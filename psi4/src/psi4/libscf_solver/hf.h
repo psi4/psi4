@@ -46,8 +46,7 @@ class PSIO;
 namespace scf {
 
 class HF : public Wavefunction {
-protected:
-
+   protected:
     /// The kinetic energy matrix
     SharedMatrix T_;
     /// The 1e potential energy matrix
@@ -65,6 +64,8 @@ protected:
     SharedMatrix diag_F_temp_;
     /// Temporary matrix for diagonalize_F
     SharedMatrix diag_C_temp_;
+    /// List of external potentials to add to Fock matrix
+    std::vector<SharedMatrix> external_potentials_;
 
     /// Old C Alpha matrix (if needed for MOM)
     SharedMatrix Ca_old_;
@@ -126,7 +127,7 @@ protected:
     /// Whether its broken symmetry solution or not
     bool broken_symmetry_;
 
-    //Initial SAD doubly occupied may be more than ndocc
+    // Initial SAD doubly occupied may be more than ndocc
     // int sad_nocc_[8];
     Dimension original_doccpi_;
     Dimension original_soccpi_;
@@ -135,8 +136,8 @@ protected:
     bool reset_occ_;
 
     /// Mapping arrays
-    int *so2symblk_;
-    int *so2index_;
+    int* so2symblk_;
+    int* so2index_;
 
     /// SCF algorithm type
     std::string scf_type_;
@@ -210,25 +211,23 @@ protected:
     bool damping_performed_;
 
     // parameters for hard-sphere potentials
-    double radius_; // radius of spherical potential
-    double thickness_; // thickness of spherical barrier
-    int r_points_; // number of radial integration points
-    int theta_points_; // number of colatitude integration points
-    int phi_points_; // number of azimuthal integration points
+    double radius_;     // radius of spherical potential
+    double thickness_;  // thickness of spherical barrier
+    int r_points_;      // number of radial integration points
+    int theta_points_;  // number of colatitude integration points
+    int phi_points_;    // number of azimuthal integration points
 
     /// DFT variables
     std::shared_ptr<SuperFunctional> functional_;
     std::shared_ptr<VBase> potential_;
 
-
     // CPHF info
     int cphf_nfock_builds_;
     bool cphf_converged_;
 
-public:
-
+   public:
     /// The number of iterations needed to reach convergence
-    int iterations_needed() {return iterations_needed_;}
+    int iterations_needed() { return iterations_needed_; }
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
@@ -240,7 +239,7 @@ public:
     std::shared_ptr<VBase> V_potential() const { return potential_; }
 
     /// The RMS error in the density
-    double rms_density_error() {return Drms_;}
+    double rms_density_error() { return Drms_; }
 
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;
@@ -250,8 +249,7 @@ public:
     bool pcm_enabled_;
     std::shared_ptr<PCM> hf_pcm_;
 
-protected:
-
+   protected:
     /// Formation of H is the same regardless of RHF, ROHF, UHF
     // Temporarily converting to virtual function for testing embedding
     // potentials.  TDC, 5/23/12.
@@ -284,16 +282,14 @@ protected:
 
     /// Check the stability of the wavefunction, and correct (if requested)
     virtual bool stability_analysis();
-    void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
-
+    void print_stability_analysis(std::vector<std::pair<double, int>>& vec);
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
     void compute_fvpi();
 
     /// Prints the orbitals energies and symmetries (helper method)
-    void print_orbitals(const char* header, std::vector<std::pair<double,
-                        std::pair< std::string, int> > > orbs);
+    void print_orbitals(const char* header, std::vector<std::pair<double, std::pair<std::string, int>>> orbs);
 
     /// Prints the orbitals in arbitrary order (works with MOM)
     void print_orbitals();
@@ -397,9 +393,9 @@ protected:
     /** Load orbitals from previous computation, projecting if needed **/
     // virtual void load_orbitals();
 
-public:
-    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
-       Options& options, std::shared_ptr<PSIO> psio);
+   public:
+    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct, Options& options,
+       std::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 
@@ -454,9 +450,8 @@ public:
     virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
                                                std::string return_basis = "MO");
     virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
-                                                 double conv_tol = 1.e-4, int max_iter = 10,
-                                                 int print_lvl = 1);
+    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
+                                                 int max_iter = 10, int print_lvl = 1);
     bool cphf_converged() { return cphf_converged_; }
     int cphf_nfock_builds() { return cphf_nfock_builds_; }
 
@@ -473,9 +468,11 @@ public:
 
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
-    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
+    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
+        sad_fitting_basissets_ = basis_vec;
+    }
 };
-
-}} // Namespaces
+}
+}  // Namespaces
 
 #endif

@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.2a1.dev616 
+                               Psi4 1.2a1.dev628 
 
-                         Git: Rev {pcm+cc_pted} 9d05c05 dirty
+                         Git: Rev {pcm+cc_pted} 6e4b0d3 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 18 October 2017 06:17PM
+    Psi4 started on: Wednesday, 25 October 2017 04:47PM
 
-    Process ID:   8888
+    Process ID:   9943
     PSIDATADIR: /home/roberto/Workspace/robertodr/psi4/objdir_pted/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -33,15 +33,15 @@
 
 
 nucenergy = 0.0000000000000000 # TEST
-scf_polenergy = -0.6908724085545570 # TEST
-scf_totalenergy = -199.515074015114 # TEST
+scf_polenergy = -0.6908724085545457 # TEST
+scf_totalenergy = -199.5150740151143793 # TEST
 #! Correlated reference values using cc-pVDZ
 #! after the update of cc-pVDZ basis (commit 0735b1e6)
-pte_correnergy = -0.002507986199683  # TEST
-pte_totalenergy = -199.517582001311979  # TEST
+pte_correnergy = -0.002507986176748 # TEST
+pte_totalenergy = -199.517582001293789 # TEST
 #! Correlated reference values using cc-pVDZ (before update)
-old_pte_correnergy = -0.002501910865185 # TEST
-old_pte_totalenergy = -199.517575925979429 # TEST
+old_pte_correnergy = -0.002501910890186 # TEST
+old_pte_totalenergy = -199.517575926007027 # TEST
 
 molecule Mg
 {
@@ -80,12 +80,29 @@ pcm =
   }
 }
 
+print('RHF reference, PCM-CC-PTE')
 energy_pte, wfn = energy('ccsd', return_wfn=True)
 compare_values(nucenergy, Mg.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") # TEST
 compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
 compare_values(scf_polenergy, wfn.reference_wavefunction().get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm)") #TEST
 compare_values(pte_totalenergy, energy_pte, 10, "CCSD Total energy (PCM PTE algorithm)") #TEST
 compare_values(pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE algorithm)") # TEST
+
+set reference uhf
+print('UHF reference, PCM-CC-PTE')
+energy_pte, wfn = energy('ccsd', return_wfn=True)
+compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
+compare_values(scf_polenergy, wfn.reference_wavefunction().get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm)") #TEST
+compare_values(pte_totalenergy, energy_pte, 10, "CCSD Total energy (PCM PTE algorithm)") #TEST
+compare_values(pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE algorithm)") # TEST
+
+set reference rohf
+print('ROHF reference, PCM-CC-PTE')
+energy_pte, wfn = energy('ccsd', return_wfn=True)
+compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
+compare_values(scf_polenergy, wfn.reference_wavefunction().get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm)") #TEST
+compare_values(pte_totalenergy, energy_pte, 9, "CCSD Total energy (PCM PTE algorithm)") #TEST
+compare_values(pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 9, "CCSD Correlation energy (PCM PTE algorithm)") # TEST
 
 #! Now test with old cc-pVDZ basis specification
 
@@ -174,7 +191,7 @@ compare_values(old_pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 1
 --------------------------------------------------------------------------
 
 *** tstart() called on minazo
-*** at Wed Oct 18 18:17:01 2017
+*** at Wed Oct 25 16:47:40 2017
 
    => Loading Basis Set <=
 
@@ -247,8 +264,8 @@ compare_values(old_pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 1
             "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
    PCMSolver is distributed under the terms of the GNU Lesser General Public License.
 
- * Git last commit hash   : 9d05c056e
- * Git last commit date   : Wed Oct 18 14:42:40 2017 +0200
+ * Git last commit hash   : 2fa8ccb4
+ * Git last commit date   : Thu Oct 19 02:07:04 2017 +0200
  * Git last commit author : Roberto Di Remigio
 
 
@@ -380,6 +397,7 @@ Permittivity = 78.39
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
+
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
 Properties computed using the SCF density matrix
@@ -397,14 +415,14 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
+*** tstop() called on minazo at Wed Oct 25 16:47:41 2017
 Module time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.58 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.58 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -431,7 +449,7 @@ Total time:
 
 
 *** tstart() called on minazo
-*** at Wed Oct 18 18:17:02 2017
+*** at Wed Oct 25 16:47:41 2017
 
 
 	Wfn Parameters:
@@ -506,18 +524,18 @@ Total time:
 	Two-electron energy          =     72.20691766003047
 	Reference energy             =   -199.51507401511705
 
-*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
+*** tstop() called on minazo at Wed Oct 25 16:47:41 2017
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on minazo
-*** at Wed Oct 18 18:17:02 2017
+*** at Wed Oct 25 16:47:41 2017
 
             **************************
             *                        *
@@ -609,14 +627,14 @@ MP2 correlation energy -0.0025591085144788
       * CCSD total energy                     = -199.517582001293789
 
 
-*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
+*** tstop() called on minazo at Wed Oct 25 16:47:41 2017
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.78 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.70 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	Nuclear repulsion energy (PCM, total algorithm)...................PASSED
 	SCF Total energy (PCM, total algorithm)...........................PASSED
@@ -625,21 +643,21 @@ Total time:
 	CCSD Correlation energy (PCM PTE algorithm).......................PASSED
 
 *** tstart() called on minazo
-*** at Wed Oct 18 18:17:02 2017
+*** at Wed Oct 25 16:47:41 2017
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUSF929755E
+    Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry MG         line     5 inputblock old-cc-pvdz 
+    atoms 1 entry MG         line   353 file /home/roberto/Workspace/robertodr/psi4/objdir_pted/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, Andy Simmonett
                              and Daniel Smith
-                              RHF Reference
+                              UHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
@@ -670,14 +688,1062 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUSF929755E
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  **PSI4:PCMSOLVER Interface Active**
+
+
+ * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
+   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
+    With contributions from:
+     R. Bast            (CMake framework)
+     U. Ekstroem        (automatic differentiation library)
+     J. Juselius        (input parsing library and CMake framework)
+   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
+            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
+   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+
+ * Git last commit hash   : 2fa8ccb4
+ * Git last commit date   : Thu Oct 19 02:07:04 2017 +0200
+ * Git last commit author : Roberto Di Remigio
+
+
+~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+Using CODATA 2010 set of constants.
+Input parsing done API-side
+========== Cavity 
+Atomic radii set: 
+Cavity type: GePol
+Average tesserae area = 1 Ang^2
+Solvent probe radius = 1.385 Ang
+Number of spheres = 1 [initial = 1; added = 0]
+Number of finite elements = 32
+Number of irreducible finite elements = 32
+============ Spheres list (in Angstrom)
+ Sphere   on   Radius   Alpha       X            Y            Z     
+-------- ---- -------- ------- -----------  -----------  -----------
+   1      Mg    1.5105   1.00     0.000000     0.000000     0.000000  
+========== Static solver 
+Solver Type: IEFPCM, isotropic
+PCM matrix hermitivitized
+============ Medium 
+Medium initialized from solvent built-in data.
+Solvent name:          Water
+Static  permittivity = 78.39
+Optical permittivity = 1.776
+Solvent radius =       1.385 Ang
+.... Inside 
+Green's function type: vacuum
+.... Outside 
+Green's function type: uniform dielectric
+Permittivity = 78.39
+
+  There are 32 tesserae, 32 of which irreducible.
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         18      18       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               8
+      Number of primitives:             55
+      Number of atomic orbitals:        19
+      Number of basis functions:        18
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 29412 doubles for integral storage.
+  We computed 666 shell quartets total.
+  Whereas there are 666 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 4.0337896727E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.69103428395604
+   @UHF iter   1:  -199.51171497165575   -1.99512e+02   1.40320e-02 
+   PCM polarization energy = -0.69087490654109
+   @UHF iter   2:  -199.51506591155425   -3.35094e-03   2.88191e-04 DIIS
+   PCM polarization energy = -0.69087261102400
+   @UHF iter   3:  -199.51507398317574   -8.07162e-06   1.61233e-05 DIIS
+   PCM polarization energy = -0.69087241494735
+   @UHF iter   4:  -199.51507401508829   -3.19125e-08   4.56833e-07 DIIS
+   PCM polarization energy = -0.69087240842899
+   @UHF iter   5:  -199.51507401511438   -2.60911e-11   1.15700e-08 DIIS
+   PCM polarization energy = -0.69087240854381
+   @UHF iter   6:  -199.51507401511438    0.00000e+00   4.63382e-10 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:  -8.881784197E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:               -8.881784197E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -49.093830     2A     -3.798339     3A     -2.320738  
+       4A     -2.320738     5A     -2.320738  
+
+    Alpha Virtual:                                                        
+
+       6A      0.032316     7A      0.087661     8A      0.087661  
+       9A      0.087661    10A      0.245820    11A      0.350631  
+      12A      0.350631    13A      0.350631    14A      0.545866  
+      15A      0.545866    16A      0.547930    17A      0.547930  
+      18A      0.547930  
+
+    Beta Occupied:                                                        
+
+       1A    -49.093830     2A     -3.798339     3A     -2.320738  
+       4A     -2.320738     5A     -2.320738  
+
+    Beta Virtual:                                                         
+
+       6A      0.032316     7A      0.087661     8A      0.087661  
+       9A      0.087661    10A      0.245820    11A      0.350631  
+      12A      0.350631    13A      0.350631    14A      0.545866  
+      15A      0.545866    16A      0.547930    17A      0.547930  
+      18A      0.547930  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    SOCC [     0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:  -199.51507401511438
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -271.0311192710533419
+    Two-Electron Energy =                  72.2069176644828019
+    PCM Polarization Energy =              -0.6908724085438132
+    Total Energy =                       -199.5150740151143509
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    4  A 2.0000000
+  HONO-1 :    3  A 2.0000000
+  HONO-0 :    5  A 2.0000000
+  LUNO+0 :    6  A 0.0000000
+  LUNO+1 :    7  A 0.0000000
+  LUNO+2 :    8  A 0.0000000
+  LUNO+3 :    9  A 0.0000000
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on minazo at Wed Oct 25 16:47:42 2017
+Module time:
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.20 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   1
+      Number of AO shells:               8
+      Number of SO shells:               8
+      Number of primitives:             55
+      Number of atomic orbitals:        19
+      Number of basis functions:        18
+
+      Number of irreps:                  1
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  18 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 2071 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on minazo
+*** at Wed Oct 25 16:47:42 2017
+
+
+	Wfn Parameters:
+	--------------------
+	Wavefunction         = CCSD
+	Number of irreps     = 1
+	Number of MOs        = 18
+	Number of active MOs = 18
+	AO-Basis             = NONE
+	Semicanonical        = false
+	Reference            = UHF
+	Print Level          = 1
+
+	IRREP	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A	   18	    0	    5	    0	    13	    0
+	Transforming integrals...
+	IWL integrals will be deleted.
+	(OO|OO)...
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting AA/AB first half-transformation.
+	Sorting AA/AB half-transformed integrals.
+	Starting BB first half-transformation.
+	Sorting BB half-transformed integrals.
+	First half integral transformation complete.
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|OV)...
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|VV)...
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OO)...
+	Starting AA/AB first half-transformation.
+	Sorting AA/AB half-transformed integrals.
+	Starting BB first half-transformation.
+	Sorting BB half-transformed integrals.
+	First half integral transformation complete.
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OV)...
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|VV)...
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OO)...
+	Starting AA/AB first half-transformation.
+	Sorting AA/AB half-transformed integrals.
+	Starting BB first half-transformation.
+	Sorting BB half-transformed integrals.
+	First half integral transformation complete.
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OV)...
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|VV)...
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+	Frozen core energy     =      0.00000000000000
+
+	Size of irrep 0 of <AB|CD> integrals:      0.006 (MW) /      0.049 (MB)
+	Total:                                     0.006 (MW) /      0.049 (MB)
+
+	Size of irrep 0 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Total:                                     0.006 (MW) /      0.049 (MB)
+
+	Size of irrep 0 of <Ab|Cd> integrals:      0.029 (MW) /      0.228 (MB)
+	Total:                                     0.029 (MW) /      0.228 (MB)
+
+	Size of irrep 0 of <IA|BC> integrals:      0.011 (MW) /      0.088 (MB)
+	Total:                                     0.011 (MW) /      0.088 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.011 (MW) /      0.088 (MB)
+	Total:                                     0.011 (MW) /      0.088 (MB)
+
+	Size of irrep 0 of <Ia|Bc> integrals:      0.011 (MW) /      0.088 (MB)
+	Total:                                     0.011 (MW) /      0.088 (MB)
+
+	Size of irrep 0 of <iA|bC> integrals:      0.011 (MW) /      0.088 (MB)
+	Total:                                     0.011 (MW) /      0.088 (MB)
+
+	Size of irrep 0 of tIjAb amplitudes:       0.004 (MW) /      0.034 (MB)
+	Total:                                     0.004 (MW) /      0.034 (MB)
+
+	Nuclear Rep. energy          =      0.00000000000000
+	SCF energy                   =   -199.51507401511438
+	One-electron energy          =   -271.03111926658949
+	Two-electron (AA) energy     =     14.13489971123557
+	Two-electron (BB) energy     =     14.13489971123557
+	Two-electron (AB) energy     =     43.93711823755609
+	Two-electron energy          =     72.20691766002723
+	Reference energy             =   -199.51507401510608
+
+*** tstop() called on minazo at Wed Oct 25 16:47:42 2017
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.29 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on minazo
+*** at Wed Oct 25 16:47:42 2017
+
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
+
+    Nuclear Rep. energy (wfn)     =    0.000000000000000
+    SCF energy          (wfn)     = -199.515074015114379
+    Reference energy    (file100) = -199.515074015106080
+
+    Input parameters:
+    -----------------
+    Wave function   =     CCSD
+    Reference wfn   =     UHF
+    Brueckner       =     No
+    Memory (Mbytes) =     524.3
+    Maxiter         =     50
+    R_Convergence   =     1.0e-07
+    E_Convergence   =     1.0e-06
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     NONE
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LRU
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
+
+    Using old T1 amplitudes.
+    Using old T2 amplitudes.
+MP2 correlation energy -0.0025591085159581
+                Solving CC Amplitude Equations
+                ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------   --------
+     0        -0.000000910637420    0.000e+00    0.001208    0.000000    0.000000    0.000000
+     1        -0.002523743590319    3.011e-02    0.000105    0.000000    0.000000    0.000000
+     2        -0.002473275097920    3.872e-03    0.001035    0.000000    0.000000    0.000000
+     3        -0.002507350084469    5.400e-04    0.001197    0.000000    0.000000    0.000000
+     4        -0.002507983600613    5.270e-05    0.001207    0.000000    0.000000    0.000000
+     5        -0.002507982766781    6.173e-06    0.001208    0.000000    0.000000    0.000000
+     6        -0.002507986314208    5.782e-07    0.001208    0.000000    0.000000    0.000000
+     7        -0.002507986178754    5.881e-08    0.001208    0.000000    0.000000    0.000000
+
+    Iterations converged.
+
+
+    Largest TIA Amplitudes:
+              4   6         0.0014593487
+              3   5         0.0010872588
+              2   7        -0.0010857441
+              3   7        -0.0009760545
+              2   5        -0.0009751400
+              1   4         0.0005585412
+              1   0        -0.0003948363
+              4   2        -0.0003742081
+              2   3        -0.0002696047
+              3   1         0.0002694164
+
+    Largest Tia Amplitudes:
+              4   6         0.0014593487
+              3   5         0.0010872588
+              2   7        -0.0010857441
+              3   7        -0.0009760545
+              2   5        -0.0009751400
+              1   4         0.0005585412
+              1   0        -0.0003948363
+              4   2        -0.0003742081
+              2   3        -0.0002696047
+              3   1         0.0002694164
+
+    Largest TIJAB Amplitudes:
+      3   2   7   5        -0.0037342494
+      4   2   7   6        -0.0027821320
+      4   3   6   5        -0.0027782561
+      4   2   6   5         0.0024975781
+      4   3   7   6        -0.0024952379
+      4   1   6   4        -0.0018821384
+      3   1   5   4        -0.0014022515
+      2   1   7   4         0.0014002980
+      3   1   7   4         0.0012588305
+      2   1   5   4         0.0012576510
+
+    Largest Tijab Amplitudes:
+      3   2   7   5        -0.0037342494
+      4   2   7   6        -0.0027821320
+      4   3   6   5        -0.0027782561
+      4   2   6   5         0.0024975781
+      4   3   7   6        -0.0024952379
+      4   1   6   4        -0.0018821384
+      3   1   5   4        -0.0014022515
+      2   1   7   4         0.0014002980
+      3   1   7   4         0.0012588305
+      2   1   5   4         0.0012576510
+
+    Largest TIjAb Amplitudes:
+      4   4   6   6        -0.0051636080
+      3   4   5   6        -0.0031644521
+      4   3   6   5        -0.0031644521
+      2   4   7   6         0.0031589685
+      4   2   6   7         0.0031589685
+      3   3   5   5        -0.0030435680
+      2   2   7   7        -0.0030362037
+      3   4   7   6         0.0028406367
+      4   3   6   7         0.0028406367
+      2   4   5   6         0.0028373259
+
+    SCF energy       (wfn)                    = -199.515074015114379
+    Reference energy (file100)                = -199.515074015106080
+
+    Opposite-spin MP2 correlation energy      =   -0.001845915185878
+    Same-spin MP2 correlation energy          =   -0.000713193330081
+    MP2 correlation energy                    =   -0.002559108515958
+      * MP2 total energy                      = -199.517633123622034
+
+    Opposite-spin CCSD correlation energy     =   -0.001794617605433
+    Same-spin CCSD correlation energy         =   -0.000713368573765
+    CCSD correlation energy                   =   -0.002507986178754
+      * CCSD total energy                     = -199.517582001284836
+
+
+*** tstop() called on minazo at Wed Oct 25 16:47:42 2017
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+	SCF Total energy (PCM, total algorithm)...........................PASSED
+	SCF Polarization energy (PCM, total algorithm)....................PASSED
+	CCSD Total energy (PCM PTE algorithm).............................PASSED
+	CCSD Correlation energy (PCM PTE algorithm).......................PASSED
+
+*** tstart() called on minazo
+*** at Wed Oct 25 16:47:42 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry MG         line   353 file /home/roberto/Workspace/robertodr/psi4/objdir_pted/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                             ROHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 2, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          MG          0.000000000000     0.000000000000     0.000000000000    23.985041699000
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 2
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  **PSI4:PCMSOLVER Interface Active**
+
+
+ * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
+   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
+    With contributions from:
+     R. Bast            (CMake framework)
+     U. Ekstroem        (automatic differentiation library)
+     J. Juselius        (input parsing library and CMake framework)
+   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
+            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
+   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+
+ * Git last commit hash   : 2fa8ccb4
+ * Git last commit date   : Thu Oct 19 02:07:04 2017 +0200
+ * Git last commit author : Roberto Di Remigio
+
+
+~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+Using CODATA 2010 set of constants.
+Input parsing done API-side
+========== Cavity 
+Atomic radii set: 
+Cavity type: GePol
+Average tesserae area = 1 Ang^2
+Solvent probe radius = 1.385 Ang
+Number of spheres = 1 [initial = 1; added = 0]
+Number of finite elements = 32
+Number of irreducible finite elements = 32
+============ Spheres list (in Angstrom)
+ Sphere   on   Radius   Alpha       X            Y            Z     
+-------- ---- -------- ------- -----------  -----------  -----------
+   1      Mg    1.5105   1.00     0.000000     0.000000     0.000000  
+========== Static solver 
+Solver Type: IEFPCM, isotropic
+PCM matrix hermitivitized
+============ Medium 
+Medium initialized from solvent built-in data.
+Solvent name:          Water
+Static  permittivity = 78.39
+Optical permittivity = 1.776
+Solvent radius =       1.385 Ang
+.... Inside 
+Green's function type: vacuum
+.... Outside 
+Green's function type: uniform dielectric
+Permittivity = 78.39
+
+  There are 32 tesserae, 32 of which irreducible.
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         18      18       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               8
+      Number of primitives:             55
+      Number of atomic orbitals:        19
+      Number of basis functions:        18
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 29412 doubles for integral storage.
+  We computed 666 shell quartets total.
+  Whereas there are 666 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 4.0337896727E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.69103428395604
+   @ROHF iter   1:  -199.51171497165578   -1.99512e+02   9.92210e-03 
+   PCM polarization energy = -0.69087490654109
+   @ROHF iter   2:  -199.51506591155419   -3.35094e-03   2.03782e-04 DIIS
+   PCM polarization energy = -0.69087261102682
+   @ROHF iter   3:  -199.51507398317437   -8.07162e-06   1.14012e-05 DIIS
+   PCM polarization energy = -0.69087241494786
+   @ROHF iter   4:  -199.51507401508826   -3.19139e-08   3.23046e-07 DIIS
+   PCM polarization energy = -0.69087240842899
+   @ROHF iter   5:  -199.51507401511444   -2.61764e-11   8.18195e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -49.093830     2A     -3.798339     3A     -2.320738  
+       4A     -2.320738     5A     -2.320738  
+
+    Singly Occupied:                                                      
+
+    
+
+    Virtual:                                                              
+
+       6A      0.032316     7A      0.087661     8A      0.087661  
+       9A      0.087661    10A      0.245820    11A      0.350631  
+      12A      0.350631    13A      0.350631    14A      0.545866  
+      15A      0.545866    16A      0.547930    17A      0.547930  
+      18A      0.547930  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    SOCC [     0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:  -199.51507401511444
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -271.0311193774237495
+    Two-Electron Energy =                  72.2069177707383005
+    PCM Polarization Energy =              -0.6908724084289872
+    Total Energy =                       -199.5150740151144362
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on minazo at Wed Oct 25 16:47:42 2017
+Module time:
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.85 seconds =       0.03 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   1
+      Number of AO shells:               8
+      Number of SO shells:               8
+      Number of primitives:             55
+      Number of atomic orbitals:        19
+      Number of basis functions:        18
+
+      Number of irreps:                  1
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  18 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 2071 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on minazo
+*** at Wed Oct 25 16:47:43 2017
+
+
+	Wfn Parameters:
+	--------------------
+	Wavefunction         = CCSD
+	Number of irreps     = 1
+	Number of MOs        = 18
+	Number of active MOs = 18
+	AO-Basis             = NONE
+	Semicanonical        = false
+	Reference            = ROHF
+	Print Level          = 1
+
+	IRREP	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A	   18	    0	    5	    0	    13	    0
+	Transforming integrals...
+	IWL integrals will be deleted.
+	(OO|OO)...
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OO)...
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OO)...
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	Frozen core energy     =      0.00000000000000
+
+	Size of irrep 0 of <ab|cd> integrals:      0.029 (MW) /      0.228 (MB)
+	Total:                                     0.029 (MW) /      0.228 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.011 (MW) /      0.088 (MB)
+	Total:                                     0.011 (MW) /      0.088 (MB)
+
+	Size of irrep 0 of tIjAb amplitudes:       0.004 (MW) /      0.034 (MB)
+	Total:                                     0.004 (MW) /      0.034 (MB)
+
+	Nuclear Rep. energy          =      0.00000000000000
+	SCF energy                   =   -199.51507401511444
+	One-electron energy          =   -271.03111927105283
+	Two-electron (AA) energy     =     14.13489971211563
+	Two-electron (BB) energy     =     14.13489971211563
+	Two-electron (AB) energy     =     43.93711824025094
+	Two-electron energy          =   -198.82420160657063
+	Reference energy             =   -199.51507401499961
+
+*** tstop() called on minazo at Wed Oct 25 16:47:43 2017
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.94 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on minazo
+*** at Wed Oct 25 16:47:43 2017
+
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
+
+    Nuclear Rep. energy (wfn)     =    0.000000000000000
+    SCF energy          (wfn)     = -199.515074015114436
+    Reference energy    (file100) = -199.515074014999612
+
+    Input parameters:
+    -----------------
+    Wave function   =     CCSD
+    Reference wfn   =     ROHF
+    Brueckner       =     No
+    Memory (Mbytes) =     524.3
+    Maxiter         =     50
+    R_Convergence   =     1.0e-07
+    E_Convergence   =     1.0e-06
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     NONE
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LOW
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
+
+    Using old T1 amplitudes.
+    Using old T2 amplitudes.
+                Solving CC Amplitude Equations
+                ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------   --------
+     0        -0.000057071853827    0.000e+00    0.000854    0.001508    0.001508    0.000000
+     1        -0.002527171781743    2.966e-02    0.000158    0.000317    0.000317    0.000000
+     2        -0.002473907245480    3.756e-03    0.000741    0.001366    0.001366    0.000000
+     3        -0.002507634618846    5.172e-04    0.000846    0.001498    0.001498    0.000000
+     4        -0.002507970349648    4.512e-05    0.000854    0.001508    0.001508    0.000000
+     5        -0.002507983165408    5.345e-06    0.000854    0.001509    0.001509    0.000000
+     6        -0.002507986638476    4.983e-07    0.000854    0.001508    0.001508    0.000000
+     7        -0.002507986159510    5.449e-08    0.000854    0.001508    0.001508    0.000000
+
+    Iterations converged.
+
+
+    Largest TIA Amplitudes:
+              3   7         0.0014209808
+              2   5         0.0014179164
+              4   6         0.0013991399
+              1   4         0.0005585391
+              1   0        -0.0003948339
+              3   2        -0.0003656281
+              4   5         0.0003221597
+              3   6         0.0003083623
+              2   6        -0.0002866876
+              2   1        -0.0002833717
+
+    Largest Tia Amplitudes:
+              3   7         0.0014209808
+              2   5         0.0014179164
+              4   6         0.0013991399
+              1   4         0.0005585391
+              1   0        -0.0003948339
+              3   2        -0.0003656281
+              4   5         0.0003221597
+              3   6         0.0003083623
+              2   6        -0.0002866876
+              2   1        -0.0002833717
+
+    Largest TIJAB Amplitudes:
+      4   2   6   5        -0.0036360753
+      4   3   7   6         0.0036282340
+      3   2   7   5        -0.0035801809
+      3   1   7   4        -0.0018326564
+      2   1   5   4        -0.0018287042
+      4   1   6   4        -0.0018044847
+      3   1   7   0         0.0012072863
+      2   1   5   0         0.0012046827
+      4   1   6   0         0.0011887278
+      3   2   7   6         0.0008243572
+
+    Largest Tijab Amplitudes:
+      4   2   6   5        -0.0036360753
+      4   3   7   6         0.0036282340
+      3   2   7   5        -0.0035801809
+      3   1   7   4        -0.0018326564
+      2   1   5   4        -0.0018287042
+      4   1   6   4        -0.0018044847
+      3   1   7   0         0.0012072863
+      2   1   5   0         0.0012046827
+      4   1   6   0         0.0011887278
+      3   2   7   6         0.0008243572
+
+    Largest TIjAb Amplitudes:
+      3   3   7   7        -0.0049163605
+      2   2   5   5        -0.0048968971
+      4   4   6   6        -0.0047785367
+      2   3   5   7        -0.0040110781
+      3   2   7   5        -0.0040110781
+      3   4   7   6        -0.0039447064
+      4   3   6   7        -0.0039447064
+      2   4   5   6        -0.0039340253
+      4   2   6   5        -0.0039340253
+      1   3   4   7        -0.0027135320
+
+    SCF energy       (wfn)                    = -199.515074015114436
+    Reference energy (file100)                = -199.515074014999612
+
+    Opposite-spin CCSD correlation energy     =   -0.001794617588613
+    Same-spin CCSD correlation energy         =   -0.000713368572266
+    CCSD correlation energy                   =   -0.002507986159510
+      * CCSD total energy                     = -199.517582001159127
+
+
+*** tstop() called on minazo at Wed Oct 25 16:47:43 2017
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.01 seconds =       0.03 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+	SCF Total energy (PCM, total algorithm)...........................PASSED
+	SCF Polarization energy (PCM, total algorithm)....................PASSED
+	CCSD Total energy (PCM PTE algorithm).............................PASSED
+	CCSD Correlation energy (PCM PTE algorithm).......................PASSED
+
+*** tstart() called on minazo
+*** at Wed Oct 25 16:47:43 2017
+
+   => Loading Basis Set <=
+
+    Name: ANONYMOUS9085488B
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry MG         line     5 inputblock old-cc-pvdz 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                             ROHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 2, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          MG          0.000000000000     0.000000000000     0.000000000000    23.985041699000
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 2
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: ANONYMOUS9085488B
     Blend: OLD-CC-PVDZ
     Number of shells: 8
     Number of basis function: 18
@@ -698,8 +1764,8 @@ Total time:
             "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
    PCMSolver is distributed under the terms of the GNU Lesser General Public License.
 
- * Git last commit hash   : 9d05c056e
- * Git last commit date   : Wed Oct 18 14:42:40 2017 +0200
+ * Git last commit hash   : 2fa8ccb4
+ * Git last commit date   : Thu Oct 19 02:07:04 2017 +0200
  * Git last commit author : Roberto Di Remigio
 
 
@@ -774,26 +1840,24 @@ Permittivity = 78.39
   Minimum eigenvalue in the overlap matrix is 1.3235326892E-01.
   Using Symmetric Orthogonalization.
 
-  SCF Guess: Core (One-Electron) Hamiltonian.
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.69810830098948
-   @RHF iter   1:  -199.21259729881811   -1.99213e+02   4.90283e-02 
-   PCM polarization energy = -0.69088178177825
-   @RHF iter   2:  -199.51217729709134   -2.99580e-01   4.97686e-03 DIIS
-   PCM polarization energy = -0.69087224472920
-   @RHF iter   3:  -199.51507021452451   -2.89292e-03   1.79056e-04 DIIS
-   PCM polarization energy = -0.69087224885453
-   @RHF iter   4:  -199.51507399967508   -3.78515e-06   1.16130e-05 DIIS
-   PCM polarization energy = -0.69087241214206
-   @RHF iter   5:  -199.51507401507666   -1.54016e-08   5.62809e-07 DIIS
-   PCM polarization energy = -0.69087240897490
-   @RHF iter   6:  -199.51507401511384   -3.71756e-11   6.35922e-08 DIIS
-   PCM polarization energy = -0.69087240855455
-   @RHF iter   7:  -199.51507401511441   -5.68434e-13   3.28182e-10 DIIS
+   PCM polarization energy = -0.69148205132635
+   @ROHF iter   1:  -199.49778802756080   -1.99498e+02   1.50343e-02 
+   PCM polarization energy = -0.69086742015294
+   @ROHF iter   2:  -199.51498751107425   -1.71995e-02   6.99490e-04 DIIS
+   PCM polarization energy = -0.69087199292491
+   @ROHF iter   3:  -199.51507360971831   -8.60986e-05   4.68691e-05 DIIS
+   PCM polarization energy = -0.69087240740274
+   @ROHF iter   4:  -199.51507401475905   -4.05041e-07   1.28823e-06 DIIS
+   PCM polarization energy = -0.69087240887563
+   @ROHF iter   5:  -199.51507401511429   -3.55243e-10   1.09331e-08 DIIS
+   PCM polarization energy = -0.69087240857007
+   @ROHF iter   6:  -199.51507401511438   -8.52651e-14   5.84496e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -804,6 +1868,10 @@ Permittivity = 78.39
 
        1A    -49.093830     2A     -3.798339     3A     -2.320738  
        4A     -2.320738     5A     -2.320738  
+
+    Singly Occupied:                                                      
+
+    
 
     Virtual:                                                              
 
@@ -816,20 +1884,22 @@ Permittivity = 78.39
     Final Occupation by Irrep:
               A 
     DOCC [     5 ]
+    SOCC [     0 ]
 
   Energy converged.
 
-  @RHF Final Energy:  -199.51507401511441
+  @ROHF Final Energy:  -199.51507401511438
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -271.0311192492410441
-    Two-Electron Energy =                  72.2069176426811907
-    PCM Polarization Energy =              -0.6908724085545530
-    Total Energy =                       -199.5150740151144078
+    One-Electron Energy =                -271.0311192471241384
+    Two-Electron Energy =                  72.2069176405798316
+    PCM Polarization Energy =              -0.6908724085700715
+    Total Energy =                       -199.5150740151143793
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -839,24 +1909,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
 
-*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
+*** tstop() called on minazo at Wed Oct 25 16:47:43 2017
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
+	user time   =       0.37 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.24 seconds =       0.02 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.38 seconds =       0.04 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -882,7 +1952,7 @@ Total time:
 
 
 *** tstart() called on minazo
-*** at Wed Oct 18 18:17:03 2017
+*** at Wed Oct 25 16:47:43 2017
 
 
 	Wfn Parameters:
@@ -893,7 +1963,7 @@ Total time:
 	Number of active MOs = 18
 	AO-Basis             = NONE
 	Semicanonical        = false
-	Reference            = RHF
+	Reference            = ROHF
 	Print Level          = 1
 
 	IRREP	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
@@ -948,27 +2018,30 @@ Total time:
 	Size of irrep 0 of <ia|bc> integrals:      0.011 (MW) /      0.088 (MB)
 	Total:                                     0.011 (MW) /      0.088 (MB)
 
-	Size of irrep 0 of tijab amplitudes:       0.004 (MW) /      0.034 (MB)
+	Size of irrep 0 of tIjAb amplitudes:       0.004 (MW) /      0.034 (MB)
 	Total:                                     0.004 (MW) /      0.034 (MB)
 
 	Nuclear Rep. energy          =      0.00000000000000
-	SCF energy                   =   -199.51507401511441
-	One-electron energy          =   -271.03111926659273
-	Two-electron energy          =     72.20691766003043
-	Reference energy             =   -199.51507401511685
+	SCF energy                   =   -199.51507401511438
+	One-electron energy          =   -271.03111926659204
+	Two-electron (AA) energy     =     14.13489971123613
+	Two-electron (BB) energy     =     14.13489971123613
+	Two-electron (AB) energy     =     43.93711823755746
+	Two-electron energy          =   -198.82420160656233
+	Reference energy             =   -199.51507401513240
 
-*** tstop() called on minazo at Wed Oct 18 18:17:03 2017
+*** tstop() called on minazo at Wed Oct 25 16:47:43 2017
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.30 seconds =       0.02 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.45 seconds =       0.04 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on minazo
-*** at Wed Oct 18 18:17:03 2017
+*** at Wed Oct 25 16:47:43 2017
 
             **************************
             *                        *
@@ -977,13 +2050,13 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =    0.000000000000000
-    SCF energy          (wfn)     = -199.515074015114408
-    Reference energy    (file100) = -199.515074015116852
+    SCF energy          (wfn)     = -199.515074015114379
+    Reference energy    (file100) = -199.515074015132399
 
     Input parameters:
     -----------------
     Wave function   =     CCSD
-    Reference wfn   =     RHF
+    Reference wfn   =     ROHF
     Brueckner       =     No
     Memory (Mbytes) =     524.3
     Maxiter         =     50
@@ -1008,71 +2081,100 @@ Total time:
 
     Using old T1 amplitudes.
     Using old T2 amplitudes.
-
-MP2 correlation energy -0.0025521381651380
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.000448903837242    0.000e+00    0.000854    0.001508    0.001508    0.009296
-     1        -0.002533585389308    2.163e-02    0.000445    0.000864    0.000864    0.009491
-     2        -0.002473931383894    2.568e-03    0.000763    0.001439    0.001439    0.009204
-     3        -0.002501730446060    3.744e-04    0.000847    0.001501    0.001501    0.009288
-     4        -0.002501898266013    3.320e-05    0.000853    0.001506    0.001506    0.009286
-     5        -0.002501909187206    4.240e-06    0.000853    0.001506    0.001506    0.009286
-     6        -0.002501912094987    4.526e-07    0.000853    0.001506    0.001506    0.009286
-     7        -0.002501910890186    4.845e-08    0.000853    0.001506    0.001506    0.009286
+     0        -0.000231849439731    0.000e+00    0.000854    0.001508    0.001508    0.000000
+     1        -0.002525796574923    2.847e-02    0.000301    0.000576    0.000576    0.000000
+     2        -0.002470315216948    3.557e-03    0.000756    0.001398    0.001398    0.000000
+     3        -0.002501914093478    4.885e-04    0.000846    0.001498    0.001498    0.000000
+     4        -0.002501874524756    3.687e-05    0.000853    0.001506    0.001506    0.000000
+     5        -0.002501912444696    3.050e-06    0.000853    0.001506    0.001506    0.000000
+     6        -0.002501911656394    3.701e-07    0.000853    0.001506    0.001506    0.000000
+     7        -0.002501910887467    4.992e-08    0.000853    0.001506    0.001506    0.000000
 
     Iterations converged.
 
 
     Largest TIA Amplitudes:
-              3   7         0.0014405065
-              4   5         0.0011872504
-              2   6         0.0011691130
-              2   5         0.0008462510
-              4   6        -0.0008431577
+              4   6        -0.0013654294
+              3   5        -0.0012440025
+              2   7         0.0012323969
+              2   5         0.0007254016
+              3   7         0.0006326554
               1   4         0.0005590766
+              4   7         0.0004575391
+              3   6         0.0004249732
               1   0        -0.0003951968
-              4   2         0.0002936351
-              2   1        -0.0002817043
-              3   3        -0.0002809661
+              4   3         0.0003385772
+
+    Largest Tia Amplitudes:
+              4   6        -0.0013654294
+              3   5        -0.0012440025
+              2   7         0.0012323969
+              2   5         0.0007254016
+              3   7         0.0006326554
+              1   4         0.0005590766
+              4   7         0.0004575391
+              3   6         0.0004249732
+              1   0        -0.0003951968
+              4   3         0.0003385772
+
+    Largest TIJAB Amplitudes:
+      3   2   7   5        -0.0034998064
+      4   2   7   6        -0.0031885626
+      4   3   6   5        -0.0031588152
+      4   3   7   6        -0.0018593103
+      4   1   6   4         0.0017636378
+      4   2   6   5         0.0016215875
+      3   1   5   4         0.0016067949
+      2   1   7   4        -0.0015918045
+      3   2   6   5        -0.0011727422
+      4   1   6   0        -0.0011618100
+
+    Largest Tijab Amplitudes:
+      3   2   7   5        -0.0034998064
+      4   2   7   6        -0.0031885626
+      4   3   6   5        -0.0031588152
+      4   3   7   6        -0.0018593103
+      4   1   6   4         0.0017636378
+      4   2   6   5         0.0016215875
+      3   1   5   4         0.0016067949
+      2   1   7   4        -0.0015918045
+      3   2   6   5        -0.0011727422
+      4   1   6   0        -0.0011618100
 
     Largest TIjAb Amplitudes:
-      3   3   7   7        -0.0050568548
-      4   4   5   5        -0.0035631130
-      2   2   6   6        -0.0034671913
-      3   4   7   5        -0.0034228637
-      4   3   5   7        -0.0034228637
-      2   3   6   7        -0.0033577719
-      3   2   7   6        -0.0033577719
-      1   3   4   7        -0.0027548778
-      3   1   7   4        -0.0027548778
-      2   4   6   5        -0.0026031030
+      4   4   6   6        -0.0045840361
+      3   3   5   5        -0.0038728139
+      2   2   7   7        -0.0038083038
+      3   4   5   6        -0.0033742277
+      4   3   6   5        -0.0033742277
+      2   4   7   6         0.0033345299
+      4   2   6   7         0.0033345299
+      2   3   7   5         0.0029554344
+      3   2   5   7         0.0029554344
+      1   4   4   6         0.0026113057
 
-    SCF energy       (wfn)                    = -199.515074015114408
-    Reference energy (file100)                = -199.515074015116852
+    SCF energy       (wfn)                    = -199.515074015114379
+    Reference energy (file100)                = -199.515074015132399
 
-    Opposite-spin MP2 correlation energy      =   -0.001841076776259
-    Same-spin MP2 correlation energy          =   -0.000711061388879
-    MP2 correlation energy                    =   -0.002552138165138
-      * MP2 total energy                      = -199.517626153281981
-
-    Opposite-spin CCSD correlation energy     =   -0.001790521063290
-    Same-spin CCSD correlation energy         =   -0.000711389825591
-    CCSD correlation energy                   =   -0.002501910890186
-      * CCSD total energy                     = -199.517575926007027
+    Opposite-spin CCSD correlation energy     =   -0.001790521071189
+    Same-spin CCSD correlation energy         =   -0.000711389813735
+    CCSD correlation energy                   =   -0.002501910887467
+      * CCSD total energy                     = -199.517575926019873
 
 
-*** tstop() called on minazo at Wed Oct 18 18:17:03 2017
+*** tstop() called on minazo at Wed Oct 25 16:47:43 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.35 seconds =       0.02 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.54 seconds =       0.04 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 	Nuclear repulsion energy (PCM, total algorithm, old cc-pVDZ spec).PASSED
 	SCF Total energy (PCM, total algorithm, old cc-pVDZ spec).........PASSED
 	SCF Polarization energy (PCM, total algorithm, old cc-pVDZ spec)..PASSED

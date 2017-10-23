@@ -29,11 +29,10 @@ set
   pcm true
   pcm_scf_type total
   pcm_cc_type pted
-  d_convergence 12
-
+  d_convergence 10
   restart false
-  e_convergence 12
-  r_convergence 12
+  e_convergence 10
+  r_convergence 10
   ints_tolerance 20
 }
 

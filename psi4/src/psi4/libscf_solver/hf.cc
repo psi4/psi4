@@ -382,7 +382,7 @@ void HF::common_init() {
 // Initialize PCM object, if requested
 #ifdef USING_PCMSolver
     if ((pcm_enabled_ = (options_.get_bool("PCM"))))
-        hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
+        hf_pcm_ = std::make_shared<PCM>(options_, psio_, nirrep_, basisset_);
 #endif
 }
 
@@ -592,27 +592,6 @@ double HF::finalize_E() {
         // Need to recompute the Fock matrices, as they are modified during the SCF iteration
         // and might need to be dumped to checkpoint later
         form_F();
-#ifdef USING_PCMSolver
-        if (pcm_enabled_) {
-            // Prepare the density
-            SharedMatrix D_pcm(Da_->clone());
-            if (same_a_b_orbs()) {
-                D_pcm->scale(2.0);  // PSI4's density doesn't include the occupation
-            } else {
-                D_pcm->add(Db_);
-            }
-
-            // Add the PCM potential to the Fock matrix
-            SharedMatrix V_pcm;
-            V_pcm = hf_pcm_->compute_V();
-            if (same_a_b_orbs())
-                Fa_->add(V_pcm);
-            else {
-                Fa_->add(V_pcm);
-                Fb_->add(V_pcm);
-            }
-        }
-#endif
 
         // Properties
         //  Comments so that autodoc utility will find these PSI variables
@@ -1534,6 +1513,9 @@ void HF::iterations() {
 
         E_ = 0.0;
 
+        // Clear external potentials from previous iteration
+        external_potentials_.clear();
+
         timer_on("HF: Form G");
         form_G();
         timer_off("HF: Form G");
@@ -1542,6 +1524,32 @@ void HF::iterations() {
         if ((iteration_ == 0) && reset_occ_) {
             reset_occupation();
         }
+
+#ifdef USING_PCMSolver
+        if (pcm_enabled_) {
+            SharedMatrix Dt(Da_->clone());
+            if (same_a_b_dens()) {
+                Dt->scale(2.0);
+            } else {
+                Dt->add(Db_);
+            }
+            double upcm = 0.0;
+            if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
+                upcm = hf_pcm_->compute_E(Dt, PCM::Total);
+            } else {
+                upcm = hf_pcm_->compute_E(Dt, PCM::NucAndEle);
+            }
+            E_ += upcm;
+            energies_["PCM Polarization"] = upcm;
+            variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            external_potentials_.push_back(hf_pcm_->compute_V());
+        } else {
+            energies_["PCM Polarization"] = 0.0;
+            variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+        }
+#endif
 
         timer_on("HF: Form F");
         form_F();
@@ -1562,45 +1570,6 @@ void HF::iterations() {
         }
 #endif
 
-#ifdef USING_PCMSolver
-        // The PCM potential must be added to the Fock operator *after* the
-        // energy computation, not in form_F()
-        if (pcm_enabled_) {
-            // Prepare the density
-            SharedMatrix D_pcm(Da_->clone());
-            if (same_a_b_orbs()) {
-                D_pcm->scale(2.0);  // PSI4's density doesn't include the occupation
-            } else {
-                D_pcm->add(Db_);
-            }
-
-            // Compute the PCM charges and polarization energy
-            double epcm = 0.0;
-            if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
-                epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
-            } else {
-                epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
-            }
-            energies_["PCM Polarization"] = epcm;
-            variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-            Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-            E_ += epcm;
-
-            // Add the PCM potential to the Fock matrix
-            SharedMatrix V_pcm;
-            V_pcm = hf_pcm_->compute_V();
-            if (same_a_b_orbs()) {
-                Fa_->add(V_pcm);
-            } else {
-                Fa_->add(V_pcm);
-                Fb_->add(V_pcm);
-            }
-        } else {
-            energies_["PCM Polarization"] = 0.0;
-            variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-            Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-        }
-#endif
         std::string status = "";
 
         // We either do SOSCF or DIIS
@@ -1775,7 +1744,7 @@ void HF::print_energies() {
 
     // Only print this alert if we are actually doing EFP or PCM
     if (pcm_enabled_ || (Process::environment.get_efp()->get_frag_count() > 0)) {
-        outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
+        outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.\n");
     }
     Process::environment.globals["SCF N ITERS"] = iteration_;
     //  Comment so that autodoc utility will find this PSI variable
