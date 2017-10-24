@@ -1110,16 +1110,6 @@ size_t py_psi_get_memory()
     return Process::environment.get_memory();
 }
 
-void py_psi_set_datadir(const std::string& pdd)
-{
-	Process::environment.set_datadir(pdd);
-}
-
-std::string py_psi_get_datadir()
-{
-	return Process::environment.get_datadir();
-}
-
 void py_psi_set_n_threads(size_t nthread, bool quiet)
 {
 #ifdef _OPENMP
@@ -1350,8 +1340,12 @@ PYBIND11_PLUGIN(core) {
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet")=false, "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
-	core.def("set_datadir", &py_psi_set_datadir, "Sets the path to shared text resources, PSIDATADIR");
-	core.def("get_datadir", &py_psi_get_datadir, "Returns the path to shared text resources, PSIDATADIR");
+    core.def("set_datadir",
+                [](const std::string& pdd) { Process::environment.set_datadir(pdd); },
+                "Returns the amount of memory available to Psi (in bytes).");
+    core.def("get_datadir",
+                []() { return Process::environment.get_datadir(); },
+                "Sets the path to shared text resources, PSIDATADIR");
     core.def("set_num_threads", py_psi_set_n_threads, py::arg("nthread"), py::arg("quiet")=false, "Sets the number of threads to use in SMP parallel computations.");
     core.def("get_num_threads", py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
 //    core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");

@@ -114,7 +114,8 @@ void EFP::add_fragments(std::vector<std::string> fnames)
 
     // Paths to search for efp files: here + PSIPATH + library
     std::string libraryPath = Process::environment.get_datadir() + "/efpfrag";
-    // getting cancelled for now std::string efpPath = ".:" + Process::environment("PSIPATH") + ":" + libraryPath;
+    // PSIPATH getting cancelled for now
+	std::string efpPath = ".:" + libraryPath;
 //    boost::char_separator<char> sep(":");
 //    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 //    tokenizer tokens(efpPath, sep);
