@@ -221,16 +221,6 @@ double VBase::vv10_nlc(SharedMatrix ret){
     int rank = 0;
     double** Vp = ret->pointer();
 
-    // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions();
-    int max_points = grid_->max_points();
-
-    // Per thread temporaries
-    std::vector<SharedMatrix> V_local;
-    for (size_t i = 0; i < num_threads_; i++) {
-        V_local.push_back(SharedMatrix(new Matrix("V Temp", max_functions, max_functions)));
-    }
-
     // VV10 temps
     std::vector<double> vv10_exc(num_threads_);
     std::vector<std::map<std::string, SharedVector>> vv10_cache;
@@ -244,6 +234,23 @@ double VBase::vv10_nlc(SharedMatrix ret){
     opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
 
     DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+
+    // Build local points workers as they max_points/max_funcs may differ
+    std::vector<SharedMatrix> V_local;
+    std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
+    int max_points = nlgrid.max_points();
+    int max_functions = nlgrid.max_functions();
+
+    for (size_t i = 0; i < num_threads_; i++) {
+        // Need a points worker per thread, only need RKS-like terms
+        std::shared_ptr<PointFunctions> point_tmp(new RKSFunctions(primary_, max_points, max_functions));
+        point_tmp->set_ansatz(functional_->ansatz());
+        point_tmp->set_pointers(D_AO_[0]);
+        nl_point_workers.push_back(point_tmp);
+
+        // Scratch dir
+        V_local.push_back(SharedMatrix(new Matrix("V Temp", max_functions, max_functions)));
+    }
 
     // => Make the "interior" cache <=
     std::vector<std::map<std::string, SharedVector>> vv10_tmp_cache;
@@ -259,7 +266,7 @@ double VBase::vv10_nlc(SharedMatrix ret){
 
         // Get workers and compute data
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
-        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        std::shared_ptr<PointFunctions> pworker = nl_point_workers[rank];
         std::shared_ptr<BlockOPoints> block = nlgrid.blocks()[Q];
         // printf("Block %zu\n", Q);
 
@@ -312,16 +319,18 @@ double VBase::vv10_nlc(SharedMatrix ret){
     // Should cleanup, but...
     vv10_tmp_cache.clear();
 
-// => Compute the kernel <=
+    // => Compute the kernel <=
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
-// Get thread info
+
+    // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
+        // Get per rank-workers
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
-        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        std::shared_ptr<PointFunctions> pworker = nl_point_workers[rank];
         double** V2p = V_local[rank]->pointer();
 
         // Scratch
