@@ -53,17 +53,16 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include "integral.h"
 #include "fjt.h"
-#include "wavefunction.h"
+#include "integral.h"
 #include "integralparameters.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/psi4-dec.h"
+#include "wavefunction.h"
 
 #include <cmath>
 
 using namespace psi;
-
 
 // Static variables of the Split_Fjt class
 std::unique_ptr<double[]> psi::Split_Fjt::grid_;
@@ -76,105 +75,88 @@ int psi::Split_Fjt::ncol_ = 0;
 // calculates a value of the boys function. Slow, but accurate
 // n = J in other code
 // t = T in other code
-void calculate_f(double * F, int n, double t)
-{
+void calculate_f(double* F, int n, double t) {
     const double eps = 1e-17;
 
     // K = sqrt(pi) / 2
     const double K = 0.88622692545275801364908374167057259139877472806;
 
-    const double t2 = 2*t;
+    const double t2 = 2 * t;
     const double et = std::exp(-t);
 
-    if (t > 20.0)
-    {
+    if (t > 20.0) {
         // Start with n = 0 and use upward recursion
         t = sqrt(t);
-        F[0] = K*std::erf(t)/t;
-        for(int m = 0; m <= n-1; m++)
-            F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
-    }
-    else
-    {
+        F[0] = K * std::erf(t) / t;
+        for (int m = 0; m <= n - 1; m++) F[m + 1] = ((2 * m + 1) * F[m] - et) / (t2);
+    } else {
         /* For smaller t's compute F with highest n using
            asymptotic series (see I. Shavitt in
            Methods in Computational Physics, ed. B. Alder et al,
            vol 2, 1963, page 8) */
 
-        const int n2 = 2*n;
+        const int n2 = 2 * n;
         double num = df[n2];
-        double den = df[n2+2];
+        double den = df[n2 + 2];
         int i = 0;
-        double sum = 1.0/(n2+1);
+        double sum = 1.0 / (n2 + 1);
         double term = 0.0;
 
         do {
             i++;
             num *= t2;
-            den *= (n2+2*i+1);
-            term = num/den;
+            den *= (n2 + 2 * i + 1);
+            term = num / den;
             sum += term;
-        } while (fabs(term) > eps);
-        F[n] = sum*et;
+        } while (std::fabs(term) > eps);
+        F[n] = sum * et;
 
         // downward recursion
-        for(int m = n-1; m >= 0; m--)
-            F[m] = (t2*F[m+1] + et)/(2*m+1);
+        for (int m = n - 1; m >= 0; m--) F[m] = (t2 * F[m + 1] + et) / (2 * m + 1);
     }
 }
 
-
-Split_Fjt::Split_Fjt(unsigned int maxJ)
-{
+Split_Fjt::Split_Fjt(unsigned int maxJ) {
     // If we have a grid, it is big enough?
     // If not, free it
-    if(grid_ && max_J_ < maxJ)
-        grid_.reset();
+    if (grid_ && max_J_ < maxJ) grid_.reset();
 
     // initialize the grid if we have to
-    if(!grid_)
-    {
-        max_Tval_ = 40.0; // rough
+    if (!grid_) {
+        max_Tval_ = 40.0;  // rough
         max_T_ = 400;
         max_J_ = maxJ;
 
-        nrow_ = max_T_+1;
-        ncol_ = max_J_+8+1;  // +8 for the higher orders required by the taylor series
+        nrow_ = max_T_ + 1;
+        ncol_ = max_J_ + 8 + 1;  // +8 for the higher orders required by the taylor series
         grid_ = std::unique_ptr<double[]>(new double[nrow_ * ncol_]);
 
-        for(int i = 0; i <= max_T_; i++)
-        {
+        for (int i = 0; i <= max_T_; i++) {
             // we are using a 0.1-spaced grid
-            const double Tval = 0.1*static_cast<double>(i);
+            const double Tval = 0.1 * static_cast<double>(i);
 
             // start of the rown in the (flattened) grid
-            double * gridpt = grid_.get() + i*ncol_;
+            double* gridpt = grid_.get() + i * ncol_;
 
             // Fill in all the values for this row
-            calculate_f(gridpt, max_J_+8, Tval);
+            calculate_f(gridpt, max_J_ + 8, Tval);
         }
     }
 }
 
-Split_Fjt::~Split_Fjt()
-{
-}
+Split_Fjt::~Split_Fjt() {}
 
-void Split_Fjt::calculate(double * F, int J, double T)
-{
+void Split_Fjt::calculate(double* F, int J, double T) {
     // Calculate the boys function for the highest n value
-    if(T > max_Tval_)
-    {
+    if (T > max_Tval_) {
         // long range asymptotic formula
         const double p = static_cast<double>(-J) - 0.5;
         F[J] = boys_longfac[J] * std::pow(T, p);
-    }
-    else
-    {
+    } else {
         // lookup + taylor series
         // this calculates the index of the row of the lookup table
         // (ie, finds the closest value of T for which we have precomputed values)
-        const int lookup_idx = (int)(10*(T+0.05));
+        const int lookup_idx = (int)(10 * (T + 0.05));
 
         // this is the value of that closest value on the grid
         const double xi = ((double)lookup_idx) * 0.1;
@@ -183,26 +165,22 @@ void Split_Fjt::calculate(double * F, int J, double T)
         // (but including a negative sign)
         const double dx = xi - T;
 
-        const double * gridpts = grid_.get() + lookup_idx*ncol_ + J;
+        const double* gridpts = grid_.get() + lookup_idx * ncol_ + J;
 
-        F[J] = gridpts[0]
-                + dx * (                  gridpts[1]
-                + dx * ( (1.0/2.0   )   * gridpts[2]
-                + dx * ( (1.0/6.0   )   * gridpts[3]
-                + dx * ( (1.0/24.0  )   * gridpts[4]
-                + dx * ( (1.0/120.0 )   * gridpts[5]
-                + dx * ( (1.0/720.0 )   * gridpts[6]
-                + dx * ( (1.0/5040.0)   * gridpts[7]
-                )))))));
-
+        F[J] =
+            gridpts[0] +
+            dx * (gridpts[1] +
+                  dx * ((1.0 / 2.0) * gridpts[2] +
+                        dx * ((1.0 / 6.0) * gridpts[3] +
+                              dx * ((1.0 / 24.0) * gridpts[4] +
+                                    dx * ((1.0 / 120.0) * gridpts[5] +
+                                          dx * ((1.0 / 720.0) * gridpts[6] + dx * ((1.0 / 5040.0) * gridpts[7])))))));
     }
 
     // calculate the others by downward recursion
-    if(J > 0)
-    {
+    if (J > 0) {
         const double eT = std::exp(-T);
-        for(int m = J-1; m >= 0; m--)
-            F[m] = (2*T*F[m+1] + eT)/(2*m+1);
+        for (int m = J - 1; m >= 0; m--) F[m] = (2 * T * F[m + 1] + eT) / (2 * m + 1);
     }
 }
 
@@ -212,40 +190,26 @@ void Split_Fjt::calculate(double * F, int J, double T)
 // GaussianFundamental
 ////////
 
-GaussianFundamental::GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int maxJ)
-{
+GaussianFundamental::GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int maxJ) {
     cf_ = cf;
 
     // For now, set the rho vars to zero. They will be set by the compute_shell routine.
     rho_ = 0.0;
 }
 
-GaussianFundamental::~GaussianFundamental()
-{
-}
+GaussianFundamental::~GaussianFundamental() {}
 
-void GaussianFundamental::set_rho(double rho)
-{
-    rho_ = rho;
-}
+void GaussianFundamental::set_rho(double rho) { rho_ = rho; }
 
 ////////
 // F12Fundamental
 ////////
 
-F12Fundamental::F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max)
-    : GaussianFundamental(cf, max)
-{
+F12Fundamental::F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max) : GaussianFundamental(cf, max) {}
 
-}
+F12Fundamental::~F12Fundamental() {}
 
-F12Fundamental::~F12Fundamental()
-{
-
-}
-
-void F12Fundamental::calculate(double * F, int J, double T)
-{
+void F12Fundamental::calculate(double* F, int J, double T) {
     // because the current implementation is just a hack of the eri
     // routines, we have to undo the eri prefactor of 2pi/rho that
     // will be added later
@@ -254,17 +218,16 @@ void F12Fundamental::calculate(double * F, int J, double T)
     int nparam = cf_->nparam();
 
     // zero the values array
-    for (int n=0; n<=J; ++n)
-        F[n] = 0.0;
+    for (int n = 0; n <= J; ++n) F[n] = 0.0;
 
     double pfac, expterm, rhotilde, omega;
     double eri_correct = rho_ / 2 / M_PI;
-    for (int i=0; i<nparam; ++i) {
+    for (int i = 0; i < nparam; ++i) {
         omega = exps[i];
         rhotilde = omega / (rho_ + omega);
-        pfac = coeffs[i] * std::pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
-        expterm = std::exp(-rhotilde*T)*pfac;
-        for (int n=0; n<=J; ++n) {
+        pfac = coeffs[i] * std::pow(M_PI / (rho_ + omega), 1.5) * eri_correct;
+        expterm = std::exp(-rhotilde * T) * pfac;
+        for (int n = 0; n <= J; ++n) {
             F[n] += expterm;
             expterm *= rhotilde;
         }
@@ -276,18 +239,11 @@ void F12Fundamental::calculate(double * F, int J, double T)
 ////////
 
 F12ScaledFundamental::F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max)
-: GaussianFundamental(cf, max)
-{
+    : GaussianFundamental(cf, max) {}
 
-}
+F12ScaledFundamental::~F12ScaledFundamental() {}
 
-F12ScaledFundamental::~F12ScaledFundamental()
-{
-
-}
-
-void F12ScaledFundamental::calculate(double * F, int J, double T)
-{
+void F12ScaledFundamental::calculate(double* F, int J, double T) {
     // because the current implementation is just a hack of the eri
     // routines, we have to undo the eri prefactor of 2pi/rho that
     // will be added later
@@ -296,18 +252,17 @@ void F12ScaledFundamental::calculate(double * F, int J, double T)
     int nparam = cf_->nparam();
 
     // zero the values array
-    for (int n=0; n<=J; ++n)
-        F[n] = 0.0;
+    for (int n = 0; n <= J; ++n) F[n] = 0.0;
 
     double pfac, expterm, rhotilde, omega;
     double eri_correct = rho_ / 2 / M_PI;
     eri_correct /= cf_->slater_exponent();
-    for (int i=0; i<nparam; ++i) {
+    for (int i = 0; i < nparam; ++i) {
         omega = exps[i];
         rhotilde = omega / (rho_ + omega);
-        pfac = coeffs[i] * std::pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
-        expterm = std::exp(-rhotilde*T)*pfac;
-        for (int n=0; n<=J; ++n) {
+        pfac = coeffs[i] * std::pow(M_PI / (rho_ + omega), 1.5) * eri_correct;
+        expterm = std::exp(-rhotilde * T) * pfac;
+        for (int n = 0; n <= J; ++n) {
             F[n] += expterm;
             expterm *= rhotilde;
         }
@@ -319,18 +274,11 @@ void F12ScaledFundamental::calculate(double * F, int J, double T)
 ////////
 
 F12SquaredFundamental::F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max)
-    : GaussianFundamental(cf, max)
-{
+    : GaussianFundamental(cf, max) {}
 
-}
+F12SquaredFundamental::~F12SquaredFundamental() {}
 
-F12SquaredFundamental::~F12SquaredFundamental()
-{
-
-}
-
-void F12SquaredFundamental::calculate(double * F, int J, double T)
-{
+void F12SquaredFundamental::calculate(double* F, int J, double T) {
     double* exps = cf_->exponent();
     double* coeffs = cf_->coeff();
     int nparam = cf_->nparam();
@@ -339,16 +287,15 @@ void F12SquaredFundamental::calculate(double * F, int J, double T)
     double eri_correct = rho_ / 2 / M_PI;
 
     // zero the values
-    for (int n=0; n<=J; ++n)
-        F[n] = 0.0;
+    for (int n = 0; n <= J; ++n) F[n] = 0.0;
 
-    for (int i=0; i<nparam; ++i) {
-        for (int j=0; j<nparam; ++j) {
+    for (int i = 0; i < nparam; ++i) {
+        for (int j = 0; j < nparam; ++j) {
             omega = exps[i] + exps[j];
             rhotilde = omega / (rho_ + omega);
-            pfac = coeffs[i] * coeffs[j] * std::pow(M_PI/(rho_+omega), 1.5) * eri_correct;
+            pfac = coeffs[i] * coeffs[j] * std::pow(M_PI / (rho_ + omega), 1.5) * eri_correct;
             expterm = std::exp(-rhotilde * T) * pfac;
-            for (int n=0; n<=J; ++n) {
+            for (int n = 0; n <= J; ++n) {
                 F[n] += expterm;
                 expterm *= rhotilde;
             }
@@ -361,17 +308,12 @@ void F12SquaredFundamental::calculate(double * F, int J, double T)
 ////////
 
 F12G12Fundamental::F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max)
-    : GaussianFundamental(cf, max), Fm_(max)
-{
-}
+    : GaussianFundamental(cf, max), Fm_(max) {}
 
-F12G12Fundamental::~F12G12Fundamental()
-{
-}
+F12G12Fundamental::~F12G12Fundamental() {}
 
-void F12G12Fundamental::calculate(double * F, int J, double T)
-{
-    double Fvals[J+1];
+void F12G12Fundamental::calculate(double* F, int J, double T) {
+    double Fvals[J + 1];
 
     double* exps = cf_->exponent();
     double* coeffs = cf_->coeff();
@@ -383,22 +325,21 @@ void F12G12Fundamental::calculate(double * F, int J, double T)
     double binom_term;
 
     // Zero the values
-    for (int n=0; n<=J; ++n)
-        F[n] = 0.0;
+    for (int n = 0; n <= J; ++n) F[n] = 0.0;
 
-    for (int i=0; i<nparam; ++i) {
+    for (int i = 0; i < nparam; ++i) {
         omega = exps[i];
         rhotilde = omega / (rho_ + omega);
         rhohat = rho_ / (rho_ + omega);
         expterm = std::exp(-rhotilde * T);
-        pfac = 2*M_PI / (rho_ + omega) * coeffs[i] * expterm * eri_correct;
+        pfac = 2 * M_PI / (rho_ + omega) * coeffs[i] * expterm * eri_correct;
         Fm_.calculate(Fvals, J, rhohat * T);
-        for (int n=0; n<=J; ++n) {
+        for (int n = 0; n <= J; ++n) {
             boysterm = 0.0;
             rhotilde_term = std::pow(rhotilde, n);
             rhohat_term = 1.0;
-            for (int m=0; m<=n; ++m) {
-                binom_term = bc[n][m];   // bc is formed by Wavefunction::initialize_singletons
+            for (int m = 0; m <= n; ++m) {
+                binom_term = bc[n][m];  // bc is formed by Wavefunction::initialize_singletons
                 boysterm += binom_term * rhotilde_term * rhohat_term * Fvals[m];
 
                 rhotilde_term /= rhotilde;
@@ -414,18 +355,13 @@ void F12G12Fundamental::calculate(double * F, int J, double T)
 ////////
 
 F12DoubleCommutatorFundamental::F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max)
-    : GaussianFundamental(cf, max)
-{
-}
+    : GaussianFundamental(cf, max) {}
 
-F12DoubleCommutatorFundamental::~F12DoubleCommutatorFundamental()
-{
-}
+F12DoubleCommutatorFundamental::~F12DoubleCommutatorFundamental() {}
 
-void F12DoubleCommutatorFundamental::calculate(double * F, int J, double T)
-{
-    double *exps = cf_->exponent();
-    double *coeffs = cf_->coeff();
+void F12DoubleCommutatorFundamental::calculate(double* F, int J, double T) {
+    double* exps = cf_->exponent();
+    double* coeffs = cf_->coeff();
     int nparam = cf_->nparam();
 
     double pfac, expterm, rhotilde, omega, sqrt_term, rhohat;
@@ -433,21 +369,20 @@ void F12DoubleCommutatorFundamental::calculate(double * F, int J, double T)
     double term1, term2;
 
     // Zero the values
-    for (int n=0; n<=J; ++n)
-        F[n] = 0.0;
+    for (int n = 0; n <= J; ++n) F[n] = 0.0;
 
-    for (int i=0; i<nparam; ++i) {
-        for (int j=0; j<nparam; ++j) {
+    for (int i = 0; i < nparam; ++i) {
+        for (int j = 0; j < nparam; ++j) {
             omega = exps[i] + exps[j];
             rhotilde = omega / (rho_ + omega);
             rhohat = rho_ / (rho_ + omega);
             expterm = std::exp(-rhotilde * T);
-            sqrt_term = std::sqrt(M_PI*M_PI*M_PI / std::pow(rho_ + omega, 5.0));
-            pfac = 4.0*coeffs[i] * coeffs[j] * exps[i] * exps[j] * sqrt_term * eri_correct * expterm;
+            sqrt_term = std::sqrt(M_PI * M_PI * M_PI / std::pow(rho_ + omega, 5.0));
+            pfac = 4.0 * coeffs[i] * coeffs[j] * exps[i] * exps[j] * sqrt_term * eri_correct * expterm;
 
-            term1 = 1.5*rhotilde + rhotilde*rhohat*T;
-            term2 = 1.0/rhotilde*pfac;
-            for (int n=0; n<=J; ++n) {
+            term1 = 1.5 * rhotilde + rhotilde * rhohat * T;
+            term2 = 1.0 / rhotilde * pfac;
+            for (int n = 0; n <= J; ++n) {
                 F[n] += term1 * term2;
                 term1 -= rhohat;
                 term2 *= rhotilde;
@@ -461,24 +396,18 @@ void F12DoubleCommutatorFundamental::calculate(double * F, int J, double T)
 ////////
 
 ErfFundamental::ErfFundamental(double omega, int max)
-    : GaussianFundamental(std::shared_ptr<CorrelationFactor>(), max),
-      boys_(max)
-{
+    : GaussianFundamental(std::shared_ptr<CorrelationFactor>(), max), boys_(max) {
     omega_ = omega;
     rho_ = 0;
 }
 
-ErfFundamental::~ErfFundamental()
-{
-}
+ErfFundamental::~ErfFundamental() {}
 
-void ErfFundamental::calculate(double * F, int J, double T)
-{
-    double Fvals[J+1];
+void ErfFundamental::calculate(double* F, int J, double T) {
+    double Fvals[J + 1];
     boys_.calculate(Fvals, J, T);
 
-    for (int n=0; n<=J; ++n)
-        F[n] = 0.0;
+    for (int n = 0; n <= J; ++n) F[n] = 0.0;
 
     // build the erf constants
     double omegasq = omega_ * omega_;
@@ -487,7 +416,7 @@ void ErfFundamental::calculate(double * F, int J, double T)
     double erf_T = T_prefac * T;
 
     boys_.calculate(Fvals, J, erf_T);
-    for (int n=0; n<=J; ++n) {
+    for (int n = 0; n <= J; ++n) {
         F[n] += Fvals[n] * F_prefac;
         F_prefac *= T_prefac;
     }
@@ -498,24 +427,18 @@ void ErfFundamental::calculate(double * F, int J, double T)
 ////////
 
 ErfComplementFundamental::ErfComplementFundamental(double omega, int max)
-    : GaussianFundamental(std::shared_ptr<CorrelationFactor>(), max),
-      boys_(max)
-{
+    : GaussianFundamental(std::shared_ptr<CorrelationFactor>(), max), boys_(max) {
     omega_ = omega;
     rho_ = 0;
 }
 
-ErfComplementFundamental::~ErfComplementFundamental()
-{
-}
+ErfComplementFundamental::~ErfComplementFundamental() {}
 
-void ErfComplementFundamental::calculate(double * F, int J, double T)
-{
-    double Fvals[J+1];
+void ErfComplementFundamental::calculate(double* F, int J, double T) {
+    double Fvals[J + 1];
     boys_.calculate(Fvals, J, T);
 
-    for (int n=0; n<=J; ++n)
-        F[n] = Fvals[n];
+    for (int n = 0; n <= J; ++n) F[n] = Fvals[n];
 
     // build the erf constants
     double omegasq = omega_ * omega_;
@@ -524,7 +447,7 @@ void ErfComplementFundamental::calculate(double * F, int J, double T)
     double erf_T = T_prefac * T;
 
     boys_.calculate(Fvals, J, erf_T);
-    for (int n=0; n<=J; ++n) {
+    for (int n = 0; n <= J; ++n) {
         F[n] -= Fvals[n] * F_prefac;
         F_prefac *= T_prefac;
     }
