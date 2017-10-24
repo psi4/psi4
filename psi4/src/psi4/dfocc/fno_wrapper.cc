@@ -49,7 +49,8 @@ void DFOCC::fno_wrapper() {
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ia)
-    b_ia();
+    if (do_cd == "FALSE") b_ia();
+    else b_ia_cd();
     bQso.reset();
 
     // Read Ints

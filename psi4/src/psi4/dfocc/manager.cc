@@ -894,7 +894,7 @@ void DFOCC::ccsd_t_manager() {
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE", do_fno == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -1113,7 +1113,7 @@ void DFOCC::ccsd_t_manager() {
     if (qchf_ == "TRUE") qchf();
 
     // Fock
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE", do_fno == "TRUE") fock();
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
@@ -1287,7 +1287,7 @@ void DFOCC::ccsdl_t_manager() {
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE", do_fno == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -1523,7 +1523,7 @@ void DFOCC::ccsdl_t_manager() {
     if (qchf_ == "TRUE") qchf();
 
     // Fock
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE", do_fno == "TRUE") fock();
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
@@ -1657,13 +1657,21 @@ void DFOCC::ccd_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -1822,7 +1830,7 @@ void DFOCC::ccd_manager() {
     if (qchf_ == "TRUE") qchf();
 
     // Fock
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
@@ -1883,6 +1891,8 @@ void DFOCC::ccd_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCD Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCD Total Energy (a.u.)         : %20.14f\n", Eccd);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-CCD + delta_MP2 (a.u.)          : %20.14f\n", Eccd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -2247,13 +2257,21 @@ void DFOCC::mp3_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -2368,6 +2386,9 @@ void DFOCC::mp3_manager() {
     // QCHF
     if (qchf_ == "TRUE") qchf();
 
+    // Fock
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
+
     // Compute MP2 energy
     if (reference == "ROHF") {
         t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
@@ -2431,6 +2452,8 @@ void DFOCC::mp3_manager() {
     outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", 0.5 * (Emp3 + Emp2));
     outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-MP3 + delta_MP2 (a.u.)          : %20.14f\n", Emp3 + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -2780,13 +2803,21 @@ void DFOCC::mp2_5_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -2883,6 +2914,9 @@ void DFOCC::mp2_5_manager() {
     // QCHF
     if (qchf_ == "TRUE") qchf();
 
+    // Fock
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
+
     // Compute MP2 energy
     if (reference == "ROHF") {
         t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
@@ -2945,6 +2979,8 @@ void DFOCC::mp2_5_manager() {
     outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp2 + 2.0 * (Emp3 - Emp2));
     outfile->Printf("\tDF-MP2.5 Correlation Energy (a.u.) : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", Emp3);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-MP2.5 + delta_MP2 (a.u.)        : %20.14f\n", Emp3 + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -3266,13 +3302,21 @@ void DFOCC::lccd_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -3369,6 +3413,9 @@ void DFOCC::lccd_manager() {
     // QCHF
     if (qchf_ == "TRUE") qchf();
 
+    // Fock
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
+
     // Compute MP2 energy
     if (reference == "ROHF") {
         t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
@@ -3429,6 +3476,8 @@ void DFOCC::lccd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", ElccdAB);
     outfile->Printf("\tDF-LCCD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-LCCD Total Energy (a.u.)        : %20.14f\n", Elccd);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-LCCD + delta_MP2 (a.u.)         : %20.14f\n", Elccd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
