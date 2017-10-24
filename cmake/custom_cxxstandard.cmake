@@ -31,7 +31,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     file(REMOVE ${_testfl})
 
     if (APPLE)
-        if (${GCC_VERSION} VERSION_LESS 6.1)
+        if (${GCC_VERSION} VERSION_LESS 3.6)
             message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without CLANG intervention: http://psicode.org/psi4manual/master/build_planning.html\n${ColourReset}")
         endif()
     else ()
