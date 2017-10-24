@@ -1191,7 +1191,6 @@ bool psi4_python_module_initialize()
 
     // Setup the environment
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-    // Process::environment.set("PSI_SCRATCH", "/tmp/");
     // Process::environment.set("PSIDATADIR", "");
     Process::environment.set_memory(524288000);
 
@@ -1491,8 +1490,6 @@ PYBIND11_PLUGIN(core) {
     core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
     core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
-    core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
-    core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname){
                  outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(ofname, std::ostream::trunc));

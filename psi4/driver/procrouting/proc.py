@@ -1285,7 +1285,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     core.set_legacy_wavefunction(scf_wfn)
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-    read_filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname + ".180.npz")
+    psi_scratch = core.IOManager.shared_object().get_default_path()
+    read_filename = os.path.join(psi_scratch, fname + ".180.npz")
 
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
         data = np.load(read_filename)
@@ -1395,7 +1396,7 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Write out orbitals and basis
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-    write_filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname + ".180.npz")
+    write_filename = os.path.join(psi_scratch, fname + ".180.npz")
     data = {}
     data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
     data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
