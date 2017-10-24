@@ -52,7 +52,7 @@ def run_cfour_module(xmod):
     lenv = {
         'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
                 ':' + os.environ.get('PATH') + \
-                ':' + core.Process.environment["PSIDATADIR"] + '/basis' + \
+                ':' + core.get_datadir() + '/basis' + \
                 ':' + core.psi_top_srcdir() + '/share/basis',
         'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')

@@ -143,8 +143,8 @@ def run_cfour(name, **kwargs):
     lenv = {
         'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
                 ':' + os.environ.get('PATH') + \
-                ':' + os.environ.get("PSIDATADIR") + '/basis',
-        'GENBAS_PATH': os.environ.get("PSIDATADIR") + '/basis',
+                ':' + core.get_datadir() + '/basis',
+        'GENBAS_PATH': core.get_datadir() + '/basis',
         'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
         'MKL_NUM_THREADS':  os.environ.get('MKL_NUM_THREADS'),
         'OMP_NUM_THREADS':  os.environ.get('OMP_NUM_THREADS'),

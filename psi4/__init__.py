@@ -48,7 +48,6 @@ data_dir = os.path.abspath(data_dir)
 if not os.path.isdir(data_dir):
     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
                     "      Current value of PSIDATADIR is %s" % data_dir)
-os.environ["PSIDATADIR"] = data_dir
 
 # Init core
 try:
@@ -68,6 +67,8 @@ if "PSI_SCRATCH" in os.environ.keys():
     if not os.path.isdir(envvar_scratch):
         raise Exception("Passed in scratch is not a directory (%s)." % envvar_scratch)
     core.IOManager.shared_object().set_default_path(envvar_scratch)
+
+core.set_datadir(data_dir)
 
 # Cleanup core at exit
 import atexit

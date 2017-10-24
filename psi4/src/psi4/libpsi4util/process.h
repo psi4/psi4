@@ -57,6 +57,7 @@
          std::map<std::string, std::string> environment_;
          size_t memory_;
          int nthread_;
+         std::string datadir_;
 
          std::shared_ptr<Molecule> molecule_;
          SharedMatrix gradient_;
@@ -125,6 +126,10 @@
          /// Memory in bytes
          size_t get_memory() const;
          void set_memory(size_t m);
+
+         /// PSIDATADIR
+         std::string get_datadir() const { return datadir_; }
+         void set_datadir(const std::string pdd) { datadir_ = pdd; }
 
          /// "Global" liboptions object.
          Options options;
