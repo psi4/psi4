@@ -481,19 +481,13 @@ double CCEnergyWavefunction::compute_energy() {
 
         outfile->Printf("\n    Opposite-spin CCSD correlation energy     = %20.15f\n", moinfo_.ecc_os);
         outfile->Printf("    Same-spin CCSD correlation energy         = %20.15f\n", moinfo_.ecc_ss);
-
-        if (options_.get_bool("PCM")) {
-            outfile->Printf("    CCSD correlation energy                   = %20.15f\n", moinfo_.ecc);
-            outfile->Printf("      * CCSD total energy                     = %20.15f\n", moinfo_.eref + moinfo_.ecc);
-        }
+        outfile->Printf("    CCSD correlation energy                   = %20.15f\n", moinfo_.ecc);
+        outfile->Printf("      * CCSD total energy                     = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.ecc_os;
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss;
-
-        if (options_.get_bool("PCM")) {
-            Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo_.ecc;
-            Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo_.ecc + moinfo_.eref;
-        }
+        Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo_.ecc;
+        Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo_.ecc + moinfo_.eref;
 
         if (params_.local && local_.weakp == "MP2")
             outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",

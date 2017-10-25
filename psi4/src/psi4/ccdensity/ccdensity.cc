@@ -789,30 +789,6 @@ void exit_io(void) {
 }
 
 void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
-    dpdfile2 dpd_fIJ, dpd_fij, dpd_fAB, dpd_fab, dpd_fIA, dpd_fia;
-    // We save the Fock matrix from the SCF step under a "original" label.
-    // The MO_OE_operator will always be added on top of that.
-    if (!(_default_psio_lib_->tocentry_exists(PSIF_CC_OEI, "fIJ original"))) {
-        global_dpd_->file2_init(&dpd_fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-        global_dpd_->file2_init(&dpd_fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-        global_dpd_->file2_init(&dpd_fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-        global_dpd_->file2_init(&dpd_fab, PSIF_CC_OEI, 0, 1, 1, "fab");
-        global_dpd_->file2_init(&dpd_fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-        global_dpd_->file2_init(&dpd_fia, PSIF_CC_OEI, 0, 0, 1, "fia");
-        global_dpd_->file2_copy(&dpd_fIJ, PSIF_CC_OEI, "fIJ original");
-        global_dpd_->file2_copy(&dpd_fij, PSIF_CC_OEI, "fij original");
-        global_dpd_->file2_copy(&dpd_fAB, PSIF_CC_OEI, "fAB original");
-        global_dpd_->file2_copy(&dpd_fab, PSIF_CC_OEI, "fab original");
-        global_dpd_->file2_copy(&dpd_fIA, PSIF_CC_OEI, "fIA original");
-        global_dpd_->file2_copy(&dpd_fia, PSIF_CC_OEI, "fia original");
-        global_dpd_->file2_close(&dpd_fIJ);
-        global_dpd_->file2_close(&dpd_fij);
-        global_dpd_->file2_close(&dpd_fAB);
-        global_dpd_->file2_close(&dpd_fab);
-        global_dpd_->file2_close(&dpd_fIA);
-        global_dpd_->file2_close(&dpd_fia);
-    }
-    // Generate Dimensions for slices
     Dimension zero(moinfo.nirreps);
 
     std::vector<int> tmp(moinfo.nirreps);
@@ -828,14 +804,7 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
     tmp.assign(moinfo.virtpi, moinfo.virtpi + moinfo.nirreps);
     Dimension virtpi(tmp);
 
-    /* Only defined for UHF
-    tmp.assign(moinfo.avirtpi, moinfo.avirtpi + moinfo.nirreps);
-    Dimension avirtpi(tmp);
-
-    tmp.assign(moinfo.bvirtpi, moinfo.bvirtpi + moinfo.nirreps);
-    Dimension bvirtpi(tmp);
-    */
-
+    dpdfile2 dpd_fIJ;
     global_dpd_->file2_init(&dpd_fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ original");
     SharedMatrix fIJ = std::make_shared<Matrix>(&dpd_fIJ);
     global_dpd_->file2_close(&dpd_fIJ);
@@ -845,6 +814,7 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
     fIJ->write_to_dpdfile2(&dpd_fIJ);
     global_dpd_->file2_close(&dpd_fIJ);
 
+    dpdfile2 dpd_fij;
     global_dpd_->file2_init(&dpd_fij, PSIF_CC_OEI, 0, 0, 0, "fij original");
     SharedMatrix fij = std::make_shared<Matrix>(&dpd_fij);
     global_dpd_->file2_close(&dpd_fij);
@@ -855,6 +825,7 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
     fij->write_to_dpdfile2(&dpd_fij);
     global_dpd_->file2_close(&dpd_fij);
 
+    dpdfile2 dpd_fAB;
     global_dpd_->file2_init(&dpd_fAB, PSIF_CC_OEI, 0, 1, 1, "fAB original");
     SharedMatrix fAB = std::make_shared<Matrix>(&dpd_fAB);
     global_dpd_->file2_close(&dpd_fAB);
@@ -865,6 +836,7 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
     fAB->write_to_dpdfile2(&dpd_fAB);
     global_dpd_->file2_close(&dpd_fAB);
 
+    dpdfile2 dpd_fab;
     global_dpd_->file2_init(&dpd_fab, PSIF_CC_OEI, 0, 1, 1, "fab original");
     SharedMatrix fab = std::make_shared<Matrix>(&dpd_fab);
     global_dpd_->file2_close(&dpd_fab);
@@ -884,6 +856,7 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
     fab->write_to_dpdfile2(&dpd_fab);
     global_dpd_->file2_close(&dpd_fab);
 
+    dpdfile2 dpd_fIA;
     global_dpd_->file2_init(&dpd_fIA, PSIF_CC_OEI, 0, 0, 1, "fIA original");
     SharedMatrix fIA = std::make_shared<Matrix>(&dpd_fIA);
     global_dpd_->file2_close(&dpd_fIA);
@@ -894,6 +867,7 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
     fIA->write_to_dpdfile2(&dpd_fIA);
     global_dpd_->file2_close(&dpd_fIA);
 
+    dpdfile2 dpd_fia;
     global_dpd_->file2_init(&dpd_fia, PSIF_CC_OEI, 0, 0, 1, "fia original");
     SharedMatrix fia = std::make_shared<Matrix>(&dpd_fia);
     global_dpd_->file2_close(&dpd_fia);
@@ -909,30 +883,6 @@ void update_Fock_matrix_rhf(SharedMatrix &MO_OE_operator) {
 }
 
 void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_operator_b) {
-    dpdfile2 dpd_fIJ, dpd_fij, dpd_fAB, dpd_fab, dpd_fIA, dpd_fia;
-    // We save the Fock matrix from the SCF step under a "original" label.
-    // The MO_OE_operator will always be added on top of that.
-    if (!(_default_psio_lib_->tocentry_exists(PSIF_CC_OEI, "fIJ original"))) {
-        global_dpd_->file2_init(&dpd_fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-        global_dpd_->file2_init(&dpd_fij, PSIF_CC_OEI, 0, 2, 2, "fij");
-        global_dpd_->file2_init(&dpd_fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-        global_dpd_->file2_init(&dpd_fab, PSIF_CC_OEI, 0, 3, 3, "fab");
-        global_dpd_->file2_init(&dpd_fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-        global_dpd_->file2_init(&dpd_fia, PSIF_CC_OEI, 0, 2, 3, "fia");
-        global_dpd_->file2_copy(&dpd_fIJ, PSIF_CC_OEI, "fIJ original");
-        global_dpd_->file2_copy(&dpd_fij, PSIF_CC_OEI, "fij original");
-        global_dpd_->file2_copy(&dpd_fAB, PSIF_CC_OEI, "fAB original");
-        global_dpd_->file2_copy(&dpd_fab, PSIF_CC_OEI, "fab original");
-        global_dpd_->file2_copy(&dpd_fIA, PSIF_CC_OEI, "fIA original");
-        global_dpd_->file2_copy(&dpd_fia, PSIF_CC_OEI, "fia original");
-        global_dpd_->file2_close(&dpd_fIJ);
-        global_dpd_->file2_close(&dpd_fij);
-        global_dpd_->file2_close(&dpd_fAB);
-        global_dpd_->file2_close(&dpd_fab);
-        global_dpd_->file2_close(&dpd_fIA);
-        global_dpd_->file2_close(&dpd_fia);
-    }
-    // Generate Dimensions for slices
     Dimension zero(moinfo.nirreps);
 
     std::vector<int> tmp(moinfo.nirreps);
@@ -951,6 +901,7 @@ void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_
     tmp.assign(moinfo.bvirtpi, moinfo.bvirtpi + moinfo.nirreps);
     Dimension bvirtpi(tmp);
 
+    dpdfile2 dpd_fIJ;
     global_dpd_->file2_init(&dpd_fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ original");
     SharedMatrix fIJ = std::make_shared<Matrix>(&dpd_fIJ);
     global_dpd_->file2_close(&dpd_fIJ);
@@ -960,6 +911,7 @@ void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_
     fIJ->write_to_dpdfile2(&dpd_fIJ);
     global_dpd_->file2_close(&dpd_fIJ);
 
+    dpdfile2 dpd_fij;
     global_dpd_->file2_init(&dpd_fij, PSIF_CC_OEI, 0, 2, 2, "fij original");
     SharedMatrix fij = std::make_shared<Matrix>(&dpd_fij);
     global_dpd_->file2_close(&dpd_fij);
@@ -969,6 +921,7 @@ void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_
     fij->write_to_dpdfile2(&dpd_fij);
     global_dpd_->file2_close(&dpd_fij);
 
+    dpdfile2 dpd_fAB;
     global_dpd_->file2_init(&dpd_fAB, PSIF_CC_OEI, 0, 1, 1, "fAB original");
     SharedMatrix fAB = std::make_shared<Matrix>(&dpd_fAB);
     global_dpd_->file2_close(&dpd_fAB);
@@ -979,6 +932,7 @@ void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_
     fAB->write_to_dpdfile2(&dpd_fAB);
     global_dpd_->file2_close(&dpd_fAB);
 
+    dpdfile2 dpd_fab;
     global_dpd_->file2_init(&dpd_fab, PSIF_CC_OEI, 0, 3, 3, "fab original");
     SharedMatrix fab = std::make_shared<Matrix>(&dpd_fab);
     global_dpd_->file2_close(&dpd_fab);
@@ -989,6 +943,7 @@ void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_
     fab->write_to_dpdfile2(&dpd_fab);
     global_dpd_->file2_close(&dpd_fab);
 
+    dpdfile2 dpd_fIA;
     global_dpd_->file2_init(&dpd_fIA, PSIF_CC_OEI, 0, 0, 1, "fIA original");
     SharedMatrix fIA = std::make_shared<Matrix>(&dpd_fIA);
     global_dpd_->file2_close(&dpd_fIA);
@@ -999,6 +954,7 @@ void update_Fock_matrix_uhf(SharedMatrix &MO_OE_operator_a, SharedMatrix &MO_OE_
     fIA->write_to_dpdfile2(&dpd_fIA);
     global_dpd_->file2_close(&dpd_fIA);
 
+    dpdfile2 dpd_fia;
     global_dpd_->file2_init(&dpd_fia, PSIF_CC_OEI, 0, 2, 3, "fia original");
     SharedMatrix fia = std::make_shared<Matrix>(&dpd_fia);
     global_dpd_->file2_close(&dpd_fia);
