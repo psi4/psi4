@@ -359,11 +359,9 @@ Note that if you are running an unrestricted computation, you should set the
     set reference uks
     energy('b3lyp')
 
-The functional may also be manually specified by the |scf__dft_functional|
-option::
+The functional may also be manually specified by a keyword argument::
 
-    set dft_functional b3lyp
-    energy('scf') 
+    energy('scf', dft_functional='b3lyp') 
 
 For hybrid functionals, the fraction of exact exchange is controlled by the
 |scf__dft_alpha| option. For the LRC functionals, the fraction of long-range
