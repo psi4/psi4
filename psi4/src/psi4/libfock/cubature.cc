@@ -4103,9 +4103,11 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius)
     // Reassign
     std::shared_ptr<GridBlocker> blocker;
     if (options_.get_str("DFT_BLOCK_SCHEME") == "NAIVE") {
-        blocker = std::shared_ptr<GridBlocker>(new NaiveGridBlocker(npoints_,x_,y_,z_,w_,index_,max_points,min_points,max_radius,extents_));
+        blocker = std::shared_ptr<GridBlocker>(
+            new NaiveGridBlocker(npoints_, x_, y_, z_, w_, index_, max_points, min_points, max_radius, extents_));
     } else if (options_.get_str("DFT_BLOCK_SCHEME") == "OCTREE") {
-        blocker = std::shared_ptr<GridBlocker>(new OctreeGridBlocker(npoints_,x_,y_,z_,w_,index_,max_points,min_points,max_radius,extents_));
+        blocker = std::shared_ptr<GridBlocker>(
+            new OctreeGridBlocker(npoints_, x_, y_, z_, w_, index_, max_points, min_points, max_radius, extents_));
     }
 
     blocker->set_print(options_.get_int("PRINT"));
@@ -4261,7 +4263,7 @@ void NaiveGridBlocker::block()
     ::memcpy((void*)y_,(void*)y_ref_, sizeof(double)*npoints_);
     ::memcpy((void*)z_,(void*)z_ref_, sizeof(double)*npoints_);
     ::memcpy((void*)w_,(void*)w_ref_, sizeof(double)*npoints_);
-    ::memcpy((void*)index_,(void*)index_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)index_,(void*)index_ref_, sizeof(int)*npoints_);
 
     blocks_.clear();
     for (int Q = 0; Q < npoints_; Q += max_points_) {
@@ -4467,6 +4469,7 @@ void OctreeGridBlocker::block()
     }
 
 
+    blocks_.clear();
     index = 0;
     max_points_ = 0;
     for (size_t A = 0; A < completed_tree.size(); A++) {
