@@ -75,12 +75,12 @@ void DFOCC::common_init() {
     tol_pcg = options_.get_double("PCG_CONVERGENCE");
     reg_param = options_.get_double("REG_PARAM");
     tol_ldl = options_.get_double("CHOLESKY_TOLERANCE");
-    tol_fno = options_.get_double("FNO_TOLERANCE");
+    tol_fno = options_.get_double("OCC_TOLERANCE");
 
     orth_type = options_.get_str("ORTH_TYPE");
     opt_method = options_.get_str("OPT_METHOD");
     occ_orb_energy = options_.get_str("OCC_ORBS_PRINT");
-    natorb = options_.get_str("NAT_ORBS");
+    natorb = options_.get_str("NBO");
     do_scs = options_.get_str("DO_SCS");
     do_sos = options_.get_str("DO_SOS");
     lineq = options_.get_str("LINEQ_SOLVER");
@@ -106,7 +106,7 @@ void DFOCC::common_init() {
     Wabef_type_ = options_.get_str("PPL_TYPE");
     triples_iabc_type_ = options_.get_str("TRIPLES_IABC_TYPE");
     do_cd = options_.get_str("CHOLESKY");
-    do_fno = options_.get_str("FNO");
+    do_fno = options_.get_str("NAT_ORBS");
 
     // title
     title();

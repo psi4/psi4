@@ -1822,10 +1822,10 @@ def run_fnodfocc(name, **kwargs):
         ['DFOCC', 'DO_SOS'],
         ['DFOCC', 'READ_SCF_3INDEX'],
         ['DFOCC', 'CHOLESKY'],
-        ['DFOCC', 'FNO'],
+        ['DFOCC', 'NAT_ORBS'],
         ['DFOCC', 'CC_LAMBDA'])
             
-    core.set_local_option('DFOCC', 'FNO', 'TRUE')
+    core.set_local_option('DFOCC', 'NAT_ORBS', 'TRUE')
 
     def set_cholesky_from(mtd_type):
         type_val = core.get_global_option(mtd_type)

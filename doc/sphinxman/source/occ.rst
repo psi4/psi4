@@ -442,7 +442,7 @@ details.)
 Basic FNO Keywords for the DFOCC module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: /autodir_options_c/dfocc__fno.rst
-.. include:: /autodir_options_c/dfocc__fno_tolerance.rst
+.. include:: /autodir_options_c/dfocc__nat_orbs.rst
+.. include:: /autodir_options_c/dfocc__occ_tolerance.rst
 
 
