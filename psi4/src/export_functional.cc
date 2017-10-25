@@ -263,11 +263,11 @@ void export_functional(py::module &m) {
     py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
         .def_static("build",
                     [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
-                        return std::shared_ptr<DFTGrid>(new DFTGrid(mol, basis, Process::environment.options));
+                        return std::make_shared<DFTGrid>(mol, basis, Process::environment.options);
                     })
         .def_static("build", [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis,
                                 std::map<std::string, int> int_opts, std::map<std::string, std::string> string_opts) {
-            return std::shared_ptr<DFTGrid>(new DFTGrid(mol, basis, int_opts, string_opts, Process::environment.options));
+            return std::make_shared<DFTGrid>(mol, basis, int_opts, string_opts, Process::environment.options);
         });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
