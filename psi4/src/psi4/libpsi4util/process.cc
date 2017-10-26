@@ -59,26 +59,8 @@ namespace psi {
 Process::Environment Process::environment;
 const std::string empty_;
 
-// Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::initialize() {
-    // Setup defaults
-    environment_["PSI_SCRATCH"] = "/tmp/";
-    environment_["PSI_DATADIR"] = "";
-
-    // Go through user provided environment overwriting defaults if necessary
-    int i = 0;
-    if (environ) {
-        while (environ[i] != NULL) {
-            std::vector<std::string> strs = split(environ[i], "=");
-            if (strs.size() > 1) {
-                environment_[strs[0]] = strs[1];
-            }
-            ++i;
-        }
-    }
-
     nthread_ = 1;
-
 #ifdef _OPENMP
     nthread_ = Process::environment.get_n_threads();
 #endif
@@ -97,46 +79,6 @@ void Process::Environment::set_n_threads(int nthread) {
     // No, this didn't work, back this out for now (and we won't need
     // this once the final solution is in anyway)  --CDS
     // Process::environment.options.set_global_int("NUM_THREADS",nthread);
-}
-
-const std::string &Process::Environment::operator()(const std::string &key) const {
-    // Search for the key:
-    std::map<std::string, std::string>::const_iterator it = environment_.find(key);
-
-    if (it == environment_.end())
-        return empty_;  // Not found return empty std::string.
-    else
-        return it->second;  // Found, return the value
-}
-
-std::string Process::Environment::operator()(const std::string &key) {
-    // Search for the key:
-    std::map<std::string, std::string>::const_iterator it = environment_.find(key);
-
-    if (it == environment_.end())
-        return std::string();  // Not found return empty std::string.
-    else
-        return it->second;  // Found, return the value
-}
-
-const std::string Process::Environment::set(const std::string &key, const std::string &value) {
-    const std::string &old = operator()(key);
-    environment_[key] = value;
-
-// Attempt to set the variable in the system.
-#ifdef HAVE_SETENV
-    setenv(key.c_str(), value.c_str(), 1);
-#elif HAVE_PUTENV
-    size_t len = key.length() + value.length() + 2;  // 2 = 1 (equals sign) + 1 (null char)
-    char *str = new char[len];
-    sprintf(str, "%s=%s", key.c_str(), value.c_str());
-    // we give up ownership of the memory allocation
-    putenv(str);
-#else
-#pragma error setenv and putenv not available.
-#endif
-
-    return std::string();
 }
 
 void Process::Environment::set_molecule(const std::shared_ptr<Molecule> &molecule) {

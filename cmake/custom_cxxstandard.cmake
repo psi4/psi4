@@ -26,17 +26,17 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     try_run(GCCV_COMPILES
             GCCV_RUNS
             ${CMAKE_BINARY_DIR} ${_testfl}
-            RUN_OUTPUT_VARIABLE GCC_VERSION)
-    message(STATUS "Found base compiler version ${GCC_VERSION}")
+            RUN_OUTPUT_VARIABLE CPLR_VERSION)
+    message(STATUS "Found base compiler version ${CPLR_VERSION}")
     file(REMOVE ${_testfl})
 
     if (APPLE)
-        if (${GCC_VERSION} VERSION_LESS 6.1)
-            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without CLANG intervention: http://psicode.org/psi4manual/master/build_planning.html\n${ColourReset}")
+        if (${CPLR_VERSION} VERSION_LESS 3.6)
+            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of CLANG (detected: ${CPLR_VERSION}; required for C++11: Clang 3.6 or AppleClang 6.1) so this build won't work without CLANG intervention.\n${ColourReset}")
         endif()
     else ()
-        if (${GCC_VERSION} VERSION_LESS 4.9)
-            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: http://psicode.org/psi4manual/master/build_planning.html#faq-modgcc\n${ColourReset}")
+        if (${CPLR_VERSION} VERSION_LESS 4.9)
+            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of GCC (detected: ${CPLR_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: http://psicode.org/psi4manual/master/build_planning.html#faq-modgcc\n${ColourReset}")
         endif()
     endif()
 

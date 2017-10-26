@@ -100,7 +100,7 @@ public:
     void process()
     {
         // The location of the plugin templates, in the Psi4 source
-        std::string psiDataDirName = Process::environment("PSIDATADIR");
+        std::string psiDataDirName = Process::environment.get_datadir();
         std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
 
         std::string fpath = filesystem::path(psiDataDirWithPlugin).make_absolute().str();

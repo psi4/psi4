@@ -53,9 +53,7 @@ extern std::shared_ptr<PSIOManager> _default_psio_manager_;
    */
 class PSIOManager {
 private:
-    /// Default path for unspec'd file numbers
-    // (defaults to either $TMP, $TEMPDIR, $TMP or /tmp/ in
-    // that order)
+    /// Default path for unspec'd file numbers. Defaults to /tmp/
     std::string default_path_;
     /// Specific paths for arbitrary file numbers
     std::map<int, std::string> specific_paths_;

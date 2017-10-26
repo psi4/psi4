@@ -1191,10 +1191,7 @@ bool psi4_python_module_initialize()
 
     // Setup the environment
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-    // Process::environment.set("PSI_SCRATCH", "/tmp/");
-    // Process::environment.set("PSIDATADIR", "");
     Process::environment.set_memory(524288000);
-
 
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
@@ -1343,6 +1340,12 @@ PYBIND11_PLUGIN(core) {
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet")=false, "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
+    core.def("set_datadir",
+                [](const std::string& pdd) { Process::environment.set_datadir(pdd); },
+                "Returns the amount of memory available to Psi (in bytes).");
+    core.def("get_datadir",
+                []() { return Process::environment.get_datadir(); },
+                "Sets the path to shared text resources, PSIDATADIR");
     core.def("set_num_threads", py_psi_set_n_threads, py::arg("nthread"), py::arg("quiet")=false, "Sets the number of threads to use in SMP parallel computations.");
     core.def("get_num_threads", py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
 //    core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
@@ -1491,8 +1494,6 @@ PYBIND11_PLUGIN(core) {
     core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
     core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
-    core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
-    core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname){
                  outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(ofname, std::ostream::trunc));

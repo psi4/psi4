@@ -45,7 +45,7 @@ def sizeof_fmt(num, suffix='B'):
 def print_header():
     driver_info = version_formatter("""{version} {release}""")
     git_info = version_formatter("""{{{branch}}} {githash} {clean}""")
-    datadir = core.get_environment("PSIDATADIR")
+    datadir = core.get_datadir()
     memory = sizeof_fmt(core.get_memory())
     threads = str(core.get_num_threads())
 

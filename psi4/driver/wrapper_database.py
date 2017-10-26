@@ -230,7 +230,7 @@ def database(name, db_name, **kwargs):
     kwargs.pop('molecule', None)
 
     # Paths to search for database files: here + PSIPATH + library + PYTHONPATH
-    psidatadir = os.environ.get('PSIDATADIR', None)
+    psidatadir = core.get_datadir()
     #nolongerpredictable psidatadir = __file__ + '/../..' if psidatadir is None else psidatadir
     libraryPath = ':' + os.path.abspath(psidatadir) + '/databases'
     driver_loc = os.path.dirname(os.path.abspath(__file__))

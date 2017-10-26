@@ -163,7 +163,7 @@ void LaplaceDenominator::decompose()
     double R = B / A;
 
     // Pick appropriate quadrature file and read contents
-    std::string PSIDATADIR = Process::environment("PSIDATADIR");
+    std::string PSIDATADIR = Process::environment.get_datadir();
     std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
     std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
 
@@ -594,7 +594,7 @@ void SAPTLaplaceDenominator::decompose()
     double R = B / A;
 
     // Pick appropriate quadrature file and read contents
-    std::string PSIDATADIR = Process::environment("PSIDATADIR");
+    std::string PSIDATADIR = Process::environment.get_datadir();
     std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
     std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
 
@@ -1066,7 +1066,7 @@ void TLaplaceDenominator::decompose()
     double R = B / A;
 
     // Pick appropriate quadrature file and read contents
-    std::string PSIDATADIR = Process::environment("PSIDATADIR");
+    std::string PSIDATADIR = Process::environment.get_datadir();
     std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
     std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
 

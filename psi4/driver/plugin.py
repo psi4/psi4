@@ -29,6 +29,7 @@
 import os
 import sys
 
+from psi4 import core
 from psi4.driver.util.filesystem import *
 from psi4.driver.util import tty
 
@@ -87,7 +88,7 @@ def sanitize_name(name):
 
 # Determine the available plugins
 available_plugins = []
-psidatadir = os.environ.get('PSIDATADIR', None)
+psidatadir = core.get_datadir()
 plugin_path = join_path(psidatadir, "plugin")
 for dir in os.listdir(plugin_path):
     if os.path.isdir(join_path(plugin_path, dir)):

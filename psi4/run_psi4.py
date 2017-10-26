@@ -204,7 +204,7 @@ psi4.print_header()
 if args["scratch"] is not None:
     if not os.path.isdir(args["scratch"]):
         raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
-    psi4.core.set_environment("PSI_SCRATCH", os.path.abspath(os.path.expanduser(args["scratch"])))
+    psi4.core.IOManager.shared_object().set_default_path(os.path.abspath(os.path.expanduser(args["scratch"])))
 
 # If this is a json call, compute and stop
 if args["json"]:

@@ -482,7 +482,7 @@ def _chain_dot(*args, **kwargs):
     return ret
 
 
-# Matirx attributes
+# Matrix attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
 core.Matrix.from_list = classmethod(lambda self, x: array_to_matrix(self, np.array(x)))
 core.Matrix.to_array = _to_array
