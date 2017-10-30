@@ -25,11 +25,9 @@
 #
 # @END LICENSE
 #
-
 """
 Runs a JSON input psi file.
 """
-
 
 from psi4.driver import driver
 from psi4.driver import molutil
@@ -40,7 +38,6 @@ import json
 import uuid
 import copy
 import os
-
 
 methods_dict = {
     'energy': driver.energy,
@@ -158,6 +155,13 @@ def run_json(json_data):
     json_data["success"] = False
     json_data["raw_output"] = None
 
+    # Add the provenance data
+    prov = {}
+    prov["version"] = psi4.__version__
+    prov["routine"] = "psi4.run_json"
+    prov["creator"] = "Psi4"
+    json_data["provenance"] = prov
+
     # Check input
     for check in ["driver", "method", "molecule"]:
         if check not in list(json_data):
@@ -169,7 +173,6 @@ def run_json(json_data):
         json_data["error"] = "Driver parameters '%s' not recognized" % str(json_data["driver"])
         return json_data
 
-
     # Set scratch
     if "scratch_location" in list(json_data):
         psi4_io = core.IOManager.shared_object()
@@ -177,7 +180,7 @@ def run_json(json_data):
 
     # Set memory
     if "memory" in list(json_data):
-        psi4.core.set_memory(int(json_data["memory"]))
+        psi4.set_memory(json_data["memory"])
 
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
@@ -208,24 +211,20 @@ def run_json(json_data):
         # Full driver call
         kwargs["return_wfn"] = True
 
+        if json_data["driver"] not in methods_dict:
+            raise KeyError("Driver type '%s' not recognized." % str(json_data["driver"]))
+
         val, wfn = methods_dict[json_data["driver"]](*args, **kwargs)
 
-        if isinstance(val, (float)):
+        if isinstance(val, (float, int)):
             json_data["return_value"] = val
         elif isinstance(val, (core.Matrix, core.Vector)):
             json_data["return_value"] = val.to_serial()
         else:
-            json_data["error"] += "Unrecognized return value of type %s\n" % type(val)
-            json_data["return_value"] = val
+            raise TypeError("Unrecognized return value of type %s\n" % type(val))
 
         json_data["variables"] = core.get_variables()
         json_data["success"] = True
-
-        prov = {}
-        prov["version"] = psi4.__version__
-        prov["routine"] = "psi4.run_json"
-        prov["creator"] = "Psi4"
-        json_data["provenance"] = prov
 
     except Exception as error:
         json_data["error"] += repr(error)
@@ -237,4 +236,3 @@ def run_json(json_data):
         os.unlink(outfile)
 
     return json_data
-
