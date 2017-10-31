@@ -3245,4 +3245,32 @@ std::string Molecule::full_point_group() const {
 }
 
 int Molecule::natom() const { return atoms_.size(); }
+
+int Molecule::rotational_symmetry_number() const
+{
+    int sigma;
+    std::string pg = FullPointGroupList[full_pg_];
+
+    if ((pg == "ATOM") || (pg == "C_inf_v") ||
+        (pg == "C1") || (pg == "Ci") || (pg == "Cs"))
+        sigma = 1;
+    else if (pg == "D_inf_h")
+        sigma = 2;
+    else if ((pg == "T") || (pg == "Td"))
+        sigma = 12;
+    else if (pg == "Oh")
+        sigma = 24;
+    else if (pg == "Ih")
+        sigma = 60;
+    else if ((pg == "Cn") || (pg == "Cnv") || (pg == "Cnh"))
+        sigma = full_pg_n_;
+    else if ((pg == "Dn") || (pg == "Dnd") || (pg == "Dnh"))
+        sigma = 2 * full_pg_n_;
+    else if (pg == "Sn")
+        sigma = full_pg_n_ / 2;
+    else
+        throw PSIEXCEPTION("Can't ID full symmetry group");
+
+    return sigma;
+}
 }

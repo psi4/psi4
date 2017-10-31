@@ -1093,7 +1093,9 @@ void export_mints(py::module& m) {
              "Prints the molecule in Cartesians in Angstroms to output file")
         .def("print_cluster", &Molecule::print_cluster,
              "Prints the molecule in Cartesians in input units adding fragment separators")
-        .def("rotational_constants", &Molecule::rotational_constants, "Prints the rotational constants of the molecule")
+        .def("rotational_constants",
+                [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
+             "Prints the rotational constants of the molecule")
         .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
              py::arg("dipole_field") = std::vector<double>(3, 0.0), "Computes nuclear repulsion energy")
         .def("find_point_group", &Molecule::find_point_group,
@@ -1110,8 +1112,11 @@ void export_mints(py::module& m) {
         .def("symmetrize", &Molecule::symmetrize_to_abelian_group,
              "Finds the highest point Abelian point group within the specified tolerance, and "
              "forces the geometry to have that symmetry.")
-        .def_static("create_molecule_from_string", &Molecule::create_molecule_from_string,
-                    "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
+        .def("inertia_tensor", &Molecule::inertia_tensor,
+             "Returns intertial tensor")
+        .def_static(
+             "create_molecule_from_string", &Molecule::create_molecule_from_string,
+             "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg2 is in the list, returns true if it is, and returns false if "
              "not")
@@ -1140,6 +1145,14 @@ void export_mints(py::module& m) {
         .def_property("units", py::cpp_function(&Molecule::units), py::cpp_function(&Molecule::set_units),
                       "Units (Angstrom or Bohr) used to define the geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
+        .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
+            "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
+        .def("rotor_type",
+            [](Molecule& mol) {
+                const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP", "RT_LINEAR", "RT_ATOM"};
+                std::string srt = RotorTypeList[mol.rotor_type()];
+                return srt; },
+            "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
         .def("geometry", &Molecule::geometry,
              "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
         .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,

@@ -670,6 +670,9 @@ public:
     std::string full_point_group_with_n() const { return FullPointGroupList[full_pg_]; }
     /// Return n in Cnv, etc.; If there is no n (e.g. Td) it's the highest-order rotation axis.
     int full_pg_n() { return full_pg_n_; }
+    /// Number of unique orientations of the rigid molecule that only interchange identical atoms.
+    ///    Source: http://cccbdb.nist.gov/thermo.asp (search "symmetry number")
+    int rotational_symmetry_number() const;
 
     /**
      * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
