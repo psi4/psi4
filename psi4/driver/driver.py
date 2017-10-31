@@ -1773,6 +1773,16 @@ def vibanal_wfn(wfn, hess=None):
                                   rot_const=np.asarray(mol.rotational_constants()),
                                   E0=wfn.energy())
 
+    core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
+    core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
+    core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
+    core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
+
+    core.set_variable("ZERO K ENTHALPHY", therminfo['ZPE_tot'].data)
+    core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
+    core.set_variable("ENTHALPY", therminfo['H_tot'].data)
+    core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
+
     core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
     core.print_out(thermtext)
 

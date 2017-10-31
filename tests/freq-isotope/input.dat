@@ -62,7 +62,7 @@ clean()
 set t 400.0
 
 #freq('hf', molecule=h2o)
-thermo(wfn, wfn.frequencies())
+vibanal_wfn(wfn)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'H2O E0 @400K')  #TEST
 compare_values(0.024367, get_variable('ZPVE'), 4, 'H2O ZPVE @400K')  #TEST
 compare_values(0.028170, get_variable('thermal energy correction'), 4, 'H2O dE @400K')  #TEST
@@ -100,7 +100,7 @@ compare_values(47.828, entropy, 2, 'HDO S')  # molpro sym=cs #TEST
 
 set rotational_symmetry_number 2
 
-thermo(wfn, wfn.frequencies())
+vibanal_wfn(wfn)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'HDO E0')  #TEST
 compare_values(0.021103, get_variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
 compare_values(0.023935, get_variable('thermal energy correction'), 4, 'HDO dE')  #TEST
