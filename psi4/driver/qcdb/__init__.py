@@ -38,7 +38,7 @@ __author__ = 'Lori A. Burns'
 
 # Load Python modules
 import sys
-from .molecule import Molecule
+from .molecule import Molecule, compute_atom_map
 from .dbproc import *
 from .options import *
 from .qcformat import *
