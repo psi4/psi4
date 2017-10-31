@@ -8,7 +8,7 @@ endforeach ()
 foreach (dir_name adc ccdensity ccenergy cceom cchbar cclambda ccresponse
          cctransort cctriples dcft detci dfmp2 dfep2
          dfocc efp_interface findif fisapt fnocc mcscf mrcc
-         occ optking psimrcc sapt scfgrad thermo
+         occ optking psimrcc sapt scfgrad
          gdma_interface dmrg ambit_interface
         )
     add_subdirectory(${dir_name})
