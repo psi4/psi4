@@ -208,7 +208,7 @@ protected:
     /// gradient, if available, as natom_ x 3 SharedMatrix
     SharedMatrix gradient_;
 
-    /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix
+    /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix (NOT mass-weighted!)
     SharedMatrix hessian_;
 
     /// Helpers for C/D/epsilon transformers
