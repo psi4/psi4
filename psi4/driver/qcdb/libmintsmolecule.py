@@ -1585,7 +1585,7 @@ class LibmintsMolecule(dict):
 
         if self.PYmove_to_com:
             self.move_to_com()
-        #print "after com:"
+        #print("after com:")
         #self.print_full()
 
         # If the no_reorient command was given, don't reorient
@@ -1597,7 +1597,7 @@ class LibmintsMolecule(dict):
             # the the user might have provided.
             frame = self.symmetry_frame()
             self.rotate_full(frame)
-            #print "after rotate:"
+            #print("after rotate:")
             #self.print_full()
 
         # Recompute point group of the molecule, so the symmetry info is updated to the new frame
@@ -1821,44 +1821,55 @@ class LibmintsMolecule(dict):
                     tensor[i][j] = 0.0
         return tensor
 
-    def rotational_constants(self, tol=FULL_PG_TOL):
-        """Compute the rotational constants and return them in wavenumbers"""
+    def rotational_constants(self, tol=FULL_PG_TOL, return_units='cm^-1'):
+        """Compute the rotational constants and moments of inertia.
+
+        Parameters
+        ----------
+        return_units : str, optional
+		    Selector for rotational constants (among: 'GHz', 'MHz', 'cm^-1') or
+            moments of inertia (among: 'u a0^2', 'u A^2').
+
+        Returns
+        -------
+        np.array
+            1 by 3 of rotational constants or moments of inertia in units of `return_units`.
+
+        Notes
+        -----
+        This used to return a list with inf values as None.
+
+        """
+        import numpy as np
 
         evals, evecs = diagonalize3x3symmat(self.inertia_tensor())
         evals = sorted(evals)
-        isLinear = True if evals[0] < ZERO else False
-        isOne = True if evals[1] < ZERO else False
-        isAtom = True if evals[2] < ZERO else False
+        evals = np.asarray(evals)
 
         im_amuA = psi_bohr2angstroms * psi_bohr2angstroms
-        im_ghz = psi_h * psi_na * 1E14 / (8.0 * math.pi * math.pi * psi_bohr2angstroms * psi_bohr2angstroms)
-        im_mhz = im_ghz * 1000
-        im_cm = im_ghz * 1E7 / psi_c
+        im_ghz = psi_h * psi_na * 1e14 / (8 * math.pi * math.pi * psi_bohr2angstroms * psi_bohr2angstroms)
+        im_mhz = im_ghz * 1000.
+        im_cm = im_ghz * 1.e7 / psi_c
 
+        rc_moi = {}
+        rc_moi['u a0^2'] = evals
+        rc_moi['u A^2'] = evals * im_amuA
+        with np.errstate(divide='ignore'):
+            rc_moi['GHz'] = im_ghz / evals
+            rc_moi['MHz'] = im_mhz / evals
+            rc_moi['cm^-1'] = im_cm / evals
+
+        fmt = """  {:12}    {a:3} {:16.8f}    {b:3} {:16.8f}    {c:3} {:16.8f}\n"""
         text = "        Moments of Inertia and Rotational Constants\n\n"
-        text += '  %-12s    %3s %16.8f    %3s %16.8f    %3s %16.8f\n' % \
-            ('[amu B^2]', 'I_A', evals[0], 'I_B', evals[1], 'I_C', evals[2])
-        text += '  %-12s    %3s %16.8f    %3s %16.8f    %3s %16.8f\n' % \
-            ('[amu A^2]', 'I_A', evals[0] * im_amuA, 'I_B', evals[1] * im_amuA, 'I_C', evals[2] * im_amuA)
-        text += '  %-12s    %3s %16s    %3s %16s    %3s %16s\n' % ('[GHz]', \
-            'A', '%16.8f' % (im_ghz / evals[0]) if not isLinear else '*****', \
-            'B', '%16.8f' % (im_ghz / evals[1]) if not isOne else '*****', \
-            'C', '%16.8f' % (im_ghz / evals[2]) if not isAtom else '*****')
-        text += '  %-12s    %3s %16s    %3s %16s    %3s %16s\n' % ('[MHz]', \
-            'A', '%16.8f' % (im_mhz / evals[0]) if not isLinear else '*****', \
-            'B', '%16.8f' % (im_mhz / evals[1]) if not isOne else '*****', \
-            'C', '%16.8f' % (im_mhz / evals[2]) if not isAtom else '*****')
-        text += '  %-12s    %3s %16s    %3s %16s    %3s %16s\n' % ('[cm^-1]', \
-            'A', '%16.8f' % (im_cm / evals[0]) if not isLinear else '*****', \
-            'B', '%16.8f' % (im_cm / evals[1]) if not isOne else '*****', \
-            'C', '%16.8f' % (im_cm / evals[2]) if not isAtom else '*****')
+        text += fmt.format('[u a0^2]', a='I_A', b='I_B', c='I_C', *rc_moi['u a0^2'])
+        text += fmt.format('[u A^2]', a='I_A', b='I_B', c='I_C', *rc_moi['u A^2'])
+        text += fmt.format('[GHz]', a='A', b='B', c='C', *rc_moi['GHz'])
+        text += fmt.format('[MHz]', a='A', b='B', c='C', *rc_moi['MHz'])
+        text += fmt.format('[cm^-1]', a='A', b='B', c='C', *rc_moi['cm^-1'])
         print(text)
         # TODO outfile
-        rot_const = []
-        rot_const.append(im_cm / evals[0] if not isLinear else None)
-        rot_const.append(im_cm / evals[1] if not isOne else None)
-        rot_const.append(im_cm / evals[2] if not isAtom else None)
-        return rot_const
+
+        return rc_moi[return_units]
 
     def rotor_type(self, tol=FULL_PG_TOL):
         """Returns the rotor type.
@@ -2213,6 +2224,7 @@ class LibmintsMolecule(dict):
             # Rotate around z-axis to put pivot atom in the yz plane
             xy_point = normalize([geom[pivot_atom_i][0], geom[pivot_atom_i][1], 0])
             ddot = dot(y_axis, xy_point)
+            phi = None
             if abs(ddot - 1) < 1.0e-10:
                 phi = 0.0
             elif abs(ddot + 1) < 1.0e-10:
@@ -2237,7 +2249,6 @@ class LibmintsMolecule(dict):
                     if not atom_present_in_geom(geom, test_atom, tol):
                         break
             else:
-            #if at == self.natom():
                 op_sigma_v = True
             if verbose > 2:
                 print("""  sigma_v                          : %s""" % ('yes' if op_sigma_v else 'no'))
@@ -2252,7 +2263,7 @@ class LibmintsMolecule(dict):
             for i in range(self.natom()):
                 A = [geom[i][0], geom[i][1], geom[i][2]]
                 AdotA = dot(A, A)
-                for j in range(at):
+                for j in range(i):
                     if self.Z(at) != self.Z(j):
                         continue  # ensure same atomic number
 
