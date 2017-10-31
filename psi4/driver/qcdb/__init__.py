@@ -51,7 +51,12 @@ from .libmintspointgrp import SymmetryOperation, PointGroup
 from .libmintsbasisset import BasisSet
 from .libmintsmolecule import LibmintsMolecule
 from .basislist import *
+from . import align
+from . import vib
+from .vib import compare_vibinfos
 
 # Load items that are useful to access from an input file
 from .psiutil import *
 from .physconst import *
+
+from .util import *

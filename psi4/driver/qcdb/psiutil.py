@@ -38,6 +38,7 @@ import re
 import os
 import string
 from .vecutil import *
+from . import vib
 
 
 def _success(label):
