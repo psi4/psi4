@@ -45,6 +45,7 @@ from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
 from psi4.driver import p4util
+from psi4.driver import qcdb
 # from psi4.driver.inputparser import parse_options_block
 
 from psi4.driver.procrouting import *
@@ -1329,7 +1330,7 @@ def hessian(name, **kwargs):
         moleculeclone.reinterpret_coordentry(False)
         moleculeclone.fix_orientation(True)
 
-        # Record undisplaced symmetry for projection of diplaced point groups
+        # Record undisplaced symmetry for projection of displaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
@@ -1720,8 +1721,11 @@ def frequency(name, **kwargs):
     if freq_mode == 'sow':
         return 0.0
 
-    wfn.frequencies().print_out()
-    core.thermo(wfn, wfn.frequencies())
+    vibinfo = vibanal_wfn(wfn)
+    vibonly = qcdb.vib.filter_nonvib(vibinfo)
+    # Yup, this is tossing out the imag freq. Have to figure out how to handle w/o -
+    wfn.set_frequencies(core.Vector.from_array(vibonly['omega'].data))
+    # and normco yet needs setting
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
@@ -1734,6 +1738,45 @@ def frequency(name, **kwargs):
         return (core.get_variable('CURRENT ENERGY'), wfn)
     else:
         return core.get_variable('CURRENT ENERGY')
+
+
+
+def vibanal_wfn(wfn, hess=None):
+    # TODO should go back to private
+    import numpy as np
+
+    if hess is None:
+        nmwhess = np.asarray(wfn.hessian())
+    else:
+        nmwhess = hess
+
+    mol = wfn.molecule()
+    geom = np.asarray(mol.geometry())
+    m = np.asarray([mol.mass(at) for at in range(mol.natom())])
+    symbols = [mol.symbol(at) for at in range(mol.natom())]
+    irrep_labels = mol.irrep_labels()
+
+    vibinfo = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels)
+
+    if core.has_option_changed('THERMO', 'ROTATIONAL_SYMMETRY_NUMBER'):
+        rsn = core.get_option('THERMO', 'ROTATIONAL_SYMMETRY_NUMBER')
+    else:
+        rsn = mol.rotational_symmetry_number()
+
+    therminfo, thermtext = qcdb.vib.thermo(vibinfo,
+                                  T=core.get_option("THERMO", "T"),  # 298.15,
+                                  P=core.get_option("THERMO", "P"),  # 101325.,
+                                  multiplicity=mol.multiplicity(),
+                                  molecular_mass=np.sum(m),
+                                  sigma=rsn,
+                                  rotor_type=mol.rotor_type(),
+                                  rot_const=np.asarray(mol.rotational_constants()),
+                                  E0=wfn.energy())
+
+    core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
+    core.print_out(thermtext)
+
+    return vibinfo
 
 
 def gdma(wfn, datafile=""):
