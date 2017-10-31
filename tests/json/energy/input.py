@@ -5,6 +5,7 @@ from psi4.driver import p4util
 # Generate JSON data
 json_data = {}
 json_data["molecule"] = """He 0 0 0\n--\nHe 0 0 1"""
+json_data["memory"] = "5GB"
 json_data["driver"] = "energy"
 json_data["method"] = 'SCF'
 json_data["kwargs"] = {"bsse_type": "cp"}

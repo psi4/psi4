@@ -384,7 +384,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
 #ifdef _OPENMP
                     rank = omp_get_thread_num();
 #endif
-#pragma omp simd collapse(2)
                     for (size_t b = 0; b < nvir; b++) {
                         for (size_t e = 0; e < nE; e++) {
                             double Eabi = I_ovvEp[i * nvir + b][a * nE + e];
@@ -424,7 +423,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
 #ifdef _OPENMP
                     rank = omp_get_thread_num();
 #endif
-#pragma omp simd collapse(2)
                     for (size_t j = 0; j < nocc; j++) {
                         for (size_t e = 0; e < nE; e++) {
                             double Eija = I_vooEp[a * nocc + j][i * nE + e];
