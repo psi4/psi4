@@ -219,6 +219,8 @@ void export_wavefunction(py::module& m) {
         // .def("print_orbitals", &scf::HF::print_orbitals, "docstring");
         .def("print_energies", &scf::HF::print_energies, "docstring")
         .def("print_header", &scf::HF::print_header, "docstring")
+        .def("get_energies", &scf::HF::get_energies, "docstring")
+        .def("set_energies", &scf::HF::set_energies, "docstring")
         .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
