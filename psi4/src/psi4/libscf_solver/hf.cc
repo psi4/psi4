@@ -614,7 +614,6 @@ double HF::finalize_E()
 //  Process::environment.globals["SCF QUADRUPOLE YZ"] =
 //  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
 
-        save_information();
     } else {
             outfile->Printf( "  Failed to converge.\n");
         E_ = 0.0;
