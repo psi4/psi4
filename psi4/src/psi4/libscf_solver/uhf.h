@@ -45,8 +45,6 @@ class UHF : public HF {
     double compute_initial_E();
     bool stability_analysis_pk();
 
-    void save_information();
-
     void common_init();
 
     // Scaling factor for orbital rotation

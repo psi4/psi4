@@ -237,10 +237,6 @@ void UHF::form_G()
     }
 }
 
-void UHF::save_information()
-{
-}
-
 bool UHF::test_convergency()
 {
     double ediff = E_ - Eold_;

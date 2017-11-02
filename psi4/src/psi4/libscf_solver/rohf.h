@@ -60,8 +60,6 @@ protected:
     // Second-order convergence code
     void Hx(SharedMatrix x, SharedMatrix ret);
 
-    void save_information();
-
     void format_guess();
 
     void common_init();

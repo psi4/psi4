@@ -82,7 +82,6 @@ class CUHF : public HF {
     void form_initialF();
     double compute_initial_E();
 
-    void save_information();
     void compute_spin_contamination();
 
     void common_init();
