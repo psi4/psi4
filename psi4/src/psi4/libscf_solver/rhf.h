@@ -47,19 +47,9 @@ protected:
     SharedMatrix K_;
     SharedMatrix wK_;
 
-    void form_C();
-    void form_D();
     virtual void damp_update();
     double compute_initial_E();
-    virtual double compute_E();
     virtual bool stability_analysis();
-
-    virtual void form_F();
-    virtual void form_G();
-    virtual void form_V();
-    virtual void compute_orbital_gradient(bool save_fock);
-
-    bool diis();
 
     bool test_convergency();
 
@@ -67,8 +57,6 @@ protected:
 
     // Finalize memory/files
     virtual void finalize();
-
-    void save_density_and_energy();
 
     // Second-order convergence code
     virtual int soscf_update(void);
@@ -83,6 +71,16 @@ public:
 
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
+
+    bool diis();
+    void save_density_and_energy();
+    void form_C();
+    void form_D();
+    void form_F();
+    void form_G();
+    void form_V();
+    void compute_orbital_gradient(bool save_fock);
+    double compute_E();
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
