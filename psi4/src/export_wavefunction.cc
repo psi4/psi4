@@ -202,7 +202,6 @@ void export_wavefunction(py::module& m) {
         .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("initialize", &scf::HF::initialize, "Initializes the Wavefunction.")
-        .def("iterations", &scf::HF::iterations, "Iterates the Wavefunction until convergence criteria have been met.")
         .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunctions temporary data.")
         .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
         .def("finalize_E", &scf::HF::finalize_E, "Computes the final SCF energy.")

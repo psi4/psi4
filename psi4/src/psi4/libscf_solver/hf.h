@@ -356,9 +356,6 @@ public:
     /// Specialized initialization, compute integrals and does everything to prepare for iterations
     virtual void initialize();
 
-    /// Performs the actual SCF iterations
-    virtual void iterations();
-
     /// Performs stability analysis and calls back SCF with new guess if needed,
     /// Returns the SCF energy
     ///  This function should be called once orbitals are ready for energy/property computations,
