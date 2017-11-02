@@ -217,6 +217,14 @@ void export_wavefunction(py::module& m) {
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
         .def("damp_update", &scf::HF::damp_update, "docstring")
+        .def("check_phases", &scf::HF::check_phases, "docstring")
+        // .def("print_orbitals", &scf::HF::print_orbitals, "docstring");
+        .def("print_energies", &scf::HF::print_energies, "docstring")
+        .def("print_header", &scf::HF::print_header, "docstring")
+        .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
+        .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
+        .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
+        .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
 
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
