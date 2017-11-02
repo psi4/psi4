@@ -48,9 +48,10 @@ def scf_iterate(self):
         damping_convergence = core.get_option('SCF', "DAMPING_CONVERGENCE")
 
     df = core.get_option('SCF', "SCF_TYPE") == "DF"
+    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
 
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   " if df else ""))
+    core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   " if is_dfjk else ""))
 
     # Iterate !
     # SCF iterations
@@ -251,7 +252,7 @@ def scf_iterate(self):
         # Print out the iteration
         df = core.get_option('SCF', "SCF_TYPE") == "DF"
         core.print_out("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if df else "", reference, iteration + 1, SCFE, Ediff, Drms,
+                       ("DF-" if is_dfjk else "", reference, iteration + 1, SCFE, Ediff, Drms,
                         status))
 
         # If a an excited MOM is requested but not started, don't stop yet
@@ -268,9 +269,10 @@ def scf_iterate(self):
         #    if(initialized_diis_manager_)
         #        diis_manager_->reset_subspace()
         #    scf_type_ = old_scf_type_
-        #    options_.set_str("SCF","SCF_TYPE",old_scf_type_)
+        #    options_.set_global_str("SCF_TYPE",old_scf_type_)
         #    old_scf_type_ = "DF"
         #    integrals()
+        #    is_dfjk = False
         #}
 
         # Call any postiteration callbacks
