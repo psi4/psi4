@@ -481,12 +481,12 @@ void HF::integrals()
     jk_->print_header();
 }
 
-double HF::compute_energy()
-{
-  initialize();
-  iterations();
-  return finalize_E();
-}
+// double HF::compute_energy()
+// {
+//   initialize();
+//   iterations();
+//   return finalize_E();
+// }
 
 double HF::finalize_E()
 {

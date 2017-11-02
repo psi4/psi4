@@ -1150,7 +1150,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             # Figure out the fitting basis set
             if castdf is True:
                 core.set_global_option('DF_BASIS_SCF', '')
-            elif isinstance(castdf, (unicode, str)):
+            elif isinstance(castdf, str):
                 core.set_global_option('DF_BASIS_SCF', castdf)
             else:
                 raise ValidationError("Unexpected castdf option (%s)." % castdf)
