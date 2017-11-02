@@ -365,12 +365,12 @@ double CUHF::compute_E() {
     return Etotal;
 }
 
-void CUHF::compute_orbital_gradient(bool save_diis) {
+double CUHF::compute_orbital_gradient(bool save_diis) {
     SharedMatrix grad_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix grad_b = form_FDSmSDF(Fb_, Db_);
 
     // Store the RMS gradient for convergence checking
-    Drms_ = 0.5 * (grad_a->rms() + grad_b->rms());
+    double Drms = 0.5 * (grad_a->rms() + grad_b->rms());
 
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
@@ -383,6 +383,7 @@ void CUHF::compute_orbital_gradient(bool save_diis) {
 
         diis_manager_->add_entry(4, grad_a.get(), grad_b.get(), Fa_.get(), Fb_.get());
     }
+    return Drms;
 }
 
 bool CUHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }

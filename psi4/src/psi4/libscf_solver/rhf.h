@@ -66,7 +66,7 @@ public:
 
     bool diis();
     void save_density_and_energy();
-    void compute_orbital_gradient(bool save_fock);
+    double compute_orbital_gradient(bool save_fock);
     bool test_convergency();
 
     void form_C();

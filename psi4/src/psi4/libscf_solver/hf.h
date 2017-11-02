@@ -47,6 +47,7 @@ namespace scf {
 
 class HF : public Wavefunction {
 protected:
+    double Drms_;
 
     /// The kinetic energy matrix
     SharedMatrix T_;
@@ -91,9 +92,6 @@ protected:
     /// Basis list for SAD
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
-
-    /// The RMS error in the density
-    double Drms_;
 
     /// Max number of iterations for HF
     int maxiter_;
@@ -355,9 +353,6 @@ public:
     /// The DFT Potential object (or null if it has been deleted)
     std::shared_ptr<VBase> V_potential() const { return potential_; }
 
-    /// The RMS error in the density
-    double rms_density_error() {return Drms_;}
-
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;
     std::shared_ptr<Vector> occupation_b() const;
@@ -399,7 +394,7 @@ public:
     virtual bool diis() { return false; }
 
     /** Compute the orbital gradient */
-    virtual void compute_orbital_gradient(bool) {}
+    virtual double compute_orbital_gradient(bool save_diis) { return 0.0; }
 
     /** Applies damping to the density update */
     virtual void damp_update();

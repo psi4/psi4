@@ -94,7 +94,7 @@ class CUHF : public HF {
 
     bool diis();
     void save_density_and_energy();
-    void compute_orbital_gradient(bool save_diis);
+    double compute_orbital_gradient(bool save_diis);
     bool test_convergency();
 
     void form_C();
