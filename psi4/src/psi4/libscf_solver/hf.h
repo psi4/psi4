@@ -385,13 +385,13 @@ public:
     virtual double Eold() { return Eold_; }
 
     /// Save the current density and energy.
-    virtual void save_density_and_energy() = 0;
+    virtual void save_density_and_energy();
 
     /// Reset to regular occupation from the fractional occupation
     void reset_occupation();
 
     /// Compute energy for the iteration.
-    virtual double compute_E() = 0;
+    virtual double compute_E();
 
     /** Test convergence of the wavefunction */
     virtual bool test_convergency() { return false; }
@@ -440,10 +440,10 @@ public:
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
     /** Computes the Fock matrix */
-    virtual void form_F() = 0;
+    virtual void form_F();
 
     /** Forms the G matrix */
-    virtual void form_G() = 0;
+    virtual void form_G();
 
 
     /// Hessian-vector computers and solvers
