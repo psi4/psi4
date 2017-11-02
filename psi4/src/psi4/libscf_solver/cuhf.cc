@@ -168,8 +168,6 @@ void CUHF::form_G() {
     Kb_ = K[1];
 }
 
-void CUHF::save_information() {}
-
 void CUHF::compute_spin_contamination() {
     double dN = 0.0;
 

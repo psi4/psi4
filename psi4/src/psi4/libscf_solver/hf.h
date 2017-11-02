@@ -294,9 +294,6 @@ protected:
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
 
-    /** Saves information to the checkpoint file */
-    virtual void save_information() {}
-
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
 
