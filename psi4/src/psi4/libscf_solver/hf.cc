@@ -127,7 +127,7 @@ void HF::common_init()
 
     density_fitted_ = false;
 
-    E_       = 0.0;
+    energies_["Total Energy"] = 0.0;
     maxiter_ = 40;
 
     // Read information from input file
@@ -510,7 +510,7 @@ double HF::finalize_E()
           if(initialized_diis_manager_) diis_manager_->reset_subspace();
           // Reading the rotated orbitals in before starting iterations
           form_D();
-          E_ = compute_initial_E();
+          energies_["Total Energy"] = compute_initial_E();
           //iterations();
           throw PSIEXCEPTION("This is bad, call Andy");
           follow = stability_analysis();
@@ -532,11 +532,11 @@ double HF::finalize_E()
         energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
 
         outfile->Printf("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy);
-        outfile->Printf("    SCF including EFP Induction   %20.12f [Eh]\n", E_);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [Eh]\n", energies_["Total Energy"]);
 
-        E_ += efp_wfn_independent_energy;
+        energies_["Total Energy"] += efp_wfn_independent_energy;
 
-        outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", E_);
+        outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", energies_["Total Energy"]);
     }
 #endif
 
@@ -562,7 +562,7 @@ double HF::finalize_E()
 
         bool df = (options_.get_str("SCF_TYPE") == "DF");
 
-        outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
+        outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(),energies_["Total Energy"]);
         if (perturb_h_) {
             outfile->Printf( " with %f %f %f perturbation", dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]);
         }
@@ -609,7 +609,7 @@ double HF::finalize_E()
 
     } else {
             outfile->Printf( "  Failed to converge.\n");
-        E_ = 0.0;
+        energies_["Total Energy"] = 0.0;
         if(psio_->open_check(PSIF_CHKPT))
             psio_->close(PSIF_CHKPT, 1);
 
@@ -624,7 +624,7 @@ double HF::finalize_E()
 
     //outfile->Printf("\nComputation Completed\n");
 
-    return E_;
+    return energies_["Total Energy"];
 
 }
 
@@ -646,7 +646,7 @@ void HF::finalize()
     // Figure out how many frozen virtual and frozen core per irrep
     compute_fcpi();
     compute_fvpi();
-    energy_ = E_;
+    energy_ = energies_["Total Energy"];
 
     //Sphalf_.reset();
     X_.reset();
@@ -1466,7 +1466,7 @@ void HF::guess()
     }
 
 
-    E_ = 0.0; // don't use this guess in our convergence checks
+    energies_["Total Energy"] = 0.0; // don't use this guess in our convergence checks
 }
 
 void HF::format_guess()
@@ -1568,7 +1568,7 @@ void HF::initialize()
     }else{
         // We're reading the orbitals from the previous set of iterations.
         form_D();
-        E_ = compute_initial_E();
+        energies_["Total Energy"] = compute_initial_E();
     }
 
 #ifdef USING_libefp

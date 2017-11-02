@@ -11,7 +11,8 @@ from psi4 import core
 def scf_compute_energy(self):
     self.initialize()
     self.py_iterate()
-    self.finalize_energy()
+    scf_energy = self.finalize_energy()
+    return scf_energy
 
 
 def scf_iterate(self):
@@ -142,6 +143,7 @@ def scf_iterate(self):
         #        }
         ##endif
         # std::string status = ""
+        self.set_energies("Total Energy", SCFE)
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
@@ -155,13 +157,13 @@ def scf_iterate(self):
 
             Drms = self.compute_orbital_gradient(False)
             diis_performed = False
-            base_name
+            base_name = ""
             if self.functional().needs_xc():
                 base_name = "SOKS, nmicro = "
             else:
                 base_name = "SOSCF, nmicro = "
 
-            if not (abs(Ediff) < energy_threshold) and (Drms < density_threshold):
+            if (abs(Ediff) > energy_threshold) or (Drms > density_threshold):
                 nmicro = self.soscf_update()
                 if nmicro > 0:
                     # If zero the soscf call bounced for some reason
@@ -351,7 +353,7 @@ def finalize_scf_energy(self):
     converged = True
     print_lvl = 0
 
-    E_ = 5
+    energy = self.get_energies("Total Energy")
     fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
     if converged or not fail_on_maxiter:
 
@@ -368,7 +370,7 @@ def finalize_scf_energy(self):
         if core.get_option("SCF", "SCF_TYPE") == "DF":
             prefix = "DF-"
 
-        core.print_out("  @%s%s Final Energy: %20.14f" % (prefix, reference, E_))
+        core.print_out("  @%s%s Final Energy: %20.14f" % (prefix, reference, energy))
         # if (perturb_h_) {
         #     core.print_out( " with %f %f %f perturbation" % (perturb_dipoles_[0], perturb_dipoles_[1], perturb_dipoles_[2]))
         # }
@@ -426,7 +428,7 @@ def finalize_scf_energy(self):
 
     core.print_out("\nComputation Completed\n")
 
-    return E_
+    return energy
 
 
 core.HF.py_iterate = scf_iterate

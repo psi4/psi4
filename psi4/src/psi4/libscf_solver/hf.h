@@ -82,9 +82,6 @@ protected:
     /// Density convergence threshold
     double density_threshold_;
 
-    /// Previous iteration's energy and current energy
-    double E_;
-
     /// Table of energy components
     std::map<std::string, double> energies_;
 
@@ -434,6 +431,10 @@ public:
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
+
+    // Energies data
+    void set_energies(std::string key, double value) { energies_[key] = value; }
+    double get_energies(std::string key) { return energies_[key]; }
 
     // PCM interface
     bool pcm_enabled_;

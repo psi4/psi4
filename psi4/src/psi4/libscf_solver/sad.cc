@@ -663,7 +663,5 @@ void HF::compute_SAD_guess() {
     doccpi_ = sad_dim;
     soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
 
-    E_ = 0.0;  // This is the -1th iteration
-}
-}
+    energies_["Total Energy"] = 0.0; // This is the -1th iteration
 }
