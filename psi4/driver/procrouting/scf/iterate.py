@@ -5,8 +5,11 @@ The SCF iteration functions
 import psi4
 import numpy
 
-@classmethod
+# @classmethod
 def scf_iterate(self):
+    print("Start SCF iterate")
+    # print(self.__mro__)
+    print(type(self))
 
     reference = psi4.core.get_option('SCF', "REFERENCE")
 
@@ -16,6 +19,7 @@ def scf_iterate(self):
     reset_occ = True if (psi4.core.get_option('SCF', 'GUESS') == 'SAD') else False
     # todo reset_occ was ripped out of nice logic so revisit
     print_lvl = psi4.core.get_option('SCF', "PRINT")
+    print(type(self))
 
 
     # First, did the user request a different number of diis vectors?
@@ -28,7 +32,7 @@ def scf_iterate(self):
         diis_enabled = False
 
     # damping?
-    damping_enabled = psi4.core.has_changed('SCF', 'DAMPING_PERCENTAGE')
+    damping_enabled = psi4.core.has_option_changed('SCF', 'DAMPING_PERCENTAGE')
     if damping_enabled:
         damping_percentage = psi4.core.get_option('SCF', "DAMPING_PERCENTAGE") / 100.0
         if damping_percentage < 0.0 or damping_percentage > 1.0:
@@ -38,19 +42,20 @@ def scf_iterate(self):
     df = psi4.core.get_option('SCF', "SCF_TYPE") == "DF"
 
     psi4.core.print_out( "  ==> Iterations <==\n\n")
-    psi4.core.print_out( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", "   " if df else "")
+    psi4.core.print_out( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   " if df else ""))
 
     # Iterate !
     # SCF iterations
+    SCFE_old = 0.0
     for iteration in range(psi4.core.get_option('SCF', 'MAXITER')):
 
         self.save_density_and_energy()
-    
+
     # #ifdef USING_libefp
         #Horig = self.H().clone()
         # self.H().copy(Horig)
         # self.H().axpy(1.0, Vefp)
-    
+
     #         // add efp contribution to Fock matrix
     #         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
     #             H_->copy(Horig_);
@@ -58,13 +63,13 @@ def scf_iterate(self):
     #             H_->add(Vefp);
     #         }
     # #endif
-    
+
         SCFE = 0.0
-    
+
         psi4.core.timer_on("HF: Form G")
         self.form_G()
         psi4.core.timer_off("HF: Form G")
-    
+
         # Reset fractional SAD occupation
         if (iteration == 0) and reset_occ:
             self.reset_occupation()
@@ -126,7 +131,8 @@ def scf_iterate(self):
 #          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
 #        }
 ##endif
-        std::string status = "";
+        # std::string status = "";
+        status = ""
 
         # We either do SOSCF or DIIS
     #print_lvl = psi4.core.get_option('SCF', "PRINT")  # PY
@@ -141,7 +147,7 @@ def scf_iterate(self):
 
             self.compute_orbital_gradient(False)
             diis_performed = False
-            std::string base_name;
+            base_name;
             if self.functional().needs_xc():
                 base_name = "SOKS, nmicro = "
             else:
@@ -152,13 +158,13 @@ def scf_iterate(self):
                 if nmicro > 0:
                     # If zero the soscf call bounced for some reason
                     self.find_occupation()
-                    status += base_name + psi::to_string(nmicro);
+                    status += base_name + str(nmicro);
                     did_soscf = True  # Stops DIIS
                 else:
                     if print_lvl:
                         core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
                     did_soscf = False  # Back to DIIS
-                
+
             else:
                 # We need to ensure orthogonal orbitals and set epsilon
                 status += base_name + "conv";
@@ -196,7 +202,7 @@ def scf_iterate(self):
             psi4.core.timer_off("HF: Form C")
 
         # If we're too well converged, or damping wasn't enabled, do DIIS
-        damping_performed = (damping_enabled and (iteration > 1) and 
+        damping_performed = (damping_enabled and (iteration > 1) and
                             (self.rms_density_error() > damping_convergence))
 
         if diis_performed:
@@ -239,10 +245,11 @@ def scf_iterate(self):
 
         df = psi4.core.get_option('SCF', "SCF_TYPE") == "DF"
 
-        psi4.core.print_out( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
-            "DF-" if df else "",
-           reference, iteration + 1, SCFE, SCFE - self.Eold(),
-            self.rms_density_error(), status)
+        psi4.core.print_out( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
+            ("DF-" if df else "",
+           reference, iteration + 1, SCFE, SCFE - SCFE_old,
+            self.rms_density_error(), status))
+        SCFE_old = SCFE
 
         # If a an excited MOM is requested but not started, don't stop yet
         #if (MOM_excited_ && !MOM_started_) converged_ = false;
@@ -269,9 +276,10 @@ def scf_iterate(self):
 
     return True
 
-psi4.core.RHF.py_iterate = scf_iterate
-psi4.core.UHF.py_iterate = scf_iterate
-psi4.core.ROHF.py_iterate = scf_iterate
-psi4.core.CUHF.py_iterate = scf_iterate
+# psi4.core.HF.py_iterate = scf_iterate
+# psi4.core.RHF.py_iterate = scf_iterate
+# psi4.core.UHF.py_iterate = scf_iterate
+# psi4.core.ROHF.py_iterate = scf_iterate
+# psi4.core.CUHF.py_iterate = scf_iterate
 
 
