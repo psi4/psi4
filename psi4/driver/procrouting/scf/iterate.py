@@ -142,7 +142,9 @@ def scf_iterate(self):
         #        }
         ##endif
         # std::string status = ""
-        Ediff = abs(SCFE - SCFE_old)
+        Ediff = SCFE - SCFE_old
+        SCFE_old = SCFE
+
         status = ""
 
         # We either do SOSCF or DIIS
@@ -159,7 +161,7 @@ def scf_iterate(self):
             else:
                 base_name = "SOSCF, nmicro = "
 
-            if not (Ediff < energy_threshold) and (Drms < density_threshold):
+            if not (abs(Ediff) < energy_threshold) and (Drms < density_threshold):
                 nmicro = self.soscf_update()
                 if nmicro > 0:
                     # If zero the soscf call bounced for some reason
@@ -244,14 +246,13 @@ def scf_iterate(self):
             self.Da().print_out()
             self.Db().print_out()
 
-        converged = (Ediff < energy_threshold) and (Drms < density_threshold)
+        converged = (abs(Ediff) < energy_threshold) and (Drms < density_threshold)
 
+        # Print out the iteration
         df = core.get_option('SCF', "SCF_TYPE") == "DF"
-
         core.print_out("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if df else "", reference, iteration + 1, SCFE, SCFE - SCFE_old, Drms,
+                       ("DF-" if df else "", reference, iteration + 1, SCFE, Ediff, Drms,
                         status))
-        SCFE_old = SCFE
 
         # If a an excited MOM is requested but not started, don't stop yet
         #if (MOM_excited_ && !MOM_started_) converged_ = false

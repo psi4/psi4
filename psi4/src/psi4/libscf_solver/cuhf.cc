@@ -203,15 +203,6 @@ void CUHF::compute_spin_contamination() {
     outfile->Printf("  @S^2 Observed:              %8.5F\n", S2 + dS);
 }
 
-bool CUHF::test_convergency() {
-    double ediff = E_ - Eold_;
-
-    // Drms was already computed
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
-        return true;
-    else
-        return false;
-}
 
 void CUHF::form_initialF() {
     Fa_->copy(H_);

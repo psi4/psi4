@@ -213,7 +213,6 @@ void export_wavefunction(py::module& m) {
         .def("compute_E", &scf::HF::compute_E, "docstring")
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
-        .def("test_convergency", &scf::HF::test_convergency, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
         .def("damp_update", &scf::HF::damp_update, "docstring")
