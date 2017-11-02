@@ -5,11 +5,12 @@ The SCF iteration functions
 import psi4
 import numpy
 
-# @classmethod
+def scf_compute_energy(self):
+    self.initialize()
+    self.py_iterate()
+    # self.finalize_E()
+
 def scf_iterate(self):
-    print("Start SCF iterate")
-    # print(self.__mro__)
-    print(type(self))
 
     reference = psi4.core.get_option('SCF', "REFERENCE")
 
@@ -19,7 +20,6 @@ def scf_iterate(self):
     reset_occ = True if (psi4.core.get_option('SCF', 'GUESS') == 'SAD') else False
     # todo reset_occ was ripped out of nice logic so revisit
     print_lvl = psi4.core.get_option('SCF', "PRINT")
-    print(type(self))
 
 
     # First, did the user request a different number of diis vectors?
@@ -276,7 +276,9 @@ def scf_iterate(self):
 
     return True
 
-# psi4.core.HF.py_iterate = scf_iterate
+
+psi4.core.HF.py_iterate = scf_iterate
+psi4.core.HF.compute_energy = scf_compute_energy
 # psi4.core.RHF.py_iterate = scf_iterate
 # psi4.core.UHF.py_iterate = scf_iterate
 # psi4.core.ROHF.py_iterate = scf_iterate

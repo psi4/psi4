@@ -178,38 +178,34 @@ void export_wavefunction(py::module& m) {
         .def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
-        .def("form_C", &scf::HF::form_C,
-             "Forms the Orbital Matrices from the current Fock Matrices.")
-        .def("form_D", &scf::HF::form_D,
-             "Forms the Density Matrices from the current Orbitals Matrices")
-        .def("form_V", &scf::HF::form_V,
-             "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
+        .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
+        .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
+        .def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
         .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
         .def("form_F", &scf::HF::form_F, "Forms the F matrix.")
         .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
         .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
         .def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).")
-        .def("cphf_solve", &scf::HF::cphf_solve, py::arg("x_vec"), py::arg("conv_tol"),
-             py::arg("max_iter"), py::arg("print_lvl") = 2,
-             "Solves the CPHF equations for a given set of x vectors.")
+        .def("cphf_solve", &scf::HF::cphf_solve, py::arg("x_vec"), py::arg("conv_tol"), py::arg("max_iter"),
+             py::arg("print_lvl") = 2, "Solves the CPHF equations for a given set of x vectors.")
         .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.")
         .def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix")
         .def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix")
         .def("reset_occ", &scf::HF::reset_occ,
              "If True, the occupation will be reset after the guess to the inital occupation.")
-        .def("set_sad_basissets", &scf::HF::set_sad_basissets,
-             "Sets the Superposition of Atomic Densities basisset.")
+        .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
-        .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Shame Potential Matrix.")
-        .def("Vb", &scf::HF::Vb, "Returns the Alpha Kohn-Shame Potential Matrix.")
+        .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Sham Potential Matrix.")
+        .def("Vb", &scf::HF::Vb, "Returns the Beta Kohn-Sham Potential Matrix.")
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
         .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("initialize", &scf::HF::initialize, "Initializes the Wavefunction.")
-        .def("iterations", &scf::HF::iterations,
-             "Iterates the Wavefunction until convergence criteria have been met.")
+        .def("iterations", &scf::HF::iterations, "Iterates the Wavefunction until convergence criteria have been met.")
+        .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunctions temporary data.")
+        .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
         .def("finalize_E", &scf::HF::finalize_E, "Computes the final SCF energy.")
         .def("occupation_a", &scf::HF::occupation_a, "Returns the Alpha occupation numbers.")
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
@@ -222,9 +218,7 @@ void export_wavefunction(py::module& m) {
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
         .def("damp_update", &scf::HF::damp_update, "docstring")
-        .def("Eold", &scf::HF::Eold, "docstring")
-        .def("semicanonicalize", &scf::HF::semicanonicalize,
-             "Semicanonicalizes the orbitals for ROHF.");
+        .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
 
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())

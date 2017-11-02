@@ -47,19 +47,11 @@ protected:
     SharedMatrix K_;
     SharedMatrix wK_;
 
-    virtual void damp_update();
     double compute_initial_E();
-    virtual bool stability_analysis();
 
-    bool test_convergency();
 
     void common_init();
 
-    // Finalize memory/files
-    virtual void finalize();
-
-    // Second-order convergence code
-    virtual int soscf_update(void);
 
 public:
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
@@ -74,13 +66,20 @@ public:
 
     bool diis();
     void save_density_and_energy();
+    void compute_orbital_gradient(bool save_fock);
+    bool test_convergency();
+
     void form_C();
     void form_D();
     void form_F();
     void form_G();
     void form_V();
-    void compute_orbital_gradient(bool save_fock);
     double compute_E();
+    void finalize();
+
+    void damp_update();
+    int soscf_update();
+    bool stability_analysis();
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);

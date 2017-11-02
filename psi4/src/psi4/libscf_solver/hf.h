@@ -418,7 +418,7 @@ public:
     /// Base class Wavefunction requires this function. Here it is simply a wrapper around
     /// initialize(), iterations(), finalize_E(). It returns the SCF energy computed by
     /// finalize_E()
-    virtual double compute_energy();
+    // virtual double compute_energy();
 
     /// Clears memory and closes files (Should they be open) prior to correlated code execution
     /// Derived classes override it for additional operations and then call HF::finalize()
