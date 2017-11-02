@@ -219,34 +219,6 @@ protected:
     int cphf_nfock_builds_;
     bool cphf_converged_;
 
-public:
-
-    /// The number of iterations needed to reach convergence
-    int iterations_needed() {return iterations_needed_;}
-
-    /// The JK object (or null if it has been deleted)
-    std::shared_ptr<JK> jk() const { return jk_; }
-
-    /// Sets the internal JK object (expert)
-    void set_jk(std::shared_ptr<JK> jk);
-
-    /// The DFT Functional object (or null if it has been deleted)
-    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
-
-    /// The DFT Potential object (or null if it has been deleted)
-    std::shared_ptr<VBase> V_potential() const { return potential_; }
-
-    /// The RMS error in the density
-    double rms_density_error() {return Drms_;}
-
-    /// Returns the occupation vectors
-    std::shared_ptr<Vector> occupation_a() const;
-    std::shared_ptr<Vector> occupation_b() const;
-
-    // PCM interface
-    bool pcm_enabled_;
-    std::shared_ptr<PCM> hf_pcm_;
-
 protected:
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
@@ -273,8 +245,6 @@ protected:
 
     /// Fractional occupation UHF/UKS
     void frac();
-    /// Renormalize orbitals to 1.0 before saving
-    void frac_renormalize();
 
     /// Check the stability of the wavefunction, and correct (if requested)
     virtual bool stability_analysis();
@@ -288,18 +258,6 @@ protected:
     /// Prints the orbitals energies and symmetries (helper method)
     void print_orbitals(const char* header, std::vector<std::pair<double,
                         std::pair< std::string, int> > > orbs);
-
-    /// Prints the orbitals in arbitrary order (works with MOM)
-    void print_orbitals();
-
-    /// Prints the energy breakdown from this SCF
-    void print_energies();
-
-    /// Prints some opening information
-    void print_header();
-
-    /// Prints some details about nsopi/nmopi, and initial occupations
-    void print_preiterations();
 
     /// Do any needed integral setup
     virtual void integrals();
@@ -322,9 +280,6 @@ protected:
     /// The number of iterations need to reach convergence
     int iterations_needed_;
 
-    /// Check MO phases
-    void check_phases();
-
     /// SAD Guess and propagation
     void compute_SAD_guess();
 
@@ -339,9 +294,6 @@ protected:
 
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
-
-    /** Compute/print spin contamination information (if unrestricted) **/
-    virtual void compute_spin_contamination();
 
     /** Saves information to the checkpoint file */
     virtual void save_information() {}
@@ -372,6 +324,46 @@ public:
        Options& options, std::shared_ptr<PSIO> psio);
 
     virtual ~HF();
+
+    /// The number of iterations needed to reach convergence
+    int iterations_needed() {return iterations_needed_;}
+
+    /// Check MO phases
+    void check_phases();
+
+    /// Prints the orbitals in arbitrary order (works with MOM)
+    void print_orbitals();
+
+    /// Prints the energy breakdown from this SCF
+    void print_energies();
+
+    /// Prints some opening information
+    void print_header();
+
+    /// Prints some details about nsopi/nmopi, and initial occupations
+    void print_preiterations();
+
+    /** Compute/print spin contamination information (if unrestricted) **/
+    virtual void compute_spin_contamination();
+
+    /// The JK object (or null if it has been deleted)
+    std::shared_ptr<JK> jk() const { return jk_; }
+
+    /// Sets the internal JK object (expert)
+    void set_jk(std::shared_ptr<JK> jk);
+
+    /// The DFT Functional object (or null if it has been deleted)
+    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
+
+    /// The DFT Potential object (or null if it has been deleted)
+    std::shared_ptr<VBase> V_potential() const { return potential_; }
+
+    /// The RMS error in the density
+    double rms_density_error() {return Drms_;}
+
+    /// Returns the occupation vectors
+    std::shared_ptr<Vector> occupation_a() const;
+    std::shared_ptr<Vector> occupation_b() const;
 
     /// Specialized initialization, compute integrals and does everything to prepare for iterations
     virtual void initialize();
@@ -431,6 +423,9 @@ public:
     /// semicanonical basis.
     virtual void semicanonicalize();
 
+    /// Renormalize orbitals to 1.0 before saving
+    void frac_renormalize();
+
     /// Compute the MO coefficients (C_)
     virtual void form_C();
 
@@ -440,15 +435,14 @@ public:
     /// Computes the density matrix (V_)
     virtual void form_V();
 
-    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
-    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
-
     /** Computes the Fock matrix */
     virtual void form_F();
 
     /** Forms the G matrix */
     virtual void form_G();
 
+    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
+    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
@@ -458,6 +452,8 @@ public:
     virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
                                                  double conv_tol = 1.e-4, int max_iter = 10,
                                                  int print_lvl = 1);
+
+    // CPHF data
     bool cphf_converged() { return cphf_converged_; }
     int cphf_nfock_builds() { return cphf_nfock_builds_; }
 
@@ -475,6 +471,10 @@ public:
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
+
+    // PCM interface
+    bool pcm_enabled_;
+    std::shared_ptr<PCM> hf_pcm_;
 };
 
 }} // Namespaces
