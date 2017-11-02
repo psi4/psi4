@@ -83,7 +83,6 @@ protected:
     double density_threshold_;
 
     /// Previous iteration's energy and current energy
-    double Eold_;
     double E_;
 
     /// Table of energy components
@@ -106,7 +105,6 @@ protected:
     int iteration_;
 
     /// Did the SCF converge?
-
     bool converged_;
 
     /// Nuclear repulsion energy
@@ -216,8 +214,6 @@ protected:
     int cphf_nfock_builds_;
     bool cphf_converged_;
 
-protected:
-
     /// Formation of H is the same regardless of RHF, ROHF, UHF
     // Temporarily converting to virtual function for testing embedding
     // potentials.  TDC, 5/23/12.
@@ -301,18 +297,6 @@ protected:
     /** Performs any operations required for a incoming guess **/
     virtual void format_guess();
 
-    /** Save orbitals to use later as a guess **/
-    // virtual void save_orbitals();
-
-    /** Tells whether or not to read Fock matrix as a guess **/
-    // bool do_use_fock_guess();
-
-    /** Load fock matrix from previous computation to form guess MO coefficients **/
-    // virtual void load_fock();
-
-    /** Load orbitals from previous computation, projecting if needed **/
-    // virtual void load_orbitals();
-
 public:
     HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
        Options& options, std::shared_ptr<PSIO> psio);
@@ -361,9 +345,6 @@ public:
     ///  This function should be called once orbitals are ready for energy/property computations,
     /// usually after iterations() is called.
     virtual double finalize_E();
-
-    /// Return the previous energy.
-    virtual double Eold() { return Eold_; }
 
     /// Save the current density and energy.
     virtual void save_density_and_energy();

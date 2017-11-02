@@ -152,7 +152,6 @@ void UHF::save_density_and_energy()
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
-    Eold_ = E_;
 }
 void UHF::form_V()
 {
@@ -233,17 +232,6 @@ void UHF::form_G()
         wKa_->zero();
         wKb_->zero();
     }
-}
-
-bool UHF::test_convergency()
-{
-    double ediff = E_ - Eold_;
-
-    // Drms was computed earlier
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
-        return true;
-    else
-        return false;
 }
 
 void UHF::form_initialF()
