@@ -234,17 +234,9 @@ double RHF::compute_orbital_gradient(bool save_fock) {
     return gradient->rms();
 }
 
-bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
-
-bool RHF::test_convergency() {
-    // energy difference
-    double ediff = E_ - Eold_;
-
-    // Drms was computed earlier
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_) {
-        return true;
-    } else
-        return false;
+bool RHF::diis()
+{
+    return diis_manager_->extrapolate(1, Fa_.get());
 }
 
 void RHF::form_F() {

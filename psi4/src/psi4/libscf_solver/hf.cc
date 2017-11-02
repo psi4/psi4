@@ -123,7 +123,7 @@ void HF::common_init()
     energy_threshold_ = options_.get_double("E_CONVERGENCE");
 
     // Read in density convergence threshold
-    density_threshold_ = options_.get_double("D_CONVERGENCE");;
+    density_threshold_ = options_.get_double("D_CONVERGENCE");
 
     density_fitted_ = false;
 
@@ -1699,7 +1699,7 @@ void HF::iterations()
                 base_name = "SOSCF, nmicro = ";
             }
 
-            if (!test_convergency()) {
+            if (!false) {
                 int nmicro = soscf_update();
                 if (nmicro > 0) {  // If zero the soscf call bounced for some reason
                     find_occupation();
@@ -1785,7 +1785,7 @@ void HF::iterations()
             Db_->print("outfile");
         }
 
-        converged_ = test_convergency();
+        converged_ = true;
 
         df = (options_.get_str("SCF_TYPE") == "DF");
 
