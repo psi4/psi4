@@ -53,37 +53,21 @@ protected:
 
     void form_initialF();
     void form_initial_C();
-    void form_C();
-    void form_D();
     double compute_initial_E();
-    double compute_E();
-    virtual bool stability_analysis();
     virtual void prepare_canonical_orthogonalization();
     void semicanonicalize();
 
-    void form_G();
-    void form_F();
+    // Second-order convergence code
+    void Hx(SharedMatrix x, SharedMatrix ret);
 
-    virtual void compute_orbital_gradient(bool save_diis);
-    bool diis();
+    void save_information();
+
+    void format_guess();
 
     bool test_convergency();
 
-    void save_information();
-    // Finalize memory/files
-    virtual void finalize();
-
-    void save_density_and_energy();
-    void format_guess();
-
-    // Second-order convergence code
-    void Hx(SharedMatrix x, SharedMatrix ret);
-    virtual int soscf_update(void);
-
-    /** Applies damping to the density update */
-    virtual void damp_update();
-
     void common_init();
+
 public:
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
@@ -94,8 +78,22 @@ public:
     SharedMatrix moFa() const {return moFa_; }
     SharedMatrix moFb() const {return moFb_; }
 
-    std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
+    bool diis();
+    void save_density_and_energy();
+    void compute_orbital_gradient(bool save_diis);
 
+    void form_C();
+    void form_D();
+    void form_F();
+    void form_G();
+    double compute_E();
+    void finalize();
+
+    void damp_update();
+    int soscf_update(void);
+    bool stability_analysis();
+
+    std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };
 
 }}
