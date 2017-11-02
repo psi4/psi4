@@ -377,9 +377,6 @@ public:
     /// Compute energy for the iteration.
     virtual double compute_E();
 
-    /** Test convergence of the wavefunction */
-    virtual bool test_convergency() { return false; }
-
     /** Applies second-order convergence acceleration */
     virtual int soscf_update();
 

@@ -360,18 +360,6 @@ bool ROHF::diis()
     return diis_manager_->extrapolate(1, soFeff_.get());
 }
 
-bool ROHF::test_convergency()
-{
-    // energy difference
-    double ediff = E_ - Eold_;
-
-    // Drms was computed earlier
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
-        return true;
-    else
-        return false;
-}
-
 void ROHF::form_initialF()
 {
     // Form the initial Fock matrix, closed and open variants
