@@ -30,6 +30,11 @@ def scf_iterate(self):
     max_diis_vectors = core.get_option('SCF', "DIIS_MAX_VECS")
     diis_start = core.get_option('SCF', "DIIS_START")
     diis_enabled = core.get_option('SCF', "DIIS")
+
+    # Thresholds
+    energy_threshold = core.get_option("SCF", "E_CONVERGENCE");
+    density_threshold = core.get_option("SCF", "D_CONVERGENCE");
+
     # Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
     if min_diis_vectors < 2:
         diis_enabled = False
@@ -50,6 +55,8 @@ def scf_iterate(self):
     # Iterate !
     # SCF iterations
     SCFE_old = 0.0
+    SCFE = 0.0
+    Drms = 0.0
     for iteration in range(core.get_option('SCF', 'MAXITER')):
 
         self.save_density_and_energy()
@@ -135,15 +142,16 @@ def scf_iterate(self):
         #        }
         ##endif
         # std::string status = ""
+        Ediff = abs(SCFE - SCFE_old)
         status = ""
 
         # We either do SOSCF or DIIS
         did_soscf = False
         soscf_enabled = core.get_option('SCF', 'SOSCF')
         soscf_r_start = core.get_option('SCF', 'SOSCF_START_CONVERGENCE')
-        if (soscf_enabled and (self.rms_density_error() < soscf_r_start) and (iteration > 3)):
+        if (soscf_enabled and (Drms < soscf_r_start) and (iteration > 3)):
 
-            self.compute_orbital_gradient(False)
+            Drms = self.compute_orbital_gradient(False)
             diis_performed = False
             base_name
             if self.functional().needs_xc():
@@ -151,7 +159,7 @@ def scf_iterate(self):
             else:
                 base_name = "SOSCF, nmicro = "
 
-            if not self.test_convergency():
+            if not (Ediff < energy_threshold) and (Drms < density_threshold):
                 nmicro = self.soscf_update()
                 if nmicro > 0:
                     # If zero the soscf call bounced for some reason
@@ -179,7 +187,7 @@ def scf_iterate(self):
             if (diis_enabled and (iteration > 0) and (iteration >= diis_start)):
                 add_to_diis_subspace = True
 
-            self.compute_orbital_gradient(add_to_diis_subspace)
+            Drms = self.compute_orbital_gradient(add_to_diis_subspace)
 
             if (diis_enabled and (iteration >= diis_start + min_diis_vectors - 1)):
                 diis_performed = self.diis()
@@ -198,7 +206,7 @@ def scf_iterate(self):
             core.timer_off("HF: Form C")
 
         # If we're too well converged, or damping wasn't enabled, do DIIS
-        damping_performed = (damping_enabled and (iteration > 1) and (self.rms_density_error() > damping_convergence))
+        damping_performed = (damping_enabled and (iteration > 1) and (Drms > damping_convergence))
 
         if diis_performed:
             if (status != ""):
@@ -236,12 +244,12 @@ def scf_iterate(self):
             self.Da().print_out()
             self.Db().print_out()
 
-        converged = self.test_convergency()
+        converged = (Ediff < energy_threshold) and (Drms < density_threshold)
 
         df = core.get_option('SCF', "SCF_TYPE") == "DF"
 
         core.print_out("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if df else "", reference, iteration + 1, SCFE, SCFE - SCFE_old, self.rms_density_error(),
+                       ("DF-" if df else "", reference, iteration + 1, SCFE, SCFE - SCFE_old, Drms,
                         status))
         SCFE_old = SCFE
 
