@@ -225,6 +225,7 @@ void export_wavefunction(py::module& m) {
         .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
 
+    /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::RHF::c1_deep_copy,
@@ -248,12 +249,14 @@ void export_wavefunction(py::module& m) {
         .def("c1_deep_copy", &scf::CUHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *basis*", py::arg("basis"));
 
+    /// EP2 functions
     py::class_<dfep2::DFEP2Wavefunction, std::shared_ptr<dfep2::DFEP2Wavefunction>, Wavefunction>(
         m, "DFEP2Wavefunction", "A density-fitted second-order Electron Propagator Wavefunction.")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("compute", &dfep2::DFEP2Wavefunction::compute,
              "Computes the density-fitted EP2 energy for the input orbitals");
 
+    /// FISAPT functions
     py::class_<fisapt::FISAPT, std::shared_ptr<fisapt::FISAPT>>(m, "FISAPT",
                                                                 "A Fragment-SAPT Wavefunction")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -262,7 +265,7 @@ void export_wavefunction(py::module& m) {
         .def("disp", &fisapt::FISAPT::disp,
              "Computes the MP2-based DispE20 and Exch-DispE20 energy.");
 
-    /// CIWavefunction data
+    /// CIWavefunction functions
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,
                                                std::shared_ptr<psi::detci::CIvect>, int, int) =
         &detci::CIWavefunction::sigma;

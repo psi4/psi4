@@ -146,7 +146,6 @@ void CUHF::save_density_and_energy() {
     Da_old_->copy(Dt_);
     Db_old_->copy(Dt_);
     Dt_old_->copy(Dt_);
-    Eold_ = E_;
 }
 
 void CUHF::form_G() {

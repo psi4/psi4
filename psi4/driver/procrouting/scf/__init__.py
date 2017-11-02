@@ -2,4 +2,4 @@
 A helper folder for auxiliary SCF funcitons and iterations.
 """
 
-from . import iterate
+from . import scf_iterator
