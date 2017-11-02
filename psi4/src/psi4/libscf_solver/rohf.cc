@@ -309,7 +309,6 @@ void ROHF::save_density_and_energy()
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
-    Eold_ = E_; // save previous energy
 }
 
 double ROHF::compute_orbital_gradient(bool save_diis)

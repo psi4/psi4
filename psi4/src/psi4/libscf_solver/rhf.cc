@@ -129,7 +129,6 @@ SharedMatrix RHF::Da() const { return D_; }
 
 void RHF::save_density_and_energy() {
     Dold_->copy(D_);  // Save previous density
-    Eold_ = E_;       // Save previous energy
 }
 
 void forPermutation(int depth, std::vector<int>& array, std::vector<int>& indices, int curDepth,

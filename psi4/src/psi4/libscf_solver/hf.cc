@@ -127,7 +127,6 @@ void HF::common_init()
 
     density_fitted_ = false;
 
-    Eold_    = 0.0;
     E_       = 0.0;
     maxiter_ = 40;
 
