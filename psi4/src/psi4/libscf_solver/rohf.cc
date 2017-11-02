@@ -312,7 +312,7 @@ void ROHF::save_density_and_energy()
     Eold_ = E_; // save previous energy
 }
 
-void ROHF::compute_orbital_gradient(bool save_diis)
+double ROHF::compute_orbital_gradient(bool save_diis)
 {
 
     // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
@@ -341,7 +341,7 @@ void ROHF::compute_orbital_gradient(bool save_diis)
 
     // Back transform MOgradient
     SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
-    Drms_ = gradient->rms();
+    double Drms = gradient->rms();
 
     if(save_diis){
         if (initialized_diis_manager_ == false) {
@@ -352,6 +352,7 @@ void ROHF::compute_orbital_gradient(bool save_diis)
         }
         diis_manager_->add_entry(2, gradient.get(), soFeff_.get());
     }
+    return Drms;
 }
 
 bool ROHF::diis()

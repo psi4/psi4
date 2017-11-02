@@ -867,11 +867,11 @@ int UHF::soscf_update(void)
     return cphf_nfock_builds_;
 }
 
-void UHF::compute_orbital_gradient(bool save_fock)
+double UHF::compute_orbital_gradient(bool save_fock)
 {
     SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
-    Drms_ = 0.5*(gradient_a->rms() + gradient_b->rms());
+    double Drms = 0.5*(gradient_a->rms() + gradient_b->rms());
 
     if(save_fock){
         if (initialized_diis_manager_ == false) {
@@ -887,6 +887,7 @@ void UHF::compute_orbital_gradient(bool save_fock)
 
         diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
     }
+    return Drms;
 }
 
 bool UHF::diis()

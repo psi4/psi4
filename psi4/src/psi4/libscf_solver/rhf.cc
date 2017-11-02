@@ -212,10 +212,9 @@ void RHF::form_G() {
     }
 }
 
-void RHF::compute_orbital_gradient(bool save_fock) {
+double RHF::compute_orbital_gradient(bool save_fock) {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
     SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
-    Drms_ = gradient->rms();
 
     if (save_fock) {
         if (initialized_diis_manager_ == false) {
@@ -232,6 +231,7 @@ void RHF::compute_orbital_gradient(bool save_fock) {
         }
         diis_manager_->add_entry(2, gradient.get(), Fa_.get());
     }
+    return gradient->rms();
 }
 
 bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }

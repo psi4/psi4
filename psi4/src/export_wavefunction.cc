@@ -210,7 +210,6 @@ void export_wavefunction(py::module& m) {
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("reset_occupation", &scf::HF::reset_occupation, "docstring")
         .def("compute_E", &scf::HF::compute_E, "docstring")
-        .def("rms_density_error", &scf::HF::rms_density_error, "docstring")
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("test_convergency", &scf::HF::test_convergency, "docstring")
