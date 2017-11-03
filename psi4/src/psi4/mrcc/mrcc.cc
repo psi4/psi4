@@ -433,7 +433,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0,
                             ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
-    SharedMatrix one_particle(new Matrix("MO-basis OPDM", active_mopi, active_mopi));
+    SharedMatrix one_particle = std::make_shared<Matrix>("MO-basis OPDM", active_mopi, active_mopi);
 
     DPDBucketFiller bucket(&I, Process::environment.get_memory());
     // While MRCCRestricedReader is processing the two particle values it will
@@ -462,10 +462,10 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
      */
 
     // One-electron contribution: Xpq <- h_pr D_rq
-    SharedMatrix H(new Matrix(PSIF_MO_FZC, nmopi, nmopi));
+    SharedMatrix H = std::make_shared<Matrix>(PSIF_MO_FZC, nmopi, nmopi);
     // TODO make sure the density is frozen appropriately with frozen core
     H->load(_default_psio_lib_, PSIF_OEI);
-    SharedMatrix X(new Matrix("X (1e contribution)", nmopi, nmopi));
+    SharedMatrix X = std::make_shared<Matrix>("X (1e contribution)", nmopi, nmopi);
     X->gemm(false, false, 1.0, one_particle, H, 0.0);
 
     // Two-electron contribution: Xpq <- 2 (pr|st) G_qrst
@@ -493,7 +493,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     outfile->Printf("\t\tTotal energy        = %16.10f\n", enuc + E1e + E2e);
 
     global_dpd_->contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
-    SharedMatrix X2mat(new Matrix(&X2));
+    SharedMatrix X2mat = std::make_shared<Matrix>(&X2);
     X->print();
     X2mat->print();
     X->add(X2mat);
@@ -525,7 +525,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     // Form the energy-weighted OPDM
 
     // Form the Lagrangian
-    //SharedMatrix Lia(new Matrix("Lia", naocc, navir));
+    //SharedMatrix Lia = std::make_shared<Matrix>("Lia", naocc, navir);
     //for (int h = 0; h < Lia->nirrep(); h++) {
     //    int ni = naocc[h];
     //    int na = navir[h];
@@ -551,7 +551,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     // Construct a RCPHF Object
     Options &options = Process::environment.options;
 
-    std::shared_ptr <RCPHF> cphf(new RCPHF(ref, options));
+    std::shared_ptr <RCPHF> cphf = std::make_shared<RCPHF>(ref, options);
     cphf->preiterations();
 
     // TODO: Add pre-CPHF A-matrix correction
@@ -701,7 +701,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     std::shared_ptr <Wavefunction> wave;
     //   freeze MP2 natural virtual orbitals?
     if (options.get_bool("NAT_ORBS")) {
-        std::shared_ptr <psi::fnocc::FrozenNO> fno(new psi::fnocc::FrozenNO(ref_wfn, options));
+        std::shared_ptr <psi::fnocc::FrozenNO> fno = std::make_shared<psi::fnocc::FrozenNO>(ref_wfn, options);
         fno->ComputeNaturalOrbitals();
         wave = (std::shared_ptr <Wavefunction>) fno;
     } else {
@@ -732,7 +732,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     outfile->Printf("\n");
     //FILE* fort55 = fopen("fort.55", "w");
-    std::shared_ptr <PsiOutStream> printer(new PsiOutStream("fort.55", std::ostream::trunc));
+    std::shared_ptr <PsiOutStream> printer = std::make_shared<PsiOutStream>("fort.55", std::ostream::trunc);
     printer->Printf("%22d%22d\n", nbf, nelectron);
 
     // Print out orbital symmetries
@@ -818,7 +818,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         global_dpd_->buf4_close(&K);
 
         // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
-        SharedMatrix moH(new Matrix(PSIF_MO_FZC, wave->nmopi(), wave->nmopi()));
+        SharedMatrix moH = std::make_shared<Matrix>(PSIF_MO_FZC, wave->nmopi(), wave->nmopi());
         moH->load(_default_psio_lib_, PSIF_OEI);
         Slice slice_fc(wave->frzcpi(),wave->frzcpi() + active_mopi);
         SharedMatrix moHblock = moH->get_block(slice_fc,slice_fc);
@@ -868,7 +868,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load in alpha frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
-        SharedMatrix moH(new Matrix(PSIF_MO_A_FZC, wave->nmopi(), wave->nmopi()));
+        SharedMatrix moH = std::make_shared<Matrix>(PSIF_MO_A_FZC, wave->nmopi(), wave->nmopi());
         moH->load(_default_psio_lib_, PSIF_OEI);
         Slice slice_fc(wave->frzcpi(),wave->frzcpi() + active_mopi);
         SharedMatrix moHblock = moH->get_block(slice_fc,slice_fc);
@@ -878,7 +878,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load in beta frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
-        SharedMatrix moHb(new Matrix(PSIF_MO_B_FZC, wave->nmopi(), wave->nmopi()));
+        SharedMatrix moHb = std::make_shared<Matrix>(PSIF_MO_B_FZC, wave->nmopi(), wave->nmopi());
         moHb->load(_default_psio_lib_, PSIF_OEI);
         SharedMatrix moHblockb = moHb->get_block(slice_fc,slice_fc);
         write_oei_to_disk(printer, moHblockb);
@@ -960,7 +960,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         for (int n = 0; n < active_socc[h]; ++n)
             symm ^= h;
     symm += 1; // stupid 1 based fortran
-    printer = std::shared_ptr<PsiOutStream>(new PsiOutStream("fort.56", std::ostream::trunc));
+    printer = std::make_shared<PsiOutStream>("fort.56", std::ostream::trunc);
     //FILE* fort56 = fopen("fort.56", "w");
     printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d%6d%6d      0      0%6d     0     0    0.00    0%6lu\n",
                     exlevel,                                         // # 1

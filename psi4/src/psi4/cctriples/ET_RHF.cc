@@ -144,7 +144,7 @@ double ET_RHF(void)
     global_dpd_->buf4_mat_irrep_init(&Dints, h);
     global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
-  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
+  std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
   //ffile(&ijkfile,"ijk.dat", 0);
 
   /* each thread gets its own F buffer to assign memory and read blocks

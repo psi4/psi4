@@ -208,7 +208,7 @@ void
 SymmetryOperation::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    printer->Printf( "        1          2          3\n");
     printer->Printf( "  1  ");
     printer->Printf( "%10.7f ", d[0][0]);

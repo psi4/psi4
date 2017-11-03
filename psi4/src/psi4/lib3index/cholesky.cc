@@ -26,11 +26,11 @@
  * @END LICENSE
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libqt/qt.h"
 #include <math.h>
 #include <limits>
@@ -45,20 +45,14 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
 #ifdef _OPENMP
-    #include <omp.h>
+#include <omp.h>
 #endif
 
 namespace psi {
 
-Cholesky::Cholesky(double delta, size_t memory)
-    : delta_(delta), memory_(memory), Q_(0)
-{
-}
-Cholesky::~Cholesky()
-{
-}
-void Cholesky::choleskify()
-{
+Cholesky::Cholesky(double delta, size_t memory) : delta_(delta), memory_(memory), Q_(0) {}
+Cholesky::~Cholesky() {}
+void Cholesky::choleskify() {
     // Initial dimensions
     size_t n = N();
     Q_ = 0;
@@ -81,7 +75,6 @@ void Cholesky::choleskify()
 
     // Cholesky procedure
     while (Q_ < n) {
-
         // Select the pivot
         size_t pivot = 0;
         double Dmax = diag[0];
@@ -112,7 +105,7 @@ void Cholesky::choleskify()
 
         // [(m|Q) - L_m^P L_Q^P]
         for (size_t P = 0; P < Q_; P++) {
-            C_DAXPY(n,-L[P][pivots[Q_]],L[P],1,L[Q_],1);
+            C_DAXPY(n, -L[P][pivots[Q_]], L[P], 1, L[Q_], 1);
         }
 
         // 1/L_QQ [(m|Q) - L_m^P L_Q^P]
@@ -139,7 +132,7 @@ void Cholesky::choleskify()
         Q_++;
     }
     // Copy into a more permanant Matrix object
-    L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
+    L_ = std::make_shared<Matrix>("Partial Cholesky", Q_, n);
     double** Lp = L_->pointer();
 
     for (size_t Q = 0; Q < Q_; Q++) {
@@ -148,54 +141,34 @@ void Cholesky::choleskify()
     }
 }
 
-CholeskyMatrix::CholeskyMatrix(SharedMatrix A, double delta, size_t memory) :
-    A_(A), Cholesky(delta, memory)
-{
-    if (A_->nirrep() != 1)
-        throw PSIEXCEPTION("CholeskyMatrix only supports C1 matrices");
-    if (A_->rowspi()[0] != A_->colspi()[0])
-        throw PSIEXCEPTION("CholeskyMatrix only supports square matrices");
+CholeskyMatrix::CholeskyMatrix(SharedMatrix A, double delta, size_t memory) : A_(A), Cholesky(delta, memory) {
+    if (A_->nirrep() != 1) throw PSIEXCEPTION("CholeskyMatrix only supports C1 matrices");
+    if (A_->rowspi()[0] != A_->colspi()[0]) throw PSIEXCEPTION("CholeskyMatrix only supports square matrices");
 }
-CholeskyMatrix::~CholeskyMatrix()
-{
-}
-size_t CholeskyMatrix::N()
-{
-    return A_->rowspi()[0];
-}
-void CholeskyMatrix::compute_diagonal(double* target)
-{
+CholeskyMatrix::~CholeskyMatrix() {}
+size_t CholeskyMatrix::N() { return A_->rowspi()[0]; }
+void CholeskyMatrix::compute_diagonal(double* target) {
     size_t n = N();
     double** Ap = A_->pointer();
     for (size_t i = 0; i < n; i++) {
         target[i] = Ap[i][i];
     }
 }
-void CholeskyMatrix::compute_row(int row, double* target)
-{
-    ::memcpy(static_cast<void*>(target),static_cast<void*>(A_->pointer()[row]),N() * sizeof(double));
+void CholeskyMatrix::compute_row(int row, double* target) {
+    ::memcpy(static_cast<void*>(target), static_cast<void*>(A_->pointer()[row]), N() * sizeof(double));
 }
 
-CholeskyERI::CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz,
-    double delta, size_t memory) :
-    integral_(integral), schwarz_(schwarz), Cholesky(delta, memory)
-{
+CholeskyERI::CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, size_t memory)
+    : integral_(integral), schwarz_(schwarz), Cholesky(delta, memory) {
     basisset_ = integral_->basis();
 }
-CholeskyERI::~CholeskyERI()
-{
-}
-size_t CholeskyERI::N()
-{
-    return basisset_->nbf() * basisset_->nbf();
-}
-void CholeskyERI::compute_diagonal(double* target)
-{
+CholeskyERI::~CholeskyERI() {}
+size_t CholeskyERI::N() { return basisset_->nbf() * basisset_->nbf(); }
+void CholeskyERI::compute_diagonal(double* target) {
     const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = 0; N < basisset_->nshell(); N++) {
-
-            integral_->compute_shell(M,N,M,N);
+            integral_->compute_shell(M, N, M, N);
 
             size_t nM = basisset_->shell(M).nfunction();
             size_t nN = basisset_->shell(N).nfunction();
@@ -211,8 +184,7 @@ void CholeskyERI::compute_diagonal(double* target)
         }
     }
 }
-void CholeskyERI::compute_row(int row, double* target)
-{
+void CholeskyERI::compute_row(int row, double* target) {
     size_t r = row / basisset_->nbf();
     size_t s = row % basisset_->nbf();
     size_t R = basisset_->function_to_shell(r);
@@ -230,8 +202,7 @@ void CholeskyERI::compute_row(int row, double* target)
     const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = M; N < basisset_->nshell(); N++) {
-
-            integral_->compute_shell(M,N,R,S);
+            integral_->compute_shell(M, N, R, S);
 
             size_t nM = basisset_->shell(M).nfunction();
             size_t nN = basisset_->shell(N).nfunction();
@@ -241,32 +212,20 @@ void CholeskyERI::compute_row(int row, double* target)
             for (size_t om = 0; om < nM; om++) {
                 for (size_t on = 0; on < nN; on++) {
                     target[(om + mstart) * basisset_->nbf() + (on + nstart)] =
-                    target[(on + nstart) * basisset_->nbf() + (om + mstart)] =
-                        buffer[om * nN * nR * nS + on * nR * nS + oR * nS + os];
+                        target[(on + nstart) * basisset_->nbf() + (om + mstart)] =
+                            buffer[om * nN * nR * nS + on * nR * nS + oR * nS + os];
                 }
             }
         }
     }
 }
 
-CholeskyMP2::CholeskyMP2(SharedMatrix Qia,
-    std::shared_ptr<Vector> eps_aocc,
-    std::shared_ptr<Vector> eps_avir,
-    bool symmetric,
-    double delta, size_t memory) :
-    Qia_(Qia), eps_aocc_(eps_aocc), eps_avir_(eps_avir),
-    symmetric_(symmetric), Cholesky(delta, memory)
-{
-}
-CholeskyMP2::~CholeskyMP2()
-{
-}
-size_t CholeskyMP2::N()
-{
-    return Qia_->colspi()[0];
-}
-void CholeskyMP2::compute_diagonal(double* target)
-{
+CholeskyMP2::CholeskyMP2(SharedMatrix Qia, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir,
+                         bool symmetric, double delta, size_t memory)
+    : Qia_(Qia), eps_aocc_(eps_aocc), eps_avir_(eps_avir), symmetric_(symmetric), Cholesky(delta, memory) {}
+CholeskyMP2::~CholeskyMP2() {}
+size_t CholeskyMP2::N() { return Qia_->colspi()[0]; }
+void CholeskyMP2::compute_diagonal(double* target) {
     size_t naocc = eps_aocc_->dimpi()[0];
     size_t navir = eps_avir_->dimpi()[0];
     size_t nQ = Qia_->rowspi()[0];
@@ -277,13 +236,12 @@ void CholeskyMP2::compute_diagonal(double* target)
 
     for (size_t i = 0, ia = 0; i < naocc; i++) {
         for (size_t a = 0; a < navir; a++, ia++) {
-            target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (size_t) navir, &Qp[0][ia], naocc * (size_t) navir) /
-                (symmetric_ ? sqrt(2.0 * (evp[a] - eop[i])) : (2.0 * (evp[a] - eop[i])));
+            target[ia] = C_DDOT(nQ, &Qp[0][ia], naocc * (size_t)navir, &Qp[0][ia], naocc * (size_t)navir) /
+                         (symmetric_ ? sqrt(2.0 * (evp[a] - eop[i])) : (2.0 * (evp[a] - eop[i])));
         }
     }
 }
-void CholeskyMP2::compute_row(int row, double* target)
-{
+void CholeskyMP2::compute_row(int row, double* target) {
     size_t naocc = eps_aocc_->dimpi()[0];
     size_t navir = eps_avir_->dimpi()[0];
     size_t nQ = Qia_->rowspi()[0];
@@ -297,29 +255,18 @@ void CholeskyMP2::compute_row(int row, double* target)
 
     for (size_t i = 0, ia = 0; i < naocc; i++) {
         for (size_t a = 0; a < navir; a++, ia++) {
-            target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (size_t) navir, &Qp[0][row], naocc * (size_t) navir) /
-                (symmetric_ ? sqrt(evp[a] + evp[b] - eop[i] - eop[j]) : (evp[a] + evp[b] - eop[i] - eop[j]));
+            target[ia] = C_DDOT(nQ, &Qp[0][ia], naocc * (size_t)navir, &Qp[0][row], naocc * (size_t)navir) /
+                         (symmetric_ ? sqrt(evp[a] + evp[b] - eop[i] - eop[j]) : (evp[a] + evp[b] - eop[i] - eop[j]));
         }
     }
 }
 
-CholeskyDelta::CholeskyDelta(
-    std::shared_ptr<Vector> eps_aocc,
-    std::shared_ptr<Vector> eps_avir,
-    double delta, size_t memory) :
-    eps_aocc_(eps_aocc), eps_avir_(eps_avir),
-    Cholesky(delta, memory)
-{
-}
-CholeskyDelta::~CholeskyDelta()
-{
-}
-size_t CholeskyDelta::N()
-{
-    return eps_aocc_->dimpi()[0] * eps_avir_->dimpi()[0];
-}
-void CholeskyDelta::compute_diagonal(double* target)
-{
+CholeskyDelta::CholeskyDelta(std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir, double delta,
+                             size_t memory)
+    : eps_aocc_(eps_aocc), eps_avir_(eps_avir), Cholesky(delta, memory) {}
+CholeskyDelta::~CholeskyDelta() {}
+size_t CholeskyDelta::N() { return eps_aocc_->dimpi()[0] * eps_avir_->dimpi()[0]; }
+void CholeskyDelta::compute_diagonal(double* target) {
     size_t naocc = eps_aocc_->dimpi()[0];
     size_t navir = eps_avir_->dimpi()[0];
 
@@ -332,8 +279,7 @@ void CholeskyDelta::compute_diagonal(double* target)
         }
     }
 }
-void CholeskyDelta::compute_row(int row, double* target)
-{
+void CholeskyDelta::compute_row(int row, double* target) {
     size_t naocc = eps_aocc_->dimpi()[0];
     size_t navir = eps_avir_->dimpi()[0];
 
@@ -350,21 +296,10 @@ void CholeskyDelta::compute_row(int row, double* target)
     }
 }
 
-CholeskyLocal::CholeskyLocal(
-    SharedMatrix C,
-    double delta, size_t memory) :
-    C_(C), Cholesky(delta, memory)
-{
-}
-CholeskyLocal::~CholeskyLocal()
-{
-}
-size_t CholeskyLocal::N()
-{
-    return C_->rowspi()[0];
-}
-void CholeskyLocal::compute_diagonal(double* target)
-{
+CholeskyLocal::CholeskyLocal(SharedMatrix C, double delta, size_t memory) : C_(C), Cholesky(delta, memory) {}
+CholeskyLocal::~CholeskyLocal() {}
+size_t CholeskyLocal::N() { return C_->rowspi()[0]; }
+void CholeskyLocal::compute_diagonal(double* target) {
     size_t n = C_->rowspi()[0];
     size_t nocc = C_->colspi()[0];
 
@@ -374,8 +309,7 @@ void CholeskyLocal::compute_diagonal(double* target)
         target[m] = C_DDOT(nocc, Cp[m], 1, Cp[m], 1);
     }
 }
-void CholeskyLocal::compute_row(int row, double* target)
-{
+void CholeskyLocal::compute_row(int row, double* target) {
     size_t n = C_->rowspi()[0];
     size_t nocc = C_->colspi()[0];
 
@@ -386,4 +320,4 @@ void CholeskyLocal::compute_row(int row, double* target)
     }
 }
 
-} // Namespace psi
+}  // Namespace psi

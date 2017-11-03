@@ -1008,7 +1008,7 @@ void timer_done(void) {
     gethostname(host, 40);
 
     /* Dump the timing data to timer.dat and free the timers */
-    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat", std::ostream::app));
+    std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("timer.dat", std::ostream::app);
     printer->Printf("\n");
     printer->Printf("Host: %s\n", host);
     free(host);

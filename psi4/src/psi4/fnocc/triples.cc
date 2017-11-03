@@ -142,7 +142,7 @@ PsiReturnType CoupledCluster::triples(){
       Z2[i]     = (double*)malloc(vvv*sizeof(double));
   }
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
   psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IJAK,"E2ijak",(char*)&E2ijak[0],vooo*sizeof(double));
@@ -192,7 +192,7 @@ PsiReturnType CoupledCluster::triples(){
           thread = omp_get_thread_num();
       #endif
 
-      std::shared_ptr<PSIO> mypsio(new PSIO());
+      std::shared_ptr<PSIO> mypsio = std::make_shared<PSIO>();
       mypsio->open(PSIF_DCC_ABCI,PSIO_OPEN_OLD);
 
       psio_address addr = psio_get_address(PSIO_ZERO,k*vvv*sizeof(double));

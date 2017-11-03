@@ -489,9 +489,9 @@ SharedMatrix Deriv::compute()
     v_int->compute_deriv1(h_deriv, cdsalcs_);
 
     int ncd = cdsalcs_.ncd();
-    SharedVector TPDMcont_vector(new Vector(ncd));
-    SharedVector Xcont_vector(new Vector(ncd));
-    SharedVector Dcont_vector(new Vector(ncd));
+    SharedVector TPDMcont_vector = std::make_shared<Vector>(ncd);
+    SharedVector Xcont_vector = std::make_shared<Vector>(ncd);
+    SharedVector Dcont_vector = std::make_shared<Vector>(ncd);
     SharedVector TPDM_ref_cont_vector;
     SharedVector X_ref_cont_vector;
     SharedVector D_ref_cont_vector;
@@ -546,9 +546,9 @@ SharedMatrix Deriv::compute()
            the correlated part.  The reference contributions must be harvested from the reference_wavefunction
            member.  If density fitting was used, we don't want to compute two electron contributions here*/
         if (wfn_->density_fitted()) {
-            X_ref_cont_vector    = SharedVector(new Vector(ncd));
-            D_ref_cont_vector    = SharedVector(new Vector(ncd));
-            TPDM_ref_cont_vector = SharedVector(new Vector(ncd));
+            X_ref_cont_vector    = std::make_shared<Vector>(ncd);
+            D_ref_cont_vector    = std::make_shared<Vector>(ncd);
+            TPDM_ref_cont_vector = std::make_shared<Vector>(ncd);
             X_ref_cont           = X_ref_cont_vector->pointer();
             D_ref_cont           = D_ref_cont_vector->pointer();
             TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();
@@ -714,7 +714,7 @@ SharedMatrix Deriv::compute()
     }
 
     // Obtain nuclear repulsion contribution from the wavefunction
-    SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1()));
+    SharedMatrix enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1());
 
     // Print things out, after making sure that each component is properly symmetrized
     enuc->symmetrize_gradient(molecule_);
@@ -741,7 +741,7 @@ SharedMatrix Deriv::compute()
     }
 
     // Add everything up into a temp.
-    SharedMatrix corr(new Matrix("Correlation contribution to gradient", molecule_->natom(), 3));
+    SharedMatrix corr = std::make_shared<Matrix>("Correlation contribution to gradient", molecule_->natom(), 3);
     gradient_->add(enuc);
     corr->add(opdm_contr_);
     corr->add(x_contr_);

@@ -40,7 +40,7 @@ void DFOCC::ccd_F_intr() {
     SharedTensor2d K, T, U, Tau;
 
     // read
-    Tau = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    Tau = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     Tau->read(psio_, PSIF_DFOCC_AMPS);
 
     // OO block

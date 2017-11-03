@@ -64,7 +64,7 @@ void DFOCC::df() {
     std::shared_ptr<DFTensor> DF(
         new DFTensor(reference_wavefunction_->basisset(), auxiliary, Ca_, noccA, nvirA, naoccA, navirA, options_));
     nQ = auxiliary->nbf();  // reads number of aux-basis functions
-    // bQnn = std::shared_ptr<Matrix>(new Matrix("B_munu^Q", nQ, nso2_));
+    // bQnn = std::make_shared<Matrix>("B_munu^Q", nQ, nso2_);
     // bQnn = DF->Qso(); // reads b(Q|mu nu) where mu/nu is NOT packed
 
     // Read MO basis intermediates

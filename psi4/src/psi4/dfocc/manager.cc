@@ -55,11 +55,11 @@ void DFOCC::omp2_manager() {
     timer_off("DF CC Integrals");
 
     // memalloc for density intermediates
-    Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
-    g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-    g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-    g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-    g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+    Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
+    g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+    g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+    g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+    g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
 
     if (reference_ == "RESTRICTED") {
         // mem for amplitudes
@@ -361,13 +361,13 @@ void DFOCC::mp2_manager() {
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
 
         // memalloc for density intermediates
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
         if (reference == "ROHF") {
-            g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+            g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
         }
     }
     outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
@@ -562,18 +562,18 @@ void DFOCC::ccsd_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // Memory allocation
-    T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+    T1c = std::make_shared<Tensor1d>("DF_BASIS_CC T1_Q", nQ);
 
     if (reference_ == "RESTRICTED") {
-        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
-        t1newA = SharedTensor2d(new Tensor2d("New T1 <I|A>", naoccA, navirA));
-        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
-        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
-        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+        t1A = std::make_shared<Tensor2d>("T1 <I|A>", naoccA, navirA);
+        t1newA = std::make_shared<Tensor2d>("New T1 <I|A>", naoccA, navirA);
+        FiaA = std::make_shared<Tensor2d>("Fint <I|A>", naoccA, navirA);
+        FtijA = std::make_shared<Tensor2d>("Ftilde <I|J>", naoccA, naoccA);
+        FtabA = std::make_shared<Tensor2d>("Ftilde <A|B>", navirA, navirA);
 
         // avaliable mem
         memory = Process::environment.get_memory();
@@ -687,9 +687,9 @@ void DFOCC::ccsd_manager() {
 
         // Mem alloc for DF ints
         if (df_ints_incore) {
-            bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
-            bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-            bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+            bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
+            bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+            bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
             bQijA->read(psio_, PSIF_DFOCC_INTS);
             bQiaA->read(psio_, PSIF_DFOCC_INTS);
             bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -697,20 +697,20 @@ void DFOCC::ccsd_manager() {
 
         //  Malloc
         if (t2_incore) {
-            t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+            t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         }
 
     }  // end if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
-        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1 <i|a>", naoccB, navirB));
-        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
-        FiaB = SharedTensor2d(new Tensor2d("Fint <i|a>", naoccB, navirB));
-        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
-        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
-        FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
-        FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1 <i|a>", naoccB, navirB);
+        FiaA = std::make_shared<Tensor2d>("Fint <I|A>", naoccA, navirA);
+        FiaB = std::make_shared<Tensor2d>("Fint <i|a>", naoccB, navirB);
+        FtijA = std::make_shared<Tensor2d>("Ftilde <I|J>", naoccA, naoccA);
+        FtabA = std::make_shared<Tensor2d>("Ftilde <A|B>", navirA, navirA);
+        FtijB = std::make_shared<Tensor2d>("Ftilde <i|j>", naoccB, naoccB);
+        FtabB = std::make_shared<Tensor2d>("Ftilde <a|b>", navirB, navirB);
 
         // memory requirements
         cost_ampAA = 0.0;
@@ -734,11 +734,11 @@ void DFOCC::ccsd_manager() {
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -823,10 +823,10 @@ void DFOCC::ccsd_manager() {
     if (dertype == "FIRST" || cc_lambda_ == "TRUE" || ekt_ip_ == "TRUE") {
         // memalloc
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
-            GtijA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <I|J>", naoccA, naoccA));
-            GtabA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <A|B>", navirA, navirA));
-            L1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC L1_Q", nQ));
-            gQt = SharedTensor1d(new Tensor1d("CCSD PDM G_Qt", nQ));
+            GtijA = std::make_shared<Tensor2d>("Gtilde Intermediate <I|J>", naoccA, naoccA);
+            GtabA = std::make_shared<Tensor2d>("Gtilde Intermediate <A|B>", navirA, navirA);
+            L1c = std::make_shared<Tensor1d>("DF_BASIS_CC L1_Q", nQ);
+            gQt = std::make_shared<Tensor1d>("CCSD PDM G_Qt", nQ);
         }
 
         timer_on("CCSDL");
@@ -848,8 +848,8 @@ void DFOCC::ccsd_manager() {
         pdm_title();
 
         // memalloc
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
         ccsd_opdm();
@@ -882,18 +882,18 @@ void DFOCC::ccsd_t_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // Memory allocation
-    T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+    T1c = std::make_shared<Tensor1d>("DF_BASIS_CC T1_Q", nQ);
 
     if (reference_ == "RESTRICTED") {
-        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
-        t1newA = SharedTensor2d(new Tensor2d("New T1 <I|A>", naoccA, navirA));
-        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
-        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
-        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+        t1A = std::make_shared<Tensor2d>("T1 <I|A>", naoccA, navirA);
+        t1newA = std::make_shared<Tensor2d>("New T1 <I|A>", naoccA, navirA);
+        FiaA = std::make_shared<Tensor2d>("Fint <I|A>", naoccA, navirA);
+        FtijA = std::make_shared<Tensor2d>("Ftilde <I|J>", naoccA, naoccA);
+        FtabA = std::make_shared<Tensor2d>("Ftilde <A|B>", navirA, navirA);
 
         // avaliable mem
         memory = Process::environment.get_memory();
@@ -1037,9 +1037,9 @@ void DFOCC::ccsd_t_manager() {
 
         // Mem alloc for DF ints
         if (df_ints_incore) {
-            bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
-            bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-            bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+            bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
+            bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+            bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
             bQijA->read(psio_, PSIF_DFOCC_INTS);
             bQiaA->read(psio_, PSIF_DFOCC_INTS);
             bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -1047,20 +1047,20 @@ void DFOCC::ccsd_t_manager() {
 
         //  Malloc
         if (t2_incore) {
-            t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+            t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         }
 
     }  // end if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
-        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1 <i|a>", naoccB, navirB));
-        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
-        FiaB = SharedTensor2d(new Tensor2d("Fint <i|a>", naoccB, navirB));
-        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
-        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
-        FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
-        FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1 <i|a>", naoccB, navirB);
+        FiaA = std::make_shared<Tensor2d>("Fint <I|A>", naoccA, navirA);
+        FiaB = std::make_shared<Tensor2d>("Fint <i|a>", naoccB, navirB);
+        FtijA = std::make_shared<Tensor2d>("Ftilde <I|J>", naoccA, naoccA);
+        FtabA = std::make_shared<Tensor2d>("Ftilde <A|B>", navirA, navirA);
+        FtijB = std::make_shared<Tensor2d>("Ftilde <i|j>", naoccB, naoccB);
+        FtabB = std::make_shared<Tensor2d>("Ftilde <a|b>", navirB, navirB);
 
         // memory requirements
         cost_ampAA = 0.0;
@@ -1084,11 +1084,11 @@ void DFOCC::ccsd_t_manager() {
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -1207,10 +1207,10 @@ void DFOCC::ccsd_t_manager() {
     if (dertype == "FIRST" || cc_lambda_ == "TRUE" || ekt_ip_ == "TRUE") {
         // memalloc
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
-            GtijA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <I|J>", naoccA, naoccA));
-            GtabA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <A|B>", navirA, navirA));
-            L1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC L1_Q", nQ));
-            gQt = SharedTensor1d(new Tensor1d("CCSD PDM G_Qt", nQ));
+            GtijA = std::make_shared<Tensor2d>("Gtilde Intermediate <I|J>", naoccA, naoccA);
+            GtabA = std::make_shared<Tensor2d>("Gtilde Intermediate <A|B>", navirA, navirA);
+            L1c = std::make_shared<Tensor1d>("DF_BASIS_CC L1_Q", nQ);
+            gQt = std::make_shared<Tensor1d>("CCSD PDM G_Qt", nQ);
         }
 
         timer_on("CCSDL");
@@ -1228,8 +1228,8 @@ void DFOCC::ccsd_t_manager() {
         pdm_title();
 
         // memalloc
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
         // ccsd_opdm();
@@ -1263,18 +1263,18 @@ void DFOCC::ccsdl_t_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // Memory allocation
-    T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+    T1c = std::make_shared<Tensor1d>("DF_BASIS_CC T1_Q", nQ);
 
     if (reference_ == "RESTRICTED") {
-        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
-        t1newA = SharedTensor2d(new Tensor2d("New T1 <I|A>", naoccA, navirA));
-        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
-        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
-        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+        t1A = std::make_shared<Tensor2d>("T1 <I|A>", naoccA, navirA);
+        t1newA = std::make_shared<Tensor2d>("New T1 <I|A>", naoccA, navirA);
+        FiaA = std::make_shared<Tensor2d>("Fint <I|A>", naoccA, navirA);
+        FtijA = std::make_shared<Tensor2d>("Ftilde <I|J>", naoccA, naoccA);
+        FtabA = std::make_shared<Tensor2d>("Ftilde <A|B>", navirA, navirA);
 
         // avaliable mem
         memory = Process::environment.get_memory();
@@ -1435,9 +1435,9 @@ void DFOCC::ccsdl_t_manager() {
 
         // Mem alloc for DF ints
         if (df_ints_incore) {
-            bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
-            bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-            bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+            bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
+            bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+            bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
             bQijA->read(psio_, PSIF_DFOCC_INTS);
             bQiaA->read(psio_, PSIF_DFOCC_INTS);
             bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -1445,20 +1445,20 @@ void DFOCC::ccsdl_t_manager() {
 
         //  Malloc
         if (t2_incore) {
-            t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+            t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         }
 
     }  // end if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
-        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1 <i|a>", naoccB, navirB));
-        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
-        FiaB = SharedTensor2d(new Tensor2d("Fint <i|a>", naoccB, navirB));
-        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
-        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
-        FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
-        FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1 <i|a>", naoccB, navirB);
+        FiaA = std::make_shared<Tensor2d>("Fint <I|A>", naoccA, navirA);
+        FiaB = std::make_shared<Tensor2d>("Fint <i|a>", naoccB, navirB);
+        FtijA = std::make_shared<Tensor2d>("Ftilde <I|J>", naoccA, naoccA);
+        FtabA = std::make_shared<Tensor2d>("Ftilde <A|B>", navirA, navirA);
+        FtijB = std::make_shared<Tensor2d>("Ftilde <i|j>", naoccB, naoccB);
+        FtabB = std::make_shared<Tensor2d>("Ftilde <a|b>", navirB, navirB);
 
         // memory requirements
         cost_ampAA = 0.0;
@@ -1482,11 +1482,11 @@ void DFOCC::ccsdl_t_manager() {
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -1600,8 +1600,8 @@ void DFOCC::ccsdl_t_manager() {
         pdm_title();
 
         // memalloc
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
         ccsd_opdm();
@@ -1635,11 +1635,11 @@ void DFOCC::ccd_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // Memory allocation
-    // T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+    // T1c = std::make_shared<Tensor1d>("DF_BASIS_CC T1_Q", nQ);
 
     if (reference_ == "RESTRICTED") {
         // avaliable mem
@@ -1739,9 +1739,9 @@ void DFOCC::ccd_manager() {
 
         // Mem alloc for DF ints
         if (df_ints_incore) {
-            bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
-            bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-            bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+            bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
+            bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+            bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
             bQijA->read(psio_, PSIF_DFOCC_INTS);
             bQiaA->read(psio_, PSIF_DFOCC_INTS);
             bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -1749,7 +1749,7 @@ void DFOCC::ccd_manager() {
 
         //  Malloc
         if (t2_incore) {
-            t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+            t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         }
 
     }  // end if (reference_ == "RESTRICTED")
@@ -1777,11 +1777,11 @@ void DFOCC::ccd_manager() {
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -1866,7 +1866,7 @@ void DFOCC::ccd_manager() {
     if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
         // memalloc
         if (dertype == "FIRST") {
-            gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+            gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
         }
 
         timer_on("CCDL");
@@ -1888,8 +1888,8 @@ void DFOCC::ccd_manager() {
         pdm_title();
 
         // memalloc
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
         ccd_opdm();
@@ -1922,12 +1922,12 @@ void DFOCC::omp3_manager() {
     timer_off("DF CC Integrals");
 
     // memalloc for density intermediates
-    Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
-    g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-    g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-    g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-    g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-    g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+    Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
+    g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+    g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+    g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+    g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+    g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
 
     // avaliable mem
     memory = Process::environment.get_memory();
@@ -2013,8 +2013,8 @@ void DFOCC::omp3_manager() {
 
     // ROHF REF
     if (reference == "ROHF") {
-        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
         t1_1st_sc();
     }
     mp3_t2_1st_sc();
@@ -2085,15 +2085,15 @@ void DFOCC::omp3_manager() {
     Emp3L_old = Emp3;
 
     // Malloc for PDMs
-    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+    gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
     if (reference_ == "RESTRICTED") {
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
     } else if (reference_ == "UNRESTRICTED") {
-        G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-        G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-        G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+        G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+        G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+        G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
     }
 
     mp3_pdm_3index_intr();
@@ -2225,7 +2225,7 @@ void DFOCC::mp3_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // avaliable mem
@@ -2307,9 +2307,9 @@ void DFOCC::mp3_manager() {
     // Mem alloc for DF ints
     /*
     if (df_ints_incore) {
-        bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
-        bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-        bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+        bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
+        bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+        bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
         bQijA->read(psio_, PSIF_DFOCC_INTS);
         bQiaA->read(psio_, PSIF_DFOCC_INTS);
         bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -2318,17 +2318,17 @@ void DFOCC::mp3_manager() {
 
     /*
     if (t2_incore) {
-        t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     }
     */
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -2336,8 +2336,8 @@ void DFOCC::mp3_manager() {
 
     // Compute MP2 energy
     if (reference == "ROHF") {
-        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
         t1_1st_sc();
     }
     mp3_t2_1st_sc();
@@ -2414,15 +2414,15 @@ void DFOCC::mp3_manager() {
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
         // memalloc
-        gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+        gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
         if (reference_ == "RESTRICTED") {
-            G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
         } else if (reference_ == "UNRESTRICTED") {
-            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+            G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+            G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+            G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
         }
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
@@ -2457,12 +2457,12 @@ void DFOCC::omp2_5_manager() {
     timer_off("DF CC Integrals");
 
     // memalloc for density intermediates
-    Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
-    g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-    g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-    g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-    g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-    g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+    Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
+    g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+    g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+    g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+    g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+    g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
 
     // avaliable mem
     memory = Process::environment.get_memory();
@@ -2548,8 +2548,8 @@ void DFOCC::omp2_5_manager() {
 
     // ROHF REF
     if (reference == "ROHF") {
-        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
         t1_1st_sc();
     }
     mp3_t2_1st_sc();
@@ -2619,15 +2619,15 @@ void DFOCC::omp2_5_manager() {
     Emp3L_old = Emp3;
 
     // Malloc for PDMs
-    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+    gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
     if (reference_ == "RESTRICTED") {
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
     } else if (reference_ == "UNRESTRICTED") {
-        G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-        G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-        G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+        G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+        G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+        G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
     }
 
     mp3_pdm_3index_intr();
@@ -2758,7 +2758,7 @@ void DFOCC::mp2_5_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // avaliable mem
@@ -2839,11 +2839,11 @@ void DFOCC::mp2_5_manager() {
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -2851,8 +2851,8 @@ void DFOCC::mp2_5_manager() {
 
     // Compute MP2 energy
     if (reference == "ROHF") {
-        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
         t1_1st_sc();
     }
     mp3_t2_1st_sc();
@@ -2928,15 +2928,15 @@ void DFOCC::mp2_5_manager() {
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
         // memalloc
-        gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+        gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
         if (reference_ == "RESTRICTED") {
-            G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
         } else if (reference_ == "UNRESTRICTED") {
-            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+            G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+            G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+            G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
         }
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
@@ -2971,12 +2971,12 @@ void DFOCC::olccd_manager() {
     timer_off("DF CC Integrals");
 
     // memalloc for density intermediates
-    Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
-    g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-    g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-    g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-    g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-    g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+    Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
+    g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+    g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+    g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+    g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+    g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
 
     // avaliable mem
     memory = Process::environment.get_memory();
@@ -3062,8 +3062,8 @@ void DFOCC::olccd_manager() {
 
     // ROHF REF
     if (reference == "ROHF") {
-        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
         t1_1st_sc();
     }
     lccd_t2_1st_sc();
@@ -3108,15 +3108,15 @@ void DFOCC::olccd_manager() {
     Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
 
     // Malloc for PDMs
-    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+    gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
     if (reference_ == "RESTRICTED") {
-        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
     } else if (reference_ == "UNRESTRICTED") {
-        G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-        G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-        G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-        G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+        G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+        G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+        G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+        G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
     }
 
     lccd_pdm_3index_intr();
@@ -3244,7 +3244,7 @@ void DFOCC::lccd_manager() {
         trans_ref();
         timer_off("DF REF Integrals");
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     }
 
     // avaliable mem
@@ -3325,11 +3325,11 @@ void DFOCC::lccd_manager() {
 
     // memalloc for density intermediates
     if (qchf_ == "TRUE" || dertype == "FIRST") {
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+        g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+        g1Qp = std::make_shared<Tensor1d>("DF_BASIS_SCF G1p_Q", nQ_ref);
+        g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+        g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     }
 
     // QCHF
@@ -3337,8 +3337,8 @@ void DFOCC::lccd_manager() {
 
     // Compute MP2 energy
     if (reference == "ROHF") {
-        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+        t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
         t1_1st_sc();
     }
     lccd_t2_1st_sc();
@@ -3412,15 +3412,15 @@ void DFOCC::lccd_manager() {
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
         // memalloc
-        gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+        gQt = std::make_shared<Tensor1d>("CCD PDM G_Qt", nQ);
         if (reference_ == "RESTRICTED") {
-            G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_ov = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_vo = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
         } else if (reference_ == "UNRESTRICTED") {
-            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+            G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+            G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+            G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
         }
 
         outfile->Printf("\tComputing unrelaxed response density matrices...\n");
@@ -3455,12 +3455,12 @@ void DFOCC::qchf_manager() {
     outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
 
     // memalloc for density intermediates
-    Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+    Jc = std::make_shared<Tensor1d>("DF_BASIS_SCF J_Q", nQ_ref);
     /*
-    g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-    g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-    g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-    g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+    g1Qc = std::make_shared<Tensor1d>("DF_BASIS_SCF G1_Q", nQ_ref);
+    g1Qt = std::make_shared<Tensor1d>("DF_BASIS_SCF G1t_Q", nQ_ref);
+    g1Q = std::make_shared<Tensor1d>("DF_BASIS_CC G1_Q", nQ);
+    g1Qt2 = std::make_shared<Tensor1d>("DF_BASIS_CC G1t_Q", nQ);
     */
     // outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 

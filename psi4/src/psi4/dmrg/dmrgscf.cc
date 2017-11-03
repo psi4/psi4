@@ -638,7 +638,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     SharedMatrix work1; work1 = SharedMatrix( new Matrix("work1", nirrep, orbspi, orbspi) );
     SharedMatrix work2; work2 = SharedMatrix( new Matrix("work2", nirrep, orbspi, orbspi) );
-    std::shared_ptr<JK> myJK; myJK = std::shared_ptr<JK>(new DiskJK(wfn->basisset(), options));
+    std::shared_ptr<JK> myJK; myJK = std::make_shared<DiskJK>(wfn->basisset(), options);
     myJK->set_cutoff(0.0);
     myJK->initialize();
     SharedMatrix orig_coeff; orig_coeff = SharedMatrix( new Matrix( wfn->Ca() ) );

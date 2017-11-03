@@ -63,7 +63,7 @@ MultipoleInt::~MultipoleInt()
 SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin)
 {
     int ntot = (order+1)*(order+2)*(order+3)/6 - 1;
-    std::shared_ptr<Vector> sret(new Vector(ntot));
+    std::shared_ptr<Vector> sret = std::make_shared<Vector>(ntot);
     double *ret = sret->pointer();
 
     int address = 0;

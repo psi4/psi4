@@ -42,8 +42,8 @@ void DFOCC::ccsd_opdm() {
     // if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
-    T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
-    U = SharedTensor2d(new Tensor2d("U Intermediate <I|J>", naoccA, naoccA));
+    T = std::make_shared<Tensor2d>("T Intermediate <I|J>", naoccA, naoccA);
+    U = std::make_shared<Tensor2d>("U Intermediate <I|J>", naoccA, naoccA);
     U->copy(GtijA);
     if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ij, 1.0);
     T->symmetrize(U);
@@ -53,8 +53,8 @@ void DFOCC::ccsd_opdm() {
     T.reset();
 
     //  G1_ab = -(G_ab + G_ba)
-    T = SharedTensor2d(new Tensor2d("T Intermediate <A|B>", navirA, navirA));
-    U = SharedTensor2d(new Tensor2d("U Intermediate <A|B>", navirA, navirA));
+    T = std::make_shared<Tensor2d>("T Intermediate <A|B>", navirA, navirA);
+    U = std::make_shared<Tensor2d>("U Intermediate <A|B>", navirA, navirA);
     U->copy(GtabA);
     if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ab, 1.0);
     T->symmetrize(U);
@@ -66,18 +66,18 @@ void DFOCC::ccsd_opdm() {
     // Jc->print();
 
     // G1_ia = t_i^a + l_i^a
-    T = SharedTensor2d(new Tensor2d("Corr OPDM <I|A>", naoccA, navirA));
+    T = std::make_shared<Tensor2d>("Corr OPDM <I|A>", naoccA, navirA);
     T->axpy(t1A, 1.0);
     T->axpy(l1A, 1.0);
 
     // G1_ia += \sum(me) U(ia,me) l_m^e
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
     T->gemv(false, U, l1A, 1.0, 1.0);
     U.reset();
 
     // G1_ia -= \sum(me) t_m^a t_i^e l_m^e
-    X = SharedTensor2d(new Tensor2d("X <I|M>", naoccA, naoccA));
+    X = std::make_shared<Tensor2d>("X <I|M>", naoccA, naoccA);
     X->gemm(false, true, t1A, l1A, 1.0, 0.0);
     T->gemm(false, false, X, t1A, -1.0, 1.0);
     X.reset();
@@ -136,8 +136,8 @@ void DFOCC::ccsd_diagonal_opdm() {
     // if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
-    T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
-    U = SharedTensor2d(new Tensor2d("U Intermediate <I|J>", naoccA, naoccA));
+    T = std::make_shared<Tensor2d>("T Intermediate <I|J>", naoccA, naoccA);
+    U = std::make_shared<Tensor2d>("U Intermediate <I|J>", naoccA, naoccA);
     U->copy(GtijA);
     T->symmetrize(U);
     U.reset();
@@ -147,8 +147,8 @@ void DFOCC::ccsd_diagonal_opdm() {
     T.reset();
 
     //  G1_ab = -(G_ab + G_ba)
-    T = SharedTensor2d(new Tensor2d("T Intermediate <A|B>", navirA, navirA));
-    U = SharedTensor2d(new Tensor2d("U Intermediate <A|B>", navirA, navirA));
+    T = std::make_shared<Tensor2d>("T Intermediate <A|B>", navirA, navirA);
+    U = std::make_shared<Tensor2d>("U Intermediate <A|B>", navirA, navirA);
     U->copy(GtabA);
     T->symmetrize(U);
     U.reset();

@@ -144,7 +144,7 @@ void DCFTSolver::run_simult_dcft_RHF()
     outfile->Printf( "\n\n\t*=================================================================================*\n"
                          "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
-    SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
+    SharedMatrix tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
 
@@ -185,14 +185,14 @@ void DCFTSolver::run_simult_dcft_RHF()
         if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
             build_DF_tensors_RHF();
 
-            SharedMatrix mo_h = SharedMatrix(new Matrix("MO-based H", nirrep_, nmopi_, nmopi_));
+            SharedMatrix mo_h = std::make_shared<Matrix>("MO-based H", nirrep_, nmopi_, nmopi_);
             mo_h->copy(so_h_);
             mo_h->transform(Ca_);
 
             moFa_->copy(mo_h);
             moFa_->add(mo_gbarGamma_A_);
             // Back-transform the Fock matrix to the SO basis: F_so = (Ct)^-1 F_mo C^-1 = (C^-1)t F_mo C^-1
-            SharedMatrix Ca_inverse = SharedMatrix(new Matrix("Ca_ inverse", nirrep_, nmopi_, nsopi_));
+            SharedMatrix Ca_inverse = std::make_shared<Matrix>("Ca_ inverse", nirrep_, nmopi_, nsopi_);
             Ca_inverse->copy(Ca_);
             Ca_inverse->general_invert();
             Fa_->copy(moFa_);

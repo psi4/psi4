@@ -176,7 +176,7 @@ void IntVector::set(int *vec) {
 void IntVector::print(std::string out, const char* extra) const {
     int h;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+          std::make_shared<PsiOutStream>(out));
     if (extra == NULL) {
         printer->Printf( "\n # %s #\n", name_.c_str());
     } else {

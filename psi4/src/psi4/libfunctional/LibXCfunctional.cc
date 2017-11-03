@@ -131,7 +131,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 LibXCFunctional::~LibXCFunctional() { xc_func_end(&xc_functional_); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
-    std::shared_ptr<LibXCFunctional> func(new LibXCFunctional(xc_func_name_, unpolarized_));
+    std::shared_ptr<LibXCFunctional> func = std::make_shared<LibXCFunctional>(xc_func_name_, unpolarized_);
 
     // User omega
     if (user_omega_) {

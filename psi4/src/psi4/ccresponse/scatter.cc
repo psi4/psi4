@@ -146,11 +146,11 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     // Replicate the part of the roa.pl code that does this here in C++
     // Dipole Polarizability Tensor Gradients
 
-    SharedMatrix denom_pol(new Matrix(3,3));
+    SharedMatrix denom_pol = std::make_shared<Matrix>(3,3);
     denom_pol->set(2.0 * step);
     std::vector <SharedMatrix> pol_grad;
     for(std::vector<SharedMatrix>::iterator it_pol=pol.begin(); it_pol != pol.end(); ++it_pol) {
-        SharedMatrix grad_mat(new Matrix(3,3));
+        SharedMatrix grad_mat = std::make_shared<Matrix>(3,3);
         grad_mat->add(*it_pol);
         ++it_pol;
         grad_mat->subtract(*it_pol);
@@ -158,7 +158,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
         pol_grad.push_back(grad_mat);
     }
 
-    SharedMatrix denom_rot(new Matrix(3,3));
+    SharedMatrix denom_rot = std::make_shared<Matrix>(3,3);
     denom_rot->set(2.0 * step);
 	/*
 	 *  PSI4's OR Tensor is opposite in sign compared to PSI3.
@@ -169,7 +169,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     //denom_rot->set(-2.0 * step);
     std::vector <SharedMatrix> rot_grad;
     for(std::vector<SharedMatrix>::iterator it_rot=rot.begin(); it_rot != rot.end(); ++it_rot) {
-        SharedMatrix grad_mat(new Matrix(3,3));
+        SharedMatrix grad_mat = std::make_shared<Matrix>(3,3);
         grad_mat->add(*it_rot);
         ++it_rot;
         grad_mat->subtract(*it_rot);
@@ -177,11 +177,11 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
         rot_grad.push_back(grad_mat);
     }
 
-    SharedMatrix denom_quad(new Matrix(9,3));
+    SharedMatrix denom_quad = std::make_shared<Matrix>(9,3);
     denom_quad->set(2.0 * step);
     std::vector <SharedMatrix> quad_grad;
     for(std::vector<SharedMatrix>::iterator it_quad=quad.begin(); it_quad != quad.end(); ++it_quad) {
-        SharedMatrix grad_mat(new Matrix(9,3));
+        SharedMatrix grad_mat = std::make_shared<Matrix>(9,3);
         grad_mat->add(*it_quad);
         ++it_quad;
         grad_mat->subtract(*it_quad);
@@ -191,7 +191,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
     // Write Out the Tensor Derivatives to File tender.dat //
     // Outfile derivs("tender.dat", "w");
-    std::shared_ptr<PsiOutStream> derivs(new PsiOutStream("tender.dat", std::ostream::trunc));
+    std::shared_ptr<PsiOutStream> derivs = std::make_shared<PsiOutStream>("tender.dat", std::ostream::trunc);
     derivs->Printf( "******************************************************\n");
     derivs->Printf( "**********                                  **********\n");
     derivs->Printf( "**********        TENSOR DERIVATIVES        **********\n");
@@ -208,15 +208,15 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     print_tensor_der(derivs, quad_grad);
 
     int natom = molecule->natom();
-    SharedMatrix geom(new Matrix(natom,3));
+    SharedMatrix geom = std::make_shared<Matrix>(natom,3);
 
     // Reading in the Hessian //
     FILE* hessian;
     FILE* dipole_moment;
     hessian=fopen("file15.dat","r");
-    SharedMatrix F(new Matrix(natom*3,natom*3));
+    SharedMatrix F = std::make_shared<Matrix>(natom*3,natom*3);
     double Fval;
-    SharedMatrix M(new Matrix(natom*3,natom*3));
+    SharedMatrix M = std::make_shared<Matrix>(natom*3,natom*3);
     for(i=0; i < (3*natom); i++)
     {
       for(j=0; j < (3*natom); j++)
@@ -228,7 +228,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
 	// Read in the Dipole-Moment Derivatives //
     dipole_moment=fopen("file17.dat","r");
-    SharedMatrix dipder(new Matrix(3, natom*3));
+    SharedMatrix dipder = std::make_shared<Matrix>(3, natom*3);
     for(i=0; i < 3; i++)
     {
       for(j=0; j < natom; j++)
@@ -239,7 +239,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     fclose(dipole_moment);
 
 	// Convert Vectors of SharedMatrices to Single SuperMatrix //
-    SharedMatrix polder(new Matrix(natom*3, 9));
+    SharedMatrix polder = std::make_shared<Matrix>(natom*3, 9);
     for (i=0;i<3*natom;i++)
     {
       for (j=0;j<9;j++)
@@ -248,7 +248,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
       }
     }
 
-    SharedMatrix optder(new Matrix(natom*3, 9));
+    SharedMatrix optder = std::make_shared<Matrix>(natom*3, 9);
     for (i=0;i<3*natom;i++)
     {
       for (j=0;j<9;j++)
@@ -257,7 +257,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
       }
     }
 
-    SharedMatrix quadder(new Matrix(natom*3, 27));
+    SharedMatrix quadder = std::make_shared<Matrix>(natom*3, 27);
     for (i=0;i<3*natom;i++)
     {
       for (j=0;j<27;j++)
@@ -276,7 +276,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     //F->print(stdout);
 
     geom->copy(molecule->geometry());
-    SharedMatrix geom_orig(new Matrix(natom,3));
+    SharedMatrix geom_orig = std::make_shared<Matrix>(natom,3);
     geom_orig->copy(geom);
 
 	// Translate Molecule to Center of Mass //
@@ -321,7 +321,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
     //Generating the inertia tensor
 
-    SharedMatrix I(new Matrix(3,3));
+    SharedMatrix I = std::make_shared<Matrix>(3,3);
     I->copy(molecule->inertia_tensor());
     //I = molecule->inertia_tensor();
 	if(print >= 2)  {
@@ -350,16 +350,16 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
     // Diagonalizing the inertia tensor //
 
-    SharedMatrix Ievecs(new Matrix("Inertia Eigenvectors",3,3));
-    SharedVector Ievals(new Vector("Inertia Eigenvalues",3));
+    SharedMatrix Ievecs = std::make_shared<Matrix>("Inertia Eigenvectors",3,3);
+    SharedVector Ievals = std::make_shared<Vector>("Inertia Eigenvalues",3);
 
     I->diagonalize(Ievecs,Ievals);
 	//rs(3,3,I->pointer(),Ievals->pointer(),1,Ievecs->pointer(),1e-12);
 
     // Constructing I-inverse matrix //
 
-    SharedMatrix Iinv(new Matrix("I-Inverse",3,3));
-    SharedMatrix Itmp(new Matrix(3,3));
+    SharedMatrix Iinv = std::make_shared<Matrix>("I-Inverse",3,3);
+    SharedMatrix Itmp = std::make_shared<Matrix>(3,3);
 
     Iinv->zero();
     for(i=0;i<3;i++)
@@ -378,7 +378,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     }
 
     // Generating the 6 pure rotation and translation vectors //
-    SharedMatrix P(new Matrix(natom*3,natom*3));
+    SharedMatrix P = std::make_shared<Matrix>(natom*3,natom*3);
     int icart,jcart,iatom,jatom;
     double imass,jmass,total_mass;
 
@@ -420,7 +420,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
     // Generate mass-weighted Hessian matrix [Eh/(bohr^2 amu)] //
     M->zero();
-    SharedMatrix T(new Matrix(natom*3,natom*3));
+    SharedMatrix T = std::make_shared<Matrix>(natom*3,natom*3);
     for(i=0; i < natom; i++)
     {
       for(j=0; j < 3; j++)
@@ -445,10 +445,10 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     }
 
     // Diagonalize projected mass-weighted Hessian //
-    SharedMatrix Fevecs(new Matrix(3*natom,3*natom));
-    SharedVector Fevals(new Vector("Feigenval",3*natom));
-    SharedMatrix Lx(new Matrix("Normal Transform Matrix",3*natom,3*natom));
-    SharedVector redmass(new Vector("ReducedMass",3*natom));
+    SharedMatrix Fevecs = std::make_shared<Matrix>(3*natom,3*natom);
+    SharedVector Fevals = std::make_shared<Vector>("Feigenval",3*natom);
+    SharedMatrix Lx = std::make_shared<Matrix>("Normal Transform Matrix",3*natom,3*natom);
+    SharedVector redmass = std::make_shared<Vector>("ReducedMass",3*natom);
     double norm=0.0;
 
     F->diagonalize(Fevecs,Fevals);
@@ -490,14 +490,14 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
    //redmass->print();
 
    // Transform dipole-moment derivatives to normal coordinates //
-   SharedMatrix dipder_q(new Matrix(3,3*natom));
+   SharedMatrix dipder_q = std::make_shared<Matrix>(3,3*natom);
    dipder_q->gemm(0,0,1.0,dipder,Lx,0.0);
 
    // Compute IR intensities in projected normal coordinates //
    double dipder_conv;
    dipder_conv = pc_dipmom_debye2si*pc_dipmom_debye2si/(1e-20 * pc_amu2kg * pc_au2amu);
    dipder_conv *= pc_na * pc_pi/(3.0 * pc_c * pc_c * 4.0 * pc_pi * pc_e0 * 1000.0);
-   SharedVector IRint(new Vector("IRint",3*natom));
+   SharedVector IRint = std::make_shared<Vector>("IRint",3*natom);
    for(i=0; i < natom*3; i++)
    {
      for(j=0; j < 3; j++)
@@ -508,7 +508,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
 
    // Transform polarizability derivatives to normal coordinates //
-   SharedMatrix polder_q(new Matrix(9,3*natom));
+   SharedMatrix polder_q = std::make_shared<Matrix>(9,3*natom);
    polder_q->gemm(1,0,1.0,polder,Lx,0.0);
    if(print >=2) {
      outfile->Printf("\n\tPolarizability Derivatives in Cart. Coord.\n");
@@ -520,9 +520,9 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
    std::vector<SharedMatrix> alpha_der(3*natom);
    for(i=0; i < alpha_der.size(); ++i)
    {
-     alpha_der[i] = SharedMatrix(new Matrix(3,3));
+     alpha_der[i] = std::make_shared<Matrix>(3,3);
    }
-   SharedMatrix alpha_der_mat(new Matrix(3,3));
+   SharedMatrix alpha_der_mat = std::make_shared<Matrix>(3,3);
 
    for(i=0; i < natom*3; i++)
    {
@@ -537,7 +537,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
    }
 
    // Transform optical rotation tensor derivatives to normal coordinates //
-   SharedMatrix optder_q(new Matrix(9,3*natom));
+   SharedMatrix optder_q = std::make_shared<Matrix>(9,3*natom);
    optder_q->gemm(1,0,1.0,optder,Lx,0.0);
    if(print >=2) {
      outfile->Printf("\n\tOptical Rotation Tensor Derivatives in Cart. Coord..\n");
@@ -549,9 +549,9 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
    std::vector<SharedMatrix> G_der(3*natom);
    for(i=0; i < G_der.size(); ++i)
    {
-     G_der[i] = SharedMatrix(new Matrix(3,3));
+     G_der[i] = std::make_shared<Matrix>(3,3);
    }
-   SharedMatrix G_der_mat(new Matrix(3,3));
+   SharedMatrix G_der_mat = std::make_shared<Matrix>(3,3);
 
    for(i=0; i < natom*3; i++)
    {
@@ -566,7 +566,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
 
    // Transform dipole/quarupole tensor derivatives to normal coordinates //
-   SharedMatrix quadder_q(new Matrix(27,3*natom));
+   SharedMatrix quadder_q = std::make_shared<Matrix>(27,3*natom);
    quadder_q->gemm(1,0,1.0,quadder,Lx,0.0);
    if(print >=2) {
      outfile->Printf("\n\tDipole/Quadrupole Tensor Derivatives in Cart. Coord..\n");
@@ -599,12 +599,12 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
    double km_convert = pc_hartree2J/(pc_bohr2m * pc_bohr2m * pc_amu2kg * pc_au2amu);
    double cm_convert = 1.0/(2.0 * pc_pi * pc_c * 100.0);
 
-   SharedVector alpha(new Vector("Alpha",3*natom));
-   SharedVector betaalpha2(new Vector("BetaAlpha2",3*natom));
-   SharedVector ramint_linear(new Vector("RamIntLinear",3*natom));
-   SharedVector depol_linear(new Vector("DepolLinear",3*natom));
-   SharedVector ramint_circular(new Vector("RamIntCircular",3*natom));
-   SharedVector depol_circular(new Vector("DepolCircular",3*natom));
+   SharedVector alpha = std::make_shared<Vector>("Alpha",3*natom);
+   SharedVector betaalpha2 = std::make_shared<Vector>("BetaAlpha2",3*natom);
+   SharedVector ramint_linear = std::make_shared<Vector>("RamIntLinear",3*natom);
+   SharedVector depol_linear = std::make_shared<Vector>("DepolLinear",3*natom);
+   SharedVector ramint_circular = std::make_shared<Vector>("RamIntCircular",3*natom);
+   SharedVector depol_circular = std::make_shared<Vector>("DepolCircular",3*natom);
 
    for(i=0; i < natom*3; i++)
    {
@@ -660,9 +660,9 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
   }
   outfile->Printf("----------------------------------------------------------------------------------------------\n");
 
-  SharedVector G(new Vector("G",3*natom));
-  SharedVector betaG2(new Vector("betaG2",3*natom));
-  SharedVector betaA2(new Vector("betaA2",3*natom));
+  SharedVector G = std::make_shared<Vector>("G",3*natom);
+  SharedVector betaG2 = std::make_shared<Vector>("betaG2",3*natom);
+  SharedVector betaA2 = std::make_shared<Vector>("betaA2",3*natom);
   G->zero();
   betaG2->zero();
   betaA2->zero();

@@ -53,8 +53,8 @@ void
 DCFTSolver::scf_guess_RHF()
 {
     dcft_timer_on("DCFTSolver::rhf_guess");
-    SharedMatrix T = SharedMatrix(new Matrix("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_));
-    SharedMatrix V = SharedMatrix(new Matrix("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_));
+    SharedMatrix T = std::make_shared<Matrix>("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_);
+    SharedMatrix V = std::make_shared<Matrix>("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_);
     double *ints = init_array(ntriso_);
 
     IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, ints, ntriso_, 0, 0, "outfile");
@@ -520,8 +520,8 @@ DCFTSolver::compute_scf_error_vector_RHF()
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
-    SharedMatrix tmp2(new Matrix("tmp2", nirrep_, nsopi_, nsopi_));
+    SharedMatrix tmp1 = std::make_shared<Matrix>("tmp1", nirrep_, nsopi_, nsopi_);
+    SharedMatrix tmp2 = std::make_shared<Matrix>("tmp2", nirrep_, nsopi_, nsopi_);
     // form FDS
     tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);

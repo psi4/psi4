@@ -53,7 +53,7 @@ SharedWavefunction dcft(SharedWavefunction ref_wfn, Options& options)
     outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf(    "\t***********************************************************************************\n");
 
-    SharedWavefunction dcft = SharedWavefunction(new DCFTSolver(ref_wfn, options));
+    SharedWavefunction dcft = std::make_shared<DCFTSolver>(ref_wfn, options);
     dcft->compute_energy();
 
     // Shut down the timers

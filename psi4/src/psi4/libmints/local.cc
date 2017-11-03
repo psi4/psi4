@@ -171,20 +171,20 @@ void BoysLocalizer::localize()
 
     // => Dipole Integrals <= //
 
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_));
+    std::shared_ptr<IntegralFactory> fact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<OneBodyAOInt> Dint(fact->ao_dipole());
     std::vector<std::shared_ptr<Matrix> > D;
     for (int xyz = 0; xyz < 3; xyz++) {
-        D.push_back(std::shared_ptr<Matrix>(new Matrix("D", nso, nso)));
+        D.push_back(std::make_shared<Matrix>("D", nso, nso));
     }
     Dint->compute(D);
     Dint.reset();
     fact.reset();
 
     std::vector<std::shared_ptr<Matrix> > Dmo;
-    std::shared_ptr<Matrix> T(new Matrix("T",nso,nmo));
+    std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T",nso,nmo);
     for (int xyz = 0; xyz < 3; xyz++) {
-        Dmo.push_back(std::shared_ptr<Matrix>(new Matrix("D", nmo, nmo)));
+        Dmo.push_back(std::make_shared<Matrix>("D", nmo, nmo));
         C_DGEMM('N','N',nso,nmo,nso,1.0,D[xyz]->pointer()[0],nso,C_->pointer()[0],nmo,0.0,T->pointer()[0],nmo);
         C_DGEMM('T','N',nmo,nmo,nso,1.0,C_->pointer()[0],nmo,T->pointer()[0],nmo,0.0,Dmo[xyz]->pointer()[0],nmo);
     }
@@ -193,8 +193,8 @@ void BoysLocalizer::localize()
 
     // => Targets <= //
 
-    L_ = std::shared_ptr<Matrix>(new Matrix("L",nso,nmo));
-    U_ = std::shared_ptr<Matrix>(new Matrix("U",nmo,nmo));
+    L_ = std::make_shared<Matrix>("L",nso,nmo);
+    U_ = std::make_shared<Matrix>("U",nmo,nmo);
     L_->copy(C_);
     U_->identity();
     converged_ = false;
@@ -380,9 +380,9 @@ void PMLocalizer::localize()
 
     // => Overlap Integrals <= //
 
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_));
+    std::shared_ptr<IntegralFactory> fact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
-    std::shared_ptr<Matrix> S(new Matrix("S",nso,nso));
+    std::shared_ptr<Matrix> S = std::make_shared<Matrix>("S",nso,nso);
     Sint->compute(S);
     Sint.reset();
     fact.reset();
@@ -390,8 +390,8 @@ void PMLocalizer::localize()
 
     // => Targets <= //
 
-    L_ = std::shared_ptr<Matrix>(new Matrix("L",nso,nmo));
-    U_ = std::shared_ptr<Matrix>(new Matrix("U",nmo,nmo));
+    L_ = std::make_shared<Matrix>("L",nso,nmo);
+    U_ = std::make_shared<Matrix>("U",nmo,nmo);
     L_->copy(C_);
     U_->identity();
     converged_ = false;
@@ -405,7 +405,7 @@ void PMLocalizer::localize()
 
     // => LS product (avoids GEMV) <= //
 
-    std::shared_ptr<Matrix> LS(new Matrix("LS",nso,nmo));
+    std::shared_ptr<Matrix> LS = std::make_shared<Matrix>("LS",nso,nmo);
     double** LSp = LS->pointer();
     C_DGEMM('N','N',nso,nmo,nso,1.0,Sp[0],nso,Lp[0],nmo,0.0,LSp[0],nmo);
 

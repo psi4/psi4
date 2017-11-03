@@ -87,8 +87,8 @@ void DFTensor::common_init()
     nso_ = C_->rowspi()[0];
     nmo_ = C_->colspi()[0];
 
-    Caocc_ = SharedMatrix(new Matrix("C active occupied", nso_, naocc_));
-    Cavir_ = SharedMatrix(new Matrix("C active virtual", nso_, navir_));
+    Caocc_ = std::make_shared<Matrix>("C active occupied", nso_, naocc_);
+    Cavir_ = std::make_shared<Matrix>("C active virtual", nso_, navir_);
 
     double** Cp = C_->pointer();
     double** Cop  = Caocc_->pointer();
@@ -123,7 +123,7 @@ void DFTensor::print_header()
 }
 void DFTensor::build_metric()
 {
-    std::shared_ptr<FittingMetric> met(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> met = std::make_shared<FittingMetric>(auxiliary_, true);
     met->form_eig_inverse();
     metric_ = met->get_metric();
 
@@ -133,15 +133,15 @@ void DFTensor::build_metric()
 }
 SharedMatrix DFTensor::Qso()
 {
-    SharedMatrix B(new Matrix("Bso", naux_, nso_ * nso_));
-    SharedMatrix A(new Matrix("Aso", naux_, nso_ * nso_));
+    SharedMatrix B = std::make_shared<Matrix>("Bso", naux_, nso_ * nso_);
+    SharedMatrix A = std::make_shared<Matrix>("Aso", naux_, nso_ * nso_);
     double** Ap = A->pointer();
     double** Bp = B->pointer();
     double** Jp = metric_->pointer();
 
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,zero,primary_,primary_));
+    std::shared_ptr<IntegralFactory> fact = std::make_shared<IntegralFactory>(auxiliary_,zero,primary_,primary_);
     std::shared_ptr<TwoBodyAOInt> eri(fact->eri());
     const double* buffer = eri->buffer();
 
@@ -185,7 +185,7 @@ SharedMatrix DFTensor::Qso()
 SharedMatrix DFTensor::Qoo()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Ami", naux_, naocc_ * (size_t) nso_));
+    SharedMatrix Ami = std::make_shared<Matrix>("Ami", naux_, naocc_ * (size_t) nso_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
@@ -196,7 +196,7 @@ SharedMatrix DFTensor::Qoo()
 
     Amn.reset();
 
-    SharedMatrix Aia(new Matrix("Aij", naux_, naocc_ * (size_t) naocc_));
+    SharedMatrix Aia = std::make_shared<Matrix>("Aij", naux_, naocc_ * (size_t) naocc_);
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -217,7 +217,7 @@ SharedMatrix DFTensor::Qoo()
 SharedMatrix DFTensor::Qov()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Qmi", naux_, naocc_ * (size_t) nso_));
+    SharedMatrix Ami = std::make_shared<Matrix>("Qmi", naux_, naocc_ * (size_t) nso_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
@@ -230,7 +230,7 @@ SharedMatrix DFTensor::Qov()
     Amn.reset();
 
     outfile->Printf( "DFTensor::Qov: naux %d, naocc %d, navir %d\n", naux_, naocc_, navir_);
-    SharedMatrix Aia(new Matrix("Qia", naux_, naocc_ * (size_t) navir_));
+    SharedMatrix Aia = std::make_shared<Matrix>("Qia", naux_, naocc_ * (size_t) navir_);
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -252,7 +252,7 @@ SharedMatrix DFTensor::Qov()
 SharedMatrix DFTensor::Qvv()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Qmi", naux_, navir_ * (size_t) nso_));
+    SharedMatrix Ami = std::make_shared<Matrix>("Qmi", naux_, navir_ * (size_t) nso_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
@@ -263,7 +263,7 @@ SharedMatrix DFTensor::Qvv()
 
     Amn.reset();
 
-    SharedMatrix Aia(new Matrix("Qab", naux_, navir_ * (size_t) navir_));
+    SharedMatrix Aia = std::make_shared<Matrix>("Qab", naux_, navir_ * (size_t) navir_);
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -284,7 +284,7 @@ SharedMatrix DFTensor::Qvv()
 SharedMatrix DFTensor::Qmo()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Qmi", naux_, nmo_ * (size_t) nso_));
+    SharedMatrix Ami = std::make_shared<Matrix>("Qmi", naux_, nmo_ * (size_t) nso_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
@@ -295,7 +295,7 @@ SharedMatrix DFTensor::Qmo()
 
     Amn.reset();
 
-    SharedMatrix Aia(new Matrix("Qmo", naux_, nmo_ * (size_t) nmo_));
+    SharedMatrix Aia = std::make_shared<Matrix>("Qmo", naux_, nmo_ * (size_t) nmo_);
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -315,7 +315,7 @@ SharedMatrix DFTensor::Qmo()
 }
 SharedMatrix DFTensor::Imo()
 {
-    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints = std::make_shared<MintsHelper>(primary_, options_, 0);
     return mints->mo_eri(C_,C_);
 }
 SharedMatrix DFTensor::Idfmo()
@@ -323,7 +323,7 @@ SharedMatrix DFTensor::Idfmo()
     SharedMatrix Amo = Qmo();
     double** Amop = Amo->pointer();
 
-    SharedMatrix Imo(new Matrix("DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+    SharedMatrix Imo = std::make_shared<Matrix>("DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_);
     double** Imop = Imo->pointer();
 
     C_DGEMM('T','N',nmo_ * nmo_, nmo_ * nmo_, naux_, 1.0, Amop[0], nmo_ * nmo_,

@@ -30,32 +30,35 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#include"psi4/libqt/qt.h"
-#include<sys/times.h>
+#include "psi4/libqt/qt.h"
+#include <sys/times.h>
 #include "psi4/libtrans/mospace.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/psifiles.h"
 #ifdef _OPENMP
-    #include<omp.h>
+#include <omp.h>
 #else
-    #define omp_get_wtime() 0.0
+#define omp_get_wtime() 0.0
 #endif
 
-#include"blas.h"
-#include"ccsd.h"
+#include "blas.h"
+#include "ccsd.h"
 
 using namespace psi;
-namespace psi{ namespace fnocc{
-void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
-}}
+namespace psi {
+namespace fnocc {
+void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt);
+}
+}
 
-namespace psi{ namespace fnocc{
+namespace psi {
+namespace fnocc {
 
 /**
   * canonical MP2
   */
-void CoupledCluster::MP2(){
+void CoupledCluster::MP2() {
     int o = ndoccact;
     int v = nvirt;
 
@@ -67,14 +70,9 @@ void CoupledCluster::MP2(){
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    std::shared_ptr<IntegralTransform>
-        ints(new IntegralTransform(wfn,
-                                   spaces,
-                                   IntegralTransform::Restricted,
-                                   IntegralTransform::IWLOnly,
-                                   IntegralTransform::QTOrder,
-                                   IntegralTransform::None,
-                                   false));
+    std::shared_ptr<IntegralTransform> ints =
+        std::make_shared<IntegralTransform>(wfn, spaces, IntegralTransform::Restricted, IntegralTransform::IWLOnly,
+                                            IntegralTransform::QTOrder, IntegralTransform::None, false);
     ints->set_keep_dpd_so_ints(1);
     ints->set_keep_iwl_so_ints(1);
     ints->initialize();
@@ -86,18 +84,17 @@ void CoupledCluster::MP2(){
     outfile->Printf("        ==> Sort (OV|OV) integrals <==\n");
     outfile->Printf("\n");
     struct iwlbuf Buf;
-    iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
-    SortOVOV(&Buf,nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt);
-    iwl_buf_close(&Buf,1);
-
+    iwl_buf_init(&Buf, PSIF_MO_TEI, 0.0, 1, 1);
+    SortOVOV(&Buf, nfzc, nfzv, nfzc + nfzv + ndoccact + nvirt, ndoccact, nvirt);
+    iwl_buf_close(&Buf, 1);
 
     // energy
-    double * v2 = (double*)malloc(o*o*v*v*sizeof(double));
+    double *v2 = (double *)malloc(o * o * v * v * sizeof(double));
 
-    std::shared_ptr<PSIO> psio(new PSIO());
-    psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-    psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&v2[0],o*o*v*v*sizeof(double));
-    psio->close(PSIF_DCC_IAJB,0);
+    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
+    psio->read_entry(PSIF_DCC_IAJB, "E2iajb", (char *)&v2[0], o * o * v * v * sizeof(double));
+    psio->close(PSIF_DCC_IAJB, 0);
 
     emp2_os = emp2_ss = 0.0;
     for (int i = 0; i < o; i++) {
@@ -105,25 +102,25 @@ void CoupledCluster::MP2(){
         for (int j = 0; j < o; j++) {
             double dij = di + eps[j];
             for (int a = 0; a < v; a++) {
-                double dija = dij - eps[a+o];
+                double dija = dij - eps[a + o];
                 for (int b = 0; b < v; b++) {
-                    double dijab = dija - eps[b+o];
-                    double val1 = v2[i*o*v*v+a*o*v+j*v+b];
+                    double dijab = dija - eps[b + o];
+                    double val1 = v2[i * o * v * v + a * o * v + j * v + b];
                     emp2_os += val1 * val1 / dijab;
-                    emp2_ss += (val1 - v2[i*o*v*v+b*o*v+j*v+a]) * val1 / dijab;
+                    emp2_ss += (val1 - v2[i * o * v * v + b * o * v + j * v + a]) * val1 / dijab;
                 }
             }
         }
     }
     emp2 = emp2_os + emp2_ss;
 
-    outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-    outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-    outfile->Printf("        MP2 correlation energy:          %20.12lf\n",emp2);
-    outfile->Printf("      * MP2 total energy:                %20.12lf\n",emp2+escf);
+    outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n", emp2_os);
+    outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n", emp2_ss);
+    outfile->Printf("        MP2 correlation energy:          %20.12lf\n", emp2);
+    outfile->Printf("      * MP2 total energy:                %20.12lf\n", emp2 + escf);
     outfile->Printf("\n");
 
     free(v2);
 }
-
-}} // end of namespaces
+}
+}  // end of namespaces

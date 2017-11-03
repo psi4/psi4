@@ -198,7 +198,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   int zsteps = (int) ((zmax - zmin)/step_size + 1);
 
   // Prep .dx file
-  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("density.dx",std::ostream::app));
+  std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("density.dx",std::ostream::app);
   printer->Printf( "#  Output from Psi4 calculation\n");
   printer->Printf( "#  Electronic density (in e/ang^3) for: \n");
   printer->Printf( "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
@@ -246,7 +246,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   printer->Printf( "component \"data\" value 3\n");
   printer->Printf( "\n");
   printer->Printf( "end");
-  std::shared_ptr<PsiOutStream> printer2(new PsiOutStream("molecule.xyz"));
+  std::shared_ptr<PsiOutStream> printer2 = std::make_shared<PsiOutStream>("molecule.xyz");
 
   printer2->Printf( "%d\n", molecule->natom());
   printer2->Printf( "Initial atomic coordinates\n");

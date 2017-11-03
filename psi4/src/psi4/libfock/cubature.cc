@@ -3013,7 +3013,7 @@ public:
 
     // Or we could use Matrix like smart people
     std::shared_ptr<Matrix> orientation() const {
-        std::shared_ptr<Matrix> O(new Matrix("O", 3, 3));
+        std::shared_ptr<Matrix> O = std::make_shared<Matrix>("O", 3, 3);
         double** Op = O->pointer();
         Op[0][0] = rotation_.xx;
         Op[0][1] = rotation_.xy;
@@ -3701,7 +3701,7 @@ bool from_string(T& t,
 BasisExtents::BasisExtents(std::shared_ptr<BasisSet> primary, double delta) :
     primary_(primary), delta_(delta)
 {
-    shell_extents_ = std::shared_ptr<Vector>(new Vector("Shell Extents", primary_->nshell()));
+    shell_extents_ = std::make_shared<Vector>("Shell Extents", primary_->nshell());
     computeExtents();
 }
 BasisExtents::~BasisExtents()
@@ -3826,7 +3826,7 @@ void BasisExtents::computeExtents()
 void BasisExtents::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    printer->Printf( "   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
     double* Rp = shell_extents_->pointer();
@@ -3932,7 +3932,7 @@ void BlockOPoints::populate()
 void BlockOPoints::print(std::string out, int print)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    printer->Printf( "   => BlockOPoints: %d Points <=\n\n", npoints_);
 
     printer->Printf( "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
@@ -4035,7 +4035,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map, std:
     int min_points = full_int_options["DFT_BLOCK_MIN_POINTS"];
     double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
-    std::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
+    std::shared_ptr<BasisExtents> extents = std::make_shared<BasisExtents>(primary_, epsilon);
     postProcess(extents, max_points, min_points, max_radius);
 }
 
@@ -4075,7 +4075,7 @@ void PseudospectralGrid::buildGridFromOptions()
     int min_points = options_.get_int("PS_BLOCK_MIN_POINTS");
     double max_radius = options_.get_double("PS_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("PS_BASIS_TOLERANCE");
-    std::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
+    std::shared_ptr<BasisExtents> extents = std::make_shared<BasisExtents>(primary_, epsilon);
 
     postProcess(extents, max_points, min_points, max_radius);
 }
@@ -4190,7 +4190,7 @@ void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_p
 void MolecularGrid::print(std::string out, int /*print*/) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme       = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
     printer->Printf("    Pruning Scheme      = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
@@ -4210,7 +4210,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const
 void MolecularGrid::print_details(std::string out, int /*print*/) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    printer->Printf("   > Grid Details <\n\n");
     for (size_t A = 0; A < radial_grids_.size(); A++) {
         printer->Printf("    Atom: %4d, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(), radial_grids_[A]->alpha());
@@ -4268,7 +4268,7 @@ void NaiveGridBlocker::block()
     blocks_.clear();
     for (int Q = 0; Q < npoints_; Q += max_points_) {
         int n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
-        blocks_.push_back(std::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_)));
+        blocks_.push_back(std::make_shared<BlockOPoints>(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_));
     }
 }
 OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
@@ -4305,7 +4305,7 @@ void OctreeGridBlocker::block()
     // K-PR Tree blocking
     std::shared_ptr<PsiOutStream> printer;
     if (bench_) {
-       printer=std::shared_ptr<PsiOutStream>(new PsiOutStream("khtree.dat"));
+       printer=std::make_shared<PsiOutStream>("khtree.dat");
        //fh_ktree = fopen("ktree.dat","w");
         //outfile->Printf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
     }
@@ -4450,7 +4450,7 @@ void OctreeGridBlocker::block()
     int index = 0;
     int unique_block = 0;
     if (bench_) {
-       printer=std::shared_ptr<PsiOutStream>(new PsiOutStream("finished_blocks.dat",std::ostream::app));
+       printer=std::make_shared<PsiOutStream>("finished_blocks.dat",std::ostream::app);
         //outfile->Printf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W");
     }
     for (size_t A = 0; A < completed_tree.size(); A++) {
@@ -4475,7 +4475,7 @@ void OctreeGridBlocker::block()
     for (size_t A = 0; A < completed_tree.size(); A++) {
         std::vector<int> block = completed_tree[A];
         if (!block.size()) continue;
-        blocks_.push_back(std::shared_ptr<BlockOPoints>(new BlockOPoints(block.size(),&x_[index],&y_[index],&z_[index],&w_[index],extents_)));
+        blocks_.push_back(std::make_shared<BlockOPoints>(block.size(),&x_[index],&y_[index],&z_[index],&w_[index],extents_));
         if ((size_t)max_points_ < block.size()) {
             max_points_ = block.size();
         }
@@ -4489,7 +4489,7 @@ void OctreeGridBlocker::block()
     }
 
     if (bench_) {
-       printer=std::shared_ptr<PsiOutStream>(new PsiOutStream("extents.dat",std::ostream::app));
+       printer=std::make_shared<PsiOutStream>("extents.dat",std::ostream::app);
         //FILE* fh_extents = fopen("extents.dat","w");
         //outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
         std::shared_ptr<BasisSet> basis = extents_->basis();
@@ -4506,7 +4506,7 @@ void OctreeGridBlocker::block()
         for (int i = 2; i < 20; i++) {
             std::stringstream ss;
             ss << "extents" << i << ".dat";
-            printer=std::shared_ptr<PsiOutStream>(new PsiOutStream(ss.str(),std::ostream::app));
+            printer=std::make_shared<PsiOutStream>(ss.str(),std::ostream::app);
             //FILE* fh_extents = fopen(ss.str().c_str(),"w");
             //outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
             extents_->set_delta(pow(10.0,-i));
@@ -4536,7 +4536,7 @@ RadialGrid::~RadialGrid()
 void RadialGrid::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    if (level > 0) {
         printer->Printf( "   => RadialGrid: %s Scheme <=\n\n", scheme_.c_str());
         printer->Printf( "      Points: %d\n", npoints_);
@@ -4644,7 +4644,7 @@ SphericalGrid::~SphericalGrid()
 void SphericalGrid::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));if (level > 0) {
+            std::make_shared<PsiOutStream>(out));if (level > 0) {
         printer->Printf( "   => SphericalGrid: %s Scheme <=\n\n", scheme_.c_str());
         printer->Printf( "      Points: %d\n", npoints_);
         printer->Printf( "   %4s %24s %24s %24s %24s\n", "N", "X", "Y", "Z",  "W");

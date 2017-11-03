@@ -59,7 +59,7 @@ QuadrupoleInt::~QuadrupoleInt()
 
 SharedVector QuadrupoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin)
 {
-    std::shared_ptr<Vector> sret(new Vector(6));
+    std::shared_ptr<Vector> sret = std::make_shared<Vector>(6);
     double *ret = sret->pointer();
 
     for (int i=0; i<mol->natom(); ++i) {

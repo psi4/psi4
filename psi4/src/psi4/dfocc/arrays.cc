@@ -97,7 +97,7 @@ void Array1d::print() {
 
 void Array1d::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
     if (name_.length()) printer->Printf("\n ## %s ##\n", name_.c_str());
     for (int p = 0; p < dim1_; p++) {
         printer->Printf(" %3d %10.7f \n", p, A1d_[p]);
@@ -357,7 +357,7 @@ void Array2d::print() {
 
 void Array2d::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
     if (A2d_) {
         if (name_.length()) printer->Printf("\n ## %s ##\n", name_.c_str());
         print_mat(A2d_, dim1_, dim2_, out);
@@ -1400,7 +1400,7 @@ void Array2i::print() {
 
 void Array2i::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
     if (name_.length()) printer->Printf("\n ## %s ##\n", name_.c_str());
     print_int_mat(A2i_, dim1_, dim2_, out);
 }  //

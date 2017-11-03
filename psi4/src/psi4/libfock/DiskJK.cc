@@ -78,7 +78,7 @@ void DiskJK::print_header() const
 }
 void DiskJK::preiterations()
 {
-    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints = std::make_shared<MintsHelper>(primary_, options_, 0);
     mints->integrals();
     if(do_wK_)
         mints->integrals_erf(omega_);
@@ -102,7 +102,7 @@ void DiskJK::preiterations()
 }
 void DiskJK::compute_JK()
 {
-    std::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
     IWL *iwl = new IWL(psio.get(), PSIF_SO_TEI, cutoff_, 1, 1);
     Label *lblptr = iwl->labels();
     Value *valptr = iwl->values();

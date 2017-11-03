@@ -75,7 +75,7 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
     int printflag, int *ioff, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+         std::make_shared<PsiOutStream>(out));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;

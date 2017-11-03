@@ -62,7 +62,7 @@ std::shared_ptr<Functional> Functional::build_worker() {
 void Functional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => %s Functional <=\n\n", name_.c_str());
 
     printer->Printf("%s", description_.c_str());

@@ -80,7 +80,7 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, std::shared_ptr<
     buffer_ = new double[maxnao1*maxnao2];
 
     // Setup the initial field of partial charges
-    Zxyz_ = SharedMatrix (new Matrix("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4));
+    Zxyz_ = std::make_shared<Matrix>("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4);
     double** Zxyzp = Zxyz_->pointer();
 
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {

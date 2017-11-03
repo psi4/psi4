@@ -93,7 +93,7 @@ void MemoryManager::UnregisterMemory(void *mem, size_t size, const char *fileNam
 void MemoryManager::MemCheck(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    static bool alreadyChecked = false;
 
   printer->Printf( "\n\n");

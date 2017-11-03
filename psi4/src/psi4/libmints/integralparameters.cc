@@ -66,8 +66,8 @@ FittedSlaterCorrelationFactor::FittedSlaterCorrelationFactor(double exponent)
     : CorrelationFactor(6)
 {
     // Perform the fit.
-    SharedVector exps(new Vector(6));
-    SharedVector coeffs(new Vector(6));
+    SharedVector exps = std::make_shared<Vector>(6);
+    SharedVector coeffs = std::make_shared<Vector>(6);
 
     slater_exponent_ = exponent;
 

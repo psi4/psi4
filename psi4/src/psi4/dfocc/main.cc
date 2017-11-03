@@ -36,7 +36,7 @@ SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options) {
     // Start the timers
     tstart();
 
-    SharedWavefunction dfocc_wfn = SharedWavefunction(new DFOCC(ref_wfn, options));
+    SharedWavefunction dfocc_wfn = std::make_shared<DFOCC>(ref_wfn, options);
     dfocc_wfn->compute_energy();
 
     // Shut down the timers

@@ -116,7 +116,7 @@ double DFCoupledCluster::compute_energy() {
           // the buffer integrals was at least 2v^3, so these should definitely fit.
           double *Z     = (double*)malloc(v*v*v*sizeof(double));
           double *Z2    = (double*)malloc(v*v*v*sizeof(double));
-          std::shared_ptr<PSIO> psio(new PSIO());
+          std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
           psio->open(PSIF_DCC_ABCI,PSIO_OPEN_NEW);
           psio_address addr2 = PSIO_ZERO;
           for (long int i=0; i<o; i++){
@@ -145,7 +145,7 @@ double DFCoupledCluster::compute_energy() {
           psio_address addr = PSIO_ZERO;
           double * temp1 = (double*)malloc(( nQ*v > o*v*v ? nQ*v : o*v*v)*sizeof(double));
           double * temp2 = (double*)malloc(o*v*v*sizeof(double));
-          std::shared_ptr<PSIO> psio(new PSIO());
+          std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
           psio->open(PSIF_DCC_ABCI4,PSIO_OPEN_NEW);
           for (long int a = 0; a < v; a++) {
               #pragma omp parallel for schedule (static)
@@ -185,7 +185,7 @@ double DFCoupledCluster::compute_energy() {
               }
           }
       }
-      std::shared_ptr<PSIO> psio(new PSIO());
+      std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
       psio->open(PSIF_DCC_IJAK,PSIO_OPEN_NEW);
       psio->write_entry(PSIF_DCC_IJAK,"E2ijak",(char*)&temp2[0],o*o*o*v*sizeof(double));
       psio->close(PSIF_DCC_IJAK,1);
@@ -283,7 +283,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   double Eold           = 1.0e9;
   if (brueckner_iter == 0 ) eccsd = 0.0;
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio_address addr;
 
   // zero residual
@@ -408,9 +408,9 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   // add T1 diagnostic to globals
   Process::environment.globals["CC T1 DIAGNOSTIC"] = t1diag;
 
-  std::shared_ptr<Matrix>T (new Matrix(o,o));
-  std::shared_ptr<Matrix>eigvec (new Matrix(o,o));
-  std::shared_ptr<Vector>eigval (new Vector(o));
+  std::shared_ptr<Matrix> T = std::make_shared<Matrix>(o,o);
+  std::shared_ptr<Matrix> eigvec = std::make_shared<Matrix>(o,o);
+  std::shared_ptr<Vector> eigval = std::make_shared<Vector>(o);
   double ** Tp = T->pointer();
   for (long int i = 0; i < o; i++) {
       for (long int j = 0; j < o; j++) {
@@ -503,7 +503,7 @@ double DFCoupledCluster::CheckEnergy(){
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
 
     if (t2_on_disk){
-        std::shared_ptr<PSIO> psio (new PSIO());
+        std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
         psio->close(PSIF_DCC_T2,1);
@@ -705,12 +705,12 @@ void DFCoupledCluster::AllocateMemory() {
   Ca = reference_wavefunction_->Ca()->pointer();
 
   // one-electron integrals
-  std::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
+  std::shared_ptr<MintsHelper> mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
   H = mints->so_kinetic();
   H->add(mints->so_potential());
 
   if (t2_on_disk) {
-     std::shared_ptr<PSIO> psio (new PSIO());
+     std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
      psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
@@ -746,7 +746,7 @@ void DFCoupledCluster::UpdateT2(){
   long int v = nvirt;
   long int o = ndoccact;
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
   // df (ai|bj)
   psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
@@ -805,7 +805,7 @@ void DFCoupledCluster::Vabcd1(){
     long int otri = o*(o+1)/2;
     long int vtri = v*(v+1)/2;
 
-    std::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
     if (t2_on_disk){
         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);

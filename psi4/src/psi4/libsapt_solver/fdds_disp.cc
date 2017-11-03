@@ -77,7 +77,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     // ==> Form Metric <==
 
     size_t naux = auxiliary_->nbf();
-    metric_ = SharedMatrix(new Matrix("Inv Coulomb Metric", naux, naux));
+    metric_ = std::make_shared<Matrix>("Inv Coulomb Metric", naux, naux);
 
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     size_t nthread = 1;
@@ -136,7 +136,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
 
     IntegralFactory factory(auxiliary_);
     std::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
-    aux_overlap_ = SharedMatrix(new Matrix("Auxiliary Overlap", naux, naux));
+    aux_overlap_ = std::make_shared<Matrix>("Auxiliary Overlap", naux, naux);
     overlap->compute(aux_overlap_);
 
     // ==> Form 3-index object <==
@@ -224,12 +224,12 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     // Build result and temp vectors
     std::vector<SharedVector> aux_dens;
     for (size_t i = 0; i < densities.size(); i++) {
-        aux_dens.push_back(SharedVector(new Vector(naux)));
+        aux_dens.push_back(std::make_shared<Vector>(naux));
     }
 
     std::vector<SharedMatrix> collapse_temp;
     for (size_t i = 0; i < nthread; i++) {
-        collapse_temp.push_back(SharedMatrix(new Matrix(auxiliary_->max_function_per_shell(), nbf2)));
+        collapse_temp.push_back(std::make_shared<Matrix>(auxiliary_->max_function_per_shell(), nbf2));
     }
 
 // Do the contraction
@@ -286,7 +286,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     // ==> Contract (R|pq) Dpq <== //
     std::vector<SharedVector> aux_dens_inv;
     for (size_t i = 0; i < densities.size(); i++) {
-        aux_dens_inv.push_back(SharedVector(new Vector(naux)));
+        aux_dens_inv.push_back(std::make_shared<Vector>(naux));
         aux_dens_inv[i]->gemv(false, 1.0, metric_inv_.get(), aux_dens[i].get(), 0.0);
     }
 
@@ -315,12 +315,12 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     // Build result and temp vectors
     std::vector<SharedMatrix> ret;
     for (size_t i = 0; i < densities.size(); i++) {
-        ret.push_back(SharedMatrix(new Matrix(naux, naux)));
+        ret.push_back(std::make_shared<Matrix>(naux, naux));
     }
 
     size_t max_func = auxiliary_->max_function_per_shell();
     for (size_t i = 0; i < nthread; i++) {
-        collapse_temp.push_back(SharedMatrix(new Matrix(max_func * max_func, naux)));
+        collapse_temp.push_back(std::make_shared<Matrix>(max_func * max_func, naux));
     }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -411,7 +411,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     }
 
     // ==> Uncoupled Amplitudes <==
-    SharedMatrix amp(new Matrix(nocc, nvir));
+    SharedMatrix amp = std::make_shared<Matrix>(nocc, nvir);
 
     double** ampp = amp->pointer();
     double* eoccp = eps_occ->pointer();
@@ -445,8 +445,8 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     // printf("dmem:    %zu\n", dmem);
     // printf("bsize:   %zu\n", bsize);
 
-    SharedMatrix ret(new Matrix("UNC Amplitude", naux, naux));
-    SharedMatrix tmp(new Matrix("iaQ tmp", bsize * nvir, naux));
+    SharedMatrix ret = std::make_shared<Matrix>("UNC Amplitude", naux, naux);
+    SharedMatrix tmp = std::make_shared<Matrix>("iaQ tmp", bsize * nvir, naux);
 
     double** tmpp = tmp->pointer();
     double** retp = ret->pointer();

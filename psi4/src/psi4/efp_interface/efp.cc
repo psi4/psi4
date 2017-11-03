@@ -37,7 +37,7 @@ namespace psi { namespace efp {
 PsiReturnType efp_init(Options & options)
 {
     // new efp object
-    std::shared_ptr<EFP> myefp(new EFP(options));
+    std::shared_ptr<EFP> myefp = std::make_shared<EFP>(options);
 
     // set efp object in process environment
     Process::environment.set_efp(myefp);

@@ -36,11 +36,11 @@
 #include <sstream>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 
@@ -54,16 +54,15 @@ std::shared_ptr<PSIOManager> _default_psio_manager_;
 std::string PSIO::default_namespace_;
 
 int PSIO::_error_exit_code_ = 1;
-psio_address PSIO_ZERO = { 0, 0 };
+psio_address PSIO_ZERO = {0, 0};
 
-PSIO::PSIO()
-{
+PSIO::PSIO() {
     int i, j;
 
-    psio_unit = (psio_ud *) malloc(sizeof(psio_ud)*PSIO_MAXUNIT);
+    psio_unit = (psio_ud *)malloc(sizeof(psio_ud) * PSIO_MAXUNIT);
 #ifdef PSIO_STATS
-    psio_readlen = (size_t *) malloc(sizeof(size_t) * PSIO_MAXUNIT);
-    psio_writlen = (size_t *) malloc(sizeof(size_t) * PSIO_MAXUNIT);
+    psio_readlen = (size_t *)malloc(sizeof(size_t) * PSIO_MAXUNIT);
+    psio_writlen = (size_t *)malloc(sizeof(size_t) * PSIO_MAXUNIT);
 #endif
     state_ = 1;
 
@@ -72,12 +71,12 @@ PSIO::PSIO()
         exit(_error_exit_code_);
     }
 
-    for (i=0; i < PSIO_MAXUNIT; i++) {
+    for (i = 0; i < PSIO_MAXUNIT; i++) {
 #ifdef PSIO_STATS
         psio_readlen[i] = psio_writlen[i] = 0;
 #endif
         psio_unit[i].numvols = 0;
-        for (j=0; j < PSIO_MAXVOL; j++) {
+        for (j = 0; j < PSIO_MAXVOL; j++) {
             psio_unit[i].vol[j].path = NULL;
             psio_unit[i].vol[j].stream = -1;
         }
@@ -103,7 +102,7 @@ PSIO::PSIO()
    3) default name is psi_file_prefix
    4) 1 volume
    */
-    for (i=1; i<=PSIO_MAXVOL; ++i) {
+    for (i = 1; i <= PSIO_MAXVOL; ++i) {
         char kwd[20];
         sprintf(kwd, "VOLUME%u", i);
         filecfg_kwd("DEFAULT", kwd, PSIF_CHKPT, "./");
@@ -115,25 +114,22 @@ PSIO::PSIO()
     pid_ = getpid();
 }
 
-std::shared_ptr<PSIO> PSIO::shared_object()
-{
-    return _default_psio_lib_;
-}
+std::shared_ptr<PSIO> PSIO::shared_object() { return _default_psio_lib_; }
 
 int psio_init(void) {
     if (_default_psio_lib_.get() == 0) {
-        std::shared_ptr<PSIO> temp(new PSIO);
+        std::shared_ptr<PSIO> temp = std::make_shared<PSIO>();
         _default_psio_lib_ = temp;
         if (_default_psio_lib_ == 0) {
-            ::fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+            ::fprintf(stderr, "LIBPSIO::init() -- failed to allocate the memory");
             exit(PSIO::_error_exit_code_);
         }
     }
     if (_default_psio_manager_.get() == 0) {
-        std::shared_ptr<PSIOManager> temp(new PSIOManager);
+        std::shared_ptr<PSIOManager> temp = std::make_shared<PSIOManager>();
         _default_psio_manager_ = temp;
         if (_default_psio_manager_ == 0) {
-            ::fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+            ::fprintf(stderr, "LIBPSIO::init() -- failed to allocate the memory");
             exit(PSIO::_error_exit_code_);
         }
     }
@@ -141,8 +137,5 @@ int psio_init(void) {
     return 1;
 }
 
-int psio_state() {
-    return _default_psio_lib_->state();
-}
-
+int psio_state() { return _default_psio_lib_->state(); }
 }

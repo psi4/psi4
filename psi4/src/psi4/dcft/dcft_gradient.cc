@@ -37,26 +37,26 @@
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 
-SharedMatrix DCFTSolver::compute_gradient()
-{
+SharedMatrix DCFTSolver::compute_gradient() {
     // Print out the header
     outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
-    outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
-    outfile->Printf(    "\t***********************************************************************************\n\n");
+    outfile->Printf("\t*                           DCFT Analytic Gradients Code                          *\n");
+    outfile->Printf("\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
+    outfile->Printf("\t***********************************************************************************\n\n");
 
     // If the system is closed-shell, then ...
-    if(options_.get_str("REFERENCE") == "RHF"){
+    if (options_.get_str("REFERENCE") == "RHF") {
         compute_gradient_RHF();
     }
     // If the system is open-shell, then ...
-    else{
+    else {
         compute_gradient_UHF();
     }
 
-    return SharedMatrix(new Matrix("NULL", 0, 0));
+    return std::make_shared<Matrix>("NULL", 0, 0);
 }
-
-}} //End namespaces
+}
+}  // End namespaces

@@ -47,7 +47,7 @@ void CoupledCluster::CPU_t1_vmeai_linear(CCTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
   long int i,a,m,e,id,one=1;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IJAB,"E2ijab",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IJAB,1);
@@ -72,7 +72,7 @@ void CoupledCluster::CPU_t1_vmeni_linear(CCTaskParams params){
   long int m,e,n,a,id;
   long int o=ndoccact;
   long int v=nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -102,7 +102,7 @@ void CoupledCluster::CPU_t1_vmaef_linear(CCTaskParams params){
   long int o=ndoccact;
   long int v=nvirt;
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -159,7 +159,7 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1_linear(CCTaskParams params){
   long int ov2 = o*v*v;
   long int o2v = o*o*v;
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio->open(PSIF_DCC_ABCI5,PSIO_OPEN_OLD);
   psio_address addr;
   addr = PSIO_ZERO;
@@ -232,7 +232,7 @@ void CoupledCluster::UpdateT2_mp4(long int iter){
   //psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
 
   // compute mp3 energy or S+D part of mp4 energy
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
   if (iter == 1){
      if (t2_on_disk){
@@ -373,7 +373,7 @@ void CoupledCluster::I2ijkl_linear(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -412,7 +412,7 @@ void CoupledCluster::I2piajk_linear(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio_address addr;
 
   psio->open(PSIF_DCC_IJAK2,PSIO_OPEN_OLD);
@@ -443,7 +443,7 @@ void CoupledCluster::Vabcd1_linear(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio_address addr;
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -500,7 +500,7 @@ void CoupledCluster::Vabcd2_linear(CCTaskParams params){
   int sg,sg2;
   o = ndoccact;
   v = nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio_address addr;
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -557,7 +557,7 @@ void CoupledCluster::I2iabj_linear(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio_address addr;
 
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
@@ -611,7 +611,7 @@ void CoupledCluster::I2iajb_linear(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio_address addr;
 
   psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);

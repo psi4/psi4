@@ -139,9 +139,9 @@ void CIWavefunction::form_opdm(void) {
     // Figure out which OPDM should be current
     if (Parameters_->opdm_ave) {
         Dimension act_dim = get_dimension("ACT");
-        opdm_a_ = SharedMatrix(new Matrix("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim));
-        opdm_b_ = SharedMatrix(new Matrix("MO-basis Beta OPDM", nirrep_, act_dim, act_dim));
-        opdm_ = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
+        opdm_a_ = std::make_shared<Matrix>("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim);
+        opdm_b_ = std::make_shared<Matrix>("MO-basis Beta OPDM", nirrep_, act_dim, act_dim);
+        opdm_ = std::make_shared<Matrix>("MO-basis OPDM", nirrep_, act_dim, act_dim);
 
         for (int i = 0; i < Parameters_->average_num; i++) {
             int croot = Parameters_->average_states[i];
@@ -182,7 +182,7 @@ SharedMatrix CIWavefunction::opdm_add_inactive(SharedMatrix opdm, double value,
         dim_ret = dim_ia;
     }
 
-    SharedMatrix ret(new Matrix(opdm->name(), dim_ret, dim_ret));
+    SharedMatrix ret = std::make_shared<Matrix>(opdm->name(), dim_ret, dim_ret);
 
     for (int h = 0; h < nirrep_; h++) {
         if (!dim_ia[h]) continue;
@@ -257,8 +257,8 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
 
   int nci = CalcInfo_->num_ci_orbs;
   Dimension act_dim = get_dimension("ACT");
-  SharedMatrix scratch_a(new Matrix("OPDM A Scratch", nci, nci));
-  SharedMatrix scratch_b(new Matrix("OPDM B Scratch", nci, nci));
+  SharedMatrix scratch_a = std::make_shared<Matrix>("OPDM A Scratch", nci, nci);
+  SharedMatrix scratch_b = std::make_shared<Matrix>("OPDM B Scratch", nci, nci);
   double** scratch_ap = scratch_a->pointer();
   double** scratch_bp = scratch_b->pointer();
 
@@ -463,15 +463,15 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
 
     std::stringstream opdm_name;
     opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-    SharedMatrix new_OPDM_a(new Matrix(opdm_name.str(), nirrep_, act_dim, act_dim));
+    SharedMatrix new_OPDM_a = std::make_shared<Matrix>(opdm_name.str(), nirrep_, act_dim, act_dim);
 
     opdm_name.str(std::string());
     opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-    SharedMatrix new_OPDM_b(new Matrix(opdm_name.str(), nirrep_, act_dim, act_dim));
+    SharedMatrix new_OPDM_b = std::make_shared<Matrix>(opdm_name.str(), nirrep_, act_dim, act_dim);
 
     opdm_name.str(std::string());
     opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-    SharedMatrix new_OPDM(new Matrix(opdm_name.str(), nirrep_, act_dim, act_dim));
+    SharedMatrix new_OPDM = std::make_shared<Matrix>(opdm_name.str(), nirrep_, act_dim, act_dim);
 
     int offset = 0;
     for (int h=0; h<nirrep_; h++){
@@ -586,8 +586,8 @@ void CIWavefunction::ci_nat_orbs() {
   Dimension nvirpi = get_dimension("VIR");
 
   // Diagonalize the OPDM in the active space
-  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", opdm_->rowspi(), opdm_->colspi()));
-  SharedVector NO_occ(new Vector("OPDM Occuption", opdm_->rowspi()));
+  SharedMatrix NO_vecs = std::make_shared<Matrix>("OPDM Eigvecs", opdm_->rowspi(), opdm_->colspi());
+  SharedVector NO_occ = std::make_shared<Vector>("OPDM Occuption", opdm_->rowspi());
   opdm_->diagonalize(NO_vecs, NO_occ, descending);
 
   // get a copy of the active orbitals and rotate them

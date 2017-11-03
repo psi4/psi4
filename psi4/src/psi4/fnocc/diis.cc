@@ -52,7 +52,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
 
   char*evector=(char*)malloc(1000*sizeof(char));
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio->open(PSIF_DCC_EVEC,PSIO_OPEN_OLD);
 
   // add row to matrix, don't build the whole thing.
@@ -139,7 +139,7 @@ void CoupledCluster::DIISOldVector(long int iter,int diis_iter,int replace_diis_
      sprintf(oldvector,"oldvector%i",replace_diis_iter);
   }
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   if (diis_iter==0) {
      psio->open(PSIF_DCC_OVEC,PSIO_OPEN_NEW);
   }else {
@@ -177,7 +177,7 @@ double CoupledCluster::DIISErrorVector(int diis_iter,int replace_diis_iter,int i
      sprintf(evector,"evector%i",replace_diis_iter);
   }
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   if (diis_iter==0) {
      psio->open(PSIF_DCC_EVEC,PSIO_OPEN_NEW);
      double * temp = (double*)malloc(maxdiis*maxdiis*sizeof(double));
@@ -208,7 +208,7 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter,int&replace_diis_iter){
   char*oldvector;
   oldvector=(char*)malloc(1000*sizeof(char));
 
-  std::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
   psio->open(PSIF_DCC_OVEC,PSIO_OPEN_OLD);
 
   psio_address addr;

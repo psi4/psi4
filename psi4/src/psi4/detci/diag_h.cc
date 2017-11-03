@@ -106,8 +106,8 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         }
 
         SharedMatrix H = hamiltonian();
-        SharedMatrix evecs(new Matrix("CI Eigenvectors", (size_t)size, (size_t)size));
-        SharedVector evals_v(new Vector("CI Eigenvalues", (size_t)size));
+        SharedMatrix evecs = std::make_shared<Matrix>("CI Eigenvectors", (size_t)size, (size_t)size);
+        SharedVector evals_v = std::make_shared<Vector>("CI Eigenvalues", (size_t)size);
 
         if (print_ > 4 && size < 200) {
             outfile->Printf("    Hamiltonian matrix:\n");

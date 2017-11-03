@@ -1603,7 +1603,7 @@ void benchmark_math(double min_time)
     ops.push_back("fabs");
 
     // In case the compiler gets awesome
-    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("dump.dat",std::ostream::trunc));
+    std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("dump.dat",std::ostream::trunc);
 
     #define LOOP_SIZE 10000
     #define UNROLL_SIZE 10
@@ -2282,9 +2282,9 @@ void benchmark_integrals(int max_am, double min_time)
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
     //Factories
-    std::shared_ptr<IntegralFactory> bbbb(new IntegralFactory(basis, basis, basis, basis));
-    std::shared_ptr<IntegralFactory> b0bb(new IntegralFactory(basis, zero, basis, basis));
-    std::shared_ptr<IntegralFactory> b0b0(new IntegralFactory(basis, zero, basis, zero));
+    std::shared_ptr<IntegralFactory> bbbb = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
+    std::shared_ptr<IntegralFactory> b0bb = std::make_shared<IntegralFactory>(basis, zero, basis, basis);
+    std::shared_ptr<IntegralFactory> b0b0 = std::make_shared<IntegralFactory>(basis, zero, basis, zero);
 
     std::vector<std::string> int_types;
     int_types.push_back("2C Overlap");

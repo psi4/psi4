@@ -48,10 +48,10 @@ void DFOCC::fock_so() {
     // Fa_->print();
 
     // Memalloc
-    FsoA = SharedTensor2d(new Tensor2d("SO-basis Alpha Fock Matrix", nso_, nso_));
-    DsoA = SharedTensor2d(new Tensor2d("SO-basis Alpha Density Matrix", nso_, nso_));
-    DQmatA = SharedTensor2d(new Tensor2d("Alpha D_munu^Q", nQ_ref, nso2_));
-    DQvecA = SharedTensor1d(new Tensor1d("Alpha D^Q", nQ_ref));
+    FsoA = std::make_shared<Tensor2d>("SO-basis Alpha Fock Matrix", nso_, nso_);
+    DsoA = std::make_shared<Tensor2d>("SO-basis Alpha Density Matrix", nso_, nso_);
+    DQmatA = std::make_shared<Tensor2d>("Alpha D_munu^Q", nQ_ref, nso2_);
+    DQvecA = std::make_shared<Tensor1d>("Alpha D^Q", nQ_ref);
 
     // Dmn = \sum_{i} Cmi Cni; Here, I used spin free density matrix instead of Alpha spin component
     DsoA->gemm(false, true, CoccA, CoccA, 1.0, 0.0);

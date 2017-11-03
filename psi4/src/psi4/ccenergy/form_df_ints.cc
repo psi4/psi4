@@ -67,7 +67,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     SharedMatrix dfAOtoSO = petite.aotoso();
     const Dimension &soDim = AO2SO_->colspi();
     const Dimension &dfDim = dfAOtoSO->colspi();
-    SharedMatrix symQao(new Matrix(nirrep_, (const int*)dfDim, nbf2));
+    SharedMatrix symQao = std::make_shared<Matrix>(nirrep_, (const int*)dfDim, nbf2);
     double **pQao = Qao->pointer();
     for(int h = 0; h < nirrep_; ++h){
         double **pAOSO = dfAOtoSO->pointer(h);

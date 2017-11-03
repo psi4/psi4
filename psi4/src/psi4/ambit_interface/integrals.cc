@@ -58,7 +58,7 @@ void integrals(psi::OneBodyAOInt &integral, ambit::Tensor *target)
         size_t row = static_cast<size_t>(integral.basis1()->nbf());
         size_t col = static_cast<size_t>(integral.basis2()->nbf());
 
-        psi::SharedMatrix tmp(new psi::Matrix(row, col));
+        psi::SharedMatrix tmp = std::make_shared<psi::Matrix>(row, col);
         integral.compute(tmp);
 
         Tensor local_tensor =

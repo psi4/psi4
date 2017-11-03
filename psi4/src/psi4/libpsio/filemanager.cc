@@ -128,7 +128,7 @@ void PSIOManager::move_file(const std::string& old_full_path, const std::string&
 void PSIOManager::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
     printer->Printf("                    --------------------------------\n");
     printer->Printf("                    ==> Psi4 Current File Status <==\n");
     printer->Printf( "                    --------------------------------\n");

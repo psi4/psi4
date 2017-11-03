@@ -502,10 +502,10 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         // Gotta reorder the wizardry
         for (size_t i = 0; i < nvecs; i++) {
             Dx.push_back(Matrix::doublet(Cl[i], Cr[i], false, true));
-            Vx.push_back(SharedMatrix(new Matrix("Vax Temp", Dx[i]->rowspi(), Dx[i]->colspi())));
+            Vx.push_back(std::make_shared<Matrix>("Vax Temp", Dx[i]->rowspi(), Dx[i]->colspi()));
 
             Dx.push_back(Matrix::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true));
-            Vx.push_back(SharedMatrix(new Matrix("Vbx Temp", Dx[nvecs + i]->rowspi(), Dx[nvecs +i]->colspi())));
+            Vx.push_back(std::make_shared<Matrix>("Vbx Temp", Dx[nvecs + i]->rowspi(), Dx[nvecs +i]->colspi()));
         }
         potential_->compute_Vx(Dx, Vx);
     }
@@ -611,8 +611,8 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     SharedMatrix IFock_a = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
     SharedMatrix IFock_b = Matrix::triplet(Cb_, Fb_, Cb_, true, false, false);
 
-    SharedMatrix Precon_a = SharedMatrix(new Matrix("Alpha Precon", nirrep_, nalphapi_, virpi_a));
-    SharedMatrix Precon_b = SharedMatrix(new Matrix("Beta Precon", nirrep_, nbetapi_, virpi_b));
+    SharedMatrix Precon_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
+    SharedMatrix Precon_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
 
     for (size_t h = 0; h < nirrep_; h++) {
         if (virpi_a[h] && nalphapi_[h]){
@@ -879,7 +879,7 @@ void UHF::compute_orbital_gradient(bool save_fock)
 
     if(save_fock){
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(2,
                                                  DIISEntry::Matrix, gradient_a.get(),
                                                  DIISEntry::Matrix, gradient_b.get());
@@ -900,7 +900,7 @@ bool UHF::diis()
 
 bool UHF::stability_analysis()
 {
-    std::shared_ptr<UStab> stab = std::shared_ptr<UStab>(new UStab(shared_from_this(), options_));
+    std::shared_ptr<UStab> stab = std::make_shared<UStab>(shared_from_this(), options_);
     stab->compute_energy();
     SharedMatrix eval_sym = stab->analyze();
     outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");

@@ -49,8 +49,7 @@
 namespace psi {
 namespace libfock {
 
-SharedWavefunction libfock(SharedWavefunction ref_wfn, Options & options)
-{
+SharedWavefunction libfock(SharedWavefunction ref_wfn, Options& options) {
     tstart();
 
     std::shared_ptr<RBase> wfn;
@@ -62,9 +61,9 @@ SharedWavefunction libfock(SharedWavefunction ref_wfn, Options & options)
         }
         wfn = std::shared_ptr<RBase>(cphf);
     } else if (options.get_str("MODULE") == "RCIS") {
-        wfn = std::shared_ptr<RBase>(new RCIS(ref_wfn, options));
+        wfn = std::make_shared<RCIS>(ref_wfn, options);
     } else if (options.get_str("MODULE") == "RTDHF") {
-        wfn = std::shared_ptr<RBase>(new RTDHF(ref_wfn, options));
+        wfn = std::make_shared<RTDHF>(ref_wfn, options);
     } else if (options.get_str("MODULE") == "RCPKS") {
         RCPKS* cphf(new RCPKS(ref_wfn, options));
         for (size_t i = 0; i < options["CPHF_TASKS"].size(); i++) {
@@ -72,19 +71,19 @@ SharedWavefunction libfock(SharedWavefunction ref_wfn, Options & options)
         }
         wfn = std::shared_ptr<RBase>(cphf);
     } else if (options.get_str("MODULE") == "RTDA") {
-        wfn = std::shared_ptr<RBase>(new RTDA(ref_wfn, options));
+        wfn = std::make_shared<RTDA>(ref_wfn, options);
     } else if (options.get_str("MODULE") == "RTDDFT") {
-        wfn = std::shared_ptr<RBase>(new RTDDFT(ref_wfn, options));
+        wfn = std::make_shared<RTDDFT>(ref_wfn, options);
     } else {
         throw PSIEXCEPTION("Libfock: Applications module not recognized");
     }
 
-//    wfn->compute_energy();
+    //    wfn->compute_energy();
 
     tstop();
 
     return wfn;
-//    return Success;
+    //    return Success;
 }
-
-}}
+}
+}

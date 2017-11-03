@@ -366,7 +366,7 @@ void
 PointGroup::print(std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+                                                   std::make_shared<PsiOutStream>(out));
     printer->Printf("PointGroup: %s\n", symb.c_str());
 }
 

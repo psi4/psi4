@@ -320,7 +320,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     //B[i][3*a+xyz] *= sqrt(mol->mass(a));
 
 //  double **Hx = block_matrix(3*Natom, 3*Natom);
-    SharedMatrix mat_Hx = SharedMatrix(new Matrix("Hessian", 3 * Natom, 3 * Natom));
+    SharedMatrix mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
     double **Hx = mat_Hx->pointer();
 
     // Hx = Bt H B
@@ -458,7 +458,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     // Print a hessian file
     if (options.get_bool("HESSIAN_WRITE")) {
         std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-        std::shared_ptr <PsiOutStream> printer(new PsiOutStream(hess_fname, std::ostream::trunc));
+        std::shared_ptr <PsiOutStream> printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
         //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
         printer->Printf("%5d", Natom);
         printer->Printf("%5d\n", 6 * Natom);

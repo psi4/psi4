@@ -77,7 +77,7 @@ std::shared_ptr <Dispersion> Dispersion::build(const std::string &name, double s
     // }
 
     if (to_upper_copy(name) == "-D1") {
-        std::shared_ptr <Dispersion> disp(new Dispersion());
+        std::shared_ptr <Dispersion> disp = std::make_shared<Dispersion>();
         disp->name_ = "-D1";
         disp->description_ = "    Grimme's -D1 Dispersion Correction\n";
         disp->citation_ = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473\n";
@@ -90,7 +90,7 @@ std::shared_ptr <Dispersion> Dispersion::build(const std::string &name, double s
         disp->Damping_type_ = Damping_D1;
         return disp;
     } else if (to_upper_copy(name) == "-D2") {
-        std::shared_ptr <Dispersion> disp(new Dispersion());
+        std::shared_ptr <Dispersion> disp = std::make_shared<Dispersion>();
         disp->name_ = "-D2";
         disp->description_ = "    Grimme's -D2 Dispersion Correction\n";
         disp->citation_ = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799\n";
@@ -103,7 +103,7 @@ std::shared_ptr <Dispersion> Dispersion::build(const std::string &name, double s
         disp->Damping_type_ = Damping_D1;
         return disp;
     } else if (to_upper_copy(name) == "-CHG") {
-        std::shared_ptr <Dispersion> disp(new Dispersion());
+        std::shared_ptr <Dispersion> disp = std::make_shared<Dispersion>();
         disp->name_ = "-CHG";
         disp->description_ = "    Chai and Head-Gordon Dispersion Correction\n";
         disp->citation_ = "    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620\n";
@@ -116,7 +116,7 @@ std::shared_ptr <Dispersion> Dispersion::build(const std::string &name, double s
         disp->Damping_type_ = Damping_CHG;
         return disp;
     } else if (to_upper_copy(name) == "-DAS2009") {
-        std::shared_ptr <Dispersion> disp(new Dispersion());
+        std::shared_ptr <Dispersion> disp = std::make_shared<Dispersion>();
         disp->name_ = "-DAS2009";
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
         disp->citation_ = "    Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201\n";
@@ -132,7 +132,7 @@ std::shared_ptr <Dispersion> Dispersion::build(const std::string &name, double s
         disp->Spherical_type_ = Spherical_Das;
         return disp;
     } else if (to_upper_copy(name) == "-DAS2010") {
-        std::shared_ptr <Dispersion> disp(new Dispersion());
+        std::shared_ptr <Dispersion> disp = std::make_shared<Dispersion>();
         disp->name_ = "-DAS2010";
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
         disp->citation_ = "    Podeszwa, R.; Pernal, K.; Patkowski, K.; Szalewicz, K. (2010), J. Phys. Chem. Lett., 1: 550\n";
@@ -156,7 +156,7 @@ void Dispersion::print(std::string out, int level) const
 {
     if (level < 1) return;
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+                                                   std::make_shared<PsiOutStream>(out));
     printer->Printf("   => %s: Empirical Dispersion <=\n\n", name_.c_str());
 
     printer->Printf("%s", description_.c_str());
@@ -376,7 +376,7 @@ double Dispersion::compute_energy(std::shared_ptr <Molecule> m)
 
 SharedMatrix Dispersion::compute_gradient(std::shared_ptr <Molecule> m)
 {
-    SharedMatrix G(new Matrix("Dispersion Gradient", m->natom(), 3));
+    SharedMatrix G = std::make_shared<Matrix>("Dispersion Gradient", m->natom(), 3);
     double **Gp = G->pointer();
 
     for (int i = 0; i < m->natom(); i++) {
@@ -453,7 +453,7 @@ SharedMatrix Dispersion::compute_hessian(std::shared_ptr <Molecule> m)
 std::shared_ptr <Vector> Dispersion::set_atom_list(std::shared_ptr <Molecule> mol)
 {
 
-    std::shared_ptr <Vector> atom_list(new Vector(mol->natom()));
+    std::shared_ptr <Vector> atom_list = std::make_shared<Vector>(mol->natom());
     double *atom_list_p = atom_list->pointer();
 
     // look for hydrogens:

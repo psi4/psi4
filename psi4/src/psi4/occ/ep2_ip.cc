@@ -52,7 +52,7 @@ void OCCWave::ep2_ip()
 //===========================================================================================
 if (reference_ == "RESTRICTED") {
      // Memory allocation for diagonal self-energy
-     SharedVector eOccOrbA = std::shared_ptr<Vector>(new Vector("eOccOrbA", nirrep_, occpiA));
+     SharedVector eOccOrbA = std::make_shared<Vector>("eOccOrbA", nirrep_, occpiA);
 
      dpdbuf4 K, T, D;
 
@@ -297,8 +297,8 @@ if (reference_ == "RESTRICTED") {
 else if (reference_ == "UNRESTRICTED") {
 
      // Memory allocation
-     SharedVector eOccOrbA = std::shared_ptr<Vector>(new Vector("eOccOrbA", nirrep_, occpiA));
-     SharedVector eOccOrbB = std::shared_ptr<Vector>(new Vector("eOccOrbB", nirrep_, occpiB));
+     SharedVector eOccOrbA = std::make_shared<Vector>("eOccOrbA", nirrep_, occpiA);
+     SharedVector eOccOrbB = std::make_shared<Vector>("eOccOrbB", nirrep_, occpiB);
      eOccOrbA->zero();
      eOccOrbB->zero();
 

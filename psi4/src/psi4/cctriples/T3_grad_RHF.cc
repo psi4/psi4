@@ -179,7 +179,7 @@ namespace psi { namespace cctriples {
 		}
 	      }
 	    }
-      //boost::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
+      //boost::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
       //ffile(&ijkfile,"ijk.dat", 0);
       //printer->Printf( "Number of IJK combinations: %d\n", nijk);
       //printer->Printf( "\nCurrent IJK Combination: ");*/
@@ -949,7 +949,7 @@ namespace psi { namespace cctriples {
               }
             }
 
-      boost::shared_ptr<PsiOutStream> printer1(new PsiOutStream("abc.dat",std::ostream::trunc));
+      boost::shared_ptr<PsiOutStream> printer1 = std::make_shared<PsiOutStream>("abc.dat",std::ostream::trunc);
       //ffile(&abcfile,"abc.dat", 0);
       printer1->Printf( "Number of ABC combinations: %d\n", nabc);
       printer1->Printf( "\nCurrent ABC Combination: ");*/

@@ -43,24 +43,22 @@
 #include "psi4/libpsi4util/process.h"
 
 #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 
-namespace psi { namespace detci {
+namespace psi {
+namespace detci {
 
-CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn)
-    : Wavefunction(Process::environment.options) {
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn) : Wavefunction(Process::environment.options) {
     // Copy the wavefuntion then update
     shallow_copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
     common_init();
 }
 
-CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn,
-                               Options& options) : Wavefunction(options) {
-
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn, Options& options) : Wavefunction(options) {
     // Copy the wavefuntion then update
     shallow_copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
@@ -133,7 +131,7 @@ void CIWavefunction::common_init() {
     // Init H0 block
     H0block_init(CIblks_->vectlen);
 
-    if (CIblks_->vectlen < 2){
+    if (CIblks_->vectlen < 2) {
         throw PSIEXCEPTION("CIWavefunction: Must have more than one determinant!");
     }
 }
@@ -163,8 +161,7 @@ double CIWavefunction::compute_energy() {
     }
 
     // Finished CI, setting wavefunction parameters
-    if (!Parameters_->zaptn &&
-        (Parameters_->opdm || Parameters_->transdens || Parameters_->opdm_diag)) {
+    if (!Parameters_->zaptn && (Parameters_->opdm || Parameters_->transdens || Parameters_->opdm_diag)) {
         form_opdm();
     }
 
@@ -177,8 +174,7 @@ double CIWavefunction::compute_energy() {
     return Process::environment.globals["CURRENT ENERGY"];
 }
 
-void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
-                                       int* end) {
+void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, int* end) {
     if (orbitals == "FZC") {
         for (int h = 0; h < nirrep_; h++) {
             start[h] = 0;
@@ -279,11 +275,10 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
     }
 
     /// Fill desired orbitals
-    SharedMatrix retC(new Matrix("C " + orbital_name, nirrep_, nsopi_, spread));
+    SharedMatrix retC = std::make_shared<Matrix>("C " + orbital_name, nirrep_, nsopi_, spread);
     for (int h = 0; h < nirrep_; h++) {
         for (int i = start[h], pos = 0; i < end[h]; i++, pos++) {
-            C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nmopi_[h],
-                    &retC->pointer(h)[0][pos], spread[h]);
+            C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nmopi_[h], &retC->pointer(h)[0][pos], spread[h]);
         }
     }
 
@@ -295,8 +290,7 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
     return retC;
 }
 
-void CIWavefunction::set_orbitals(const std::string& orbital_name,
-                                  SharedMatrix orbitals) {
+void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix orbitals) {
     /// Figure out orbital positions
     int* start = new int[nirrep_];
     int* end = new int[nirrep_];
@@ -311,8 +305,7 @@ void CIWavefunction::set_orbitals(const std::string& orbital_name,
     /// Fill desired orbitals
     for (int h = 0; h < nirrep_; h++) {
         for (int i = start[h], pos = 0; i < end[h]; i++, pos++) {
-            C_DCOPY(nsopi_[h], &orbitals->pointer(h)[0][pos], spread[h],
-                    &Ca_->pointer(h)[0][i], nmopi_[h]);
+            C_DCOPY(nsopi_[h], &orbitals->pointer(h)[0][pos], spread[h], &Ca_->pointer(h)[0][i], nmopi_[h]);
         }
     }
 
@@ -339,113 +332,116 @@ Dimension CIWavefunction::get_dimension(const std::string& orbital_name) {
     return dim;
 }
 
-SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot,
-                                      const std::string& spin,
-                                      bool full_space) {
+SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& spin, bool full_space) {
     if (!opdm_called_) {
         throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
     }
     double inact_value = (spin == "SUM") ? 2.0 : 1.0;
     SharedMatrix opdm;
 
-    if ((Iroot == -1) && (Jroot == -1)){
-        if (spin == "SUM") opdm = opdm_;
-        else if (spin == "A") opdm = opdm_a_;
-        else if (spin == "B") opdm = opdm_b_;
-        else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
-    }
-    else {
+    if ((Iroot == -1) && (Jroot == -1)) {
+        if (spin == "SUM")
+            opdm = opdm_;
+        else if (spin == "A")
+            opdm = opdm_a_;
+        else if (spin == "B")
+            opdm = opdm_b_;
+        else
+            throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
+    } else {
         if (Jroot == -1) Jroot = Iroot;
 
         std::stringstream opdm_name;
-        if (spin == "SUM") opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-        else if (spin == "A") opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-        else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-        else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
+        if (spin == "SUM")
+            opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else if (spin == "A")
+            opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else if (spin == "B")
+            opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else
+            throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
 
-        if (opdm_map_.count(opdm_name.str()) == 0){
+        if (opdm_map_.count(opdm_name.str()) == 0) {
             throw PSIEXCEPTION("CIWavefunction::get_opdm: Requested OPDM was not formed!\n");
         }
 
         opdm = opdm_map_[opdm_name.str()];
     }
 
-    if (Iroot != Jroot){ // Transition densities
+    if (Iroot != Jroot) {  // Transition densities
         inact_value = 0.0;
     }
 
     if (full_space) {
         return opdm_add_inactive(opdm, inact_value, true);
-    }
-    else {
+    } else {
         return opdm;
     }
 }
-void CIWavefunction::convergence_death(){
-    if (Parameters_->die_if_not_converged){
+void CIWavefunction::convergence_death() {
+    if (Parameters_->die_if_not_converged) {
         throw PSIEXCEPTION("CIWavefunction: Iterations did not converge!");
     }
-
 }
-SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
-                                      bool symmetrize) {
+SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) {
     if (!tpdm_called_) {
         throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
     }
 
-    if (symmetrize){
-      if (spin != "SUM")
-          throw PSIEXCEPTION("CIWavefunction::get_tpdm: Symmetrize is only available for SUM spin type.");
+    if (symmetrize) {
+        if (spin != "SUM")
+            throw PSIEXCEPTION("CIWavefunction::get_tpdm: Symmetrize is only available for SUM spin type.");
 
-      // Build
-      int nact = CalcInfo_->num_ci_orbs;
-      int nact2 = nact * nact;
+        // Build
+        int nact = CalcInfo_->num_ci_orbs;
+        int nact2 = nact * nact;
 
-      double** tpdm_nsp = tpdm_->pointer();
-      SharedMatrix ret(new Matrix("MO-basis TPDM (symmetrized)", nact2, nact2));
-      double** retp = ret->pointer();
+        double** tpdm_nsp = tpdm_->pointer();
+        SharedMatrix ret = std::make_shared<Matrix>("MO-basis TPDM (symmetrized)", nact2, nact2);
+        double** retp = ret->pointer();
 
-      // Symmetrize
-      for (int p=0; p<nact; p++) {
-      for (int q=0; q<=p; q++) {
-      for (int r=0; r<=p; r++) {
+        // Symmetrize
+        for (int p = 0; p < nact; p++) {
+            for (int q = 0; q <= p; q++) {
+                for (int r = 0; r <= p; r++) {
+                    int smax = (p == r) ? q + 1 : r + 1;
+                    for (int s = 0; s < smax; s++) {
+                        // tpdm_nsp indices
+                        int pq = p * nact + q;
+                        int qp = q * nact + p;
+                        int rs = r * nact + s;
+                        int sr = s * nact + r;
 
-        int smax = (p == r) ? q+1 : r+1;
-        for (int s=0; s<smax; s++) {
+                        /* would be 0.25 but the formulae I used for the diag hessian
+                         * seem to define the TPDM with the 1/2 back outside */
+                        double value =
+                            0.5 * (tpdm_nsp[pq][rs] + tpdm_nsp[qp][rs] + tpdm_nsp[pq][sr] + tpdm_nsp[qp][sr]);
 
-          // tpdm_nsp indices
-         int pq = p * nact + q;
-         int qp = q * nact + p;
-         int rs = r * nact + s;
-         int sr = s * nact + r;
-
-         /* would be 0.25 but the formulae I used for the diag hessian
-          * seem to define the TPDM with the 1/2 back outside */
-         double value = 0.5 * (tpdm_nsp[pq][rs] + tpdm_nsp[qp][rs] +
-                               tpdm_nsp[pq][sr] + tpdm_nsp[qp][sr]);
-
-         // Write out 8 fold symmetry
-         retp[pq][rs] = retp[qp][rs] =
-         retp[pq][sr] = retp[qp][sr] =
-         retp[rs][pq] = retp[rs][qp] =
-         retp[sr][pq] = retp[sr][qp] = value;
-
+                        // Write out 8 fold symmetry
+                        retp[pq][rs] = retp[qp][rs] = retp[pq][sr] = retp[qp][sr] = retp[rs][pq] = retp[rs][qp] =
+                            retp[sr][pq] = retp[sr][qp] = value;
+                    }
+                }
+            }
         }
-      }}}
 
-      // Add numpy shape
-      std::vector<int> nshape{nact, nact, nact, nact};
-      ret->set_numpy_shape(nshape);
+        // Add numpy shape
+        std::vector<int> nshape{nact, nact, nact, nact};
+        ret->set_numpy_shape(nshape);
 
-      // Return
-      return ret;
-    }
-    else {
-      if (spin == "SUM")    return tpdm_;
-      else if (spin == "AA") return tpdm_aa_;
-      else if (spin == "AB") return tpdm_ab_;
-      else if (spin == "BB") return tpdm_bb_;
-      else throw PSIEXCEPTION("CIWavefunction::get_tpdm: Spin type must be AA, AB, BB, or SUM.");
+        // Return
+        return ret;
+    } else {
+        if (spin == "SUM")
+            return tpdm_;
+        else if (spin == "AA")
+            return tpdm_aa_;
+        else if (spin == "AB")
+            return tpdm_ab_;
+        else if (spin == "BB")
+            return tpdm_bb_;
+        else
+            throw PSIEXCEPTION("CIWavefunction::get_tpdm: Spin type must be AA, AB, BB, or SUM.");
     }
 }
 
@@ -453,10 +449,8 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
 void CIWavefunction::cleanup_ci(void) {
-
     // Make sure we dont double clean
-    if (!cleaned_up_ci_){
-
+    if (!cleaned_up_ci_) {
         // Free Bendazzoli OV arrays
         // if (Parameters_->bendazzoli) free(OV);
 
@@ -472,7 +466,7 @@ void CIWavefunction::cleanup_ci(void) {
         free(CIblks_->last_iablk);
         delete CIblks_;
 
-        //delete Parameters_;
+        // delete Parameters_;
 
         // Free H0block
         H0block_free();
@@ -486,15 +480,13 @@ void CIWavefunction::cleanup_ci(void) {
 
         cleaned_up_ci_ = true;
     }
-
 }
 void CIWavefunction::cleanup_dpd(void) {
-
     if (ints_init_) {
         ints_.reset();
         ints_init_ = false;
     }
-    if (mcscf_object_init_){
+    if (mcscf_object_init_) {
         somcscf_.reset();
         mcscf_object_init_ = false;
     }
@@ -507,8 +499,7 @@ void CIWavefunction::set_ci_guess(std::string guess) {
     } else if (guess == "DFILE") {
         Parameters_->guess_vector = PARM_GUESS_VEC_DFILE;
     } else {
-        throw PSIEXCEPTION(
-            "CIWavefunction::set_ci_guess: Guess can only be UNIT, H0_BLOCK, or DFILE");
+        throw PSIEXCEPTION("CIWavefunction::set_ci_guess: Guess can only be UNIT, H0_BLOCK, or DFILE");
     }
 }
 void CIWavefunction::title(bool is_mcscf) {
@@ -535,14 +526,12 @@ void CIWavefunction::title(bool is_mcscf) {
     }
 }
 
-SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
-                                            bool use_disk, bool buf_init) {
-    SharedCIVector civect(new CIvect(Parameters_->icore, maxnvect,
-                                     (int)use_disk, filenum, CIblks_, CalcInfo_,
-                                     Parameters_, H0block_, buf_init));
+SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum, bool use_disk, bool buf_init) {
+    SharedCIVector civect = std::make_shared<CIvect>(Parameters_->icore, maxnvect, (int)use_disk, filenum, CIblks_,
+                                                     CalcInfo_, Parameters_, H0block_, buf_init);
     return civect;
 }
-SharedCIVector CIWavefunction::D_vector(){
+SharedCIVector CIWavefunction::D_vector() {
     SharedCIVector civect = new_civector(Parameters_->num_roots, Parameters_->d_filenum, true, true);
     return civect;
 }
@@ -550,10 +539,9 @@ SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
     hd_type = (hd_type == -1) ? Parameters_->hd_ave : hd_type;
     SharedCIVector Hd = new_civector(1, Parameters_->hd_filenum, true, true);
     Hd->init_io_files(false);  // False for do not open old
-    Hd->diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
-                     CalcInfo_->twoel_ints->pointer(), CalcInfo_->edrc,
-                     CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl,
-                     CalcInfo_->num_ci_orbs, hd_type);
+    Hd->diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(), CalcInfo_->twoel_ints->pointer(),
+                     CalcInfo_->edrc, CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs,
+                     hd_type);
     Hd->write(0, 0);
     return Hd;
 }
@@ -562,11 +550,12 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
     double h_size = (double)(8 * size * size);
     if (h_size > (Process::environment.get_memory() * 0.4)) {
         outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size / 1E9);
-        throw PSIEXCEPTION("CIWave::hamiltonian: Size is too large for"
-                           "explicit hamiltonian build");
+        throw PSIEXCEPTION(
+            "CIWave::hamiltonian: Size is too large for"
+            "explicit hamiltonian build");
     }
 
-    SharedMatrix H(new Matrix("CI Hamiltonian", (size_t)size, (size_t)size));
+    SharedMatrix H = std::make_shared<Matrix>("CI Hamiltonian", (size_t)size, (size_t)size);
     double** Hp = H->pointer();
 
     CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
@@ -575,15 +564,15 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
     int Iarel, Ialist, Ibrel, Iblist;
     for (size_t ii = 0; ii < size; ii++) {
         Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-        I.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs,
-              CalcInfo_->num_bet_expl, betlist_[Iblist][Ibrel].occs);
+        I.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+              betlist_[Iblist][Ibrel].occs);
         Hp[ii][ii] = matrix_element(&I, &I) + CalcInfo_->edrc;
 
         /* introduce symmetry or other restrictions here */
         for (size_t jj = 0; jj < ii; jj++) {
             Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
-            J.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs,
-                  CalcInfo_->num_bet_expl, betlist_[Iblist][Ibrel].occs);
+            J.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+                  betlist_[Iblist][Ibrel].occs);
             Hp[ii][jj] = Hp[jj][ii] = matrix_element(&I, &J);
         }
     }
@@ -624,21 +613,18 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
     }
     */
     /* end block-at-a-time stuff */
-
 }
 
-void CIWavefunction::init_mcscf_object(){
-
+void CIWavefunction::init_mcscf_object() {
     if (Parameters_->mcscf_type == "DF") {
         if (!df_ints_init_) setup_dfmcscf_ints();
-        somcscf_ = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dfh_, AO2SO_, H_));
-    } else if (Parameters_->mcscf_type == "AO" ){
+        somcscf_ = std::make_shared<DFSOMCSCF>(jk_, dfh_, AO2SO_, H_);
+    } else if (Parameters_->mcscf_type == "AO") {
         if (!ints_init_) setup_mcscf_ints_ao();
-        somcscf_ = std::shared_ptr<SOMCSCF>(new IncoreSOMCSCF(jk_, AO2SO_, H_));
-    }
-    else {
+        somcscf_ = std::make_shared<IncoreSOMCSCF>(jk_, AO2SO_, H_);
+    } else {
         if (!ints_init_) setup_mcscf_ints();
-        somcscf_ = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+        somcscf_ = std::make_shared<DiskSOMCSCF>(jk_, ints_, AO2SO_, H_);
     }
 
     // We assume some kind of ras here.
@@ -664,38 +650,34 @@ void CIWavefunction::init_mcscf_object(){
     mcscf_object_init_ = true;
 }
 
-std::shared_ptr<SOMCSCF> CIWavefunction::mcscf_object(){
-    if (!mcscf_object_init_){
+std::shared_ptr<SOMCSCF> CIWavefunction::mcscf_object() {
+    if (!mcscf_object_init_) {
         init_mcscf_object();
     }
     return somcscf_;
 }
 
+void CIWavefunction::print_vector(SharedCIVector vec, int root) {
+    int* mi_iac = init_int_array(Parameters_->nprint);
+    int* mi_ibc = init_int_array(Parameters_->nprint);
+    int* mi_iaidx = init_int_array(Parameters_->nprint);
+    int* mi_ibidx = init_int_array(Parameters_->nprint);
+    double* mi_coeff = init_array(Parameters_->nprint);
 
-void CIWavefunction::print_vector(SharedCIVector vec, int root){
-  int* mi_iac = init_int_array(Parameters_->nprint);
-  int* mi_ibc = init_int_array(Parameters_->nprint);
-  int* mi_iaidx = init_int_array(Parameters_->nprint);
-  int* mi_ibidx = init_int_array(Parameters_->nprint);
-  double* mi_coeff = init_array(Parameters_->nprint);
+    // Print largest CI coefs
+    vec->read(root, 0);
+    vec->max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff, Parameters_->neg_only);
+    print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff);
 
-  // Print largest CI coefs
-  vec->read(root, 0);
-  vec->max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-                    mi_coeff, Parameters_->neg_only);
-  print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff);
-
-  free(mi_iac);
-  free(mi_ibc);
-  free(mi_iaidx);
-  free(mi_ibidx);
-  free(mi_coeff);
+    free(mi_iac);
+    free(mi_ibc);
+    free(mi_iaidx);
+    free(mi_ibidx);
+    free(mi_coeff);
 }
 
-void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
-                                                SharedMatrix prop, SharedCIVector ret){
-
-    if (!CalcInfo_->sigma_initialized){
+void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec, SharedMatrix prop, SharedCIVector ret) {
+    if (!CalcInfo_->sigma_initialized) {
         sigma_init(*(ref.get()), *(ret.get()));
     }
 
@@ -741,10 +723,8 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
     //         }
     //     }
 
-
     //     } /* end loop over J blocks */
     // } /* end loop over J blocks */
-
 
     // if (ref->Ms0_) {
     //     if ((int)Parameters_->ref->% 2)
@@ -777,12 +757,12 @@ void CIWavefunction::semicanonical_orbs() {
     // Diagonalize each block of Favg
     Dimension offset_start(nirrep_);
     Dimension offset_end(nirrep_);
-    for (Dimension block : {noccpi,nactpi,nvirpi}){
+    for (Dimension block : {noccpi, nactpi, nvirpi}) {
         offset_end += block;
 
         // Grab a block of Favg
-        Slice slice(offset_start,offset_end);
-        SharedMatrix F = Favg->get_block(slice,slice);
+        Slice slice(offset_start, offset_end);
+        SharedMatrix F = Favg->get_block(slice, slice);
 
         // Diagonalize it
         SharedVector evals = std::make_shared<Vector>("F Evals", block);
@@ -790,7 +770,7 @@ void CIWavefunction::semicanonical_orbs() {
         F->diagonalize(evecs, evals, ascending);
 
         // Put block in U
-        U->set_block(slice,slice,evecs);
+        U->set_block(slice, slice, evecs);
 
         offset_start += block;
     }
@@ -800,5 +780,5 @@ void CIWavefunction::semicanonical_orbs() {
     set_orbitals("ROT", Cnew);
     Cb_ = Ca_;
 }
-
-}} // End Psi and CIWavefunction spaces
+}
+}  // End Psi and CIWavefunction spaces

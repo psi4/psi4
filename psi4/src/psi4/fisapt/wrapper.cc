@@ -41,7 +41,7 @@ PsiReturnType fisapt(SharedWavefunction ref_wfn, Options& options)
 {
     tstart();
 
-    std::shared_ptr<fisapt::FISAPT> intra(new fisapt::FISAPT(ref_wfn, options));
+    std::shared_ptr<fisapt::FISAPT> intra = std::make_shared<fisapt::FISAPT>(ref_wfn, options);
     intra->compute_energy();
 
     tstop();

@@ -356,8 +356,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
     Dimension frzvpi = ref_wfn->frzvpi();
 
     // Grab the GS OPDM and set it in the ref_wfn object
-    SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
-    SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
+    SharedMatrix Pa = std::make_shared<Matrix>("P alpha", Ca->colspi(), Ca->colspi());
+    SharedMatrix Pb = std::make_shared<Matrix>("P beta", Cb->colspi(), Cb->colspi());
     int mo_offset = 0;
 
     for (int h = 0; h < Ca->nirrep(); h++) {
@@ -384,7 +384,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       mo_offset += nmo;
     }
     /*Call OEProp for each root opdm */
-    std::shared_ptr<OEProp> oe(new OEProp(ref_wfn));
+    std::shared_ptr<OEProp> oe = std::make_shared<OEProp>(ref_wfn);
     if(ref_wfn->same_a_b_dens()){
       Pa->scale(0.5);
       oe->set_Da_mo(Pa);

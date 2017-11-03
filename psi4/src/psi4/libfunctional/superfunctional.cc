@@ -75,7 +75,7 @@ void SuperFunctional::common_init() {
     locked_ = false;
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::blank() {
-    return std::shared_ptr<SuperFunctional>(new SuperFunctional());
+    return std::make_shared<SuperFunctional>();
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
     // Only allow build from full XC kernals
@@ -84,7 +84,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     }
 
     // Build the superfuncitonal
-    std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
+    std::shared_ptr<SuperFunctional> sup = std::make_shared<SuperFunctional>();
 
     // Build LibXC functional
     LibXCFunctional* xc_func = new LibXCFunctional(name, unpolarized);
@@ -107,7 +107,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
     // Build the superfuncitonal
-    std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
+    std::shared_ptr<SuperFunctional> sup = std::make_shared<SuperFunctional>();
 
     // Clone over parts
     for (int i = 0; i < x_functionals_.size(); i++) {
@@ -143,7 +143,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Composite Functional: %s <= \n\n", name_.c_str());
 
     if (description_ != "") {
@@ -568,24 +568,24 @@ void SuperFunctional::allocate() {
     }
 
     for (int i = 0; i < list.size(); i++) {
-        values_[list[i]] = SharedVector(new Vector(list[i], max_points_));
+        values_[list[i]] = std::make_shared<Vector>(list[i], max_points_);
     }
 
     if (needs_grac_) {
-        ac_values_["V"] = SharedVector(new Vector("V", max_points_)); // Not actually used
-        ac_values_["V_RHO_A"] = SharedVector(new Vector("V_RHO_A", max_points_));
-        ac_values_["V_GAMMA_AA"] = SharedVector(new Vector("V_GAMMA_AA", max_points_));
+        ac_values_["V"] = std::make_shared<Vector>("V", max_points_); // Not actually used
+        ac_values_["V_RHO_A"] = std::make_shared<Vector>("V_RHO_A", max_points_);
+        ac_values_["V_GAMMA_AA"] = std::make_shared<Vector>("V_GAMMA_AA", max_points_);
         if (is_polar) {
             throw PSIEXCEPTION("GRAC is not implemented for UKS functionals.");
-            ac_values_["V_RHO_B"] = SharedVector(new Vector("V_RHO_B", max_points_));
-            ac_values_["V_GAMMA_AB"] = SharedVector(new Vector("V_GAMMA_AB", max_points_));
-            ac_values_["V_GAMMA_BB"] = SharedVector(new Vector("V_GAMMA_BB", max_points_));
+            ac_values_["V_RHO_B"] = std::make_shared<Vector>("V_RHO_B", max_points_);
+            ac_values_["V_GAMMA_AB"] = std::make_shared<Vector>("V_GAMMA_AB", max_points_);
+            ac_values_["V_GAMMA_BB"] = std::make_shared<Vector>("V_GAMMA_BB", max_points_);
         }
     }
 
     if (needs_vv10_) {
-        vv_values_["W0"] = SharedVector(new Vector("W0", max_points_));
-        vv_values_["KAPPA"] = SharedVector(new Vector("KAPPA", max_points_));
+        vv_values_["W0"] = std::make_shared<Vector>("W0", max_points_);
+        vv_values_["KAPPA"] = std::make_shared<Vector>("KAPPA", max_points_);
     }
 }
 std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
@@ -749,13 +749,13 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
 
     // printf("Nact/Ntot %zu / %d\n", nact, npoints);
     // Sieve the results
-    SharedVector w_vec(new Vector("W Grid points", nact));
-    SharedVector x_vec(new Vector("X Grid points", nact));
-    SharedVector y_vec(new Vector("Y Grid points", nact));
-    SharedVector z_vec(new Vector("Z Grid points", nact));
-    SharedVector rho_vec(new Vector("RHO points", nact));
-    SharedVector w0_vec(new Vector("W0 points", nact));
-    SharedVector kappa_vec(new Vector("KAPPA points", nact));
+    SharedVector w_vec = std::make_shared<Vector>("W Grid points", nact);
+    SharedVector x_vec = std::make_shared<Vector>("X Grid points", nact);
+    SharedVector y_vec = std::make_shared<Vector>("Y Grid points", nact);
+    SharedVector z_vec = std::make_shared<Vector>("Z Grid points", nact);
+    SharedVector rho_vec = std::make_shared<Vector>("RHO points", nact);
+    SharedVector w0_vec = std::make_shared<Vector>("W0 points", nact);
+    SharedVector kappa_vec = std::make_shared<Vector>("KAPPA points", nact);
 
     double* w_vecp = w_vec->pointer();
     double* x_vecp = x_vec->pointer();

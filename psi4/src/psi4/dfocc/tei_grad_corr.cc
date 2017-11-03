@@ -72,7 +72,7 @@ void DFOCC::tei_grad_corr() {
     //========================= Metric Gradient:Corr ============================================
     //===========================================================================================
     // Read Gaux
-    Gaux = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ_corr, nQ_corr));
+    Gaux = std::make_shared<Tensor2d>("2-Index Correlation TPDM (P|Q)", nQ_corr, nQ_corr);
     // Gaux->read(psio_, PSIF_DFOCC_DENS);
     Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
 
@@ -98,7 +98,7 @@ void DFOCC::tei_grad_corr() {
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
+        Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
     }
 
     std::vector<std::pair<int, int> > PQ_pairs;
@@ -178,7 +178,7 @@ void DFOCC::tei_grad_corr() {
     //========================= 3-Index Gradient:Corr ===========================================
     //===========================================================================================
     // Read gQso
-    gQso = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ_corr, nso_, nso_));
+    gQso = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|nn)", nQ_corr, nso_, nso_);
     gQso->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
@@ -194,7 +194,7 @@ void DFOCC::tei_grad_corr() {
     // int nso = primary_->nbf();
     // int naux = auxiliary_->nbf();
 
-    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
+    std::shared_ptr<ERISieve> sieve_ = std::make_shared<ERISieve>(primary_, 0.0);
     const std::vector<std::pair<int, int> > &shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -227,7 +227,7 @@ void DFOCC::tei_grad_corr() {
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps2;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jtemps2.push_back(SharedMatrix(new Matrix("Jtemp2", natom, 3)));
+        Jtemps2.push_back(std::make_shared<Matrix>("Jtemp2", natom, 3));
     }
 
     // => Master Loop <= //

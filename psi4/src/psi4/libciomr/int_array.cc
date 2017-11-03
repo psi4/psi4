@@ -179,7 +179,7 @@ void zero_int_matrix(int **array, int rows, int cols)
 void print_int_mat(int **a, int m, int n, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+         std::make_shared<PsiOutStream>(out));
    int ii,jj,kk,nn,ll;
   int i,j;
 
