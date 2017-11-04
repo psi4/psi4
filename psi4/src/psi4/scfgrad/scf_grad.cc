@@ -38,6 +38,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/extern.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
@@ -173,6 +174,8 @@ SharedMatrix SCFGrad::compute_gradient()
     // => Nuclear Gradient <= //
     gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
+
+    auto mints = std::make_shared<MintsHelper>(basisset_);
 
     // => Kinetic Gradient <= //
     timer_on("Grad: T");
@@ -587,75 +590,8 @@ SharedMatrix SCFGrad::compute_gradient()
 
         delete[] temp;
 
-        gradients_["Overlap"] = SharedMatrix(gradients_["Nuclear"]->clone());
-        gradients_["Overlap"]->set_name("Overlap Gradient");
-        gradients_["Overlap"]->zero();
-        double** Sp = gradients_["Overlap"]->pointer();
 
-        // Overlap derivatives
-        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-
-                Sint->compute_shell_deriv1(P,Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-            }
-        }
+        gradients_["Overlap"] = mints->ao_overlap_deriv1(W);
     }
     timer_off("Grad: S");
 

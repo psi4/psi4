@@ -83,9 +83,10 @@ private:
 
     void common_init();
 
-    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> obv, SharedMatrix out, bool symm);
+    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
+    void one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
 
-public:
+   public:
 
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
     void init_helper(std::shared_ptr<BasisSet> basis);
@@ -217,8 +218,8 @@ public:
 
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
-    // JWM 4/3/2015
     SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_overlap_deriv1(SharedMatrix D);
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
     SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
