@@ -716,6 +716,8 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MintsHelper::*oneelectron)();
     typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>,
                                                                  std::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*perturb_grad_options)(SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*perturb_grad_xyz)(SharedMatrix, double, double, double);
 
     py::class_<MintsHelper, std::shared_ptr<MintsHelper>>(m, "MintsHelper", "Computes integrals")
         .def(py::init<std::shared_ptr<BasisSet>>())
@@ -823,7 +825,9 @@ void export_mints(py::module& m)
         // Contracted gradient terms
         .def("overlap_grad", &MintsHelper::overlap_grad, "AO first nuclear derivative overlap integrals")
         .def("kinetic_grad", &MintsHelper::kinetic_grad, "AO first nuclear derivative kinetic integrals")
-        .def("potential_grad", &MintsHelper::potential_grad, "AO first nuclear derivative potential integrals");
+        .def("potential_grad", &MintsHelper::potential_grad, "AO first nuclear derivative potential integrals")
+        .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad), "AO first nuclear derivative perturb integrals")
+        .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "AO first nuclear derivative perturb integrals");
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "

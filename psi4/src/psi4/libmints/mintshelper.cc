@@ -1866,7 +1866,16 @@ SharedMatrix MintsHelper::kinetic_grad(SharedMatrix D) {
     grad_two_center_computer(ints_vec, D, kinetic_mat);
     return kinetic_mat;
 }
-
+SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
+    // Overlap
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(1)));
+    }
+    SharedMatrix overlap_mat(new Matrix("Overlap Gradient", basisset_->molecule()->natom(), 3));
+    grad_two_center_computer(ints_vec, D, overlap_mat);
+    return overlap_mat;
+}
 SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     double xlambda = 0.0;
     double ylambda = 0.0;
@@ -1893,17 +1902,6 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     }
 
     return perturb_grad(D, xlambda, ylambda, zlambda);
-}
-
-SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
-    // Overlap
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(1)));
-    }
-    SharedMatrix overlap_mat(new Matrix("Overlap Gradient", basisset_->molecule()->natom(), 3));
-    grad_two_center_computer(ints_vec, D, overlap_mat);
-    return overlap_mat;
 }
 SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double ylambda, double zlambda) {
     double **Dp = D->pointer();
@@ -2090,6 +2088,17 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double yl
                 }
             }
         }
+    }
+    return ret;
+}
+
+SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
+    auto ret = kinetic_grad(D);
+    ret->set_name("Core Hamiltonian Gradient");
+    ret->add(potential_grad(D));
+
+    if (options_.get_bool("PERTURB_H")) {
+        ret->add(perturb_grad(D));
     }
     return ret;
 }
