@@ -141,19 +141,19 @@ SharedMatrix SCFGrad::compute_gradient()
     Dt->set_name("Dt");
 
     // => Occupations (AO) <= //
-    SharedMatrix Ca;
-    SharedMatrix Cb;
-    SharedVector eps_a;
-    SharedVector eps_b;
+    SharedMatrix Ca_occ;
+    SharedMatrix Cb_occ;
+    SharedVector eps_a_occ;
+    SharedVector eps_b_occ;
 
-    Ca = Ca_subset("AO", "OCC");
-    eps_a = epsilon_a_subset("AO", "OCC");
+    Ca_occ = Ca_subset("AO", "OCC");
+    eps_a_occ = epsilon_a_subset("AO", "OCC");
     if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
-        Cb = Ca;
-        eps_b = eps_a;
+        Cb_occ = Ca_occ;
+        eps_b_occ = eps_a_occ;
     } else {
-        Cb = Cb_subset("AO", "OCC");
-        eps_b = epsilon_b_subset("AO", "OCC");
+        Cb_occ = Cb_subset("AO", "OCC");
+        eps_b_occ = epsilon_b_subset("AO", "OCC");
     }
 
     // => Potential/Functional <= //
@@ -168,8 +168,8 @@ SharedMatrix SCFGrad::compute_gradient()
     // => Sizings <= //
     int natom = molecule_->natom();
     int nso = basisset_->nbf();
-    int nalpha = Ca->colspi()[0];
-    int nbeta = Cb->colspi()[0];
+    int nalpha = Ca_occ->colspi()[0];
+    int nbeta = Cb_occ->colspi()[0];
 
     // => Nuclear Gradient <= //
     gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
@@ -179,12 +179,12 @@ SharedMatrix SCFGrad::compute_gradient()
 
     // => Kinetic Gradient <= //
     timer_on("Grad: T");
-    gradients_["Kinetic"] = mints->ao_kinetic_deriv1(Dt);
+    gradients_["Kinetic"] = mints->kinetic_grad(Dt);
     timer_off("Grad: T");
 
     // => Potential Gradient <= //
     timer_on("Grad: V");
-    gradients_["Potential"] = mints->ao_potential_deriv1(Dt);
+    gradients_["Potential"] = mints->potential_grad(Dt);
     timer_off("Grad: V");
 
     // If an external field exists, add it to the one-electron Hamiltonian
@@ -421,32 +421,21 @@ SharedMatrix SCFGrad::compute_gradient()
         SharedMatrix W(Da->clone());
         W->set_name("W");
 
-        double** Wp = W->pointer();
-        double** Cap = Ca->pointer();
-        double** Cbp = Cb->pointer();
-        double* eps_ap = eps_a->pointer();
-        double* eps_bp = eps_b->pointer();
-
-        double* temp = new double[nso * (size_t) nalpha];
-
-        ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
-        for (int i = 0; i < nalpha; i++) {
-            C_DAXPY(nso, -eps_ap[i], &Cap[0][i], nalpha, &temp[i], nalpha);
+        // Alpha
+        auto tmp = Ca_occ->clone();
+        for (size_t i = 0; i < nalpha; i++){
+            tmp->scale_column(0, i, -eps_a_occ->get(i));
         }
+        W->gemm(false, true, 1.0, tmp, Ca_occ, 0.0);
 
-        C_DGEMM('N','T',nso,nso,nalpha,1.0,Cap[0],nalpha,temp,nalpha,0.0,Wp[0],nso);
-
-        ::memset((void*) temp, '\0', sizeof(double) * nso * nbeta);
-        for (int i = 0; i < nbeta; i++) {
-            C_DAXPY(nso, -eps_bp[i], &Cbp[0][i], nbeta, &temp[i], nbeta);
+        // Beta
+        tmp->copy(Cb_occ);
+        for (size_t i = 0; i < nbeta; i++){
+            tmp->scale_column(0, i, -eps_b_occ->get(i));
         }
+        W->gemm(false, true, 1.0, tmp, Cb_occ, 1.0);
 
-        C_DGEMM('N','T',nso,nso,nbeta,1.0,Cbp[0],nbeta,temp,nbeta,1.0,Wp[0],nso);
-
-        delete[] temp;
-
-
-        gradients_["Overlap"] = mints->ao_overlap_deriv1(W);
+        gradients_["Overlap"] = mints->overlap_grad(W);
     }
     timer_off("Grad: S");
 
@@ -456,8 +445,8 @@ SharedMatrix SCFGrad::compute_gradient()
     std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_, basissets_["DF_BASIS_SCF"]);
     jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
-    jk->set_Ca(Ca);
-    jk->set_Cb(Cb);
+    jk->set_Ca(Ca_occ);
+    jk->set_Cb(Cb_occ);
     jk->set_Da(Da);
     jk->set_Db(Db);
     jk->set_Dt(Dt);
