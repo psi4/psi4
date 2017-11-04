@@ -529,7 +529,7 @@ void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBod
                 }
             }
             # pragma omp atomic update
-            outp[aP][0] -= Px;
+            outp[aP][0] += Px;
 
             // Py
             double Py = 0.0;
@@ -539,7 +539,7 @@ void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBod
                 }
             }
             # pragma omp atomic update
-            outp[aP][1] -= Py;
+            outp[aP][1] += Py;
 
             // Pz
             double Pz = 0.0;
@@ -549,7 +549,7 @@ void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBod
                 }
             }
             # pragma omp atomic update
-            outp[aP][2] -= Pz;
+            outp[aP][2] += Pz;
 
             // Qx
             double Qx = 0.0;
@@ -559,7 +559,7 @@ void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBod
                 }
             }
             # pragma omp atomic update
-            outp[aQ][0] -= Qx;
+            outp[aQ][0] += Qx;
 
             // Qy
             double Qy = 0.0;
@@ -569,7 +569,7 @@ void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBod
                 }
             }
             # pragma omp atomic update
-            outp[aQ][1] -= Qy;
+            outp[aQ][1] += Qy;
 
             // Qz
             double Qz = 0.0;
@@ -579,7 +579,7 @@ void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBod
                 }
             }
             # pragma omp atomic update
-            outp[aQ][2] -= Qz;
+            outp[aQ][2] += Qz;
         }
     }
 }
@@ -641,6 +641,17 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
     }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf());
     one_body_ao_computer(ints_vec, kinetic_mat, false);
+    return kinetic_mat;
+}
+SharedMatrix MintsHelper::ao_kinetic_deriv1(SharedMatrix D)
+{
+    // Overlap
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic(1)));
+    }
+    SharedMatrix kinetic_mat(new Matrix("AO-basis Overlap Ints", basisset_->molecule()->natom(), 3));
+    one_body_ao_computer_deriv1(ints_vec, D, kinetic_mat);
     return kinetic_mat;
 }
 
