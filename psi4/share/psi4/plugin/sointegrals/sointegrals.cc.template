@@ -83,8 +83,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     std::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
 
     // The integral factory oversees the creation of integral objects
-    std::shared_ptr<IntegralFactory> integral(new IntegralFactory
-            (aoBasis, aoBasis, aoBasis, aoBasis));
+    auto integral = std::make_shared<IntegralFactory>(aoBasis, aoBasis, aoBasis, aoBasis);
 
     // N.B. This should be called after the basis has been built, because
     // the geometry has not been
@@ -94,13 +93,13 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     // checkpoint file
     // ...it needs to raid the checkpoint file to find those dimensions.
     // Create an SOBasis object using the basis set and integral factory.
-    std::shared_ptr<SOBasisSet> soBasis(new SOBasisSet(aoBasis, integral));
+    auto soBasis = std::make_shared<SOBasisSet>(aoBasis, integral);
 
     // Obtain block dimensions from the SO basis
     const Dimension dimension = soBasis->dimension();
 
     // The matrix factory can create matrices of the correct dimensions...
-    std::shared_ptr<MatrixFactory> factory(new MatrixFactory);
+    auto factory = std::make_shared<MatrixFactory>();
     factory->init_with(dimension, dimension);
 
     // Form the one-electron integral objects from the integral factory
@@ -138,7 +137,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
         // 2. Create an object that knows how to convert any two-body AO
         // integral to SO.
-        std::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral));
+        auto eri = std::make_shared<TwoBodySOInt>(tb, integral);
 
         // 3. Find out how many SO shells we have.
         int nsoshell = soBasis->nshell();

@@ -71,7 +71,7 @@ static simint_shell psi_shell_to_simint_(const GaussianShell &s) {
 }
 
 static std::shared_ptr<ShellVec> create_shell_vec_(const BasisSet &bs) {
-    std::shared_ptr<ShellVec> shells = std::shared_ptr<ShellVec>(new ShellVec, &shell_vector_deleter_);
+    auto shells = std::shared_ptr<ShellVec>(new ShellVec, &shell_vector_deleter_);
     for (size_t i = 0; i < bs.nshell(); i++) shells->push_back(psi_shell_to_simint_(bs.shell(i)));
 
     return shells;
@@ -125,7 +125,7 @@ static ShellPairVec create_multi_shellpair_(const std::vector<ShellPairBlock> &v
 static std::shared_ptr<ShellPairVec> create_shared_multi_shellpair_(const std::vector<ShellPairBlock> &vsh,
                                                                     const ShellVec &shell1, const ShellVec &shell2) {
     auto vec = create_multi_shellpair_(vsh, shell1, shell2);
-    return std::shared_ptr<ShellPairVec> = std::make_shared<ShellPairVec>(std::move(vec));
+    return std::make_shared<ShellPairVec>(std::move(vec));
 }
 
 ////////////////////////////////////////////////
