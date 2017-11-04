@@ -641,17 +641,6 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr <BasisSet> bs1, std::shared
     one_body_ao_computer(ints_vec, overlap_mat, false);
     return overlap_mat;
 }
-SharedMatrix MintsHelper::overlap_grad(SharedMatrix D)
-{
-    // Overlap
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++){
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(1)));
-    }
-    SharedMatrix overlap_mat(new Matrix("AO-basis Overlap Ints Deriv1", basisset_->molecule()->natom(), 3));
-    grad_two_center_computer(ints_vec, D, overlap_mat);
-    return overlap_mat;
-}
 
 SharedMatrix MintsHelper::ao_kinetic()
 {
@@ -673,17 +662,6 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr <BasisSet> bs1, std::shared
     }
     SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf()));
     one_body_ao_computer(ints_vec, kinetic_mat, false);
-    return kinetic_mat;
-}
-SharedMatrix MintsHelper::kinetic_grad(SharedMatrix D)
-{
-    // Overlap
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++){
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic(1)));
-    }
-    SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints Deriv1", basisset_->molecule()->natom(), 3));
-    grad_two_center_computer(ints_vec, D, kinetic_mat);
     return kinetic_mat;
 }
 
@@ -708,76 +686,6 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shar
     SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf(), bs2->nbf()));
     one_body_ao_computer(ints_vec, potential_mat, false);
     return potential_mat;
-}
-SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
-
-    // Potential derivs
-    int natom = basisset_->molecule()->natom();
-    auto V = std::make_shared<Matrix>("AO-basis Potential Ints Deriv1", natom, 3);
-
-    // Build temps
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    std::vector<SharedMatrix> Vtemps;
-    for (size_t i = 0; i < nthread_; i++) {
-        Vtemps.push_back(V->clone());
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
-    }
-
-    // Lower Triangle
-    std::vector<std::pair<int, int>> PQ_pairs;
-    for (int P = 0; P < basisset_->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int, int>(P, Q));
-        }
-    }
-
-    double **Dp = D->pointer();
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
-    for (size_t PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        size_t P = PQ_pairs[PQ].first;
-        size_t Q = PQ_pairs[PQ].second;
-
-        size_t rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-
-        ints_vec[rank]->compute_shell_deriv1(P, Q);
-        const double *buffer = ints_vec[rank]->buffer();
-
-        size_t nP = basisset_->shell(P).nfunction();
-        size_t oP = basisset_->shell(P).function_index();
-        size_t aP = basisset_->shell(P).ncenter();
-
-        size_t nQ = basisset_->shell(Q).nfunction();
-        size_t oQ = basisset_->shell(Q).function_index();
-        size_t aQ = basisset_->shell(Q).ncenter();
-
-        double perm = (P == Q ? 1.0 : 2.0);
-
-        double **Vp = Vtemps[rank]->pointer();
-
-        for (size_t A = 0; A < natom; A++) {
-            const double *ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-            const double *ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-            const double *ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    double Vval = perm * Dp[p + oP][q + oQ];
-                    Vp[A][0] += Vval * (*ref0++);
-                    Vp[A][1] += Vval * (*ref1++);
-                    Vp[A][2] += Vval * (*ref2++);
-                }
-            }
-        }
-    }
-
-    // Sum it up
-    for (size_t t = 0; t < nthread_; t++) {
-        V->axpy(1.0, Vtemps[t]);
-    }
-    return V;
 }
 
 SharedMatrix MintsHelper::ao_ecp()
@@ -1877,6 +1785,313 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     Imo->set_numpy_shape(nshape);
 
     return Imo;
+}
+SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
+    // Potential derivs
+    int natom = basisset_->molecule()->natom();
+    auto V = std::make_shared<Matrix>("Potential Gradient", natom, 3);
+
+    // Build temps
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    std::vector<SharedMatrix> Vtemps;
+    for (size_t i = 0; i < nthread_; i++) {
+        Vtemps.push_back(V->clone());
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+    }
+
+    // Lower Triangle
+    std::vector<std::pair<int, int>> PQ_pairs;
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            PQ_pairs.push_back(std::pair<int, int>(P, Q));
+        }
+    }
+
+    double **Dp = D->pointer();
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+    for (size_t PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+        size_t P = PQ_pairs[PQ].first;
+        size_t Q = PQ_pairs[PQ].second;
+
+        size_t rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        ints_vec[rank]->compute_shell_deriv1(P, Q);
+        const double *buffer = ints_vec[rank]->buffer();
+
+        size_t nP = basisset_->shell(P).nfunction();
+        size_t oP = basisset_->shell(P).function_index();
+        size_t aP = basisset_->shell(P).ncenter();
+
+        size_t nQ = basisset_->shell(Q).nfunction();
+        size_t oQ = basisset_->shell(Q).function_index();
+        size_t aQ = basisset_->shell(Q).ncenter();
+
+        double perm = (P == Q ? 1.0 : 2.0);
+
+        double **Vp = Vtemps[rank]->pointer();
+
+        for (size_t A = 0; A < natom; A++) {
+            const double *ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
+            const double *ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
+            const double *ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+            for (size_t p = 0; p < nP; p++) {
+                for (size_t q = 0; q < nQ; q++) {
+                    double Vval = perm * Dp[p + oP][q + oQ];
+                    Vp[A][0] += Vval * (*ref0++);
+                    Vp[A][1] += Vval * (*ref1++);
+                    Vp[A][2] += Vval * (*ref2++);
+                }
+            }
+        }
+    }
+
+    // Sum it up
+    for (size_t t = 0; t < nthread_; t++) {
+        V->axpy(1.0, Vtemps[t]);
+    }
+    return V;
+}
+
+SharedMatrix MintsHelper::kinetic_grad(SharedMatrix D) {
+    // Overlap
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic(1)));
+    }
+    SharedMatrix kinetic_mat(new Matrix("Kinetic Gradient", basisset_->molecule()->natom(), 3));
+    grad_two_center_computer(ints_vec, D, kinetic_mat);
+    return kinetic_mat;
+}
+
+SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
+    double xlambda = 0.0;
+    double ylambda = 0.0;
+    double zlambda = 0.0;
+
+    std::string perturb_with = options_.get_str("PERTURB_WITH");
+    if (perturb_with == "DIPOLE_X")
+        xlambda = options_.get_double("PERTURB_MAGNITUDE");
+    else if (perturb_with == "DIPOLE_Y")
+        ylambda = options_.get_double("PERTURB_MAGNITUDE");
+    else if (perturb_with == "DIPOLE_Z")
+        zlambda = options_.get_double("PERTURB_MAGNITUDE");
+    else if (perturb_with == "DIPOLE") {
+        if (options_["PERTURB_DIPOLE"].size() != 3)
+            throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+        xlambda = options_["PERTURB_DIPOLE"][0].to_double();
+        ylambda = options_["PERTURB_DIPOLE"][1].to_double();
+        zlambda = options_["PERTURB_DIPOLE"][2].to_double();
+    } else {
+        std::string msg("Gradients for a ");
+        msg += perturb_with;
+        msg += " perturbation are not available yet.\n";
+        throw PSIEXCEPTION(msg);
+    }
+
+    return perturb_grad(D, xlambda, ylambda, zlambda);
+}
+
+SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
+    // Overlap
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(1)));
+    }
+    SharedMatrix overlap_mat(new Matrix("Overlap Gradient", basisset_->molecule()->natom(), 3));
+    grad_two_center_computer(ints_vec, D, overlap_mat);
+    return overlap_mat;
+}
+SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double ylambda, double zlambda) {
+    double **Dp = D->pointer();
+
+    int natom = molecule_->natom();
+    auto ret = std::make_shared<Matrix>("Perturbation Gradient", natom, 3);
+    double **Pp = ret->pointer();
+
+    // Nuclear dipole perturbation derivatives
+    for (int n = 0; n < natom; ++n) {
+        double charge = molecule_->Z(n);
+        Pp[n][0] += xlambda * charge;
+        Pp[n][1] += ylambda * charge;
+        Pp[n][2] += zlambda * charge;
+    }
+
+    // Electronic dipole perturbation derivatives
+    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+    const double *buffer = Dint->buffer();
+
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            Dint->compute_shell_deriv1(P, Q);
+
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
+
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
+
+            const double *ref = buffer;
+            double perm = (P == Q ? 1.0 : 2.0);
+            double prefac;
+
+            /*
+             * Mu X derivatives
+             */
+            if (xlambda != 0.0) {
+                prefac = perm * xlambda;
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+            } else {
+                // Xlambda is zero, so we just advance the pointer to the buffer
+                ref += 6 * nP * nQ;
+            }
+
+            /*
+             * Mu Y derivatives
+             */
+            if (ylambda != 0.0) {
+                prefac = perm * ylambda;
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+            } else {
+                // Ylambda is zero, so we just advance the pointer to the buffer
+                ref += 6 * nP * nQ;
+            }
+
+            /*
+             * Mu Z derivatives
+             */
+            if (zlambda != 0.0) {
+                prefac = perm * zlambda;
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aP][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+            }
+        }
+    }
+    return ret;
 }
 
 void MintsHelper::play()
