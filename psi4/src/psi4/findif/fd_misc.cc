@@ -94,12 +94,12 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 
 
   // Return list of frequencies to wavefunction object.
-  std::shared_ptr<Vector> freq_vector = std::make_shared<Vector>(modes.size());
+  auto freq_vector = std::make_shared<Vector>(modes.size());
   for (int i=0; i<modes.size(); ++i)
     freq_vector->set(i, modes[i]->cm);
 
   // Reture list of normal modes to wavefunction object.
-  std::shared_ptr<Vector> nm_vector = std::make_shared<Vector>(3*Natom*modes.size());
+  auto nm_vector = std::make_shared<Vector>(3*Natom*modes.size());
   int count = 0;
   for (int i=0; i<modes.size(); ++i) {
     freq_vector->set(i, modes[i]->cm);
@@ -155,7 +155,7 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
 {
     std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
-    std::shared_ptr <PsiOutStream> printer = std::make_shared<PsiOutStream>(normal_modes_fname, std::ostream::trunc);
+    auto printer = std::make_shared<PsiOutStream>(normal_modes_fname, std::ostream::trunc);
 
     printer->Printf("[Molden Format]\n[FREQ]\n");
     for(int i = 0; i < modes.size(); ++i) { // print descending order

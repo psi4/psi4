@@ -180,8 +180,8 @@ void CUHF::compute_spin_contamination() {
         int nb = nbetapi_[h];
         if (na == 0 || nb == 0 || nbf == 0 || nmo == 0) continue;
 
-        SharedMatrix Ht = std::make_shared<Matrix>("H Temp", nbf, nb);
-        SharedMatrix Ft = std::make_shared<Matrix>("F Temp", na, nb);
+        auto Ht = std::make_shared<Matrix>("H Temp", nbf, nb);
+        auto Ft = std::make_shared<Matrix>("F Temp", na, nb);
 
         double** Sp = S_->pointer(h);
         double** Cap = Ca_->pointer(h);

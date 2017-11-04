@@ -96,10 +96,10 @@ void DFOCC::ccd_t2_amps() {
     Tnew.reset();
 
     // DIIS
-    std::shared_ptr<Matrix> RT2 = std::make_shared<Matrix>("RT2", naoccA * navirA, naoccA * navirA);
+    auto RT2 = std::make_shared<Matrix>("RT2", naoccA * navirA, naoccA * navirA);
     Tau->to_matrix(RT2);
     Tau.reset();
-    std::shared_ptr<Matrix> T2 = std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
+    auto T2 = std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
     t2->to_matrix(T2);
 
     // add entry

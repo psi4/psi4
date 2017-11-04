@@ -238,9 +238,9 @@ void DFCorrGrad::build_Amn_terms()
 
     // => Temporary Buffers <= //
 
-    SharedVector c = std::make_shared<Vector>("c", naux);
+    auto c = std::make_shared<Vector>("c", naux);
     double* cp = c->pointer();
-    SharedVector d = std::make_shared<Vector>("d", naux);
+    auto d = std::make_shared<Vector>("d", naux);
     double* dp = d->pointer();
 
     SharedMatrix Amn;
@@ -307,7 +307,7 @@ void DFCorrGrad::build_Amn_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
@@ -458,14 +458,14 @@ void DFCorrGrad::build_AB_inv_terms()
 
     // => Fitting Metric Full Inverse <= //
 
-    std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(auxiliary_, true);
+    auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
     metric->form_full_eig_inverse();
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
 
     // => d_A = (A|B)^{-1} c_B <= //
-    SharedVector c = std::make_shared<Vector>("c", naux);
-    SharedVector d = std::make_shared<Vector>("d", naux);
+    auto c = std::make_shared<Vector>("c", naux);
+    auto d = std::make_shared<Vector>("d", naux);
     double* cp = c->pointer();
     double* dp = d->pointer();
 
@@ -509,8 +509,8 @@ void DFCorrGrad::fitting_helper(SharedMatrix J, size_t file, const std::string& 
     cols = (cols < 1L ? 1L : cols);
     max_cols = (int) cols;
 
-    SharedMatrix Aij = std::make_shared<Matrix>("Aij", naux, max_cols);
-    SharedMatrix Bij = std::make_shared<Matrix>("Bij", naux, max_cols);
+    auto Aij = std::make_shared<Matrix>("Aij", naux, max_cols);
+    auto Bij = std::make_shared<Matrix>("Bij", naux, max_cols);
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
     double** Jp = J->pointer();
@@ -550,7 +550,7 @@ void DFCorrGrad::build_UV_terms()
 
     bool restricted = (Ca_ == Cb_);
 
-    SharedMatrix V = std::make_shared<Matrix>("W", naux, naux);
+    auto V = std::make_shared<Matrix>("W", naux, naux);
     double** Vp = V->pointer();
 
     // => V < = //
@@ -589,8 +589,8 @@ void DFCorrGrad::UV_helper(SharedMatrix V, double c, size_t file, const std::str
 
     // => Temporary Buffers <= //
 
-    SharedMatrix Aij = std::make_shared<Matrix>("Aij", max_rows, nij);
-    SharedMatrix Bij = std::make_shared<Matrix>("Bij", max_rows, nij);
+    auto Aij = std::make_shared<Matrix>("Aij", max_rows, nij);
+    auto Bij = std::make_shared<Matrix>("Bij", max_rows, nij);
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
     double** Vp = V->pointer();
@@ -643,7 +643,7 @@ void DFCorrGrad::build_AB_x_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set());
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set());
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
@@ -848,7 +848,7 @@ void DFCorrGrad::build_Amn_x_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));

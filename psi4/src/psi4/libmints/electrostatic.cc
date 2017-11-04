@@ -197,7 +197,7 @@ void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell
 
 SharedVector ElectrostaticInt::nuclear_contribution(std::shared_ptr<Molecule> mol)
 {
-    std::shared_ptr<Vector> sret = std::make_shared<Vector>(mol->natom());
+    auto sret = std::make_shared<Vector>(mol->natom());
     double *ret = sret->pointer();
 
     int natom = mol->natom();

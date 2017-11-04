@@ -154,7 +154,7 @@ void DFOCC::formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet
     J_mhalf = block_matrix(nQ, nQ);
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -198,7 +198,7 @@ void DFOCC::formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet
 
     /*
     // Create integral factories for the RI basis
-    std::shared_ptr<IntegralFactory> rifactory_J = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
+    auto rifactory_J = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::shared_ptr<TwoBodyAOInt> Jint(rifactory_J->eri());
 
     double **J = block_matrix(nQ, nQ);
@@ -277,7 +277,7 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<ERISieve> sieve_ = std::make_shared<ERISieve>(primary_, cutoff);
+    auto sieve_ = std::make_shared<ERISieve>(primary_, cutoff);
     const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -300,7 +300,7 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2 = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -360,7 +360,7 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
     }
 
     /*
-    std::shared_ptr<IntegralFactory> fact = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    auto fact = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::shared_ptr<TwoBodyAOInt> eri(fact->eri());
     const double* buffer = eri->buffer();
 

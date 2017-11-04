@@ -262,8 +262,8 @@ void DCFTSolver::form_density_weighted_fock_RHF() {
     global_dpd_->file2_mat_rd(&T_VV);
 
     // Copy Tau in MO basis from the DPD library
-    SharedMatrix a_tau_mo = std::make_shared<Matrix>("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
-    SharedMatrix b_tau_mo = std::make_shared<Matrix>("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto a_tau_mo = std::make_shared<Matrix>("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto b_tau_mo = std::make_shared<Matrix>("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
 
     for (int h = 0; h < nirrep_; ++h) {
         if (nsopi_[h] == 0) continue;
@@ -292,8 +292,8 @@ void DCFTSolver::form_density_weighted_fock_RHF() {
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
-    SharedMatrix a_evecs = std::make_shared<Matrix>("Tau Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedVector a_evals = std::make_shared<Vector>("Tau Eigenvalues (Alpha)", nirrep_, nmopi_);
+    auto a_evecs = std::make_shared<Matrix>("Tau Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto a_evals = std::make_shared<Vector>("Tau Eigenvalues (Alpha)", nirrep_, nmopi_);
 
     // Diagonalize Tau
     a_tau_mo->diagonalize(a_evecs, a_evals);
@@ -301,7 +301,7 @@ void DCFTSolver::form_density_weighted_fock_RHF() {
     a_tau_mo->set_diagonal(a_evals);
 
     // Transform the Fock matrix to NSO basis
-    SharedMatrix nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_);
+    auto nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_);
 
     // Alpha spin
     nso_Fa->transform(moFa_, a_evecs);

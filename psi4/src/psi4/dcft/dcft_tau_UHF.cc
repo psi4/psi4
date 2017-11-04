@@ -726,8 +726,8 @@ DCFTSolver::print_opdm()
 
     // Obtain natural occupancies
     // Form one-particle density matrix
-    SharedMatrix a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
 
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -766,10 +766,10 @@ DCFTSolver::print_opdm()
     }
 
     // Diagonalize OPDM to obtain NOs
-    SharedMatrix aevecs = std::make_shared<Matrix>("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix bevecs = std::make_shared<Matrix>("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
-    SharedVector aevals = std::make_shared<Vector>("Eigenvalues (Alpha)", nirrep_, nmopi_);
-    SharedVector bevals = std::make_shared<Vector>("Eigenvalues (Beta)", nirrep_, nmopi_);
+    auto aevecs = std::make_shared<Matrix>("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto bevecs = std::make_shared<Matrix>("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
+    auto aevals = std::make_shared<Vector>("Eigenvalues (Alpha)", nirrep_, nmopi_);
+    auto bevals = std::make_shared<Vector>("Eigenvalues (Beta)", nirrep_, nmopi_);
 
     a_opdm->diagonalize(aevecs, aevals, descending);
     b_opdm->diagonalize(bevecs, bevals, descending);
@@ -832,14 +832,14 @@ DCFTSolver::refine_tau() {
 
     // Iteratively compute the exact Tau
 
-    SharedMatrix aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    SharedMatrix bocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Beta Occupied, old)", nirrep_, nboccpi_, nboccpi_);
-    SharedMatrix avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    SharedMatrix bvir_tau_old = std::make_shared<Matrix>("MO basis Tau (Beta Virtual, old)", nirrep_, nbvirpi_, nbvirpi_);
-    SharedMatrix aocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    SharedMatrix bocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Beta Occupied, old)", nirrep_, nboccpi_, nboccpi_);
-    SharedMatrix avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    SharedMatrix bvir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Beta Virtual, old)", nirrep_, nbvirpi_, nbvirpi_);
+    auto aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto bocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Beta Occupied, old)", nirrep_, nboccpi_, nboccpi_);
+    auto avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto bvir_tau_old = std::make_shared<Matrix>("MO basis Tau (Beta Virtual, old)", nirrep_, nbvirpi_, nbvirpi_);
+    auto aocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto bocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Beta Occupied, old)", nirrep_, nboccpi_, nboccpi_);
+    auto avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto bvir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Beta Virtual, old)", nirrep_, nbvirpi_, nbvirpi_);
 
     bool converged = false;
     bool failed = false;
@@ -863,10 +863,10 @@ DCFTSolver::refine_tau() {
                                        DIISEntry::Matrix, bvir_tau_.get());
     }
 
-    SharedMatrix aocc_r = std::make_shared<Matrix>("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-    SharedMatrix bocc_r = std::make_shared<Matrix>("Residual (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
-    SharedMatrix avir_r = std::make_shared<Matrix>("Residual (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-    SharedMatrix bvir_r = std::make_shared<Matrix>("Residual (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
+    auto aocc_r = std::make_shared<Matrix>("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
+    auto bocc_r = std::make_shared<Matrix>("Residual (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
+    auto avir_r = std::make_shared<Matrix>("Residual (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
+    auto bvir_r = std::make_shared<Matrix>("Residual (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
 
     while(!converged && !failed){
         std::string diisString;
@@ -997,14 +997,14 @@ DCFTSolver::refine_tau() {
         bocc_tau_->zero();
         bvir_tau_->zero();
         // Diagonalize and take a square root
-        SharedMatrix aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-        SharedMatrix bocc_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
-        SharedMatrix avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-        SharedMatrix bvir_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
-        SharedVector aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
-        SharedVector bocc_evals = std::make_shared<Vector>("Eigenvalues (Beta Occupied)", nirrep_, nboccpi_);
-        SharedVector avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
-        SharedVector bvir_evals = std::make_shared<Vector>("Eigenvalues (Beta Virtual)", nirrep_, nbvirpi_);
+        auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
+        auto bocc_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
+        auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
+        auto bvir_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
+        auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
+        auto bocc_evals = std::make_shared<Vector>("Eigenvalues (Beta Occupied)", nirrep_, nboccpi_);
+        auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
+        auto bvir_evals = std::make_shared<Vector>("Eigenvalues (Beta Virtual)", nirrep_, nbvirpi_);
         aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
         bocc_tau_old->diagonalize(bocc_evecs, bocc_evals);
         avir_tau_old->diagonalize(avir_evecs, avir_evals);

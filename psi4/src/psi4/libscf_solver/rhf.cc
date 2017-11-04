@@ -551,7 +551,7 @@ std::vector<SharedMatrix> RHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
 std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
                                           int print_lvl) {
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
     cphf_converged_ = false;
     cphf_nfock_builds_ = 0;
 
@@ -678,7 +678,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     mean_rms /= (double)nvecs;
     cphf_nfock_builds_ += nremain;
 
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_lvl > 1) {
         outfile->Printf("    %5s %14.3e %12.3e %7d %9ld\n", "Guess", mean_rms, max_rms, nremain, stop - start);
     }
@@ -741,7 +741,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         nremain = new_remain;
         mean_rms /= (double)nvecs;
 
-        stop = time(NULL);
+        stop = time(nullptr);
         if (print_lvl) {
             outfile->Printf("    %5d %14.3e %12.3e %7d %9ld\n", cg_iter, mean_rms, max_rms, nremain, stop - start);
         }
@@ -795,7 +795,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 int RHF::soscf_update() {
     int fock_builds;
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
 
     // => Build gradient and preconditioner <= //
 
@@ -828,7 +828,7 @@ bool RHF::stability_analysis() {
     } else {
 #define ID(x) ints.DPD_ID(x)
         // Build the Fock Matrix
-        SharedMatrix moF = std::make_shared<Matrix>("MO basis fock matrix", nmopi_, nmopi_);
+        auto moF = std::make_shared<Matrix>("MO basis fock matrix", nmopi_, nmopi_);
         moF->transform(Fa_, Ca_);
 
         std::vector<std::shared_ptr<MOSpace> > spaces;

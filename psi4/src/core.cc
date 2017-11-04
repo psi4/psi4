@@ -382,7 +382,7 @@ void py_psi_cctransort(SharedWavefunction ref_wfn) {
 }
 SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("CCENERGY");
-    SharedWavefunction ccwave = std::make_shared<ccenergy::CCEnergyWavefunction>(ref_wfn, Process::environment.options);
+    auto ccwave = std::make_shared<ccenergy::CCEnergyWavefunction>(ref_wfn, Process::environment.options);
 
     double energy = ccwave->compute_energy();
     return ccwave;
@@ -469,9 +469,9 @@ void py_psi_scatter(std::shared_ptr<Molecule> molecule, double step, py::list di
         py::list dip_list = dip_polar_list[i].cast<py::list>();
         py::list rot_list = opt_rot_list[i].cast<py::list>();
         py::list quad_list = dip_quad_polar_list[i].cast<py::list>();
-        SharedMatrix dip_mat = std::make_shared<Matrix>(3, 3);
-        SharedMatrix rot_mat = std::make_shared<Matrix>(3, 3);
-        SharedMatrix quad_mat = std::make_shared<Matrix>(9, 3);
+        auto dip_mat = std::make_shared<Matrix>(3, 3);
+        auto rot_mat = std::make_shared<Matrix>(3, 3);
+        auto quad_mat = std::make_shared<Matrix>(9, 3);
         for (int row = 0, j = 0; row < 3; ++row) {
             for (int col = 0; col < 3; ++col, ++j) {
                 dip_mat->set(row, col, dip_list[j].cast<double>());
@@ -653,10 +653,10 @@ bool py_psi_set_global_option_double(std::string const& key, double value) {
 }
 
 bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const py::list& values,
-                                   DataType* entry = NULL) {
+                                   DataType* entry = nullptr) {
     std::string nonconst_key = to_upper(key);
     // Assign a new head entry on the first time around only
-    if (entry == NULL) {
+    if (entry == nullptr) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
         Data& data = Process::environment.options[nonconst_key];
         // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
@@ -696,10 +696,10 @@ bool py_psi_set_local_option_array_wrapper(std::string const& module, std::strin
     return py_psi_set_local_option_array(module, key, values);
 }
 
-bool py_psi_set_global_option_array(std::string const& key, py::list values, DataType* entry = NULL) {
+bool py_psi_set_global_option_array(std::string const& key, py::list values, DataType* entry = nullptr) {
     std::string nonconst_key = to_upper(key);
     // Assign a new head entry on the first time around only
-    if (entry == NULL) {
+    if (entry == nullptr) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
         Data& data = Process::environment.options[nonconst_key];
         // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
@@ -947,7 +947,7 @@ void py_psi_set_frequencies(std::shared_ptr<Vector> freq) { Process::environment
 std::shared_ptr<Vector> py_psi_get_frequencies() { return Process::environment.frequencies(); }
 
 std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
-    std::shared_ptr<psi::Vector> empty = std::make_shared<psi::Vector>();
+    auto empty = std::make_shared<psi::Vector>();
     return empty;  // charges not added to process.h for environment - yet(?)
 }
 
@@ -1082,7 +1082,7 @@ void psi4_python_module_finalize() {
     timer_done();
 
     outfile = std::shared_ptr<PsiOutStream>();
-    psi_file_prefix = NULL;
+    psi_file_prefix = nullptr;
 }
 
 PYBIND11_PLUGIN(core) {

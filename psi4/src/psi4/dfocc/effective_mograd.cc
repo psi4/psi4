@@ -245,7 +245,7 @@ void DFOCC::fc_grad_terms() {
         L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc);
         L->form_b_kl(K);
         K.reset();
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, L, ZklA, 4.0, 0.0);
         L.reset();
 
@@ -429,7 +429,7 @@ void DFOCC::fc_grad_terms() {
         L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc);
         L->form_b_kl(K);
         K.reset();
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, L, ZklA, 2.0, 0.0);
         L.reset();
 
@@ -795,7 +795,7 @@ void DFOCC::oo_grad_terms() {
         K->read(psio_, PSIF_DFOCC_INTS);
 
         // Z_Q' = 2 \sum_{kl} b_{kl}^{Q} Z_kl
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, K, ZklA, 2.0, 0.0);
 
 //  G_ij^Q += 2 Z_Q' \delta_{ij}
@@ -880,7 +880,7 @@ void DFOCC::oo_grad_terms() {
             L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc);
             L->form_b_kl(K);
             K.reset();
-            SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
+            auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
             Zq->gemv(false, L, ZklA, 2.0, 0.0);
             L.reset();
 
@@ -1240,7 +1240,7 @@ void DFOCC::vv_grad_terms() {
         // Z_Q'' = 2 \sum_{cd} b_{cd}^{Q} Z_cd
         K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, K, ZcdA, 2.0, 0.0);
         K.reset();
 

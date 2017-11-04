@@ -75,13 +75,13 @@ SAPT0::SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefu
         do_e20disp_ = true;
     }
 
-    wBAR_ = NULL;
-    wABS_ = NULL;
+    wBAR_ = nullptr;
+    wABS_ = nullptr;
 }
 
 SAPT0::~SAPT0() {
-    if (wBAR_ != NULL) free_block(wBAR_);
-    if (wABS_ != NULL) free_block(wABS_);
+    if (wBAR_ != nullptr) free_block(wBAR_);
+    if (wABS_ != nullptr) free_block(wABS_);
     psio_->close(PSIF_SAPT_AA_DF_INTS, 1);
     psio_->close(PSIF_SAPT_BB_DF_INTS, 1);
     psio_->close(PSIF_SAPT_AB_DF_INTS, 1);
@@ -393,7 +393,7 @@ void SAPT0::df_integrals() {
     psio_->open(PSIF_SAPT_TEMP, PSIO_OPEN_NEW);
 
     // Get fitting metric
-    std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(ribasis_);
+    auto metric = std::make_shared<FittingMetric>(ribasis_);
     metric->form_eig_inverse();
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);
@@ -856,12 +856,12 @@ void SAPT0::df_integrals() {
 }
 
 void SAPT0::df_integrals_aio() {
-    std::shared_ptr<AIOHandler> aio = std::make_shared<AIOHandler>(psio_);
+    auto aio = std::make_shared<AIOHandler>(psio_);
 
     psio_->open(PSIF_SAPT_TEMP, PSIO_OPEN_NEW);
 
     // Get fitting metric
-    std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(ribasis_);
+    auto metric = std::make_shared<FittingMetric>(ribasis_);
     metric->form_eig_inverse();
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);
@@ -1615,7 +1615,7 @@ void SAPT0::oo_df_integrals() {
     free_block(B_p_BB);
 
     // Get fitting metric
-    std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(elstbasis_);
+    auto metric = std::make_shared<FittingMetric>(elstbasis_);
     metric->form_eig_inverse();
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);

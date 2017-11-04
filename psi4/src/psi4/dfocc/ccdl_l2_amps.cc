@@ -110,10 +110,10 @@ void DFOCC::ccdl_l2_amps() {
     Lnew.reset();
 
     // DIIS
-    std::shared_ptr<Matrix> RL2 = std::make_shared<Matrix>("RL2", naoccA * navirA, naoccA * navirA);
+    auto RL2 = std::make_shared<Matrix>("RL2", naoccA * navirA, naoccA * navirA);
     Tau->to_matrix(RL2);
     Tau.reset();
-    std::shared_ptr<Matrix> L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
+    auto L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
     l2->to_matrix(L2);
 
     // add entry

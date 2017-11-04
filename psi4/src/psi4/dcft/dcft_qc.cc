@@ -288,8 +288,8 @@ void DCFTSolver::compute_orbital_gradient() {
 
     // Initialize the idempotent contribution to the OPDM (Kappa)
     if (!orbital_optimized_) {
-        SharedMatrix full_kappa_a = std::make_shared<Matrix>("MO basis Full Kappa (Alpha)", nirrep_, nmopi_, nmopi_);
-        SharedMatrix full_kappa_b = std::make_shared<Matrix>("MO basis Full Kappa (Beta)", nirrep_, nmopi_, nmopi_);
+        auto full_kappa_a = std::make_shared<Matrix>("MO basis Full Kappa (Alpha)", nirrep_, nmopi_, nmopi_);
+        auto full_kappa_b = std::make_shared<Matrix>("MO basis Full Kappa (Beta)", nirrep_, nmopi_, nmopi_);
         // Compute Kappa in the MO basis
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < naoccpi_[h]; ++i) {
@@ -1843,7 +1843,7 @@ int DCFTSolver::iterate_nr_conjugate_gradients() {
 }
 
 int DCFTSolver::iterate_nr_jacobi() {
-    SharedVector Xold = std::make_shared<Vector>("Old step vector in the IDP basis", nidp_);
+    auto Xold = std::make_shared<Vector>("Old step vector in the IDP basis", nidp_);
 
     bool converged_micro = false;
     int counter = 0;
@@ -2043,7 +2043,7 @@ void DCFTSolver::run_davidson() {
         if (print_ > 1) outfile->Printf("\tIteration %d\n", ++count);
 
         // Form the off-diagonal contribution to the sigma vector
-        SharedMatrix sigma_vector = std::make_shared<Matrix>("Sigma vector for the Davidson algorithm", b_dim_, nidp_);
+        auto sigma_vector = std::make_shared<Matrix>("Sigma vector for the Davidson algorithm", b_dim_, nidp_);
         for (int k = 0; k < b_dim_; ++k) {
             double *D_p = D_->pointer();
             double *b_p = b_->pointer()[k];
@@ -2057,7 +2057,7 @@ void DCFTSolver::run_davidson() {
             ::memcpy(sigma_vector_p, sigma_p, nidp_ * sizeof(double));
         }
         // Add the diagonal contribution
-        SharedMatrix temp = std::make_shared<Matrix>("Temp matrix", b_dim_, nidp_);
+        auto temp = std::make_shared<Matrix>("Temp matrix", b_dim_, nidp_);
         temp->copy(b_);
         double **temp_p = temp->pointer();
         for (int i = 0; i < nidp_; ++i) C_DSCAL(b_dim_, Hd_->get(i), &temp_p[0][i], nidp_);
@@ -2065,7 +2065,7 @@ void DCFTSolver::run_davidson() {
         sigma_vector->add(temp);
 
         // Form G matrix and diagonalize it
-        SharedMatrix G = std::make_shared<Matrix>("Subspace representation of the Hessian", b_dim_, b_dim_);
+        auto G = std::make_shared<Matrix>("Subspace representation of the Hessian", b_dim_, b_dim_);
         Evecs = std::make_shared<Matrix>("Eigenvectors of the Hessian subspace representation", b_dim_, b_dim_);
         Evals = std::make_shared<Vector>("Eigenvalues of the Hessian subspace representation", b_dim_);
         G->gemm(false, true, 1.0, b_, sigma_vector, 0.0);
@@ -2089,7 +2089,7 @@ void DCFTSolver::run_davidson() {
         b_->copy(temp);
 
         // Check whether the norm is preserved
-        SharedMatrix check = std::make_shared<Matrix>("Orthonormality Check, after rotation", b_dim_, b_dim_);
+        auto check = std::make_shared<Matrix>("Orthonormality Check, after rotation", b_dim_, b_dim_);
         check->gemm(0, 1, 1.0, b_, b_, 0.0);
         for (int i = 0; i < b_dim_; ++i) {
             if (std::fabs(check->get(i, i) - 1.0) > 1e-5)
@@ -2097,7 +2097,7 @@ void DCFTSolver::run_davidson() {
         }
 
         // Compute the residual: r_kp = sigma'_kp - ro_k b_kp'
-        SharedMatrix r = std::make_shared<Matrix>("Residual", b_dim_, nidp_);
+        auto r = std::make_shared<Matrix>("Residual", b_dim_, nidp_);
         r->copy(sigma_vector);
         double **r_p = r->pointer();
         double **b_p = b_->pointer();
@@ -2133,7 +2133,7 @@ void DCFTSolver::run_davidson() {
         }
 
         // Obtain new vectors from the residual: delta = -r_kp / (Hd_p - Evals_k)
-        SharedMatrix delta = std::make_shared<Matrix>("Correction vector", b_dim_, nidp_);
+        auto delta = std::make_shared<Matrix>("Correction vector", b_dim_, nidp_);
         for (int k = 0; k < b_dim_; ++k)
             for (int p = 0; p < nidp_; ++p) delta->set(k, p, -r->get(k, p));
         //                delta->set(k, p, -r->get(k, p) / (Hd_->get(p) - Evals->get(k)));
@@ -2224,12 +2224,12 @@ bool DCFTSolver::augment_b(double *vec, double tol) {
     C_DSCAL(nidp_, inv_norm, vec, 1);
 
     // Allocate |b'> vector and copy vec to it
-    SharedMatrix bprime = std::make_shared<Matrix>("B'", 1, nidp_);
+    auto bprime = std::make_shared<Matrix>("B'", 1, nidp_);
     double **bpp = bprime->pointer();
     ::memcpy(bpp[0], vec, nidp_ * sizeof(double));
 
     // Compute the overlap of the new |b'> space and the existing space |b>: <b|b'>
-    SharedMatrix bxb = std::make_shared<Matrix>("<b'|b>", b_dim_, 1);
+    auto bxb = std::make_shared<Matrix>("<b'|b>", b_dim_, 1);
     if (b_dim_) bxb->gemm(0, 1, 1.0, b_, bprime, 0.0);
 
     // Project out the existing subspace |b> from the current |b'> subspace: |b'> = |b'> - |b><b|b'>

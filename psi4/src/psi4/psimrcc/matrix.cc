@@ -69,7 +69,7 @@ fock(false),integral(false),chemist_notation(false),antisymmetric(false),out_of_
   allocate1(size_t,block_sizepi,nirreps);
 
   for(int h=0;h<nirreps;h++){
-    matrix[h]=NULL;
+    matrix[h]=nullptr;
     left_pairpi[h]=left->get_pairpi(h);
     right_pairpi[h]=right->get_pairpi(h);
     block_sizepi[h]=left_pairpi[h]*right_pairpi[h];

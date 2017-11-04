@@ -46,7 +46,7 @@ size_t PSIO::toclen(size_t unit) {
 
   this_entry = psio_unit[unit].toc;
 
-  while (this_entry != NULL) {
+  while (this_entry != nullptr) {
     ++len;
     this_entry = this_entry->next;
   }

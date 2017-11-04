@@ -51,7 +51,7 @@ namespace scf {
 
 PsiReturnType stability(SharedWavefunction ref_wfn, Options& options) {
     tstart();
-    std::shared_ptr<UStab> stab = std::make_shared<UStab>(ref_wfn, options);
+    auto stab = std::make_shared<UStab>(ref_wfn, options);
     stab->compute_energy();
     tstop();
 
@@ -221,7 +221,7 @@ SharedMatrix UStab::analyze() {
         ++(eig_dims[vecs_[i].first->symmetry()]);
     }
 
-    SharedMatrix eval_sym = std::make_shared<Matrix>("SCF STABILITY EIGENVALUES", eig_dims, col_dim);
+    auto eval_sym = std::make_shared<Matrix>("SCF STABILITY EIGENVALUES", eig_dims, col_dim);
     eig_dims.zero();
 
     for (int i = 0; i < vals_.size(); ++i) {

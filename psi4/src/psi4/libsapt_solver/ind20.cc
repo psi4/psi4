@@ -113,7 +113,7 @@ void SAPT0::ind20r()
 
 void SAPT0::ind20rA_B()
 {
-  time_t start = time(NULL);
+  time_t start = time(nullptr);
   time_t stop;
   int iter=0;
   double E_old, E;
@@ -271,7 +271,7 @@ void SAPT0::ind20rA_B()
     dE = E_old-E;
 
     iter++;
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
@@ -308,7 +308,7 @@ void SAPT0::ind20rA_B()
 
 void SAPT0::ind20rB_A()
 {
-  time_t start = time(NULL);
+  time_t start = time(nullptr);
   time_t stop;
   int iter=0;
   double E_old, E;
@@ -466,7 +466,7 @@ void SAPT0::ind20rB_A()
     dE = E_old-E;
 
     iter++;
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
@@ -503,7 +503,7 @@ void SAPT0::ind20rB_A()
 
 void SAPT0::ind20rA_B_aio()
 {
-  time_t start = time(NULL);
+  time_t start = time(nullptr);
   time_t stop;
   int iter=0;
   double E_old, E;
@@ -555,7 +555,7 @@ void SAPT0::ind20rA_B_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
 
-  std::shared_ptr<AIOHandler> aio = std::make_shared<AIOHandler>(psio_);
+  auto aio = std::make_shared<AIOHandler>(psio_);
 
   double **C_p_AA[2];
   double **C_p_RR[2];
@@ -705,7 +705,7 @@ void SAPT0::ind20rA_B_aio()
     dE = E_old-E;
 
     iter++;
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
@@ -742,7 +742,7 @@ void SAPT0::ind20rA_B_aio()
 
 void SAPT0::ind20rB_A_aio()
 {
-  time_t start = time(NULL);
+  time_t start = time(nullptr);
   time_t stop;
   int iter=0;
   double E_old, E;
@@ -794,7 +794,7 @@ void SAPT0::ind20rB_A_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
 
-  std::shared_ptr<AIOHandler> aio = std::make_shared<AIOHandler>(psio_);
+  auto aio = std::make_shared<AIOHandler>(psio_);
 
   double **C_p_BB[2];
   double **C_p_SS[2];
@@ -944,7 +944,7 @@ void SAPT0::ind20rB_A_aio()
     dE = E_old-E;
 
     iter++;
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);

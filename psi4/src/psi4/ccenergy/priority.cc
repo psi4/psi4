@@ -53,7 +53,7 @@ void CCEnergyWavefunction::init_priority_list(void)
     cache_priority_list_[  0].rsnum =  7;
     cache_priority_list_[  0].priority = 231;
     cache_priority_list_[  0].next = &(cache_priority_list_[  0+1]);
-    cache_priority_list_[  0].last = NULL;
+    cache_priority_list_[  0].last = nullptr;
 
     strcpy(cache_priority_list_[  1].label, "tIJAB");
     cache_priority_list_[  1].filenum = 109;
@@ -1062,7 +1062,7 @@ void CCEnergyWavefunction::init_priority_list(void)
     cache_priority_list_[112].pqnum =  0;
     cache_priority_list_[112].rsnum =  5;
     cache_priority_list_[112].priority = 99999;
-    cache_priority_list_[112].next = NULL;
+    cache_priority_list_[112].next = nullptr;
     cache_priority_list_[112].last = &(cache_priority_list_[111]);
 }
 }} // namespace psi::ccenergy

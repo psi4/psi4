@@ -74,7 +74,7 @@ void CCEnergyWavefunction::diis(int iter)
 
 void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, double tolerance)
 {
-    SharedMatrix B2 = std::make_shared<Matrix>("B2", dimension, dimension);
+    auto B2 = std::make_shared<Matrix>("B2", dimension, dimension);
     double** Bp = B2->pointer();
     ::memcpy((void*) Bp[0], B[0], sizeof(double) * dimension * dimension);
 

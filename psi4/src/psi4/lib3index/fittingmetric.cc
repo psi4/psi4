@@ -84,8 +84,8 @@ void FittingMetric::form_fitting_metric()
     algorithm_ = "NONE";
 
     // Sizing/symmetry indexing
-    std::shared_ptr<IntegralFactory> auxfact = std::make_shared<IntegralFactory>(aux_, aux_, aux_, aux_);
-    std::shared_ptr<PetiteList> auxpet = std::make_shared<PetiteList>(aux_, auxfact);
+    auto auxfact = std::make_shared<IntegralFactory>(aux_, aux_, aux_, aux_);
+    auto auxpet = std::make_shared<PetiteList>(aux_, auxfact);
     std::shared_ptr<IntegralFactory> poisfact;
     std::shared_ptr<PetiteList> poispet;
     if (is_poisson_) {
@@ -110,7 +110,7 @@ void FittingMetric::form_fitting_metric()
     Dimension ngauspi = auxpet->SO_basisdim();
 
     // Build the full DF/Poisson matrix in the AO basis first
-    SharedMatrix AOmetric = std::make_shared<Matrix>("AO Basis DF Metric", naux, naux);
+    auto AOmetric = std::make_shared<Matrix>("AO Basis DF Metric", naux, naux);
     double** W = AOmetric->pointer(0);
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
@@ -372,7 +372,7 @@ void FittingMetric::form_QR_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy the J matrix to R (actually R')
-        SharedMatrix R = std::make_shared<Matrix>("R", n, n);
+        auto R = std::make_shared<Matrix>("R", n, n);
         double** Rp = R->pointer();
         C_DCOPY(n*(size_t)n, J[0], 1, Rp[0], 1);
 
@@ -390,7 +390,7 @@ void FittingMetric::form_QR_inverse(double tol)
         delete[] work;
 
         // Copy Jcopy to Q (actually Q')
-        SharedMatrix Q = std::make_shared<Matrix>("Q", n, n);
+        auto Q = std::make_shared<Matrix>("Q", n, n);
         double** Qp = Q->pointer();
         C_DCOPY(n*(size_t)n, Rp[0], 1, Qp[0], 1);
 
@@ -459,7 +459,7 @@ void FittingMetric::form_eig_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy J to W
-        SharedMatrix W = std::make_shared<Matrix>("W", n, n);
+        auto W = std::make_shared<Matrix>("W", n, n);
         double** Wp = W->pointer();
         C_DCOPY(n*(size_t)n,J[0],1,Wp[0],1);
 
@@ -469,7 +469,7 @@ void FittingMetric::form_eig_inverse(double tol)
         int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
         delete[] work;
 
-        SharedMatrix Jcopy = std::make_shared<Matrix>("Jcopy", n, n);
+        auto Jcopy = std::make_shared<Matrix>("Jcopy", n, n);
         double** Jcopyp = Jcopy->pointer();
 
         C_DCOPY(n*(size_t)n,Wp[0],1,Jcopyp[0],1);
@@ -514,7 +514,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy J to W
-        SharedMatrix W = std::make_shared<Matrix>("W", n, n);
+        auto W = std::make_shared<Matrix>("W", n, n);
         double** Wp = W->pointer();
         C_DCOPY(n*(size_t)n,J[0],1,Wp[0],1);
 
@@ -524,7 +524,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
         delete[] work;
 
-        SharedMatrix Jcopy = std::make_shared<Matrix>("Jcopy", n, n);
+        auto Jcopy = std::make_shared<Matrix>("Jcopy", n, n);
         double** Jcopyp = Jcopy->pointer();
 
         C_DCOPY(n*(size_t)n,Wp[0],1,Jcopyp[0],1);

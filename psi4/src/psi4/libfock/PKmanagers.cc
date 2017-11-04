@@ -194,7 +194,7 @@ void PKManager::print_batches() {
 // computing each an interval of canonical indices ijkl
 void PKManager::compute_integrals(bool wK) {
     // Get an AO integral factory
-    std::shared_ptr<IntegralFactory> intfact = std::make_shared<IntegralFactory>(primary_);
+    auto intfact = std::make_shared<IntegralFactory>(primary_);
 
     // Get ERI object, one per thread
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
@@ -426,7 +426,7 @@ void PKManager::make_J_vec(std::vector<SharedMatrix> J) {
             double* Jvec = new double[pk_pairs_];
             ::memset((void*)Jvec, '\0', pk_pairs_ * sizeof(double));
             JK_vec_.push_back(Jvec);
-            // Non-symmetric density matrix: stores NULL pointer
+            // Non-symmetric density matrix: stores nullptr pointer
             // as we will use full J.
             // Shared pointer initialized to null
             // TODO Could actually store triangle since J is always symmetric
@@ -966,7 +966,7 @@ void PKMgrYoshimine::allocate_buffers() {
     // K address for the first bucket
     // we actually need the boost shared_ptr, the std::shared_ptr does
     // not support array syntax
-    std::shared_ptr<std::vector<size_t>> current_pos = std::make_shared<std::vector<size_t>>(2 * buf_per_thread);
+    auto current_pos = std::make_shared<std::vector<size_t>>(2 * buf_per_thread);
 
     (*current_pos)[0] = 0;
     (*current_pos)[1] = 0;
@@ -993,7 +993,7 @@ void PKMgrYoshimine::allocate_buffers_wK() {
     // Need a vector of starting positions for each batch in the wK
     // IWL file
     int bufperthread = batch_ind_min().size();
-    std::shared_ptr<std::vector<size_t>> current_pos = std::make_shared<std::vector<size_t>>(bufperthread);
+    auto current_pos = std::make_shared<std::vector<size_t>>(bufperthread);
     (*current_pos)[0] = 0;
     for (int i = 1; i < bufperthread; ++i) {
         size_t batchsize = batch_ind_max()[i - 1] - batch_ind_min()[i - 1];
@@ -1030,7 +1030,7 @@ void PKMgrYoshimine::form_PK_wK() {
 
 void PKMgrYoshimine::compute_integrals(bool wK) {
     // Get an AO integral factory
-    std::shared_ptr<IntegralFactory> intfact = std::make_shared<IntegralFactory>(primary());
+    auto intfact = std::make_shared<IntegralFactory>(primary());
 
     // Get ERI object, one per thread
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;

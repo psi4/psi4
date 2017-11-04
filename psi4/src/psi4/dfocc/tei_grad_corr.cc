@@ -194,7 +194,7 @@ void DFOCC::tei_grad_corr() {
     // int nso = primary_->nbf();
     // int naux = auxiliary_->nbf();
 
-    std::shared_ptr<ERISieve> sieve_ = std::make_shared<ERISieve>(primary_, 0.0);
+    auto sieve_ = std::make_shared<ERISieve>(primary_, 0.0);
     const std::vector<std::pair<int, int> > &shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 

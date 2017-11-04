@@ -77,21 +77,21 @@ namespace psi {
 
 double ** block_matrix(size_t n, size_t m, bool memlock)
 {
-    double **A=NULL;
-    double *B=NULL;
+    double **A=nullptr;
+    double *B=nullptr;
     size_t i;
 
     if(!m || !n) return(static_cast<double **>(0));
 
     A = new double*[n];
-    if (A==NULL) {
+    if (A==nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("n = %ld\n",n);
         exit(PSI_RETURN_FAILURE);
     }
 
     B = new double[n*m];
-    if (B == NULL) {
+    if (B == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("m = %ld\n",m);
         exit(PSI_RETURN_FAILURE);
@@ -152,7 +152,7 @@ double ** block_matrix(size_t n, size_t m, bool memlock)
 */
 void free_block(double **array)
 {
-    if(array == NULL) return;
+    if(array == nullptr) return;
     delete [] array[0];
     delete [] array;
 }

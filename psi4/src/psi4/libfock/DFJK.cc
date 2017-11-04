@@ -80,7 +80,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
         dim[symm] = rank;
     }
 
-    SharedVector Iia = std::make_shared<Vector>("(ia|ia)", dim);
+    auto Iia = std::make_shared<Vector>("(ia|ia)", dim);
 
     // AO-basis quantities
     int nirrep = Ci->nirrep();
@@ -88,9 +88,9 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     int nvir = Ca->ncol();
     int nso = AO2USO_->rowspi()[0];
 
-    SharedMatrix Ci_ao = std::make_shared<Matrix>("Ci AO", nso, nocc);
-    SharedMatrix Ca_ao = std::make_shared<Matrix>("Ca AO", nso, nvir);
-    SharedVector Iia_ao = std::make_shared<Vector>("(ia|ia) AO", nocc * (size_t)nvir);
+    auto Ci_ao = std::make_shared<Matrix>("Ci AO", nso, nocc);
+    auto Ca_ao = std::make_shared<Matrix>("Ca AO", nso, nvir);
+    auto Iia_ao = std::make_shared<Vector>("(ia|ia) AO", nocc * (size_t)nvir);
 
     int offset = 0;
     for (int h = 0; h < nirrep; h++) {
@@ -589,7 +589,7 @@ void DFJK::initialize_JK_core() {
 
     timer_on("JK: (A|Q)^-1/2");
 
-    std::shared_ptr<FittingMetric> Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
+    auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
     Jinv->form_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -598,7 +598,7 @@ void DFJK::initialize_JK_core() {
     size_t max_cols = (memory_ - three_memory - two_memory) / auxiliary_->nbf();
     if (max_cols < 1) max_cols = 1;
     if (max_cols > ntri) max_cols = ntri;
-    SharedMatrix temp = std::make_shared<Matrix>("Qmn buffer", auxiliary_->nbf(), max_cols);
+    auto temp = std::make_shared<Matrix>("Qmn buffer", auxiliary_->nbf(), max_cols);
     double** tempp = temp->pointer();
 
     size_t nblocks = ntri / max_cols;
@@ -677,7 +677,7 @@ void DFJK::initialize_JK_disk() {
     //}
 
     // Find out exactly how much memory per MN shell
-    std::shared_ptr<IntVector> MN_mem = std::make_shared<IntVector>("Memory per MN pair", nshell * (nshell + 1) / 2);
+    auto MN_mem = std::make_shared<IntVector>("Memory per MN pair", nshell * (nshell + 1) / 2);
     int* MN_memp = MN_mem->pointer();
 
     for (int mn = 0; mn < ntri; mn++) {
@@ -730,7 +730,7 @@ void DFJK::initialize_JK_disk() {
     // ==> Reduced indexing by M <== //
 
     // Figure out the MN start index per M row
-    std::shared_ptr<IntVector> MN_start = std::make_shared<IntVector>("MUNU start per M row", nshell);
+    auto MN_start = std::make_shared<IntVector>("MUNU start per M row", nshell);
     int* MN_startp = MN_start->pointer();
 
     MN_startp[0] = schwarz_shell_pairs_r[0];
@@ -743,7 +743,7 @@ void DFJK::initialize_JK_disk() {
     }
 
     // Figure out the mn start index per M row
-    std::shared_ptr<IntVector> mn_start = std::make_shared<IntVector>("munu start per M row", nshell);
+    auto mn_start = std::make_shared<IntVector>("munu start per M row", nshell);
     int* mn_startp = mn_start->pointer();
 
     mn_startp[0] = schwarz_fun_pairs[0].first;
@@ -756,7 +756,7 @@ void DFJK::initialize_JK_disk() {
     }
 
     // Figure out the MN columns per M row
-    std::shared_ptr<IntVector> MN_col = std::make_shared<IntVector>("MUNU cols per M row", nshell);
+    auto MN_col = std::make_shared<IntVector>("MUNU cols per M row", nshell);
     int* MN_colp = MN_col->pointer();
 
     for (int M = 1; M < nshell; M++) {
@@ -765,7 +765,7 @@ void DFJK::initialize_JK_disk() {
     MN_colp[nshell - 1] = nshellpairs - MN_startp[nshell - 1];
 
     // Figure out the mn columns per M row
-    std::shared_ptr<IntVector> mn_col = std::make_shared<IntVector>("munu cols per M row", nshell);
+    auto mn_col = std::make_shared<IntVector>("munu cols per M row", nshell);
     int* mn_colp = mn_col->pointer();
 
     for (int M = 1; M < nshell; M++) {
@@ -831,7 +831,7 @@ void DFJK::initialize_JK_disk() {
     // Primary buffer
     Qmn_ = std::make_shared<Matrix>("(Q|mn) (Disk Chunk)", naux, max_cols);
     // Fitting buffer
-    SharedMatrix Amn = std::make_shared<Matrix>("(Q|mn) (Buffer)", naux, naux);
+    auto Amn = std::make_shared<Matrix>("(Q|mn) (Buffer)", naux, naux);
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
@@ -840,13 +840,13 @@ void DFJK::initialize_JK_disk() {
     timer_on("JK: (A|Q)^-1");
 
     psio_->open(unit_, PSIO_OPEN_NEW);
-    std::shared_ptr<AIOHandler> aio = std::make_shared<AIOHandler>(psio_);
+    auto aio = std::make_shared<AIOHandler>(psio_);
 
     // Dispatch the prestripe
     aio->zero_disk(unit_, "(Q|mn) Integrals", naux, ntri);
 
     // Form the J symmetric inverse
-    std::shared_ptr<FittingMetric> Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
+    auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
     Jinv->form_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -1052,7 +1052,7 @@ void DFJK::initialize_wK_core() {
     timer_on("JK: (A|Q)^-1");
 
     // Fitting metric
-    std::shared_ptr<FittingMetric> Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
+    auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
     Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -1175,7 +1175,7 @@ void DFJK::initialize_wK_disk() {
     //}
 
     // Find out exactly how much memory per MN shell
-    std::shared_ptr<IntVector> MN_mem = std::make_shared<IntVector>("Memory per MN pair", nshell * (nshell + 1) / 2);
+    auto MN_mem = std::make_shared<IntVector>("Memory per MN pair", nshell * (nshell + 1) / 2);
     int* MN_memp = MN_mem->pointer();
 
     for (int mn = 0; mn < ntri; mn++) {
@@ -1228,7 +1228,7 @@ void DFJK::initialize_wK_disk() {
     // ==> Reduced indexing by M <== //
 
     // Figure out the MN start index per M row
-    std::shared_ptr<IntVector> MN_start = std::make_shared<IntVector>("MUNU start per M row", nshell);
+    auto MN_start = std::make_shared<IntVector>("MUNU start per M row", nshell);
     int* MN_startp = MN_start->pointer();
 
     MN_startp[0] = schwarz_shell_pairs_r[0];
@@ -1241,7 +1241,7 @@ void DFJK::initialize_wK_disk() {
     }
 
     // Figure out the mn start index per M row
-    std::shared_ptr<IntVector> mn_start = std::make_shared<IntVector>("munu start per M row", nshell);
+    auto mn_start = std::make_shared<IntVector>("munu start per M row", nshell);
     int* mn_startp = mn_start->pointer();
 
     mn_startp[0] = schwarz_fun_pairs[0].first;
@@ -1254,7 +1254,7 @@ void DFJK::initialize_wK_disk() {
     }
 
     // Figure out the MN columns per M row
-    std::shared_ptr<IntVector> MN_col = std::make_shared<IntVector>("MUNU cols per M row", nshell);
+    auto MN_col = std::make_shared<IntVector>("MUNU cols per M row", nshell);
     int* MN_colp = MN_col->pointer();
 
     for (size_t M = 1; M < nshell; M++) {
@@ -1263,7 +1263,7 @@ void DFJK::initialize_wK_disk() {
     MN_colp[nshell - 1] = nshellpairs - MN_startp[nshell - 1];
 
     // Figure out the mn columns per M row
-    std::shared_ptr<IntVector> mn_col = std::make_shared<IntVector>("munu cols per M row", nshell);
+    auto mn_col = std::make_shared<IntVector>("munu cols per M row", nshell);
     int* mn_colp = mn_col->pointer();
 
     for (size_t M = 1; M < nshell; M++) {
@@ -1329,19 +1329,19 @@ void DFJK::initialize_wK_disk() {
     // Primary buffer
     Qmn_ = std::make_shared<Matrix>("(Q|mn) (Disk Chunk)", naux, max_cols);
     // Fitting buffer
-    SharedMatrix Amn = std::make_shared<Matrix>("(Q|mn) (Buffer)", naux, naux);
+    auto Amn = std::make_shared<Matrix>("(Q|mn) (Buffer)", naux, naux);
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
     // ==> Prestripe/Jinv <== //
     psio_->open(unit_, PSIO_OPEN_OLD);
-    std::shared_ptr<AIOHandler> aio = std::make_shared<AIOHandler>(psio_);
+    auto aio = std::make_shared<AIOHandler>(psio_);
 
     // Dispatch the prestripe
     aio->zero_disk(unit_, "Left (Q|w|mn) Integrals", naux, ntri);
 
     // Form the J full inverse
-    std::shared_ptr<FittingMetric> Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
+    auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
     Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -1470,7 +1470,7 @@ void DFJK::initialize_wK_disk() {
     }
     block_Q_starts.push_back(auxiliary_->nshell());
 
-    SharedMatrix Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, ntri);
+    auto Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, ntri);
     double** Amn2p = Amn2->pointer();
     psio_address next_AIA = PSIO_ZERO;
 
@@ -1593,7 +1593,7 @@ void DFJK::rebuild_wK_disk() {
     }
     block_Q_starts.push_back(auxiliary_->nshell());
 
-    SharedMatrix Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, ntri);
+    auto Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, ntri);
     double** Amn2p = Amn2->pointer();
     psio_address next_AIA = PSIO_ZERO;
 

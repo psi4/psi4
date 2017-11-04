@@ -60,7 +60,7 @@ namespace findif {
 int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, int pts,
         int irrep, int ii, int jj, int disp_i, int disp_j);
 
-SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
                        const py::list &python_energies, int freq_irrep_only)
 {
     int pts = options.get_int("POINTS");
@@ -68,7 +68,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     int print_lvl = options.get_int("PRINT");
 
     int Natom = mol->natom();
-    std::shared_ptr <MatrixFactory> fact;
+    std::shared_ptr<MatrixFactory> fact;
     bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
     CdSalcList salc_list(mol, fact, 0xFF, project, project);
     int Nirrep = salc_list.nirrep();
@@ -320,7 +320,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     //B[i][3*a+xyz] *= sqrt(mol->mass(a));
 
 //  double **Hx = block_matrix(3*Natom, 3*Natom);
-    SharedMatrix mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
+    auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
     double **Hx = mat_Hx->pointer();
 
     // Hx = Bt H B
@@ -458,7 +458,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     // Print a hessian file
     if (options.get_bool("HESSIAN_WRITE")) {
         std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-        std::shared_ptr <PsiOutStream> printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
+        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
         //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
         printer->Printf("%5d", Natom);
         printer->Printf("%5d\n", 6 * Natom);

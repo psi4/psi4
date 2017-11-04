@@ -122,7 +122,7 @@ double ET_UHF_BBB(void)
 	    }
 	  }
 	}
-  std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
+  auto printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
   //ffile(&ijkfile,"ijk.dat",0);
   printer->Printf("Spin Case: BBB\n");
   printer->Printf("Number of IJK combintions: %d\n", nijk);

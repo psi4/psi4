@@ -164,7 +164,7 @@ void DFOCC::ccsd_tpdm() {
     // G_ia^Q += l_i^a t_Q
     G->dirprd123(T1c, l1A, 1.0, 1.0);
     // G_ia^Q += t_i^a (l_Q - G_Q - Gt_Q)
-    SharedTensor1d Tt = std::make_shared<Tensor1d>("TEMP", nQ);
+    auto Tt = std::make_shared<Tensor1d>("TEMP", nQ);
     Tt->copy(L1c);
     Tt->axpy(gQ, -1.0);
     Tt->axpy(gQt, -1.0);

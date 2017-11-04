@@ -68,36 +68,36 @@ SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunc
 }
 
 SAPT::~SAPT() {
-    if (evalsA_ != NULL) free(evalsA_);
-    if (evalsB_ != NULL) free(evalsB_);
-    if (diagAA_ != NULL) free(diagAA_);
-    if (diagBB_ != NULL) free(diagBB_);
-    if (CA_ != NULL) free_block(CA_);
-    if (CB_ != NULL) free_block(CB_);
-    if (CHFA_ != NULL) free_block(CHFA_);
-    if (CHFB_ != NULL) free_block(CHFB_);
-    if (sAB_ != NULL) free_block(sAB_);
-    if (vABB_ != NULL) free_block(vABB_);
-    if (vBAA_ != NULL) free_block(vBAA_);
-    if (vAAB_ != NULL) free_block(vAAB_);
-    if (vBAB_ != NULL) free_block(vBAB_);
+    if (evalsA_ != nullptr) free(evalsA_);
+    if (evalsB_ != nullptr) free(evalsB_);
+    if (diagAA_ != nullptr) free(diagAA_);
+    if (diagBB_ != nullptr) free(diagBB_);
+    if (CA_ != nullptr) free_block(CA_);
+    if (CB_ != nullptr) free_block(CB_);
+    if (CHFA_ != nullptr) free_block(CHFA_);
+    if (CHFB_ != nullptr) free_block(CHFB_);
+    if (sAB_ != nullptr) free_block(sAB_);
+    if (vABB_ != nullptr) free_block(vABB_);
+    if (vBAA_ != nullptr) free_block(vBAA_);
+    if (vAAB_ != nullptr) free_block(vAAB_);
+    if (vBAB_ != nullptr) free_block(vBAB_);
     zero_.reset();
 }
 
 void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
-    evalsA_ = NULL;
-    evalsB_ = NULL;
-    diagAA_ = NULL;
-    diagBB_ = NULL;
-    CA_ = NULL;
-    CB_ = NULL;
-    CHFA_ = NULL;
-    CHFB_ = NULL;
-    sAB_ = NULL;
-    vABB_ = NULL;
-    vBAA_ = NULL;
-    vAAB_ = NULL;
-    vBAB_ = NULL;
+    evalsA_ = nullptr;
+    evalsB_ = nullptr;
+    diagAA_ = nullptr;
+    diagBB_ = nullptr;
+    CA_ = nullptr;
+    CB_ = nullptr;
+    CHFA_ = nullptr;
+    CHFB_ = nullptr;
+    sAB_ = nullptr;
+    vABB_ = nullptr;
+    vBAA_ = nullptr;
+    vAAB_ = nullptr;
+    vBAB_ = nullptr;
 
     // We inherit from the dimer basis
     ribasis_ = get_basisset("DF_BASIS_SAPT");
@@ -206,7 +206,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 
     int nbf[8];
     nbf[0] = nso_;
-    std::shared_ptr<MatrixFactory> fact = std::make_shared<MatrixFactory>();
+    auto fact = std::make_shared<MatrixFactory>();
     fact->init_with(1, nbf, nbf);
 
     std::shared_ptr<IntegralFactory> intfact =
@@ -226,7 +226,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     free_block(sAJ);
 
     std::shared_ptr<PotentialInt> potA(static_cast<PotentialInt *>(intfact->ao_potential()));
-    SharedMatrix ZxyzA = std::make_shared<Matrix>("Charges A (Z,x,y,z)", natomsA_, 4);
+    auto ZxyzA = std::make_shared<Matrix>("Charges A (Z,x,y,z)", natomsA_, 4);
     for (int n = 0, p = 0; n < monomerA->natom(); n++) {
         if (monomerA->Z(n)) {
             double Z = (double)monomerA->Z(n);
@@ -245,7 +245,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     potA->compute(VAmat);
 
     std::shared_ptr<PotentialInt> potB(static_cast<PotentialInt *>(intfact->ao_potential()));
-    SharedMatrix ZxyzB = std::make_shared<Matrix>("Charges B (Z,x,y,z)", natomsB_, 4);
+    auto ZxyzB = std::make_shared<Matrix>("Charges B (Z,x,y,z)", natomsB_, 4);
     for (int n = 0, p = 0; n < monomerB->natom(); n++) {
         if (monomerB->Z(n)) {
             double Z = (double)monomerB->Z(n);
@@ -287,10 +287,10 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 }
 
 void SAPT::get_denom() {
-    std::shared_ptr<Vector> evals_aoccA = std::make_shared<Vector>(aoccA_);
-    std::shared_ptr<Vector> evals_virA = std::make_shared<Vector>(nvirA_);
-    std::shared_ptr<Vector> evals_aoccB = std::make_shared<Vector>(aoccB_);
-    std::shared_ptr<Vector> evals_virB = std::make_shared<Vector>(nvirB_);
+    auto evals_aoccA = std::make_shared<Vector>(aoccA_);
+    auto evals_virA = std::make_shared<Vector>(nvirA_);
+    auto evals_aoccB = std::make_shared<Vector>(aoccB_);
+    auto evals_virB = std::make_shared<Vector>(nvirB_);
 
     for (int a = 0; a < aoccA_; a++) evals_aoccA->set(0, a, evalsA_[a + foccA_]);
     for (int r = 0; r < nvirA_; r++) evals_virA->set(0, r, evalsA_[r + noccA_]);

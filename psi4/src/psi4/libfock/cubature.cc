@@ -148,40 +148,40 @@ private:
 
 const MassPoint *LebedevGridMgr::nonstandard18PointGrid_;
 LebedevGridMgr::GridData LebedevGridMgr::grids_[] = {
-    {0,   1,    mk1ptGrid,    NULL},
-    {3,   6,    mk6ptGrid,    NULL},
-    {5,   14,   mk14ptGrid,   NULL},
-    {7,   26,   mk26ptGrid,   NULL},
-    {9,   38,   mk38ptGrid,   NULL},
-    {11,  50,   mk50ptGrid,   NULL},
-    {13,  74,   mk74ptGrid,   NULL},
-    {15,  86,   mk86ptGrid,   NULL},
-    {17,  110,  mk110ptGrid,  NULL},
-    {19,  146,  mk146ptGrid,  NULL},
-    {21,  170,  mk170ptGrid,  NULL},
-    {23,  194,  mk194ptGrid,  NULL},
-    {25,  230,  mk230ptGrid,  NULL},
-    {27,  266,  mk266ptGrid,  NULL},
-    {29,  302,  mk302ptGrid,  NULL},
-    {31,  350,  mk350ptGrid,  NULL},
-    {35,  434,  mk434ptGrid,  NULL},
-    {41,  590,  mk590ptGrid,  NULL},
-    {47,  770,  mk770ptGrid,  NULL},
-    {53,  974,  mk974ptGrid,  NULL},
-    {59,  1202, mk1202ptGrid, NULL},
-    {65,  1454, mk1454ptGrid, NULL},
-    {71,  1730, mk1730ptGrid, NULL},
-    {77,  2030, mk2030ptGrid, NULL},
-    {83,  2354, mk2354ptGrid, NULL},
-    {89,  2702, mk2702ptGrid, NULL},
-    {95,  3074, mk3074ptGrid, NULL},
-    {101, 3470, mk3470ptGrid, NULL},
-    {107, 3890, mk3890ptGrid, NULL},
-    {113, 4334, mk4334ptGrid, NULL},
-    {119, 4802, mk4802ptGrid, NULL},
-    {125, 5294, mk5294ptGrid, NULL},
-    {131, 5810, mk5810ptGrid, NULL}, // If you add a grid, increase LebedevGridMgr::MaxOrder.
-    {0,   0,    NULL,         NULL}
+    {0,   1,    mk1ptGrid,    nullptr},
+    {3,   6,    mk6ptGrid,    nullptr},
+    {5,   14,   mk14ptGrid,   nullptr},
+    {7,   26,   mk26ptGrid,   nullptr},
+    {9,   38,   mk38ptGrid,   nullptr},
+    {11,  50,   mk50ptGrid,   nullptr},
+    {13,  74,   mk74ptGrid,   nullptr},
+    {15,  86,   mk86ptGrid,   nullptr},
+    {17,  110,  mk110ptGrid,  nullptr},
+    {19,  146,  mk146ptGrid,  nullptr},
+    {21,  170,  mk170ptGrid,  nullptr},
+    {23,  194,  mk194ptGrid,  nullptr},
+    {25,  230,  mk230ptGrid,  nullptr},
+    {27,  266,  mk266ptGrid,  nullptr},
+    {29,  302,  mk302ptGrid,  nullptr},
+    {31,  350,  mk350ptGrid,  nullptr},
+    {35,  434,  mk434ptGrid,  nullptr},
+    {41,  590,  mk590ptGrid,  nullptr},
+    {47,  770,  mk770ptGrid,  nullptr},
+    {53,  974,  mk974ptGrid,  nullptr},
+    {59,  1202, mk1202ptGrid, nullptr},
+    {65,  1454, mk1454ptGrid, nullptr},
+    {71,  1730, mk1730ptGrid, nullptr},
+    {77,  2030, mk2030ptGrid, nullptr},
+    {83,  2354, mk2354ptGrid, nullptr},
+    {89,  2702, mk2702ptGrid, nullptr},
+    {95,  3074, mk3074ptGrid, nullptr},
+    {101, 3470, mk3470ptGrid, nullptr},
+    {107, 3890, mk3890ptGrid, nullptr},
+    {113, 4334, mk4334ptGrid, nullptr},
+    {119, 4802, mk4802ptGrid, nullptr},
+    {125, 5294, mk5294ptGrid, nullptr},
+    {131, 5810, mk5810ptGrid, nullptr}, // If you add a grid, increase LebedevGridMgr::MaxOrder.
+    {0,   0,    nullptr,         nullptr}
 };
 
 LebedevGridMgr::LebedevGridMgr()
@@ -190,7 +190,7 @@ LebedevGridMgr::LebedevGridMgr()
 
 void LebedevGridMgr::Initialize()
 {
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         grids_[i].grid = grids_[i].mkGridFn();
 
     // We handle the 18-point grid separately so it doesn't
@@ -203,20 +203,20 @@ static class MagicInitializer { public: MagicInitializer() { LebedevGridMgr::Ini
 
 bool LebedevGridMgr::isUsableOrder(int order)
 {
-    return findGridByOrder(order) != NULL;
+    return findGridByOrder(order) != nullptr;
 }
 
 const MassPoint *LebedevGridMgr::findGridByOrder(int order)
 {
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         if (grids_[i].order == order)
             return grids_[i].grid;
-    return NULL;
+    return nullptr;
 }
 
 int LebedevGridMgr::findNPointsByOrder(int order)
 {
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         if (grids_[i].order == order)
             return grids_[i].npoints;
     return 0;
@@ -224,15 +224,15 @@ int LebedevGridMgr::findNPointsByOrder(int order)
 
 const MassPoint *LebedevGridMgr::findGridByOrder_roundUp(int order)
 {
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         if (grids_[i].order >= order)
             return grids_[i].grid;
-    return NULL; // Too high!
+    return nullptr; // Too high!
 }
 
 int LebedevGridMgr::findNPointsByOrder_roundUp(int order)
 {
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         if (grids_[i].order >= order)
             return grids_[i].npoints;
     return 0;
@@ -240,7 +240,7 @@ int LebedevGridMgr::findNPointsByOrder_roundUp(int order)
 
 int LebedevGridMgr::findOrderByNPoints(int npoints)
 {
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         if (grids_[i].npoints == npoints)
             return grids_[i].order;
     return -1;
@@ -250,17 +250,17 @@ const MassPoint *LebedevGridMgr::findGridByNPoints(int npoints)
 {
     if (npoints == 18) // Special case; this isn't actually a Lebedev grid, but some SG-1 atomic grids require it.
         return nonstandard18PointGrid_;
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         if (grids_[i].npoints == npoints)
             return grids_[i].grid;
-    return NULL;
+    return nullptr;
 }
 
 void LebedevGridMgr::PrintHelp()
 {
     outfile->Printf( "  ==> Valid Lebedev Grids <==\n\n");
     outfile->Printf( "\t%11s %11s\n", "Points", "Order");
-    for (int i = 0; grids_[i].mkGridFn != NULL; i++)
+    for (int i = 0; grids_[i].mkGridFn != nullptr; i++)
         outfile->Printf( "\t%11d %11d\n", grids_[i].npoints, grids_[i].order);
     outfile->Printf( "\n");
 
@@ -2347,7 +2347,7 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[])
 // Then `rFn' maps the nice interval to [0, \infty)
 // `drdxFn' is the derivative of rFn and is used to adjust the weights.
 RadialGridMgr::SchemeTable RadialGridMgr::radialschemes[] = {
-    {"LAGUERRE", getLaguerreRoots,    NULL,       NULL}, // NULLs mean we skip the [0,\infty) correction
+    {"LAGUERRE", getLaguerreRoots,    nullptr,       nullptr}, // nullptrs mean we skip the [0,\infty) correction
     {"MULTIEXP", getMultiExpRoots,    multiexp_r, multiexp_dr},
     {"AHLRICHS", getChebychevRoots,   ahlrichs_r, ahlrichs_dr}, // Also called "Treutler" or "Treutler-Ahlrichs"
     {"TREUTLER", getChebychevRoots,   ahlrichs_r, ahlrichs_dr},
@@ -2396,7 +2396,7 @@ void RadialGridMgr::makeRadialGrid(int n, int whichScheme, double r[], double w[
     double (*drdxFn)(double) = radialschemes[whichScheme].drdxFn;
     // So now `r' and `w' store the roots of some nice orthogonal basis.
     // Then we convert to spherical.
-    if (rFn != NULL) { // LaguerreRoots has its own implementation of this that avoids overflow issues.
+    if (rFn != nullptr) { // LaguerreRoots has its own implementation of this that avoids overflow issues.
         for (int i = 0; i < n; i++) {
             double old_x = r[i];
             r[i] = rFn(old_x);
@@ -2544,12 +2544,12 @@ void StandardGridMgr::ReleaseMemory()
     for (size_t i = 0; i < sizeof(SG0_grids_)/sizeof(SG0_grids_[0]); i++)
         if(SG0_grids_[i]){
             free((void*)SG0_grids_[i]);
-            SG0_grids_[i]=NULL;
+            SG0_grids_[i]=nullptr;
         }
     for (size_t i = 0; i < sizeof(SG1_grids_)/sizeof(SG1_grids_[0]); i++)
         if(SG1_grids_[i]){
             free((void*)SG1_grids_[i]);
-            SG1_grids_[i]=NULL;
+            SG1_grids_[i]=nullptr;
         }
 }
 
@@ -2577,9 +2577,9 @@ void StandardGridMgr::Initialize_SG0()
     static const PruneGroup Cl_grp[] = {{6, 4}, {18, 7}, {26, 2}, {38, 2}, {50, 1},  {74, 1},  {110, 2}, {170, 3}, {146, 1}, {110, 1}, {86, 1}, {6, 1}, {0,0}};
 
     PruneSpec SG0specs[18] = {
-        {NULL,    0,    0,    0},
+        {nullptr,    0,    0,    0},
         {H__grp, 23, 1406, 1.30},
-        {NULL,    0,    0,    0},
+        {nullptr,    0,    0,    0},
         {Li_grp, 23, 1406, 1.95},
         {Be_grp, 23, 1390, 2.20},
         {B__grp, 23, 1426, 1.45},
@@ -2587,7 +2587,7 @@ void StandardGridMgr::Initialize_SG0()
         {N__grp, 23, 1414, 1.10},
         {O__grp, 23, 1154, 1.10},
         {F__grp, 23, 1494, 1.20},
-        {NULL,    0,    0,    0},
+        {nullptr,    0,    0,    0},
         {Na_grp, 26, 1328, 2.30},
         {Mg_grp, 26, 1468, 2.20}, // Warning: The original paper has 1492 points instead of 1468...
         {Al_grp, 26, 1496, 2.10},
@@ -2599,7 +2599,7 @@ void StandardGridMgr::Initialize_SG0()
 
     for (int Z = 0; Z < 18; Z++) {
         if (SG0specs[Z].rparam == 0) {
-            SG0_grids_[Z] = NULL;
+            SG0_grids_[Z] = nullptr;
             SG0_sizes_[Z] = 0;
         } else {
             MassPoint *grid = (MassPoint*)malloc(SG0specs[Z].npts * sizeof(MassPoint));
@@ -3013,7 +3013,7 @@ public:
 
     // Or we could use Matrix like smart people
     std::shared_ptr<Matrix> orientation() const {
-        std::shared_ptr<Matrix> O = std::make_shared<Matrix>("O", 3, 3);
+        auto O = std::make_shared<Matrix>("O", 3, 3);
         double** Op = O->pointer();
         Op[0][0] = rotation_.xx;
         Op[0][1] = rotation_.xy;
@@ -3514,7 +3514,7 @@ RadialPruneMgr::PruneSchemeTable RadialPruneMgr::pruneschemes[] = {
     {"P_GAUSSIAN", p_gaussian},
     {"D_GAUSSIAN", d_gaussian},
     {"LOG_GAUSSIAN", log_gaussian},
-    {NULL, NULL}
+    {nullptr, nullptr}
 };
 
 int RadialPruneMgr::WhichPruneScheme(const char *schemename)
@@ -4035,7 +4035,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map, std:
     int min_points = full_int_options["DFT_BLOCK_MIN_POINTS"];
     double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
-    std::shared_ptr<BasisExtents> extents = std::make_shared<BasisExtents>(primary_, epsilon);
+    auto extents = std::make_shared<BasisExtents>(primary_, epsilon);
     postProcess(extents, max_points, min_points, max_radius);
 }
 
@@ -4075,7 +4075,7 @@ void PseudospectralGrid::buildGridFromOptions()
     int min_points = options_.get_int("PS_BLOCK_MIN_POINTS");
     double max_radius = options_.get_double("PS_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("PS_BASIS_TOLERANCE");
-    std::shared_ptr<BasisExtents> extents = std::make_shared<BasisExtents>(primary_, epsilon);
+    auto extents = std::make_shared<BasisExtents>(primary_, epsilon);
 
     postProcess(extents, max_points, min_points, max_radius);
 }

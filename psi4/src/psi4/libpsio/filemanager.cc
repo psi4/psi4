@@ -177,7 +177,7 @@ void PSIOManager::mirror_to_disk()
 
 //      FILE* fh = fopen("psi.clean","w");
     FILE* fh = fopen(("psi." + pid_ + ".clean").c_str(), "w");
-      if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle\n");
+      if (fh == nullptr) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle\n");
 
       for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
           if (retained_files_.count((*it).first) == 0) {
@@ -193,14 +193,14 @@ void PSIOManager::build_from_disk()
 
 
       FILE* fh = fopen("psi.clean","r");
-      if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle. Is there a psi.clean file there?\n");
+      if (fh == nullptr) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle. Is there a psi.clean file there?\n");
 
       files_.clear();
       retained_files_.clear();
 
       char* in = new char[1000];
 
-      while (fgets(in, 1000, fh) != NULL) {
+      while (fgets(in, 1000, fh) != nullptr) {
           std::string str(in);
           str.resize(str.size()-1); // crush the newline
           files_[str] = false;

@@ -299,7 +299,7 @@ void MOLECULE::add_interfragment(void) {
   double tval, min;
   int ndA, ndB; // num of reference atoms on each fragment
   char error_msg[100];
-  double **weight_A=NULL, **weight_B=NULL;
+  double **weight_A=nullptr, **weight_B=nullptr;
   FRAG *Afrag, *Bfrag;
   if (fragments.size() == 1) return;
   std::vector<std::vector<std::vector<int> > > frag_ref_atoms = Opt_params.frag_ref_atoms;
@@ -520,7 +520,7 @@ void MOLECULE::add_interfragment(void) {
       else
         ndB = 3;
 
-      INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, NULL, NULL, ndA, ndB, true);
+      INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, nullptr, nullptr, ndA, ndB, true);
       interfragments.push_back(one_IF);
     }
 

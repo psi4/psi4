@@ -56,7 +56,7 @@ SharedMatrix DCFTSolver::compute_gradient() {
         compute_gradient_UHF();
     }
 
-    return std::make_shared<Matrix>("NULL", 0, 0);
+    return std::make_shared<Matrix>("nullptr", 0, 0);
 }
 }
 }  // End namespaces

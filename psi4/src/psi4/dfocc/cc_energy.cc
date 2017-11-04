@@ -178,7 +178,7 @@ void DFOCC::scs_mp2_energy() {
         tei_iajb_chem_directAA(JiajbAA);
 
         // Same spin part
-        SharedTensor2d temp = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        auto temp = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         temp->read(psio_, PSIF_DFOCC_AMPS);
         Ecorr = 0.5 * temp->vector_dot(JiajbAA);
         temp.reset();

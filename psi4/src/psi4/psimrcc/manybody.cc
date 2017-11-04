@@ -78,7 +78,7 @@ CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options &options):
   norm_amps = 0.0;
   delta_t1_amps = 0.0;
   delta_t2_amps = 0.0;
-  d3_ooo = d3_ooO = d3_oOO = d3_OOO =  d3_vvv = d3_vvV = d3_vVV = d3_VVV = NULL;
+  d3_ooo = d3_ooO = d3_oOO = d3_OOO =  d3_vvv = d3_vvV = d3_vVV = d3_VVV = nullptr;
 }
 
 /**

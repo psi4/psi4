@@ -40,7 +40,7 @@ namespace psi {
 
 void DPD::file4_cache_init(void)
 {
-    dpd_main.file4_cache = NULL;
+    dpd_main.file4_cache = nullptr;
     dpd_main.file4_cache_most_recent = 0;
     dpd_main.file4_cache_least_recent = 1;
     dpd_main.file4_cache_lru_del = 0;
@@ -58,7 +58,7 @@ void DPD::file4_cache_close(void)
     /* save the current dpd_default */
     dpdnum = dpd_default;
 
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
 
         dpd_set_default(this_entry->dpdnum);
 
@@ -89,7 +89,7 @@ DPD::file4_cache_scan(int filenum, int irrep, int pqnum, int rsnum, const char *
 
     this_entry = dpd_main.file4_cache;
 
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
         if(this_entry->filenum == filenum      &&
                 this_entry->irrep == irrep          &&
                 this_entry->pqnum == pqnum          &&
@@ -125,12 +125,12 @@ DPD::file4_cache_last(void)
 
     this_entry = dpd_main.file4_cache;
 
-    while(this_entry !=NULL) {
-        if(this_entry->next == NULL) return(this_entry);
+    while(this_entry !=nullptr) {
+        if(this_entry->next == nullptr) return(this_entry);
         this_entry = this_entry->next;
     }
 
-    return(NULL);
+    return(nullptr);
 }
 
 int DPD::file4_cache_add(dpdfile4 *File, size_t priority)
@@ -142,18 +142,18 @@ int DPD::file4_cache_add(dpdfile4 *File, size_t priority)
                                   File->params->pqnum, File->params->rsnum,
                                   File->label, File->dpdnum);
 
-    if((this_entry != NULL && !(File->incore)) ||
-            (this_entry == NULL && (File->incore))) {
+    if((this_entry != nullptr && !(File->incore)) ||
+            (this_entry == nullptr && (File->incore))) {
         /* Either the file4 appears in the cache but incore is not set,
      or incore is set and the file4 isn't in the cache */
         dpd_error("File4 cache add error!", "outfile");
     }
-    else if(this_entry != NULL && File->incore) {
+    else if(this_entry != nullptr && File->incore) {
         /* We already have this one in cache, but change its priority level */
         this_entry->priority = priority;
         return 0;
     }
-    else if(this_entry == NULL && !(File->incore)) { /* New cache entry */
+    else if(this_entry == nullptr && !(File->incore)) { /* New cache entry */
 
         this_entry = (dpd_file4_cache_entry *)
                 malloc(sizeof(dpd_file4_cache_entry));
@@ -177,12 +177,12 @@ int DPD::file4_cache_add(dpdfile4 *File, size_t priority)
         this_entry->pqnum = File->params->pqnum;
         this_entry->rsnum = File->params->rsnum;
         strcpy(this_entry->label,File->label);
-        this_entry->next = NULL;
+        this_entry->next = nullptr;
         this_entry->last = file4_cache_last();
 
         this_entry->lock = 0;
 
-        if(this_entry->last != NULL) this_entry->last->next = this_entry;
+        if(this_entry->last != nullptr) this_entry->last->next = this_entry;
         else dpd_main.file4_cache = this_entry;
 
         /* increment the access timers */
@@ -223,9 +223,9 @@ int DPD::file4_cache_del(dpdfile4 *File)
                                   File->params->pqnum, File->params->rsnum,
                                   File->label, File->dpdnum);
 
-    if((this_entry == NULL && File->incore) ||
-            (this_entry != NULL && !(File->incore)) ||
-            (this_entry == NULL && !(File->incore))) {
+    if((this_entry == nullptr && File->incore) ||
+            (this_entry != nullptr && !(File->incore)) ||
+            (this_entry == nullptr && !(File->incore))) {
         dpd_error("File4 cache delete error!", "outfile");
     }
     else {
@@ -258,8 +258,8 @@ int DPD::file4_cache_del(dpdfile4 *File)
         free(this_entry);
 
         /* Reassign pointers for adjacent entries in the list */
-        if(next_entry != NULL) next_entry->last = last_entry;
-        if(last_entry != NULL) last_entry->next = next_entry;
+        if(next_entry != nullptr) next_entry->last = last_entry;
+        if(last_entry != nullptr) last_entry->next = next_entry;
 
         /* Return the dpd_default to original value */
         dpd_set_default(dpdnum);
@@ -281,7 +281,7 @@ void DPD::file4_cache_print_screen(void)
             "Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
     outfile->Printf(
             "--------------------------------------------------------------------------------\n");
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
         outfile->Printf(
                 "%-22s  %1d   %3d   %1d   %2d  %2d  %3d %3d    %1d  %6d   %1d  %8.1f\n",
                 this_entry->label, this_entry->dpdnum, this_entry->filenum, this_entry->irrep,
@@ -321,7 +321,7 @@ void DPD::file4_cache_print(std::string out)
             "Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
     printer->Printf(
             "--------------------------------------------------------------------------------\n");
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
         printer->Printf(
                 "%-22s  %1d   %3d   %1d   %2d  %2d  %3d %3d    %1d  %6d   %1d  %8.1f\n",
                 this_entry->label, this_entry->dpdnum, this_entry->filenum, this_entry->irrep,
@@ -354,16 +354,16 @@ DPD::file4_cache_find_lru(void)
 
     this_entry = dpd_main.file4_cache;
 
-    if(this_entry == NULL) return(NULL);
+    if(this_entry == nullptr) return(nullptr);
 
     /* find the first unlocked entry */
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
         if(this_entry->lock) this_entry = this_entry->next;
         else break; /* Is this right? */
     }
 
     while(dpd_main.file4_cache_least_recent <= dpd_main.file4_cache_most_recent) {
-        while(this_entry !=NULL) {
+        while(this_entry !=nullptr) {
             if(this_entry->access <= dpd_main.file4_cache_least_recent && !this_entry->lock)
                 return(this_entry);
             this_entry = this_entry->next;
@@ -377,7 +377,7 @@ DPD::file4_cache_find_lru(void)
   outfile->Printf( "Possibly out of memory!\n");
   dpd_error("Error locating file4_cache LRU!", "outfile");
   */
-    return(NULL);
+    return(nullptr);
 }
 
 int DPD::file4_cache_del_lru(void)
@@ -392,7 +392,7 @@ int DPD::file4_cache_del_lru(void)
 
     this_entry = file4_cache_find_lru();
 
-    if(this_entry == NULL) {
+    if(this_entry == nullptr) {
 #ifdef DPD_TIMER
         timer_off("cache_lru");
 #endif
@@ -439,9 +439,9 @@ void DPD::file4_cache_dirty(dpdfile4 *File)
                                   File->params->pqnum, File->params->rsnum,
                                   File->label, File->dpdnum);
 
-    if((this_entry == NULL && File->incore) ||
-            (this_entry != NULL && !File->incore) ||
-            (this_entry == NULL && !File->incore))
+    if((this_entry == nullptr && File->incore) ||
+            (this_entry != nullptr && !File->incore) ||
+            (this_entry == nullptr && !File->incore))
         dpd_error("Error setting file4_cache dirty flag!", "outfile");
     else {
         this_entry->clean = 0;
@@ -454,7 +454,7 @@ int DPD::file4_cache_get_priority(dpdfile4 *File)
 
     this_entry = dpd_main.file4_cache_priority;
 
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
         if(this_entry->filenum == File->filenum     &&
                 this_entry->irrep == File->my_irrep      &&
                 this_entry->pqnum == File->params->pqnum &&
@@ -475,17 +475,17 @@ dpd_file4_cache_find_low(void)
 
     this_entry = dpd_main.file4_cache;
 
-    if(this_entry == NULL) return(NULL);
+    if(this_entry == nullptr) return(nullptr);
 
     /* find the first unlocked entry */
-    while(this_entry != NULL) {
+    while(this_entry != nullptr) {
         if(this_entry->lock) this_entry = this_entry->next;
         else break; /* Is this right? */
     }
 
     /* Now search for the lowest priority entry */
     low_entry = this_entry;
-    while(this_entry != NULL && low_entry != NULL) {
+    while(this_entry != nullptr && low_entry != nullptr) {
         if((this_entry->priority < low_entry->priority) && !this_entry->lock)
             low_entry = this_entry;
         this_entry = this_entry->next;
@@ -506,7 +506,7 @@ int DPD::file4_cache_del_low(void)
 
     this_entry = dpd_file4_cache_find_low();
 
-    if(this_entry == NULL) {
+    if(this_entry == nullptr) {
 #ifdef DPD_TIMER
         timer_off("cache_low");
 #endif
@@ -554,7 +554,7 @@ void DPD::file4_cache_lock(dpdfile4 *File)
                                   File->params->pqnum, File->params->rsnum,
                                   File->label, File->dpdnum);
 
-    if(this_entry != NULL && !this_entry->lock) {
+    if(this_entry != nullptr && !this_entry->lock) {
 
         /* Increment the locked cache memory counter */
         for(h=0; h < File->params->nirreps; h++) {
@@ -574,7 +574,7 @@ void DPD::file4_cache_unlock(dpdfile4 *File)
                                   File->params->pqnum, File->params->rsnum,
                                   File->label, File->dpdnum);
 
-    if(this_entry != NULL && this_entry->lock) {
+    if(this_entry != nullptr && this_entry->lock) {
 
         this_entry->lock = 0;
 

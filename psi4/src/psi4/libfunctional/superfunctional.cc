@@ -84,7 +84,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     }
 
     // Build the superfuncitonal
-    std::shared_ptr<SuperFunctional> sup = std::make_shared<SuperFunctional>();
+    auto sup = std::make_shared<SuperFunctional>();
 
     // Build LibXC functional
     LibXCFunctional* xc_func = new LibXCFunctional(name, unpolarized);
@@ -107,7 +107,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
     // Build the superfuncitonal
-    std::shared_ptr<SuperFunctional> sup = std::make_shared<SuperFunctional>();
+    auto sup = std::make_shared<SuperFunctional>();
 
     // Clone over parts
     for (int i = 0; i < x_functionals_.size(); i++) {
@@ -749,13 +749,13 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
 
     // printf("Nact/Ntot %zu / %d\n", nact, npoints);
     // Sieve the results
-    SharedVector w_vec = std::make_shared<Vector>("W Grid points", nact);
-    SharedVector x_vec = std::make_shared<Vector>("X Grid points", nact);
-    SharedVector y_vec = std::make_shared<Vector>("Y Grid points", nact);
-    SharedVector z_vec = std::make_shared<Vector>("Z Grid points", nact);
-    SharedVector rho_vec = std::make_shared<Vector>("RHO points", nact);
-    SharedVector w0_vec = std::make_shared<Vector>("W0 points", nact);
-    SharedVector kappa_vec = std::make_shared<Vector>("KAPPA points", nact);
+    auto w_vec = std::make_shared<Vector>("W Grid points", nact);
+    auto x_vec = std::make_shared<Vector>("X Grid points", nact);
+    auto y_vec = std::make_shared<Vector>("Y Grid points", nact);
+    auto z_vec = std::make_shared<Vector>("Z Grid points", nact);
+    auto rho_vec = std::make_shared<Vector>("RHO points", nact);
+    auto w0_vec = std::make_shared<Vector>("W0 points", nact);
+    auto kappa_vec = std::make_shared<Vector>("KAPPA points", nact);
 
     double* w_vecp = w_vec->pointer();
     double* x_vecp = x_vec->pointer();

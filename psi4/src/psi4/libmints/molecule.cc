@@ -752,7 +752,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
 
     std::vector<FragmentLevel> fragment_levels;
 
-    std::shared_ptr<Molecule> mol = std::make_shared<Molecule>();
+    auto mol = std::make_shared<Molecule>();
     std::string units = Process::environment.options.get_str("UNITS");
 
     if (iequals(units, std::string("ANG")) || iequals(units, std::string("ANGSTROM")) ||
@@ -850,7 +850,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     if (efp_nfrag > 0) {
         enum efp_coord_type { XYZABC, POINTS, ROTMAT };
         efp_coord_type efp_ctype;
-        double *coords = NULL;
+        double *coords = nullptr;
         coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
         double *pcoords = coords;
         size_t currentFragment = efp_nfrag - 1;
@@ -1486,7 +1486,7 @@ std::shared_ptr<Molecule> Molecule::extract_subsets(const std::vector<int> &real
     if (ghost_list.size() + real_list.size() > fragments_.size())
         throw PSIEXCEPTION("The sum of real- and ghost-atom subsets is greater than the number of subsets");
 
-    std::shared_ptr<Molecule> clone = std::make_shared<Molecule>(*this);
+    auto clone = std::make_shared<Molecule>(*this);
     clone->deactivate_all_fragments();
     for (size_t fragment = 0; fragment < real_list.size(); ++fragment) {
         clone->set_active_fragment(real_list[fragment] + 1);  // The active fragment code subtracts 1
@@ -1766,7 +1766,7 @@ void Molecule::print_out_of_planes() const {
 void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) const {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>(filename, std::ostream::trunc);
+    auto printer = std::make_shared<PsiOutStream>(filename, std::ostream::trunc);
 
     int N = natom();
     if (!save_ghosts) {
@@ -1863,7 +1863,7 @@ Matrix *Molecule::inertia_tensor() const {
 Vector Molecule::rotational_constants(double zero_tol) const {
     SharedMatrix pI(inertia_tensor());
     Vector evals(3);
-    SharedMatrix eigenvectors = std::make_shared<Matrix>(3, 3);
+    auto eigenvectors = std::make_shared<Matrix>(3, 3);
     pI->diagonalize(eigenvectors, evals, ascending);
 
     // Conversion factor from moments to rotational constants.
@@ -2390,7 +2390,7 @@ found_sigma:
     //    outfile->Printf( "yaxis %20.14lf %20.14lf %20.14lf\n", yaxis[0], yaxis[1], yaxis[2]);
     //    outfile->Printf( "zaxis %20.14lf %20.14lf %20.14lf\n", zaxis[0], zaxis[1], zaxis[2]);
 
-    SharedMatrix frame = std::make_shared<Matrix>(3, 3);
+    auto frame = std::make_shared<Matrix>(3, 3);
     for (i = 0; i < 3; ++i) {
         frame->set(0, i, 0, xaxis[i]);
         frame->set(0, i, 1, yaxis[i]);
@@ -2445,7 +2445,7 @@ std::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
         }
     }
 
-    std::shared_ptr<PointGroup> pg = std::make_shared<PointGroup>(pg_bits);
+    auto pg = std::make_shared<PointGroup>(pg_bits);
 
     return pg;
 }
@@ -2474,7 +2474,7 @@ std::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const {
         }
 
         if (symmetry_from_input() != pg->symbol()) {
-            std::shared_ptr<PointGroup> user = std::make_shared<PointGroup>(symmetry_from_input().c_str());
+            auto user = std::make_shared<PointGroup>(symmetry_from_input().c_str());
 
             if (user_specified_direction == true) {
                 // Assume the user knows what they're doing.
@@ -2715,7 +2715,7 @@ std::string Molecule::sym_label() {
 }
 
 std::vector<std::string> Molecule::irrep_labels() {
-    if (pg_ == NULL) set_point_group(find_point_group());
+    if (pg_ == nullptr) set_point_group(find_point_group());
     int nirreps = pg_->char_table().nirrep();
     std::vector<std::string> irreplabel;
     for (int i = 0; i < nirreps; i++) {
@@ -3017,7 +3017,7 @@ void Molecule::set_full_point_group(double zero_tol) {
         // Find principal axis that is unique and make it z-axis.
         SharedMatrix It(inertia_tensor());
         Vector I_evals(3);
-        SharedMatrix I_evects = std::make_shared<Matrix>(3, 3);
+        auto I_evects = std::make_shared<Matrix>(3, 3);
         It->diagonalize(I_evects, I_evals, ascending);
         // I_evects->print_out();
         // outfile->Printf("I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);

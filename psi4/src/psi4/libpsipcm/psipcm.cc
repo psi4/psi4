@@ -149,7 +149,7 @@ PCM::PCM(Options &options, std::shared_ptr<PSIO> /* psio */, int nirrep, std::sh
   tess_charges_ = new double[ntess_];
 
   int natom = molecule->natom();
-  SharedMatrix atom_Zxyz_ = std::make_shared<Matrix>("Atom Zxyz", natom, 4);
+  auto atom_Zxyz_ = std::make_shared<Matrix>("Atom Zxyz", natom, 4);
   for(int atom = 0; atom < natom; ++atom){
     Vector3 xyz = molecule->xyz(atom);
     atom_Zxyz_->set(atom, 0, molecule->charge(atom));
@@ -411,7 +411,7 @@ double PCM::compute_E_electronic(SharedMatrix &D)
 
 SharedMatrix PCM::compute_V()
 {
-  SharedMatrix V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
+  auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
   ContractOverChargesFunctor contract_charges_functor(tess_charges_, V_pcm_cart);
   potential_int_->compute(contract_charges_functor);
   // The potential might need to be transformed to the spherical harmonic basis
@@ -426,7 +426,7 @@ SharedMatrix PCM::compute_V()
 
 SharedMatrix PCM::compute_V_electronic()
 {
-  SharedMatrix V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
+  auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
   ContractOverChargesFunctor contract_charges_functor(tess_charges_e_, V_pcm_cart);
   potential_int_->compute(contract_charges_functor);
   // The potential might need to be transformed to the spherical harmonic basis

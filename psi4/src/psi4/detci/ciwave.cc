@@ -275,7 +275,7 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
     }
 
     /// Fill desired orbitals
-    SharedMatrix retC = std::make_shared<Matrix>("C " + orbital_name, nirrep_, nsopi_, spread);
+    auto retC = std::make_shared<Matrix>("C " + orbital_name, nirrep_, nsopi_, spread);
     for (int h = 0; h < nirrep_; h++) {
         for (int i = start[h], pos = 0; i < end[h]; i++, pos++) {
             C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nmopi_[h], &retC->pointer(h)[0][pos], spread[h]);
@@ -397,7 +397,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) 
         int nact2 = nact * nact;
 
         double** tpdm_nsp = tpdm_->pointer();
-        SharedMatrix ret = std::make_shared<Matrix>("MO-basis TPDM (symmetrized)", nact2, nact2);
+        auto ret = std::make_shared<Matrix>("MO-basis TPDM (symmetrized)", nact2, nact2);
         double** retp = ret->pointer();
 
         // Symmetrize
@@ -555,7 +555,7 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
             "explicit hamiltonian build");
     }
 
-    SharedMatrix H = std::make_shared<Matrix>("CI Hamiltonian", (size_t)size, (size_t)size);
+    auto H = std::make_shared<Matrix>("CI Hamiltonian", (size_t)size, (size_t)size);
     double** Hp = H->pointer();
 
     CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
@@ -752,7 +752,7 @@ void CIWavefunction::semicanonical_orbs() {
     Dimension nvirpi = get_dimension("VIR");
 
     // Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
-    SharedMatrix U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
+    auto U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
 
     // Diagonalize each block of Favg
     Dimension offset_start(nirrep_);
@@ -765,8 +765,8 @@ void CIWavefunction::semicanonical_orbs() {
         SharedMatrix F = Favg->get_block(slice, slice);
 
         // Diagonalize it
-        SharedVector evals = std::make_shared<Vector>("F Evals", block);
-        SharedMatrix evecs = std::make_shared<Matrix>("F Evecs", block, block);
+        auto evals = std::make_shared<Vector>("F Evals", block);
+        auto evecs = std::make_shared<Matrix>("F Evecs", block, block);
         F->diagonalize(evecs, evals, ascending);
 
         // Put block in U

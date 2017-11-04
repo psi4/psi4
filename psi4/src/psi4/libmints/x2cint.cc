@@ -99,7 +99,7 @@ void X2CInt::setup(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2
 
     // Create an SO basis...we need the point group for this part.
     // SOBasisSet object for the computational basis
-    std::shared_ptr<SOBasisSet> soBasis = std::make_shared<SOBasisSet>(aoBasis_, integral_);
+    auto soBasis = std::make_shared<SOBasisSet>(aoBasis_, integral_);
 
     // Obtain the dimension object to initialize the factory.
     nsopi_ = soBasis->dimension();
@@ -421,7 +421,7 @@ void X2CInt::project() {
 
     nsopi_contracted_ = soBasis_contracted->dimension();
 
-    std::shared_ptr<MatrixFactory> soFactory_contracted = std::make_shared<MatrixFactory>();
+    auto soFactory_contracted = std::make_shared<MatrixFactory>();
     soFactory_contracted->init_with(nsopi_contracted_, nsopi_);
 
     // Form the overlap matrix in the BASIS/X2C_BASIS basis
@@ -432,7 +432,7 @@ void X2CInt::project() {
     SharedMatrix S_inv = sMat->clone();
     S_inv->general_invert();
 
-    SharedMatrix D = std::make_shared<Matrix>("D", nsopi_, nsopi_contracted_);
+    auto D = std::make_shared<Matrix>("D", nsopi_, nsopi_contracted_);
     //  Form D = S_uu^{-1} S_uc.  Notice that we transpose S_cu
     D->gemm(false, true, 1.0, S_inv, S_cu, 0.0);
 
@@ -446,7 +446,7 @@ void X2CInt::test_h_FW_plus() {
      * Diagonalize the Hamiltonian
      */
     SharedMatrix Evec_x2c(S_x2c_->clone());
-    SharedVector Eval_x2c = std::make_shared<Vector>("Eigenvalues of h_FW^{+}", sMat->rowspi());
+    auto Eval_x2c = std::make_shared<Vector>("Eigenvalues of h_FW^{+}", sMat->rowspi());
     SharedMatrix S_inv_half(S_x2c_->clone());
     SharedMatrix H_x2c = T_x2c_->clone();
     H_x2c->add(V_x2c_);

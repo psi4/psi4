@@ -94,7 +94,7 @@ void DirectJK::preiterations()
 }
 void DirectJK::compute_JK()
 {
-    std::shared_ptr<IntegralFactory> factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
+    auto factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
@@ -578,7 +578,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("bench.dat",std::ostream::app);
+       auto printer = std::make_shared<PsiOutStream>("bench.dat",std::ostream::app);
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);

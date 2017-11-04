@@ -42,10 +42,10 @@ void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, Shar
     /********************************************************************************************/
     /************************** memalloc ********************************************************/
     /********************************************************************************************/
-    SharedTensor2d Bmat = std::make_shared<Tensor2d>("DIIS B Matrix", nvar, nvar);
-    SharedTensor1d Cvec = std::make_shared<Tensor1d>("DIIS C Vector", nvar);
-    SharedTensor1d vrow = std::make_shared<Tensor1d>("DIIS vrow", dimvec);
-    SharedTensor1d vcol = std::make_shared<Tensor1d>("DIIS vcol", dimvec);
+    auto Bmat = std::make_shared<Tensor2d>("DIIS B Matrix", nvar, nvar);
+    auto Cvec = std::make_shared<Tensor1d>("DIIS C Vector", nvar);
+    auto vrow = std::make_shared<Tensor1d>("DIIS vrow", dimvec);
+    auto vcol = std::make_shared<Tensor1d>("DIIS vcol", dimvec);
 
     /********************************************************************************************/
     /************************** Form B matrix ***************************************************/

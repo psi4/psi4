@@ -103,9 +103,9 @@ void Denominator::debug() {
     double *e_v = eps_vir_->pointer();
     double **denp = denominator_->pointer();
 
-    SharedMatrix true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
-    SharedMatrix app_denom = std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nvir, nocc * nvir);
-    SharedMatrix err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
+    auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
+    auto app_denom = std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nvir, nocc * nvir);
+    auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
     double **tp = true_denom->pointer();
     double **ap = app_denom->pointer();
@@ -171,7 +171,7 @@ void LaplaceDenominator::decompose() {
     double *R_availp = new double[nR];
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
-    SharedMatrix err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
+    auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
     err_table_file.read((char *)err_tablep[0], nR * nk * sizeof(double));
 
@@ -325,10 +325,10 @@ void LaplaceDenominator::debug() {
     double **denop = denominator_occ_->pointer();
     double **denvp = denominator_vir_->pointer();
 
-    SharedMatrix true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
+    auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
     SharedMatrix app_denom =
         std::make_shared<Matrix>("Approximate Delta Tensor (Fully Separated)", nocc * nvir, nocc * nvir);
-    SharedMatrix err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
+    auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
     double **tp = true_denom->pointer();
     double **ap = app_denom->pointer();
@@ -506,9 +506,9 @@ void SAPTDenominator::check_denom(std::shared_ptr<Vector> eps_occ, std::shared_p
     double *e_v = eps_vir->pointer();
     double **denp = denominator->pointer();
 
-    SharedMatrix true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
-    SharedMatrix app_denom = std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nvir, nocc * nvir);
-    SharedMatrix err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
+    auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
+    auto app_denom = std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nvir, nocc * nvir);
+    auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
     double **tp = true_denom->pointer();
     double **ap = app_denom->pointer();
@@ -587,7 +587,7 @@ void SAPTLaplaceDenominator::decompose() {
     double *R_availp = new double[nR];
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
-    SharedMatrix err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
+    auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
     err_table_file.read((char *)err_tablep[0], nR * nk * sizeof(double));
 
@@ -769,10 +769,10 @@ void SAPTLaplaceDenominator::check_split(std::shared_ptr<Vector> eps_occ, std::s
     double **denop = denominator_occ->pointer();
     double **denvp = denominator_vir->pointer();
 
-    SharedMatrix true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
+    auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
     SharedMatrix app_denom =
         std::make_shared<Matrix>("Approximate Delta Tensor (Fully Separated)", nocc * nvir, nocc * nvir);
-    SharedMatrix err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
+    auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
     double **tp = true_denom->pointer();
     double **ap = app_denom->pointer();
@@ -821,8 +821,8 @@ void SAPTCholeskyDenominator::decompose() {
     double *eps_virBp = eps_virB_->pointer();
 
     // Build the schur complement
-    std::shared_ptr<Vector> schurA = std::make_shared<Vector>("Diagonal Complement A", noccA * nvirA);
-    std::shared_ptr<Vector> schurB = std::make_shared<Vector>("Diagonal Complement B", noccB * nvirB);
+    auto schurA = std::make_shared<Vector>("Diagonal Complement A", noccA * nvirA);
+    auto schurB = std::make_shared<Vector>("Diagonal Complement B", noccB * nvirB);
     double *schurAp = schurA->pointer();
     double *schurBp = schurB->pointer();
 
@@ -1054,7 +1054,7 @@ void TLaplaceDenominator::decompose() {
     double *R_availp = new double[nR];
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
-    SharedMatrix err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
+    auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
     err_table_file.read((char *)err_tablep[0], nR * nk * sizeof(double));
 
@@ -1196,10 +1196,10 @@ void TLaplaceDenominator::debug() {
     double **d_o = denominator_occ_->pointer();
     double **d_v = denominator_vir_->pointer();
 
-    SharedMatrix true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
+    auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
     SharedMatrix app_denom =
         std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
-    SharedMatrix err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
+    auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
 
     double **tp = true_denom->pointer();
     double **ap = app_denom->pointer();

@@ -100,7 +100,7 @@ void DCFTSolver::presort_mo_tpdm_AB()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketOffset = p;
@@ -111,7 +111,7 @@ void DCFTSolver::presort_mo_tpdm_AB()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketRowDim = p;
@@ -122,7 +122,7 @@ void DCFTSolver::presort_mo_tpdm_AB()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketSize = p;
@@ -258,7 +258,7 @@ void DCFTSolver::presort_mo_tpdm_AA()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketOffset = p;
@@ -269,7 +269,7 @@ void DCFTSolver::presort_mo_tpdm_AA()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketRowDim = p;
@@ -280,7 +280,7 @@ void DCFTSolver::presort_mo_tpdm_AA()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketSize = p;

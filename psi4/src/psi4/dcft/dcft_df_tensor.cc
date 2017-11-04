@@ -133,7 +133,7 @@ void DCFTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<B
     Jm12_ = block_matrix(nQ_, nQ_);
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, auxiliary, zero);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, auxiliary, zero);
     std::vector<std::shared_ptr<TwoBodyAOInt>> Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -218,7 +218,7 @@ void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Bas
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
+    auto sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
     const std::vector<std::pair<int, int>>& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -241,7 +241,7 @@ void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Bas
     Pstarts.push_back(auxiliary->nshell());
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -402,7 +402,7 @@ void DCFTSolver::transform_b_ao2so() {
         for (int hm = 0; hm < nirrep_; ++hm) {
             int hn = h ^ hm;
             if (nsopi_[hm] > 0 && nsopi_[hn] > 0) {
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b", nQ_, nso_ * nsopi_[hn]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b", nQ_, nso_ * nsopi_[hn]);
                 double** tmpp = tmp->pointer();
                 double** ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
                 double** ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
@@ -460,7 +460,7 @@ void DCFTSolver::formb_oo() {
             if (naoccpi_[hI] > 0 && naoccpi_[hJ] > 0) {
                 double** CaJp = Ca_->pointer(hJ);
                 double** CaIp = Ca_->pointer(hI);
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b_IJ", nQ_, nsopi_[hI] * naoccpi_[hJ]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b_IJ", nQ_, nsopi_[hI] * naoccpi_[hJ]);
                 double** tmpp = tmp->pointer();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Q = 0; Q < nQ_; ++Q) {
@@ -560,7 +560,7 @@ void DCFTSolver::formb_ov() {
             if (naoccpi_[hI] > 0 && navirpi_[hA] > 0) {
                 double** CaVp = Ca_->pointer(hA);
                 double** CaOp = Ca_->pointer(hI);
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b_OV", nQ_, nsopi_[hI] * navirpi_[hA]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b_OV", nQ_, nsopi_[hI] * navirpi_[hA]);
                 double** tmpp = tmp->pointer();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Q = 0; Q < nQ_; ++Q) {
@@ -658,7 +658,7 @@ void DCFTSolver::formb_vv() {
             if (navirpi_[hA] > 0 && navirpi_[hB] > 0) {
                 double** CaBp = Ca_->pointer(hB);
                 double** CaAp = Ca_->pointer(hA);
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b_VV", nQ_, nsopi_[hA] * navirpi_[hB]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b_VV", nQ_, nsopi_[hA] * navirpi_[hB]);
                 double** tmpp = tmp->pointer();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Q = 0; Q < nQ_; ++Q) {
@@ -757,7 +757,7 @@ void DCFTSolver::formb_pq() {
             if (nsopi_[hP] > 0 && nsopi_[hQ] > 0) {
                 double** Caqp = Ca_->pointer(hQ);
                 double** Capp = Ca_->pointer(hP);
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b_PQ", nQ_, nsopi_[hP] * nsopi_[hQ]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b_PQ", nQ_, nsopi_[hP] * nsopi_[hQ]);
                 double** tmpp = tmp->pointer();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Aux = 0; Aux < nQ_; ++Aux) {
@@ -792,7 +792,7 @@ void DCFTSolver::formb_pq() {
                 if (nsopi_[hp] > 0 && nsopi_[hq] > 0) {
                     double** Cbqp = Cb_->pointer(hq);
                     double** Cbpp = Cb_->pointer(hp);
-                    SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b_pq", nQ_, nsopi_[hp] * nsopi_[hq]);
+                    auto tmp = std::make_shared<Matrix>("Half-transformed b_pq", nQ_, nsopi_[hp] * nsopi_[hq]);
                     double** tmpp = tmp->pointer();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                     for (int Aux = 0; Aux < nQ_; ++Aux) {
@@ -1621,7 +1621,7 @@ void DCFTSolver::build_gbarGamma_RHF() {
         if (nsopi_[hq] > 0) {
             double** tFAp = mo_gbarGamma_A_->pointer(hq);
             double** bQpqAp = bQpqA_mo_->pointer(0);
-            SharedMatrix Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_);
+            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_);
             double** Qp = Q->pointer();
             // (Q) = b(Q|SR) gamma<R|S>
             for (int hr = 0; hr < nirrep_; ++hr) {
@@ -1724,7 +1724,7 @@ void DCFTSolver::build_gbarKappa_RHF() {
         if (nsopi_[hq] > 0) {
             double** tFAp = mo_gbarKappa_A_->pointer(hq);
             double** bQpqAp = bQpqA_mo_scf_->pointer(0);
-            SharedMatrix Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
+            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
             double** Qp = Q->pointer();
             // (Q) = b(Q|SR) gamma<R|S>
             for (int hr = 0; hr < nirrep_; ++hr) {
@@ -2293,7 +2293,7 @@ void DCFTSolver::build_gbarGamma_UHF() {
             double** bQpqBp = bQpqB_mo_->pointer(0);
 
             // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
-            SharedMatrix Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_);
+            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_);
             double** Qp = Q->pointer();
             for (int hR = 0; hR < nirrep_; ++hR) {
                 int hS = hR;
@@ -2455,7 +2455,7 @@ void DCFTSolver::build_gbarKappa_UHF() {
             double** bQpqBp = bQpqB_mo_scf_->pointer(0);
 
             // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
-            SharedMatrix Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
+            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
             double** Qp = Q->pointer();
             for (int hR = 0; hR < nirrep_; ++hR) {
                 int hS = hR;
@@ -2587,7 +2587,7 @@ void DCFTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_p
     Jm12_scf_ = block_matrix(nQ_scf_, nQ_scf_);
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, auxiliary, zero);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, auxiliary, zero);
     std::vector<std::shared_ptr<TwoBodyAOInt>> Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -2672,7 +2672,7 @@ void DCFTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
+    auto sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
     const std::vector<std::pair<int, int>>& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -2695,7 +2695,7 @@ void DCFTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr
     Pstarts.push_back(auxiliary->nshell());
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -2790,7 +2790,7 @@ void DCFTSolver::transform_b_ao2so_scf() {
         for (int hm = 0; hm < nirrep_; ++hm) {
             int hn = h ^ hm;
             if (nsopi_[hm] > 0 && nsopi_[hn] > 0) {
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b", nQ_scf_, nso_ * nsopi_[hn]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b", nQ_scf_, nso_ * nsopi_[hn]);
                 double** tmpp = tmp->pointer();
                 double** ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
                 double** ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
@@ -2949,7 +2949,7 @@ void DCFTSolver::formb_pq_scf() {
             if (nsopi_[hP] > 0 && nsopi_[hQ] > 0) {
                 double** Caqp = Ca_->pointer(hQ);
                 double** Capp = Ca_->pointer(hP);
-                SharedMatrix tmp = std::make_shared<Matrix>("Half-transformed b_PQ", nQ_scf_, nsopi_[hP] * nsopi_[hQ]);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b_PQ", nQ_scf_, nsopi_[hP] * nsopi_[hQ]);
                 double** tmpp = tmp->pointer();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Aux = 0; Aux < nQ_scf_; ++Aux) {

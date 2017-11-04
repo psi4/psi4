@@ -167,7 +167,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
     spaces.push_back(moinfo.virtpi);
     spaces.push_back(moinfo.vir_sym);
     delete dpd_list[0];
-    dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+    dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr,
              2, spaces);
     dpd_set_default(0);
 
@@ -184,7 +184,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
     spaces.push_back(moinfo.bocc_sym);
     spaces.push_back(moinfo.bvirtpi);
     spaces.push_back(moinfo.bvir_sym);
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
   }
 
   for (i=0; i<params.nstates; ++i) {
@@ -356,8 +356,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
     Dimension frzvpi = ref_wfn->frzvpi();
 
     // Grab the GS OPDM and set it in the ref_wfn object
-    SharedMatrix Pa = std::make_shared<Matrix>("P alpha", Ca->colspi(), Ca->colspi());
-    SharedMatrix Pb = std::make_shared<Matrix>("P beta", Cb->colspi(), Cb->colspi());
+    auto Pa = std::make_shared<Matrix>("P alpha", Ca->colspi(), Ca->colspi());
+    auto Pb = std::make_shared<Matrix>("P beta", Cb->colspi(), Cb->colspi());
     int mo_offset = 0;
 
     for (int h = 0; h < Ca->nirrep(); h++) {
@@ -384,7 +384,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       mo_offset += nmo;
     }
     /*Call OEProp for each root opdm */
-    std::shared_ptr<OEProp> oe = std::make_shared<OEProp>(ref_wfn);
+    auto oe = std::make_shared<OEProp>(ref_wfn);
     if(ref_wfn->same_a_b_dens()){
       Pa->scale(0.5);
       oe->set_Da_mo(Pa);

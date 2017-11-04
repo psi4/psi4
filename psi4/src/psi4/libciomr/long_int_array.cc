@@ -62,7 +62,7 @@ long int * init_long_int_array(int size)
 {
   long int *array;
 
-  if ((array = (long int *) malloc(sizeof(long int)*size))==NULL) {
+  if ((array = (long int *) malloc(sizeof(long int)*size))==nullptr) {
     outfile->Printf("init_array:  trouble allocating memory \n");
     outfile->Printf("size = %d\n",size);
     exit(PSI_RETURN_FAILURE);

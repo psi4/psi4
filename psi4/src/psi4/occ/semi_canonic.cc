@@ -41,12 +41,12 @@ void OCCWave::semi_canonic()
         // tell other functions that orbitals are already semi canonical.
         orbs_already_sc = 1;
 
-	SharedMatrix UooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
-	SharedMatrix UvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
-	SharedMatrix FockooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
-	SharedMatrix FockvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
-	SharedVector eigooA = std::make_shared<Vector>(nirrep_, occpiA);
-	SharedVector eigvvA = std::make_shared<Vector>(nirrep_, virtpiA);
+	auto UooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
+	auto UvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
+	auto FockooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
+	auto FockvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
+	auto eigooA = std::make_shared<Vector>(nirrep_, occpiA);
+	auto eigvvA = std::make_shared<Vector>(nirrep_, virtpiA);
 
 	UooA->zero();
 	UvvA->zero();
@@ -178,12 +178,12 @@ void OCCWave::semi_canonic()
 
      // UHF REFERENCE
      if (reference_ == "UNRESTRICTED") {
-	SharedMatrix UooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
-	SharedMatrix UvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
-	SharedMatrix FockooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
-	SharedMatrix FockvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
-	SharedVector eigooB = std::make_shared<Vector>(nirrep_, occpiB);
-	SharedVector eigvvB = std::make_shared<Vector>(nirrep_, virtpiB);
+	auto UooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
+	auto UvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
+	auto FockooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
+	auto FockvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
+	auto eigooB = std::make_shared<Vector>(nirrep_, occpiB);
+	auto eigvvB = std::make_shared<Vector>(nirrep_, virtpiB);
 
 	UooB->zero();
 	UvvB->zero();

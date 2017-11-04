@@ -43,20 +43,20 @@ namespace dfoccwave {
 /************************** 1d array ********************************************************/
 /********************************************************************************************/
 Array1d::Array1d(int d1) {
-    A1d_ = NULL;
+    A1d_ = nullptr;
     dim1_ = d1;
     memalloc();
 }  //
 
 Array1d::Array1d(std::string name, int d1) {
-    A1d_ = NULL;
+    A1d_ = nullptr;
     dim1_ = d1;
     name_ = name;
     memalloc();
 }  //
 
 Array1d::Array1d() {
-    A1d_ = NULL;
+    A1d_ = nullptr;
     dim1_ = 0;
 
 }  //
@@ -97,7 +97,7 @@ void Array1d::print() {
 
 void Array1d::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
+        (out == "outfile" ? outfile auto std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
     if (name_.length()) printer->Printf("\n ## %s ##\n", name_.c_str());
     for (int p = 0; p < dim1_; p++) {
         printer->Printf(" %3d %10.7f \n", p, A1d_[p]);
@@ -108,7 +108,7 @@ void Array1d::print(std::string out) {
 void Array1d::release() {
     if (!A1d_) return;
     delete[] A1d_;
-    A1d_ = NULL;
+    A1d_ = nullptr;
 }  //
 
 void Array1d::set(int i, double value) { A1d_[i] = value; }  //
@@ -266,14 +266,14 @@ void Array1d::dirprd(Array1d *a, Array1d *b) {
 /************************** 2d array ********************************************************/
 /********************************************************************************************/
 Array2d::Array2d(int d1, int d2) {
-    A2d_ = NULL;
+    A2d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     memalloc();
 }  //
 
 Array2d::Array2d(std::string name, int d1, int d2) {
-    A2d_ = NULL;
+    A2d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     name_ = name;
@@ -281,14 +281,14 @@ Array2d::Array2d(std::string name, int d1, int d2) {
 }  //
 
 Array2d::Array2d() {
-    A2d_ = NULL;
+    A2d_ = nullptr;
     dim1_ = 0;
     dim2_ = 0;
 
 }  //
 
 Array2d::Array2d(psi::PSIO *psio, size_t fileno, std::string name, int d1, int d2) {
-    A2d_ = NULL;
+    A2d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     name_ = name;
@@ -297,7 +297,7 @@ Array2d::Array2d(psi::PSIO *psio, size_t fileno, std::string name, int d1, int d
 }
 
 Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, std::string name, int d1, int d2) {
-    A2d_ = NULL;
+    A2d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     name_ = name;
@@ -306,7 +306,7 @@ Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, std::string nam
 }
 
 Array2d::Array2d(psi::PSIO &psio, size_t fileno, std::string name, int d1, int d2) {
-    A2d_ = NULL;
+    A2d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     name_ = name;
@@ -357,7 +357,7 @@ void Array2d::print() {
 
 void Array2d::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
+        (out == "outfile" ? outfile auto std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
     if (A2d_) {
         if (name_.length()) printer->Printf("\n ## %s ##\n", name_.c_str());
         print_mat(A2d_, dim1_, dim2_, out);
@@ -367,13 +367,13 @@ void Array2d::print(std::string out) {
 void Array2d::release() {
     if (!A2d_) return;
     free_block(A2d_);
-    A2d_ = NULL;
+    A2d_ = nullptr;
 }  //
 
 void Array2d::set(int i, int j, double value) { A2d_[i][j] = value; }  //
 
 void Array2d::set(double **A) {
-    if (A == NULL) return;
+    if (A == nullptr) return;
     for (int i = 0; i < dim1_; ++i) {
         for (int j = 0; j < dim2_; ++j) {
             A2d_[i][j] = A[i][j];
@@ -382,7 +382,7 @@ void Array2d::set(double **A) {
 }  //
 
 void Array2d::set(Array2d *A) {
-    if (A == NULL) return;
+    if (A == nullptr) return;
     for (int i = 0; i < dim1_; ++i) {
         for (int j = 0; j < dim2_; ++j) {
             A2d_[i][j] = A->A2d_[i][j];
@@ -841,7 +841,7 @@ double **Array2d::to_block_matrix() {
 }  //
 
 double *Array2d::to_lower_triangle() {
-    if (dim1_ != dim2_) return NULL;
+    if (dim1_ != dim2_) return nullptr;
     int ntri = 0.5 * dim1_ * (dim1_ + 1);
     double *tri = new double[ntri];
     double **temp = to_block_matrix();
@@ -1147,7 +1147,7 @@ void Array2d::sortp3142(int d1, int d2, int d3, int d4, Array2d *A, Array2i *row
 /************************** 3d array ********************************************************/
 /********************************************************************************************/
 Array3d::Array3d(int d1, int d2, int d3) {
-    A3d_ = NULL;
+    A3d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     dim3_ = d3;
@@ -1155,7 +1155,7 @@ Array3d::Array3d(int d1, int d2, int d3) {
 }  //
 
 Array3d::Array3d(std::string name, int d1, int d2, int d3) {
-    A3d_ = NULL;
+    A3d_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     dim3_ = d3;
@@ -1164,7 +1164,7 @@ Array3d::Array3d(std::string name, int d1, int d2, int d3) {
 }  //
 
 Array3d::Array3d() {
-    A3d_ = NULL;
+    A3d_ = nullptr;
     dim1_ = 0;
     dim2_ = 0;
     dim3_ = 0;
@@ -1228,7 +1228,7 @@ void Array3d::release() {
     for (int i = 0; i < dim1_; i++) {
         free_block(A3d_[i]);
     }
-    A3d_ = NULL;
+    A3d_ = nullptr;
 }  //
 
 void Array3d::set(int h, int i, int j, double value) { A3d_[h][i][j] = value; }  //
@@ -1239,20 +1239,20 @@ double Array3d::get(int h, int i, int j) { return A3d_[h][i][j]; }  //
 /************************** 1i array ********************************************************/
 /********************************************************************************************/
 Array1i::Array1i(int d1) {
-    A1i_ = NULL;
+    A1i_ = nullptr;
     dim1_ = d1;
     memalloc();
 }  //
 
 Array1i::Array1i(std::string name, int d1) {
-    A1i_ = NULL;
+    A1i_ = nullptr;
     dim1_ = d1;
     name_ = name;
     memalloc();
 }  //
 
 Array1i::Array1i() {
-    A1i_ = NULL;
+    A1i_ = nullptr;
     dim1_ = 0;
 
 }  //
@@ -1294,7 +1294,7 @@ void Array1i::print() {
 void Array1i::release() {
     if (!A1i_) return;
     delete[] A1i_;
-    A1i_ = NULL;
+    A1i_ = nullptr;
 }  //
 
 void Array1i::set(int i, int value) { A1i_[i] = value; }  //
@@ -1337,14 +1337,14 @@ void Array1i::subtract(int i, int value) { A1i_[i] -= value; }  //
 /************************** 2i array ********************************************************/
 /********************************************************************************************/
 Array2i::Array2i(int d1, int d2) {
-    A2i_ = NULL;
+    A2i_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     memalloc();
 }  //
 
 Array2i::Array2i(std::string name, int d1, int d2) {
-    A2i_ = NULL;
+    A2i_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     name_ = name;
@@ -1352,7 +1352,7 @@ Array2i::Array2i(std::string name, int d1, int d2) {
 }  //
 
 Array2i::Array2i() {
-    A2i_ = NULL;
+    A2i_ = nullptr;
     dim1_ = 0;
     dim2_ = 0;
 
@@ -1400,7 +1400,7 @@ void Array2i::print() {
 
 void Array2i::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
+        (out == "outfile" ? outfile auto std::shared_ptr<PsiOutStream> = std::make_shared<PsiOutStream>(out));
     if (name_.length()) printer->Printf("\n ## %s ##\n", name_.c_str());
     print_int_mat(A2i_, dim1_, dim2_, out);
 }  //
@@ -1408,13 +1408,13 @@ void Array2i::print(std::string out) {
 void Array2i::release() {
     if (!A2i_) return;
     free_int_matrix(A2i_);
-    A2i_ = NULL;
+    A2i_ = nullptr;
 }  //
 
 void Array2i::set(int i, int j, int value) { A2i_[i][j] = value; }  //
 
 void Array2i::set(int **A) {
-    if (A == NULL) return;
+    if (A == nullptr) return;
     for (int i = 0; i < dim1_; ++i) {
         for (int j = 0; j < dim2_; ++j) {
             A2i_[i][j] = A[i][j];
@@ -1514,7 +1514,7 @@ int **Array2i::to_int_matrix() {
 /************************** 3i array ********************************************************/
 /********************************************************************************************/
 Array3i::Array3i(int d1, int d2, int d3) {
-    A3i_ = NULL;
+    A3i_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     dim3_ = d3;
@@ -1522,7 +1522,7 @@ Array3i::Array3i(int d1, int d2, int d3) {
 }  //
 
 Array3i::Array3i(std::string name, int d1, int d2, int d3) {
-    A3i_ = NULL;
+    A3i_ = nullptr;
     dim1_ = d1;
     dim2_ = d2;
     dim3_ = d3;
@@ -1531,7 +1531,7 @@ Array3i::Array3i(std::string name, int d1, int d2, int d3) {
 }  //
 
 Array3i::Array3i() {
-    A3i_ = NULL;
+    A3i_ = nullptr;
     dim1_ = 0;
     dim2_ = 0;
     dim3_ = 0;
@@ -1595,7 +1595,7 @@ void Array3i::release() {
     for (int i = 0; i < dim1_; i++) {
         free_int_matrix(A3i_[i]);
     }
-    A3i_ = NULL;
+    A3i_ = nullptr;
 }  //
 
 void Array3i::set(int h, int i, int j, int value) { A3i_[h][i][j] = value; }  //

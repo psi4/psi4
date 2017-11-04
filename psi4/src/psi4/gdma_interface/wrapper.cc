@@ -61,7 +61,7 @@ SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options & options,
         maxorder = maxorder > site_order ? maxorder : site_order;
     }
     int nvals = (maxorder+1)*(maxorder+1);
-    SharedMatrix dmavals = std::make_shared<Matrix>("Spherical Harmonic DMA for each site", nsites, nvals);
+    auto dmavals = std::make_shared<Matrix>("Spherical Harmonic DMA for each site", nsites, nvals);
     for(int site = 1; site <= nsites; ++site){
         int site_order = get_order(site);
         int site_nvals = (site_order+1)*(site_order+1);
@@ -70,7 +70,7 @@ SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options & options,
             dmavals->set(site-1, n-1, val);
         }
     }
-    SharedMatrix totvals = std::make_shared<Matrix>("Total multipoles, translated to the origin", 1, nvals);
+    auto totvals = std::make_shared<Matrix>("Total multipoles, translated to the origin", 1, nvals);
     for(int n = 1; n <= nvals; ++n){
         double val = get_tot_value(n);
         totvals->set(0, n-1, val);

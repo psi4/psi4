@@ -215,7 +215,7 @@ OptReturnType optking(void) {
       mol1->add_cartesians(); // also adds trivial combos
 
     // print out internal coordinates for future steps
-    FILE *qc_intco = NULL;
+    FILE *qc_intco = nullptr;
     std::string psi_intco = FILENAME_INTCO_DAT;
 #if defined(OPTKING_PACKAGE_QCHEM)
     qc_intco = fopen(FILENAME_INTCO_DAT, "w");
@@ -269,7 +269,7 @@ OptReturnType optking(void) {
   // save geometry and energy
   double * x = mol1->g_geom_array();
   p_Opt_data->save_geom_energy(x, mol1->g_energy());
-  if (x!=NULL) free_array(x);
+  if (x!=nullptr) free_array(x);
 
   // print out report on progress
   p_Opt_data->previous_step_report();

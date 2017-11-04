@@ -41,7 +41,7 @@
 namespace psi {
 
 Vector::Vector() {
-    dimpi_ = NULL;
+    dimpi_ = nullptr;
     nirrep_ = 0;
     name_ = "";
 }
@@ -149,7 +149,7 @@ void Vector::assign_pointer_offsets() {
         if (dimpi_[h])
             vector_[h] = &(v_[0]) + offset;
         else
-            vector_[h] = NULL;
+            vector_[h] = nullptr;
         offset += dimpi_[h];
     }
 }
@@ -183,7 +183,7 @@ SharedVector Vector::get_block(const Slice &slice) {
     }
     const Dimension &slice_begin = slice.begin();
     Dimension slice_dim = slice.end() - slice.begin();
-    SharedVector block = std::make_shared<Vector>("Block", slice_dim);
+    auto block = std::make_shared<Vector>("Block", slice_dim);
     for (int h = 0; h < nirrep_; h++) {
         int max_p = slice_dim[h];
         for (int p = 0; p < max_p; p++) {
@@ -220,7 +220,7 @@ void Vector::print(std::string out, const char *extra) const {
     std::shared_ptr<psi::PsiOutStream> printer =
         (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h;
-    if (extra == NULL) {
+    if (extra == nullptr) {
         printer->Printf("\n # %s #\n", name_.c_str());
     } else {
         printer->Printf("\n # %s %s #\n", name_.c_str(), extra);

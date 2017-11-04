@@ -493,8 +493,8 @@ outfile->Printf("\n Diagonalizing one-particle response density matrix... \n");
 outfile->Printf("\n");
 
 
-      SharedMatrix Udum = std::make_shared<Matrix>("Udum", nirrep_, nmopi_, nmopi_);
-      SharedVector diag = std::make_shared<Vector>("Natural orbital occupation numbers", nirrep_, nmopi_);
+      auto Udum = std::make_shared<Matrix>("Udum", nirrep_, nmopi_, nmopi_);
+      auto diag = std::make_shared<Vector>("Natural orbital occupation numbers", nirrep_, nmopi_);
 
       // Diagonalizing Alpha-OPDM
       Udum->zero();

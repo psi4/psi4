@@ -40,9 +40,9 @@
 
 namespace psi {
 
-DPD *global_dpd_ = NULL;
+DPD *global_dpd_ = nullptr;
 int dpd_default = 0;
-DPD* dpd_list[2] = {NULL, NULL};
+DPD* dpd_list[2] = {nullptr, nullptr};
 dpd_gbl dpd_main;
 
 struct dpdpair{
@@ -380,7 +380,7 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
             pairorb[5*i+l] = (int ***) malloc(nirreps * sizeof(int **));
             for(j=0; j < nirreps; j++) {
                 pairorb[5*i+l][j] =
-                        pairtot[5*i+l][j] ? init_int_matrix(pairtot[5*i+l][j],2) : NULL;
+                        pairtot[5*i+l][j] ? init_int_matrix(pairtot[5*i+l][j],2) : nullptr;
                 for(k=0; k < pairtot[5*i+l][j]; k++) {
                     pairorb[5*i+l][j][k][0] = -1;
                     pairorb[5*i+l][j][k][1] = -1;
@@ -530,9 +530,9 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
             pairorb[cnt+1] = (int ***) malloc(nirreps * sizeof(int **));
             for(k=0; k < nirreps; k++) {
                 pairorb[cnt][k] =
-                        pairtot[cnt][k] ? init_int_matrix(pairtot[cnt][k],2) : NULL;
+                        pairtot[cnt][k] ? init_int_matrix(pairtot[cnt][k],2) : nullptr;
                 pairorb[cnt+1][k] =
-                        pairtot[cnt+1][k] ? init_int_matrix(pairtot[cnt+1][k],2) : NULL;
+                        pairtot[cnt+1][k] ? init_int_matrix(pairtot[cnt+1][k],2) : nullptr;
                 for(l=0; l < pairtot[cnt][k]; l++) {
                     pairorb[cnt][k][l][0] = -1;
                     pairorb[cnt][k][l][1] = -1;
@@ -662,7 +662,7 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
     for(i=0;i < num_subspaces; i++) {
         orbs2[i] = (int **) malloc(nirreps*sizeof(int *));
         for(j=0; j < nirreps; j++) {
-            orbs2[i][j] = orbspi[i][j] ? init_int_array(orbspi[i][j]) : NULL;
+            orbs2[i][j] = orbspi[i][j] ? init_int_array(orbspi[i][j]) : nullptr;
             for(k=0; k < orbspi[i][j]; k++)
                 orbs2[i][j][k] = -1;
         }

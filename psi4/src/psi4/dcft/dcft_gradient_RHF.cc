@@ -454,7 +454,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
 
     Matrix aW ("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
 
-    SharedMatrix a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     int *alpha_pitzer_to_corr = new int[nmo_];

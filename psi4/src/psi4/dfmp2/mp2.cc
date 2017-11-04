@@ -63,8 +63,8 @@ namespace dfmp2 {
 
 void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ) {
     // The density matrix
-    SharedMatrix c1MO_c1NO = std::make_shared<Matrix>("NOs", nmo_, nmo_);
-    SharedVector occ_c1 = std::make_shared<Vector>("NO Occupations", nmo_);
+    auto c1MO_c1NO = std::make_shared<Matrix>("NOs", nmo_, nmo_);
+    auto occ_c1 = std::make_shared<Vector>("NO Occupations", nmo_);
     Dnosym->diagonalize(c1MO_c1NO, occ_c1, descending);
     // Rotate the canonical MOs to NOs
     SharedMatrix AO_c1MO = reference_wavefunction_->Ca_subset("AO");
@@ -72,7 +72,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     AO_c1NO->gemm(false, false, 1.0, AO_c1MO, c1MO_c1NO, 0.0);
     // Reapply the symmetry to the AO dimension
     SharedMatrix AO_SO = reference_wavefunction_->aotoso();
-    SharedMatrix SO_c1NO = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
+    auto SO_c1NO = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
     SO_c1NO->set_name("SO to C1 NO");
     for (int h = 0; h < nirrep_; ++h) {
         int so_h = nsopi_[h];
@@ -123,7 +123,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     //
     // Now we're finished with the MO(c1)->NO(c1) matrix, use it as scratch for diag(NO occ)
     c1MO_c1NO->set_diagonal(occ_c1);
-    SharedMatrix temp = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
+    auto temp = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
     for (int h = 0; h < nirrep_; ++h) {
         int so_h = nsopi_[h];
         if (so_h) {
@@ -304,7 +304,7 @@ SharedMatrix DFMP2::compute_gradient() {
     if (options_.get_bool("ONEPDM")) {
         print_energies();
         energy_ = variables_["MP2 TOTAL ENERGY"];
-        return std::make_shared<Matrix>("NULL", 0, 0);
+        return std::make_shared<Matrix>("nullptr", 0, 0);
     }
 
     timer_on("DFMP2 grad");
@@ -332,8 +332,8 @@ void DFMP2::form_singles() {
     SharedVector eps_aocc_b = epsilon_b_subset("SO", "ACTIVE_OCC");
     SharedVector eps_avir_b = epsilon_b_subset("SO", "ACTIVE_VIR");
 
-    SharedMatrix Fia_a = std::make_shared<Matrix>("Fia a", Caocc_a->colspi(), Cavir_a->colspi());
-    SharedMatrix Fia_b = std::make_shared<Matrix>("Fia b", Caocc_b->colspi(), Cavir_b->colspi());
+    auto Fia_a = std::make_shared<Matrix>("Fia a", Caocc_a->colspi(), Cavir_a->colspi());
+    auto Fia_b = std::make_shared<Matrix>("Fia b", Caocc_b->colspi(), Cavir_b->colspi());
 
     double* temp =
         new double[Fa_->max_nrow() *
@@ -418,7 +418,7 @@ SharedMatrix DFMP2::form_inverse_metric() {
 
     // Load inverse metric from the SCF three-index integral file if it exists
     if (options_.get_str("DF_INTS_IO") == "LOAD") {
-        SharedMatrix Jm12 = std::make_shared<Matrix>("SO Basis Fitting Inverse (Eig)", naux, naux);
+        auto Jm12 = std::make_shared<Matrix>("SO Basis Fitting Inverse (Eig)", naux, naux);
         outfile->Printf("\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ);
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*)Jm12->pointer()[0], sizeof(double) * naux * naux);
@@ -430,7 +430,7 @@ SharedMatrix DFMP2::form_inverse_metric() {
 
     } else {
         // Form the inverse metric manually
-        std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(ribasis_, true);
+        auto metric = std::make_shared<FittingMetric>(ribasis_, true);
         metric->form_eig_inverse(1.0E-10);
         SharedMatrix Jm12 = metric->get_metric();
 
@@ -472,8 +472,8 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t ni
     // block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    SharedMatrix Aia = std::make_shared<Matrix>("Aia", naux, max_nia);
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
+    auto Aia = std::make_shared<Matrix>("Aia", naux, max_nia);
+    auto Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
     double** Aiap = Aia->pointer();
     double** Qiap = Qia->pointer();
     double** Jp = Jm12->pointer();
@@ -533,8 +533,8 @@ void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size
     // block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    SharedMatrix Aia = std::make_shared<Matrix>("Aia", max_nia, naux);
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
+    auto Aia = std::make_shared<Matrix>("Aia", max_nia, naux);
+    auto Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
     double** Aiap = Aia->pointer();
     double** Qiap = Qia->pointer();
     double** Jp = Jm12->pointer();
@@ -590,9 +590,9 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
     // block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    SharedMatrix Aia = std::make_shared<Matrix>("Aia", max_nia, naux);
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
-    SharedMatrix G = std::make_shared<Matrix>("g", naux, naux);
+    auto Aia = std::make_shared<Matrix>("Aia", max_nia, naux);
+    auto Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
+    auto G = std::make_shared<Matrix>("g", naux, naux);
     double** Aiap = Aia->pointer();
     double** Qiap = Qia->pointer();
     double** Gp = G->pointer();
@@ -659,8 +659,8 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     next_QIA = PSIO_ZERO;
 
     // Tensor blocks
-    SharedMatrix Aia = std::make_shared<Matrix>("Aia", naux, max_nia);
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
+    auto Aia = std::make_shared<Matrix>("Aia", naux, max_nia);
+    auto Qia = std::make_shared<Matrix>("Qia", max_nia, naux);
     double** Aiap = Aia->pointer();
     double** Qiap = Qia->pointer();
 
@@ -711,7 +711,7 @@ void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t nav
     // block_status(a_starts, __FILE__,__LINE__);
 
     // Buffers
-    SharedMatrix iaQ = std::make_shared<Matrix>("iaQ", max_A * naocc, naux);
+    auto iaQ = std::make_shared<Matrix>("iaQ", max_A * naocc, naux);
     double** iaQp = iaQ->pointer();
 
     // Loop through blocks
@@ -860,7 +860,7 @@ void RDFMP2::print_header() {
 }
 void RDFMP2::form_Aia() {
     // Schwarz Sieve
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
@@ -916,9 +916,9 @@ void RDFMP2::form_Aia() {
     // block_status(block_Q_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    SharedMatrix Amn = std::make_shared<Matrix>("(A|mn) Block", max_naux, nso * (size_t)nso);
-    SharedMatrix Ami = std::make_shared<Matrix>("(A|mi) Block", max_naux, nso * (size_t)naocc);
-    SharedMatrix Aia = std::make_shared<Matrix>("(A|ia) Block", max_naux, naocc * (size_t)navir);
+    auto Amn = std::make_shared<Matrix>("(A|mn) Block", max_naux, nso * (size_t)nso);
+    auto Ami = std::make_shared<Matrix>("(A|mi) Block", max_naux, nso * (size_t)naocc);
+    auto Aia = std::make_shared<Matrix>("(A|ia) Block", max_naux, naocc * (size_t)navir);
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Aiap = Aia->pointer();
@@ -1056,8 +1056,8 @@ void RDFMP2::form_energy() {
     // block_status(i_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
-    SharedMatrix Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
+    auto Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
+    auto Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
 
@@ -1184,14 +1184,14 @@ void RDFMP2::form_Pab() {
     // block_status(i_starts, __FILE__,__LINE__);
 
     // 2-Index Tensor blocks
-    SharedMatrix Pab = std::make_shared<Matrix>("Pab", navir, navir);
+    auto Pab = std::make_shared<Matrix>("Pab", navir, navir);
     double** Pabp = Pab->pointer();
 
     // 3-Index Tensor blocks
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
-    SharedMatrix Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
-    SharedMatrix Gia = std::make_shared<Matrix>("Gia", max_i * (size_t)navir, naux);
-    SharedMatrix Cjb = std::make_shared<Matrix>("Cjb", max_i * (size_t)navir, naux);
+    auto Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
+    auto Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
+    auto Gia = std::make_shared<Matrix>("Gia", max_i * (size_t)navir, naux);
+    auto Cjb = std::make_shared<Matrix>("Cjb", max_i * (size_t)navir, naux);
 
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
@@ -1199,8 +1199,8 @@ void RDFMP2::form_Pab() {
     double** Cjbp = Cjb->pointer();
 
     // 4-index Tensor blocks
-    SharedMatrix I = std::make_shared<Matrix>("I", max_i * (size_t)navir, max_i * (size_t)navir);
-    SharedMatrix T = std::make_shared<Matrix>("T", max_i * (size_t)navir, max_i * (size_t)navir);
+    auto I = std::make_shared<Matrix>("I", max_i * (size_t)navir, max_i * (size_t)navir);
+    auto T = std::make_shared<Matrix>("T", max_i * (size_t)navir, max_i * (size_t)navir);
     double** Ip = I->pointer();
     double** Tp = T->pointer();
 
@@ -1376,19 +1376,19 @@ void RDFMP2::form_Pij() {
     // block_status(a_starts, __FILE__,__LINE__);
 
     // 2-Index Tensor blocks
-    SharedMatrix Pij = std::make_shared<Matrix>("Pij", naocc, naocc);
+    auto Pij = std::make_shared<Matrix>("Pij", naocc, naocc);
     double** Pijp = Pij->pointer();
 
     // 3-Index Tensor blocks
-    SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_a * (size_t)naocc, naux);
-    SharedMatrix Qjb = std::make_shared<Matrix>("Qjb", max_a * (size_t)naocc, naux);
+    auto Qia = std::make_shared<Matrix>("Qia", max_a * (size_t)naocc, naux);
+    auto Qjb = std::make_shared<Matrix>("Qjb", max_a * (size_t)naocc, naux);
 
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
 
     // 4-index Tensor blocks
-    SharedMatrix I = std::make_shared<Matrix>("I", max_a * (size_t)naocc, max_a * (size_t)naocc);
-    SharedMatrix T = std::make_shared<Matrix>("T", max_a * (size_t)naocc, max_a * (size_t)naocc);
+    auto I = std::make_shared<Matrix>("I", max_a * (size_t)naocc, max_a * (size_t)naocc);
+    auto T = std::make_shared<Matrix>("T", max_a * (size_t)naocc, max_a * (size_t)naocc);
     double** Ip = I->pointer();
     double** Tp = T->pointer();
 
@@ -1514,7 +1514,7 @@ void RDFMP2::form_AB_x_terms() {
 
     // => Forcing Terms/Gradients <= //
 
-    SharedMatrix V = std::make_shared<Matrix>("V", naux, naux);
+    auto V = std::make_shared<Matrix>("V", naux, naux);
     double** Vp = V->pointer();
     psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
     psio_->read_entry(PSIF_DFMP2_AIA, "G_PQ", (char*)Vp[0], sizeof(double) * naux * naux);
@@ -1624,7 +1624,7 @@ void RDFMP2::form_Amn_x_terms() {
 
     // => ERI Sieve <= //
 
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -1664,9 +1664,9 @@ void RDFMP2::form_Amn_x_terms() {
 
     // => Temporary Buffers <= //
 
-    SharedMatrix Gia = std::make_shared<Matrix>("Gia", max_rows, naocc * navir);
-    SharedMatrix Gmi = std::make_shared<Matrix>("Gmi", max_rows, nso * naocc);
-    SharedMatrix Gmn = std::make_shared<Matrix>("Gmn", max_rows, nso * (size_t)nso);
+    auto Gia = std::make_shared<Matrix>("Gia", max_rows, naocc * navir);
+    auto Gmi = std::make_shared<Matrix>("Gmi", max_rows, nso * naocc);
+    auto Gmn = std::make_shared<Matrix>("Gmn", max_rows, nso * (size_t)nso);
 
     double** Giap = Gia->pointer();
     double** Gmip = Gmi->pointer();
@@ -1824,7 +1824,7 @@ void RDFMP2::form_L() {
 
     // => ERI Sieve <= //
 
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -1864,10 +1864,10 @@ void RDFMP2::form_L() {
 
     // => Temporary Buffers <= //
 
-    SharedMatrix Gia = std::make_shared<Matrix>("Gia", max_rows, naocc * navir);
-    SharedMatrix Gim = std::make_shared<Matrix>("Pim", max_rows, nso * naocc);
-    SharedMatrix Gam = std::make_shared<Matrix>("Pam", max_rows, nso * navir);
-    SharedMatrix Gmn = std::make_shared<Matrix>("Pmn", max_rows, nso * (size_t)nso);
+    auto Gia = std::make_shared<Matrix>("Gia", max_rows, naocc * navir);
+    auto Gim = std::make_shared<Matrix>("Pim", max_rows, nso * naocc);
+    auto Gam = std::make_shared<Matrix>("Pam", max_rows, nso * navir);
+    auto Gmn = std::make_shared<Matrix>("Pmn", max_rows, nso * (size_t)nso);
 
     double** Giap = Gia->pointer();
     double** Gimp = Gim->pointer();
@@ -1881,8 +1881,8 @@ void RDFMP2::form_L() {
 
     // => Targets <= //
 
-    SharedMatrix Lmi = std::make_shared<Matrix>("Lma", nso, naocc);
-    SharedMatrix Lma = std::make_shared<Matrix>("Lmi", nso, navir);
+    auto Lmi = std::make_shared<Matrix>("Lma", nso, naocc);
+    auto Lma = std::make_shared<Matrix>("Lmi", nso, navir);
     double** Lmip = Lmi->pointer();
     double** Lmap = Lma->pointer();
 
@@ -2009,11 +2009,11 @@ void RDFMP2::form_P() {
 
     // => Tensors <= //
 
-    SharedMatrix Pij = std::make_shared<Matrix>("Pij", naocc, naocc);
-    SharedMatrix Pab = std::make_shared<Matrix>("Pab", navir, navir);
-    SharedMatrix PIj = std::make_shared<Matrix>("PIj", nfocc, naocc);
-    SharedMatrix PAb = std::make_shared<Matrix>("PAb", nfvir, navir);
-    SharedMatrix Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
+    auto Pij = std::make_shared<Matrix>("Pij", naocc, naocc);
+    auto Pab = std::make_shared<Matrix>("Pab", navir, navir);
+    auto PIj = std::make_shared<Matrix>("PIj", nfocc, naocc);
+    auto PAb = std::make_shared<Matrix>("PAb", nfvir, navir);
+    auto Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
 
     double** Pijp = Pij->pointer();
     double** Pabp = Pab->pointer();
@@ -2021,8 +2021,8 @@ void RDFMP2::form_P() {
     double** PAbp = PAb->pointer();
     double** Ppqp = Ppq->pointer();
 
-    SharedMatrix Lmi = std::make_shared<Matrix>("Lmi", nso, naocc);
-    SharedMatrix Lma = std::make_shared<Matrix>("Lma", nso, navir);
+    auto Lmi = std::make_shared<Matrix>("Lmi", nso, naocc);
+    auto Lma = std::make_shared<Matrix>("Lma", nso, navir);
 
     double** Lmip = Lmi->pointer();
     double** Lmap = Lma->pointer();
@@ -2106,15 +2106,15 @@ void RDFMP2::form_W() {
 
     // => Tensors <= //
 
-    SharedMatrix Wpq1 = std::make_shared<Matrix>("Wpq1", nmo, nmo);
+    auto Wpq1 = std::make_shared<Matrix>("Wpq1", nmo, nmo);
     double** Wpq1p = Wpq1->pointer();
 
-    SharedMatrix Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
+    auto Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
     double** Ppqp = Ppq->pointer();
 
-    SharedMatrix Lmi = std::make_shared<Matrix>("Lmi", nso, naocc);
-    SharedMatrix Lma = std::make_shared<Matrix>("Lma", nso, navir);
-    SharedMatrix Lia = std::make_shared<Matrix>("Lia", naocc + nfocc, navir + nfvir);
+    auto Lmi = std::make_shared<Matrix>("Lmi", nso, naocc);
+    auto Lma = std::make_shared<Matrix>("Lma", nso, navir);
+    auto Lia = std::make_shared<Matrix>("Lia", naocc + nfocc, navir + nfvir);
 
     double** Lmip = Lmi->pointer();
     double** Lmap = Lma->pointer();
@@ -2202,17 +2202,17 @@ void RDFMP2::form_Z() {
 
     // => Tensors <= //
 
-    SharedMatrix Wpq1 = std::make_shared<Matrix>("Wpq1", nmo, nmo);
+    auto Wpq1 = std::make_shared<Matrix>("Wpq1", nmo, nmo);
     double** Wpq1p = Wpq1->pointer();
-    SharedMatrix Wpq2 = std::make_shared<Matrix>("Wpq2", nmo, nmo);
+    auto Wpq2 = std::make_shared<Matrix>("Wpq2", nmo, nmo);
     double** Wpq2p = Wpq2->pointer();
-    SharedMatrix Wpq3 = std::make_shared<Matrix>("Wpq3", nmo, nmo);
+    auto Wpq3 = std::make_shared<Matrix>("Wpq3", nmo, nmo);
     double** Wpq3p = Wpq3->pointer();
 
-    SharedMatrix Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
+    auto Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
     double** Ppqp = Ppq->pointer();
 
-    SharedMatrix Lia = std::make_shared<Matrix>("Lia", naocc + nfocc, navir + nfvir);
+    auto Lia = std::make_shared<Matrix>("Lia", naocc + nfocc, navir + nfvir);
     double** Liap = Lia->pointer();
 
     SharedMatrix Cocc = Ca_subset("AO", "OCC");
@@ -2235,7 +2235,7 @@ void RDFMP2::form_Z() {
 
     // => CPHF/JK Object <= //
 
-    std::shared_ptr<RCPHF> cphf = std::make_shared<RCPHF>(reference_wavefunction_, options_);
+    auto cphf = std::make_shared<RCPHF>(reference_wavefunction_, options_);
     cphf->set_C(C);
     cphf->set_Caocc(Cocc);
     cphf->set_Cavir(Cvir);
@@ -2254,11 +2254,11 @@ void RDFMP2::form_Z() {
     psio_->open(PSIF_DFMP2_AIA, 1);
     psio_->read_entry(PSIF_DFMP2_AIA, "P", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
 
-    SharedMatrix T = std::make_shared<Matrix>("T", nocc, nso);
+    auto T = std::make_shared<Matrix>("T", nocc, nso);
     double** Tp = T->pointer();
-    SharedMatrix dPpq = std::make_shared<Matrix>("dP", nmo, nmo);
+    auto dPpq = std::make_shared<Matrix>("dP", nmo, nmo);
     double** dPpqp = dPpq->pointer();
-    SharedMatrix AP = std::make_shared<Matrix>("A_mn^ls P_ls^(2)", nso, nso);
+    auto AP = std::make_shared<Matrix>("A_mn^ls P_ls^(2)", nso, nso);
     double** APp = AP->pointer();
     SharedMatrix Dtemp;
 
@@ -2280,8 +2280,8 @@ void RDFMP2::form_Z() {
         // N1->print();
 
         // > Back-transform the transition orbitals < //
-        SharedMatrix P1AO = std::make_shared<Matrix>("P AO", nso, P1->colspi()[0]);
-        SharedMatrix N1AO = std::make_shared<Matrix>("N AO", nso, N1->colspi()[0]);
+        auto P1AO = std::make_shared<Matrix>("P AO", nso, P1->colspi()[0]);
+        auto N1AO = std::make_shared<Matrix>("N AO", nso, N1->colspi()[0]);
         double** P1AOp = P1AO->pointer();
         double** N1AOp = N1AO->pointer();
 
@@ -2403,8 +2403,8 @@ void RDFMP2::form_Z() {
     // N2->print();
 
     // > Back-transform the transition orbitals < //
-    SharedMatrix P2AO = std::make_shared<Matrix>("P AO", nso, P2->colspi()[0]);
-    SharedMatrix N2AO = std::make_shared<Matrix>("N AO", nso, N2->colspi()[0]);
+    auto P2AO = std::make_shared<Matrix>("P AO", nso, P2->colspi()[0]);
+    auto N2AO = std::make_shared<Matrix>("N AO", nso, N2->colspi()[0]);
     double** P2AOp = P2AO->pointer();
     double** N2AOp = N2AO->pointer();
 
@@ -2498,10 +2498,10 @@ void RDFMP2::form_gradient() {
 
     // => Tensors <= //
 
-    SharedMatrix W = std::make_shared<Matrix>("W", nmo, nmo);
+    auto W = std::make_shared<Matrix>("W", nmo, nmo);
     double** Wp = W->pointer();
 
-    SharedMatrix P2 = std::make_shared<Matrix>("P", nmo, nmo);
+    auto P2 = std::make_shared<Matrix>("P", nmo, nmo);
     double** P2p = P2->pointer();
 
     SharedMatrix Cocc = reference_wavefunction_->Ca_subset("AO", "OCC");
@@ -2553,12 +2553,12 @@ void RDFMP2::form_gradient() {
 
     // => Back-transform <= //
 
-    SharedMatrix T1 = std::make_shared<Matrix>("T", nmo, nso);
-    SharedMatrix PAO = std::make_shared<Matrix>("P AO", nso, nso);
-    SharedMatrix PFAO = std::make_shared<Matrix>("PF AO", nso, nso);
-    SharedMatrix WAO = std::make_shared<Matrix>("W AO", nso, nso);
-    SharedMatrix P1AO = std::make_shared<Matrix>("P1 AO", nso, P1->colspi()[0]);
-    SharedMatrix N1AO = std::make_shared<Matrix>("N1 AO", nso, N1->colspi()[0]);
+    auto T1 = std::make_shared<Matrix>("T", nmo, nso);
+    auto PAO = std::make_shared<Matrix>("P AO", nso, nso);
+    auto PFAO = std::make_shared<Matrix>("PF AO", nso, nso);
+    auto WAO = std::make_shared<Matrix>("W AO", nso, nso);
+    auto P1AO = std::make_shared<Matrix>("P1 AO", nso, P1->colspi()[0]);
+    auto N1AO = std::make_shared<Matrix>("N1 AO", nso, N1->colspi()[0]);
 
     double** T1p = T1->pointer();
     double** PAOp = PAO->pointer();
@@ -3194,7 +3194,7 @@ void UDFMP2::print_header() {
 }
 void UDFMP2::form_Aia() {
     // Schwarz Sieve
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
@@ -3254,9 +3254,9 @@ void UDFMP2::form_Aia() {
     // block_status(block_Q_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    SharedMatrix Amn = std::make_shared<Matrix>("(A|mn) Block", max_naux, nso * (size_t)nso);
-    SharedMatrix Ami = std::make_shared<Matrix>("(A|mi) Block", max_naux, nso * (size_t)naocc);
-    SharedMatrix Aia = std::make_shared<Matrix>("(A|ia) Block", max_naux, naocc * (size_t)navir);
+    auto Amn = std::make_shared<Matrix>("(A|mn) Block", max_naux, nso * (size_t)nso);
+    auto Ami = std::make_shared<Matrix>("(A|mi) Block", max_naux, nso * (size_t)naocc);
+    auto Aia = std::make_shared<Matrix>("(A|ia) Block", max_naux, naocc * (size_t)navir);
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Aiap = Aia->pointer();
@@ -3428,8 +3428,8 @@ void UDFMP2::form_energy() {
         // block_status(i_starts, __FILE__,__LINE__);
 
         // Tensor blocks
-        SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
-        SharedMatrix Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
+        auto Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
+        auto Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
         double** Qiap = Qia->pointer();
         double** Qjbp = Qjb->pointer();
 
@@ -3548,8 +3548,8 @@ void UDFMP2::form_energy() {
         // block_status(i_starts, __FILE__,__LINE__);
 
         // Tensor blocks
-        SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
-        SharedMatrix Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
+        auto Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir, naux);
+        auto Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir, naux);
         double** Qiap = Qia->pointer();
         double** Qjbp = Qjb->pointer();
 
@@ -3681,8 +3681,8 @@ void UDFMP2::form_energy() {
         }
 
         // Tensor blocks
-        SharedMatrix Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir_a, naux);
-        SharedMatrix Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir_b, naux);
+        auto Qia = std::make_shared<Matrix>("Qia", max_i * (size_t)navir_a, naux);
+        auto Qjb = std::make_shared<Matrix>("Qjb", max_i * (size_t)navir_b, naux);
         double** Qiap = Qia->pointer();
         double** Qjbp = Qjb->pointer();
 

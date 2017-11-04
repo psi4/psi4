@@ -82,7 +82,7 @@ void CCBLAS::allocate_work()
   // Make sure work is empty
   if(!work.empty())
     for(size_t n = 0; n < work.size(); ++n)
-      if(work[n]!=NULL)
+      if(work[n]!=nullptr)
         release1(work[n]);
 
   for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
@@ -114,7 +114,7 @@ void CCBLAS::allocate_buffer()
   // Make sure buffer is empty
   if(!buffer.empty())
     for(size_t n = 0; n < buffer.size(); ++n)
-      if(buffer[n]!=NULL)
+      if(buffer[n]!=nullptr)
         release1(buffer[n]);
 
   for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
@@ -146,7 +146,7 @@ void CCBLAS::free_work()
 {
   // Delete the temporary work space
   for(size_t n = 0; n < work.size(); ++n){
-    if(work[n]!=NULL){
+    if(work[n]!=nullptr){
       release1(work[n]);
     }
   }
@@ -156,7 +156,7 @@ void CCBLAS::free_buffer()
 {
   // Delete the temporary buffer space
   for(size_t n = 0; n < buffer.size(); ++n){
-    if(buffer[n]!=NULL){
+    if(buffer[n]!=nullptr){
       release1(buffer[n]);
     }
   }

@@ -52,7 +52,7 @@ GradientWriter::GradientWriter(std::shared_ptr<Molecule> mol, const Matrix& grad
 
 void GradientWriter::write(const std::string &filename)
 {
-   std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
+   auto printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
    int i;
 
 
@@ -80,7 +80,7 @@ MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction)
 }
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB, bool dovirtual)
 {
-    std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
+    auto printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
 
     int atom;
 
@@ -125,7 +125,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     }
 
     // Convert Ca & Cb
-    std::shared_ptr<PetiteList> pl = std::make_shared<PetiteList>(wavefunction_->basisset(), wavefunction_->integral());
+    auto pl = std::make_shared<PetiteList>(wavefunction_->basisset(), wavefunction_->integral());
     // get the "aotoso" transformation matrix, ao by so
     SharedMatrix aotoso = pl->aotoso();
     // need dimensions
@@ -133,8 +133,8 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     const Dimension sos = pl->SO_basisdim();
     const Dimension nmo = Ca->colspi();
 
-    SharedMatrix Ca_ao_mo = std::make_shared<Matrix>("Ca AO x MO", aos, nmo);
-    SharedMatrix Cb_ao_mo = std::make_shared<Matrix>("Cb AO x MO", aos, nmo);
+    auto Ca_ao_mo = std::make_shared<Matrix>("Ca AO x MO", aos, nmo);
+    auto Cb_ao_mo = std::make_shared<Matrix>("Cb AO x MO", aos, nmo);
 
     // do the half transform
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
@@ -518,7 +518,7 @@ void FCHKWriter::write(const std::string &filename)
          ///*  0 */  { pf1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
     };
 
-    SharedMatrix transmat = std::make_shared<Matrix>("Reorder", nbf, nbf);
+    auto transmat = std::make_shared<Matrix>("Reorder", nbf, nbf);
     transmat->identity();
     int offset = 0;
     for(int nshell = 0; nshell < basis->nshell(); ++nshell){
@@ -557,8 +557,8 @@ void FCHKWriter::write(const std::string &filename)
     SharedMatrix reorderedDs(Dtot_ao->clone());
     reorderedDt->back_transform(Dtot_ao, transmat);
     reorderedDs->back_transform(Dspin_ao, transmat);
-    SharedMatrix reorderedCa = std::make_shared<Matrix>("Reordered Ca", Ca_ao->ncol(), Ca_ao->nrow());
-    SharedMatrix reorderedCb = std::make_shared<Matrix>("Reordered Cb", Cb_ao->ncol(), Cb_ao->nrow());
+    auto reorderedCa = std::make_shared<Matrix>("Reordered Ca", Ca_ao->ncol(), Ca_ao->nrow());
+    auto reorderedCb = std::make_shared<Matrix>("Reordered Cb", Cb_ao->ncol(), Cb_ao->nrow());
     reorderedCa->gemm(true, true, 1.0, Ca_ao, transmat, 0.0);
     reorderedCb->gemm(true, true, 1.0, Cb_ao, transmat, 0.0);
     for(int i = 0; i < reorderedDt->nrow(); ++i)
@@ -678,7 +678,7 @@ void NBOWriter::write(const std::string &filename)
 
     MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
-    std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
+    auto printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
 
 
     //Get the basis set and molecule from the wavefuntion
@@ -907,17 +907,17 @@ void NBOWriter::write(const std::string &filename)
 
     //Alpha Density Matrix
     SharedMatrix soalphadens = wavefunction_->Da();
-    SharedMatrix alphadens = std::make_shared<Matrix>(nbf, nbf);
+    auto alphadens = std::make_shared<Matrix>(nbf, nbf);
     alphadens->remove_symmetry (soalphadens, sotoao);
     //Beta density
-    SharedMatrix betadens = std::make_shared<Matrix>(nbf, nbf);
+    auto betadens = std::make_shared<Matrix>(nbf, nbf);
     SharedMatrix sobetadens = wavefunction_->Db();
     betadens->remove_symmetry (sobetadens, sotoao);
     //Now print the density matrix
     printer->Printf( "\n $DENSITY");
     if(wavefunction_->same_a_b_dens ())
     {
-        SharedMatrix density = std::make_shared<Matrix>(nbf, nbf);
+        auto density = std::make_shared<Matrix>(nbf, nbf);
         density->copy (alphadens);
         density->add (betadens);
         for( int i=0; i<nbf; i++)
@@ -959,7 +959,7 @@ void NBOWriter::write(const std::string &filename)
 
     // alpha Fock matrix
     SharedMatrix alphasofock = wavefunction_->Fa();
-    SharedMatrix alphafock = std::make_shared<Matrix>(nbf, nbf);
+    auto alphafock = std::make_shared<Matrix>(nbf, nbf);
     alphafock->remove_symmetry (alphasofock, sotoao);
     // print the Fock matrix
     printer->Printf( "\n $FOCK");
@@ -979,7 +979,7 @@ void NBOWriter::write(const std::string &filename)
     else
     {
         // beta Fock
-        SharedMatrix betafock = std::make_shared<Matrix>(nbf, nbf);
+        auto betafock = std::make_shared<Matrix>(nbf, nbf);
         SharedMatrix betasofock = wavefunction_->Fb();
         betafock->remove_symmetry(betasofock, sotoao);
         int count=0;
@@ -1010,7 +1010,7 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix soalphac = wavefunction_->Ca();
     const Dimension aos = helper.petite_list()->AO_basisdim();
     const Dimension nmo = wavefunction_->Ca()->colspi();
-    SharedMatrix alphac = std::make_shared<Matrix>("Ca AO x MO", aos, nmo);
+    auto alphac = std::make_shared<Matrix>("Ca AO x MO", aos, nmo);
     alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
 
     printer->Printf( "\n $LCAOMO");
@@ -1030,7 +1030,7 @@ void NBOWriter::write(const std::string &filename)
     else
     {
         //Beta AO->MO transformation
-        SharedMatrix betac = std::make_shared<Matrix>(nbf, nbf);
+        auto betac = std::make_shared<Matrix>(nbf, nbf);
         SharedMatrix sobetac = wavefunction_->Cb();
         betac->gemm(true, false, 1.00, sotoao, sobetac, 0.00);
 
@@ -1081,7 +1081,7 @@ void MOWriter::write()
     Vector& Ea = *wavefunction_->epsilon_a().get();
     Vector& Eb = *wavefunction_->epsilon_b().get();
 
-    std::shared_ptr<PetiteList> pl = std::make_shared<PetiteList>(wavefunction_->basisset(), wavefunction_->integral());
+    auto pl = std::make_shared<PetiteList>(wavefunction_->basisset(), wavefunction_->integral());
 
     // get the "aotoso" transformation matrix, ao by so
     SharedMatrix aotoso = pl->aotoso();
@@ -1090,8 +1090,8 @@ void MOWriter::write()
     const Dimension sos = pl->SO_basisdim();
     const Dimension mos = wavefunction_->nmopi();
 
-    SharedMatrix Ca_ao_mo = std::make_shared<Matrix>("Ca AO x MO", aos, mos);
-    SharedMatrix Cb_ao_mo = std::make_shared<Matrix>("Cb AO x MO", aos, mos);
+    auto Ca_ao_mo = std::make_shared<Matrix>("Ca AO x MO", aos, mos);
+    auto Cb_ao_mo = std::make_shared<Matrix>("Cb AO x MO", aos, mos);
 
     // do the half transform
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);

@@ -432,7 +432,7 @@ void DFOCC::tei_ovov_chem_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijkl_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <IJ|KL>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KL)", naoccA, naoccA, naoccA, naoccA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KL)", naoccA, naoccA, naoccA, naoccA);
     tei_ijkl_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -444,7 +444,7 @@ void DFOCC::tei_ijkl_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijkl_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <ij|kl>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ij|kl)", naoccB, naoccB, naoccB, naoccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ij|kl)", naoccB, naoccB, naoccB, naoccB);
     tei_ijkl_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -456,7 +456,7 @@ void DFOCC::tei_ijkl_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijkl_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ij|Kl>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|kl)", naoccA, naoccA, naoccB, naoccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|kl)", naoccA, naoccA, naoccB, naoccB);
     tei_ijkl_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -468,7 +468,7 @@ void DFOCC::tei_ijkl_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oooo_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <OO|OO>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|OO)", noccA, noccA, noccA, noccA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|OO)", noccA, noccA, noccA, noccA);
     tei_oooo_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -480,7 +480,7 @@ void DFOCC::tei_oooo_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oooo_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <oo|oo>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (oo|oo)", noccB, noccB, noccB, noccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (oo|oo)", noccB, noccB, noccB, noccB);
     tei_oooo_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -492,7 +492,7 @@ void DFOCC::tei_oooo_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oooo_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Oo|Oo>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|oo)", noccA, noccA, noccB, noccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|oo)", noccA, noccA, noccB, noccB);
     tei_oooo_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -504,7 +504,7 @@ void DFOCC::tei_oooo_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijka_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <IJ|KA>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     tei_ijka_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -516,7 +516,7 @@ void DFOCC::tei_ijka_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijka_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <ij|ka>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ij|ka)", naoccB, naoccB, naoccB, navirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ij|ka)", naoccB, naoccB, naoccB, navirB);
     tei_ijka_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -528,7 +528,7 @@ void DFOCC::tei_ijka_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijka_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ij|Ka>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|ka)", naoccA, naoccA, naoccB, navirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|ka)", naoccA, naoccA, naoccB, navirB);
     tei_ijka_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -540,7 +540,7 @@ void DFOCC::tei_ijka_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijak_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ij|Ak>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jk)", naoccA, navirA, naoccB, naoccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jk)", naoccA, navirA, naoccB, naoccB);
     tei_iajk_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -552,7 +552,7 @@ void DFOCC::tei_ijak_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ooov_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <OO|OV>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|OV)", noccA, noccA, noccA, nvirA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|OV)", noccA, noccA, noccA, nvirA);
     tei_ooov_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -564,7 +564,7 @@ void DFOCC::tei_ooov_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ooov_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <oo|ov>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (oo|ov)", noccB, noccB, noccB, nvirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (oo|ov)", noccB, noccB, noccB, nvirB);
     tei_ooov_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -576,7 +576,7 @@ void DFOCC::tei_ooov_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ooov_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Oo|Ov>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|ov)", noccA, noccA, noccB, nvirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|ov)", noccA, noccA, noccB, nvirB);
     tei_ooov_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -588,7 +588,7 @@ void DFOCC::tei_ooov_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oovo_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Oo|Vo>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OV|oo)", noccA, nvirA, noccB, noccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OV|oo)", noccA, nvirA, noccB, noccB);
     tei_ovoo_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -600,7 +600,7 @@ void DFOCC::tei_oovo_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijab_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <IJ|AB>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     tei_iajb_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -612,7 +612,7 @@ void DFOCC::tei_ijab_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijab_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <ij|ab>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
     tei_iajb_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -624,7 +624,7 @@ void DFOCC::tei_ijab_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ijab_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ij|Ab>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
     tei_iajb_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -636,7 +636,7 @@ void DFOCC::tei_ijab_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oovv_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <OO|VV>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
     tei_ovov_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -648,7 +648,7 @@ void DFOCC::tei_oovv_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oovv_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <oo|vv>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB);
     tei_ovov_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -660,7 +660,7 @@ void DFOCC::tei_oovv_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_oovv_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Oo|Vv>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB);
     tei_ovov_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -672,7 +672,7 @@ void DFOCC::tei_oovv_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_iajb_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <IA|JB>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|AB)", naoccA, naoccA, navirA, navirA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|AB)", naoccA, naoccA, navirA, navirA);
     tei_ijab_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -684,7 +684,7 @@ void DFOCC::tei_iajb_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_iajb_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <ia|jb>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ij|ab)", naoccB, naoccB, navirB, navirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ij|ab)", naoccB, naoccB, navirB, navirB);
     tei_ijab_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -696,7 +696,7 @@ void DFOCC::tei_iajb_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_iajb_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ia|Jb>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|ab)", naoccA, naoccA, navirB, navirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|ab)", naoccA, naoccA, navirB, navirB);
     tei_ijab_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -708,7 +708,7 @@ void DFOCC::tei_iajb_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_aibj_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ai|Bj>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (AB|ij)", navirA, navirA, naoccB, naoccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (AB|ij)", navirA, navirA, naoccB, naoccB);
     tei_abij_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -720,7 +720,7 @@ void DFOCC::tei_aibj_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ovov_phys_directAA(SharedTensor2d &K) {
     timer_on("Build <OV|OV>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
     tei_oovv_chem_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -732,7 +732,7 @@ void DFOCC::tei_ovov_phys_directAA(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ovov_phys_directBB(SharedTensor2d &K) {
     timer_on("Build <ov|ov>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB);
     tei_oovv_chem_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -744,7 +744,7 @@ void DFOCC::tei_ovov_phys_directBB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_ovov_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Ov|Ov>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB);
     tei_oovv_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
@@ -756,7 +756,7 @@ void DFOCC::tei_ovov_phys_directAB(SharedTensor2d &K) {
 //=======================================================
 void DFOCC::tei_vovo_phys_directAB(SharedTensor2d &K) {
     timer_on("Build <Vo|Vo>");
-    SharedTensor2d L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB);
+    auto L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB);
     tei_vvoo_chem_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();

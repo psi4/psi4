@@ -75,12 +75,12 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
 // adds the coordinates connecting A2-A1-A0-B0-B1-B2
 // sets D_on to indicate which ones (of the 6) are unusued
 void INTERFRAG::add_coordinates_of_reference_pts(void) {
-  STRE *one_stre = NULL;  // RAB
-  BEND *one_bend = NULL;  // theta_A
-  BEND *one_bend2 = NULL; // theta_B
-  TORS *one_tors  = NULL; // tau
-  TORS *one_tors2 = NULL; // phi_A
-  TORS *one_tors3 = NULL; // phi_B
+  STRE *one_stre = nullptr;  // RAB
+  BEND *one_bend = nullptr;  // theta_A
+  BEND *one_bend2 = nullptr; // theta_B
+  TORS *one_tors  = nullptr; // tau
+  TORS *one_tors2 = nullptr; // phi_A
+  TORS *one_tors3 = nullptr; // phi_B
 
   // turn all coordinates on ; turn off unused ones below
   for (int i=0; i<6; ++i) D_on[i] = true;
@@ -205,12 +205,12 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
   if (one_stre->is_hbond())
     oprintf_out("Detected H-bonding interfragment coordinate.\n");
 
-  if (one_stre  != NULL) inter_frag->coords.simples.push_back(one_stre);
-  if (one_bend  != NULL) inter_frag->coords.simples.push_back(one_bend);
-  if (one_bend2 != NULL) inter_frag->coords.simples.push_back(one_bend2);
-  if (one_tors  != NULL) inter_frag->coords.simples.push_back(one_tors);
-  if (one_tors2 != NULL) inter_frag->coords.simples.push_back(one_tors2);
-  if (one_tors3 != NULL) inter_frag->coords.simples.push_back(one_tors3);
+  if (one_stre  != nullptr) inter_frag->coords.simples.push_back(one_stre);
+  if (one_bend  != nullptr) inter_frag->coords.simples.push_back(one_bend);
+  if (one_bend2 != nullptr) inter_frag->coords.simples.push_back(one_bend2);
+  if (one_tors  != nullptr) inter_frag->coords.simples.push_back(one_tors);
+  if (one_tors2 != nullptr) inter_frag->coords.simples.push_back(one_tors2);
+  if (one_tors3 != nullptr) inter_frag->coords.simples.push_back(one_tors3);
 }
 
 // update location of reference points using given geometries
@@ -239,7 +239,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
     for (int xyz=0; xyz<3; ++xyz)
       inter_frag->geom[2][xyz] = fragment_com[xyz];
 
-    double **axes=NULL, *moi=NULL;
+    double **axes=nullptr, *moi=nullptr;
     int i = A->principal_axes(new_geom_A, axes, moi);
 
     oprintf_out("Number of principal axes returned is %d\n", i);

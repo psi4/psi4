@@ -95,11 +95,11 @@ DCFTSolver::run_simult_dcft_oo()
 
             build_DF_tensors_UHF();
 
-            SharedMatrix mo_h_A = std::make_shared<Matrix>("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
+            auto mo_h_A = std::make_shared<Matrix>("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
             mo_h_A->copy(so_h_);
             mo_h_A->transform(Ca_);
 
-            SharedMatrix mo_h_B = std::make_shared<Matrix>("MO-based H Beta", nirrep_, nmopi_, nmopi_);
+            auto mo_h_B = std::make_shared<Matrix>("MO-based H Beta", nirrep_, nmopi_, nmopi_);
             mo_h_B->copy(so_h_);
             mo_h_B->transform(Cb_);
 
@@ -936,8 +936,8 @@ DCFTSolver::rotate_orbitals()
     dcft_timer_on("DCFTSolver::rotate_orbitals()");
 
     // Initialize the orbital rotation matrix
-    SharedMatrix U_a = std::make_shared<Matrix>("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix U_b = std::make_shared<Matrix>("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_);
+    auto U_a = std::make_shared<Matrix>("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto U_b = std::make_shared<Matrix>("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_);
 
     // Compute the orbital rotation matrix and rotate the orbitals
 

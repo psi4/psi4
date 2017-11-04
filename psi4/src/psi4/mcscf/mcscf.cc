@@ -68,7 +68,7 @@ MemoryManager* memory_manager = 0;
  */
 SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options) {
     using namespace psi;
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
 
     tstart();
 

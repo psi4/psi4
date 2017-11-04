@@ -50,7 +50,7 @@ namespace psi {
 namespace dfmp2 {
 
 SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options& options) {
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
 
     std::shared_ptr<Wavefunction> dfmp2;
     if (options.get_str("REFERENCE") == "RHF" || options.get_str("REFERENCE") == "RKS") {

@@ -1905,10 +1905,10 @@ void OCCWave::oeprop()
     outfile->Printf("\tComputing one-electron properties...\n");
 
 
-    //SharedMatrix Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
-    //SharedMatrix Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
-    SharedMatrix Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_);
-    SharedMatrix Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_);
+    //auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
+    //auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
+    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_);
+    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_);
     if (reference_ == "RESTRICTED") {
         Da_->copy(g1symm);
         Da_->scale(0.5);
@@ -1921,7 +1921,7 @@ void OCCWave::oeprop()
     }
 
     // Compute oeprop
-    std::shared_ptr<OEProp> oe = std::make_shared<OEProp>(shared_from_this());
+    auto oe = std::make_shared<OEProp>(shared_from_this());
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");

@@ -584,8 +584,8 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     }
 
     // => Effective one electron part <= //
-    SharedMatrix Hx_left = std::make_shared<Matrix>("Partial Hx tensor left", ret->rowspi(), ret->colspi());
-    SharedMatrix Hx_right = std::make_shared<Matrix>("Partial Hx tensor right", ret->rowspi(), ret->colspi());
+    auto Hx_left = std::make_shared<Matrix>("Partial Hx tensor left", ret->rowspi(), ret->colspi());
+    auto Hx_right = std::make_shared<Matrix>("Partial Hx tensor right", ret->rowspi(), ret->colspi());
 
     // Passing these guys is annoying, pretty cheap to rebuild
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
@@ -659,9 +659,9 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
         SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
         Csocc->set_name("Csocc");
 
-        SharedMatrix Cr_i = std::make_shared<Matrix>("Cright for docc", nsopi_,  doccpi_);
-        SharedMatrix Cr_a = std::make_shared<Matrix>("Cright for socc", nsopi_,  soccpi_);
-        SharedMatrix Cl_a = std::make_shared<Matrix>("Cleft for socc", nsopi_,  soccpi_);
+        auto Cr_i = std::make_shared<Matrix>("Cright for docc", nsopi_,  doccpi_);
+        auto Cr_a = std::make_shared<Matrix>("Cright for socc", nsopi_,  soccpi_);
+        auto Cl_a = std::make_shared<Matrix>("Cleft for socc", nsopi_,  soccpi_);
 
         for (size_t h=0; h<nirrep_; h++){
             if (!nsopi_[h]) continue;
@@ -738,7 +738,7 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
         J[1]->subtract(K[2]->transpose());
 
         // Transform to MO basis and add to exsisting
-        SharedMatrix half_trans = std::make_shared<Matrix>("half_trans temp space", occpi, nsopi_);
+        auto half_trans = std::make_shared<Matrix>("half_trans temp space", occpi, nsopi_);
 
         half_trans->gemm(true, false, 1.0, Cocc, J[0], 0.0);
         Hx_left->gemm(false, false, 1.0, half_trans, Cvir, 1.0);
@@ -756,8 +756,8 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
         Cl.push_back(Cocc);
         Cl.push_back(Cdocc);
 
-        SharedMatrix Cr_a = std::make_shared<Matrix>("Cright for alpha", nsopi_,  occpi);
-        SharedMatrix Cr_b = std::make_shared<Matrix>("Cright for beta", nsopi_,  doccpi_);
+        auto Cr_a = std::make_shared<Matrix>("Cright for alpha", nsopi_,  occpi);
+        auto Cr_b = std::make_shared<Matrix>("Cright for beta", nsopi_,  doccpi_);
 
         for (size_t h=0; h<nirrep_; h++){
             if (!nsopi_[h]) continue;
@@ -813,7 +813,7 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
         J[1]->subtract(K[1]->transpose());
 
         // Transform to MO basis and add to exsisting
-        SharedMatrix half_trans = std::make_shared<Matrix>("half_trans temp space", occpi, nsopi_);
+        auto half_trans = std::make_shared<Matrix>("half_trans temp space", occpi, nsopi_);
 
         half_trans->gemm(true, false, 1.0, Cocc, J[0], 0.0);
         Hx_left->gemm(false, false, 1.0, half_trans, Cvir, 1.0);
@@ -863,7 +863,7 @@ void ROHF::damp_update()
 int ROHF::soscf_update()
 {
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
 
     // => Build gradient and preconditioner <= //
 
@@ -874,7 +874,7 @@ int ROHF::soscf_update()
 
     SharedMatrix Gradient = moFeff_->get_block({dim_zero,occpi},{doccpi_,nmopi_});
     Gradient->scale(-4.0);
-    SharedMatrix Precon = std::make_shared<Matrix>("Precon", nirrep_, occpi, virpi);
+    auto Precon = std::make_shared<Matrix>("Precon", nirrep_, occpi, virpi);
 
     for (size_t h=0; h < nirrep_; h++){
         if (!occpi[h] || !virpi[h]) continue;
@@ -935,7 +935,7 @@ int ROHF::soscf_update()
 
     // Calc hessian vector product, find residual and conditioned residual
     SharedMatrix r = Gradient->clone();
-    SharedMatrix Ap = std::make_shared<Matrix>("Ap", nirrep_, occpi, virpi);
+    auto Ap = std::make_shared<Matrix>("Ap", nirrep_, occpi, virpi);
     Hx(x, Ap);
     r->subtract(Ap);
 
@@ -946,7 +946,7 @@ int ROHF::soscf_update()
         grad_rms = 1.e-14; // Prevent rel denom from being too small
     }
     double rms = sqrt(rconv / grad_rms);
-    stop = time(NULL);
+    stop = time(nullptr);
     if (soscf_print_){
         outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
     }
@@ -978,7 +978,7 @@ int ROHF::soscf_update()
         // Get residual
         double rconv = r->sum_of_squares();
         double rms = sqrt(rconv / grad_rms);
-        stop = time(NULL);
+        stop = time(nullptr);
         if (soscf_print_){
             outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
         }
@@ -1065,12 +1065,12 @@ bool ROHF::stability_analysis()
         Dimension navir = nmopi_ - nalphapi_;
         Dimension nbvir = nmopi_ - nbetapi_;
 
-        SharedMatrix FIJ = std::make_shared<Matrix>("Alpha occupied MO basis Fock matrix", nalphapi_, nalphapi_);
-        SharedMatrix Fij = std::make_shared<Matrix>("Beta occupied MO basis Fock matrix", nalphapi_, nalphapi_);
-        SharedMatrix FAB = std::make_shared<Matrix>("Alpha virtual MO basis Fock matrix", nbvir, nbvir);
-        SharedMatrix Fab = std::make_shared<Matrix>("Beta virtual MO basis Fock matrix", nbvir, nbvir);
-        SharedMatrix FIA = std::make_shared<Matrix>("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir);
-        SharedMatrix Fia = std::make_shared<Matrix>("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir);
+        auto FIJ = std::make_shared<Matrix>("Alpha occupied MO basis Fock matrix", nalphapi_, nalphapi_);
+        auto Fij = std::make_shared<Matrix>("Beta occupied MO basis Fock matrix", nalphapi_, nalphapi_);
+        auto FAB = std::make_shared<Matrix>("Alpha virtual MO basis Fock matrix", nbvir, nbvir);
+        auto Fab = std::make_shared<Matrix>("Beta virtual MO basis Fock matrix", nbvir, nbvir);
+        auto FIA = std::make_shared<Matrix>("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir);
+        auto Fia = std::make_shared<Matrix>("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir);
 
         SharedMatrix Cocc = Ca_->get_block({zero,nsopi_},{zero,nalphapi_});
         std::vector<SharedMatrix> virandsoc;
@@ -1311,7 +1311,7 @@ bool ROHF::stability_analysis()
         std::vector<int> dimvec(nirrep_, nsave);
         Dimension ones(onevec);
         Dimension evalsdim(dimvec);
-        SharedMatrix stabvals = std::make_shared<Matrix>("Eigenvalues from ROHF stability calculation", evalsdim, ones);
+        auto stabvals = std::make_shared<Matrix>("Eigenvalues from ROHF stability calculation", evalsdim, ones);
 
         for(int h = 0; h < A.params->nirreps; ++h) {
             double **pEvals = stabvals->pointer(h);

@@ -2042,7 +2042,7 @@ void TwoElectronInt::init_shell_pairs34()
     if (use_shell_pairs_ == true) {
         // This assumes init_shell_pairs12 was called and precomputed the values.
         pairs34_ = pairs12_;
-        stack34_ = NULL;
+        stack34_ = nullptr;
         return;
     }
 #if 0
@@ -2171,17 +2171,17 @@ void TwoElectronInt::free_shell_pairs12()
             delete[] sp->gamma;
             delete[] sp->overlap;
 
-            if (sp->P != NULL) {
+            if (sp->P != nullptr) {
                 for (i = 0; i < np_i; ++i)
                     delete[] sp->P[i];
                 delete[] sp->P;
             }
-            if (sp->PA != NULL) {
+            if (sp->PA != nullptr) {
                 for (i = 0; i < np_i; ++i)
                     delete[] sp->PA[i];
                 delete[] sp->PA;
             }
-            if (sp->PB != NULL) {
+            if (sp->PB != nullptr) {
                 for (i = 0; i < np_i; ++i)
                     delete[] sp->PB[i];
                 delete[] sp->PB;

@@ -916,7 +916,7 @@ SharedMatrix PetiteList::aotoso() {
     Dimension aodim = AO_basisdim();
     Dimension sodim = SO_basisdim();
 
-    SharedMatrix aoso = std::make_shared<Matrix>("AO->SO matrix", aodim, sodim);
+    auto aoso = std::make_shared<Matrix>("AO->SO matrix", aodim, sodim);
 
     //    if (c1_) {
     //        aoso->identity();
@@ -951,7 +951,7 @@ SharedMatrix PetiteList::evecs_to_AO_basis(SharedMatrix soevecs) {
     // if C1, then do nothing
     if (c1_) return std::make_shared<Matrix>(soevecs);
 
-    SharedMatrix result = std::make_shared<Matrix>(soevecs->name(), AO_basisdim(), soevecs->colspi());
+    auto result = std::make_shared<Matrix>(soevecs->name(), AO_basisdim(), soevecs->colspi());
 
     result->gemm(false, false, 1.0, aotoso(), soevecs, 0.0);
 

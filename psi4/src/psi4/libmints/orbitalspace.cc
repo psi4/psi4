@@ -119,7 +119,7 @@ OrbitalSpace OrbitalSpace::transform(const OrbitalSpace &A, const std::shared_pt
     SharedMatrix Cb = Matrix::create("Cb", SBB->rowspi(), A.C()->colspi());
     Cb->gemm(false, false, 1.0, SBB, SbaCaT, 0.0);
 
-    std::shared_ptr<IntegralFactory> i = std::make_shared<IntegralFactory>(B, B, B, B);
+    auto i = std::make_shared<IntegralFactory>(B, B, B, B);
 
     return OrbitalSpace("p", "Ca transformed into Cb", Cb, A.evals(), B, i);
 }
@@ -193,7 +193,7 @@ OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const
 
     outfile->Printf("    %d linear dependencies will be \'removed\'.\n", nlindep);
 
-    std::shared_ptr<IntegralFactory> localfactory = std::make_shared<IntegralFactory>(bs);
+    auto localfactory = std::make_shared<IntegralFactory>(bs);
     return OrbitalSpace(id, name, sqrtm, bs, localfactory);
 }
 

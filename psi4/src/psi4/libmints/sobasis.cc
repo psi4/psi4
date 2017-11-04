@@ -481,7 +481,7 @@ std::shared_ptr<BasisSet> SOBasisSet::basis() const
 
 Dimension SOBasisSet::dimension() const
 {
-    std::shared_ptr<PetiteList> petite = std::make_shared<PetiteList>(basis_, integral_);
+    auto petite = std::make_shared<PetiteList>(basis_, integral_);
     return petite->SO_basisdim();
 }
 

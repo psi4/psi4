@@ -149,15 +149,15 @@ void CIvect::common_init(void) {
     cur_vect_ = -1;
     cur_buf_ = -1;
     buffer_size_ = 0;
-    buf_size_ = NULL;
-    buf2blk_ = NULL;
-    buf_offdiag_ = NULL;
-    first_ablk_ = NULL;
-    last_ablk_ = NULL;
-    decode_ = NULL;
-    blocks_ = NULL;
+    buf_size_ = nullptr;
+    buf2blk_ = nullptr;
+    buf_offdiag_ = nullptr;
+    first_ablk_ = nullptr;
+    last_ablk_ = nullptr;
+    decode_ = nullptr;
+    blocks_ = nullptr;
     buf_locked_ = 0;
-    buffer_ = NULL;
+    buffer_ = nullptr;
     in_file_ = 0;
     extras_ = 0;
     units_used_ = 0;
@@ -1710,8 +1710,8 @@ void CIvect::buf_lock(double *a)
 void CIvect::buf_unlock(void)
 {
    buf_locked_ = 0;
-   blocks_[0][0] = NULL;
-   buffer_ = NULL;
+   blocks_[0][0] = nullptr;
+   buffer_ = nullptr;
    cur_vect_ = -1;
    cur_buf_ = -1;
 }
@@ -3535,7 +3535,7 @@ int CIvect::read_new_first_buf(void)
   int nfb;
 
   unit = first_unit_;
-  if (psio_tocscan((size_t) unit, "New First Buffer") == NULL) return(-1);
+  if (psio_tocscan((size_t) unit, "New First Buffer") == nullptr) return(-1);
   psio_read_entry((size_t) unit, "New First Buffer", (char *) &nfb,
     sizeof(int));
   return(nfb);
@@ -3565,7 +3565,7 @@ int CIvect::read_num_vecs(void)
   int nv;
 
   unit = first_unit_;
-  if (psio_tocscan((size_t) unit, "Num Vectors") == NULL) return(-1);
+  if (psio_tocscan((size_t) unit, "Num Vectors") == nullptr) return(-1);
   psio_read_entry((size_t) unit, "Num Vectors", (char *) &nv, sizeof(int));
   return(nv);
 }

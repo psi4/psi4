@@ -1436,7 +1436,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
     // tTau_ij^mn <= \sum_{ls} Tau_ij^ls <mn|ls>
     // tTau_ij^mn <= \sum_{ls} Tau_ij^ls (ml|ns)
     Tt = std::make_shared<Tensor2d>("Tau <IJ|MN>", naoccA, naoccA, nso_, nso_);
-    SharedTensor2i nz_ints = std::make_shared<Tensor2i>("nz_ints", naoccA, naoccA);
+    auto nz_ints = std::make_shared<Tensor2i>("nz_ints", naoccA, naoccA);
     double Jmlns = 0.0;
     J = std::make_shared<Tensor2d>("J <ML|NS>", 1, 1);
     ndf_nz = 0;

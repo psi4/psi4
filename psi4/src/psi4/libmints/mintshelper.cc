@@ -181,12 +181,12 @@ void MintsHelper::common_init() {
 }
 
 std::shared_ptr<PetiteList> MintsHelper::petite_list() const {
-    std::shared_ptr<PetiteList> pt = std::make_shared<PetiteList>(basisset_, integral_);
+    auto pt = std::make_shared<PetiteList>(basisset_, integral_);
     return pt;
 }
 
 std::shared_ptr<PetiteList> MintsHelper::petite_list(bool val) const {
-    std::shared_ptr<PetiteList> pt = std::make_shared<PetiteList>(basisset_, integral_, val);
+    auto pt = std::make_shared<PetiteList>(basisset_, integral_, val);
     return pt;
 }
 
@@ -208,7 +208,7 @@ void MintsHelper::integrals() {
     // Get ERI object
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
     for (int i = 0; i < nthread_; ++i) tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri()));
-    std::shared_ptr<TwoBodySOInt> eri = std::make_shared<TwoBodySOInt>(tb, integral_);
+    auto eri = std::make_shared<TwoBodySOInt>(tb, integral_);
 
     //// Print out some useful information
     if (print_) {
@@ -271,7 +271,7 @@ void MintsHelper::integrals_erf(double w) {
     // Get ERI object
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
     for (int i = 0; i < nthread_; ++i) tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
-    std::shared_ptr<TwoBodySOInt> erf = std::make_shared<TwoBodySOInt>(tb, integral_);
+    auto erf = std::make_shared<TwoBodySOInt>(tb, integral_);
 
     // Let the user know what we're doing.
     outfile->Printf("      Computing non-zero ERF integrals (omega = %.3f)...", omega);
@@ -303,7 +303,7 @@ void MintsHelper::integrals_erfc(double w) {
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
     for (int i = 0; i < nthread_; ++i)
         tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega)));
-    std::shared_ptr<TwoBodySOInt> erf = std::make_shared<TwoBodySOInt>(tb, integral_);
+    auto erf = std::make_shared<TwoBodySOInt>(tb, integral_);
 
     // Let the user know what we're doing.
     outfile->Printf("      Computing non-zero ERFComplement integrals...");
@@ -475,7 +475,7 @@ SharedMatrix MintsHelper::ao_overlap() {
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
     }
-    SharedMatrix overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
+    auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
     one_body_ao_computer(ints_vec, overlap_mat, true);
 
     // Is this needed?
@@ -491,7 +491,7 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_overlap()));
     }
-    SharedMatrix overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, bs1->nbf(), bs2->nbf());
+    auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, bs1->nbf(), bs2->nbf());
     one_body_ao_computer(ints_vec, overlap_mat, false);
     return overlap_mat;
 }
@@ -501,7 +501,7 @@ SharedMatrix MintsHelper::ao_kinetic() {
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
     }
-    SharedMatrix kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
+    auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
     one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
 }
@@ -512,7 +512,7 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_kinetic()));
     }
-    SharedMatrix kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf());
+    auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf());
     one_body_ao_computer(ints_vec, kinetic_mat, false);
     return kinetic_mat;
 }
@@ -534,7 +534,7 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr<BasisSet> bs1, std::share
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_potential()));
     }
-    SharedMatrix potential_mat = std::make_shared<Matrix>("AO-basis Potential Ints", bs1->nbf(), bs2->nbf());
+    auto potential_mat = std::make_shared<Matrix>("AO-basis Potential Ints", bs1->nbf(), bs2->nbf());
     one_body_ao_computer(ints_vec, potential_mat, false);
     return potential_mat;
 }
@@ -544,7 +544,7 @@ SharedMatrix MintsHelper::ao_ecp() {
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_ecp()));
     }
-    SharedMatrix ecp_mat = std::make_shared<Matrix>("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf());
+    auto ecp_mat = std::make_shared<Matrix>("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf());
     one_body_ao_computer(ints_vec, ecp_mat, true);
     return ecp_mat;
 }
@@ -555,7 +555,7 @@ SharedMatrix MintsHelper::ao_ecp(std::shared_ptr<BasisSet> bs1, std::shared_ptr<
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_ecp()));
     }
-    SharedMatrix ecp_mat = std::make_shared<Matrix>("AO-basis ECP Ints", bs1->nbf(), bs2->nbf());
+    auto ecp_mat = std::make_shared<Matrix>("AO-basis ECP Ints", bs1->nbf(), bs2->nbf());
     one_body_ao_computer(ints_vec, ecp_mat, false);
     return ecp_mat;
 }
@@ -565,7 +565,7 @@ SharedMatrix MintsHelper::ao_pvp() {
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_rel_potential()));
     }
-    SharedMatrix pVp_mat = std::make_shared<Matrix>("AO-basis pVp Ints", basisset_->nbf(), basisset_->nbf());
+    auto pVp_mat = std::make_shared<Matrix>("AO-basis pVp Ints", basisset_->nbf(), basisset_->nbf());
     one_body_ao_computer(ints_vec, pVp_mat, true);
     return pVp_mat;
 }
@@ -614,11 +614,11 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order) {
     SharedMatrix S_cd = ao_overlap(basisset_, rel_basisset_);
     //    S_cd->print();
 
-    SharedMatrix D = std::make_shared<Matrix>("D", nbf, basisset_->nbf());
+    auto D = std::make_shared<Matrix>("D", nbf, basisset_->nbf());
     //  Form D = S_uu^{-1} S_uc.  Notice that we transpose S_cu
     D->gemm(false, true, 1.0, S_inv, S_cd, 0.0);
 
-    SharedMatrix H_dk_cc = std::make_shared<Matrix>("AO-basis DKH Ints", basisset_->nbf(), basisset_->nbf());
+    auto H_dk_cc = std::make_shared<Matrix>("AO-basis DKH Ints", basisset_->nbf(), basisset_->nbf());
     H_dk_cc->transform(H_dk, D);
     //    H_dk_cc->print();
 
@@ -646,7 +646,7 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     int nbf3 = bs3->nbf();
     int nbf4 = bs4->nbf();
 
-    SharedMatrix I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3 * nbf4);
+    auto I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3 * nbf4);
     double **Ip = I->pointer();
     const double *buffer = ints->buffer();
 
@@ -685,7 +685,7 @@ SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_
     int nfxn = basisset_->shell(N).nfunction();
     int pfxn = basisset_->shell(P).nfunction();
     int qfxn = basisset_->shell(Q).nfunction();
-    SharedMatrix I = std::make_shared<Matrix>(label, mfxn * nfxn, pfxn * qfxn);
+    auto I = std::make_shared<Matrix>(label, mfxn * nfxn, pfxn * qfxn);
     double **Ip = I->pointer();
     const double *buffer = ints->buffer();
 
@@ -784,7 +784,7 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
     int nbf2 = bs2->nbf();
     int nbf3 = bs3->nbf();
 
-    SharedMatrix I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3);
+    auto I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3);
     double **Ip = I->pointer();
     const double *buffer = ints->buffer();
 
@@ -830,7 +830,7 @@ SharedMatrix MintsHelper::ao_3coverlap(std::shared_ptr<BasisSet> bs1, std::share
     for (int i = 0; i <= max_am; i++) {
         trans.push_back(SphericalTransform(i));
     }
-    std::shared_ptr<ThreeCenterOverlapInt> ints = std::make_shared<ThreeCenterOverlapInt>(trans, bs1, bs2, bs3);
+    auto ints = std::make_shared<ThreeCenterOverlapInt>(trans, bs1, bs2, bs3);
     return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints);
 }
 
@@ -917,20 +917,20 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
     double **C4p = C4->pointer();
 
     double **Isop = Iso->pointer();
-    SharedMatrix I2 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * nso);
+    auto I2 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * nso);
     double **I2p = I2->pointer();
 
     C_DGEMM('T', 'N', n1, nso * (size_t)nso * nso, nso, 1.0, C1p[0], n1, Isop[0], nso * (size_t)nso * nso, 0.0, I2p[0],
             nso * (size_t)nso * nso);
 
     Iso.reset();
-    SharedMatrix I3 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * n3);
+    auto I3 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * n3);
     double **I3p = I3->pointer();
 
     C_DGEMM('N', 'N', n1 * (size_t)nso * nso, n3, nso, 1.0, I2p[0], nso, C3p[0], n3, 0.0, I3p[0], n3);
 
     I2.reset();
-    SharedMatrix I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * n1, n3 * nso);
+    auto I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * n1, n3 * nso);
     double **I4p = I4->pointer();
 
     for (int i = 0; i < n1; i++) {
@@ -944,20 +944,20 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
     }
 
     I3.reset();
-    SharedMatrix I5 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * nso);
+    auto I5 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * nso);
     double **I5p = I5->pointer();
 
     C_DGEMM('T', 'N', n2, n1 * (size_t)n3 * nso, nso, 1.0, C2p[0], n2, I4p[0], n1 * (size_t)n3 * nso, 0.0, I5p[0],
             n1 * (size_t)n3 * nso);
 
     I4.reset();
-    SharedMatrix I6 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * n4);
+    auto I6 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * n4);
     double **I6p = I6->pointer();
 
     C_DGEMM('N', 'N', n2 * (size_t)n1 * n3, n4, nso, 1.0, I5p[0], nso, C4p[0], n4, 0.0, I6p[0], n4);
 
     I5.reset();
-    SharedMatrix Imo = std::make_shared<Matrix>("MO ERI Tensor", n1 * n2, n3 * n4);
+    auto Imo = std::make_shared<Matrix>("MO ERI Tensor", n1 * n2, n3 * n4);
     double **Imop = Imo->pointer();
 
     for (int i = 0; i < n1; i++) {
@@ -985,20 +985,20 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
     double **Cvp = Cv->pointer();
 
     double **Isop = Iso->pointer();
-    SharedMatrix I2 = std::make_shared<Matrix>("MO ERI Tensor", nocc * nso, nso * nso);
+    auto I2 = std::make_shared<Matrix>("MO ERI Tensor", nocc * nso, nso * nso);
     double **I2p = I2->pointer();
 
     C_DGEMM('T', 'N', nocc, nso * (size_t)nso * nso, nso, 1.0, Cop[0], nocc, Isop[0], nso * (size_t)nso * nso, 0.0,
             I2p[0], nso * (size_t)nso * nso);
 
     Iso.reset();
-    SharedMatrix I3 = std::make_shared<Matrix>("MO ERI Tensor", nocc * nso, nso * nocc);
+    auto I3 = std::make_shared<Matrix>("MO ERI Tensor", nocc * nso, nso * nocc);
     double **I3p = I3->pointer();
 
     C_DGEMM('N', 'N', nocc * (size_t)nso * nso, nocc, nso, 1.0, I2p[0], nso, Cop[0], nocc, 0.0, I3p[0], nocc);
 
     I2.reset();
-    SharedMatrix I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * nocc, nocc * nso);
+    auto I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * nocc, nocc * nso);
     double **I4p = I4->pointer();
 
     for (int i = 0; i < nocc; i++) {
@@ -1012,20 +1012,20 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
     }
 
     I3.reset();
-    SharedMatrix I5 = std::make_shared<Matrix>("MO ERI Tensor", nvir * nocc, nocc * nso);
+    auto I5 = std::make_shared<Matrix>("MO ERI Tensor", nvir * nocc, nocc * nso);
     double **I5p = I5->pointer();
 
     C_DGEMM('T', 'N', nvir, nocc * (size_t)nocc * nso, nso, 1.0, Cvp[0], nvir, I4p[0], nocc * (size_t)nocc * nso, 0.0,
             I5p[0], nocc * (size_t)nocc * nso);
 
     I4.reset();
-    SharedMatrix I6 = std::make_shared<Matrix>("MO ERI Tensor", nvir * nocc, nocc * nvir);
+    auto I6 = std::make_shared<Matrix>("MO ERI Tensor", nvir * nocc, nocc * nvir);
     double **I6p = I6->pointer();
 
     C_DGEMM('N', 'N', nvir * (size_t)nocc * nocc, nvir, nso, 1.0, I5p[0], nso, Cvp[0], nvir, 0.0, I6p[0], nvir);
 
     I5.reset();
-    SharedMatrix Imo = std::make_shared<Matrix>("MO ERI Tensor", nocc * nvir, nocc * nvir);
+    auto Imo = std::make_shared<Matrix>("MO ERI Tensor", nocc * nvir, nocc * nvir);
     double **Imop = Imo->pointer();
 
     for (int i = 0; i < nocc; i++) {
@@ -1059,7 +1059,7 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2) {
     int n22 = n2 * 2;
 
     double **Isop = Iso->pointer();
-    SharedMatrix Ispin = std::make_shared<Matrix>("MO ERI Tensor", 4 * n1 * n1, 4 * n2 * n2);
+    auto Ispin = std::make_shared<Matrix>("MO ERI Tensor", 4 * n1 * n1, 4 * n2 * n2);
     double **Ispinp = Ispin->pointer();
 
     double first, second;
@@ -1489,20 +1489,20 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     }
 
     double **Isop = Iso->pointer();
-    SharedMatrix I2 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * nso);
+    auto I2 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * nso);
     double **I2p = I2->pointer();
 
     C_DGEMM('T', 'N', n1, nso * (size_t)nso * nso, nso, 1.0, C1p[0], n1, Isop[0], nso * (size_t)nso * nso, 0.0, I2p[0],
             nso * (size_t)nso * nso);
 
     Iso.reset();
-    SharedMatrix I3 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * n3);
+    auto I3 = std::make_shared<Matrix>("MO ERI Tensor", n1 * nso, nso * n3);
     double **I3p = I3->pointer();
 
     C_DGEMM('N', 'N', n1 * (size_t)nso * nso, n3, nso, 1.0, I2p[0], nso, C3p[0], n3, 0.0, I3p[0], n3);
 
     I2.reset();
-    SharedMatrix I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * n1, n3 * nso);
+    auto I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * n1, n3 * nso);
     double **I4p = I4->pointer();
 
     for (int i = 0; i < n1; i++) {
@@ -1516,20 +1516,20 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     }
 
     I3.reset();
-    SharedMatrix I5 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * nso);
+    auto I5 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * nso);
     double **I5p = I5->pointer();
 
     C_DGEMM('T', 'N', n2, n1 * (size_t)n3 * nso, nso, 1.0, C2p[0], n2, I4p[0], n1 * (size_t)n3 * nso, 0.0, I5p[0],
             n1 * (size_t)n3 * nso);
 
     I4.reset();
-    SharedMatrix I6 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * n4);
+    auto I6 = std::make_shared<Matrix>("MO ERI Tensor", n2 * n1, n3 * n4);
     double **I6p = I6->pointer();
 
     C_DGEMM('N', 'N', n2 * (size_t)n1 * n3, n4, nso, 1.0, I5p[0], nso, C4p[0], n4, 0.0, I6p[0], n4);
 
     I5.reset();
-    SharedMatrix Imo = std::make_shared<Matrix>("MO ERI Tensor", shape_left, shape_right);
+    auto Imo = std::make_shared<Matrix>("MO ERI Tensor", shape_left, shape_right);
     double **Imop = Imo->pointer();
 
     // Currently 2143, need to transform back

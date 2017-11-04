@@ -154,7 +154,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
 
     // constraints.print();
 
-    // Remove NULL constraint (if present) and normalize the rest of them
+    // Remove nullptr constraint (if present) and normalize the rest of them
     for (int i = 0; i < 6; ++i) {
         double normval = C_DDOT(ncd_, constraints[0][i], 1, constraints[0][i], 1);
         if (normval > 1.0E-10)
@@ -327,7 +327,7 @@ std::string CdSalcList::name_of_component(int component) {
 }
 
 SharedMatrix CdSalcList::matrix() {
-    SharedMatrix temp = std::make_shared<Matrix>("Cartesian/SALC transformation", ncd(), 3 * molecule_->natom());
+    auto temp = std::make_shared<Matrix>("Cartesian/SALC transformation", ncd(), 3 * molecule_->natom());
 
     for (size_t i = 0; i < ncd(); ++i) {
         int nc = salcs_[i].ncomponent();
@@ -352,7 +352,7 @@ SharedMatrix CdSalcList::matrix_irrep(int h) {
     for (size_t i = 0; i < ncd(); ++i)
         if (salcs_[i].irrep() == h) ++cnt;
 
-    SharedMatrix temp = std::make_shared<Matrix>("Cartesian/SALC transformation", cnt, 3 * molecule_->natom());
+    auto temp = std::make_shared<Matrix>("Cartesian/SALC transformation", cnt, 3 * molecule_->natom());
 
     cnt = 0;
     for (size_t i = 0; i < ncd(); ++i) {
@@ -447,7 +447,7 @@ molecule_->inertia_tensor()->print();
         }
     }
 
-    // Remove NULL constraint (if present) and normalize the rest of them
+    // Remove nullptr constraint (if present) and normalize the rest of them
     std::vector<int> non_zero;
     for (int i=0; i<6; ++i) {
         double normval = C_DDOT(3*natom, constraints[0][i], 1, constraints[0][i], 1);

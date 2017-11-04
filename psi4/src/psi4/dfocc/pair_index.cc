@@ -368,7 +368,7 @@ int DFOCC::get_rotation_block(std::string rotblock) {
     else if (rotblock == "VO_AOCCFC_FVAVIR")
         index = 3;
     else
-        index = 4;  // NULL
+        index = 4;  // nullptr
 
     return (index);
 }

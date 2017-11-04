@@ -77,7 +77,7 @@ static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double
 }
 } // namespace anonmyous
 
-OneBodyAOInt::OneBodyAOInt(std::vector <SphericalTransform> &spherical_transforms, std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, int deriv)
+OneBodyAOInt::OneBodyAOInt(std::vector <SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv)
         : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1)
 {
     force_cartesian_ = false;
@@ -96,17 +96,17 @@ OneBodyAOInt::~OneBodyAOInt()
     delete[] target_;
 }
 
-std::shared_ptr <BasisSet> OneBodyAOInt::basis()
+std::shared_ptr<BasisSet> OneBodyAOInt::basis()
 {
     return bs1_;
 }
 
-std::shared_ptr <BasisSet> OneBodyAOInt::basis1()
+std::shared_ptr<BasisSet> OneBodyAOInt::basis1()
 {
     return bs1_;
 }
 
-std::shared_ptr <BasisSet> OneBodyAOInt::basis2()
+std::shared_ptr<BasisSet> OneBodyAOInt::basis2()
 {
     return bs2_;
 }

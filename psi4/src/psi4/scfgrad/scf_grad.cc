@@ -826,7 +826,7 @@ SharedMatrix SCFGrad::compute_hessian()
     hessians_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
     hessians_["Nuclear"]->set_name("Nuclear Hessian");
 
-    SharedMatrix Zxyz = std::make_shared<Matrix>("Zxyz", 1, 4);
+    auto Zxyz = std::make_shared<Matrix>("Zxyz", 1, 4);
 
     // => Potential Hessian <= //
     timer_on("Hess: V");

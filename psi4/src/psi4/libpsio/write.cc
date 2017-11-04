@@ -58,7 +58,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
 
   tocentry_size = sizeof(psio_tocentry) - 2*sizeof(psio_tocentry *);
 
-  if (this_entry == NULL) { /* New TOC entry */
+  if (this_entry == nullptr) { /* New TOC entry */
     if (start.page||start.offset)
       psio_error(unit, PSIO_ERROR_BLKSTART);
 
@@ -67,8 +67,8 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
     this_entry = (psio_tocentry *) malloc(sizeof(psio_tocentry));
     ::strncpy(this_entry->key, key, PSIO_KEYLEN);
     this_entry->key[PSIO_KEYLEN-1] = '\0';
-    this_entry->next = NULL;
-    this_entry->last = NULL;
+    this_entry->next = nullptr;
+    this_entry->last = nullptr;
 
     /* Compute the global address of the new entry */
     if (!(this_unit->toclen)) { /* First TOC entry */
@@ -114,7 +114,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
     /* Compute the new global ending address for the entry, if necessary */
     end_data = psio_get_address(start_data, size);
     if (end_data.page > this_entry->eadd.page) {
-      if (this_entry->next != NULL) {
+      if (this_entry->next != nullptr) {
         fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %zu, %s\n", unit, key);
         psio_error(unit, PSIO_ERROR_BLKEND);
       }
@@ -122,7 +122,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
       dirty = 1; /* set flag for writing the TOC header */
     } else if ((end_data.page == this_entry->eadd.page) &&(end_data.offset
         > this_entry->eadd.offset)) {
-      if (this_entry->next != NULL) {
+      if (this_entry->next != nullptr) {
         fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %zu, %s\n", unit, key);
         psio_error(unit, PSIO_ERROR_BLKEND);
       }

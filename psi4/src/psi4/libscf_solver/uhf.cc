@@ -597,7 +597,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     }
 
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
     cphf_converged_ = false;
     cphf_nfock_builds_ = 0;
 
@@ -611,8 +611,8 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     SharedMatrix IFock_a = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
     SharedMatrix IFock_b = Matrix::triplet(Cb_, Fb_, Cb_, true, false, false);
 
-    SharedMatrix Precon_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
-    SharedMatrix Precon_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
+    auto Precon_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
+    auto Precon_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
 
     for (size_t h = 0; h < nirrep_; h++) {
         if (virpi_a[h] && nalphapi_[h]){
@@ -713,7 +713,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     mean_rms /= (double)nvecs;
     cphf_nfock_builds_ += nremain;
 
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_lvl > 1) {
         outfile->Printf("    %5s %14.3e %12.3e %7d %9ld\n", "Guess", mean_rms, max_rms, nremain,
                         stop - start);
@@ -788,7 +788,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         nremain = new_remain;
         mean_rms /= (double)nvecs;
 
-        stop = time(NULL);
+        stop = time(nullptr);
         if (print_lvl) {
             outfile->Printf("    %5d %14.3e %12.3e %7d %9ld\n", cg_iter, mean_rms, max_rms, nremain,
                             stop - start);
@@ -841,7 +841,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 int UHF::soscf_update(void)
 {
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
 
     // => Build gradient and preconditioner <= //
 
@@ -900,7 +900,7 @@ bool UHF::diis()
 
 bool UHF::stability_analysis()
 {
-    std::shared_ptr<UStab> stab = std::make_shared<UStab>(shared_from_this(), options_);
+    auto stab = std::make_shared<UStab>(shared_from_this(), options_);
     stab->compute_energy();
     SharedMatrix eval_sym = stab->analyze();
     outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");

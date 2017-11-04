@@ -93,7 +93,7 @@ void DFOCC::df_ref() {
     // 1.  read scf 3-index integrals from disk
 
     // get ntri from sieve
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
     long int ntri_cd = function_pairs.size();
 
@@ -106,7 +106,7 @@ void DFOCC::df_ref() {
         nQ_ref = auxiliary->nbf();
 
         // ntri comes from sieve above
-        std::shared_ptr<Matrix> Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_ref, ntri_cd);
+        auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_ref, ntri_cd);
         double** Qmnp = Qmn->pointer();
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
@@ -142,7 +142,7 @@ void DFOCC::df_ref() {
         // ntri comes from sieve above
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_ref, sizeof(long int));
-        std::shared_ptr<Matrix> Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_ref, ntri_cd);
+        auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_ref, ntri_cd);
         double** Qmnp = Qmn->pointer();
         psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
         psio_->close(PSIF_DFSCF_BJ, 1);
@@ -199,7 +199,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
     J_mhalf = block_matrix(nQ_ref, nQ_ref);
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -243,7 +243,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
 
     /*
     // Create integral factories for the RI basis
-    std::shared_ptr<IntegralFactory> rifactory_J = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
+    auto rifactory_J = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::shared_ptr<TwoBodyAOInt> Jint(rifactory_J->eri());
 
     double **J = block_matrix(nQ_ref, nQ_ref);
@@ -322,7 +322,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<ERISieve> sieve_ = std::make_shared<ERISieve>(primary_, 0.0);
+    auto sieve_ = std::make_shared<ERISieve>(primary_, 0.0);
     const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -345,7 +345,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2 = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -405,7 +405,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
     }
 
     /*
-    std::shared_ptr<IntegralFactory> fact = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    auto fact = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::shared_ptr<TwoBodyAOInt> eri(fact->eri());
     const double* buffer = eri->buffer();
 

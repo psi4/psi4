@@ -87,13 +87,13 @@ void DFOCC::fock() {
 
         /*
         // Diagonalize
-        SharedTensor1d eigA = std::make_shared<Tensor1d>("epsilon <P|Q>", nmo_);
-        SharedTensor2d UmoA = std::make_shared<Tensor2d>("UmoA", nmo_, nmo_);
+        auto eigA = std::make_shared<Tensor1d>("epsilon <P|Q>", nmo_);
+        auto UmoA = std::make_shared<Tensor2d>("UmoA", nmo_, nmo_);
         FockA->diagonalize(UmoA, eigA, cutoff);
         eigA.reset();
 
         // Get new MOs
-        SharedTensor2d Ca_new = std::make_shared<Tensor2d>("New alpha MO coefficients", nso_, nmo_);
+        auto Ca_new = std::make_shared<Tensor2d>("New alpha MO coefficients", nso_, nmo_);
         Ca_new->gemm(false, false, CmoA, UmoA, 1.0, 0.0);
         UmoA.reset();
         CmoA->copy(Ca_new);

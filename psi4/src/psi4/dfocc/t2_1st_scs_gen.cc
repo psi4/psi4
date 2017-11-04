@@ -89,7 +89,7 @@ void DFOCC::t2_1st_scs_gen() {
         // t2_1->print();
         t2_1.reset();
 
-        SharedTensor2d temp = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        auto temp = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         temp->sort(1432, t2p_1, 1.0, 0.0);
         temp->scale(-1.0);
         temp->add(t2p_1);

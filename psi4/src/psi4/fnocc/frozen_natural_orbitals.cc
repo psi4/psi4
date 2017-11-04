@@ -274,7 +274,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // diagonalize virtual-virtual block of opdm
     int symmetry = Ca_->symmetry();
-    std::shared_ptr<Matrix> D = std::make_shared<Matrix>("Dab", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
+    auto D = std::make_shared<Matrix>("Dab", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
 
     global_dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD, 0, 1, 1, "Dab");
     global_dpd_->file2_mat_init(&Dab);
@@ -297,11 +297,11 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     std::shared_ptr<Matrix> eigvec =
         std::make_shared<Matrix>("Dab eigenvectors", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
-    std::shared_ptr<Vector> eigval = std::make_shared<Vector>("Dab eigenvalues", nirrep_, aVirOrbsPI);
+    auto eigval = std::make_shared<Vector>("Dab eigenvalues", nirrep_, aVirOrbsPI);
     D->diagonalize(eigvec, eigval, descending);
 
     // overwrite ao/mo C matrix with ao/no transformation
-    std::shared_ptr<Matrix> temp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, aVirOrbsPI, symmetry);
+    auto temp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, aVirOrbsPI, symmetry);
     for (int h = 0; h < nirrep_; h++) {
         int v = aVirOrbsPI[h];
 
@@ -424,7 +424,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // transform Fock matrix to truncated NO basis
 
-    std::shared_ptr<Matrix> Fab = std::make_shared<Matrix>("Fab(NO)", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
+    auto Fab = std::make_shared<Matrix>("Fab(NO)", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
     for (int h = 0; h < nirrep_; h++) {
         int o = doccpi_[h];
         int vnew = newVirOrbsPI[h];
@@ -446,7 +446,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     // semicanonicalize orbitals:
     std::shared_ptr<Matrix> eigvecF =
         std::make_shared<Matrix>("Fab eigenvectors", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
-    std::shared_ptr<Vector> eigvalF = std::make_shared<Vector>("Fab eigenvalues", nirrep_, newVirOrbsPI);
+    auto eigvalF = std::make_shared<Vector>("Fab eigenvalues", nirrep_, newVirOrbsPI);
     Fab->diagonalize(eigvecF, eigvalF);
 
     // overwrite ao/no C matrix with ao/semicanonical no transformation:
@@ -523,7 +523,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     // 1.  read scf 3-index integrals from disk
 
     // get ntri from sieve
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
     long int ntri = function_pairs.size();
 
@@ -537,15 +537,15 @@ void DFFrozenNO::ThreeIndexIntegrals() {
         Process::environment.globals["NAUX (SCF)"] = nQ_scf;
     }
 
-    std::shared_ptr<Matrix> Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_scf, ntri);
+    auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_scf, ntri);
     double** Qmnp = Qmn->pointer();
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * nQ_scf);
     psio->close(PSIF_DFSCF_BJ, 1);
 
     // unpack and write again in my format
-    SharedMatrix L = std::make_shared<Matrix>("3-index ERIs (SCF)", nQ_scf, nso * nso);
+    auto L = std::make_shared<Matrix>("3-index ERIs (SCF)", nQ_scf, nso * nso);
     double** Lp = L->pointer();
     for (long int mn = 0; mn < ntri; mn++) {
         long int m = function_pairs[mn].first;
@@ -590,14 +590,14 @@ void DFFrozenNO::ThreeIndexIntegrals() {
             outfile->Printf("        Number of Cholesky vectors:          %5li\n", nQ);
 
             // ntri comes from sieve above
-            std::shared_ptr<Matrix> Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ, ntri);
+            auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ, ntri);
             double** Qmnp = Qmn->pointer();
             // TODO: use my 3-index integral file in SCF for DFCC jobs
             psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
             psio->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * nQ);
             psio->close(PSIF_DFSCF_BJ, 1);
 
-            SharedMatrix L = std::make_shared<Matrix>("CD Integrals", nQ, nso * nso);
+            auto L = std::make_shared<Matrix>("CD Integrals", nQ, nso * nso);
             double** Lp = L->pointer();
             for (long int mn = 0; mn < ntri; mn++) {
                 long int m = function_pairs[mn].first;
@@ -658,7 +658,7 @@ void DFFrozenNO::FourIndexIntegrals() {
     double* buf1 = (double*)malloc(nso * nso * sizeof(double));
     double* buf2 = (double*)malloc(nso * nso * sizeof(double));
 
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_QSO, PSIO_OPEN_OLD);
     for (int q = 0; q < nQ; q++) {
         psio->read(PSIF_DCC_QSO, "Qso CC", (char*)&buf1[0], nso * nso * sizeof(double), addr1, &addr1);
@@ -722,7 +722,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
         throw PsiException("not enough memory (fno)", __FILE__, __LINE__);
     }
 
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
 
     // read in 3-index integrals specific to the CC method:
     double* tmp2 = (double*)malloc(nso * nso * nQ * sizeof(double));
@@ -1026,7 +1026,7 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
 
     // transform H
     // one-electron integrals
-    std::shared_ptr<MintsHelper> mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
+    auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
     SharedMatrix H = mints->so_kinetic();
     H->add(mints->so_potential());
 

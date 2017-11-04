@@ -74,15 +74,15 @@ extern double str_to_double(const std::string &s);
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 Matrix::Matrix() {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = 0;
     symmetry_ = 0;
 }
 
-Matrix::Matrix(const std::string &name, int symmetry) : matrix_(NULL), nirrep_(0), name_(name), symmetry_(symmetry) {}
+Matrix::Matrix(const std::string &name, int symmetry) : matrix_(nullptr), nirrep_(0), name_(name), symmetry_(symmetry) {}
 
 Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
     name_ = c.name();
@@ -91,7 +91,7 @@ Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
 }
 
 Matrix::Matrix(const SharedMatrix &c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
     name_ = c->name();
@@ -100,7 +100,7 @@ Matrix::Matrix(const SharedMatrix &c) : rowspi_(c->rowspi_), colspi_(c->colspi_)
 }
 
 Matrix::Matrix(const Matrix *c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
     name_ = c->name();
@@ -110,7 +110,7 @@ Matrix::Matrix(const Matrix *c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
 
 Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
     : rowspi_(l_nirreps), colspi_(l_nirreps) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
     rowspi_ = l_rowspi;
@@ -120,7 +120,7 @@ Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symm
 
 Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
     : rowspi_(l_nirreps), colspi_(l_nirreps), name_(name) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
     rowspi_ = l_rowspi;
@@ -129,7 +129,7 @@ Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, cons
 }
 
 Matrix::Matrix(const std::string &name, int rows, int cols) : rowspi_(1), colspi_(1), name_(name) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = 1;
     symmetry_ = 0;
     rowspi_[0] = rows;
@@ -138,7 +138,7 @@ Matrix::Matrix(const std::string &name, int rows, int cols) : rowspi_(1), colspi
 }
 
 Matrix::Matrix(int rows, int cols) : rowspi_(1), colspi_(1) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirrep_ = 1;
     symmetry_ = 0;
     rowspi_[0] = rows;
@@ -147,7 +147,7 @@ Matrix::Matrix(int rows, int cols) : rowspi_(1), colspi_(1) {
 }
 
 Matrix::Matrix(int nirrep, int rows, const int *colspi) : rowspi_(nirrep), colspi_(nirrep) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     symmetry_ = 0;
     nirrep_ = nirrep;
     for (int i = 0; i < nirrep_; ++i) {
@@ -158,7 +158,7 @@ Matrix::Matrix(int nirrep, int rows, const int *colspi) : rowspi_(nirrep), colsp
 }
 
 Matrix::Matrix(int nirrep, const int *rowspi, int cols) : rowspi_(nirrep), colspi_(nirrep) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     symmetry_ = 0;
     nirrep_ = nirrep;
     for (int i = 0; i < nirrep_; ++i) {
@@ -170,7 +170,7 @@ Matrix::Matrix(int nirrep, const int *rowspi, int cols) : rowspi_(nirrep), colsp
 
 Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, int symmetry) {
     name_ = name;
-    matrix_ = NULL;
+    matrix_ = nullptr;
     symmetry_ = symmetry;
 
     // This will happen in PetiteList::aotoso()
@@ -196,7 +196,7 @@ Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &
 }
 
 Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry) {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     symmetry_ = symmetry;
 
     // This will happen in PetiteList::aotoso()
@@ -225,7 +225,7 @@ Matrix::Matrix(dpdfile2 *inFile)
     : rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps), name_(inFile->label) {
     global_dpd_->file2_mat_init(inFile);
     global_dpd_->file2_mat_rd(inFile);
-    matrix_ = NULL;
+    matrix_ = nullptr;
     symmetry_ = inFile->my_irrep;
     nirrep_ = inFile->params->nirreps;
     for (int i = 0; i < nirrep_; ++i) {
@@ -286,7 +286,7 @@ SharedMatrix Matrix::create(const std::string &name, const Dimension &rows, cons
 }
 
 SharedMatrix Matrix::clone() const {
-    SharedMatrix temp = std::make_shared<Matrix>(this);
+    auto temp = std::make_shared<Matrix>(this);
     return temp;
 }
 
@@ -343,7 +343,7 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix> &mats) {
         colspi += mats[a]->colspi();
     }
 
-    SharedMatrix cat = std::make_shared<Matrix>("", nirrep, mats[0]->rowspi(), colspi);
+    auto cat = std::make_shared<Matrix>("", nirrep, mats[0]->rowspi(), colspi);
 
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->rowspi()[h] == 0 || colspi[h] == 0) continue;
@@ -389,7 +389,7 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix> &mats) {
         rowspi += mats[a]->rowspi();
     }
 
-    SharedMatrix cat = std::make_shared<Matrix>("", nirrep, rowspi, mats[0]->colspi());
+    auto cat = std::make_shared<Matrix>("", nirrep, rowspi, mats[0]->colspi());
 
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->colspi()[h] == 0 || rowspi[h] == 0) continue;
@@ -475,7 +475,7 @@ void Matrix::alloc() {
 
     // This is probably a default constructor matrix
     if (!nirrep_) {
-        matrix_ = NULL;
+        matrix_ = nullptr;
         return;
     }
 
@@ -491,7 +491,7 @@ void Matrix::alloc() {
             // dependent on one or both containing valid dimensions and
             // not a hard zero.
             // rowspi_[h] = colspi_[h^symmetry_] = 0;
-            matrix_[h] = NULL;
+            matrix_[h] = nullptr;
         }
     }
 }
@@ -503,7 +503,7 @@ void Matrix::release() {
         if (matrix_[h]) Matrix::free(matrix_[h]);
     }
     ::free(matrix_);
-    matrix_ = NULL;
+    matrix_ = nullptr;
 }
 
 void Matrix::copy_from(double ***c) {
@@ -561,8 +561,8 @@ void Matrix::set(const double *const *const sq) {
     int h, i, j, ii, jj;
     int offset;
 
-    if (sq == NULL) {
-        throw PSIEXCEPTION("Matrix::set: Set call with a NULL double** matrix");
+    if (sq == nullptr) {
+        throw PSIEXCEPTION("Matrix::set: Set call with a nullptr double** matrix");
     }
     offset = 0;
     for (h = 0; h < nirrep_; ++h) {
@@ -579,7 +579,7 @@ void Matrix::set(const double *const *const sq) {
 }
 
 void Matrix::set(const double *const *const sq, int h) {
-    if (sq == NULL) throw PSIEXCEPTION("Matrix::set: Set call with a NULL double** matrix");
+    if (sq == nullptr) throw PSIEXCEPTION("Matrix::set: Set call with a nullptr double** matrix");
 
     for (int i = 0; i < rowspi_[h]; i++)
         for (int j = 0; j < colspi_[h]; j++) matrix_[h][i][j] = sq[i][j];
@@ -634,7 +634,7 @@ SharedVector Matrix::get_row(int h, int m) {
     if (m >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
     }
-    SharedVector vec = std::make_shared<Vector>("Row", colspi_);
+    auto vec = std::make_shared<Vector>("Row", colspi_);
     vec->zero();
     size_t size = colspi_[h];
     for (size_t i = 0; i < size; ++i) {
@@ -647,7 +647,7 @@ SharedVector Matrix::get_column(int h, int m) {
     if (m >= colspi_[h]) {
         throw PSIEXCEPTION("Matrix::get_column: index is out of bounds.");
     }
-    SharedVector vec = std::make_shared<Vector>("Column", rowspi_);
+    auto vec = std::make_shared<Vector>("Column", rowspi_);
     vec->zero();
     size_t size = rowspi_[h];
     for (size_t i = 0; i < size; ++i) {
@@ -694,7 +694,7 @@ SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) {
     const Dimension &cols_begin = cols.begin();
     Dimension block_rows = rows.end() - rows.begin();
     Dimension block_cols = cols.end() - cols.begin();
-    SharedMatrix block = std::make_shared<Matrix>("Block", block_rows, block_cols);
+    auto block = std::make_shared<Matrix>("Block", block_rows, block_cols);
     for (int h = 0; h < nirrep_; h++) {
         int max_p = block_rows[h];
         int max_q = block_cols[h];
@@ -753,7 +753,7 @@ double *Matrix::to_lower_triangle() const {
         sizer += rowspi_[h];
         sizec += colspi_[h ^ symmetry_];
     }
-    if (sizer != sizec) return NULL;
+    if (sizer != sizec) return nullptr;
 
     double *tri = new double[ioff[sizer]];
     double **temp = to_block_matrix();
@@ -798,7 +798,7 @@ SharedMatrix Matrix::to_block_sharedmatrix() const {
         sizer += rowspi_[h];
         sizec += colspi_[h ^ symmetry_];
     }
-    SharedMatrix ret = std::make_shared<Matrix>(name_ + " Block Copy", sizer, sizec);
+    auto ret = std::make_shared<Matrix>(name_ + " Block Copy", sizer, sizec);
     double **temp = to_block_matrix();
     ret->set(temp, 0);
     free_block(temp);
@@ -870,7 +870,7 @@ void Matrix::print(std::string out, const char *extra) const {
     std::shared_ptr<psi::PsiOutStream> printer =
         (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     if (name_.length()) {
-        if (extra == NULL)
+        if (extra == nullptr)
             printer->Printf("  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
         else
             printer->Printf("  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_);
@@ -1000,7 +1000,7 @@ void Matrix::symmetrize_hessian(SharedMolecule molecule) {
 
     int **atom_map = compute_atom_map(molecule);
 
-    SharedMatrix symm = std::make_shared<Matrix>(clone());
+    auto symm = std::make_shared<Matrix>(clone());
     symm->zero();
     double **pH = pointer();
     double **pS = symm->pointer();
@@ -1111,7 +1111,7 @@ double Matrix::trace() {
 }
 
 SharedMatrix Matrix::transpose() {
-    SharedMatrix temp = std::make_shared<Matrix>(name_, nirrep_, colspi_, rowspi_, symmetry_);
+    auto temp = std::make_shared<Matrix>(name_, nirrep_, colspi_, rowspi_, symmetry_);
 
     if (symmetry_) {
         for (int rowsym = 0; rowsym < nirrep_; ++rowsym) {
@@ -1461,7 +1461,7 @@ SharedMatrix Matrix::doublet(const SharedMatrix &A, const SharedMatrix &B, bool 
         throw PSIEXCEPTION("Matrix::doublet: Dimension mismatch");
     }
 
-    SharedMatrix T = std::make_shared<Matrix>("T", m, n);
+    auto T = std::make_shared<Matrix>("T", m, n);
 
     for (int h = 0; h < A->nirrep(); h++) {
         if (!k[h] || !m[h] || !n[h]) continue;
@@ -1508,7 +1508,7 @@ SharedMatrix Matrix::collapse(int dim) {
         ones[h] = 1;
     }
 
-    std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T", ((dim == 0) ? colspi_ : rowspi_), ones);
+    auto T = std::make_shared<Matrix>("T", ((dim == 0) ? colspi_ : rowspi_), ones);
 
     for (int h = 0; h < nirrep_; h++) {
         int nrow = rowspi_[h];
@@ -1822,9 +1822,9 @@ std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps() {
         int k = (m < n ? m : n);
         rank[h] = k;
     }
-    SharedMatrix U = std::make_shared<Matrix>("U", rowspi_, rank);
-    SharedVector S = std::make_shared<Vector>("S", rank);
-    SharedMatrix V = std::make_shared<Matrix>("V", rank, colspi_);
+    auto U = std::make_shared<Matrix>("U", rowspi_, rank);
+    auto S = std::make_shared<Vector>("S", rank);
+    auto V = std::make_shared<Matrix>("V", rank, colspi_);
 
     return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(U, S, V);
 }
@@ -1836,9 +1836,9 @@ std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_a_temps() {
         int n = colspi_[h ^ symmetry_];
         rank[h] = std::min(m, n);
     }
-    SharedMatrix U = std::make_shared<Matrix>("U", rowspi_, rowspi_);
-    SharedVector S = std::make_shared<Vector>("S", rank);
-    SharedMatrix V = std::make_shared<Matrix>("V", colspi_, colspi_);
+    auto U = std::make_shared<Matrix>("U", rowspi_, rowspi_);
+    auto S = std::make_shared<Vector>("S", rank);
+    auto V = std::make_shared<Matrix>("V", colspi_, colspi_);
     return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(U, S, V);
 }
 
@@ -2000,7 +2000,7 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     }
 
     SharedMatrix U(clone());
-    SharedVector a = std::make_shared<Vector>("a", rowspi_);
+    auto a = std::make_shared<Vector>("a", rowspi_);
 
     diagonalize(U, a, descending);
 
@@ -2025,7 +2025,7 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
         rank[h] = sig;
     }
 
-    SharedMatrix X = std::make_shared<Matrix>("X", rowspi_, rank);
+    auto X = std::make_shared<Matrix>("X", rowspi_, rank);
 
     for (int h = 0; h < nirrep_; h++) {
         int m = rowspi_[h];
@@ -2081,7 +2081,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     }
 
     // Temporary cholesky factor (full memory)
-    SharedMatrix K = std::make_shared<Matrix>("L Temp", nirrep_, rowspi_, rowspi_);
+    auto K = std::make_shared<Matrix>("L Temp", nirrep_, rowspi_, rowspi_);
 
     // Significant Cholesky columns per irrep
     int *sigpi = new int[nirrep_];
@@ -2159,7 +2159,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     }
 
     // Copy out to properly sized array
-    SharedMatrix L = std::make_shared<Matrix>("Partial Cholesky Factor", nirrep_, rowspi_, sigpi);
+    auto L = std::make_shared<Matrix>("Partial Cholesky Factor", nirrep_, rowspi_, sigpi);
 
     // K->print();
     // L->print();
@@ -2183,8 +2183,8 @@ std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta) 
         throw PSIEXCEPTION("Matrix::partial_square_root: Matrix is non-totally symmetric.");
     }
 
-    SharedMatrix V = std::make_shared<Matrix>("V", colspi_, colspi_);
-    SharedVector d = std::make_shared<Vector>("d", colspi_);
+    auto V = std::make_shared<Matrix>("V", colspi_, colspi_);
+    auto d = std::make_shared<Vector>("d", colspi_);
 
     diagonalize(V, d);
 
@@ -2202,8 +2202,8 @@ std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta) 
         }
     }
 
-    SharedMatrix P = std::make_shared<Matrix>("P", colspi_, Ppi);
-    SharedMatrix N = std::make_shared<Matrix>("N", colspi_, Npi);
+    auto P = std::make_shared<Matrix>("P", colspi_, Ppi);
+    auto N = std::make_shared<Matrix>("N", colspi_, Npi);
 
     for (int h = 0; h < d->nirrep(); h++) {
         double **Vp = V->pointer(h);
@@ -3133,7 +3133,7 @@ void Matrix::load_mpqc(const std::string &filename) {
         if (rowspi_[h] != 0 && colspi_[h ^ symmetry_] != 0)
             matrix_[h] = Matrix::matrix(rowspi_[h], colspi_[h ^ symmetry_]);
         else
-            matrix_[h] = NULL;
+            matrix_[h] = nullptr;
 
         // We read no more than 3 columns at a time
         for (int col = 0; col < colspi_[h ^ symmetry_]; col += 3) {

@@ -136,7 +136,7 @@ IrreducibleRepresentation::init(int order, int d, const char *lab,
     if (lab)
         symb = strdup(lab);
     else
-        symb = NULL;
+        symb = nullptr;
 
     free(csymb);
     if (clab) csymb = strdup(clab);

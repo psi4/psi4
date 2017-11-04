@@ -1155,16 +1155,16 @@ std::shared_ptr<Matrix> USAPT0::build_exch_ind_pot(std::map<std::string, std::sh
     return Matrix::triplet(Ca, W, Cr, true, false, false);
 }
 std::shared_ptr<Matrix> USAPT0::build_S(std::shared_ptr<BasisSet> basis) {
-    std::shared_ptr<IntegralFactory> factory = std::make_shared<IntegralFactory>(basis);
+    auto factory = std::make_shared<IntegralFactory>(basis);
     std::shared_ptr<OneBodyAOInt> Sint(factory->ao_overlap());
-    std::shared_ptr<Matrix> S = std::make_shared<Matrix>("S (AO)", basis->nbf(), basis->nbf());
+    auto S = std::make_shared<Matrix>("S (AO)", basis->nbf(), basis->nbf());
     Sint->compute(S);
     return S;
 }
 std::shared_ptr<Matrix> USAPT0::build_V(std::shared_ptr<BasisSet> basis) {
-    std::shared_ptr<IntegralFactory> factory = std::make_shared<IntegralFactory>(basis);
+    auto factory = std::make_shared<IntegralFactory>(basis);
     std::shared_ptr<OneBodyAOInt> Sint(factory->ao_potential());
-    std::shared_ptr<Matrix> S = std::make_shared<Matrix>("V (AO)", basis->nbf(), basis->nbf());
+    auto S = std::make_shared<Matrix>("V (AO)", basis->nbf(), basis->nbf());
     Sint->compute(S);
     return S;
 }
@@ -1174,8 +1174,8 @@ std::shared_ptr<Matrix> USAPT0::build_Sija(std::shared_ptr<Matrix> S) {
     int nocc_B = Cocca_B_->ncol();
     int nocc = nocc_A + nocc_B;
 
-    std::shared_ptr<Matrix> Sij = std::make_shared<Matrix>("Sija (MO)", nocc, nocc);
-    std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T", nso, nocc_B);
+    auto Sij = std::make_shared<Matrix>("Sija (MO)", nocc, nocc);
+    auto T = std::make_shared<Matrix>("T", nso, nocc_B);
 
     double** Sp = S->pointer();
     double** Tp = T->pointer();
@@ -1196,8 +1196,8 @@ std::shared_ptr<Matrix> USAPT0::build_Sijb(std::shared_ptr<Matrix> S) {
     int nocc_B = Coccb_B_->ncol();
     int nocc = nocc_A + nocc_B;
 
-    std::shared_ptr<Matrix> Sij = std::make_shared<Matrix>("Sijb (MO)", nocc, nocc);
-    std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T", nso, nocc_B);
+    auto Sij = std::make_shared<Matrix>("Sijb (MO)", nocc, nocc);
+    auto T = std::make_shared<Matrix>("T", nso, nocc_B);
 
     double** Sp = S->pointer();
     double** Tp = T->pointer();
@@ -1216,7 +1216,7 @@ std::shared_ptr<Matrix> USAPT0::build_Sijb(std::shared_ptr<Matrix> S) {
 std::shared_ptr<Matrix> USAPT0::build_Sij_n(std::shared_ptr<Matrix> Sij) {
     int nocc = Sij->nrow();
 
-    std::shared_ptr<Matrix> Sij2 = std::make_shared<Matrix>("Sij^inf (MO)", nocc, nocc);
+    auto Sij2 = std::make_shared<Matrix>("Sij^inf (MO)", nocc, nocc);
 
     double** Sijp = Sij->pointer();
     double** Sij2p = Sij2->pointer();
@@ -1302,7 +1302,7 @@ std::map<std::string, std::shared_ptr<Matrix> > USAPT0::compute_x(std::shared_pt
                                                                   std::shared_ptr<Matrix> wb_B,
                                                                   std::shared_ptr<Matrix> wa_A,
                                                                   std::shared_ptr<Matrix> wb_A) {
-    std::shared_ptr<CPKS_USAPT0> cpks = std::make_shared<CPKS_USAPT0>();
+    auto cpks = std::make_shared<CPKS_USAPT0>();
 
     // Effective constructor
     cpks->delta_ = cpks_delta_;
@@ -1407,7 +1407,7 @@ void CPKS_USAPT0::compute_cpks() {
     time_t start;
     time_t stop;
 
-    start = time(NULL);
+    start = time(nullptr);
 
     outfile->Printf("    -----------------------------------------\n");
     outfile->Printf("    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
@@ -1485,7 +1485,7 @@ void CPKS_USAPT0::compute_cpks() {
             r2B = sqrt(r2B) / b2B;
         }
 
-        stop = time(NULL);
+        stop = time(nullptr);
         outfile->Printf("    %-4d %11.3E%1s %11.3E%1s %10ld\n", iter + 1, r2A, (r2A < delta_ ? "*" : " "), r2B,
                         (r2B < delta_ ? "*" : " "), stop - start);
 
@@ -1581,7 +1581,7 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
         int nso = Cvira_A_->nrow();
         double** Cp = Cvira_A_->pointer();
         double** bp = b["Aa"]->pointer();
-        std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T", nso, no);
+        auto T = std::make_shared<Matrix>("T", nso, no);
         double** Tp = T->pointer();
         C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
         Cr.push_back(T);
@@ -1604,7 +1604,7 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
         int nso = Cvira_B_->nrow();
         double** Cp = Cvira_B_->pointer();
         double** bp = b["Ba"]->pointer();
-        std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T", nso, no);
+        auto T = std::make_shared<Matrix>("T", nso, no);
         double** Tp = T->pointer();
         C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
         Cr.push_back(T);
@@ -2066,23 +2066,23 @@ void USAPT0::mp2_terms() {
 
     // => Tensor Slices <= //
 
-    std::shared_ptr<Matrix> Aa_ar = std::make_shared<Matrix>("Aa_ar", maxa_a * nar, nQ);
-    std::shared_ptr<Matrix> Aa_bs = std::make_shared<Matrix>("Aa_bs", maxa_b * nas, nQ);
-    std::shared_ptr<Matrix> Ba_as = std::make_shared<Matrix>("Ba_as", maxa_a * nas, nQ);
-    std::shared_ptr<Matrix> Ba_br = std::make_shared<Matrix>("Ba_br", maxa_b * nar, nQ);
-    std::shared_ptr<Matrix> Ca_as = std::make_shared<Matrix>("Ca_as", maxa_a * nas, nQ);
-    std::shared_ptr<Matrix> Ca_br = std::make_shared<Matrix>("Ca_br", maxa_b * nar, nQ);
-    std::shared_ptr<Matrix> Da_ar = std::make_shared<Matrix>("Da_ar", maxa_a * nar, nQ);
-    std::shared_ptr<Matrix> Da_bs = std::make_shared<Matrix>("Da_bs", maxa_b * nas, nQ);
+    auto Aa_ar = std::make_shared<Matrix>("Aa_ar", maxa_a * nar, nQ);
+    auto Aa_bs = std::make_shared<Matrix>("Aa_bs", maxa_b * nas, nQ);
+    auto Ba_as = std::make_shared<Matrix>("Ba_as", maxa_a * nas, nQ);
+    auto Ba_br = std::make_shared<Matrix>("Ba_br", maxa_b * nar, nQ);
+    auto Ca_as = std::make_shared<Matrix>("Ca_as", maxa_a * nas, nQ);
+    auto Ca_br = std::make_shared<Matrix>("Ca_br", maxa_b * nar, nQ);
+    auto Da_ar = std::make_shared<Matrix>("Da_ar", maxa_a * nar, nQ);
+    auto Da_bs = std::make_shared<Matrix>("Da_bs", maxa_b * nas, nQ);
 
-    std::shared_ptr<Matrix> Ab_ar = std::make_shared<Matrix>("Ab_ar", maxb_a * nbr, nQ);
-    std::shared_ptr<Matrix> Ab_bs = std::make_shared<Matrix>("Ab_bs", maxb_b * nbs, nQ);
-    std::shared_ptr<Matrix> Bb_as = std::make_shared<Matrix>("Bb_as", maxb_a * nbs, nQ);
-    std::shared_ptr<Matrix> Bb_br = std::make_shared<Matrix>("Bb_br", maxb_b * nbr, nQ);
-    std::shared_ptr<Matrix> Cb_as = std::make_shared<Matrix>("Cb_as", maxb_a * nbs, nQ);
-    std::shared_ptr<Matrix> Cb_br = std::make_shared<Matrix>("Cb_br", maxb_b * nbr, nQ);
-    std::shared_ptr<Matrix> Db_ar = std::make_shared<Matrix>("Db_ar", maxb_a * nbr, nQ);
-    std::shared_ptr<Matrix> Db_bs = std::make_shared<Matrix>("Db_bs", maxb_b * nbs, nQ);
+    auto Ab_ar = std::make_shared<Matrix>("Ab_ar", maxb_a * nbr, nQ);
+    auto Ab_bs = std::make_shared<Matrix>("Ab_bs", maxb_b * nbs, nQ);
+    auto Bb_as = std::make_shared<Matrix>("Bb_as", maxb_a * nbs, nQ);
+    auto Bb_br = std::make_shared<Matrix>("Bb_br", maxb_b * nbr, nQ);
+    auto Cb_as = std::make_shared<Matrix>("Cb_as", maxb_a * nbs, nQ);
+    auto Cb_br = std::make_shared<Matrix>("Cb_br", maxb_b * nbr, nQ);
+    auto Db_ar = std::make_shared<Matrix>("Db_ar", maxb_a * nbr, nQ);
+    auto Db_bs = std::make_shared<Matrix>("Db_bs", maxb_b * nbs, nQ);
 
     // => Thread Work Arrays <= //
 
@@ -2251,16 +2251,16 @@ void USAPT0::mp2_terms() {
                 double** Vrsp;
                 double** Aarp;
                 double** Absp;
-                double** Bbrp = NULL;
-                double** Basp = NULL;
-                double** Casp = NULL;
-                double** Cbrp = NULL;
+                double** Bbrp = nullptr;
+                double** Basp = nullptr;
+                double** Casp = nullptr;
+                double** Cbrp = nullptr;
                 double** Darp;
                 double** Dbsp;
-                double** Qbrp = NULL;
-                double** Qasp = NULL;
-                double** Sbrp = NULL;
-                double** Sasp = NULL;
+                double** Qbrp = nullptr;
+                double** Qasp = nullptr;
+                double** Sbrp = nullptr;
+                double** Sasp = nullptr;
                 double** Qarp;
                 double** Qbsp;
                 double** SAbsp;
@@ -2379,7 +2379,7 @@ void USAPT0::mp2_terms() {
 
                 C_DGEMM('N', 'T', nr, ns, nQ, 1.0, Aarp[(a)*nr], nQ, Dbsp[(b)*ns], nQ, 0.0, Vrsp[0], ns);
                 C_DGEMM('N', 'T', nr, ns, nQ, 1.0, Darp[(a)*nr], nQ, Absp[(b)*ns], nQ, 1.0, Vrsp[0], ns);
-                if (Bbrp != NULL) {
+                if (Bbrp != nullptr) {
                     C_DGEMM('N', 'T', nr, ns, nQ, 1.0, Bbrp[(b)*nr], nQ, Basp[(a)*ns], nQ, 1.0, Vrsp[0], ns);
                     C_DGEMM('N', 'T', nr, ns, nQ, -1.0, Cbrp[(b)*nr], nQ, Casp[(a)*ns], nQ, 1.0, Vrsp[0], ns);
 

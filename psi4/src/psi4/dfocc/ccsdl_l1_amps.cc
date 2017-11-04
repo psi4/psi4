@@ -174,7 +174,7 @@ void DFOCC::ccsdl_l1_amps() {
     T.reset();
 
     // l_i^a <= \sum_{Q} (Gp_Q - G_Q) b_ia^Q
-    SharedTensor1d gQp2 = std::make_shared<Tensor1d>("CCSDL G_Qp - G_Q", nQ);
+    auto gQp2 = std::make_shared<Tensor1d>("CCSDL G_Qp - G_Q", nQ);
     gQp2->copy(gQp);
     gQp2->axpy(gQ, -1.0);
     l1newA->gemv(true, bQiaA, gQp2, 1.0, 1.0);

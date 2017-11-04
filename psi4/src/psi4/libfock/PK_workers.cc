@@ -344,7 +344,7 @@ char *PKWorker::get_label_wK(const int batch) {
 }
 
 void PKWorker::first_quartet(size_t i) {
-    shelliter_ = UniqueAOShellIt(new AOShellSieveIterator(primary_, sieve_));
+    shelliter_ = std::unique_ptr<AOShellSieveIterator>(new AOShellSieveIterator(primary_, sieve_));
     bufidx_ = i;
     offset_ = bufidx_ * buf_size_;
     initialize_task();
@@ -738,12 +738,12 @@ PKWrkrInCore::PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
     last_buf_ = lastbuf;
     J_buf0_ = Jbuf;
     K_buf0_ = Kbuf;
-    // wKbuf is NULL if we don't compute wK
+    // wKbuf is nullptr if we don't compute wK
     wK_buf0_ = wKbuf;
 
-    J_bufp_ = NULL;
-    K_bufp_ = NULL;
-    wK_bufp_ = NULL;
+    J_bufp_ = nullptr;
+    K_bufp_ = nullptr;
+    wK_bufp_ = nullptr;
 }
 
 void PKWrkrInCore::initialize_task() {

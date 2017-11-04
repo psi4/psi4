@@ -77,8 +77,8 @@ SADGuess::~SADGuess() {}
 void SADGuess::common_init() {
     molecule_ = basis_->molecule();
 
-    std::shared_ptr<IntegralFactory> ints = std::make_shared<IntegralFactory>(basis_);
-    std::shared_ptr<PetiteList> petite = std::make_shared<PetiteList>(basis_, ints);
+    auto ints = std::make_shared<IntegralFactory>(basis_);
+    auto petite = std::make_shared<PetiteList>(basis_, ints);
     AO2SO_ = petite->aotoso();
 
     print_ = options_.get_int("SAD_PRINT");
@@ -239,7 +239,7 @@ SharedMatrix SADGuess::form_D_AO() {
     std::vector<SharedMatrix> atomic_D;
     for (int A = 0; A < nunique; A++) {
         int nbf = atomic_bases_[atomic_indices[A]]->nbf();
-        SharedMatrix dtmp = std::make_shared<Matrix>("Atomic D", nbf, nbf);
+        auto dtmp = std::make_shared<Matrix>("Atomic D", nbf, nbf);
         atomic_D.push_back(dtmp);
     }
 
@@ -259,7 +259,7 @@ SharedMatrix SADGuess::form_D_AO() {
     if (print_) outfile->Printf("\n");
 
     // Add atomic_D into D (scale by 1/2, we like effective pairs)
-    SharedMatrix DAO = std::make_shared<Matrix>("D_SAD (AO)", basis_->nbf(), basis_->nbf());
+    auto DAO = std::make_shared<Matrix>("D_SAD (AO)", basis_->nbf(), basis_->nbf());
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
         int norbs = atomic_bases_[A]->nbf();
         int back_index = unique_indices[A];
@@ -405,8 +405,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         for (size_t x = 0; x < nbeta; x++) occ_b->set(x, 1.0);
     }
 
-    SharedMatrix Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, nalpha);
-    SharedMatrix Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, nbeta);
+    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, nalpha);
+    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, nbeta);
 
     // Compute initial Cx, Dx, and D from core guess
     form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, occ_a, Da);
@@ -557,8 +557,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 }
 void SADGuess::form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S,
                              SharedMatrix X) {
-    SharedMatrix Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
-    SharedMatrix Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
+    auto Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
+    auto Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
 
     // FDS
     Scratch1->gemm(false, false, 1.0, F, D, 0.0);
@@ -585,14 +585,14 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
     if (nocc == 0) return;
 
     // Forms C in the AO basis for SAD Guesses
-    SharedMatrix Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
-    SharedMatrix Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
+    auto Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
+    auto Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
 
     // Form Fp = XFX
     Scratch1->gemm(true, false, 1.0, X, F, 0.0);
     Scratch2->gemm(false, false, 1.0, Scratch1, X, 0.0);
 
-    SharedVector eigvals = std::make_shared<Vector>("Eigenvalue scratch", norbs);
+    auto eigvals = std::make_shared<Vector>("Eigenvalue scratch", norbs);
     Scratch2->diagonalize(Scratch1, eigvals);
 
     // Form C = XC'
@@ -623,7 +623,7 @@ void HF::compute_SAD_guess() {
         throw PSIEXCEPTION("  SCF guess was set to SAD with DFJK, but sad_fitting_basissets_ was empty!\n\n");
     }
 
-    std::shared_ptr<SADGuess> guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, nalpha_, nbeta_, options_);
+    auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, nalpha_, nbeta_, options_);
     if (options_.get_str("SAD_SCF_TYPE") == "DF") {
         guess->set_atomic_fit_bases(sad_fitting_basissets_);
     }

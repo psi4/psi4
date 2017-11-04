@@ -66,7 +66,7 @@ path path::make_absolute() const
 #endif
 
     char *temp = new char[path_max];
-    if (realpath(str().c_str(), temp) == NULL) {
+    if (realpath(str().c_str(), temp) == nullptr) {
         // Ignore errors relating to a file or directory component not existing
         if (errno != (int)std::errc::no_such_file_or_directory &&
             errno != (int)std::errc::not_a_directory) {

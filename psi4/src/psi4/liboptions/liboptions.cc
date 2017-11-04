@@ -154,7 +154,7 @@ void BooleanDataType::assign(int i) { assign(static_cast<bool>(i)); }
 
 void BooleanDataType::assign(double d) { assign(static_cast<bool>(d)); }
 
-void BooleanDataType::assign(std::string s) { assign(static_cast<bool>(std::strtod(s.c_str(), NULL))); }
+void BooleanDataType::assign(std::string s) { assign(static_cast<bool>(std::strtod(s.c_str(), nullptr))); }
 
 // IntDataType
 IntDataType::IntDataType() : DataType(), integer_(0) {}
@@ -184,7 +184,7 @@ void IntDataType::assign(int i) {
 
 void IntDataType::assign(double d) { assign(static_cast<int>(d)); }
 
-void IntDataType::assign(std::string s) { assign(static_cast<int>(std::strtod(s.c_str(), NULL))); }
+void IntDataType::assign(std::string s) { assign(static_cast<int>(std::strtod(s.c_str(), nullptr))); }
 
 // DoubleDataType
 DoubleDataType::DoubleDataType() : DataType(), double_(0.0) {}
@@ -214,7 +214,7 @@ void DoubleDataType::assign(double d) {
     double_ = d;
 }
 
-void DoubleDataType::assign(std::string s) { assign(std::strtod(s.c_str(), NULL)); }
+void DoubleDataType::assign(std::string s) { assign(std::strtod(s.c_str(), nullptr)); }
 
 // StringDataType
 StringDataType::StringDataType() : DataType(), str_(), choices_() {}
@@ -239,9 +239,9 @@ std::string StringDataType::type() const { return std::string("string"); }
 
 std::string StringDataType::to_string() const { return str_; }
 
-int StringDataType::to_integer() const { return static_cast<int>(std::strtod(str_.c_str(), NULL)); }
+int StringDataType::to_integer() const { return static_cast<int>(std::strtod(str_.c_str(), nullptr)); }
 
-double StringDataType::to_double() const { return std::strtod(str_.c_str(), NULL); }
+double StringDataType::to_double() const { return std::strtod(str_.c_str(), nullptr); }
 
 void StringDataType::assign(bool b) {
     if (b)
@@ -297,9 +297,9 @@ std::string IStringDataType::type() const { return std::string("istring"); }
 
 std::string IStringDataType::to_string() const { return str_; }
 
-int IStringDataType::to_integer() const { return static_cast<int>(std::strtod(str_.c_str(), NULL)); }
+int IStringDataType::to_integer() const { return static_cast<int>(std::strtod(str_.c_str(), nullptr)); }
 
-double IStringDataType::to_double() const { return std::strtod(str_.c_str(), NULL); }
+double IStringDataType::to_double() const { return std::strtod(str_.c_str(), nullptr); }
 
 void IStringDataType::assign(bool b) {
     if (b)
@@ -426,7 +426,7 @@ Data& ArrayType::operator[](size_t i) {
 }
 
 Data& ArrayType::operator[](std::string s) {
-    size_t i = static_cast<size_t>(std::strtod(s.c_str(), NULL));
+    size_t i = static_cast<size_t>(std::strtod(s.c_str(), nullptr));
     if (i >= array_.size()) throw IndexException("out of range");
     changed();
     return array_[i];
@@ -627,7 +627,7 @@ void Options::set_global_array(const std::string& key) {
 }
 
 DataType* Options::set_global_array_entry(const std::string& key, DataType* entry, DataType* loc) {
-    if (loc == NULL) {
+    if (loc == nullptr) {
         // This is the first entry to be added
         Data& data = get_global(key);
         data.assign(entry);
@@ -657,7 +657,7 @@ DataType* Options::set_global_array_array(std::string key, DataType* entry) {
 
 DataType* Options::set_local_array_entry(const std::string& module, const std::string& key, DataType* entry,
                                          DataType* loc) {
-    if (loc == NULL) {
+    if (loc == nullptr) {
         // This is the first entry to be added
         locals_[module][key].assign(entry);
     } else {

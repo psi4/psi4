@@ -68,7 +68,7 @@ void CDJK::initialize_JK_disk()
 void CDJK::initialize_JK_core()
 {
     timer_on("CD: cholesky decomposition");
-    std::shared_ptr<IntegralFactory> integral = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
+    auto integral = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
     int ntri = sieve_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
@@ -87,7 +87,7 @@ void CDJK::initialize_JK_core()
     }
 
     ///If user does not want to read from disk, recompute the cholesky integrals
-    std::shared_ptr<CholeskyERI> Ch = std::make_shared<CholeskyERI>(std::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_);
+    auto Ch = std::make_shared<CholeskyERI>(std::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_);
     Ch->choleskify();
     ncholesky_  = Ch->Q();
     size_t three_memory = ncholesky_ * ntri;

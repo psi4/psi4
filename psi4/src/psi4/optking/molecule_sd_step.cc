@@ -67,7 +67,7 @@ void MOLECULE::sd_step(void) {
 
   oprintf_out("\tTaking SD optimization step.\n");
 
-  if (last_fq != NULL && p_Opt_data->g_last_dq_norm() != 0.0) {
+  if (last_fq != nullptr && p_Opt_data->g_last_dq_norm() != 0.0) {
     // compute overlap of previous forces with current forces
     double *last_fq_u = init_array(dim);
     array_copy(last_fq, last_fq_u, dim);

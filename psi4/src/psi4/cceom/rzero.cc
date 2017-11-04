@@ -87,7 +87,7 @@ void rzero(int C_irr, int *converged) {
 
     if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
-      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
+      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == nullptr) {
         outfile->Printf("No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
@@ -95,7 +95,7 @@ void rzero(int C_irr, int *converged) {
     }
     else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
-      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
+      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == nullptr) {
         outfile->Printf("No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
@@ -103,7 +103,7 @@ void rzero(int C_irr, int *converged) {
     }
     else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
-      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
+      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == nullptr) {
         outfile->Printf("No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
@@ -308,7 +308,7 @@ void rzero_rhf(int C_irr, int *converged) {
 
     if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
-      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
+      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == nullptr) {
         outfile->Printf("No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
@@ -316,7 +316,7 @@ void rzero_rhf(int C_irr, int *converged) {
     }
     else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
-      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
+      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == nullptr) {
         outfile->Printf("No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
@@ -324,7 +324,7 @@ void rzero_rhf(int C_irr, int *converged) {
     }
     else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
-      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
+      if(psio_tocscan(PSIF_CC_INFO, E_lbl) == nullptr) {
         outfile->Printf("No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }

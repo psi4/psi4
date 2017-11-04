@@ -239,7 +239,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                 /* execute threads */
                 for (thread=0;thread<nthreads;++thread) {
                     if (!ijk_part[thread]) continue;
-                    errcod = pthread_create(&(p_thread[thread]), NULL, cc3_sigma_RHF_ic_thread,
+                    errcod = pthread_create(&(p_thread[thread]), nullptr, cc3_sigma_RHF_ic_thread,
                                             (void *) &thread_data_array[thread]);
                     if (errcod) {
                         outfile->Printf("pthread_create in cc3_sigma_RHF_ic failed\n");
@@ -249,7 +249,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
 
                 for (thread=0; thread<nthreads;++thread) {
                     if (!ijk_part[thread]) continue;
-                    errcod = pthread_join(p_thread[thread], NULL);
+                    errcod = pthread_join(p_thread[thread], nullptr);
                     if (errcod) {
                         outfile->Printf("pthread_join in cc3_sigma_RHF_ic failed\n");
                         exit(PSI_RETURN_FAILURE);
@@ -923,7 +923,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     free(Wa);
     free(Va);
 
-    pthread_exit(NULL);
+    pthread_exit(nullptr);
 }
 
 }

@@ -144,7 +144,7 @@ double ET_RHF(void)
     global_dpd_->buf4_mat_irrep_init(&Dints, h);
     global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
-  std::shared_ptr<PsiOutStream> printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
+  auto printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
   //ffile(&ijkfile,"ijk.dat", 0);
 
   /* each thread gets its own F buffer to assign memory and read blocks
@@ -230,7 +230,7 @@ double ET_RHF(void)
 
         for (thread=0;thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          errcod = pthread_create(&(p_thread[thread]), NULL, ET_RHF_thread,
+          errcod = pthread_create(&(p_thread[thread]), nullptr, ET_RHF_thread,
                    (void *) &thread_data_array[thread]);
           if (errcod) {
             throw PsiException("pthread_create in ET_RHF()",__FILE__,__LINE__);
@@ -239,7 +239,7 @@ double ET_RHF(void)
 
         for (thread=0; thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          errcod = pthread_join(p_thread[thread], NULL);
+          errcod = pthread_join(p_thread[thread], nullptr);
           if (errcod) {
             throw PsiException("pthread_join in ET_RHF() failed",__FILE__,__LINE__);
           }
@@ -956,7 +956,7 @@ void* ET_RHF_thread(void* thread_data_in)
           } /* j */
         } /* i */
 
-  pthread_exit(NULL);
+  pthread_exit(nullptr);
 }
 
 }} // namespace psi::CCTRIPLES

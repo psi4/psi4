@@ -1311,7 +1311,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 
   psio_address next_RRRRp = PSIO_ZERO;
 
-    std::shared_ptr<AIOHandler> aio = std::make_shared<AIOHandler>(psio_);
+    auto aio = std::make_shared<AIOHandler>(psio_);
 
     psio_->read(PSIF_SAPT_CCD,RRRRp,(char *) &(vRRRRp[0][0][0]),
         blocksize*virtri*(size_t) sizeof(double),next_RRRRp,&next_RRRRp);
@@ -2154,14 +2154,14 @@ char *SAPTDIIS::get_vec_label(int num)
 
 std::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char* VV_opdm, int nvir, double cutoff)
 {
-    std::shared_ptr<Matrix> D = std::make_shared<Matrix>("D", nvir, nvir);
+    auto D = std::make_shared<Matrix>("D", nvir, nvir);
     double** Dp = D->pointer();
     psio_->read_entry(ampfile,VV_opdm,(char *) Dp[0],
       sizeof(double)*nvir*nvir);
     D->scale(2.0);
 
-    std::shared_ptr<Matrix> V = std::make_shared<Matrix>("V", nvir, nvir);
-    std::shared_ptr<Vector> d = std::make_shared<Vector>("d", nvir);
+    auto V = std::make_shared<Matrix>("V", nvir, nvir);
+    auto d = std::make_shared<Vector>("d", nvir);
     D->diagonalize(V,d,descending);
     D.reset();
 
@@ -2179,7 +2179,7 @@ std::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char* VV_opdm, int nvir
         fclose(fh);
     }
 
-    std::shared_ptr<Matrix> U = std::make_shared<Matrix>("U",nvir,nno);
+    auto U = std::make_shared<Matrix>("U",nvir,nno);
     double** Up = U->pointer();
     double** Vp = V->pointer();
     int offset = 0;

@@ -96,7 +96,7 @@ void DFOCC::effective_pdms() {
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
         Zq->gemv(false, L, ZvoA, 4.0, 0.0);
 
         // Z_ij^Q = 4 * \sum_{a} Z_ia b_aj^Q
@@ -174,7 +174,7 @@ void DFOCC::effective_pdms() {
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
         Zq->gemv(false, L, ZvoA, 2.0, 0.0);
 
         // Z_IJ^Q = 2 * \sum_{A} Z_IA b_AJ^Q
@@ -567,7 +567,7 @@ void DFOCC::effective_pdm_gfm() {
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
         Zq->gemv(false, L, ZvoA, 4.0, 0.0);
 
         // Z_ij^Q = 4 * \sum_{a} Z_ia b_aj^Q
@@ -712,7 +712,7 @@ void DFOCC::effective_pdm_gfm() {
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
-        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
+        auto Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Z_Q", nQ_ref);
         Zq->gemv(false, L, ZvoA, 2.0, 0.0);
 
         // Z_IJ^Q = 2 * \sum_{A} Z_IA b_AJ^Q

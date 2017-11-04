@@ -1414,8 +1414,8 @@ DCFTSolver::update_orbital_response()
 {
 
     dpdfile2 X_ia, X_ai, z_ia, zI_ai, zI_ia, r_ia;
-    SharedMatrix a_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Alpha)", nirrep_, naoccpi_, navirpi_);
-    SharedMatrix b_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Beta)", nirrep_, nboccpi_, nbvirpi_);
+    auto a_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Alpha)", nirrep_, naoccpi_, navirpi_);
+    auto b_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Beta)", nirrep_, nboccpi_, nbvirpi_);
 
     // Alpha spin
     global_dpd_->file2_init(&zI_ia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "zI <O|V>");
@@ -3806,10 +3806,10 @@ DCFTSolver::compute_ewdm_dc()
     Matrix aW ("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
     Matrix bW ("Energy-weighted density matrix (Beta)", nirrep_, nmopi_, nmopi_);
 
-    SharedMatrix a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix a_zia = std::make_shared<Matrix>("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix b_zia = std::make_shared<Matrix>("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_zia = std::make_shared<Matrix>("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_zia = std::make_shared<Matrix>("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     int *alpha_pitzer_to_corr = new int[nmo_];
@@ -4751,8 +4751,8 @@ DCFTSolver::compute_ewdm_odc()
     Matrix aW ("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
     Matrix bW ("Energy-weighted density matrix (Beta)", nirrep_, nmopi_, nmopi_);
 
-    SharedMatrix a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     int *alpha_pitzer_to_corr = new int[nmo_];

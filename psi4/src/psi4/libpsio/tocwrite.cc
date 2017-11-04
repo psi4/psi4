@@ -63,7 +63,7 @@ void PSIO::tocwrite(size_t unit) {
   for (i=0; i < this_unit->toclen; i++) {
     rw(unit, (char *) this_entry, address, entry_size, 1);
     this_entry = this_entry->next;
-    if (this_entry != NULL)
+    if (this_entry != nullptr)
       address = this_entry->sadd;
   }
 }

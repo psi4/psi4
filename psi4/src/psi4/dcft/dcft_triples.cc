@@ -139,10 +139,10 @@ void DCFTSolver::dump_semicanonical() {
     }
 
     // Diagonalize F0 to get transformation matrix to semicanonical basis
-    SharedMatrix a_evecs = std::make_shared<Matrix>("F0 Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
-    SharedMatrix b_evecs = std::make_shared<Matrix>("F0 Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
-    SharedVector a_evals = std::make_shared<Vector>("F0 Eigenvalues (Alpha)", nirrep_, nmopi_);
-    SharedVector b_evals = std::make_shared<Vector>("F0 Eigenvalues (Beta)", nirrep_, nmopi_);
+    auto a_evecs = std::make_shared<Matrix>("F0 Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_evecs = std::make_shared<Matrix>("F0 Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_evals = std::make_shared<Vector>("F0 Eigenvalues (Alpha)", nirrep_, nmopi_);
+    auto b_evals = std::make_shared<Vector>("F0 Eigenvalues (Beta)", nirrep_, nmopi_);
 
     Ftilde_a_->diagonalize(a_evecs, a_evals);
     Ftilde_a_->zero();

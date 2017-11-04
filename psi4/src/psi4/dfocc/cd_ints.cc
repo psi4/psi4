@@ -122,7 +122,7 @@ void DFOCC::cd_ints() {
     // 1.  read scf 3-index integrals from disk
 
     // get ntri from sieve
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
+    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
     const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
     long int ntri_cd = function_pairs.size();
 
@@ -136,7 +136,7 @@ void DFOCC::cd_ints() {
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         // Read the NAUX from the file
         psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
-        std::shared_ptr<Matrix> Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ, ntri_cd);
+        auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ, ntri_cd);
         double** Qmnp = Qmn->pointer();
         psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri_cd * nQ);
         psio_->close(PSIF_DFSCF_BJ, 1);

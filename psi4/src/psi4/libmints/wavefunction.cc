@@ -230,7 +230,7 @@ void Wavefunction::common_init() {
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
-    std::shared_ptr<PetiteList> pet = std::make_shared<PetiteList>(basisset_, integral_);
+    auto pet = std::make_shared<PetiteList>(basisset_, integral_);
     AO2SO_ = pet->aotoso();
 
     // Obtain the dimension object to initialize the factory.
@@ -495,7 +495,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
     for (int h = 0; h < (int)positions.size(); h++) {
         nmopi[h] = positions[h].size();
     }
-    SharedMatrix C2 = std::make_shared<Matrix>("C " + basis + " " + subset, nsopi_, nmopi);
+    auto C2 = std::make_shared<Matrix>("C " + basis + " " + subset, nsopi_, nmopi);
     for (int h = 0; h < (int)positions.size(); h++) {
         for (int i = 0; i < (int)positions[h].size(); i++) {
             C_DCOPY(nsopi_[h], &C->pointer(h)[0][positions[h][i]], nmopi_[h], &C2->pointer(h)[0][i], nmopi[h]);
@@ -503,7 +503,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
     }
 
     if (basis == "AO") {
-        SharedMatrix C3 = std::make_shared<Matrix>("C " + basis + " " + subset, nso_, nmopi.sum());
+        auto C3 = std::make_shared<Matrix>("C " + basis + " " + subset, nso_, nmopi.sum());
         std::swap(C2, C3);
 
         std::vector<std::tuple<double, int, int>> order;
@@ -582,7 +582,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string &basis) {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
-        SharedMatrix F2 = std::make_shared<Matrix>("Fock (AO basis)", basisset_->nbf(), basisset_->nbf());
+        auto F2 = std::make_shared<Matrix>("Fock (AO basis)", basisset_->nbf(), basisset_->nbf());
         int symm = F->symmetry();
         for (int h = 0; h < AO2SO_->nirrep(); ++h) {
             int nao = AO2SO_->rowspi()[0];
@@ -601,7 +601,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
     } else if (basis == "SO") {
         return SharedMatrix(F->clone());
     } else if (basis == "MO") {
-        SharedMatrix F2 = std::make_shared<Matrix>("Fock (MO Basis)", C->colspi(), C->colspi());
+        auto F2 = std::make_shared<Matrix>("Fock (MO Basis)", C->colspi(), C->colspi());
 
         int symm = F->symmetry();
         int nirrep = F->nirrep();
@@ -637,7 +637,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
 SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string &basis) {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
-        SharedMatrix D2 = std::make_shared<Matrix>("D (AO basis)", basisset_->nbf(), basisset_->nbf());
+        auto D2 = std::make_shared<Matrix>("D (AO basis)", basisset_->nbf(), basisset_->nbf());
         int symm = D->symmetry();
         for (int h = 0; h < AO2SO_->nirrep(); ++h) {
             int nao = AO2SO_->rowspi()[0];
@@ -664,7 +664,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         PetiteList petite(basisset_, integral_, true);
         SharedMatrix my_aotoso = petite.aotoso();
         double *temp = new double[my_aotoso->max_ncol() * my_aotoso->max_nrow()];
-        SharedMatrix D2 = std::make_shared<Matrix>("D (ao basis)", basisset_->nao(), basisset_->nao());
+        auto D2 = std::make_shared<Matrix>("D (ao basis)", basisset_->nao(), basisset_->nao());
         int symm = D->symmetry();
         for (int h = 0; h < my_aotoso->nirrep(); ++h) {
             int nao = my_aotoso->rowspi()[0];
@@ -683,7 +683,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
     } else if (basis == "SO") {
         return SharedMatrix(D->clone());
     } else if (basis == "MO") {
-        SharedMatrix D2 = std::make_shared<Matrix>("D (MO Basis)", C->colspi(), C->colspi());
+        auto D2 = std::make_shared<Matrix>("D (MO Basis)", C->colspi(), C->colspi());
 
         int symm = D->symmetry();
         int nirrep = D->nirrep();
@@ -725,11 +725,11 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
     std::shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());
     std::shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());
 
-    std::shared_ptr<PetiteList> pet = std::make_shared<PetiteList>(new_basis, newfactory);
+    auto pet = std::make_shared<PetiteList>(new_basis, newfactory);
     SharedMatrix AO2USO(pet->aotoso());
 
-    SharedMatrix SAB = std::make_shared<Matrix>("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi());
-    SharedMatrix SBB = std::make_shared<Matrix>("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi());
+    auto SAB = std::make_shared<Matrix>("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi());
+    auto SBB = std::make_shared<Matrix>("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi());
 
     intAB->compute(SAB);
     intBB->compute(SBB);
@@ -746,7 +746,7 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
     pet.reset();
 
     // Constrained to the same symmetry at the moment, we can relax this soon
-    SharedMatrix C_B = std::make_shared<Matrix>("C_B", C_A->nirrep(), AO2USO->colspi(), noccpi);
+    auto C_B = std::make_shared<Matrix>("C_B", C_A->nirrep(), AO2USO->colspi(), noccpi);
 
     // Block over irreps (soon united irreps)
     for (int h = 0; h < C_A->nirrep(); h++) {
@@ -915,7 +915,7 @@ SharedVector Wavefunction::get_atomic_point_charges() const {
     std::shared_ptr<std::vector<double>> q = atomic_point_charges();
 
     int n = molecule_->natom();
-    SharedVector q_vector = std::make_shared<Vector>(n);
+    auto q_vector = std::make_shared<Vector>(n);
     for (int i = 0; i < n; ++i) {
         q_vector->set(i, (*q)[i]);
     }

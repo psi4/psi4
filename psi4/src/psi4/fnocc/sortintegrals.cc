@@ -205,7 +205,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       abcd2[k] = integralbuffer+(nelem+20L)*(nfiles+5L+3L*ov3nfiles+k);
   }
 
-  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+  auto psio = std::make_shared<PSIO>();
 
   psio_address ijkl_addr  = PSIO_ZERO;
   psio_address klcd_addr  = PSIO_ZERO;
@@ -978,7 +978,7 @@ void abci5_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,siz
   }
   for (k = 0; k < nfiles; k++) {
       if (nabci5[k] >= bucketsize) {
-         std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+         auto psio = std::make_shared<PSIO>();
          //write
          psio->open(filestart+k,PSIO_OPEN_OLD);
          psio->write(filestart+k,"E2abci2",(char*)&abci5[k][0],nabci5[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1056,7 +1056,7 @@ void abci3_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,siz
   }
   for (k = 0; k < nfiles; k++) {
       if (nabci3[k] >= bucketsize) {
-         std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+         auto psio = std::make_shared<PSIO>();
          //write
          psio->open(filestart+k,PSIO_OPEN_OLD);
          psio->write(filestart+k,"E2abci3",(char*)&abci3[k][0],nabci3[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1134,7 +1134,7 @@ void abci1_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,siz
   }
   for (k = 0; k < nfiles; k++) {
       if (nabci1[k] >= bucketsize) {
-         std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+         auto psio = std::make_shared<PSIO>();
          //write
          psio->open(filestart+k,PSIO_OPEN_OLD);
          psio->write(filestart+k,"E2abci",(char*)&abci1[k][0],nabci1[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1497,7 +1497,7 @@ void abcd2_terms_new(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,s
   }
   for (k = 0; k < nfiles; k++) {
       if (nabcd2[k] >= bucketsize) {
-         std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+         auto psio = std::make_shared<PSIO>();
          //write
          psio->open(PSIF_DCC_SORT_START+k+nfiles,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k+nfiles,"E2abcd2",(char*)&abcd2[k][0],nabcd2[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1737,7 +1737,7 @@ void abcd1_terms_new(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,s
   for (k = 0; k < nfiles; k++) {
       if (nabcd1[k] >= bucketsize) {
          //write
-         std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+         auto psio = std::make_shared<PSIO>();
          psio->open(PSIF_DCC_SORT_START+k,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k,"E2abcd1",(char*)&abcd1[k][0],nabcd1[k]*sizeof(struct integral),addr[k],&addr[k]);
          psio->close(PSIF_DCC_SORT_START+k,1);
@@ -1902,7 +1902,7 @@ void abcd1_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_
 }
 
 void SortBlockNewNew(size_t*nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim,size_t filestart,size_t nfiles){
-  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+  auto psio = std::make_shared<PSIO>();
      // bins are coreloads
      size_t nbins,binsize,lastbin;
      for (size_t i=1; i<=blockdim; i++){
@@ -1943,7 +1943,7 @@ void SortBlockNewNew(size_t*nelem,size_t blockdim,struct integral*buffer,double*
 }
 
 void SortBlockNew(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim){
-  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+  auto psio = std::make_shared<PSIO>();
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
      psio->open(PSIFILE,PSIO_OPEN_OLD);
@@ -2128,7 +2128,7 @@ void SortBlockNew(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp
   }
 }
 void SortBlock(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim){
-  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+  auto psio = std::make_shared<PSIO>();
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
      psio->open(PSIFILE,PSIO_OPEN_OLD);
@@ -2219,7 +2219,7 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v){
   double * tmp2 = new double[maxelem];
 
   // in the interest of diskspace, get rid of PSIF_DCC_ABCI
-  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+  auto psio = std::make_shared<PSIO>();
   psio->open(PSIF_DCC_ABCI,PSIO_OPEN_NEW);
   psio->close(PSIF_DCC_ABCI,0);
 
@@ -2357,7 +2357,7 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   /**
     * write to disk
     */
-  std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+  auto psio = std::make_shared<PSIO>();
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_NEW);
   psio->write_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&klcd[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);

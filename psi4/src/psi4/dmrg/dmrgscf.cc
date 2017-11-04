@@ -587,7 +587,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
      *******************************************/
     CheMPS2::DMRGSCFindices * iHandler = new CheMPS2::DMRGSCFindices(nmo, SyGroup, frozen_docc, active, nvirtual);
     CheMPS2::DMRGSCFunitary * unitary = new CheMPS2::DMRGSCFunitary(iHandler);
-    CheMPS2::DIIS * theDIIS = NULL;
+    CheMPS2::DIIS * theDIIS = nullptr;
     CheMPS2::DMRGSCFintegrals * theRotatedTEI = new CheMPS2::DMRGSCFintegrals( iHandler );
     const int nOrbDMRG = iHandler->getDMRGcumulative(nirrep);
     double * DMRG1DM = new double[nOrbDMRG * nOrbDMRG];
@@ -690,7 +690,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     double updateNorm = 1.0;
     double * theupdate = new double[ unitary->getNumVariablesX() ];
     for (int cnt=0; cnt<unitary->getNumVariablesX(); cnt++){ theupdate[cnt] = 0.0; }
-    double * theDIISparameterVector = NULL;
+    double * theDIISparameterVector = nullptr;
     double Energy = 1e8;
 
     int theDIISvectorParamSize = 0;
@@ -708,7 +708,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     double * mem1 = new double[ sizeWorkMem ];
     double * mem2 = new double[ ( PSEUDOCANONICAL ) ? sizeWorkMem : std::max( sizeWorkMem, tot_dmrg_power6 ) ];
 
-    CheMPS2::EdmistonRuedenberg * theLocalizer = NULL;
+    CheMPS2::EdmistonRuedenberg * theLocalizer = nullptr;
     if ( dmrg_active_space.compare("LOC")==0 ){ theLocalizer = new CheMPS2::EdmistonRuedenberg( HamDMRG->getVmat(), iHandler->getGroupNumber() ); }
 
     //Load unitary from disk
@@ -723,7 +723,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         struct stat stFileInfo;
         int intStat = stat( diisname.c_str(), &stFileInfo );
         if (intStat==0){
-            if (theDIIS == NULL){
+            if (theDIIS == nullptr){
                 theDIIS = new CheMPS2::DIIS( theDIISvectorParamSize, unitary->getNumVariablesX(), dmrg_num_vec_diis );
                 theDIISparameterVector = new double[ theDIISvectorParamSize ];
             }
@@ -758,7 +758,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
                 if ( dmrg_active_space.compare("LOC")==0 ){
                     std::cout << "DIIS has started. Active space not rotated to localized orbitals anymore!" << std::endl;
                 }
-                if (theDIIS == NULL){
+                if (theDIIS == nullptr){
                     theDIIS = new CheMPS2::DIIS( theDIISvectorParamSize, unitary->getNumVariablesX(), dmrg_num_vec_diis );
                     theDIISparameterVector = new double[ theDIISvectorParamSize ];
                     unitary->makeSureAllBlocksDetOne(mem1, mem2);
@@ -782,7 +782,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
         }
         if (( dmrg_store_unit ) && (gradNorm!=1.0)){ unitary->saveU( unitaryname ); }
-        if (( dmrg_store_diis ) && (updateNorm!=1.0) && (theDIIS!=NULL)){ theDIIS->saveDIIS( diisname ); }
+        if (( dmrg_store_diis ) && (updateNorm!=1.0) && (theDIIS!=nullptr)){ theDIIS->saveDIIS( diisname ); }
 
         //Fill HamDMRG
         update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
@@ -791,7 +791,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
 
         //Localize the active space and reorder the orbitals within each irrep based on the exchange matrix
-        if (( dmrg_active_space.compare("LOC")==0 ) && (theDIIS==NULL)){ //When the DIIS has started: stop
+        if (( dmrg_active_space.compare("LOC")==0 ) && (theDIIS==nullptr)){ //When the DIIS has started: stop
 
             std::ofstream capturing;
             std::streambuf * cout_buffer;
@@ -870,9 +870,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             system(("rm " + chemps2filename).c_str());
         }
 
-        if (( dmrg_active_space.compare("NO")==0 ) && (theDIIS==NULL)){ //When the DIIS has started: stop
+        if (( dmrg_active_space.compare("NO")==0 ) && (theDIIS==nullptr)){ //When the DIIS has started: stop
             CheMPS2::CASSCF::copy_active( DMRG1DM, theFmatrix, iHandler, true );
-            CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, true, DMRG2DM, NULL, NULL ); // Unitary is updated and DMRG2DM rotated
+            CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, true, DMRG2DM, nullptr, nullptr ); // Unitary is updated and DMRG2DM rotated
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
             update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
             buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
@@ -926,9 +926,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###                                          ###" << std::endl;
         (*outfile->stream()) << "################################################" << std::endl;
         CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
-        CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
-        CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, NULL, NULL );
-        CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
+        CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
+        CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, nullptr, nullptr );
+        CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
         CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
         update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
         buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
@@ -1063,9 +1063,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
        if ( PSEUDOCANONICAL == false ){
            (*outfile->stream()) << "CASPT2 : Deviation from pseudocanonical = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << std::endl;
-           CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
+           CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
            CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, three_dm, contract ); // 2-RDM, 3-RDM, and trace( Fock * cu(4)-4-RDM )
-           CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
+           CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
            CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM ); // 1-RDM
            update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
            buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
@@ -1117,9 +1117,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     delete [] mem1;
     delete [] mem2;
     delete [] theupdate;
-    if (theDIISparameterVector!=NULL){ delete [] theDIISparameterVector; }
-    if (theLocalizer!=NULL){ delete theLocalizer; }
-    if (theDIIS!=NULL){ delete theDIIS; }
+    if (theDIISparameterVector!=nullptr){ delete [] theDIISparameterVector; }
+    if (theLocalizer!=nullptr){ delete theLocalizer; }
+    if (theDIIS!=nullptr){ delete theDIIS; }
 
     delete wmattilde;
     delete theTmatrix;

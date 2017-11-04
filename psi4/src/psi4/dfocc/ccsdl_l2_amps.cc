@@ -138,7 +138,7 @@ void DFOCC::ccsdl_l2_amps() {
 
     // Reset T1
     rms_t1 = l1newA->rms(l1A);
-    SharedTensor2d Rl1A = std::make_shared<Tensor2d>("RL1 <I|A>", naoccA, navirA);
+    auto Rl1A = std::make_shared<Tensor2d>("RL1 <I|A>", naoccA, navirA);
     Rl1A->copy(l1newA);
     Rl1A->subtract(l1A);
     l1A->copy(l1newA);
@@ -153,15 +153,15 @@ void DFOCC::ccsdl_l2_amps() {
     Lnew.reset();
 
     // DIIS
-    std::shared_ptr<Matrix> RL2 = std::make_shared<Matrix>("RL2", naoccA * navirA, naoccA * navirA);
+    auto RL2 = std::make_shared<Matrix>("RL2", naoccA * navirA, naoccA * navirA);
     Tau->to_matrix(RL2);
     Tau.reset();
-    std::shared_ptr<Matrix> L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
+    auto L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
     l2->to_matrix(L2);
-    std::shared_ptr<Matrix> RL1 = std::make_shared<Matrix>("RL1", naoccA, navirA);
+    auto RL1 = std::make_shared<Matrix>("RL1", naoccA, navirA);
     Rl1A->to_matrix(RL1);
     Rl1A.reset();
-    std::shared_ptr<Matrix> L1 = std::make_shared<Matrix>("L1", naoccA, navirA);
+    auto L1 = std::make_shared<Matrix>("L1", naoccA, navirA);
     l1A->to_matrix(L1);
 
     // add entry

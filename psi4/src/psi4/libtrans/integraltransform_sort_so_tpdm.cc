@@ -44,7 +44,7 @@ namespace psi {
 
 void IntegralTransform::setup_tpdm_buffer(const dpdbuf4 *D) {
     std::shared_ptr<SOBasisSet> sobasis = wfn_->sobasisset();
-    std::shared_ptr<SO_PQ_Iterator> PQIter = std::make_shared<SO_PQ_Iterator>(sobasis);
+    auto PQIter = std::make_shared<SO_PQ_Iterator>(sobasis);
     tpdm_buffer_sizes_.clear();
     size_t max_size = 0;
     for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
@@ -132,7 +132,7 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
 
     size_t last_row = first_row + num_rows;
     size_t pq_pair_count = 0;
-    std::shared_ptr<SO_PQ_Iterator> PQIter = std::make_shared<SO_PQ_Iterator>(sobasis);
+    auto PQIter = std::make_shared<SO_PQ_Iterator>(sobasis);
     for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
         int p = PQIter->p();
         int q = PQIter->q();

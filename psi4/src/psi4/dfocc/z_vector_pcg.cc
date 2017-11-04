@@ -520,9 +520,9 @@ void DFOCC::pcg_solver_uhf() {
 void DFOCC::sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec) {
     // Build sigma0
     // Memalloc
-    SharedTensor2d SvoA = std::make_shared<Tensor2d>("PCG Sigma <V|O>", nvirA, noccA);
-    SharedTensor1d pQ = std::make_shared<Tensor1d>("DF_BASIS_SCF p_Q", nQ_ref);
-    SharedTensor2d PvoA = std::make_shared<Tensor2d>("PCG P <V|O>", nvirA, noccA);
+    auto SvoA = std::make_shared<Tensor2d>("PCG Sigma <V|O>", nvirA, noccA);
+    auto pQ = std::make_shared<Tensor1d>("DF_BASIS_SCF p_Q", nQ_ref);
+    auto PvoA = std::make_shared<Tensor2d>("PCG P <V|O>", nvirA, noccA);
     PvoA->set(p_vec);
 
 // Build sigma
@@ -540,7 +540,7 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec) {
     // p_Q = 2\sum_{bj} b_bj^Q p_bj
     bQovA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
     bQovA->read(psio_, PSIF_DFOCC_INTS);
-    SharedTensor2d bQvoA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
+    auto bQvoA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
     bQvoA->swap_3index_col(bQovA);
     bQovA.reset();
     pQ->gemv(false, bQvoA, p_vec, 2.0, 0.0);
@@ -549,7 +549,7 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec) {
     SvoA->gemv(true, bQvoA, pQ, 4.0, 1.0);
 
     // p_ij^Q = \sum_{b} b_bi^Q p_bj = \su_{b} b_ib^Q p_bj
-    SharedTensor2d pQooA = std::make_shared<Tensor2d>("PCG P (Q|OO)", nQ_ref, noccA, noccA);
+    auto pQooA = std::make_shared<Tensor2d>("PCG P (Q|OO)", nQ_ref, noccA, noccA);
     pQooA->contract323(true, false, noccA, noccA, bQvoA, PvoA, 1.0, 0.0);
 
     // s_ai += -2 \sum_{Q} \sum_{j} b_aj^Q p_ij^Q = b[Q](a,j) p'[Q](j,i)
@@ -560,7 +560,7 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec) {
     // p_aj^Q = \sum_{b} b_ba^Q p_bj
     bQvvA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
     bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
-    SharedTensor2d pQvoA = std::make_shared<Tensor2d>("PCG P (Q|VO)", nQ_ref, nvirA, noccA);
+    auto pQvoA = std::make_shared<Tensor2d>("PCG P (Q|VO)", nQ_ref, nvirA, noccA);
     pQvoA->contract323(false, false, nvirA, noccA, bQvvA, PvoA, 1.0, 0.0);
     bQvvA.reset();
 
@@ -591,11 +591,11 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec) {
 void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTensor1d& p_vecA,
                       SharedTensor1d& p_vecB) {
     // Memalloc
-    SharedTensor2d SvoA = std::make_shared<Tensor2d>("PCG Sigma <V|O>", nvirA, noccA);
-    SharedTensor2d SvoB = std::make_shared<Tensor2d>("PCG Sigma <v|o>", nvirB, noccB);
-    SharedTensor2d PvoA = std::make_shared<Tensor2d>("PCG P <V|O>", nvirA, noccA);
-    SharedTensor2d PvoB = std::make_shared<Tensor2d>("PCG P <v|o>", nvirB, noccB);
-    SharedTensor1d pQ = std::make_shared<Tensor1d>("DF_BASIS_SCF p_Q", nQ_ref);
+    auto SvoA = std::make_shared<Tensor2d>("PCG Sigma <V|O>", nvirA, noccA);
+    auto SvoB = std::make_shared<Tensor2d>("PCG Sigma <v|o>", nvirB, noccB);
+    auto PvoA = std::make_shared<Tensor2d>("PCG P <V|O>", nvirA, noccA);
+    auto PvoB = std::make_shared<Tensor2d>("PCG P <v|o>", nvirB, noccB);
+    auto pQ = std::make_shared<Tensor1d>("DF_BASIS_SCF p_Q", nQ_ref);
 
     // Build sigma
     PvoA->set(p_vecA);
@@ -617,7 +617,7 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     // beta contribution
     bQovB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB);
     bQovB->read(psio_, PSIF_DFOCC_INTS);
-    SharedTensor2d bQvoB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB);
+    auto bQvoB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB);
     bQvoB->swap_3index_col(bQovB);
     bQovB.reset();
     pQ->gemv(false, bQvoB, p_vecB, 1.0, 0.0);
@@ -626,7 +626,7 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     // alpha contribution
     bQovA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
     bQovA->read(psio_, PSIF_DFOCC_INTS);
-    SharedTensor2d bQvoA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
+    auto bQvoA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
     bQvoA->swap_3index_col(bQovA);
     bQovA.reset();
     pQ->gemv(false, bQvoA, p_vecA, 1.0, 1.0);
@@ -635,7 +635,7 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     SvoA->gemv(true, bQvoA, pQ, 4.0, 1.0);
 
     // p_IJ^Q = \sum_{B} b_BI^Q p_BJ
-    SharedTensor2d pQooA = std::make_shared<Tensor2d>("PCG P (Q|OO)", nQ_ref, noccA, noccA);
+    auto pQooA = std::make_shared<Tensor2d>("PCG P (Q|OO)", nQ_ref, noccA, noccA);
     pQooA->contract323(true, false, noccA, noccA, bQvoA, PvoA, 1.0, 0.0);
 
     // s_AI += -2 \sum_{Q} \sum_{J} b_AJ^Q p_IJ^Q
@@ -646,7 +646,7 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     // p_AJ^Q = \sum_{B} b_BA^Q p_BJ
     bQvvA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
     bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
-    SharedTensor2d pQvoA = std::make_shared<Tensor2d>("PCG P (Q|VO)", nQ_ref, nvirA, noccA);
+    auto pQvoA = std::make_shared<Tensor2d>("PCG P (Q|VO)", nQ_ref, nvirA, noccA);
     pQvoA->contract323(false, false, nvirA, noccA, bQvvA, PvoA, 1.0, 0.0);
     bQvvA.reset();
 
@@ -688,7 +688,7 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     pQ.reset();
 
     // p_ij^Q = \sum_{b} b_bi^Q p_bj
-    SharedTensor2d pQooB = std::make_shared<Tensor2d>("PCG P (Q|oo)", nQ_ref, noccB, noccB);
+    auto pQooB = std::make_shared<Tensor2d>("PCG P (Q|oo)", nQ_ref, noccB, noccB);
     pQooB->contract323(true, false, noccB, noccB, bQvoB, PvoB, 1.0, 0.0);
 
     // s_ai += -2 \sum_{Q} \sum_{j} b_aj^Q p_ij^Q
@@ -699,7 +699,7 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     // p_aj^Q = \sum_{b} b_ba^Q p_bj
     bQvvB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB);
     bQvvB->read(psio_, PSIF_DFOCC_INTS, true, true);
-    SharedTensor2d pQvoB = std::make_shared<Tensor2d>("PCG P (Q|vo)", nQ_ref, nvirB, noccB);
+    auto pQvoB = std::make_shared<Tensor2d>("PCG P (Q|vo)", nQ_ref, nvirB, noccB);
     pQvoB->contract323(false, false, nvirB, noccB, bQvvB, PvoB, 1.0, 0.0);
     bQvvB.reset();
 

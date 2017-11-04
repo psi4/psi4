@@ -47,18 +47,18 @@ void OCCWave::ekt_ip()
 //========================= RHF =============================================================
 //===========================================================================================
      // Memory allocation
-     SharedMatrix GFock_primeA = std::make_shared<Matrix>("Alpha GF prime", nirrep_, nmopi_, nmopi_);
-     SharedMatrix GFock_copyA = std::make_shared<Matrix>("Alpha GF copy", nirrep_, nmopi_, nmopi_);
-     SharedMatrix g1symm_copyA = std::make_shared<Matrix>("Alpha OPDM copy", nirrep_, nmopi_, nmopi_);
-     SharedMatrix g1HalfA = std::make_shared<Matrix>("g^-1/2", nirrep_, nmopi_, nmopi_);
-     SharedMatrix UvecA = std::make_shared<Matrix>("UvecA", nirrep_, nmopi_, nmopi_);
-     SharedMatrix Uvec_primeA = std::make_shared<Matrix>("Uvec_primeA", nirrep_, nmopi_, nmopi_);
-     SharedMatrix PSA = std::make_shared<Matrix>("Alpha pole strength matrix", nirrep_, nmopi_, nmopi_);
-     SharedMatrix gc_transA = std::make_shared<Matrix>("Alpha C'*g", nirrep_, nmopi_, nmopi_);
-     SharedMatrix tempA = std::make_shared<Matrix>("Alpha temp", nirrep_, nmopi_, nmopi_);
-     SharedVector Diag_g1A = std::make_shared<Vector>("Diag OO-block OPDM", nirrep_, nmopi_);
-     SharedVector ps_vecA = std::make_shared<Vector>("alpha pole strength vector", nirrep_, nmopi_);
-     SharedVector eorbA = std::make_shared<Vector>("eorbA", nirrep_, nmopi_);
+     auto GFock_primeA = std::make_shared<Matrix>("Alpha GF prime", nirrep_, nmopi_, nmopi_);
+     auto GFock_copyA = std::make_shared<Matrix>("Alpha GF copy", nirrep_, nmopi_, nmopi_);
+     auto g1symm_copyA = std::make_shared<Matrix>("Alpha OPDM copy", nirrep_, nmopi_, nmopi_);
+     auto g1HalfA = std::make_shared<Matrix>("g^-1/2", nirrep_, nmopi_, nmopi_);
+     auto UvecA = std::make_shared<Matrix>("UvecA", nirrep_, nmopi_, nmopi_);
+     auto Uvec_primeA = std::make_shared<Matrix>("Uvec_primeA", nirrep_, nmopi_, nmopi_);
+     auto PSA = std::make_shared<Matrix>("Alpha pole strength matrix", nirrep_, nmopi_, nmopi_);
+     auto gc_transA = std::make_shared<Matrix>("Alpha C'*g", nirrep_, nmopi_, nmopi_);
+     auto tempA = std::make_shared<Matrix>("Alpha temp", nirrep_, nmopi_, nmopi_);
+     auto Diag_g1A = std::make_shared<Vector>("Diag OO-block OPDM", nirrep_, nmopi_);
+     auto ps_vecA = std::make_shared<Vector>("alpha pole strength vector", nirrep_, nmopi_);
+     auto eorbA = std::make_shared<Vector>("eorbA", nirrep_, nmopi_);
 
      // For Non-OO methods
      if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);
@@ -281,18 +281,18 @@ void OCCWave::ekt_ip()
 //===========================================================================================
 if (reference_ == "UNRESTRICTED") {
      // Memory allocation
-     SharedMatrix GFock_primeB = std::make_shared<Matrix>("Beta OO-block GF prime", nirrep_, nmopi_, nmopi_);
-     SharedMatrix GFock_copyB = std::make_shared<Matrix>("Beta GF copy", nirrep_, nmopi_, nmopi_);
-     SharedMatrix g1symm_copyB = std::make_shared<Matrix>("Alpha OPDM copy", nirrep_, nmopi_, nmopi_);
-     SharedMatrix g1HalfB = std::make_shared<Matrix>("g^-1/2", nirrep_, nmopi_, nmopi_);
-     SharedMatrix UvecB = std::make_shared<Matrix>("UvecB", nirrep_, nmopi_, nmopi_);
-     SharedMatrix Uvec_primeB = std::make_shared<Matrix>("Uvec_primeB", nirrep_, nmopi_, nmopi_);
-     SharedMatrix PSB = std::make_shared<Matrix>("Beta pole strength matrix", nirrep_, nmopi_, nmopi_);
-     SharedMatrix gc_transB = std::make_shared<Matrix>("Beta C'*g", nirrep_, nmopi_, nmopi_);
-     SharedMatrix tempB = std::make_shared<Matrix>("Beta temp", nirrep_, nmopi_, nmopi_);
-     SharedVector Diag_g1B = std::make_shared<Vector>("DiagA OO-block OPDM", nirrep_, nmopi_);
-     SharedVector ps_vecB = std::make_shared<Vector>("Beta pole strength vector", nirrep_, nmopi_);
-     SharedVector eorbB = std::make_shared<Vector>("eorbB", nirrep_, nmopi_);
+     auto GFock_primeB = std::make_shared<Matrix>("Beta OO-block GF prime", nirrep_, nmopi_, nmopi_);
+     auto GFock_copyB = std::make_shared<Matrix>("Beta GF copy", nirrep_, nmopi_, nmopi_);
+     auto g1symm_copyB = std::make_shared<Matrix>("Alpha OPDM copy", nirrep_, nmopi_, nmopi_);
+     auto g1HalfB = std::make_shared<Matrix>("g^-1/2", nirrep_, nmopi_, nmopi_);
+     auto UvecB = std::make_shared<Matrix>("UvecB", nirrep_, nmopi_, nmopi_);
+     auto Uvec_primeB = std::make_shared<Matrix>("Uvec_primeB", nirrep_, nmopi_, nmopi_);
+     auto PSB = std::make_shared<Matrix>("Beta pole strength matrix", nirrep_, nmopi_, nmopi_);
+     auto gc_transB = std::make_shared<Matrix>("Beta C'*g", nirrep_, nmopi_, nmopi_);
+     auto tempB = std::make_shared<Matrix>("Beta temp", nirrep_, nmopi_, nmopi_);
+     auto Diag_g1B = std::make_shared<Vector>("DiagA OO-block OPDM", nirrep_, nmopi_);
+     auto ps_vecB = std::make_shared<Vector>("Beta pole strength vector", nirrep_, nmopi_);
+     auto eorbB = std::make_shared<Vector>("eorbB", nirrep_, nmopi_);
 
      // Make sure GFM is symmetric
      if (sym_gfm_ == "TRUE") {

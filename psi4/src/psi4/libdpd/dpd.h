@@ -170,8 +170,8 @@ struct dpd_file4_cache_entry {
 /* DPD File2 Cache entries */
 struct dpd_file2_cache_entry {
     dpd_file2_cache_entry():
-        next(NULL),
-        last(NULL)
+        next(nullptr),
+        last(nullptr)
     {
     }
     int dpdnum;                         /* dpd structure reference */
@@ -223,8 +223,8 @@ struct dpd_gbl {
 
     // The default C'tor will zero everything out properly
     dpd_gbl():
-        file2_cache(NULL),
-        file4_cache(NULL),
+        file2_cache(nullptr),
+        file4_cache(nullptr),
         file4_cache_most_recent(0),
         file4_cache_least_recent(1),
         file4_cache_lru_del(0),

@@ -424,9 +424,9 @@ void EFP::set_qm_atoms() {
     enum efp_result res;
 
     int natom = molecule_->natom();
-    std::shared_ptr<Vector> q = std::make_shared<Vector>(natom);
+    auto q = std::make_shared<Vector>(natom);
     double *q_p = q->pointer();
-    std::shared_ptr<Vector> xyz = std::make_shared<Vector>(3 * natom);
+    auto xyz = std::make_shared<Vector>(3 * natom);
     double *xyz_p = xyz->pointer();
 
     for (int A = 0; A < natom; A++) {
@@ -457,8 +457,8 @@ std::shared_ptr<Matrix> EFP::modify_Fock_permanent() {
             __FILE__, __LINE__);
 
     // multipole coordinates are stored array xyz.
-    std::shared_ptr<Vector> xyz = std::make_shared<Vector>(3 * n_multipole);
-    std::shared_ptr<Vector> mult = std::make_shared<Vector>((1 + 3 + 6 + 10) * n_multipole);
+    auto xyz = std::make_shared<Vector>(3 * n_multipole);
+    auto mult = std::make_shared<Vector>((1 + 3 + 6 + 10) * n_multipole);
 
     // get multipoles from libefp
     //     dipoles stored as     x,y,z
@@ -491,7 +491,7 @@ std::shared_ptr<Matrix> EFP::modify_Fock_permanent() {
     }
 
     // Cartesian basis one-electron EFP perturbation
-    SharedMatrix V2 = std::make_shared<Matrix>("EFP permanent moment contribution to the Fock Matrix", nbf, nbf);
+    auto V2 = std::make_shared<Matrix>("EFP permanent moment contribution to the Fock Matrix", nbf, nbf);
 
     // multipole contributions to Fock matrix
     double *xyz_p = xyz->pointer();
@@ -565,19 +565,19 @@ std::shared_ptr<Matrix> EFP::modify_Fock_induced() {
             "EFP::modify_Fock_induced():efp_get_induced_dipole_count() " + std::string(efp_result_to_string(res)),
             __FILE__, __LINE__);
 
-    std::shared_ptr<Vector> xyz_id = std::make_shared<Vector>(3 * n_id);
+    auto xyz_id = std::make_shared<Vector>(3 * n_id);
     if ((res = efp_get_induced_dipole_coordinates(efp_, xyz_id->pointer())))
         throw PsiException(
             "EFP::modify_Fock_induced():efp_get_induced_dipole_coordinates() " + std::string(efp_result_to_string(res)),
             __FILE__, __LINE__);
 
-    std::shared_ptr<Vector> id = std::make_shared<Vector>(3 * n_id);
+    auto id = std::make_shared<Vector>(3 * n_id);
     if ((res = efp_get_induced_dipole_values(efp_, id->pointer())))
         throw PsiException(
             "EFP::modify_Fock_induced():efp_get_induced_dipole_values() " + std::string(efp_result_to_string(res)),
             __FILE__, __LINE__);
 
-    std::shared_ptr<Vector> idt = std::make_shared<Vector>(3 * n_id);
+    auto idt = std::make_shared<Vector>(3 * n_id);
     if ((res = efp_get_induced_dipole_conj_values(efp_, idt->pointer())))
         throw PsiException(
             "EFP::modify_Fock_induced():efp_get_induced_dipole_conj_values() " + std::string(efp_result_to_string(res)),
@@ -596,7 +596,7 @@ std::shared_ptr<Matrix> EFP::modify_Fock_induced() {
     for (int i = 0; i < 3; ++i) mats.push_back(std::make_shared<Matrix>(nbf, nbf));
 
     // Cartesian basis one-electron EFP perturbation
-    SharedMatrix V2 = std::make_shared<Matrix>("EFP induced dipole contribution to the Fock Matrix", nbf, nbf);
+    auto V2 = std::make_shared<Matrix>("EFP induced dipole contribution to the Fock Matrix", nbf, nbf);
 
     // induced dipole contributions to Fock matrix
     // multipole contributions to Fock matrix
@@ -648,7 +648,7 @@ void EFP::compute() {
                            __LINE__);
 
     if (do_grad_) {
-        SharedMatrix smgrad = std::make_shared<Matrix>("EFP Gradient", nfrag_, 6);
+        auto smgrad = std::make_shared<Matrix>("EFP Gradient", nfrag_, 6);
         double **psmgrad = smgrad->pointer();
         if ((res = efp_get_gradient(efp_, psmgrad[0])))
             throw PsiException("EFP::compute():efp_get_gradient(): " + std::string(efp_result_to_string(res)), __FILE__,
@@ -780,7 +780,7 @@ void EFP::print_out() {
 // double * EFP::get_com(int frag_idx)
 //{
 //    if (frag_idx >= nfrag_)
-//        return NULL;
+//        return nullptr;
 //
 //    double * xyzabc = new double [6*nfrag_];
 //    efp_get_coordinates(efp_, xyzabc);
@@ -816,7 +816,7 @@ void EFP::print_out() {
 //
 //    int nbf = wfn->basisset()->nbf();
 //
-//    std::shared_ptr<Matrix> V = std::make_shared<Matrix>(nbf,nbf);
+//    auto V = std::make_shared<Matrix>(nbf,nbf);
 //
 //    for (int frag=0; frag<nfrag_; frag++) {
 //        size_t natom = 0;
@@ -829,9 +829,9 @@ void EFP::print_out() {
 //            throw PsiException("EFP::EFP_nuclear_potential():efp_get_frag_atoms() " +
 //                std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 //
-//        SharedMatrix V_charge = std::make_shared<Matrix>("External Potential (Charges)", nbf, nbf);
+//        auto V_charge = std::make_shared<Matrix>("External Potential (Charges)", nbf, nbf);
 //
-//        SharedMatrix Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", natom, 4);
+//        auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", natom, 4);
 //        double** Zxyzp = Zxyz->pointer();
 //        for (int i=0; i<natom; i++) {
 //            Zxyzp[i][0] = atoms[i].znuc;

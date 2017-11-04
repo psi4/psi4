@@ -65,8 +65,8 @@ void OverlapOrthog::compute_overlap_eig(Matrix& overlap_eigvec,
                                         Vector& isqrt_eigval,
                                         Vector& sqrt_eigval)
 {
-    SharedMatrix U = std::make_shared<Matrix>("U", overlap_->rowspi(), overlap_->colspi());
-    SharedVector m = std::make_shared<Vector>(overlap_->colspi());
+    auto U = std::make_shared<Matrix>("U", overlap_->rowspi(), overlap_->colspi());
+    auto m = std::make_shared<Vector>(overlap_->colspi());
 
     overlap_->diagonalize(U, m);
 
@@ -163,9 +163,9 @@ void OverlapOrthog::compute_symmetric_orthog()
                         overlap_isqrt_eigval,
                         overlap_sqrt_eigval);
 
-    SharedMatrix overlap_isqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
+    auto overlap_isqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
     overlap_isqrt_eigval_mat->set_diagonal(overlap_isqrt_eigval);
-    SharedMatrix overlap_sqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
+    auto overlap_sqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
     overlap_sqrt_eigval_mat->set_diagonal(overlap_sqrt_eigval);
 
     orthog_trans_ = std::make_shared<Matrix>("Orthogonal Transformation", dim_, dim_);
@@ -190,9 +190,9 @@ void OverlapOrthog::compute_canonical_orthog()
                         overlap_isqrt_eigval,
                         overlap_sqrt_eigval);
 
-    SharedMatrix overlap_isqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
+    auto overlap_isqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
     overlap_isqrt_eigval_mat->set_diagonal(overlap_isqrt_eigval);
-    SharedMatrix overlap_sqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
+    auto overlap_sqrt_eigval_mat = std::make_shared<Matrix>(orthog_dim_, orthog_dim_);
     overlap_sqrt_eigval_mat->set_diagonal(overlap_sqrt_eigval);
 
     orthog_trans_ = std::make_shared<Matrix>("Orthogonal Transformation", orthog_dim_, dim_);

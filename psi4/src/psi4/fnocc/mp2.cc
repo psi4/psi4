@@ -91,7 +91,7 @@ void CoupledCluster::MP2() {
     // energy
     double *v2 = (double *)malloc(o * o * v * v * sizeof(double));
 
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IAJB, "E2iajb", (char *)&v2[0], o * o * v * v * sizeof(double));
     psio->close(PSIF_DCC_IAJB, 0);

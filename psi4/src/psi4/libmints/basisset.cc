@@ -136,7 +136,7 @@ BasisSet::BasisSet() {
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
                                           const std::vector<ShellInfo> & /*shells*/) {
     // TRIAL//    //TODO fixme!!!
-    // TRIAL//    std::shared_ptr <BasisSet> basis = std::make_shared<BasisSet>();
+    // TRIAL//    auto basis = std::make_shared<BasisSet>();
     // TRIAL//    //    basis->molecule_ = molecule;
     // TRIAL//    //    basis->shells_ = shells;
     // TRIAL//    //    basis->refresh();
@@ -558,7 +558,7 @@ const GaussianShell &BasisSet::shell(int center, int si) const { return shell(ce
 
 std::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set() {
     // In the new implementation, we simply call the default constructor
-    std::shared_ptr<BasisSet> new_basis = std::make_shared<BasisSet>();
+    auto new_basis = std::make_shared<BasisSet>();
     return new_basis;
 }
 
@@ -1085,7 +1085,7 @@ std::pair<std::vector<std::string>, std::shared_ptr<BasisSet>> BasisSet::test_ba
         max_shells = 10;
     }
 
-    std::shared_ptr<BasisSet> new_basis = std::make_shared<BasisSet>();
+    auto new_basis = std::make_shared<BasisSet>();
 
     // Add 4 atoms to the molecule for this basis (max integal centers is 4 at the moment)
     new_basis->molecule_ = std::make_shared<Molecule>();

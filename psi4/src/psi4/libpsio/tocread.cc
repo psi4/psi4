@@ -59,18 +59,18 @@ void PSIO::tocread(size_t unit) {
   if (this_unit->toclen) {
     this_unit->toc = (psio_tocentry *) malloc(sizeof(psio_tocentry));
     this_entry = this_unit->toc;
-    this_entry->last = NULL;
+    this_entry->last = nullptr;
     for (i=1; i < this_unit->toclen; i++) {
       last_entry = this_entry;
       this_entry = (psio_tocentry *) malloc(sizeof(psio_tocentry));
       last_entry->next = this_entry;
       this_entry->last = last_entry;
     }
-    this_entry->next = NULL;
+    this_entry->next = nullptr;
   }
   else {
     this_unit->toclen = 0;
-    this_unit->toc = NULL;
+    this_unit->toc = nullptr;
   }
 
   /* Read the TOC entry-by-entry */

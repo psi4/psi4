@@ -85,32 +85,32 @@ SAPT2::SAPT2(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefu
         }
     }
 
-    wBAR_ = NULL;
-    wABS_ = NULL;
-    wBAA_ = NULL;
-    wBRR_ = NULL;
-    wABB_ = NULL;
-    wASS_ = NULL;
-    no_evalsA_ = NULL;
-    no_evalsB_ = NULL;
-    no_CA_ = NULL;
-    no_CB_ = NULL;
+    wBAR_ = nullptr;
+    wABS_ = nullptr;
+    wBAA_ = nullptr;
+    wBRR_ = nullptr;
+    wABB_ = nullptr;
+    wASS_ = nullptr;
+    no_evalsA_ = nullptr;
+    no_evalsB_ = nullptr;
+    no_CA_ = nullptr;
+    no_CB_ = nullptr;
 }
 
 SAPT2::~SAPT2() {
-    if (wBAR_ != NULL) free_block(wBAR_);
-    if (wABS_ != NULL) free_block(wABS_);
+    if (wBAR_ != nullptr) free_block(wBAR_);
+    if (wABS_ != nullptr) free_block(wABS_);
 
-    if (wBAA_ != NULL) free_block(wBAA_);
-    if (wBRR_ != NULL) free_block(wBRR_);
-    if (wABB_ != NULL) free_block(wABB_);
-    if (wASS_ != NULL) free_block(wASS_);
+    if (wBAA_ != nullptr) free_block(wBAA_);
+    if (wBRR_ != nullptr) free_block(wBRR_);
+    if (wABB_ != nullptr) free_block(wABB_);
+    if (wASS_ != nullptr) free_block(wASS_);
 
     if (nat_orbs_t3_ || nat_orbs_t2_) {
-        if (no_evalsA_ != NULL) free(no_evalsA_);
-        if (no_evalsB_ != NULL) free(no_evalsB_);
-        if (no_CA_ != NULL) free_block(no_CA_);
-        if (no_CB_ != NULL) free_block(no_CB_);
+        if (no_evalsA_ != nullptr) free(no_evalsA_);
+        if (no_evalsB_ != nullptr) free(no_evalsB_);
+        if (no_CA_ != nullptr) free_block(no_CA_);
+        if (no_CB_ != nullptr) free_block(no_CB_);
     }
 
     free(ioff_);
@@ -375,14 +375,14 @@ void SAPT2::print_results() {
 
 void SAPT2::df_integrals() {
     // Get fitting metric
-    std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(ribasis_);
+    auto metric = std::make_shared<FittingMetric>(ribasis_);
     metric->form_eig_inverse();
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);
     C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
     metric.reset();
 
-    std::shared_ptr<IntegralFactory> rifactory_J = std::make_shared<IntegralFactory>(ribasis_, zero_, ribasis_, zero_);
+    auto rifactory_J = std::make_shared<IntegralFactory>(ribasis_, zero_, ribasis_, zero_);
     std::shared_ptr<TwoBodyAOInt> Jint = std::shared_ptr<TwoBodyAOInt>(rifactory_J->eri());
     const double *Jbuffer = Jint->buffer();
 

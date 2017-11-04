@@ -91,7 +91,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Target <= //
 
-    std::shared_ptr<Matrix> response = std::make_shared<Matrix>("RHF Response",3*natom,3*natom);
+    auto response = std::make_shared<Matrix>("RHF Response",3*natom,3*natom);
 
     // => Response Utility File <= //
 
@@ -103,18 +103,18 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
         const double* buffer = Sint->buffer();
 
-        std::shared_ptr<Matrix> Smix = std::make_shared<Matrix>("Smix",nso,nocc);
-        std::shared_ptr<Matrix> Smiy = std::make_shared<Matrix>("Smiy",nso,nocc);
-        std::shared_ptr<Matrix> Smiz = std::make_shared<Matrix>("Smiz",nso,nocc);
+        auto Smix = std::make_shared<Matrix>("Smix",nso,nocc);
+        auto Smiy = std::make_shared<Matrix>("Smiy",nso,nocc);
+        auto Smiz = std::make_shared<Matrix>("Smiz",nso,nocc);
         double** Smixp = Smix->pointer();
         double** Smiyp = Smiy->pointer();
         double** Smizp = Smiz->pointer();
 
-        std::shared_ptr<Matrix> Sai = std::make_shared<Matrix>("Sai",nvir,nocc);
+        auto Sai = std::make_shared<Matrix>("Sai",nvir,nocc);
         double** Saip = Sai->pointer();
-        std::shared_ptr<Matrix> Sij = std::make_shared<Matrix>("Sij",nocc,nocc);
+        auto Sij = std::make_shared<Matrix>("Sij",nocc,nocc);
         double** Sijp = Sij->pointer();
-        std::shared_ptr<Matrix> Spi = std::make_shared<Matrix>("Spi",nmo,nocc);
+        auto Spi = std::make_shared<Matrix>("Spi",nmo,nocc);
         double** Spip = Spi->pointer();
 
         psio_address next_Sai = PSIO_ZERO;
@@ -252,14 +252,14 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
 
-        std::shared_ptr<Matrix> Tmix = std::make_shared<Matrix>("Tmix",nso,nocc);
-        std::shared_ptr<Matrix> Tmiy = std::make_shared<Matrix>("Tmiy",nso,nocc);
-        std::shared_ptr<Matrix> Tmiz = std::make_shared<Matrix>("Tmiz",nso,nocc);
+        auto Tmix = std::make_shared<Matrix>("Tmix",nso,nocc);
+        auto Tmiy = std::make_shared<Matrix>("Tmiy",nso,nocc);
+        auto Tmiz = std::make_shared<Matrix>("Tmiz",nso,nocc);
         double** Tmixp = Tmix->pointer();
         double** Tmiyp = Tmiy->pointer();
         double** Tmizp = Tmiz->pointer();
 
-        std::shared_ptr<Matrix> Tpi = std::make_shared<Matrix>("Tpi",nmo,nocc);
+        auto Tpi = std::make_shared<Matrix>("Tpi",nmo,nocc);
         double** Tpip = Tpi->pointer();
         psio_address next_Tpi = PSIO_ZERO;
 
@@ -353,14 +353,14 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
         const double* buffer = Vint->buffer();
 
-        std::shared_ptr<Matrix> Vmix = std::make_shared<Matrix>("Vmix",nso,nocc);
-        std::shared_ptr<Matrix> Vmiy = std::make_shared<Matrix>("Vmiy",nso,nocc);
-        std::shared_ptr<Matrix> Vmiz = std::make_shared<Matrix>("Vmiz",nso,nocc);
+        auto Vmix = std::make_shared<Matrix>("Vmix",nso,nocc);
+        auto Vmiy = std::make_shared<Matrix>("Vmiy",nso,nocc);
+        auto Vmiz = std::make_shared<Matrix>("Vmiz",nso,nocc);
         double** Vmixp = Vmix->pointer();
         double** Vmiyp = Vmiy->pointer();
         double** Vmizp = Vmiz->pointer();
 
-        std::shared_ptr<Matrix> Vpi = std::make_shared<Matrix>("Vpi",nmo,nocc);
+        auto Vpi = std::make_shared<Matrix>("Vpi",nmo,nocc);
         double** Vpip = Vpi->pointer();
         psio_address next_Vpi = PSIO_ZERO;
 
@@ -432,7 +432,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         for(int a = 0; a < max_a; ++a)
             dGmats.push_back(std::make_shared<Matrix>("G derivative contribution", nso, nso));
 
-        SharedMatrix Gpi = std::make_shared<Matrix>("MO G Deriv", nmo, nocc);
+        auto Gpi = std::make_shared<Matrix>("MO G Deriv", nmo, nocc);
         double**pGpi = Gpi->pointer();
         psio_address next_Gpi = PSIO_ZERO;
         // Write some junk for now, to set the sizing for PSIO
@@ -447,8 +447,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
              */
             std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
 
-            std::shared_ptr<IntegralFactory> Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
-            std::shared_ptr<IntegralFactory> PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
+            auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+            auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
             std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
             std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
             int np = auxiliary_->nbf();
@@ -457,15 +457,15 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             int nshell = basisset_->nshell();
             int maxp = auxiliary_->max_function_per_shell();
 
-            SharedMatrix Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
-            SharedMatrix Ami = std::make_shared<Matrix>("(A|mi)", np, nso*nocc);
-            SharedMatrix Aij = std::make_shared<Matrix>("(A|ij)", np, nocc*nocc);
-            SharedMatrix Bmn = std::make_shared<Matrix>("Minv[B][A] (A|mn)", np, nso*nso);
-            SharedMatrix Tmn = std::make_shared<Matrix>("Tmn", np, nso*nso);
-            SharedMatrix TempP = std::make_shared<Matrix>("Temp[P]", 9, maxp);
-            SharedMatrix TempPmn = std::make_shared<Matrix>("Temp[P][mn]", maxp, nso*nso);
-            SharedVector c = std::make_shared<Vector>("c[A] = (mn|A) D[m][n]", np);
-            SharedVector d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
+            auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
+            auto Ami = std::make_shared<Matrix>("(A|mi)", np, nso*nocc);
+            auto Aij = std::make_shared<Matrix>("(A|ij)", np, nocc*nocc);
+            auto Bmn = std::make_shared<Matrix>("Minv[B][A] (A|mn)", np, nso*nso);
+            auto Tmn = std::make_shared<Matrix>("Tmn", np, nso*nso);
+            auto TempP = std::make_shared<Matrix>("Temp[P]", 9, maxp);
+            auto TempPmn = std::make_shared<Matrix>("Temp[P][mn]", maxp, nso*nso);
+            auto c = std::make_shared<Vector>("c[A] = (mn|A) D[m][n]", np);
+            auto d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
             double **Amnp = Amn->pointer();
             double **Amip = Ami->pointer();
             double **Aijp = Aij->pointer();
@@ -478,7 +478,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
             // This probably shouldn't be recomputed here; we already needed it to get the
             // second derivative integrals.  One fine day, this should be refactored.
-            std::shared_ptr<FittingMetric> metric = std::make_shared<FittingMetric>(auxiliary_, true);
+            auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
             metric->form_full_eig_inverse();
             SharedMatrix PQ = metric->get_metric();
             double** PQp = PQ->pointer();
@@ -536,7 +536,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
                 // Keep track of which centers are loaded into memory, so we know when to skip
                 std::fill(pert_incore.begin(), pert_incore.end(), false);
-                std::fill(pdG.begin(), pdG.end(), (double**)NULL);
+                std::fill(pdG.begin(), pdG.end(), (double**)nullptr);
                 for (int a = 0; a < nA; a++){
                     pert_incore[floor((A+a)/3.0)] = true;
                     pdG[A+a] = dGmats[a]->pointer();
@@ -784,7 +784,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
             std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-            std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(basisset_, 0.0);
+            auto sieve = std::make_shared<ERISieve>(basisset_, 0.0);
 
 
             const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
@@ -799,7 +799,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
                 // Keep track of which centers are loaded into memory, so we know when to skip
                 std::fill(pert_incore.begin(), pert_incore.end(), false);
-                std::fill(pdG.begin(), pdG.end(), (double**)NULL);
+                std::fill(pdG.begin(), pdG.end(), (double**)nullptr);
                 for (int a = 0; a < nA; a++){
                     pert_incore[floor((A+a)/3.0)] = true;
                     pdG[A+a] = dGmats[a]->pointer();
@@ -1111,7 +1111,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
          * correctly account for the ordering of the MOs with and without symmetry.
          */
         std::shared_ptr<OneBodyAOInt> aoSint(integral_->ao_overlap());
-        std::shared_ptr<Matrix> Sao = std::make_shared<Matrix>("Sao", nso, nso);
+        auto Sao = std::make_shared<Matrix>("Sao", nso, nso);
         aoSint->compute(Sao);
         double **pS = Sao->pointer();
 
@@ -1153,11 +1153,11 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         L.clear();
         R.clear();
 
-        std::shared_ptr<Matrix> Sij = std::make_shared<Matrix>("Sij",nocc,nocc);
+        auto Sij = std::make_shared<Matrix>("Sij",nocc,nocc);
         double** Sijp = Sij->pointer();
-        std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T",nso,nocc);
+        auto T = std::make_shared<Matrix>("T",nso,nocc);
         double** Tp = T->pointer();
-        std::shared_ptr<Matrix> U = std::make_shared<Matrix>("Tempai",nmo,nocc);
+        auto U = std::make_shared<Matrix>("Tempai",nmo,nocc);
         double** Up = U->pointer();
 
         // Write some placeholder data to PSIO, to get the sizing right
@@ -1209,7 +1209,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     const CdSalc& thissalc = SALCList[a+A];
                     int salcirrep = thissalc.irrep();
                     R[a] = std::make_shared<Matrix>("R", nsopi_, doccpi_, salcirrep);
-                    std::shared_ptr<Matrix> Tmpij = std::make_shared<Matrix>(nirrep_, nocc, (int*)doccpi_);
+                    auto Tmpij = std::make_shared<Matrix>(nirrep_, nocc, (int*)doccpi_);
                     for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
                         const CdSalc::Component& salccomponent = thissalc.component(comp);
                         int salcatom = salccomponent.atom;
@@ -1255,8 +1255,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     J[a]->add(K[a]);
 
                     // Transform from SO to C1 MO basis
-                    std::shared_ptr<Matrix> Fmat = std::make_shared<Matrix>("F derivative", nmo, nocc);
-                    std::shared_ptr<Matrix> Tmpso_occ = std::make_shared<Matrix>(nirrep_, (int*)nsopi_, nocc);
+                    auto Fmat = std::make_shared<Matrix>("F derivative", nmo, nocc);
+                    auto Tmpso_occ = std::make_shared<Matrix>(nirrep_, (int*)nsopi_, nocc);
                     for(int h = 0; h < nirrep_; ++h){
                         if(!nsopi_[h] || !nsopi_[h^salcirrep]) continue;
                         C_DGEMM('N', 'N', nsopi_[h], nocc, nsopi_[h^salcirrep], 1.0, J[a]->pointer(h)[0], nsopi_[h^salcirrep],
@@ -1288,8 +1288,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Fpi <= //
     {
-        std::shared_ptr<Matrix> Tpi = std::make_shared<Matrix>("Tpi",nmo,nocc);
-        std::shared_ptr<Matrix> Fpi = std::make_shared<Matrix>("Fpi",nmo,nocc);
+        auto Tpi = std::make_shared<Matrix>("Tpi",nmo,nocc);
+        auto Fpi = std::make_shared<Matrix>("Fpi",nmo,nocc);
         double** Tpip = Tpi->pointer();
         double** Fpip = Fpi->pointer();
 
@@ -1310,8 +1310,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Bpi <= //
     {
-        std::shared_ptr<Matrix> Tai = std::make_shared<Matrix>("T",nvir,nocc);
-        std::shared_ptr<Matrix> Bai = std::make_shared<Matrix>("B",nvir,nocc);
+        auto Tai = std::make_shared<Matrix>("T",nvir,nocc);
+        auto Bai = std::make_shared<Matrix>("B",nvir,nocc);
         double** Taip = Tai->pointer();
         double** Baip = Bai->pointer();
 
@@ -1337,10 +1337,10 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => CPHF (Uai) <= //
     {
-        SharedWavefunction wfn = std::make_shared<Wavefunction>(options_);
+        auto wfn = std::make_shared<Wavefunction>(options_);
         wfn->shallow_copy(this);
 
-        std::shared_ptr<RCPHF> cphf = std::make_shared<RCPHF>(wfn, options_, !ignore_symmetry);
+        auto cphf = std::make_shared<RCPHF>(wfn, options_, !ignore_symmetry);
         cphf->set_jk(jk);
 
         std::map<std::string, SharedMatrix>& b = cphf->b();
@@ -1349,7 +1349,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         psio_address next_Bai = PSIO_ZERO;
         psio_address next_Uai = PSIO_ZERO;
 
-        std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T",nvir,nocc);
+        auto T = std::make_shared<Matrix>("T",nvir,nocc);
         double** Tp = T->pointer();
 
         if(!ignore_symmetry){
@@ -1386,7 +1386,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 }else{
                     const CdSalc& thissalc = SALCList[a+A];
                     int salcirrep = thissalc.irrep();
-                    std::shared_ptr<Matrix> Tmpmo = std::make_shared<Matrix>(nirrep_, nocc, (int*)nvirpi);
+                    auto Tmpmo = std::make_shared<Matrix>(nirrep_, nocc, (int*)nvirpi);
                     B = std::make_shared<Matrix>(ss.str(),doccpi_,nvirpi,salcirrep);
                     for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
                         const CdSalc::Component& salccomponent = thissalc.component(comp);
@@ -1435,8 +1435,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     const CdSalc& thissalc = SALCList[a+A];
                     int salcirrep = thissalc.irrep();
 
-                    std::shared_ptr<Matrix> Tmpmo_c1 = std::make_shared<Matrix>(nvir, nocc);
-                    std::shared_ptr<Matrix> Tmpso_occ = std::make_shared<Matrix>(nirrep_, nvir, (int*)doccpi_);
+                    auto Tmpmo_c1 = std::make_shared<Matrix>(nvir, nocc);
+                    auto Tmpso_occ = std::make_shared<Matrix>(nirrep_, nvir, (int*)doccpi_);
                     for(int h = 0; h < nirrep_; ++h){
                         if(!doccpi_[h] || !nvirpi[h^salcirrep]) continue;
 
@@ -1470,7 +1470,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Upi <= //
     {
-        std::shared_ptr<Matrix> Upi = std::make_shared<Matrix>("U",nmo,nocc);
+        auto Upi = std::make_shared<Matrix>("U",nmo,nocc);
         double** Upqp = Upi->pointer();
 
         psio_address next_Spi = PSIO_ZERO;
@@ -1498,11 +1498,11 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             R.push_back(std::make_shared<Matrix>("R",nso,nocc));
         }
 
-        std::shared_ptr<Matrix> Upi = std::make_shared<Matrix>("Upi",nmo,nocc);
+        auto Upi = std::make_shared<Matrix>("Upi",nmo,nocc);
         double** Upip = Upi->pointer();
-        std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T",nso,nocc);
+        auto T = std::make_shared<Matrix>("T",nso,nocc);
         double** Tp = T->pointer();
-        std::shared_ptr<Matrix> U = std::make_shared<Matrix>("T",nmo,nocc);
+        auto U = std::make_shared<Matrix>("T",nmo,nocc);
         double** Up = U->pointer();
 
         for (int A = 0; A < 3 * natom; A+=max_A) {
@@ -1539,9 +1539,9 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         size_t max_a = memory / (3L * npi);
         max_a = (max_a > 3 * natom ? 3 * natom : max_a);
 
-        std::shared_ptr<Matrix> L = std::make_shared<Matrix>("L",max_a * nmo, nocc);
-        std::shared_ptr<Matrix> R = std::make_shared<Matrix>("R",max_a * nmo, nocc);
-        std::shared_ptr<Matrix> T = std::make_shared<Matrix>("T",max_a * nmo, nocc);
+        auto L = std::make_shared<Matrix>("L",max_a * nmo, nocc);
+        auto R = std::make_shared<Matrix>("R",max_a * nmo, nocc);
+        auto T = std::make_shared<Matrix>("T",max_a * nmo, nocc);
         double** Lp = L->pointer();
         double** Rp = R->pointer();
         double** Tp = T->pointer();

@@ -57,7 +57,7 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, Shared
         throw PSIEXCEPTION("SAPT can only run in C1 symmetry!\n");
     }
 
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
 
     if (options.get_str("SAPT_LEVEL") == "SAPT0") {
         if (options.get_str("REFERENCE") == "RHF") {

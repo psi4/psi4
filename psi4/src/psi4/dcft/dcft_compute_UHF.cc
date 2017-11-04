@@ -349,7 +349,7 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
 void
 DCFTSolver::run_twostep_dcft_orbital_updates() {
 
-    SharedMatrix tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
 
     // Set up DIIS
     DIISManager scfDiisManager(maxdiis_, "DCFT DIIS Orbitals",DIISManager::LargestError,DIISManager::InCore);
@@ -440,7 +440,7 @@ DCFTSolver::run_simult_dcft()
                          "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
 
-    SharedMatrix tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
@@ -478,11 +478,11 @@ DCFTSolver::run_simult_dcft()
 
             build_DF_tensors_UHF();
 
-            SharedMatrix mo_h_A = std::make_shared<Matrix>("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
+            auto mo_h_A = std::make_shared<Matrix>("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
             mo_h_A->copy(so_h_);
             mo_h_A->transform(Ca_);
 
-            SharedMatrix mo_h_B = std::make_shared<Matrix>("MO-based H Beta", nirrep_, nmopi_, nmopi_);
+            auto mo_h_B = std::make_shared<Matrix>("MO-based H Beta", nirrep_, nmopi_, nmopi_);
             mo_h_B->copy(so_h_);
             mo_h_B->transform(Cb_);
 
@@ -493,13 +493,13 @@ DCFTSolver::run_simult_dcft()
             moFb_->add(mo_gbarGamma_B_);
 
             // Back-transform the Fock matrix to the SO basis: F_so = (Ct)^-1 F_mo C^-1 = (C^-1)t F_mo C^-1
-            SharedMatrix Ca_inverse = std::make_shared<Matrix>("Ca_ inverse", nirrep_, nmopi_, nsopi_);
+            auto Ca_inverse = std::make_shared<Matrix>("Ca_ inverse", nirrep_, nmopi_, nsopi_);
             Ca_inverse->copy(Ca_);
             Ca_inverse->general_invert();
             Fa_->copy(moFa_);
             Fa_->transform(Ca_inverse);
 
-            SharedMatrix Cb_inverse = std::make_shared<Matrix>("Cb_ inverse", nirrep_, nmopi_, nsopi_);
+            auto Cb_inverse = std::make_shared<Matrix>("Cb_ inverse", nirrep_, nmopi_, nsopi_);
             Cb_inverse->copy(Cb_);
             Cb_inverse->general_invert();
             Fb_->copy(moFa_);

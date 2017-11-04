@@ -411,7 +411,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     }
 
     // ==> Uncoupled Amplitudes <==
-    SharedMatrix amp = std::make_shared<Matrix>(nocc, nvir);
+    auto amp = std::make_shared<Matrix>(nocc, nvir);
 
     double** ampp = amp->pointer();
     double* eoccp = eps_occ->pointer();
@@ -445,8 +445,8 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     // printf("dmem:    %zu\n", dmem);
     // printf("bsize:   %zu\n", bsize);
 
-    SharedMatrix ret = std::make_shared<Matrix>("UNC Amplitude", naux, naux);
-    SharedMatrix tmp = std::make_shared<Matrix>("iaQ tmp", bsize * nvir, naux);
+    auto ret = std::make_shared<Matrix>("UNC Amplitude", naux, naux);
+    auto tmp = std::make_shared<Matrix>("iaQ tmp", bsize * nvir, naux);
 
     double** tmpp = tmp->pointer();
     double** retp = ret->pointer();

@@ -137,10 +137,10 @@ DCFTSolver::refine_tau_RHF() {
 
     // Iteratively compute the exact Tau
 
-    SharedMatrix aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    SharedMatrix avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    SharedMatrix aocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    SharedMatrix avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
 
     bool converged = false;
     bool failed = false;
@@ -202,10 +202,10 @@ DCFTSolver::refine_tau_RHF() {
         aocc_tau_->zero();
         avir_tau_->zero();
         // Diagonalize and take a square root
-        SharedMatrix aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-        SharedMatrix avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-        SharedVector aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
-        SharedVector avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
+        auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
+        auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
+        auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
+        auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
         aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
         avir_tau_old->diagonalize(avir_evecs, avir_evals);
 

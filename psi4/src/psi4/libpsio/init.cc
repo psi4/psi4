@@ -66,7 +66,7 @@ PSIO::PSIO() {
 #endif
     state_ = 1;
 
-    if (psio_unit == NULL) {
+    if (psio_unit == nullptr) {
         ::fprintf(stderr, "Error in PSIO_INIT()!\n");
         exit(_error_exit_code_);
     }
@@ -77,11 +77,11 @@ PSIO::PSIO() {
 #endif
         psio_unit[i].numvols = 0;
         for (j = 0; j < PSIO_MAXVOL; j++) {
-            psio_unit[i].vol[j].path = NULL;
+            psio_unit[i].vol[j].path = nullptr;
             psio_unit[i].vol[j].stream = -1;
         }
         psio_unit[i].toclen = 0;
-        psio_unit[i].toc = NULL;
+        psio_unit[i].toc = nullptr;
     }
 
     /* Open user's general .psirc file, if exists */
@@ -89,7 +89,7 @@ PSIO::PSIO() {
     //  char *filename = (char*) malloc((strlen(userhome)+8)*sizeof(char));
     //  sprintf(filename, "%s%s", userhome, "/.psirc");
     //  FILE *psirc = fopen(filename, "r");
-    //  if (psirc != NULL) {
+    //  if (psirc != nullptr) {
     //    ip_append(psirc, stdout);
     //    fclose(psirc);
     //  }
@@ -118,7 +118,7 @@ std::shared_ptr<PSIO> PSIO::shared_object() { return _default_psio_lib_; }
 
 int psio_init(void) {
     if (_default_psio_lib_.get() == 0) {
-        std::shared_ptr<PSIO> temp = std::make_shared<PSIO>();
+        auto temp = std::make_shared<PSIO>();
         _default_psio_lib_ = temp;
         if (_default_psio_lib_ == 0) {
             ::fprintf(stderr, "LIBPSIO::init() -- failed to allocate the memory");
@@ -126,7 +126,7 @@ int psio_init(void) {
         }
     }
     if (_default_psio_manager_.get() == 0) {
-        std::shared_ptr<PSIOManager> temp = std::make_shared<PSIOManager>();
+        auto temp = std::make_shared<PSIOManager>();
         _default_psio_manager_ = temp;
         if (_default_psio_manager_ == 0) {
             ::fprintf(stderr, "LIBPSIO::init() -- failed to allocate the memory");

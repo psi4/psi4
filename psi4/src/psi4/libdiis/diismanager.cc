@@ -340,7 +340,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     timer_on("DIISManager::extrapolate");
 
     int dimension = _subspace.size() + 1;
-    SharedMatrix B = std::make_shared<Matrix>("B (DIIS Connectivity Matrix", dimension, dimension);
+    auto B = std::make_shared<Matrix>("B (DIIS Connectivity Matrix", dimension, dimension);
     double **bMatrix = B->pointer();
     double *coefficients = init_array(dimension);
     double *force = init_array(dimension);
@@ -378,7 +378,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
 
     double **Bp = B->pointer();
 
-    SharedVector S = std::make_shared<Vector>("S", dimension);
+    auto S = std::make_shared<Vector>("S", dimension);
     double *Sp = S->pointer();
 
     // Trap an explicit zero

@@ -195,7 +195,7 @@ Taylor_Fjt::~Taylor_Fjt() {
     delete[] T_crit_;
     T_crit_ = 0;
     free_block(grid_);
-    grid_ = NULL;
+    grid_ = nullptr;
 }
 
 /* Using the tabulated incomplete gamma function in gtable, compute

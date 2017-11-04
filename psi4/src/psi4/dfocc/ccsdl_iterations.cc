@@ -116,8 +116,8 @@ void DFOCC::ccsdl_iterations() {
 
     // DIIS
     if (do_diis_ == 1) {
-        std::shared_ptr<Matrix> L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
-        std::shared_ptr<Matrix> L1 = std::make_shared<Matrix>("L1", naoccA, navirA);
+        auto L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
+        auto L1 = std::make_shared<Matrix>("L1", naoccA, navirA);
         if (reference_ == "RESTRICTED") {
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));

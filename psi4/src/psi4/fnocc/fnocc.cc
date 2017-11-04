@@ -42,7 +42,7 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
     if (!options.get_bool("DFCC")) {
         // frozen natural orbital ccsd(t)
         if (options.get_bool("NAT_ORBS")) {
-            std::shared_ptr<FrozenNO> fno = std::make_shared<FrozenNO>(ref_wfn, options);
+            auto fno = std::make_shared<FrozenNO>(ref_wfn, options);
             fno->ComputeNaturalOrbitals();
             wfn = (std::shared_ptr<Wavefunction>)fno;
 
@@ -68,11 +68,11 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
         tstop();
 
         if (!options.get_bool("RUN_CEPA")) {
-            std::shared_ptr<CoupledCluster> ccsd = std::make_shared<CoupledCluster>(wfn, options);
+            auto ccsd = std::make_shared<CoupledCluster>(wfn, options);
             ccsd->compute_energy();
             return ccsd;
         } else {
-            std::shared_ptr<CoupledPair> cepa = std::make_shared<CoupledPair>(wfn, options);
+            auto cepa = std::make_shared<CoupledPair>(wfn, options);
             cepa->compute_energy();
             return cepa;
         }
@@ -92,7 +92,7 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
         outfile->Printf("\n\n");
 
         // three-index integrals are generated/read by fno class
-        std::shared_ptr<DFFrozenNO> fno = std::make_shared<DFFrozenNO>(ref_wfn, options);
+        auto fno = std::make_shared<DFFrozenNO>(ref_wfn, options);
         fno->ThreeIndexIntegrals();
         if (options.get_bool("NAT_ORBS")) {
             fno->ComputeNaturalOrbitals();
@@ -103,10 +103,10 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 // ccsd(t)!
 
 #ifdef GPUCC
-        std::shared_ptr<GPUDFCoupledCluster> ccsd = std::make_shared<GPUDFCoupledCluster>(wfn, options);
+        auto ccsd = std::make_shared<GPUDFCoupledCluster>(wfn, options);
         ccsd->compute_energy();
 #else
-        std::shared_ptr<DFCoupledCluster> ccsd = std::make_shared<DFCoupledCluster>(wfn, options);
+        auto ccsd = std::make_shared<DFCoupledCluster>(wfn, options);
         ccsd->compute_energy();
 #endif
 

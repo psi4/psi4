@@ -56,10 +56,10 @@ CubicScalarGrid::CubicScalarGrid(std::shared_ptr<BasisSet> primary, Options& opt
     : primary_(primary), mol_(primary->molecule()), options_(options) {
     filepath_ = "";
     npoints_ = 0L;
-    x_ = NULL;
-    y_ = NULL;
-    z_ = NULL;
-    w_ = NULL;
+    x_ = nullptr;
+    y_ = nullptr;
+    z_ = nullptr;
+    w_ = nullptr;
     N_ = new int[3];
     D_ = new double[3];
     O_ = new double[3];
@@ -340,13 +340,13 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
     }
 
-    std::shared_ptr<ERISieve> sieve = std::make_shared<ERISieve>(primary_, cutoff);
+    auto sieve = std::make_shared<ERISieve>(primary_, cutoff);
     const std::vector<std::pair<int, int> >& pairs = sieve->shell_pairs();
 
-    std::shared_ptr<Vector> c = std::make_shared<Vector>("c", naux);
+    auto c = std::make_shared<Vector>("c", naux);
     double* cp = c->pointer();
 
-    std::shared_ptr<Matrix> Amn = std::make_shared<Matrix>("Amn", maxP, nbf * nbf);
+    auto Amn = std::make_shared<Matrix>("Amn", maxP, nbf * nbf);
     double** Amnp = Amn->pointer();
 
     double** Dp = D->pointer();
@@ -394,7 +394,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
     Ifact.reset();
     ints.clear();
 
-    std::shared_ptr<Matrix> J = std::make_shared<Matrix>("J", naux, naux);
+    auto J = std::make_shared<Matrix>("J", naux, naux);
     double** Jp = J->pointer();
 
     std::shared_ptr<IntegralFactory> Jfact = std::make_shared<IntegralFactory>(
@@ -427,7 +427,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     J->power(-1.0, condition);
 
-    std::shared_ptr<Vector> d = std::make_shared<Vector>("d", naux);
+    auto d = std::make_shared<Vector>("d", naux);
     double* dp = d->pointer();
 
     C_DGEMV('N', naux, naux, 1.0, Jp[0], naux, cp, 1, 0.0, dp, 1);
@@ -619,7 +619,7 @@ void CubicScalarGrid::compute_basis_functions(const std::vector<int>& indices, c
 void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
                                        const std::vector<std::string>& labels, const std::string& name,
                                        const std::string& type) {
-    std::shared_ptr<Matrix> C2 = std::make_shared<Matrix>(primary_->nbf(), indices.size());
+    auto C2 = std::make_shared<Matrix>(primary_->nbf(), indices.size());
     double** Cp = C->pointer();
     double** C2p = C2->pointer();
     for (int k = 0; k < indices.size(); k++) {

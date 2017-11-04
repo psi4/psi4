@@ -58,7 +58,7 @@ void DFCoupledCluster::CCResidual(){
 
     double start;
 
-    std::shared_ptr<PSIO> psio = std::make_shared<PSIO>();
+    auto psio = std::make_shared<PSIO>();
 
     // C2 = -1/2 t(bc,kj) [ (ki|ac) - 1/2 t(ad,li) (kd|lc) ]
     //      +    t(bc,ki) [ (kj|ac) - 1/2 t(ad,lj) (kd|lc) ]

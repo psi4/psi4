@@ -58,7 +58,7 @@ void PSIO::read(size_t unit, const char *key, char *buffer, size_t size,
 
   tocentry_size = sizeof(psio_tocentry) - 2*sizeof(psio_tocentry *);
 
-  if (this_entry == NULL) {
+  if (this_entry == nullptr) {
     fprintf(stderr, "PSIO_ERROR: Can't find TOC Entry %s\n", key);
     psio_error(unit, PSIO_ERROR_NOTOCENT);
   } else {

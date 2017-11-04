@@ -73,7 +73,7 @@ void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
 {
       int i, j, ij, ierr;
       int ascend_order;
-      double *fv1=NULL;
+      double *fv1=nullptr;
       double sw;
 
       /* Modified by Ed - matz can have values 0 through 3 */

@@ -191,7 +191,7 @@ class TwoBodySOInt {
     template <typename TwoBodySOIntFunctor>
     int compute_pq_pair_deriv1(const int &p, const int &q, const size_t &pair_number, const TwoBodySOIntFunctor &body) {
         const_cast<TwoBodySOIntFunctor &>(body).load_tpdm(pair_number);
-        std::shared_ptr<SO_RS_Iterator> shellIter = std::make_shared<SO_RS_Iterator>(p, q, b1_, b2_, b3_, b4_);
+        auto shellIter = std::make_shared<SO_RS_Iterator>(p, q, b1_, b2_, b3_, b4_);
 
         compute_quartets_deriv1(shellIter, const_cast<TwoBodySOIntFunctor &>(body));
 
@@ -1096,7 +1096,7 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor) {
 
     if (comm_ == "MADNESS") {
     } else {
-        std::shared_ptr<SO_PQ_Iterator> PQIter = std::make_shared<SO_PQ_Iterator>(b1_);
+        auto PQIter = std::make_shared<SO_PQ_Iterator>(b1_);
         size_t pair_number = 0;
         for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
             compute_pq_pair_deriv1<TwoBodySOIntFunctor>(PQIter->p(), PQIter->q(), pair_number, functor);

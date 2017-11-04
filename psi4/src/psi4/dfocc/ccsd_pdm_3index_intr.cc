@@ -677,8 +677,8 @@ void DFOCC::ccsd_pdm_yQia() {
     Y.reset();
 
     // Build S_i^a = \sum(m) T_m^a \sum(e) T_i^e * L_m^e
-    SharedTensor2d Sij = std::make_shared<Tensor2d>("S <I|J>", naoccA, naoccA);
-    SharedTensor2d s1 = std::make_shared<Tensor2d>("S <I|A>", naoccA, navirA);
+    auto Sij = std::make_shared<Tensor2d>("S <I|J>", naoccA, naoccA);
+    auto s1 = std::make_shared<Tensor2d>("S <I|A>", naoccA, navirA);
     Sij->gemm(false, true, t1A, l1A, 1.0, 0.0);
     s1->gemm(false, false, Sij, t1A, 1.0, 0.0);
     Sij.reset();
