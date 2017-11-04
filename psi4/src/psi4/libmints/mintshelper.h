@@ -227,6 +227,7 @@ private:
     /// AO Potential Integrals
     SharedMatrix ao_potential();
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_potential_deriv1(SharedMatrix D);
     /// AO ECP Integrals
     SharedMatrix ao_ecp();
     SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
