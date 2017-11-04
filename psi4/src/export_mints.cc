@@ -745,15 +745,12 @@ void export_mints(py::module& m)
         // One-electron
         .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "AO basis overlap integrals")
         .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "AO mixed basis overlap integrals")
-        .def("ao_overlap_deriv1", &MintsHelper::ao_overlap_deriv1, "AO first nuclear derivative overlap integrals")
         .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals")
         .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
         .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
-        .def("ao_kinetic_deriv1", &MintsHelper::ao_kinetic_deriv1, "AO first nuclear derivative kinetic integrals")
         .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals")
         .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
-        .def("ao_potential_deriv1", &MintsHelper::ao_potential_deriv1, "AO first nuclear derivative potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals")
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
@@ -821,7 +818,12 @@ void export_mints(py::module& m)
         .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory",
              py::arg("Iso"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
         .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", py::arg("rel_basis"))
-        .def("play", &MintsHelper::play, "play function");
+        .def("play", &MintsHelper::play, "play function")
+
+        // Contracted gradient terms
+        .def("overlap_grad", &MintsHelper::overlap_grad, "AO first nuclear derivative overlap integrals")
+        .def("kinetic_grad", &MintsHelper::kinetic_grad, "AO first nuclear derivative kinetic integrals")
+        .def("potential_grad", &MintsHelper::potential_grad, "AO first nuclear derivative potential integrals");
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "

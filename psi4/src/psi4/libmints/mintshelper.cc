@@ -501,7 +501,7 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         }      // End Rectangular
     }          // End Mu
 }
-void MintsHelper::one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out){
+void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out){
 
     // Grab basis info
     std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
@@ -641,7 +641,7 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr <BasisSet> bs1, std::shared
     one_body_ao_computer(ints_vec, overlap_mat, false);
     return overlap_mat;
 }
-SharedMatrix MintsHelper::ao_overlap_deriv1(SharedMatrix D)
+SharedMatrix MintsHelper::overlap_grad(SharedMatrix D)
 {
     // Overlap
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
@@ -649,7 +649,7 @@ SharedMatrix MintsHelper::ao_overlap_deriv1(SharedMatrix D)
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(1)));
     }
     SharedMatrix overlap_mat(new Matrix("AO-basis Overlap Ints Deriv1", basisset_->molecule()->natom(), 3));
-    one_body_ao_computer_deriv1(ints_vec, D, overlap_mat);
+    grad_two_center_computer(ints_vec, D, overlap_mat);
     return overlap_mat;
 }
 
@@ -675,7 +675,7 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr <BasisSet> bs1, std::shared
     one_body_ao_computer(ints_vec, kinetic_mat, false);
     return kinetic_mat;
 }
-SharedMatrix MintsHelper::ao_kinetic_deriv1(SharedMatrix D)
+SharedMatrix MintsHelper::kinetic_grad(SharedMatrix D)
 {
     // Overlap
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
@@ -683,7 +683,7 @@ SharedMatrix MintsHelper::ao_kinetic_deriv1(SharedMatrix D)
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic(1)));
     }
     SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints Deriv1", basisset_->molecule()->natom(), 3));
-    one_body_ao_computer_deriv1(ints_vec, D, kinetic_mat);
+    grad_two_center_computer(ints_vec, D, kinetic_mat);
     return kinetic_mat;
 }
 
@@ -709,7 +709,7 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shar
     one_body_ao_computer(ints_vec, potential_mat, false);
     return potential_mat;
 }
-SharedMatrix MintsHelper::ao_potential_deriv1(SharedMatrix D) {
+SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
 
     // Potential derivs
     int natom = basisset_->molecule()->natom();

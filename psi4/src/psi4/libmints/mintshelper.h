@@ -84,7 +84,7 @@ private:
     void common_init();
 
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
-    void one_body_ao_computer_deriv1(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
+    void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
 
    public:
 
@@ -219,15 +219,12 @@ private:
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
     SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    SharedMatrix ao_overlap_deriv1(SharedMatrix D);
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
     SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    SharedMatrix ao_kinetic_deriv1(SharedMatrix D);
     /// AO Potential Integrals
     SharedMatrix ao_potential();
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    SharedMatrix ao_potential_deriv1(SharedMatrix D);
     /// AO ECP Integrals
     SharedMatrix ao_ecp();
     SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
@@ -278,6 +275,13 @@ private:
     /// N^5 ao->mo transform, in memory, smart indexing
     SharedMatrix mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
                                                 SharedMatrix C3, SharedMatrix C4);
+
+    /// Gradient Integrals
+    SharedMatrix overlap_grad(SharedMatrix D);
+    SharedMatrix kinetic_grad(SharedMatrix D);
+    SharedMatrix potential_grad(SharedMatrix D);
+    // SharedMatrix potential_grad(SharedMatrix D);
+
     /// Play function
     void play();
 };
