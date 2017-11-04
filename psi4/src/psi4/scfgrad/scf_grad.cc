@@ -172,7 +172,7 @@ SharedMatrix SCFGrad::compute_gradient()
     gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
 
-    auto mints = std::make_shared<MintsHelper>(basisset_);
+    auto mints = std::make_shared<MintsHelper>(basisset_, options_);
 
     // => V T Perturbation Gradients <= //
     timer_on("Grad: V T Perturb");
@@ -197,18 +197,19 @@ SharedMatrix SCFGrad::compute_gradient()
         // Alpha
         auto tmp = Ca_occ->clone();
         for (size_t i = 0; i < nalpha; i++){
-            tmp->scale_column(0, i, -eps_a_occ->get(i));
+            tmp->scale_column(0, i, eps_a_occ->get(i));
         }
         W->gemm(false, true, 1.0, tmp, Ca_occ, 0.0);
 
         // Beta
         tmp->copy(Cb_occ);
         for (size_t i = 0; i < nbeta; i++){
-            tmp->scale_column(0, i, -eps_b_occ->get(i));
+            tmp->scale_column(0, i, eps_b_occ->get(i));
         }
         W->gemm(false, true, 1.0, tmp, Cb_occ, 1.0);
 
         gradients_["Overlap"] = mints->overlap_grad(W);
+        gradients_["Overlap"]->scale(-1.0);
     }
     timer_off("Grad: S");
 

@@ -823,11 +823,12 @@ void export_mints(py::module& m)
         .def("play", &MintsHelper::play, "play function")
 
         // Contracted gradient terms
-        .def("overlap_grad", &MintsHelper::overlap_grad, "AO first nuclear derivative overlap integrals")
-        .def("kinetic_grad", &MintsHelper::kinetic_grad, "AO first nuclear derivative kinetic integrals")
-        .def("potential_grad", &MintsHelper::potential_grad, "AO first nuclear derivative potential integrals")
-        .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad), "AO first nuclear derivative perturb integrals")
-        .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "AO first nuclear derivative perturb integrals");
+        .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
+        .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
+        .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
+        .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
+        .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
+        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals");
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
