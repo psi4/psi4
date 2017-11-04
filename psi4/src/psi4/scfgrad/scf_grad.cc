@@ -113,12 +113,9 @@ SharedMatrix SCFGrad::compute_gradient()
 
     std::vector<std::string> gradient_terms;
     gradient_terms.push_back("Nuclear");
-    gradient_terms.push_back("Kinetic");
-    gradient_terms.push_back("Potential");
+    gradient_terms.push_back("Core");
     gradient_terms.push_back("Overlap");
     gradient_terms.push_back("Coulomb");
-    if(options_.get_bool("PERTURB_H"))
-        gradient_terms.push_back("Perturbation");
     gradient_terms.push_back("Exchange");
     gradient_terms.push_back("Exchange,LR");
     gradient_terms.push_back("XC");
@@ -177,15 +174,10 @@ SharedMatrix SCFGrad::compute_gradient()
 
     auto mints = std::make_shared<MintsHelper>(basisset_);
 
-    // => Kinetic Gradient <= //
-    timer_on("Grad: T");
-    gradients_["Kinetic"] = mints->kinetic_grad(Dt);
-    timer_off("Grad: T");
-
-    // => Potential Gradient <= //
-    timer_on("Grad: V");
-    gradients_["Potential"] = mints->potential_grad(Dt);
-    timer_off("Grad: V");
+    // => V T Perturbation Gradients <= //
+    timer_on("Grad: V T Perturb");
+    gradients_["Core"] = mints->core_hamiltonian_grad(Dt);
+    timer_off("Grad: V T Perturb");
 
     // If an external field exists, add it to the one-electron Hamiltonian
     if (external_pot_) {
@@ -194,11 +186,6 @@ SharedMatrix SCFGrad::compute_gradient()
         gradients_["External Potential"] = external_pot_->computePotentialGradients(basisset_, Dt);
         timer_off("Grad: External");
     }  // end external
-
-    // => Perturbation Gradient <= //
-    if(options_.get_bool("PERTURB_H")) {
-        gradients_["Perturbation"] = mints->perturb_grad(Dt);
-    }
 
     // => Overlap Gradient <= //
     timer_on("Grad: S");

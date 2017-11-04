@@ -278,6 +278,10 @@ private:
 
     /// Gradient Integrals
     SharedMatrix overlap_grad(SharedMatrix D);
+
+    // Computes all "core" gradient terms T + V + perturb
+    SharedMatrix core_hamiltonian_grad(SharedMatrix D);
+
     SharedMatrix kinetic_grad(SharedMatrix D);
     SharedMatrix potential_grad(SharedMatrix D);
     SharedMatrix perturb_grad(SharedMatrix D);
