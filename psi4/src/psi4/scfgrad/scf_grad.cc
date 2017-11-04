@@ -179,79 +179,7 @@ SharedMatrix SCFGrad::compute_gradient()
 
     // => Kinetic Gradient <= //
     timer_on("Grad: T");
-    {
-        double** Dp = Dt->pointer();
-
-        gradients_["Kinetic"] = SharedMatrix(gradients_["Nuclear"]->clone());
-        gradients_["Kinetic"]->set_name("Kinetic Gradient");
-        gradients_["Kinetic"]->zero();
-        double** Tp = gradients_["Kinetic"]->pointer();
-
-        // Kinetic derivatives
-        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-
-                Tint->compute_shell_deriv1(P,Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-            }
-        }
-    }
+    gradients_["Kinetic"] = mints->ao_kinetic_deriv1(Dt);
     timer_off("Grad: T");
 
     // => Potential Gradient <= //
@@ -576,14 +504,14 @@ SharedMatrix SCFGrad::compute_gradient()
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
-            C_DAXPY(nso,eps_ap[i], &Cap[0][i], nalpha, &temp[i], nalpha);
+            C_DAXPY(nso, -eps_ap[i], &Cap[0][i], nalpha, &temp[i], nalpha);
         }
 
         C_DGEMM('N','T',nso,nso,nalpha,1.0,Cap[0],nalpha,temp,nalpha,0.0,Wp[0],nso);
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nbeta);
         for (int i = 0; i < nbeta; i++) {
-            C_DAXPY(nso,eps_bp[i], &Cbp[0][i], nbeta, &temp[i], nbeta);
+            C_DAXPY(nso, -eps_bp[i], &Cbp[0][i], nbeta, &temp[i], nbeta);
         }
 
         C_DGEMM('N','T',nso,nso,nbeta,1.0,Cbp[0],nbeta,temp,nbeta,1.0,Wp[0],nso);

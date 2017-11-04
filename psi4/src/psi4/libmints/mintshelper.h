@@ -223,6 +223,7 @@ private:
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
     SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_kinetic_deriv1(SharedMatrix D);
     /// AO Potential Integrals
     SharedMatrix ao_potential();
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
