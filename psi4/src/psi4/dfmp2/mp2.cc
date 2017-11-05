@@ -2655,11 +2655,8 @@ void RDFMP2::form_gradient()
     std::vector<std::string> gradient_terms;
     gradient_terms.push_back("Nuclear");
     gradient_terms.push_back("Core");
-    // gradient_terms.push_back("Potential");
     gradient_terms.push_back("Overlap");
     gradient_terms.push_back("Coulomb");
-    // if(options_.get_bool("PERTURB_H"))
-    //     gradient_terms.push_back("Perturbation");
     gradient_terms.push_back("Exchange");
     gradient_terms.push_back("Correlation");
     gradient_terms.push_back("Total");
@@ -2672,9 +2669,9 @@ void RDFMP2::form_gradient()
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
 
     // => Kinetic Gradient <= //
-    timer_on("Grad: T");
+    timer_on("Grad: V T Perturb");
     gradients_["Core"] = mints->core_hamiltonian_grad(PAO);
-    timer_off("Grad: T");
+    timer_off("Grad: V T Perturb");
 
     // If an external field exists, add it to the one-electron Hamiltonian
     if (external_pot_) {
