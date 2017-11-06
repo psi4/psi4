@@ -42,8 +42,8 @@ void DFOCC::oeprop() {
     outfile->Printf("\tComputing one-electron properties...\n");
 
     timer_on("oeprop");
-    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
-    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
+    SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
+    SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
     if (reference_ == "RESTRICTED") {
         G1->to_shared_matrix(Da_);
         Da_->scale(0.5);
@@ -56,7 +56,7 @@ void DFOCC::oeprop() {
     }
 
     // Compute oeprop
-    auto oe = std::make_shared<OEProp>(shared_from_this());
+    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
@@ -83,11 +83,11 @@ void DFOCC::ekt_ip() {
     timer_on("ekt");
     if (reference_ == "RESTRICTED") {
         // malloc
-        eigA = std::make_shared<Tensor1d>("epsilon <I|J>", noccA);
-        psA = std::make_shared<Tensor1d>("alpha occupied pole strength vector", noccA);
+        eigA = SharedTensor1d(new Tensor1d("epsilon <I|J>", noccA));
+        psA = SharedTensor1d(new Tensor1d("alpha occupied pole strength vector", noccA));
 
         // Call EKT
-        auto ektA = std::make_shared<Ektip>("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5);
+        SharedEktip ektA = SharedEktip(new Ektip("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5));
 
         // Print IPs
         outfile->Printf("\n\tEKT Ionization Potentials (Alpha Spin Case) \n");
