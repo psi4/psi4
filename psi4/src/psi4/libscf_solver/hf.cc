@@ -1189,7 +1189,7 @@ void HF::print_orbitals()
 {
     std::vector<std::string> labels = molecule_->irrep_labels();
 
-    outfile->Printf( "    Orbital Energies (a.u.)\n    -----------------------\n\n");
+    outfile->Printf( "    Orbital Energies [Eh]\n    ---------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
     if((reference == "RHF") || (reference == "RKS")){
