@@ -103,7 +103,7 @@ def scf_iterate(self):
         #            E_ += efp_wfn_dependent_energy
         #        }
         ##endif
-        #
+        
         ##ifdef USING_PCMSolver
         #        # The PCM potential must be added to the Fock operator *after* the
         #        # energy computation, not in form_F()
@@ -239,7 +239,7 @@ def scf_iterate(self):
 
         core.set_variable("SCF ITERATION ENERGY", SCFE)
 
-        # After we've built the new D, damp the update if
+        # After we've built the new D, damp the update
         if damping_performed:
             self.damp_update()
 

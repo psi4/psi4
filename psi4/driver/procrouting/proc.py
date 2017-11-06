@@ -1356,7 +1356,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
-    if hasattr(ref_wfn, "_disp_functor"):
+    if hasattr(scf_wfn, "_disp_functor"):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
         scf_wfn.set_variable("-D Energy", disp_energy)
 
