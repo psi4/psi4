@@ -183,6 +183,10 @@ void export_wavefunction(py::module& m) {
         .def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
         .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
         .def("form_F", &scf::HF::form_F, "Forms the F matrix.")
+        .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
+        .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
+        .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
+        .def("integrals", &scf::HF::integrals, "Sets up the JK object")
         .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
         .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
         .def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).")
@@ -214,17 +218,20 @@ void export_wavefunction(py::module& m) {
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
+        .def("diis_manager", &scf::HF::diis_manager, "docstring")
+        .def("get_initialized_diis_manager", &scf::HF::get_initialized_diis_manager, "docstring")
+        .def("set_initialized_diis_manager", &scf::HF::set_initialized_diis_manager, "docstring")
         .def("damp_update", &scf::HF::damp_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
-        // .def("print_orbitals", &scf::HF::print_orbitals, "docstring");
+        .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
         .def("print_energies", &scf::HF::print_energies, "docstring")
         .def("print_header", &scf::HF::print_header, "docstring")
         .def("get_energies", &scf::HF::get_energies, "docstring")
         .def("set_energies", &scf::HF::set_energies, "docstring")
         .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
+        .def_property("iteration", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
-        .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
 
     /// HF Functions
