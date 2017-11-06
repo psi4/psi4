@@ -80,6 +80,7 @@ void export_misc(py::module&);
 void export_oeprop(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
+void export_diis(py::module&);
 void export_wavefunction(py::module&);
 void export_options(py::module&);
 
@@ -1350,6 +1351,7 @@ PYBIND11_PLUGIN(core) {
 
     // Define library classes
     export_psio(core);
+    export_diis(core);
     export_mints(core);
     export_functional(core);
     export_misc(core);

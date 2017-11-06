@@ -59,6 +59,8 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
+#include "psi4/libdiis/diismanager.h"
+
 #include <string>
 
 using namespace psi;
