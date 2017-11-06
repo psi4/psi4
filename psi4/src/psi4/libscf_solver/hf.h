@@ -211,14 +211,6 @@ protected:
     int cphf_nfock_builds_;
     bool cphf_converged_;
 
-    /// Formation of H is the same regardless of RHF, ROHF, UHF
-    // Temporarily converting to virtual function for testing embedding
-    // potentials.  TDC, 5/23/12.
-    virtual void form_H();
-
-    /// Formation of S^+1/2 and S^-1/2 are the same
-    void form_Shalf();
-
     /// Edit matrices if we are doing canonical orthogonalization
     virtual void prepare_canonical_orthogonalization() { return; }
 
@@ -246,11 +238,8 @@ protected:
     void compute_fvpi();
 
     /// Prints the orbitals energies and symmetries (helper method)
-    void print_orbitals(const char* header, std::vector<std::pair<double,
-                        std::pair< std::string, int> > > orbs);
-
-    /// Do any needed integral setup
-    virtual void integrals();
+    void print_orbital_pairs(const char* header, std::vector<std::pair<double,
+                             std::pair< std::string, int> > > orbs);
 
     /// Which set of iterations we're on in this computation, e.g., for stability
     /// analysis, where we want to retry SCF without going through all of the setup
@@ -267,14 +256,8 @@ protected:
     /// The multiplicity of the system (specified as 2 Ms + 1)
     int multiplicity_;
 
-    /// The number of iterations need to reach convergence
-    int iterations_needed_;
-
     /// SAD Guess and propagation
     void compute_SAD_guess();
-
-    /// Form the guess (gaurantees C, D, and E)
-    virtual void guess();
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
@@ -300,8 +283,9 @@ public:
 
     virtual ~HF();
 
-    /// The number of iterations needed to reach convergence
-    int iterations_needed() {return iterations_needed_;}
+    /// Get and set current iteration
+    int iteration() const { return iteration_; }
+    void set_iteration(int iter) { iteration_ = iter; }
 
     /// Check MO phases
     void check_phases();
@@ -385,6 +369,20 @@ public:
 
     /// Renormalize orbitals to 1.0 before saving
     void frac_renormalize();
+
+    /// Formation of H is the same regardless of RHF, ROHF, UHF
+    // Temporarily converting to virtual function for testing embedding
+    // potentials.  TDC, 5/23/12.
+    virtual void form_H();
+
+    /// Do any needed integral setup
+    virtual void integrals();
+
+    /// Formation of S^+1/2 and S^-1/2 are the same
+    void form_Shalf();
+
+    /// Form the guess (guarantees C, D, and E)
+    virtual void guess();
 
     /// Compute the MO coefficients (C_)
     virtual void form_C();
