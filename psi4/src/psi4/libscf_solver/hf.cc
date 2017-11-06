@@ -1173,7 +1173,7 @@ void HF::compute_fvpi()
     }
 }
 
-void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<std::string, int> > > orbs)
+void HF::print_orbital_pairs(const char* header, std::vector<std::pair<double, std::pair<std::string, int> > > orbs)
 {
         outfile->Printf( "    %-70s\n\n    ", header);
         int count = 0;
@@ -1217,8 +1217,8 @@ void HF::print_orbitals()
         std::sort(occ.begin(), occ.end());
         std::sort(vir.begin(), vir.end());
 
-        print_orbitals("Doubly Occupied:", occ);
-        print_orbitals("Virtual:", vir);
+        print_orbital_pairs("Doubly Occupied:", occ);
+        print_orbital_pairs("Virtual:", vir);
 
     }else if((reference == "UHF") || (reference == "UKS") ||
         (reference == "CUHF")){
@@ -1264,10 +1264,10 @@ void HF::print_orbitals()
         std::sort(occB.begin(), occB.end());
         std::sort(virB.begin(), virB.end());
 
-        print_orbitals("Alpha Occupied:", occA);
-        print_orbitals("Alpha Virtual:", virA);
-        print_orbitals("Beta Occupied:", occB);
-        print_orbitals("Beta Virtual:", virB);
+        print_orbital_pairs("Alpha Occupied:", occA);
+        print_orbital_pairs("Alpha Virtual:", virA);
+        print_orbital_pairs("Beta Occupied:", occB);
+        print_orbital_pairs("Beta Virtual:", virB);
 
     }else if(reference == "ROHF"){
 
@@ -1298,9 +1298,9 @@ void HF::print_orbitals()
         std::sort(socc.begin(), socc.end());
         std::sort(vir.begin(), vir.end());
 
-        print_orbitals("Doubly Occupied:", docc);
-        print_orbitals("Singly Occupied:", socc);
-        print_orbitals("Virtual:", vir);
+        print_orbital_pairs("Doubly Occupied:", docc);
+        print_orbital_pairs("Singly Occupied:", socc);
+        print_orbital_pairs("Virtual:", vir);
 
     }else{
         throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
