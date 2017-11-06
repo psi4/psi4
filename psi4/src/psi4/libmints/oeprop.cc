@@ -804,7 +804,7 @@ void OEProp::common_init()
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
-    outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
+    outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n",
             origin_[0], origin_[1], origin_[2]);
 
     // Determine number of NOONs to print; default is 3
@@ -1243,11 +1243,11 @@ void OEProp::compute_dipole(bool transition)
 
     if (!transition) {
 
-        outfile->Printf( "  Nuclear Dipole Moment: (a.u.)\n");
+        outfile->Printf( "  Nuclear Dipole Moment: [e a0]\n");
         outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
                 ndip->get(0), ndip->get(1), ndip->get(2));
         outfile->Printf( "\n");
-        outfile->Printf( "  Electronic Dipole Moment: (a.u.)\n");
+        outfile->Printf( "  Electronic Dipole Moment: [e a0]\n");
         outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
                 de[0], de[1], de[2]);
         outfile->Printf( "\n");
@@ -1257,13 +1257,13 @@ void OEProp::compute_dipole(bool transition)
         de[2] += ndip->get(0, 2);
     }
 
-    outfile->Printf("  %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
+    outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
     outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0], de[1], de[2], de.norm());
     outfile->Printf( "\n");
 
     double dfac = pc_dipmom_au2debye;
-    outfile->Printf("  %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
+    outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
     outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
     outfile->Printf( "\n");
@@ -1347,7 +1347,7 @@ void OEProp::compute_quadrupole(bool transition)
 
     // Print multipole components
     double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
-    outfile->Printf( "  %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
+    outfile->Printf( "  %sQuadrupole Moment: [D Å]\n", (transition ? "Transition " : ""));
     outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
     outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
@@ -1355,7 +1355,7 @@ void OEProp::compute_quadrupole(bool transition)
     outfile->Printf( "\n");
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    outfile->Printf( "  Traceless %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
+    outfile->Printf( "  Traceless %sQuadrupole Moment: [D Å]\n", (transition ? "Transition " : ""));
     outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
     outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
