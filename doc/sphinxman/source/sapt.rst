@@ -353,6 +353,12 @@ yourself. In the example below, we do a stability analysis for the open-shell mo
   psi4.IO.change_file_namespace(97, 'monomerB', 'dimer')
   psi4.IO.set_default_namespace('dimer')
   
+  aux_basis = psi4.core.BasisSet.build(wfn_dimer.molecule(), "DF_BASIS_SAPT",
+                                psi4.core.get_global_option("DF_BASIS_SAPT"),
+                                "RIFIT", psi4.core.get_global_option("BASIS"))
+  wfn_dimer.set_basisset("DF_BASIS_SAPT", aux_basis)
+  wfn_dimer.set_basisset("DF_BASIS_ELST", aux_basis)
+  
   psi4.sapt(wfn_dimer,wfn_monA,wfn_monB)
 
 In this way, any of the SCF options can be tweaked for individual fragments.
