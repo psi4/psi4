@@ -306,6 +306,11 @@ public:
     /** Compute/print spin contamination information (if unrestricted) **/
     virtual void compute_spin_contamination();
 
+    /// The DIIS object
+    std::shared_ptr<DIISManager> diis_manager() const { return diis_manager_; }
+    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
+    bool get_initialized_diis_manager() const { return initialized_diis_manager_; }
+
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
 

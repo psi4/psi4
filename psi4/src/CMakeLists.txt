@@ -17,6 +17,7 @@ set(sources_list
         export_misc.cc
         export_oeprop.cc
         export_plugins.cc
+        export_diis.cc
         export_psio.cc
         export_trans.cc
         export_wavefunction.cc
