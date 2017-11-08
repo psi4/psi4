@@ -287,7 +287,8 @@ SharedMatrix SCFDeriv::compute_gradient()
 
     return gradients_["Total"];
 }
-SharedMatrix SCFDeriv::compute_hessian()
+
+SharedMatrix SCFGrad::compute_hessian()
 {
     // => Echo <= //
 
@@ -1038,7 +1039,7 @@ SharedMatrix SCFDeriv::compute_hessian()
     if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
         hessians_["Response"] = hessian_response();
     } else {
-        throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
+        hessians_["Response"] = uhf_hessian_response();
     }
 
     // => Total Hessian <= //

@@ -71,6 +71,15 @@ public:
     virtual SharedMatrix hessian_response() override;
 };
 
+class USCFDeriv : public SCFDeriv {
+protected:
+    std::shared_ptr<scf::UHF> uhf_wfn_;
+public:
+    USCFDeriv(std::shared_ptr<scf::UHF> uhf_wfn, Options& options): SCFDeriv(std::dynamic_pointer_cast<Wavefunction>(uhf_wfn), options), uhf_wfn_(uhf_wfn) {}
+    ~USCFDeriv() override {}
+    virtual SharedMatrix hessian_response() override;
+};
+
 }} // Namespaces
 
 #endif
