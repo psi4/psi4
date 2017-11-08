@@ -68,8 +68,7 @@ void DFOCC::dfgrad() {
     outfile->Printf("\tComputing analytic gradients...\n");
 
     gradient_terms.push_back("Nuclear");
-    gradient_terms.push_back("Kinetic");
-    gradient_terms.push_back("Potential");
+    gradient_terms.push_back("Core");
     gradient_terms.push_back("Overlap");
     gradient_terms.push_back("3-Index:RefSep");
     gradient_terms.push_back("3-Index:Corr");
@@ -101,11 +100,8 @@ void DFOCC::dfgrad() {
     gradients["Total"]->set_name("Total Gradient");
 
     // OEI grad
-    gradients["One-Electron"] = SharedMatrix(gradients["Nuclear"]->clone());
+    gradients["One-Electron"] = gradients["Core"]->clone();
     gradients["One-Electron"]->set_name("One-Electron Gradient");
-    gradients["One-Electron"]->zero();
-    gradients["One-Electron"]->add(gradients["Kinetic"]);
-    gradients["One-Electron"]->add(gradients["Potential"]);
     gradients["One-Electron"]->print_atom_vector();
 
     // TEI grad

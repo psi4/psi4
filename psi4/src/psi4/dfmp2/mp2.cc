@@ -51,6 +51,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/mintshelper.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -2308,7 +2309,7 @@ void RDFMP2::form_Z()
     SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
     double** APp = AP->pointer();
     SharedMatrix Dtemp;
-    
+
 
     if(options_.get_bool("OPDM_RELAX")){
         psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2405,7 +2406,7 @@ void RDFMP2::form_Z()
         Ca_ = SharedMatrix(new Matrix("DF-MP2 Natural Orbitals", nsopi_, nmopi_));
         epsilon_a_ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 relaxed density", nsopi_, nsopi_));
-        
+
     }else{
         // Don't relax the OPDM
         Dtemp = Ppq->clone();
@@ -2420,7 +2421,7 @@ void RDFMP2::form_Z()
         Ca_ = SharedMatrix(new Matrix("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_));
         epsilon_a_ = SharedVector(new Vector("DF-MP2 (unrelaxed) NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 unrelaxed density", nsopi_, nsopi_));
-        
+
     }
 
     compute_opdm_and_nos(Dtemp, Da_, Ca_, epsilon_a_);
@@ -2647,16 +2648,15 @@ void RDFMP2::form_gradient()
     SharedMatrix PFAOs(PFAO->clone());
     PFAOs->scale(0.5);
 
+    auto mints = std::make_shared<MintsHelper>(basisset_, options_);
+
     // => Gogo Gradients <= //
 
     std::vector<std::string> gradient_terms;
     gradient_terms.push_back("Nuclear");
-    gradient_terms.push_back("Kinetic");
-    gradient_terms.push_back("Potential");
+    gradient_terms.push_back("Core");
     gradient_terms.push_back("Overlap");
     gradient_terms.push_back("Coulomb");
-    if(options_.get_bool("PERTURB_H"))
-        gradient_terms.push_back("Perturbation");
     gradient_terms.push_back("Exchange");
     gradient_terms.push_back("Correlation");
     gradient_terms.push_back("Total");
@@ -2669,155 +2669,9 @@ void RDFMP2::form_gradient()
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
 
     // => Kinetic Gradient <= //
-    timer_on("Grad: T");
-    {
-        gradients_["Kinetic"] = SharedMatrix(gradients_["Nuclear"]->clone());
-        gradients_["Kinetic"]->set_name("Kinetic Gradient");
-        gradients_["Kinetic"]->zero();
-        double** Tp = gradients_["Kinetic"]->pointer();
-
-        // Kinetic derivatives
-        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-
-                Tint->compute_shell_deriv1(P,Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][0] += perm * PAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][1] += perm * PAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][2] += perm * PAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][0] += perm * PAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][1] += perm * PAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][2] += perm * PAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-            }
-        }
-    }
-    timer_off("Grad: T");
-
-    // => Potential Gradient <= //
-    timer_on("Grad: V");
-    {
-        gradients_["Potential"] = SharedMatrix(gradients_["Nuclear"]->clone());
-        gradients_["Potential"]->set_name("Potential Gradient");
-        gradients_["Potential"]->zero();
-
-        // Thread count
-        int threads = 1;
-        #ifdef _OPENMP
-            threads = Process::environment.get_n_threads();
-        #endif
-
-        // Potential derivatives
-        std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
-        std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) {
-            Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
-            Vtemps.push_back(SharedMatrix(gradients_["Potential"]->clone()));
-        }
-
-        // Lower Triangle
-        std::vector<std::pair<int,int> > PQ_pairs;
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-                PQ_pairs.push_back(std::pair<int,int>(P,Q));
-            }
-        }
-
-        #pragma omp parallel for schedule(dynamic) num_threads(threads)
-        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-
-            int P = PQ_pairs[PQ].first;
-            int Q = PQ_pairs[PQ].second;
-
-            int thread = 0;
-            #ifdef _OPENMP
-                thread = omp_get_thread_num();
-            #endif
-
-            Vint[thread]->compute_shell_deriv1(P,Q);
-            const double* buffer = Vint[thread]->buffer();
-
-            int nP = basisset_->shell(P).nfunction();
-            int oP = basisset_->shell(P).function_index();
-            int aP = basisset_->shell(P).ncenter();
-
-            int nQ = basisset_->shell(Q).nfunction();
-            int oQ = basisset_->shell(Q).function_index();
-            int aQ = basisset_->shell(Q).ncenter();
-
-            double perm = (P == Q ? 1.0 : 2.0);
-
-            double** Vp = Vtemps[thread]->pointer();
-
-            for (int A = 0; A < natom; A++) {
-                const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-                const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-                const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        double Vval = perm * PAOp[p + oP][q + oQ];
-                        Vp[A][0] += Vval * (*ref0++);
-                        Vp[A][1] += Vval * (*ref1++);
-                        Vp[A][2] += Vval * (*ref2++);
-                    }
-                }
-            }
-        }
-
-        for (int t = 0; t < threads; t++) {
-            gradients_["Potential"]->add(Vtemps[t]);
-        }
-    }
-    timer_off("Grad: V");
+    timer_on("Grad: V T Perturb");
+    gradients_["Core"] = mints->core_hamiltonian_grad(PAO);
+    timer_off("Grad: V T Perturb");
 
     // If an external field exists, add it to the one-electron Hamiltonian
     if (external_pot_) {
@@ -2827,302 +2681,10 @@ void RDFMP2::form_gradient()
         timer_off("Grad: External");
     }  // end external
 
-
-    // => Perturbation Gradient <= //
-    if(options_.get_bool("PERTURB_H")) {
-        timer_on("Grad: Perturbation");
-
-        double xlambda = 0.0;
-        double ylambda = 0.0;
-        double zlambda = 0.0;
-
-        std::string perturb_with = options_.get_str("PERTURB_WITH");
-        if (perturb_with == "DIPOLE_X")
-            xlambda = options_.get_double("PERTURB_MAGNITUDE");
-        else if (perturb_with == "DIPOLE_Y")
-            ylambda = options_.get_double("PERTURB_MAGNITUDE");
-        else if (perturb_with == "DIPOLE_Z")
-            zlambda = options_.get_double("PERTURB_MAGNITUDE");
-        else if (perturb_with == "DIPOLE") {
-            if(options_["PERTURB_DIPOLE"].size() !=3)
-                throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-            xlambda = options_["PERTURB_DIPOLE"][0].to_double();
-            ylambda = options_["PERTURB_DIPOLE"][1].to_double();
-            zlambda = options_["PERTURB_DIPOLE"][2].to_double();
-        } else {
-            std::string msg("Gradients for a ");
-            msg += perturb_with;
-            msg += " perturbation are not available yet.\n";
-            throw PSIEXCEPTION(msg);
-        }
-
-        gradients_["Perturbation"] = SharedMatrix(gradients_["Nuclear"]->clone());
-        gradients_["Perturbation"]->set_name("Perturbation Gradient");
-        gradients_["Perturbation"]->zero();
-        double** Pp = gradients_["Perturbation"]->pointer();
-        // Nuclear dipole perturbation derivatives
-        for(int n = 0; n < natom; ++n){
-            double charge = molecule_->Z(n);
-            Pp[n][0] += xlambda*charge;
-            Pp[n][1] += ylambda*charge;
-            Pp[n][2] += zlambda*charge;
-        }
-
-        // Electronic dipole perturbation derivatives
-        std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
-        const double* buffer = Dint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-
-                Dint->compute_shell_deriv1(P,Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-                double prefac;
-
-                /*
-                 * Mu X derivatives
-                 */
-                if (xlambda != 0.0) {
-                    prefac = perm*xlambda;
-                    // Px
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Py
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Pz
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qx
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qy
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qz
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-                } else {
-                    // Xlambda is zero, so we just advance the pointer to the buffer
-                    ref += 6*nP*nQ;
-                }
-
-                /*
-                 * Mu Y derivatives
-                 */
-                if (ylambda != 0.0) {
-                    prefac = perm*ylambda;
-                    // Px
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Py
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Pz
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qx
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qy
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qz
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-                } else {
-                    // Ylambda is zero, so we just advance the pointer to the buffer
-                    ref += 6*nP*nQ;
-                }
-
-                /*
-                 * Mu Z derivatives
-                 */
-                if (zlambda != 0.0) {
-                    prefac = perm*zlambda;
-                    // Px
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Py
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Pz
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aP][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qx
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qy
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-
-                    // Qz
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Pp[aQ][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
-                        }
-                    }
-                }
-
-            }
-        }
-        timer_off("Grad: Perturbation");
-    }
-    //gradients_["One-Electron"] = SharedMatrix(gradients_["Nuclear"]->clone());
-    //gradients_["One-Electron"]->set_name("One-Electron Gradient");
-    //gradients_["One-Electron"]->zero();
-    //gradients_["One-Electron"]->add(gradients_["Kinetic"]);
-    //gradients_["One-Electron"]->add(gradients_["Potential"]);
-    //gradients_["One-Electron"]->print();
-
     // => Overlap Gradient <= //
     timer_on("Grad: S");
-    {
-        gradients_["Overlap"] = SharedMatrix(gradients_["Nuclear"]->clone());
-        gradients_["Overlap"]->set_name("Overlap Gradient");
-        gradients_["Overlap"]->zero();
-        double** Sp = gradients_["Overlap"]->pointer();
-
-        // Overlap derivatives
-        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-
-                Sint->compute_shell_deriv1(P,Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][0] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][1] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][2] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][0] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][1] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][2] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-            }
-        }
-    }
+    gradients_["Overlap"] = mints->overlap_grad(WAO);
+    gradients_["Overlap"]->scale(-1.0);
     timer_off("Grad: S");
 
     // => Two-Electron Gradient <= //
