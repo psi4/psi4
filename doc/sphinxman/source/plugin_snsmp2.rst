@@ -59,13 +59,17 @@ Installation
 
 * Download the plugin from the GitHub repository:
 
-   >>> git clone https://github.com/DEShawResearch/sns-mp2
+  .. code-block:: bash
+
+     >>> git clone https://github.com/DEShawResearch/sns-mp2
 
 * Once dowloaded, the plugin can be installed:
 
-   >>> cd {top-level-sns-mp2-directory}
-   >>> PSI4_PYTHON=$(head $(which psi4) -n 1 | sed -r 's/^.{2}//')
-   >>> PSI4_PYTHON -m pip install .
+  .. code-block:: bash
+
+     >>> cd {top-level-sns-mp2-directory}
+     >>> PSI4_PYTHON=$(head $(which psi4) -n 1 | sed -r 's/^.{2}//')
+     >>> PSI4_PYTHON -m pip install .
 
 Sample Input
 ~~~~~~~~~~~~
@@ -88,6 +92,7 @@ the two should be treated as separate molecules. (See
 setting up dimer molecules.) This input file can be run in the usual fashion:
 
   .. code-block:: bash
+
     >>> psi4 input.dat
 
 
