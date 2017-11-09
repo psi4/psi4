@@ -91,8 +91,8 @@ the two should be treated as separate molecules. (See
 :ref:`sec:analysis-of-intermolecular-interactions` for more details on 
 setting up dimer molecules.) This input file can be run in the usual fashion:
 
-  .. code-block:: bash
+.. code-block:: bash
 
-     >>> psi4 input.dat
+   >>> psi4 input.dat
 
 
