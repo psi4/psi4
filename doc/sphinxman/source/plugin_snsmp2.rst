@@ -93,6 +93,6 @@ setting up dimer molecules.) This input file can be run in the usual fashion:
 
   .. code-block:: bash
 
-    >>> psi4 input.dat
+     >>> psi4 input.dat
 
 
