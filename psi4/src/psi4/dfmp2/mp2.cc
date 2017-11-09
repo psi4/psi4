@@ -2621,7 +2621,7 @@ void RDFMP2::form_gradient() {
     int natom = molecule_->natom();
 
     // => Nuclear Gradient <= //
-    gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1(dipole_field_strength_).clone());
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
 
     // => Kinetic Gradient <= //

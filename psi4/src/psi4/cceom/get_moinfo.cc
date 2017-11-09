@@ -67,7 +67,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn)
     for(int h=0; h < moinfo.nirreps; h++)
       moinfo.iopen += wfn->nsopi()[h];
     moinfo.irr_labs = wfn->molecule()->irrep_labels();
-    moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
+    moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy(wfn->get_dipole_field_strength());
     if(wfn->reference_wavefunction())
         moinfo.escf = wfn->reference_wavefunction()->reference_energy();
     else

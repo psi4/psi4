@@ -215,7 +215,7 @@ void HF::common_init()
 
 
     // Set additional information
-    nuclearrep_ = molecule_->nuclear_repulsion_energy();
+    nuclearrep_ = molecule_->nuclear_repulsion_energy(dipole_field_strength_);
     charge_ = molecule_->molecular_charge();
     multiplicity_ = molecule_->multiplicity();
     nelectron_ = nbeta_ + nalpha_;
@@ -258,64 +258,7 @@ void HF::common_init()
     //     }
     // }
 
-    perturb_h_ = false;
-    perturb_h_ = options_.get_bool("PERTURB_H");
-    perturb_ = nothing;
-    if (perturb_h_) {
-        std::string perturb_with;
 
-
-        if (options_["PERTURB_WITH"].has_changed()) {
-            perturb_with = options_.get_str("PERTURB_WITH");
-            // Do checks to see what perturb_with is.
-            if (perturb_with == "DIPOLE_X") {
-                perturb_ = dipole_x;
-                perturb_dipoles_[0] = options_.get_double("PERTURB_MAGNITUDE");
-                nuclearrep_ += perturb_dipoles_[0]*molecule_->nuclear_dipole()[0];
-                outfile->Printf(" WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
-            } else if (perturb_with == "DIPOLE_Y") {
-                perturb_ = dipole_y;
-                perturb_dipoles_[1] = options_.get_double("PERTURB_MAGNITUDE");
-                nuclearrep_ += perturb_dipoles_[1]*molecule_->nuclear_dipole()[1];
-                outfile->Printf(" WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
-            } else if (perturb_with == "DIPOLE_Z") {
-                perturb_ = dipole_z;
-                perturb_dipoles_[2] = options_.get_double("PERTURB_MAGNITUDE");
-                nuclearrep_ += perturb_dipoles_[2]*molecule_->nuclear_dipole()[2];
-                outfile->Printf(" WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
-            } else if (perturb_with == "DIPOLE") {
-                perturb_ = dipole;
-                if(options_["PERTURB_DIPOLE"].size() !=3)
-                    throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-                for(int n = 0; n < 3; ++n)
-                    perturb_dipoles_[n] = options_["PERTURB_DIPOLE"][n].to_double();
-                nuclearrep_ += perturb_dipoles_.dot(molecule_->nuclear_dipole());
-            } else if (perturb_with == "EMBPOT") {
-                perturb_ = embpot;
-                perturb_dipoles_[0] = 1.0;
-            }
-            else if (perturb_with == "DX") {
-                perturb_ = dx;
-                perturb_dipoles_[0] = 1.0;
-            }
-            else if (perturb_with == "SPHERE") {
-                perturb_ = sphere;
-                perturb_dipoles_[0] = 1.0;
-            }
-            else {
-
-                    outfile->Printf( "Unknown PERTURB_WITH. Applying no perturbation.\n");
-
-            }
-        } else {
-
-                outfile->Printf( "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
-
-        }
-    }
 
     // How much stuff shall we echo to the user?
     if(options_["PRINT"].has_changed())
@@ -616,7 +559,7 @@ double HF::finalize_E()
 
         outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
         if (perturb_h_) {
-            outfile->Printf( " with %f %f %f perturbation", perturb_dipoles_[0], perturb_dipoles_[1], perturb_dipoles_[2]);
+            outfile->Printf( " with %f %f %f perturbation", dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]);
         }
         outfile->Printf( "\n\n");
         print_energies();
@@ -881,7 +824,7 @@ void HF::form_H()
         V_->print("outfile");
 
     if (perturb_h_) {
-      if(perturb_ == embpot || perturb_ == sphere || perturb_ == dx) { // embedding potential read from file
+      if(dipole_field_type_ == embpot || dipole_field_type_ == sphere || dipole_field_type_ == dx) { // embedding potential read from file
         if(nirrep_ > 1)
           throw PSIEXCEPTION("RHF_embed: embedding, dx, and spherical potentials require 'symmetry c1'.");
         int nso = 0;
@@ -908,7 +851,7 @@ void HF::form_H()
         phi_so = init_array(nso);
         V_eff = block_matrix(nso, nso);
 
-        if(perturb_ == embpot) {
+        if(dipole_field_type_ == embpot) {
 
           FILE* input = fopen("EMBPOT", "r");
           int npoints;
@@ -932,11 +875,11 @@ void HF::form_H()
           fclose(input);
 
         } // embpot
-        else if(perturb_ == dx) {
+        else if(dipole_field_type_ == dx) {
           dx_read(V_eff, phi_ao, phi_so, nao, nso, u);
 
         } // dx file
-        else if(perturb_ == sphere) {
+        else if(dipole_field_type_ == sphere) {
           radius_ = options_.get_double("RADIUS");
           thickness_ = options_.get_double("THICKNESS");
           r_points_ = options_.get_int("R_POINTS");
@@ -976,11 +919,11 @@ void HF::form_H()
         } // sphere
 
 
-          outfile->Printf( "  Perturbing H by %f %f %f V_eff.\n", perturb_dipoles_[0], perturb_dipoles_[1], perturb_dipoles_[2]);
+          outfile->Printf( "  Perturbing H by %f %f %f V_eff.\n", dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]);
           if(options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, "outfile");
 
 
-        if(perturb_ == dx) {
+        if(dipole_field_type_ == dx) {
           for(int i=0; i < nso; i++)
             for(int j=0; j < nso; j++)
               V_->set(i, j, V_eff[i][j]); // ignore nuclear potential
@@ -1972,6 +1915,7 @@ std::shared_ptr<Vector> HF::occupation_b() const
   return occB;
 }
 
+
 void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm)
 {
     //Form F' = X'FX for canonical orthogonalization
@@ -1998,6 +1942,7 @@ void HF::reset_occupation()
     nbeta_ = original_nbeta_;
 
 }
+
 SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 {
     const int* nsopi = Cso->rowspi();

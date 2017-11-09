@@ -484,7 +484,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
                             "X (2e contribution)");
 
     // Check energy
-    double enuc = ref->molecule()->nuclear_repulsion_energy();
+    double enuc = ref->molecule()->nuclear_repulsion_energy(ref->get_dipole_field_strength());
     double E1e = one_particle->vector_dot(H);
     double E2e = global_dpd_->buf4_dot(&G, &D);
     outfile->Printf("\tEnergies recomputed from MRCC's density matrices:\n");
@@ -826,7 +826,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(wave->get_dipole_field_strength()), 0, 0, 0, 0);
     } else {
 
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
@@ -888,7 +888,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(wave->get_dipole_field_strength()), 0, 0, 0, 0);
     }
     _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 

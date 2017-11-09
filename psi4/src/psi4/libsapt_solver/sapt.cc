@@ -84,40 +84,173 @@ SAPT::~SAPT() {
     zero_.reset();
 }
 
-void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
-    evalsA_ = nullptr;
-    evalsB_ = nullptr;
-    diagAA_ = nullptr;
-    diagBB_ = nullptr;
-    CA_ = nullptr;
-    CB_ = nullptr;
-    CHFA_ = nullptr;
-    CHFB_ = nullptr;
-    sAB_ = nullptr;
-    vABB_ = nullptr;
-    vBAA_ = nullptr;
-    vAAB_ = nullptr;
-    vBAB_ = nullptr;
+void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
+{
+  evalsA_ = NULL;
+  evalsB_ = NULL;
+  diagAA_ = NULL;
+  diagBB_ = NULL;
+  CA_ = NULL;
+  CB_ = NULL;
+  CHFA_ = NULL;
+  CHFB_ = NULL;
+  sAB_ = NULL;
+  vABB_ = NULL;
+  vBAA_ = NULL;
+  vAAB_ = NULL;
+  vBAB_ = NULL;
 
-    // We inherit from the dimer basis
-    ribasis_ = get_basisset("DF_BASIS_SAPT");
-    elstbasis_ = get_basisset("DF_BASIS_ELST");
+  // We inherit from the dimer basis
+  ribasis_ = get_basisset("DF_BASIS_SAPT");
+  elstbasis_ = get_basisset("DF_BASIS_ELST");
 
-    // Compare pointers
-    if (ribasis_ == elstbasis_) {
-        elst_basis_ = 0;
-    } else {
-        elst_basis_ = 1;
-    }
+  // Compare pointers
+  if (ribasis_ == elstbasis_){
+      elst_basis_ = 0;
+  } else {
+      elst_basis_ = 1;
+  }
 
-    zero_ = std::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
+  zero_ = std::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
 
-    if (options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
-        exch_scale_alpha_ = 0.0;
-    } else if (options_.get_str("EXCH_SCALE_ALPHA") == "TRUE") {
-        exch_scale_alpha_ = 1.0;  // Default value for alpha
-    } else {
-        exch_scale_alpha_ = std::atof(options_.get_str("EXCH_SCALE_ALPHA").c_str());
+  if(options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
+      exch_scale_alpha_ = 0.0;
+  } else if (options_.get_str("EXCH_SCALE_ALPHA") == "TRUE") {
+      exch_scale_alpha_ = 1.0;                // Default value for alpha
+  } else {
+      exch_scale_alpha_ = std::atof(options_.get_str("EXCH_SCALE_ALPHA").c_str());
+  }
+  Process::environment.globals["SAPT ALPHA"] = exch_scale_alpha_;
+  print_ = options_.get_int("PRINT");
+  debug_ = options_.get_int("DEBUG");
+  schwarz_ = options_.get_double("INTS_TOLERANCE");
+  mem_ = (long int) ((double) memory_*options_.get_double("SAPT_MEM_SAFETY"));
+  mem_ /= 8L;
+
+  std::vector<int> realsA;
+  realsA.push_back(0);
+  std::vector<int> ghostsA;
+  ghostsA.push_back(1);
+  std::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
+    ghostsA);
+  foccA_ = MonomerA->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), monomerA);
+
+  std::vector<int> realsB;
+  realsB.push_back(1);
+  std::vector<int> ghostsB;
+  ghostsB.push_back(0);
+  std::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
+    ghostsB);
+  foccB_ = MonomerB->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), monomerB);
+
+  natomsA_ = 0;
+  natomsB_ = 0;
+
+  for (int n=0; n<monomerA->natom(); n++)
+    if (monomerA->Z(n)) natomsA_++;
+  for (int n=0; n<monomerB->natom(); n++)
+    if (monomerB->Z(n)) natomsB_++;
+
+  ndf_ = ribasis_->nbf();
+
+  double enucD, enucA, enucB;
+  double eHFD, eHFA, eHFB;
+
+  eHFD = energy_;
+  enucD = molecule_->nuclear_repulsion_energy(dipole_field_strength_);
+
+  // Monomer A info
+  nsoA_  = MonomerA->nso();
+  nmoA_  = MonomerA->nmo();
+  noccA_ = MonomerA->doccpi().sum();
+  nvirA_ = nmoA_ - noccA_;
+  NA_    = 2 * noccA_;
+  eHFA   = MonomerA->reference_energy();
+  enucA  = MonomerA->molecule()->nuclear_repulsion_energy(dipole_field_strength_);
+  aoccA_ = noccA_ - foccA_;
+
+  // Monomer B info
+  nsoB_  = MonomerB->nso();
+  nmoB_  = MonomerB->nmo();
+  noccB_ = MonomerB->doccpi().sum();
+  nvirB_ = nmoB_ - noccB_;
+  NB_    = 2 * noccB_;
+  eHFB   = MonomerB->reference_energy();
+  enucB  = MonomerB->molecule()->nuclear_repulsion_energy(dipole_field_strength_);
+  aoccB_ = noccB_ - foccB_;
+
+  enuc_ = enucD - enucA - enucB;
+  eHF_ =  eHFD - eHFA - eHFB;
+
+  evalsA_ = init_array(nmoA_);
+  std::memcpy(evalsA_, MonomerA->epsilon_a()->pointer(), sizeof(double) * nmoA_);
+
+  evalsB_ = init_array(nmoB_);
+  std::memcpy(evalsB_, MonomerB->epsilon_a()->pointer(), sizeof(double) * nmoB_);
+
+  CA_ = block_matrix(nso_,nmoA_);
+  double **tempA = block_matrix(nsoA_,nmoA_);
+  std::memcpy(tempA[0], MonomerA->Ca()->pointer()[0], sizeof(double) * nmoA_ * nsoA_);
+
+  if (nsoA_ != nso_) {
+    for (int n=0; n<nsoA_; n++)
+      C_DCOPY(nmoA_,tempA[n],1,CA_[n],1);
+  }
+  else
+    C_DCOPY(nso_*nmoA_,tempA[0],1,CA_[0],1);
+  free_block(tempA);
+
+  CB_ = block_matrix(nso_,nmoB_);
+  double **tempB = block_matrix(nsoB_,nmoB_);
+  std::memcpy(tempB[0], MonomerB->Ca()->pointer()[0], sizeof(double) * nmoB_ * nsoB_);
+  if (nsoB_ != nso_) {
+    for (int n=0; n<nsoB_; n++)
+      C_DCOPY(nmoB_,tempB[n],1,CB_[n+nsoA_],1);
+  }
+  else
+    C_DCOPY(nso_*nmoB_,tempB[0],1,CB_[0],1);
+  free_block(tempB);
+
+  int nbf[8];
+  nbf[0] = nso_;
+  std::shared_ptr<MatrixFactory> fact =
+    std::shared_ptr<MatrixFactory>(new MatrixFactory);
+  fact->init_with(1, nbf, nbf);
+
+  std::shared_ptr<IntegralFactory> intfact =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
+    basisset_, basisset_, basisset_));
+
+  std::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
+  SharedMatrix Smat = SharedMatrix
+    (fact->create_matrix("Overlap"));
+  Sint->compute(Smat);
+
+  double **sIJ = Smat->pointer();
+  double **sAJ = block_matrix(nmoA_,nso_);
+  sAB_ = block_matrix(nmoA_,nmoB_);
+
+  C_DGEMM('T','N',nmoA_,nso_,nso_,1.0,CA_[0],nmoA_,sIJ[0],nso_,
+      0.0,sAJ[0],nso_);
+  C_DGEMM('N','N',nmoA_,nmoB_,nso_,1.0,sAJ[0],nso_,CB_[0],nmoB_,
+      0.0,sAB_[0],nmoB_);
+
+  free_block(sAJ);
+
+  std::shared_ptr<PotentialInt> potA(static_cast<PotentialInt*>(
+    intfact->ao_potential()));
+  SharedMatrix ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
+  for (int n=0, p=0; n<monomerA->natom(); n++) {
+    if (monomerA->Z(n)) {
+      double Z = (double) monomerA->Z(n);
+      double x = monomerA->x(n);
+      double y = monomerA->y(n);
+      double z = monomerA->z(n);
+      ZxyzA->set(0, p, 0, Z);
+      ZxyzA->set(0, p, 1, x);
+      ZxyzA->set(0, p, 2, y);
+      ZxyzA->set(0, p, 3, z);
+      p++;
     }
     Process::environment.globals["SAPT ALPHA"] = exch_scale_alpha_;
     print_ = options_.get_int("PRINT");

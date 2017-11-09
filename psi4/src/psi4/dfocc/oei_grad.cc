@@ -61,42 +61,40 @@ void DFOCC::oei_grad() {
     /************************** Nuclear Gradient ************************************************/
     /********************************************************************************************/
     // => Nuclear Gradient <= //
-    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1(dipole_field_strength_).clone());
     gradients["Nuclear"]->set_name("Nuclear Gradient");
     gradients["Nuclear"]->print_atom_vector();
 
     // => Kinetic Gradient <= //
-    if (reference_ == "RESTRICTED") {
-        auto mints = std::make_shared<MintsHelper>(basisset_, options_);
+    auto mints = std::make_shared<MintsHelper>(basisset_, options_);
 
-        /****************************************************************************************/
-        /************************** One-Electron Gradient ***************************************/
-        /****************************************************************************************/
-        timer_on("Grad: V T Perturb");
-        auto D = std::make_shared<Matrix>("AO-basis OPDM", nmo_, nmo_);
-        G1ao->to_shared_matrix(D);
-        gradients["Core"] = mints->core_hamiltonian_grad(D);
-        gradients["Core"]->print_atom_vector();
-        timer_off("Grad: V T Perturb");
+    /****************************************************************************************/
+    /************************** One-Electron Gradient ***************************************/
+    /****************************************************************************************/
+    timer_on("Grad: V T Perturb");
+    auto D = std::make_shared<Matrix>("AO-basis OPDM", nmo_, nmo_);
+    G1ao->to_shared_matrix(D);
+    gradients["Core"] = mints->core_hamiltonian_grad(D);
+    gradients["Core"]->print_atom_vector();
+    timer_off("Grad: V T Perturb");
 
-        /****************************************************************************************/
-        /************************** Overlap Gradient ********************************************/
-        /****************************************************************************************/
-        // => Overlap Gradient <= //
-        timer_on("Grad: S");
-        auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
-        GFao->to_shared_matrix(W);
-        gradients["Overlap"] = mints->overlap_grad(W);
-        gradients["Overlap"]->scale(-1.0);
-        gradients["Overlap"]->print_atom_vector();
-        timer_off("Grad: S");
+    /****************************************************************************************/
+    /************************** Overlap Gradient ********************************************/
+    /****************************************************************************************/
+    // => Overlap Gradient <= //
+    timer_on("Grad: S");
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    GFao->to_shared_matrix(W);
+    gradients["Overlap"] = mints->overlap_grad(W);
+    gradients["Overlap"]->scale(-1.0);
+    gradients["Overlap"]->print_atom_vector();
+    timer_off("Grad: S");
 
-        /****************************************************************************************/
-        /****************************************************************************************/
-        /****************************************************************************************/
+    /****************************************************************************************/
+    /****************************************************************************************/
+    /****************************************************************************************/
 
-        // outfile->Printf("\toei_grad is done. \n");
-    }  // end
+    // outfile->Printf("\toei_grad is done. \n");
 }
 }  // namespace dfoccwave
 }  // namespace psi

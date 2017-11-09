@@ -101,7 +101,7 @@ SharedMatrix SCFGrad::compute_gradient()
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
 
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "\n");
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
@@ -169,7 +169,7 @@ SharedMatrix SCFGrad::compute_gradient()
     int nbeta = Cb_occ->colspi()[0];
 
     // => Nuclear Gradient <= //
-    gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1(dipole_field_strength_).clone());
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
 
     auto mints = std::make_shared<MintsHelper>(basisset_, options_);
@@ -305,7 +305,7 @@ SharedMatrix SCFGrad::compute_hessian()
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
 
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "\n");
 
     outfile->Printf( "  ==> Basis Set <==\n\n");

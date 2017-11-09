@@ -370,7 +370,8 @@ double Molecule::pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> mB)
     return V;
 }
 
-double Molecule::nuclear_repulsion_energy() const {
+double Molecule::nuclear_repulsion_energy(std::vector<double> dipole_field) const
+{
     double e = 0.0;
 
     for (int i = 1; i < natom(); ++i) {
@@ -382,17 +383,34 @@ double Molecule::nuclear_repulsion_energy() const {
         }
     }
 
+    if(dipole_field.size() != 3)
+        throw PSIEXCEPTION("dipole_field passed to nuclear_repulsion_energy should be of length 3");
+    if(dipole_field[0] != 0.0 || dipole_field[1] != 0.0 || dipole_field[2] != 0.0){
+        Vector3 nucdip = nuclear_dipole();
+        e += dipole_field[0]*nucdip[0]
+           + dipole_field[1]*nucdip[1]
+           + dipole_field[2]*nucdip[2];
+    }
+
     return e;
 }
 
-Matrix Molecule::nuclear_repulsion_energy_deriv1() const {
+
+Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::vector<double> &dipole_field) const
+{
     Matrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
 
+    if(dipole_field.size() != 3)
+        throw PSIEXCEPTION("dipole_field passed to nuclear_repulsion_energy should be of length 3");
+
     for (int i = 0; i < natom(); ++i) {
+        double Zi = Z(i);
+        de(i, 0) += Zi * dipole_field[0];
+        de(i, 1) += Zi * dipole_field[1];
+        de(i, 2) += Zi * dipole_field[2];
         for (int j = 0; j < natom(); ++j) {
             if (i != j) {
                 double temp = pow((xyz(i).distance(xyz(j))), 3.0);
-                double Zi = Z(i);
                 double Zj = Z(j);
                 de(i, 0) -= (x(i) - x(j)) * Zi * Zj / temp;
                 de(i, 1) -= (y(i) - y(j)) * Zi * Zj / temp;

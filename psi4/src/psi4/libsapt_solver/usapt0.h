@@ -111,6 +111,13 @@ protected:
     // Monomer B geometry
     std::shared_ptr<Molecule> monomer_B_;
 
+    // Dimer dipole field
+    std::vector<double> dimer_field_;
+    // Monomer A dipole field
+    std::vector<double> monomer_A_field_;
+    // Monomer B dipole field
+    std::vector<double> monomer_B_field_;
+
     // Monomer A C matrix (full occ), alpha spin
     std::shared_ptr<Matrix> Cocca_A_;
     // Monomer B C matrix (full occ), alpha spin

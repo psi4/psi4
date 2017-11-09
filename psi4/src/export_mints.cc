@@ -1021,7 +1021,7 @@ void export_mints(py::module& m)
              "Prints the molecule in Cartesians in input units adding fragment separators")
         .def("rotational_constants", &Molecule::rotational_constants,
              "Prints the rotational constants of the molecule")
-        .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
+        .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, py::arg("dipole_field") = std::vector<double>(3,0.0),
              "Computes nuclear repulsion energy")
         .def("find_point_group", &Molecule::find_point_group,
              "Finds computational molecular point group, user can override this with the symmetry "

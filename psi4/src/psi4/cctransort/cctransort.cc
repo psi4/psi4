@@ -110,7 +110,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   int nirreps = ref->nirrep();
   int nmo = ref->nmo();
   std::vector<std::string> labels = ref->molecule()->irrep_labels();
-  double enuc = ref->molecule()->nuclear_repulsion_energy();
+  double enuc = ref->molecule()->nuclear_repulsion_energy(ref->get_dipole_field_strength());
   double escf;
   if(ref->reference_wavefunction()) {
       escf = ref->reference_wavefunction()->reference_energy();

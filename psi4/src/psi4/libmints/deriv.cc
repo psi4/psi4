@@ -40,7 +40,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sointegral_onebody.h"
-
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -478,29 +478,22 @@ SharedMatrix Deriv::compute()
 
     // Compute one-electron derivatives.
     std::vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'");
-    std::vector<SharedMatrix> h_deriv = cdsalcs_.create_matrices("H'");
 
     std::shared_ptr<OneBodySOInt> s_int(integral_->so_overlap(1));
-    std::shared_ptr<OneBodySOInt> t_int(integral_->so_kinetic(1));
-    std::shared_ptr<OneBodySOInt> v_int(integral_->so_potential(1));
 
     s_int->compute_deriv1(s_deriv, cdsalcs_);
-    t_int->compute_deriv1(h_deriv, cdsalcs_);
-    v_int->compute_deriv1(h_deriv, cdsalcs_);
 
+    auto mints = std::make_shared<MintsHelper>(wfn_->basisset(), wfn_->options());
     int ncd = cdsalcs_.ncd();
     auto TPDMcont_vector = std::make_shared<Vector>(ncd);
     auto Xcont_vector = std::make_shared<Vector>(ncd);
     auto Dcont_vector = std::make_shared<Vector>(ncd);
     SharedVector TPDM_ref_cont_vector;
     SharedVector X_ref_cont_vector;
-    SharedVector D_ref_cont_vector;
-    double *Dcont           = Dcont_vector->pointer();
     double *Xcont           = Xcont_vector->pointer();
     double *TPDMcont        = TPDMcont_vector->pointer();
     double *TPDM_ref_cont   = 0;
     double *X_ref_cont      = 0;
-    double *D_ref_cont      = 0;
 
     if (!wfn_)
         throw("In Deriv: The wavefunction passed in is empty!");
@@ -547,25 +540,15 @@ SharedMatrix Deriv::compute()
            member.  If density fitting was used, we don't want to compute two electron contributions here*/
         if (wfn_->density_fitted()) {
             X_ref_cont_vector    = std::make_shared<Vector>(ncd);
-            D_ref_cont_vector    = std::make_shared<Vector>(ncd);
             TPDM_ref_cont_vector = std::make_shared<Vector>(ncd);
             X_ref_cont           = X_ref_cont_vector->pointer();
-            D_ref_cont           = D_ref_cont_vector->pointer();
             TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();
             x_ref_contr_         = factory_->create_shared_matrix("Reference Lagrangian contribution to gradient", natom_, 3);
-            opdm_ref_contr_      = factory_->create_shared_matrix("Reference one-electron contribution to gradient", natom_, 3);
             tpdm_ref_contr_      = factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
 
             // Here we need to extract the reference contributions
             SharedMatrix X_ref  = ref_wfn->Lagrangian();
             SharedMatrix Da_ref = ref_wfn->Da();
-            SharedMatrix Db_ref = ref_wfn->Db();
-
-            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = Da_ref->vector_dot(h_deriv[cd]);
-                temp += Db_ref->vector_dot(h_deriv[cd]);
-                D_ref_cont[cd] = temp;
-            }
 
             for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -X_ref->vector_dot(s_deriv[cd]);
@@ -636,13 +619,15 @@ SharedMatrix Deriv::compute()
 
 
     // Now, compute the one electron terms
-    for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
-        double temp = Dcont[cd]; // In the df case, the HxP2 terms are already in here
-        temp += Da->vector_dot(h_deriv[cd]);
-        temp += Db->vector_dot(h_deriv[cd]);
-        Dcont[cd] = temp;
+    auto Dtot_AO = std::make_shared<Matrix>("AO basis total D", wfn_->nso(), wfn_->nso());
+    if(wfn_->density_fitted()){
+         Dtot_AO->add(wfn_->Da_subset("AO"));
+         Dtot_AO->add(wfn_->Db_subset("AO"));
     }
-
+    auto Dtot = Da->clone();
+    Dtot->add(Db);
+    Dtot_AO->remove_symmetry(Dtot, wfn_->aotoso()->transpose());
+    opdm_contr_ = mints->core_hamiltonian_grad(Dtot_AO);
     for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = X->vector_dot(s_deriv[cd]);
         Xcont[cd] = -temp;
@@ -653,25 +638,6 @@ SharedMatrix Deriv::compute()
     double **B = st->pointer(0);
     double *cart = new double[3*natom_];
 
-    // B^t g_q^t = g_x^t -> g_q B = g_x
-    C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
-            1.0, Dcont, cdsalcs_.ncd(), B[0],
-            3*natom_, 0.0, cart, 3*natom_);
-
-    for (int a=0; a<natom_; ++a)
-        for (int xyz=0; xyz<3; ++xyz)
-            opdm_contr_->set(a, xyz, cart[3*a+xyz]);
-
-    if(D_ref_cont){
-        // B^t g_q^t = g_x^t -> g_q B = g_x
-        C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
-                1.0, D_ref_cont, cdsalcs_.ncd(), B[0],
-                3*natom_, 0.0, cart, 3*natom_);
-
-        for (int a=0; a<natom_; ++a)
-            for (int xyz=0; xyz<3; ++xyz)
-                opdm_ref_contr_->set(a, xyz, cart[3*a+xyz]);
-    }
 
     if(TPDM_ref_cont){
         // B^t g_q^t = g_x^t -> g_q B = g_x
@@ -714,7 +680,12 @@ SharedMatrix Deriv::compute()
     }
 
     // Obtain nuclear repulsion contribution from the wavefunction
+<<<<<<< HEAD
     auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1());
+=======
+    std::vector<double> field_strength = wfn_->get_dipole_field_strength();
+    SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1(field_strength)));
+>>>>>>> Numerous fixes/additions for external fields
 
     // Print things out, after making sure that each component is properly symmetrized
     enuc->symmetrize_gradient(molecule_);
@@ -731,10 +702,6 @@ SharedMatrix Deriv::compute()
         x_ref_contr_->symmetrize_gradient(molecule_);
         x_ref_contr_->print_atom_vector();
     }
-    if (opdm_ref_contr_) {
-        opdm_ref_contr_->symmetrize_gradient(molecule_);
-        opdm_ref_contr_->print_atom_vector();
-    }
     if (tpdm_ref_contr_) {
         tpdm_ref_contr_->symmetrize_gradient(molecule_);
         tpdm_ref_contr_->print_atom_vector();
@@ -748,7 +715,6 @@ SharedMatrix Deriv::compute()
     corr->add(tpdm_contr_);
     if (reference_separate && !ignore_reference_) {
         gradient_->add(x_ref_contr_);
-        gradient_->add(opdm_ref_contr_);
         gradient_->add(tpdm_ref_contr_);
         SharedMatrix scf_gradient(gradient_->clone());
         scf_gradient->set_name("Reference Gradient");

@@ -42,6 +42,7 @@
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/vector3.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/corrtab.h"
 #include "psi4/psi4-dec.h"
@@ -111,6 +112,11 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     nsopi_ = other->nsopi_;
     nmopi_ = other->nmopi_;
 
+    dipole_field_type_ = other->dipole_field_type_;
+    perturb_h_ = other->perturb_h_;
+    dipole_field_strength_.resize(3);
+    std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(), dipole_field_strength_.begin());
+
     nso_ = other->nso_;
     nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
@@ -162,6 +168,11 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
     nfrzc_ = other->nfrzc_;
+
+    dipole_field_type_ = other->dipole_field_type_;
+    perturb_h_ = other->perturb_h_;
+    dipole_field_strength_.resize(3);
+    std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(), dipole_field_strength_.begin());
 
     print_ = other->print_;
     debug_ = other->debug_;
@@ -434,6 +445,64 @@ void Wavefunction::common_init() {
 
     nbeta_ = (nelectron - multiplicity + 1) / 2;
     nalpha_ = nbeta_ + multiplicity - 1;
+
+    // Setup dipole field perturbation information
+    perturb_h_ = options_.get_bool("PERTURB_H");
+    dipole_field_type_ = nothing;
+    dipole_field_strength_.resize(3);
+    std::fill(dipole_field_strength_.begin(), dipole_field_strength_.end(), 0.0);
+    if (perturb_h_) {
+        std::string perturb_with;
+        if (options_["PERTURB_WITH"].has_changed()) {
+            perturb_with = options_.get_str("PERTURB_WITH");
+            // Do checks to see what perturb_with is.
+            if (perturb_with == "DIPOLE_X") {
+                dipole_field_type_ = dipole_x;
+                dipole_field_strength_[0] = options_.get_double("PERTURB_MAGNITUDE");
+                outfile->Printf(" WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
+                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+            } else if (perturb_with == "DIPOLE_Y") {
+                dipole_field_type_ = dipole_y;
+                dipole_field_strength_[1] = options_.get_double("PERTURB_MAGNITUDE");
+                outfile->Printf(" WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
+                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+            } else if (perturb_with == "DIPOLE_Z") {
+                dipole_field_type_ = dipole_z;
+                dipole_field_strength_[2] = options_.get_double("PERTURB_MAGNITUDE");
+                outfile->Printf(" WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
+                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+            } else if (perturb_with == "DIPOLE") {
+                dipole_field_type_ = dipole;
+                if(options_["PERTURB_DIPOLE"].size() !=3)
+                    throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+                for(int n = 0; n < 3; ++n)
+                    dipole_field_strength_[n] = options_["PERTURB_DIPOLE"][n].to_double();
+            } else if (perturb_with == "EMBPOT") {
+                dipole_field_type_ = embpot;
+            }
+            else if (perturb_with == "DX") {
+                dipole_field_type_ = dx;
+            }
+            else if (perturb_with == "SPHERE") {
+                dipole_field_type_ = sphere;
+            }
+            else {
+                outfile->Printf( "Unknown PERTURB_WITH. Applying no perturbation.\n");
+            }
+        } else {
+                outfile->Printf( "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
+        }
+    }
+}
+
+std::vector<double> Wavefunction::get_dipole_field_strength() const
+{
+    return dipole_field_strength_;
+}
+
+Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const
+{
+    return dipole_field_type_;
 }
 
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {

@@ -79,7 +79,7 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->labels = molecule()->irrep_labels();
     CalcInfo_->docc = doccpi();
     CalcInfo_->socc = soccpi();
-    CalcInfo_->enuc = molecule()->nuclear_repulsion_energy();
+    CalcInfo_->enuc = molecule()->nuclear_repulsion_energy(dipole_field_strength_);
     CalcInfo_->escf = reference_energy();
     CalcInfo_->edrc = 0.0;
 

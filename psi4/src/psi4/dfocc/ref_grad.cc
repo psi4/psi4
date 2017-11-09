@@ -128,7 +128,7 @@ void DFOCC::ref_grad() {
     /************************** Nuclear Gradient ************************************************/
     /********************************************************************************************/
     // => Nuclear Gradient <= //
-    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1(dipole_field_strength_).clone());
     gradients["Nuclear"]->set_name("Nuclear Gradient");
     gradients["Nuclear"]->print_atom_vector();
 
