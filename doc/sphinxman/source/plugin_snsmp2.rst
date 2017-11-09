@@ -36,7 +36,7 @@ Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 .. codeauthor:: D. E. Shaw
 .. sectionauthor:: Shannon E. Houck
 
-.. image:: https://img.shields.io/badge/home-sns_mp2-5077AB.svg
+.. image:: https://img.shields.io/badge/home-sns--mp2-5077AB.svg
    :target: https://github.com/DEShawResearch/sns-mp2
 
 .. raw:: html
@@ -48,7 +48,7 @@ Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 
 This plugin is an implementation of the SNS-MP2 algorithm, originally 
 developed by McGibbon et. al. [McGibbon:2017:161725]_, which uses neural networking to 
-improve the accuracy of MP2 (ref:`dfmp2`) interaction energies for dimers. 
+improve the accuracy of MP2 (:ref:`dfmp2`) interaction energies for dimers. 
 This |PSIfour| plugin allows the user to compute both energies and 
 confidence intervals.
 
@@ -59,15 +59,13 @@ Installation
 
 * Download the plugin from the GitHub repository:
 
-  .. code-block:: bash
-    >>> git clone https://github.com/DEShawResearch/sns-mp2
+   >>> git clone https://github.com/DEShawResearch/sns-mp2
 
 * Once dowloaded, the plugin can be installed:
 
-  .. code-block:: bash
-    >>> cd {top-level-sns-mp2-directory}
-    >>> PSI4_PYTHON=$(head $(which psi4) -n 1 | sed -r 's/^.{2}//')
-    >>> PSI4_PYTHON -m pip install .
+   >>> cd {top-level-sns-mp2-directory}
+   >>> PSI4_PYTHON=$(head $(which psi4) -n 1 | sed -r 's/^.{2}//')
+   >>> PSI4_PYTHON -m pip install .
 
 Sample Input
 ~~~~~~~~~~~~
