@@ -37,3 +37,8 @@ try:
     import forte
 except ImportError:
     pass
+
+try:
+    import snsmp2
+except ImportError:
+    pass
