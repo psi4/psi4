@@ -31,3 +31,14 @@ if(ENABLE_UBSAN)
     endif()
 endif()
 
+if(ENABLE_MSAN)
+    if((CMAKE_CXX_COMPILER_ID MATCHES Clang) OR
+        (CMAKE_CXX_COMPILER_ID MATCHES AppleClang) OR
+        (CMAKE_CXX_COMPILER_ID MATCHES GNU))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory -fno-omit-frame-pointer")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=memory -fno-omit-frame-pointer")
+    else()
+        message(WARNING "MSAN flags are not known for your compiler ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endif()
+
