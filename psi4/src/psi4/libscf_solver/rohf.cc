@@ -311,7 +311,7 @@ void ROHF::save_density_and_energy()
     Dt_old_->copy(Dt_);
 }
 
-double ROHF::compute_orbital_gradient(bool save_diis)
+double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors)
 {
 
     // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
@@ -344,7 +344,7 @@ double ROHF::compute_orbital_gradient(bool save_diis)
 
     if(save_diis){
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk);
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
             diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
             initialized_diis_manager_ = true;
@@ -832,17 +832,17 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     Cocc.reset(); Cvir.reset();
 }
 
-void ROHF::damp_update()
+void ROHF::damping_update(double damping_percentage)
 {
-  Da_->scale(1.0 - damping_percentage_);
-  Da_->axpy(damping_percentage_, Da_old_);
-  Db_->scale(1.0 - damping_percentage_);
-  Db_->axpy(damping_percentage_, Db_old_);
+  Da_->scale(1.0 - damping_percentage);
+  Da_->axpy(damping_percentage, Da_old_);
+  Db_->scale(1.0 - damping_percentage);
+  Db_->axpy(damping_percentage, Db_old_);
   Dt_->copy(Da_);
   Dt_->add(Db_);
 }
 
-int ROHF::soscf_update()
+int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print)
 {
     time_t start, stop;
     start = time(nullptr);
@@ -899,12 +899,12 @@ int ROHF::soscf_update()
         return 0;
     }
 
-    if (soscf_print_){
+    if (soscf_print){
         outfile->Printf("\n");
         outfile->Printf("    ==> SOROHF Iterations <==\n");
-        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv);
         outfile->Printf("    ---------------------------------------\n");
         outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
         outfile->Printf("    ---------------------------------------\n");
@@ -929,7 +929,7 @@ int ROHF::soscf_update()
     }
     double rms = sqrt(rconv / grad_rms);
     stop = time(nullptr);
-    if (soscf_print_){
+    if (soscf_print){
         outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
     }
 
@@ -940,7 +940,7 @@ int ROHF::soscf_update()
 
     // => CG iterations <= //
     int fock_builds = 1;
-    for (int cg_iter=1; cg_iter<soscf_max_iter_; cg_iter++) {
+    for (int cg_iter=1; cg_iter<soscf_max_iter; cg_iter++) {
 
         // Calc hessian vector product
         Hx(p, Ap);
@@ -961,12 +961,12 @@ int ROHF::soscf_update()
         double rconv = r->sum_of_squares();
         double rms = sqrt(rconv / grad_rms);
         stop = time(nullptr);
-        if (soscf_print_){
+        if (soscf_print){
             outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
         }
 
         // Check convergence
-        if (((rms < soscf_conv_) && (cg_iter >= soscf_min_iter_)) || (alpha==0.0)) {
+        if (((rms < soscf_conv) && (cg_iter >= soscf_min_iter)) || (alpha==0.0)) {
             break;
         }
 
@@ -981,7 +981,7 @@ int ROHF::soscf_update()
 
     }
 
-    if (soscf_print_){
+    if (soscf_print){
         outfile->Printf("    ---------------------------------------\n");
         outfile->Printf("\n");
     }

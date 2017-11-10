@@ -101,11 +101,11 @@ void CUHF::common_init() {
     }
 }
 
-void CUHF::damp_update() {
-    Da_->scale(1.0 - damping_percentage_);
-    Da_->axpy(damping_percentage_, Da_old_);
-    Db_->scale(1.0 - damping_percentage_);
-    Db_->axpy(damping_percentage_, Db_old_);
+void CUHF::damping_update(double damping_percentage) {
+    Da_->scale(1.0 - damping_percentage);
+    Da_->axpy(damping_percentage, Da_old_);
+    Db_->scale(1.0 - damping_percentage);
+    Db_->axpy(damping_percentage, Db_old_);
     Dt_->copy(Da_);
     Dt_->add(Db_);
 }
@@ -355,7 +355,7 @@ double CUHF::compute_E() {
     return Etotal;
 }
 
-double CUHF::compute_orbital_gradient(bool save_diis) {
+double CUHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
     SharedMatrix grad_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix grad_b = form_FDSmSDF(Fb_, Db_);
 
@@ -364,7 +364,7 @@ double CUHF::compute_orbital_gradient(bool save_diis) {
 
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
                                                           DIISManager::LargestError, DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, grad_a.get(), DIISEntry::Matrix, grad_b.get());
             diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());

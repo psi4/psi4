@@ -342,13 +342,13 @@ void HF::common_init()
 #endif
 }
 
-void HF::damp_update() {
+void HF::damping_update(double damping_percentage) {
     throw PSIEXCEPTION(
         "Sorry, damping has not been implemented for this "
         "type of SCF wavefunction yet.");
 }
 
-int HF::soscf_update() {
+int HF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     throw PSIEXCEPTION(
         "Sorry, second-order convergence has not been implemented for this "
         "type of SCF wavefunction yet.");
