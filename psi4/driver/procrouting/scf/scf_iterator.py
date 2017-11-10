@@ -338,6 +338,17 @@ def scf_iterate(self):
 
 
 def scf_finalize_energy(self):
+
+    ## post-scf vv10 correlation
+    #if core.get_option('SCF', "DFT_VV10_POSTSCF"):
+    #    functional_->set_lock(false);
+    #    functional_->set_do_vv10(true);
+    #    functional_->set_lock(true);
+    #    outfile->Printf( "  ==> calculating VV10 correction on post-scf density <==\n\n");
+    #    E_=0.0;
+    #    form_V();
+    #    E_+=compute_E();
+
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
     # if core.get_option("STABILITY_ANALYSIS") != None:

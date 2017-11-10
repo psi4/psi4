@@ -144,10 +144,6 @@ void HF::frac()
             //load_orbitals();
         }
 
-        // Keep the printing nice
-        outfile->Printf( "                        Total Energy        Delta E      Density RMS\n\n");
-
-
         // Prevent spurious convergence (technically this iteration comes from the N-electron system anyways)
         frac_performed_ = false;
     }
@@ -188,7 +184,9 @@ void HF::frac()
 }
 void HF::frac_renormalize()
 {
-    if (!options_.get_bool("FRAC_RENORMALIZE") || !frac_enabled_) return;
+    if ((options_.get_int("FRAC_START") == 0)       // frac disabled
+        || !options_.get_bool("FRAC_RENORMALIZE"))  // || don't renormalize C
+        return;
 
     // Renormalize the fractional occupations back to 1, if possible before storage
     outfile->Printf( "    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");

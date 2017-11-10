@@ -76,11 +76,8 @@ protected:
     SharedMatrix guess_Ca_;
     SharedMatrix guess_Cb_;
 
-    /// Energy convergence threshold
-    double energy_threshold_;
-
-    /// Density convergence threshold
-    double density_threshold_;
+    // Q: right now, thresholds are removed from Wfn since only appear once, py-side.
+    //    should we instead store here the E & D to which SCF was converged?
 
     /// Table of energy components
     std::map<std::string, double> energies_;
@@ -89,14 +86,8 @@ protected:
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
 
-    /// Max number of iterations for HF
-    int maxiter_;
-
-    /// Fail if we don't converge by maxiter?
+    ///
     bool ref_C_;
-
-    /// Fail if we don't converge by maxiter?
-    bool fail_on_maxiter_;
 
     /// Current Iteration
     int iteration_;
@@ -106,9 +97,6 @@ protected:
 
     /// Nuclear repulsion energy
     double nuclearrep_;
-
-    /// Whether DIIS was performed this iteration, or not
-    bool diis_performed_;
 
     /// DOCC vector from input (if found)
     bool input_docc_;
@@ -134,11 +122,6 @@ protected:
     /// SCF algorithm type
     std::string scf_type_;
 
-    /// Old SCF type for DF guess trick
-    /// TODO We should really get rid of that and put it in the driver
-    std::string old_scf_type_;
-
-
     /// The value below which integrals are neglected
     double integral_threshold_;
 
@@ -150,13 +133,9 @@ protected:
     bool MOM_enabled_;
     /// Are we to do excited-state MOM?
     bool MOM_excited_;
-    /// MOM started?
-    bool MOM_started_;
     /// MOM performed?
     bool MOM_performed_;
 
-    /// Are we to fractionally occupy?
-    bool frac_enabled_;
     /// Frac started? (Same thing as frac_performed_)
     bool frac_performed_;
 
@@ -165,36 +144,10 @@ protected:
     /// DIIS manager for all SCF wavefunctions
     std::shared_ptr<DIISManager> diis_manager_;
 
-    /// How many min vectors for DIIS
-    int min_diis_vectors_;
-    /// How many max vectors for DIIS
-    int max_diis_vectors_;
     /// When do we start collecting vectors for DIIS
     int diis_start_;
     /// Are we even using DIIS?
     int diis_enabled_;
-
-    /// Are we doing second-order convergence acceleration?
-    bool soscf_enabled_;
-    /// What is the gradient threshold that we should start?
-    double soscf_r_start_;
-    /// Maximum number of iterations
-    int soscf_min_iter_;
-    /// Minimum number of iterations
-    int soscf_max_iter_;
-    /// Break if the residual RMS is less than this
-    double soscf_conv_;
-    /// Do we print the microiterations?
-    double soscf_print_;
-
-    /// The amount (%) of the previous orbitals to mix in during SCF damping
-    double damping_percentage_;
-    /// The energy convergence at which SCF damping is disabled
-    double damping_convergence_;
-    /// Whether to use SCF damping
-    bool damping_enabled_;
-    /// Whether damping was actually performed this iteration
-    bool damping_performed_;
 
     // parameters for hard-sphere potentials
     double radius_; // radius of spherical potential
@@ -245,8 +198,6 @@ protected:
     /// Which set of iterations we're on in this computation, e.g., for stability
     /// analysis, where we want to retry SCF without going through all of the setup
     int attempt_number_;
-    /// Maximum number of macroiterations to take in e.g. a stability analysis
-    int max_attempts_;
 
     /// The number of electrons
     int nelectron_;
@@ -327,15 +278,6 @@ public:
     std::shared_ptr<Vector> occupation_a() const;
     std::shared_ptr<Vector> occupation_b() const;
 
-    /// Specialized initialization, compute integrals and does everything to prepare for iterations
-    virtual void initialize();
-
-    /// Performs stability analysis and calls back SCF with new guess if needed,
-    /// Returns the SCF energy
-    ///  This function should be called once orbitals are ready for energy/property computations,
-    /// usually after iterations() is called.
-    virtual double finalize_E();
-
     /// Save the current density and energy.
     virtual void save_density_and_energy();
 
@@ -346,7 +288,7 @@ public:
     virtual double compute_E();
 
     /** Applies second-order convergence acceleration */
-    virtual int soscf_update();
+    virtual int soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
@@ -355,15 +297,10 @@ public:
     virtual bool diis() { return false; }
 
     /** Compute the orbital gradient */
-    virtual double compute_orbital_gradient(bool save_diis) { return 0.0; }
+    virtual double compute_orbital_gradient(bool save_diis, int max_diis_vectors) { return 0.0; }
 
     /** Applies damping to the density update */
-    virtual void damp_update();
-
-    /// Base class Wavefunction requires this function. Here it is simply a wrapper around
-    /// initialize(), iterations(), finalize_E(). It returns the SCF energy computed by
-    /// finalize_E()
-    // virtual double compute_energy();
+    virtual void damping_update(double);
 
     /// Clears memory and closes files (Should they be open) prior to correlated code execution
     /// Derived classes override it for additional operations and then call HF::finalize()
