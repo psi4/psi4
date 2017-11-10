@@ -157,8 +157,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         diis_performed = False
         soscf_performed = False
-        self.MOM_performed_ = False  # redundant from common_init()
         self.frac_performed_ = False
+        #self.MOM_performed_ = False  # redundant from common_init()
 
         self.save_density_and_energy()
 
