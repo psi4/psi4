@@ -94,7 +94,7 @@ class CUHF : public HF {
 
     bool diis();
     void save_density_and_energy();
-    double compute_orbital_gradient(bool save_diis);
+    double compute_orbital_gradient(bool save_diis, int max_diis_vectors);
 
     void form_C();
     void form_D();
@@ -103,7 +103,7 @@ class CUHF : public HF {
     double compute_E();
     void finalize();
 
-    void damp_update();
+    void damping_update(double);
     bool stability_analysis();
 
     std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);

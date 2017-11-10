@@ -105,7 +105,7 @@ void UStab::print_header() {
     outfile->Printf("         ------------------------------------------------------------\n");
     outfile->Printf("                              UHF Stability code                     \n");
     outfile->Printf("                                Jérôme Gonthier                     \n");
-    outfile->Printf("               Strong inspiration from R. Parrish's CIS              \n");
+    outfile->Printf("                   Strong inspiration from R. Parrish's CIS          \n");
     outfile->Printf("         ------------------------------------------------------------\n\n");
 
     outfile->Printf("  ==> Geometry <==\n\n");

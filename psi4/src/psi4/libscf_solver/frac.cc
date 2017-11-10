@@ -93,7 +93,7 @@ void HF::frac()
         if (options_.get_int("MOM_START") <= options_.get_int("FRAC_START") && options_.get_int("MOM_START") != 0)
             throw PSIEXCEPTION("Fractional Occupation SCF: MOM must start after FRAC");
 
-        // Throw if the use is just way too eager
+        // Throw if the user is just way too eager
         if (MOM_excited_)
             throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
 

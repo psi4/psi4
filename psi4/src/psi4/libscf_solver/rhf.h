@@ -66,7 +66,7 @@ public:
 
     bool diis();
     void save_density_and_energy();
-    double compute_orbital_gradient(bool save_fock);
+    double compute_orbital_gradient(bool save_fock, int max_diis_vectors);
 
     void form_C();
     void form_D();
@@ -76,8 +76,8 @@ public:
     double compute_E();
     void finalize();
 
-    void damp_update();
-    int soscf_update();
+    void damping_update(double);
+    int soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
     bool stability_analysis();
 
     /// Hessian-vector computers and solvers
