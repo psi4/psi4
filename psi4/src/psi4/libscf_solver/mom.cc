@@ -62,10 +62,9 @@ namespace psi { namespace scf {
 void HF::MOM_start()
 {
     // Perhaps no MOM (or at least no MOM_start())?
-    if (iteration_ != options_.get_int("MOM_START") || iteration_ == 0 || MOM_started_)  return;
+    if (iteration_ != options_.get_int("MOM_START") || iteration_ == 0 || MOM_performed_)  return;
 
     // If we're here, we're doing MOM of some kind
-    MOM_started_ = true;
     MOM_performed_ = true; // Gets printed next iteration
     //
     // Build Ca_old_ matrices

@@ -97,8 +97,6 @@ void HF::common_init()
     ref_C_ = false;
     reset_occ_ = false;
 
-    max_attempts_ = options_.get_int("MAX_ATTEMPTS");
-
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
@@ -119,28 +117,9 @@ void HF::common_init()
         nmo_ += nmopi_[h]; //For now, may change in S^-1/2
     }
 
-    // Read in energy convergence threshold
-    energy_threshold_ = options_.get_double("E_CONVERGENCE");
-
-    // Read in density convergence threshold
-    density_threshold_ = options_.get_double("D_CONVERGENCE");
-
     density_fitted_ = false;
 
     energies_["Total Energy"] = 0.0;
-    maxiter_ = 40;
-
-    // Read information from input file
-    maxiter_ = options_.get_int("MAXITER");
-
-    // Should we continue if we fail to converge?
-    fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
-
-    // Set name
-    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
-        name_ = "DFT";
-    else
-        name_ = "SCF";
 
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
@@ -263,52 +242,10 @@ void HF::common_init()
     if(options_["PRINT"].has_changed())
         print_ = options_.get_int("PRINT");
 
-    if(options_["DAMPING_PERCENTAGE"].has_changed()){
-        // The user has asked for damping to be turned on
-        damping_enabled_ = true;
-        damping_percentage_ = options_.get_double("DAMPING_PERCENTAGE") / 100.0;
-        if(damping_percentage_ < 0.0 || damping_percentage_ > 1.0)
-            throw PSIEXCEPTION("DAMPING_PERCENTAGE must be between 0 and 100.");
-        damping_convergence_ = options_.get_double("DAMPING_CONVERGENCE");
-    }else{
-        damping_enabled_ = false;
-    }
-
-    // Handle common diis info
-    diis_enabled_ = true;
-    min_diis_vectors_ = 4;
-
-    // Allocate memory for DIISmin_diis_vectors_
-    //  First, did the user request a different number of diis vectors?
-    min_diis_vectors_ = options_.get_int("DIIS_MIN_VECS");
-    max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
-    diis_start_ = options_.get_int("DIIS_START");
-    diis_enabled_ = options_.get_bool("DIIS");
-
-    // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
-    if (min_diis_vectors_ < 2) {
-        // disable diis
-        diis_enabled_ = false;
-    }
-
     initialized_diis_manager_ = false;
 
-    // Second-order convergence acceleration
-    soscf_enabled_ = options_.get_bool("SOSCF");
-    soscf_r_start_ = options_.get_double("SOSCF_START_CONVERGENCE");
-    soscf_min_iter_ = options_.get_int("SOSCF_MIN_ITER");
-    soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
-    soscf_conv_ = options_.get_double("SOSCF_CONV");
-    soscf_print_ = options_.get_bool("SOSCF_PRINT");
+    MOM_performed_ = false;  // duplicated py-side (needed before iterate)
 
-    // MOM convergence acceleration
-    MOM_enabled_ = (options_.get_int("MOM_START") != 0);
-    MOM_excited_ = (options_["MOM_OCC"].size() != 0 && MOM_enabled_);
-    MOM_started_ = false;
-    MOM_performed_ = false;
-
-    frac_enabled_ = (options_.get_int("FRAC_START") != 0);
-    frac_performed_ = false;
     print_header();
 
     // DFT stuff
@@ -480,154 +417,6 @@ void HF::integrals()
     jk_->print_header();
 }
 
-double HF::finalize_E()
-{
-    // Perform wavefunction stability analysis before doing
-    // anything on a wavefunction that may not be truly converged.
-    if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
-        // We need the integral file, make sure it is written and
-        // compute it if needed
-        if(options_.get_str("REFERENCE") != "UHF") {
-            psio_->open(PSIF_SO_TEI, PSIO_OPEN_OLD);
-            if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == nullptr) {
-                psio_->close(PSIF_SO_TEI,1);
-                outfile->Printf("    SO Integrals not on disk, computing...");
-                auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
-                mints->integrals();
-                outfile->Printf("done.\n");
-            } else {
-                psio_->close(PSIF_SO_TEI,1);
-            }
-
-        }
-        bool follow = stability_analysis();
-
-        while ( follow && !(attempt_number_ > max_attempts_) ) {
-
-          attempt_number_++;
-          outfile->Printf("    Running SCF again with the rotated orbitals.\n");
-
-          if(initialized_diis_manager_) diis_manager_->reset_subspace();
-          // Reading the rotated orbitals in before starting iterations
-          form_D();
-          energies_["Total Energy"] = compute_initial_E();
-          //iterations();
-          throw PSIEXCEPTION("This is bad, call Andy");
-          follow = stability_analysis();
-        }
-        if ( follow && (attempt_number_ > max_attempts_) ) {
-          outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
-          outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
-        }
-    }
-
-    // At this point, we are not doing any more SCF cycles
-    // and we can compute and print final quantities.
-#ifdef USING_libefp
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        Process::environment.get_efp()->compute();
-
-        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
-                                            Process::environment.globals["EFP IND ENERGY"];
-        energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
-
-        outfile->Printf("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy);
-        outfile->Printf("    SCF including EFP Induction   %20.12f [Eh]\n", energies_["Total Energy"]);
-
-        energies_["Total Energy"] += efp_wfn_independent_energy;
-
-        outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", energies_["Total Energy"]);
-    }
-#endif
-
-    outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
-
-    check_phases();
-    compute_spin_contamination();
-    frac_renormalize();
-    std::string reference = options_.get_str("REFERENCE");
-
-    if (converged_ || !fail_on_maxiter_) {
-
-        // Print the orbitals
-        if(print_)
-            print_orbitals();
-
-        if (converged_) {
-            outfile->Printf( "  Energy converged.\n\n");
-        }
-        if (!converged_) {
-            outfile->Printf( "  Energy did not converge, but proceeding anyway.\n\n");
-        }
-
-        bool df = (options_.get_str("SCF_TYPE") == "DF");
-
-        outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(),energies_["Total Energy"]);
-        if (perturb_h_) {
-            outfile->Printf( " with %f %f %f perturbation", dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]);
-        }
-        outfile->Printf( "\n\n");
-        print_energies();
-
-        // Need to recompute the Fock matrices, as they are modified during the SCF iteration
-        // and might need to be dumped to checkpoint later
-        form_F();
-#ifdef USING_PCMSolver
-        if(pcm_enabled_) {
-            // Prepare the density
-            SharedMatrix D_pcm(Da_->clone());
-            if(same_a_b_orbs()) {
-              D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
-            }
-            else {
-              D_pcm->add(Db_);
-            }
-
-            // Add the PCM potential to the Fock matrix
-            SharedMatrix V_pcm;
-            V_pcm = hf_pcm_->compute_V();
-            if(same_a_b_orbs()) Fa_->add(V_pcm);
-            else {
-              Fa_->add(V_pcm);
-              Fb_->add(V_pcm);
-            }
-        }
-#endif
-
-        // Properties
-//  Comments so that autodoc utility will find these PSI variables
-//
-//  Process::environment.globals["SCF DIPOLE X"] =
-//  Process::environment.globals["SCF DIPOLE Y"] =
-//  Process::environment.globals["SCF DIPOLE Z"] =
-//  Process::environment.globals["SCF QUADRUPOLE XX"] =
-//  Process::environment.globals["SCF QUADRUPOLE XY"] =
-//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
-//  Process::environment.globals["SCF QUADRUPOLE YY"] =
-//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
-//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
-
-    } else {
-            outfile->Printf( "  Failed to converge.\n");
-        energies_["Total Energy"] = 0.0;
-        if(psio_->open_check(PSIF_CHKPT))
-            psio_->close(PSIF_CHKPT, 1);
-
-        // Throw if we didn't converge?
-        die_if_not_converged();
-    }
-
-    // Orbitals are always saved, in case an MO guess is requested later
-    // save_orbitals();
-
-    finalize();
-
-    //outfile->Printf("\nComputation Completed\n");
-
-    return energies_["Total Energy"];
-
-}
-
 void HF::finalize()
 {
     // Clean memory off, handle diis closeout, etc
@@ -666,7 +455,7 @@ void HF::semicanonicalize()
 void HF::find_occupation()
 {
     // Don't mess with the occ, MOM's got it!
-    if (MOM_started_) {
+    if (MOM_performed_) {
         MOM();
     } else {
         std::vector<std::pair<double, int> > pairs_a;
@@ -775,15 +564,15 @@ void HF::print_header()
 
     outfile->Printf( "  ==> Algorithm <==\n\n");
     outfile->Printf( "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
-    outfile->Printf( "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-    if (MOM_excited_)
+    outfile->Printf( "  DIIS %s.\n", options_.get_bool("DIIS") ? "enabled" : "disabled");
+    if ((options_.get_int("MOM_START") != 0) && (options_["MOM_OCC"].size() != 0))  // TROUBLE, NOT SET YET?
         outfile->Printf( "  Excited-state MOM enabled.\n");
     else
-        outfile->Printf( "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
-    outfile->Printf( "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
+        outfile->Printf( "  MOM %s.\n", (options_.get_int("MOM_START") == 0) ? "disabled" : "enabled");
+    outfile->Printf( "  Fractional occupation %s.\n", (options_.get_int("FRAC_START") == 0) ? "disabled" : "enabled");
     outfile->Printf( "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
-    outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
-    outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
+    outfile->Printf( "  Energy threshold   = %3.2e\n", options_.get_double("E_CONVERGENCE"));
+    outfile->Printf( "  Density threshold  = %3.2e\n", options_.get_double("D_CONVERGENCE"));
     outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
 
 
@@ -1361,7 +1150,6 @@ void HF::guess()
             }
         }
 
-
         if ((guess_Ca_->nirrep() != nirrep_) or (guess_Cb_->nirrep() != nirrep_)) {
             throw PSIEXCEPTION("Number of guess of the input orbitals do not match number of irreps of the wavefunction.");
         }
@@ -1506,77 +1294,6 @@ void HF::check_phases()
     }
 }
 
-
-void HF::initialize()
-{
-    converged_ = false;
-
-    iteration_ = 0;
-
-    if (print_)
-        outfile->Printf( "  ==> Pre-Iterations <==\n\n");
-
-    if (print_)
-        print_preiterations();
-
-    // Andy trick 2.0
-    old_scf_type_ = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT") ) {
-         outfile->Printf( "  Starting with a DF guess...\n\n");
-         if(!options_["DF_BASIS_SCF"].has_changed()) {
-             // TODO: Match Dunning basis sets
-             molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
-         }
-         scf_type_ = "DF";
-         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
-    }
-
-    if(attempt_number_ == 1){
-        auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
-        if ((options_.get_str("RELATIVISTIC") == "X2C") ||
-            (options_.get_str("RELATIVISTIC") == "DKH")) {
-            mints->set_rel_basisset(get_basisset("BASIS_RELATIVISTIC"));
-        }
-
-        mints->one_electron_integrals();
-
-        integrals();
-
-        timer_on("HF: Form H");
-        form_H(); //Core Hamiltonian
-        timer_off("HF: Form H");
-
-#ifdef USING_libefp
-        // EFP: Add in permanent moment contribution and cache
-        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-            std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
-            H_->add(Vefp);
-            Horig_ = std::make_shared<Matrix>("H orig Matrix", basisset_->nbf(), basisset_->nbf());
-            Horig_->copy(H_);
-            outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
-        }
-#endif
-
-        timer_on("HF: Form S/X");
-        form_Shalf(); //S and X Matrix
-        timer_off("HF: Form S/X");
-
-        timer_on("HF: Guess");
-        guess(); // Guess
-        timer_off("HF: Guess");
-
-    }else{
-        // We're reading the orbitals from the previous set of iterations.
-        form_D();
-        energies_["Total Energy"] = compute_initial_E();
-    }
-
-#ifdef USING_libefp
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        Process::environment.get_efp()->set_qm_atoms();
-    }
-#endif
-}
 
 void HF::print_energies()
 {
