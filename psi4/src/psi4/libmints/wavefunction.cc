@@ -83,10 +83,6 @@ Wavefunction::Wavefunction(Options &options) :
 {
 }
 
-Wavefunction::~Wavefunction()
-{
-}
-
 Wavefunction::~Wavefunction() {}
 
 void Wavefunction::shallow_copy(SharedWavefunction other) { shallow_copy(other.get()); }
