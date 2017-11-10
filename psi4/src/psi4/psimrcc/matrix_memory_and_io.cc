@@ -87,7 +87,7 @@ bool CCMatrix::is_allocated()
 
 bool CCMatrix::is_block_allocated(int h)
 {
-  if(matrix[h]==NULL)
+  if(matrix[h]==nullptr)
     return(false);
   else
     return(true);

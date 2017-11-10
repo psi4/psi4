@@ -250,7 +250,7 @@ void HF::compute_spin_contamination()
     }
 
     SharedMatrix S = SharedMatrix(factory_->create_matrix("S (Overlap)"));
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_, basisset_,basisset_));
+    auto fact = std::make_shared<IntegralFactory>(basisset_,basisset_, basisset_,basisset_);
     std::shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
     so_overlap->compute(S);
 
@@ -264,8 +264,8 @@ void HF::compute_spin_contamination()
         if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
             continue;
 
-        SharedMatrix Ht (new Matrix("H Temp", nbf, nb));
-        SharedMatrix Ft (new Matrix("F Temp", na, nb));
+        auto Ht = std::make_shared<Matrix>("H Temp", nbf, nb);
+        auto Ft = std::make_shared<Matrix>("F Temp", na, nb);
 
         double** Sp = S->pointer(h);
         double** Cap = Ca_->pointer(h);

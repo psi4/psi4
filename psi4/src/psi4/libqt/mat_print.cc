@@ -53,7 +53,7 @@ namespace psi {
 int mat_print(double **matrix, int rows, int cols, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    div_t fraction;
   int i,j;
   int cols_per_page, num_pages, last_page, page, first_col;

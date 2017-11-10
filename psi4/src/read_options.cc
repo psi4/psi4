@@ -1355,7 +1355,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The operator used to perturb the Hamiltonian, if requested.  DIPOLE_X, DIPOLE_Y and DIPOLE_Z will be
         removed in favor of the DIPOLE option in the future -*/
     options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
-    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    /*- An ExternalPotential (built by Python or nullptr/None) -*/
     options.add_bool("EXTERN", false);
 
     /*- Radius (bohr) of a hard-sphere external potential -*/

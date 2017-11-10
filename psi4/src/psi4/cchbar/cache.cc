@@ -121,7 +121,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
 int **cacheprep_rhf(int level, int *cachefiles)
 {
-  int **cachelist = NULL;
+  int **cachelist = nullptr;
 
   /* The listing of CC files whose entries may be cached */
   cachefiles[PSIF_CC_AINTS] = 1;

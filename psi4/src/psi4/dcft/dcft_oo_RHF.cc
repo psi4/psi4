@@ -102,7 +102,7 @@ DCFTSolver::run_simult_dcft_oo_RHF()
         if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
             build_DF_tensors_RHF();
 
-            SharedMatrix mo_h = SharedMatrix(new Matrix("MO-based H", nirrep_, nmopi_, nmopi_));
+            auto mo_h = std::make_shared<Matrix>("MO-based H", nirrep_, nmopi_, nmopi_);
             mo_h->copy(so_h_);
             mo_h->transform(Ca_);
 
@@ -625,7 +625,7 @@ DCFTSolver::rotate_orbitals_RHF() {
     dcft_timer_on("DCFTSolver::rotate_orbitals_RHF()");
 
     // Initialize the orbital rotation matrix
-    SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
+    auto U_a = std::make_shared<Matrix>("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
 
     // Compute the orbital rotation matrix and rotate the orbitals
 

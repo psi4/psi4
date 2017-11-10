@@ -35,12 +35,12 @@
 
 namespace psi {
 
-class Dimension
-{
+class Dimension {
+   private:
     std::string name_;
     std::vector<int> blocks_;
 
-public:
+   public:
     Dimension();
     Dimension(const Dimension& other);
     Dimension(int n, const std::string& name = "");
@@ -85,6 +85,9 @@ public:
     /// Zero all the elements
     void zero();
 
+    /// Fill all elements in blocks_ with given value
+    void fill(int v);
+
     void print() const;
 
     // Only used for python
@@ -117,31 +120,29 @@ public:
  *      SharedVector v;
  *      v->get_block({begin,end}); // same as v->get_block(slice);
  */
-class Slice
-{
+class Slice {
     Dimension begin_;
     Dimension end_;
 
-public:
+   public:
     /// Creator
     /// Rules: begin must satisfly begin[h] >= 0 for all h
     ///        end must satisfly end[h] >= begin[h] for all h
-    Slice(const Dimension& begin,const Dimension& end);
+    Slice(const Dimension& begin, const Dimension& end);
     /// Copy constructor
     Slice(const Slice& other);
 
     /// Get the first element of this slice
-    const Dimension& begin() const {return begin_;}
+    const Dimension& begin() const { return begin_; }
     /// Get the past-the-end element of this slice
-    const Dimension& end() const {return end_;}
+    const Dimension& end() const { return end_; }
     /// Increment the beginning and end of this slice
     Slice& operator+=(const Dimension& increment);
 
-private:
+   private:
     /// Check if this Slice is acceptable
     bool validate_slice();
 };
-
 }
 
-#endif // _psi_src_lib_libmints_dimension_h_
+#endif  // _psi_src_lib_libmints_dimension_h_

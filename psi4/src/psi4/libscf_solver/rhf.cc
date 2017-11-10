@@ -58,62 +58,57 @@
 #include "psi4/libdpd/dpd.h"
 #include "rhf.h"
 
-namespace psi { namespace scf {
+namespace psi {
+namespace scf {
 
 RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
-    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object())
-{
+    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
     common_init();
 }
 
-RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
-         Options& options, std::shared_ptr<PSIO> psio)
-    : HF(ref_wfn, func, options, psio)
-{
+RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options,
+         std::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, func, options, psio) {
     common_init();
 }
 
-RHF::~RHF()
-{
-}
+RHF::~RHF() {}
 
-void RHF::common_init()
-{
+void RHF::common_init() {
     if (multiplicity_ != 1) throw PSIEXCEPTION("RHF: RHF reference is only for singlets.");
     Drms_ = 0.0;
 
     // Allocate matrix memory
-    Fa_        = SharedMatrix(factory_->create_matrix("F"));
-    Fb_        = Fa_;
-    Ca_        = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
-    Cb_        = Ca_;
+    Fa_ = SharedMatrix(factory_->create_matrix("F"));
+    Fb_ = Fa_;
+    Ca_ = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
+    Cb_ = Ca_;
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_a_->set_name("orbital energies");
     epsilon_b_ = epsilon_a_;
-    Da_        = SharedMatrix(factory_->create_matrix("SCF density"));
-    Db_        = Da_;
+    Da_ = SharedMatrix(factory_->create_matrix("SCF density"));
+    Db_ = Da_;
     Lagrangian_ = SharedMatrix(factory_->create_matrix("X"));
-    D_         = Da_;
-    Dold_      = SharedMatrix(factory_->create_matrix("D old"));
-    Va_        = SharedMatrix(factory_->create_matrix("V"));
-    Vb_        = Va_;
-    G_         = SharedMatrix(factory_->create_matrix("G"));
-    J_         = SharedMatrix(factory_->create_matrix("J"));
-    K_         = SharedMatrix(factory_->create_matrix("K"));
-    wK_        = SharedMatrix(factory_->create_matrix("wK"));
+    D_ = Da_;
+    Dold_ = SharedMatrix(factory_->create_matrix("D old"));
+    Va_ = SharedMatrix(factory_->create_matrix("V"));
+    Vb_ = Va_;
+    G_ = SharedMatrix(factory_->create_matrix("G"));
+    J_ = SharedMatrix(factory_->create_matrix("J"));
+    K_ = SharedMatrix(factory_->create_matrix("K"));
+    wK_ = SharedMatrix(factory_->create_matrix("wK"));
 
     same_a_b_dens_ = true;
     same_a_b_orbs_ = true;
 }
 
-void RHF::finalize()
-{
+void RHF::finalize() {
     // Form lagrangian
-    for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Lagrangian_->rowdim(h); ++m) {
-            for (int n=0; n<Lagrangian_->coldim(h); ++n) {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
+            for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i=0; i<doccpi_[h]; ++i) {
+                for (int i = 0; i < doccpi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
                 }
                 Lagrangian_->set(h, m, n, sum);
@@ -130,37 +125,32 @@ void RHF::finalize()
     HF::finalize();
 }
 
-SharedMatrix RHF::Da() const
-{
-    return D_;
-}
+SharedMatrix RHF::Da() const { return D_; }
 
-void RHF::save_density_and_energy()
-{
+void RHF::save_density_and_energy() {
     Dold_->copy(D_);  // Save previous density
     Eold_ = E_;       // Save previous energy
 }
 
-void forPermutation(int depth, std::vector<int>& array,
-      std::vector<int>& indices,int curDepth, std::vector<std::vector<int> >& finalindex) {
-   int length=array.size();
-   if(curDepth == 0) {
+void forPermutation(int depth, std::vector<int>& array, std::vector<int>& indices, int curDepth,
+                    std::vector<std::vector<int> >& finalindex) {
+    int length = array.size();
+    if (curDepth == 0) {
         finalindex.push_back(indices);
         return;
     }
     for (int i = 0; i < length; i++) {
-       bool isgood=true;
-       for(int j=length-1;j>=curDepth&&isgood;j--){
-          if(indices[j]==array[i])isgood=false;
-       }
-       if(isgood){
-          indices[curDepth-1]= array[i];
-          forPermutation(depth, array,indices, curDepth - 1,finalindex);
-       }
+        bool isgood = true;
+        for (int j = length - 1; j >= curDepth && isgood; j--) {
+            if (indices[j] == array[i]) isgood = false;
+        }
+        if (isgood) {
+            indices[curDepth - 1] = array[i];
+            forPermutation(depth, array, indices, curDepth - 1, finalindex);
+        }
     }
 }
-void RHF::form_V()
-{
+void RHF::form_V() {
     // Push the C matrix on
     // std::vector<SharedMatrix> & C = potential_->C();
     // C.clear();
@@ -176,8 +166,7 @@ void RHF::form_V()
     potential_->compute_V({Va_});
     Vb_ = Va_;
 }
-void RHF::form_G()
-{
+void RHF::form_G() {
     if (functional_->needs_xc()) {
         form_V();
         G_->copy(Va_);
@@ -186,7 +175,7 @@ void RHF::form_G()
     }
 
     /// Push the C matrix on
-    std::vector<SharedMatrix> & C = jk_->C_left();
+    std::vector<SharedMatrix>& C = jk_->C_left();
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
 
@@ -194,9 +183,9 @@ void RHF::form_G()
     jk_->compute();
 
     // Pull the J and K matrices off
-    const std::vector<SharedMatrix> & J = jk_->J();
-    const std::vector<SharedMatrix> & K = jk_->K();
-    const std::vector<SharedMatrix> & wK = jk_->wK();
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+    const std::vector<SharedMatrix>& wK = jk_->wK();
     J_ = J[0];
     if (functional_->is_x_hybrid()) {
         K_ = K[0];
@@ -223,20 +212,19 @@ void RHF::form_G()
     }
 }
 
-void RHF::compute_orbital_gradient(bool save_fock)
-{
+void RHF::compute_orbital_gradient(bool save_fock) {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
     SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
     Drms_ = gradient->rms();
 
-    if(save_fock){
+    if (save_fock) {
         if (initialized_diis_manager_ == false) {
             if (scf_type_ == "DIRECT") {
-                diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(
-                    max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore));
+                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+                                                              DIISManager::LargestError, DIISManager::InCore);
             } else {
-                diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(
-                    max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+                                                              DIISManager::LargestError, DIISManager::OnDisk);
             }
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
             diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
@@ -246,22 +234,16 @@ void RHF::compute_orbital_gradient(bool save_fock)
     }
 }
 
+bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
 
-bool RHF::diis()
-{
-    return diis_manager_->extrapolate(1, Fa_.get());
-}
-
-bool RHF::test_convergency()
-{
+bool RHF::test_convergency() {
     // energy difference
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
-       return true;
-    }
-    else
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_) {
+        return true;
+    } else
         return false;
 }
 
@@ -307,20 +289,17 @@ void RHF::form_D() {
     }
 }
 
-void RHF::damp_update()
-{
-  D_->scale(1.0 - damping_percentage_);
-  D_->axpy(damping_percentage_, Dold_);
+void RHF::damp_update() {
+    D_->scale(1.0 - damping_percentage_);
+    D_->axpy(damping_percentage_, Dold_);
 }
 
-double RHF::compute_initial_E()
-{
+double RHF::compute_initial_E() {
     double Etotal = nuclearrep_ + D_->vector_dot(H_);
     return Etotal;
 }
 
-double RHF::compute_E()
-{
+double RHF::compute_E() {
     double one_electron_E = 2.0 * D_->vector_dot(H_);
     double coulomb_E = 2.0 * D_->vector_dot(J_);
 
@@ -329,7 +308,7 @@ double RHF::compute_E()
     if (functional_->needs_xc()) {
         XC_E = potential_->quadrature_values()["FUNCTIONAL"];
     }
-    if (functional_->needs_vv10()){
+    if (functional_->needs_vv10()) {
         VV10_E = potential_->quadrature_values()["VV10"];
     }
 
@@ -343,12 +322,11 @@ double RHF::compute_E()
         exchange_E -= beta * Da_->vector_dot(wK_);
     }
 
-
     double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] =  coulomb_E + exchange_E;
+    energies_["Two-Electron"] = coulomb_E + exchange_E;
     energies_["XC"] = XC_E;
     energies_["VV10"] = VV10_E;
     energies_["-D"] = variables_["-D Energy"];
@@ -366,15 +344,13 @@ double RHF::compute_E()
     return Etotal;
 }
 std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
-
     // This is a bypass for C1 input
     std::vector<bool> c1_input_;
 
     bool needs_ao = false;
     bool needs_so = false;
-    for (size_t i = 0; i < x_vec.size(); i++){
-
-        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)){
+    for (size_t i = 0; i < x_vec.size(); i++) {
+        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)) {
             c1_input_.push_back(true);
             needs_ao = true;
         } else {
@@ -384,12 +360,12 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     }
 
     SharedMatrix Cocc_ao, Cvir_ao, F_ao, Cocc_so, Cvir_so;
-    if (needs_ao){
+    if (needs_ao) {
         Cocc_ao = Ca_subset("AO", "OCC");
         Cvir_ao = Ca_subset("AO", "VIR");
         F_ao = F_subset_helper(Fa_, Ca_, "AO");
     }
-    if (needs_so){
+    if (needs_so) {
         Cocc_so = Ca_subset("SO", "OCC");
         Cvir_so = Ca_subset("SO", "VIR");
     }
@@ -399,19 +375,16 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     SharedMatrix F, Co, Cv;
     for (size_t i = 0; i < x_vec.size(); i++) {
         if (c1_input_[i]) {
-            if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (nmo_ - nalpha_))){
-                throw PSIEXCEPTION(
-                    "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+            if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (nmo_ - nalpha_))) {
+                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             F = F_ao;
             Co = Cocc_ao;
             Cv = Cvir_ao;
 
         } else {
-            if ((x_vec[i]->rowspi() != Cocc_so->colspi()) ||
-                (x_vec[i]->colspi() != Cvir_so->colspi())) {
-                throw PSIEXCEPTION(
-                    "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+            if ((x_vec[i]->rowspi() != Cocc_so->colspi()) || (x_vec[i]->colspi() != Cvir_so->colspi())) {
+                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             F = Fa_;
             Co = Cocc_so;
@@ -430,9 +403,8 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     return ret;
 }
 std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis) {
-
     // Make sure we have a JK object
-    if (!jk_){
+    if (!jk_) {
         throw PSIEXCEPTION("RHF::twoel_Hx: JK object is not initialized, please set option SAVE_JK to True.");
     }
 
@@ -441,9 +413,8 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 
     bool needs_ao = false;
     bool needs_so = false;
-    for (size_t i = 0; i < x_vec.size(); i++){
-
-        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)){
+    for (size_t i = 0; i < x_vec.size(); i++) {
+        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)) {
             c1_input_.push_back(true);
             needs_ao = true;
         } else {
@@ -453,11 +424,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 
     SharedMatrix Cocc_ao, Cvir_ao, Cocc_so, Cvir_so;
-    if (needs_ao){
+    if (needs_ao) {
         Cocc_ao = Ca_subset("AO", "OCC");
         Cvir_ao = Ca_subset("AO", "VIR");
     }
-    if (needs_so){
+    if (needs_so) {
         Cocc_so = Ca_subset("SO", "OCC");
         Cvir_so = Ca_subset("SO", "VIR");
     }
@@ -473,16 +444,13 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     for (size_t i = 0; i < x_vec.size(); i++) {
         if (c1_input_[i]) {
             if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (nmo_ - nalpha_))) {
-                throw PSIEXCEPTION(
-                    "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Co = Cocc_ao;
             Cv = Cvir_ao;
         } else {
-            if ((x_vec[i]->rowspi() != Cocc_so->colspi()) ||
-                (x_vec[i]->colspi() != Cvir_so->colspi())) {
-                throw PSIEXCEPTION(
-                    "SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
+            if ((x_vec[i]->rowspi() != Cocc_so->colspi()) || (x_vec[i]->colspi() != Cvir_so->colspi())) {
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Co = Cocc_so;
             Cv = Cvir_so;
@@ -499,14 +467,14 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
-    const std::vector<SharedMatrix> & wK = jk_->wK();
+    const std::vector<SharedMatrix>& wK = jk_->wK();
 
     std::vector<SharedMatrix> Vx;
-    if (functional_->needs_xc()){
+    if (functional_->needs_xc()) {
         std::vector<SharedMatrix> Dx;
         for (size_t i = 0; i < x_vec.size(); i++) {
             Dx.push_back(Matrix::doublet(Cl[i], Cr[i], false, true));
-            Vx.push_back(SharedMatrix(new Matrix("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi())));
+            Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi()));
         }
         potential_->compute_Vx(Dx, Vx);
     }
@@ -518,9 +486,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
     std::vector<SharedMatrix> ret;
-    if (combine){
+    if (combine) {
         // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
-        for (size_t i = 0; i < x_vec.size(); i++){
+        for (size_t i = 0; i < x_vec.size(); i++) {
             J[i]->scale(4.0);
             if (functional_->is_x_hybrid()) {
                 J[i]->axpy(-alpha, K[i]);
@@ -530,13 +498,13 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 J[i]->axpy(-beta, wK[i]);
                 J[i]->axpy(-beta, wK[i]->transpose());
             }
-            if (functional_->needs_xc()){
+            if (functional_->needs_xc()) {
                 J[i]->axpy(4.0, Vx[i]);
             }
             ret.push_back(J[i]);
         }
-    } else{
-        for (size_t i = 0; i < x_vec.size(); i++){
+    } else {
+        for (size_t i = 0; i < x_vec.size(); i++) {
             ret.push_back(J[i]);
             if (functional_->is_x_hybrid()) {
                 K[i]->scale(alpha);
@@ -546,45 +514,44 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                     ret.push_back(wK[i]);
                 }
             }
-            if (functional_->needs_xc()){
+            if (functional_->needs_xc()) {
                 ret.push_back(Vx[i]);
             }
-       }
+        }
     }
 
     // Transform if needed
-    if (return_basis == "SO"){
+    if (return_basis == "SO") {
         /* pass */
-    } else if (return_basis == "MO"){
-        for (size_t i = 0; i < ret.size(); i++){
+    } else if (return_basis == "MO") {
+        for (size_t i = 0; i < ret.size(); i++) {
             if (c1_input_[i]) {
                 ret[i] = Matrix::triplet(Cocc_ao, ret[i], Cvir_ao, true, false, false);
             } else {
                 ret[i] = Matrix::triplet(Cocc_so, ret[i], Cvir_so, true, false, false);
             }
-       }
-    } else{
+        }
+    } else {
         throw PSIEXCEPTION("SCF::twoel_Hx: return_basis option not understood.");
     }
 
     return ret;
 }
 std::vector<SharedMatrix> RHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
-
     // Compute quantities
     std::vector<SharedMatrix> onel = onel_Hx(x_vec);
     std::vector<SharedMatrix> twoel = twoel_Hx(x_vec, true, "MO");
 
-    for (size_t i = 0; i < onel.size(); i++){
+    for (size_t i = 0; i < onel.size(); i++) {
         onel[i]->add(twoel[i]);
     }
 
     return onel;
 }
-std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol,
-                                          int max_iter, int print_lvl) {
+std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
+                                          int print_lvl) {
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
     cphf_converged_ = false;
     cphf_nfock_builds_ = 0;
 
@@ -594,9 +561,8 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     bool needs_ao = false;
     bool needs_so = false;
-    for (size_t i = 0; i < x_vec.size(); i++){
-
-        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)){
+    for (size_t i = 0; i < x_vec.size(); i++) {
+        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)) {
             c1_input_.push_back(true);
             needs_ao = true;
         } else {
@@ -608,12 +574,12 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     // => Build preconditioner <= //
     SharedMatrix Precon_ao, Precon_so;
 
-    if (needs_ao){
+    if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix Cocc_ao = Ca_subset("AO", "ALL");
         SharedMatrix F_ao = F_subset_helper(Fa_, Ca_, "AO");
         SharedMatrix IFock_ao = Matrix::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
-        Precon_ao = SharedMatrix(new Matrix("Precon", nalpha_, nmo_ - nalpha_));
+        Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
         double* denomp = Precon_ao->pointer()[0];
         double** fp = IFock_ao->pointer();
@@ -625,11 +591,11 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         }
     }
 
-    if (needs_so){
+    if (needs_so) {
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
         Dimension virpi = nmopi_ - nalphapi_;
         SharedMatrix IFock_so = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
-        Precon_so = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, virpi));
+        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, doccpi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
             if (!doccpi_[h] || !virpi[h]) continue;
@@ -647,14 +613,12 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     // => Header <= //
     if (print_lvl) {
         outfile->Printf("\n");
-        outfile->Printf("   ==> Coupled-Perturbed %s Solver <==\n\n",
-                        options_.get_str("REFERENCE").c_str());
+        outfile->Printf("   ==> Coupled-Perturbed %s Solver <==\n\n", options_.get_str("REFERENCE").c_str());
         outfile->Printf("    Maxiter             = %11d\n", max_iter);
         outfile->Printf("    Convergence         = %11.3E\n", conv_tol);
         outfile->Printf("    Number of equations = %11ld\n", x_vec.size());
         outfile->Printf("   -----------------------------------------------------\n");
-        outfile->Printf("     %4s %14s %12s  %6s  %6s\n", "Iter", "Residual RMS", "Max RMS",
-                        "Remain", "Time [s]");
+        outfile->Printf("     %4s %14s %12s  %6s  %6s\n", "Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]");
         outfile->Printf("   -----------------------------------------------------\n");
     }
 
@@ -670,7 +634,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     // => Initial CG guess <= //
     for (size_t i = 0; i < nvecs; i++) {
         ret_vec.push_back(x_vec[i]->clone());
-        if (c1_input_[i]){
+        if (c1_input_[i]) {
             ret_vec[i]->apply_denominator(Precon_ao);
         } else {
             ret_vec[i]->apply_denominator(Precon_so);
@@ -703,7 +667,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
         // p and z vectors
         z_vec.push_back(r_vec[i]->clone());
-        if (c1_input_[i]){
+        if (c1_input_[i]) {
             z_vec[i]->apply_denominator(Precon_ao);
         } else {
             z_vec[i]->apply_denominator(Precon_so);
@@ -714,10 +678,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     mean_rms /= (double)nvecs;
     cphf_nfock_builds_ += nremain;
 
-    stop = time(NULL);
+    stop = time(nullptr);
     if (print_lvl > 1) {
-        outfile->Printf("    %5s %14.3e %12.3e %7d %9ld\n", "Guess", mean_rms, max_rms, nremain,
-                        stop - start);
+        outfile->Printf("    %5s %14.3e %12.3e %7d %9ld\n", "Guess", mean_rms, max_rms, nremain, stop - start);
     }
 
     // => CG iterations <= //
@@ -748,8 +711,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
             double alpha = rzpre[i] / p_vec[i]->vector_dot(Ap_vec[nremain]);
 
             if (std::isnan(alpha)) {
-                outfile->Printf(
-                    "RHF::CPHF Warning CG alpha is zero/nan for vec %d. Stopping vec.\n", i);
+                outfile->Printf("RHF::CPHF Warning CG alpha is zero/nan for vec %d. Stopping vec.\n", i);
                 active[i] = false;
                 alpha = 0.0;
             }
@@ -779,10 +741,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         nremain = new_remain;
         mean_rms /= (double)nvecs;
 
-        stop = time(NULL);
-        if (print_lvl){
-            outfile->Printf("    %5d %14.3e %12.3e %7d %9ld\n", cg_iter, mean_rms, max_rms, nremain,
-                            stop - start);
+        stop = time(nullptr);
+        if (print_lvl) {
+            outfile->Printf("    %5d %14.3e %12.3e %7d %9ld\n", cg_iter, mean_rms, max_rms, nremain, stop - start);
         }
 
         // Check convergence
@@ -795,7 +756,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
             if (!active[i]) continue;
             z_vec[i]->copy(r_vec[i]);
             // z_vec[i]->apply_denominator(Precon);
-            if (c1_input_[i]){
+            if (c1_input_[i]) {
                 z_vec[i]->apply_denominator(Precon_ao);
             } else {
                 z_vec[i]->apply_denominator(Precon_so);
@@ -809,8 +770,8 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     }
 
     // Convergence
-    if (!nremain){
-       cphf_converged_ = true;
+    if (!nremain) {
+        cphf_converged_ = true;
     }
 
     // Print out tail
@@ -829,14 +790,12 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     Precon_so.reset();
 
     return ret_vec;
-
 }
 
-int RHF::soscf_update()
-{
+int RHF::soscf_update() {
     int fock_builds;
     time_t start, stop;
-    start = time(NULL);
+    start = time(nullptr);
 
     // => Build gradient and preconditioner <= //
 
@@ -848,15 +807,14 @@ int RHF::soscf_update()
     SharedMatrix Gradient = Matrix::triplet(Cocc, Fa_, Cvir, true, false, false);
 
     // Make sure the MO gradient is reasonably small
-    if (Gradient->absmax() > 0.3){
-        if (print_ > 1){
+    if (Gradient->absmax() > 0.3) {
+        if (print_ > 1) {
             outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
         }
         return 0;
     }
 
-    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv_, soscf_max_iter_,
-                                             soscf_print_ ? 2 : 0);
+    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv_, soscf_max_iter_, soscf_print_ ? 2 : 0);
 
     // => Rotate orbitals <= //
     rotate_orbitals(Ca_, ret_x[0]);
@@ -864,14 +822,13 @@ int RHF::soscf_update()
     return cphf_nfock_builds_;
 }
 
-bool RHF::stability_analysis()
-{
-    if(scf_type_ == "DF" || scf_type_ == "CD"){
+bool RHF::stability_analysis() {
+    if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
-    }else{
+    } else {
 #define ID(x) ints.DPD_ID(x)
         // Build the Fock Matrix
-        SharedMatrix moF(new Matrix("MO basis fock matrix", nmopi_, nmopi_));
+        auto moF = std::make_shared<Matrix>("MO basis fock matrix", nmopi_, nmopi_);
         moF->transform(Fa_, Ca_);
 
         std::vector<std::shared_ptr<MOSpace> > spaces;
@@ -883,35 +840,35 @@ bool RHF::stability_analysis()
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
         dpd_set_default(ints.get_dpd_id());
-        dpdbuf4 Asing, Atrip,I;
+        dpdbuf4 Asing, Atrip, I;
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "MO Ints (OV|OV)");
         // Singlet A_ia_jb = 4 (ia|jb)
         global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "RHF Singlet Hessian (IA|JB)", 4.0);
         // Triplet A_ia_jb = -(ib|ja)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
-                           ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)", -1.0);
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"),
+                                    "RHF Triplet Hessian (IA|JB)", -1.0);
         global_dpd_->buf4_close(&I);
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+                               "MO Ints (OO|VV)");
         // Triplet A_ia_jb -= (ij|ab)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
-                           ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)", -1.0);
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,V]"), ID("[O,V]"),
+                                    "RHF Triplet Hessian (IA|JB)", -1.0);
         global_dpd_->buf4_close(&I);
-        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Triplet Hessian (IA|JB)");
-        for(int h = 0; h < Atrip.params->nirreps; ++h){
+        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "RHF Triplet Hessian (IA|JB)");
+        for (int h = 0; h < Atrip.params->nirreps; ++h) {
             global_dpd_->buf4_mat_irrep_init(&Atrip, h);
             global_dpd_->buf4_mat_irrep_rd(&Atrip, h);
-            for(int ia = 0; ia < Atrip.params->rowtot[h]; ++ia){
+            for (int ia = 0; ia < Atrip.params->rowtot[h]; ++ia) {
                 int iabs = Atrip.params->roworb[h][ia][0];
                 int aabs = Atrip.params->roworb[h][ia][1];
                 int isym = Atrip.params->psym[iabs];
                 int asym = Atrip.params->qsym[aabs];
                 int irel = iabs - Atrip.params->poff[isym];
                 int arel = aabs - Atrip.params->qoff[asym] + doccpi_[asym];
-                for(int jb = 0; jb < Atrip.params->coltot[h]; ++jb){
+                for (int jb = 0; jb < Atrip.params->coltot[h]; ++jb) {
                     int jabs = Atrip.params->colorb[h][jb][0];
                     int babs = Atrip.params->colorb[h][jb][1];
                     int jsym = Atrip.params->rsym[jabs];
@@ -919,17 +876,15 @@ bool RHF::stability_analysis()
                     int jrel = jabs - Atrip.params->roff[jsym];
                     int brel = babs - Atrip.params->soff[bsym] + doccpi_[bsym];
                     // Triplet A_ia_jb += delta_ij F_ab - delta_ab F_ij
-                    if((iabs == jabs) && (asym == bsym))
-                        Atrip.matrix[h][ia][jb] += moF->get(asym, arel, brel);
-                    if((aabs == babs) && (isym == jsym))
-                        Atrip.matrix[h][ia][jb] -= moF->get(isym, irel, jrel);
+                    if ((iabs == jabs) && (asym == bsym)) Atrip.matrix[h][ia][jb] += moF->get(asym, arel, brel);
+                    if ((aabs == babs) && (isym == jsym)) Atrip.matrix[h][ia][jb] -= moF->get(isym, irel, jrel);
                 }
             }
             global_dpd_->buf4_mat_irrep_wrt(&Atrip, h);
         }
         // Singlet A += Triplet A
-        global_dpd_->buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Singlet Hessian (IA|JB)");
+        global_dpd_->buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "RHF Singlet Hessian (IA|JB)");
         global_dpd_->buf4_axpy(&Atrip, &Asing, 1.0);
         global_dpd_->buf4_close(&Atrip);
         global_dpd_->buf4_close(&Asing);
@@ -937,18 +892,18 @@ bool RHF::stability_analysis()
         /*
          *  Perform the stability analysis
          */
-        std::vector<std::pair<double, int> >singlet_eval_sym;
-        std::vector<std::pair<double, int> >triplet_eval_sym;
+        std::vector<std::pair<double, int> > singlet_eval_sym;
+        std::vector<std::pair<double, int> > triplet_eval_sym;
 
-        global_dpd_->buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Singlet Hessian (IA|JB)");
-        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Triplet Hessian (IA|JB)");
-        for(int h = 0; h < Asing.params->nirreps; ++h) {
+        global_dpd_->buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "RHF Singlet Hessian (IA|JB)");
+        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "RHF Triplet Hessian (IA|JB)");
+        for (int h = 0; h < Asing.params->nirreps; ++h) {
             int dim = Asing.params->rowtot[h];
-            if(dim == 0) continue;
-            double *evals = init_array(dim);
-            double **evecs = block_matrix(dim, dim);
+            if (dim == 0) continue;
+            double* evals = init_array(dim);
+            double** evecs = block_matrix(dim, dim);
 
             global_dpd_->buf4_mat_irrep_init(&Asing, h);
             global_dpd_->buf4_mat_irrep_rd(&Asing, h);
@@ -956,8 +911,7 @@ bool RHF::stability_analysis()
             global_dpd_->buf4_mat_irrep_close(&Asing, h);
 
             int mindim = dim < 5 ? dim : 5;
-            for(int i = 0; i < mindim; i++)
-                singlet_eval_sym.push_back(std::make_pair(evals[i], h));
+            for (int i = 0; i < mindim; i++) singlet_eval_sym.push_back(std::make_pair(evals[i], h));
 
             zero_arr(evals, dim);
             zero_mat(evecs, dim, dim);
@@ -967,16 +921,15 @@ bool RHF::stability_analysis()
             sq_rsp(dim, dim, Atrip.matrix[h], evals, 1, evecs, 1e-12);
             global_dpd_->buf4_mat_irrep_close(&Atrip, h);
 
-            for(int i = 0; i < mindim; i++)
-                triplet_eval_sym.push_back(std::make_pair(evals[i], h));
+            for (int i = 0; i < mindim; i++) triplet_eval_sym.push_back(std::make_pair(evals[i], h));
 
             free_block(evecs);
-            delete [] evals;
+            delete[] evals;
         }
 
-        outfile->Printf( "    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        outfile->Printf( "    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
@@ -984,5 +937,5 @@ bool RHF::stability_analysis()
     // FOLLOW is not implemented for RHF
     return false;
 }
-
-}}
+}
+}

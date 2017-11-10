@@ -128,7 +128,7 @@ void PSIO::open(size_t unit, int status) {
   else if (status == PSIO_OPEN_NEW) {
     /* Init the TOC stats and write them to disk */
     this_unit->toclen = 0;
-    this_unit->toc = NULL;
+    this_unit->toc = nullptr;
     wt_toclen(unit, 0);
   }
   else psio_error(unit,PSIO_ERROR_OSTAT);

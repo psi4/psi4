@@ -192,7 +192,7 @@ PointGroup::PointGroup(const PointGroup &pg)
     *this = pg;
 }
 
-PointGroup::PointGroup(const std::shared_ptr <PointGroup> &pg)
+PointGroup::PointGroup(const std::shared_ptr<PointGroup> &pg)
 {
     *this = *pg.get();
 }
@@ -227,7 +227,7 @@ PointGroup::char_table() const
 }
 
 int
-PointGroup::equiv(const std::shared_ptr <PointGroup> &grp, double /*tol*/) const
+PointGroup::equiv(const std::shared_ptr<PointGroup> &grp, double /*tol*/) const
 {
     if (symb != grp->symb)
         return 0;
@@ -365,8 +365,8 @@ const char *PointGroup::bits_to_basic_name(unsigned char bits)
 void
 PointGroup::print(std::string out) const
 {
-    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                   std::make_shared<PsiOutStream>(out));
     printer->Printf("PointGroup: %s\n", symb.c_str());
 }
 

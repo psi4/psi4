@@ -26,25 +26,23 @@
  * @END LICENSE
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "functional.h"
 #include "libxc/xc.h"
 #include "psi4/psi4-dec.h"
 #include "LibXCfunctional.h"
 #include "psi4/libpsi4util/exception.h"
 
-
 namespace psi {
 
-std::shared_ptr<Functional> Functional::build_base(const std::string& alias)
-{
+std::shared_ptr<Functional> Functional::build_base(const std::string& alias) {
     Functional* fun;
 
-    if (xc_functional_get_number(alias.c_str()) >= 0){
+    if (xc_functional_get_number(alias.c_str()) >= 0) {
         fun = static_cast<Functional*>(new LibXCFunctional(alias, false));
     } else {
         throw PSIEXCEPTION("Functional::build_base: Unrecognized base Functional.");
@@ -52,5 +50,4 @@ std::shared_ptr<Functional> Functional::build_base(const std::string& alias)
 
     return std::shared_ptr<Functional>(fun);
 }
-
 }

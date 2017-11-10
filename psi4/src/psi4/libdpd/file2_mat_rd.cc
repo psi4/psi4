@@ -45,7 +45,7 @@ int DPD::file2_mat_rd(dpdfile2 *File)
     if(File->incore) return 0; /* We already have this data in core */
 
     /* If data doesn't actually exist on disk, we just leave */
-    if(psio_tocscan(File->filenum, File->label) == NULL) return 1;
+    if(psio_tocscan(File->filenum, File->label) == nullptr) return 1;
 
     for(h=0; h < File->params->nirreps; h++) {
         irrep_ptr = File->lfiles[h];

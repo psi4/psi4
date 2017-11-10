@@ -223,7 +223,7 @@ void MOLECULE::read_geom_grad(void) {
   INTEGER *QZ, QNATOMS;
   bool Qnoghosts = true;
 
-  ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
+  ::get_carts(nullptr, &QX, &QZ, &QNATOMS, Qnoghosts);
 
   int QNATOMS_real = g_natom();
   if (QNATOMS_real != (QNATOMS-FBatom))

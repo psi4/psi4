@@ -75,9 +75,9 @@ IntegralTransform::compute_fock_like_matrices(SharedMatrix Hcore, std::vector<Sh
         SharedMatrix Cmat = Cmats[N];
         if(Cmat->rowspi() != sopi_)
             throw PSIEXCEPTION("Row dimension of C matrix is not equal to SOs per irrep in LibTrans::compute_fock_like_matrices()");
-        SharedMatrix Fmat(new Matrix("F matrix", sopi_, sopi_));
+        auto Fmat = std::make_shared<Matrix>("F matrix", sopi_, sopi_);
         Fmats.push_back(Fmat);
-        SharedMatrix Dmat(new Matrix("D matrix", sopi_, sopi_));
+        auto Dmat = std::make_shared<Matrix>("D matrix", sopi_, sopi_);
         Dmat->gemm(false, true, 1.0, Cmat, Cmat, 0.0);
         Dmats.push_back(Dmat);
     }
@@ -309,7 +309,7 @@ IntegralTransform::presort_so_tei()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketOffset = p;
@@ -320,7 +320,7 @@ IntegralTransform::presort_so_tei()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketRowDim = p;
@@ -332,7 +332,7 @@ IntegralTransform::presort_so_tei()
 		long int **pp;
 		pp = static_cast<long int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(long int *)));
-		if(pp == NULL) {
+		if(pp == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketSize = pp;

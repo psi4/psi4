@@ -170,7 +170,7 @@ class OPT_DATA {
     double *g_last_forces_pointer(void) const {
       if (steps.size() > 1)
         return steps.at(steps.size()-2)->g_forces_pointer();
-      else return NULL;
+      else return nullptr;
     }
     double *g_geom_const_pointer(int i) const {
       return steps.at(i)->g_geom_const_pointer();

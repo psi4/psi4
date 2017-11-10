@@ -103,7 +103,7 @@ void MemoryManager::allocate(const char *type, T*& matrix, size_t size, const ch
   AllocationEntry newEntry;
 
   if(size<=0){
-    matrix = NULL;
+    matrix = nullptr;
   }else{
     matrix    = new T[size];
     for(size_t i=0;i<size;i++)
@@ -122,7 +122,7 @@ void MemoryManager::allocate(const char *type, T*& matrix, size_t size, const ch
 template <typename T>
 void MemoryManager::release_one(T*& matrix, const char *fileName, size_t lineNumber)
 {
-  if(matrix == NULL)
+  if(matrix == nullptr)
     return;
 
   size_t size = AllocationTable[static_cast<void*>(matrix)].argumentList[0];
@@ -130,7 +130,7 @@ void MemoryManager::release_one(T*& matrix, const char *fileName, size_t lineNum
   UnregisterMemory(static_cast<void*>(matrix), size*sizeof(T),fileName,lineNumber);
 
   delete[] matrix;
-  matrix = NULL;
+  matrix = nullptr;
 }
 
 template <typename T>
@@ -140,7 +140,7 @@ void MemoryManager::allocate(const char *type, T**& matrix, size_t size1, size_t
   size_t size = size1*size2;
 
   if(size<=0){
-    matrix = NULL;
+    matrix = nullptr;
     return;
   }else{
     matrix    = new T*[size1];
@@ -164,7 +164,7 @@ void MemoryManager::allocate(const char *type, T**& matrix, size_t size1, size_t
 template <typename T>
 void MemoryManager::release_two(T**& matrix, const char *fileName, size_t lineNumber)
 {
-  if(matrix == NULL)
+  if(matrix == nullptr)
     return;
 
   size_t size = AllocationTable[static_cast<void*>(matrix)].argumentList[0] * AllocationTable[static_cast<void*>(matrix)].argumentList[1];
@@ -173,7 +173,7 @@ void MemoryManager::release_two(T**& matrix, const char *fileName, size_t lineNu
 
   delete[] matrix[0];
   delete[] matrix;
-  matrix = NULL;
+  matrix = nullptr;
 }
 
 template <typename T>
@@ -182,7 +182,7 @@ void MemoryManager::allocate(const char *type, T***& matrix,size_t size1,size_t 
   AllocationEntry newEntry;
   size_t size = size1*size2*size3;
   if(size<=0){
-    matrix = NULL;
+    matrix = nullptr;
     return;
   }else{
     matrix    = new T**[size1];
@@ -209,7 +209,7 @@ void MemoryManager::allocate(const char *type, T***& matrix,size_t size1,size_t 
 template <typename T>
 void MemoryManager::release_three(T***& matrix, const char *fileName, size_t lineNumber)
 {
-  if(matrix == NULL)
+  if(matrix == nullptr)
     return;
 
   size_t size1 = AllocationTable[static_cast<void*>(matrix)].argumentList[0];
@@ -222,7 +222,7 @@ void MemoryManager::release_three(T***& matrix, const char *fileName, size_t lin
   for(size_t i=0;i<size1;i++)
     delete[] matrix[i];
   delete[] matrix;
-  matrix = NULL;
+  matrix = nullptr;
 }
 
 #define allocate1(type, variable, size) \

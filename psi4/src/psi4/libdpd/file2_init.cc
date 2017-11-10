@@ -73,7 +73,7 @@ int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum,
     nirreps = File->params->nirreps;
 
     this_entry = file2_cache_scan(filenum, irrep, pnum, qnum, label, dpd_default);
-    if(this_entry != NULL) {
+    if(this_entry != nullptr) {
         File->incore = 1;
         File->matrix = this_entry->matrix;
     }

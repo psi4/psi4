@@ -35,14 +35,14 @@
 using namespace psi;
 
 IntVector::IntVector() {
-    vector_ = NULL;
-    dimpi_ = NULL;
+    vector_ = nullptr;
+    dimpi_ = nullptr;
     nirrep_ = 0;
     name_ = "";
 }
 
 IntVector::IntVector(const IntVector& c) {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirrep_ = c.nirrep_;
     dimpi_ = new int[nirrep_];
     for (int h=0; h<nirrep_; ++h)
@@ -53,7 +53,7 @@ IntVector::IntVector(const IntVector& c) {
 }
 
 IntVector::IntVector(int nirreps, int *dimpi) {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
     for (int h=0; h<nirrep_; ++h)
@@ -61,14 +61,14 @@ IntVector::IntVector(int nirreps, int *dimpi) {
     alloc();
 }
 IntVector::IntVector(int dim) {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirrep_ = 1;
     dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
 }
 IntVector::IntVector(const std::string& name, int nirreps, int *dimpi) {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
     for (int h=0; h<nirrep_; ++h)
@@ -77,7 +77,7 @@ IntVector::IntVector(const std::string& name, int nirreps, int *dimpi) {
     name_ = name;
 }
 IntVector::IntVector(const std::string& name, int dim) {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirrep_ = 1;
     dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
@@ -123,7 +123,7 @@ void IntVector::release() {
             delete[] (vector_[h]);
     }
     free(vector_);
-    vector_ = NULL;
+    vector_ = nullptr;
 }
 
 void IntVector::copy_from(int **c) {
@@ -176,8 +176,8 @@ void IntVector::set(int *vec) {
 void IntVector::print(std::string out, const char* extra) const {
     int h;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
-    if (extra == NULL) {
+          std::make_shared<PsiOutStream>(out));
+    if (extra == nullptr) {
         printer->Printf( "\n # %s #\n", name_.c_str());
     } else {
         printer->Printf( "\n # %s %s #\n", name_.c_str(), extra);

@@ -112,14 +112,14 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nthreads);
     dfh->initialize();
-    
+
     dfh->print_header();
 
     dfh->add_space("ACTIVE_OCC", Caocc);
     dfh->add_space("ACTIVE_VIR", Cavir);
-    
+
     dfh->add_transformation("B", "ACTIVE_OCC", "ACTIVE_VIR", "pqQ");
-    
+
     dfh->transform();
 
     // => DFMP2 Energy Evaluation <= //
@@ -132,15 +132,15 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     long int max_o = doubles / (2L * nvQ);
     max_o = (max_o > no ? no : max_o);
 
-    std::shared_ptr<Matrix> Bia(new Matrix(max_o, nvQ));
-    std::shared_ptr<Matrix> Bjb(new Matrix(max_o, nvQ));
+    auto Bia = std::make_shared<Matrix>(max_o, nvQ);
+    auto Bjb = std::make_shared<Matrix>(max_o, nvQ);
 
     double** Biap = Bia->pointer();
     double** Bjbp = Bjb->pointer();
 
     std::vector<std::shared_ptr<Matrix> > Iab;
     for (int t = 0; t < nthreads; t++) {
-        Iab.push_back(std::shared_ptr<Matrix>(new Matrix("Iab", nv, nv)));
+        Iab.push_back(std::make_shared<Matrix>("Iab", nv, nv));
     }
 
     double* eop = eps_aocc->pointer();
@@ -163,7 +163,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
             if (istart == jstart) {
                 Bjb->copy(Bia);
             } else {
-                dfh->fill_tensor("B", Bjb, {jstart, jstart + nj});    
+                dfh->fill_tensor("B", Bjb, {jstart, jstart + nj});
             }
 
 #pragma omp parallel for reduction(+: E_MP2J, E_MP2K) num_threads(nthreads)

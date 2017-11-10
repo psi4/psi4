@@ -396,7 +396,7 @@ void HF::common_init()
     // Initialize PCM object, if requested
 #ifdef USING_PCMSolver
     if((pcm_enabled_ = (options_.get_bool("PCM"))))
-      hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
+      hf_pcm_ = std::make_shared<PCM>(options_, psio_, nirrep_, basisset_);
 #endif
 }
 
@@ -437,7 +437,7 @@ std::vector<SharedMatrix> HF::cphf_solve(std::vector<SharedMatrix> x_vec, double
 }
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     // => Rotate orbitals <= //
-    SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
+    auto U = std::make_shared<Matrix>("Ck", nirrep_, nmopi_, nmopi_);
     std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
@@ -491,9 +491,9 @@ void HF::integrals()
         std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
         Process::environment.set_legacy_molecule(molecule_);
         if(options_.get_bool("SOSCF"))
-            jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
+            jk_ = std::make_shared<GTFockJK>(basisset_,2,false);
         else
-            jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+            jk_ = std::make_shared<GTFockJK>(basisset_,2,true);
         Process::environment.set_legacy_molecule(other_legacy);
       #else
         throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
@@ -542,10 +542,10 @@ double HF::finalize_E()
         // compute it if needed
         if(options_.get_str("REFERENCE") != "UHF") {
             psio_->open(PSIF_SO_TEI, PSIO_OPEN_OLD);
-            if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == NULL) {
+            if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == nullptr) {
                 psio_->close(PSIF_SO_TEI,1);
                 outfile->Printf("    SO Integrals not on disk, computing...");
-                std::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
+                auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
                 mints->integrals();
                 outfile->Printf("done.\n");
             } else {
@@ -1154,9 +1154,9 @@ void HF::form_Shalf()
     }
 
     // Temporary variables needed by diagonalize_F
-    diag_temp_   = SharedMatrix(new Matrix(nirrep_, nmopi_, nsopi_));
-    diag_F_temp_ = SharedMatrix(new Matrix(nirrep_, nmopi_, nmopi_));
-    diag_C_temp_ = SharedMatrix(new Matrix(nirrep_, nmopi_, nmopi_));
+    diag_temp_   = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
+    diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+    diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
 
     if (print_ > 3) {
         S_->print("outfile");
@@ -1585,7 +1585,7 @@ void HF::initialize()
     }
 
     if(attempt_number_ == 1){
-        std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
+        auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
         if ((options_.get_str("RELATIVISTIC") == "X2C") ||
             (options_.get_str("RELATIVISTIC") == "DKH")) {
             mints->set_rel_basisset(get_basisset("BASIS_RELATIVISTIC"));
@@ -1604,7 +1604,7 @@ void HF::initialize()
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
             H_->add(Vefp);
-            Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
+            Horig_ = std::make_shared<Matrix>("H orig Matrix", basisset_->nbf(), basisset_->nbf());
             Horig_->copy(H_);
             outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
         }
@@ -1953,7 +1953,7 @@ void HF::print_occupation()
 //  Returns a vector of the occupation of the a orbitals
 std::shared_ptr<Vector> HF::occupation_a() const
 {
-  SharedVector occA = SharedVector(new Vector(nmopi_));
+  auto occA = std::make_shared<Vector>(nmopi_);
   for(int h=0; h < nirrep_;++h)
     for(int n=0; n < nalphapi()[h]; n++)
       occA->set(h, n, 1.0);
@@ -1964,7 +1964,7 @@ std::shared_ptr<Vector> HF::occupation_a() const
 //  Returns a vector of the occupation of the b orbitals
 std::shared_ptr<Vector> HF::occupation_b() const
 {
-  SharedVector occB = SharedVector(new Vector(nmopi_));
+  auto occB = std::make_shared<Vector>(nmopi_);
   for(int h=0; h < nirrep_;++h)
     for(int n=0; n < nbetapi()[h]; n++)
       occB->set(h, n, 1.0);
@@ -2007,11 +2007,11 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
     for (int h = 0; h < nirrep_; h++)
         nvirpi[h] = nmopi[h] - noccpi[h];
 
-    SharedMatrix Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
+    auto Fia = std::make_shared<Matrix>("Fia (Some Basis)", nirrep_, noccpi, nvirpi);
 
     // Hack to get orbital e for this Fock
-    SharedMatrix C2(new Matrix("C2", Cso->rowspi(), Cso->colspi()));
-    std::shared_ptr<Vector> E2(new Vector("E2", Cso->colspi()));
+    auto C2 = std::make_shared<Matrix>("C2", Cso->rowspi(), Cso->colspi());
+    auto E2 = std::make_shared<Vector>("E2", Cso->colspi());
     diagonalize_F(Fso, C2, E2);
 
     for (int h = 0; h < nirrep_; h++) {
@@ -2049,8 +2049,8 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 }
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso)
 {
-    SharedMatrix FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
-    SharedMatrix DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
+    auto FDSmSDF = std::make_shared<Matrix>("FDS-SDF", nirrep_, nsopi_, nsopi_);
+    auto DS = std::make_shared<Matrix>("DS", nirrep_, nsopi_, nsopi_);
 
     DS->gemm(false,false,1.0,Dso,S_,0.0);
     FDSmSDF->gemm(false,false,1.0,Fso,DS,0.0);
@@ -2061,8 +2061,8 @@ SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso)
     DS.reset();
     SDF.reset();
 
-    SharedMatrix XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
-    SharedMatrix XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));
+    auto XP = std::make_shared<Matrix>("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_);
+    auto XPX = std::make_shared<Matrix>("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_);
     XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
     XPX->gemm(false,false,1.0,XP,X_,0.0);
 

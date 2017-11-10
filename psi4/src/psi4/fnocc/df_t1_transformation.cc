@@ -85,7 +85,7 @@ void DFCoupledCluster::T1Fock(){
     free(Catemp);
 
     // (Q|rs)
-    std::shared_ptr<PSIO> psio(new PSIO());
+    auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio_address addr1  = PSIO_ZERO;
     psio_address addr2  = PSIO_ZERO;
@@ -257,7 +257,7 @@ void DFCoupledCluster::T1Integrals(){
     free(Catemp);
 
     // (Q|rs)
-    std::shared_ptr<PSIO> psio(new PSIO());
+    auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio_address addr1  = PSIO_ZERO;
     psio_address addrvo = PSIO_ZERO;

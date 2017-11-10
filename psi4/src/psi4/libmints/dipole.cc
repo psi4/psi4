@@ -69,7 +69,7 @@ DipoleInt::~DipoleInt()
 
 SharedVector DipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3& origin)
 {
-    std::shared_ptr<Vector> sret(new Vector(3));
+    auto sret = std::make_shared<Vector>(3);
     double *ret = sret->pointer();
 
     for(int i=0; i<mol->natom(); ++i) {

@@ -77,14 +77,14 @@ void tstart()
 
   /// start a global timer
   if(!running){
-     time_start_overall = time(NULL);
+     time_start_overall = time(nullptr);
      user_start_overall = ((double) total_tmstime.tms_utime)/clk_tck;
      sys_start_overall = ((double) total_tmstime.tms_stime)/clk_tck;
      running = 1;
   }
 
   /// start module timers
-  time_start = time(NULL);
+  time_start = time(nullptr);
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start = ((double) total_tmstime.tms_stime)/clk_tck;
 
@@ -113,7 +113,7 @@ void tstop()
   error = gethostname(name, 40);
   if(error != 0) strncpy(name,"nohostname", 11);
 
-  time_end = time(NULL);
+  time_end = time(nullptr);
   total_time = time_end - time_start;
   total_time_overall = time_end - time_start_overall;
 

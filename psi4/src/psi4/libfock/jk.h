@@ -30,11 +30,11 @@
 #define JK_H
 
 #include <vector>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
 
@@ -224,9 +224,7 @@ class PKManager;
  *
  */
 class JK {
-
-protected:
-
+   protected:
     // => Utility Variables <= //
 
     /// Print flag, defaults to 1
@@ -330,7 +328,7 @@ protected:
     /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
     size_t memory_overhead() const;
 
-public:
+   public:
     // => Constructors <= //
 
     /**
@@ -351,7 +349,6 @@ public:
     /// Destructor
     virtual ~JK();
 
-
     /**
     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
     * using knobs in options.
@@ -360,14 +357,12 @@ public:
     * @return abstract JK object, tuned in with preset options
     */
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                                          Options& options);
+                                        Options& options);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                                          Options& options, std::string jk_type);
-
+                                        Options& options, std::string jk_type);
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
-
 
     // => Knobs <= //
 
@@ -463,13 +458,13 @@ public:
      * Reference to C_left queue. It is YOUR job to
      * allocate and fill this object out
      */
-    std::vector<SharedMatrix >& C_left() { return C_left_; }
+    std::vector<SharedMatrix>& C_left() { return C_left_; }
     /**
      * Reference to C_right queue. It is YOUR job to
      * allocate and fill this object out. Only fill
      * C_left if symmetric.
      */
-    std::vector<SharedMatrix >& C_right() { return C_right_; }
+    std::vector<SharedMatrix>& C_right() { return C_right_; }
 
     /**
      * Reference to J results. The reference to the
@@ -479,7 +474,7 @@ public:
      * may be changed in each call of compute();
      * @return J vector of J matrices
      */
-    const std::vector<SharedMatrix >& J() const { return J_; }
+    const std::vector<SharedMatrix>& J() const { return J_; }
     /**
      * Reference to K results. The reference to the
      * std::vector<SharedMatrix > is valid
@@ -488,7 +483,7 @@ public:
      * may be changed in each call of compute();
      * @return K vector of K matrices
      */
-    const std::vector<SharedMatrix >& K() const { return K_; }
+    const std::vector<SharedMatrix>& K() const { return K_; }
     /**
      * Reference to wK results. The reference to the
      * std::vector<SharedMatrix > is valid
@@ -497,7 +492,7 @@ public:
      * may be changed in each call of compute();
      * @return wK vector of wK matrices
      */
-    const std::vector<SharedMatrix >& wK() const { return wK_; }
+    const std::vector<SharedMatrix>& wK() const { return wK_; }
     /**
      * Reference to D results. The reference to the
      * std::vector<SharedMatrix > is valid
@@ -506,7 +501,7 @@ public:
      * may be changed in each call of compute();
      * @return D vector of D matrices
      */
-    const std::vector<SharedMatrix >& D() const { return D_; }
+    const std::vector<SharedMatrix>& D() const { return D_; }
 
     /**
     * Print header information regarding JK
@@ -524,7 +519,6 @@ public:
  * integral technology
  */
 class DiskJK : public JK {
-
     /// Absolute AO index to relative SO index
     int* so2index_;
     /// Absolute AO index to irrep
@@ -545,7 +539,7 @@ class DiskJK : public JK {
     /// Common initialization
     void common_init();
 
-public:
+   public:
     // => Constructors < = //
 
     /**
@@ -575,7 +569,6 @@ public:
  * integral technology
  */
 class PKJK : public JK {
-
     /// The PSIO instance to use for I/O
     std::shared_ptr<PSIO> psio_;
 
@@ -610,7 +603,7 @@ class PKJK : public JK {
     /// Number of so per irrep
     Dimension nsopi_;
 
-public:
+   public:
     // => Constructors < = //
 
     /**
@@ -646,9 +639,7 @@ public:
  * DF_INTS_NUM_THREADS value if this fate befalls you.
  */
 class DirectJK : public JK {
-
-protected:
-
+   protected:
     /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
     int df_ints_num_threads_;
     /// ERI Sieve
@@ -666,15 +657,13 @@ protected:
     virtual void postiterations();
 
     /// Build the J and K matrices for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
-        std::vector<std::shared_ptr<Matrix> >& D,
-        std::vector<std::shared_ptr<Matrix> >& J,
-        std::vector<std::shared_ptr<Matrix> >& K);
+    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                  std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Common initialization
     void common_init();
 
-public:
+   public:
     // => Constructors < = //
 
     /**
@@ -718,45 +707,44 @@ public:
  *   the Hartree-Fock code in HF.cc
  *
  */
-class GTFockJK: public JK{
+class GTFockJK : public JK {
    private:
-      ///The actual instance that does the implementing
-      std::shared_ptr<MinimalInterface> Impl_;
-      int NMats_ = 0;
+    /// The actual instance that does the implementing
+    std::shared_ptr<MinimalInterface> Impl_;
+    int NMats_ = 0;
 
    protected:
-      /// Do we need to backtransform to C1 under the hood?
-      virtual bool C1() const { return true; }
-      /// Setup integrals, files, etc
-      virtual void preiterations(){}
-      /// Compute J/K for current C/D
-      virtual void compute_JK();
-      /// Delete integrals, files, etc
-      virtual void postiterations(){}
-      ///I don't fell the need to further clutter the output...
-      virtual void print_header() const{}
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return true; }
+    /// Setup integrals, files, etc
+    virtual void preiterations() {}
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations() {}
+    /// I don't fell the need to further clutter the output...
+    virtual void print_header() const {}
+
    public:
-      /** \brief Your public interface to GTFock
-       *
-       *  \param[in] Primary used by the base JK object, but not
-       *         by GTFock.  Long term, this should be changed,
-       *         but the reality is GTFock under the hood gets
-       *         its basis in the same way as JK::build_JK gets
-       *         Primary, so this shouldn't be an issue
-       *  \param[in] NMats The number of density matrices you are
-       *         passing in and consequently the number of Js and Ks
-       *         you'll be getting back
-       *  \param[in] AreSymm A flag specifying whether the density
-       *         matrices you'll be passing in are symmetric.
-       */
-      GTFockJK(std::shared_ptr<psi::BasisSet> Primary,
-            size_t NMats,
-            bool AreSymm);
-      /** \brief Your interface to GTFock that works well with libfock
-      *   GTFock needs number of densities and symmetric at initialization
-      *   This code calls GTFock once the number of densities was read from jk object
-      */
-      GTFockJK(std::shared_ptr<psi::BasisSet> Primary);
+    /** \brief Your public interface to GTFock
+     *
+     *  \param[in] Primary used by the base JK object, but not
+     *         by GTFock.  Long term, this should be changed,
+     *         but the reality is GTFock under the hood gets
+     *         its basis in the same way as JK::build_JK gets
+     *         Primary, so this shouldn't be an issue
+     *  \param[in] NMats The number of density matrices you are
+     *         passing in and consequently the number of Js and Ks
+     *         you'll be getting back
+     *  \param[in] AreSymm A flag specifying whether the density
+     *         matrices you'll be passing in are symmetric.
+     */
+    GTFockJK(std::shared_ptr<psi::BasisSet> Primary, size_t NMats, bool AreSymm);
+    /** \brief Your interface to GTFock that works well with libfock
+    *   GTFock needs number of densities and symmetric at initialization
+    *   This code calls GTFock once the number of densities was read from jk object
+    */
+    GTFockJK(std::shared_ptr<psi::BasisSet> Primary);
 };
 
 /**
@@ -766,9 +754,7 @@ class GTFockJK: public JK{
  * density-fitted technology
  */
 class DFJK : public JK {
-
-protected:
-
+   protected:
     // => DF-Specific stuff <= //
 
     /// Auxiliary basis set
@@ -806,8 +792,8 @@ protected:
 
     SharedMatrix E_left_;
     SharedMatrix E_right_;
-    std::vector<SharedMatrix > C_temp_;
-    std::vector<SharedMatrix > Q_temp_;
+    std::vector<SharedMatrix> C_temp_;
+    std::vector<SharedMatrix> Q_temp_;
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -848,7 +834,7 @@ protected:
     virtual void block_wK(double** Qlmnp, double** Qrmnp, int naux);
     virtual void rebuild_wK_disk();
 
-public:
+   public:
     // => Constructors < = //
 
     /**
@@ -859,8 +845,7 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK( std::shared_ptr<BasisSet> primary,
-       std::shared_ptr<BasisSet> auxiliary);
+    DFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
     virtual ~DFJK();
@@ -914,8 +899,7 @@ public:
  * cholesky decomposition technology
  */
 class CDJK : public DFJK {
-
-protected:
+   protected:
     // the number of cholesky vectors
     long int ncholesky_;
 
@@ -938,7 +922,7 @@ protected:
     */
     virtual void print_header() const;
 
-public:
+   public:
     // => Constructors < = //
 
     /**
@@ -949,12 +933,10 @@ public:
      *        structure as this molecule
      * @param cholesky_tolerance tolerance for cholesky decomposition.
      */
-    CDJK( std::shared_ptr<BasisSet> primary, double cholesky_tolerance);
+    CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance);
 
     /// Destructor
     virtual ~CDJK();
-
 };
-
 }
 #endif

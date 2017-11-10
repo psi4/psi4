@@ -70,7 +70,7 @@ int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
     File->my_irrep = irrep;
 
     this_entry = file4_cache_scan(filenum, irrep, pqnum, rsnum, label, dpd_default);
-    if(this_entry != NULL) {
+    if(this_entry != nullptr) {
         File->incore = 1;
         File->matrix = this_entry->matrix;
     }

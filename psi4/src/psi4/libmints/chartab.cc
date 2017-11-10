@@ -152,7 +152,7 @@ void CharacterTable::print(std::string out) const
 {
     if (!nirrep_) return;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+          std::make_shared<PsiOutStream>(out));
     int i;
 
     printer->Printf( "  point group %s\n\n", symb.c_str());

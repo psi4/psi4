@@ -95,7 +95,7 @@ CCIndex* CCBLAS::get_index(const char* cstr)
     return(indices[str]);
   }
   throw PSIEXCEPTION("\nCCBLAS::get_index() couldn't find index " + str);
-  return(NULL);
+  return(nullptr);
 }
 
 CCIndex* CCBLAS::get_index(std::string& str)
@@ -107,7 +107,7 @@ CCIndex* CCBLAS::get_index(std::string& str)
     return(indices[str]);
   }
   throw PSIEXCEPTION("\nCCBLAS::get_index() couldn't find index " + str);
-  return(NULL);
+  return(nullptr);
 }
 
 CCMatTmp CCBLAS::get_MatTmp(std::string str, int reference, DiskOpt disk_option)
@@ -168,7 +168,7 @@ CCMatrix* CCBLAS::get_Matrix(std::string& str)
   if(iter!=matrices.end())
     return(matrices[str]);
   throw PSIEXCEPTION("\nCCBLAS::get_matrix() couldn't find matrix " + str);
-  return(NULL);
+  return(nullptr);
 }
 
 CCMatrix* CCBLAS::get_Matrix(std::string& str, std::string& expression)
@@ -179,7 +179,7 @@ CCMatrix* CCBLAS::get_Matrix(std::string& str, std::string& expression)
     return(matrices[str]);
   }
   throw PSIEXCEPTION("\n\nCCBLAS::parse() couldn't find the matrix " + str + " in the CCMatrix list\n\nwhile parsing the string:\n\t " + expression + "\n\n");
-  return NULL;
+  return nullptr;
 }
 
 void CCBLAS::set_scalar(const char* cstr,int reference,double value)

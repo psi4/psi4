@@ -90,11 +90,11 @@ void DirectJK::print_header() const
 }
 void DirectJK::preiterations()
 {
-    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 }
 void DirectJK::compute_JK()
 {
-    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+    auto factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
@@ -107,7 +107,7 @@ void DirectJK::compute_JK()
         } else {
             std::vector<std::shared_ptr<Matrix> > temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(std::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+                temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
             build_JK(ints,D_ao_,temp,wK_ao_);
         }
@@ -127,13 +127,13 @@ void DirectJK::compute_JK()
         } else if (do_J_) {
             std::vector<std::shared_ptr<Matrix> > temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(std::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+                temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
             build_JK(ints,D_ao_,J_ao_,temp);
         } else {
             std::vector<std::shared_ptr<Matrix> > temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(std::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+                temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
             build_JK(ints,D_ao_,temp,K_ao_);
         }
@@ -244,7 +244,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     for (int thread = 0; thread < nthread; thread++) {
         std::vector<std::shared_ptr<Matrix> > JK2;
         for (size_t ind = 0; ind < D.size(); ind++) {
-            JK2.push_back(std::shared_ptr<Matrix>(new Matrix("JKT", (lr_symmetric_ ? 6 : 10) * max_task, max_task)));
+            JK2.push_back(std::make_shared<Matrix>("JKT", (lr_symmetric_ ? 6 : 10) * max_task, max_task));
         }
         JKT.push_back(JK2);
     }
@@ -578,7 +578,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       std::shared_ptr<PsiOutStream> printer(new PsiOutStream("bench.dat",std::ostream::app));
+       auto printer = std::make_shared<PsiOutStream>("bench.dat",std::ostream::app);
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
@@ -617,8 +617,8 @@ void DirectJK::print_header() const
 }
 void DirectJK::preiterations()
 {
-    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
-    factory_= std::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+    factory_= std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
     eri_.clear();
     for (int thread = 0; thread < omp_nthread_; thread++) {
         eri_.push_back(std::shared_ptr<TwoBodyAOInt>(factory_->erd_eri()));

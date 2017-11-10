@@ -37,7 +37,7 @@ SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options)
     // Start the timers
     tstart();
 
-    SharedWavefunction occ = SharedWavefunction(new OCCWave(ref_wfn, options));
+    auto occ = std::make_shared<OCCWave>(ref_wfn, options);
     occ->compute_energy();
 
     // Shut down the timers

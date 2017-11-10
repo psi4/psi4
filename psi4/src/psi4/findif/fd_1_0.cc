@@ -45,14 +45,14 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::list &python_energies)
+SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::list &python_energies)
 {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
     int print_lvl = options.get_int("PRINT");
 
     int Natom = mol->natom();
-    std::shared_ptr <MatrixFactory> fact;
+    std::shared_ptr<MatrixFactory> fact;
 
     bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
     CdSalcList cdsalc(mol, fact, 0x1, project, project);

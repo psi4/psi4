@@ -85,7 +85,7 @@ void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag)
     /*! open the output file */
     /*! Note that we assume that if oldfile isn't set, we O_CREAT the file */
     psio_->open(itap_, oldfile ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
-    if (oldfile && (psio_->tocscan(itap_, IWL_KEY_BUF) == NULL)) {
+    if (oldfile && (psio_->tocscan(itap_, IWL_KEY_BUF) == nullptr)) {
         outfile->Printf("iwl_buf_init: Can't open file %d\n", itap_);
         psio_->close(itap_,0);
         return;
@@ -135,7 +135,7 @@ void iwl_buf_init(struct iwlbuf *Buf, int itape, double cutoff,
   /*! open the output file */
   /*! Note that we assume that if oldfile isn't set, we O_CREAT the file */
   psio_open(Buf->itap, oldfile ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
-  if (oldfile && (psio_tocscan(Buf->itap, IWL_KEY_BUF) == NULL)) {
+  if (oldfile && (psio_tocscan(Buf->itap, IWL_KEY_BUF) == nullptr)) {
     outfile->Printf("iwl_buf_init: Can't open file %d\n", Buf->itap);
     psio_close(Buf->itap,0);
     return;

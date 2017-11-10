@@ -83,7 +83,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     // The integral factory oversees the creation of integral objects
-    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis, aoBasis, aoBasis, aoBasis));
+    auto integral = std::make_shared<IntegralFactory>(aoBasis, aoBasis, aoBasis, aoBasis);
 
     molecule->print();
 

@@ -69,7 +69,7 @@ fock(false),integral(false),chemist_notation(false),antisymmetric(false),out_of_
   allocate1(size_t,block_sizepi,nirreps);
 
   for(int h=0;h<nirreps;h++){
-    matrix[h]=NULL;
+    matrix[h]=nullptr;
     left_pairpi[h]=left->get_pairpi(h);
     right_pairpi[h]=right->get_pairpi(h);
     block_sizepi[h]=left_pairpi[h]*right_pairpi[h];
@@ -334,7 +334,7 @@ void CCMatrix::print_dpdmatrix(int irrep, std::string out_fname)
   int ii,jj,kk,nn,ll;
   int i,j;
   std::shared_ptr<psi::PsiOutStream> printer(out_fname=="outfile"? psi::outfile:
-     std::shared_ptr<psi::PsiOutStream>(new psi::PsiOutStream(out_fname,std::ostream::app)));
+     std::make_shared<psi::PsiOutStream>(out_fname,std::ostream::app));
   double** mat=matrix[irrep];
   int left_offset  = left->get_first(irrep);
   int right_offset = right->get_first(irrep);

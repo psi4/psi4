@@ -77,7 +77,7 @@ int schmidt_add(double **A, int rows, int cols, double *v)
    if (normval < NORM_TOL)
       return(0) ;
    else {
-      if (A[rows] == NULL) A[rows] = init_array(cols) ;
+      if (A[rows] == nullptr) A[rows] = init_array(cols) ;
       for (I=0; I<cols; I++) A[rows][I] = v[I] / normval ;
       return(1) ;
       }

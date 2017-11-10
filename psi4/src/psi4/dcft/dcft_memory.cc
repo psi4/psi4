@@ -71,43 +71,43 @@ DCFTSolver::init()
     navir_  = navirpi_.sum();
     nbvir_  = nbvirpi_.sum();
 
-    aocc_c_      = SharedMatrix(new Matrix("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_));
-    bocc_c_      = SharedMatrix(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_));
-    avir_c_      = SharedMatrix(new Matrix("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_));
-    bvir_c_      = SharedMatrix(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
-    scf_error_a_ = SharedMatrix(new Matrix("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_));
-    scf_error_b_ = SharedMatrix(new Matrix("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_));
+    aocc_c_      = std::make_shared<Matrix>("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_);
+    bocc_c_      = std::make_shared<Matrix>("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_);
+    avir_c_      = std::make_shared<Matrix>("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_);
+    bvir_c_      = std::make_shared<Matrix>("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_);
+    scf_error_a_ = std::make_shared<Matrix>("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_);
+    scf_error_b_ = std::make_shared<Matrix>("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_);
     Fa_          = reference_wavefunction_->Fa()->clone();
     Fb_          = reference_wavefunction_->Fb()->clone();
-    moF0a_         = SharedMatrix(new Matrix("Alpha MO F0 Matrix", nirrep_, nmopi_, nmopi_));
-    moF0b_         = SharedMatrix(new Matrix("Beta MO F0 Matrix", nirrep_, nmopi_, nmopi_));
-    Ftilde_a_      = SharedMatrix(new Matrix("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
-    Ftilde_b_      = SharedMatrix(new Matrix("Beta MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
-    Ca_          = SharedMatrix(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
-    Cb_          = SharedMatrix(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    moFa_        = SharedMatrix(new Matrix("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_));
-    moFb_        = SharedMatrix(new Matrix("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_));
-    old_ca_      = SharedMatrix(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
-    old_cb_      = SharedMatrix(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    kappa_so_a_  = SharedMatrix(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    kappa_so_b_  = SharedMatrix(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    g_tau_a_     = SharedMatrix(new Matrix("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_));
-    g_tau_b_     = SharedMatrix(new Matrix("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_));
-    moG_tau_a_   = SharedMatrix(new Matrix("GTau in the MO basis (Alpha)", nirrep_, nmopi_, nmopi_));
-    moG_tau_b_   = SharedMatrix(new Matrix("GTau in the MO basis (Beta)", nirrep_, nmopi_, nmopi_));
-    ao_s_        = SharedMatrix(new Matrix("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_));
-    so_h_        = SharedMatrix(new Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_));
-    s_half_inv_  = SharedMatrix(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
-    epsilon_a_   = std::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
-    epsilon_b_   = std::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
-    kappa_mo_a_  = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, nmopi_, nmopi_));
-    kappa_mo_b_  = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_));
-    tau_so_a_    = SharedMatrix(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
-    tau_so_b_    = SharedMatrix(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
-    aocc_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
-    bocc_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
-    avir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
-    bvir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
+    moF0a_         = std::make_shared<Matrix>("Alpha MO F0 Matrix", nirrep_, nmopi_, nmopi_);
+    moF0b_         = std::make_shared<Matrix>("Beta MO F0 Matrix", nirrep_, nmopi_, nmopi_);
+    Ftilde_a_      = std::make_shared<Matrix>("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_);
+    Ftilde_b_      = std::make_shared<Matrix>("Beta MO Ftilde Matrix", nirrep_, nmopi_, nmopi_);
+    Ca_          = std::make_shared<Matrix>("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_);
+    Cb_          = std::make_shared<Matrix>("Beta MO Coefficients", nirrep_, nsopi_, nsopi_);
+    moFa_        = std::make_shared<Matrix>("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_);
+    moFb_        = std::make_shared<Matrix>("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_);
+    old_ca_      = std::make_shared<Matrix>("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_);
+    old_cb_      = std::make_shared<Matrix>("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_);
+    kappa_so_a_  = std::make_shared<Matrix>("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_);
+    kappa_so_b_  = std::make_shared<Matrix>("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_);
+    g_tau_a_     = std::make_shared<Matrix>("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_);
+    g_tau_b_     = std::make_shared<Matrix>("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_);
+    moG_tau_a_   = std::make_shared<Matrix>("GTau in the MO basis (Alpha)", nirrep_, nmopi_, nmopi_);
+    moG_tau_b_   = std::make_shared<Matrix>("GTau in the MO basis (Beta)", nirrep_, nmopi_, nmopi_);
+    ao_s_        = std::make_shared<Matrix>("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_);
+    so_h_        = std::make_shared<Matrix>("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
+    s_half_inv_  = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_);
+    epsilon_a_   = std::make_shared<Vector>(nirrep_, nsopi_);
+    epsilon_b_   = std::make_shared<Vector>(nirrep_, nsopi_);
+    kappa_mo_a_  = std::make_shared<Matrix>("MO basis Kappa (Alpha)", nirrep_, nmopi_, nmopi_);
+    kappa_mo_b_  = std::make_shared<Matrix>("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_);
+    tau_so_a_    = std::make_shared<Matrix>("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_);
+    tau_so_b_    = std::make_shared<Matrix>("Beta Tau Matrix", nirrep_, nsopi_, nsopi_);
+    aocc_tau_    = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
+    bocc_tau_    = std::make_shared<Matrix>("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
+    avir_tau_    = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
+    bvir_tau_    = std::make_shared<Matrix>("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
 
     // Compute MO offsets
     aocc_off_ = init_int_array(nirrep_);
@@ -134,12 +134,12 @@ DCFTSolver::init()
 
     // Quadratically-convergent algorithm or orbital-optimized methods
     if (options_.get_str("ALGORITHM") == "QC" || orbital_optimized_) {
-        orbital_gradient_a_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_));
-        orbital_gradient_b_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_));
-        X_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
-        X_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_));
-        Xtotal_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
-        Xtotal_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_));
+        orbital_gradient_a_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_);
+        orbital_gradient_b_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_);
+        X_a_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_, nmopi_, nmopi_);
+        X_b_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_);
+        Xtotal_a_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_);
+        Xtotal_b_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_);
     }
 
     if (options_.get_str("ALGORITHM") == "QC") {

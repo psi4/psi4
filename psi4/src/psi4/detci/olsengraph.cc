@@ -108,7 +108,7 @@ void CIWavefunction::form_strings(void)
    nlists = nirreps * ncodes;
    /* alplist = new stringwr*[nlists]; */
    alplist_ = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
-   for (i=0; i<nlists; i++) alplist_[i] = NULL;
+   for (i=0; i<nlists; i++) alplist_[i] = nullptr;
 
    stringlist(AlphaG_, alplist_, Parameters_->repl_otf, Occs_);
 
@@ -144,7 +144,7 @@ void CIWavefunction::form_strings(void)
       nirreps = BetaG_->nirreps;
       nlists = nirreps * ncodes;
       betlist_ = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
-      for (i=0; i<nlists; i++) betlist_[i] = NULL;
+      for (i=0; i<nlists; i++) betlist_[i] = nullptr;
 
 
       stringlist(BetaG_, betlist_, Parameters_->repl_otf, Occs_);
@@ -556,8 +556,8 @@ void og_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs,
    code = Graph->decode[ras1_idx][ras3_num][ras4_num];
    subgraph = Graph->sg[irrep] + code;
 
-   if (subgraph == NULL) {
-     outfile->Printf("Error (og_add_walk): NULL subgraph pointer\n");
+   if (subgraph == nullptr) {
+     outfile->Printf("Error (og_add_walk): nullptr subgraph pointer\n");
       return;
       }
    if (code < 0) {
@@ -644,8 +644,8 @@ void og_fill(int num_el, int norb, int nirreps, int num_drc_orbs,
          Graph->list_offset[irrep*ncodes+code] = absoffset;
 
          subgraph = (Graph->sg)[irrep] + code;
-         if (subgraph == NULL) {
-           outfile->Printf("Error (fill_og): NULL subgraph pointer\n") ;
+         if (subgraph == nullptr) {
+           outfile->Printf("Error (fill_og): nullptr subgraph pointer\n") ;
             return;
             }
 

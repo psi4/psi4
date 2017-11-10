@@ -88,7 +88,7 @@ MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_)
 
     no_damp_convergence = 1.0e-9;
     dgemm_timing        = 0.0;
-    scf                 = NULL;
+    scf                 = nullptr;
 
     nfocc = 0;
     nfvir = 0;
@@ -451,7 +451,7 @@ void MOInfo::print_mo()
  */
 void MOInfo::free_memory()
 {
-    if(scf != NULL)
+    if(scf != nullptr)
         free_block(scf);
     for(int i=0;i<nirreps;i++)
         free_block(scf_irrep[i]);

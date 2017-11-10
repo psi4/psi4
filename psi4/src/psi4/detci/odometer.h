@@ -38,7 +38,7 @@
 **   ensures that digit i is greater than digit i+1.
 **
 **   Methods:
-**      Odometer(): Default constructor gives 0 digits and all NULL arrays.
+**      Odometer(): Default constructor gives 0 digits and all nullptr arrays.
 **      Odometer(int n): Construct an odometer with n digits
 **      ~Odometer(): Free's the dynamically allocated memory
 **      size(int m): Set the length of a default-constructed odometer to m

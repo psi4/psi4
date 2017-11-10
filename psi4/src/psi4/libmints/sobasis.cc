@@ -213,7 +213,7 @@ void SOBasisSet::init()
 
     bool include_pure_transform = true;
 
-    petite_ = std::shared_ptr<PetiteList>(new PetiteList(basis_, integral_, include_pure_transform));
+    petite_ = std::make_shared<PetiteList>(basis_, integral_, include_pure_transform);
 
 //    petite_->print();
 
@@ -391,7 +391,7 @@ void SOBasisSet::print(std::string out) const
 {
     int i,j,k;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+          std::make_shared<PsiOutStream>(out));
     printer->Printf( "  SOBasis:\n");
     printer->Printf( "    nshell(SO) = %d\n", nshell_);
     printer->Printf( "    nirrep = %d\n", nirrep_);
@@ -481,7 +481,7 @@ std::shared_ptr<BasisSet> SOBasisSet::basis() const
 
 Dimension SOBasisSet::dimension() const
 {
-    std::shared_ptr<PetiteList> petite = std::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    auto petite = std::make_shared<PetiteList>(basis_, integral_);
     return petite->SO_basisdim();
 }
 

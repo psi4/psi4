@@ -95,7 +95,7 @@ CubeProperties::~CubeProperties()
 }
 void CubeProperties::common_init()
 {
-    grid_ = std::shared_ptr<CubicScalarGrid>(new CubicScalarGrid(basisset_, options_));
+    grid_ = std::make_shared<CubicScalarGrid>(basisset_, options_);
     grid_->set_filepath(options_.get_str("CUBEPROP_FILEPATH"));
     grid_->set_auxiliary_basis(auxiliary_);
 }

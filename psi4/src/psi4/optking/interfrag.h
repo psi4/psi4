@@ -210,7 +210,7 @@ class INTERFRAG {
   double ** H_guess(void); // guess Hessian
 
   // orient fragments and displace by dq; forces are just for printing
-  bool orient_fragment(double *dq, double *f_q=NULL);
+  bool orient_fragment(double *dq, double *f_q=nullptr);
 
   double ** compute_constraints(void) const;
 

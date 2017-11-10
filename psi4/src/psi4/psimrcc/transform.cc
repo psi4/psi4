@@ -69,12 +69,12 @@ CCTransform::CCTransform() : fraction_of_memory_for_presorting(0.75)
   ioff = moinfo->get_ioff();
   first_irrep_in_core = 0;
   last_irrep_in_core  = 0;
-  s_so   = NULL;
-  oei_so = NULL;
-  oei_mo = NULL;
-  tei_so = NULL;
-  tei_mo = NULL;
-  tei_half_transformed = NULL;
+  s_so   = nullptr;
+  oei_so = nullptr;
+  oei_mo = nullptr;
+  tei_so = nullptr;
+  tei_mo = nullptr;
+  tei_half_transformed = nullptr;
 }
 
 CCTransform::~CCTransform()
@@ -436,7 +436,7 @@ void CCTransform::free_memory()
  */
 void CCTransform::allocate_oei_mo()
 {
-  if(oei_mo==NULL){
+  if(oei_mo==nullptr){
     int nmo = moinfo->get_nmo();
     allocate2(double,oei_mo,nmo,nmo);
   }
@@ -447,10 +447,10 @@ void CCTransform::allocate_oei_mo()
  */
 void CCTransform::free_oei_mo()
 {
-  if(oei_mo!=NULL){
+  if(oei_mo!=nullptr){
     int nmo = moinfo->get_nmo();
     release2(oei_mo);
-    oei_mo = NULL;
+    oei_mo = nullptr;
   }
 }
 
@@ -459,11 +459,11 @@ void CCTransform::free_oei_mo()
  */
 void CCTransform::allocate_oei_so()
 {
-  if(oei_so==NULL){
+  if(oei_so==nullptr){
     int nso = moinfo->get_nso();
     allocate2(double,oei_so,nso,nso);
   }
-  if(s_so==NULL){
+  if(s_so==nullptr){
     int nso = moinfo->get_nso();
     allocate2(double,s_so,nso,nso);
   }
@@ -474,13 +474,13 @@ void CCTransform::allocate_oei_so()
  */
 void CCTransform::free_oei_so()
 {
-  if(oei_so!=NULL){
+  if(oei_so!=nullptr){
     release2(oei_so);
-    oei_so = NULL;
+    oei_so = nullptr;
   }
-  if(s_so!=NULL){
+  if(s_so!=nullptr){
     release2(s_so);
-    s_so = NULL;
+    s_so = nullptr;
   }
 }
 
@@ -489,7 +489,7 @@ void CCTransform::free_oei_so()
  */
 void CCTransform::allocate_tei_mo()
 {
-  if(tei_mo==NULL){
+  if(tei_mo==nullptr){
     CCIndex* indexing = blas->get_index("[n>=n]");
 
     // Allocate the tei_mo matrix blocks
@@ -509,7 +509,7 @@ void CCTransform::allocate_tei_mo()
         }else{
           failed = true;
           required_size += sizeof(double) * block_size;
-          tei_mo[h] = NULL;
+          tei_mo[h] = nullptr;
         }
         outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h).c_str(),block_size,memory_manager->get_FreeMemory());
       }
@@ -524,7 +524,7 @@ void CCTransform::allocate_tei_mo()
 
 void CCTransform::allocate_tei_so()
 {
-  if(tei_so==NULL){
+  if(tei_so==nullptr){
     CCIndex* indexing = blas->get_index("[s>=s]");
 
     // Allocate the tei_so matrix blocks
@@ -544,7 +544,7 @@ void CCTransform::allocate_tei_so()
         }else{
           failed = true;
           required_size += sizeof(double) * block_size;
-          tei_so[h] = NULL;
+          tei_so[h] = nullptr;
         }
         outfile->Printf("\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h).c_str(),block_size,memory_manager->get_FreeMemory());
       }
@@ -559,7 +559,7 @@ void CCTransform::allocate_tei_so()
 
 void CCTransform::allocate_tei_half_transformed()
 {
-  if(tei_half_transformed==NULL){
+  if(tei_half_transformed==nullptr){
     CCIndex* so_indexing = blas->get_index("[s>=s]");
     CCIndex* mo_indexing = blas->get_index("[n>=n]");
 
@@ -584,7 +584,7 @@ void CCTransform::allocate_tei_half_transformed()
 void CCTransform::free_tei_mo()
 {
   int nirreps = moinfo->get_nirreps();
-  if(tei_mo!=NULL){
+  if(tei_mo!=nullptr){
     size_t matrix_size = 0;
     CCIndex* indexing = blas->get_index("[n>=n]");
     for(int h=0;h<moinfo->get_nirreps();h++){
@@ -596,14 +596,14 @@ void CCTransform::free_tei_mo()
       }
     }
     release1(tei_mo);
-    tei_mo=NULL;
+    tei_mo=nullptr;
   }
 }
 
 void CCTransform::free_tei_so()
 {
   int nirreps = moinfo->get_nirreps();
-  if(tei_so!=NULL){
+  if(tei_so!=nullptr){
     size_t matrix_size = 0;
     CCIndex* indexing = blas->get_index("[s>=s]");
     for(int h=0;h<moinfo->get_nirreps();h++){
@@ -615,13 +615,13 @@ void CCTransform::free_tei_so()
       }
     }
     release1(tei_so);
-    tei_so = NULL;
+    tei_so = nullptr;
   }
 }
 
 void CCTransform::free_tei_half_transformed()
 {
-  if(tei_half_transformed!=NULL){
+  if(tei_half_transformed!=nullptr){
     CCIndex* rsindx = blas->get_index("[s>=s]");
     CCIndex* ijindx = blas->get_index("[n>=n]");
     size_t matrix_size = 0;
@@ -633,7 +633,7 @@ void CCTransform::free_tei_half_transformed()
       }
     }
     release1(tei_half_transformed);
-    tei_half_transformed = NULL;
+    tei_half_transformed = nullptr;
   }
 }
 

@@ -42,7 +42,7 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
     std::string out, int dirac)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+         std::make_shared<PsiOutStream>(out));
 
     int idx;
     Label *lblptr;
@@ -109,7 +109,7 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
                      double value, int printflag, std::string out, int dirac)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+         std::make_shared<PsiOutStream>(out));
   int idx;
   Label *lblptr;
   Value *valptr;

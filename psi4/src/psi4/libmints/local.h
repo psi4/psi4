@@ -58,16 +58,16 @@ protected:
     int maxiter_;
 
     /// Primary orbital basis set
-    std::shared_ptr <BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Delocalized Orbitals
-    std::shared_ptr <Matrix> C_;
+    std::shared_ptr<Matrix> C_;
 
     // => Targets <= //
 
     /// Localized Orbitals
-    std::shared_ptr <Matrix> L_;
+    std::shared_ptr<Matrix> L_;
     /// MO -> LO transformation
-    std::shared_ptr <Matrix> U_;
+    std::shared_ptr<Matrix> U_;
     /// Did the algorithm converge?
     bool converged_;
 
@@ -78,15 +78,15 @@ public:
 
     // => Constructors <= //
 
-    Localizer(std::shared_ptr <BasisSet> primary_, std::shared_ptr <Matrix> C);
+    Localizer(std::shared_ptr<BasisSet> primary_, std::shared_ptr<Matrix> C);
 
     virtual ~Localizer();
 
-    static std::shared_ptr <Localizer> build(const std::string &type, std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C);
+    static std::shared_ptr<Localizer> build(const std::string &type, std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C);
 
-    static std::shared_ptr <Localizer> build(const std::string &type, std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C, Options &options);
+    static std::shared_ptr<Localizer> build(const std::string &type, std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C, Options &options);
 
-    static std::shared_ptr <Localizer> build(std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C, Options &options);
+    static std::shared_ptr<Localizer> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C, Options &options);
 
     // => Computers <= //
 
@@ -97,14 +97,14 @@ public:
     virtual void localize() = 0;
 
     /// Given a Fock matrix in the original basis (usually diagonal), produce an ordered copy in the local basis, and reorder L and U
-    std::shared_ptr <Matrix> fock_update(std::shared_ptr <Matrix> F_orig);
+    std::shared_ptr<Matrix> fock_update(std::shared_ptr<Matrix> F_orig);
 
     // => Accessors <= //
 
-    std::shared_ptr <Matrix> L() const
+    std::shared_ptr<Matrix> L() const
     { return L_; }
 
-    std::shared_ptr <Matrix> U() const
+    std::shared_ptr<Matrix> U() const
     { return U_; }
 
     bool converged() const
@@ -138,7 +138,7 @@ protected:
     void common_init();
 
 public:
-    BoysLocalizer(std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C);
+    BoysLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C);
 
     virtual ~BoysLocalizer();
 
@@ -157,7 +157,7 @@ protected:
     void common_init();
 
 public:
-    PMLocalizer(std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C);
+    PMLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C);
 
     virtual ~PMLocalizer();
 

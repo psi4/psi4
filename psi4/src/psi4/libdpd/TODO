@@ -6,7 +6,7 @@ pointers.
 --- Rewrite all contractions involving a shift31 to resort the data and use
 the BLAS DGEMM.
 
---- Add checks for NULL pointers returned by dpd_block_matrix().  This will
+--- Add checks for nullptr pointers returned by dpd_block_matrix().  This will
 serve as the flag for out-of-core contraction algorithms.
 
 --- Add memcpy() or just a file pointer copy to "case 12" in

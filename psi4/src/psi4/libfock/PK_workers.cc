@@ -35,9 +35,8 @@ namespace psi {
 
 namespace pk {
 
-AOShellSieveIterator::AOShellSieveIterator(std::shared_ptr<BasisSet> prim,
-                                           SharedSieve sieve_input) :
-shell_pairs_(sieve_input->shell_pairs()) {
+AOShellSieveIterator::AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedSieve sieve_input)
+    : shell_pairs_(sieve_input->shell_pairs()) {
     bs_ = prim;
     sieve_ = sieve_input;
     npairs_ = shell_pairs_.size();
@@ -54,46 +53,44 @@ void AOShellSieveIterator::populate_indices() {
 }
 
 void AOShellSieveIterator::first() {
-
     PQ_ = 0;
     RS_ = 0;
     populate_indices();
-    while(!sieve_->shell_significant(P_,Q_,R_,S_)) {
+    while (!sieve_->shell_significant(P_, Q_, R_, S_)) {
         // We do not use a function to increment so we can directly
         // return when needed
         ++RS_;
-        if(RS_ > PQ_) {
+        if (RS_ > PQ_) {
             RS_ = 0;
             ++PQ_;
-            if(PQ_ >= npairs_) {
+            if (PQ_ >= npairs_) {
                 done_ = true;
                 return;
             }
         }
         populate_indices();
     }
-
 }
 
 void AOShellSieveIterator::next() {
     ++RS_;
-    if(RS_ > PQ_) {
+    if (RS_ > PQ_) {
         RS_ = 0;
         ++PQ_;
-        if(PQ_ >= npairs_) {
+        if (PQ_ >= npairs_) {
             done_ = true;
             return;
         }
     }
     populate_indices();
-    while(!sieve_->shell_significant(P_,Q_,R_,S_)) {
+    while (!sieve_->shell_significant(P_, Q_, R_, S_)) {
         // We do not use a function to increment so we can directly
         // return when needed
         ++RS_;
-        if(RS_ > PQ_) {
+        if (RS_ > PQ_) {
             RS_ = 0;
             ++PQ_;
-            if(PQ_ >= npairs_) {
+            if (PQ_ >= npairs_) {
                 done_ = true;
                 return;
             }
@@ -103,14 +100,12 @@ void AOShellSieveIterator::next() {
 }
 
 AOFctSieveIterator AOShellSieveIterator::integrals_iterator() {
-    return AOFctSieveIterator(bs_->shell(P_),bs_->shell(Q_),
-                              bs_->shell(R_),bs_->shell(S_),sieve_);
-
+    return AOFctSieveIterator(bs_->shell(P_), bs_->shell(Q_), bs_->shell(R_), bs_->shell(S_), sieve_);
 }
 
-AOFctSieveIterator::AOFctSieveIterator(const GaussianShell &s1, const GaussianShell &s2,
-                    const GaussianShell &s3, const GaussianShell &s4,
-                    std::shared_ptr<ERISieve> siev) : usi_(s1), usj_(s2), usk_(s3), usl_(s4) {
+AOFctSieveIterator::AOFctSieveIterator(const GaussianShell &s1, const GaussianShell &s2, const GaussianShell &s3,
+                                       const GaussianShell &s4, std::shared_ptr<ERISieve> siev)
+    : usi_(s1), usj_(s2), usk_(s3), usl_(s4) {
     sieve_ = siev;
     done_ = false;
 
@@ -140,23 +135,23 @@ void AOFctSieveIterator::increment_bra() {
     lrel_ = 0;
     krel_ = 0;
     ++jrel_;
-    if(jrel_ > maxj_) {
+    if (jrel_ > maxj_) {
         jrel_ = 0;
         ++irel_;
-        if(irel_ > maxi_) {
+        if (irel_ > maxi_) {
             done_ = true;
         }
-        if(sh_aaaa_) {
+        if (sh_aaaa_) {
             maxj_ = irel_;
-        } else if(!sh_abab_) {
+        } else if (!sh_abab_) {
             maxj_ = (&usi_ == &usj_) ? irel_ : nj_ - 1;
         }
     }
 
-    if(sh_aaaa_) {
+    if (sh_aaaa_) {
         maxk_ = irel_;
         maxl_ = (krel_ == irel_) ? jrel_ : krel_;
-    } else if(sh_abab_) {
+    } else if (sh_abab_) {
         maxk_ = irel_;
         maxl_ = (krel_ == irel_) ? jrel_ : nl_ - 1;
     } else {
@@ -169,37 +164,36 @@ void AOFctSieveIterator::increment_ket() {
     // Here we adopt the original implementation, might be more efficient
     if (sh_aaaa_) {
         ++lrel_;
-        if(lrel_ > maxl_){
+        if (lrel_ > maxl_) {
             ++krel_;
             lrel_ = 0;
-            if(krel_ > maxk_){
+            if (krel_ > maxk_) {
                 krel_ = 0;
                 ++jrel_;
-                if(jrel_ > maxj_){
+                if (jrel_ > maxj_) {
                     jrel_ = 0;
                     ++irel_;
-                    if(irel_ > maxi_){
+                    if (irel_ > maxi_) {
                         done_ = true;
                     }
                     maxj_ = irel_;
                 }
                 maxk_ = irel_;
-
             }
-            maxl_ = (krel_==irel_) ? jrel_ : krel_;
+            maxl_ = (krel_ == irel_) ? jrel_ : krel_;
         }
-    } else if(sh_abab_){
+    } else if (sh_abab_) {
         ++lrel_;
-        if(lrel_ > maxl_){
+        if (lrel_ > maxl_) {
             ++krel_;
             lrel_ = 0;
-            if(krel_ > maxk_){
+            if (krel_ > maxk_) {
                 krel_ = 0;
                 ++jrel_;
-                if(jrel_ > maxj_){
+                if (jrel_ > maxj_) {
                     jrel_ = 0;
                     ++irel_;
-                    if(irel_ > maxi_){
+                    if (irel_ > maxi_) {
                         done_ = true;
                     }
                 }
@@ -209,16 +203,16 @@ void AOFctSieveIterator::increment_ket() {
         }
     } else {
         ++lrel_;
-        if(lrel_ > maxl_){
+        if (lrel_ > maxl_) {
             ++krel_;
             lrel_ = 0;
-            if(krel_ > maxk_){
+            if (krel_ > maxk_) {
                 krel_ = 0;
                 ++jrel_;
-                if(jrel_ > maxj_){
+                if (jrel_ > maxj_) {
                     jrel_ = 0;
                     ++irel_;
-                    if(irel_ > maxi_){
+                    if (irel_ > maxi_) {
                         done_ = true;
                     }
                     maxj_ = (&usi_ == &usj_) ? irel_ : nj_ - 1;
@@ -228,35 +222,32 @@ void AOFctSieveIterator::increment_ket() {
         }
     }
     populate_indices();
-
 }
 
 void AOFctSieveIterator::reorder_inds() {
-    if(!sh_aaaa_) {
-        if(sh_abab_) {
-            if(i_ < j_) {
-                std::swap(i_,j_);
-                std::swap(k_,l_);
+    if (!sh_aaaa_) {
+        if (sh_abab_) {
+            if (i_ < j_) {
+                std::swap(i_, j_);
+                std::swap(k_, l_);
             }
-            if(i_ < k_) {
-                std::swap(i_,k_);
-                std::swap(j_,l_);
+            if (i_ < k_) {
+                std::swap(i_, k_);
+                std::swap(j_, l_);
             }
         } else {
-            if(i_ < j_) {
-                std::swap(i_,j_);
+            if (i_ < j_) {
+                std::swap(i_, j_);
             }
-            if(k_ < l_) {
-                std::swap(k_,l_);
+            if (k_ < l_) {
+                std::swap(k_, l_);
             }
-            if((i_ < k_) || (i_ == k_ && j_ < l_)) {
-                std::swap(i_,k_);
-                std::swap(j_,l_);
-
+            if ((i_ < k_) || (i_ == k_ && j_ < l_)) {
+                std::swap(i_, k_);
+                std::swap(j_, l_);
             }
         }
     }
-
 }
 
 // Could be more efficient to include increment steps
@@ -283,18 +274,18 @@ void AOFctSieveIterator::first() {
     lrel_ = 0;
     populate_indices();
     // find a significant ij
-    while(!sieve_->function_pair_significant(i_,j_)) {
+    while (!sieve_->function_pair_significant(i_, j_)) {
         increment_bra();
-        if(done_) return;
+        if (done_) return;
     }
     // find a significant integral
-    while(!sieve_->function_significant(i_,j_,k_,l_)) {
+    while (!sieve_->function_significant(i_, j_, k_, l_)) {
         increment_ket();
-        if(done_) return;
+        if (done_) return;
         // If ij changes, find next significant pair
-        while(!sieve_->function_pair_significant(i_,j_)) {
+        while (!sieve_->function_pair_significant(i_, j_)) {
             increment_bra();
-            if(done_) return;
+            if (done_) return;
         }
     }
 
@@ -303,30 +294,27 @@ void AOFctSieveIterator::first() {
 
 void AOFctSieveIterator::next() {
     increment_ket();
-    if(done_) return;
-    while(!sieve_->function_pair_significant(i_,j_)) {
+    if (done_) return;
+    while (!sieve_->function_pair_significant(i_, j_)) {
         increment_bra();
-        if(done_) return;
+        if (done_) return;
     }
     // find a significant integral
-    while(!sieve_->function_significant(i_,j_,k_,l_)) {
+    while (!sieve_->function_significant(i_, j_, k_, l_)) {
         increment_ket();
-        if(done_) return;
+        if (done_) return;
         // If ij changes, find next significant pair
-        while(!sieve_->function_pair_significant(i_,j_)) {
+        while (!sieve_->function_pair_significant(i_, j_)) {
             increment_bra();
-            if(done_) return;
+            if (done_) return;
         }
     }
 
     reorder_inds();
 }
 
-
-
-PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
-                   std::shared_ptr<AIOHandler> AIO, int target_file,
-                   size_t buf_size) {
+PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO,
+                   int target_file, size_t buf_size) {
     AIO_ = AIO;
     sieve_ = sieve;
     target_file_ = target_file;
@@ -335,37 +323,37 @@ PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
     bufidx_ = 0;
     offset_ = 0;
     do_wK_ = false;
-
 }
 
-char* PKWorker::get_label_J(const int batch) {
-    char* label = new char[100];
+char *PKWorker::get_label_J(const int batch) {
+    char *label = new char[100];
     sprintf(label, "J Block (Batch %d)", batch);
     return label;
 }
 
-char* PKWorker::get_label_K(const int batch) {
-    char* label = new char[100];
+char *PKWorker::get_label_K(const int batch) {
+    char *label = new char[100];
     sprintf(label, "K Block (Batch %d)", batch);
     return label;
 }
 
-char* PKWorker::get_label_wK(const int batch) {
-    char* label = new char[100];
+char *PKWorker::get_label_wK(const int batch) {
+    char *label = new char[100];
     sprintf(label, "wK Block (Batch %d)", batch);
     return label;
 }
 
 void PKWorker::first_quartet(size_t i) {
-    shelliter_ = UniqueAOShellIt(new AOShellSieveIterator(primary_,sieve_)) ;
+    shelliter_ = std::unique_ptr<AOShellSieveIterator>(new AOShellSieveIterator(primary_, sieve_));
     bufidx_ = i;
     offset_ = bufidx_ * buf_size_;
     initialize_task();
-//DEBUG    #pragma omp critical
-//DEBUG    outfile->Printf("thread %d, offset is %lu and max_idx is %lu\n",omp_get_thread_num(),offset_,max_idx_);
-//DEBUG    std::cout << "thread" << omp_get_thread_num() << ", offset is " << offset_ << " and max_idx is " << max_idx_ << std::endl;
+    // DEBUG    #pragma omp critical
+    // DEBUG    outfile->Printf("thread %d, offset is %lu and max_idx is %lu\n",omp_get_thread_num(),offset_,max_idx_);
+    // DEBUG    std::cout << "thread" << omp_get_thread_num() << ", offset is " << offset_ << " and max_idx is " <<
+    // max_idx_ << std::endl;
     shells_left_ = false;
-    for(shelliter_->first(); (shells_left_ || shelliter_->is_done()) == false; shelliter_->next()) {
+    for (shelliter_->first(); (shells_left_ || shelliter_->is_done()) == false; shelliter_->next()) {
         P_ = shelliter_->p();
         Q_ = shelliter_->q();
         R_ = shelliter_->r();
@@ -373,7 +361,6 @@ void PKWorker::first_quartet(size_t i) {
 
         shells_left_ = is_shell_relevant();
     }
-
 }
 
 bool PKWorker::is_shell_relevant() {
@@ -392,7 +379,7 @@ bool PKWorker::is_shell_relevant() {
     // indices are too high ?
 
     if (low_ijkl > max_idx_ && low_ikjl > max_idx_ && low_iljk > max_idx_) {
-//DEBUG        outfile->Printf("Rejecting1 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+        // DEBUG        outfile->Printf("Rejecting1 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
         return false;
     }
 
@@ -416,21 +403,21 @@ bool PKWorker::is_shell_relevant() {
     // indices are too low ?
 
     if (hi_ijkl < offset_ && hi_ikjl < offset_ && hi_iljk < offset_) {
-//DEBUG        outfile->Printf("Rejecting2 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+        // DEBUG        outfile->Printf("Rejecting2 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
         return false;
     }
 
     // Now we loop over unique basis function quartets in the shell quartet
     AOFctSieveIterator bfiter = shelliter_->integrals_iterator();
-    for(bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
+    for (bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
         size_t i = bfiter.i();
         size_t j = bfiter.j();
         size_t k = bfiter.k();
         size_t l = bfiter.l();
 
-        size_t ijkl = INDEX4(i,j,k,l);
-        size_t ikjl = INDEX4(i,k,j,l);
-        size_t iljk = INDEX4(i,l,j,k);
+        size_t ijkl = INDEX4(i, j, k, l);
+        size_t ikjl = INDEX4(i, k, j, l);
+        size_t iljk = INDEX4(i, l, j, k);
 
         bool bJ = ijkl >= offset_ && ijkl <= max_idx_;
         bool bK1 = ikjl >= offset_ && ikjl <= max_idx_;
@@ -438,23 +425,22 @@ bool PKWorker::is_shell_relevant() {
 
         if (bJ || bK1 || bK2) {
             // This shell should be computed by the present thread.
-//DEBUG        outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+            // DEBUG        outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
             return true;
         }
     }
 
-//DEBUG    outfile->Printf("Rejecting shell3 <%d %d|%d %d>\n",P_,Q_,R_,S_);
+    // DEBUG    outfile->Printf("Rejecting shell3 <%d %d|%d %d>\n",P_,Q_,R_,S_);
     return false;
-
 }
 
 void PKWorker::next_quartet() {
-    if(shelliter_->is_done()) {
+    if (shelliter_->is_done()) {
         shells_left_ = false;
         return;
     }
     bool shell_found = false;
-    for(; (shell_found || shelliter_->is_done()) == false; shelliter_->next()) {
+    for (; (shell_found || shelliter_->is_done()) == false; shelliter_->next()) {
         P_ = shelliter_->p();
         Q_ = shelliter_->q();
         R_ = shelliter_->r();
@@ -467,91 +453,89 @@ void PKWorker::next_quartet() {
 }
 
 PKWrkrReord::PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO,
-                         int target_file, size_t buffer_size, size_t nbuffer) :
-    PKWorker(primary,sieve,AIO,target_file,buffer_size) {
-
+                         int target_file, size_t buffer_size, size_t nbuffer)
+    : PKWorker(primary, sieve, AIO, target_file, buffer_size) {
     set_nbuf(nbuffer);
     buf_ = 0;
 
-    double * mem;
+    double *mem;
     // Allocate everything we need
-    for(int i = 0; i < nbuf(); ++i) {
+    for (int i = 0; i < nbuf(); ++i) {
         mem = new double[buf_size()];
         J_bufs_.push_back(mem);
         mem = new double[buf_size()];
         K_bufs_.push_back(mem);
-        std::vector< char* > labelJ;
-        std::vector< char* > labelK;
+        std::vector<char *> labelJ;
+        std::vector<char *> labelK;
         labels_J_.push_back(labelJ);
         labels_K_.push_back(labelK);
-        std::vector< size_t > idJ;
-        std::vector< size_t > idK;
+        std::vector<size_t> idJ;
+        std::vector<size_t> idK;
         jobID_J_.push_back(idJ);
         jobID_K_.push_back(idK);
     }
     // We only need to set to zero the first buffers.
     // The others are taken care of in the write function
-    ::memset((void*) J_bufs_[0], '\0', buf_size() * sizeof(double));
-    ::memset((void*) K_bufs_[0], '\0', buf_size() * sizeof(double));
+    ::memset((void *)J_bufs_[0], '\0', buf_size() * sizeof(double));
+    ::memset((void *)K_bufs_[0], '\0', buf_size() * sizeof(double));
 }
 
 PKWrkrReord::~PKWrkrReord() {
     // Deallocate all memory cleanly
-    std::vector<double*>::iterator it;
-    for(it = J_bufs_.begin(); it != J_bufs_.end(); ++it) {
-        delete [] *it;
+    std::vector<double *>::iterator it;
+    for (it = J_bufs_.begin(); it != J_bufs_.end(); ++it) {
+        delete[] * it;
     }
     J_bufs_.clear();
-    for(it = K_bufs_.begin(); it != K_bufs_.end(); ++it) {
-        delete [] *it;
+    for (it = K_bufs_.begin(); it != K_bufs_.end(); ++it) {
+        delete[] * it;
     }
     K_bufs_.clear();
-    for(it = wK_bufs_.begin(); it != wK_bufs_.end(); ++it) {
-        delete [] *it;
+    for (it = wK_bufs_.begin(); it != wK_bufs_.end(); ++it) {
+        delete[] * it;
     }
     wK_bufs_.clear();
-    for(int i = 0; i < labels_J_.size(); ++i) {
-        for(int j = 0; j < labels_J_[i].size(); ++j) {
-            delete [] labels_J_[i][j];
+    for (int i = 0; i < labels_J_.size(); ++i) {
+        for (int j = 0; j < labels_J_[i].size(); ++j) {
+            delete[] labels_J_[i][j];
         }
         labels_J_[i].clear();
     }
     labels_J_.clear();
-    for(int i = 0; i < labels_K_.size(); ++i) {
-        for(int j = 0; j < labels_K_[i].size(); ++j) {
-            delete [] labels_K_[i][j];
+    for (int i = 0; i < labels_K_.size(); ++i) {
+        for (int j = 0; j < labels_K_[i].size(); ++j) {
+            delete[] labels_K_[i][j];
         }
         labels_K_[i].clear();
     }
     labels_K_.clear();
-    for(int i = 0; i < labels_wK_.size(); ++i) {
-        for(int j = 0; j < labels_wK_[i].size(); ++j) {
-            delete [] labels_wK_[i][j];
+    for (int i = 0; i < labels_wK_.size(); ++i) {
+        for (int j = 0; j < labels_wK_[i].size(); ++j) {
+            delete[] labels_wK_[i][j];
         }
         labels_wK_[i].clear();
     }
     labels_wK_.clear();
-
 }
 
 void PKWrkrReord::allocate_wK(size_t bufsize, size_t buf_per_thread) {
     // We want to deallocate the previous J and K buffers
     // Make sure the corresponding integrals are written to disk
-    for(int i = 0; i < nbuf(); ++i) {
-        for(int j = 0; j < jobID_J_[i].size(); ++j) {
+    for (int i = 0; i < nbuf(); ++i) {
+        for (int j = 0; j < jobID_J_[i].size(); ++j) {
             AIO()->wait_for_job(jobID_J_[i][j]);
-            delete [] labels_J_[i][j];
+            delete[] labels_J_[i][j];
         }
         labels_J_[i].clear();
         jobID_J_[i].clear();
-        delete [] J_bufs_[i];
-        for(int j = 0; j < jobID_K_[i].size(); ++j) {
+        delete[] J_bufs_[i];
+        for (int j = 0; j < jobID_K_[i].size(); ++j) {
             AIO()->wait_for_job(jobID_K_[i][j]);
-            delete [] labels_K_[i][j];
+            delete[] labels_K_[i][j];
         }
         labels_K_[i].clear();
         jobID_K_[i].clear();
-        delete [] K_bufs_[i];
+        delete[] K_bufs_[i];
     }
     labels_J_.clear();
     labels_K_.clear();
@@ -565,29 +549,26 @@ void PKWrkrReord::allocate_wK(size_t bufsize, size_t buf_per_thread) {
     set_bufsize(bufsize);
     buf_ = 0;
 
-    for(int i = 0; i < nbuf(); ++i) {
+    for (int i = 0; i < nbuf(); ++i) {
         wK_bufs_.push_back(new double[buf_size()]);
-        std::vector< char* > labelwK;
+        std::vector<char *> labelwK;
         labels_wK_.push_back(labelwK);
-        std::vector< size_t > idwK;
+        std::vector<size_t> idwK;
         jobID_wK_.push_back(idwK);
     }
     // Only need to set to zero the first buffer
-    ::memset((void*) wK_bufs_[0],'\0', buf_size() * sizeof(double));
+    ::memset((void *)wK_bufs_[0], '\0', buf_size() * sizeof(double));
 }
 
-void PKWrkrReord::initialize_task() {
-    set_max_idx(buf_size() * (bufidx() + 1) - 1);
-}
+void PKWrkrReord::initialize_task() { set_max_idx(buf_size() * (bufidx() + 1) - 1); }
 
 void PKWrkrReord::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
-
-    size_t ijkl = INDEX4(i,j,k,l);
+    size_t ijkl = INDEX4(i, j, k, l);
     if (ijkl >= offset() && ijkl <= max_idx()) {
         J_bufs_[buf_][ijkl - offset()] += val;
     }
     size_t ikjl = INDEX4(i, k, j, l);
-    if(ikjl >= offset() && ikjl <= max_idx()) {
+    if (ikjl >= offset() && ikjl <= max_idx()) {
         if (i == k || j == l) {
             K_bufs_[buf_][ikjl - offset()] += val;
         } else {
@@ -595,10 +576,10 @@ void PKWrkrReord::fill_values(double val, size_t i, size_t j, size_t k, size_t l
         }
     }
 
-    if(i != j && k != l) {
+    if (i != j && k != l) {
         size_t iljk = INDEX4(i, l, j, k);
         if (iljk >= offset() && iljk <= max_idx()) {
-            if ( i == l || j == k) {
+            if (i == l || j == k) {
                 K_bufs_[buf_][iljk - offset()] += val;
             } else {
                 K_bufs_[buf_][iljk - offset()] += 0.5 * val;
@@ -609,7 +590,7 @@ void PKWrkrReord::fill_values(double val, size_t i, size_t j, size_t k, size_t l
 
 void PKWrkrReord::fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) {
     size_t ijkl = INDEX4(i, j, k, l);
-    if(ijkl >= offset() && ijkl <= max_idx()) {
+    if (ijkl >= offset() && ijkl <= max_idx()) {
         wK_bufs_[buf_][ijkl - offset()] += val;
     }
 }
@@ -654,38 +635,39 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
         size_t stop = std::min(max_idx() + 1, max_ind[b]);
         psio_address adr = psio_get_address(PSIO_ZERO, (start - min_ind[b]) * sizeof(double));
         size_t nints = stop - start;
-        jobID_J_[buf_].push_back(AIO()->write(target_file(), labels_J_[buf_][i], (char *)(&J_bufs_[buf_][start - offset()]),
-                    nints * sizeof(double), adr, &dummy_));
+        jobID_J_[buf_].push_back(AIO()->write(target_file(), labels_J_[buf_][i],
+                                              (char *)(&J_bufs_[buf_][start - offset()]), nints * sizeof(double), adr,
+                                              &dummy_));
         labels_K_[buf_].push_back(get_label_K(b));
-        jobID_K_[buf_].push_back(AIO()->write(target_file(), labels_K_[buf_][i], (char *)(&K_bufs_[buf_][start - offset()]),
-                    nints * sizeof(double), adr, &dummy_));
+        jobID_K_[buf_].push_back(AIO()->write(target_file(), labels_K_[buf_][i],
+                                              (char *)(&K_bufs_[buf_][start - offset()]), nints * sizeof(double), adr,
+                                              &dummy_));
     }
 
     // Update the buffer being written into
     ++buf_;
     if (buf_ >= nbuf()) buf_ = 0;
     // Make sure the buffer has been written to disk and we can erase it
-    for(int i = 0; i < jobID_J_[buf_].size(); ++i) {
-      AIO()->wait_for_job(jobID_J_[buf_][i]);
+    for (int i = 0; i < jobID_J_[buf_].size(); ++i) {
+        AIO()->wait_for_job(jobID_J_[buf_][i]);
     }
     jobID_J_[buf_].clear();
-    for(int i = 0; i < jobID_K_[buf_].size(); ++i) {
-      AIO()->wait_for_job(jobID_K_[buf_][i]);
+    for (int i = 0; i < jobID_K_[buf_].size(); ++i) {
+        AIO()->wait_for_job(jobID_K_[buf_][i]);
     }
     jobID_K_[buf_].clear();
     // We can delete the labels for these buffers
-    for(int i = 0; i < labels_J_[buf_].size(); ++i) {
-        delete [] labels_J_[buf_][i];
+    for (int i = 0; i < labels_J_[buf_].size(); ++i) {
+        delete[] labels_J_[buf_][i];
     }
-    for(int i = 0; i < labels_K_[buf_].size(); ++i) {
-        delete [] labels_K_[buf_][i];
+    for (int i = 0; i < labels_K_[buf_].size(); ++i) {
+        delete[] labels_K_[buf_][i];
     }
     labels_J_[buf_].clear();
     labels_K_[buf_].clear();
     // Make sure the buffer in which we are going to write is set to zero
-    ::memset((void *) J_bufs_[buf_], '\0', buf_size() * sizeof(double));
-    ::memset((void *) K_bufs_[buf_], '\0', buf_size() * sizeof(double));
-
+    ::memset((void *)J_bufs_[buf_], '\0', buf_size() * sizeof(double));
+    ::memset((void *)K_bufs_[buf_], '\0', buf_size() * sizeof(double));
 }
 
 void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) {
@@ -727,42 +709,41 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
         size_t stop = std::min(max_idx() + 1, max_ind[b]);
         psio_address adr = psio_get_address(PSIO_ZERO, (start - min_ind[b]) * sizeof(double));
         size_t nints = stop - start;
-        jobID_wK_[buf_].push_back(AIO()->write(target_file(), labels_wK_[buf_][i], (char *)(&wK_bufs_[buf_][start - offset()]),
-                    nints * sizeof(double), adr, &dummy_));
+        jobID_wK_[buf_].push_back(AIO()->write(target_file(), labels_wK_[buf_][i],
+                                               (char *)(&wK_bufs_[buf_][start - offset()]), nints * sizeof(double), adr,
+                                               &dummy_));
     }
 
     // Update the buffer being written into
     ++buf_;
     if (buf_ >= nbuf()) buf_ = 0;
     // Make sure the next buffer has been written to disk and we can erase it
-    for(int i = 0; i < jobID_wK_[buf_].size(); ++i) {
-      AIO()->wait_for_job(jobID_wK_[buf_][i]);
+    for (int i = 0; i < jobID_wK_[buf_].size(); ++i) {
+        AIO()->wait_for_job(jobID_wK_[buf_][i]);
     }
     jobID_wK_[buf_].clear();
     // We can delete the labels for these buffers
-    for(int i = 0; i < labels_wK_[buf_].size(); ++i) {
-        delete [] labels_wK_[buf_][i];
+    for (int i = 0; i < labels_wK_[buf_].size(); ++i) {
+        delete[] labels_wK_[buf_][i];
     }
     labels_wK_[buf_].clear();
     // Make sure the buffer in which we are going to write is set to zero
-    ::memset((void *) wK_bufs_[buf_], '\0', buf_size() * sizeof(double));
-
+    ::memset((void *)wK_bufs_[buf_], '\0', buf_size() * sizeof(double));
 }
 
-PKWrkrInCore::PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size,
-                           size_t lastbuf, double *Jbuf, double *Kbuf, double *wKbuf, int nworkers) :
-    PKWorker(primary,sieve,std::shared_ptr<AIOHandler>(),0,buf_size) {
-
+PKWrkrInCore::PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size, size_t lastbuf,
+                           double *Jbuf, double *Kbuf, double *wKbuf, int nworkers)
+    : PKWorker(primary, sieve, std::shared_ptr<AIOHandler>(), 0, buf_size) {
     nworkers_ = nworkers;
     last_buf_ = lastbuf;
     J_buf0_ = Jbuf;
     K_buf0_ = Kbuf;
-    // wKbuf is NULL if we don't compute wK
+    // wKbuf is nullptr if we don't compute wK
     wK_buf0_ = wKbuf;
 
-    J_bufp_ = NULL;
-    K_bufp_ = NULL;
-    wK_bufp_ = NULL;
+    J_bufp_ = nullptr;
+    K_bufp_ = nullptr;
+    wK_bufp_ = nullptr;
 }
 
 void PKWrkrInCore::initialize_task() {
@@ -773,8 +754,8 @@ void PKWrkrInCore::initialize_task() {
         maxid += last_buf_;
     }
     set_max_idx(maxid - 1);
-    //We set the pointers to the beginning of the attributed buffer section
-    if(do_wK()) {
+    // We set the pointers to the beginning of the attributed buffer section
+    if (do_wK()) {
         wK_bufp_ = wK_buf0_ + offset();
     } else {
         J_bufp_ = J_buf0_ + offset();
@@ -783,30 +764,31 @@ void PKWrkrInCore::initialize_task() {
 }
 
 void PKWrkrInCore::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
-    size_t ijkl = INDEX4(i,j,k,l);
+    size_t ijkl = INDEX4(i, j, k, l);
     size_t ikjl = INDEX4(i, k, j, l);
 
-//DEBUG    size_t pqd = INDEX2(i,j);
-//DEBUG    size_t rsd = INDEX2(k,l);
-//DEBUG    if(rsd == 0) {
-//DEBUG#pragma omp critical
-//DEBUG      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pqd,rsd,val);
-//DEBUG    }
+    // DEBUG    size_t pqd = INDEX2(i,j);
+    // DEBUG    size_t rsd = INDEX2(k,l);
+    // DEBUG    if(rsd == 0) {
+    // DEBUG#pragma omp critical
+    // DEBUG      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pqd,rsd,val);
+    // DEBUG    }
     if (ijkl >= offset() && ijkl <= max_idx()) {
         J_bufp_[ijkl - offset()] += val;
-//DEBUG    size_t pqd = INDEX2(i,j);
-//DEBUG    size_t rsd = INDEX2(k,l);
-//DEBUG    if(rsd == 0) {
-//DEBUG#pragma omp critical
-//DEBUG{
-//DEBUG      outfile->Printf("For thread %d, ijkl = %lu, offset = %lu, max_idx = %lu\n", omp_get_thread_num(), ijkl, offset(), max_idx());
-//DEBUG      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pqd,rsd,J_bufp_[ijkl-offset()]);
-//DEBUG}
-//DEBUG    }
-//DEBUG#pragma omp critical
-//DEBUG        outfile->Printf("Value at 0 for J: %16.12f\n",J_bufp_[0]);
+        // DEBUG    size_t pqd = INDEX2(i,j);
+        // DEBUG    size_t rsd = INDEX2(k,l);
+        // DEBUG    if(rsd == 0) {
+        // DEBUG#pragma omp critical
+        // DEBUG{
+        // DEBUG      outfile->Printf("For thread %d, ijkl = %lu, offset = %lu, max_idx = %lu\n", omp_get_thread_num(),
+        // ijkl, offset(), max_idx());
+        // DEBUG      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pqd,rsd,J_bufp_[ijkl-offset()]);
+        // DEBUG}
+        // DEBUG    }
+        // DEBUG#pragma omp critical
+        // DEBUG        outfile->Printf("Value at 0 for J: %16.12f\n",J_bufp_[0]);
     }
-    if(ikjl >= offset() && ikjl <= max_idx()) {
+    if (ikjl >= offset() && ikjl <= max_idx()) {
         if (i == k || j == l) {
             K_bufp_[ikjl - offset()] += val;
         } else {
@@ -814,51 +796,47 @@ void PKWrkrInCore::fill_values(double val, size_t i, size_t j, size_t k, size_t 
         }
     }
 
-    if(i != j && k != l) {
+    if (i != j && k != l) {
         size_t iljk = INDEX4(i, l, j, k);
         if (iljk >= offset() && iljk <= max_idx()) {
-            if ( i == l || j == k) {
+            if (i == l || j == k) {
                 K_bufp_[iljk - offset()] += val;
             } else {
                 K_bufp_[iljk - offset()] += 0.5 * val;
             }
         }
     }
-
 }
 
 void PKWrkrInCore::fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) {
     size_t ijkl = INDEX4(i, j, k, l);
 
-    if(ijkl >= offset() && ijkl <= max_idx()) {
-//DEBUG        size_t pqd = INDEX2(i,j);
-//DEBUG        size_t rsd = INDEX2(k,l);
-//DEBUG        if(rsd == 0) {
-//DEBUG#pragma omp critical
-//DEBUG          outfile->Printf("PK int (%lu|%lu) = %20.16f from thread %d\n",pqd,rsd,val,omp_get_thread_num());
-//DEBUG        }
+    if (ijkl >= offset() && ijkl <= max_idx()) {
+        // DEBUG        size_t pqd = INDEX2(i,j);
+        // DEBUG        size_t rsd = INDEX2(k,l);
+        // DEBUG        if(rsd == 0) {
+        // DEBUG#pragma omp critical
+        // DEBUG          outfile->Printf("PK int (%lu|%lu) = %20.16f from thread
+        // %d\n",pqd,rsd,val,omp_get_thread_num());
+        // DEBUG        }
         wK_bufp_[ijkl - offset()] += val;
     }
-
 }
 
 void PKWrkrInCore::finalize_ints(size_t pk_pairs) {
-
     for (size_t pq = 0; pq < pk_pairs; ++pq) {
-        size_t pqpq = INDEX2(pq,pq);
-        if(pqpq >= offset() && pqpq <= max_idx()) {
+        size_t pqpq = INDEX2(pq, pq);
+        if (pqpq >= offset() && pqpq <= max_idx()) {
             J_bufp_[pqpq - offset()] *= 0.5;
             K_bufp_[pqpq - offset()] *= 0.5;
         }
     }
-
 }
 
 void PKWrkrInCore::finalize_ints_wK(size_t pk_pairs) {
-
     for (size_t pq = 0; pq < pk_pairs; ++pq) {
-        size_t pqpq = INDEX2(pq,pq);
-        if(pqpq >= offset() && pqpq <= max_idx()) {
+        size_t pqpq = INDEX2(pq, pq);
+        if (pqpq >= offset() && pqpq <= max_idx()) {
             wK_bufp_[pqpq - offset()] *= 0.5;
         }
     }
@@ -866,8 +844,8 @@ void PKWrkrInCore::finalize_ints_wK(size_t pk_pairs) {
 
 PKWrkrIWL::PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIOp,
                      int targetfile, int K_file, size_t buf_size, std::vector<int> &bufforpq,
-                     std::shared_ptr<std::vector<size_t>> pos) :
-    PKWorker(primary,sieve,AIOp,targetfile,buf_size) {
+                     std::shared_ptr<std::vector<size_t>> pos)
+    : PKWorker(primary, sieve, AIOp, targetfile, buf_size) {
     K_file_ = K_file;
     buf_for_pq_ = bufforpq;
     size_t lastpq = buf_for_pq_.size() - 1;
@@ -875,18 +853,18 @@ PKWrkrIWL::PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::
     addresses_ = pos;
 
     // Constructing the IWL buffers needed
-    for(int i = 0; i < nbuf(); ++i) {
+    for (int i = 0; i < nbuf(); ++i) {
         IWL_J_.push_back(new IWLAsync_PK(&((*addresses_)[2 * i]), AIO(), target_file()));
         IWL_K_.push_back(new IWLAsync_PK(&((*addresses_)[2 * i + 1]), AIO(), K_file_));
     }
 }
 
 PKWrkrIWL::~PKWrkrIWL() {
-    for(int i = 0; i < nbuf(); ++i) {
+    for (int i = 0; i < nbuf(); ++i) {
         delete IWL_J_[i];
         delete IWL_K_[i];
     }
-    for(int i = 0; i < IWL_wK_.size(); ++i) {
+    for (int i = 0; i < IWL_wK_.size(); ++i) {
         delete IWL_wK_[i];
     }
 }
@@ -896,42 +874,42 @@ void PKWrkrIWL::allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile
     addresses_wK_ = pos;
 
     // Constructing the IWL buffers needed for wK
-    for(int i = 0; i < nbuf(); ++i) {
+    for (int i = 0; i < nbuf(); ++i) {
         IWL_wK_.push_back(new IWLAsync_PK(&((*addresses_wK_)[i]), AIO(), wK_file_));
     }
 }
 
 void PKWrkrIWL::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
     // Pre-sorting for J
-    size_t pq = INDEX2(i,j);
-    IWLAsync_PK* buf = IWL_J_[buf_for_pq_[pq]];
-//DEBUG    outfile->Printf("Adding value to J\n");
-//DEBUG    if(INDEX2(k,l) == 0) {
-//DEBUG      outfile->Printf("Buffering int <%d|%d> = %16.12f\n",pq,INDEX2(k,l),val);
-//DEBUG    }
-    buf->fill_values(val,i,j,k,l);
-    if(buf->nints() == buf->maxints()) {
+    size_t pq = INDEX2(i, j);
+    IWLAsync_PK *buf = IWL_J_[buf_for_pq_[pq]];
+    // DEBUG    outfile->Printf("Adding value to J\n");
+    // DEBUG    if(INDEX2(k,l) == 0) {
+    // DEBUG      outfile->Printf("Buffering int <%d|%d> = %16.12f\n",pq,INDEX2(k,l),val);
+    // DEBUG    }
+    buf->fill_values(val, i, j, k, l);
+    if (buf->nints() == buf->maxints()) {
         buf->write();
     }
 
     // Pre-sorting for K
-    pq = INDEX2(i,k);
+    pq = INDEX2(i, k);
     int bufK1 = buf_for_pq_[pq];
     buf = IWL_K_[bufK1];
-//DEBUG    outfile->Printf("Adding value to K1\n");
-    buf->fill_values(val,i,j,k,l);
-    if(buf->nints() == buf->maxints()) {
+    // DEBUG    outfile->Printf("Adding value to K1\n");
+    buf->fill_values(val, i, j, k, l);
+    if (buf->nints() == buf->maxints()) {
         buf->write();
     }
     // Second pre-sorting for K
     if (i != j && k != l) {
-        pq = std::max(INDEX2(i,l), INDEX2(j,k));
+        pq = std::max(INDEX2(i, l), INDEX2(j, k));
         int bufK2 = buf_for_pq_[pq];
         if (bufK2 != bufK1) {
             buf = IWL_K_[bufK2];
-//DEBUG    outfile->Printf("Adding value to K2\n");
-            buf->fill_values(val,i,j,k,l);
-            if(buf->nints() == buf->maxints()) {
+            // DEBUG    outfile->Printf("Adding value to K2\n");
+            buf->fill_values(val, i, j, k, l);
+            if (buf->nints() == buf->maxints()) {
                 buf->write();
             }
         }
@@ -939,61 +917,61 @@ void PKWrkrIWL::fill_values(double val, size_t i, size_t j, size_t k, size_t l) 
 }
 
 void PKWrkrIWL::fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) {
-    size_t pq = INDEX2(i,j);
-    IWLAsync_PK* buf = IWL_wK_[buf_for_pq_[pq]];
-    buf->fill_values(val,i,j,k,l);
-    if(buf->nints() == buf->maxints()) {
+    size_t pq = INDEX2(i, j);
+    IWLAsync_PK *buf = IWL_wK_[buf_for_pq_[pq]];
+    buf->fill_values(val, i, j, k, l);
+    if (buf->nints() == buf->maxints()) {
         buf->write();
     }
 }
 
 bool PKWrkrIWL::pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
-    IWLAsync_PK* buf;
-    if(bufid < nbuf()) {
+    IWLAsync_PK *buf;
+    if (bufid < nbuf()) {
         buf = IWL_J_[bufid];
     } else {
         buf = IWL_K_[bufid - nbuf()];
     }
-    if(buf->nints() == 0) {
+    if (buf->nints() == 0) {
         return false;
     }
-    buf->pop_value(val,i,j,k,l);
+    buf->pop_value(val, i, j, k, l);
     return true;
 }
 
 bool PKWrkrIWL::pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
-    IWLAsync_PK* buf = IWL_wK_[bufid];
-    if(buf->nints() == 0) {
+    IWLAsync_PK *buf = IWL_wK_[bufid];
+    if (buf->nints() == 0) {
         return false;
     }
-    buf->pop_value(val,i,j,k,l);
+    buf->pop_value(val, i, j, k, l);
     return true;
 }
 
 void PKWrkrIWL::insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) {
-    IWLAsync_PK* buf;
-    if(bufid < nbuf()) {
+    IWLAsync_PK *buf;
+    if (bufid < nbuf()) {
         buf = IWL_J_[bufid];
     } else {
         buf = IWL_K_[bufid - nbuf()];
     }
-    buf->fill_values(val,i,j,k,l);
-    if(buf->nints() == buf->maxints()) {
+    buf->fill_values(val, i, j, k, l);
+    if (buf->nints() == buf->maxints()) {
         buf->write();
     }
 }
 
 void PKWrkrIWL::insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) {
-    IWLAsync_PK* buf = IWL_wK_[bufid];
-    buf->fill_values(val,i,j,k,l);
-    if(buf->nints() == buf->maxints()) {
+    IWLAsync_PK *buf = IWL_wK_[bufid];
+    buf->fill_values(val, i, j, k, l);
+    if (buf->nints() == buf->maxints()) {
         buf->write();
     }
 }
 
 void PKWrkrIWL::flush() {
-    IWLAsync_PK* buf;
-    for(int bufid = 0; bufid < nbuf(); ++bufid) {
+    IWLAsync_PK *buf;
+    for (int bufid = 0; bufid < nbuf(); ++bufid) {
         buf = IWL_J_[bufid];
         buf->flush();
         buf = IWL_K_[bufid];
@@ -1002,8 +980,8 @@ void PKWrkrIWL::flush() {
 }
 
 void PKWrkrIWL::flush_wK() {
-    IWLAsync_PK* buf;
-    for(int bufid = 0; bufid < nbuf(); ++bufid) {
+    IWLAsync_PK *buf;
+    for (int bufid = 0; bufid < nbuf(); ++bufid) {
         buf = IWL_wK_[bufid];
         buf->flush();
     }
@@ -1023,14 +1001,13 @@ IWLAsync_PK::IWLAsync_PK(size_t *address, std::shared_ptr<AIOHandler> AIO, int i
     JobID_[0] = 0;
     JobID_[1] = 0;
     lastbuf_ = 0;
-
 }
 
 IWLAsync_PK::~IWLAsync_PK() {
-    delete [] labels_[0];
-    delete [] labels_[1];
-    delete [] values_[0];
-    delete [] values_[1];
+    delete[] labels_[0];
+    delete[] labels_[1];
+    delete[] values_[0];
+    delete[] values_[1];
 }
 
 void IWLAsync_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
@@ -1048,9 +1025,9 @@ void IWLAsync_PK::write() {
     size_t val_size = ints_per_buf_ * sizeof(Value);
     // We need a special function in AIO to take care
     // of IWL buffer writing, since these contain four parts.
-//DEBUG    outfile->Printf("Writing to %d.\n",itap_);
-    JobID_[idx_] = AIO_->write_iwl(itap_,IWL_KEY_BUF,nints_,lastbuf_,(char *) labels_[idx_],
-                    (char*) values_[idx_], lab_size, val_size, address_);
+    // DEBUG    outfile->Printf("Writing to %d.\n",itap_);
+    JobID_[idx_] = AIO_->write_iwl(itap_, IWL_KEY_BUF, nints_, lastbuf_, (char *)labels_[idx_], (char *)values_[idx_],
+                                   lab_size, val_size, address_);
 
     // Now we need to switch the internal buffer to which we are writing.
     idx_ = idx_ == 0 ? 1 : 0;
@@ -1060,7 +1037,7 @@ void IWLAsync_PK::write() {
 
 // Pop a value from the buffer storage
 void IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
-    if(nints_ == 0) {
+    if (nints_ == 0) {
         throw PSIEXCEPTION("Cannot pop value from empty buffer\n");
     }
     --nints_;
@@ -1074,8 +1051,8 @@ void IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t
 
 void IWLAsync_PK::flush() {
     size_t nints = nints_;
-    while(nints_ < ints_per_buf_) {
-        fill_values(0.0,0,0,0,0);
+    while (nints_ < ints_per_buf_) {
+        fill_values(0.0, 0, 0, 0, 0);
     }
     nints_ = nints;
     lastbuf_ = 1;

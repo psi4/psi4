@@ -2046,8 +2046,8 @@ void
 DCFTSolver::compute_oe_properties() {
 
     // Form one-particle density matrix
-    SharedMatrix a_opdm (new Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix b_opdm (new Matrix("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_));
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
 
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -2087,7 +2087,7 @@ DCFTSolver::compute_oe_properties() {
 
     // Compute one-electron properties
 
-    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
+    auto oe = std::make_shared<OEProp>(shared_from_this());
     oe->set_title(options_.get_str("DCFT_FUNCTIONAL").c_str());
 
     oe->set_Da_mo(a_opdm);
@@ -2110,8 +2110,8 @@ DCFTSolver::write_molden_file() {
     // Compute natural orbitals
 
     // Form one-particle density matrix
-    SharedMatrix a_opdm (new Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix b_opdm (new Matrix("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_));
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
 
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -2150,27 +2150,27 @@ DCFTSolver::write_molden_file() {
     }
 
     // Diagonalize OPDM to obtain NOs
-    SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix bevecs(new Matrix("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_));
-    SharedVector aevals(new Vector("Eigenvalues (Alpha)", nirrep_, nmopi_));
-    SharedVector bevals(new Vector("Eigenvalues (Beta)", nirrep_, nmopi_));
+    auto aevecs = std::make_shared<Matrix>("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto bevecs = std::make_shared<Matrix>("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
+    auto aevals = std::make_shared<Vector>("Eigenvalues (Alpha)", nirrep_, nmopi_);
+    auto bevals = std::make_shared<Vector>("Eigenvalues (Beta)", nirrep_, nmopi_);
 
     a_opdm->diagonalize(aevecs, aevals, descending);
     b_opdm->diagonalize(bevecs, bevals, descending);
 
     // Form transformation matrix from AO to NO
-    SharedMatrix aAONO (new Matrix("NOs (Alpha)", nirrep_, nsopi_, nmopi_));
-    SharedMatrix bAONO (new Matrix("NOs (Beta)", nirrep_, nsopi_, nmopi_));
+    auto aAONO = std::make_shared<Matrix>("NOs (Alpha)", nirrep_, nsopi_, nmopi_);
+    auto bAONO = std::make_shared<Matrix>("NOs (Beta)", nirrep_, nsopi_, nmopi_);
     aAONO->gemm(false, false, 1.0, Ca_, aevecs, 0.0);
     bAONO->gemm(false, false, 1.0, Cb_, bevecs, 0.0);
 
     // Write to MOLDEN file
-    std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
+    auto molden = std::make_shared<MoldenWriter>(shared_from_this());
     std::string filename = get_writer_file_prefix(molecule_->name()) + ".molden";
 
     // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
-    SharedVector dummy_a(new Vector("Dummy Vector Alpha", nirrep_, nmopi_));
-    SharedVector dummy_b(new Vector("Dummy Vector Beta", nirrep_, nmopi_));
+    auto dummy_a = std::make_shared<Vector>("Dummy Vector Alpha", nirrep_, nmopi_);
+    auto dummy_b = std::make_shared<Vector>("Dummy Vector Beta", nirrep_, nmopi_);
 
     molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals, true);
 

@@ -103,7 +103,7 @@ protected:
                         bool backwards, double alpha, double beta);
     void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
     void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
-                       int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
+                       int r, int s, double value, dpdfile2* = nullptr, dpdfile2* = nullptr, dpdfile2* = nullptr);
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);

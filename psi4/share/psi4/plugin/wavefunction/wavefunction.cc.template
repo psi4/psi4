@@ -98,7 +98,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     // Note that if this function was integrated into Psi4 we would not be using P::e.wavefunction
     // Instead everything would be explicitly passed
-    SharedWavefunction wfn(new @Plugin@(ref_wfn, options));
+    auto wfn = std::make_shared<@Plugin@>(ref_wfn, options);
     wfn->compute_energy();
 
     return wfn;

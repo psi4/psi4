@@ -39,7 +39,7 @@ namespace psi { namespace ccenergy {
 void CCEnergyWavefunction::status(const char *s, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-           std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+           std::make_shared<PsiOutStream>(out));
   printer->Printf( "     %-15s...complete\n", s);
 
 }

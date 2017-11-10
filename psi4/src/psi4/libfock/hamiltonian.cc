@@ -81,7 +81,7 @@ SharedMatrix RHamiltonian::explicit_hamiltonian()
 {
     std::shared_ptr<Vector> diag = diagonal();
 
-    SharedMatrix H(new Matrix("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi()));
+    auto H = std::make_shared<Matrix>("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi());
 
     std::shared_ptr<Vector> b(diag->clone());
     std::shared_ptr<Vector> s(diag->clone());
@@ -129,7 +129,7 @@ void MatrixRHamiltonian::print_header() const
 }
 std::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
 {
-    std::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->rowspi()));
+    auto diag = std::make_shared<Vector>("Matrix Diagonal", M_->rowspi());
     for (int h = 0; h < M_->nirrep(); ++h) {
         int n = M_->rowspi()[h];
         if (!n) continue;
@@ -171,8 +171,8 @@ void MatrixUHamiltonian::print_header() const
 }
 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > MatrixUHamiltonian::diagonal()
 {
-    std::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->rowspi()));
-    std::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->rowspi()));
+    auto diaga = std::make_shared<Vector>("Alpha Matrix Diagonal", M_.first->rowspi());
+    auto diagb = std::make_shared<Vector>("Beta Matrix Diagonal", M_.first->rowspi());
     for (int h = 0; h < M_.first->nirrep(); ++h) {
         int n = M_.first->rowspi()[h];
         if (!n) continue;
@@ -235,7 +235,7 @@ std::shared_ptr<Vector> CISRHamiltonian::diagonal()
         }
     }
 
-    std::shared_ptr<Vector> diag(new Vector("CIS Diagonal", nov));
+    auto diag = std::make_shared<Vector>("CIS Diagonal", nov);
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -328,7 +328,7 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 std::stringstream ss;
                 ss << "C_left, h = " << symm << ", N = " << N;
-                SharedMatrix Cl(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank));
+                auto Cl = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank);
 
                 double** Clp = Cl->pointer(delta_h);
                 double** Cop = Caocc_->pointer(delta_h);
@@ -336,7 +336,7 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 std::stringstream ss2;
                 ss2 << "C_right, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ss2.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm));
+                auto Cr = std::make_shared<Matrix>(ss2.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm);
 
                 double** Crp = Cr->pointer(delta_h^symm);
                 double** Cvp = Cavir_->pointer(delta_h^symm);
@@ -348,7 +348,7 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
             } else {
                 std::stringstream ss;
                 ss << "C_right, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+                auto Cr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
                 offset = 0L;
                 for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -440,7 +440,7 @@ std::vector<SharedMatrix > CISRHamiltonian::unpack(const std::shared_ptr<Vector>
     int nirrep = eig->nirrep();
     std::vector<SharedMatrix > t1;
     for (int symm = 0; symm < nirrep; ++symm) {
-        SharedMatrix t(new Matrix("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm));
+        auto t = std::make_shared<Matrix>("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm);
         long int offset = 0L;
         for (int h = 0; h < nirrep; ++h) {
             int nocc = Caocc_->colspi()[h];
@@ -486,7 +486,7 @@ std::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
         }
     }
 
-    std::shared_ptr<Vector> diag(new Vector("TDHF Diagonal", nov));
+    auto diag = std::make_shared<Vector>("TDHF Diagonal", nov);
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -536,7 +536,7 @@ void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right_X, h = " << symm << ", N = " << N;
-            SharedMatrix CXr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto CXr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -559,7 +559,7 @@ void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss2;
             ss2 << "C_right_Y, h = " << symm << ", N = " << N;
-            SharedMatrix CYr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto CYr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -710,7 +710,7 @@ std::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
         }
     }
 
-    std::shared_ptr<Vector> diag(new Vector("CPHF Diagonal", nov));
+    auto diag = std::make_shared<Vector>("CPHF Diagonal", nov);
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -749,7 +749,7 @@ std::map<std::string, SharedVector> CPHFRHamiltonian::pack(const std::map<std::s
     for (std::map<std::string, SharedMatrix>::const_iterator it = x.begin();
         it != x.end(); ++it) {
 
-        std::shared_ptr<Vector> v(new Vector("X", nov));
+        auto v = std::make_shared<Vector>("X", nov);
         SharedMatrix x2 = (*it).second;
         int symm = x2->symmetry();
         int offset = 0;
@@ -785,7 +785,7 @@ void CPHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right, h = " << symm << ", N = " << N;
-            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto Cr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -877,7 +877,7 @@ std::vector<SharedMatrix > CPHFRHamiltonian::unpack(const std::vector<std::share
     int nirrep = x[0]->nirrep();
     for (size_t i = 0; i < x.size(); i++) {
         for (int symm = 0; symm < nirrep; ++symm) {
-            SharedMatrix t(new Matrix("X",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm));
+            auto t = std::make_shared<Matrix>("X",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm);
             long int offset = 0L;
             for (int h = 0; h < nirrep; ++h) {
                 int nocc = Caocc_->colspi()[h];
@@ -947,7 +947,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right, h = " << symm << ", N = " << N;
-            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto Cr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -970,7 +970,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss2;
             ss2 << "P, h = " << symm << ", N = " << N;
-            SharedMatrix P2(new Matrix(ss2.str(), Caocc_->colspi(), Cavir_->colspi(), symm));
+            auto P2 = std::make_shared<Matrix>(ss2.str(), Caocc_->colspi(), Cavir_->colspi(), symm);
 
             offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -1112,7 +1112,7 @@ void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right_X, h = " << symm << ", N = " << N;
-            SharedMatrix CXr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto CXr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -1135,7 +1135,7 @@ void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss2;
             ss2 << "C_right_Y, h = " << symm << ", N = " << N;
-            SharedMatrix CYr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto CYr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -1309,7 +1309,7 @@ void CPKSRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right, h = " << symm << ", N = " << N;
-            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            auto Cr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -1439,8 +1439,8 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > USTABHamiltonian::d
         }
     }
 
-    std::shared_ptr<Vector> diaga(new Vector("UStab Alpha Diagonal", nova));
-    std::shared_ptr<Vector> diagb(new Vector("UStab Beta Diagonal", novb));
+    auto diaga = std::make_shared<Vector>("UStab Alpha Diagonal", nova);
+    auto diagb = std::make_shared<Vector>("UStab Beta Diagonal", novb);
 
     for (int symm = 0; symm < nirrepa; ++symm) {
         long int offset = 0L;
@@ -1548,7 +1548,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
 
                 std::stringstream ss;
                 ss << "C_left alpha, h = " << symm << ", N = " << N;
-                SharedMatrix Cl(new Matrix(ss.str(), Cocca_->nirrep(), Cocca_->rowspi(), rank));
+                auto Cl = std::make_shared<Matrix>(ss.str(), Cocca_->nirrep(), Cocca_->rowspi(), rank);
 
                 double** Clp = Cl->pointer(delta_h);
                 double** Cop = Cocca_->pointer(delta_h);
@@ -1556,7 +1556,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
 
                 std::stringstream ss2;
                 ss2 << "C_right alpha, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ss2.str(), Cocca_->nirrep(), Cocca_->rowspi(), rank, symm));
+                auto Cr = std::make_shared<Matrix>(ss2.str(), Cocca_->nirrep(), Cocca_->rowspi(), rank, symm);
 
                 double** Crp = Cr->pointer(delta_h^symm);
                 double** Cvp = Cvira_->pointer(delta_h^symm);
@@ -1568,7 +1568,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
             } else {
                 std::stringstream ss;
                 ss << "C_right alpha, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ss.str(), Cocca_->nirrep(), Cocca_->rowspi(), Cocca_->colspi(), symm));
+                auto Cr = std::make_shared<Matrix>(ss.str(), Cocca_->nirrep(), Cocca_->rowspi(), Cocca_->colspi(), symm);
 
                 offset = 0L;
                 for (int h = 0; h < Cocca_->nirrep(); ++h) {
@@ -1637,7 +1637,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
 
                 std::stringstream ss;
                 ss << "C_left beta, h = " << symm << ", N = " << N;
-                SharedMatrix Cl(new Matrix(ss.str(), Coccb_->nirrep(), Coccb_->rowspi(), rank));
+                auto Cl = std::make_shared<Matrix>(ss.str(), Coccb_->nirrep(), Coccb_->rowspi(), rank);
 
                 double** Clp = Cl->pointer(delta_h);
                 double** Cop = Coccb_->pointer(delta_h);
@@ -1645,7 +1645,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
 
                 std::stringstream ss2;
                 ss2 << "C_right beta, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ss2.str(), Coccb_->nirrep(), Coccb_->rowspi(), rank, symm));
+                auto Cr = std::make_shared<Matrix>(ss2.str(), Coccb_->nirrep(), Coccb_->rowspi(), rank, symm);
 
                 double** Crp = Cr->pointer(delta_h^symm);
                 double** Cvp = Cvirb_->pointer(delta_h^symm);
@@ -1657,7 +1657,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
             } else {
                 std::stringstream ss;
                 ss << "C_right beta, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ss.str(), Coccb_->nirrep(), Coccb_->rowspi(), Coccb_->colspi(), symm));
+                auto Cr = std::make_shared<Matrix>(ss.str(), Coccb_->nirrep(), Coccb_->rowspi(), Coccb_->colspi(), symm);
 
                 offset = 0L;
                 for (int h = 0; h < Coccb_->nirrep(); ++h) {
@@ -1833,8 +1833,8 @@ std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack_pai
     int nirrep = eig->nirrep();
     std::vector<std::pair<SharedMatrix, SharedMatrix> > t1;
     for (int symm = 0; symm < nirrep; ++symm) {
-        SharedMatrix talpha(new Matrix("T",Cocca_->nirrep(), Cocca_->colspi(), Cvira_->colspi(), symm));
-        SharedMatrix tbeta(new Matrix("T",Coccb_->nirrep(), Coccb_->colspi(), Cvirb_->colspi(), symm));
+        auto talpha = std::make_shared<Matrix>("T",Cocca_->nirrep(), Cocca_->colspi(), Cvira_->colspi(), symm);
+        auto tbeta = std::make_shared<Matrix>("T",Coccb_->nirrep(), Coccb_->colspi(), Cvirb_->colspi(), symm);
         long int offseta = 0L;
         long int offsetb = 0L;
         for (int h = 0; h < nirrep; ++h) {

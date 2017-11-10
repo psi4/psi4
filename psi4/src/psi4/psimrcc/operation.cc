@@ -37,8 +37,8 @@ namespace psi{
 
     namespace psimrcc{
 
-double* CCOperation::local_work = NULL;
-double* CCOperation::out_of_core_buffer = NULL;
+double* CCOperation::local_work = nullptr;
+double* CCOperation::out_of_core_buffer = nullptr;
 double CCOperation::zero_timing=0.0;
 double CCOperation::numerical_timing=0.0;
 double CCOperation::contract_timing=0.0;
@@ -74,9 +74,9 @@ void CCOperation::print()
   outfile->Printf("\tAssigment = %s",assignment.c_str());
   outfile->Printf("\tOperation = %s",operation.c_str());
   outfile->Printf("\n\tA = %s",A_Matrix->get_label().c_str());
-  if(B_Matrix!=NULL)
+  if(B_Matrix!=nullptr)
     outfile->Printf("\tB = %s",B_Matrix->get_label().c_str());
-  if(C_Matrix!=NULL)
+  if(C_Matrix!=nullptr)
     outfile->Printf("\tC = %s",C_Matrix->get_label().c_str());
 }
 
@@ -87,10 +87,10 @@ void CCOperation::print_operation()
   if(reindexing.size())
     outfile->Printf(" %s",reindexing.c_str());
   outfile->Printf(" %lf",factor);
-  if(B_Matrix!=NULL)
+  if(B_Matrix!=nullptr)
     outfile->Printf(" %s",B_Matrix->get_label().c_str());
   outfile->Printf(" %s",operation.c_str());
-  if(C_Matrix!=NULL)
+  if(C_Matrix!=nullptr)
     outfile->Printf(" %s",C_Matrix->get_label().c_str());
 }
 

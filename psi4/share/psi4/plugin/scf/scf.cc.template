@@ -66,8 +66,7 @@ void SCF::init_integrals()
 
     // The basisset object contains all of the basis information and is formed in the new_wavefunction call
     // The integral factory oversees the creation of integral objects
-    std::shared_ptr<IntegralFactory> integral(new IntegralFactory
-            (basisset_, basisset_, basisset_, basisset_));
+    auto integral = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
 
     // Determine the number of electrons in the system
     // The molecule object is built into all wavefunctions
@@ -93,11 +92,11 @@ void SCF::init_integrals()
     outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", e_nuc_);
 
     // These don't need to be declared, because they belong to the class
-    S_ = SharedMatrix(new Matrix("Overlap matrix", nso_, nso_));
-    H_ = SharedMatrix(new Matrix("Core Hamiltonian matrix", nso_, nso_));
+    S_ = std::make_shared<Matrix>("Overlap matrix", nso_, nso_);
+    H_ = std::make_shared<Matrix>("Core Hamiltonian matrix", nso_, nso_);
     // These don't belong to the class, so we have to define them as having type SharedMatrix
-    SharedMatrix T = SharedMatrix(new Matrix("Kinetic integrals matrix", nso_, nso_));
-    SharedMatrix V = SharedMatrix(new Matrix("Potential integrals matrix", nso_, nso_));
+    auto T = std::make_shared<Matrix>("Kinetic integrals matrix", nso_, nso_);
+    auto V = std::make_shared<Matrix>("Potential integrals matrix", nso_, nso_);
 
     // Form the one-electron integral objects from the integral factory
     std::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
@@ -151,18 +150,18 @@ void SCF::update_Cocc()
 double SCF::compute_energy()
 {
    // Allocate some matrices
-   X_  = SharedMatrix(new Matrix("S^-1/2", nso_, nso_));
-   F_  = SharedMatrix(new Matrix("Fock matrix", nso_, nso_));
-   Ft_ = SharedMatrix(new Matrix("Transformed Fock matrix", nso_, nso_));
-   C_  = SharedMatrix(new Matrix("MO Coefficients", nso_, nso_));
-   Cocc_ = SharedMatrix(new Matrix("Occupied MO Coefficients", nso_, ndocc_));
-   D_  = SharedMatrix(new Matrix("The Density Matrix", nso_, nso_));
-   SharedMatrix Temp1(new Matrix("Temporary Array 1", nso_, nso_));
-   SharedMatrix Temp2(new Matrix("Temporary Array 2", nso_, nso_));
-   SharedMatrix FDS(new Matrix("FDS", nso_, nso_));
-   SharedMatrix SDF(new Matrix("SDF", nso_, nso_));
-   SharedMatrix Evecs(new Matrix("Eigenvectors", nso_, nso_));
-   SharedVector Evals(new Vector("Eigenvalues", nso_));
+   X_  = std::make_shared<Matrix>("S^-1/2", nso_, nso_);
+   F_  = std::make_shared<Matrix>("Fock matrix", nso_, nso_);
+   Ft_ = std::make_shared<Matrix>("Transformed Fock matrix", nso_, nso_);
+   C_  = std::make_shared<Matrix>("MO Coefficients", nso_, nso_);
+   Cocc_ = std::make_shared<Matrix>("Occupied MO Coefficients", nso_, ndocc_);
+   D_ = std::make_shared<Matrix>("The Density Matrix", nso_, nso_);
+   auto Temp1 = std::make_shared<Matrix>("Temporary Array 1", nso_, nso_);
+   auto Temp2 = std::make_shared<Matrix>("Temporary Array 2", nso_, nso_);
+   auto FDS = std::make_shared<Matrix>("FDS", nso_, nso_);
+   auto SDF = std::make_shared<Matrix>("SDF", nso_, nso_);
+   auto Evecs = std::make_shared<Matrix>("Eigenvectors", nso_, nso_);
+   auto Evals = std::make_shared<Vector>("Eigenvalues", nso_);
 
    // Form the X_ matrix (S^-1/2)
    X_->copy(S_);

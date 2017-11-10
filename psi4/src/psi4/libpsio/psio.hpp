@@ -293,7 +293,7 @@ public:
     void tocclean(size_t unit, const char *key);
     /// Print the table of contents for the given unit
     void tocprint(size_t unit);
-    /// Scans the TOC for a particular keyword and returns either a pointer to the entry or NULL to the caller.
+    /// Scans the TOC for a particular keyword and returns either a pointer to the entry or nullptr to the caller.
     psio_tocentry* tocscan(size_t unit, const char *key);
     /// Checks the TOC to see if a particular keyword exists there or not
     bool tocentry_exists(size_t unit, const char *key);

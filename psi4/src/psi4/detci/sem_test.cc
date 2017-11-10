@@ -149,7 +149,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
    int *Lvec;
 
    /* check parameters */
-   if (evecs == NULL || evals == NULL) {
+   if (evecs == nullptr || evals == nullptr) {
      outfile->Printf("(sem): passed uncallocated pointers for evecs or evals\n") ;
       return ;
       }

@@ -47,7 +47,7 @@ void CoupledPair::OPDM(){
 
   // if t2 was stored on disk, grab it.
   if (t2_on_disk){
-     std::shared_ptr<PSIO> psio(new PSIO());
+     auto psio = std::make_shared<PSIO>();
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
@@ -70,7 +70,7 @@ void CoupledPair::OPDM(){
   ss_a << ss.str() << " alpha";
 
   // one particle density matrix
-  SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi()));
+  auto opdm_a = std::make_shared<Matrix>(ss_a.str(), Ca->colspi(), Ca->colspi());
 
   // mapping array for D1(c1) -> D1(symmetry)
   int *irrepoffset = (int*)malloc(nirrep_*sizeof(double));

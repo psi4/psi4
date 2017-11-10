@@ -172,7 +172,7 @@ double CCLambdaWavefunction::compute_energy()
       spaces.push_back(moinfo.occ_sym);
       spaces.push_back(moinfo.virtpi);
       spaces.push_back(moinfo.vir_sym);
-      dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
+      dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
 
       if(params.aobasis) { /* Set up new DPD for AO-basis algorithm */
           std::vector<int*> aospaces;
@@ -180,7 +180,7 @@ double CCLambdaWavefunction::compute_energy()
           aospaces.push_back(moinfo.occ_sym);
           aospaces.push_back(moinfo.sopi);
           aospaces.push_back(moinfo.sosym);
-          dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
+          dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, aospaces);
           dpd_set_default(0);
       }
 
@@ -198,7 +198,7 @@ double CCLambdaWavefunction::compute_energy()
       spaces.push_back(moinfo.bvirtpi);
       spaces.push_back(moinfo.bvir_sym);
 
-      dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
+      dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
 
       if(params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
           std::vector<int*> aospaces;
@@ -210,7 +210,7 @@ double CCLambdaWavefunction::compute_energy()
           aospaces.push_back(moinfo.bocc_sym);
           aospaces.push_back(moinfo.sopi);
           aospaces.push_back(moinfo.sosym);
-          dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, aospaces);
+          dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, aospaces);
           dpd_set_default(0);
       }
     }

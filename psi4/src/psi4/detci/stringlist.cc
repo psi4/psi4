@@ -120,7 +120,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
    for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
       for (code = 0; code < ncodes; code++,listnum++) {
 
-         if (repl_otf) Occs[listnum] = NULL;
+         if (repl_otf) Occs[listnum] = nullptr;
 
          subgraph = Graph->sg[irrep] + code;
          if (!subgraph->num_strings) continue;
@@ -229,7 +229,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
    struct stringwr *node;
 
    occlist = (unsigned char *) malloc (N * sizeof(unsigned char));
-   if (occlist == NULL) {
+   if (occlist == nullptr) {
       throw PsiException("(form_stringwr): Malloc error",__FILE__,__LINE__);
       }
 
@@ -261,8 +261,8 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
    int nel, p, q, i, j, k, l, ij, oij;
    int nlists, listnum, strlistnum, nsym, jused, ndrc;
    int diagcnt=0;
-   static int *diagij = NULL;
-   static int *diagoij = NULL;
+   static int *diagij = nullptr;
+   static int *diagoij = nullptr;
    size_t cnt, stringridx;
    int ridx;
    signed char sgn;
@@ -283,8 +283,8 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
 
    /* set up the ij indices for the 'diagonal' entries E_ii           */
    /* this assumes that the values in array O are strictly increasing */
-   if (diagij == NULL) diagij = init_int_array(nel);
-   if (diagoij == NULL) diagoij = init_int_array(nel);
+   if (diagij == nullptr) diagij = init_int_array(nel);
+   if (diagoij == nullptr) diagoij = init_int_array(nel);
    for (i=0; i<nel; i++) {
       j = O[i];
       diagij[i] = ioff[j] + j;
@@ -389,10 +389,10 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
 
    for (i=0; i<nlists; i++) {
       string->cnt[i] = cnt = Tcnt[i];
-      string->ij[i] = NULL;
-      string->oij[i] = NULL;
-      string->ridx[i] = NULL;
-      string->sgn[i] = NULL;
+      string->ij[i] = nullptr;
+      string->oij[i] = nullptr;
+      string->ridx[i] = nullptr;
+      string->sgn[i] = nullptr;
       if (cnt) {
          string->ij[i] = init_int_array(cnt);
          string->oij[i] = init_int_array(cnt);
