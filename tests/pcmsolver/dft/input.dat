@@ -1,8 +1,8 @@
 #! pcm
 
 nucenergy   =  12.0367196636183458 # TEST
-polenergy   =  -0.0060921680888660 # TEST
-totalenergy = -56.5572469753401847 # TEST
+polenergy   =  -0.0060919460849251 # TEST
+totalenergy = -56.5572469754345377 # TEST
 
 molecule NH3 {
 symmetry c1

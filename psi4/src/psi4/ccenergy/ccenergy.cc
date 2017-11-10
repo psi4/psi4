@@ -58,42 +58,43 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-namespace psi { namespace ccenergy {
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
+
+namespace psi {
+namespace ccenergy {
 
 #define IOFF_MAX 32641
-
-}} //namespace psi::ccenergy
+}
+}  // namespace psi::ccenergy
 
 // Forward declaration to call cctriples
-namespace psi { namespace cctriples {
+namespace psi {
+namespace cctriples {
 PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
-}}
+}
+}
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
 CCEnergyWavefunction::CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options)
-{
+    : Wavefunction(options) {
     set_reference_wavefunction(reference_wavefunction);
     init();
-    #define NUM_ENTRIES 113
+#define NUM_ENTRIES 113
     cache_priority_list_ = new dpd_file4_cache_entry[NUM_ENTRIES];
 }
 
-CCEnergyWavefunction::~CCEnergyWavefunction()
-{
-    if(cache_priority_list_)
-        delete [] cache_priority_list_;
+CCEnergyWavefunction::~CCEnergyWavefunction() {
+    if (cache_priority_list_) delete[] cache_priority_list_;
 }
 
-void CCEnergyWavefunction::init()
-{
-    shallow_copy(reference_wavefunction_);
-}
+void CCEnergyWavefunction::init() { shallow_copy(reference_wavefunction_); }
 
-double CCEnergyWavefunction::compute_energy()
-{
-    int done=0, brueckner_done=0;
+double CCEnergyWavefunction::compute_energy() {
+    int done = 0, brueckner_done = 0;
     int h, i, j, a, b, row, col, natom;
     double **geom, *zvals, value;
     FILE *efile;
@@ -102,7 +103,7 @@ double CCEnergyWavefunction::compute_energy()
     dpdbuf4 t2;
     double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab, tval;
 
-    moinfo_.iter=0;
+    moinfo_.iter = 0;
 
     init_io();
     init_ioff();
@@ -117,10 +118,10 @@ double CCEnergyWavefunction::compute_energy()
 
     cachefiles = init_int_array(PSIO_MAXUNIT);
 
-    if(params_.ref == 2) { /** UHF **/
+    if (params_.ref == 2) { /** UHF **/
         cachelist = cacheprep_uhf(params_.cachelev, cachefiles);
 
-        std::vector<int*> spaces;
+        std::vector<int *> spaces;
         spaces.push_back(moinfo_.aoccpi);
         spaces.push_back(moinfo_.aocc_sym);
         spaces.push_back(moinfo_.avirtpi);
@@ -130,14 +131,13 @@ double CCEnergyWavefunction::compute_energy()
         spaces.push_back(moinfo_.bvirtpi);
         spaces.push_back(moinfo_.bvir_sym);
         delete[] dpd_list[0];
-        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles,
-                              cachelist, NULL, 4, spaces);
+        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
         dpd_set_default(0);
 
-        if( params_.df ){
+        if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles, cache_priority_list_);
-        }else if( params_.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
-            std::vector<int*> aospaces;
+        } else if (params_.aobasis != "NONE") { /* Set up new DPD's for AO-basis algorithm */
+            std::vector<int *> aospaces;
             aospaces.push_back(moinfo_.aoccpi);
             aospaces.push_back(moinfo_.aocc_sym);
             aospaces.push_back(moinfo_.sopi);
@@ -150,23 +150,23 @@ double CCEnergyWavefunction::compute_energy()
             dpd_set_default(0);
         }
 
-    }
-    else { /** RHF or ROHF **/
+    } else { /** RHF or ROHF **/
         cachelist = cacheprep_rhf(params_.cachelev, cachefiles);
 
         init_priority_list();
-        std::vector<int*> spaces;
+        std::vector<int *> spaces;
         spaces.push_back(moinfo_.occpi);
         spaces.push_back(moinfo_.occ_sym);
         spaces.push_back(moinfo_.virtpi);
         spaces.push_back(moinfo_.vir_sym);
 
-        dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles, cachelist, cache_priority_list_, 2, spaces);
+        dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles, cachelist, cache_priority_list_, 2,
+                 spaces);
 
-        if( params_.df ){
+        if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles, cache_priority_list_);
-        }else if( params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
-            std::vector<int*> aospaces;
+        } else if (params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
+            std::vector<int *> aospaces;
             aospaces.push_back(moinfo_.occpi);
             aospaces.push_back(moinfo_.occ_sym);
             aospaces.push_back(moinfo_.sopi);
@@ -174,12 +174,14 @@ double CCEnergyWavefunction::compute_energy()
             dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
             dpd_set_default(0);
         }
-
     }
 
-    if ( (params_.just_energy) || (params_.just_residuals) ) {
+    if ((params_.just_energy) || (params_.just_residuals)) {
         one_step();
-        if(params_.ref == 2) cachedone_uhf(cachelist); else cachedone_rhf(cachelist);
+        if (params_.ref == 2)
+            cachedone_uhf(cachelist);
+        else
+            cachedone_rhf(cachelist);
         free(cachefiles);
         cleanup();
         free(ioff_);
@@ -187,30 +189,35 @@ double CCEnergyWavefunction::compute_energy()
         return Success;
     }
 
-    if(params_.local) {
+    if (params_.local) {
         local_init();
-        if(local_.weakp=="MP2") lmp2();
+        if (local_.weakp == "MP2") lmp2();
+    }
+
+    bool is_pted_calc = (options_.get_str("PCM_CC_TYPE") == "PTED");
+    if (options_.get_bool("PCM") && is_pted_calc) {
+        rebuild_denom();
     }
 
     init_amps();
 
     /* Compute the MP2 energy while we're here */
-    if(params_.ref == 0 || params_.ref == 2) {
+    if (params_.ref == 0 || params_.ref == 2) {
         moinfo_.emp2 = mp2_energy();
         outfile->Printf("MP2 correlation energy %4.16f\n", moinfo_.emp2);
-        psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *) &(moinfo_.emp2),sizeof(double));
+        psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *)&(moinfo_.emp2), sizeof(double));
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
     }
 
-    if(params_.print_mp2_amps) amp_write();
+    if (params_.print_mp2_amps) amp_write();
 
     tau_build();
     taut_build();
-    outfile->Printf( "                Solving CC Amplitude Equations\n");
-    outfile->Printf( "                ------------------------------\n");
-    outfile->Printf( "  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag\n");
-    outfile->Printf( "  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
+    outfile->Printf("                Solving CC Amplitude Equations\n");
+    outfile->Printf("                ------------------------------\n");
+    outfile->Printf("  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag\n");
+    outfile->Printf("  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
     moinfo_.ecc = energy();
     pair_energies(&emp2_aa, &emp2_ab);
     double last_energy;
@@ -222,32 +229,37 @@ double CCEnergyWavefunction::compute_energy()
     moinfo_.d2diag = d2diag();
     update();
     checkpoint();
-    for(moinfo_.iter=1; moinfo_.iter <= params_.maxiter; moinfo_.iter++) {
-
+    for (moinfo_.iter = 1; moinfo_.iter <= params_.maxiter; moinfo_.iter++) {
         sort_amps();
+
+        if (options_.get_bool("PCM") && (options_.get_str("PCM_CC_TYPE") == "PTED")) {
+            Process::environment.globals["T MICROITERATIONS"] = (moinfo_.iter + 1);
+        }
 
 #ifdef TIME_CCENERGY
         timer_on("F build");
 #endif
-        Fme_build(); Fae_build(); Fmi_build();
-        if(params_.print & 2) status("F intermediates", "outfile");
+
+        Fme_build();
+        Fae_build();
+        Fmi_build();
+        if (params_.print & 2) status("F intermediates", "outfile");
 #ifdef TIME_CCENERGY
         timer_off("F build");
 #endif
 
         t1_build();
-        if(params_.print & 2) status("T1 amplitudes", "outfile");
+        if (params_.print & 2) status("T1 amplitudes", "outfile");
 
-        if( params_.wfn == "CC2"  || params_.wfn == "EOM_CC2" ) {
-
+        if (params_.wfn == "CC2" || params_.wfn == "EOM_CC2") {
             cc2_Wmnij_build();
-            if(params_.print & 2) status("Wmnij", "outfile");
+            if (params_.print & 2) status("Wmnij", "outfile");
 
 #ifdef TIME_CCENERGY
             timer_on("Wmbij build");
 #endif
             cc2_Wmbij_build();
-            if(params_.print & 2) status("Wmbij", "outfile");
+            if (params_.print & 2) status("Wmbij", "outfile");
 #ifdef TIME_CCENERGY
             timer_off("Wmbij build");
 #endif
@@ -256,7 +268,7 @@ double CCEnergyWavefunction::compute_energy()
             timer_on("Wabei build");
 #endif
             cc2_Wabei_build();
-            if(params_.print & 2) status("Wabei", "outfile");
+            if (params_.print & 2) status("Wabei", "outfile");
 #ifdef TIME_CCENERGY
             timer_off("Wabei build");
 #endif
@@ -265,7 +277,7 @@ double CCEnergyWavefunction::compute_energy()
             timer_on("T2 Build");
 #endif
             cc2_t2_build();
-            if(params_.print & 2) status("T2 amplitudes", "outfile");
+            if (params_.print & 2) status("T2 amplitudes", "outfile");
 #ifdef TIME_CCENERGY
             timer_off("T2 Build");
 #endif
@@ -273,32 +285,30 @@ double CCEnergyWavefunction::compute_energy()
         }
 
         else {
-
 #ifdef TIME_CCENERGY
             timer_on("Wmbej build");
 #endif
             Wmbej_build();
-            if(params_.print & 2) status("Wmbej", "outfile");
+            if (params_.print & 2) status("Wmbej", "outfile");
 #ifdef TIME_CCENERGY
             timer_off("Wmbej build");
 #endif
 
             Z_build();
-            if(params_.print & 2) status("Z", "outfile");
+            if (params_.print & 2) status("Z", "outfile");
             Wmnij_build();
-            if(params_.print & 2) status("Wmnij", "outfile");
+            if (params_.print & 2) status("Wmnij", "outfile");
 
 #ifdef TIME_CCENERGY
             timer_on("T2 Build");
 #endif
             t2_build();
-            if(params_.print & 2) status("T2 amplitudes", "outfile");
+            if (params_.print & 2) status("T2 amplitudes", "outfile");
 #ifdef TIME_CCENERGY
             timer_off("T2 Build");
 #endif
 
-            if( params_.wfn == "CC3" || params_.wfn == "EOM_CC3" ) {
-
+            if (params_.wfn == "CC3" || params_.wfn == "EOM_CC3") {
                 /* step1: build cc3 intermediates, Wabei, Wmnie, Wmbij, Wamef */
                 cc3_Wmnij();
                 cc3_Wmbij();
@@ -311,14 +321,14 @@ double CCEnergyWavefunction::compute_energy()
             }
         }
 
-        if (!params_.just_residuals)
-            denom(); /* apply denominators to T1 and T2 */
+        if (!params_.just_residuals) denom(); /* apply denominators to T1 and T2 */
 
-        if(converged(last_energy - moinfo_.ecc)) {
+        if (converged(last_energy - moinfo_.ecc)) {
             done = 1;
 
             tsave();
-            tau_build(); taut_build();
+            tau_build();
+            taut_build();
             last_energy = moinfo_.ecc;
             moinfo_.ecc = energy();
             moinfo_.t1diag = diagnostic();
@@ -327,16 +337,26 @@ double CCEnergyWavefunction::compute_energy()
             moinfo_.d2diag = d2diag();
             sort_amps();
             update();
-            outfile->Printf( "\n    Iterations converged.\n");
+            outfile->Printf("\n    Iterations converged.\n");
 
-            outfile->Printf( "\n");
+            outfile->Printf("\n");
             amp_write();
+
+            if (options_.get_bool("PCM") && is_pted_calc) {
+                bool is_pted_macroiter_0 = (int(Process::environment.globals["MACROITERATION"]) == 0);
+                if (is_pted_macroiter_0) {
+                    double E_correlation = moinfo_.ecc;
+                    Process::environment.globals["PCM-CC-PTE CORRELATION ENERGY"] = E_correlation;
+                }
+            }
+
             if (params_.analyze != 0) analyze();
             break;
         }
-        if(params_.diis) diis(moinfo_.iter);
+        if (params_.diis) diis(moinfo_.iter);
         tsave();
-        tau_build(); taut_build();
+        tau_build();
+        taut_build();
         last_energy = moinfo_.ecc;
         moinfo_.ecc = energy();
         moinfo_.t1diag = diagnostic();
@@ -353,12 +373,11 @@ double CCEnergyWavefunction::compute_energy()
     Process::environment.globals["CC NEW D1 DIAGNOSTIC"] = moinfo_.new_d1diag;
     Process::environment.globals["CC D2 DIAGNOSTIC"] = moinfo_.d2diag;
 
-    outfile->Printf( "\n");
-    if(!done) {
-        outfile->Printf( "     ** Wave function not converged to %2.1e ** \n",
-                params_.convergence);
+    outfile->Printf("\n");
+    if (!done) {
+        outfile->Printf("     ** Wave function not converged to %2.1e ** \n", params_.convergence);
 
-        if( params_.aobasis != "NONE" ) dpd_close(1);
+        if (params_.aobasis != "NONE") dpd_close(1);
         dpd_close(0);
         cleanup();
 #ifdef TIME_CCENERGY
@@ -369,119 +388,128 @@ double CCEnergyWavefunction::compute_energy()
         return Failure;
     }
 
-    outfile->Printf( "    SCF energy       (wfn)                    = %20.15f\n", moinfo_.escf);
-    outfile->Printf( "    Reference energy (file100)                = %20.15f\n", moinfo_.eref);
+    outfile->Printf("    SCF energy       (wfn)                    = %20.15f\n", moinfo_.escf);
+    outfile->Printf("    Reference energy (file100)                = %20.15f\n", moinfo_.eref);
 
-    //Process::environment.globals["SCF TOTAL ENERGY (CHKPT)"] = moinfo.escf;
-    //Process::environment.globals["SCF TOTAL ENERGY"] = moinfo.eref;
+    // Process::environment.globals["SCF TOTAL ENERGY (CHKPT)"] = moinfo_.escf;
+    // Process::environment.globals["SCF TOTAL ENERGY"] = moinfo_.eref;
 
-    if(params_.ref == 0 || params_.ref == 2) {
+    if (params_.ref == 0 || params_.ref == 2) {
         if (params_.scs) {
-            outfile->Printf( "\n    OS SCS-MP2 correlation energy             = %20.15f\n", moinfo_.emp2_os*params_.scsmp2_scale_os);
-            outfile->Printf( "    SS SCS-MP2 correlation energy             = %20.15f\n", moinfo_.emp2_ss*params_.scsmp2_scale_ss);
-            outfile->Printf( "    SCS-MP2 correlation energy                = %20.15f\n", moinfo_.emp2_os*params_.scsmp2_scale_os
-                    + moinfo_.emp2_ss*params_.scsmp2_scale_ss);
-            outfile->Printf( "      * SCS-MP2 total energy                  = %20.15f\n", moinfo_.eref
-                    + moinfo_.emp2_os*params_.scsmp2_scale_os + moinfo_.emp2_ss*params_.scsmp2_scale_ss);
+            outfile->Printf("\n    OS SCS-MP2 correlation energy             = %20.15f\n",
+                            moinfo_.emp2_os * params_.scsmp2_scale_os);
+            outfile->Printf("    SS SCS-MP2 correlation energy             = %20.15f\n",
+                            moinfo_.emp2_ss * params_.scsmp2_scale_ss);
+            outfile->Printf("    SCS-MP2 correlation energy                = %20.15f\n",
+                            moinfo_.emp2_os * params_.scsmp2_scale_os + moinfo_.emp2_ss * params_.scsmp2_scale_ss);
+            outfile->Printf(
+                "      * SCS-MP2 total energy                  = %20.15f\n",
+                moinfo_.eref + moinfo_.emp2_os * params_.scsmp2_scale_os + moinfo_.emp2_ss * params_.scsmp2_scale_ss);
 
-            Process::environment.globals["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.emp2_os*params_.scsmp2_scale_os;
-            Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo_.emp2_ss*params_.scsmp2_scale_ss;
-            Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = moinfo_.emp2_os*params_.scsmp2_scale_os +
-                    moinfo_.emp2_ss*params_.scsmp2_scale_ss;
-            Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = moinfo_.eref +
-                    moinfo_.emp2_os*params_.scsmp2_scale_os + moinfo_.emp2_ss*params_.scsmp2_scale_ss;
+            Process::environment.globals["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] =
+                moinfo_.emp2_os * params_.scsmp2_scale_os;
+            Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] =
+                moinfo_.emp2_ss * params_.scsmp2_scale_ss;
+            Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] =
+                moinfo_.emp2_os * params_.scsmp2_scale_os + moinfo_.emp2_ss * params_.scsmp2_scale_ss;
+            Process::environment.globals["SCS-MP2 TOTAL ENERGY"] =
+                moinfo_.eref + moinfo_.emp2_os * params_.scsmp2_scale_os + moinfo_.emp2_ss * params_.scsmp2_scale_ss;
         }
         if (params_.scsn) {
-            outfile->Printf( "\nOS SCSN-MP2 correlation energy            = %20.15f\n", 0.0);
-            outfile->Printf( "    SS SCSN-MP2 correlation energy        = %20.15f\n", moinfo_.emp2_ss*1.76);
-            outfile->Printf( "    SCSN-MP2 correlation energy           = %20.15f\n", moinfo_.emp2_ss*1.76);
-            outfile->Printf( "      * SCSN-MP2 total energy             = %20.15f\n", moinfo_.eref + moinfo_.emp2_ss*1.76);
+            outfile->Printf("\nOS SCSN-MP2 correlation energy            = %20.15f\n", 0.0);
+            outfile->Printf("    SS SCSN-MP2 correlation energy        = %20.15f\n", moinfo_.emp2_ss * 1.76);
+            outfile->Printf("    SCSN-MP2 correlation energy           = %20.15f\n", moinfo_.emp2_ss * 1.76);
+            outfile->Printf("      * SCSN-MP2 total energy             = %20.15f\n",
+                            moinfo_.eref + moinfo_.emp2_ss * 1.76);
 
             Process::environment.globals["SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
-            Process::environment.globals["SCSN-MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo_.emp2_ss*1.76;
-            Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = moinfo_.emp2_ss*1.76;
-            Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.emp2_ss*1.76;
+            Process::environment.globals["SCSN-MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo_.emp2_ss * 1.76;
+            Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = moinfo_.emp2_ss * 1.76;
+            Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.emp2_ss * 1.76;
         }
 
-        outfile->Printf( "\n    Opposite-spin MP2 correlation energy      = %20.15f\n", moinfo_.emp2_os);
-        outfile->Printf( "    Same-spin MP2 correlation energy          = %20.15f\n", moinfo_.emp2_ss);
-        outfile->Printf( "    MP2 correlation energy                    = %20.15f\n", moinfo_.emp2);
-        outfile->Printf( "      * MP2 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.emp2);
+        outfile->Printf("\n    Opposite-spin MP2 correlation energy      = %20.15f\n", moinfo_.emp2_os);
+        outfile->Printf("    Same-spin MP2 correlation energy          = %20.15f\n", moinfo_.emp2_ss);
+        outfile->Printf("    MP2 correlation energy                    = %20.15f\n", moinfo_.emp2);
+        outfile->Printf("      * MP2 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.emp2);
 
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.emp2_os;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo_.emp2_ss;
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.emp2;
     }
-    if( params_.wfn == "CC3"  || params_.wfn == "EOM_CC3" ) {
-        outfile->Printf( "    CC3 correlation energy                    = %20.15f\n", moinfo_.ecc);
-        outfile->Printf( "      * CC3 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.ecc);
+    if (params_.wfn == "CC3" || params_.wfn == "EOM_CC3") {
+        outfile->Printf("    CC3 correlation energy                    = %20.15f\n", moinfo_.ecc);
+        outfile->Printf("      * CC3 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CC3 CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CC3 TOTAL ENERGY"] = moinfo_.eref + moinfo_.ecc;
-    }
-    else if( params_.wfn == "CC2" || params_.wfn == "EOM_CC2" )  {
-        outfile->Printf( "    CC2 correlation energy                    = %20.15f\n", moinfo_.ecc);
-        outfile->Printf( "      * CC2 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.ecc);
+    } else if (params_.wfn == "CC2" || params_.wfn == "EOM_CC2") {
+        outfile->Printf("    CC2 correlation energy                    = %20.15f\n", moinfo_.ecc);
+        outfile->Printf("      * CC2 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CC2 CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CC2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.ecc;
 
-        if(params_.local && local_.weakp == "MP2" )
-            outfile->Printf( "      * LCC2 (+LMP2) total energy             = %20.15f\n",
-                    moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
+        if (params_.local && local_.weakp == "MP2")
+            outfile->Printf("      * LCC2 (+LMP2) total energy             = %20.15f\n",
+                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
         Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
-                moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
-    }
-    else {
+            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+    } else {
         if (params_.scscc) {
-            outfile->Printf( "\n    OS SCS-CCSD correlation energy            = %20.15f\n", moinfo_.ecc_os*params_.scscc_scale_os);
-            outfile->Printf( "    SS SCS-CCSD correlation energy            = %20.15f\n", moinfo_.ecc_ss*params_.scscc_scale_ss);
-            outfile->Printf( "    SCS-CCSD correlation energy               = %20.15f\n", moinfo_.ecc_os*params_.scscc_scale_os
-                    + moinfo_.ecc_ss*params_.scscc_scale_ss);
-            outfile->Printf( "      * SCS-CCSD total energy                 = %20.15f\n", moinfo_.eref
-                    + moinfo_.ecc_os*params_.scscc_scale_os + moinfo_.ecc_ss*params_.scscc_scale_ss);
+            outfile->Printf("\n    OS SCS-CCSD correlation energy            = %20.15f\n",
+                            moinfo_.ecc_os * params_.scscc_scale_os);
+            outfile->Printf("    SS SCS-CCSD correlation energy            = %20.15f\n",
+                            moinfo_.ecc_ss * params_.scscc_scale_ss);
+            outfile->Printf("    SCS-CCSD correlation energy               = %20.15f\n",
+                            moinfo_.ecc_os * params_.scscc_scale_os + moinfo_.ecc_ss * params_.scscc_scale_ss);
+            outfile->Printf(
+                "      * SCS-CCSD total energy                 = %20.15f\n",
+                moinfo_.eref + moinfo_.ecc_os * params_.scscc_scale_os + moinfo_.ecc_ss * params_.scscc_scale_ss);
 
             // LAB TODO  reconsider variable names for ss/os cc
-            Process::environment.globals["SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.ecc_os*params_.scscc_scale_os;
-            Process::environment.globals["SCS-CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss*params_.scscc_scale_ss;
-            Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] = moinfo_.ecc_os*params_.scscc_scale_os +
-                    moinfo_.ecc_ss*params_.scscc_scale_ss;
-            Process::environment.globals["SCS-CCSD TOTAL ENERGY"] = moinfo_.eref +
-                    moinfo_.ecc_os*params_.scscc_scale_os + moinfo_.ecc_ss*params_.scscc_scale_ss;
+            Process::environment.globals["SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY"] =
+                moinfo_.ecc_os * params_.scscc_scale_os;
+            Process::environment.globals["SCS-CCSD SAME-SPIN CORRELATION ENERGY"] =
+                moinfo_.ecc_ss * params_.scscc_scale_ss;
+            Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] =
+                moinfo_.ecc_os * params_.scscc_scale_os + moinfo_.ecc_ss * params_.scscc_scale_ss;
+            Process::environment.globals["SCS-CCSD TOTAL ENERGY"] =
+                moinfo_.eref + moinfo_.ecc_os * params_.scscc_scale_os + moinfo_.ecc_ss * params_.scscc_scale_ss;
         }
 
-        outfile->Printf( "\n    Opposite-spin CCSD correlation energy     = %20.15f\n", moinfo_.ecc_os);
-        outfile->Printf( "    Same-spin CCSD correlation energy         = %20.15f\n", moinfo_.ecc_ss);
-        outfile->Printf( "    CCSD correlation energy                   = %20.15f\n", moinfo_.ecc);
-        outfile->Printf( "      * CCSD total energy                     = %20.15f\n", moinfo_.eref + moinfo_.ecc);
+        outfile->Printf("\n    Opposite-spin CCSD correlation energy     = %20.15f\n", moinfo_.ecc_os);
+        outfile->Printf("    Same-spin CCSD correlation energy         = %20.15f\n", moinfo_.ecc_ss);
+        outfile->Printf("    CCSD correlation energy                   = %20.15f\n", moinfo_.ecc);
+        outfile->Printf("      * CCSD total energy                     = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.ecc_os;
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo_.ecc + moinfo_.eref;
 
-        if(params_.local && local_.weakp == "MP2" )
-            outfile->Printf( "      * LCCSD (+LMP2) total energy            = %20.15f\n",
-                    moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
+        if (params_.local && local_.weakp == "MP2")
+            outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",
+                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
         Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
-                moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
     }
-    outfile->Printf( "\n");
+    outfile->Printf("\n");
 
     /* Generate the spin-adapted RHF amplitudes for later codes */
-    if(params_.ref == 0) spinad_amps();
+    if (params_.ref == 0) spinad_amps();
 
     /* Compute pair energies */
-    if(params_.print_pair_energies) {
+    if (params_.print_pair_energies) {
         pair_energies(&ecc_aa, &ecc_ab);
         print_pair_energies(emp2_aa, emp2_ab, ecc_aa, ecc_ab);
     }
 
-    if(params_.wfn == "CC2" && params_.dertype ==1) t1_ijab();
+    if (params_.wfn == "CC2" && params_.dertype == 1) t1_ijab();
 
-    if( (params_.wfn == "CC3" || params_.wfn == "EOM_CC3" )
-            && (params_.dertype == 1 || params_.dertype == 3) && params_.ref == 0) {
+    if ((params_.wfn == "CC3" || params_.wfn == "EOM_CC3") && (params_.dertype == 1 || params_.dertype == 3) &&
+        params_.ref == 0) {
         params_.ref = 1;
         /* generate the ROHF versions of the He^T1 intermediates */
         cc3_Wmnij();
@@ -489,22 +517,23 @@ double CCEnergyWavefunction::compute_energy()
         cc3_Wmnie();
         cc3_Wamef();
         cc3_Wabei();
-        //    params.ref == 0;
+        //    params_.ref == 0;
     }
 
-    if(params_.local) {
+    if (params_.local) {
         /*    local_print_T1_norm(); */
         local_done();
     }
 
-    if(params_.brueckner)
-        Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
+    if (params_.brueckner) Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
 
-    if( params_.aobasis != "NONE" ) dpd_close(1);
+    if (params_.aobasis != "NONE") dpd_close(1);
     dpd_close(0);
 
-    if(params_.ref == 2) cachedone_uhf(cachelist);
-    else cachedone_rhf(cachelist);
+    if (params_.ref == 2)
+        cachedone_uhf(cachelist);
+    else
+        cachedone_rhf(cachelist);
     free(cachefiles);
 
     cleanup();
@@ -514,17 +543,17 @@ double CCEnergyWavefunction::compute_energy()
 #endif
 
     energy_ = moinfo_.ecc + moinfo_.eref;
-    name_  = "CCSD";
-    Process::environment.globals["CURRENT ENERGY"] = moinfo_.ecc+moinfo_.eref;
+    name_ = "CCSD";
+    Process::environment.globals["CURRENT ENERGY"] = moinfo_.ecc + moinfo_.eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = moinfo_.ecc;
-    //Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
-    //Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
+    // Process::environment.globals["CC TOTAL ENERGY"] = moinfo_.ecc+moinfo_.eref;
+    // Process::environment.globals["CC CORRELATION ENERGY"] = moinfo_.ecc;
 
     free(ioff_);
     exit_io();
-    //  if(params.brueckner && brueckner_done)
+    //  if(params_.brueckner && brueckner_done)
     //     throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
-    //else
+    // else
 
     if ((options_.get_str("WFN") == "CCSD_T")) {
         // Run cctriples
@@ -537,49 +566,41 @@ double CCEnergyWavefunction::compute_energy()
     return energy_;
 }
 
-
-void CCEnergyWavefunction::init_io()
-{
+void CCEnergyWavefunction::init_io() {
     params_.just_energy = 0;
     params_.just_residuals = 0;
     tstart();
-    for(int i =PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
+    for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void CCEnergyWavefunction::title(void)
-{
-    outfile->Printf( "            **************************\n");
-    outfile->Printf( "            *                        *\n");
-    outfile->Printf( "            *        CCENERGY        *\n");
-    outfile->Printf( "            *                        *\n");
-    outfile->Printf( "            **************************\n");
+void CCEnergyWavefunction::title(void) {
+    outfile->Printf("            **************************\n");
+    outfile->Printf("            *                        *\n");
+    outfile->Printf("            *        CCENERGY        *\n");
+    outfile->Printf("            *                        *\n");
+    outfile->Printf("            **************************\n");
 }
 
-void CCEnergyWavefunction::exit_io(void)
-{
+void CCEnergyWavefunction::exit_io(void) {
     int i;
-    for(i=PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i,1);
-    for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0); /* delete CC_TMP files */
-    for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
+    for (i = PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i, 1);
+    for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* delete CC_TMP files */
+    for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
     tstop();
-
 }
 
-void CCEnergyWavefunction::init_ioff(void)
-{
+void CCEnergyWavefunction::init_ioff(void) {
     int i;
     ioff_ = init_int_array(IOFF_MAX);
     ioff_[0] = 0;
-    for(i=1; i < IOFF_MAX; i++) ioff_[i] = ioff_[i-1] + i;
+    for (i = 1; i < IOFF_MAX; i++) ioff_[i] = ioff_[i - 1] + i;
 }
 
-
-void CCEnergyWavefunction::checkpoint(void)
-{
+void CCEnergyWavefunction::checkpoint(void) {
     int i;
 
-    for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i,1);
-    for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
+    for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
+    for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
 /* just use T's on disk and don't iterate */
@@ -591,30 +612,31 @@ void CCEnergyWavefunction::one_step(void) {
     moinfo_.ecc = energy();
     outfile->Printf("\n    Values computed from T amplitudes on disk.\n");
     outfile->Printf("Reference expectation value computed: %20.15lf\n", moinfo_.ecc);
-    psio_write_entry(PSIF_CC_HBAR, "Reference expectation value", (char *) &(moinfo_.ecc), sizeof(double));
+    psio_write_entry(PSIF_CC_HBAR, "Reference expectation value", (char *)&(moinfo_.ecc), sizeof(double));
 
     if (params_.just_residuals) {
-        Fme_build(); Fae_build(); Fmi_build();
+        Fme_build();
+        Fae_build();
+        Fmi_build();
         t1_build();
         Wmbej_build();
         Z_build();
         Wmnij_build();
         t2_build();
-        if ( (params_.ref == 0) || (params_.ref == 1) ) {
+        if ((params_.ref == 0) || (params_.ref == 1)) {
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
             global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "FAI residual");
             global_dpd_->file2_close(&t1);
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "FAI residual");
             tval = global_dpd_->file2_dot_self(&t1);
             global_dpd_->file2_close(&t1);
-            outfile->Printf("    Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",tval);
+            outfile->Printf("    Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n", tval);
         }
         if (params_.ref == 1) {
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
             global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
             global_dpd_->file2_close(&t1);
-        }
-        else if (params_.ref == 2) {
+        } else if (params_.ref == 2) {
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
             global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
             global_dpd_->file2_close(&t1);
@@ -625,10 +647,9 @@ void CCEnergyWavefunction::one_step(void) {
             global_dpd_->buf4_close(&t2);
             global_dpd_->buf4_init(&t2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
             tval = global_dpd_->buf4_dot_self(&t2);
-            outfile->Printf("    Norm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n",tval);
+            outfile->Printf("    Norm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n", tval);
             global_dpd_->buf4_close(&t2);
-        }
-        else if (params_.ref == 1) {
+        } else if (params_.ref == 1) {
             global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
             global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
             global_dpd_->buf4_close(&t2);
@@ -638,8 +659,7 @@ void CCEnergyWavefunction::one_step(void) {
             global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
             global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
             global_dpd_->buf4_close(&t2);
-        }
-        else if(params_.ref ==2) {
+        } else if (params_.ref == 2) {
             global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
             global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
             global_dpd_->buf4_close(&t2);
@@ -654,4 +674,99 @@ void CCEnergyWavefunction::one_step(void) {
     return;
 }
 
-}} // namespace psi::ccenergy
+void CCEnergyWavefunction::get_t1_rhf(SharedMatrix &_t1) {
+    dpdfile2 tIA;
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&tIA);
+    global_dpd_->file2_mat_rd(&tIA);
+
+    for (int h = 0; h < moinfo_.nirreps; ++h) {
+        int upper_bound_ij = moinfo_.occpi[h] - moinfo_.openpi[h];
+        int upper_bound_IA = moinfo_.virtpi[h] - moinfo_.openpi[h];
+
+        for (int i = 0; i < moinfo_.occpi[h]; ++i) {
+            int I = i + moinfo_.frdocc[h];
+            for (int a = 0; a < upper_bound_IA; ++a) {
+                int A = a + moinfo_.frdocc[h] + moinfo_.occpi[h];
+                _t1->set(h, I, A, tIA.matrix[h][i][a]);
+            }
+        }
+    }
+
+    global_dpd_->file2_close(&tIA);
+}
+
+void CCEnergyWavefunction::get_t1_rohf(SharedMatrix &_t1_A, SharedMatrix &_t1_B) {
+    dpdfile2 tIA, tia;
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&tIA);
+    global_dpd_->file2_mat_rd(&tIA);
+
+    global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_mat_init(&tia);
+    global_dpd_->file2_mat_rd(&tia);
+
+    for (int h = 0; h < moinfo_.nirreps; ++h) {
+        int upper_bound_ij = moinfo_.occpi[h] - moinfo_.openpi[h];
+        int upper_bound_IA = moinfo_.virtpi[h] - moinfo_.openpi[h];
+
+        for (int i = 0; i < moinfo_.occpi[h]; ++i) {
+            int I = i + moinfo_.frdocc[h];
+            for (int a = 0; a < upper_bound_IA; ++a) {
+                int A = a + moinfo_.frdocc[h] + moinfo_.occpi[h];
+                _t1_A->set(h, I, A, tIA.matrix[h][i][a]);
+            }
+        }
+        for (int i = 0; i < upper_bound_ij; ++i) {
+            int I = i + moinfo_.frdocc[h];
+            for (int a = 0; a < upper_bound_IA; ++a) {
+                int A = a + moinfo_.frdocc[h] + moinfo_.occpi[h];
+                _t1_B->set(h, I, A, tia.matrix[h][i][a]);
+            }
+        }
+        for (int i = 0; i < upper_bound_ij; ++i) {
+            int I = i + moinfo_.frdocc[h];
+            for (int a = 0; a < moinfo_.openpi[h]; ++a) {
+                int A = a + upper_bound_IA;
+                int aA = a + moinfo_.frdocc[h] + upper_bound_ij;
+                _t1_B->set(h, I, aA, tia.matrix[h][i][A]);
+            }
+        }
+    }
+
+    global_dpd_->file2_close(&tIA);
+    global_dpd_->file2_close(&tia);
+}
+
+void CCEnergyWavefunction::get_t1_uhf(SharedMatrix &_t1_A, SharedMatrix &_t1_B) {
+    dpdfile2 tIA, tia;
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&tIA);
+    global_dpd_->file2_mat_rd(&tIA);
+
+    global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&tia);
+    global_dpd_->file2_mat_rd(&tia);
+
+    for (int h = 0; h < moinfo_.nirreps; ++h) {
+        for (int i = 0; i < moinfo_.aoccpi[h]; ++i) {
+            int I = i + moinfo_.frdocc[h];
+            for (int a = 0; a < moinfo_.avirtpi[h]; ++a) {
+                int A = a + moinfo_.frdocc[h] + moinfo_.aoccpi[h];
+                _t1_A->set(h, I, A, tIA.matrix[h][i][a]);
+            }
+        }
+        for (int i = 0; i < moinfo_.boccpi[h]; ++i) {
+            int I = i + moinfo_.frdocc[h];
+            for (int a = 0; a < moinfo_.bvirtpi[h]; ++a) {
+                int A = a + moinfo_.frdocc[h] + moinfo_.boccpi[h];
+                _t1_B->set(h, I, A, tia.matrix[h][i][a]);
+            }
+        }
+    }
+
+    global_dpd_->file2_close(&tIA);
+    global_dpd_->file2_close(&tia);
+}
+}
+}  // namespace psi::ccenergy

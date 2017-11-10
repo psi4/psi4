@@ -1,0 +1,79 @@
+#! coupled-cluster with PCM
+#! Perturbation-to-the-Energy-and-Density (PTED) algorithm
+#! The cavity for ammonia is read from file
+
+nucenergy         =  12.0367196135154551 # TEST
+scf_polenergy     =  -0.0118461834852890 # TEST
+scf_totalenergy   = -56.2047133267370924 # TEST
+pte_correnergy    =  -0.2007033649737000 # TEST
+pte_s_polenergy   =  -0.0000004751324580 # TEST
+pte_s_totalenergy = -56.4054171640217700 # TEST
+pted_polenergy    =  -0.0000219424834600 # TEST
+pted_correnergy   =  -0.2007234321263660 # TEST
+pted_totalenergy  = -56.4054367560419790 # TEST
+
+molecule nh3 {
+  symmetry c1
+  N  -0.000000000075    -0.055054563313     0.000000000000
+  H  -0.477097924216     0.254982462134    -0.826357845779
+  H  -0.477097924216     0.254982462134     0.826357845779
+  H   0.954195849480     0.254982462271     0.000000000000
+ units angstrom
+ no_reorient
+ no_com
+}
+
+set
+{
+  basis cc-pVDZ
+  scf_type pk
+  freeze_core true
+  pcm true
+  pcm_scf_type total
+  pcm_cc_type pted
+}
+
+pcm =
+{
+  Units = Angstrom
+  Cavity
+  {
+    Type = Restart
+    NpzFile = nh3.npz
+  }
+  Medium
+  {
+    SolverType = CPCM
+    Solvent = Explicit
+    ProbeRadius = 1.385
+    Green<inside>
+    {
+      Type = Vacuum
+    }
+    Green<outside>
+    {
+      Type = UniformDielectric
+      Eps = 78.355300
+      EpsDyn = 1.777849
+    }
+  }
+}
+
+import os
+import shutil
+shutil.copy(os.path.join(psi4.extras.get_input_directory(), 'nh3.npz'), os.getcwd())
+
+energy_pted = energy('ccsd')
+compare_values(nh3.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") # TEST
+compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
+compare_values(scf_polenergy, get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm)") #TEST
+
+compare_values(pte_correnergy, get_variable("PCM-CC-PTE CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE algorithm)") # TEST
+
+#compare_values(pte_s_totalenergy, get_variable("PCM-CC-PTE(S) TOTAL ENERGY"), 10, "CCSD Total energy (PCM PTE(S) algorithm)") # TEST
+#compare_values(pte_s_correnergy, get_variable("PCM-CC-PTE(S) CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE(S) algorithm)") # TEST
+#compare_values(pte_s_polenergy, get_variable("PCM-CC-PTE(S) CORRELATED POLARIZATION ENERGY"), 8, "CCSD Polarization energy (PCM PTE(S) algorithm)") # TEST
+
+compare_values(pted_totalenergy, energy_pted, 10, "CCSD Total energy (PCM PTED algorithm)") #TEST
+compare_values(pted_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTED algorithm)") # TEST
+compare_values(pted_polenergy, get_variable("PCM-CC-PTED CORRELATED POLARIZATION ENERGY"), 8, "CCSD Polarization energy (PCM PTED algorithm)") # TEST

@@ -102,7 +102,7 @@ The latter forces the separate handling of nuclear and electronic electrostatic 
 polarization charges. It is mainly useful for debugging.
 
 .. note:: At present PCM can only be used for energy calculations with SCF
-          wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_
+          wavefunctions and CC wavefunctions in the PTE and PTED approximations. [Cammi:2009:164104]_
 
 .. warning:: The PCMSolver library **cannot** exploit molecular point group symmetry.
 
@@ -148,9 +148,13 @@ A typical input for a Hartree--Fock calculation with PCM would look like the fol
     }
 
 More examples can be found in the directories with PCM tests
-:srcsample:`pcmsolver/pcm-scf`,
-:srcsample:`pcmsolver/pcm-dft`, and
-:srcsample:`pcmsolver/pcm-dipole`.
+:srcsample:`pcmsolver/scf`,
+:srcsample:`pcmsolver/dft`,
+:srcsample:`pcmsolver/dipole`,
+:srcsample:`pcmsolver/ccsd-pte`,
+:srcsample:`pcmsolver/ccsd-pted`,
+:srcsample:`pcmsolver/ccsd-pted-heh+`, and
+:srcsample:`pcmsolver/ccsd-pte-restart`
 
 Keywords for PCMSolver
 ~~~~~~~~~~~~~~~~~~~~~~

@@ -34,29 +34,31 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/pragma.h"
 #include "psi4/libmints/potentialint.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 
 #include <PCMSolver/pcmsolver.h>
 
 namespace psi {
 class BasisSet;
 class Options;
-using SharedMatrix=std::shared_ptr<Matrix>;
+using SharedMatrix = std::shared_ptr<Matrix>;
 
 class PCM {
-  public:
-    enum CalcType {Total, NucAndEle, EleOnly};
-    PCM() {};
+   public:
+    enum CalcType { Total, NucAndEle, EleOnly };
+    PCM(){};
     PCM(Options &options, std::shared_ptr<PSIO> psio, int nirrep, std::shared_ptr<BasisSet> basisset);
     ~PCM();
-    double compute_E(SharedMatrix &D, CalcType type = NucAndEle);//Total); this should be the default (once an advanced option is available)
+    double compute_E(
+        SharedMatrix &D,
+        CalcType type = NucAndEle);  // Total); this should be the default (once an advanced option is available)
     SharedMatrix compute_V();
-    SharedMatrix compute_V_electronic(); // This is needed by the CC code (and maybe the LR-SCF code)
+    SharedMatrix compute_V_electronic();  // This is needed by the CC code (and maybe the LR-SCF code)
 
-  protected:
+   protected:
     /// The number of tesserae in PCMSolver.
     int ntess_;
     /// The number of irreducible tesserae in PCMSolver.
@@ -64,17 +66,17 @@ class PCM {
     /// A matrix to hold the charges and {x,y,z} coordinates of the tesserae
     SharedMatrix tess_Zxyz_;
     /// A scratch array to hold the electronic potential values at the tesserae
-    double * tess_pot_e_;
+    double *tess_pot_e_;
     /// A scratch array to hold the nuclear potential values at the tesserae (unchanging)
-    double * tess_pot_n_;
+    double *tess_pot_n_;
     /// A scratch array to hold the total potential values at the tesserae
-    double * tess_pot_;
+    double *tess_pot_;
     /// A scratch array to hold the electronic charges at the tesserae
-    double * tess_charges_e_;
+    double *tess_charges_e_;
     /// A scratch array to hold the nuclear charges at the tesserae
-    double * tess_charges_n_;
+    double *tess_charges_n_;
     /// A scratch array to hold the charges at the tesserae
-    double * tess_charges_;
+    double *tess_charges_;
     /// Calculate energy using total charges and potentials
     double compute_E_total(SharedMatrix &D);
     /// Calculate energy separating between charges and potentials
@@ -90,20 +92,19 @@ class PCM {
     SharedMatrix my_aotoso_;
 
     /// Factory for the electrostatic integrals
-    PCMPotentialInt* potential_int_;
+    PCMPotentialInt *potential_int_;
 
     /// Handle to stuff provided by PCMSolver
-    pcmsolver_context_t * context_;
+    pcmsolver_context_t *context_;
 
     /// print level
     int pcm_print_;
-
 };
 
 typedef std::shared_ptr<PCM> SharedPCM;
 
-void host_writer(const char * message);
+void host_writer(const char *message);
 
-} // psi
+}  // psi
 #endif
 #endif
