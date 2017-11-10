@@ -57,13 +57,16 @@ Installation
 
 **Source**
 
+* .. image:: https://img.shields.io/github/tag/DEShawResearch/sns-mp2.svg?maxAge=2592000
+   :target: https://github.com/DEShawResearch/sns-mp2
+
 * Download the plugin from the GitHub repository:
 
   .. code-block:: bash
 
      >>> git clone https://github.com/DEShawResearch/sns-mp2
 
-* Once dowloaded, the plugin can be installed:
+* Once dowloaded, the plugin can be installed as outlined in the documentation:
 
   .. code-block:: bash
 
@@ -87,7 +90,7 @@ A sample input file, borrowed from D. E. Shaw's documentation, is shown below::
    energy('sns-mp2')
     
 Note that these two atoms are separated by double dashes, indicating that
-the two should be treated as separate molecules. (See 
+they should be treated as separate molecules. (See 
 :ref:`sec:analysis-of-intermolecular-interactions` for more details on 
 setting up dimer molecules.) This input file can be run in the usual fashion:
 
