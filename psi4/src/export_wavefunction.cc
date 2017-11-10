@@ -207,22 +207,21 @@ void export_wavefunction(py::module& m) {
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
         .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
-        .def("initialize", &scf::HF::initialize, "Initializes the Wavefunction.")
-        .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunctions temporary data.")
+        .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunction's temporary data.")
         .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
-        .def("finalize_E", &scf::HF::finalize_E, "Computes the final SCF energy.")
         .def("occupation_a", &scf::HF::occupation_a, "Returns the Alpha occupation numbers.")
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("reset_occupation", &scf::HF::reset_occupation, "docstring")
         .def("compute_E", &scf::HF::compute_E, "docstring")
+        .def("compute_initial_E", &scf::HF::compute_initial_E, "docstring")
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
         .def("diis_manager", &scf::HF::diis_manager, "docstring")
-        .def("get_initialized_diis_manager", &scf::HF::get_initialized_diis_manager, "docstring")
-        .def("set_initialized_diis_manager", &scf::HF::set_initialized_diis_manager, "docstring")
-        .def("damp_update", &scf::HF::damp_update, "docstring")
+        .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager, 
+                                                   &scf::HF::set_initialized_diis_manager, "docstring")
+        .def("damping_update", &scf::HF::damping_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
         .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
         .def("print_energies", &scf::HF::print_energies, "docstring")
@@ -230,7 +229,19 @@ void export_wavefunction(py::module& m) {
         .def("get_energies", &scf::HF::get_energies, "docstring")
         .def("set_energies", &scf::HF::set_energies, "docstring")
         .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
-        .def_property("iteration", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
+        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
+        .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
+        .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
+        .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,
+            "Frac performed current iteration?")
+        .def_property("MOM_excited_", &scf::HF::MOM_excited, &scf::HF::set_MOM_excited,
+            "Are we to do excited-state MOM?")
+        .def_property("MOM_performed_", &scf::HF::MOM_performed, &scf::HF::set_MOM_performed,
+            "MOM performed current iteration?")
+        .def_property("attempt_number_", &scf::HF::attempt_number, &scf::HF::set_attempt_number,
+            "Current macroiteration (1-indexed) for stability analysis")
+        .def("stability_analysis", &scf::HF::stability_analysis,
+            "Assess wfn stability and correct if requested")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");

@@ -181,8 +181,6 @@ protected:
     /// Fractional occupation UHF/UKS
     void frac();
 
-    /// Check the stability of the wavefunction, and correct (if requested)
-    virtual bool stability_analysis();
     void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
 
 
@@ -216,9 +214,6 @@ protected:
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 
-    /** Computes the initial energy. */
-    virtual double compute_initial_E() { return 0.0; }
-
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
 
@@ -237,6 +232,39 @@ public:
     /// Get and set current iteration
     int iteration() const { return iteration_; }
     void set_iteration(int iter) { iteration_ = iter; }
+
+    /// Are we even using DIIS?
+    bool diis_enabled() const { return bool(diis_enabled_); }
+    void set_diis_enabled(bool tf) { diis_enabled_ = int(tf); }
+
+    /// When do we start collecting vectors for DIIS
+    int diis_start() const { return diis_start_; }
+    void set_diis_start(int iter) { diis_start_ = iter; }
+
+    /// Frac performed current iteration?
+    bool frac_performed() const { return frac_performed_; }
+    void set_frac_performed(bool tf) { frac_performed_ = tf; }
+
+    /// Are we to do excited-state MOM?
+    bool MOM_excited() const { return MOM_excited_; }
+    void set_MOM_excited(bool tf) { MOM_excited_ = tf; }
+
+    /// MOM performed?
+    bool MOM_performed() const { return MOM_performed_; }
+    void set_MOM_performed(bool tf) { MOM_performed_ = tf; }
+
+    // Q: MOM_started_ was ditched b/c same info as MOM_performed_
+
+    /// Which set of iterations we're on in this computation, e.g., for stability
+    /// analysis, where we want to retry SCF without going through all of the setup
+    int attempt_number() const { return attempt_number_; }
+    void set_attempt_number(int an) { attempt_number_ = an; }
+
+    /// Check the stability of the wavefunction, and correct (if requested)
+    virtual bool stability_analysis();
+
+    /** Computes the initial energy. */
+    virtual double compute_initial_E() { return 0.0; }
 
     /// Check MO phases
     void check_phases();
@@ -259,7 +287,7 @@ public:
     /// The DIIS object
     std::shared_ptr<DIISManager> diis_manager() const { return diis_manager_; }
     void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
-    bool get_initialized_diis_manager() const { return initialized_diis_manager_; }
+    bool initialized_diis_manager() const { return initialized_diis_manager_; }
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
