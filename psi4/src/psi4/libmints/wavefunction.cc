@@ -561,7 +561,7 @@ SharedMatrix Wavefunction::Cb() const {
     return Cb_;
 }
 
-std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &noccpi, const std::string &subset) {
+std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &noccpi, const std::string &subset) const {
     if (!(subset == "FROZEN_OCC" || subset == "FROZEN_VIR" || subset == "ACTIVE_OCC" || subset == "ACTIVE_VIR" ||
           subset == "FROZEN" || subset == "ACTIVE" || subset == "OCC" || subset == "VIR" || subset == "ALL"))
         throw PSIEXCEPTION(
@@ -593,7 +593,7 @@ std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &n
 }
 
 SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &noccpi, SharedVector epsilon,
-                                           const std::string &basis, const std::string &subset) {
+                                           const std::string &basis, const std::string &subset) const {
     std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
@@ -1054,7 +1054,7 @@ OrbitalSpace Wavefunction::beta_orbital_space(const std::string &id, const std::
     return OrbitalSpace(id, subset, Cb_subset(basis, subset), epsilon_b_subset(basis, subset), basisset_, integral_);
 }
 
-SharedMatrix Wavefunction::Ca_subset(const std::string &basis, const std::string &subset) {
+SharedMatrix Wavefunction::Ca_subset(const std::string &basis, const std::string &subset) const {
     return C_subset_helper(Ca_, nalphapi_, epsilon_a_, basis, subset);
 }
 

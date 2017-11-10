@@ -414,8 +414,7 @@ public:
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     * @return the matrix in Pitzer order in the desired basis
     **/
-    SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string&
-subset = "ALL") const;
+    SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL") const;
 
     /**
      * @brief Creates an OrbitalSpace object containing information about the request alpha orbital space.
