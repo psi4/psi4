@@ -211,17 +211,17 @@ void RHF::form_G() {
     }
 }
 
-double RHF::compute_orbital_gradient(bool save_fock) {
+double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
     SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
 
     if (save_fock) {
         if (initialized_diis_manager_ == false) {
             if (scf_type_ == "DIRECT") {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
                                                               DIISManager::LargestError, DIISManager::InCore);
             } else {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
                                                               DIISManager::LargestError, DIISManager::OnDisk);
             }
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
@@ -280,9 +280,9 @@ void RHF::form_D() {
     }
 }
 
-void RHF::damp_update() {
-    D_->scale(1.0 - damping_percentage_);
-    D_->axpy(damping_percentage_, Dold_);
+void RHF::damping_update(double damping_percentage) {
+    D_->scale(1.0 - damping_percentage);
+    D_->axpy(damping_percentage, Dold_);
 }
 
 double RHF::compute_initial_E() {
@@ -783,7 +783,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     return ret_vec;
 }
 
-int RHF::soscf_update() {
+int RHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     int fock_builds;
     time_t start, stop;
     start = time(nullptr);
@@ -805,7 +805,7 @@ int RHF::soscf_update() {
         return 0;
     }
 
-    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv_, soscf_max_iter_, soscf_print_ ? 2 : 0);
+    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv, soscf_max_iter, soscf_print ? 2 : 0);
 
     // => Rotate orbitals <= //
     rotate_orbitals(Ca_, ret_x[0]);

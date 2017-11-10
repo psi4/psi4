@@ -315,12 +315,12 @@ void UHF::form_D()
         Db_->print();
     }
 }
-void UHF::damp_update()
+void UHF::damping_update(double damping_percentage)
 {
-    Da_->scale(1.0 - damping_percentage_);
-    Da_->axpy(damping_percentage_, Da_old_);
-    Db_->scale(1.0 - damping_percentage_);
-    Db_->axpy(damping_percentage_, Db_old_);
+    Da_->scale(1.0 - damping_percentage);
+    Da_->axpy(damping_percentage, Da_old_);
+    Db_->scale(1.0 - damping_percentage);
+    Db_->axpy(damping_percentage, Db_old_);
     Dt_->copy(Da_);
     Dt_->add(Db_);
 }
@@ -822,7 +822,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     return ret_vec;
 }
-int UHF::soscf_update(void)
+int UHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print)
 {
     time_t start, stop;
     start = time(nullptr);
@@ -845,8 +845,8 @@ int UHF::soscf_update(void)
         }
         return 0;
     }
-    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient_a, Gradient_b}, soscf_conv_, soscf_max_iter_,
-                                             soscf_print_ ? 2 : 0);
+    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient_a, Gradient_b}, soscf_conv, soscf_max_iter,
+                                             soscf_print ? 2 : 0);
 
     // => Rotate orbitals <= //
     rotate_orbitals(Ca_, ret_x[0]);
@@ -855,7 +855,7 @@ int UHF::soscf_update(void)
     return cphf_nfock_builds_;
 }
 
-double UHF::compute_orbital_gradient(bool save_fock)
+double UHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors)
 {
     SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
@@ -863,7 +863,7 @@ double UHF::compute_orbital_gradient(bool save_fock)
 
     if(save_fock){
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk);
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(2,
                                                  DIISEntry::Matrix, gradient_a.get(),
                                                  DIISEntry::Matrix, gradient_b.get());
