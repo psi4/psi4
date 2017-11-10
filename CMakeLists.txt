@@ -77,10 +77,6 @@ option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
-option(ENABLE_ASAN "Enables address sanitizer (requires similarly compiled Python and Numpy)" OFF)
-option(ENABLE_TSAN "Enables thread sanitizer (requires similarly compiled Python and Numpy)" OFF)
-option(ENABLE_UBSAN" Enables undefined behavior sanitizer (requires similarly compiled Python and Numpy)" OFF)
-option(ENABLE_MSAN" Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF)
 # These options are relevant to pasture
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -114,6 +110,14 @@ option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
                   "-ftrapuv -check all -fpstkchk" "-fcheck=all" "-fbounds-check -fcheck-array-temporaries")
+option_with_flags(ENABLE_ASAN "Enables address sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=address -fno-omit-frame-pointer")
+option_with_flags(ENABLE_TSAN "Enables thread sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=thread -fPIE -pie -fno-omit-frame-pointer")
+option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=undefined -fno-omit-frame-pointer")
+option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
 option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
