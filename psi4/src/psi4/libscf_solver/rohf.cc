@@ -1383,4 +1383,32 @@ bool ROHF::stability_analysis()
 }
 
 
+std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
+{
+    std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
+    auto hf_wfn = std::make_shared<ROHF>(wfn, functional_, wfn->options(), wfn->psio());
+
+    // now just have to copy the matrices that RHF initializes
+    // include only those that are not temporary (some deleted in finalize())
+    if (Ca_) hf_wfn->Ca_ = Ca_subset("AO", "ALL");
+    hf_wfn->Cb_ = hf_wfn->Ca_;
+    hf_wfn->Cb_->set_name("beta MO coefficients (C)");
+    if (Da_) hf_wfn->Da_ = Da_subset("AO");
+    if (Db_) hf_wfn->Db_ = Db_subset("AO");
+    if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
+    if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
+    if (epsilon_a_) hf_wfn->epsilon_a_ =
+        epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+    hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
+    hf_wfn->epsilon_b_->set_name("beta orbital energies");
+    // H_ ans X_ reset in the HF constructor, copy them over here
+    SharedMatrix SO2AO = aotoso()->transpose();
+    if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
+    if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
+
+
+    return hf_wfn;
+}
+
+
 }}

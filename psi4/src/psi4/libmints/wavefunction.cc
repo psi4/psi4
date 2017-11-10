@@ -213,118 +213,107 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     }
 }
 
-std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(SharedWavefunction other, std::shared_ptr<BasisSet> basis)
+std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSet> basis)
 {
-    if (!other->S_) {
+    if (!S_) {
         throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
     }
 
-    std::shared_ptr <Wavefunction> wfn(new Wavefunction(basis->molecule(), basis, other->options()));
+    auto wfn = std::make_shared<Wavefunction>(basis->molecule(), basis, options_);
   
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
-    wfn->name_ = other->name_;
-    //molecule_ = std::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
-    //molecule_->reset_point_group("c1");
-    //molecule_->set_orientation_fixed(true);
-    //molecule_->set_com_fixed(true);
-    //molecule_->update_geometry();
-
-    //basisset_ = other->basisset_; // CDS: think we need to reset this
-                                  // b/c it contains a molecule
-    //basissets_ = other->basissets_; // Still cannot copy basissets
-    //basissets_ // leave at null ptr
-    wfn->integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_));
-    wfn->sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(wfn->basisset_, wfn->integral_));
-    wfn->factory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
+    wfn->name_ = name_;
+    wfn->integral_ = std::make_shared<IntegralFactory>(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_);
+    wfn->sobasisset_ = std::make_shared<SOBasisSet>(wfn->basisset_, wfn->integral_);
+    wfn->factory_ = std::make_shared<MatrixFactory>();
 
     Dimension c1_nsopi = Dimension(1);
-    c1_nsopi[0] = other->nsopi_.sum();
+    c1_nsopi[0] = nsopi_.sum();
     wfn->factory_->init_with(c1_nsopi, c1_nsopi);
 
     // Need to re-generate AO2SO_ because the new SO basis is different
     // than the old one (lower symmetry)
-    std::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset_, wfn->integral_));
+    auto pet = std::make_shared<PetiteList>(wfn->basisset_, wfn->integral_);
     wfn->AO2SO_ = pet->aotoso();
 
-    wfn->psio_ = other->psio_; // We dont actually copy psio
-    wfn->memory_ = other->memory_;
-    wfn->nalpha_ = other->nalpha_;
-    wfn->nbeta_ = other->nbeta_;
-    wfn->nfrzc_ = other->nfrzc_;
+    wfn->psio_ = psio_; // We dont actually copy psio
+    wfn->memory_ = memory_;
+    wfn->nalpha_ = nalpha_;
+    wfn->nbeta_ = nbeta_;
+    wfn->nfrzc_ = nfrzc_;
 
-    wfn->print_ = other->print_;
-    wfn->debug_ = other->debug_;
-    wfn->density_fitted_ = other->density_fitted_;
+    wfn->print_ = print_;
+    wfn->debug_ = debug_;
+    wfn->density_fitted_ = density_fitted_;
 
-    wfn->energy_ = other->energy_;
-    wfn->efzc_ = other->efzc_;
-    wfn->variables_ = other->variables_;
+    wfn->energy_ = energy_;
+    wfn->efzc_ = efzc_;
 
     // collapse all the Dimension objects down to one element
-    wfn->doccpi_.init(1, other->doccpi_.name());
-    wfn->doccpi_[0] = other->doccpi_.sum();
-    wfn->soccpi_.init(1, other->soccpi_.name());
-    wfn->soccpi_[0] = other->soccpi_.sum();
-    wfn->frzcpi_.init(1, other->frzcpi_.name());
-    wfn->frzcpi_[0] = other->frzcpi_.sum();
-    wfn->frzvpi_.init(1, other->frzvpi_.name());
-    wfn->frzvpi_[0] = other->frzvpi_.sum();
-    wfn->nalphapi_.init(1, other->nalphapi_.name());
-    wfn->nalphapi_[0] = other->nalphapi_.sum();
-    wfn->nbetapi_.init(1, other->nbetapi_.name());
-    wfn->nbetapi_[0] = other->nbetapi_.sum();
-    wfn->nsopi_.init(1, other->nsopi_.name());
-    wfn->nsopi_[0] = other->nsopi_.sum();
-    wfn->nmopi_.init(1, other->nmopi_.name());
-    wfn->nmopi_[0] = other->nmopi_.sum();
+    wfn->doccpi_.init(1, doccpi_.name());
+    wfn->doccpi_[0] = doccpi_.sum();
+    wfn->soccpi_.init(1, soccpi_.name());
+    wfn->soccpi_[0] = soccpi_.sum();
+    wfn->frzcpi_.init(1, frzcpi_.name());
+    wfn->frzcpi_[0] = frzcpi_.sum();
+    wfn->frzvpi_.init(1, frzvpi_.name());
+    wfn->frzvpi_[0] = frzvpi_.sum();
+    wfn->nalphapi_.init(1, nalphapi_.name());
+    wfn->nalphapi_[0] = nalphapi_.sum();
+    wfn->nbetapi_.init(1, nbetapi_.name());
+    wfn->nbetapi_[0] = nbetapi_.sum();
+    wfn->nsopi_.init(1, nsopi_.name());
+    wfn->nsopi_[0] = nsopi_.sum();
+    wfn->nmopi_.init(1, nmopi_.name());
+    wfn->nmopi_[0] = nmopi_.sum();
 
-    wfn->nso_ = other->nso_;
-    wfn->nmo_ = other->nmo_;
+    wfn->nso_ = nso_;
+    wfn->nmo_ = nmo_;
     wfn->nirrep_ = 1;
 
-    wfn->same_a_b_dens_ = other->same_a_b_dens_;
-    wfn->same_a_b_orbs_ = other->same_a_b_orbs_;
+    wfn->same_a_b_dens_ = same_a_b_dens_;
+    wfn->same_a_b_orbs_ = same_a_b_orbs_;
 
 
     /// Need the SO2AO matrix for remove_symmetry(), have the AO2SO matrix
-    SharedMatrix other_SO2AO = other->aotoso()->transpose();
+    SharedMatrix SO2AO = aotoso()->transpose();
 
     wfn->S_ = wfn->factory_->create_shared_matrix("S");
-    wfn->S_->remove_symmetry(other->S(), other_SO2AO);
+    wfn->S_->remove_symmetry(S_, SO2AO);
 
     /// Below is not set in the typical constructor
 
     wfn->H_ = wfn->factory_->create_shared_matrix("One-electron Hamiltonian");
-    wfn->H_->remove_symmetry(other->H(), other_SO2AO);
-    // outfile->Printf("new H:");
-    // wfn->H_->print();
+    wfn->H_->remove_symmetry(H_, SO2AO);
 
-    if (other->Ca_) wfn->Ca_ = other->Ca_subset("AO", "ALL");
-    if (other->Cb_) wfn->Cb_ = other->Cb_subset("AO", "ALL");
-    if (other->Da_) wfn->Da_ = other->Da_subset("AO");
-    if (other->Db_) wfn->Db_ = other->Db_subset("AO");
-    if (other->Fa_) wfn->Fa_ = other->Fa_subset("AO");
-    if (other->Fb_) wfn->Fb_ = other->Fb_subset("AO");
-    if (other->epsilon_a_) wfn->epsilon_a_ =
-        other->epsilon_subset_helper(other->epsilon_a_, other->nsopi_, "AO", "ALL");
-    if (other->epsilon_b_) wfn->epsilon_b_ = 
-        other->epsilon_subset_helper(other->epsilon_b_, other->nsopi_, "AO", "ALL");
-
-
-    /*
-    outfile->Printf("New Ca:\n");
-    wfn->Ca_->print();
-    outfile->Printf("Epsilon a's:\n");
-    wfn->epsilon_a_->print();
-    outfile->Printf("Epsilon b's:\n");
-    wfn->epsilon_b_->print();
+    /* This stuff we need to copy in the subclass functions, b/c
+    ** constructors like RHF() just blow these away anyway 
+    if (Ca_) wfn->Ca_ = Ca_subset("AO", "ALL");
+    if (Cb_) wfn->Cb_ = Cb_subset("AO", "ALL");
+    if (Da_) wfn->Da_ = Da_subset("AO");
+    if (Db_) wfn->Db_ = Db_subset("AO");
+    if (Fa_) wfn->Fa_ = Fa_subset("AO");
+    if (Fb_) wfn->Fb_ = Fb_subset("AO");
+    if (epsilon_a_) wfn->epsilon_a_ =
+        epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+    if (epsilon_b_) wfn->epsilon_b_ = 
+        epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
     */
 
     // these are simple SharedMatrices of size 3*natom_, etc., so should
     // not depend on symmetry ... can just copy them
-    if (other->gradient_) wfn->gradient_ = other->gradient_->clone();
-    if (other->hessian_) wfn->hessian_ = other->hessian_->clone();
+    if (gradient_) wfn->gradient_ = gradient_->clone();
+    if (hessian_) wfn->hessian_ = hessian_->clone();
+
+    wfn->variables_ = variables_;
+    // ok for deep copy?
+    wfn->external_pot_ = external_pot_;
+
+    // Need to explicitly call copy
+    for (auto const &kv : arrays_) {
+        wfn->arrays_[kv.first] = kv.second->clone();
+    }
 
     return wfn;
 }

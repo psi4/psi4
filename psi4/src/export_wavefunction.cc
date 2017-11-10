@@ -74,8 +74,8 @@ void export_wavefunction(py::module& m) {
              "Copies the pointers to the internal data.")
         .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy),
              "Deep copies the internal data.")
-        .def_static("c1_deep_copy", &Wavefunction::c1_deep_copy,
-             "Returns a new wavefunction with internal data converted to C_1 symmetry from *arg0* and pre-c1-constructed BasisSet *arg1*")
+        .def("c1_deep_copy", &Wavefunction::c1_deep_copy,
+             "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *arg0*")
         .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs,
              "Returns true if the alpha and beta orbitals are the same.")
         .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
@@ -208,19 +208,24 @@ void export_wavefunction(py::module& m) {
              "Semicanonicalizes the orbitals for ROHF.");
 
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
-        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("c1_deep_copy", &scf::RHF::c1_deep_copy,
+             "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *arg0*");
 
     py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("moFeff", &scf::ROHF::moFeff, "docstring")
         .def("moFa", &scf::ROHF::moFa, "docstring")
-        .def("moFb", &scf::ROHF::moFb, "docstring");
+        .def("moFb", &scf::ROHF::moFb, "docstring")
+        .def("c1_deep_copy", &scf::ROHF::c1_deep_copy, "Make de-symmetrized deep copy");
 
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring")
-        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("c1_deep_copy", &scf::UHF::c1_deep_copy, "Make de-symmetrized deep copy");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
-        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("c1_deep_copy", &scf::CUHF::c1_deep_copy, "Make de-symetrized deep copy");
 
     py::class_<dfep2::DFEP2Wavefunction, std::shared_ptr<dfep2::DFEP2Wavefunction>, Wavefunction>(
         m, "DFEP2Wavefunction", "A density-fitted second-order Electron Propagator Wavefunction.")

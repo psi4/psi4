@@ -220,7 +220,7 @@ protected:
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
 
-    // The external potenital
+    // The external potential
     std::shared_ptr<ExternalPotential> external_pot_;
 
     // Collection of variables
@@ -267,19 +267,13 @@ public:
     void deep_copy(const Wavefunction* other);
 
     /**
-    * Creates a new wavefunction in C1-symmetry format from another
+    * Creates a new wavefunction in C1-symmetry format from the current
     * Wavefunction that may be in a higher point group symmetry format.
     *
-    * Note: Unlike the other deep_copy() functions, this one doesn't act on
-    * an empty wavefunction and fill it up, it is a free function that creates
-    * and returns a new Wavefunction object.  Since it doesn't act on a 
-    * *this object, it is declared as a static member function.
-    * 
-    * @param other The Wavefunction to copy
     * @param basis A C1-symmetry basis set object (we don't yet have
     *        the ability to copy this straight from the symmetric Wavefunction)
     **/
-    static std::shared_ptr <Wavefunction> c1_deep_copy(SharedWavefunction other, std::shared_ptr<BasisSet> basis);
+    std::shared_ptr <Wavefunction> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 
     virtual ~Wavefunction();
 

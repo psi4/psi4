@@ -110,6 +110,7 @@ public:
     CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
          Options& options, std::shared_ptr<PSIO> psio);
     virtual ~CUHF();
+    std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };
 
 }}

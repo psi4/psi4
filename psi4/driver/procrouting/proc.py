@@ -1423,7 +1423,12 @@ def scf_helper(name, post_scf=True, **kwargs):
         c1_molecule.fix_com(True)
         c1_molecule.update_geometry()
         c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'))
-        return core.Wavefunction.c1_deep_copy(scf_wfn, c1_basis)
+        tmp = scf_wfn.c1_deep_copy(c1_basis)
+        c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF", 
+                                         core.get_global_option("DF_BASIS_SCF"),
+                                         "JKFIT", core.get_global_option('BASIS'))
+        tmp.set_basisset("DF_BASIS_SCF", c1_jkbasis)
+        return tmp
 
 
 def run_dcft(name, **kwargs):

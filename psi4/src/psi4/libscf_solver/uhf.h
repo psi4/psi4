@@ -103,6 +103,8 @@ public:
     virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
                                                  double conv_tol = 1.e-4, int max_iter = 10,
                                                  int print_lvl = 1);
+
+    std::shared_ptr<UHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };
 
 }}
