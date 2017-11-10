@@ -1164,15 +1164,15 @@ void HF::guess()
             }
         }
 
-        if (!single_orb){
+        if (single_orb){
+            Cb_ = Ca_;
+        } else {
            for (int h = 0; h < nirrep_; h++) {
                 for (int i = 0; i < guess_Cb_->colspi()[h]; i++) {
                     C_DCOPY(nsopi_[h], &guess_Cb_->pointer(h)[0][i], guess_Cb_->colspi()[h],
                             &Cb_->pointer(h)[0][i], nmopi_[h]);
                 }
             }
-        } else {
-            Cb_ = Ca_;
         }
 
         // Figure out occupations from given input
