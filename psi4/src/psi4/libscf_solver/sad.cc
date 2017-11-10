@@ -432,7 +432,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     double E_tol = options_.get_double("SAD_E_CONVERGENCE");
     double D_tol = options_.get_double("SAD_D_CONVERGENCE");
-    int maxiter = options_.get_int("SAD_MAXITER");
+    int sad_maxiter = options_.get_int("SAD_MAXITER");
 
     double E_old = E;
     int iteration = 0;
@@ -544,7 +544,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         // Check convergence
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol) converged = true;
 
-        if (iteration > maxiter) {
+        if (iteration > sad_maxiter) {
             outfile->Printf(
                 "\n WARNING: Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
             break;
