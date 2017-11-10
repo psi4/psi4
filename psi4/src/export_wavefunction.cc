@@ -197,8 +197,8 @@ void export_wavefunction(py::module& m) {
         .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.")
         .def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix")
         .def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix")
-        .def("reset_occ", &scf::HF::reset_occ,
-             "If True, the occupation will be reset after the guess to the inital occupation.")
+        .def_property("reset_occ_", &scf::HF::reset_occ, &scf::HF::set_reset_occ,
+             "Do reset the occupation after the guess to the inital occupation.")
         .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")

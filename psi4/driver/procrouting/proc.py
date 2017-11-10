@@ -1323,7 +1323,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         old_ref = str(data["reference"]).replace("KS", "").replace("HF", "")
         new_ref = core.get_option('SCF', 'REFERENCE').replace("KS", "").replace("HF", "")
         if old_ref != new_ref:
-            scf_wfn.reset_occ(True)
+            scf_wfn.reset_occ_ = True
 
 
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):

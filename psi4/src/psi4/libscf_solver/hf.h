@@ -370,7 +370,8 @@ public:
     void guess_Cb(SharedMatrix Cb) { guess_Cb_ = Cb; }
 
     // Expert option to reset the occuption or not at iteration zero
-    void reset_occ(bool reset) { reset_occ_ = reset; }
+    bool reset_occ() const { return reset_occ_; }
+    void set_reset_occ(bool reset) { reset_occ_ = reset; }
 
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
