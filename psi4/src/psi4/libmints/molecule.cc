@@ -393,6 +393,25 @@ Vector3 Molecule::center_of_mass() const
     return ret;
 }
 
+Vector3 Molecule::center_of_charge() const
+{
+    Vector3 ret;
+    double total_c;
+
+    ret = 0.0;
+    total_c = 0.0;
+
+    for (int i = 0; i < natom(); ++i) {
+        double c = charge(i);
+        ret += c * xyz(i);
+        total_c += c;
+    }
+
+    ret *= 1.0 / total_c;
+
+    return ret;
+}
+
 Matrix Molecule::distance_matrix() const
 {
     Matrix distance("Distances between atoms in Bohr", natom(), natom());

@@ -30,6 +30,14 @@
 | Database of radical stabilization energies.
 | Geometries from [E. Soydas and U. Bozkaya, JCTC, 9, 1452-1460 (2013)].
 | Reference radical stabilization energies from [E. Soydas and U. Bozkaya, JCTC, 9, 1452-1460 (2013)] at CCSD(T)/cc-pCVTZ level.
+| Aug 2017 -- further info.
+|   geometries actually from Zipse 10.1007/128_028 who computed ROMP2 ref for 44 sys
+|   then used by Neese 10.1021/ct9003299 who computed a better ref CCSD(T)/cc-pVDTZ for 44 sys
+|   then collected into a database named RSE43 by Grimme 10.1021/ct900489g who dropped the acetyl radical for state ordering problems, so 43 sys
+|   then Bozkaya 10.1021/ct301078q (citation above) redid the ref for the smaller sys CCSD(T)/cc-pCVTZ so RSE30
+|       not sure which one's missing for the 43->42 name change. also, reaction ordering changed from RSE43 to here
+|       so that this file could use 1-30 consecutively.
+|   for consistency, abandoning this db and reforming RSE43 from Grimme's GMTKN
 
 
 - **benchmark**
