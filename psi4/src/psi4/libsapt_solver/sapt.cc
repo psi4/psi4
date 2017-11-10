@@ -212,10 +212,10 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
 
   int nbf[8];
   nbf[0] = nso_;
-  auto fact = std::make_shared<MatrixFactory>(MatrixFactory());
+  auto fact = std::make_shared<MatrixFactory>();
   fact->init_with(1, nbf, nbf);
 
-  auto intfact = std::make_shared<IntegralFactory>(IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+  auto intfact = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
 
   std::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
   auto Smat = std::make_shared<Matrix>(fact->create_matrix("Overlap"));
@@ -232,7 +232,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
 
   free_block(sAJ);
 
-  auto potA(static_cast<PotentialInt*>(intfact->ao_potential()));
+  auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt*>(intfact->ao_potential()));
   SharedMatrix ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
   for (int n=0, p=0; n<monomerA->natom(); n++) {
     if (monomerA->Z(n)) {
@@ -251,8 +251,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   auto VAmat = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer A)"));
   potA->compute(VAmat);
 
-  std::shared_ptr<PotentialInt> potB(static_cast<PotentialInt*>(
-    intfact->ao_potential()));
+  auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt*>(intfact->ao_potential()));
   auto ZxyzB = std::make_shared<Matrix>("Charges B (Z,x,y,z)", natomsB_, 4);
   for (int n=0, p=0; n<monomerB->natom(); n++) {
     if (monomerB->Z(n)) {
