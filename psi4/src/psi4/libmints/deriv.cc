@@ -50,6 +50,7 @@
 #include <stdlib.h>
 #include <string>
 #include <memory>
+#include <array>
 
 namespace psi {
 
@@ -680,12 +681,7 @@ SharedMatrix Deriv::compute()
     }
 
     // Obtain nuclear repulsion contribution from the wavefunction
-<<<<<<< HEAD
-    auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1());
-=======
-    std::vector<double> field_strength = wfn_->get_dipole_field_strength();
-    SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1(field_strength)));
->>>>>>> Numerous fixes/additions for external fields
+    auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1(wfn_->get_dipole_field_strength()));
 
     // Print things out, after making sure that each component is properly symmetrized
     enuc->symmetrize_gradient(molecule_);

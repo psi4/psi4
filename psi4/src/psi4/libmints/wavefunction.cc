@@ -63,17 +63,29 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options &options)
-    : options_(options), basisset_(basis), molecule_(molecule) {
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
+                           std::shared_ptr<BasisSet> basis,
+                           Options &options) :
+        options_(options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}}
+{
     common_init();
 }
 
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options), basisset_(basis), molecule_(molecule) {
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
+                           std::shared_ptr<BasisSet> basis) :
+        options_(Process::environment.options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}}
+{
     common_init();
 }
 
-Wavefunction::Wavefunction(Options &options) : options_(options) {}
+Wavefunction::Wavefunction(Options &options) :
+        options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}
+{
+}
+
+Wavefunction::~Wavefunction()
+{
+}
 
 Wavefunction::~Wavefunction() {}
 
@@ -114,7 +126,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 
     dipole_field_type_ = other->dipole_field_type_;
     perturb_h_ = other->perturb_h_;
-    dipole_field_strength_.resize(3);
     std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(), dipole_field_strength_.begin());
 
     nso_ = other->nso_;
@@ -171,7 +182,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
 
     dipole_field_type_ = other->dipole_field_type_;
     perturb_h_ = other->perturb_h_;
-    dipole_field_strength_.resize(3);
     std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(), dipole_field_strength_.begin());
 
     print_ = other->print_;
@@ -449,7 +459,6 @@ void Wavefunction::common_init() {
     // Setup dipole field perturbation information
     perturb_h_ = options_.get_bool("PERTURB_H");
     dipole_field_type_ = nothing;
-    dipole_field_strength_.resize(3);
     std::fill(dipole_field_strength_.begin(), dipole_field_strength_.end(), 0.0);
     if (perturb_h_) {
         std::string perturb_with;
@@ -495,7 +504,7 @@ void Wavefunction::common_init() {
     }
 }
 
-std::vector<double> Wavefunction::get_dipole_field_strength() const
+std::array<double,3> Wavefunction::get_dipole_field_strength() const
 {
     return dipole_field_strength_;
 }

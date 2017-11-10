@@ -35,6 +35,7 @@
 
 #include <stddef.h>
 #include <vector>
+#include <array>
 #include <memory>
 #include <map>
 
@@ -125,7 +126,7 @@ protected:
     enum FieldType { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
     FieldType dipole_field_type_;
     /// How big of a field perturbation to apply
-    std::vector<double> dipole_field_strength_;
+    std::array<double,3> dipole_field_strength_;
 
 
     /// Debug flag
@@ -354,7 +355,7 @@ public:
     const Dimension& frzvpi() const { return frzvpi_; }
 
     /* Return the magnitude of the dipole perturbation strength in the x,y,z direction */
-    std::vector<double> get_dipole_field_strength() const;
+    std::array<double,3> get_dipole_field_strength() const;
     FieldType get_dipole_perturbation_type() const;
 
     void set_doccpi(const Dimension& doccpi);

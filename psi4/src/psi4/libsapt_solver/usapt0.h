@@ -35,6 +35,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libqt/qt.h"
 #include <map>
+#include <array>
 
 #ifdef _OPENMP
   #include <omp.h>
@@ -112,11 +113,11 @@ protected:
     std::shared_ptr<Molecule> monomer_B_;
 
     // Dimer dipole field
-    std::vector<double> dimer_field_;
+    std::array<double,3> dimer_field_;
     // Monomer A dipole field
-    std::vector<double> monomer_A_field_;
+    std::array<double,3> monomer_A_field_;
     // Monomer B dipole field
-    std::vector<double> monomer_B_field_;
+    std::array<double,3> monomer_B_field_;
 
     // Monomer A C matrix (full occ), alpha spin
     std::shared_ptr<Matrix> Cocca_A_;

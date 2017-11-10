@@ -58,6 +58,7 @@
 #include <string>
 #include <sstream>
 #include <regex>
+#include <array>
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 
@@ -370,7 +371,7 @@ double Molecule::pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> mB)
     return V;
 }
 
-double Molecule::nuclear_repulsion_energy(std::vector<double> dipole_field) const
+double Molecule::nuclear_repulsion_energy(const std::array<double, 3> &dipole_field) const
 {
     double e = 0.0;
 
@@ -383,8 +384,6 @@ double Molecule::nuclear_repulsion_energy(std::vector<double> dipole_field) cons
         }
     }
 
-    if(dipole_field.size() != 3)
-        throw PSIEXCEPTION("dipole_field passed to nuclear_repulsion_energy should be of length 3");
     if(dipole_field[0] != 0.0 || dipole_field[1] != 0.0 || dipole_field[2] != 0.0){
         Vector3 nucdip = nuclear_dipole();
         e += dipole_field[0]*nucdip[0]
@@ -396,12 +395,9 @@ double Molecule::nuclear_repulsion_energy(std::vector<double> dipole_field) cons
 }
 
 
-Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::vector<double> &dipole_field) const
+Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::array<double, 3> &dipole_field) const
 {
     Matrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
-
-    if(dipole_field.size() != 3)
-        throw PSIEXCEPTION("dipole_field passed to nuclear_repulsion_energy should be of length 3");
 
     for (int i = 0; i < natom(); ++i) {
         double Zi = Z(i);
