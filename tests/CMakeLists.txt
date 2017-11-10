@@ -170,8 +170,8 @@ endif()
 # <<<  LIBEFP  >>>
 
 if(ENABLE_libefp)
-    add_subdirectory(libefp)
-    message(STATUS "Adding test cases: Psi4 + libefp")
+#    add_subdirectory(libefp)
+#    message(STATUS "Adding test cases: Psi4 + libefp")
 endif()
 
 # <<<  ERD  >>>
@@ -215,8 +215,8 @@ endif()
 # <<<  PCMSOLVER  >>>
 
 if(ENABLE_PCMSolver)
-    add_subdirectory(pcmsolver)
-    message(STATUS "Adding test cases: Psi4 + PCMSolver")
+#    add_subdirectory(pcmsolver)
+#    message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
 
 # <<<  SIMINT  >>>
