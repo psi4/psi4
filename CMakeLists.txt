@@ -154,7 +154,6 @@ add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(custom_cxxstandard)
-include(custom_sanitize)
 include(autocmake_omp)
 include(custom_static_library)
 
