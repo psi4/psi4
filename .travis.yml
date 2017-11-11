@@ -147,7 +147,6 @@ install:
 before_script:
 - python -V
 - python -c 'import numpy; print(numpy.version.version)'
-- python -c 'import scipy; print(scipy.version.version)'
 - cd ${TRAVIS_BUILD_DIR}
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}

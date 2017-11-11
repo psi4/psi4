@@ -12,6 +12,7 @@ from .libmintsmolecule import compute_atom_map
 
 VibrationAspect = collections.namedtuple('VibrationAspect', 'lbl unit data comment')
 
+LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 
 def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, required=None):
     """Compare two dictionaries of VibrationAspect objects. All items in
@@ -75,10 +76,10 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
         else:
             same = np.allclose(expected[asp].data, computed[asp].data, atol=tol)
             print_stuff(asp=asp, same=same, ref=expected[asp].data.real, val=computed[asp].data.real)
-      
+
         if asp not in forgive:
             summsame.append(same)
-      
+
     passed = all(summsame)
     if passed:
         _success(label)
@@ -138,7 +139,7 @@ def hessian_symmetrize(hess, mol):
 
 def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
     """Format vibrational analysis for Molden.
-    
+
     Parameters
     ----------
     vibinfo : dict of VibrationAspect
@@ -147,19 +148,19 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
         TODO
     standalone : bool, optional
         Whether returned string prefixed "[Molden Format]" for standalone rather than append.
-    
+
     Returns
     -------
     str
         `vibinfo` formatted for Molden, including FREQ, FR-COORD, & FR-NORM-COORD fields.
-    
+
     Notes
     -----
     Molden format spec from http://www.cmbi.ru.nl/molden/molden_format.html
     Specifies "atomic coordinates x,y,z and atomic displacements dx,dy,dz are all in Bohr (Atomic Unit of length)"
-    
+
     Despite it being quite wrong, imaginary modes are represented by a negative frequency.
-    
+
     """
     nat = int(len(vibinfo['q'].data[:, 0]) / 3)
     active = [idx for idx, trv in enumerate(vibinfo['TRV'].data) if trv == 'V']
@@ -167,7 +168,7 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
     text = ''
     if standalone:
         text += """[Molden Format]\n"""
-        
+
     text += """\n[FREQ]\n"""
     for vib in active:
         if vibinfo['omega'].data[vib].imag > vibinfo['omega'].data[vib].real:
@@ -329,7 +330,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
             Uh[lbl] = tmp
 
     # form projector of translations and rotations
-    TRspace = _get_TR_space(m, geom, space='TR')
+    TRspace = _get_TR_space(m, geom, space='TR', tol=LINEAR_A_TOL)
     nrt = TRspace.shape[0]
     print('  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
 
@@ -841,12 +842,10 @@ def filter_nonvib(vibinfo):
     return work
 
 
-def _get_TR_space(m, geom, space='TR', verbose=1):
+def _get_TR_space(m, geom, space='TR', tol=None, verbose=1):
     """Form the idealized translation and rotation dof from geometry `geom` and masses `m`.
     Remove any linear dependencies and return an array of shape (3, 3) for atoms, (5, 3 * nat) for linear `geom`,
-    or (6, 3 * nat) otherwise.
-
-    Warning, can't handle departures from linearity.
+    or (6, 3 * nat) otherwise. To handle noisy linear geometries, pass `tol` on the order of max deviation.
 
     m1 = np.asarray([1.])
     m2 = np.asarray([1., 1.])
@@ -861,22 +860,30 @@ def _get_TR_space(m, geom, space='TR', verbose=1):
     g3 = np.asarray([[3., 3., 3.],
           [4., 4., 4.,],
           [5., 5., 5.]])
+    g3noisy = np.asarray([[3., 3.001, 3.],
+          [4., 4.001, 4.,],
+          [5., 5., 5.01]])
     g33 = np.asarray([[0., 0., 0.],
                      [1., 0., 0.],
                      [-1., 0., 0.]])
     g1 = np.asarray([[0., 0., 0.]])
     g11 = np.asarray([[1., 2., 3.]])
+    noise = np.random.normal(0, 1, 9).reshape(3, 3)
+    noise = np.divide(noise, np.max(noise))
 
-    assert(get_TR_space(m4, g4).shape == (6, 12))
-    assert(get_TR_space(m2, g2).shape == (5, 6))
-    assert(get_TR_space(m3, g3).shape == (5, 9))
-    assert(get_TR_space(m3, g33).shape == (5, 9))
-    assert(get_TR_space(m1, g1).shape == (3, 3))
-    assert(get_TR_space(m1, g11).shape == (3, 3))
+    assert(_get_TR_space(m4, g4).shape == (6, 12))
+    assert(_get_TR_space(m2, g2).shape == (5, 6))
+    assert(_get_TR_space(m3, g3).shape == (5, 9))
+    assert(_get_TR_space(m3, g33).shape == (5, 9))
+    assert(_get_TR_space(m1, g1).shape == (3, 3))
+    assert(_get_TR_space(m1, g11).shape == (3, 3))
+    assert(_get_TR_space(m3, g3noisy, tol=1.e-2).shape == (5, 9))
+    for ns in range(2, 6):
+        tol = 10. ** -ns
+        gnoisy = g3 + tol * noise
+        assert(_get_TR_space(m3, gnoisy, tol=10*tol).shape == (5, 9))
 
     """
-    from scipy.linalg import orth
-
     sqrtmmm = np.repeat(np.sqrt(m), 3)
     xxx = np.repeat(geom[:, 0], 3)
     yyy = np.repeat(geom[:, 1], 3)
@@ -903,14 +910,24 @@ def _get_TR_space(m, geom, space='TR', verbose=1):
         TRspace.append([R4, R5, R6])
     TRspace = np.vstack(TRspace)
 
+    def orth(A, tol=tol):
+        u, s, vh = np.linalg.svd(A, full_matrices=False)
+        if verbose >= 2:
+            print(s)
+        M, N = A.shape
+        eps = np.finfo(float).eps
+        if tol is None:
+            tol = max(M, N) * np.amax(s) * eps
+        num = np.sum(s > tol, dtype=int)
+        Q = u[:, :num]
+        return Q
+
     TRindep = orth(TRspace.T)
     TRindep = TRindep.T
 
     if verbose >= 2:
         print(TRindep.shape, '<--', TRspace.shape)
         print(np.linalg.norm(TRindep, axis=1))
+        print('-' * 80)
 
     return TRindep
-
-
-

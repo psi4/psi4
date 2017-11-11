@@ -239,7 +239,6 @@ def _plausible_atom_rearrangements(ref, current, rgeom, cgeom):
     """
     import itertools
     import collections
-    from scipy.spatial import distance
 
     try:
         assert(sorted(ref) == sorted(current))
@@ -262,8 +261,13 @@ def _plausible_atom_rearrangements(ref, current, rgeom, cgeom):
         print('ASDF', k, v)
 #        print("""{:30} <--> {:30}""".format(k, v))
 
-    ccdistmat = distance.cdist(cgeom, cgeom, 'euclidean')
-    rrdistmat = distance.cdist(rgeom, rgeom, 'euclidean')
+    def distance_matrix(a, b):
+        assert(a.shape[1] == b.shape[1])
+        distm = np.zeros([a.shape[0], b.shape[0]])
+        for i in range(a.shape[0]):
+            for j in range(b.shape[0]):
+                distm[i, j] = np.linalg.norm(a[i] - b[j])
+        return distm
 
     def filter_more_geom(rgp, cgp):
         for pm in itertools.permutations(cgp):
@@ -273,14 +277,17 @@ def _plausible_atom_rearrangements(ref, current, rgeom, cgeom):
                 print('Candidate:', rgp, '<--', pm)
                 yield pm
 
+    # ccdistmat = scipy.spatial.distance.cdist(cgeom, cgeom, 'euclidean')
+    # rrdistmat = scipy.spatial.distance.cdist(rgeom, rgeom, 'euclidean')
+    ccdistmat = distance_matrix(cgeom, cgeom)
+    rrdistmat = distance_matrix(rgeom, rgeom)
+
     for cpmut in itertools.product(*itertools.starmap(filter_more_geom, connect.items())):
         atpat = [None] * len(ref)
         for igp, group in enumerate(cpmut):
             for iidx, idx in enumerate(list(connect.keys())[igp]):
                 atpat[idx] = group[iidx]
         yield atpat
-
-
 
 
 def kabsch_align(rgeom, cgeom, weight=None):
