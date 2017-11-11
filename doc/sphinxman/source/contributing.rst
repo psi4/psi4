@@ -33,9 +33,11 @@ Contributions: Intro to Programming in |PSIfour|
 ================================================
 
 .. toctree::
+   FAQ <prog_faq>
    plugins
    documentation
    psipep
+   style_c
 
 ..   bestpractices_py
 

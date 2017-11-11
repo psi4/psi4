@@ -26,10 +26,29 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:managefaq`:
 
-Management FAQ
-==============
+.. _`sec:progfaq`:
+
+===============
+Programmers FAQ
+===============
+
+C++ Style in |PSIfour|
+----------------------
+
+#. :ref:`faq:nullptr`
+#. :ref:`faq:automakeshared`
+#. :ref:`faq:autodecl`
+
+Modules in |PSIfour|
+--------------------
+
+#. :ref:`faq:readoptions`
+#. :ref:`faq:blaswrappers`
+#. :ref:`faq:blasmatrix`
+#. :ref:`faq:labas`
+#. :ref:`faq:orbdims`
+#. :ref:`faq:orbspaces`
 
 Interfacing with |PSIfour|
 --------------------------
@@ -44,4 +63,7 @@ Versioning |PSIfour|
 #. :ref:`faq:remotetag`
 #. :ref:`faq:githubworkflow`
 #. :ref:`faq:psi4version`
+
+Miscellaneous
+-------------
 
