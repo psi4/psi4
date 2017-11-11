@@ -33,7 +33,7 @@
 Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 ===============================================
 
-.. codeauthor:: D. E. Shaw
+.. codeauthor:: D. E. Shaw Research
 .. sectionauthor:: Shannon E. Houck
 
 .. image:: https://img.shields.io/badge/home-sns--mp2-5077AB.svg
@@ -46,11 +46,9 @@ Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
    :target: https://github.com/DEShawResearch/sns-mp2/blob/master/README.md
 
-This plugin is an implementation of the SNS-MP2 algorithm, originally 
-developed by McGibbon et. al. [McGibbon:2017:161725]_, which uses neural networking to 
-improve the accuracy of MP2 (:ref:`dfmp2`) interaction energies for dimers. 
-This |PSIfour| plugin allows the user to compute both energies and 
-confidence intervals.
+This plugin is an implementation of the SNS-MP2 algorithm developed by McGibbon 
+et. al. [McGibbon:2017:161725]_. The SNS-MP2 method uses neural networking to 
+improve the accuracy of MP2 (:ref:`dfmp2`) interaction energies for dimer molecules.
 
 Installation
 ~~~~~~~~~~~~
@@ -77,7 +75,7 @@ Installation
 Sample Input
 ~~~~~~~~~~~~
 
-A sample input file, borrowed from D. E. Shaw's documentation, is shown below::
+A sample input file, adapted from the documentation, is shown below::
 
    # Sample SNS-MP2 calculation for two helium atoms
 
@@ -89,7 +87,7 @@ A sample input file, borrowed from D. E. Shaw's documentation, is shown below::
 
    energy('sns-mp2')
     
-Note that these two atoms are separated by double dashes, indicating that
+Note that the two monomers are separated by double dashes, indicating that
 they should be treated as separate molecules. (See 
 :ref:`sec:analysis-of-intermolecular-interactions` for more details on 
 setting up dimer molecules.) This input file can be run in the usual fashion:
