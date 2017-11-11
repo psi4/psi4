@@ -983,7 +983,7 @@ void timer_init(void) {
     omp_set_lock(&lock_timer);
     extern time_t timer_start;
     extern Timer_Structure root_timer;
-    timer_start = time(NULL);
+    timer_start = time(nullptr);
     root_timer.turn_on();
     extern std::list<Timer_Structure *> ser_on_timers;
     ser_on_timers.push_back(&root_timer);
@@ -1008,13 +1008,13 @@ void timer_done(void) {
     gethostname(host, 40);
 
     /* Dump the timing data to timer.dat and free the timers */
-    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat", std::ostream::app));
+    auto printer = std::make_shared<PsiOutStream>("timer.dat", std::ostream::app);
     printer->Printf("\n");
     printer->Printf("Host: %s\n", host);
     free(host);
     printer->Printf("\n");
     printer->Printf("Timers On : %s", ctime(&timer_start));
-    timer_end = time(NULL);
+    timer_end = time(nullptr);
     printer->Printf("Timers Off: %s", ctime(&timer_end));
     printer->Printf("\nWall Time:  %10.2f seconds\n\n",
                     std::chrono::duration_cast<std::chrono::duration<double>>(root_timer.get_total_wtime()).count());

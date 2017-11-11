@@ -90,7 +90,7 @@ DIISEntry::dump_vector_to_disk()
 void
 DIISEntry::read_vector_from_disk()
 {
-    if (_vector == NULL) {
+    if (_vector == nullptr) {
         _vector = new double[_vectorSize];
         std::string label = _label + " vector";
         open_psi_file();
@@ -112,7 +112,7 @@ DIISEntry::dump_error_vector_to_disk()
 void
 DIISEntry::read_error_vector_from_disk()
 {
-    if (_errorVector == NULL) {
+    if (_errorVector == nullptr) {
         _errorVector = new double[_errorVectorSize];
         std::string label = _label + " error";
         open_psi_file();
@@ -125,7 +125,7 @@ DIISEntry::free_vector_memory()
 {
     if (_vector)
         delete[] _vector;
-    _vector = NULL;
+    _vector = nullptr;
 }
 
 
@@ -134,15 +134,15 @@ DIISEntry::free_error_vector_memory()
 {
     if (_errorVector)
         delete[] _errorVector;
-    _errorVector = NULL;
+    _errorVector = nullptr;
 }
 
 
 DIISEntry::~DIISEntry()
 {
-    if(_vector != NULL)
+    if(_vector != nullptr)
         delete[] _vector;
-    if(_errorVector != NULL)
+    if(_errorVector != nullptr)
         delete[] _errorVector;
 }
 

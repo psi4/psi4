@@ -62,8 +62,8 @@ std::vector<SharedMatrix> RKSFunctions::D_scratch()
 }
 void RKSFunctions::build_temps()
 {
-    temp_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
-    D_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
+    temp_ = std::make_shared<Matrix>("Temp",max_points_,max_functions_);
+    D_local_ = std::make_shared<Matrix>("Dlocal",max_functions_,max_functions_);
 }
 void RKSFunctions::allocate()
 {
@@ -72,29 +72,29 @@ void RKSFunctions::allocate()
     point_values_.clear();
 
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = std::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
+        point_values_["RHO_A"] = std::make_shared<Vector>("RHO_A", max_points_);
         // point_values_["RHO_B"] = point_values_["RHO_A"];
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = std::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
-        point_values_["RHO_AY"] = std::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
-        point_values_["RHO_AZ"] = std::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
+        point_values_["RHO_AX"] = std::make_shared<Vector>("RHO_AX", max_points_);
+        point_values_["RHO_AY"] = std::make_shared<Vector>("RHO_AY", max_points_);
+        point_values_["RHO_AZ"] = std::make_shared<Vector>("RHO_AZ", max_points_);
         // point_values_["RHO_BX"] = point_values_["RHO_AX"];
         // point_values_["RHO_BY"] = point_values_["RHO_AY"];
         // point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
-        point_values_["GAMMA_AA"] = std::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
+        point_values_["GAMMA_AA"] = std::make_shared<Vector>("GAMMA_AA", max_points_);
         // point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
         // point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
     }
 
     if (ansatz_ >= 2) {
-        point_values_["RHO_XX"] = std::shared_ptr<Vector>(new Vector("RHO_XX", max_points_));
-        point_values_["RHO_YY"] = std::shared_ptr<Vector>(new Vector("RHO_YY", max_points_));
-        point_values_["RHO_ZZ"] = std::shared_ptr<Vector>(new Vector("RHO_ZZ", max_points_));
-        point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
+        point_values_["RHO_XX"] = std::make_shared<Vector>("RHO_XX", max_points_);
+        point_values_["RHO_YY"] = std::make_shared<Vector>("RHO_YY", max_points_);
+        point_values_["RHO_ZZ"] = std::make_shared<Vector>("RHO_ZZ", max_points_);
+        point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
         // point_values_["TAU_B"] = point_values_["TAU_A"];
-        // point_values_["LAPL_RHO_A"] = std::shared_ptr<Vector>(new Vector("LAPL_RHO_A", max_points_));
+        // point_values_["LAPL_RHO_A"] = std::make_shared<Vector>("LAPL_RHO_A", max_points_);
         // point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
     }
     build_temps();
@@ -248,9 +248,9 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 
 void RKSFunctions::set_Cs(SharedMatrix C_AO) {
     C_AO_ = C_AO;
-    C_local_ = std::shared_ptr<Matrix>(new Matrix("C local", max_functions_, C_AO_->colspi()[0]));
+    C_local_ = std::make_shared<Matrix>("C local", max_functions_, C_AO_->colspi()[0]);
     orbital_values_["PSI_A"] =
-        std::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
+        std::make_shared<Matrix>("PSI_A", C_AO_->colspi()[0], max_points_);
     orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
 }
 void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
@@ -291,7 +291,7 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
 
 void RKSFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -340,10 +340,10 @@ std::vector<SharedMatrix> UKSFunctions::D_scratch()
 }
 void UKSFunctions::build_temps()
 {
-    tempa_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
-    Da_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
-    tempb_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
-    Db_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
+    tempa_ = std::make_shared<Matrix>("Temp",max_points_,max_functions_);
+    Da_local_ = std::make_shared<Matrix>("Dlocal",max_functions_,max_functions_);
+    tempb_ = std::make_shared<Matrix>("Temp",max_points_,max_functions_);
+    Db_local_ = std::make_shared<Matrix>("Dlocal",max_functions_,max_functions_);
 }
 void UKSFunctions::allocate()
 {
@@ -352,25 +352,25 @@ void UKSFunctions::allocate()
     point_values_.clear();
 
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = std::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
-        point_values_["RHO_B"] = std::shared_ptr<Vector>(new Vector("RHO_B", max_points_));
+        point_values_["RHO_A"] = std::make_shared<Vector>("RHO_A", max_points_);
+        point_values_["RHO_B"] = std::make_shared<Vector>("RHO_B", max_points_);
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = std::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
-        point_values_["RHO_AY"] = std::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
-        point_values_["RHO_AZ"] = std::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
-        point_values_["RHO_BX"] = std::shared_ptr<Vector>(new Vector("RHO_BX", max_points_));
-        point_values_["RHO_BY"] = std::shared_ptr<Vector>(new Vector("RHO_BY", max_points_));
-        point_values_["RHO_BZ"] = std::shared_ptr<Vector>(new Vector("RHO_BZ", max_points_));
-        point_values_["GAMMA_AA"] = std::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
-        point_values_["GAMMA_AB"] = std::shared_ptr<Vector>(new Vector("GAMMA_AB", max_points_));
-        point_values_["GAMMA_BB"] = std::shared_ptr<Vector>(new Vector("GAMMA_BB", max_points_));
+        point_values_["RHO_AX"] = std::make_shared<Vector>("RHO_AX", max_points_);
+        point_values_["RHO_AY"] = std::make_shared<Vector>("RHO_AY", max_points_);
+        point_values_["RHO_AZ"] = std::make_shared<Vector>("RHO_AZ", max_points_);
+        point_values_["RHO_BX"] = std::make_shared<Vector>("RHO_BX", max_points_);
+        point_values_["RHO_BY"] = std::make_shared<Vector>("RHO_BY", max_points_);
+        point_values_["RHO_BZ"] = std::make_shared<Vector>("RHO_BZ", max_points_);
+        point_values_["GAMMA_AA"] = std::make_shared<Vector>("GAMMA_AA", max_points_);
+        point_values_["GAMMA_AB"] = std::make_shared<Vector>("GAMMA_AB", max_points_);
+        point_values_["GAMMA_BB"] = std::make_shared<Vector>("GAMMA_BB", max_points_);
     }
 
     if (ansatz_ >= 2) {
-        point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
-        point_values_["TAU_B"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
+        point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
+        point_values_["TAU_B"] = std::make_shared<Vector>("TAU_A", max_points_);
     }
     build_temps();
 }
@@ -526,10 +526,10 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
 {
     Ca_AO_ = Ca_AO;
     Cb_AO_ = Cb_AO;
-    Ca_local_ = std::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
-    Cb_local_ = std::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
-    orbital_values_["PSI_A"] = std::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
-    orbital_values_["PSI_B"] = std::shared_ptr<Matrix>(new Matrix("PSI_B", Cb_AO_->colspi()[0], max_points_));
+    Ca_local_ = std::make_shared<Matrix>("Ca local", max_functions_, Ca_AO_->colspi()[0]);
+    Cb_local_ = std::make_shared<Matrix>("Cb local", max_functions_, Cb_AO_->colspi()[0]);
+    orbital_values_["PSI_A"] = std::make_shared<Matrix>("PSI_A", Ca_AO_->colspi()[0], max_points_);
+    orbital_values_["PSI_B"] = std::make_shared<Matrix>("PSI_B", Cb_AO_->colspi()[0], max_points_);
 }
 void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
 {
@@ -580,7 +580,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
 void UKSFunctions::print(std::string out, int print) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -663,32 +663,32 @@ void BasisFunctions::allocate()
     int max_cart = (max_am + 1) * (max_am + 2) / 2;
 
     if (deriv_ >= 0) {
-        basis_values_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, max_functions_));
-        basis_temps_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, max_cart));
+        basis_values_["PHI"] = std::make_shared<Matrix>("PHI", max_points_, max_functions_);
+        basis_temps_["PHI"] = std::make_shared<Matrix>("PHI", max_points_, max_cart);
     }
 
     if (deriv_ >= 1) {
-        basis_values_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, max_functions_));
-        basis_values_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, max_functions_));
-        basis_values_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, max_functions_));
-        basis_temps_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, max_cart));
-        basis_temps_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, max_cart));
-        basis_temps_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, max_cart));
+        basis_values_["PHI_X"] = std::make_shared<Matrix>("PHI_X", max_points_, max_functions_);
+        basis_values_["PHI_Y"] = std::make_shared<Matrix>("PHI_Y", max_points_, max_functions_);
+        basis_values_["PHI_Z"] = std::make_shared<Matrix>("PHI_Z", max_points_, max_functions_);
+        basis_temps_["PHI_X"] = std::make_shared<Matrix>("PHI_X", max_points_, max_cart);
+        basis_temps_["PHI_Y"] = std::make_shared<Matrix>("PHI_Y", max_points_, max_cart);
+        basis_temps_["PHI_Z"] = std::make_shared<Matrix>("PHI_Z", max_points_, max_cart);
     }
 
     if (deriv_ >= 2) {
-        basis_values_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, max_functions_));
-        basis_values_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, max_functions_));
-        basis_values_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, max_functions_));
-        basis_values_["PHI_YY"] = SharedMatrix (new Matrix("PHI_YY", max_points_, max_functions_));
-        basis_values_["PHI_YZ"] = SharedMatrix (new Matrix("PHI_YZ", max_points_, max_functions_));
-        basis_values_["PHI_ZZ"] = SharedMatrix (new Matrix("PHI_ZZ", max_points_, max_functions_));
-        basis_temps_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, max_cart));
-        basis_temps_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, max_cart));
-        basis_temps_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, max_cart));
-        basis_temps_["PHI_YY"] = SharedMatrix (new Matrix("PHI_YY", max_points_, max_cart));
-        basis_temps_["PHI_YZ"] = SharedMatrix (new Matrix("PHI_YZ", max_points_, max_cart));
-        basis_temps_["PHI_ZZ"] = SharedMatrix (new Matrix("PHI_ZZ", max_points_, max_cart));
+        basis_values_["PHI_XX"] = std::make_shared<Matrix>("PHI_XX", max_points_, max_functions_);
+        basis_values_["PHI_XY"] = std::make_shared<Matrix>("PHI_XY", max_points_, max_functions_);
+        basis_values_["PHI_XZ"] = std::make_shared<Matrix>("PHI_XZ", max_points_, max_functions_);
+        basis_values_["PHI_YY"] = std::make_shared<Matrix>("PHI_YY", max_points_, max_functions_);
+        basis_values_["PHI_YZ"] = std::make_shared<Matrix>("PHI_YZ", max_points_, max_functions_);
+        basis_values_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_functions_);
+        basis_temps_["PHI_XX"] = std::make_shared<Matrix>("PHI_XX", max_points_, max_cart);
+        basis_temps_["PHI_XY"] = std::make_shared<Matrix>("PHI_XY", max_points_, max_cart);
+        basis_temps_["PHI_XZ"] = std::make_shared<Matrix>("PHI_XZ", max_points_, max_cart);
+        basis_temps_["PHI_YY"] = std::make_shared<Matrix>("PHI_YY", max_points_, max_cart);
+        basis_temps_["PHI_YZ"] = std::make_shared<Matrix>("PHI_YZ", max_points_, max_cart);
+        basis_temps_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_cart);
     }
 
     if (deriv_ >= 3)
@@ -1097,7 +1097,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 void BasisFunctions::print(std::string out, int print) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    printer->Printf( "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
     printer->Printf( "    Basis Values:\n");

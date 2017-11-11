@@ -45,8 +45,8 @@ namespace psi {
 psio_tocentry*PSIO::tocscan(size_t unit, const char *key) {
   psio_tocentry *this_entry;
 
-  if (key == NULL)
-    return (NULL);
+  if (key == nullptr)
+    return (nullptr);
 
   if ((strlen(key)+1) > PSIO_KEYLEN)
     psio_error(unit, PSIO_ERROR_KEYLEN);
@@ -56,7 +56,7 @@ psio_tocentry*PSIO::tocscan(size_t unit, const char *key) {
 
   this_entry = psio_unit[unit].toc;
 
-  while (this_entry != NULL) {
+  while (this_entry != nullptr) {
     if (!strcmp(this_entry->key, key)) {
       if(!already_open) close(unit, 1); // keep
       return (this_entry);
@@ -65,12 +65,12 @@ psio_tocentry*PSIO::tocscan(size_t unit, const char *key) {
   }
 
   if(!already_open) close(unit, 1); // keep
-  return (NULL);
+  return (nullptr);
 }
 
   /*!
    ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
-   ** a pointer to the entry or NULL to the caller.
+   ** a pointer to the entry or nullptr to the caller.
    **
    ** \ingroup PSIO
    */
@@ -82,7 +82,7 @@ psio_tocentry*PSIO::tocscan(size_t unit, const char *key) {
 bool PSIO::tocentry_exists(size_t unit, const char *key) {
   psio_tocentry *this_entry;
 
-  if (key == NULL)
+  if (key == nullptr)
     return (true);
 
   if ((strlen(key)+1) > PSIO_KEYLEN)
@@ -93,7 +93,7 @@ bool PSIO::tocentry_exists(size_t unit, const char *key) {
 
   this_entry = psio_unit[unit].toc;
 
-  while (this_entry != NULL) {
+  while (this_entry != nullptr) {
     if (!strcmp(this_entry->key, key)) {
       if(!already_open) close(unit, 1); // keep
       return (true);
@@ -107,7 +107,7 @@ bool PSIO::tocentry_exists(size_t unit, const char *key) {
 
   /*!
    ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
-   ** a pointer to the entry or NULL to the caller.
+   ** a pointer to the entry or nullptr to the caller.
    **
    ** \ingroup PSIO
    */

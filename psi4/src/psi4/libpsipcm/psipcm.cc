@@ -107,7 +107,7 @@ PCM::PCM(Options &options, std::shared_ptr<PSIO> /* psio */, int nirrep, std::sh
   basisset_ = basisset;
 
   std::shared_ptr<IntegralFactory>
-    integrals(new IntegralFactory(basisset, basisset, basisset, basisset));
+    integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
 
   PetiteList petite(basisset, integrals, true);
   my_aotoso_ = petite.aotoso();
@@ -149,7 +149,7 @@ PCM::PCM(Options &options, std::shared_ptr<PSIO> /* psio */, int nirrep, std::sh
   tess_charges_ = new double[ntess_];
 
   int natom = molecule->natom();
-  SharedMatrix atom_Zxyz_ = SharedMatrix(new Matrix("Atom Zxyz", natom, 4));
+  auto atom_Zxyz_ = std::make_shared<Matrix>("Atom Zxyz", natom, 4);
   for(int atom = 0; atom < natom; ++atom){
     Vector3 xyz = molecule->xyz(atom);
     atom_Zxyz_->set(atom, 0, molecule->charge(atom));
@@ -159,7 +159,7 @@ PCM::PCM(Options &options, std::shared_ptr<PSIO> /* psio */, int nirrep, std::sh
   }
 
   // The charge and {x,y,z} coordinates (in bohr) for each tessera
-  tess_Zxyz_ = SharedMatrix(new Matrix("Tess Zxyz", ntess_, 4));
+  tess_Zxyz_ = std::make_shared<Matrix>("Tess Zxyz", ntess_, 4);
   double **ptess_Zxyz = tess_Zxyz_->pointer();
   // Set the tesserae's coordinates (note the loop bounds; this function is 1-based)
   for(int tess = 1; tess <= ntess_; ++tess)
@@ -245,7 +245,7 @@ double PCM::compute_E_total(SharedMatrix &D)
 
   SharedMatrix D_carts;
   if(basisset_->has_puream()){
-    D_carts = SharedMatrix(new Matrix("D carts", basisset_->nao(), basisset_->nao()));
+    D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
     D_carts->back_transform(D,my_aotoso_);
   }
   else D_carts = D;
@@ -300,7 +300,7 @@ double PCM::compute_E_separate(SharedMatrix &D)
 
   SharedMatrix D_carts;
   if(basisset_->has_puream()){
-    D_carts = SharedMatrix(new Matrix("D carts", basisset_->nao(), basisset_->nao()));
+    D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
     D_carts->back_transform(D,my_aotoso_);
   }
   else D_carts = D;
@@ -370,7 +370,7 @@ double PCM::compute_E_electronic(SharedMatrix &D)
 
   SharedMatrix D_carts;
   if(basisset_->has_puream()){
-    D_carts = SharedMatrix(new Matrix("D carts", basisset_->nao(), basisset_->nao()));
+    D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
     D_carts->back_transform(D,my_aotoso_);
   }
   else D_carts = D;
@@ -411,13 +411,13 @@ double PCM::compute_E_electronic(SharedMatrix &D)
 
 SharedMatrix PCM::compute_V()
 {
-  SharedMatrix V_pcm_cart = SharedMatrix(new Matrix("PCM potential cart", basisset_->nao(), basisset_->nao()));
+  auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
   ContractOverChargesFunctor contract_charges_functor(tess_charges_, V_pcm_cart);
   potential_int_->compute(contract_charges_functor);
   // The potential might need to be transformed to the spherical harmonic basis
   SharedMatrix V_pcm_pure;
   if(basisset_->has_puream()){
-      V_pcm_pure = SharedMatrix(new Matrix("PCM potential pure", basisset_->nbf(), basisset_->nbf()));
+      V_pcm_pure = std::make_shared<Matrix>("PCM potential pure", basisset_->nbf(), basisset_->nbf());
       V_pcm_pure->transform(V_pcm_cart, my_aotoso_);
   }
   if(basisset_->has_puream()) return V_pcm_pure;
@@ -426,13 +426,13 @@ SharedMatrix PCM::compute_V()
 
 SharedMatrix PCM::compute_V_electronic()
 {
-  SharedMatrix V_pcm_cart = SharedMatrix(new Matrix("PCM potential cart", basisset_->nao(), basisset_->nao()));
+  auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
   ContractOverChargesFunctor contract_charges_functor(tess_charges_e_, V_pcm_cart);
   potential_int_->compute(contract_charges_functor);
   // The potential might need to be transformed to the spherical harmonic basis
   SharedMatrix V_pcm_pure;
   if(basisset_->has_puream()){
-      V_pcm_pure = SharedMatrix(new Matrix("PCM potential pure", basisset_->nbf(), basisset_->nbf()));
+      V_pcm_pure = std::make_shared<Matrix>("PCM potential pure", basisset_->nbf(), basisset_->nbf());
       V_pcm_pure->transform(V_pcm_cart, my_aotoso_);
   }
   if(basisset_->has_puream()) return V_pcm_pure;

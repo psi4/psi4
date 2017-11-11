@@ -48,12 +48,12 @@ namespace psi {
 bool PSIO::tocdel(size_t unit, const char *key) {
   psio_tocentry *this_entry = tocscan(unit, key);
 
-  if (this_entry == NULL) return false;
+  if (this_entry == nullptr) return false;
 
   psio_tocentry *last_entry = this_entry->last;
   psio_tocentry *next_entry = this_entry->next;
 
-  if(next_entry == NULL) last_entry->next = NULL;
+  if(next_entry == nullptr) last_entry->next = nullptr;
   else {
     last_entry->next = next_entry;
     next_entry->last = last_entry;

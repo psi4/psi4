@@ -56,9 +56,9 @@ namespace psi { namespace detci {
 Odometer::Odometer()
 {
    length = 0 ;
-   max = NULL ;
-   min = NULL ;
-   value = NULL ;
+   max = nullptr ;
+   min = nullptr ;
+   value = nullptr ;
 }
 
 Odometer::~Odometer()

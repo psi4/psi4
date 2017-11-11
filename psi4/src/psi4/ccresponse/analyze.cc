@@ -67,7 +67,7 @@ void analyze(const char *pert, int irrep, double omega)
 
 
   sprintf(lbl, "X_%s_%5.3f", pert, omega);
-  std::shared_ptr<PsiOutStream> printer(new PsiOutStream(lbl,std::ostream::app));
+  auto printer = std::make_shared<PsiOutStream>(lbl,std::ostream::app);
   //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 
@@ -129,7 +129,7 @@ void analyze(const char *pert, int irrep, double omega)
   width = (max-min) / (num_div);
 
   sprintf(lbl, "X1_%s_%5.3f", pert, omega);
-  std::shared_ptr<PsiOutStream> printer2(new PsiOutStream(lbl,std::ostream::app));
+  auto printer2 = std::make_shared<PsiOutStream>(lbl,std::ostream::app);
   //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 

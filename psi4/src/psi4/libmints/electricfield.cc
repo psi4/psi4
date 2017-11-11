@@ -96,7 +96,7 @@ Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, std::share
 SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3& /*origin*/, std::shared_ptr<Molecule> /*mol*/)
 {
 //    int natom = mol->natom();
-//    SharedMatrix result(new Matrix("Nuclear contribution to electric field gradient", 1, 6));
+//    auto result = std::make_shared<Matrix>("Nuclear contribution to electric field gradient", 1, 6);
 
 //    for (int i=0; i<natom; ++i) {
 //        double x = mol->x(i) - origin[0];

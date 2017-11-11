@@ -144,7 +144,8 @@ void FISAPT::print_header() {
 void FISAPT::localize() {
     outfile->Printf("  ==> Localization (IBO) <==\n\n");
 
-    std::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ"]->dimpi()[0], vectors_["eps_occ"]->dimpi()[0]));
+    std::shared_ptr<Matrix> Focc =
+        std::make_shared<Matrix>("Focc", vectors_["eps_occ"]->dimpi()[0], vectors_["eps_occ"]->dimpi()[0]);
     Focc->set_diagonal(vectors_["eps_occ"]);
 
     std::vector<int> ranges;
@@ -200,7 +201,7 @@ void FISAPT::partition() {
 
     // => Fragment Orbital Charges <= //
 
-    std::shared_ptr<Matrix> QF(new Matrix("QF", 3, na));
+    auto QF = std::make_shared<Matrix>("QF", 3, na);
     double** QFp = QF->pointer();
     double** Qp = matrices_["Qocc"]->pointer();
 
@@ -323,9 +324,9 @@ void FISAPT::partition() {
 
     // => Nuclear Charge Targets <= //
 
-    vectors_["ZA"] = std::shared_ptr<Vector>(new Vector("ZA", nA));
-    vectors_["ZB"] = std::shared_ptr<Vector>(new Vector("ZB", nA));
-    vectors_["ZC"] = std::shared_ptr<Vector>(new Vector("ZC", nA));
+    vectors_["ZA"] = std::make_shared<Vector>("ZA", nA);
+    vectors_["ZB"] = std::make_shared<Vector>("ZB", nA);
+    vectors_["ZC"] = std::make_shared<Vector>("ZC", nA);
 
     double* ZAp = vectors_["ZA"]->pointer();
     double* ZBp = vectors_["ZB"]->pointer();
@@ -528,18 +529,18 @@ void FISAPT::overlap() {
     outfile->Printf("  ==> Overlap Integrals <==\n\n");
 
     int nm = primary_->nbf();
-    std::shared_ptr<IntegralFactory> Tfact(new IntegralFactory(primary_));
+    auto Tfact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<OneBodyAOInt> Tint = std::shared_ptr<OneBodyAOInt>(Tfact->ao_overlap());
-    matrices_["S"] = std::shared_ptr<Matrix>(new Matrix("S", nm, nm));
+    matrices_["S"] = std::make_shared<Matrix>("S", nm, nm);
     Tint->compute(matrices_["S"]);
 }
 void FISAPT::kinetic() {
     outfile->Printf("  ==> Kinetic Integrals <==\n\n");
 
     int nm = primary_->nbf();
-    std::shared_ptr<IntegralFactory> Tfact(new IntegralFactory(primary_));
+    auto Tfact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<OneBodyAOInt> Tint = std::shared_ptr<OneBodyAOInt>(Tfact->ao_kinetic());
-    matrices_["T"] = std::shared_ptr<Matrix>(new Matrix("T", nm, nm));
+    matrices_["T"] = std::make_shared<Matrix>("T", nm, nm);
     Tint->compute(matrices_["T"]);
 }
 void FISAPT::nuclear() {
@@ -553,10 +554,10 @@ void FISAPT::nuclear() {
 
     // => Nuclear Potentials <= //
 
-    std::shared_ptr<Matrix> Zxyz(new Matrix("Zxyz", nA, 4));
+    auto Zxyz = std::make_shared<Matrix>("Zxyz", nA, 4);
     double** Zxyzp = Zxyz->pointer();
 
-    std::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(primary_));
+    auto Vfact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<PotentialInt> Vint;
     Vint = std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential()));
     Vint->set_charge_field(Zxyz);
@@ -576,7 +577,7 @@ void FISAPT::nuclear() {
         Zxyzp[A][0] = ZAp[A];
     }
 
-    matrices_["VA"] = std::shared_ptr<Matrix>(new Matrix("VA", nm, nm));
+    matrices_["VA"] = std::make_shared<Matrix>("VA", nm, nm);
     Vint->compute(matrices_["VA"]);
 
     // > B < //
@@ -586,7 +587,7 @@ void FISAPT::nuclear() {
         Zxyzp[A][0] = ZBp[A];
     }
 
-    matrices_["VB"] = std::shared_ptr<Matrix>(new Matrix("VB", nm, nm));
+    matrices_["VB"] = std::make_shared<Matrix>("VB", nm, nm);
     Vint->compute(matrices_["VB"]);
 
     // > C < //
@@ -596,15 +597,15 @@ void FISAPT::nuclear() {
         Zxyzp[A][0] = ZCp[A];
     }
 
-    matrices_["VC"] = std::shared_ptr<Matrix>(new Matrix("VC", nm, nm));
+    matrices_["VC"] = std::make_shared<Matrix>("VC", nm, nm);
     Vint->compute(matrices_["VC"]);
 
     // => Nuclear Repulsions <= //
 
-    std::shared_ptr<Matrix> Zs(new Matrix("Zs", nA, 3));
+    auto Zs = std::make_shared<Matrix>("Zs", nA, 3);
     double** Zsp = Zs->pointer();
 
-    std::shared_ptr<Matrix> Rinv(new Matrix("Rinv", nA, nA));
+    auto Rinv = std::make_shared<Matrix>("Rinv", nA, nA);
     double** Rinvp = Rinv->pointer();
 
     for (int A = 0; A < nA; A++) {
@@ -676,8 +677,8 @@ void FISAPT::coulomb() {
     jk_->compute();
 
     int nn = primary_->nbf();
-    matrices_["JC"] = std::shared_ptr<Matrix>(new Matrix("JC", nn, nn));
-    matrices_["KC"] = std::shared_ptr<Matrix>(new Matrix("KC", nn, nn));
+    matrices_["JC"] = std::make_shared<Matrix>("JC", nn, nn);
+    matrices_["KC"] = std::make_shared<Matrix>("KC", nn, nn);
     if (matrices_["LoccC"]->colspi()[0] > 0) {
         matrices_["JC"]->copy(J[0]);
         matrices_["KC"]->copy(K[0]);
@@ -707,9 +708,9 @@ void FISAPT::scf() {
     // => A <= //
 
     outfile->Printf("  ==> SCF A: <==\n\n");
-    std::shared_ptr<FISAPTSCF> scfA(new FISAPTSCF(jk_, matrices_["E NUC"]->get(0, 0), matrices_["S"], matrices_["XC"],
-                                                  matrices_["T"], matrices_["VA"], matrices_["WC"], matrices_["LoccA"],
-                                                  options_));
+    std::shared_ptr<FISAPTSCF> scfA =
+        std::make_shared<FISAPTSCF>(jk_, matrices_["E NUC"]->get(0, 0), matrices_["S"], matrices_["XC"], matrices_["T"],
+                                    matrices_["VA"], matrices_["WC"], matrices_["LoccA"], options_);
     scfA->compute_energy();
 
     scalars_["E0 A"] = scfA->scalars()["E SCF"];
@@ -723,9 +724,9 @@ void FISAPT::scf() {
     // => B <= //
 
     outfile->Printf("  ==> SCF B: <==\n\n");
-    std::shared_ptr<FISAPTSCF> scfB(new FISAPTSCF(jk_, matrices_["E NUC"]->get(1, 1), matrices_["S"], matrices_["XC"],
-                                                  matrices_["T"], matrices_["VB"], matrices_["WC"], matrices_["LoccB"],
-                                                  options_));
+    std::shared_ptr<FISAPTSCF> scfB =
+        std::make_shared<FISAPTSCF>(jk_, matrices_["E NUC"]->get(1, 1), matrices_["S"], matrices_["XC"], matrices_["T"],
+                                    matrices_["VB"], matrices_["WC"], matrices_["LoccB"], options_);
     scfB->compute_energy();
 
     scalars_["E0 B"] = scfB->scalars()["E SCF"];
@@ -782,15 +783,15 @@ void FISAPT::freeze_core() {
     outfile->Printf("    ------------------\n");
     outfile->Printf("\n");
 
-    matrices_["Cfocc0A"] = std::shared_ptr<Matrix>(new Matrix("Cfocc0A", nbf, nfocc0A));
-    matrices_["Caocc0A"] = std::shared_ptr<Matrix>(new Matrix("Caocc0A", nbf, naocc0A));
-    matrices_["Cfocc0B"] = std::shared_ptr<Matrix>(new Matrix("Cfocc0B", nbf, nfocc0B));
-    matrices_["Caocc0B"] = std::shared_ptr<Matrix>(new Matrix("Caocc0B", nbf, naocc0B));
+    matrices_["Cfocc0A"] = std::make_shared<Matrix>("Cfocc0A", nbf, nfocc0A);
+    matrices_["Caocc0A"] = std::make_shared<Matrix>("Caocc0A", nbf, naocc0A);
+    matrices_["Cfocc0B"] = std::make_shared<Matrix>("Cfocc0B", nbf, nfocc0B);
+    matrices_["Caocc0B"] = std::make_shared<Matrix>("Caocc0B", nbf, naocc0B);
 
-    vectors_["eps_focc0A"] = std::shared_ptr<Vector>(new Vector("eps_focc0A", nfocc0A));
-    vectors_["eps_aocc0A"] = std::shared_ptr<Vector>(new Vector("eps_aocc0A", naocc0A));
-    vectors_["eps_focc0B"] = std::shared_ptr<Vector>(new Vector("eps_focc0B", nfocc0B));
-    vectors_["eps_aocc0B"] = std::shared_ptr<Vector>(new Vector("eps_aocc0B", naocc0B));
+    vectors_["eps_focc0A"] = std::make_shared<Vector>("eps_focc0A", nfocc0A);
+    vectors_["eps_aocc0A"] = std::make_shared<Vector>("eps_aocc0A", naocc0A);
+    vectors_["eps_focc0B"] = std::make_shared<Vector>("eps_focc0B", nfocc0B);
+    vectors_["eps_aocc0B"] = std::make_shared<Vector>("eps_aocc0B", naocc0B);
 
     double** Cocc0Ap = matrices_["Cocc0A"]->pointer();
     double** Cocc0Bp = matrices_["Cocc0B"]->pointer();
@@ -1350,7 +1351,7 @@ void FISAPT::exch() {
 
     std::shared_ptr<Matrix> Sab = Matrix::triplet(matrices_["Cocc0A"], S, matrices_["Cocc0B"], true, false, false);
     double** Sabp = Sab->pointer();
-    std::shared_ptr<Matrix> T(new Matrix("T", na + nb, na + nb));
+    auto T = std::make_shared<Matrix>("T", na + nb, na + nb);
     T->identity();
     double** Tp = T->pointer();
     for (int a = 0; a < na; a++) {
@@ -1366,10 +1367,10 @@ void FISAPT::exch() {
     }
     // T->print();
 
-    std::shared_ptr<Matrix> C_T_A_n(new Matrix("C_T_A_n", nbf, na));
-    std::shared_ptr<Matrix> C_T_B_n(new Matrix("C_T_A_n", nbf, nb));
-    std::shared_ptr<Matrix> C_T_BA_n(new Matrix("C_T_BA_n", nbf, nb));
-    std::shared_ptr<Matrix> C_T_AB_n(new Matrix("C_T_AB_n", nbf, na));
+    auto C_T_A_n = std::make_shared<Matrix>("C_T_A_n", nbf, na);
+    auto C_T_B_n = std::make_shared<Matrix>("C_T_A_n", nbf, nb);
+    auto C_T_BA_n = std::make_shared<Matrix>("C_T_BA_n", nbf, nb);
+    auto C_T_AB_n = std::make_shared<Matrix>("C_T_AB_n", nbf, na);
 
     C_DGEMM('N', 'N', nbf, na, na, 1.0, matrices_["Cocc0A"]->pointer()[0], na, &Tp[0][0], na + nb, 0.0,
             C_T_A_n->pointer()[0], na);
@@ -1631,7 +1632,7 @@ void FISAPT::ind() {
 
     // => Coupled Induction <= //
 
-    std::shared_ptr<CPHF_FISAPT> cphf(new CPHF_FISAPT);
+    auto cphf = std::make_shared<CPHF_FISAPT>();
 
     // Effective constructor
     cphf->delta_ = options_.get_double("D_CONVERGENCE");
@@ -2046,7 +2047,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     }
 
     // => Get integrals from DF_Helper <= //
-    auto dfh (std::make_shared<DF_Helper>(primary_, auxiliary));
+    auto dfh(std::make_shared<DF_Helper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2112,22 +2113,22 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 
     // => Tensor Slices <= //
 
-    std::shared_ptr<Matrix> Aar(new Matrix("Aar", max_a * nr, nQ));
-    std::shared_ptr<Matrix> Abs(new Matrix("Abs", max_b * ns, nQ));
-    std::shared_ptr<Matrix> Bas(new Matrix("Bas", max_a * ns, nQ));
-    std::shared_ptr<Matrix> Bbr(new Matrix("Bbr", max_b * nr, nQ));
-    std::shared_ptr<Matrix> Cas(new Matrix("Cas", max_a * ns, nQ));
-    std::shared_ptr<Matrix> Cbr(new Matrix("Cbr", max_b * nr, nQ));
-    std::shared_ptr<Matrix> Dar(new Matrix("Dar", max_a * nr, nQ));
-    std::shared_ptr<Matrix> Dbs(new Matrix("Dbs", max_b * ns, nQ));
+    auto Aar = std::make_shared<Matrix>("Aar", max_a * nr, nQ);
+    auto Abs = std::make_shared<Matrix>("Abs", max_b * ns, nQ);
+    auto Bas = std::make_shared<Matrix>("Bas", max_a * ns, nQ);
+    auto Bbr = std::make_shared<Matrix>("Bbr", max_b * nr, nQ);
+    auto Cas = std::make_shared<Matrix>("Cas", max_a * ns, nQ);
+    auto Cbr = std::make_shared<Matrix>("Cbr", max_b * nr, nQ);
+    auto Dar = std::make_shared<Matrix>("Dar", max_a * nr, nQ);
+    auto Dbs = std::make_shared<Matrix>("Dbs", max_b * ns, nQ);
 
     // => Thread Work Arrays <= //
 
     std::vector<std::shared_ptr<Matrix> > Trs;
     std::vector<std::shared_ptr<Matrix> > Vrs;
     for (int t = 0; t < nT; t++) {
-        Trs.push_back(std::shared_ptr<Matrix>(new Matrix("Trs", nr, ns)));
-        Vrs.push_back(std::shared_ptr<Matrix>(new Matrix("Vrs", nr, ns)));
+        Trs.push_back(std::make_shared<Matrix>("Trs", nr, ns));
+        Vrs.push_back(std::make_shared<Matrix>("Vrs", nr, ns));
     }
 
     // => Pointers <= //
@@ -2388,7 +2389,7 @@ void FISAPT::plot() {
 
     filesystem::create_directory(filepath);
 
-    std::shared_ptr<CubicScalarGrid> csg(new CubicScalarGrid(primary_, options_));
+    auto csg = std::make_shared<CubicScalarGrid>(primary_, options_);
     csg->set_filepath(filepath);
     csg->print_header();
     csg->set_auxiliary_basis(reference_->get_basisset("DF_BASIS_SCF"));
@@ -2482,10 +2483,10 @@ void FISAPT::flocalize() {
         matrices_["Uocc0A"] = ret["U"];
         matrices_["Qocc0A"] = ret["Q"];
 
-        matrices_["Lfocc0A"] = std::shared_ptr<Matrix>(new Matrix("Lfocc0A", nn, nf));
-        matrices_["Laocc0A"] = std::shared_ptr<Matrix>(new Matrix("Laocc0A", nn, na));
-        matrices_["Ufocc0A"] = std::shared_ptr<Matrix>(new Matrix("Ufocc0A", nf, nf));
-        matrices_["Uaocc0A"] = std::shared_ptr<Matrix>(new Matrix("Uaocc0A", na, na));
+        matrices_["Lfocc0A"] = std::make_shared<Matrix>("Lfocc0A", nn, nf);
+        matrices_["Laocc0A"] = std::make_shared<Matrix>("Laocc0A", nn, na);
+        matrices_["Ufocc0A"] = std::make_shared<Matrix>("Ufocc0A", nf, nf);
+        matrices_["Uaocc0A"] = std::make_shared<Matrix>("Uaocc0A", na, na);
 
         double** Lp = matrices_["Locc0A"]->pointer();
         double** Lfp = matrices_["Lfocc0A"]->pointer();
@@ -2550,10 +2551,10 @@ void FISAPT::flocalize() {
         matrices_["Uocc0B"] = ret["U"];
         matrices_["Qocc0B"] = ret["Q"];
 
-        matrices_["Lfocc0B"] = std::shared_ptr<Matrix>(new Matrix("Lfocc0B", nn, nf));
-        matrices_["Laocc0B"] = std::shared_ptr<Matrix>(new Matrix("Laocc0B", nn, na));
-        matrices_["Ufocc0B"] = std::shared_ptr<Matrix>(new Matrix("Ufocc0B", nf, nf));
-        matrices_["Uaocc0B"] = std::shared_ptr<Matrix>(new Matrix("Uaocc0B", na, na));
+        matrices_["Lfocc0B"] = std::make_shared<Matrix>("Lfocc0B", nn, nf);
+        matrices_["Laocc0B"] = std::make_shared<Matrix>("Laocc0B", nn, na);
+        matrices_["Ufocc0B"] = std::make_shared<Matrix>("Ufocc0B", nf, nf);
+        matrices_["Uaocc0B"] = std::make_shared<Matrix>("Uaocc0B", na, na);
 
         double** Lp = matrices_["Locc0B"]->pointer();
         double** Lfp = matrices_["Lfocc0B"]->pointer();
@@ -2610,7 +2611,7 @@ void FISAPT::felst() {
     std::vector<double> Elst10_terms;
     Elst10_terms.resize(4);
 
-    matrices_["Elst_AB"] = std::shared_ptr<Matrix>(new Matrix("Elst_AB", nA + na, nB + nb));
+    matrices_["Elst_AB"] = std::make_shared<Matrix>("Elst_AB", nA + na, nB + nb);
     double** Ep = matrices_["Elst_AB"]->pointer();
 
     // => A <-> B <= //
@@ -2634,7 +2635,7 @@ void FISAPT::felst() {
 #endif
 
     // => Get integrals from DF_Helper <= //
-    auto dfh (std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2650,13 +2651,13 @@ void FISAPT::felst() {
     dfh->transform();
 
     size_t nQ = dfh->get_naux();
-    std::shared_ptr<Matrix> QaC(new Matrix("QaC", na, nQ));
+    auto QaC = std::make_shared<Matrix>("QaC", na, nQ);
     double** QaCp = QaC->pointer();
     for (size_t a = 0; a < na; a++) {
         dfh->fill_tensor("Aaa", QaCp[a], {a, a + 1}, {a, a + 1});
     }
 
-    std::shared_ptr<Matrix> QbC(new Matrix("QbC", nb, nQ));
+    auto QbC = std::make_shared<Matrix>("QbC", nb, nQ);
     double** QbCp = QbC->pointer();
     for (size_t b = 0; b < nb; b++) {
         dfh->fill_tensor("Abb", QbCp[b], {b, b + 1}, {b, b + 1});
@@ -2677,12 +2678,12 @@ void FISAPT::felst() {
 
     // => Nuclear Part (PITA) <= //
 
-    std::shared_ptr<Matrix> Zxyz2(new Matrix("Zxyz", 1, 4));
+    auto Zxyz2 = std::make_shared<Matrix>("Zxyz", 1, 4);
     double** Zxyz2p = Zxyz2->pointer();
-    std::shared_ptr<IntegralFactory> Vfact2(new IntegralFactory(primary_));
+    auto Vfact2 = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact2->ao_potential()));
     Vint2->set_charge_field(Zxyz2);
-    std::shared_ptr<Matrix> Vtemp2(new Matrix("Vtemp2", nn, nn));
+    auto Vtemp2 = std::make_shared<Matrix>("Vtemp2", nn, nn);
 
     // => A <-> b <= //
 
@@ -2757,7 +2758,7 @@ void FISAPT::fexch() {
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
 
-    matrices_["Exch_AB"] = std::shared_ptr<Matrix>(new Matrix("Exch_AB", nA + na, nB + nb));
+    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na, nB + nb);
     double** Ep = matrices_["Exch_AB"]->pointer();
 
     // ==> Stack Variables <== //
@@ -2790,7 +2791,7 @@ void FISAPT::fexch() {
     for (auto& mat : Cs) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
     // => Get integrals from DF_Helper <= //
-    auto dfh (std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2838,17 +2839,17 @@ void FISAPT::fexch() {
     double** Sasp = Sas->pointer();
     double** Sbrp = Sbr->pointer();
 
-    std::shared_ptr<Matrix> WBab(new Matrix("WBab", na, nb));
+    auto WBab = std::make_shared<Matrix>("WBab", na, nb);
     double** WBabp = WBab->pointer();
-    std::shared_ptr<Matrix> WAba(new Matrix("WAba", nb, na));
+    auto WAba = std::make_shared<Matrix>("WAba", nb, na);
     double** WAbap = WAba->pointer();
 
     C_DGEMM('N', 'T', na, nb, nr, 1.0, WBarp[0], nr, Sbrp[0], nr, 0.0, WBabp[0], nb);
     C_DGEMM('N', 'T', nb, na, ns, 1.0, WAbsp[0], ns, Sasp[0], ns, 0.0, WAbap[0], na);
 
-    std::shared_ptr<Matrix> E_exch1(new Matrix("E_exch [a <x- b]", na, nb));
+    auto E_exch1 = std::make_shared<Matrix>("E_exch [a <x- b]", na, nb);
     double** E_exch1p = E_exch1->pointer();
-    std::shared_ptr<Matrix> E_exch2(new Matrix("E_exch [a -x> b]", na, nb));
+    auto E_exch2 = std::make_shared<Matrix>("E_exch [a -x> b]", na, nb);
     double** E_exch2p = E_exch2->pointer();
 
     for (int a = 0; a < na; a++) {
@@ -2862,13 +2863,13 @@ void FISAPT::fexch() {
     // E_exch2->print();
 
     size_t nQ = dfh->get_naux();
-    std::shared_ptr<Matrix> TrQ(new Matrix("TrQ", nr, nQ));
+    auto TrQ = std::make_shared<Matrix>("TrQ", nr, nQ);
     double** TrQp = TrQ->pointer();
-    std::shared_ptr<Matrix> TsQ(new Matrix("TsQ", ns, nQ));
+    auto TsQ = std::make_shared<Matrix>("TsQ", ns, nQ);
     double** TsQp = TsQ->pointer();
-    std::shared_ptr<Matrix> TbQ(new Matrix("TbQ", nb, nQ));
+    auto TbQ = std::make_shared<Matrix>("TbQ", nb, nQ);
     double** TbQp = TbQ->pointer();
-    std::shared_ptr<Matrix> TaQ(new Matrix("TaQ", na, nQ));
+    auto TaQ = std::make_shared<Matrix>("TaQ", na, nQ);
     double** TaQp = TaQ->pointer();
 
     dfh->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
@@ -2887,7 +2888,7 @@ void FISAPT::fexch() {
         dfh->write_disk_tensor("Bba", TrQ, {b, b + 1});
     }
 
-    std::shared_ptr<Matrix> E_exch3(new Matrix("E_exch [a <x-x> b]", na, nb));
+    auto E_exch3 = std::make_shared<Matrix>("E_exch [a <x-x> b]", na, nb);
     double** E_exch3p = E_exch3->pointer();
 
     for (size_t a = 0; a < na; a++) {
@@ -2979,7 +2980,7 @@ void FISAPT::find() {
     nT = Process::environment.get_n_threads();
 #endif
 
-    auto dfh (std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2994,12 +2995,12 @@ void FISAPT::find() {
 
     // => Nuclear Part (PITA) <= //
 
-    std::shared_ptr<Matrix> Zxyz2(new Matrix("Zxyz", 1, 4));
+    auto Zxyz2 = std::make_shared<Matrix>("Zxyz", 1, 4);
     double** Zxyz2p = Zxyz2->pointer();
-    std::shared_ptr<IntegralFactory> Vfact2(new IntegralFactory(primary_));
+    auto Vfact2 = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact2->ao_potential()));
     Vint2->set_charge_field(Zxyz2);
-    std::shared_ptr<Matrix> Vtemp2(new Matrix("Vtemp2", nn, nn));
+    auto Vtemp2 = std::make_shared<Matrix>("Vtemp2", nn, nn);
 
     double* ZAp = vectors_["ZA"]->pointer();
     for (size_t A = 0; A < nA; A++) {
@@ -3051,8 +3052,8 @@ void FISAPT::find() {
     double** RaCp = matrices_["Vlocc0A"]->pointer();
     double** RbDp = matrices_["Vlocc0B"]->pointer();
 
-    std::shared_ptr<Matrix> TsQ(new Matrix("TsQ", ns, nQ));
-    std::shared_ptr<Matrix> T1As(new Matrix("T1As", na, ns));
+    auto TsQ = std::make_shared<Matrix>("TsQ", ns, nQ);
+    auto T1As = std::make_shared<Matrix>("T1As", na, ns);
     double** TsQp = TsQ->pointer();
     double** T1Asp = T1As->pointer();
     for (size_t b = 0; b < nb; b++) {
@@ -3063,8 +3064,8 @@ void FISAPT::find() {
         }
     }
 
-    std::shared_ptr<Matrix> TrQ(new Matrix("TrQ", nr, nQ));
-    std::shared_ptr<Matrix> T1Br(new Matrix("T1Br", nb, nr));
+    auto TrQ = std::make_shared<Matrix>("TrQ", nr, nQ);
+    auto T1Br = std::make_shared<Matrix>("T1Br", nb, nr);
     double** TrQp = TrQ->pointer();
     double** T1Brp = T1Br->pointer();
     for (size_t a = 0; a < na; a++) {
@@ -3098,13 +3099,13 @@ void FISAPT::find() {
 
     // ==> MO Amplitudes/Sources (by source atom) <== //
 
-    std::shared_ptr<Matrix> xA(new Matrix("xA", na, nr));
-    std::shared_ptr<Matrix> xB(new Matrix("xB", nb, ns));
+    auto xA = std::make_shared<Matrix>("xA", na, nr);
+    auto xB = std::make_shared<Matrix>("xB", nb, ns);
     double** xAp = xA->pointer();
     double** xBp = xB->pointer();
 
-    std::shared_ptr<Matrix> wB(new Matrix("wB", na, nr));
-    std::shared_ptr<Matrix> wA(new Matrix("wA", nb, ns));
+    auto wB = std::make_shared<Matrix>("wB", na, nr);
+    auto wA = std::make_shared<Matrix>("wA", nb, ns);
     double** wBp = wB->pointer();
     double** wAp = wA->pointer();
 
@@ -3162,16 +3163,16 @@ void FISAPT::find() {
 
     // ==> Uncoupled Targets <== //
 
-    std::shared_ptr<Matrix> Ind20u_AB_terms(new Matrix("Ind20 [A<-B] (a x B)", na, nB + nb));
-    std::shared_ptr<Matrix> Ind20u_BA_terms(new Matrix("Ind20 [B<-A] (A x b)", nA + na, nb));
+    auto Ind20u_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb);
+    auto Ind20u_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na, nb);
     double** Ind20u_AB_termsp = Ind20u_AB_terms->pointer();
     double** Ind20u_BA_termsp = Ind20u_BA_terms->pointer();
 
     double Ind20u_AB = 0.0;
     double Ind20u_BA = 0.0;
 
-    std::shared_ptr<Matrix> ExchInd20u_AB_terms(new Matrix("ExchInd20 [A<-B] (a x B)", na, nB + nb));
-    std::shared_ptr<Matrix> ExchInd20u_BA_terms(new Matrix("ExchInd20 [B<-A] (A x b)", nA + na, nb));
+    auto ExchInd20u_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb);
+    auto ExchInd20u_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na, nb);
     double** ExchInd20u_AB_termsp = ExchInd20u_AB_terms->pointer();
     double** ExchInd20u_BA_termsp = ExchInd20u_BA_terms->pointer();
 
@@ -3190,24 +3191,26 @@ void FISAPT::find() {
         snA = nA;
     }
 
-    std::shared_ptr<Matrix> sExchInd20u_AB_terms(new Matrix("sExchInd20 [A<-B] (a x B)", sna, snB + snb));
-    std::shared_ptr<Matrix> sExchInd20u_BA_terms(new Matrix("sExchInd20 [B<-A] (A x b)", snA + sna, snb));
+    std::shared_ptr<Matrix> sExchInd20u_AB_terms =
+        std::make_shared<Matrix>("sExchInd20 [A<-B] (a x B)", sna, snB + snb);
+    std::shared_ptr<Matrix> sExchInd20u_BA_terms =
+        std::make_shared<Matrix>("sExchInd20 [B<-A] (A x b)", snA + sna, snb);
     double** sExchInd20u_AB_termsp = sExchInd20u_AB_terms->pointer();
     double** sExchInd20u_BA_termsp = sExchInd20u_BA_terms->pointer();
 
     double sExchInd20u_AB = 0.0;
     double sExchInd20u_BA = 0.0;
 
-    std::shared_ptr<Matrix> Indu_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB + nb));
-    std::shared_ptr<Matrix> Indu_BA_terms(new Matrix("Ind [B<-A] (A x b)", nA + na, nb));
+    auto Indu_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb);
+    auto Indu_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na, nb);
     double** Indu_AB_termsp = Indu_AB_terms->pointer();
     double** Indu_BA_termsp = Indu_BA_terms->pointer();
 
     double Indu_AB = 0.0;
     double Indu_BA = 0.0;
 
-    std::shared_ptr<Matrix> sIndu_AB_terms(new Matrix("sInd [A<-B] (a x B)", sna, snB + snb));
-    std::shared_ptr<Matrix> sIndu_BA_terms(new Matrix("sInd [B<-A] (A x b)", snA + sna, snb));
+    auto sIndu_AB_terms = std::make_shared<Matrix>("sInd [A<-B] (a x B)", sna, snB + snb);
+    auto sIndu_BA_terms = std::make_shared<Matrix>("sInd [B<-A] (A x b)", snA + sna, snb);
     double** sIndu_AB_termsp = sIndu_AB_terms->pointer();
     double** sIndu_BA_termsp = sIndu_BA_terms->pointer();
 
@@ -3318,24 +3321,24 @@ void FISAPT::find() {
 
         // ==> Coupled Targets <== //
 
-        std::shared_ptr<Matrix> Ind20r_AB_terms(new Matrix("Ind20 [A<-B] (a x B)", na, nB + nb));
-        std::shared_ptr<Matrix> Ind20r_BA_terms(new Matrix("Ind20 [B<-A] (A x b)", nA + na, nb));
+        auto Ind20r_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb);
+        auto Ind20r_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na, nb);
         double** Ind20r_AB_termsp = Ind20r_AB_terms->pointer();
         double** Ind20r_BA_termsp = Ind20r_BA_terms->pointer();
 
         double Ind20r_AB = 0.0;
         double Ind20r_BA = 0.0;
 
-        std::shared_ptr<Matrix> ExchInd20r_AB_terms(new Matrix("ExchInd20 [A<-B] (a x B)", na, nB + nb));
-        std::shared_ptr<Matrix> ExchInd20r_BA_terms(new Matrix("ExchInd20 [B<-A] (A x b)", nA + na, nb));
+        auto ExchInd20r_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb);
+        auto ExchInd20r_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na, nb);
         double** ExchInd20r_AB_termsp = ExchInd20r_AB_terms->pointer();
         double** ExchInd20r_BA_termsp = ExchInd20r_BA_terms->pointer();
 
         double ExchInd20r_AB = 0.0;
         double ExchInd20r_BA = 0.0;
 
-        std::shared_ptr<Matrix> Indr_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB + nb));
-        std::shared_ptr<Matrix> Indr_BA_terms(new Matrix("Ind [B<-A] (A x b)", nA + na, nb));
+        auto Indr_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb);
+        auto Indr_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na, nb);
         double** Indr_AB_termsp = Indr_AB_terms->pointer();
         double** Indr_BA_termsp = Indr_BA_terms->pointer();
 
@@ -3372,7 +3375,7 @@ void FISAPT::find() {
             outfile->Printf("    Responses for (A <- Source B = %3d) and (B <- Source A = %3d)\n\n",
                             (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));
 
-            std::shared_ptr<CPHF_FISAPT> cphf(new CPHF_FISAPT);
+            auto cphf = std::make_shared<CPHF_FISAPT>();
 
             // Effective constructor
             cphf->delta_ = options_.get_double("D_CONVERGENCE");
@@ -3503,12 +3506,12 @@ void FISAPT::find() {
         sInd_BA_terms->scale(sSdelta * SrBA);
     }
 
-    matrices_["IndAB_AB"] = std::shared_ptr<Matrix>(new Matrix("IndAB_AB", nA + na, nB + nb));
-    matrices_["IndBA_AB"] = std::shared_ptr<Matrix>(new Matrix("IndBA_AB", nA + na, nB + nb));
-    matrices_["Ind20u_AB_terms"] = std::shared_ptr<Matrix>(new Matrix("Ind20uAB_AB", nA + na, nB + nb));
-    matrices_["ExchInd20u_AB_terms"] = std::shared_ptr<Matrix>(new Matrix("ExchInd20uAB_AB", nA + na, nB + nb));
-    matrices_["Ind20u_BA_terms"] = std::shared_ptr<Matrix>(new Matrix("Ind20uBA_AB", nA + na, nB + nb));
-    matrices_["ExchInd20u_BA_terms"] = std::shared_ptr<Matrix>(new Matrix("ExchInd20uBA_AB", nA + na, nB + nb));
+    matrices_["IndAB_AB"] = std::make_shared<Matrix>("IndAB_AB", nA + na, nB + nb);
+    matrices_["IndBA_AB"] = std::make_shared<Matrix>("IndBA_AB", nA + na, nB + nb);
+    matrices_["Ind20u_AB_terms"] = std::make_shared<Matrix>("Ind20uAB_AB", nA + na, nB + nb);
+    matrices_["ExchInd20u_AB_terms"] = std::make_shared<Matrix>("ExchInd20uAB_AB", nA + na, nB + nb);
+    matrices_["Ind20u_BA_terms"] = std::make_shared<Matrix>("Ind20uBA_AB", nA + na, nB + nb);
+    matrices_["ExchInd20u_BA_terms"] = std::make_shared<Matrix>("ExchInd20uBA_AB", nA + na, nB + nb);
     double** EABp = matrices_["IndAB_AB"]->pointer();
     double** EBAp = matrices_["IndBA_AB"]->pointer();
     double** Ind20ABp = matrices_["Ind20u_AB_terms"]->pointer();
@@ -3538,8 +3541,8 @@ void FISAPT::find() {
         }
     }
 
-    matrices_["sIndAB_AB"] = std::shared_ptr<Matrix>(new Matrix("sIndAB_AB", snA + sna, snB + snb));
-    matrices_["sIndBA_AB"] = std::shared_ptr<Matrix>(new Matrix("sIndBA_AB", snA + sna, snB + snb));
+    matrices_["sIndAB_AB"] = std::make_shared<Matrix>("sIndAB_AB", snA + sna, snB + snb);
+    matrices_["sIndBA_AB"] = std::make_shared<Matrix>("sIndBA_AB", snA + sna, snB + snb);
     double** sEABp = matrices_["sIndAB_AB"]->pointer();
     double** sEBAp = matrices_["sIndBA_AB"]->pointer();
     double** sEAB2p = sInd_AB_terms->pointer();
@@ -3588,7 +3591,7 @@ void FISAPT::fdisp() {
 
     // => Targets <= //
 
-    matrices_["Disp_AB"] = std::shared_ptr<Matrix>(new Matrix("Disp_AB", nA + nfa + na, nB + nfb + nb));
+    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na, nB + nfb + nb);
     double** Ep = matrices_["Disp_AB"]->pointer();
 
     int snA = 0;
@@ -3607,7 +3610,7 @@ void FISAPT::fdisp() {
         snb = nb;
     }
 
-    matrices_["sDisp_AB"] = std::shared_ptr<Matrix>(new Matrix("Disp_AB", snA + snfa + sna, snB + snfb + snb));
+    matrices_["sDisp_AB"] = std::make_shared<Matrix>("Disp_AB", snA + snfa + sna, snB + snfb + snb);
     double** sEp = matrices_["sDisp_AB"]->pointer();
 
     // => Stashed Variables <= //
@@ -3784,7 +3787,7 @@ void FISAPT::fdisp() {
         ncol += (size_t)mat->ncol();
     }
 
-    auto dfh (std::make_shared<DF_Helper>(primary_, auxiliary));
+    auto dfh(std::make_shared<DF_Helper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -3850,14 +3853,14 @@ void FISAPT::fdisp() {
 
     // => Tensor Slices <= //
 
-    std::shared_ptr<Matrix> Aar(new Matrix("Aar", max_r * na, nQ));
-    std::shared_ptr<Matrix> Abs(new Matrix("Abs", max_s * nb, nQ));
-    std::shared_ptr<Matrix> Bas(new Matrix("Bas", max_s * na, nQ));
-    std::shared_ptr<Matrix> Bbr(new Matrix("Bbr", max_r * nb, nQ));
-    std::shared_ptr<Matrix> Cas(new Matrix("Cas", max_s * na, nQ));
-    std::shared_ptr<Matrix> Cbr(new Matrix("Cbr", max_r * nb, nQ));
-    std::shared_ptr<Matrix> Dar(new Matrix("Dar", max_r * na, nQ));
-    std::shared_ptr<Matrix> Dbs(new Matrix("Dbs", max_s * nb, nQ));
+    auto Aar = std::make_shared<Matrix>("Aar", max_r * na, nQ);
+    auto Abs = std::make_shared<Matrix>("Abs", max_s * nb, nQ);
+    auto Bas = std::make_shared<Matrix>("Bas", max_s * na, nQ);
+    auto Bbr = std::make_shared<Matrix>("Bbr", max_r * nb, nQ);
+    auto Cas = std::make_shared<Matrix>("Cas", max_s * na, nQ);
+    auto Cbr = std::make_shared<Matrix>("Cbr", max_r * nb, nQ);
+    auto Dar = std::make_shared<Matrix>("Dar", max_r * na, nQ);
+    auto Dbs = std::make_shared<Matrix>("Dbs", max_s * nb, nQ);
 
     // => Thread Work Arrays <= //
 
@@ -3867,11 +3870,11 @@ void FISAPT::fdisp() {
     std::vector<std::shared_ptr<Matrix> > V2ab;
     std::vector<std::shared_ptr<Matrix> > Iab;
     for (int t = 0; t < nT; t++) {
-        Tab.push_back(std::shared_ptr<Matrix>(new Matrix("Tab", na, nb)));
-        Vab.push_back(std::shared_ptr<Matrix>(new Matrix("Vab", na, nb)));
-        T2ab.push_back(std::shared_ptr<Matrix>(new Matrix("T2ab", na, nb)));
-        V2ab.push_back(std::shared_ptr<Matrix>(new Matrix("V2ab", na, nb)));
-        Iab.push_back(std::shared_ptr<Matrix>(new Matrix("Iab", na, nb)));
+        Tab.push_back(std::make_shared<Matrix>("Tab", na, nb));
+        Vab.push_back(std::make_shared<Matrix>("Vab", na, nb));
+        T2ab.push_back(std::make_shared<Matrix>("T2ab", na, nb));
+        V2ab.push_back(std::make_shared<Matrix>("V2ab", na, nb));
+        Iab.push_back(std::make_shared<Matrix>("Iab", na, nb));
     }
 
     // => Pointers <= //
@@ -3946,9 +3949,9 @@ void FISAPT::fdisp() {
     std::vector<std::shared_ptr<Matrix> > E_exch_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > sE_exch_disp20_threads;
     for (int t = 0; t < nT; t++) {
-        E_disp20_threads.push_back(std::shared_ptr<Matrix>(new Matrix("E_disp20", na, nb)));
-        E_exch_disp20_threads.push_back(std::shared_ptr<Matrix>(new Matrix("E_exch_disp20", na, nb)));
-        sE_exch_disp20_threads.push_back(std::shared_ptr<Matrix>(new Matrix("sE_exch_disp20", sna, snb)));
+        E_disp20_threads.push_back(std::make_shared<Matrix>("E_disp20", na, nb));
+        E_exch_disp20_threads.push_back(std::make_shared<Matrix>("E_exch_disp20", na, nb));
+        sE_exch_disp20_threads.push_back(std::make_shared<Matrix>("sE_exch_disp20", sna, snb));
     }
 
     // => MO => LO Transform <= //
@@ -4054,8 +4057,8 @@ void FISAPT::fdisp() {
         }
     }
 
-    std::shared_ptr<Matrix> E_disp20(new Matrix("E_disp20", na, nb));
-    std::shared_ptr<Matrix> E_exch_disp20(new Matrix("E_exch_disp20", na, nb));
+    auto E_disp20 = std::make_shared<Matrix>("E_disp20", na, nb);
+    auto E_exch_disp20 = std::make_shared<Matrix>("E_exch_disp20", na, nb);
     double** E_disp20p = E_disp20->pointer();
     double** E_exch_disp20p = E_exch_disp20->pointer();
 
@@ -4071,7 +4074,7 @@ void FISAPT::fdisp() {
     }
 
     if (options_.get_bool("sSAPT0_SCALE")) {
-        std::shared_ptr<Matrix> sE_exch_disp20(new Matrix("sE_exch_disp20", na, nb));
+        auto sE_exch_disp20 = std::make_shared<Matrix>("sE_exch_disp20", na, nb);
         sE_exch_disp20->copy(E_exch_disp20);
         double** sE_exch_disp20p = sE_exch_disp20->pointer();
         sE_exch_disp20->scale(sSAPT0_scale_);
@@ -4187,7 +4190,7 @@ std::shared_ptr<Matrix> FISAPT::extract_columns(const std::vector<int>& cols, st
     int na = A->colspi()[0];
     int ni = cols.size();
 
-    std::shared_ptr<Matrix> A2(new Matrix("A2", nm, ni));
+    auto A2 = std::make_shared<Matrix>("A2", nm, ni);
     double** Ap = A->pointer();
     double** A2p = A2->pointer();
 
@@ -4274,8 +4277,8 @@ void FISAPTSCF::compute_energy() {
     outfile->Printf("\n");
 
     bool diised = false;
-    std::shared_ptr<Matrix> Gsize(new Matrix("Gsize", nmo, nmo));
-    std::shared_ptr<DIISManager> diis(new DIISManager(max_diis_vectors, "FISAPT DIIS"));
+    auto Gsize = std::make_shared<Matrix>("Gsize", nmo, nmo);
+    auto diis = std::make_shared<DIISManager>(max_diis_vectors, "FISAPT DIIS");
     diis->set_error_vector_size(1, DIISEntry::Matrix, Gsize.get());
     diis->set_vector_size(1, DIISEntry::Matrix, F.get());
     Gsize.reset();
@@ -4346,8 +4349,8 @@ void FISAPTSCF::compute_energy() {
         // => Diagonalize Fock Matrix <= //
 
         std::shared_ptr<Matrix> F2 = Matrix::triplet(X, F, X, true, false, false);
-        std::shared_ptr<Matrix> U2 = std::shared_ptr<Matrix>(new Matrix("C", nmo, nmo));
-        std::shared_ptr<Vector> e2 = std::shared_ptr<Vector>(new Vector("eps", nmo));
+        auto U2 = std::make_shared<Matrix>("C", nmo, nmo);
+        auto e2 = std::make_shared<Vector>("eps", nmo);
         F2->diagonalize(U2, e2, ascending);
         std::shared_ptr<Matrix> C = Matrix::doublet(X, U2, false, false);
 
@@ -4375,8 +4378,8 @@ void FISAPTSCF::compute_energy() {
     // => Post Results <= //
 
     std::shared_ptr<Vector> eps = vectors_["eps"];
-    std::shared_ptr<Vector> eps_occ(new Vector("eps_occ", nocc));
-    std::shared_ptr<Vector> eps_vir(new Vector("eps_vir", nvir));
+    auto eps_occ = std::make_shared<Vector>("eps_occ", nocc);
+    auto eps_vir = std::make_shared<Vector>("eps_vir", nvir);
 
     double* ep = eps->pointer();
     double* eop = eps_occ->pointer();
@@ -4394,8 +4397,8 @@ void FISAPTSCF::compute_energy() {
     vectors_["eps_vir"] = eps_vir;
 
     std::shared_ptr<Matrix> C = matrices_["C"];
-    std::shared_ptr<Matrix> Cocc(new Matrix("Cocc", nbf, nocc));
-    std::shared_ptr<Matrix> Cvir(new Matrix("Cvir", nbf, nvir));
+    auto Cocc = std::make_shared<Matrix>("Cocc", nbf, nocc);
+    auto Cvir = std::make_shared<Matrix>("Cvir", nbf, nvir);
 
     double** Cp = C->pointer();
     double** Cop = Cocc->pointer();
@@ -4494,7 +4497,7 @@ void CPHF_FISAPT::compute_cphf() {
     time_t start;
     time_t stop;
 
-    start = time(NULL);
+    start = time(nullptr);
 
     outfile->Printf("    -----------------------------------------\n");
     outfile->Printf("    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
@@ -4547,7 +4550,7 @@ void CPHF_FISAPT::compute_cphf() {
             r2B = sqrt(C_DDOT(no * nv, rp[0], 1, rp[0], 1)) / b2B;
         }
 
-        stop = time(NULL);
+        stop = time(nullptr);
         outfile->Printf("    %-4d %11.3E%1s %11.3E%1s %10ld\n", iter + 1, r2A, (r2A < delta_ ? "*" : " "), r2B,
                         (r2B < delta_ ? "*" : " "), stop - start);
         // fflush(outfile);
@@ -4625,7 +4628,7 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
         int nso = Cvir_A_->nrow();
         double** Cp = Cvir_A_->pointer();
         double** bp = b["A"]->pointer();
-        std::shared_ptr<Matrix> T(new Matrix("T", nso, no));
+        auto T = std::make_shared<Matrix>("T", nso, no);
         double** Tp = T->pointer();
         C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
         Cr.push_back(T);
@@ -4638,7 +4641,7 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
         int nso = Cvir_B_->nrow();
         double** Cp = Cvir_B_->pointer();
         double** bp = b["B"]->pointer();
-        std::shared_ptr<Matrix> T(new Matrix("T", nso, no));
+        auto T = std::make_shared<Matrix>("T", nso, no);
         double** Tp = T->pointer();
         C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
         Cr.push_back(T);
@@ -4662,8 +4665,8 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
         int no = b["A"]->nrow();
         int nv = b["A"]->ncol();
         int nso = Cvir_A_->nrow();
-        std::shared_ptr<Matrix> T(new Matrix("T", no, nso));
-        s["A"] = std::shared_ptr<Matrix>(new Matrix("S", no, nv));
+        auto T = std::make_shared<Matrix>("T", no, nso);
+        s["A"] = std::make_shared<Matrix>("S", no, nv);
         double** Cop = Cocc_A_->pointer();
         double** Cvp = Cvir_A_->pointer();
         double** Jp = Jv->pointer();
@@ -4692,8 +4695,8 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
         int no = b["B"]->nrow();
         int nv = b["B"]->ncol();
         int nso = Cvir_B_->nrow();
-        std::shared_ptr<Matrix> T(new Matrix("T", no, nso));
-        s["B"] = std::shared_ptr<Matrix>(new Matrix("S", no, nv));
+        auto T = std::make_shared<Matrix>("T", no, nso);
+        s["B"] = std::make_shared<Matrix>("S", no, nv);
         double** Cop = Cocc_B_->pointer();
         double** Cvp = Cvir_B_->pointer();
         double** Jp = Jv->pointer();

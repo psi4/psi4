@@ -489,9 +489,9 @@ SharedMatrix Deriv::compute()
     v_int->compute_deriv1(h_deriv, cdsalcs_);
 
     int ncd = cdsalcs_.ncd();
-    SharedVector TPDMcont_vector(new Vector(ncd));
-    SharedVector Xcont_vector(new Vector(ncd));
-    SharedVector Dcont_vector(new Vector(ncd));
+    auto TPDMcont_vector = std::make_shared<Vector>(ncd);
+    auto Xcont_vector = std::make_shared<Vector>(ncd);
+    auto Dcont_vector = std::make_shared<Vector>(ncd);
     SharedVector TPDM_ref_cont_vector;
     SharedVector X_ref_cont_vector;
     SharedVector D_ref_cont_vector;
@@ -510,7 +510,7 @@ SharedMatrix Deriv::compute()
     SharedMatrix Db = wfn_->Db();
     SharedMatrix X = wfn_->X();
 
-    // The current wavefunction's reference wavefunction, NULL for SCF/DFT
+    // The current wavefunction's reference wavefunction, nullptr for SCF/DFT
     std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
     // Whether the SCF contribution is separate from the correlated terms
     bool reference_separate = (X) && ref_wfn;
@@ -546,9 +546,9 @@ SharedMatrix Deriv::compute()
            the correlated part.  The reference contributions must be harvested from the reference_wavefunction
            member.  If density fitting was used, we don't want to compute two electron contributions here*/
         if (wfn_->density_fitted()) {
-            X_ref_cont_vector    = SharedVector(new Vector(ncd));
-            D_ref_cont_vector    = SharedVector(new Vector(ncd));
-            TPDM_ref_cont_vector = SharedVector(new Vector(ncd));
+            X_ref_cont_vector    = std::make_shared<Vector>(ncd);
+            D_ref_cont_vector    = std::make_shared<Vector>(ncd);
+            TPDM_ref_cont_vector = std::make_shared<Vector>(ncd);
             X_ref_cont           = X_ref_cont_vector->pointer();
             D_ref_cont           = D_ref_cont_vector->pointer();
             TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();
@@ -575,7 +575,7 @@ SharedMatrix Deriv::compute()
             if (wfn_->same_a_b_orbs()) {
                 // In the restricted case, the alpha D is really the total D.  Undefine the beta one, so
                 // that the one-electron contribution, computed below, is correct.
-                Db = factory_->create_shared_matrix("NULL");
+                Db = factory_->create_shared_matrix("nullptr");
                 ScfRestrictedFunctor scf_functor(TPDM_ref_cont_vector, Da_ref);
                 ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, Da, Da_ref);
                 so_eri.compute_integrals_deriv1(functor);
@@ -612,7 +612,7 @@ SharedMatrix Deriv::compute()
                 ints_transform->backtransform_density();
 
                 Da = factory_->create_shared_matrix("SO-basis OPDM");
-                Db = factory_->create_shared_matrix("NULL");
+                Db = factory_->create_shared_matrix("nullptr");
                 Da->load(_default_psio_lib_, PSIF_AO_OPDM);
                 X = factory_->create_shared_matrix("SO-basis Lagrangian");
                 X->load(_default_psio_lib_, PSIF_AO_OPDM);
@@ -714,7 +714,7 @@ SharedMatrix Deriv::compute()
     }
 
     // Obtain nuclear repulsion contribution from the wavefunction
-    SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1()));
+    auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1());
 
     // Print things out, after making sure that each component is properly symmetrized
     enuc->symmetrize_gradient(molecule_);
@@ -741,7 +741,7 @@ SharedMatrix Deriv::compute()
     }
 
     // Add everything up into a temp.
-    SharedMatrix corr(new Matrix("Correlation contribution to gradient", molecule_->natom(), 3));
+    auto corr = std::make_shared<Matrix>("Correlation contribution to gradient", molecule_->natom(), 3);
     gradient_->add(enuc);
     corr->add(opdm_contr_);
     corr->add(x_contr_);

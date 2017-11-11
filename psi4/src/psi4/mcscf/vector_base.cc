@@ -42,7 +42,7 @@ namespace psi{ namespace mcscf{
 
 extern MemoryManager* memory_manager;
 
-VectorBase::VectorBase(int elements) : elements_(elements),vector_(NULL)
+VectorBase::VectorBase(int elements) : elements_(elements),vector_(nullptr)
 {
   allocate1(double,vector_,elements_);
 }

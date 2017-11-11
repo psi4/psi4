@@ -117,15 +117,15 @@ void CCBLAS::compute()
 //   // Create a map with all the target matrices and how many times they appear
 //   map<string,int> target_count;
 //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     if(it->get_A_Matrix()!=NULL)
+//     if(it->get_A_Matrix()!=nullptr)
 //       target_count[it->get_A_Matrix()->get_label()]++;
 //   }
 //   // Create a map with all the source matrices and how many times they appear
 //   map<string,int> source_count;
 //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     if(it->get_B_Matrix()!=NULL)
+//     if(it->get_B_Matrix()!=nullptr)
 //       source_count[it->get_B_Matrix()->get_label()]++;
-//     if(it->get_C_Matrix()!=NULL)
+//     if(it->get_C_Matrix()!=nullptr)
 //       source_count[it->get_C_Matrix()->get_label()]++;
 //   }
 //
@@ -179,7 +179,7 @@ void CCBLAS::compute()
 //     int nop = distance(it-operations.begin());
 //     outfile->Printf("\nI will process operation #%3d",nop);
 //     int memA=0;
-//     if(it->get_A_Matrix()!=NULL){
+//     if(it->get_A_Matrix()!=nullptr){
 //       memA=it->get_A_Matrix()->get_memory();
 //     }
 //   }
@@ -187,15 +187,15 @@ void CCBLAS::compute()
   // Create a map with all the required matrices and how many times they appear
 
   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-    if(it->get_A_Matrix()!=NULL){
+    if(it->get_A_Matrix()!=nullptr){
       matrices_in_deque[it->get_A_Matrix()]++;
       matrices_in_deque_target[it->get_A_Matrix()]++;
     }
-    if(it->get_B_Matrix()!=NULL){
+    if(it->get_B_Matrix()!=nullptr){
       matrices_in_deque[it->get_B_Matrix()]++;
       matrices_in_deque_source[it->get_B_Matrix()]++;
     }
-    if(it->get_C_Matrix()!=NULL){
+    if(it->get_C_Matrix()!=nullptr){
       matrices_in_deque[it->get_C_Matrix()]++;
       matrices_in_deque_source[it->get_C_Matrix()]++;
     }
@@ -207,15 +207,15 @@ void CCBLAS::compute()
     op.compute();
 
     // Decrease the counters for the matrices to be processed
-    if(op.get_A_Matrix()!=NULL){
+    if(op.get_A_Matrix()!=nullptr){
       matrices_in_deque[op.get_A_Matrix()]--;
       matrices_in_deque_target[op.get_A_Matrix()]--;
     }
-    if(op.get_B_Matrix()!=NULL){
+    if(op.get_B_Matrix()!=nullptr){
       matrices_in_deque[op.get_B_Matrix()]--;
       matrices_in_deque_source[op.get_B_Matrix()]--;
     }
-    if(op.get_C_Matrix()!=NULL){
+    if(op.get_C_Matrix()!=nullptr){
       matrices_in_deque[op.get_C_Matrix()]--;
       matrices_in_deque_source[op.get_C_Matrix()]--;
     }
@@ -235,7 +235,7 @@ void CCBLAS::append_zero_two_diagonal(const char* cstr)
   std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(int n=0;n<names.size();n++){
     CCMatrix* Matrix = get_Matrix(names[n]);
-    CCOperation op(0.0,"","","zero_two_diagonal",Matrix,NULL,NULL,work[0],buffer[0]);
+    CCOperation op(0.0,"","","zero_two_diagonal",Matrix,nullptr,nullptr,work[0],buffer[0]);
     operations.push_back(op);
   }
 }

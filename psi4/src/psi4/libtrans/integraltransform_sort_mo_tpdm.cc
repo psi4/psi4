@@ -106,7 +106,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketOffset = p;
@@ -117,7 +117,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketRowDim = p;
@@ -128,7 +128,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketSize = p;
@@ -269,7 +269,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketOffset = p;
@@ -280,7 +280,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketRowDim = p;
@@ -291,7 +291,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(int *)));
-		if(p == NULL) {
+		if(p == nullptr) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
 		} else {
 		  bucketSize = p;

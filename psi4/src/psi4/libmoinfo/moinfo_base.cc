@@ -69,7 +69,7 @@ void MOInfoBase::startup()
   wfn_sym = 0;
 
   guess_occupation = true;
-  PSI_NULL(ioff);
+  PSI_nullptr(ioff);
   compute_ioff();
 }
 

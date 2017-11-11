@@ -49,7 +49,7 @@ int DPD::file4_close(dpdfile4 *File)
     free(File->lfiles);
 
     if(!File->incore) free(File->matrix);
-    else File->matrix = NULL;
+    else File->matrix = nullptr;
 
     return 0;
 }

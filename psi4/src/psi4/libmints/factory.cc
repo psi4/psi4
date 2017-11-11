@@ -42,30 +42,23 @@
 ;
 using namespace psi;
 
-MatrixFactory::MatrixFactory()
-{
-    nirrep_ = 0;
-}
+MatrixFactory::MatrixFactory() { nirrep_ = 0; }
 
-MatrixFactory::MatrixFactory(const MatrixFactory& copy)
-{
+MatrixFactory::MatrixFactory(const MatrixFactory& copy) {
     nirrep_ = copy.nirrep_;
     rowspi_ = copy.rowspi_;
     colspi_ = copy.colspi_;
 }
 
-MatrixFactory::~MatrixFactory()
-{
-}
+MatrixFactory::~MatrixFactory() {}
 
-bool MatrixFactory::init_with(int nirreps, int *rowspi, int *colspi)
-{
+bool MatrixFactory::init_with(int nirreps, int* rowspi, int* colspi) {
     nirrep_ = nirreps;
     rowspi_ = Dimension(nirrep_);
     colspi_ = Dimension(nirrep_);
 
     nso_ = 0;
-    for (int i=0; i<nirrep_; ++i) {
+    for (int i = 0; i < nirrep_; ++i) {
         rowspi_[i] = rowspi[i];
         colspi_[i] = colspi[i];
         nso_ += rowspi_[i];
@@ -74,114 +67,78 @@ bool MatrixFactory::init_with(int nirreps, int *rowspi, int *colspi)
     return true;
 }
 
-bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols)
-{
+bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols) {
     nirrep_ = rows.n();
 
-    if (rows.n() != cols.n())
-        throw PSIEXCEPTION("MatrixFactory can only handle same symmetry for rows and cols.");
+    if (rows.n() != cols.n()) throw PSIEXCEPTION("MatrixFactory can only handle same symmetry for rows and cols.");
 
     rowspi_ = rows;
     colspi_ = cols;
 
     nso_ = 0;
-    for (int i=0; i<nirrep_; ++i) {
+    for (int i = 0; i < nirrep_; ++i) {
         nso_ += rowspi_[i];
     }
 
     return true;
 }
 
-bool MatrixFactory::init_with(const std::shared_ptr<SOBasisSet>& sobasis)
-{
+bool MatrixFactory::init_with(const std::shared_ptr<SOBasisSet>& sobasis) {
     return init_with(sobasis->dimension(), sobasis->dimension());
 }
 
 /// Returns number of irreps
-int MatrixFactory::nirrep() const {
-    return nirrep_;
-}
+int MatrixFactory::nirrep() const { return nirrep_; }
 
 /// Returns the rows per irrep array
-const Dimension& MatrixFactory::rowspi() const {
-    return rowspi_;
-}
+const Dimension& MatrixFactory::rowspi() const { return rowspi_; }
 
 /// Returns the number of rows in irrep h
-int MatrixFactory::nrow(int h) const {
-    return rowspi_[h];
-}
+int MatrixFactory::nrow(int h) const { return rowspi_[h]; }
 
 /// Returns the columns per irrep array
-const Dimension& MatrixFactory::colspi() const {
-    return colspi_;
-}
+const Dimension& MatrixFactory::colspi() const { return colspi_; }
 
 /// Returns the number of columns in irrep h
-int MatrixFactory::ncol(int h) const {
-    return colspi_[h];
-}
+int MatrixFactory::ncol(int h) const { return colspi_[h]; }
 
 /// Returns the number of orbitals
-int MatrixFactory::norb() const {
-    return nso_;
-}
+int MatrixFactory::norb() const { return nso_; }
 
 /// Returns a new Matrix object with default dimensions
-Matrix * MatrixFactory::create_matrix(int symmetry)
-{
-    return new Matrix(nirrep_, rowspi_, colspi_, symmetry);
-}
+Matrix* MatrixFactory::create_matrix(int symmetry) { return new Matrix(nirrep_, rowspi_, colspi_, symmetry); }
 
 /// Returns a new Matrix object with default dimensions
-SharedMatrix MatrixFactory::create_shared_matrix()
-{
-    return SharedMatrix(new Matrix(nirrep_, rowspi_, colspi_));
-}
+SharedMatrix MatrixFactory::create_shared_matrix() { return std::make_shared<Matrix>(nirrep_, rowspi_, colspi_); }
 
-void MatrixFactory::create_matrix(Matrix& mat, int symmetry)
-{
-    mat.init(nirrep_, rowspi_, colspi_, "", symmetry);
-}
+void MatrixFactory::create_matrix(Matrix& mat, int symmetry) { mat.init(nirrep_, rowspi_, colspi_, "", symmetry); }
 
 /// Returns a new Matrix object named name with default dimensions
-Matrix * MatrixFactory::create_matrix(std::string name, int symmetry)
-{
+Matrix* MatrixFactory::create_matrix(std::string name, int symmetry) {
     return new Matrix(name, nirrep_, rowspi_, colspi_, symmetry);
 }
 
-SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name)
-{
-    return SharedMatrix(new Matrix(name, nirrep_, rowspi_, colspi_));
+SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name) {
+    return std::make_shared<Matrix>(name, nirrep_, rowspi_, colspi_);
 }
 
-SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name, int symmetry)
-{
-    return SharedMatrix(new Matrix(name, nirrep_, rowspi_, colspi_, symmetry));
+SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name, int symmetry) {
+    return std::make_shared<Matrix>(name, nirrep_, rowspi_, colspi_, symmetry);
 }
 
-SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name, int rows, int cols)
-{
-    return SharedMatrix(new Matrix(name, rows, cols));
+SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name, int rows, int cols) {
+    return std::make_shared<Matrix>(name, rows, cols);
 }
 
-void MatrixFactory::create_matrix(Matrix& mat, std::string name, int symmetry)
-{
+void MatrixFactory::create_matrix(Matrix& mat, std::string name, int symmetry) {
     mat.init(nirrep_, rowspi_, colspi_, name, symmetry);
 }
 
 /// Returns a new Vector object with default dimensions
-Vector * MatrixFactory::create_vector()
-{
-    return new Vector(rowspi_);
-}
+Vector* MatrixFactory::create_vector() { return new Vector(rowspi_); }
 
-void MatrixFactory::create_vector(Vector& vec)
-{
-    vec.init(rowspi_);
-}
+void MatrixFactory::create_vector(Vector& vec) { vec.init(rowspi_); }
 
-SharedVector MatrixFactory::create_shared_vector(const std::string& name)
-{
-    return SharedVector(new Vector(name, rowspi_));
+SharedVector MatrixFactory::create_shared_vector(const std::string& name) {
+    return std::make_shared<Vector>(name, rowspi_);
 }

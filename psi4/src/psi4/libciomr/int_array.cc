@@ -63,7 +63,7 @@ int * init_int_array(int size)
 {
   int *array;
 
-  if ((array = (int *) malloc(sizeof(int)*size))==NULL) {
+  if ((array = (int *) malloc(sizeof(int)*size))==nullptr) {
     outfile->Printf("init_array:  trouble allocating memory \n");
     outfile->Printf("size = %d\n",size);
     exit(PSI_RETURN_FAILURE);
@@ -105,16 +105,16 @@ void zero_int_array(int *a, int size)
 */
 int **init_int_matrix(int rows, int cols)
 {
-   int **array=NULL;
+   int **array=nullptr;
    int i;
 
-   if ((array = (int **) malloc(sizeof(int *)*rows))==NULL) {
+   if ((array = (int **) malloc(sizeof(int *)*rows))==nullptr) {
      outfile->Printf("init_int_matrix: trouble allocating memory \n");
      outfile->Printf("rows = %d\n", rows);
      exit(PSI_RETURN_FAILURE);
    }
 
-   if ((array[0] = (int *) malloc (sizeof(int)*cols*rows))==NULL) {
+   if ((array[0] = (int *) malloc (sizeof(int)*cols*rows))==nullptr) {
      outfile->Printf("init_int_matrix: trouble allocating memory \n");
      outfile->Printf("rows = %d, cols = %d", rows, cols);
      exit(PSI_RETURN_FAILURE) ;
@@ -179,7 +179,7 @@ void zero_int_matrix(int **array, int rows, int cols)
 void print_int_mat(int **a, int m, int n, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+         std::make_shared<PsiOutStream>(out));
    int ii,jj,kk,nn,ll;
   int i,j;
 

@@ -67,7 +67,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     SharedMatrix dfAOtoSO = petite.aotoso();
     const Dimension &soDim = AO2SO_->colspi();
     const Dimension &dfDim = dfAOtoSO->colspi();
-    SharedMatrix symQao(new Matrix(nirrep_, (const int*)dfDim, nbf2));
+    auto symQao = std::make_shared<Matrix>(nirrep_, (const int*)dfDim, nbf2);
     double **pQao = Qao->pointer();
     for(int h = 0; h < nirrep_; ++h){
         double **pAOSO = dfAOtoSO->pointer(h);
@@ -129,7 +129,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     aospaces.push_back(dummyorbspi);
     aospaces.push_back(dummyorbsym);
 
-    dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, NULL, aospaces.size()/2, aospaces);
+    dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, aospaces.size()/2, aospaces);
 
     delete [] dforbspi;
     delete [] dforbsym;

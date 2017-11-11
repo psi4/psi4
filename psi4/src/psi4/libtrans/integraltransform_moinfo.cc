@@ -685,7 +685,7 @@ IntegralTransform::process_eigenvectors()
             int nBOrbs = borbs.size();
             std::string name("Alpha orbitals for space ");
             name += label;
-            Ca = SharedMatrix(new Matrix(name, nirreps_, sopi_, aOrbsPI_[label]));
+            Ca = std::make_shared<Matrix>(name, nirreps_, sopi_, aOrbsPI_[label]);
             int mo_offsets[8];
             mo_offsets[0] = 0;
             for(int h = 1; h < nirreps_; ++h)
@@ -705,7 +705,7 @@ IntegralTransform::process_eigenvectors()
             }
             if(transformationType_ != Restricted){
                 name = "Beta orbitals for space " + std::string(1, label);
-                Cb = SharedMatrix(new Matrix(name, nirreps_, sopi_, bOrbsPI_[label]));
+                Cb = std::make_shared<Matrix>(name, nirreps_, sopi_, bOrbsPI_[label]);
                 for(int h = 0; h < nirreps_; ++h){
                     int count = 0;
                     for(int n = 0; n < nBOrbs; ++n){

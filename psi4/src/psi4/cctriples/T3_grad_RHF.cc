@@ -179,7 +179,7 @@ namespace psi { namespace cctriples {
 		}
 	      }
 	    }
-      //boost::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
+      //auto printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
       //ffile(&ijkfile,"ijk.dat", 0);
       //printer->Printf( "Number of IJK combinations: %d\n", nijk);
       //printer->Printf( "\nCurrent IJK Combination: ");*/
@@ -949,7 +949,7 @@ namespace psi { namespace cctriples {
               }
             }
 
-      boost::shared_ptr<PsiOutStream> printer1(new PsiOutStream("abc.dat",std::ostream::trunc));
+      auto printer1 = std::make_shared<PsiOutStream>("abc.dat",std::ostream::trunc);
       //ffile(&abcfile,"abc.dat", 0);
       printer1->Printf( "Number of ABC combinations: %d\n", nabc);
       printer1->Printf( "\nCurrent ABC Combination: ");*/
@@ -1031,7 +1031,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gk];
                     nlinks = virtpi[Gd];
 
-                    if(nrows && ncols && nlinks && W0[Gij] != NULL)
+                    if(nrows && ncols && nlinks && W0[Gij] != nullptr)
                       C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
                               &(T2i.matrix[Gad][ad][0]), nrows,
                               &(F3ints.matrix[Gcb][cb][kd]), nlinks, 0.0,
@@ -1053,7 +1053,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gk];
                     nlinks = occpi[Gl];
 
-                    if(nrows && ncols && nlinks && W0[Gij] != NULL){
+                    if(nrows && ncols && nlinks && W0[Gij] != nullptr){
 
             	  E2ints.matrix[Gal] = global_dpd_->dpd_block_matrix(occpi[Gl], E2ints.params->coltot[Gal]);
                   global_dpd_->buf4_mat_irrep_rd_block(&E2ints, Gal, E2ints.row_offset[Gal][A], occpi[Gl]);   
@@ -1088,7 +1088,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gj];
                     nlinks = virtpi[Gd];
 
-                    if(nrows && ncols && nlinks && W1[Gik] != NULL)
+                    if(nrows && ncols && nlinks && W1[Gik] != nullptr)
                       C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
                               &(T2i.matrix[Gad][ad][0]), nrows,
                               &(F3ints.matrix[Gbc][bc][jd]), nlinks, 1.0,
@@ -1111,7 +1111,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gj];
                     nlinks = occpi[Gl];
 
- 			if(nrows && ncols && nlinks && W1[Gik] != NULL){
+ 			if(nrows && ncols && nlinks && W1[Gik] != nullptr){
 
                     E2ints.matrix[Gal] = global_dpd_->dpd_block_matrix(occpi[Gl], E2ints.params->coltot[Gal]);
                     global_dpd_->buf4_mat_irrep_rd_block(&E2ints, Gal, E2ints.row_offset[Gal][A], occpi[Gl]);
@@ -1146,7 +1146,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gj];
                     nlinks = virtpi[Gd];
 
-                    if(nrows && ncols && nlinks && W0[Gki] != NULL)
+                    if(nrows && ncols && nlinks && W0[Gki] != nullptr)
                       C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
                               &(T2i.matrix[Gcd][cd][0]), nrows,
                               &(F3ints.matrix[Gba][ba][jd]), nlinks, 1.0,
@@ -1169,7 +1169,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gj];
                     nlinks = occpi[Gl];
 
-                    if(nrows && ncols && nlinks && W0[Gki] != NULL){
+                    if(nrows && ncols && nlinks && W0[Gki] != nullptr){
 
                     E2ints.matrix[Gcl] = global_dpd_->dpd_block_matrix(occpi[Gl], E2ints.params->coltot[Gcl]);
                     global_dpd_->buf4_mat_irrep_rd_block(&E2ints, Gcl, E2ints.row_offset[Gcl][C], occpi[Gl]);
@@ -1207,7 +1207,7 @@ namespace psi { namespace cctriples {
                      nlinks = virtpi[Gd];
  
  
-                     if(nrows && ncols && nlinks && W1[Gkj] != NULL)
+                     if(nrows && ncols && nlinks && W1[Gkj] != nullptr)
                        C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
                                &(T2i.matrix[Gcd][cd][0]), nrows,
                                &(F3ints.matrix[Gab][ab][id]), nlinks, 1.0, 
@@ -1229,7 +1229,7 @@ namespace psi { namespace cctriples {
                      ncols = occpi[Gi];
                      nlinks = occpi[Gl];
  
-                     if(nrows && ncols && nlinks && W1[Gkj] != NULL){
+                     if(nrows && ncols && nlinks && W1[Gkj] != nullptr){
 
                      E2ints.matrix[Gcl] = global_dpd_->dpd_block_matrix(occpi[Gl], E2ints.params->coltot[Gcl]);
                      global_dpd_->buf4_mat_irrep_rd_block(&E2ints, Gcl, E2ints.row_offset[Gcl][C], occpi[Gl]);
@@ -1267,7 +1267,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gi];
                     nlinks = virtpi[Gd];
 
-                    if(nrows && ncols && nlinks && W0[Gjk] != NULL)
+                    if(nrows && ncols && nlinks && W0[Gjk] != nullptr)
                       C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
                               &(T2i.matrix[Gbd][bd][0]), nrows,
                               &(F3ints.matrix[Gac][ac][id]), nlinks, 1.0,
@@ -1291,7 +1291,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gi];
                     nlinks = occpi[Gl];
 
-                    if(nrows && ncols && nlinks && W0[Gjk] != NULL){
+                    if(nrows && ncols && nlinks && W0[Gjk] != nullptr){
 
                     E2ints.matrix[Gbl] = global_dpd_->dpd_block_matrix(occpi[Gl], E2ints.params->coltot[Gbl]);
                     global_dpd_->buf4_mat_irrep_rd_block(&E2ints, Gbl, E2ints.row_offset[Gbl][B], occpi[Gl]);
@@ -1328,7 +1328,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gk];
                     nlinks = virtpi[Gd];
 
-                    if(nrows && ncols && nlinks && W1[Gji] != NULL)
+                    if(nrows && ncols && nlinks && W1[Gji] != nullptr)
                       C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
                               &(T2i.matrix[Gbd][bd][0]), nrows,
                               &(F3ints.matrix[Gca][ca][kd]), nlinks, 1.0,
@@ -1351,7 +1351,7 @@ namespace psi { namespace cctriples {
                     ncols = occpi[Gk];
                     nlinks = occpi[Gl];
 
-                    if(nrows && ncols && nlinks && W1[Gji] != NULL){
+                    if(nrows && ncols && nlinks && W1[Gji] != nullptr){
 
                     E2ints.matrix[Gbl] = global_dpd_->dpd_block_matrix(occpi[Gl], E2ints.params->coltot[Gbl]);
                     global_dpd_->buf4_mat_irrep_rd_block(&E2ints, Gbl, E2ints.row_offset[Gbl][B], occpi[Gl]);

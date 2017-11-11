@@ -81,8 +81,8 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
                 avir_orbs.push_back(a + offset);
             offset += mopi[h];
         }
-        aocc = std::shared_ptr<MOSpace>(new MOSpace('M', aocc_orbs, aocc_orbs));
-        avir = std::shared_ptr<MOSpace>(new MOSpace('E', avir_orbs, avir_orbs));
+        aocc = std::make_shared<MOSpace>('M', aocc_orbs, aocc_orbs);
+        avir = std::make_shared<MOSpace>('E', avir_orbs, avir_orbs);
         spaces.push_back(aocc);
         spaces.push_back(avir);
         ints = new IntegralTransform(ref_wfn, spaces,

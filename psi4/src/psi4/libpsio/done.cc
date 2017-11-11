@@ -52,7 +52,7 @@ PSIO::~PSIO() {
   size_t total_read=0, total_write=0;
   FILE *io_out;
   time_t my_time;
-  my_time = time(NULL);
+  my_time = time(nullptr);
   io_out = fopen("io.dat", "a+");
   fprintf(io_out, "\nLIBPSIO Read/Write Statistics\n\n");
   fprintf(io_out, "Run at: %s\n", ctime(&my_time));

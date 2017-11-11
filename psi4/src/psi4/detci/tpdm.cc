@@ -107,10 +107,10 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
   int nact2 = nact * nact;
   int ntri2 = (nact2 * (nact2 + 1)) / 2;
 
-  SharedVector tpdm_aa(new Vector("MO-basis TPDM AA (ci order)", ntri2));
+  auto tpdm_aa = std::make_shared<Vector>("MO-basis TPDM AA (ci order)", ntri2);
   SharedVector tpdm_ab(
       new Vector("MO-basis TPDM AB (ci order)", nact2 * nact2));
-  SharedVector tpdm_bb(new Vector("MO-basis TPDM BB (ci order)", ntri2));
+  auto tpdm_bb = std::make_shared<Vector>("MO-basis TPDM BB (ci order)", ntri2);
   double *tpdm_aap = tpdm_aa->pointer();
   double *tpdm_abp = tpdm_ab->pointer();
   double *tpdm_bbp = tpdm_bb->pointer();
@@ -376,9 +376,9 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
 
   timer_on("CIWave: TPDM Reorder");
   // Symmetrize and reorder the TPDM
-  SharedMatrix tpdm_aam(new Matrix("MO-basis TPDM AA", nact2, nact2));
-  SharedMatrix tpdm_abm(new Matrix("MO-basis TPDM AB", nact2, nact2));
-  SharedMatrix tpdm_bbm(new Matrix("MO-basis TPDM BB", nact2, nact2));
+  auto tpdm_aam = std::make_shared<Matrix>("MO-basis TPDM AA", nact2, nact2);
+  auto tpdm_abm = std::make_shared<Matrix>("MO-basis TPDM AB", nact2, nact2);
+  auto tpdm_bbm = std::make_shared<Matrix>("MO-basis TPDM BB", nact2, nact2);
   double **tpdm_aamp = tpdm_aam->pointer();
   double **tpdm_abmp = tpdm_abm->pointer();
   double **tpdm_bbmp = tpdm_bbm->pointer();
@@ -414,7 +414,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
   tpdm_bb.reset();
 
   // Build our spin summed density matrix
-  SharedMatrix tpdm(new Matrix("MO-basis TPDM", nact2, nact2));
+  auto tpdm = std::make_shared<Matrix>("MO-basis TPDM", nact2, nact2);
   double **tpdmp = tpdm->pointer();
 
   for (int p = 0; p < nact; p++) {

@@ -81,7 +81,7 @@ int DPD::buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block)
     Buf->shift.matrix[buf_block] = (double ***) malloc(nirreps * sizeof(double **));
     for(h=0; h < nirreps; h++)
         Buf->shift.matrix[buf_block][h] =
-                ((!Buf->shift.rowtot[buf_block][h]) ? NULL :
+                ((!Buf->shift.rowtot[buf_block][h]) ? nullptr :
                                                       (double **) malloc(Buf->shift.rowtot[buf_block][h] * sizeof(double *)));
 
     /* Calculate the data offset */

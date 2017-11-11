@@ -216,7 +216,7 @@ void RCPHF::add_polarizability()
     for (size_t i = 0; i < dipole.size(); i++) {
         std::stringstream ss;
         ss << "Dipole Perturbation " << (i == 0 ? "X" : (i == 1 ? "Y" : "Z"));
-        SharedMatrix B(new Matrix(ss.str(), Caocc_->colspi(), Cavir_->colspi(), dipole[i]->symmetry()));
+        auto B = std::make_shared<Matrix>(ss.str(), Caocc_->colspi(), Cavir_->colspi(), dipole[i]->symmetry());
 
         int symm = dipole[i]->symmetry();
         double* temp = new double[dipole[i]->max_nrow() * Cavir_->max_ncol()];
@@ -259,7 +259,7 @@ void RCPHF::analyze_polarizability()
     u.push_back(x_["MU_Z"]);
 
     // Analysis
-    SharedMatrix polarizability(new Matrix("CPHF Polarizability", 3, 3));
+    auto polarizability = std::make_shared<Matrix>("CPHF Polarizability", 3, 3);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             polarizability->set(0,i,j,-4.0 * (d[i]->symmetry() == u[j]->symmetry() ? d[i]->vector_dot(u[j]) : 0.0));
@@ -280,7 +280,7 @@ double RCPHF::compute_energy()
         preiterations();
 
     // Construct components
-    std::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    auto H = std::make_shared<CPHFRHamiltonian>(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_);
     std::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
 
     // Extra Knobs
@@ -494,15 +494,15 @@ void RCIS::print_transitions()
 {
     if (!print_) return;
 
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
+    auto fact = std::make_shared<IntegralFactory>(basisset_,basisset_,basisset_,basisset_);
     std::shared_ptr<OneBodyAOInt> dipole(fact->ao_dipole());
 
     // Get dipole integrals
     std::vector<SharedMatrix > dipole_ints;
     int nso = basisset_->nbf();
-    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole X", nso, nso)));
-    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Y", nso, nso)));
-    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso)));
+    dipole_ints.push_back(std::make_shared<Matrix>("Dipole X", nso, nso));
+    dipole_ints.push_back(std::make_shared<Matrix>("Dipole Y", nso, nso));
+    dipole_ints.push_back(std::make_shared<Matrix>("Dipole Z", nso, nso));
     dipole->compute(dipole_ints);
 
     outfile->Printf( "  ==> GS->XS Oscillator Strengths <==\n\n");
@@ -624,7 +624,7 @@ SharedMatrix RCIS::TDmo(SharedMatrix T1, bool singlet)
 }
 SharedMatrix RCIS::TDso(SharedMatrix T1, bool singlet)
 {
-    SharedMatrix D(new Matrix("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry()));
+    auto D = std::make_shared<Matrix>("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry());
 
     // Triplets are zero
     if (!singlet) return D;
@@ -659,7 +659,7 @@ SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 {
     SharedMatrix D = TDso(T1, singlet);
 
-    SharedMatrix D2(new Matrix("TDao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]));
+    auto D2 = std::make_shared<Matrix>("TDao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]);
 
     double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
@@ -687,7 +687,7 @@ SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 }
 SharedMatrix RCIS::Dmo(SharedMatrix T1, bool diff)
 {
-    SharedMatrix D(new Matrix("Dmo", reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
+    auto D = std::make_shared<Matrix>("Dmo", reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi());
 
     int symm = T1->symmetry();
 
@@ -736,7 +736,7 @@ SharedMatrix RCIS::Dmo(SharedMatrix T1, bool diff)
 SharedMatrix RCIS::Dso(SharedMatrix T1, bool diff)
 {
     SharedMatrix D = Dmo(T1,diff);
-    SharedMatrix D2(new Matrix("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi()));
+    auto D2 = std::make_shared<Matrix>("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi());
 
     double* temp = new double[C_->max_nrow() * C_->max_ncol()];
 
@@ -763,7 +763,7 @@ SharedMatrix RCIS::Dso(SharedMatrix T1, bool diff)
 SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
 {
     SharedMatrix D = Dso(T1,diff);
-    SharedMatrix D2(new Matrix("Dao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]));
+    auto D2 = std::make_shared<Matrix>("Dao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]);
 
     double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
@@ -789,8 +789,8 @@ SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
 std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, bool diff)
 {
     SharedMatrix D = Dmo(T1, diff);
-    SharedMatrix C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
-    std::shared_ptr<Vector> O(new Vector("Occupation", D->rowspi()));
+    auto C = std::make_shared<Matrix>("Nmo", D->nirrep(), D->rowspi(), D->rowspi());
+    auto O = std::make_shared<Vector>("Occupation", D->rowspi());
 
     D->diagonalize(C,O,descending);
 
@@ -802,7 +802,7 @@ std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nso(SharedMatrix T1, boo
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
-    SharedMatrix N2(new Matrix("Nso", C_->nirrep(), C_->rowspi(), C_->colspi()));
+    auto N2 = std::make_shared<Matrix>("Nso", C_->nirrep(), C_->rowspi(), C_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
 
@@ -825,9 +825,9 @@ std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, boo
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
-    SharedMatrix N2(new Matrix("Nso", C_->nrow(), C_->ncol()));
-    SharedMatrix N3(new Matrix("Nso", C_->nrow(), C_->ncol()));
-    std::shared_ptr<Vector> O2(new Vector("Occupation", C_->ncol()));
+    auto N2 = std::make_shared<Matrix>("Nso", C_->nrow(), C_->ncol());
+    auto N3 = std::make_shared<Matrix>("Nso", C_->nrow(), C_->ncol());
+    auto O2 = std::make_shared<Vector>("Occupation", C_->ncol());
 
     int offset = 0;
     std::vector<std::pair<double,int> > index;
@@ -874,8 +874,8 @@ std::pair<SharedMatrix, SharedMatrix> RCIS::ADmo(SharedMatrix T1)
     SharedMatrix N = nos.first;
     SharedVector f = nos.second;
 
-    SharedMatrix A(new Matrix("A", N->rowspi(), N->rowspi()));
-    SharedMatrix D(new Matrix("D", N->rowspi(), N->rowspi()));
+    auto A = std::make_shared<Matrix>("A", N->rowspi(), N->rowspi());
+    auto D = std::make_shared<Matrix>("D", N->rowspi(), N->rowspi());
     for (int h = 0; h < N->nirrep(); h++) {
         int nrow = N->rowspi()[h];
         int ncol = N->colspi()[h];
@@ -917,8 +917,8 @@ std::pair<SharedMatrix, SharedMatrix> RCIS::ADso(SharedMatrix T1)
     SharedMatrix N = nos.first;
     SharedVector f = nos.second;
 
-    SharedMatrix A(new Matrix("A", N->rowspi(), N->rowspi()));
-    SharedMatrix D(new Matrix("D", N->rowspi(), N->rowspi()));
+    auto A = std::make_shared<Matrix>("A", N->rowspi(), N->rowspi());
+    auto D = std::make_shared<Matrix>("D", N->rowspi(), N->rowspi());
     for (int h = 0; h < N->nirrep(); h++) {
         int nrow = N->rowspi()[h];
         int ncol = N->colspi()[h];
@@ -960,8 +960,8 @@ std::pair<SharedMatrix, SharedMatrix> RCIS::ADao(SharedMatrix T1)
     SharedMatrix N = nos.first;
     SharedVector f = nos.second;
 
-    SharedMatrix A(new Matrix("A", N->rowspi(), N->rowspi()));
-    SharedMatrix D(new Matrix("D", N->rowspi(), N->rowspi()));
+    auto A = std::make_shared<Matrix>("A", N->rowspi(), N->rowspi());
+    auto D = std::make_shared<Matrix>("D", N->rowspi(), N->rowspi());
     for (int h = 0; h < N->nirrep(); h++) {
         int nrow = N->rowspi()[h];
         int ncol = N->colspi()[h];
@@ -1007,7 +1007,7 @@ double RCIS::compute_energy()
         preiterations();
 
     // Construct components
-    std::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    auto H = std::make_shared<CISRHamiltonian>(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_);
     std::shared_ptr<DLRSolver> solver;
     if (options_.get_str("SOLVER_TYPE") == "DL")
         solver = DLRSolver::build_solver(options_,H);
@@ -1170,7 +1170,7 @@ double RTDHF::compute_energy()
         preiterations();
 
     // Construct components
-    std::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    auto H = std::make_shared<TDHFRHamiltonian>(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_);
     std::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
 
     // Extra Knobs
@@ -1289,7 +1289,7 @@ double RCPKS::compute_energy()
         preiterations();
 
     // Construct components
-    std::shared_ptr<CPKSRHamiltonian> H(new CPKSRHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    auto H = std::make_shared<CPKSRHamiltonian>(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_);
     std::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
 
     // Extra Knobs
@@ -1384,7 +1384,7 @@ double RTDA::compute_energy()
         preiterations();
 
     // Construct components
-    std::shared_ptr<TDARHamiltonian> H(new TDARHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    auto H = std::make_shared<TDARHamiltonian>(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_);
     std::shared_ptr<DLRSolver> solver = DLRSolver::build_solver(options_,H);
 
     // Extra Knobs
@@ -1535,7 +1535,7 @@ double RTDDFT::compute_energy()
         preiterations();
 
     // Construct components
-    std::shared_ptr<TDDFTRHamiltonian> H(new TDDFTRHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    auto H = std::make_shared<TDDFTRHamiltonian>(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_);
     std::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
 
     // Extra Knobs

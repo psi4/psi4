@@ -172,12 +172,12 @@ void sigmaCC3(int i, int C_irr, double omega) {
            /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
   
     if (params.t3_Ws_incore)
-      global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL, 
+      global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 0, nullptr, nullptr, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
         moinfo.virtpi, moinfo.vir_off, 0.0, "outfile", params.nthreads,
         params.newtrips);
     else
-    global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL,
+    global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, nullptr, nullptr,
        1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
        moinfo.virtpi, moinfo.vir_off, 0.0, "outfile", params.newtrips);
   
@@ -543,7 +543,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
-    global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 0, NULL, NULL,
+    global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 0, nullptr, nullptr,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off,
         moinfo.avirtpi, moinfo.avir_off, 0.0, "outfile");
 
@@ -565,7 +565,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
-    global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 0, NULL, NULL,
+    global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 0, nullptr, nullptr,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off, 
         moinfo.bvirtpi, moinfo.bvir_off, 0.0, "outfile");
 
@@ -601,7 +601,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
     global_dpd_->cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi,
-       &WMBIJ, &WMbIj, &WmBiJ, 0, NULL, NULL, NULL, NULL,
+       &WMBIJ, &WMbIj, &WmBiJ, 0, nullptr, nullptr, nullptr, nullptr,
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
@@ -639,7 +639,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
     global_dpd_->cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi,
-      &Wmbij, &WMbIj, &WmBiJ, 0, NULL, NULL, NULL, NULL,
+      &Wmbij, &WMbIj, &WmBiJ, 0, nullptr, nullptr, nullptr, nullptr,
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,

@@ -63,7 +63,7 @@ void DFCoupledCluster::SCS_CCSD(){
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
 
     if (t2_on_disk){
-        std::shared_ptr<PSIO> psio (new PSIO());
+        auto psio = std::make_shared<PSIO>();
         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
         psio->close(PSIF_DCC_T2,1);
@@ -104,7 +104,7 @@ void DFCoupledCluster::SCS_MP2(){
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
 
     if (t2_on_disk){
-        std::shared_ptr<PSIO> psio (new PSIO());
+        auto psio = std::make_shared<PSIO>();
         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
         psio->close(PSIF_DCC_T2,1);

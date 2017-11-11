@@ -48,7 +48,7 @@ int DPD::file2_scm(dpdfile2 *InFile, double alpha)
     file2_mat_init(InFile);
 
     /* Look first for the TOC entry on disk */
-    if(psio_tocscan(InFile->filenum, InFile->label) == NULL)
+    if(psio_tocscan(InFile->filenum, InFile->label) == nullptr)
         new_file2 = 1;
     else new_file2 = 0;
 

@@ -321,7 +321,7 @@ void CCEnergyWavefunction::get_moinfo(void)
 void CCEnergyWavefunction::cleanup(void)
 {
     int i, h;
-    char *keyw=NULL;
+    char *keyw=nullptr;
 
     if( params_.wfn == "CC2" || params_.wfn == "EOM_CC2" )
         psio_write_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo_.ecc),

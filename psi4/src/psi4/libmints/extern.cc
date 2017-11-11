@@ -65,15 +65,15 @@ void ExternalPotential::addCharge(double Z, double x, double y, double z)
     charges_.push_back(std::make_tuple(Z, x, y, z));
 }
 
-void ExternalPotential::addBasis(std::shared_ptr <BasisSet> basis, SharedVector coefs)
+void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs)
 {
     bases_.push_back(std::make_pair(basis, coefs));
 }
 
 void ExternalPotential::print(std::string out) const
 {
-    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                   std::make_shared<PsiOutStream>(out));
     printer->Printf("   => External Potential Field: %s <= \n\n", name_.c_str());
 
     // Charges
@@ -106,20 +106,20 @@ void ExternalPotential::print(std::string out) const
     }
 }
 
-SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr <BasisSet> basis)
+SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis)
 {
     int n = basis->nbf();
-    SharedMatrix V(new Matrix("External Potential", n, n));
-    std::shared_ptr <IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    auto V = std::make_shared<Matrix>("External Potential", n, n);
+    auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
 
     double convfac = 1.0;
     if (basis->molecule()->units() == Molecule::Angstrom)
         convfac /= pc_bohr2angstroms;
 
     // Monopoles
-    SharedMatrix V_charge(new Matrix("External Potential (Charges)", n, n));
+    auto V_charge = std::make_shared<Matrix>("External Potential (Charges)", n, n);
 
-    SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", charges_.size(), 4));
+    auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", charges_.size(), 4);
     double **Zxyzp = Zxyz->pointer();
     for (size_t i = 0; i < charges_.size(); i++) {
         Zxyzp[i][0] = std::get<0>(charges_[i]);
@@ -128,7 +128,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr <BasisSet
         Zxyzp[i][3] = convfac * std::get<3>(charges_[i]);
     }
 
-    std::shared_ptr <PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
+    std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
     pot->set_charge_field(Zxyz);
     pot->compute(V_charge);
 
@@ -139,12 +139,12 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr <BasisSet
     // Diffuse Bases
     for (size_t ind = 0; ind < bases_.size(); ind++) {
 
-        std::shared_ptr <BasisSet> aux = bases_[ind].first;
+        std::shared_ptr<BasisSet> aux = bases_[ind].first;
         SharedVector d = bases_[ind].second;
 
         // TODO thread this
-        std::shared_ptr <IntegralFactory> fact2(new IntegralFactory(aux, BasisSet::zero_ao_basis_set(), basis, basis));
-        std::shared_ptr <TwoBodyAOInt> eri(fact2->eri());
+        auto fact2 = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basis, basis);
+        std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
 
         const double *buffer = eri->buffer();
 
@@ -179,7 +179,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr <BasisSet
 }
 
 
-SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr <BasisSet> basis, std::shared_ptr <Matrix> Dt)
+SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt)
 {
     // This will be easy to implement, I think, but just throw for now.
     if (bases_.size())
@@ -188,10 +188,10 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr <Basis
     SharedMolecule mol = basis->molecule();
     int natom = mol->natom();
     int nextc = charges_.size();
-    SharedMatrix grad(new Matrix("External Potential Gradient", natom, 3));
+    auto grad = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
     double **Gp = grad->pointer();
 
-    SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", charges_.size(), 4));
+    auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", charges_.size(), 4);
     double **Zxyzp = Zxyz->pointer();
 
     double convfac = 1.0;
@@ -226,7 +226,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr <Basis
     }
 
     // Now the electronic contribution.
-    std::shared_ptr <IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
 #if 0
     // Slow, but correct, memory hog version
     std::shared_ptr<PotentialInt> potential_deriv_ints(dynamic_cast<PotentialInt*>(fact->ao_potential(1)));
@@ -234,7 +234,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr <Basis
     int nbf = basis->nbf();
     std::vector<SharedMatrix> intmats;
     for(int i = 0; i < 3*basis->molecule()->natom(); ++i)
-        intmats.push_back(SharedMatrix(new Matrix("V derivative integrals", nbf, nbf)));
+        intmats.push_back(std::make_shared<Matrix>("V derivative integrals", nbf, nbf));
 
 
     potential_deriv_ints->set_charge_field(Zxyz);
@@ -325,7 +325,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr <Basis
 #endif
 }
 
-double ExternalPotential::computeNuclearEnergy(std::shared_ptr <Molecule> mol)
+double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
 {
     double E = 0.0;
     double convfac = 1.0;
@@ -361,7 +361,7 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr <Molecule> mol)
 
     if (bases_.size()) {
         // Nucleus-diffuse interaction
-        SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", mol->natom(), 4));
+        auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", mol->natom(), 4);
         double **Zxyzp = Zxyz->pointer();
         for (int A = 0; A < mol->natom(); A++) {
             Zxyzp[A][0] = mol->Z(A);
@@ -372,14 +372,14 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr <Molecule> mol)
 
         for (size_t ind = 0; ind < bases_.size(); ind++) {
 
-            std::shared_ptr <BasisSet> aux = bases_[ind].first;
+            std::shared_ptr<BasisSet> aux = bases_[ind].first;
             SharedVector d = bases_[ind].second;
 
-            std::shared_ptr <Matrix> V(new Matrix("(Q|Z|0) Integrals", aux->nbf(), 1));
+            auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
 
-            std::shared_ptr <BasisSet> zero = BasisSet::zero_ao_basis_set();
-            std::shared_ptr <IntegralFactory> fact(new IntegralFactory(aux, zero, zero, zero));
-            std::shared_ptr <PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
+            std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+            auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
+            std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
             pot->set_charge_field(Zxyz);
             pot->compute(V);
 

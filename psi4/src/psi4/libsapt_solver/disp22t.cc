@@ -304,7 +304,7 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
   C_DGEMM('N','T',aoccA*nvirA,aoccA*aoccA,ndf_+3,1.0,&(B_p_AR[0][0]),
     ndf_+3,&(B_p_AA[0][0]),ndf_+3,0.0,&(vARAA[0][0]),aoccA*aoccA);
 
-  time_t start = time(NULL);
+  time_t start = time(nullptr);
   time_t stop;
 
   for(int b=0,bs=0; b<aoccB; b++) {
@@ -355,7 +355,7 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
       }}
     }}
    }
-  stop = time(NULL);
+  stop = time(nullptr);
   if (print_) {
     outfile->Printf("    (i = %3d of %3d) %10ld seconds\n",b+1,aoccB,
       stop-start);
@@ -443,7 +443,7 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
 
   psio_address next_BSAR;
 
-  time_t start = time(NULL);
+  time_t start = time(nullptr);
   time_t stop;
 
   for(int b=0,bs=0; b<noccB; b++) {
@@ -511,7 +511,7 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
       }}
     }}
    }
-  stop = time(NULL);
+  stop = time(nullptr);
     outfile->Printf("    (i = %3d of %3d) %10ld seconds\n",b+1,noccB,stop-start);
   
   }

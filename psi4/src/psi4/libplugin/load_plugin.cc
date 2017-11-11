@@ -45,7 +45,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     plugin_info info;
 
     info.plugin_handle = dlopen(plugin_pathname.c_str(), RTLD_LAZY);
-    if (info.plugin_handle == NULL) {
+    if (info.plugin_handle == nullptr) {
         std::string msg = "load_plugin: Cannot open library: ";
         msg += dlerror();
         throw PSIEXCEPTION(msg);

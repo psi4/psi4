@@ -47,7 +47,7 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
                        const py::list &grad_list, int freq_irrep_only)
 {
     int pts = options.get_int("POINTS");
@@ -55,7 +55,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     int print_lvl = options.get_int("PRINT");
 
     int Natom = mol->natom();
-    std::shared_ptr <MatrixFactory> fact;
+    std::shared_ptr<MatrixFactory> fact;
     bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
 
     CdSalcList salc_list(mol, fact, 0xFF, project, project);
@@ -126,7 +126,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
         outfile->Printf("  Generating complete list of displacements from unique ones.\n\n");
     }
 
-    std::shared_ptr <PointGroup> pg = mol->point_group();
+    std::shared_ptr<PointGroup> pg = mol->point_group();
     CharacterTable ct = mol->point_group()->char_table();
     int order = ct.order();
 
@@ -191,7 +191,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
             // Read the - displacement and generate the +
             gradients.push_back(grad_list[disp_cnt].cast<SharedMatrix>());
 
-            SharedMatrix new_grad(new Matrix(Natom, 3));
+            auto new_grad = std::make_shared<Matrix>(Natom, 3);
 
             for (int atom = 0; atom < Natom; ++atom) {
                 int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
@@ -209,7 +209,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
             if (pts == 5) {
                 gradients.push_back(grad_list[disp_cnt].cast<SharedMatrix>());
 
-                SharedMatrix new_grad2(new Matrix(Natom, 3));
+                auto new_grad2 = std::make_shared<Matrix>(Natom, 3);
 
                 for (int atom = 0; atom < Natom; ++atom) {
                     int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
@@ -411,7 +411,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     double **B = B_shared->pointer();
 
     // double **Hx = block_matrix(3*Natom, 3*Natom);
-    SharedMatrix mat_Hx = SharedMatrix(new Matrix("Hessian", 3 * Natom, 3 * Natom));
+    auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
     double **Hx = mat_Hx->pointer();
 
     // Hx = Bt H B
@@ -445,7 +445,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     // Print a hessian file
     if (options.get_bool("HESSIAN_WRITE")) {
         std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-        std::shared_ptr <PsiOutStream> printer(new PsiOutStream(hess_fname, std::ostream::trunc));
+        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
         //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
         printer->Printf("%5d", Natom);
         printer->Printf("%5d\n", 6 * Natom);

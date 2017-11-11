@@ -48,7 +48,7 @@
 ** LRU order) until the memory limits are satisfied.  If, after
 ** deletion of the entire dpd_file4_cache (or at least until no other
 ** zero-priority entries remain), there is still insufficient memory
-** available to satisfy the request, a NULL pointer is returned to the
+** available to satisfy the request, a nullptr pointer is returned to the
 ** caller, indicating that either an out-of-core algorithm must be
 ** used, or the caller must exit().
 **
@@ -81,7 +81,7 @@ DPD::dpd_block_matrix(size_t n, size_t m)
     timer_on("block_mat");
 #endif
 
-    A = NULL;  B = NULL;
+    A = nullptr;  B = nullptr;
 
     size_t size = m * n;
 
@@ -114,22 +114,22 @@ DPD::dpd_block_matrix(size_t n, size_t m)
 #ifdef DPD_TIMER
         timer_off("block_mat");
 #endif
-        return(NULL);
+        return(nullptr);
     }
 
-    if((A = (double **) malloc(n * sizeof(double *)))==NULL) {
+    if((A = (double **) malloc(n * sizeof(double *)))==nullptr) {
         outfile->Printf("dpd_block_matrix: trouble allocating memory \n");
         outfile->Printf("n = %zd  m = %zd\n",n, m);
         exit(PSI_RETURN_FAILURE);
     }
 
     /* Allocate the main block here */
-    /* NB: If we delete the entire cache and STILL get NULL from malloc(), */
+    /* NB: If we delete the entire cache and STILL get nullptr from malloc(), */
     /* we're either out of real memory or the heap is seriously fragmented */
 //#ifdef HAVE_MM_MALLOC_H
-//    while((B = (double *)_mm_malloc(size * sizeof(double), 64)) == NULL) {
+//    while((B = (double *)_mm_malloc(size * sizeof(double), 64)) == nullptr) {
 //#else
-    while((B = (double *) malloc(size * sizeof(double))) == NULL) {
+    while((B = (double *) malloc(size * sizeof(double))) == nullptr) {
 //#endif
         /* Priority-based cache */
         if(dpd_main.cachetype == 1) {
@@ -169,7 +169,7 @@ DPD::dpd_block_matrix(size_t n, size_t m)
 void DPD::free_dpd_block(double **array, size_t n, size_t m)
 {
     size_t size =  m * n;
-    if(array == NULL) return;
+    if(array == nullptr) return;
 
 //#ifdef HAVE_MM_MALLOC_H
 //    _mm_free(array[0]);

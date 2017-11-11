@@ -82,7 +82,7 @@ namespace py = pybind11;
  * @param forced_puream Force puream or not
 **/
 std::shared_ptr<BasisSet>
-construct_basisset_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &pybs, const int forced_puream){
+construct_basisset_from_pydict(const std::shared_ptr<Molecule> &mol, py::dict &pybs, const int forced_puream){
 
     std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
@@ -171,7 +171,7 @@ construct_basisset_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &
 
     mol->update_geometry();  // update symmetry with basisset info
 
-    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell, basis_atom_ecpshell));
+    auto basisset = std::make_shared<BasisSet>(key, mol, basis_atom_shell, basis_atom_ecpshell);
 
     // Modify the nuclear charges, to account for the ECP.
     if(totalncore){

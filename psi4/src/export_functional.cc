@@ -213,25 +213,25 @@ void export_functional(py::module &m) {
                       std::shared_ptr<BasisExtents>>())
         .def("x",
              [](BlockOPoints &grid) {
-                 SharedVector ret(new Vector("X Grid points", grid.npoints()));
+                 auto ret = std::make_shared<Vector>("X Grid points", grid.npoints());
                  C_DCOPY(grid.npoints(), grid.x(), 1, ret->pointer(), 1);
                  return ret;
              })
         .def("y",
              [](BlockOPoints &grid) {
-                 SharedVector ret(new Vector("Y Grid points", grid.npoints()));
+                 auto ret = std::make_shared<Vector>("Y Grid points", grid.npoints());
                  C_DCOPY(grid.npoints(), grid.y(), 1, ret->pointer(), 1);
                  return ret;
              })
         .def("z",
              [](BlockOPoints &grid) {
-                 SharedVector ret(new Vector("Z Grid points", grid.npoints()));
+                 auto ret = std::make_shared<Vector>("Z Grid points", grid.npoints());
                  C_DCOPY(grid.npoints(), grid.z(), 1, ret->pointer(), 1);
                  return ret;
              })
         .def("w",
              [](BlockOPoints &grid) {
-                 SharedVector ret(new Vector("Grid Weights", grid.npoints()));
+                 auto ret = std::make_shared<Vector>("Grid Weights", grid.npoints());
                  C_DCOPY(grid.npoints(), grid.w(), 1, ret->pointer(), 1);
                  return ret;
              })

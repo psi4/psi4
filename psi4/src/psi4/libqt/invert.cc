@@ -67,7 +67,7 @@ namespace psi {
 double invert_matrix(double **a, double **y, int N, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    double  d, *col, *colptr;
    int i, j;
    int *indx ;

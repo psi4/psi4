@@ -45,7 +45,7 @@ namespace psi {
 int DPD::file2_print(dpdfile2 *File, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    int i, my_irrep;
     dpdparams2 *Params;
 

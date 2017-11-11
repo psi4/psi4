@@ -196,7 +196,7 @@ void DF_Helper::prepare_sparsity() {
 
     // prepare eri buffers
     size_t nthreads = nthreads_;  // for now
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(primary_, primary_, primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
     std::vector<const double*> buffer(nthreads);
 
@@ -291,7 +291,7 @@ void DF_Helper::prepare_AO() {
     // prepare eris
     size_t rank = 0;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
 #pragma omp parallel for schedule(static) num_threads(nthreads_) private(rank)
     for (size_t i = 0; i < nthreads_; i++) {
@@ -370,7 +370,7 @@ void DF_Helper::prepare_AO_core() {
     // prepare eris
     size_t rank = 0;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
 #pragma omp parallel for schedule(static) num_threads(nthreads_) private(rank)
     for (size_t i = 0; i < nthreads_; i++) {
@@ -963,7 +963,7 @@ void DF_Helper::grab_AO(const size_t start, const size_t stop, double* Mp) {
 }
 void DF_Helper::prepare_metric_core() {
     timer_on("DFH: metric contrsuction");
-    std::shared_ptr<FittingMetric> Jinv(new FittingMetric(aux_, true));
+    auto Jinv = std::make_shared<FittingMetric>(aux_, true);
     Jinv->form_fitting_metric();
     metrics_[1.0] = Jinv->get_metric();
     timer_off("DFH: metric contrsuction");
@@ -990,7 +990,7 @@ double* DF_Helper::metric_prep_core(double pow) {
 }
 void DF_Helper::prepare_metric() {
     // construct metric
-    std::shared_ptr<FittingMetric> Jinv(new FittingMetric(aux_, true));
+    auto Jinv = std::make_shared<FittingMetric>(aux_, true);
     Jinv->form_fitting_metric();
     SharedMatrix metric = Jinv->get_metric();
     double* Mp = metric->pointer()[0];
@@ -1026,7 +1026,7 @@ std::string DF_Helper::compute_metric(double pow) {
         prepare_metric();
     else {
         // get metric
-        SharedMatrix metric(new Matrix("met", naux_, naux_));
+        auto metric = std::make_shared<Matrix>("met", naux_, naux_);
         double* metp = metric->pointer()[0];
         std::string filename = return_metfile(1.0);
 
@@ -1366,7 +1366,7 @@ void DF_Helper::transform_core() {
     // prepare eri buffers
     std::vector<std::vector<double>> C_buffers(nthreads);
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
 #pragma omp parallel private(rank) num_threads(nthreads)
     {
@@ -1599,7 +1599,7 @@ void DF_Helper::transform_disk() {
     size_t nthread = nthreads_;
     std::vector<std::vector<double>> C_buffers(nthreads_);
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
 #pragma omp parallel private(rank) num_threads(nthreads_)
     {
@@ -2034,7 +2034,7 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> t0, std
     size_t A1 = (sto1 - sta1 + 1);
     size_t A2 = (sto2 - sta2 + 1);
 
-    SharedMatrix M(new Matrix("M", A0, A1 * A2));
+    auto M = std::make_shared<Matrix>("M", A0, A1 * A2);
     double* Mp = M->pointer()[0];
 
     if (MO_core_) {
@@ -2568,7 +2568,7 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     // prepare eri buffers
     size_t nthread = nthreads_;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
 
     // manual cache alignment..(poor std vectors..) (assumes cache size is 64bytes)
@@ -2648,7 +2648,7 @@ void DF_Helper::compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix
     for (size_t i = 0; i < Cleft.size(); i++) {
         std::stringstream s;
         s << "D " << i << " (SO)";
-        D.push_back(SharedMatrix(new Matrix(s.str(), nao_, nao_)));
+        D.push_back(std::make_shared<Matrix>(s.str(), nao_, nao_));
     }
 
     for (size_t i = 0; i < Cleft.size(); i++) {

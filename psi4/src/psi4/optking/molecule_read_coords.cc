@@ -568,7 +568,7 @@ bool stoi(std::string s, int *a) {
 bool stof(std::string s, double *val) {
   double d;
   try {
-    d = std::stod(s, NULL);
+    d = std::stod(s, nullptr);
   }
   catch(...) {
     return false;

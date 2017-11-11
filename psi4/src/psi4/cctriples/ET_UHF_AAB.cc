@@ -169,7 +169,7 @@ double ET_UHF_AAB(void)
 	    }
 	  }
 	}
-  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
+  auto printer = std::make_shared<PsiOutStream>("ijk.dat",std::ostream::trunc);
   //ffile(&ijkfile,"ijk.dat",0);
   printer->Printf( "Spin Case: AAB\n");
   printer->Printf( "Number of IJK combintions: %d\n", nijk);

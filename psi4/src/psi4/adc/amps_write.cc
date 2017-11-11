@@ -48,7 +48,7 @@ void
 ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+            std::make_shared<PsiOutStream>(out));
    struct onestack *t1stack;
     int Gia = B->my_irrep;
 

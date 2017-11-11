@@ -131,7 +131,7 @@ double CCEnergyWavefunction::compute_energy()
         spaces.push_back(moinfo_.bvir_sym);
         delete[] dpd_list[0];
         dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles,
-                              cachelist, NULL, 4, spaces);
+                              cachelist, nullptr, 4, spaces);
         dpd_set_default(0);
 
         if( params_.df ){
@@ -146,7 +146,7 @@ double CCEnergyWavefunction::compute_energy()
             aospaces.push_back(moinfo_.bocc_sym);
             aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, NULL, 4, aospaces);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, 4, aospaces);
             dpd_set_default(0);
         }
 
@@ -171,7 +171,7 @@ double CCEnergyWavefunction::compute_energy()
             aospaces.push_back(moinfo_.occ_sym);
             aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, 2, aospaces);
             dpd_set_default(0);
         }
 

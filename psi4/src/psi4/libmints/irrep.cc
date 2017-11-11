@@ -136,7 +136,7 @@ IrreducibleRepresentation::init(int order, int d, const char *lab,
     if (lab)
         symb = strdup(lab);
     else
-        symb = NULL;
+        symb = nullptr;
 
     free(csymb);
     if (clab) csymb = strdup(clab);
@@ -159,7 +159,7 @@ void IrreducibleRepresentation::print(std::string out) const
     if (!g)
         return;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
+          std::make_shared<PsiOutStream>(out));
     int i,d;
 
     printer->Printf( "  %-5s", symb);

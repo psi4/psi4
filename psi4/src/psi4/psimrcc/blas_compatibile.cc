@@ -88,7 +88,7 @@ bool CCOperation::compatible_element_by_element()
   int B_right  = B_Matrix->get_right()->get_ntuples();
 
   // First case: We are comparing A and B
-  if(C_Matrix==NULL){
+  if(C_Matrix==nullptr){
     if((A_left==B_left) && (A_right==B_right))
       same = true;
   }else{

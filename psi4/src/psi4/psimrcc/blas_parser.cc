@@ -72,8 +72,8 @@ int CCBLAS::parse(std::string& str){
 
   while(iter!=split_str.end()){
     double factor=1.0;
-    C_Matrix = NULL;
-    B_Matrix = NULL;
+    C_Matrix = nullptr;
+    B_Matrix = nullptr;
     // Read the reindexing
     if(iter->find("#")!=std::string::npos){
       reindexing = *iter;

@@ -143,7 +143,7 @@ void MOLECULE::linesearch_step(void) {
 
     double *coord = g_geom_array();
 
-    FILE *qc_fout = NULL;
+    FILE *qc_fout = nullptr;
     std::string psi_fout = "linesearch_geoms.py";
 #if defined(OPTKING_PACKAGE_QCHEM)
     FILE *qc_fout = fopen("linesearch_geoms.py", "w");

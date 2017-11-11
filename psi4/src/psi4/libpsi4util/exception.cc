@@ -59,7 +59,7 @@ PsiException::PsiException(std::string msg,
 
     for (int i = 0; i < size; i++) {
         //This part from https://panthema.net/2008/0901-stacktrace-demangled/
-        char *begin_name = NULL, *begin_offset = NULL, *end_offset = NULL;
+        char *begin_name = nullptr, *begin_offset = nullptr, *end_offset = nullptr;
         for (char *p = strings[i]; *p; ++p) {
             if (*p == '(') begin_name = p;
             else if (*p == '+')begin_offset = p;

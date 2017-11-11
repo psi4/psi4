@@ -76,14 +76,14 @@ void PSIO::close(size_t unit, int keep) {
     PSIOManager::shared_object()->close_file(std::string(this_unit->vol[i].path), unit, (keep ? true : false));
 
     free(this_unit->vol[i].path);
-    this_unit->vol[i].path = NULL;
+    this_unit->vol[i].path = nullptr;
     this_unit->vol[i].stream = -1;
   }
 
   /* Reset the global page stats to zero */
   this_unit->numvols = 0;
   this_unit->toclen = 0;
-  this_unit->toc = NULL;
+  this_unit->toc = nullptr;
 }
 
 int psio_close(size_t unit, int keep) {

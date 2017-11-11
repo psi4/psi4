@@ -31,36 +31,25 @@
 #include <GTFock/MinimalInterface.h>
 #else
 namespace psi {
-struct MinimalInterface{
-    MinimalInterface(size_t,bool)
-    {
-        throw PSIEXCEPTION("PSI4 has not been compiled with GTFock support");
-    }
-    void SetP(std::vector<SharedMatrix>&){}
-    void GetJ(std::vector<SharedMatrix>&){}
-    void GetK(std::vector<SharedMatrix>&){}
-
+struct MinimalInterface {
+    MinimalInterface(size_t, bool) { throw PSIEXCEPTION("PSI4 has not been compiled with GTFock support"); }
+    void SetP(std::vector<SharedMatrix>&) {}
+    void GetJ(std::vector<SharedMatrix>&) {}
+    void GetK(std::vector<SharedMatrix>&) {}
 };
 }
 #endif
 
-
 #ifdef ENABLE_GTFOCK
 namespace psi {
-GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary) :
-      JK(Primary),Impl_(new MinimalInterface()){
-
-}
+GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary) : JK(Primary), Impl_(new MinimalInterface()) {}
 void GTFockJK::compute_JK() {
-
-   NMats_ = C_left_.size();
-   Impl_->create_pfock(NMats_, lr_symmetric_);
-   Impl_->SetP(D_ao_);
-   Impl_->GetJ(J_ao_);
-   Impl_->GetK(K_ao_);
-   Impl_->destroy_gtfock();
+    NMats_ = C_left_.size();
+    Impl_->create_pfock(NMats_, lr_symmetric_);
+    Impl_->SetP(D_ao_);
+    Impl_->GetJ(J_ao_);
+    Impl_->GetK(K_ao_);
+    Impl_->destroy_gtfock();
 }
-
-
 }
 #endif

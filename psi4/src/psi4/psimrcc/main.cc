@@ -77,7 +77,7 @@ namespace psi{
     Timer               *global_timer;
     CCBLAS              *blas;
     CCSort              *sorter;
-    CCTransform         *trans = NULL;
+    CCTransform         *trans = nullptr;
     MOInfo              *moinfo;
     ModelSpace          *model_space;
     Debugging           *debugging;

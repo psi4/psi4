@@ -134,7 +134,7 @@ public:
 
             // Load in Makefile.template
             FILE *fp = fopen(source_name.c_str(), "r");
-            if (fp == NULL) {
+            if (fp == nullptr) {
                 printf("create_new_plugin: Unable to open %s template.\n", source_name.c_str());
                 exit(1);
             }

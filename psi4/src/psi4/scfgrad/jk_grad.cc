@@ -176,18 +176,18 @@ void DFJKGrad::compute_gradient()
     int natom = primary_->molecule()->natom();
     gradients_.clear();
     if (do_J_) {
-        gradients_["Coulomb"] = SharedMatrix(new Matrix("Coulomb Gradient",natom,3));
+        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient",natom,3);
     }
     if (do_K_) {
-        gradients_["Exchange"] = SharedMatrix(new Matrix("Exchange Gradient",natom,3));
+        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient",natom,3);
     }
     if (do_wK_) {
         throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
-        gradients_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Gradient",natom,3));
+        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient",natom,3);
     }
 
     // => Build ERI Sieve <= //
-    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
@@ -279,7 +279,7 @@ void DFJKGrad::build_Amn_terms()
     double* cp;
 
     if (do_J_) {
-        c = SharedVector(new Vector("c", naux));
+        c = std::make_shared<Vector>("c", naux);
         cp = c->pointer();
     }
 
@@ -292,12 +292,12 @@ void DFJKGrad::build_Amn_terms()
     double** Aijp;
 
     if (true) {
-        Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (size_t) nso));
+        Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t) nso);
         Amnp = Amn->pointer();
     }
     if (do_K_ || do_wK_) {
-        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
-        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
+        Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
+        Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
@@ -311,7 +311,7 @@ void DFJKGrad::build_Amn_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
@@ -468,9 +468,9 @@ void DFJKGrad::build_Amn_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (size_t) nso));
-    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
-    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
+    Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t) nso);
+    Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
+    Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
 
     Amnp = Amn->pointer();
     Amip = Ami->pointer();
@@ -484,7 +484,7 @@ void DFJKGrad::build_Amn_lr_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_)));
@@ -591,15 +591,15 @@ void DFJKGrad::build_AB_inv_terms()
 
     // => Fitting Metric Full Inverse <= //
 
-    std::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+    auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
     metric->form_full_eig_inverse();
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
 
     // => d_A = (A|B)^{-1} c_B <= //
     if (do_J_) {
-        SharedVector c(new Vector("c", naux));
-        SharedVector d(new Vector("d", naux));
+        auto c = std::make_shared<Vector>("c", naux);
+        auto d = std::make_shared<Vector>("d", naux);
         double* cp = c->pointer();
         double* dp = d->pointer();
 
@@ -621,8 +621,8 @@ void DFJKGrad::build_AB_inv_terms()
     cols = (cols < na ? na : cols);
     max_cols = (int) cols;
 
-    SharedMatrix Aij(new Matrix("Aij", naux, max_cols));
-    SharedMatrix Bij(new Matrix("Bij", naux, max_cols));
+    auto Aij = std::make_shared<Matrix>("Aij", naux, max_cols);
+    auto Bij = std::make_shared<Matrix>("Bij", naux, max_cols);
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
 
@@ -742,7 +742,7 @@ void DFJKGrad::build_UV_terms()
 
     bool restricted = (Ca_ == Cb_);
 
-    SharedMatrix V = SharedMatrix(new Matrix("W", naux, naux));
+    auto V = std::make_shared<Matrix>("W", naux, naux);
     double** Vp = V->pointer();
 
     // => Memory Constraints <= //
@@ -757,8 +757,8 @@ void DFJKGrad::build_UV_terms()
 
     // => Temporary Buffers <= //
 
-    SharedMatrix Aij(new Matrix("Aij", max_rows, na*(size_t)na));
-    SharedMatrix Bij(new Matrix("Bij", max_rows, na*(size_t)na));
+    auto Aij = std::make_shared<Matrix>("Aij", max_rows, na*(size_t)na);
+    auto Bij = std::make_shared<Matrix>("Bij", max_rows, na*(size_t)na);
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
 
@@ -856,24 +856,24 @@ void DFJKGrad::build_AB_x_terms()
     double*  dp;
 
     if (do_J_) {
-        d = SharedVector(new Vector("d", naux));
+        d = std::make_shared<Vector>("d", naux);
         dp = d->pointer();
         psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
     }
     if (do_K_) {
-        V = SharedMatrix(new Matrix("V", naux, naux));
+        V = std::make_shared<Matrix>("V", naux, naux);
         Vp = V->pointer();
         psio_->read_entry(unit_c_, "V", (char*) Vp[0], sizeof(double) * naux * naux);
     }
     if (do_wK_) {
-        W = SharedMatrix(new Matrix("W", naux, naux));
+        W = std::make_shared<Matrix>("W", naux, naux);
         Wp = W->pointer();
         psio_->read_entry(unit_c_, "W", (char*) Wp[0], sizeof(double) * naux * naux);
     }
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set());
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
@@ -886,13 +886,13 @@ void DFJKGrad::build_AB_x_terms()
     std::vector<SharedMatrix> wKtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         if (do_J_) {
-            Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
+            Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
         }
         if (do_K_) {
-            Ktemps.push_back(SharedMatrix(new Matrix("Ktemp", natom, 3)));
+            Ktemps.push_back(std::make_shared<Matrix>("Ktemp", natom, 3));
         }
         if (do_wK_) {
-            wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
+            wKtemps.push_back(std::make_shared<Matrix>("wKtemp", natom, 3));
         }
     }
 
@@ -1078,7 +1078,7 @@ void DFJKGrad::build_Amn_x_terms()
     double* dp;
 
     if (do_J_) {
-        d = SharedVector(new Vector("d", naux));
+        d = std::make_shared<Vector>("d", naux);
         dp = d->pointer();
         psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
     }
@@ -1094,15 +1094,15 @@ void DFJKGrad::build_Amn_x_terms()
     double** Aijp;
 
     if (do_K_ || do_wK_) {
-        Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (size_t) nso));
-        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
-        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
+        Jmn = std::make_shared<Matrix>("Jmn", max_rows, nso * (size_t) nso);
+        Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
+        Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
         Jmnp = Jmn->pointer();
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
     if (do_wK_) {
-        Kmn = SharedMatrix(new Matrix("Kmn", max_rows, nso * (size_t) nso));
+        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t) nso);
         Kmnp = Kmn->pointer();
     }
 
@@ -1117,7 +1117,7 @@ void DFJKGrad::build_Amn_x_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
@@ -1130,13 +1130,13 @@ void DFJKGrad::build_Amn_x_terms()
     std::vector<SharedMatrix> wKtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         if (do_J_) {
-            Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
+            Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
         }
         if (do_K_) {
-            Ktemps.push_back(SharedMatrix(new Matrix("Ktemp", natom, 3)));
+            Ktemps.push_back(std::make_shared<Matrix>("Ktemp", natom, 3));
         }
         if (do_wK_) {
-            wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
+            wKtemps.push_back(std::make_shared<Matrix>("wKtemp", natom, 3));
         }
     }
 
@@ -1426,9 +1426,9 @@ void DFJKGrad::build_Amn_x_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (size_t) nso));
-    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
-    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
+    Jmn = std::make_shared<Matrix>("Jmn", max_rows, nso * (size_t) nso);
+    Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
+    Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
     Jmnp = Jmn->pointer();
     Amip = Ami->pointer();
     Aijp = Aij->pointer();
@@ -1441,7 +1441,7 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_,1)));
@@ -1451,7 +1451,7 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
     std::vector<SharedMatrix> wKtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
+        wKtemps.push_back(std::make_shared<Matrix>("wKtemp", natom, 3));
     }
 
     // => R/U doubling factor <= //
@@ -1634,13 +1634,13 @@ void DFJKGrad::compute_hessian()
     int natom = primary_->molecule()->natom();
     hessians_.clear();
     if (do_J_) {
-        hessians_["Coulomb"] = SharedMatrix(new Matrix("Coulomb Hessian",3*natom,3*natom));
+        hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian",3*natom,3*natom);
     }
     if (do_K_) {
-        hessians_["Exchange"] = SharedMatrix(new Matrix("Exchange Hessian",3*natom,3*natom));
+        hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian",3*natom,3*natom);
     }
     if (do_wK_) {
-        hessians_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Hessian",3*natom,3*natom));
+        hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian",3*natom,3*natom);
     }
 
 
@@ -1659,38 +1659,38 @@ void DFJKGrad::compute_hessian()
     double **Cbp = Cb_->pointer();
 
     int na = Ca_->colspi()[0];
-    std::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+    auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
     metric->form_full_eig_inverse();
     SharedMatrix PQ = metric->get_metric();
     double** PQp = PQ->pointer();
 
-    SharedVector c(new Vector("c[A] = (mn|A) D[m][n]", np));
+    auto c = std::make_shared<Vector>("c[A] = (mn|A) D[m][n]", np);
     double *cp = c->pointer();
-    SharedMatrix dc(new Matrix("dc[x][A] = (mn|A)^x D[m][n]",  3*natoms, np));
+    auto dc = std::make_shared<Matrix>("dc[x][A] = (mn|A)^x D[m][n]",  3*natoms, np);
     double **dcp = dc->pointer();
-    SharedMatrix dAij(new Matrix("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na));
+    auto dAij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na);
     double **dAijp = dAij->pointer();
-    SharedVector d(new Vector("d[A] = Minv[A][B] C[B]", np));
+    auto d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
     double *dp = d->pointer();
-    SharedMatrix dd(new Matrix("dd[x][B] = dc[x][A] Minv[A][B]", 3*natoms, np));
+    auto dd = std::make_shared<Matrix>("dd[x][B] = dc[x][A] Minv[A][B]", 3*natoms, np);
     double **ddp = dd->pointer();
-    SharedMatrix de(new Matrix("de[x][A] = (A|B)^x d[B] ", 3*natoms, np));
+    auto de = std::make_shared<Matrix>("de[x][A] = (A|B)^x d[B] ", 3*natoms, np);
     double **dep = de->pointer();
-    SharedMatrix deij(new Matrix("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na));
+    auto deij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na);
     double **deijp = deij->pointer();
 
     // Build some integral factories
-    std::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
+    auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
     std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
     std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
-    SharedMatrix Amn(new Matrix("(A|mn)", np, nso*nso));
-    SharedMatrix Ami(new Matrix("(A|mi)", np, nso*na));
-    SharedMatrix Aij(new Matrix("(A|ij)", np, na*na));
-    SharedMatrix Bij(new Matrix("Minv[B][A] (A|ij)", np, na*na));
-    SharedMatrix Bim(new Matrix("Minv[B][A] (A|im)", np, nso*na));
-    SharedMatrix Bmn(new Matrix("Minv[B][A] (A|mn)", np, nso*nso));
-    SharedMatrix DPQ(new Matrix("B(P|ij) B(Q|ij)", np, np));
+    auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
+    auto Ami = std::make_shared<Matrix>("(A|mi)", np, nso*na);
+    auto Aij = std::make_shared<Matrix>("(A|ij)", np, na*na);
+    auto Bij = std::make_shared<Matrix>("Minv[B][A] (A|ij)", np, na*na);
+    auto Bim = std::make_shared<Matrix>("Minv[B][A] (A|im)", np, nso*na);
+    auto Bmn = std::make_shared<Matrix>("Minv[B][A] (A|mn)", np, nso*nso);
+    auto DPQ = std::make_shared<Matrix>("B(P|ij) B(Q|ij)", np, np);
     double **Amnp = Amn->pointer();
     double **Amip = Ami->pointer();
     double **Aijp = Aij->pointer();
@@ -1750,7 +1750,7 @@ void DFJKGrad::compute_hessian()
 
     int maxp = auxiliary_->max_function_per_shell();
     int maxm = primary_->max_function_per_shell();
-    SharedMatrix T(new Matrix("T", maxp, maxm*na));
+    auto T = std::make_shared<Matrix>("T", maxp, maxm*na);
     double **Tp = T->pointer();
 
     for (int P = 0; P < nauxshell; ++P){
@@ -2305,7 +2305,7 @@ void DFJKGrad::compute_hessian()
 
 
     // Stitch all the intermediates together to form the actual Hessian contributions
-    SharedMatrix tmp(new Matrix("Tmp [P][i,j]", np, na*na));
+    auto tmp = std::make_shared<Matrix>("Tmp [P][i,j]", np, na*na);
     double **ptmp = tmp->pointer();
 
     for(int x = 0; x < 3*natoms; ++x){
@@ -2379,19 +2379,19 @@ void DirectJKGrad::compute_gradient()
     int natom = primary_->molecule()->natom();
     gradients_.clear();
     if (do_J_) {
-        gradients_["Coulomb"] = SharedMatrix(new Matrix("Coulomb Gradient",natom,3));
+        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient",natom,3);
     }
     if (do_K_) {
-        gradients_["Exchange"] = SharedMatrix(new Matrix("Exchange Gradient",natom,3));
+        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient",natom,3);
     }
     if (do_wK_) {
-        gradients_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Gradient",natom,3));
+        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient",natom,3);
     }
 
     // => Build ERI Sieve <= //
-    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
-    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+    auto factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
 
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
@@ -2424,8 +2424,8 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
     std::vector<std::shared_ptr<Matrix> > Jgrad;
     std::vector<std::shared_ptr<Matrix> > Kgrad;
     for (int thread = 0; thread < nthreads; thread++) {
-        Jgrad.push_back(SharedMatrix(new Matrix("JGrad",natom,3)));
-        Kgrad.push_back(SharedMatrix(new Matrix("KGrad",natom,3)));
+        Jgrad.push_back(std::make_shared<Matrix>("JGrad",natom,3));
+        Kgrad.push_back(std::make_shared<Matrix>("KGrad",natom,3));
     }
 
     const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
@@ -2628,19 +2628,19 @@ void DirectJKGrad::compute_hessian()
     int natom = primary_->molecule()->natom();
     hessians_.clear();
     if (do_J_) {
-        hessians_["Coulomb"] = SharedMatrix(new Matrix("Coulomb Hessian",3*natom,3*natom));
+        hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian",3*natom,3*natom);
     }
     if (do_K_) {
-        hessians_["Exchange"] = SharedMatrix(new Matrix("Exchange Hessian",3*natom,3*natom));
+        hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian",3*natom,3*natom);
     }
     if (do_wK_) {
-        hessians_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Hessian",3*natom,3*natom));
+        hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian",3*natom,3*natom);
     }
 
     // => Build ERI Sieve <= //
-    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
-    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+    auto factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
 
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
@@ -2673,8 +2673,8 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vect
     std::vector<std::shared_ptr<Matrix> > Jhess;
     std::vector<std::shared_ptr<Matrix> > Khess;
     for (int thread = 0; thread < nthreads; thread++) {
-        Jhess.push_back(SharedMatrix(new Matrix("JHess",3*natom,3*natom)));
-        Khess.push_back(SharedMatrix(new Matrix("KHess",3*natom,3*natom)));
+        Jhess.push_back(std::make_shared<Matrix>("JHess",3*natom,3*natom));
+        Khess.push_back(std::make_shared<Matrix>("KHess",3*natom,3*natom));
     }
 
     const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();

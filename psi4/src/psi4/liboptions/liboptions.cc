@@ -42,7 +42,7 @@
 #include "liboptions_python.h"
 
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
+#include "psi4/libpsi4util/libpsi4util.h"  // Needed for Ref counting, string splitting, and conversions
 #include "psi4/pragma.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
@@ -56,183 +56,83 @@
 namespace psi {
 
 // DataType base
-DataType::DataType()
-    : changed_(false)
-{ }
+DataType::DataType() : changed_(false) {}
 
-DataType::~DataType()
-{ }
+DataType::~DataType() {}
 
-bool DataType::has_changed() const
-{
-    return changed_;
-}
+bool DataType::has_changed() const { return changed_; }
 
-void DataType::changed()
-{
-    changed_ = true;
-}
+void DataType::changed() { changed_ = true; }
 
-void DataType::dechanged()
-{
-    changed_ = false;
-}
+void DataType::dechanged() { changed_ = false; }
 
-void DataType::to_upper(std::string& str)
-{
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-}
+void DataType::to_upper(std::string& str) { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
 
-void DataType::add_choices(std::string str)
-{
+void DataType::add_choices(std::string str) {
     printf("I am here!\n");
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
-std::string DataType::type() const
-{
-    return std::string("unknown");
-}
+std::string DataType::type() const { return std::string("unknown"); }
 
-bool DataType::is_array() const
-{
-    return false;
-}
+bool DataType::is_array() const { return false; }
 
-size_t DataType::size() const
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+size_t DataType::size() const { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(DataType *)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(DataType*) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(std::string, DataType*)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(std::string, DataType*) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(bool)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(bool) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(int)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(int) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(double)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(double) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(std::string, bool)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(std::string, bool) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(std::string, std::string)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(std::string, std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(std::string, int)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(std::string, int) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(std::string, double)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(std::string, double) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-void DataType::add(std::string, std::string, std::string)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+void DataType::add(std::string, std::string, std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-bool DataType::exists(std::string)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+bool DataType::exists(std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-std::string DataType::to_string() const
-{
-    throw DataTypeException("don't know how to convert to a string");
-}
+std::string DataType::to_string() const { throw DataTypeException("don't know how to convert to a string"); }
 
-int DataType::to_integer() const
-{
-    throw DataTypeException("don't know how to convert to an integer");
-}
+int DataType::to_integer() const { throw DataTypeException("don't know how to convert to an integer"); }
 
-double DataType::to_double() const
-{
-    throw DataTypeException("don't know how to convert to a double");
-}
+double DataType::to_double() const { throw DataTypeException("don't know how to convert to a double"); }
 
-void DataType::assign(DataType*)
-{
-    throw DataTypeException("assign(DataType*) failure");
-}
+void DataType::assign(DataType*) { throw DataTypeException("assign(DataType*) failure"); }
 
-void DataType::assign(bool)
-{
-    throw DataTypeException("assign(bool) failure");
-}
+void DataType::assign(bool) { throw DataTypeException("assign(bool) failure"); }
 
-void DataType::assign(int)
-{
-    throw DataTypeException("assign(int) failure");
-}
+void DataType::assign(int) { throw DataTypeException("assign(int) failure"); }
 
-void DataType::assign(double)
-{
-    throw DataTypeException("assign(double) failure");
-}
+void DataType::assign(double) { throw DataTypeException("assign(double) failure"); }
 
-void DataType::assign(std::string)
-{
-    throw DataTypeException("assign(std:string) failure");
-}
+void DataType::assign(std::string) { throw DataTypeException("assign(std:string) failure"); }
 
-void DataType::reset()
-{
-    throw DataTypeException("reset() failure");
-}
+void DataType::reset() { throw DataTypeException("reset() failure"); }
 
-Data& DataType::operator[](std::string)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+Data& DataType::operator[](std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-Data& DataType::operator[](size_t)
-{
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
+Data& DataType::operator[](size_t) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
 // BooleanDataType
-BooleanDataType::BooleanDataType()
-    : DataType(), boolean_(false)
-{ }
+BooleanDataType::BooleanDataType() : DataType(), boolean_(false) {}
 
-BooleanDataType::BooleanDataType(bool b)
-    : DataType(), boolean_(b)
-{ }
+BooleanDataType::BooleanDataType(bool b) : DataType(), boolean_(b) {}
 
-BooleanDataType::~BooleanDataType()
-{ }
+BooleanDataType::~BooleanDataType() {}
 
-std::string BooleanDataType::type() const
-{
-    return std::string("boolean");
-}
+std::string BooleanDataType::type() const { return std::string("boolean"); }
 
-std::string BooleanDataType::to_string() const
-{
+std::string BooleanDataType::to_string() const {
     std::string ret;
     if (boolean_)
         ret = "TRUE";
@@ -241,633 +141,351 @@ std::string BooleanDataType::to_string() const
     return ret;
 }
 
-int BooleanDataType::to_integer() const
-{
-    return static_cast<int>(boolean_);
-}
+int BooleanDataType::to_integer() const { return static_cast<int>(boolean_); }
 
-double BooleanDataType::to_double() const
-{
-    return static_cast<double>(boolean_);
-}
+double BooleanDataType::to_double() const { return static_cast<double>(boolean_); }
 
-void BooleanDataType::assign(bool b)
-{
+void BooleanDataType::assign(bool b) {
     changed();
     boolean_ = b;
 }
 
-void BooleanDataType::assign(int i)
-{
-    assign(static_cast<bool>(i));
-}
+void BooleanDataType::assign(int i) { assign(static_cast<bool>(i)); }
 
-void BooleanDataType::assign(double d)
-{
-    assign(static_cast<bool>(d));
-}
+void BooleanDataType::assign(double d) { assign(static_cast<bool>(d)); }
 
-void BooleanDataType::assign(std::string s)
-{
-    assign(static_cast<bool>(std::strtod(s.c_str(), NULL)));
-}
+void BooleanDataType::assign(std::string s) { assign(static_cast<bool>(std::strtod(s.c_str(), nullptr))); }
 
 // IntDataType
-IntDataType::IntDataType()
-    : DataType(), integer_(0)
-{ }
+IntDataType::IntDataType() : DataType(), integer_(0) {}
 
-IntDataType::IntDataType(int i)
-    : DataType(), integer_(i)
-{ }
+IntDataType::IntDataType(int i) : DataType(), integer_(i) {}
 
-IntDataType::~IntDataType()
-{ }
+IntDataType::~IntDataType() {}
 
-std::string IntDataType::type() const
-{
-    return std::string("int");
-}
+std::string IntDataType::type() const { return std::string("int"); }
 
-std::string IntDataType::to_string() const
-{
+std::string IntDataType::to_string() const {
     std::stringstream strm;
     strm << integer_;
     return strm.str();
 }
 
-int IntDataType::to_integer() const
-{
-    return integer_;
-}
+int IntDataType::to_integer() const { return integer_; }
 
-double IntDataType::to_double() const
-{
-    return static_cast<double>(integer_);
-}
+double IntDataType::to_double() const { return static_cast<double>(integer_); }
 
-void IntDataType::assign(bool b)
-{
-    assign(static_cast<int>(b));
-}
+void IntDataType::assign(bool b) { assign(static_cast<int>(b)); }
 
-void IntDataType::assign(int i)
-{
+void IntDataType::assign(int i) {
     changed();
     integer_ = i;
 }
 
-void IntDataType::assign(double d)
-{
-    assign(static_cast<int>(d));
-}
+void IntDataType::assign(double d) { assign(static_cast<int>(d)); }
 
-void IntDataType::assign(std::string s)
-{
-    assign(static_cast<int>(std::strtod(s.c_str(), NULL)));
-}
+void IntDataType::assign(std::string s) { assign(static_cast<int>(std::strtod(s.c_str(), nullptr))); }
 
 // DoubleDataType
-DoubleDataType::DoubleDataType()
-    : DataType(), double_(0.0)
-{ }
+DoubleDataType::DoubleDataType() : DataType(), double_(0.0) {}
 
-DoubleDataType::DoubleDataType(double d)
-    : DataType(), double_(d)
-{ }
+DoubleDataType::DoubleDataType(double d) : DataType(), double_(d) {}
 
-DoubleDataType::~DoubleDataType()
-{ }
+DoubleDataType::~DoubleDataType() {}
 
-std::string DoubleDataType::type() const
-{
-    return std::string("double");
-}
+std::string DoubleDataType::type() const { return std::string("double"); }
 
-std::string DoubleDataType::to_string() const
-{
+std::string DoubleDataType::to_string() const {
     std::stringstream strm;
     strm << double_;
     return strm.str();
 }
 
-int DoubleDataType::to_integer() const
-{
-    return static_cast<int>(double_);
-}
+int DoubleDataType::to_integer() const { return static_cast<int>(double_); }
 
-double DoubleDataType::to_double() const
-{
-    return double_;
-}
+double DoubleDataType::to_double() const { return double_; }
 
-void DoubleDataType::assign(bool b)
-{
-    assign(static_cast<double>(b));
-}
+void DoubleDataType::assign(bool b) { assign(static_cast<double>(b)); }
 
-void DoubleDataType::assign(int i)
-{
-    assign(static_cast<double>(i));
-}
+void DoubleDataType::assign(int i) { assign(static_cast<double>(i)); }
 
-void DoubleDataType::assign(double d)
-{
+void DoubleDataType::assign(double d) {
     changed();
     double_ = d;
 }
 
-void DoubleDataType::assign(std::string s)
-{
-    assign(std::strtod(s.c_str(), NULL));
-}
+void DoubleDataType::assign(std::string s) { assign(std::strtod(s.c_str(), nullptr)); }
 
 // StringDataType
-StringDataType::StringDataType()
-    : DataType(), str_(), choices_()
-{ }
+StringDataType::StringDataType() : DataType(), str_(), choices_() {}
 
-StringDataType::StringDataType(std::string s)
-    : DataType(), str_(s), choices_()
-{
-    to_upper(str_);
-}
+StringDataType::StringDataType(std::string s) : DataType(), str_(s), choices_() { to_upper(str_); }
 
-StringDataType::StringDataType(std::string s, std::string c)
-    : DataType(), str_(s), choices_()
-{
+StringDataType::StringDataType(std::string s, std::string c) : DataType(), str_(s), choices_() {
     to_upper(str_);
     to_upper(c);
     choices_ = split(c);
 }
 
-StringDataType::~StringDataType()
-{ }
+StringDataType::~StringDataType() {}
 
-void StringDataType::add_choices(std::string str)
-{
+void StringDataType::add_choices(std::string str) {
     to_upper(str);
     std::vector<std::string> temp = split(str);
-    for(int i = 0; i < temp.size(); ++i)
-        choices_.push_back(temp[i]);
+    for (int i = 0; i < temp.size(); ++i) choices_.push_back(temp[i]);
 }
 
-std::string StringDataType::type() const
-{
-    return std::string("string");
-}
+std::string StringDataType::type() const { return std::string("string"); }
 
-std::string StringDataType::to_string() const
-{
-    return str_;
-}
+std::string StringDataType::to_string() const { return str_; }
 
-int StringDataType::to_integer() const
-{
-    return static_cast<int>(std::strtod(str_.c_str(), NULL));
-}
+int StringDataType::to_integer() const { return static_cast<int>(std::strtod(str_.c_str(), nullptr)); }
 
-double StringDataType::to_double() const
-{
-    return std::strtod(str_.c_str(), NULL);
-}
+double StringDataType::to_double() const { return std::strtod(str_.c_str(), nullptr); }
 
-void StringDataType::assign(bool b)
-{
+void StringDataType::assign(bool b) {
     if (b)
         assign("TRUE");
     else
         assign("FALSE");
 }
 
-void StringDataType::assign(int i)
-{
+void StringDataType::assign(int i) {
     std::stringstream strm;
     strm << i;
     assign(strm.str());
 }
 
-void StringDataType::assign(double d)
-{
+void StringDataType::assign(double d) {
     std::stringstream strm;
     strm << d;
     assign(strm.str());
 }
 
-void StringDataType::assign(std::string s)
-{
+void StringDataType::assign(std::string s) {
     to_upper(s);
     if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (size_t i=0; i<choices_.size(); ++i)
-            if (s == choices_[i])
-                wrong_input = false;
-        if (wrong_input)
-            throw DataTypeException(s + " is not a valid choice");
+        for (size_t i = 0; i < choices_.size(); ++i)
+            if (s == choices_[i]) wrong_input = false;
+        if (wrong_input) throw DataTypeException(s + " is not a valid choice");
         changed();
         str_ = s;
-    }
-    else {
+    } else {
         changed();
         str_ = s;
     }
 }
 
 // IStringDataType
-IStringDataType::IStringDataType()
-    : DataType(), str_(), choices_()
-{ }
+IStringDataType::IStringDataType() : DataType(), str_(), choices_() {}
 
-IStringDataType::IStringDataType(std::string s)
-    : DataType(), str_(s), choices_()
-{ }
+IStringDataType::IStringDataType(std::string s) : DataType(), str_(s), choices_() {}
 
-IStringDataType::IStringDataType(std::string s, std::string c)
-    : DataType(), str_(s), choices_()
-{
+IStringDataType::IStringDataType(std::string s, std::string c) : DataType(), str_(s), choices_() {
     choices_ = split(c);
 }
 
-IStringDataType::~IStringDataType()
-{ }
+IStringDataType::~IStringDataType() {}
 
-void IStringDataType::add_choices(std::string str)
-{
+void IStringDataType::add_choices(std::string str) {
     std::vector<std::string> temp = split(str);
-    for(int i = 0; i < temp.size(); ++i)
-        choices_.push_back(temp[i]);
+    for (int i = 0; i < temp.size(); ++i) choices_.push_back(temp[i]);
 }
 
-std::string IStringDataType::type() const
-{
-    return std::string("istring");
-}
+std::string IStringDataType::type() const { return std::string("istring"); }
 
-std::string IStringDataType::to_string() const
-{
-    return str_;
-}
+std::string IStringDataType::to_string() const { return str_; }
 
-int IStringDataType::to_integer() const
-{
-    return static_cast<int>(std::strtod(str_.c_str(), NULL));
-}
+int IStringDataType::to_integer() const { return static_cast<int>(std::strtod(str_.c_str(), nullptr)); }
 
-double IStringDataType::to_double() const
-{
-    return std::strtod(str_.c_str(), NULL);
-}
+double IStringDataType::to_double() const { return std::strtod(str_.c_str(), nullptr); }
 
-void IStringDataType::assign(bool b)
-{
+void IStringDataType::assign(bool b) {
     if (b)
         assign("TRUE");
     else
         assign("FALSE");
 }
 
-void IStringDataType::assign(int i)
-{
+void IStringDataType::assign(int i) {
     std::stringstream strm;
     strm << i;
     assign(strm.str());
 }
 
-void IStringDataType::assign(double d)
-{
+void IStringDataType::assign(double d) {
     std::stringstream strm;
     strm << d;
     assign(strm.str());
 }
 
-void IStringDataType::assign(std::string s)
-{
+void IStringDataType::assign(std::string s) {
     if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (size_t i=0; i<choices_.size(); ++i)
-            if (s == choices_[i])
-                wrong_input = false;
-        if (wrong_input)
-            throw DataTypeException(s + " is not a valid choice");
+        for (size_t i = 0; i < choices_.size(); ++i)
+            if (s == choices_[i]) wrong_input = false;
+        if (wrong_input) throw DataTypeException(s + " is not a valid choice");
         changed();
         str_ = s;
-    }
-    else {
+    } else {
         changed();
         str_ = s;
     }
 }
 
 // Data
-Data::Data()
-{ }
+Data::Data() {}
 
-Data::Data(DataType *t){
-   ptr_= std::shared_ptr<DataType>(t);
+Data::Data(DataType* t) { ptr_ = std::shared_ptr<DataType>(t); }
 
-}
+Data::Data(const Data& copy) { ptr_ = copy.ptr_; }
 
-Data::Data(const Data& copy)
-{
-    ptr_ = copy.ptr_;
-}
+std::string Data::to_string() const { return ptr_->to_string(); }
 
-std::string Data::to_string() const
-{
-    return ptr_->to_string();
-}
+int Data::to_integer() const { return ptr_->to_integer(); }
 
-int Data::to_integer() const
-{
-    return ptr_->to_integer();
-}
+double Data::to_double() const { return ptr_->to_double(); }
 
-double Data::to_double() const
-{
-    return ptr_->to_double();
-}
+bool Data::is_array() const { return ptr_->is_array(); }
 
-bool Data::is_array() const
-{
-    return ptr_->is_array();
-}
+size_t Data::size() const { return ptr_->size(); }
 
-size_t Data::size() const
-{
-    return ptr_->size();
-}
+bool Data::has_changed() const { return ptr_->has_changed(); }
 
-bool Data::has_changed() const
-{
-    return ptr_->has_changed();
-}
+void Data::changed() { ptr_->changed(); }
 
-void Data::changed()
-{
-    ptr_->changed();
-}
+void Data::dechanged() { ptr_->dechanged(); }
 
-void Data::dechanged()
-{
-    ptr_->dechanged();
-}
+void Data::add_choices(std::string str) { ptr_->add_choices(str); }
 
-void Data::add_choices(std::string str)
-{
-    ptr_->add_choices(str);
-}
+std::string Data::type() const { return ptr_->type(); }
 
-std::string Data::type() const
-{
-    return ptr_->type();
-}
+void Data::add(DataType* data) { ptr_->add(data); }
 
-void Data::add(DataType *data)
-{
-    ptr_->add(data);
-}
+void Data::add(std::string s, DataType* data) { ptr_->add(s, data); }
 
-void Data::add(std::string s, DataType *data)
-{
-    ptr_->add(s, data);
-}
+void Data::add(bool b) { ptr_->add(b); }
 
-void Data::add(bool b)
-{
-    ptr_->add(b);
-}
+void Data::add(int i) { ptr_->add(i); }
 
-void Data::add(int i)
-{
-    ptr_->add(i);
-}
+void Data::add(double d) { ptr_->add(d); }
 
-void Data::add(double d)
-{
-    ptr_->add(d);
-}
+void Data::add(std::string s, std::string c) { ptr_->add(s, c); }
 
-void Data::add(std::string s, std::string c)
-{
-    ptr_->add(s, c);
-}
+void Data::add(std::string key, bool b) { ptr_->add(key, b); }
 
-void Data::add(std::string key, bool b)
-{
-    ptr_->add(key, b);
-}
+void Data::add(std::string key, int i) { ptr_->add(key, i); }
 
-void Data::add(std::string key, int i)
-{
-    ptr_->add(key, i);
-}
+void Data::add(std::string key, double d) { ptr_->add(key, d); }
 
-void Data::add(std::string key, double d)
-{
-    ptr_->add(key, d);
-}
+void Data::add(std::string key, std::string s, std::string c) { ptr_->add(key, s, c); }
 
-void Data::add(std::string key, std::string s, std::string c)
-{
-    ptr_->add(key, s, c);
-}
+void Data::assign(DataType* data) { ptr_->assign(data); }
 
-void Data::assign(DataType *data)
-{
-    ptr_->assign(data);
-}
+void Data::assign(bool b) { ptr_->assign(b); }
 
-void Data::assign(bool b)
-{
-    ptr_->assign(b);
-}
+void Data::assign(int i) { ptr_->assign(i); }
 
-void Data::assign(int i)
-{
-    ptr_->assign(i);
-}
+void Data::assign(double d) { ptr_->assign(d); }
 
-void Data::assign(double d)
-{
-    ptr_->assign(d);
-}
+void Data::assign(std::string s) { ptr_->assign(s); }
 
-void Data::assign(std::string s)
-{
-    ptr_->assign(s);
-}
+void Data::reset() { ptr_->reset(); }
 
-void Data::reset()
-{
-    ptr_->reset();
-}
+DataType* Data::get() const { return ptr_.get(); }
 
-DataType* Data::get() const
-{
-    return ptr_.get();
-}
+Data& Data::operator[](int i) { return (*(ptr_.get()))[i]; }
 
-Data& Data::operator[](int i)
-{
-    return (*(ptr_.get()))[i];
-}
-
-Data& Data::operator[](std::string s)
-{
-    return (*(ptr_.get()))[s];
-}
+Data& Data::operator[](std::string s) { return (*(ptr_.get()))[s]; }
 
 // ArrayType
-ArrayType::ArrayType()
-{ }
+ArrayType::ArrayType() {}
 
-std::string ArrayType::type() const
-{
-    return std::string("array");
-}
+std::string ArrayType::type() const { return std::string("array"); }
 
-void ArrayType::add(DataType *data)
-{
-    array_.push_back(Data(data));
-}
+void ArrayType::add(DataType* data) { array_.push_back(Data(data)); }
 
-void ArrayType::add(bool b)
-{
-    add(new BooleanDataType(b));
-}
+void ArrayType::add(bool b) { add(new BooleanDataType(b)); }
 
-void ArrayType::add(int i)
-{
-    add(new IntDataType(i));
-}
+void ArrayType::add(int i) { add(new IntDataType(i)); }
 
-void ArrayType::add(double d)
-{
-    add(new DoubleDataType(d));
-}
+void ArrayType::add(double d) { add(new DoubleDataType(d)); }
 
-void ArrayType::add(std::string s, std::string c)
-{
-    add(new StringDataType(s, c));
-}
+void ArrayType::add(std::string s, std::string c) { add(new StringDataType(s, c)); }
 
-void ArrayType::assign(DataType* data)
-{
+void ArrayType::assign(DataType* data) {
     changed();
     array_.push_back(Data(data));
 }
 
-Data& ArrayType::operator[](size_t i)
-{
-    if (i >= array_.size())
-        throw IndexException("out of range");
+Data& ArrayType::operator[](size_t i) {
+    if (i >= array_.size()) throw IndexException("out of range");
     changed();
     return array_[i];
 }
 
-Data& ArrayType::operator[](std::string s)
-{
-    size_t i = static_cast<size_t>(std::strtod(s.c_str(), NULL));
-    if (i >= array_.size())
-        throw IndexException("out of range");
+Data& ArrayType::operator[](std::string s) {
+    size_t i = static_cast<size_t>(std::strtod(s.c_str(), nullptr));
+    if (i >= array_.size()) throw IndexException("out of range");
     changed();
     return array_[i];
 }
 
-bool ArrayType::is_array() const
-{
-    return true;
-}
+bool ArrayType::is_array() const { return true; }
 
-size_t ArrayType::size() const
-{
-    return array_.size();
-}
+size_t ArrayType::size() const { return array_.size(); }
 
-std::string ArrayType::to_string() const
-{
+std::string ArrayType::to_string() const {
     std::string str = "[ ";
-    for (size_t i=0; i<array_.size(); ++i) {
+    for (size_t i = 0; i < array_.size(); ++i) {
         str += array_[i].to_string();
-        if (i != array_.size() - 1)
-            str += ", ";
+        if (i != array_.size() - 1) str += ", ";
     }
     str += " ]";
     return str;
 }
 
-void ArrayType::reset()
-{
-    array_.clear();
-}
+void ArrayType::reset() { array_.clear(); }
 
-MapType::MapType()
-{ }
+MapType::MapType() {}
 
-std::string MapType::type() const
-{
-    return std::string("map");
-}
+std::string MapType::type() const { return std::string("map"); }
 
-void MapType::add(std::string key, DataType *data)
-{
+void MapType::add(std::string key, DataType* data) {
     to_upper(key);
 
     iterator pos = keyvals_.find(key);
-    if (pos != keyvals_.end())
-        throw DuplicateKeyException(key, data->type(), pos->second.type(), __FILE__, __LINE__);
+    if (pos != keyvals_.end()) throw DuplicateKeyException(key, data->type(), pos->second.type(), __FILE__, __LINE__);
     keyvals_[key] = Data(data);
 }
 
-void MapType::add(std::string key, bool b)
-{
-    add(key, new BooleanDataType(b));
-}
+void MapType::add(std::string key, bool b) { add(key, new BooleanDataType(b)); }
 
-void MapType::add(std::string key, int i)
-{
-    add(key, new IntDataType(i));
-}
+void MapType::add(std::string key, int i) { add(key, new IntDataType(i)); }
 
-void MapType::add(std::string key, double d)
-{
-    add(key, new DoubleDataType(d));
-}
+void MapType::add(std::string key, double d) { add(key, new DoubleDataType(d)); }
 
-void MapType::add(std::string key, std::string s, std::string c)
-{
-    add(key, new StringDataType(s, c));
-}
+void MapType::add(std::string key, std::string s, std::string c) { add(key, new StringDataType(s, c)); }
 
-bool MapType::exists(std::string key)
-{
+bool MapType::exists(std::string key) {
     to_upper(key);
     iterator pos = keyvals_.find(key);
-    if (pos != keyvals_.end())
-        return true;
+    if (pos != keyvals_.end()) return true;
     return false;
 }
 
-Data& MapType::operator[](std::string s)
-{
+Data& MapType::operator[](std::string s) {
     to_upper(s);
-    if (!exists(s))
-        throw IndexException(s);
+    if (!exists(s)) throw IndexException(s);
     return keyvals_[s];
 }
 
-bool MapType::is_array() const
-{
-    return true;
-}
+bool MapType::is_array() const { return true; }
 
-size_t MapType::size() const
-{
-    return keyvals_.size();
-}
+size_t MapType::size() const { return keyvals_.size(); }
 
-std::string MapType::to_string() const
-{
+std::string MapType::to_string() const {
     std::string str = "{ ";
     for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
         str += pos->first + " => " + pos->second.to_string() + ", ";
@@ -876,15 +494,11 @@ std::string MapType::to_string() const
     return str;
 }
 
-Options::Options()
-    : edit_globals_(false)
-{ }
+Options::Options() : edit_globals_(false) {}
 
-Options& Options::operator=(const Options& rhs)
-{
+Options& Options::operator=(const Options& rhs) {
     // Don't self copy
-    if (this == &rhs)
-        return *this;
+    if (this == &rhs) return *this;
 
     locals_ = rhs.locals_;
     globals_ = rhs.globals_;
@@ -892,54 +506,42 @@ Options& Options::operator=(const Options& rhs)
     return *this;
 }
 
-bool Options::read_globals() const
-{
-    return edit_globals_;
-}
+bool Options::read_globals() const { return edit_globals_; }
 
-void Options::set_read_globals(bool _b)
-{
-    edit_globals_ = _b;
-}
+void Options::set_read_globals(bool _b) { edit_globals_ = _b; }
 
-void Options::set_current_module(const std::string s)
-{
+void Options::set_current_module(const std::string s) {
     current_module_ = s;
     all_local_options_.clear();
 }
 
-void Options::to_upper(std::string& str)
-{
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-}
+void Options::to_upper(std::string& str) { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
 
-void Options::validate_options()
-{
+void Options::validate_options() {
     std::map<std::string, Data>::const_iterator iter = locals_[current_module_].begin();
     std::map<std::string, Data>::const_iterator stop = locals_[current_module_].end();
     std::map<std::string, Data>::const_iterator not_found = all_local_options_.end();
-    for(; iter != stop; ++iter){
-        if(iter->second.has_changed()){
-            if(all_local_options_.find(iter->first) == not_found)
-                throw PSIEXCEPTION("Option " + iter->first +
-                                   " is not recognized by the " + current_module_ + " module.");
+    for (; iter != stop; ++iter) {
+        if (iter->second.has_changed()) {
+            if (all_local_options_.find(iter->first) == not_found)
+                throw PSIEXCEPTION("Option " + iter->first + " is not recognized by the " + current_module_ +
+                                   " module.");
         }
     }
     all_local_options_.clear();
 }
 
-void Options::add(std::string key, DataType *data)
-{
+void Options::add(std::string key, DataType* data) {
     to_upper(key);
 
-    std::map<std::string, Data> & local = edit_globals_ ? globals_ : locals_[current_module_];
+    std::map<std::string, Data>& local = edit_globals_ ? globals_ : locals_[current_module_];
 
     Data val(data);
     all_local_options_[key] = val;
 
     // Make sure the key isn't already there
     iterator pos = local.find(key);
-    if (pos != local.end()) { // If it is there, make sure they are the same type
+    if (pos != local.end()) {  // If it is there, make sure they are the same type
         if (pos->second.type() != data->type())
             throw DuplicateKeyException(key, data->type(), pos->second.type(), __FILE__, __LINE__);
         return;
@@ -947,141 +549,89 @@ void Options::add(std::string key, DataType *data)
     local[key] = val;
 }
 
-void Options::add(std::string key, bool b)
-{
-    add(key, new BooleanDataType(b));
-}
+void Options::add(std::string key, bool b) { add(key, new BooleanDataType(b)); }
 
-void Options::add(std::string key, int i)
-{
-    add(key, new IntDataType(i));
-}
+void Options::add(std::string key, int i) { add(key, new IntDataType(i)); }
 
-void Options::add(std::string key, double d)
-{
-    add(key, new DoubleDataType(d));
-}
+void Options::add(std::string key, double d) { add(key, new DoubleDataType(d)); }
 
-void Options::add(std::string key, std::string s, std::string c)
-{
-    if(edit_globals_  && globals_.count(key)){
+void Options::add(std::string key, std::string s, std::string c) {
+    if (edit_globals_ && globals_.count(key)) {
         globals_[key].add_choices(c);
-    }
-    else{
+    } else {
         add(key, new StringDataType(s, c));
     }
 }
 
-void Options::add_i(std::string key, std::string s, std::string c)
-{
-    if(edit_globals_  && globals_.count(key)){
+void Options::add_i(std::string key, std::string s, std::string c) {
+    if (edit_globals_ && globals_.count(key)) {
         globals_[key].add_choices(c);
-    }
-    else{
+    } else {
         add(key, new IStringDataType(s, c));
     }
 }
 
-void Options::add_bool(std::string key, bool b)
-{
-    add(key,b);
-}
+void Options::add_bool(std::string key, bool b) { add(key, b); }
 
-void Options::add_int(std::string key, int i)
-{
-    add(key,i);
-}
+void Options::add_int(std::string key, int i) { add(key, i); }
 
-void Options::add_double(std::string key, double d)
-{
-    add(key,d);
-}
+void Options::add_double(std::string key, double d) { add(key, d); }
 
-void Options::add_str(std::string key, std::string s, std::string c)
-{
-    add(key,s,c);
-}
+void Options::add_str(std::string key, std::string s, std::string c) { add(key, s, c); }
 
-void Options::add_str_i(std::string key, std::string s, std::string c)
-{
-    add_i(key,s,c);
-}
+void Options::add_str_i(std::string key, std::string s, std::string c) { add_i(key, s, c); }
 
-void Options::add_array(std::string key)
-{
-    add(key, new ArrayType());
-}
+void Options::add_array(std::string key) { add(key, new ArrayType()); }
 
-void Options::set_bool(const std::string &module, const std::string &key, bool b)
-{
+void Options::set_bool(const std::string& module, const std::string& key, bool b) {
     locals_[module][key] = new BooleanDataType(b);
     locals_[module][key].changed();
 }
 
-void Options::set_int(const std::string &module, const std::string &key, int i)
-{
+void Options::set_int(const std::string& module, const std::string& key, int i) {
     locals_[module][key] = new IntDataType(i);
     locals_[module][key].changed();
 }
 
-void Options::set_double(const std::string & module, const std::string &key, double d)
-{
+void Options::set_double(const std::string& module, const std::string& key, double d) {
     locals_[module][key] = new DoubleDataType(d);
     locals_[module][key].changed();
 }
 
-void Options::set_str(const std::string & module, const std::string &key, std::string s)
-{
+void Options::set_str(const std::string& module, const std::string& key, std::string s) {
     locals_[module][key] = new StringDataType(s);
     locals_[module][key].changed();
 }
 
-void Options::set_str_i(const std::string & module, const std::string &key, std::string s)
-{
+void Options::set_str_i(const std::string& module, const std::string& key, std::string s) {
     locals_[module][key] = new IStringDataType(s);
     locals_[module][key].changed();
 }
 
-void Options::set_array(const std::string &module, const std::string& key)
-{
+void Options::set_array(const std::string& module, const std::string& key) {
     locals_[module][key] = Data(new ArrayType);
     locals_[module][key].changed();
 }
 
-void Options::set_global_bool(const std::string &key, bool b)
-{
-    get_global(key).assign(b);
-}
+void Options::set_global_bool(const std::string& key, bool b) { get_global(key).assign(b); }
 
-void Options::set_global_int(const std::string &key, int i)
-{
-    get_global(key).assign(i);
-}
+void Options::set_global_int(const std::string& key, int i) { get_global(key).assign(i); }
 
-void Options::set_global_double(const std::string &key, double d)
-{
-    get_global(key).assign(d);
-}
+void Options::set_global_double(const std::string& key, double d) { get_global(key).assign(d); }
 
-void Options::set_global_str(const std::string &key, const std::string &s)
-{
-    get_global(key).assign(s);
-}
+void Options::set_global_str(const std::string& key, const std::string& s) { get_global(key).assign(s); }
 
-void Options::set_global_array(const std::string& key)
-{
+void Options::set_global_array(const std::string& key) {
     globals_[key] = Data(new ArrayType());
     globals_[key].changed();
 }
 
-DataType* Options::set_global_array_entry(const std::string& key, DataType* entry, DataType* loc)
-{
-    if(loc == NULL){
+DataType* Options::set_global_array_entry(const std::string& key, DataType* entry, DataType* loc) {
+    if (loc == nullptr) {
         // This is the first entry to be added
-        Data &data = get_global(key);
+        Data& data = get_global(key);
         data.assign(entry);
-    }
-    else{
+    } else {
         // We're adding to an existing entry
         ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
         arrptr->assign(entry);
@@ -1089,33 +639,28 @@ DataType* Options::set_global_array_entry(const std::string& key, DataType* entr
     return entry;
 }
 
-void Options::set_global_array_double(std::string key, double val, DataType *entry)
-{
+void Options::set_global_array_double(std::string key, double val, DataType* entry) {
     set_global_array_entry(key, new DoubleDataType(val), entry);
 }
 
-void Options::set_global_array_string(std::string key, std::string val, DataType *entry)
-{
+void Options::set_global_array_string(std::string key, std::string val, DataType* entry) {
     set_global_array_entry(key, new StringDataType(val), entry);
 }
 
-void Options::set_global_array_int(std::string key, int val, DataType *entry)
-{
+void Options::set_global_array_int(std::string key, int val, DataType* entry) {
     set_global_array_entry(key, new IntDataType(val), entry);
 }
 
-DataType* Options::set_global_array_array(std::string key, DataType *entry)
-{
+DataType* Options::set_global_array_array(std::string key, DataType* entry) {
     return set_global_array_entry(key, new ArrayType(), entry);
 }
 
-DataType* Options::set_local_array_entry(const std::string &module, const std::string& key, DataType* entry, DataType* loc)
-{
-    if(loc == NULL){
+DataType* Options::set_local_array_entry(const std::string& module, const std::string& key, DataType* entry,
+                                         DataType* loc) {
+    if (loc == nullptr) {
         // This is the first entry to be added
         locals_[module][key].assign(entry);
-    }
-    else{
+    } else {
         // We're adding to an existing entry
         ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
         arrptr->assign(entry);
@@ -1123,58 +668,46 @@ DataType* Options::set_local_array_entry(const std::string &module, const std::s
     return entry;
 }
 
-void Options::set_local_array_double(const std::string &module, const std::string &key, double val, DataType *entry)
-{
+void Options::set_local_array_double(const std::string& module, const std::string& key, double val, DataType* entry) {
     set_local_array_entry(module, key, new DoubleDataType(val), entry);
 }
 
-void Options::set_local_array_string(const std::string &module, const std::string &key, std::string val, DataType *entry)
-{
+void Options::set_local_array_string(const std::string& module, const std::string& key, std::string val,
+                                     DataType* entry) {
     set_local_array_entry(module, key, new StringDataType(val), entry);
 }
 
-void Options::set_local_array_int(const std::string &module, const std::string &key, int val, DataType *entry)
-{
+void Options::set_local_array_int(const std::string& module, const std::string& key, int val, DataType* entry) {
     set_local_array_entry(module, key, new IntDataType(val), entry);
 }
 
-DataType* Options::set_local_array_array(const std::string &module, const std::string &key, DataType *entry)
-{
+DataType* Options::set_local_array_array(const std::string& module, const std::string& key, DataType* entry) {
     return set_local_array_entry(module, key, new ArrayType(), entry);
 }
 
-void Options::clear(void)
-{
+void Options::clear(void) {
     globals_.clear();
     locals_.clear();
 }
 
-bool Options::exists_in_active(std::string key)
-{
+bool Options::exists_in_active(std::string key) {
     to_upper(key);
 
-    if(!locals_.count(current_module_)) return false;
+    if (!locals_.count(current_module_)) return false;
     return (locals_[current_module_].count(key));
 }
 
-bool Options::exists_in_global(std::string key)
-{
+bool Options::exists_in_global(std::string key) {
     to_upper(key);
 
     iterator pos = globals_.find(key);
-    if (pos != globals_.end())
-        return true;
+    if (pos != globals_.end()) return true;
     return false;
 }
 
-bool Options::exists(std::string key)
-{
-    return exists_in_active(key) || exists_in_global(key);
-}
+bool Options::exists(std::string key) { return exists_in_active(key) || exists_in_global(key); }
 
-
-Data& Options::get(std::string key)
-{
+Data& Options::get(std::string key) {
     to_upper(key);
     if (!exists_in_active(key)) {
         // Key not found. Throw an error
@@ -1183,8 +716,7 @@ Data& Options::get(std::string key)
     return locals_[current_module_][key];
 }
 
-Data& Options::get_local(std::string& key)
-{
+Data& Options::get_local(std::string& key) {
     to_upper(key);
 
     if (!exists_in_active(key))
@@ -1194,14 +726,12 @@ Data& Options::get_local(std::string& key)
     }
 }
 
-Data& Options::get(std::map<std::string, Data>& m, std::string& key)
-{
+Data& Options::get(std::map<std::string, Data>& m, std::string& key) {
     to_upper(key);
     return m[key];
 }
 
-Data& Options::get_global(std::string key)
-{
+Data& Options::get_global(std::string key) {
     to_upper(key);
     if (!exists_in_global(key)) {
         // Key not found. Throw an error
@@ -1210,12 +740,11 @@ Data& Options::get_global(std::string key)
     return globals_[key];
 }
 
-Data& Options::use_local(std::string& key)
-{
+Data& Options::use_local(std::string& key) {
     to_upper(key);
 
     // edit globals being true overrides everything
-    if (edit_globals_){
+    if (edit_globals_) {
         return get(globals_, key);
     }
 
@@ -1230,32 +759,28 @@ Data& Options::use_local(std::string& key)
         if (active.has_changed()) {
             // Pull from keyvals
             return active;
-        }
-        else if (global.has_changed()){
+        } else if (global.has_changed()) {
             // Pull from globals
             return global;
-        }
-        else{
+        } else {
             // No user input - the default should come from local vals
             return active;
         }
-    }
-    else
+    } else
         return get(locals_[current_module_], key);
 }
 
-Data& Options::use(std::string& key)
-{
+Data& Options::use(std::string& key) {
     to_upper(key);
 
     // edit globals being true overrides everything
-    if (edit_globals_){
+    if (edit_globals_) {
         return get(globals_, key);
     }
 
-    if (!exists_in_active(key) && !exists_in_global(key)){
-        printf("\nError: option %s is not contained in the list of available options.\n",key.c_str());
-        outfile->Printf("\nError: option %s is not contained in the list of available options.\n",key.c_str());
+    if (!exists_in_active(key) && !exists_in_global(key)) {
+        printf("\nError: option %s is not contained in the list of available options.\n", key.c_str());
+        outfile->Printf("\nError: option %s is not contained in the list of available options.\n", key.c_str());
 
         std::vector<std::string> choices;
 
@@ -1263,9 +788,9 @@ Data& Options::use(std::string& key)
         {
             std::map<std::string, Data>::iterator it = locals_[current_module_].begin();
             std::map<std::string, Data>::iterator endit = locals_[current_module_].end();
-            for (; it != endit; ++it){
-                size_t distance = edit_distance(it->first,key);
-                if (distance < 3){
+            for (; it != endit; ++it) {
+                size_t distance = edit_distance(it->first, key);
+                if (distance < 3) {
                     choices.push_back(it->first);
                 }
             }
@@ -1274,29 +799,27 @@ Data& Options::use(std::string& key)
         {
             std::map<std::string, Data>::iterator it = globals_.begin();
             std::map<std::string, Data>::iterator endit = globals_.end();
-            for (; it != endit; ++it){
-                size_t distance = edit_distance(it->first,key);
-                if (distance < 3){
+            for (; it != endit; ++it) {
+                size_t distance = edit_distance(it->first, key);
+                if (distance < 3) {
                     choices.push_back(it->first);
                 }
             }
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0,
-                        [&choices_joined](int &, std::string &s) {
-                            if (!choices_joined.empty()) {
-                                choices_joined.append(" ");
-                            }
-                            choices_joined.append(s);
-                            return 0;
-                        });
+        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+            if (!choices_joined.empty()) {
+                choices_joined.append(" ");
+            }
+            choices_joined.append(s);
+            return 0;
+        });
 
-        printf("\nDid you mean? %s\n\n",choices_joined.c_str());
-        outfile->Printf("\nDid you mean? %s\n\n",choices_joined.c_str());
+        printf("\nDid you mean? %s\n\n", choices_joined.c_str());
+        outfile->Printf("\nDid you mean? %s\n\n", choices_joined.c_str());
         throw IndexException(key);
-    }
-    else if (!exists_in_active(key) && exists_in_global(key))
+    } else if (!exists_in_active(key) && exists_in_global(key))
         return get(globals_, key);
     else if (exists_in_active(key) && exists_in_global(key)) {
         Data& active = get(locals_[current_module_], key);
@@ -1305,90 +828,64 @@ Data& Options::use(std::string& key)
         if (active.has_changed()) {
             // Pull from keyvals
             return active;
-        }
-        else if (global.has_changed()){
+        } else if (global.has_changed()) {
             // Pull from globals
             return global;
-        }
-        else{
+        } else {
             // No user input - the default should come from local vals
             return active;
         }
-    }
-    else
+    } else
         return get(locals_[current_module_], key);
 }
 
-bool Options::get_bool(std::string key)
-{
-    return(static_cast<bool>(use(key).to_integer()));
-}
+bool Options::get_bool(std::string key) { return (static_cast<bool>(use(key).to_integer())); }
 
-int Options::get_int(std::string key)
-{
-    return(use(key).to_integer());
-}
+int Options::get_int(std::string key) { return (use(key).to_integer()); }
 
-double Options::get_double(std::string key)
-{
-    return(use(key).to_double());
-}
+double Options::get_double(std::string key) { return (use(key).to_double()); }
 
-std::string Options::get_str(std::string key) {
-    return(use(key).to_string());
-}
+std::string Options::get_str(std::string key) { return (use(key).to_string()); }
 
-int* Options::get_int_array(std::string key)
-{
-    int *array = new int[use(key).size()];
-    for (size_t i=0; i<use(key).size(); ++i) {
+int* Options::get_int_array(std::string key) {
+    int* array = new int[use(key).size()];
+    for (size_t i = 0; i < use(key).size(); ++i) {
         array[i] = use(key)[i].to_integer();
     }
     return array;
 }
 
-void Options::fill_int_array(std::string key, int* empty_array)
-{
-    for (size_t i=0; i<use(key).size(); ++i) {
+void Options::fill_int_array(std::string key, int* empty_array) {
+    for (size_t i = 0; i < use(key).size(); ++i) {
         empty_array[i] = use(key)[i].to_integer();
     }
 }
 
-std::vector<int> Options::get_int_vector(std::string key)
-{
+std::vector<int> Options::get_int_vector(std::string key) {
     std::vector<int> array;
-    for (size_t i=0; i<use(key).size(); ++i) {
+    for (size_t i = 0; i < use(key).size(); ++i) {
         array.push_back(use(key)[i].to_integer());
     }
     return array;
 }
 
-double* Options::get_double_array(std::string key)
-{
-    double *array = new double[use(key).size()];
-    for (size_t i=0; i<use(key).size(); ++i) {
+double* Options::get_double_array(std::string key) {
+    double* array = new double[use(key).size()];
+    for (size_t i = 0; i < use(key).size(); ++i) {
         array[i] = use(key)[i].to_double();
     }
     return array;
 }
 
-std::vector<double> Options::get_double_vector(std::string key)
-{
+std::vector<double> Options::get_double_vector(std::string key) {
     std::vector<double> array;
-    for (size_t i=0; i<use(key).size(); ++i) {
+    for (size_t i = 0; i < use(key).size(); ++i) {
         array.push_back(use(key)[i].to_double());
     }
     return array;
 }
 
-const char* Options::get_cstr(std::string key)
-{
-    return(use(key).to_string().c_str());
-}
+const char* Options::get_cstr(std::string key) { return (use(key).to_string().c_str()); }
 
-Data& Options::operator[](std::string key)
-{
-    return use(key);
-}
-
+Data& Options::operator[](std::string key) { return use(key); }
 }

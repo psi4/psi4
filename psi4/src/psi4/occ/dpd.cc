@@ -44,22 +44,22 @@ namespace psi{ namespace occwave{
 /********************************************************************************************/
 SymBlockMatrix::SymBlockMatrix()
 {
-    matrix_ = NULL;
-    rowspi_ = NULL;
-    colspi_ = NULL;
+    matrix_ = nullptr;
+    rowspi_ = nullptr;
+    colspi_ = nullptr;
 }
 
 SymBlockMatrix::SymBlockMatrix(std::string name)
 {
-    matrix_ = NULL;
-    rowspi_ = NULL;
-    colspi_ = NULL;
+    matrix_ = nullptr;
+    rowspi_ = nullptr;
+    colspi_ = nullptr;
 }
 
 
 SymBlockMatrix::SymBlockMatrix(int nirreps, int *ins_rowspi, int *ins_colspi)
 {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     nirreps_ = nirreps;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
@@ -72,7 +72,7 @@ SymBlockMatrix::SymBlockMatrix(int nirreps, int *ins_rowspi, int *ins_colspi)
 
 SymBlockMatrix::SymBlockMatrix(std::string name, int nirreps, int *ins_rowspi, int *ins_colspi)
 {
-    matrix_ = NULL;
+    matrix_ = nullptr;
     name_ = name;
     nirreps_ = nirreps;
     rowspi_ = new int[nirreps_];
@@ -134,7 +134,7 @@ void SymBlockMatrix::memalloc()
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
 	matrix_[h] = block_matrix(rowspi_[h], colspi_[h]);
       }
-      else matrix_[h] = NULL;
+      else matrix_[h] = nullptr;
     }
 }//
 
@@ -144,7 +144,7 @@ void SymBlockMatrix::release()
     for (int h=0; h<nirreps_; h++) {
       if (matrix_[h]) free_block(matrix_[h]);
     }
-    matrix_ = NULL;
+    matrix_ = nullptr;
 }//
 
 void SymBlockMatrix::zero()
@@ -362,7 +362,7 @@ void SymBlockMatrix::set(int h, int i, int j, double value)
 void SymBlockMatrix::set(double **Asq)
 {
     int offset;
-    if (Asq == NULL) return;
+    if (Asq == nullptr) return;
 
     offset = 0;
     for (int h=0; h<nirreps_; h++) {
@@ -405,7 +405,7 @@ double *SymBlockMatrix::to_lower_triangle()
         sizecol += colspi_[h];
     }
     if (sizerow != sizecol)
-        return NULL;
+        return nullptr;
 
     double *tri = new double[ioff[sizerow]];
     double **temp = to_block_matrix();
@@ -440,7 +440,7 @@ double **SymBlockMatrix::to_block_matrix()
 void SymBlockMatrix::print(std::string out_fname)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname,std::ostream::app)));
+         std::make_shared<PsiOutStream>(out_fname,std::ostream::app));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
@@ -862,20 +862,20 @@ void SymBlockMatrix::read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int no
 /********************************************************************************************/
 SymBlockVector::SymBlockVector()
 {
-    vector_ = NULL;
-    dimvec_ = NULL;
+    vector_ = nullptr;
+    dimvec_ = nullptr;
 }
 
 SymBlockVector::SymBlockVector(std::string name)
 {
-    vector_ = NULL;
-    dimvec_ = NULL;
+    vector_ = nullptr;
+    dimvec_ = nullptr;
 }
 
 
 SymBlockVector::SymBlockVector(int nirreps, int *ins_dimvec)
 {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirreps_ = nirreps;
     dimvec_ = new int[nirreps_];
     for (int h=0; h<nirreps_; h++) {
@@ -886,7 +886,7 @@ SymBlockVector::SymBlockVector(int nirreps, int *ins_dimvec)
 
 SymBlockVector::SymBlockVector(std::string name, int nirreps, int *ins_dimvec)
 {
-    vector_ = NULL;
+    vector_ = nullptr;
     nirreps_ = nirreps;
     name_ = name;
     dimvec_ = new int[nirreps_];
@@ -916,7 +916,7 @@ void SymBlockVector::memalloc()
       if (dimvec_[h] != 0) {
 	vector_[h] = new double [dimvec_[h]];
       }
-      else vector_[h] = NULL;
+      else vector_[h] = nullptr;
     }
 }//
 
@@ -926,7 +926,7 @@ void SymBlockVector::release()
     for (int h=0; h<nirreps_; h++) {
       if (vector_[h]) free(vector_[h]);
     }
-    vector_ = NULL;
+    vector_ = nullptr;
 }//
 
 void SymBlockVector::zero()
@@ -1101,7 +1101,7 @@ void SymBlockVector::set(int h, int i, double value)
 void SymBlockVector::set(double *Avec)
 {
     int offset;
-    if (Avec == NULL) return;
+    if (Avec == nullptr) return;
 
     offset = 0;
     for (int h=0; h<nirreps_; h++) {
@@ -1152,7 +1152,7 @@ double SymBlockVector::trace()
 void SymBlockVector::print(std::string out_fname)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
-         std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname,std::ostream::app)));
+         std::make_shared<PsiOutStream>(out_fname,std::ostream::app));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {

@@ -39,7 +39,7 @@
 
 namespace psi {
 
-ERISieve::ERISieve(std::shared_ptr <BasisSet> primary, double sieve) :
+ERISieve::ERISieve(std::shared_ptr<BasisSet> primary, double sieve) :
         primary_(primary), sieve_(sieve)
 {
     common_init();
@@ -218,7 +218,7 @@ void ERISieve::integrals()
     max_ = 0.0;
 
     IntegralFactory schwarzfactory(primary_, primary_, primary_, primary_);
-    std::shared_ptr <TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
+    std::shared_ptr<TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
     const double *buffer = eri->buffer();
 
     for (int P = 0; P < nshell_; P++) {

@@ -45,45 +45,35 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
-
-namespace psi{
+namespace psi {
 
 namespace scf {
 
-PsiReturnType stability(SharedWavefunction ref_wfn, Options& options)
-{
-
+PsiReturnType stability(SharedWavefunction ref_wfn, Options& options) {
     tstart();
-    std::shared_ptr<UStab> stab = std::shared_ptr<UStab>(new UStab(ref_wfn, options));
+    auto stab = std::make_shared<UStab>(ref_wfn, options);
     stab->compute_energy();
     tstop();
 
     return Success;
 }
 
-UStab::UStab(SharedWavefunction ref_wfn, Options& options) :
-       options_(options)
-{
+UStab::UStab(SharedWavefunction ref_wfn, Options& options) : options_(options) {
     common_init();
     set_reference(ref_wfn);
 }
 
-UStab::~UStab() {
-}
+UStab::~UStab() {}
 
-void UStab::common_init()
-{
-
+void UStab::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
     bench_ = options_.get_int("BENCH");
     convergence_ = options_.get_double("SOLVER_CONVERGENCE");
     memory_ = Process::environment.get_memory();
-
 }
 
-void UStab::set_reference(std::shared_ptr<Wavefunction> wfn)
-{
+void UStab::set_reference(std::shared_ptr<Wavefunction> wfn) {
     reference_wavefunction_ = wfn;
 
     if (!reference_wavefunction_) {
@@ -96,40 +86,38 @@ void UStab::set_reference(std::shared_ptr<Wavefunction> wfn)
 
     Ca_ = wfn->Ca();
     Cb_ = wfn->Cb();
-    Cocca_  = wfn->Ca_subset("SO","OCC");
-    Coccb_  = wfn->Cb_subset("SO","OCC");
-    Cvira_  = wfn->Ca_subset("SO","VIR");
-    Cvirb_  = wfn->Cb_subset("SO","VIR");
-    eps_occa_ = wfn->epsilon_a_subset("SO","OCC");
-    eps_occb_ = wfn->epsilon_b_subset("SO","OCC");
-    eps_vira_ = wfn->epsilon_a_subset("SO","VIR");
-    eps_virb_ = wfn->epsilon_b_subset("SO","VIR");
+    Cocca_ = wfn->Ca_subset("SO", "OCC");
+    Coccb_ = wfn->Cb_subset("SO", "OCC");
+    Cvira_ = wfn->Ca_subset("SO", "VIR");
+    Cvirb_ = wfn->Cb_subset("SO", "VIR");
+    eps_occa_ = wfn->epsilon_a_subset("SO", "OCC");
+    eps_occb_ = wfn->epsilon_b_subset("SO", "OCC");
+    eps_vira_ = wfn->epsilon_a_subset("SO", "VIR");
+    eps_virb_ = wfn->epsilon_b_subset("SO", "VIR");
     molecule_ = wfn->molecule();
     basis_ = wfn->basisset();
     Eref_ = wfn->reference_energy();
-
 }
 
-void UStab::print_header()
-{
+void UStab::print_header() {
     std::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
-    outfile->Printf( "\n");
-    outfile->Printf( "         ------------------------------------------------------------\n");
-    outfile->Printf( "                              UHF Stability code                     \n");
-    outfile->Printf( "                                Jérôme Gonthier                     \n");
-    outfile->Printf( "               Strong inspiration from R. Parrish's CIS              \n");
-    outfile->Printf( "         ------------------------------------------------------------\n\n");
+    outfile->Printf("\n");
+    outfile->Printf("         ------------------------------------------------------------\n");
+    outfile->Printf("                              UHF Stability code                     \n");
+    outfile->Printf("                                Jérôme Gonthier                     \n");
+    outfile->Printf("               Strong inspiration from R. Parrish's CIS              \n");
+    outfile->Printf("         ------------------------------------------------------------\n\n");
 
-    outfile->Printf( "  ==> Geometry <==\n\n");
+    outfile->Printf("  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", molecule_->nuclear_repulsion_energy());
-    //outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf("  Nuclear repulsion = %20.15f\n", molecule_->nuclear_repulsion_energy());
+    // outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    outfile->Printf( "  ==> Basis Set <==\n\n");
+    outfile->Printf("  ==> Basis Set <==\n\n");
     basis_->print_by_level("outfile", print_);
 
     if (debug_ > 1) {
-        outfile->Printf( "  ==> Fock Matrix (MO Basis) <==\n\n");
+        outfile->Printf("  ==> Fock Matrix (MO Basis) <==\n\n");
         eps_occa_->print();
         eps_occb_->print();
         eps_vira_->print();
@@ -137,20 +125,18 @@ void UStab::print_header()
     }
 }
 
-double UStab::compute_energy()
-{
+double UStab::compute_energy() {
     // Main UStability Header
     print_header();
 
-    if (!jk_)
-        preiterations();
+    if (!jk_) preiterations();
 
     // Construct components
-    std::shared_ptr<USTABHamiltonian> H(new USTABHamiltonian(jk_, Cocca_,Cvira_,Coccb_,Cvirb_,eps_occa_,eps_vira_,
-                            eps_occb_,eps_virb_));
+    std::shared_ptr<USTABHamiltonian> H(
+        new USTABHamiltonian(jk_, Cocca_, Cvira_, Coccb_, Cvirb_, eps_occa_, eps_vira_, eps_occb_, eps_virb_));
     std::shared_ptr<DLUSolver> solver;
     if (options_.get_str("SOLVER_TYPE") == "DL")
-        solver = DLUSolver::build_solver(options_,H);
+        solver = DLUSolver::build_solver(options_, H);
     else if (options_.get_str("SOLVER_TYPE") == "RAYLEIGH")
         throw PSIEXCEPTION("Rayleigh solver not implemented for UStab.");
 
@@ -172,7 +158,7 @@ double UStab::compute_energy()
     solver->solve();
 
     // Did we converge?
-    if ( !solver->converged()) {
+    if (!solver->converged()) {
         throw PSIEXCEPTION("Error: Roots not converged.");
     }
 
@@ -180,11 +166,11 @@ double UStab::compute_energy()
     const std::vector<std::shared_ptr<Vector> > stabvecs = solver->eigenvectors();
     const std::vector<std::vector<double> > stabvals = solver->eigenvalues();
 
-    std::vector<std::pair<SharedMatrix, SharedMatrix > > evec_temp;
+    std::vector<std::pair<SharedMatrix, SharedMatrix> > evec_temp;
     std::vector<std::pair<double, int> > eval_temp;
 
     for (size_t N = 0, index = 0; N < stabvecs.size(); ++N) {
-        std::vector< std::pair<SharedMatrix, SharedMatrix> > tpair = H->unpack_paired(stabvecs[N]);
+        std::vector<std::pair<SharedMatrix, SharedMatrix> > tpair = H->unpack_paired(stabvecs[N]);
         for (int h = 0; h < Cocca_->nirrep(); h++) {
             // Spurious zero eigenvalue due to not enough states
             if (N >= (size_t)stabvecs[N]->dimpi()[h]) continue;
@@ -204,12 +190,11 @@ double UStab::compute_energy()
         vecs_.push_back(evec_temp[eval_temp[i].second]);
     }
 
-    if (debug_ > 1 ) {
+    if (debug_ > 1) {
         for (size_t i = 0; i < eval_temp.size(); ++i) {
             outfile->Printf("Eigenvalue %4i: %.12f\n", i, vals_[i]);
         }
     }
-
 
     // Finalize solver
     solver->finalize();
@@ -217,44 +202,40 @@ double UStab::compute_energy()
     return 0.0;
 }
 
-SharedMatrix UStab::analyze()
-{
-
+SharedMatrix UStab::analyze() {
     // We use the convergence criterion to eliminate zero eigenvalues
     // suffering from numerical noise.
     int nirrep = vecs_[0].first->nirrep();
-    int eig_dims[nirrep];
-    int col_dim[nirrep];
+    Dimension eig_dims(nirrep, "eig_dims");
+    Dimension col_dim(nirrep, "eig_dims");
+    col_dim.fill(1);
+    // int eig_dims[nirrep];
+    // int col_dim[nirrep];
 
-    for (int i = 0; i < nirrep; ++i) {
-        eig_dims[i] = 0;
-        col_dim[i] = 1;
-    }
+    // for (int i = 0; i < nirrep; ++i) {
+    //    eig_dims[i] = 0;
+    //    col_dim[i] = 1;
+    //}
 
     for (int i = 0; i < vals_.size(); ++i) {
         ++(eig_dims[vecs_[i].first->symmetry()]);
-
     }
 
-    SharedMatrix eval_sym(new Matrix("SCF STABILITY EIGENVALUES", nirrep, eig_dims, col_dim));
-    for (int h = 0; h < nirrep; ++h)
-    {
-        eig_dims[h] = 0;
-    }
+    auto eval_sym = std::make_shared<Matrix>("SCF STABILITY EIGENVALUES", eig_dims, col_dim);
+    eig_dims.zero();
 
     for (int i = 0; i < vals_.size(); ++i) {
         int h = vecs_[i].first->symmetry();
-        eval_sym->set(h,eig_dims[h],0,vals_[i]);
+        eval_sym->set(h, eig_dims[h], 0, vals_[i]);
         ++eig_dims[h];
-        if ((vals_[i] < unstable_val) && (std::fabs(vals_[i]) > convergence_) ) {
-            if ( vecs_[i].first->symmetry() == 0) {
+        if ((vals_[i] < unstable_val) && (std::fabs(vals_[i]) > convergence_)) {
+            if (vecs_[i].first->symmetry() == 0) {
                 unstable = true;
                 unstable_val = vals_[i];
                 unstable_vec = vecs_[i];
             }
         }
     }
-
 
     if (unstable) {
         outfile->Printf("    Negative totally symmetric eigenvalue detected: %f \n", unstable_val);
@@ -267,9 +248,8 @@ SharedMatrix UStab::analyze()
     return eval_sym;
 }
 
-void UStab::rotate_orbs(double step_scale)
-{
-    double scale = pc_pi*step_scale/2.0;
+void UStab::rotate_orbs(double step_scale) {
+    double scale = pc_pi * step_scale / 2.0;
     outfile->Printf("    Rotating orbitals by %f * pi / 2 radians along unstable eigenvector.\n", step_scale);
 
     int nirrep = unstable_vec.first->nirrep();
@@ -279,31 +259,30 @@ void UStab::rotate_orbs(double step_scale)
     for (int h = 0; h < nirrep; ++h) {
         int nocca = unveca->rowdim(h);
         int nvira = unveca->coldim(h);
-    // Rotate the alpha orbitals
+        // Rotate the alpha orbitals
         for (int i = 0; i < nocca; ++i) {
             for (int a = nocca; a < nvira + nocca; ++a) {
-                Ca_->rotate_columns(h, i, a, scale*unveca->get(h,i,a - nocca));
+                Ca_->rotate_columns(h, i, a, scale * unveca->get(h, i, a - nocca));
             }
         }
         int noccb = unvecb->rowdim(h);
         int nvirb = unvecb->coldim(h);
-    // Rotate the beta orbitals
+        // Rotate the beta orbitals
         for (int i = 0; i < noccb; ++i) {
             for (int a = noccb; a < nvirb + noccb; ++a) {
-                Cb_->rotate_columns(h, i, a, scale*unvecb->get(h,i,a - noccb));
+                Cb_->rotate_columns(h, i, a, scale * unvecb->get(h, i, a - noccb));
             }
         }
     }
 }
 
-void UStab::preiterations()
-{
+void UStab::preiterations() {
     if (!jk_) {
         if (options_.get_bool("SAVE_JK")) {
             jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
             outfile->Printf("    Reusing JK object from SCF.\n\n");
         } else {
-            if (options_.get_str("SCF_TYPE") == "DF"){
+            if (options_.get_str("SCF_TYPE") == "DF") {
                 jk_ = JK::build_JK(basis_, reference_wavefunction_->get_basisset("DF_BASIS_SCF"), options_);
             } else {
                 jk_ = JK::build_JK(basis_, BasisSet::zero_ao_basis_set(), options_);
@@ -313,7 +292,6 @@ void UStab::preiterations()
             jk_->initialize();
         }
     }
-
-  }
-
-    }} // End namespaces
+}
+}
+}  // End namespaces

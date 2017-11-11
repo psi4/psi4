@@ -53,8 +53,8 @@ void IWL::close()
         delete[](labels_);
     if (values_)
         delete[](values_);
-    labels_ = NULL;
-    values_ = NULL;
+    labels_ = nullptr;
+    values_ = nullptr;
 }
 
 /*!
