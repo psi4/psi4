@@ -67,7 +67,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             ccnc = _check_degen_modes(ccnc, computed['omega'].data)
             eenc = _check_degen_modes(eenc, expected['omega'].data)
             same = np.allclose(eenc, ccnc, atol=tol)
-            print_stuff(asp=asp, same=same, ref=eenc.real, val=ccnc.real, space='\n')
+            print_stuff(asp=asp, same=same, ref=eenc, val=ccnc, space='\n')
 
         elif asp in ['gamma']:
             same = all([computed[asp].data[idx] == val for idx, val in enumerate(expected[asp].data)])
@@ -75,7 +75,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
 
         else:
             same = np.allclose(expected[asp].data, computed[asp].data, atol=tol)
-            print_stuff(asp=asp, same=same, ref=expected[asp].data.real, val=computed[asp].data.real)
+            print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
 
         if asp not in forgive:
             summsame.append(same)
@@ -279,7 +279,47 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     Returns
     -------
     dict
-        Returns dictionary of VibrationAspect objects
+        Returns dictionary of VibrationAspect objects (fields: lbl unit data comment)
+
+    .. _`table:vibinfo`:
+
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | key           | description (lbl & comment)                | units     | data (real/imaginary modes)                          |
+    +===============+============================================+===========+======================================================+
+    | omega         | frequency                                  | cm^-1     | np.array(ndof) complex (real/imag)                   |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | q             | normal mode, normalized mass-weighted      | a0 u^1/2  | np.array(ndof, ndof) float                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | w             | normal mode, un-mass-weighted              | a0        | np.array(ndof, ndof) float                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | x             | normal mode, normalized un-mass-weighted   | a0        | np.array(ndof, ndof) float                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | degeneracy    | degree of degeneracy                       |           | np.array(ndof) int                                   |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | TRV           | translation/rotation/vibration             |           | np.array(ndof) str 'TR' or 'V'                       |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | gamma         | irreducible representation                 |           | np.array(ndof) str irrep or None if unclassifiable   |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | mu            | reduced mass                               | u         | np.array(ndof) float (+/+)                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | k             | force constant                             | mDyne/A   | np.array(ndof) float (+/-)                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | DQ0           | RMS deviation v=0                          | a0 u^1/2  | np.array(ndof) float (+/0)                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | Qtp0          | Turning point v=0                          | a0 u^1/2  | np.array(ndof) float (+/0)                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | Xtp0          | Turning point v=0                          | a0        | np.array(ndof) float (+/0)                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | theta_vib     | char temp                                  | K         | np.array(ndof) float (+/0)                           |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+
+    Examples
+    --------
+    # displacement of first atom in highest energy mode
+    >>> vibinfo['x'].data[:, -1].reshape(nat, 3)[0]
+
+    # remove translations & rotations
+    >>> vibonly = filter_nonvib(vibinfo)
 
     """
     from psi4 import core
@@ -427,36 +467,36 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     xL = np.sqrt(reduced_mass_u) * wL
     vibinfo['x'] = VibrationAspect('normal mode', '[a0]', xL, 'normalized un-mass-weighted')
 
-    # force constants, LAB II.16
+    # force constants, LAB II.16 (real compensates for earlier sqrt)
     uconv_mdyne_a = (0.1 * (2 * np.pi * psi_c) ** 2) / psi_na
-    force_constant_mdyne_a = reduced_mass_u * frequency_cm_1 * frequency_cm_1 * uconv_mdyne_a
+    force_constant_mdyne_a = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_mdyne_a
     vibinfo['k'] = VibrationAspect('force constant', '[mDyne/A]', force_constant_mdyne_a, '')
 
-    force_constant_cm_1_bb = reduced_mass_u * frequency_cm_1 * frequency_cm_1 * uconv_S * uconv_S
+    force_constant_cm_1_bb = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_S * uconv_S
     VibrationAspect('force constant', '[cm^-1/a0^2]', force_constant_cm_1_bb, "Hooke's Law")
 
-    # turning points, LAB II.20
+    # turning points, LAB II.20 (real & zero since turning point silly for imag modes)
     nu = 0
     turning_point_rnc = np.sqrt(2.0 * nu + 1.0)
 
-    turning_point_bohr_u = turning_point_rnc / (np.sqrt(frequency_cm_1) * uconv_S)
+    turning_point_bohr_u = turning_point_rnc / (np.sqrt(frequency_cm_1.real) * uconv_S)
+    turning_point_bohr_u[turning_point_bohr_u == np.inf] = 0.
     vibinfo['Qtp0'] = VibrationAspect('Turning point v=0', '[a0 u^1/2]', turning_point_bohr_u, '')
 
-    turning_point_bohr = turning_point_rnc / (np.sqrt(frequency_cm_1 * reduced_mass_u) * uconv_S)
+    turning_point_bohr = turning_point_rnc / (np.sqrt(frequency_cm_1.real * reduced_mass_u) * uconv_S)
+    turning_point_bohr[turning_point_bohr == np.inf] = 0.
     vibinfo['Xtp0'] = VibrationAspect('Turning point v=0', '[a0]', turning_point_bohr, '')
 
     rms_deviation_bohr_u = turning_point_bohr_u / np.sqrt(2.0)
     vibinfo['DQ0'] = VibrationAspect('RMS deviation v=0', '[a0 u^1/2]', rms_deviation_bohr_u, '')
 
     # characteristic vibrational temperature, RAK thermo & https://en.wikipedia.org/wiki/Vibrational_temperature
+    #   (imag freq zeroed)
     uconv_K = 100 * psi_h * psi_c / psi_kb
     vib_temperature_K = frequency_cm_1.real * uconv_K
     vibinfo['theta_vib'] = VibrationAspect('char temp', '[K]', vib_temperature_K, '')
 
     return vibinfo
-
-
-
 
 
 def _format_omega(omega, decimals):
@@ -578,21 +618,21 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['k'].data[vib].real, '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['k'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
         text += """{:{presp}}{:{prewidth}}""".format('', 'Turning point v=0 ' + vibinfo['Xtp0'].unit, prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['Xtp0'].data[vib].real, '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['Xtp0'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
         text += """{:{presp}}{:{prewidth}}""".format('', 'RMS dev v=0 ' + vibinfo['DQ0'].unit, prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['DQ0'].data[vib].real, '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['DQ0'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
         if 'theta_vib' in vibinfo:
@@ -613,7 +653,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
                 for vib in row:
                     if vib is None:
                         break
-                    text += ("""{:^{width}.{prec}f}""" * 3).format(*(vibinfo[normco].data[:, vib].reshape(nat, 3)[at].real),
+                    text += ("""{:^{width}.{prec}f}""" * 3).format(*(vibinfo[normco].data[:, vib].reshape(nat, 3)[at]),
                                                                width=int(width/3), prec=ncprec)
                     text += """{:{colsp}}""".format('', colsp=colsp)
                 text += '\n'
@@ -624,7 +664,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
                     for vib in row:
                         if vib is None:
                             break
-                        text += """{:^{width}.{prec}f}""".format((vibinfo[normco].data[3 * at + xyz, vib].real),
+                        text += """{:^{width}.{prec}f}""".format((vibinfo[normco].data[3 * at + xyz, vib]),
                                                                width=width, prec=ncprec)
                         text += """{:{colsp}}""".format('', colsp=colsp)
                     text += '\n'
@@ -828,7 +868,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
 
 def filter_nonvib(vibinfo):
-    """Returns copy of input dictionary `vibinfo` with any R, T, or RT vibrations (as labeled in `vibinfo['TRV']`) removed."""
+    """Returns copy of input dictionary `vibinfo` with any R, T, or TR vibrations (as labeled in `vibinfo['TRV']`) removed."""
 
     work = {}
     remove = [idx for idx, dat in enumerate(vibinfo['TRV'].data) if dat != 'V']
