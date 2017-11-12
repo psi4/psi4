@@ -2,6 +2,7 @@ import numpy as np
 import psi4
 from psi4.driver import qcdb
 
+psi4.set_output_file("output.dat", False)
 
 # <<<  Section I: testing vibrational analysis vs Cfour  >>>
 
