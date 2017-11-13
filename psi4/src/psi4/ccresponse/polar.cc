@@ -33,6 +33,8 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <cmath> /* needed for lround*/
+#include <sstream> /* needed for stringstream */
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
@@ -137,11 +139,21 @@ void polar(void)
     trace[i] = tensor[i][0][0] + tensor[i][1][1] + tensor[i][2][2];
     outfile->Printf( "\n\talpha_(%5.3f) = %20.12f a.u.\n", params.omega[i], trace[i]/3.0);
 
-    // Need to generalize this for multi-wavelength calcs
-    if (params.wfn == "CC2")
-      Process::environment.globals["CC2 DIPOLE POLARIZABILITY"] = trace[i]/3.0;
-    else
-      Process::environment.globals["CCSD DIPOLE POLARIZABILITY"] = trace[i]/3.0;
+    /* make sure omega in nm is rounded */
+    long omega_nm_rd = std::lround(omega_nm);
+
+    if (params.wfn == "CC2"){
+      /* build up a string */
+      std::stringstream tag;
+      tag << "CC2 DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
+      Process::environment.globals[tag.str()] = trace[i]/3.0;
+    }
+    else if(params.wfn == "CCSD"){
+      /* build up a string */
+      std::stringstream tag;
+      tag << "CCSD DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
+      Process::environment.globals[tag.str()] = trace[i]/3.0;
+    }
   }
 
   if(params.nomega > 1) {  /* print a summary table for multi-wavelength calcs */
