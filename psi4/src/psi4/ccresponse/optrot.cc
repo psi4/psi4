@@ -70,8 +70,8 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <cmath> /* needed for lround*/
-#include <sstream> /* needed for stringstream */
+#include <cmath>
+#include <sstream>
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
