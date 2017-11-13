@@ -401,10 +401,11 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     pre_lowfreq = np.append(pre_lowfreq, np.arange(nrt))  # catch at least nrt modes
     for lf in set(pre_lowfreq):
         vlf = pre_frequency_cm_1[lf]
-        if vlf.imag > 0.1:
-            text.append('  pre-proj  low-frequency mode: {:9.4f} + {:9.4f}i [cm^-1]'.format(vlf.real, vlf.imag))
+        if vlf.imag > vlf.real:
+            text.append('  pre-proj  low-frequency mode: {:9.4f}i [cm^-1]'.format(vlf.real, vlf.imag))
         else:
-            text.append('  pre-proj  low-frequency mode: {:9.4f} {:12} [cm^-1]'.format(vlf.real, ''))
+            text.append('  pre-proj  low-frequency mode: {:9.4f}  [cm^-1]'.format(vlf.real, ''))
+    text.append('  pre-proj  all modes:' + str(_format_omega(pre_frequency_cm_1, 4)))
 
     # project & solve
     mwhess_proj = np.einsum('ij,jk,kl->il', P.T, mwhess, P)
@@ -459,11 +460,11 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     lowfreq = np.append(lowfreq, np.arange(nrt))  # catch at least nrt modes
     for lf in set(lowfreq):
         vlf = frequency_cm_1[lf]
-        if vlf.imag > 0.1:
-            text.append('  post-proj low-frequency mode: {:9.4f} + {:9.4f}i [cm^-1] ({})'.format(vlf.real, vlf.imag, active[lf]))
+        if vlf.imag > vlf.imag:
+            text.append('  post-proj low-frequency mode: {:9.4f}i [cm^-1] ({})'.format(vlf.real, vlf.imag, active[lf]))
         else:
-            text.append('  post-proj low-frequency mode: {:9.4f} {:12} [cm^-1] ({})'.format(vlf.real, '', active[lf]))
-    text.append('')
+            text.append('  post-proj low-frequency mode: {:9.4f}  [cm^-1] ({})'.format(vlf.real, '', active[lf]))
+    text.append('  post-proj  all modes:' + str(_format_omega(frequency_cm_1, 4)) + '\n')
 
     # general conversion factors, LAB II.11
     uconv_K = (psi_h * psi_na * 1.0e21) / (8 * np.pi * np.pi * psi_c)
