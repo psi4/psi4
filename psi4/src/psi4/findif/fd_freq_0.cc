@@ -61,7 +61,7 @@ namespace findif {
 int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, int pts,
         int irrep, int ii, int jj, int disp_i, int disp_j);
 
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, Options &options,
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
                        const py::list &python_energies, int freq_irrep_only) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");

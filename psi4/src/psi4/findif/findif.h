@@ -55,9 +55,9 @@ std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, 
 // functions to carry out finite-differences
 SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::list& energies);
 //PsiReturnType fd_2_0(std::shared_ptr<Molecule> mol, Options &options, const py::list& energies);
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, Options &options,
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
                       const py::list& energies, int irrep=-1);
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, Options &options,
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
                       const py::list& E_list, int irrep=-1);
 
 // for displacing along a salc

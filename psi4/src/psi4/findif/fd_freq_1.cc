@@ -48,7 +48,7 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, std::shared_ptr<Wavefunction> wfn, Options &options,
+SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
                        const py::list &grad_list, int freq_irrep_only ) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
