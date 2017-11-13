@@ -70,6 +70,8 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <cmath> /* needed for lround*/
+#include <sstream> /* needed for stringstream */
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
@@ -447,10 +449,21 @@ void optrot(std::shared_ptr<Molecule> molecule)
       outfile->Printf( "\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_rl[i]);
 
-      if(params.wfn == "CC2")
-        Process::environment.globals["CC2 SPECIFIC ROTATION (LEN)"] = rotation_rl[i];
-      else if(params.wfn == "CCSD")
-        Process::environment.globals["CCSD SPECIFIC ROTATION (LEN)"] = rotation_rl[i];
+      /* grab omega in nm, rounded to nearest int */
+      long om_nm = std::lround((pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]));
+
+      if(params.wfn == "CC2"){
+        /* build up a string */
+        std::stringstream tag;
+        tag << "CC2 SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
+        Process::environment.globals[tag.str()] = rotation_rl[i];
+      }
+      else if(params.wfn == "CCSD"){
+        /* build up a string */
+        std::stringstream tag;
+        tag << "CCSD SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
+        Process::environment.globals[tag.str()] = rotation_rl[i];
+      }
     }
 
     if(compute_pl) {
@@ -474,10 +487,21 @@ void optrot(std::shared_ptr<Molecule> molecule)
       outfile->Printf( "\n   Specific rotation using velocity-gauge electric-dipole Rosenfeld tensor.\n");
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_pl[i]);
 
-      if(params.wfn == "CC2")
-        Process::environment.globals["CC2 SPECIFIC ROTATION (VEL)"] = rotation_pl[i];
-      else if(params.wfn == "CCSD")
-        Process::environment.globals["CCSD SPECIFIC ROTATION (VEL)"] = rotation_pl[i];
+      /* grab omega in nm, rounded to nearest int */
+      long om_nm = std::lround((pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]));
+
+      if(params.wfn == "CC2"){
+        /* build up a string */
+        std::stringstream tag;
+        tag << "CC2 SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
+        Process::environment.globals[tag.str()] = rotation_pl[i];
+      }
+      else if(params.wfn == "CCSD"){
+        /* build up a string */
+        std::stringstream tag;
+        tag << "CCSD SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
+        Process::environment.globals[tag.str()] = rotation_pl[i];
+      }
 
       /* subtract the zero-frequency beta tensor */
       for(j=0; j < 3; j++)
@@ -504,10 +528,18 @@ void optrot(std::shared_ptr<Molecule> molecule)
       outfile->Printf( "\n   Specific rotation using modified velocity-gauge Rosenfeld tensor.\n");
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_mod[i]);
 
-      if(params.wfn == "CC2")
-        Process::environment.globals["CC2 SPECIFIC ROTATION (MVG)"] = rotation_mod[i];
-      else if(params.wfn == "CCSD")
-        Process::environment.globals["CCSD SPECIFIC ROTATION (MVG)"] = rotation_mod[i];
+      if(params.wfn == "CC2"){
+        /* build up a string */
+        std::stringstream tag;
+        tag << "CC2 SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
+        Process::environment.globals[tag.str()] = rotation_mod[i];
+      }
+      else if(params.wfn == "CCSD"){
+        /* build up a string */
+        std::stringstream tag;
+        tag << "CCSD SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
+        Process::environment.globals[tag.str()] = rotation_mod[i];
+      }
     }
 
     if(params.gauge == "BOTH") {
