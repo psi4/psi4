@@ -1724,9 +1724,11 @@ def frequency(name, **kwargs):
     if freq_mode == 'sow':
         return 0.0
 
-    vibinfo = vibanal_wfn(wfn)
+    irrep = kwargs.get('irrep', None)
+    vibinfo = vibanal_wfn(wfn, irrep=irrep)
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
     wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
+    wfn.frequency_analysis = vibinfo
     # and normco yet needs setting
 
     for postcallback in hooks['frequency']['post']:
@@ -1743,7 +1745,7 @@ def frequency(name, **kwargs):
 
 
 
-def vibanal_wfn(wfn, hess=None):
+def vibanal_wfn(wfn, hess=None, irrep=None):
     # TODO should go back to private
     import numpy as np
 
@@ -1758,35 +1760,40 @@ def vibanal_wfn(wfn, hess=None):
     symbols = [mol.symbol(at) for at in range(mol.natom())]
     irrep_labels = mol.irrep_labels()
 
-    vibinfo = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels)
+
+    core.print_out(vibtext)
+    core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
 
     if core.has_option_changed('THERMO', 'ROTATIONAL_SYMMETRY_NUMBER'):
         rsn = core.get_option('THERMO', 'ROTATIONAL_SYMMETRY_NUMBER')
     else:
         rsn = mol.rotational_symmetry_number()
 
-    therminfo, thermtext = qcdb.vib.thermo(vibinfo,
-                                  T=core.get_option("THERMO", "T"),  # 298.15,
-                                  P=core.get_option("THERMO", "P"),  # 101325.,
-                                  multiplicity=mol.multiplicity(),
-                                  molecular_mass=np.sum(m),
-                                  sigma=rsn,
-                                  rotor_type=mol.rotor_type(),
-                                  rot_const=np.asarray(mol.rotational_constants()),
-                                  E0=wfn.energy())
+    if irrep is None:
+        therminfo, thermtext = qcdb.vib.thermo(vibinfo,
+                                      T=core.get_option("THERMO", "T"),  # 298.15,
+                                      P=core.get_option("THERMO", "P"),  # 101325.,
+                                      multiplicity=mol.multiplicity(),
+                                      molecular_mass=np.sum(m),
+                                      sigma=rsn,
+                                      rotor_type=mol.rotor_type(),
+                                      rot_const=np.asarray(mol.rotational_constants()),
+                                      E0=wfn.energy())
 
-    core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
-    core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
-    core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
-    core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
+        core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
+        core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
+        core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
+        core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
 
-    core.set_variable("ZERO K ENTHALPHY", therminfo['ZPE_tot'].data)
-    core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
-    core.set_variable("ENTHALPY", therminfo['H_tot'].data)
-    core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
+        core.set_variable("ZERO K ENTHALPHY", therminfo['ZPE_tot'].data)
+        core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
+        core.set_variable("ENTHALPY", therminfo['H_tot'].data)
+        core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
 
-    core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
-    core.print_out(thermtext)
+        core.print_out(thermtext)
+    else:
+        core.print_out('  Thermochemical analysis skipped for partial frequency calculation.\n')
 
     return vibinfo
 
