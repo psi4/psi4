@@ -1,6 +1,10 @@
 #! HF3C fd and analytical frequency
 
-ref = psi4.Vector.from_list([2166.389, 2804.665, 3100.066]) #TEST
+ref = psi4.Vector.from_list([2166.389, 2804.665, 3098.681]) #TEST
+# Changing ref freq on basis of diff after projection. 
+#  pre-proj  all modes:array(['0.0027i', '0.0004', '0.0006', '950.8842', '1137.0842', '1217.0028', '2166.3889', '2804.6651', '3100.0664'],
+#  pre-proj  all modes:['0.0001i' '0.0000i' '0.0000i' '0.0000' '0.0000' '0.0001' '2166.3889' '2804.6651' '3098.6811']
+
 
 molecule mol {
 O

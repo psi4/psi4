@@ -46,7 +46,8 @@ def vibanal_str(mass, coord, fcm, hess=None):
     wfn = psi4.core.Wavefunction.build(mol, "STO-3G")  # dummy, obviously. only used for SALCs
     basisset = wfn.basisset()
     
-    vibinfo = qcdb.vib.harmonic_analysis(nmwhess, geom, m, basisset, irrep_labels)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, basisset, irrep_labels)
+    print(vibtext)
     print(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='q', atom_lbl=symbols)) #, groupby=-1))
     
     return vibinfo
@@ -729,61 +730,67 @@ psi4.set_options({'basis':'cc-pvdz',
                   'points': 5,
                   'scf_type': 'pk'})
 
-# <<<  Psi4 H1 Hydrogen Peroxide TS  >>>
+#def test_psi4_hessian(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
+def test_psi4_hessian_indep(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
+    pmol = psi4.geometry(geom_str)
+    rpmol = psi4.geometry(ref_geom_str)
+    rmsd, mill, aqmol = qcdb.align.B787(rpmol, pmol, atoms_map=True, mols_align=True)
+    apmol = psi4.geometry(aqmol.create_psi4_string_from_molecule())
+    
+    psi4.core.clean()
+    phess, pwfn = psi4.hessian('hf', return_wfn=True, molecule=apmol, dertype=dertype)
+    print(psi4.get_variable('CURRENT ENERGY'))
 
-hooh_mol = psi4.geometry("""
+    sphess = qcdb.vib.hessian_symmetrize(np.asarray(pwfn.hessian()), aqmol)
+    print('Symmetrization non-catastrophic:', np.allclose(np.asarray(phess), sphess, atol=1.0e-1))
+    pvibinfo = psi4.driver.vibanal_wfn(pwfn, hess=sphess)
+    pvibonly = qcdb.vib.filter_nonvib(pvibinfo)
+    
+    psi4.compare_integers(1, qcdb.compare_vibinfos(ref_vibonly, pvibonly, 2, comparison_label, verbose=verbose, forgive=forgive), comparison_label)
+
+#def test_psi4_hessian_new(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
+def test_psi4_hessian(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
+    pmol = psi4.geometry(geom_str)
+    rpmol = psi4.geometry(ref_geom_str)
+    rmsd, mill, aqmol = qcdb.align.B787(rpmol, pmol, atoms_map=True, mols_align=True)
+    apmol = psi4.geometry(aqmol.create_psi4_string_from_molecule())
+    
+    psi4.core.clean()
+    E, pwfn = psi4.frequency('hf', return_wfn=True, molecule=apmol, dertype=dertype)
+    print(psi4.get_variable('CURRENT ENERGY'))
+
+    #sphess = qcdb.vib.hessian_symmetrize(np.asarray(pwfn.hessian()), aqmol)
+    #print('Symmetrization non-catastrophic:', np.allclose(np.asarray(phess), sphess, atol=1.0e-1))
+    #pvibinfo = psi4.driver.vibanal_wfn(pwfn, hess=sphess)
+    pvibinfo = pwfn.frequency_analysis
+    pvibonly = qcdb.vib.filter_nonvib(pvibinfo)
+    
+    psi4.compare_integers(1, qcdb.compare_vibinfos(ref_vibonly, pvibonly, 2, comparison_label, verbose=verbose, forgive=forgive), comparison_label)
+
+
+
+# <<<  Psi4 Hydrogen Peroxide TS  >>>
+
+hooh_smol = """
 units au
 H  1.8327917647 -1.5752960165 -0.0000055594
 O  1.3171390326  0.1388012713  0.0000003503
 O -1.3171390326 -0.1388012713  0.0000003503
 H -1.8327917647  1.5752960165 -0.0000055594
-""")
+"""
 
+# <<<  Psi4 CO2  >>>
 
-rmsd, mill, a_hooh_mol = qcdb.align.B787(psi4.geometry(c4_hooh_xyz), hooh_mol, atoms_map=True, mols_align=True)
-hooh_mol = psi4.geometry(a_hooh_mol.create_psi4_string_from_molecule())
-
-psi4.core.clean()
-hooh_h1_hess, hooh_h1_wfn = psi4.hessian('hf', return_wfn=True, molecule=hooh_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
-
-s_hooh_h1_hess = qcdb.vib.hessian_symmetrize(np.asarray(hooh_h1_wfn.hessian()), a_hooh_mol)
-print('Symmetrization non-catastrophic:', np.allclose(np.asarray(hooh_h1_hess), s_hooh_h1_hess, atol=1.0e-1))
-p4_hooh_h1_vibinfo = psi4.driver.vibanal_wfn(hooh_h1_wfn, hess=s_hooh_h1_hess)
-p4_hooh_h1_vibonly = qcdb.vib.filter_nonvib(p4_hooh_h1_vibinfo)
-
-qcdb.compare_vibinfos(ref_hooh_vibonly, p4_hooh_h1_vibonly, 2, 'Cfour vs Psi H1: HOOH TS', verbose=1)
-
-
-
-# <<<  Psi4 H1 CO2  >>>
-
-co2_mol = psi4.geometry("""
+co2_smol = """
 units au
 C  0.0000000000  0.0000000000  0.0000000000
 O  2.1553604887  0.0000000000  0.0000000000
 O -2.1553604887 -0.0000000000  0.0000000000
-""")
+"""
 
-rmsd, mill, a_co2_mol = qcdb.align.B787(psi4.geometry(c4_co2_xyz), co2_mol, atoms_map=True, mols_align=True)
-co2_mol = psi4.geometry(a_co2_mol.create_psi4_string_from_molecule())
+# <<<  Psi4 Ethene  >>>
 
-psi4.core.clean()
-co2_h1_hess, co2_h1_wfn = psi4.hessian('hf', return_wfn=True, molecule=co2_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
-
-s_co2_h1_hess = qcdb.vib.hessian_symmetrize(np.asarray(co2_h1_wfn.hessian()), a_co2_mol)
-print('Symmetrization non-catastrophic:', np.allclose(np.asarray(co2_h1_hess), s_co2_h1_hess, atol=1.0e-1))
-p4_co2_h1_vibinfo = psi4.driver.vibanal_wfn(co2_h1_wfn, hess=s_co2_h1_hess)
-p4_co2_h1_vibonly = qcdb.vib.filter_nonvib(p4_co2_h1_vibinfo)
-
-qcdb.compare_vibinfos(ref_co2_vibonly, p4_co2_h1_vibonly, 2, 'Cfour vs Psi H1: CO2', verbose=1, forgive=['gamma'])
-
-
-
-# <<<  Psi4 H1 Ethene  >>>
-
-eth_mol = psi4.geometry("""
+eth_smol = """
 units au
 C  1.2480432017  0.0000000000  0.0000000000
 C -1.2480432017 -0.0000000000  0.0000000000
@@ -791,104 +798,68 @@ H  2.3230381483  1.7435443352  0.0000000000
 H  2.3230381483 -1.7435443352  0.0000000000
 H -2.3230381483  1.7435443352  0.0000000000
 H -2.3230381483 -1.7435443352  0.0000000000
- """)
+"""
 
-rmsd, mill, a_eth_mol = qcdb.align.B787(psi4.geometry(c4_eth_xyz), eth_mol, atoms_map=True, mols_align=True)
-eth_mol = psi4.geometry(a_eth_mol.create_psi4_string_from_molecule())
+# <<<  Psi4 Methane  >>>
 
-psi4.core.clean()
-eth_h1_hess, eth_h1_wfn = psi4.hessian('hf', return_wfn=True, molecule=eth_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
-
-s_eth_h1_hess = qcdb.vib.hessian_symmetrize(np.asarray(eth_h1_wfn.hessian()), a_eth_mol)
-print('Symmetrization non-catastrophic:', np.allclose(np.asarray(eth_h1_hess), s_eth_h1_hess, atol=1.0e-1))
-p4_eth_h1_vibinfo = psi4.driver.vibanal_wfn(eth_h1_wfn, hess=s_eth_h1_hess)
-p4_eth_h1_vibonly = qcdb.vib.filter_nonvib(p4_eth_h1_vibinfo)
-
-qcdb.compare_vibinfos(ref_eth_vibonly, p4_eth_h1_vibonly, 2, 'Cfour vs Psi H1: ethene', verbose=1)
-
-
-
-# <<<  Psi4 H1 Methane  >>>
-
-ch4_mol = psi4.geometry("""
+ch4_smol = """
 units au
 C  0.0000000000  0.0000000000  0.0000000000
 H  0.0000000000  1.6830328110 -1.1900839136
 H  1.6830328110  0.0000000000  1.1900839136
 H -1.6830328110  0.0000000000  1.1900839136
 H  0.0000000000 -1.6830328110 -1.1900839136
- """)
+"""
 
-rmsd, mill, a_ch4_mol = qcdb.align.B787(psi4.geometry(c4_ch4_xyz), ch4_mol, atoms_map=True, mols_align=True)
-ch4_mol = psi4.geometry(a_ch4_mol.create_psi4_string_from_molecule())
+# <<<  Psi4 Ammonia  >>>
 
-psi4.core.clean()
-ch4_h1_hess, ch4_h1_wfn = psi4.hessian('hf', return_wfn=True, molecule=ch4_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
-
-s_ch4_h1_hess = qcdb.vib.hessian_symmetrize(np.asarray(ch4_h1_wfn.hessian()), a_ch4_mol)
-print('Symmetrization non-catastrophic:', np.allclose(np.asarray(ch4_h1_hess), s_ch4_h1_hess, atol=1.0e-1))
-p4_ch4_h1_vibinfo = psi4.driver.vibanal_wfn(ch4_h1_wfn, hess=s_ch4_h1_hess)
-p4_ch4_h1_vibonly = qcdb.vib.filter_nonvib(p4_ch4_h1_vibinfo)
-
-qcdb.compare_vibinfos(ref_ch4_vibonly, p4_ch4_h1_vibonly, 2, 'Cfour vs Psi H1: methane', verbose=1, forgive=['gamma'])
-
-
-
-# <<<  Psi4 H1 Ammonia  >>>
-
-nh3_mol = psi4.geometry("""
+nh3_smol = """
      N                    0.00000000     0.00000000    0.09284449
      H                    0.91560345    -1.58587170   -0.43000462
      H                   -1.83120690    -0.00000000   -0.43000462
      H                    0.91560345     1.58587170   -0.43000462
      units au
-""")
+"""
 
-rmsd, mill, a_nh3_mol = qcdb.align.B787(psi4.geometry(c4_nh3_xyz), nh3_mol, atoms_map=True, mols_align=True)
-nh3_mol = psi4.geometry(a_nh3_mol.create_psi4_string_from_molecule())
+# <<<  Psi4 Formaldehyde  >>>
 
-psi4.core.clean()
-nh3_h1_hess, nh3_h1_wfn = psi4.hessian('hf', return_wfn=True, molecule=nh3_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
-
-s_nh3_h1_hess = qcdb.vib.hessian_symmetrize(np.asarray(nh3_h1_wfn.hessian()), a_nh3_mol)
-print('Symmetrization non-catastrophic:', np.allclose(np.asarray(nh3_h1_hess), s_nh3_h1_hess, atol=1.0e-1))
-p4_nh3_h1_vibinfo = psi4.driver.vibanal_wfn(nh3_h1_wfn, hess=s_nh3_h1_hess)
-p4_nh3_h1_vibonly = qcdb.vib.filter_nonvib(p4_nh3_h1_vibinfo)
-
-qcdb.compare_vibinfos(ref_nh3_vibonly, p4_nh3_h1_vibonly, 2, 'Cfour vs Psi H1: ammonia', verbose=1, forgive=['gamma'])
-
-
-
-# <<<  Psi4 H1 Formaldehyde  >>>
-
-form_mol = psi4.geometry("""
+form_smol = """
 units au
      C                  0.00000000     0.00000000     1.11607307
      O                  0.00000000     0.00000000    -1.11771672
      H                  0.00000000     1.76217215     2.22504227
      H                  0.00000000    -1.76217215     2.22504227
-""")
+"""
 
-rmsd, mill, a_form_mol = qcdb.align.B787(psi4.geometry(c4_form_xyz), form_mol, atoms_map=True, mols_align=True)
-form_mol = psi4.geometry(a_form_mol.create_psi4_string_from_molecule())
-
-psi4.core.clean()
-form_h1_hess, form_h1_wfn = psi4.hessian('hf', return_wfn=True, molecule=form_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
-
-s_form_h1_hess = qcdb.vib.hessian_symmetrize(np.asarray(form_h1_wfn.hessian()), a_form_mol)
-print('Symmetrization non-catastrophic:', np.allclose(np.asarray(form_h1_hess), s_form_h1_hess, atol=1.0e-1))
-p4_form_h1_vibinfo = psi4.driver.vibanal_wfn(form_h1_wfn, hess=s_form_h1_hess)
-p4_form_h1_vibonly = qcdb.vib.filter_nonvib(p4_form_h1_vibinfo)
-
-qcdb.compare_vibinfos(ref_form_vibonly, p4_form_h1_vibonly, 2, 'Cfour vs Psi H1: Formaldehyde', verbose=1)
+test_psi4_hessian(c4_co2_xyz, ref_co2_vibonly, co2_smol, 2, 'Cfour vs Psi H1: carbon dioxide', verbose=1, forgive=['gamma'], dertype=1)
+test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H1: ethene', verbose=1, dertype=1)
+test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H1: methane', verbose=2, forgive=['gamma'], dertype=1)
+test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H1: ammonia', verbose=1, forgive=['gamma'], dertype=1)
+test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H1: formaldehyde', verbose=1, dertype=1)
 
 
 
-# <<< Part III Thermo  >>>
+# <<<  Section III: testing Psi4 findif-by-energy Hessians vs Cfour  >>>
+
+test_psi4_hessian(c4_co2_xyz, ref_co2_vibonly, co2_smol, 2, 'Cfour vs Psi H0: carbon dioxide', verbose=1, forgive=['gamma'], dertype=0)
+test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H0: ethene', verbose=1, dertype=0)
+test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H0: methane', verbose=1, forgive=['gamma'], dertype=0)
+test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H0: ammonia', verbose=1, forgive=['gamma'], dertype=0)
+test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H0: formaldehyde', verbose=1, dertype=0)
+
+
+
+# <<<  Section IV: testing Psi4 analytic Hessians vs Cfour  >>>
+
+#test_psi4_hessian(c4_co2_xyz, ref_co2_vibonly, co2_smol, 2, 'Cfour vs Psi H2: carbon dioxide', verbose=1, forgive=['gamma'], dertype=2)
+#test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H2: ethene', verbose=1, dertype=2)
+test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H2: methane', verbose=1, forgive=['gamma'], dertype=2)
+test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H2: ammonia', verbose=1, forgive=['gamma'], dertype=2)
+#test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H2: formaldehyde', verbose=1, dertype=2)
+
+
+
+# <<<  Section V: Thermo  >>>
 
 ch4_thermo_mol = psi4.geometry("""
    C
@@ -963,11 +934,4 @@ ch4_hf_321g_thermoinfo = {
 
 
 qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega'])
-
-
-
-
-
-
-
 
