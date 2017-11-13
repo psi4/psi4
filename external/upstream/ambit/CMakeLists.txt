@@ -9,6 +9,10 @@ if(${ENABLE_ambit})
         # reset below necessary as find_package clears it. better solution sought
         set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected ambitConfig.cmake" FORCE)
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_ambit})
+            message(FATAL_ERROR "Suitable ambit could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable ambit could not be located, ${Magenta}Building ambit${ColourReset} instead.")
 

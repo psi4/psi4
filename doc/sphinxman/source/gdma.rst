@@ -160,6 +160,7 @@ How to configure gdma for building Psi4
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For gdma, set to an installation directory containing ``include/GDMA/GDMA_MANGLE.h``
 * :makevar:`gdma_DIR` |w---w| CMake variable to specify where pre-built gdma can be found. Set to installation directory containing ``share/cmake/gdma/gdmaConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_gdma` |w---w| CMake variable to force internal build of gdma instead of detecting pre-built
+* :makevar:`CMAKE_INSIST_FIND_PACKAGE_gdma` |w---w| CMake variable to force detecting pre-built gdma and not falling back on internal build
 
 **Examples**
 

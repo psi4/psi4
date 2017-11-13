@@ -5,6 +5,10 @@ if(${Libint_FOUND})
     message(STATUS "${Cyan}Found Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint_VERSION})")
     add_library(libint_external INTERFACE)  # dummy
 else()
+    if(${CMAKE_INSIST_FIND_PACKAGE_Libint})
+        message(FATAL_ERROR "Suitable Libint could not be externally located as user insists")
+    endif()
+
     include(ExternalProject)
     message(STATUS "Suitable Libint could not be located, ${Magenta}Building Libint${ColourReset} instead.")
     ExternalProject_Add(libint_external

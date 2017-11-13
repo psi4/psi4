@@ -6,6 +6,10 @@ if(${ENABLE_gdma})
         message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (found version ${gdma_VERSION})")
         add_library(gdma_external INTERFACE)  # dummy
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_gdma})
+            message(FATAL_ERROR "Suitable gdma could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable gdma could not be located, ${Magenta}Building gdma${ColourReset} instead.")
         ExternalProject_Add(gdma_external

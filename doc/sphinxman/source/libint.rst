@@ -104,6 +104,7 @@ How to configure Libint for building Psi4
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For Libint, set to an installation directory containing ``include/libint/libint.h``
 * :makevar:`Libint_DIR` |w---w| CMake variable to specify where pre-built Libint can be found. Set to installation directory containing ``share/cmake/Libint/LibintConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_Libint` |w---w| CMake variable to force internal build of Libint instead of detecting pre-built
+* :makevar:`CMAKE_INSIST_FIND_PACKAGE_Libint` |w---w| CMake variable to force detecting pre-built Libint and not falling back on internal build
 
 **Examples**
 

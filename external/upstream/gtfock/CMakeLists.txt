@@ -7,6 +7,10 @@ if(${ENABLE_GTFock})
         message(FATAL_ERROR "GTFock has not been hooked back in after the inversion.")
         add_library(gtfock_external INTERFACE)  # dummy
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_GTFock})
+            message(FATAL_ERROR "Suitable GTFock could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable GTFock could not be located, ${Magenta}Building GTFock${ColourReset} instead.")
         message(FATAL_ERROR "GTFock has not been hooked back in after the inversion.")

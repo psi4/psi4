@@ -5,6 +5,10 @@ if(${Libxc_FOUND})
     message(STATUS "${Cyan}Found Libxc${ColourReset}: ${_loc} (found version ${Libxc_VERSION})")
     add_library(libxc_external INTERFACE)  # dummy
 else()
+    if(${CMAKE_INSIST_FIND_PACKAGE_Libxc})
+        message(FATAL_ERROR "Suitable Libxc could not be externally located as user insists")
+    endif()
+
     include(ExternalProject)
     message(STATUS "Suitable Libxc could not be located, ${Magenta}Building Libxc${ColourReset} instead.")
     ExternalProject_Add(libxc_external

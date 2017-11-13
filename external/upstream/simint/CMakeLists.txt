@@ -8,6 +8,10 @@ if(${ENABLE_simint})
         message(STATUS "${Cyan}Found simint ${simint_MAXAM}${ColourReset}: ${_loc} (found version ${simint_VERSION}; vectorization ${simint_VECTOR})")
         add_library(simint_external INTERFACE)  # dummy
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_simint})
+            message(FATAL_ERROR "Suitable simint could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable simint could not be located, ${Magenta}Building simint${ColourReset} instead.")
         ExternalProject_Add(simint_external
