@@ -1444,7 +1444,7 @@ def hessian(name, **kwargs):
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = core.fd_freq_1(molecule, wfn, gradients, irrep)  # TODO or moleculeclone?
+        H = core.fd_freq_1(molecule, gradients, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(H)
         wfn.set_frequencies(core.get_frequencies())
 
@@ -1579,7 +1579,7 @@ def hessian(name, **kwargs):
             wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
-        H = core.fd_freq_0(molecule, wfn, energies, irrep)
+        H = core.fd_freq_0(molecule, energies, irrep)
         wfn.set_hessian(H)
         wfn.set_frequencies(core.get_frequencies())
 
