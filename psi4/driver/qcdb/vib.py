@@ -882,6 +882,17 @@ def filter_nonvib(vibinfo):
     return work
 
 
+def filter_omega_to_real(omega):
+    """Returns np.array (float) of `omega` (complex) where imaginary entries are converted to negative reals."""
+    freqs = []
+    for fr in omega:
+        if fr.imag > fr.real:
+            freqs.append(-1 * fr.imag)
+        else:
+            freqs.append(fr.real)
+    return np.asarray(freqs)
+
+    
 def _get_TR_space(m, geom, space='TR', tol=None, verbose=1):
     """Form the idealized translation and rotation dof from geometry `geom` and masses `m`.
     Remove any linear dependencies and return an array of shape (3, 3) for atoms, (5, 3 * nat) for linear `geom`,

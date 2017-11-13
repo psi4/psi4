@@ -881,6 +881,12 @@ def optimize(name, **kwargs):
         Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
+    :type return_history: :ref:`boolean <op_py_boolean>`
+    :param return_history: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return dictionary of lists of geometries,
+        energies, and gradients at each step in the optimization.
+
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
@@ -1008,15 +1014,13 @@ def optimize(name, **kwargs):
         custom_gradient = False
 
     return_wfn = kwargs.pop('return_wfn', False)
+
     return_history = kwargs.pop('return_history', False)
-
-
-#Be sure to add wavefunction functionality later once the deep copy issues are worked out
     if return_history:
+        # Add wfn once the deep copy issues are worked out
         step_energies      = []
         step_gradients     = []
         step_coordinates   = []
-        #        step_wavefunctions = []
 
     # For CBS wrapper, need to set retention on INTCO file
     if custom_gradient or ('/' in lowername):
@@ -1171,8 +1175,7 @@ def optimize(name, **kwargs):
             if return_history:
                 history = { 'energy'        : step_energies ,
                             'gradient'      : step_gradients ,
-                            'coordinates'   : step_coordinates #,
-            #                'wavefunctions' : step_wavefunctions
+                            'coordinates'   : step_coordinates,
                           }
 
             if return_wfn and return_history:
@@ -1727,8 +1730,7 @@ def frequency(name, **kwargs):
 
     vibinfo = vibanal_wfn(wfn)
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
-    # Yup, this is tossing out the imag freq. Have to figure out how to handle w/o -
-    wfn.set_frequencies(core.Vector.from_array(vibonly['omega'].data))
+    wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
     # and normco yet needs setting
 
     for postcallback in hooks['frequency']['post']:
