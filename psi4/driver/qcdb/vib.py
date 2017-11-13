@@ -200,7 +200,7 @@ def _check_degen_modes(arr, freq):
 
     """
     arr2 = np.zeros_like(arr)
-    dfreq, didx, dinv, dcts = np.unique(np.around(freq, 4), return_index=True, return_inverse=True, return_counts=True)
+    dfreq, didx, dinv, dcts = np.unique(np.around(freq, 2), return_index=True, return_inverse=True, return_counts=True)
 
     # judging degen normco to only 2 decimals is probably sign need to resolve evec
     idx_max_elem_each_normco = np.argmax(np.around(arr, 2), axis=0)
@@ -210,8 +210,11 @@ def _check_degen_modes(arr, freq):
     for idegen, istart in enumerate(didx):
         degree = dcts[idegen]
 
-        # sort degen evec primarily by value of extreme element (sep evec that in this coord sys have diff elements)
-        #               & secondarily by index of extreme element (order evec with same elements in diff (xyz) arrangements)
+        # sort degen evec
+        #   primarily (last arg) by value of extreme element
+        #             (sep evec that in this coord sys have diff elements)
+        #   & secondarily (2nd-to-last arg) by index of extreme element
+        #             (order evec with same elements in diff (xyz) arrangements)
         idx_sort_wi_degen = np.lexsort((idx_max_elem_each_normco[istart: istart + degree],
                                             max_elem_each_normco[istart: istart + degree]))
         idx_vib_reordering[istart: istart+degree] = np.arange(istart, istart+degree)[idx_sort_wi_degen]
@@ -296,7 +299,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | degeneracy    | degree of degeneracy                       |           | np.array(ndof) int                                   |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | TRV           | translation/rotation/vibration             |           | np.array(ndof) str 'TR' or 'V'                       |
+    | TRV           | translation/rotation/vibration             |           | np.array(ndof) str 'TR' or 'V' or '-' for partial    |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | gamma         | irreducible representation                 |           | np.array(ndof) str irrep or None if unclassifiable   |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
@@ -419,7 +422,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     vibinfo['omega'] = VibrationAspect('frequency', '[cm^-1]', frequency_cm_1, '')
 
     # degeneracies
-    ufreq, uinv, ucts = np.unique(np.around(frequency_cm_1, 4), return_inverse=True, return_counts=True)
+    ufreq, uinv, ucts = np.unique(np.around(frequency_cm_1, 2), return_inverse=True, return_counts=True)
     vibinfo['degeneracy'] = ucts[uinv]
 
     # look among the symmetry subspaces h for one to which the normco
@@ -441,6 +444,11 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
                     break
             else:
                 irrep_classification.append(None)
+
+                # catch partial Hessians
+                if np.linalg.norm(vib) < 1.e-3:
+                    active[-1] = '-'
+
     vibinfo['TRV'] = VibrationAspect('translation/rotation/vibration', '', active, '')
     vibinfo['gamma'] = VibrationAspect('irreducible representation', '', irrep_classification, '')
 
