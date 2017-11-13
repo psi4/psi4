@@ -135,10 +135,6 @@ void export_wavefunction(py::module& m) {
              "Returns a vector of length 3, containing the x,y, and z dipole field strengths.")
         .def("no_occupations", &Wavefunction::get_no_occupations,
              "returns the natural orbital occupations on the wavefunction.")
-        .def("normalmodes", &Wavefunction::get_normalmodes,
-             "Returns the normal modes of the Wavefunction.")
-        .def("normalmode_displacements", &Wavefunction::get_normalmodes_displacements,
-             "Returns the displacements for normalmodes")
         .def("set_name", &Wavefunction::set_name,
              "Sets the level of theory this wavefunction corresponds to.")
         .def("name", &Wavefunction::name, py::return_value_policy::copy,
@@ -218,9 +214,6 @@ void export_wavefunction(py::module& m) {
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("semicanonicalize", &scf::HF::semicanonicalize,
              "Semicanonicalizes the orbitals for ROHF.");
-    
-    py::class_<findif::VIBRATION, std::shared_ptr<findif::VIBRATION>>(m, "VIBRATION" , "docstring")
-        .def(py::init<int, int, double>());
     
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
