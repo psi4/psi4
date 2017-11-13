@@ -194,7 +194,7 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
     return text
 
 
-def _check_degen_modes(arr, freq):
+def _check_degen_modes(arr, freq, verbose=1):
     """Use `freq` to identify degenerate columns of eigenvectors `arr` and
     sort into std order for comparison. Returns eigenvectors back sorted.
 
@@ -222,13 +222,13 @@ def _check_degen_modes(arr, freq):
     arr2 = arr[:, idx_vib_reordering]
 
     reorderings = ['{}-->{}'.format(i, v) for i, v in enumerate(idx_vib_reordering) if (i != v)]
-    if reorderings:
+    if reorderings and verbose >= 2:
         print('Degenerate modes reordered:', ', '.join(reorderings))
 
     return arr2
 
 
-def _phase_cols_to_max_element(arr, tol=1.0e-2):
+def _phase_cols_to_max_element(arr, tol=1.0e-2, verbose=1):
     """Returns copy of 2D `arr` scaled such that, within cols, max(fabs)
     element is positive. If max(fabs) is pos/neg pair, scales so first
     element (within `tol`) is positive.
@@ -256,7 +256,7 @@ def _phase_cols_to_max_element(arr, tol=1.0e-2):
             rephasing.append(str(v))
         arr2[:, v] *= sign
 
-    if rephasing:
+    if rephasing and verbose >= 2:
         print('Negative modes rephased:', ', '.join(rephasing))
 
     return arr2
@@ -281,8 +281,9 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
 
     Returns
     -------
-    dict
+    dict, text
         Returns dictionary of VibrationAspect objects (fields: lbl unit data comment)
+        Also returns text suitable for printing
 
     .. _`table:vibinfo`:
 
@@ -348,9 +349,10 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
         return (s[-1] < tol)
 
     vibinfo = {}
+    text = []
 
     nat = len(m)
-    sqrtmmm = np.repeat(np.sqrt(m), 3)
+    text.append("""\n\n  ==> Harmonic Vibrational Analysis <==\n""")
 
     if nat == 1:
         nrt_expected = 3
@@ -360,7 +362,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
         nrt_expected = 6
 
     nmwhess = nmwhess_in.copy()
-    print(mat_symm_info(nmwhess, lbl='non-mass-weighted Hessian'), '(0)')
+    text.append(mat_symm_info(nmwhess, lbl='non-mass-weighted Hessian') + ' (0)')
 
     # get SALC object with trans & rot projected
     mints = core.MintsHelper(basisset)
@@ -375,17 +377,18 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     # form projector of translations and rotations
     TRspace = _get_TR_space(m, geom, space='TR', tol=LINEAR_A_TOL)
     nrt = TRspace.shape[0]
-    print('  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
+    text.append('  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
 
     P = np.identity(3 * nat)
     for irt in TRspace:
         P -= np.outer(irt, irt)
-    print(mat_symm_info(P, lbl='total projector'), '({})'.format(nrt))
+    text.append(mat_symm_info(P, lbl='total projector') + ' ({})'.format(nrt))
 
     # mass-weight & solve
+    sqrtmmm = np.repeat(np.sqrt(m), 3)
     sqrtmmminv = np.divide(1.0, sqrtmmm)
     mwhess = np.einsum('i,ij,j->ij', sqrtmmminv, nmwhess, sqrtmmminv)
-    print(mat_symm_info(mwhess, lbl='mass-weighted Hessian'), '(0)')
+    text.append(mat_symm_info(mwhess, lbl='mass-weighted Hessian') + ' (0)')
 
     pre_force_constant_au = np.linalg.eigvalsh(mwhess)
 
@@ -399,15 +402,15 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     for lf in set(pre_lowfreq):
         vlf = pre_frequency_cm_1[lf]
         if vlf.imag > 0.1:
-            print('  pre-proj  low-frequency mode: {:9.4f} + {:9.4f}i [cm^-1]'.format(vlf.real, vlf.imag))
+            text.append('  pre-proj  low-frequency mode: {:9.4f} + {:9.4f}i [cm^-1]'.format(vlf.real, vlf.imag))
         else:
-            print('  pre-proj  low-frequency mode: {:9.4f} {:12} [cm^-1]'.format(vlf.real, ''))
+            text.append('  pre-proj  low-frequency mode: {:9.4f} {:12} [cm^-1]'.format(vlf.real, ''))
 
     # project & solve
     mwhess_proj = np.einsum('ij,jk,kl->il', P.T, mwhess, P)
-    print(mat_symm_info(mwhess_proj, lbl='projected mass-weighted Hessian'), '({})'.format(nrt))
+    text.append(mat_symm_info(mwhess_proj, lbl='projected mass-weighted Hessian') + ' ({})'.format(nrt))
 
-#     print('projhess = ', np.array_repr(mwhess_proj))
+    #print('projhess = ', np.array_repr(mwhess_proj))
     force_constant_au, qL = np.linalg.eigh(mwhess_proj)
 
     # expected order for vibrations is steepest downhill to steepest uphill
@@ -457,9 +460,10 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     for lf in set(lowfreq):
         vlf = frequency_cm_1[lf]
         if vlf.imag > 0.1:
-            print('  post-proj low-frequency mode: {:9.4f} + {:9.4f}i [cm^-1] ({})'.format(vlf.real, vlf.imag, active[lf]))
+            text.append('  post-proj low-frequency mode: {:9.4f} + {:9.4f}i [cm^-1] ({})'.format(vlf.real, vlf.imag, active[lf]))
         else:
-            print('  post-proj low-frequency mode: {:9.4f} {:12} [cm^-1] ({})'.format(vlf.real, '', active[lf]))
+            text.append('  post-proj low-frequency mode: {:9.4f} {:12} [cm^-1] ({})'.format(vlf.real, '', active[lf]))
+    text.append('')
 
     # general conversion factors, LAB II.11
     uconv_K = (psi_h * psi_na * 1.0e21) / (8 * np.pi * np.pi * psi_c)
@@ -487,11 +491,13 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     nu = 0
     turning_point_rnc = np.sqrt(2.0 * nu + 1.0)
 
-    turning_point_bohr_u = turning_point_rnc / (np.sqrt(frequency_cm_1.real) * uconv_S)
+    with np.errstate(divide='ignore'):
+        turning_point_bohr_u = turning_point_rnc / (np.sqrt(frequency_cm_1.real) * uconv_S)
     turning_point_bohr_u[turning_point_bohr_u == np.inf] = 0.
     vibinfo['Qtp0'] = VibrationAspect('Turning point v=0', '[a0 u^1/2]', turning_point_bohr_u, '')
 
-    turning_point_bohr = turning_point_rnc / (np.sqrt(frequency_cm_1.real * reduced_mass_u) * uconv_S)
+    with np.errstate(divide='ignore'):
+        turning_point_bohr = turning_point_rnc / (np.sqrt(frequency_cm_1.real * reduced_mass_u) * uconv_S)
     turning_point_bohr[turning_point_bohr == np.inf] = 0.
     vibinfo['Xtp0'] = VibrationAspect('Turning point v=0', '[a0]', turning_point_bohr, '')
 
@@ -504,7 +510,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     vib_temperature_K = frequency_cm_1.real * uconv_K
     vibinfo['theta_vib'] = VibrationAspect('char temp', '[K]', vib_temperature_K, '')
 
-    return vibinfo
+    return vibinfo, '\n'.join(text)
 
 
 def _format_omega(omega, decimals):
@@ -822,7 +828,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
     # TODO rot_const, rotor_type
     text = ''
-    text += """\n  ==> Components <=="""
+    text += """\n  ==> Thermochemistry Components <=="""
 
     text += """\n\n  Entropy, S"""
     for term in terms:
@@ -845,7 +851,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     del terms['tot']
     terms['corr'] = 'Correction'
 
-    text += """\n\n  ==> Energy Analysis <=="""
+    text += """\n\n  ==> Thermochemistry Energy Analysis <=="""
 
     text += """\n\n  Raw electronic energy, E0"""
     text += """\n  Total E0, Electronic energy at well bottom at 0 [K]               {:15.8f} [Eh]""".format(E0)
