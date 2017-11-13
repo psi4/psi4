@@ -48,7 +48,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/findif/findif.h"
 
 #include <typeinfo>
 
@@ -1218,59 +1217,6 @@ SharedVector Wavefunction::frequencies() const { return frequencies_; }
 
 void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs) {
     frequencies_ = freqs;
-}
-/*
-void Wavefunction::set_normalmodes(std::vector<std::shared_ptr<findif::VIBRATION>> modes)
-{
-    for (int i =0; i<sizeof(modes); i++) {
-        double *displacements = new double[modes[i]->size_lx()];
-        for (int j =0; j<modes[i]->size_lx(); j++)
-            displacements[j]=1.1;  //modes[i]->get_lx(j);
-        
-        std::shared_ptr<findif::VIBRATION> vib = std::make_shared<findif::VIBRATION>(i, modes[i]->get_km(), displacements);
-        
-        outfile->Printf("Well, you tried\n");
-        
-        normalmodes_.push_back(vib) ;
-    }
-    outfile->Printf("for loop exited\n");
-}
-*/
-
-std::vector<std::shared_ptr<findif::VIBRATION>> Wavefunction::get_normalmodes() const
-{
-    
-    std::vector<std::shared_ptr<findif::VIBRATION>> n_modes = normalmodes();
-    std::vector<std::shared_ptr<findif::VIBRATION>> normodes;
-    
-    //for (int i =0; i<sizeof(normalmodes_); i++) {
-    for (int i =0; i<3; i++) {
-        
-        std::shared_ptr<findif::VIBRATION> vib = std::make_shared<findif::VIBRATION>(i,n_modes[i]->get_km(), n_modes[i]->lx->dim());
-        
-        normodes.push_back(vib);
-    }
-    return normodes;
-}
-
-std::vector<Vector> Wavefunction::get_normalmodes_displacements() const
-{
-    std::vector<std::shared_ptr<findif::VIBRATION>> n_modes = normalmodes();
-    std::vector<Vector> disps;
-    int count =1;
-    
-    for (int i=0; i< 3*molecule_->natom() -6; i++) {
-        Vector my_vector(3*molecule_->natom());
-        for (int j = 0; j< 3 * molecule_->natom() ; j++) {
-            
-            my_vector.set(j, n_modes[i]->lx->get(0,j));
-            count++;
-            
-        }
-        disps.push_back(my_vector);
-    }
-    
-    return disps;
 }
 
 void Wavefunction::save() const {}

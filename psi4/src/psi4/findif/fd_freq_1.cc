@@ -264,8 +264,6 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, std::shared_ptr<Wavefuncti
     std::vector<std::string> irrep_lbls = mol->irrep_labels();
     double **H_irr[8];
 
-    std::vector <std::shared_ptr<VIBRATION>> modes;
-    
     for (int h = 0; h < Nirrep; ++h) {
 
         if (salcs_pi[h].size() == 0) continue;
@@ -357,13 +355,6 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, std::shared_ptr<Wavefuncti
         if (print_lvl >= 2) {
             outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h].c_str());
             eivout(normal_irr, evals, 3 * Natom, dim, "outfile");
-        }
-
-        for (int i = 0; i < salcs_pi[h].size(); ++i) {
-            std::shared_ptr<VIBRATION> vib(new VIBRATION(h, 3 * Natom, evals[i]));
-            for (int x = 0; x < 3 * Natom; ++x)
-                vib->lx->set(0, x, normal_irr[x][i]);
-            modes.push_back(vib);
         }
 
         //free(evals);

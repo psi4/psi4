@@ -32,7 +32,6 @@
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/dimension.h"
-#include "psi4/findif/findif.h"
 
 #include <stddef.h>
 #include <vector>
@@ -233,9 +232,6 @@ protected:
     
     /// If frequencies are available, they will be here:
     SharedVector frequencies_;
-
-    /// If normal modes are available, they will be here:
-    std::vector<std::shared_ptr<findif::VIBRATION>> normalmodes_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
@@ -634,24 +630,6 @@ public:
     /// Set the frequencies for the wavefunction
     void set_frequencies(std::shared_ptr<Vector>& freqs);
     
-    
-    /// Returns the normodes
-    std::vector<std::shared_ptr<findif::VIBRATION>> normalmodes() const{
-        return normalmodes_;
-    }
-    
-    /// Returns the normalmodes in vector form for python output
-    std::vector<std::shared_ptr<findif::VIBRATION>> get_normalmodes() const;
-    
-    /// Returns the atomic displacements for python output
-    std::vector<Vector>get_normalmodes_displacements() const;
-    
-    /// Set the normalmodes for the wavefunction
-    void set_normalmodes(std::vector<std::shared_ptr<findif::VIBRATION>>& modes){
-        normalmodes_= modes;
-    }
-    
-
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }
 
