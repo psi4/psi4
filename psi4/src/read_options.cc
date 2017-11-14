@@ -2751,6 +2751,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         will be discarded. This option is only used if |dfocc__nat_orbs| =
         true. -*/
     options.add_double("OCC_TOLERANCE", 1.0e-4);
+    /*- Cutoff for occupation of MP2 virtual NOs in FNO-CCSD/CCSD(T).
+        The number of virtual NOs is chosen so the occupation of the
+        truncated virtual space is |dfocc__occ_percentage| percent of
+        occupation of the original MP2 virtual space. This option is only
+        used if |dfocc__nat_orbs| = true. This keyword overrides
+        |dfocc__occ_tolerance|. -*/
+    options.add_double("OCC_PERCENTAGE", 98.0);
+    /*- An array containing the number of virtual natural orbitals per irrep
+    (in Cotton order) so a user can specify the number of retained
+    natural orbitals rather than determining them with |dfocc__occ_tolerance|.
+    This keyword overrides |dfocc__occ_tolerance| and
+    |dfocc__occ_percentage|. -*/
+    options.add("ACTIVE_NAT_ORBS", new ArrayType());
 
 
     /*- The solver will be used for simultaneous linear equations. -*/
