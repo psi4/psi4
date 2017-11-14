@@ -40,7 +40,8 @@ namespace dfoccwave {
 /************************** 1d array ********************************************************/
 /********************************************************************************************/
 FnoCC::FnoCC(std::string name, int naux, int nao, int nfrzc, int naocc, int nvir, const SharedTensor2d& Corb,
-             const SharedTensor2d& Fock, const SharedTensor2d& bQ, double fno_cutoff) {
+             const SharedTensor2d& Fock, const SharedTensor2d& bQ, double fno_cutoff, double fno_perct, int navir_fno,
+             bool fno_by_perct, bool fno_by_user) {
     name_ = name;
     naux_ = naux;
     naob_ = nao;
@@ -49,7 +50,11 @@ FnoCC::FnoCC(std::string name, int naux, int nao, int nfrzc, int naocc, int nvir
     nocc_ = nfrzc_ + naocc_;
     nvir_ = nvir;
     norb_ = nocc_ + nvir_;
+    navir_fno_ = navir_fno;
     fno_cutoff_ = fno_cutoff;
+    fno_percentage_ = fno_perct;
+    fno_by_perct_ = fno_by_perct;
+    fno_by_user_ = fno_by_user;
     cutoff_ = 1.0E-10;
 
     // malloc
@@ -116,9 +121,21 @@ void FnoCC::compute_fno() {
 
     // determine frozen nos
     navir_ = 0;
-    for (int a = 0; a < nvir_; ++a) {
-        double value = diag_n_->get(a);
-        if (std::fabs(diag_n_->get(a)) >= fno_cutoff_) navir_++;
+    // if it is explicitly specified by user
+    if (fno_by_user_) {
+        navir_ = navir_fno_;
+    }
+    // if it is specified by percentage
+    else if (fno_by_perct_) {
+        double frac = fno_percentage_/100.0;
+        navir_ = (int)round(frac*nvir_);
+    }
+    // if it is specified by OCC_TOLERANCE
+    else {
+        for (int a = 0; a < nvir_; ++a) {
+            double value = diag_n_->get(a);
+            if (std::fabs(diag_n_->get(a)) >= fno_cutoff_) navir_++;
+        }
     }
     nfrzv_ = nvir_ - navir_;
 

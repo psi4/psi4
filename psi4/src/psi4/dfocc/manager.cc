@@ -814,8 +814,8 @@ void DFOCC::ccsd_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -1174,8 +1174,8 @@ void DFOCC::ccsd_t_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
     Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
@@ -1208,8 +1208,8 @@ void DFOCC::ccsd_t_manager() {
     timer_off("(T)");
     outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
     outfile->Printf("\tDF-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-CCSD(T) + delta_MP2 (a.u.)      : %20.14f\n", Eccsd_t + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-CCSD(T) + delta_MP2 (a.u.)      : %20.14f\n", Eccsd_t + Emp2L - Emp2);
     if (dertype == "FIRST") {
         tstop();
         tstart();
@@ -1584,8 +1584,8 @@ void DFOCC::ccsdl_t_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
     Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
@@ -1613,8 +1613,8 @@ void DFOCC::ccsdl_t_manager() {
     timer_off("(AT)");
     outfile->Printf("\t(AT) Correction (a.u.)             : %20.14f\n", E_at);
     outfile->Printf("\tDF-CCSD(AT) Total Energy (a.u.)    : %20.14f\n", Eccsd_at);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-CCSD(AT) + delta_MP2 (a.u.)     : %20.14f\n", Eccsd_at + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-CCSD(AT) + delta_MP2 (a.u.)     : %20.14f\n", Eccsd_at + Emp2L - Emp2);
 
     Process::environment.globals["CURRENT ENERGY"] = Eccsd_at;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
@@ -1891,8 +1891,8 @@ void DFOCC::ccd_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCD Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCD Total Energy (a.u.)         : %20.14f\n", Eccd);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-CCD + delta_MP2 (a.u.)          : %20.14f\n", Eccd + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-CCD + delta_MP2 (a.u.)          : %20.14f\n", Eccd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -2452,8 +2452,8 @@ void DFOCC::mp3_manager() {
     outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", 0.5 * (Emp3 + Emp2));
     outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-MP3 + delta_MP2 (a.u.)          : %20.14f\n", Emp3 + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP3 + delta_MP2 (a.u.)          : %20.14f\n", Emp3 + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -2979,8 +2979,8 @@ void DFOCC::mp2_5_manager() {
     outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp2 + 2.0 * (Emp3 - Emp2));
     outfile->Printf("\tDF-MP2.5 Correlation Energy (a.u.) : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", Emp3);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-MP2.5 + delta_MP2 (a.u.)        : %20.14f\n", Emp3 + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2.5 + delta_MP2 (a.u.)        : %20.14f\n", Emp3 + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -3476,8 +3476,8 @@ void DFOCC::lccd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", ElccdAB);
     outfile->Printf("\tDF-LCCD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-LCCD Total Energy (a.u.)        : %20.14f\n", Elccd);
-    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
-    outfile->Printf("\tDF-LCCD + delta_MP2 (a.u.)         : %20.14f\n", Elccd + Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    if (do_fno == "TRUE") outfile->Printf("\tDF-LCCD + delta_MP2 (a.u.)         : %20.14f\n", Elccd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 

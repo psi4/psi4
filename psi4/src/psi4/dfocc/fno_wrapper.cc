@@ -33,6 +33,7 @@
 #include "fno.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/physconst.h"
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi {
 namespace dfoccwave {
@@ -49,8 +50,10 @@ void DFOCC::fno_wrapper() {
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ia)
-    if (do_cd == "FALSE") b_ia();
-    else b_ia_cd();
+    if (do_cd == "FALSE")
+        b_ia();
+    else
+        b_ia_cd();
     bQso.reset();
 
     // Read Ints
@@ -70,8 +73,25 @@ void DFOCC::fno_wrapper() {
         diag = SharedTensor1d(new Tensor1d("Occupation numbers", nvirA));
 
         // Call FnoCC
-        SharedFnoCC fnoA =
-            SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno));
+        SharedFnoCC fnoA;
+        int navir_fno = 0;
+        if (options_["ACTIVE_NAT_ORBS"].has_changed()) {
+            for (int h = 0; h < nirrep_; h++) {
+                navir_fno += (int)options_["ACTIVE_NAT_ORBS"][h].to_double();
+            }
+            fnoA = SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
+                                         fno_percentage, navir_fno, false, true));
+        }
+
+        else if (options_["OCC_PERCENTAGE"].has_changed()) {
+            fnoA = SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
+                                         fno_percentage, navir_fno, true, false));
+        }
+
+        else {
+            fnoA = SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
+                                         fno_percentage, navir_fno, false, false));
+        }
 
         // Get MP2 energy
         Ecorr = fnoA->mp2_corr();

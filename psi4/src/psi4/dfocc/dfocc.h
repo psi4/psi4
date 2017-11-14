@@ -739,6 +739,7 @@ class DFOCC : public Wavefunction {
     double tol_pcg;
     double tol_ldl;
     double tol_fno;
+    double fno_percentage;
     double step_max;
     double mograd_max;
     double biggest_mograd;

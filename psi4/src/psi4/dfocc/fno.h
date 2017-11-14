@@ -54,10 +54,15 @@ class FnoCC {
     int nfrzv_;
     int naux_;
     int naob_;
+    int navir_fno_;
 
     double cutoff_;
     double fno_cutoff_;
+    double fno_percentage_;
     double Ecorr_;
+
+    bool fno_by_perct_;
+    bool fno_by_user_;
 
     // 1D
     SharedTensor1d diag_n_;
@@ -78,7 +83,8 @@ class FnoCC {
    public:
     // FnoCC(SharedWavefunction ref_wfn, Options &options);
     FnoCC(std::string name, int naux, int nao, int nfrzc, int naocc, int nvir, const SharedTensor2d& Corb,
-          const SharedTensor2d& Fock, const SharedTensor2d& bQ, double fno_cutoff);
+          const SharedTensor2d& Fock, const SharedTensor2d& bQ, double fno_cutoff, double fno_perct, int navir_fno,
+          bool fno_by_perct, bool fno_by_user);
     ~FnoCC();
 
     // Return occupation numbers

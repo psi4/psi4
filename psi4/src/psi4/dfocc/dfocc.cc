@@ -76,6 +76,7 @@ void DFOCC::common_init() {
     reg_param = options_.get_double("REG_PARAM");
     tol_ldl = options_.get_double("CHOLESKY_TOLERANCE");
     tol_fno = options_.get_double("OCC_TOLERANCE");
+    fno_percentage = options_.get_double("OCC_PERCENTAGE");
 
     orth_type = options_.get_str("ORTH_TYPE");
     opt_method = options_.get_str("OPT_METHOD");
@@ -278,7 +279,7 @@ void DFOCC::title() {
     else if (wfn_type_ == "QCHF")
         outfile->Printf("                      QCHF   \n");
     outfile->Printf("              Program Written by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision October 24, 2017\n");
+    outfile->Printf("              Latest Revision November 14, 2017\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
