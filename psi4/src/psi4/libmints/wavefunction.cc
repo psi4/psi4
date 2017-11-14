@@ -140,7 +140,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 void Wavefunction::deep_copy(SharedWavefunction other) { deep_copy(other.get()); }
 
 void Wavefunction::deep_copy(const Wavefunction *other) {
-    if (!S_) {
+    if (!other->S_) {
         throw PSIEXCEPTION("Wavefunction::deep_copy must copy an initialized wavefunction.");
     }
 
@@ -211,6 +211,111 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     for (auto const &kv : other->arrays_) {
         arrays_[kv.first] = kv.second->clone();
     }
+}
+
+std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSet> basis)
+{
+    if (!S_) {
+        throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
+    }
+
+    auto wfn = std::make_shared<Wavefunction>(basis->molecule(), basis, options_);
+  
+    /// From typical constructor
+    /// Some member data is not clone-able so we will copy
+    wfn->name_ = name_;
+    wfn->integral_ = std::make_shared<IntegralFactory>(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_);
+    wfn->sobasisset_ = std::make_shared<SOBasisSet>(wfn->basisset_, wfn->integral_);
+    wfn->factory_ = std::make_shared<MatrixFactory>();
+
+    Dimension c1_nsopi = Dimension(1);
+    c1_nsopi[0] = nsopi_.sum();
+    wfn->factory_->init_with(c1_nsopi, c1_nsopi);
+
+    // Need to re-generate AO2SO_ because the new SO basis is different
+    // than the old one (lower symmetry)
+    auto pet = std::make_shared<PetiteList>(wfn->basisset_, wfn->integral_);
+    wfn->AO2SO_ = pet->aotoso();
+
+    wfn->psio_ = psio_; // We dont actually copy psio
+    wfn->memory_ = memory_;
+    wfn->nalpha_ = nalpha_;
+    wfn->nbeta_ = nbeta_;
+    wfn->nfrzc_ = nfrzc_;
+
+    wfn->print_ = print_;
+    wfn->debug_ = debug_;
+    wfn->density_fitted_ = density_fitted_;
+
+    wfn->energy_ = energy_;
+    wfn->efzc_ = efzc_;
+
+    // collapse all the Dimension objects down to one element
+    wfn->doccpi_.init(1, doccpi_.name());
+    wfn->doccpi_[0] = doccpi_.sum();
+    wfn->soccpi_.init(1, soccpi_.name());
+    wfn->soccpi_[0] = soccpi_.sum();
+    wfn->frzcpi_.init(1, frzcpi_.name());
+    wfn->frzcpi_[0] = frzcpi_.sum();
+    wfn->frzvpi_.init(1, frzvpi_.name());
+    wfn->frzvpi_[0] = frzvpi_.sum();
+    wfn->nalphapi_.init(1, nalphapi_.name());
+    wfn->nalphapi_[0] = nalphapi_.sum();
+    wfn->nbetapi_.init(1, nbetapi_.name());
+    wfn->nbetapi_[0] = nbetapi_.sum();
+    wfn->nsopi_.init(1, nsopi_.name());
+    wfn->nsopi_[0] = nsopi_.sum();
+    wfn->nmopi_.init(1, nmopi_.name());
+    wfn->nmopi_[0] = nmopi_.sum();
+
+    wfn->nso_ = nso_;
+    wfn->nmo_ = nmo_;
+    wfn->nirrep_ = 1;
+
+    wfn->same_a_b_dens_ = same_a_b_dens_;
+    wfn->same_a_b_orbs_ = same_a_b_orbs_;
+
+
+    /// Need the SO2AO matrix for remove_symmetry(), have the AO2SO matrix
+    SharedMatrix SO2AO = aotoso()->transpose();
+
+    wfn->S_ = wfn->factory_->create_shared_matrix("S");
+    wfn->S_->remove_symmetry(S_, SO2AO);
+
+    /// Below is not set in the typical constructor
+
+    wfn->H_ = wfn->factory_->create_shared_matrix("One-electron Hamiltonian");
+    wfn->H_->remove_symmetry(H_, SO2AO);
+
+    /* This stuff we need to copy in the subclass functions, b/c
+    ** constructors like RHF() just blow these away anyway 
+    if (Ca_) wfn->Ca_ = Ca_subset("AO", "ALL");
+    if (Cb_) wfn->Cb_ = Cb_subset("AO", "ALL");
+    if (Da_) wfn->Da_ = Da_subset("AO");
+    if (Db_) wfn->Db_ = Db_subset("AO");
+    if (Fa_) wfn->Fa_ = Fa_subset("AO");
+    if (Fb_) wfn->Fb_ = Fb_subset("AO");
+    if (epsilon_a_) wfn->epsilon_a_ =
+        epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+    if (epsilon_b_) wfn->epsilon_b_ = 
+        epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
+    */
+
+    // these are simple SharedMatrices of size 3*natom_, etc., so should
+    // not depend on symmetry ... can just copy them
+    if (gradient_) wfn->gradient_ = gradient_->clone();
+    if (hessian_) wfn->hessian_ = hessian_->clone();
+
+    wfn->variables_ = variables_;
+    // ok for deep copy?
+    wfn->external_pot_ = external_pot_;
+
+    // Need to explicitly call copy
+    for (auto const &kv : arrays_) {
+        wfn->arrays_[kv.first] = kv.second->clone();
+    }
+
+    return wfn;
 }
 
 void Wavefunction::common_init() {
@@ -456,7 +561,7 @@ SharedMatrix Wavefunction::Cb() const {
     return Cb_;
 }
 
-std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &noccpi, const std::string &subset) {
+std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &noccpi, const std::string &subset) const {
     if (!(subset == "FROZEN_OCC" || subset == "FROZEN_VIR" || subset == "ACTIVE_OCC" || subset == "ACTIVE_VIR" ||
           subset == "FROZEN" || subset == "ACTIVE" || subset == "OCC" || subset == "VIR" || subset == "ALL"))
         throw PSIEXCEPTION(
@@ -488,7 +593,7 @@ std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &n
 }
 
 SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &noccpi, SharedVector epsilon,
-                                           const std::string &basis, const std::string &subset) {
+                                           const std::string &basis, const std::string &subset) const {
     std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
@@ -537,9 +642,8 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
     return C2;
 }
 
-SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi,
-                                                 const std::string &basis, const std::string &subset) {
-    std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
+SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi, const std::string &basis, const std::string &subset) const {
+    std::vector <std::vector<int>> positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
     for (int h = 0; h < (int)positions.size(); h++) {
@@ -579,7 +683,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
     return C2;
 }
 
-SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string &basis) {
+SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string &basis) const {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
         auto F2 = std::make_shared<Matrix>("Fock (AO basis)", basisset_->nbf(), basisset_->nbf());
@@ -591,7 +695,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
             if (!nsol || !nsor) continue;
             double **Ulp = AO2SO_->pointer(h);
             double **Urp = AO2SO_->pointer(h ^ symm);
-            double **FSOp = F->pointer(h ^ symm);
+            double **FSOp = F->pointer(h);
             double **FAOp = F2->pointer();
             C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, FSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
             C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, FAOp[0], nao);
@@ -634,7 +738,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
     }
 }
 
-SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string &basis) {
+SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string &basis) const {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
         auto D2 = std::make_shared<Matrix>("D (AO basis)", basisset_->nbf(), basisset_->nbf());
@@ -646,7 +750,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
             if (!nsol || !nsor) continue;
             double **Ulp = AO2SO_->pointer(h);
             double **Urp = AO2SO_->pointer(h ^ symm);
-            double **DSOp = D->pointer(h ^ symm);
+            double **DSOp = D->pointer(h);
             double **DAOp = D2->pointer();
             C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
             C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, DAOp[0], nao);
@@ -673,7 +777,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
             if (!nsol || !nsor) continue;
             double **Ulp = my_aotoso->pointer(h);
             double **Urp = my_aotoso->pointer(h ^ symm);
-            double **DSOp = D->pointer(h ^ symm);
+            double **DSOp = D->pointer(h);
             double **DAOp = D2->pointer();
             C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
             C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, DAOp[0], nao);
@@ -715,9 +819,102 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
     }
 }
-SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, std::shared_ptr<BasisSet> old_basis,
-                                            std::shared_ptr<BasisSet> new_basis) {
-    // Based on Werner's method from Mol. Phys. 102, 21-22, 2311
+
+SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C,
+    const std::string &basis, const std::string matrix_basename) const
+{
+    if (basis == "AO") {
+        double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
+        std::string m2_name = matrix_basename + " (AO basis)";
+        SharedMatrix M2 = SharedMatrix(new Matrix(m2_name, basisset_->nbf(), basisset_->nbf()));
+        int symm = M->symmetry();
+        for (int h = 0; h < AO2SO_->nirrep(); ++h) {
+            int nao = AO2SO_->rowspi()[0];
+            int nsol = AO2SO_->colspi()[h];
+            int nsor = AO2SO_->colspi()[h ^ symm];
+            if (!nsol || !nsor) continue;
+            double **Ulp = AO2SO_->pointer(h);
+            double **Urp = AO2SO_->pointer(h ^ symm);
+            double **MSOp = M->pointer(h);
+            double **MAOp = M2->pointer();
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, MAOp[0], nao);
+        }
+        delete[] temp;
+        return M2;
+    } else if (basis == "CartAO") {
+        /*
+         * Added by ACS. Rob's definition of AO is simply a desymmetrized SO (i.e. using spherical basis
+         * functions).  In cases like EFP and PCM where many OE integral evaluations are needed, we want
+         * to avoid the spherical transformation, so we need to back transform the density matrix all the
+         * way back to Cartesian AOs.
+         */
+
+        PetiteList petite(basisset_, integral_, true);
+        SharedMatrix my_aotoso = petite.aotoso();
+        double *temp = new double[my_aotoso->max_ncol() * my_aotoso->max_nrow()];
+        std::string m2_name = matrix_basename + " (CartAO basis)";
+        SharedMatrix M2 = SharedMatrix(new Matrix(m2_name, basisset_->nao(), basisset_->nao()));
+        int symm = M->symmetry();
+        for (int h = 0; h < my_aotoso->nirrep(); ++h) {
+            int nao = my_aotoso->rowspi()[0];
+            int nsol = my_aotoso->colspi()[h];
+            int nsor = my_aotoso->colspi()[h ^ symm];
+            if (!nsol || !nsor) continue;
+            double **Ulp = my_aotoso->pointer(h);
+            double **Urp = my_aotoso->pointer(h ^ symm);
+            double **MSOp = M->pointer(h);
+            double **MAOp = M2->pointer();
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, MAOp[0], nao);
+        }
+        delete[] temp;
+        return M2;
+    } else if (basis == "SO") {
+        SharedMatrix M2 = M->clone();
+        std::string m2_name = matrix_basename + " (SO basis)";
+        M2->set_name(m2_name);
+        return M2; 
+    } else if (basis == "MO") {
+        std::string m2_name = matrix_basename + " (MO basis)";
+        SharedMatrix M2(new Matrix(m2_name, C->colspi(), C->colspi()));
+
+        int symm = M->symmetry();
+        int nirrep = M->nirrep();
+
+        double *SC = new double[C->max_ncol() * C->max_nrow()];
+        double *temp = new double[C->max_ncol() * C->max_nrow()];
+        for (int h = 0; h < nirrep; h++) {
+            int nmol = C->colspi()[h];
+            int nmor = C->colspi()[h ^ symm];
+            int nsol = C->rowspi()[h];
+            int nsor = C->rowspi()[h ^ symm];
+            if (!nmol || !nmor || !nsol || !nsor) continue;
+            double **Slp = S_->pointer(h);
+            double **Srp = S_->pointer(h ^ symm);
+            double **Clp = C->pointer(h);
+            double **Crp = C->pointer(h ^ symm);
+            double **Mmop = M2->pointer(h);
+            double **Msop = M->pointer(h);
+
+            C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC, nmor);
+            C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC, nmor, 0.0, temp, nmor);
+            C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC, nmol);
+            C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC, nmol, temp, nmor, 0.0, Mmop[0], nmor);
+        }
+        delete[] temp;
+        delete[] SC;
+        return M2;
+    } else {
+        throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
+    }
+}
+
+
+SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
+                                            std::shared_ptr<BasisSet> old_basis,
+                                            std::shared_ptr<BasisSet> new_basis) { 
+// Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     std::shared_ptr<IntegralFactory> newfactory =
         std::make_shared<IntegralFactory>(new_basis, new_basis, new_basis, new_basis);
     std::shared_ptr<IntegralFactory> hybfactory =
@@ -857,23 +1054,35 @@ OrbitalSpace Wavefunction::beta_orbital_space(const std::string &id, const std::
     return OrbitalSpace(id, subset, Cb_subset(basis, subset), epsilon_b_subset(basis, subset), basisset_, integral_);
 }
 
-SharedMatrix Wavefunction::Ca_subset(const std::string &basis, const std::string &subset) {
+SharedMatrix Wavefunction::Ca_subset(const std::string &basis, const std::string &subset) const {
     return C_subset_helper(Ca_, nalphapi_, epsilon_a_, basis, subset);
 }
 
-SharedMatrix Wavefunction::Cb_subset(const std::string &basis, const std::string &subset) {
+SharedMatrix Wavefunction::Cb_subset(const std::string &basis, const std::string &subset) const {
     return C_subset_helper(Cb_, nbetapi_, epsilon_b_, basis, subset);
 }
 
-SharedMatrix Wavefunction::Da_subset(const std::string &basis) { return D_subset_helper(Da_, Ca_, basis); }
+SharedMatrix Wavefunction::Da_subset(const std::string &basis) const {
+    return matrix_subset_helper(Da_, Ca_, basis, "D");
+}
 
-SharedMatrix Wavefunction::Db_subset(const std::string &basis) { return D_subset_helper(Db_, Cb_, basis); }
+SharedMatrix Wavefunction::Db_subset(const std::string &basis) const {
+    return matrix_subset_helper(Db_, Cb_, basis, "D");
+}
 
-SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) {
+SharedMatrix Wavefunction::Fa_subset(const std::string &basis) const {
+    return matrix_subset_helper(Fa_, Ca_, basis, "Fock");
+}
+
+SharedMatrix Wavefunction::Fb_subset(const std::string &basis) const {
+    return matrix_subset_helper(Fb_, Cb_, basis, "Fock");
+}
+
+SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) const {
     return epsilon_subset_helper(epsilon_a_, nalphapi_, basis, subset);
 }
 
-SharedVector Wavefunction::epsilon_b_subset(const std::string &basis, const std::string &subset) {
+SharedVector Wavefunction::epsilon_b_subset(const std::string &basis, const std::string &subset) const {
     return epsilon_subset_helper(epsilon_b_, nbetapi_, basis, subset);
 }
 

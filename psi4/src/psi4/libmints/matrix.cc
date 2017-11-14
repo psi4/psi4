@@ -2708,7 +2708,7 @@ void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
         throw PSIEXCEPTION("Matrix::remove_symmetry: Sizes are not compatible.\n");
     }
 
-    // Ensure we're working with a clea
+    // Ensure we're working with a clean matrix
     zero();
 
     // Create temporary matrix of proper size.
@@ -3239,11 +3239,15 @@ void Matrix::load(const std::string &filename) {
     }
 }
 
-bool Matrix::equal(const Matrix &rhs) { return equal(&rhs); }
+bool Matrix::equal(const Matrix &rhs, double TOL) {
+    return equal(&rhs, TOL);
+}
 
-bool Matrix::equal(const SharedMatrix &rhs) { return equal(rhs.get()); }
+bool Matrix::equal(const SharedMatrix &rhs, double TOL) {
+    return equal(rhs.get(), TOL);
+}
 
-bool Matrix::equal(const Matrix *rhs) {
+bool Matrix::equal(const Matrix *rhs, double TOL) {
     // Check dimensions
     if (rhs->nirrep() != nirrep()) return false;
 
@@ -3256,7 +3260,8 @@ bool Matrix::equal(const Matrix *rhs) {
     for (int h = 0; h < nirrep(); ++h) {
         for (int m = 0; m < rowspi()[h]; ++m) {
             for (int n = 0; n < colspi()[h ^ symmetry_]; ++n) {
-                if (get(h, m, n) != rhs->get(h, m, n)) return false;
+                if (std::fabs(get(h, m, n) - rhs->get(h, m, n)) > TOL)
+                    return false;
             }
         }
     }

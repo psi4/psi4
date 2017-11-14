@@ -193,20 +193,19 @@ protected:
     /// Beta orbital energies
     SharedVector epsilon_b_;
 
-    /// If a gradient is available it will be here:
+    /// gradient, if available, as natom_ x 3 SharedMatrix
     SharedMatrix gradient_;
 
-    /// If a Hessian is available it will be here:
+    /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix
     SharedMatrix hessian_;
 
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon,
-                                 const std::string& basis, const std::string& subset);
-    SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis);
+                                 const std::string& basis, const std::string& subset) const;
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi,
-                                       const std::string& basis, const std::string& subset);
+                                       const std::string& basis, const std::string& subset) const;
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi,
-                                                    const std::string& subset);
+                                                    const std::string& subset) const;
 
     /// If atomic point charges are available they will be here
     std::shared_ptr<std::vector<double>> atomic_point_charges_;
@@ -221,7 +220,7 @@ protected:
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
 
-    // The external potenital
+    // The external potential
     std::shared_ptr<ExternalPotential> external_pot_;
 
     // Collection of variables
@@ -266,6 +265,15 @@ public:
     **/
     void deep_copy(SharedWavefunction other);
     void deep_copy(const Wavefunction* other);
+
+    /**
+    * Creates a new wavefunction in C1-symmetry format from the current
+    * Wavefunction that may be in a higher point group symmetry format.
+    *
+    * @param basis A C1-symmetry basis set object (we don't yet have
+    *        the ability to copy this straight from the symmetric Wavefunction)
+    **/
+    std::shared_ptr <Wavefunction> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 
     virtual ~Wavefunction();
 
@@ -396,7 +404,7 @@ public:
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     * @return the matrix in Pitzer order in the desired basis
     **/
-    SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+    SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL") const;
 
     /**
     * Return a subset of the Cb matrix in a desired basis
@@ -406,7 +414,7 @@ public:
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     * @return the matrix in Pitzer order in the desired basis
     **/
-    SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+    SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL") const;
 
     /**
      * @brief Creates an OrbitalSpace object containing information about the request alpha orbital space.
@@ -435,7 +443,7 @@ public:
     *  AO, SO, MO
     * @return the matrix in the desired basis
     **/
-    SharedMatrix Da_subset(const std::string& basis = "SO");
+    SharedMatrix Da_subset(const std::string& basis = "SO") const;
 
     /**
     * Return the Db matrix in the desired basis
@@ -443,17 +451,56 @@ public:
     *  AO, SO, MO
     * @return the matrix in the desired basis
     **/
-    SharedMatrix Db_subset(const std::string& basis = "SO");
+    SharedMatrix Db_subset(const std::string& basis = "SO") const;
 
     /**
     * Return the D matrix in the desired basis
     * @param D matrix in the SO basis to transform
-    * @param C matrix in the SO basis to use as a transformer
+    * @param C matrix in the SO basis to use for transforms to the MO basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO, CartAO
     * @return the D matrix in the desired basis
     **/
-    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
+    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis) const;
+
+    /**
+    * Return the Fa matrix in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO
+    * @return the matrix in the desired basis
+    **/
+    SharedMatrix Fa_subset(const std::string& basis = "SO") const;
+
+    /**
+    * Return the Fb matrix in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO
+    * @return the matrix in the desired basis
+    **/
+    SharedMatrix Fb_subset(const std::string& basis = "SO") const;
+
+    /**
+    * Return the F matrix in the desired basis
+    * @param F matrix in the SO basis to transform
+    * @param C matrix in the SO basis to use for transforms to the MO basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO, CartAO
+    * @return the F matrix in the desired basis
+    **/
+    SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis) const;
+
+
+    /**
+    * Transform a matrix M into the desired basis 
+    * @param M matrix in the SO basis to transform
+    * @param C matrix in the SO basis to use for transforms to MO basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO, CartAO
+    * @return the matrix M in the desired basis
+    **/
+    SharedMatrix matrix_subset_helper(SharedMatrix M, 
+        SharedMatrix C, const std::string &basis, 
+        const std::string matrix_basename) const;
 
     /**
     * Return the alpha orbital eigenvalues in the desired basis
@@ -462,7 +509,7 @@ public:
     * @param subset the subset of orbitals to return
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     */
-    SharedVector epsilon_a_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+    SharedVector epsilon_a_subset(const std::string& basis = "SO", const std::string& subset = "ALL") const;
 
     /**
     * Return the beta orbital eigenvalues in the desired basis
@@ -471,7 +518,7 @@ public:
     * @param subset the subset of orbitals to return
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     */
-    SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+    SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "ALL") const;
 
     /**
      * Projects the given orbitals from the old to the new basis

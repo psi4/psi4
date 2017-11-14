@@ -94,6 +94,8 @@ public:
     SharedMatrix moFa() const {return moFa_; }
     SharedMatrix moFb() const {return moFb_; }
 
+    std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
+
 };
 
 }}

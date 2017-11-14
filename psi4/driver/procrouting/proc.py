@@ -1193,19 +1193,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         p4util.banner('  Computing high-spin triplet guess  ')
         core.print_out('\n')
 
-
-    # If we force c1 copy the active molecule
-    if use_c1:
-        scf_molecule.update_geometry()
-        if scf_molecule.schoenflies_symbol() != 'c1':
-            core.print_out("""  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-            scf_molecule = scf_molecule.clone()
-            scf_molecule.reset_point_group('c1')
-            scf_molecule.fix_orientation(True)
-            scf_molecule.fix_com(True)
-            scf_molecule.update_geometry()
-
     # If GUESS is auto guess what it should be
     if core.get_option('SCF', 'GUESS') == "AUTO":
         if (core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
@@ -1422,7 +1409,26 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.tstop()
 
     optstash.restore()
-    return scf_wfn
+
+    if (not use_c1) or (scf_molecule.schoenflies_symbol() == 'c1'):
+        return scf_wfn
+    else:
+        # If we force c1 copy the active molecule
+        scf_molecule.update_geometry()
+        core.print_out("""  A requested method does not make use of molecular symmetry: """
+                           """further calculations in C1 point group.\n""")
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.fix_orientation(True)
+        c1_molecule.fix_com(True)
+        c1_molecule.update_geometry()
+        c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'))
+        tmp = scf_wfn.c1_deep_copy(c1_basis)
+        c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF", 
+                                         core.get_global_option("DF_BASIS_SCF"),
+                                         "JKFIT", core.get_global_option('BASIS'))
+        tmp.set_basisset("DF_BASIS_SCF", c1_jkbasis)
+        return tmp
 
 
 def run_dcft(name, **kwargs):

@@ -1326,10 +1326,6 @@ class DFOCC : public Wavefunction {
     SharedTensor2i vv_idxAB;  // Pair index for all VV
     SharedTensor2i vv_idxBB;  // Pair index for all VV
 
-    SharedMatrix Tso_;
-    SharedMatrix Vso_;
-    SharedMatrix Hso_;
-    SharedMatrix Sso_;
     SharedMatrix bQnn;  // b(Q|mu nu)
     SharedVector e_orbA;
 };

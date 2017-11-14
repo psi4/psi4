@@ -1118,9 +1118,9 @@ public:
     /// Checks matrix equality.
     /// @param rhs Matrix to compare to.
     /// @returns true if equal, otherwise false.
-    bool equal(const Matrix& rhs);
-    bool equal(const SharedMatrix& rhs);
-    bool equal(const Matrix* rhs);
+    bool equal(const Matrix& rhs, double TOL=1.0e-10);
+    bool equal(const SharedMatrix& rhs, double TOL=1.0e-10);
+    bool equal(const Matrix* rhs, double TOL=1.0e-10);
     /// @}
 
     /// @{

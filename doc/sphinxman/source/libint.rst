@@ -60,8 +60,8 @@ Installation
 
 **Binary**
 
-* .. image:: https://anaconda.org/psi4/libint/badges/version.svg
-     :target: https://anaconda.org/psi4/libint
+* .. image:: https://anaconda.org/evaleev/libint/badges/version.svg
+     :target: https://anaconda.org/evaleev/libint
 
 * Libint is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 

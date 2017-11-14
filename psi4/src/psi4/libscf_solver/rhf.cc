@@ -363,7 +363,7 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     if (needs_ao) {
         Cocc_ao = Ca_subset("AO", "OCC");
         Cvir_ao = Ca_subset("AO", "VIR");
-        F_ao = F_subset_helper(Fa_, Ca_, "AO");
+        F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
     }
     if (needs_so) {
         Cocc_so = Ca_subset("SO", "OCC");
@@ -577,7 +577,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix Cocc_ao = Ca_subset("AO", "ALL");
-        SharedMatrix F_ao = F_subset_helper(Fa_, Ca_, "AO");
+        SharedMatrix F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
         SharedMatrix IFock_ao = Matrix::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
@@ -937,5 +937,37 @@ bool RHF::stability_analysis() {
     // FOLLOW is not implemented for RHF
     return false;
 }
+
+std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
+{
+    std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
+    auto hf_wfn = std::make_shared<RHF>(wfn, functional_, wfn->options(), wfn->psio());
+    // now just have to copy the matrices that RHF initializes
+    // include only those that are not temporary (some deleted in finalize())
+    if (Ca_) {
+        hf_wfn->Ca_ = Ca_subset("AO", "ALL");
+        hf_wfn->Cb_ = hf_wfn->Ca_;
+    }
+    if (Da_) {
+        hf_wfn->Da_ = Da_subset("AO");
+        hf_wfn->Db_ = hf_wfn->Da_;
+        hf_wfn->D_  = hf_wfn->Da_;
+    }
+    if (Fa_) {
+        hf_wfn->Fa_ = Fa_subset("AO");
+        hf_wfn->Fb_ = hf_wfn->Fa_;
+    }
+    if (epsilon_a_) {
+        hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+        hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
+    }
+    // H_ ans X_ reset in the HF constructor, copy them over here
+    SharedMatrix SO2AO = aotoso()->transpose();
+    if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
+    if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
+
+    return hf_wfn;
+}
+
 }
 }
