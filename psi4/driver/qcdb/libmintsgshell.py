@@ -26,9 +26,6 @@
 # @END LICENSE
 #
 
-"""Class to
-
-"""
 from __future__ import absolute_import
 from __future__ import print_function
 import math
@@ -89,7 +86,7 @@ def df(n):
 
 def INT_NCART(am):
     """Gives the number of cartesian functions for an angular momentum.
-    define INT_NCART(am) ((am>=0) ? ((((am)+2)*((am)+1))>>1) : 0)
+    #define INT_NCART(am) ((am>=0) ? ((((am)+2)*((am)+1))>>1) : 0)
 
     """
     return (((abs(am) + 2) * (abs(am) + 1)) >> 1)
@@ -108,14 +105,11 @@ def INT_NFUNC(pu, am):
     #define INT_NFUNC(pu,am) ((pu)?INT_NPURE(am):INT_NCART(am))
 
     """
-    if pu == 'Cartesian' or pu == False:
-        return INT_NCART(am)
-    else:
-        return INT_NPURE(am)
+    return INT_NCART(am) if pu in {'Cartesian', False} else INT_NPURE(am)
 
 
 def INT_CARTINDEX(am, i, j):
-    """Computes offset index for cartesian function.
+    """Returns offset index for cartesian function.
     #define INT_CARTINDEX(am,i,j) (((i) == (am))? 0 : (((((am) - (i) + 1)*((am) - (i)))>>1) + (am) - (i) - (j)))
 
     """
@@ -123,7 +117,7 @@ def INT_CARTINDEX(am, i, j):
 
 
 def INT_ICART(a, b, c):
-    """Given a, b, and c compute a cartesian offset.
+    """Given a, b, and c, return a cartesian offset.
     #define INT_ICART(a, b, c) (((((((a)+(b)+(c)+1)<<1)-(a))*((a)+1))>>1)-(b)-1)
 
     """
@@ -131,7 +125,7 @@ def INT_ICART(a, b, c):
 
 
 def INT_IPURE(l, m):
-    """Given l and m compute a pure function offset.
+    """Given l and m, return a pure function offset.
     #define INT_IPURE(l, m) ((l)+(m))
 
     """
@@ -147,10 +141,10 @@ class ShellInfo(object):
     """This class has the same behavior as GaussianShell, but implements everything using
     slower data structures, which are easier to construct. These are used to build the
     basis set, which builds more efficient pointer-based GaussianShell objects.
-    @param e An array of exponent values.
     @param am Angular momentum.
-    @param pure Pure spherical harmonics, or Cartesian.
     @param c An array of contraction coefficients.
+    @param e An array of exponent values.
+    @param pure Pure spherical harmonics, or Cartesian.
     @param nc The atomic center that this shell is located on. Must map
     back to the correct atom in the owning BasisSet molecule. Used
     in integral derivatives for indexing.
@@ -159,6 +153,7 @@ class ShellInfo(object):
     @param start The starting index of the first function this shell
     provides. Used to provide starting positions in matrices.
     @param pt Is the shell already normalized?
+    @param rpowers For an ECP, the array of radial powers.
 
     """
 
@@ -193,7 +188,7 @@ class ShellInfo(object):
             self.normalize_shell()
             self.erd_normalize_shell()
         else:
-            self.PYerd_coef = [0.0 for i in c]
+            self.PYerd_coef = [0.0] * self.nprimitive() 
 
     def primitive_normalization(self, p):
         """Normalizes a single primitive.
@@ -208,7 +203,6 @@ class ShellInfo(object):
 
     def contraction_normalization(self):
         """Normalizes an entire contraction set. Applies the normalization to the coefficients
-        *  @param gs The contraction set to normalize.
 
         """
         e_sum = 0.0
@@ -222,10 +216,11 @@ class ShellInfo(object):
         try:
             norm = math.sqrt(1.0 / (tmp * e_sum))
         except ZeroDivisionError:
-            self.PYcoef[i] = [1.0 for i in range(self.nprimitive())]
-        # Set the normalization
-        for i in range(self.nprimitive()):
-            self.PYcoef[i] *= norm
+            # This is likely an ECP with no local function. 
+            pass
+        else:
+            # Normalize, as usual.
+            self.PYcoef = [i * norm for i in self.PYcoef]
 
     def normalize_shell(self):
         """Handles calling primitive_normalization and
@@ -238,10 +233,10 @@ class ShellInfo(object):
         self.contraction_normalization()
 
     def erd_normalize_shell(self):
-        """
+        """Compute the normalization coefficients for Electronic
+        Repulsion Direct integral evaluation.
 
         """
-        self.PYerd_coef = []
         tsum = 0.0
         for j in range(self.nprimitive()):
             for k in range(j + 1):
@@ -255,15 +250,12 @@ class ShellInfo(object):
                 tsum += temp
                 if j != k:
                     tsum += temp
-        prefac = 1.0
-        if self.l > 1:
-            prefac = pow(2.0, 2 * self.l) / df(2 * self.l)
+        prefac = pow(2.0, 2 * self.l) / df(2 * self.l) if self.l > 1 else 1.0
         norm = math.sqrt(prefac / tsum)
-        for j in range(self.nprimitive()):
-            self.PYerd_coef.append(self.PYoriginal_coef[j] * norm)
+        self.PYerd_coef = [j * norm for j in self.PYoriginal_coef]
 
     def copy(self, nc=None, c=None):
-        """Make a copy of the ShellInfo"""
+        """Return a copy of the ShellInfo"""
         if nc is not None and c is not None:
             return ShellInfo(self.l, self.PYoriginal_coef, self.PYexp,
                 self.puream, nc, c,
@@ -275,36 +267,36 @@ class ShellInfo(object):
         # better to just deepcopy?
 
     def nprimitive(self):
-        """The number of primitive Gaussians"""
+        """Return the number of primitive Gaussians"""
         return len(self.PYexp)
 
     def nfunction(self):
-        """Total number of basis functions"""
+        """Return the total number of basis functions"""
         return INT_NFUNC(self.puream, self.l)
 
     def ncartesian(self):
-        """Total number of functions if this shell was Cartesian"""
+        """Return the total number of functions if this shell was Cartesian"""
         return self.PYncartesian
 
     def am(self):
-        """The angular momentum of the given contraction"""
+        """Return the angular momentum of the given contraction"""
         return self.l
 
     def amchar(self):
-        """The character symbol for the angular momentum of the given contraction"""
+        """Return the character symbol for the angular momentum of the given contraction"""
         return 'spdfghiklmnopqrtuvwxyz'[self.l]
 
     def AMCHAR(self):
-        """The character symbol for the angular momentum of the given contraction (upper case)"""
-        return 'SPDFGHIKLMNOPQRTUVWXYZ'[self.l]
+        """Return the character symbol for the angular momentum of the given contraction (upper case)"""
+        return self.amchar().upper()
 
     def is_cartesian(self):
         """Returns true if contraction is Cartesian"""
-        return True if self.puream == 'Cartesian' else False
+        return self.puream == 'Cartesian'
 
     def is_pure(self):
         """Returns true if contraction is pure"""
-        return True if self.puream == 'Pure' else False
+        return self.puream == 'Pure'
 
     def center(self):
         """Returns the center of the Molecule this shell is on"""
@@ -384,12 +376,8 @@ class ShellInfo(object):
         """String representation of shell"""
         return self.pyprint(outfile=None)
 
-    def normalize(self, l, m, n):
-        """Normalize the angular momentum component"""
-        return 1.0
-
     def function_index(self):
-        """Basis function index where this shell starts."""
+        """Return the basis function index where this shell starts."""
         return self.start
 
     def set_function_index(self, i):
