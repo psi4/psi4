@@ -3246,8 +3246,7 @@ std::string Molecule::full_point_group() const {
 
 int Molecule::natom() const { return atoms_.size(); }
 
-int Molecule::rotational_symmetry_number() const
-{
+int Molecule::rotational_symmetry_number() const {
     int sigma;
     std::string pg = FullPointGroupList[full_pg_];
 

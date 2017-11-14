@@ -214,7 +214,7 @@ void export_wavefunction(py::module& m) {
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("semicanonicalize", &scf::HF::semicanonicalize,
              "Semicanonicalizes the orbitals for ROHF.");
-    
+
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::RHF::c1_deep_copy,

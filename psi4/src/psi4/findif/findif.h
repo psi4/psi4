@@ -48,8 +48,8 @@ namespace findif {
 // functions to generate displacements
 std::vector< SharedMatrix > fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &options);
 // std::vector< SharedMatrix > fd_geoms_2_0(Options &options);
-std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Options &options, int irrep= -1);
-std::vector< SharedMatrix > fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options, int irrep= -1);
+std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Options &options, int irrep=-1);
+std::vector< SharedMatrix > fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options, int irrep=-1);
 std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, Options &options);
 
 // functions to carry out finite-differences

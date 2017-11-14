@@ -263,7 +263,7 @@ def _phase_cols_to_max_element(arr, tol=1.0e-2, verbose=1):
 
 
 
-def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
+def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
     """Like so much other Psi4 goodness, originally by @andysim
 
     Parameters
@@ -272,7 +272,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
         3*nat x 3*nat non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
     geom : np.array
         nat x 3 geometry [a0] at which Hessian computed.
-    m : np.array
+    mass : np.array
         nat [u] atomic masses.
     basisset : psi4.core.BasisSet
         for SALCs
@@ -328,11 +328,11 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     """
     from psi4 import core
 
-    if (m.shape[0] == geom.shape[0] == (nmwhess_in.shape[0] // 3) == (nmwhess_in.shape[1] // 3)) and (geom.shape[1] == 3):
+    if (mass.shape[0] == geom.shape[0] == (nmwhess_in.shape[0] // 3) == (nmwhess_in.shape[1] // 3)) and (geom.shape[1] == 3):
             pass
     else:
         raise ValidationError("""Dimension mismatch among mass ({}), geometry ({}), and Hessian ({})""".format(
-            m.shape, geom.shape, nmwhess_in.shape))
+            mass.shape, geom.shape, nmwhess_in.shape))
 
     def mat_symm_info(a, atol=1e-14, lbl='array', stol=None):
         import numpy as np
@@ -351,7 +351,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     vibinfo = {}
     text = []
 
-    nat = len(m)
+    nat = len(mass)
     text.append("""\n\n  ==> Harmonic Vibrational Analysis <==\n""")
 
     if nat == 1:
@@ -375,7 +375,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
             Uh[lbl] = tmp
 
     # form projector of translations and rotations
-    TRspace = _get_TR_space(m, geom, space='TR', tol=LINEAR_A_TOL)
+    TRspace = _get_TR_space(mass, geom, space='TR', tol=LINEAR_A_TOL)
     nrt = TRspace.shape[0]
     text.append('  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
 
@@ -385,7 +385,7 @@ def harmonic_analysis(nmwhess_in, geom, m, basisset, irrep_labels):
     text.append(mat_symm_info(P, lbl='total projector') + ' ({})'.format(nrt))
 
     # mass-weight & solve
-    sqrtmmm = np.repeat(np.sqrt(m), 3)
+    sqrtmmm = np.repeat(np.sqrt(mass), 3)
     sqrtmmminv = np.divide(1.0, sqrtmmm)
     mwhess = np.einsum('i,ij,j->ij', sqrtmmminv, nmwhess, sqrtmmminv)
     text.append(mat_symm_info(mwhess, lbl='mass-weighted Hessian') + ' (0)')

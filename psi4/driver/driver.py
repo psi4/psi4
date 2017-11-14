@@ -1729,7 +1729,6 @@ def frequency(name, **kwargs):
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
     wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
     wfn.frequency_analysis = vibinfo
-    # and normco yet needs setting
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
@@ -1755,12 +1754,14 @@ def vibanal_wfn(wfn, hess=None, irrep=None):
         nmwhess = hess
 
     mol = wfn.molecule()
-    geom = np.asarray(mol.geometry())
     m = np.asarray([mol.mass(at) for at in range(mol.natom())])
     symbols = [mol.symbol(at) for at in range(mol.natom())]
-    irrep_labels = mol.irrep_labels()
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess,
+                                                  geom=np.asarray(mol.geometry()),
+                                                  mass=m,
+                                                  basisset=wfn.basisset(),
+                                                  irrep_labels=mol.irrep_labels())
 
     core.print_out(vibtext)
     core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
