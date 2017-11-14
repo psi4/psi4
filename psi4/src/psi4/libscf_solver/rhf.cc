@@ -946,9 +946,11 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
     // include only those that are not temporary (some deleted in finalize())
     if (Ca_) hf_wfn->Ca_ = Ca_subset("AO", "ALL");
     hf_wfn->Cb_ = hf_wfn->Ca_;
-    if (Da_) hf_wfn->Da_ = Da_subset("AO");
-    hf_wfn->Db_ = hf_wfn->Da_;
-    hf_wfn->D_  = hf_wfn->Da_;
+    if (Da_) {
+        hf_wfn->Da_ = Da_subset("AO");
+        hf_wfn->Db_ = hf_wfn->Da_;
+        hf_wfn->D_  = hf_wfn->Da_;
+    }
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     hf_wfn->Fb_ = hf_wfn->Fa_;
     if (epsilon_a_) hf_wfn->epsilon_a_ = 
@@ -958,10 +960,6 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
-
-    // pretty sure the next 2 things are really set already
-    same_a_b_dens_ = true;
-    same_a_b_orbs_ = true;
 
     return hf_wfn;
 }

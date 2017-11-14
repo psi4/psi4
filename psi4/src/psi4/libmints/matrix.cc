@@ -3260,7 +3260,7 @@ bool Matrix::equal(const Matrix *rhs, double TOL) {
     for (int h = 0; h < nirrep(); ++h) {
         for (int m = 0; m < rowspi()[h]; ++m) {
             for (int n = 0; n < colspi()[h ^ symmetry_]; ++n) {
-                if (fabs(get(h, m, n) - rhs->get(h, m, n)) > TOL)
+                if (std::fabs(get(h, m, n) - rhs->get(h, m, n)) > TOL)
                     return false;
             }
         }

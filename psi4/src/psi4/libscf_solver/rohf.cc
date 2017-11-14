@@ -82,9 +82,8 @@ void ROHF::common_init()
     moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_      = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
+    Ca_      = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
     Cb_      = Ca_;
-    Cb_->set_name("beta MO coefficients (C)");
     Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
@@ -100,9 +99,8 @@ void ROHF::common_init()
     moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
-    epsilon_a_->set_name("alpha orbital energies");
+    epsilon_a_->set_name("orbital energies");
     epsilon_b_ = epsilon_a_;
-    epsilon_b_->set_name("beta orbital energies");
     same_a_b_dens_ = false;
     same_a_b_orbs_ = true;
 
@@ -1392,7 +1390,6 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
     // include only those that are not temporary (some deleted in finalize())
     if (Ca_) hf_wfn->Ca_ = Ca_subset("AO", "ALL");
     hf_wfn->Cb_ = hf_wfn->Ca_;
-    hf_wfn->Cb_->set_name("beta MO coefficients (C)");
     if (Da_) hf_wfn->Da_ = Da_subset("AO");
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
@@ -1400,7 +1397,6 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
     if (epsilon_a_) hf_wfn->epsilon_a_ =
         epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
     hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
-    hf_wfn->epsilon_b_->set_name("beta orbital energies");
     // H_ ans X_ reset in the HF constructor, copy them over here
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
