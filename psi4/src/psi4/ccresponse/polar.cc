@@ -143,13 +143,11 @@ void polar(void)
     long omega_nm_rd = std::lround(omega_nm);
 
     if (params.wfn == "CC2"){
-      /* build up a string */
       std::stringstream tag;
       tag << "CC2 DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
       Process::environment.globals[tag.str()] = trace[i]/3.0;
     }
     else if(params.wfn == "CCSD"){
-      /* build up a string */
       std::stringstream tag;
       tag << "CCSD DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
       Process::environment.globals[tag.str()] = trace[i]/3.0;
@@ -182,5 +180,9 @@ void polar(void)
   free(cartcomp[2]);
   free(cartcomp);
 }
+
+   // for the edification of the autodoc-er. these set py-side or through oeprop calls
+   /*- Process::environment.globals["CC2 DIPOLE POLARIZABILITY @ xNM"] -*/
+   /*- Process::environment.globals["CCSD DIPOLE POLARIZABILITY @ xNM"] -*/
 
 }} // namespace psi::ccresponse

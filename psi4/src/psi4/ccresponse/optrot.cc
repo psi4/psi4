@@ -453,13 +453,11 @@ void optrot(std::shared_ptr<Molecule> molecule)
       long om_nm = std::lround((pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]));
 
       if(params.wfn == "CC2"){
-        /* build up a string */
         std::stringstream tag;
         tag << "CC2 SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
         Process::environment.globals[tag.str()] = rotation_rl[i];
       }
       else if(params.wfn == "CCSD"){
-        /* build up a string */
         std::stringstream tag;
         tag << "CCSD SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
         Process::environment.globals[tag.str()] = rotation_rl[i];
@@ -491,13 +489,11 @@ void optrot(std::shared_ptr<Molecule> molecule)
       long om_nm = std::lround((pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]));
 
       if(params.wfn == "CC2"){
-        /* build up a string */
         std::stringstream tag;
         tag << "CC2 SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
         Process::environment.globals[tag.str()] = rotation_pl[i];
       }
       else if(params.wfn == "CCSD"){
-        /* build up a string */
         std::stringstream tag;
         tag << "CCSD SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
         Process::environment.globals[tag.str()] = rotation_pl[i];
@@ -529,13 +525,11 @@ void optrot(std::shared_ptr<Molecule> molecule)
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_mod[i]);
 
       if(params.wfn == "CC2"){
-        /* build up a string */
         std::stringstream tag;
         tag << "CC2 SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
         Process::environment.globals[tag.str()] = rotation_mod[i];
       }
       else if(params.wfn == "CCSD"){
-        /* build up a string */
         std::stringstream tag;
         tag << "CCSD SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
         Process::environment.globals[tag.str()] = rotation_mod[i];
@@ -624,5 +618,13 @@ void optrot(std::shared_ptr<Molecule> molecule)
   free(cartcomp[2]);
   free(cartcomp);
 }
+
+   // for the edification of the autodoc-er. these set py-side or through oeprop calls
+   /*- Process::environment.globals["CC2 SPECIFIC ROTATION (LEN) @ xNM"] -*/
+   /*- Process::environment.globals["CC2 SPECIFIC ROTATION (VEL) @ xNM"] -*/
+   /*- Process::environment.globals["CC2 SPECIFIC ROTATION (MVG) @ xNM"] -*/
+   /*- Process::environment.globals["CCSD SPECIFIC ROTATION (LEN) @ xNM"] -*/
+   /*- Process::environment.globals["CCSD SPECIFIC ROTATION (VEL) @ xNM"] -*/
+   /*- Process::environment.globals["CCSD SPECIFIC ROTATION (MVG) @ xNM"] -*/
 
 }} // namespace psi::ccresponse

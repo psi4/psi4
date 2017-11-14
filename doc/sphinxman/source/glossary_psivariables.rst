@@ -175,6 +175,26 @@ PSI Variables by Alpha
    The three components of the dipole [Debye] for the requested
    coupled cluster level of theory and root.
 
+.. psivar:: CC2 DIPOLE POLARIZABILITY @ xNM
+
+   The dipole polarizability [au] calculated at the CC2 level 
+   for a given (x) wavelength, (x) rounded to nearest integer. 
+
+.. psivar:: CC2 SPECIFIC ROTATION (LEN) @ xNM
+
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   length gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 SPECIFIC ROTATION (VEL) @ xNM
+
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the 
+   velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 SPECIFIC ROTATION (MVG) @ xNM
+
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the 
+   modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
 .. psivar:: CC QUADRUPOLE XX
    CC QUADRUPOLE XY
    CC QUADRUPOLE XZ
@@ -254,6 +274,26 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the approximate coupled-cluster (CCSD(T)_L, CCSDT(Q)_L, 
    up to CC(\ *n*\ -1)(\ *n*\ )L level of theory.
+
+.. psivar:: CCSD DIPOLE POLARIZABILITY @ xNM
+
+   The dipole polarizability [au] calculated at the CCSD level 
+   for a given (x) wavelength, (x) rounded to nearest integer. 
+
+.. psivar:: CCSD SPECIFIC ROTATION (LEN) @ xNM
+
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
+   length gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CCSD SPECIFIC ROTATION (VEL) @ xNM
+
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the 
+   velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CCSD SPECIFIC ROTATION (MVG) @ xNM
+
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the 
+   modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CEPA(0) DIPOLE X
    CEPA(0) DIPOLE Y
