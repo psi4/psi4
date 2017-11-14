@@ -1388,20 +1388,22 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
 
     // now just have to copy the matrices that RHF initializes
     // include only those that are not temporary (some deleted in finalize())
-    if (Ca_) hf_wfn->Ca_ = Ca_subset("AO", "ALL");
-    hf_wfn->Cb_ = hf_wfn->Ca_;
+    if (Ca_) {
+        hf_wfn->Ca_ = Ca_subset("AO", "ALL");
+        hf_wfn->Cb_ = hf_wfn->Ca_;
+    }
     if (Da_) hf_wfn->Da_ = Da_subset("AO");
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
-    if (epsilon_a_) hf_wfn->epsilon_a_ =
-        epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
+    if (epsilon_a_) {
+        hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+        hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
+    }
     // H_ ans X_ reset in the HF constructor, copy them over here
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
-
 
     return hf_wfn;
 }
