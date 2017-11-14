@@ -259,20 +259,11 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
             eivout(normal_irr, evals, 3 * Natom, dim, "outfile");
         }
 
-        //free(evals);
-        //free_block(evects);
-        //free_block(normal_irr);
+        free(evals);
+        free_block(evects);
+        free_block(normal_irr);
     }
 
-//    // This print function also saves frequencies in wavefunction.
-//    if (print_lvl) {
-//        print_vibrations(mol, modes);
-//    }
-//
-//    // Optionally, save normal modes to file.
-//    if (options.get_bool("NORMAL_MODES_WRITE")) {
-//        save_normal_modes(mol, wfn, modes);
-//    }
 
     // Build complete hessian for transformation to cartesians
     double **H = block_matrix(Nsalc_all, Nsalc_all);
