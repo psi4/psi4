@@ -49,7 +49,7 @@ Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 This plugin is an implementation of the SNS-MP2 algorithm developed by McGibbon 
 et. al. [McGibbon:2017:161725]_. The SNS-MP2 method uses neural networking to 
 improve the accuracy of MP2 (:ref:`dfmp2`) interaction energies for dimer molecules. 
-The plugin is distributed under the BSD-2 license.
+The plugin is distributed under the 2-clause BSD license.
 
 Installation
 ~~~~~~~~~~~~
