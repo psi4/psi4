@@ -1044,7 +1044,7 @@ def optimize(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
 
-    # If we are feezing cartesian, do not orient or COM
+    # If we are freezing cartesian, do not orient or COM
     if core.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
         molecule.fix_orientation(True)
         molecule.fix_com(True)
@@ -1101,7 +1101,6 @@ def optimize(name, **kwargs):
             core.IOManager.shared_object().set_specific_path(1, './')
             if 'opt_datafile' in kwargs:
                 restartfile = kwargs.pop('opt_datafile')
-                #if core.me() == 0:  TODO ask Ryan
                 shutil.copy(restartfile, p4util.get_psifile(1))
 
         # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
@@ -1743,8 +1742,7 @@ def frequency(name, **kwargs):
         return core.get_variable('CURRENT ENERGY')
 
 
-
-def vibanal_wfn(wfn, hess=None, irrep=None):
+def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None):
     # TODO should go back to private
     import numpy as np
 
@@ -1754,14 +1752,25 @@ def vibanal_wfn(wfn, hess=None, irrep=None):
         nmwhess = hess
 
     mol = wfn.molecule()
-    m = np.asarray([mol.mass(at) for at in range(mol.natom())])
+    geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess,
-                                                  geom=np.asarray(mol.geometry()),
-                                                  mass=m,
-                                                  basisset=wfn.basisset(),
-                                                  irrep_labels=mol.irrep_labels())
+    if molecule is not None:
+        molecule.update_geometry()
+        if mol.natom() != molecule.natom():
+            raise ValidationError('Impostor molecule trying to be analyzed! natom {} != {}'.format(mol.natom(), molecule.natom()))
+        if abs(mol.nuclear_repulsion_energy() - molecule.nuclear_repulsion_energy()) > 1.e-6:
+            raise ValidationError('Impostor molecule trying to be analyzed! NRE {} != {}'.format(mol.nuclear_repulsion_energy(), molecule.nuclear_repulsion_energy()))
+        if not np.allclose(np.asarray(mol.geometry()), np.asarray(molecule.geometry()), atol=1.e-6):
+            core.print_out('Warning: geometry center/orientation mismatch. Normal modes may not be in expected coordinate system.')
+        #    raise ValidationError('Impostor molecule trying to be analyzed! geometry\n{}\n   !=\n{}'.format(
+        #        np.asarray(mol.geometry()), np.asarray(molecule.geometry())))
+        mol = molecule
+            
+    m = np.asarray([mol.mass(at) for at in range(mol.natom())])
+    irrep_labels = mol.irrep_labels()
+
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels)
 
     core.print_out(vibtext)
     core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))

@@ -995,8 +995,8 @@ void export_mints(py::module& m)
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg2")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Gets mass of atom arg2")
-        .def("set_mass", &Molecule::set_mass, "Gets mass of atom arg2")
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed)", py::arg("atom"))
+        .def("set_mass", &Molecule::set_mass, "Sets mass of *atom* (0-indexed) to *mass*", py::arg("atom"), py::arg("mass"))
         .def("symbol", &Molecule::symbol,
              "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)")
         .def("label", &Molecule::label,
