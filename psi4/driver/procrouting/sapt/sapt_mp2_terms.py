@@ -52,14 +52,14 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
     PQrho_lvl.diagonalize(U, rho, core.DiagonalizeOrder.Ascending)
 
     # "Gridless DFT"
-    mask = rho.np < rho_thresh # Values too small cause singularities
+    mask = rho.np < rho_thresh  # Values too small cause singularities
     rho.np[mask] = rho_thresh
 
     dft_size = rho.shape[0]
 
     inp = {"RHO_A": rho}
     out = {"V": core.Vector(dft_size),
-           "V_RHO_A" : core.Vector(dft_size),
+           "V_RHO_A": core.Vector(dft_size),
            "V_RHO_A_RHO_A": core.Vector(dft_size)}
 
     func_x = core.LibXCFunctional('XC_LDA_X', True)
@@ -78,9 +78,10 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
     # Undo the leveling
     return core.Matrix.triplet(halfp_Saux, tmp, halfp_Saux, False, False, False)
 
+
 def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3, do_print=True):
 
-    rho_thresh = 1.e-8
+    rho_thresh = core.get_option("SAPT", "SAPT_FDDS_V2_RHO_CUTOFF")
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (CHF FDDS) <== \n\n")
         core.print_out("   Legendre Points:  % 10d\n" % leg_points)
@@ -125,6 +126,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
 
     val_pack = ("Omega", "Weight", "Disp20,u", "Disp20", "time [s]")
     core.print_out("% 12s % 12s % 14s % 14s % 10s\n" % val_pack)
+    # print("% 12s % 12s % 14s % 14s % 10s" % val_pack)
     start_time = time.time()
 
     total_uc = 0
@@ -145,8 +147,8 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         amplitude_inv = metric.clone()
         amplitude_inv.axpy(1.0, XSW_A)
         nremoved = 0
-        amplitude = amplitude_inv.pseudoinverse(1.e-14,nremoved)
-        amplitude.transpose_this()    # Why is this coming out transposed?
+        amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
+        amplitude.transpose_this()  # Why is this coming out transposed?
         X_A_coupled.axpy(-1.0, core.Matrix.triplet(XSW_A, amplitude, X_A, False, False, False))
         del XSW_A, amplitude
 
@@ -159,10 +161,15 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
 
         amplitude_inv = metric.clone()
         amplitude_inv.axpy(1.0, XSW_B)
-        amplitude = amplitude_inv.pseudoinverse(1.e-14,nremoved)
-        amplitude.transpose_this() # Why is this coming out transposed?
+        amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
+        amplitude.transpose_this()  # Why is this coming out transposed?
         X_B_coupled.axpy(-1.0, core.Matrix.triplet(XSW_B, amplitude, X_B, False, False, False))
         del XSW_B, amplitude
+
+        # Make sure the results are symmetrized
+        for tensor in [X_A, X_B, X_A_coupled, X_B_coupled]:
+            tensor.add(tensor.transpose())
+            tensor.scale(0.5)
 
         # Combine
         tmp_uc = core.Matrix.triplet(metric_inv, X_A, metric_inv, False, False, False)
@@ -184,15 +191,16 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
 
             val_pack = (omega, weight, tmp_disp_unc, tmp_disp, fdds_time)
             core.print_out("% 12.3e % 12.3e % 14.3e % 14.3e %10d\n" % val_pack)
+            # print("% 12.3e % 12.3e % 14.3e % 14.3e %10d" % val_pack)
 
     Disp20_uc = -1.0 / (2.0 * np.pi) * total_uc
-    Disp20_c = -1.0 / (2.0  * np.pi) * total_c
+    Disp20_c = -1.0 / (2.0 * np.pi) * total_c
 
     core.print_out("\n")
     core.print_out(print_sapt_var("Disp20,u", Disp20_uc, short=True) + "\n")
     core.print_out(print_sapt_var("Disp20", Disp20_c, short=True) + "\n")
 
-    return {"Disp20,FDDS (unc)" : Disp20_uc, "Disp20" : Disp20_c}
+    return {"Disp20,FDDS (unc)": Disp20_uc, "Disp20": Disp20_c}
 
 
 def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
@@ -231,13 +239,14 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     ret["Disp20,u"] = scalars["Disp20"]
     return ret
 
+
 def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True):
 
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
 
-    optstash = p4util.OptionsState(['SAPT', 'SAPT0_E10'], ['SAPT', 'SAPT0_E20IND'],
-                                   ['SAPT', 'SAPT0_E20DISP'], ['SAPT', 'SAPT_QUIET'])
+    optstash = p4util.OptionsState(['SAPT', 'SAPT0_E10'], ['SAPT', 'SAPT0_E20IND'], ['SAPT', 'SAPT0_E20DISP'],
+                                   ['SAPT', 'SAPT_QUIET'])
 
     core.set_local_option("SAPT", "SAPT0_E10", False)
     core.set_local_option("SAPT", "SAPT0_E20IND", False)
@@ -266,5 +275,3 @@ def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, ca
     ret["Exch-Disp20,u"] = svars["E Exch-Disp20"]
     ret["Disp20,u"] = svars["E Disp20"]
     return ret
-
-

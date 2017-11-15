@@ -941,6 +941,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAPT_FDDS_DISP_NUM_POINTS", 10);
     /*- Lambda shift in the space morphing for the FDDS Dispersion time integration !expert -*/
     options.add_double("SAPT_FDDS_DISP_LEG_LAMBDA", 0.3);
+    /*- Minimum rho cutoff for the in the LDA response for FDDS !expert -*/
+    options.add_double("SAPT_FDDS_V2_RHO_CUTOFF", 1.e-6);
     /*- Which MP2 Exch-Disp module to use? !expert -*/
     options.add_str("SAPT_DFT_MP2_DISP_ALG", "SAPT", "FISAPT SAPT");
     /*- Interior option to clean up printing !expert -*/
