@@ -110,12 +110,14 @@ option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
                   "-ftrapuv -check all -fpstkchk" "-fcheck=all" "-fbounds-check -fcheck-array-temporaries")
-option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF
-                  "-fsanitize=address" "-fno-omit-frame-pointer")
-option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
-                  "-fsanitize=thread" "-fno-omit-frame-pointer -pie")
-option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
-                  "-fsanitize=undefined" "-fno-omit-frame-pointer")
+option_with_flags(ENABLE_ASAN "Enables address sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=address -fno-omit-frame-pointer")
+option_with_flags(ENABLE_TSAN "Enables thread sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=thread -fPIE -pie -fno-omit-frame-pointer")
+option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=undefined -fno-omit-frame-pointer")
+option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
+                  "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
 option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
