@@ -41,23 +41,33 @@ How to call BLAS & LAPACK in |PSIfour|
 
 Computational chemistry is essentially linear algebra on molecular
 systems, so using stable, portable, scalable, and efficient numerical
-linear algebra methods in PSI4 is critical. To that end, we use BLAS1
+linear algebra methods in |PSIfour| is critical. To that end, we use BLAS1
 (vector-vector operations, like dot products), BLAS2 (matrix-vector
 operations, like rank-1 update), BLAS3 (matrix-matrix operations, like
 matrix multiplication), and LAPACK (advanced matrix decompositions and
 solutions). The methods provided by BLAS and LAPACK are standard, but the
 performance of actual implementations differ greatly from one version to
 another. Moreover, the standard interfaces to the libraries are Fortran,
-so PSI4 provides a common set of wrappers in libqt/qt.h.
+so |PSIfour| provides a common set of wrappers in :source:`psi4/src/psi4/libqt/qt.h` .
+
+.. warning:: Although block_matrix, init_array, and print_mat are still
+   around, their use is discouraged in favor of operations on
+   `psi4.core.Matrix` itself. The advice in these docs will catch up
+   shortly.
 
 BLAS Wrappers
 ^^^^^^^^^^^^^
 
 BLAS wrappers are currently fully supported at double precision.
 
-BLAS commands involving matrices are wrapped so as to be conventional C-style "row-major" indexing, meaning that the column is the fast index like normal.
+BLAS commands involving matrices are wrapped so as to be conventional
+C-style "row-major" indexing, meaning that the column is the fast index
+like normal.
 
-* The calls to BLAS1 routines are wrapped so as to allow for operations on vectors with more than 2^{31} elements (~16 GB, getting to be a problem). So passing a signed or unsigned long works, though the stride arguments must be integers.
+* The calls to BLAS1 routines are wrapped so as to allow for operations on
+  vectors with more than 2^{31} elements (~16 GB, getting to be a problem).
+  So passing a signed or unsigned long works, though the stride arguments
+  must be integers.
 
 * All routines are declared in ``qt.h``. Each routine is prefixed with a
   ``C_``, followed by the standard Fortran name of the routine, in capital
@@ -71,9 +81,9 @@ BLAS commands involving matrices are wrapped so as to be conventional C-style "r
   For char arguments, case is insensitive. A few examples are provided::
 
     // BLAS/LAPACK
-    #include <libqt/qt.h>
+    #include "psi4/libqt/qt.h"
     // block_matrix, init_array
-    #include <libciomr/libciomr.h>
+    #include "psi4/libciomr/libciomr.h"
     
     using namespace psi;
     ...
@@ -166,9 +176,9 @@ argument here. For char arguments, case is insensitive. A Cholesky
 transform example is shown::
 
     // BLAS/LAPACK
-    #include <libqt/qt.h>
+    #include "psi4/libqt/qt.h"
     // block_matrix, init_array
-    #include <libciomr/libciomr.h>
+    #include "psi4/libciomr/libciomr.h"
     
     using namespace psi;
     ...
@@ -225,9 +235,9 @@ careful (the outer index is the submatrix for each irrep). Here's an
 example::
 
     // BLAS/LAPACK
-    #include "psi4/src/psi4/libqt/qt.h"
+    #include "psi4/libqt/qt.h"
     // Matrix
-    #include "psi4/src/psi4/libmints/matrix.h"
+    #include "psi4/libmints/matrix.h"
     
     using namespace psi;
     ...
@@ -293,13 +303,13 @@ weird results from occurring.
   automatically. If Cartesian functions are used, the number of functions
   per shell remains ``(L + 1)(L + 2)/2``, and the ordering remains the same
   as above. Note that the individual functions are not normalized for
-  angular momentum as in most codes: the self-overlap of a PSI4 Cartesian D
+  angular momentum as in most codes: the self-overlap of a |PSIfour| Cartesian D
   or higher function with more than one nonzero Cartesian exponent (e.g., lx
   = 1, ly = 1, lz = 0) will be less than one. If Spherical Harmonics are
   used, 2L + 1 real combinations of the spherical harmonics are built from
   the ``(L+1)(L+2)/2`` Cartesian Gaussians, according to H. Schlegel and M.
   Frish, IJQC, 54, 83-87, 1995. Unlike Cartesian functions these functions
-  are all strictly normalized. Note that in PSI4, the real combinations of
+  are all strictly normalized. Note that in |PSIfour|, the real combinations of
   spherical harmonic functions (see the paragraph below Eq. 15 in the
   Schlegel paper) are ordered as: 0, 1+, 1-, 2+, 2-, ....
 
