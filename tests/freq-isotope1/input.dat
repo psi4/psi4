@@ -11,26 +11,26 @@ molecule h2o {
   H      0.00000000   -1.93042809   -1.10715266
 }
 
-molecule d2o {
-  units au
-  O                  0.00000000    0.00000000    0.00000000
-  H@2.014101779      0.00000000    1.93042809   -1.10715266
-  H@2.014101779      0.00000000   -1.93042809   -1.10715266
-}
-
-molecule hdo {
-  units au
-  O                  0.00000000    0.00000000    0.00000000
-  H@2.014101779      0.00000000    1.93042809   -1.10715266
-  H                  0.00000000   -1.93042809   -1.10715266
-}
-
-molecule dto {
-  units au
-  O                  0.00000000    0.00000000    0.00000000
-  H@2.014101779      0.00000000    1.93042809   -1.10715266
-  H@3.01604927       0.00000000   -1.93042809   -1.10715266
-}
+#VALID BUT OUTDATED molecule d2o {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H@2.014101779      0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+#VALID BUT OUTDATED
+#VALID BUT OUTDATED molecule hdo {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H                  0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+#VALID BUT OUTDATED
+#VALID BUT OUTDATED molecule dto {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H@3.01604927       0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
 
 set basis sto-3g
 set e_convergence 9
@@ -39,15 +39,26 @@ set scf_type pk
 
 optimize('hf', molecule=h2o)
 
-# can't currently update masses with set_mass() in the mols and redetect the right symmetry
-#   so have to create as as above and update the geometry
-ogeo = h2o.geometry()
-d2o.update_geometry()
-d2o.set_geometry(ogeo)
-hdo.update_geometry()
-hdo.set_geometry(ogeo)
-dto.update_geometry()
-dto.set_geometry(ogeo)
+#VALID BUT OUTDATED # can't currently update masses with set_mass() in the mols and redetect the right symmetry
+#VALID BUT OUTDATED #   so have to create as as above and update the geometry
+#VALID BUT OUTDATED ogeo = h2o.geometry()
+#VALID BUT OUTDATED d2o.update_geometry()
+#VALID BUT OUTDATED d2o.set_geometry(ogeo)
+#VALID BUT OUTDATED hdo.update_geometry()
+#VALID BUT OUTDATED hdo.set_geometry(ogeo)
+#VALID BUT OUTDATED dto.update_geometry()
+#VALID BUT OUTDATED dto.set_geometry(ogeo)
+
+d2o = h2o.clone()
+d2o.set_mass(1, 2.014101779)
+d2o.set_mass(2, 2.014101779)
+
+hdo = h2o.clone()
+hdo.set_mass(1, 2.014101779)
+
+dto = h2o.clone()
+dto.set_mass(1, 2.014101779)
+dto.set_mass(2, 3.01604927)
 
 e, wfn = freq('hf', molecule=h2o, return_wfn=True)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'H2O E0')  #TEST
@@ -61,7 +72,6 @@ clean()
 
 set t 400.0
 
-#freq('hf', molecule=h2o)
 vibanal_wfn(wfn)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'H2O E0 @400K')  #TEST
 compare_values(0.024367, get_variable('ZPVE'), 4, 'H2O ZPVE @400K')  #TEST

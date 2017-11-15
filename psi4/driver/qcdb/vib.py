@@ -460,10 +460,10 @@ def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
     lowfreq = np.append(lowfreq, np.arange(nrt))  # catch at least nrt modes
     for lf in set(lowfreq):
         vlf = frequency_cm_1[lf]
-        if vlf.imag > vlf.imag:
-            text.append('  post-proj low-frequency mode: {:9.4f}i [cm^-1] ({})'.format(vlf.real, vlf.imag, active[lf]))
+        if vlf.imag > vlf.real:
+            text.append('  post-proj low-frequency mode: {:9.4f}i [cm^-1] ({})'.format(vlf.imag, active[lf]))
         else:
-            text.append('  post-proj low-frequency mode: {:9.4f}  [cm^-1] ({})'.format(vlf.real, '', active[lf]))
+            text.append('  post-proj low-frequency mode: {:9.4f}  [cm^-1] ({})'.format(vlf.real, active[lf]))
     text.append('  post-proj  all modes:' + str(_format_omega(frequency_cm_1, 4)) + '\n')
 
     # general conversion factors, LAB II.11
