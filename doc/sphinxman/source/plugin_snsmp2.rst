@@ -48,7 +48,8 @@ Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 
 This plugin is an implementation of the SNS-MP2 algorithm developed by McGibbon 
 et. al. [McGibbon:2017:161725]_. The SNS-MP2 method uses neural networking to 
-improve the accuracy of MP2 (:ref:`dfmp2`) interaction energies for dimer molecules.
+improve the accuracy of MP2 (:ref:`dfmp2`) interaction energies for dimer molecules. 
+The plugin is distributed under the BSD-2 license.
 
 Installation
 ~~~~~~~~~~~~
@@ -70,7 +71,7 @@ Installation
 
      >>> cd {top-level-sns-mp2-directory}
      >>> PSI4_PYTHON=$(head $(which psi4) -n 1 | sed -r 's/^.{2}//')
-     >>> PSI4_PYTHON -m pip install .
+     >>> $PSI4_PYTHON -m pip install .
 
 Sample Input
 ~~~~~~~~~~~~
