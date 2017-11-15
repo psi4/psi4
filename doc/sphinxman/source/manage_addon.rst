@@ -80,6 +80,7 @@ How to use an Add-On's name in directory structure, build, and distribution
   have a different capitalization for an advertising name. After all,
   that's what |PSIfour| does.
 
+
 .. _`faq:addoncmake`:
 
 How to integrate an Add-On into build, testing, and docs
@@ -204,4 +205,154 @@ else
 
     (6) provide conda download counts independent of |PSIfour|.
 
+
+.. _`faq:readoptions`:
+
+How to name keywords in ``psi4/src/read_options.cc``
+----------------------------------------------------
+
+A few guidelines for standardizing option names among modules.
+
+* ``TRIPLES`` (not trip), ``TRIPLETS`` (not trip), ``SINGLES`` (not sing),
+  ``SINGLETS`` (not sing)
+
+* ``CONVERGENCE`` (not conv, not converge) and ``TOLERANCE`` (not tol)
+
+* Convergence of a method should be governed by an ``E_CONVERGENCE`` for
+  energy and either a ``D_CONVERGENCE`` for density or a ``R_CONVERGENCE``
+  for residual/amplitudes. All of these should be doubles- let the input
+  parser handle the flexible input format.
+
+* Diis should have a boolean ``DIIS`` (not do_diis, not use_diis) to turn
+  on/off diis extrapolation, a ``DIIS_MIN_VECS`` and ``DIIS_MAX_VECS`` for
+  minimum and maximum number of diis vectors to use, and a ``DIIS_START``
+  which is the iteration at which to start saving vectors for diis. Not all
+  modules conform to all these at present, but they're as standardized as
+  they can be without changing code.
+
+* ``AMPS`` (not amplitude, not amp) for amplitudes
+
+* ``NUM_`` (not n) for number (e.g., ``NUM_AMPS_PRINT``, ``MAX_NUM_VECS``,
+  ``NUM_THREADS``)
+
+* Some names that could be split into multiple words are staying as one.
+  Use ``MAXITER``, ``CACHELEVEL``, ``PUREAM``, ``DERTYPE``.
+
+* ``INTS`` (not integrals), also ``OEI`` (not oe_integrals) for
+  one-electron integrals and ``TEI`` (not te_integrals) for two-electron
+  integrals
+
+* ``PERTURB`` (not pert) for perturbation
+
+* Use ``PRINT`` options to indicate printing to output file. Use ``WRITE``
+  options to indicate printing to another file. This probably isn't
+  entirely valid now but should be observed in future. The complement to
+  ``WRITE`` is ``READ``. ``PRINT``, ``READ``, and ``WRITE`` will usually
+  be the last words in an option name.
+
+* Use ``FOLLOW_ROOT`` for the state to be followed in geometry optimizations
+
+* ``WFN`` (not wavefunction)
+
+* You're welcome to use ``WFN`` and ``DERTYPE`` as internal options, but
+  plan to have these set by the python driver and mark them as ``!expert``
+  options. Really avoid using ``JOBTYPE``.
+
+* You're not welcome to add ``CHARGE`` or ``MULTP`` options. Plan to get
+  these quantities from the molecule object. Since we frequently use subsets
+  of systems (with their own charge and multiplicity), this is safer.
+
+* Conform. Just grep ``'add' psi4/src/read_options.cc`` to get a list of
+  all the option names in |PSIfour| and try to match any conventions you
+  find.
+
+* If you have a quantity you'd like to call a cutoff, a threshold, a
+  tolerance, or a convergence, consider the following guidelines in naming
+  it.
+
+  * If its value is typically greater than ~0.001, give it a name with ``CUTOFF``.
+
+  * If its value is typically less than ~0.001 and quantities being tested
+    against the option are more valuable with larger values (e.g.,
+    integrals, occupations, eigenvectors), give it a name with ``TOLERANCE``.
+
+  * If its value is typically less than ~0.001 and quantities being tested
+    against the option are more valuable with smaller values (e.g., energy
+    changes, residual errors, gradients), give it a name with
+    ``CONVERGENCE``.
+
+* In deciding how to arrange words in an option name, place the context
+  first (e.g., ``MP2_AMPS_PRINT``, ``TRIPLES_DIIS``). This means ``PRINT``
+  will generally be at the end of an option name.
+
+* Use ``INTS_TOLERANCE`` (not schwarz_cutoff)
+
+* ``H`` in an option name is reserved for Hamiltonian (or hydrogen).
+  Hessian should be ``HESS``.
+
+* All option names should be all caps and separated by underscores.
+
+* If you have an option that instructs your module to do something not too
+  computationally intensive and then quit, append ``_EXIT`` to the option
+  name.
+
+* Scaling terms (like for scs) should follow the pattern ``MP2_SS_SCALE``
+  and ``SAPT_OS_SCALE``.
+
+* ``FRAG`` for fragment.
+
+* ``AVG`` for average.
+
+* For level-shifting, let's try to have it governed by (double)
+  ``LEVEL_SHIFT`` only and not a boolean/double combo since the procedure
+  can be turned on (role of boolean) if the value (role of double) has
+  changed.
+
+* For Tikhonow regularization, use ``TIKONOW_OMEGA``, not regularizer.
+
+* ``SYM`` for symmetry.
+
+* ``OCC`` for occupied/occupation (e.g., ``DOCC``, ``LOCK_OCC``, ``OCC_TOLERANCE``).
+
+* ``COND`` for condition and ``CONDITIONER`` for conditioner.
+
+* ``LOCAL`` (not localize).
+
+* Use ``AO`` and ``MO`` for atomic and molecular orbitals. When 'O' for
+  orbitals is too obsure or would make for too short a keyword, as in
+  "bool NO" for "Do use natural orbitals", use ``ORBS`` for orbitals. So
+  natural orbitals are ``NAT_ORBS`` and Brueckner orbitals are
+  ``BRUECKNER_ORBS``.
+
+* ``LEVEL`` (not ``LVL``, not ``LEV``).
+
+* ``EX`` for excitation.
+
+* ``VAL`` for valence.
+
+* ``GEOM`` (not geo, not geometry).
+
+* ``SYM`` (not symm, not symmetry).
+
+* ``FILE`` (unless truly multiple FILES).
+
+* ``WRITE``/``READ`` for info transfer across jobs. ``SAVE``/``RESTART``
+  for same in context of restart.
+
+* Damping should interface through option (double) ``DAMPING_PERCENTAGE``,
+  where a value of 0.0 indicates no damping.
+
+* Try to avoid ``COMPUTE`` or ``CALC`` in an option name. If it's a
+  boolean like "opdm_compute" for "Do compute the one-particle density
+  matrix", just use ``OPDM``.
+
+* Properties should be governed by a ``PROPERTIES`` array for the root of
+  interest or by a ``PROPERTIES_ALL`` array for all roots in a multi-root
+  calc.  Since no module conforms to this right now, use ``PROPERTY``
+  alone and ``PROP`` in multi-part option as ``PROP_ROOT``, ``PROP_ALL``,
+  ``PROP_SYM`` to conform.
+
+* Use ``DF`` (not ri) for density-fitting and resolution-of-the-identity
+  option names. Only the basis sets are staying as -RI since that's what
+  EMSL uses.
 

@@ -4366,7 +4366,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computed force-constant matrix is performed, rotationally projected
       frequencies are computed, infrared intensities are determined, and
       zero-point energies (ZPE) are evaluated. -*/
-      options.add_str("CFOUR_VIBRATION", "NO", "NO ANALYTIC FINDIF");
+      options.add_str("CFOUR_VIBRATION", "NO", "NO ANALYTIC FINDIF EXACT");
 
       /*- This keyword defines what type of integral transformation is to
       be performed in the program ``xvtran``. FULL/PARTIAL (=0) allows the

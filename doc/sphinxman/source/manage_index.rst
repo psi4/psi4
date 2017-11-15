@@ -35,7 +35,6 @@ Managing: Git, Conda, CMake and all that
 .. toctree::
    :maxdepth: 2
 
-   FAQ <manage_faq>
    manage_addon
    manage_git
 
