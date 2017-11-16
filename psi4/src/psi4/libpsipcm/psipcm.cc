@@ -27,6 +27,7 @@
  */
 #ifdef USING_PCMSolver
 
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <tuple>
@@ -105,12 +106,9 @@ void host_writer(const char *message) {
 }
 }
 
-PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) {
+PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print_level), basisset_(basisset) {
     if (!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
 
-    pcm_print_ = print_level;
-
-    basisset_ = basisset;
     std::shared_ptr<Molecule> molecule = basisset_->molecule();
     int natom = molecule->natom();
 
@@ -157,15 +155,6 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) {
     tess_charges_n_ = new double[ntess_];
     tess_charges_ = new double[ntess_];
 
-    auto atom_Zxyz_ = std::make_shared<Matrix>("Atom Zxyz", natom, 4);
-    for (int atom = 0; atom < natom; ++atom) {
-        Vector3 xyz = molecule->xyz(atom);
-        atom_Zxyz_->set(atom, 0, molecule->charge(atom));
-        atom_Zxyz_->set(atom, 1, xyz[0]);
-        atom_Zxyz_->set(atom, 2, xyz[1]);
-        atom_Zxyz_->set(atom, 3, xyz[2]);
-    }
-
     // The charge and {x,y,z} coordinates (in bohr) for each tessera
     tess_Zxyz_ = std::make_shared<Matrix>("Tess Zxyz", ntess_, 4);
     double **ptess_Zxyz = tess_Zxyz_->pointer();
@@ -173,15 +162,14 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) {
     for (int tess = 1; tess <= ntess_; ++tess) pcmsolver_get_center(context_.get(), tess, &(ptess_Zxyz[tess - 1][1]));
 
     // Compute the nuclear potentials at the tesserae
-    double **patom_Zxyz = atom_Zxyz_->pointer();
-    ::memset(tess_pot_n_, 0, ntess_ * sizeof(double));
+    std::fill(tess_pot_n_, tess_pot_n_ + ntess_, 0.0);
     for (int atom = 0; atom < natom; ++atom) {
-        double Z = patom_Zxyz[atom][0];
+        double Z = charges[atom];
         for (int tess = 0; tess < ntess_; ++tess) {
-            double dx = ptess_Zxyz[tess][1] - patom_Zxyz[atom][1];
-            double dy = ptess_Zxyz[tess][2] - patom_Zxyz[atom][2];
-            double dz = ptess_Zxyz[tess][3] - patom_Zxyz[atom][3];
-            double r = sqrt(dx * dx + dy * dy + dz * dz);
+            double dx = ptess_Zxyz[tess][1] - coordinates[atom * 3];
+            double dy = ptess_Zxyz[tess][2] - coordinates[atom * 3 + 1];
+            double dz = ptess_Zxyz[tess][3] - coordinates[atom * 3 + 2];
+            double r = std::sqrt(dx * dx + dy * dy + dz * dz);
             tess_pot_n_[tess] += Z / r;
             if (r < 1.0E-3) outfile->Printf("Warning! Tessera %d is only %.3f bohr from atom %d!\n", tess, r, atom + 1);
         }
@@ -195,7 +183,7 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) {
     }
 
     // Compute the nuclear charges, since they don't change
-    ::memset(tess_charges_n_, 0, ntess_ * sizeof(double));
+    std::fill(tess_charges_n_, tess_charges_n_ + ntess_, 0.0);
     const char *potential_name = "NucMEP";
     const char *charge_name = "NucASC";
     pcmsolver_set_surface_function(context_.get(), ntess_, tess_pot_n_, potential_name);
@@ -237,8 +225,8 @@ double PCM::compute_E(SharedMatrix &D, CalcType type) {
 
 double PCM::compute_E_total(SharedMatrix &D) {
     double **ptess_Zxyz = tess_Zxyz_->pointer();
-    ::memset(tess_pot_e_, 0, ntess_ * sizeof(double));
-    ::memset(tess_charges_, 0, ntess_ * sizeof(double));
+    std::fill(tess_pot_e_, tess_pot_e_ + ntess_, 0.0);
+    std::fill(tess_charges_e_, tess_charges_e_ + ntess_, 0.0);
     for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
     potential_int_->set_charge_field(tess_Zxyz_);
 
@@ -288,10 +276,9 @@ double PCM::compute_E_total(SharedMatrix &D) {
 
 double PCM::compute_E_separate(SharedMatrix &D) {
     double **ptess_Zxyz = tess_Zxyz_->pointer();
-    ::memset(tess_pot_e_, 0, ntess_ * sizeof(double));
-    ::memset(tess_charges_, 0, ntess_ * sizeof(double));
-    ::memset(tess_charges_e_, 0, ntess_ * sizeof(double));
-    ::memset(tess_charges_, 0, ntess_ * sizeof(double));
+    std::fill(tess_pot_e_, tess_pot_e_ + ntess_, 0.0);
+    std::fill(tess_charges_, tess_charges_ + ntess_, 0.0);
+    std::fill(tess_charges_e_, tess_charges_e_ + ntess_, 0.0);
     for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
     potential_int_->set_charge_field(tess_Zxyz_);
 
@@ -359,8 +346,8 @@ double PCM::compute_E_separate(SharedMatrix &D) {
 
 double PCM::compute_E_electronic(SharedMatrix &D) {
     double **ptess_Zxyz = tess_Zxyz_->pointer();
-    ::memset(tess_pot_e_, 0, ntess_ * sizeof(double));
-    ::memset(tess_charges_e_, 0, ntess_ * sizeof(double));
+    std::fill(tess_pot_e_, tess_pot_e_ + ntess_, 0.0);
+    std::fill(tess_charges_e_, tess_charges_e_ + ntess_, 0.0);
     for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
     potential_int_->set_charge_field(tess_Zxyz_);
 
