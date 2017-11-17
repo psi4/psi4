@@ -127,14 +127,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
-    def converged(e_delta, d_rms, e_conv=e_conv, d_conv=d_conv):
-        if e_conv is None:
-            e_conv = core.get_option("SCF", "E_CONVERGENCE")
-        if d_conv is None:
-            d_conv = core.get_option("SCF", "D_CONVERGENCE")
-
-        return (abs(e_delta) < e_conv and d_rms < d_conv)
-
     # self.member_data_ signals are non-local, used internally by c-side fns
     self.diis_enabled_ = _validate_diis()
     self.MOM_excited_ = _validate_MOM()
@@ -260,7 +252,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             else:
                 base_name = "SOSCF, nmicro="
 
-            if not converged(Ediff, Drms):
+            if not _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
                 nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
                                            core.get_option('SCF', 'SOSCF_MIN_ITER'),
                                            core.get_option('SCF', 'SOSCF_MAX_ITER'),
@@ -354,7 +346,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Call any postiteration callbacks
 
-        if converged(Ediff, Drms):
+        if _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
             break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise ConvergenceError("""SCF iterations""", self.iteration_)
@@ -506,7 +498,30 @@ core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
 
 
+def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
+    if e_conv is None:
+        e_conv = core.get_option("SCF", "E_CONVERGENCE")
+    if d_conv is None:
+        d_conv = core.get_option("SCF", "D_CONVERGENCE")
+
+    return (abs(e_delta) < e_conv and d_rms < d_conv)
+
+
 def _validate_damping():
+    """Sanity-checks DAMPING control options
+
+    Raises
+    ------
+    ValidationError
+        If any of |scf__damping_percentage|, |scf__damping_convergence|
+        don't play well together.
+
+    Returns
+    -------
+    bool
+        Whether DAMPING is enabled during scf.
+
+    """
     # Q: I changed the enabled criterion get_option <-- has_option_changed
     enabled = (core.get_option('SCF', 'DAMPING_PERCENTAGE') > 0.0)
     if enabled:
@@ -522,6 +537,20 @@ def _validate_damping():
 
 
 def _validate_diis():
+    """Sanity-checks DIIS control options
+
+    Raises
+    ------
+    ValidationError
+        If any of |scf__diis|, |scf__diis_start|,
+        |scf__diis_min_vecs|, |scf__diis_max_vecs| don't play well together.
+
+    Returns
+    -------
+    bool
+        Whether DIIS is enabled during scf.
+
+    """
     enabled = bool(core.get_option('SCF', 'DIIS'))
     if enabled:
         start = core.get_option('SCF', 'DIIS_START')
@@ -541,6 +570,19 @@ def _validate_diis():
 
 
 def _validate_frac():
+    """Sanity-checks FRAC control options
+
+    Raises
+    ------
+    ValidationError
+        If any of |scf__frac_start| don't play well together.
+
+    Returns
+    -------
+    bool
+        Whether FRAC is enabled during scf.
+
+    """
     enabled = (core.get_option('SCF', 'FRAC_START') != 0)
     if enabled:
         if enabled < 0:
@@ -550,17 +592,43 @@ def _validate_frac():
 
 
 def _validate_MOM():
+    """Sanity-checks MOM control options
+
+    Raises
+    ------
+    ValidationError
+        If any of |scf__mom_start|, |scf__mom_occ| don't play well together.
+
+    Returns
+    -------
+    bool
+        Whether excited-state MOM (not just the plain stabilizing MOM) is enabled during scf.
+
+    """
     enabled = (core.get_option('SCF', "MOM_START") != 0 and len(core.get_option('SCF', "MOM_OCC")) > 0)
     if enabled:
         start = core.get_option('SCF', "MOM_START")
         if enabled < 0:
             raise ValidationError('SCF MOM_START ({}) must be at least 1'.format(start))
 
-    # note that this is excited-MOM-enabled, which is the more interesting flag
     return enabled
 
 
 def _validate_soscf():
+    """Sanity-checks SOSCF control options
+
+    Raises
+    ------
+    ValidationError
+        If any of |scf__soscf|, |scf__soscf_start_convergence|,
+        |scf__soscf_min_iter|, |scf__soscf_max_iter| don't play well together.
+
+    Returns
+    -------
+    bool
+        Whether SOSCF is enabled during scf.
+
+    """
     enabled = core.get_option('SCF', 'SOSCF')
     if enabled:
         start = core.get_option('SCF', 'SOSCF_START_CONVERGENCE')
