@@ -33,16 +33,16 @@
 Code style conventions
 ======================
 
-It is important to keep a consistent formatting of the C++ and Python code,
-since it avoids hard to read diffs and merge conflicts.
+It is important to keep a consistent formatting of the C++ and Python code
+to avoid hard-to-read diffs and merge conflicts.
 ``clang-format``_ and ``yapf``_ can be used to format C++ and Python code,
 respectively, according to a predefined style file.
-|PSIfour| provides the ``.clang-format``_ and ``.style.yapf``_ files in the root
+|PSIfour| provides the :source:`.clang-format` and :source:`.style.yapf` files in the root
 folder of the project.
 It is **recommended** that modifications and/or new files checked into the
 repository are formatted according to these style files using ``clang-format``
-and ``yapf``. It is then necessary that these tools be part of your development toolchain.
-Once ``clang-format`` and ``yapf`` are installed that are three ways in which
+and ``yapf``. It is then helpful if these tools be part of your development toolchain.
+Once ``clang-format`` and ``yapf`` are installed, then there are three ways in which
 formatting of the code can be accomplished, in decreasing order of automation:
 
 1. By integrating the formatters into your editor.
@@ -51,8 +51,8 @@ formatting of the code can be accomplished, in decreasing order of automation:
 
 .. _`faq:editor`:
 
-Editor
-------
+How to impose code style through your editor
+--------------------------------------------
 
 Both ``clang-format`` and ``yapf`` can be integrated into widely used editors.
 The `Neoformat <https://github.com/sbdchd/neoformat>`_ plugin can be configured
@@ -60,8 +60,8 @@ to format files when saving them to disk.
 
 .. _`faq:githooks`:
 
-Git hooks
----------
+How to impose code style through Git hooks
+------------------------------------------
 
 Git hooks are scripts that are run before or after certain Git events.
 In this particular case, we want to make sure that all files that have been
@@ -75,8 +75,8 @@ repository you are working on.
 
 .. _`faq:manual`:
 
-Manually
---------
+How to run code-style tools `clang-format` and `yapf` manually
+--------------------------------------------------------------
 
 The least recommended approach to formatting your code is to run manually the
 formatters. The following commands will format only the files that have been
@@ -86,6 +86,10 @@ modified:
   clang-format -style=file -i `git diff --relative --name-only HEAD -- *.cc *.h`
   yapf -i `git diff --relative --name-only HEAD -- *.py`
 
+How and when to *not* apply code styling to your contributions
+--------------------------------------------------------------
+
+TODO
 
 .. _``clang-format``: https://clang.llvm.org/docs/ClangFormat.html
 
