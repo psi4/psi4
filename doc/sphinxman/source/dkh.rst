@@ -140,6 +140,7 @@ How to configure dkh for building Psi4
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For dkh, set to an installation directory containing ``include/DKH/DKH_MANGLE.h``
 * :makevar:`dkh_DIR` |w---w| CMake variable to specify where pre-built dkh can be found. Set to installation directory containing ``share/cmake/dkh/dkhConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_dkh` |w---w| CMake variable to force internal build of dkh instead of detecting pre-built
+* :makevar:`CMAKE_INSIST_FIND_PACKAGE_dkh` |w---w| CMake variable to force detecting pre-built dkh and not falling back on internal build
 
 **Examples**
 

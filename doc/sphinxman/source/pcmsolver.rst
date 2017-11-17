@@ -173,3 +173,25 @@ How to configure PCMSolver for building Psi4
 
 * Upstream Dependencies |w---w| PCMSolver |dr| Fortran, ???
 
+**CMake Variables**
+
+* :makevar:`ENABLE_PCMSolver` |w---w| CMake variable toggling whether Psi4 builds with PCMSolver
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For PCMSolver, set to an installation directory containing ``include/PCMSolver/pcmsolver.h``
+* :makevar:`PCMSolver_DIR` |w---w| CMake variable to specify where pre-built PCMSolver can be found. Set to installation directory containing ``share/cmake/PCMSolver/PCMSolverConfig.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_PCMSolver` |w---w| CMake variable to force internal build of PCMSolver instead of detecting pre-built
+* :makevar:`CMAKE_INSIST_FIND_PACKAGE_PCMSolver` |w---w| CMake variable to force detecting pre-built PCMSolver and not falling back on internal build
+
+**Examples**
+
+A. Build bundled
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_PCMSolver=ON
+
+B. Build *without* PCMSolver
+
+  .. code-block:: bash
+
+    >>> cmake
+

@@ -6,6 +6,10 @@ if(${ENABLE_erd})
         message(STATUS "${Cyan}Found erd${ColourReset}: ${_loc} (found version ${erd_VERSION})")
         add_library(erd_external INTERFACE)  # dummy
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_erd})
+            message(FATAL_ERROR "Suitable erd could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable erd could not be located, ${Magenta}Building erd${ColourReset} instead.")
         ExternalProject_Add(erd_external

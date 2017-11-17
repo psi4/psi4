@@ -9,6 +9,10 @@ if(${ENABLE_CheMPS2})
         # reset below necessary as find_package clears it. better solution sought
         set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected CheMPS2Config.cmake" FORCE)
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_CheMPS2})
+            message(FATAL_ERROR "Suitable CheMPS2 could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable CheMPS2 could not be located, ${Magenta}Building CheMPS2${ColourReset} instead.")
 

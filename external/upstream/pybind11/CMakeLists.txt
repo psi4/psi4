@@ -4,6 +4,10 @@ if(${pybind11_FOUND})
     message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
     add_library(pybind11_external INTERFACE)  # dummy
 else()
+    if(${CMAKE_INSIST_FIND_PACKAGE_pybind11})
+        message(FATAL_ERROR "Suitable pybind11 could not be externally located as user insists")
+    endif()
+
     include(ExternalProject)
     message(STATUS "Suitable pybind11 could not be located, ${Magenta}Building pybind11${ColourReset} instead.")
     ExternalProject_Add(pybind11_external

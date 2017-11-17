@@ -6,6 +6,10 @@ if(${ENABLE_PCMSolver})
         message(STATUS "${Cyan}Found PCMSolver${ColourReset}: ${_loc} (found version ${PCMSolver_VERSION})")
         add_library(pcmsolver_external INTERFACE)  # dummy
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_PCMSolver})
+            message(FATAL_ERROR "Suitable PCMSolver could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable PCMSolver could not be located, ${Magenta}Building PCMSolver${ColourReset} instead.")
 

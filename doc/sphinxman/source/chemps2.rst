@@ -162,6 +162,7 @@ How to configure CheMPS2 for building Psi4
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For CheMPS2, set to an installation directory containing ``include/chemps2/DMRG.h``
 * :makevar:`CheMPS2_DIR` |w---w| CMake variable to specify where pre-built CheMPS2 can be found. Set to installation directory containing ``share/cmake/CheMPS2/CheMPS2Config.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_CheMPS2` |w---w| CMake variable to force internal build of CheMPS2 instead of detecting pre-built
+* :makevar:`CMAKE_INSIST_FIND_PACKAGE_CheMPS2` |w---w| CMake variable to force detecting pre-built CheMPS2 and not falling back on internal build
 
 **Examples**
 

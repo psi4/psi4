@@ -46,11 +46,6 @@
 #include <omp.h>
 #endif
 
-// Apple doesn't provide the environ global variable
-#if defined(__APPLE__) && !defined(environ)
-#   include <crt_externs.h>
-#   define environ (*_NSGetEnviron())
-#endif
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
