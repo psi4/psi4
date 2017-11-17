@@ -31,5 +31,4 @@ from .proc import scf_helper, scf_wavefunction_factory
 from .empirical_dispersion import EmpericalDispersion
 from . import dft_funcs
 from . import response
-
-from . import scf # FIXME! DONT DO THIS.
+from . import scf_proc
