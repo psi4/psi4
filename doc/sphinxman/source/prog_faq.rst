@@ -39,6 +39,9 @@ C++ Style in |PSIfour|
 #. :ref:`faq:nullptr`
 #. :ref:`faq:automakeshared`
 #. :ref:`faq:autodecl`
+#. :ref:`faq:editor`
+#. :ref:`faq:githooks`
+#. :ref:`faq:manual`
 
 Modules in |PSIfour|
 --------------------

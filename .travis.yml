@@ -8,6 +8,7 @@ before_cache:
   - conda remove --name p4env --all
 cache:
   timeout: 1000
+  bundler: true
   directories:
     - $HOME/miniconda
 
@@ -63,6 +64,7 @@ matrix:
   #    - C_COMPILER='clang-3.9'
   #    - Fortran_COMPILER='gfortran'
   #    - BUILD_TYPE='release'
+  #    - RUN_DANGER=false
 
   - os: linux
     compiler: gcc
@@ -142,45 +144,46 @@ install:
   - conda list
 
 before_script:
-- python -V
-- python -c 'import numpy; print(numpy.version.version)'
-- cd ${TRAVIS_BUILD_DIR}
-- export CXX=${CXX_COMPILER}
-- export CC=${C_COMPILER}
-- export FC=${Fortran_COMPILER}
-- ${CXX_COMPILER} --version
-- ${Fortran_COMPILER} --version
-- ${C_COMPILER} --version
-- |
-  if [[ "${RUN_DANGER}" = true ]]; then
-    conda install -c conda-forge yapf
-    bundle install --gemfile=.ci/Gemfile
-    BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
-  fi
+  - python -V
+  - python -c 'import numpy; print(numpy.version.version)'
+  - cd ${TRAVIS_BUILD_DIR}
+  - export CXX=${CXX_COMPILER}
+  - export CC=${C_COMPILER}
+  - export FC=${Fortran_COMPILER}
+  - ${CXX_COMPILER} --version
+  - ${Fortran_COMPILER} --version
+  - ${C_COMPILER} --version
+  - |
+    if [[ "${RUN_DANGER}" = true ]]; then
+      conda install -c conda-forge yapf
+      bundle install --gemfile=.ci/Gemfile
+      BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
+    fi
     # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
     #   b/c their c++ symbols don't mix with the different Travis compilers. for other
     #   reasons, pkgs are being compiled less statically, sad for CI.
     # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-- >
-    cmake -Bbuild -H.
-    -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
-    -DCMAKE_C_COMPILER=${C_COMPILER}
-    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-    -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
-    -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
-    -DENABLE_CheMPS2=OFF
-    -DENABLE_dkh=ON
-    -DENABLE_libefp=ON
-    -DENABLE_erd=OFF
-    -DENABLE_gdma=ON
-    -DENABLE_PCMSolver=OFF
-    -DENABLE_simint=ON
-    -DENABLE_snsmp2=OFF
-    -DENABLE_v2rdm_casscf=OFF
-    -DENABLE_PLUGIN_TESTING=ON
-    -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
-- cd build
-- ../.ci/travis_build.sh
+  - >
+      cmake -Bbuild -H.
+      -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
+      -DCMAKE_C_COMPILER=${C_COMPILER}
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+      -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
+      -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
+      -DENABLE_CheMPS2=OFF
+      -DENABLE_dkh=ON
+      -DENABLE_libefp=ON
+      -DENABLE_erd=OFF
+      -DENABLE_gdma=ON
+      -DENABLE_PCMSolver=OFF
+      -DENABLE_simint=ON
+      -DENABLE_snsmp2=OFF
+      -DENABLE_v2rdm_casscf=OFF
+      -DENABLE_PLUGIN_TESTING=ON
+      -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
+  - cd build
+  - ../.ci/travis_build.sh
+
 script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.ci/travis_run_test.py
