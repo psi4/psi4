@@ -274,8 +274,16 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name) {
     FILE* fh = fopen(ss.str().c_str(), "w");
     // Two comment lines
     fprintf(fh, "Psi4 Gaussian Cube File.\n");
-    fprintf(fh, "Property: %s\n", name.c_str());
-
+    // For MOs, write the isocountour range that capture a given fraction of the total density
+    std::size_t found = name.find("Psi_");
+    if (found != std::string::npos) {
+        std::pair<double, double> iso = compute_isocontour(v2);
+        double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
+        fprintf(fh, "Property: %s. Isocontour range for %.0f%% of the density: (%10f,%10f)\n", name.c_str(),
+                density_percent, iso.first, iso.second);
+    } else {
+        fprintf(fh, "Property: %s\n", name.c_str());
+    }
     // Number of atoms plus origin of data
     fprintf(fh, "%6d %10.6f %10.6f %10.6f\n", mol_->natom(), O_[0], O_[1], O_[2]);
 
@@ -335,13 +343,13 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     std::shared_ptr<IntegralFactory> Ifact =
         std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
     for (int thread = 0; thread < nthreads; thread++) {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
     }
 
     auto sieve = std::make_shared<ERISieve>(primary_, cutoff);
-    const std::vector<std::pair<int, int> >& pairs = sieve->shell_pairs();
+    const std::vector<std::pair<int, int>>& pairs = sieve->shell_pairs();
 
     auto c = std::make_shared<Vector>("c", naux);
     double* cp = c->pointer();
@@ -441,9 +449,9 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     std::shared_ptr<IntegralFactory> Vfact = std::make_shared<IntegralFactory>(
         auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
-    std::vector<std::shared_ptr<Matrix> > ZxyzT;
-    std::vector<std::shared_ptr<Matrix> > VtempT;
-    std::vector<std::shared_ptr<PotentialInt> > VintT;
+    std::vector<std::shared_ptr<Matrix>> ZxyzT;
+    std::vector<std::shared_ptr<Matrix>> VtempT;
+    std::vector<std::shared_ptr<PotentialInt>> VintT;
     for (int thread = 0; thread < nthreads; thread++) {
         ZxyzT.push_back(std::make_shared<Matrix>("Zxyz", 1, 4));
         VtempT.push_back(std::make_shared<Matrix>("Vtemp", naux, 1));
@@ -648,5 +656,32 @@ void CubicScalarGrid::compute_ELF(std::shared_ptr<Matrix> D, const std::string& 
     add_ELF(v, D);
     write_gen_file(v, name, type);
     delete[] v;
+}
+std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2) {
+    double cumulative_threshold = options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
+    double norm = 0.0;
+    std::vector<std::pair<double, double>> sorted_points(npoints_);
+    for (size_t ind = 0; ind < npoints_; ind++) {
+        double value = v2[ind];
+        norm += value * value;
+        sorted_points[ind] = std::make_pair(value * value, value);
+    }
+
+    std::sort(sorted_points.rbegin(), sorted_points.rend());
+
+    double sum = 0.0;
+    double negative_isocontour = 0.0;
+    double positive_isocontour = 0.0;
+    for (const std::pair<double, double>& p : sorted_points) {
+        double value = p.second;
+        if (value >= 0.0) {
+            positive_isocontour = value;
+        } else {
+            negative_isocontour = value;
+        }
+        sum += p.first / norm;
+        if (sum > cumulative_threshold) break;
+    }
+    return std::make_pair(positive_isocontour, negative_isocontour);
 }
 }

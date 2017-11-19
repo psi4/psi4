@@ -39,9 +39,7 @@ namespace psi {
 class CubicScalarGrid;
 
 class CubeProperties {
-
-protected:
-
+   protected:
     // => Task specification <= //
 
     /// Global options object
@@ -76,7 +74,7 @@ protected:
     /// Common setup across all constructors
     void common_init();
 
-public:
+   public:
     // => Constructors <= //
 
     /// Construct a CubeProperties object from a Wavefunction (possibly with symmetry in wfn)
@@ -99,7 +97,8 @@ public:
     /// Compute an ESP grid task (Dt.cube and ESP.cube)
     void compute_esp(std::shared_ptr<Matrix> Dt, const std::vector<double>& nuc_weights = std::vector<double>());
     /// Compute an orbital task (key_N.cube, for 0-based indices of C)
-    void compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key);
+    void compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
+                          const std::vector<std::string>& labels, const std::string& key);
     /// Compute a basis function task (key_N.cube, for 0-based indices of basisset_)
     void compute_basis_functions(const std::vector<int>& indices, const std::string& key);
     /// Compute a LOL grid task (key.cube)
@@ -107,7 +106,6 @@ public:
     /// Compute an ELF grid task (key.cube)
     void compute_ELF(std::shared_ptr<Matrix> D, const std::string& key);
 };
-
 }
 
 #endif
