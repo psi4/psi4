@@ -148,9 +148,9 @@ class CubicScalarGrid {
     // => Low-Level Write Routines (Use only if you know what you are doing) <= //
 
     /// Write a general file of the scalar field v (in fast ordering) to filepath/name.ext
-    void write_gen_file(double* v, const std::string& name, const std::string& type);
+    void write_gen_file(double* v, const std::string& name, const std::string& type, const std::string& comment = "");
     /// Write a Gaussian cube file of the scalar field v (in fast ordering) to filepath/name.cube
-    void write_cube_file(double* v, const std::string& name);
+    void write_cube_file(double* v, const std::string& name, const std::string& comment = "");
 
     // => Low-Level Scalar Field Computation (Use only if you know what you are doing) <= //
 
@@ -186,8 +186,9 @@ class CubicScalarGrid {
     /// Compute an ELF-type property and drop a file corresponding to name and type (TODO: this seems very unstable)
     void compute_ELF(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
 
-    /// Compute the isocountour range that capture a given fraction of the MO density
-    std::pair<double, double> compute_isocontour_range(double* v2);
+    /// Compute the isocountour range that capture a given fraction of a property. Exponent is used
+    /// to properly compute the density. E.g. for orbitals exponent = 2, for densities exponent = 1
+    std::pair<double, double> compute_isocontour_range(double* v2, double exponent);
 };
 
 }  // End namespace

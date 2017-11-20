@@ -228,14 +228,15 @@ void CubicScalarGrid::print_header() {
 
     primary_->print();
 }
-void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type) {
+void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type,
+                                     const std::string& comment) {
     if (type == "CUBE") {
-        write_cube_file(v, name);
+        write_cube_file(v, name, comment);
     } else {
         throw PSIEXCEPTION("CubicScalarGrid: Unrecognized output file type");
     }
 }
-void CubicScalarGrid::write_cube_file(double* v, const std::string& name) {
+void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const std::string& comment) {
     // => Reorder the grid <= //
 
     double* v2 = new double[npoints_];
@@ -274,16 +275,8 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name) {
     FILE* fh = fopen(ss.str().c_str(), "w");
     // Two comment lines
     fprintf(fh, "Psi4 Gaussian Cube File.\n");
-    // For MOs, write the isocountour range that capture a given fraction of the total density
-    std::size_t found = name.find("Psi_");
-    if (found != std::string::npos) {
-        std::pair<double, double> iso = compute_isocontour(v2);
-        double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
-        fprintf(fh, "Property: %s. Isocontour range for %.0f%% of the density: (%10f,%10f)\n", name.c_str(),
-                density_percent, iso.first, iso.second);
-    } else {
-        fprintf(fh, "Property: %s\n", name.c_str());
-    }
+    fprintf(fh, "Property: %s%s\n", name.c_str(), comment.c_str());
+
     // Number of atoms plus origin of data
     fprintf(fh, "%6d %10.6f %10.6f %10.6f\n", mol_->natom(), O_[0], O_[1], O_[2]);
 
@@ -601,7 +594,14 @@ void CubicScalarGrid::compute_density(std::shared_ptr<Matrix> D, const std::stri
     double* v = new double[npoints_];
     memset(v, '\0', npoints_ * sizeof(double));
     add_density(v, D);
-    write_gen_file(v, name, type);
+    // Get adaptive isocountour range
+    std::pair<double, double> isocontour_range = compute_isocontour_range(v, 1.0);
+    double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
+    std::stringstream comment;
+    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first << ","
+            << isocontour_range.second << ")";
+    // Write to disk
+    write_gen_file(v, name, type,comment.str());
     delete[] v;
 }
 void CubicScalarGrid::compute_esp(std::shared_ptr<Matrix> D, const std::vector<double>& w, const std::string& name,
@@ -637,9 +637,16 @@ void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vec
     memset(v[0], '\0', indices.size() * npoints_ * sizeof(double));
     add_orbitals(v, C2);
     for (int k = 0; k < indices.size(); k++) {
+        // Get adaptive isocountour range
+        std::pair<double, double> isocontour_range = compute_isocontour_range(v[k], 2.0);
+        double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
+        std::stringstream comment;
+        comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first << ","
+                << isocontour_range.second << ")";
+        // Write to disk
         std::stringstream ss;
         ss << name << "_" << (indices[k] + 1) << "_" << labels[k];
-        write_gen_file(v[k], ss.str(), type);
+        write_gen_file(v[k], ss.str(), type, comment.str());
     }
     free_block(v);
 }
@@ -657,18 +664,23 @@ void CubicScalarGrid::compute_ELF(std::shared_ptr<Matrix> D, const std::string& 
     write_gen_file(v, name, type);
     delete[] v;
 }
-std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2) {
+std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2, double exponent) {
     double cumulative_threshold = options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
-    double norm = 0.0;
+
+    // Store the points with their weights and compute the sum of weights
+    double sum_weight = 0.0;
     std::vector<std::pair<double, double>> sorted_points(npoints_);
     for (size_t ind = 0; ind < npoints_; ind++) {
         double value = v2[ind];
-        norm += value * value;
-        sorted_points[ind] = std::make_pair(value * value, value);
+        double weight = std::pow(std::fabs(value), exponent);
+        sum_weight += weight;
+        sorted_points[ind] = std::make_pair(weight, value);
     }
 
+    // Sort the points
     std::sort(sorted_points.rbegin(), sorted_points.rend());
 
+    // Determine the positive and negative bounds
     double sum = 0.0;
     double negative_isocontour = 0.0;
     double positive_isocontour = 0.0;
@@ -679,7 +691,7 @@ std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2) 
         } else {
             negative_isocontour = value;
         }
-        sum += p.first / norm;
+        sum += p.first / sum_weight;
         if (sum > cumulative_threshold) break;
     }
     return std::make_pair(positive_isocontour, negative_isocontour);
