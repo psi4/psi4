@@ -367,9 +367,14 @@ def compare_cubes(expected, computed, label):
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
-    # Skip the first six elemets which are just labels
-    evec = [float(k) for k in expected.split()[6:]]
-    cvec = [float(k) for k in computed.split()[6:]]
+    # Grab grid points and skip the first two lines which are just labels
+    evec = []
+    for line in expected.split("\n")[2:]:
+        evec.extend([float(k) for k in line.split()])
+    cvec = []
+    for line in computed.split("\n")[2:]:
+        cvec.extend([float(k) for k in line.split()])
+
     if len(evec) == len(cvec):
         for n in range(len(evec)):
             if (math.fabs(evec[n]-cvec[n]) > 1.0e-4):
