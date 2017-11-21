@@ -40,6 +40,11 @@
 #include <string>
 #include <algorithm>
 
+// LibXC helper utility for setter functions, not really supposed to do this
+#include "libxc/util.h"
+#include "libxc/xc.h"
+
+
 using namespace psi;
 
 namespace psi {
@@ -50,6 +55,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     unpolarized_ = unpolarized;
     lr_exch_ = 0.0;
     global_exch_ = 0.0;
+
+    xc_functional_ = std::unique_ptr<xc_func_type>(new xc_func_type);
 
     // Build the functional
     int polar_value;
@@ -160,6 +167,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     return static_cast<std::shared_ptr<Functional>>(func);
 }
 void LibXCFunctional::set_omega(double omega) {
+    return;
     omega_ = omega;
     user_omega_ = true;
     if (xc_func_name_ == "XC_GGA_X_WPBEH") {
@@ -208,6 +216,7 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
     return params;
 }
 void LibXCFunctional::set_tweak(std::vector<double> values) {
+    return;
     bool failed = true;
     size_t vsize = values.size();
     if (xc_func_name_ == "XC_LDA_X") {
