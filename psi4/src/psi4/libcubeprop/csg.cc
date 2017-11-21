@@ -598,10 +598,10 @@ void CubicScalarGrid::compute_density(std::shared_ptr<Matrix> D, const std::stri
     std::pair<double, double> isocontour_range = compute_isocontour_range(v, 1.0);
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
-    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first << ","
-            << isocontour_range.second << ")";
+    comment << " [e/a0^3]. Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
+            << "," << isocontour_range.second << ")";
     // Write to disk
-    write_gen_file(v, name, type,comment.str());
+    write_gen_file(v, name, type, comment.str());
     delete[] v;
 }
 void CubicScalarGrid::compute_esp(std::shared_ptr<Matrix> D, const std::vector<double>& w, const std::string& name,
@@ -609,7 +609,7 @@ void CubicScalarGrid::compute_esp(std::shared_ptr<Matrix> D, const std::vector<d
     double* v = new double[npoints_];
     memset(v, '\0', npoints_ * sizeof(double));
     add_esp(v, D, w);
-    write_gen_file(v, name, type);
+    write_gen_file(v, name, type, " [Eh/e]");
     delete[] v;
 }
 void CubicScalarGrid::compute_basis_functions(const std::vector<int>& indices, const std::string& name,
@@ -641,8 +641,8 @@ void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vec
         std::pair<double, double> isocontour_range = compute_isocontour_range(v[k], 2.0);
         double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
         std::stringstream comment;
-        comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first << ","
-                << isocontour_range.second << ")";
+        comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
+                << "," << isocontour_range.second << ")";
         // Write to disk
         std::stringstream ss;
         ss << name << "_" << (indices[k] + 1) << "_" << labels[k];

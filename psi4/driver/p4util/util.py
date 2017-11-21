@@ -367,21 +367,15 @@ def compare_cubes(expected, computed, label):
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
-    # Grab grid points and skip the first two lines which are just labels
-    evec = []
-    for line in expected.split("\n")[2:]:
-        evec.extend([float(k) for k in line.split()])
-    cvec = []
-    for line in computed.split("\n")[2:]:
-        cvec.extend([float(k) for k in line.split()])
-
-    if len(evec) == len(cvec):
-        for n in range(len(evec)):
-            if (math.fabs(evec[n]-cvec[n]) > 1.0e-4):
-                message = ("\t%s: computed cube file does not match expected cube file." % label)
-                raise TestComparisonError(message)
+    # Grab grid points. Skip the first nine lines and the last one
+    evec = np.genfromtxt(expected,skip_header=9,skip_footer=1)
+    cvec = np.genfromtxt(computed,skip_header=9,skip_footer=1)
+    if evec.size == cvec.size:
+        if not np.allclose(cvec, evec, rtol=5e-02, atol=1e-10):
+            message = ("\t%s: computed cube file does not match expected cube file." % label)
+            raise TestComparisonError(message)
     else:
-        message = ("\t%s: computed cube file does not match expected cube file." % (label, computed, expected))
+        message = ("\t%s: computed cube file does not match size of expected cube file." % label)
         raise TestComparisonError(message)
     success(label)
     return True
