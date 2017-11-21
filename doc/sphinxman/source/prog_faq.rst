@@ -64,6 +64,15 @@ Versioning |PSIfour|
 #. :ref:`faq:githubworkflow`
 #. :ref:`faq:psi4version`
 
+Workflow
+--------
+
+#. :ref:`faq:localaddon`
+#. :ref:`faq:dirlayoutinstall`
+#. :ref:`faq:githubworkflow`
+#. :ref:`faq:vigitmerge`
+#. :ref:`faq:gdblldb`
+
 Miscellaneous
 -------------
 

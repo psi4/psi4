@@ -89,6 +89,7 @@ QC Dependencies and Extensions
 ------------------------------
 
 #. :ref:`faq:addondepend`
+#. :ref:`faq:localaddon`
 #. :ref:`cmake:chemps2`
 #. :ref:`faq:chemps2gccflto`
 #. :ref:`cmake:dkh`
