@@ -147,30 +147,34 @@ Slice& Slice::operator+=(const Dimension& increment) {
 
 bool Slice::validate_slice() {
     bool valid = true;
+    std::string msg;
     if (begin_.n() != end_.n()) {
         valid = false;
-        std::string msg = "Invalid Slice: begin and end Dimension objects have different size.";
+        msg = "Invalid Slice: begin and end Dimension objects have different size.";
+        begin_.print();
+        end_.print();
         throw PSIEXCEPTION(msg);
     }
+
     // Check that begin[h] >= 0 and end[h] >= begin[h]
     for (int h = 0, max_h = begin_.n(); h < max_h; h++) {
         if (begin_[h] < 0) {
             valid = false;
-            std::string msg = "Invalid Slice: element " + std::to_string(h) +
+            msg = "Invalid Slice: element " + std::to_string(h) +
                               " of begin Dimension object is less than zero (" + std::to_string(begin_[h]) + ")";
-            throw PSIEXCEPTION(msg);
+            break;
         }
         if (end_[h] < begin_[h]) {
             valid = false;
-            std::string msg = "Invalid Slice: element " + std::to_string(h) +
-                              " of (end - begin) Dimension object is less than zero (" +
-                              std::to_string(end_[h] - begin_[h]) + ")";
-            throw PSIEXCEPTION(msg);
+            msg = "Invalid Slice: element " + std::to_string(h) +
+                  " of (end - begin) Dimension object is less than zero (" + std::to_string(end_[h] - begin_[h]) + ")";
+            break;
         }
     }
     if (not valid) {
         begin_.print();
         end_.print();
+        throw PSIEXCEPTION(msg);
     }
     return valid;
 }
