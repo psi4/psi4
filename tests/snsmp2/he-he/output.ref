@@ -1,0 +1,447 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2a1.dev661 
+
+                         Git: Rev {snsmp2build} f216b33 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 21 November 2017 03:44PM
+
+    Process ID:   7815
+    PSIDATADIR: /home/psilocaluser/gits/hrw-ecp/objdir/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule mol {
+0 1
+He 0 0 0
+--
+He 2 0 0
+}
+
+energy('sns-mp2')
+
+compare_values(  0.00176708227, get_variable('SNS-MP2 TOTAL ENERGY'),                         5, "SNS-MP2 IE [Eh]")  #TEST
+
+--------------------------------------------------------------------------
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Scheduling Monomer A in DESAVTZ monomer-centered basis (HF) //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on psinet
+*** at Tue Nov 21 15:44:09 2017
+
+   => Loading Basis Set <=
+
+    Name: DESAVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry HE         line    58 file /home/psilocaluser/gits/hrw-ecp/objdir/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE         -1.000000000000    -0.000000000000     0.000000000000     4.002603254150
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      4.21167  C =      4.21167 [cm^-1]
+  Rotational constants: A = ************  B = 126262.57785  C = 126262.57785 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: DESAVTZ
+    Blend: AUG-CC-PVTZ
+    Number of shells: 9
+    Number of basis function: 23
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: DESAVTZJKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry HE         line    39 file /home/psilocaluser/gits/hrw-ecp/objdir/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       0       0       0       0
+   -------------------------------------------------------
+    Total      23      23       1       1       1       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: DESAVTZJKFIT
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 9
+    Number of basis function: 23
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 7.0110136498E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   1:    -2.75222140508069   -2.75222e+00   2.30194e-02 
+   @DF-RHF iter   2:    -2.85975100088551   -1.07530e-01   1.92123e-03 DIIS
+   @DF-RHF iter   3:    -2.86118118969516   -1.43019e-03   2.83556e-04 DIIS
+   @DF-RHF iter   4:    -2.86120624828801   -2.50586e-05   9.62172e-06 DIIS
+   @DF-RHF iter   5:    -2.86120630793689   -5.96489e-08   1.00275e-06 DIIS
+   @DF-RHF iter   6:    -2.86120630847484   -5.37950e-10   3.37004e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A     -0.917882  
+
+    Virtual:                                                              
+
+       2A      0.110957     3A      0.429035     4A      0.429035  
+       5A      0.429035     6A      0.842057     7A      1.520744  
+       8A      1.520744     9A      1.520744    10A      1.520744  
+      11A      1.520744    12A      1.962813    13A      1.962813  
+      14A      1.962813    15A      4.821640    16A      7.123617  
+      17A      7.123617    18A      7.123617    19A      7.123617  
+      20A      7.123617    21A      8.222484    22A      8.222484  
+      23A      8.222484  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:    -2.86120630847484
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -3.8866483964540275
+    Two-Electron Energy =                   1.0254420879791901
+    Total Energy =                         -2.8612063084748374
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -3.7795      Y:    -0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     3.7795      Y:     0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Tue Nov 21 15:44:10 2017
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Scheduling Monomer B in DESAVTZ monomer-centered basis (HF) //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on psinet
+*** at Tue Nov 21 15:44:10 2017
+
+   => Loading Basis Set <=
+
+    Name: DESAVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry HE         line    58 file /home/psilocaluser/gits/hrw-ecp/objdir/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          1.000000000000     0.000000000000     0.000000000000     4.002603254150
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      4.21167  C =      4.21167 [cm^-1]
+  Rotational constants: A = ************  B = 126262.57785  C = 126262.57785 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: DESAVTZ
+    Blend: AUG-CC-PVTZ
+    Number of shells: 9
+    Number of basis function: 23
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: DESAVTZJKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry HE         line    39 file /home/psilocaluser/gits/hrw-ecp/objdir/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       0       0       0       0
+   -------------------------------------------------------
+    Total      23      23       1       1       1       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: DESAVTZJKFIT
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 9
+    Number of basis function: 23
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 7.0110136498E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   1:    -2.75222140508069   -2.75222e+00   2.30194e-02 
+   @DF-RHF iter   2:    -2.85975100088551   -1.07530e-01   1.92123e-03 DIIS
+   @DF-RHF iter   3:    -2.86118118969516   -1.43019e-03   2.83556e-04 DIIS
+   @DF-RHF iter   4:    -2.86120624828801   -2.50586e-05   9.62172e-06 DIIS
+   @DF-RHF iter   5:    -2.86120630793689   -5.96489e-08   1.00275e-06 DIIS
+   @DF-RHF iter   6:    -2.86120630847484   -5.37950e-10   3.37004e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A     -0.917882  
+
+    Virtual:                                                              
+
+       2A      0.110957     3A      0.429035     4A      0.429035  
+       5A      0.429035     6A      0.842057     7A      1.520744  
+       8A      1.520744     9A      1.520744    10A      1.520744  
+      11A      1.520744    12A      1.962813    13A      1.962813  
+      14A      1.962813    15A      4.821640    16A      7.123617  
+      17A      7.123617    18A      7.123617    19A      7.123617  
+      20A      7.123617    21A      8.222484    22A      8.222484  
+      23A      8.222484  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:    -2.86120630847484
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -3.8866483964540275
+    Two-Electron Energy =                   1.0254420879791901
+    Total Energy =                         -2.8612063084748374
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     3.7795      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -3.7795      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Tue Nov 21 15:44:10 2017
+Module time:
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Scheduling Monomer A in DESAVQZ monomer-centered basis (MP2 density matrix) //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+Traceback (most recent call last):
+  File "stage/usr/local/psi4/bin/psi4", line 260, in <module>
+    exec(content)
+  File "<string>", line 27, in <module>
+  File "/home/psilocaluser/gits/hrw-ecp/objdir/stage/usr/local/psi4/lib/psi4/driver/driver.py", line 460, in energy
+    wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
+  File "/home/psilocaluser/gits/sns-mp2/snsmp2/snsmp2.py", line 75, in run_sns_mp2
+    m1mhigh = c.compute('m1', 'm', 'high', mp2=True, mp2_dm=True)
+  File "/home/psilocaluser/gits/sns-mp2/snsmp2/wavefunctioncache.py", line 372, in compute
+    self._init_ns(calc)
+  File "/home/psilocaluser/gits/sns-mp2/snsmp2/wavefunctioncache.py", line 143, in _init_ns
+    return self._init_upcast_C(oldcalc=candidate, calc=calc)
+  File "/home/psilocaluser/gits/sns-mp2/snsmp2/wavefunctioncache.py", line 172, in _init_upcast_C
+    new_data = self._basis_projection(oldcalc, calc)
+  File "/home/psilocaluser/gits/sns-mp2/snsmp2/wavefunctioncache.py", line 185, in _basis_projection
+    data = np.load(read_filename)
+  File "/home/psilocaluser/miniconda3/envs/idp35p4/lib/python3.5/site-packages/numpy/lib/npyio.py", line 370, in load
+    fid = open(file, "rb")
+
+FileNotFoundError: [Errno 2] No such file or directory: '../tests/snsmp2/he-he/input.m1-m-low.7815.180.npz'
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.

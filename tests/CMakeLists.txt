@@ -233,6 +233,13 @@ if(ENABLE_v2rdm_casscf)
     message(STATUS "Adding test cases: Psi4 + v2rdm_casscf")
 endif()
 
+# <<<  SNSMP2  >>>
+
+if(ENABLE_snsmp2)
+    add_subdirectory(snsmp2)
+    message(STATUS "Adding test cases: Psi4 + snsmp2")
+endif()
+
 # plugin regime
 if(ENABLE_PLUGIN_TESTING)
     add_subdirectory(plugins)
