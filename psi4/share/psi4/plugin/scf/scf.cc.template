@@ -87,8 +87,9 @@ void SCF::init_integrals()
     }
 
     nso_ =  basisset_->nbf();
-
-    e_nuc_ = molecule_->nuclear_repulsion_energy();
+    
+    // Nuclear repulsion without a field
+    e_nuc_ = molecule_->nuclear_repulsion_energy({0, 0, 0});
     outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", e_nuc_);
 
     // These don't need to be declared, because they belong to the class
@@ -231,8 +232,11 @@ double SCF::compute_energy()
        SDF->gemm(false, false, 1.0, S_, Temp1, 0.0);
        Temp1->copy(FDS);
        Temp1->subtract(SDF);
+
+       // Density RMS
        double dRMS = Temp1->rms();
 
+       //Optional printing
        if(print_ > 1){
            Ft_->print();
            Evecs->print();
