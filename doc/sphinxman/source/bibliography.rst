@@ -386,3 +386,7 @@ Bibliography
 .. [Tomasi:2005:2999]
    J. Tomasi, B. Mennucci, and R. Cammi
    *Chem. Rev.* **105**, 2999 (2005).
+
+.. [McGibbon:2017:161725]
+   R. T. McGibbon, A. G. Taube, A. G. Donchev, K. Siva, F. Hernández, C. Hargus, K. H. Law, J. L. Klepeis, D. E. Shaw
+   *J. Chem. Phys.* **147**, 161725 (2017).
