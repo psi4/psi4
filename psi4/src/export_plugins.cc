@@ -67,7 +67,7 @@ int py_psi_plugin_load(std::string fullpathname)
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
-        outfile->Printf("%s loaded.\n", fullpathname.c_str());
+        //outfile->Printf("%s loaded.\n", fullpathname.c_str());
         ret = 1;
     } else {
        ret = 2;

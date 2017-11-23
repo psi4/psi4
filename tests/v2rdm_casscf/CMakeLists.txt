@@ -1,0 +1,6 @@
+add_subdirectory(v2rdm1)
+add_subdirectory(v2rdm2)
+add_subdirectory(v2rdm3)
+add_subdirectory(v2rdm4)
+add_subdirectory(v2rdm5)
+add_subdirectory(v2rdm6)
