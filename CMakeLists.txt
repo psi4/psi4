@@ -24,6 +24,15 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
 #    >>> make install
 
+#  <<<  Required build dependencies that Psi4 can't build itself  >>>
+#
+#    - CMake (e.g., `conda install cmake`)
+#    - C++ and C compilers (C++11 compliant)
+#    - BLAS/LAPACK (also runtime; e.g., `conda install mkl mkl-include`)
+#    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
+#    - NumPy (also runtime; e.g., `conda install numpy`)
+#    - mpmath (e.g., `conda install mpmath`)
+
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
 #  <<<  Compilers and flags  >>>
@@ -67,7 +76,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"
 #    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
 #    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /)
-#                            Must start with /"
+#                            Must start with: / . Used to imitate python install: /python3.6/site-packages ."
 
 ############################  Options: Build What?  ############################
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
