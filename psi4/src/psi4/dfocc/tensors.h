@@ -289,6 +289,11 @@ class Tensor2d {
     void mgs();
     // gs: orthogonalize with a Classical Gram-Schmid algorithm
     void gs();
+    // gs_add(): Assume A is a orthogonal matrix.  This function Gram-Schmidt
+    // orthogonalizes a new vector v and adds it to matrix A.  A must contain
+    // a free row pointer for a new row.  Don't add orthogonalized v' if
+    // norm(v') < NORM_TOL.
+    int gs_add(int rows, SharedTensor1d v);
     // row_vector: return nth row as a vector
     double *row_vector(int n);
     // column_vector: return nth column as a vector

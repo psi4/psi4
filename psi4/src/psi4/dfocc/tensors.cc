@@ -2477,6 +2477,50 @@ void Tensor2d::gs() {
     }
 }  //
 
+/*
+** SCHMIDT_ADD(): Assume A is a orthogonal matrix.  This function Gram-Schmidt
+** orthogonalizes a new vector v and adds it to matrix A.  A must contain
+** a free row pointer for a new row.  Don't add orthogonalized v' if
+** norm(v') < NORM_TOL.
+**
+** David Sherrill, Feb 1994
+** Ugur Bozkaya, Nov 2017
+**
+** \param A    = matrix to add new vector to
+** \param rows = current number of rows in A
+**               (A must have ptr for 'rows+1' row.)
+** \param cols = columns in A
+** \parm v     = vector to add to A after it has been made orthogonal
+**               to rest of A
+**
+** Returns: 1 if a vector is added to A, 0 otherwise
+*/
+int Tensor2d::gs_add(int rows, SharedTensor1d v) {
+   double dotval, normval ;
+   int i, I ;
+   int cols = dim2_;
+   double NORM_TOL = 1.0E-5;
+
+   for (i=0; i<rows; i++) {
+        dotval = C_DDOT(cols, A2d_[i], 1, v->A1d_, 1);
+        for (I=0; I<cols; I++) {
+	     v->subtract(I, dotval * A2d_[i][I]);
+        }
+   }
+
+   // dot_arr(v, v, cols, &normval) ;
+   normval = C_DDOT(cols, v->A1d_, 1, v->A1d_, 1);
+   normval = std::sqrt(normval) ;
+
+   if (normval < NORM_TOL)
+      return(0) ;
+   else {
+      if (A2d_[rows] == NULL) A2d_[rows] = init_array(cols) ;
+      for (I=0; I<cols; I++) A2d_[rows][I] = v->get(I) / normval ;
+      return(1) ;
+      }
+}  //
+
 double *Tensor2d::row_vector(int n) {
     double *temp = new double[dim2_];
     memset(temp, 0, dim2_ * sizeof(double));

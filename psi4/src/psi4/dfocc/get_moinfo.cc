@@ -340,34 +340,33 @@ void DFOCC::get_moinfo() {
     /************************** Create all required matrice *************************************/
     /********************************************************************************************/
     // Build Hso
-    Hso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nso_, nso_));
-    Tso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nso_, nso_));
-    Vso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nso_, nso_));
-    Sso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Overlap Ints", nso_, nso_));
-    Hso_->zero();
-    Tso_->zero();
-    Vso_->zero();
-    Sso_->zero();
+    //Hso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nso_, nso_));
+    //Tso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nso_, nso_));
+    //Vso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nso_, nso_));
+    //Sso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Overlap Ints", nso_, nso_));
+    //Hso_->zero();
+    //Tso_->zero();
+    //Vso_->zero();
+    //Sso_->zero();
 
-    // Read SO-basis one-electron integrals
-    double *so_ints = init_array(ntri_so);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
-    Tso_->set(so_ints);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
-    Vso_->set(so_ints);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, so_ints, ntri_so, 0, 0, "outfile");
-    Sso_->set(so_ints);
-    free(so_ints);
-    Hso_->copy(Tso_);
-    Hso_->add(Vso_);
-    Tso_.reset();
-    Vso_.reset();
+    //// Read SO-basis one-electron integrals
+    //double *so_ints = init_array(ntri_so);
+    //IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
+    //Tso_->set(so_ints);
+    //IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
+    //Vso_->set(so_ints);
+    //IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, so_ints, ntri_so, 0, 0, "outfile");
+    //Sso_->set(so_ints);
+    //free(so_ints);
+    //Hso_->copy(Tso_);
+    //Hso_->add(Vso_);
+    //Tso_.reset();
+    //Vso_.reset();
+    // CDS: Migrate these from disk reads to grabbing off Wavefunction
     Hso = SharedTensor2d(new Tensor2d("SO-basis One-electron Ints", nso_, nso_));
-    Hso->set(Hso_);
-    Hso_.reset();
+    Hso->set(H_);
     Sso = SharedTensor2d(new Tensor2d("SO-basis Overlap Ints", nso_, nso_));
-    Sso->set(Sso_);
-    Sso_.reset();
+    Sso->set(S_);
 
     // outfile->Printf("\n get_moinfo is done. \n");
 }  // end get_moinfo
