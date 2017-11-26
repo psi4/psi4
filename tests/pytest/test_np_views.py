@@ -114,22 +114,3 @@ def test_totals():
         raise MemoryError("\nA function leaked %d bytes of memory!" % diff)
     else:
         print("\nNo leaks detected!")
-
-
-if __name__ == "__main__":
-    # Run the checks
-    start = snapshot_memory()
-
-    check_leak(build_mat)
-    check_leak(build_view_mat)
-    check_leak(build_viewh_mat)
-    check_leak(build_view_set_mat)
-    check_leak(build_arr_mat)
-    check_leak(build_copy_mat)
-
-    # Double check totals
-    diff = abs(start - snapshot_memory())
-    if diff > 1.e6:
-        raise MemoryError("\nA function leaked %d bytes of memory!" % diff)
-    else:
-        print("\nNo leaks detected!")

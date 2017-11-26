@@ -16,8 +16,10 @@ macro(find_python_module module)
     if(ARGC GREATER 1 AND ARGV1 STREQUAL "REQUIRED")
         set(${module}_FIND_REQUIRED TRUE)
     endif()
-    # A module's location is usually a directory, but for binary modules
-    # it's a .so file.
+    # * A module's location is usually a directory, but for binary modules
+    #   it's a .so file.
+    # * Unsure of the balance btwn submission to user's PYTHONPATH and avoiding
+    #   strays in same. So clobbering user for now with `sys.path.insert(0`
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
                             "import re, sys; \
                              sys.path.insert(0, '${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}'); \
