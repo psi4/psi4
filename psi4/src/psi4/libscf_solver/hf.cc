@@ -74,25 +74,19 @@
 #include <omp.h>
 #endif
 
-namespace psi { namespace scf {
+namespace psi {
+namespace scf {
 
-HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
-       Options &options, std::shared_ptr<PSIO> psio)
-    : Wavefunction(options),
-      functional_(func) {
+HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options, std::shared_ptr<PSIO> psio)
+    : Wavefunction(options), functional_(func) {
     shallow_copy(ref_wfn);
     psio_ = psio;
     common_init();
 }
 
+HF::~HF() {}
 
-HF::~HF()
-{
-}
-
-void HF::common_init()
-{
-
+void HF::common_init() {
     attempt_number_ = 1;
     ref_C_ = false;
     reset_occ_ = false;
@@ -112,23 +106,24 @@ void HF::common_init()
     nmo_ = 0;
     nso_ = 0;
     const Dimension& dimpi = factory_->colspi();
-    for (int h = 0; h< factory_->nirrep(); h++){
+    for (int h = 0; h < factory_->nirrep(); h++) {
         nsopi_[h] = dimpi[h];
-        nmopi_[h] = nsopi_[h]; //For now, may change in S^-1/2
+        nmopi_[h] = nsopi_[h];  // For now, may change in S^-1/2
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h]; //For now, may change in S^-1/2
+        nmo_ += nmopi_[h];  // For now, may change in S^-1/2
     }
 
     // Read in energy convergence threshold
     energy_threshold_ = options_.get_double("E_CONVERGENCE");
 
     // Read in density convergence threshold
-    density_threshold_ = options_.get_double("D_CONVERGENCE");;
+    density_threshold_ = options_.get_double("D_CONVERGENCE");
+    ;
 
     density_fitted_ = false;
 
-    Eold_    = 0.0;
-    E_       = 0.0;
+    Eold_ = 0.0;
+    E_ = 0.0;
     maxiter_ = 40;
 
     // Read information from input file
@@ -138,7 +133,7 @@ void HF::common_init()
     fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
 
     // Set name
-    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
+    if (options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
         name_ = "DFT";
     else
         name_ = "SCF";
@@ -164,8 +159,7 @@ void HF::common_init()
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
-            if (options_["DOCC"].size() != nirreps)
-                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            if (options_["DOCC"].size() != nirreps) throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             for (int h = 0; h < nirreps; ++h) {
                 doccpi_[h] = options_["DOCC"][h].to_integer();
             }
@@ -191,8 +185,7 @@ void HF::common_init()
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
-            if (options_["SOCC"].size() != nirreps)
-                throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            if (options_["SOCC"].size() != nirreps) throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             for (int h = 0; h < nirreps; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
             }
@@ -200,19 +193,18 @@ void HF::common_init()
     }  // else take the reference wavefunctions soccpi
 
     // Check that we have enough basis functions
-    for(int h = 0; h < nirreps; ++h) {
-      if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
-    throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
-      }
+    for (int h = 0; h < nirreps; ++h) {
+        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+            throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+        }
     }
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
             nalphapi_[h] = doccpi_[h] + soccpi_[h];
-            nbetapi_[h]  = doccpi_[h];
+            nbetapi_[h] = doccpi_[h];
         }
     }
-
 
     // Set additional information
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
@@ -264,71 +256,64 @@ void HF::common_init()
     if (perturb_h_) {
         std::string perturb_with;
 
-
         if (options_["PERTURB_WITH"].has_changed()) {
             perturb_with = options_.get_str("PERTURB_WITH");
             // Do checks to see what perturb_with is.
             if (perturb_with == "DIPOLE_X") {
                 perturb_ = dipole_x;
                 perturb_dipoles_[0] = options_.get_double("PERTURB_MAGNITUDE");
-                nuclearrep_ += perturb_dipoles_[0]*molecule_->nuclear_dipole()[0];
-                outfile->Printf(" WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+                nuclearrep_ += perturb_dipoles_[0] * molecule_->nuclear_dipole()[0];
+                outfile->Printf(
+                    " WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
+                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
             } else if (perturb_with == "DIPOLE_Y") {
                 perturb_ = dipole_y;
                 perturb_dipoles_[1] = options_.get_double("PERTURB_MAGNITUDE");
-                nuclearrep_ += perturb_dipoles_[1]*molecule_->nuclear_dipole()[1];
-                outfile->Printf(" WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+                nuclearrep_ += perturb_dipoles_[1] * molecule_->nuclear_dipole()[1];
+                outfile->Printf(
+                    " WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
+                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
             } else if (perturb_with == "DIPOLE_Z") {
                 perturb_ = dipole_z;
                 perturb_dipoles_[2] = options_.get_double("PERTURB_MAGNITUDE");
-                nuclearrep_ += perturb_dipoles_[2]*molecule_->nuclear_dipole()[2];
-                outfile->Printf(" WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+                nuclearrep_ += perturb_dipoles_[2] * molecule_->nuclear_dipole()[2];
+                outfile->Printf(
+                    " WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
+                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
             } else if (perturb_with == "DIPOLE") {
                 perturb_ = dipole;
-                if(options_["PERTURB_DIPOLE"].size() !=3)
+                if (options_["PERTURB_DIPOLE"].size() != 3)
                     throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-                for(int n = 0; n < 3; ++n)
-                    perturb_dipoles_[n] = options_["PERTURB_DIPOLE"][n].to_double();
+                for (int n = 0; n < 3; ++n) perturb_dipoles_[n] = options_["PERTURB_DIPOLE"][n].to_double();
                 nuclearrep_ += perturb_dipoles_.dot(molecule_->nuclear_dipole());
             } else if (perturb_with == "EMBPOT") {
                 perturb_ = embpot;
                 perturb_dipoles_[0] = 1.0;
-            }
-            else if (perturb_with == "DX") {
+            } else if (perturb_with == "DX") {
                 perturb_ = dx;
                 perturb_dipoles_[0] = 1.0;
-            }
-            else if (perturb_with == "SPHERE") {
+            } else if (perturb_with == "SPHERE") {
                 perturb_ = sphere;
                 perturb_dipoles_[0] = 1.0;
-            }
-            else {
-
-                    outfile->Printf( "Unknown PERTURB_WITH. Applying no perturbation.\n");
-
+            } else {
+                outfile->Printf("Unknown PERTURB_WITH. Applying no perturbation.\n");
             }
         } else {
-
-                outfile->Printf( "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
-
+            outfile->Printf("PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
     }
 
     // How much stuff shall we echo to the user?
-    if(options_["PRINT"].has_changed())
-        print_ = options_.get_int("PRINT");
+    if (options_["PRINT"].has_changed()) print_ = options_.get_int("PRINT");
 
-    if(options_["DAMPING_PERCENTAGE"].has_changed()){
+    if (options_["DAMPING_PERCENTAGE"].has_changed()) {
         // The user has asked for damping to be turned on
         damping_enabled_ = true;
         damping_percentage_ = options_.get_double("DAMPING_PERCENTAGE") / 100.0;
-        if(damping_percentage_ < 0.0 || damping_percentage_ > 1.0)
+        if (damping_percentage_ < 0.0 || damping_percentage_ > 1.0)
             throw PSIEXCEPTION("DAMPING_PERCENTAGE must be between 0 and 100.");
         damping_convergence_ = options_.get_double("DAMPING_CONVERGENCE");
-    }else{
+    } else {
         damping_enabled_ = false;
     }
 
@@ -370,12 +355,13 @@ void HF::common_init()
     print_header();
 
     // DFT stuff
-    if (functional_->needs_xc()){
-        potential_ = VBase::build_V(basisset_, functional_, options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
+    if (functional_->needs_xc()) {
+        potential_ =
+            VBase::build_V(basisset_, functional_, options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
         potential_->initialize();
 
         // Do the GRAC
-        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0){
+        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0) {
             potential_->set_grac_shift(options_.get_double("DFT_GRAC_SHIFT"));
         }
 
@@ -393,10 +379,14 @@ void HF::common_init()
     cphf_nfock_builds_ = 0;
     cphf_converged_ = false;
 
-    // Initialize PCM object, if requested
+// Initialize PCM object, if requested
 #ifdef USING_PCMSolver
-    if((pcm_enabled_ = (options_.get_bool("PCM"))))
-      hf_pcm_ = std::make_shared<PCM>(options_, psio_, nirrep_, basisset_);
+    if ((pcm_enabled_ = (options_.get_bool("PCM")))) {
+        if (nirrep_ > 1)
+            throw PSIEXCEPTION("You must add\n\n\tsymmetry c1\n\nto the molecule{} block to run the PCM code.");
+
+        hf_pcm_ = std::make_shared<PCM>(options_.get_int("PRINT"), basisset_);
+    }
 #endif
 }
 
@@ -411,28 +401,20 @@ int HF::soscf_update() {
         "Sorry, second-order convergence has not been implemented for this "
         "type of SCF wavefunction yet.");
 }
-void HF::form_V() {
-    throw PSIEXCEPTION(
-        "Sorry, DFT functionals are not suppored for this type of SCF wavefunction.");
-}
-void HF::form_C() {
-    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals.");
-}
-void HF::form_D() {
-    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities.");
-}
+void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not suppored for this type of SCF wavefunction."); }
+void HF::form_C() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
+void HF::form_D() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities."); }
 std::vector<SharedMatrix> HF::onel_Hx(std::vector<SharedMatrix> x) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct Hx products.");
 }
-std::vector<SharedMatrix> HF::twoel_Hx(std::vector<SharedMatrix> x, bool combine,
-                                       std::string return_basis) {
+std::vector<SharedMatrix> HF::twoel_Hx(std::vector<SharedMatrix> x, bool combine, std::string return_basis) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct Hx products.");
 }
 std::vector<SharedMatrix> HF::cphf_Hx(std::vector<SharedMatrix> x) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct cphf_Hx products.");
 }
 std::vector<SharedMatrix> HF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
-                                     int print_lvl) {
+                                         int print_lvl) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot solve CPHF equations.");
 }
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
@@ -442,32 +424,30 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
 
     // We guess occ x vir block size by the size of x to make this method easy to use
     Dimension tsize = x->colspi() + x->rowspi();
-    if ((reference != "ROHF") && (tsize != nmopi_)){
+    if ((reference != "ROHF") && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
     tsize = x->colspi() + x->rowspi() - soccpi_;
-    if ((reference == "ROHF") && (tsize != nmopi_)){
+    if ((reference == "ROHF") && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
 
     // Form full antisymmetric matrix
-    for (size_t h=0; h<nirrep_; h++){
-
+    for (size_t h = 0; h < nirrep_; h++) {
         // Whatever the dimension are, we set top right/bot left
         size_t doccpih = (size_t)x->rowspi()[h];
         size_t virpih = (size_t)x->colspi()[h];
         if (!doccpih || !virpih) continue;
         double** up = U->pointer(h);
-        double*  xp = x->pointer(h)[0];
+        double* xp = x->pointer(h)[0];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
-        for (size_t i=0, target=0; i<doccpih; i++){
-            for (size_t a=(nmopi_[h] - virpih); a < nmopi_[h]; a++){
+        for (size_t i = 0, target = 0; i < doccpih; i++) {
+            for (size_t a = (nmopi_[h] - virpih); a < nmopi_[h]; a++) {
                 up[a][i] = xp[target];
                 up[i][a] = -1.0 * xp[target++];
             }
         }
-
     }
     U->expm(4, true);
 
@@ -478,39 +458,36 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     U.reset();
     tmp.reset();
 }
-void HF::integrals()
-{
-    if (print_ )
-        outfile->Printf( "  ==> Integral Setup <==\n\n");
+void HF::integrals() {
+    if (print_) outfile->Printf("  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
     // try {
-    if(options_.get_str("SCF_TYPE") == "GTFOCK") {
-      #ifdef HAVE_JK_FACTORY
-        //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
+    if (options_.get_str("SCF_TYPE") == "GTFOCK") {
+#ifdef HAVE_JK_FACTORY
+        // DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
         std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
         Process::environment.set_legacy_molecule(molecule_);
-        if(options_.get_bool("SOSCF"))
-            jk_ = std::make_shared<GTFockJK>(basisset_,2,false);
+        if (options_.get_bool("SOSCF"))
+            jk_ = std::make_shared<GTFockJK>(basisset_, 2, false);
         else
-            jk_ = std::make_shared<GTFockJK>(basisset_,2,true);
+            jk_ = std::make_shared<GTFockJK>(basisset_, 2, true);
         Process::environment.set_legacy_molecule(other_legacy);
-      #else
+#else
         throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
-      #endif
+#endif
     } else {
-        if (options_.get_str("SCF_TYPE") == "DF"){
+        if (options_.get_str("SCF_TYPE") == "DF") {
             jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
         } else {
             jk_ = JK::build_JK(get_basisset("ORBITAL"), BasisSet::zero_ao_basis_set(), options_);
-
         }
     }
 
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
-    jk_->set_memory((size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
+    jk_->set_memory((size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR") * (Process::environment.get_memory() / 8L)));
 
     // DFT sometimes needs custom stuff
     // K matrices
@@ -526,61 +503,57 @@ void HF::integrals()
     jk_->print_header();
 }
 
-double HF::compute_energy()
-{
-  initialize();
-  iterations();
-  return finalize_E();
+double HF::compute_energy() {
+    initialize();
+    iterations();
+    return finalize_E();
 }
 
-double HF::finalize_E()
-{
+double HF::finalize_E() {
     // Perform wavefunction stability analysis before doing
     // anything on a wavefunction that may not be truly converged.
-    if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
+    if (options_.get_str("STABILITY_ANALYSIS") != "NONE") {
         // We need the integral file, make sure it is written and
         // compute it if needed
-        if(options_.get_str("REFERENCE") != "UHF") {
+        if (options_.get_str("REFERENCE") != "UHF") {
             psio_->open(PSIF_SO_TEI, PSIO_OPEN_OLD);
             if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == nullptr) {
-                psio_->close(PSIF_SO_TEI,1);
+                psio_->close(PSIF_SO_TEI, 1);
                 outfile->Printf("    SO Integrals not on disk, computing...");
                 auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
                 mints->integrals();
                 outfile->Printf("done.\n");
             } else {
-                psio_->close(PSIF_SO_TEI,1);
+                psio_->close(PSIF_SO_TEI, 1);
             }
-
         }
         bool follow = stability_analysis();
 
-        while ( follow && !(attempt_number_ > max_attempts_) ) {
+        while (follow && !(attempt_number_ > max_attempts_)) {
+            attempt_number_++;
+            outfile->Printf("    Running SCF again with the rotated orbitals.\n");
 
-          attempt_number_++;
-          outfile->Printf("    Running SCF again with the rotated orbitals.\n");
-
-          if(initialized_diis_manager_) diis_manager_->reset_subspace();
-          // Reading the rotated orbitals in before starting iterations
-          form_D();
-          E_ = compute_initial_E();
-          iterations();
-          follow = stability_analysis();
+            if (initialized_diis_manager_) diis_manager_->reset_subspace();
+            // Reading the rotated orbitals in before starting iterations
+            form_D();
+            E_ = compute_initial_E();
+            iterations();
+            follow = stability_analysis();
         }
-        if ( follow && (attempt_number_ > max_attempts_) ) {
-          outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
-          outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
+        if (follow && (attempt_number_ > max_attempts_)) {
+            outfile->Printf("    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
+            outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
         }
     }
 
-    // At this point, we are not doing any more SCF cycles
-    // and we can compute and print final quantities.
+// At this point, we are not doing any more SCF cycles
+// and we can compute and print final quantities.
 #ifdef USING_libefp
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
         Process::environment.get_efp()->compute();
 
-        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
-                                            Process::environment.globals["EFP IND ENERGY"];
+        double efp_wfn_independent_energy =
+            Process::environment.globals["EFP TOTAL ENERGY"] - Process::environment.globals["EFP IND ENERGY"];
         energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
 
         outfile->Printf("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy);
@@ -592,7 +565,7 @@ double HF::finalize_E()
     }
 #endif
 
-    outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
+    outfile->Printf("\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
     compute_spin_contamination();
@@ -600,71 +573,69 @@ double HF::finalize_E()
     std::string reference = options_.get_str("REFERENCE");
 
     if (converged_ || !fail_on_maxiter_) {
-
         // Print the orbitals
-        if(print_)
-            print_orbitals();
+        if (print_) print_orbitals();
 
         if (converged_) {
-            outfile->Printf( "  Energy converged.\n\n");
+            outfile->Printf("  Energy converged.\n\n");
         }
         if (!converged_) {
-            outfile->Printf( "  Energy did not converge, but proceeding anyway.\n\n");
+            outfile->Printf("  Energy did not converge, but proceeding anyway.\n\n");
         }
 
         bool df = (options_.get_str("SCF_TYPE") == "DF");
 
-        outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
+        outfile->Printf("  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
         if (perturb_h_) {
-            outfile->Printf( " with %f %f %f perturbation", perturb_dipoles_[0], perturb_dipoles_[1], perturb_dipoles_[2]);
+            outfile->Printf(" with %f %f %f perturbation", perturb_dipoles_[0], perturb_dipoles_[1],
+                            perturb_dipoles_[2]);
         }
-        outfile->Printf( "\n\n");
+        outfile->Printf("\n\n");
         print_energies();
 
         // Need to recompute the Fock matrices, as they are modified during the SCF iteration
         // and might need to be dumped to checkpoint later
         form_F();
 #ifdef USING_PCMSolver
-        if(pcm_enabled_) {
+        if (pcm_enabled_) {
             // Prepare the density
             SharedMatrix D_pcm(Da_->clone());
-            if(same_a_b_orbs()) {
-              D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
-            }
-            else {
-              D_pcm->add(Db_);
+            if (same_a_b_orbs()) {
+                D_pcm->scale(2.0);  // PSI4's density doesn't include the occupation
+            } else {
+                D_pcm->add(Db_);
             }
 
             // Add the PCM potential to the Fock matrix
             SharedMatrix V_pcm;
             V_pcm = hf_pcm_->compute_V();
-            if(same_a_b_orbs()) Fa_->add(V_pcm);
+            if (same_a_b_orbs())
+                Fa_->add(V_pcm);
             else {
-              Fa_->add(V_pcm);
-              Fb_->add(V_pcm);
+                Fa_->add(V_pcm);
+                Fb_->add(V_pcm);
             }
         }
 #endif
 
         // Properties
-//  Comments so that autodoc utility will find these PSI variables
-//
-//  Process::environment.globals["SCF DIPOLE X"] =
-//  Process::environment.globals["SCF DIPOLE Y"] =
-//  Process::environment.globals["SCF DIPOLE Z"] =
-//  Process::environment.globals["SCF QUADRUPOLE XX"] =
-//  Process::environment.globals["SCF QUADRUPOLE XY"] =
-//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
-//  Process::environment.globals["SCF QUADRUPOLE YY"] =
-//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
-//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
+        //  Comments so that autodoc utility will find these PSI variables
+        //
+        //  Process::environment.globals["SCF DIPOLE X"] =
+        //  Process::environment.globals["SCF DIPOLE Y"] =
+        //  Process::environment.globals["SCF DIPOLE Z"] =
+        //  Process::environment.globals["SCF QUADRUPOLE XX"] =
+        //  Process::environment.globals["SCF QUADRUPOLE XY"] =
+        //  Process::environment.globals["SCF QUADRUPOLE XZ"] =
+        //  Process::environment.globals["SCF QUADRUPOLE YY"] =
+        //  Process::environment.globals["SCF QUADRUPOLE YZ"] =
+        //  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
 
         save_information();
     } else {
-            outfile->Printf( "  Failed to converge.\n");
+        outfile->Printf("  Failed to converge.\n");
         E_ = 0.0;
-        if(psio_->open_check(PSIF_CHKPT))
-            psio_->close(PSIF_CHKPT, 1);
+        if (psio_->open_check(PSIF_CHKPT)) psio_->close(PSIF_CHKPT, 1);
 
         // Throw if we didn't converge?
         die_if_not_converged();
@@ -675,14 +646,12 @@ double HF::finalize_E()
 
     finalize();
 
-    //outfile->Printf("\nComputation Completed\n");
+    // outfile->Printf("\nComputation Completed\n");
 
     return E_;
-
 }
 
-void HF::finalize()
-{
+void HF::finalize() {
     // Clean memory off, handle diis closeout, etc
 
     // This will be the only one
@@ -691,8 +660,7 @@ void HF::finalize()
     }
 
     // Clean up after DIIS
-    if(initialized_diis_manager_)
-        diis_manager_->delete_diis_file();
+    if (initialized_diis_manager_) diis_manager_->delete_diis_file();
     diis_manager_.reset();
     initialized_diis_manager_ = false;
 
@@ -701,23 +669,17 @@ void HF::finalize()
     compute_fvpi();
     energy_ = E_;
 
-    //Sphalf_.reset();
+    // Sphalf_.reset();
     X_.reset();
     T_.reset();
     diag_temp_.reset();
     diag_F_temp_.reset();
     diag_C_temp_.reset();
-
-
 }
 
-void HF::semicanonicalize()
-{
-    throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");
-}
+void HF::semicanonicalize() { throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!"); }
 
-void HF::find_occupation()
-{
+void HF::find_occupation() {
     // Don't mess with the occ, MOM's got it!
     if (MOM_started_) {
         MOM();
@@ -725,7 +687,7 @@ void HF::find_occupation()
         std::vector<std::pair<double, int> > pairs_a;
         std::vector<std::pair<double, int> > pairs_b;
         for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
-            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i){
+            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
                 pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
             }
         }
@@ -737,29 +699,26 @@ void HF::find_occupation()
 
         } else {
             for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
-                for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i){
+                for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i) {
                     pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
                 }
             }
             sort(pairs_b.begin(), pairs_b.end());
         }
 
-        if(!input_docc_ && !input_socc_){
-
+        if (!input_docc_ && !input_socc_) {
             // Alpha
             memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
-            for (int i=0; i<nalpha_; ++i)
-                nalphapi_[pairs_a[i].second]++;
+            for (int i = 0; i < nalpha_; ++i) nalphapi_[pairs_a[i].second]++;
 
             // Beta
             memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
-            for (int i=0; i<nbeta_; ++i)
-                nbetapi_[pairs_b[i].second]++;
+            for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
         int old_socc[8];
         int old_docc[8];
-        for(int h = 0; h < nirrep_; ++h){
+        for (int h = 0; h < nirrep_; ++h) {
             old_socc[h] = soccpi_[h];
             old_docc[h] = doccpi_[h];
         }
@@ -792,81 +751,70 @@ void HF::find_occupation()
     frac();
 }
 
-void HF::print_header()
-{
+void HF::print_header() {
     int nthread = 1;
-    #ifdef _OPENMP
-        nthread = Process::environment.get_n_threads();
-    #endif
+#ifdef _OPENMP
+    nthread = Process::environment.get_n_threads();
+#endif
 
-
-    outfile->Printf( "\n");
-    outfile->Printf( "         ---------------------------------------------------------\n");
-    outfile->Printf( "                                   SCF\n");
-    outfile->Printf( "            by Justin Turney, Rob Parrish, Andy Simmonett\n");
-    outfile->Printf( "                             and Daniel Smith\n");
-    outfile->Printf( "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
-    outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1048576L);
-    outfile->Printf( "         ---------------------------------------------------------\n");
-    outfile->Printf( "\n");
-    outfile->Printf( "  ==> Geometry <==\n\n");
-
+    outfile->Printf("\n");
+    outfile->Printf("         ---------------------------------------------------------\n");
+    outfile->Printf("                                   SCF\n");
+    outfile->Printf("            by Justin Turney, Rob Parrish, Andy Simmonett\n");
+    outfile->Printf("                             and Daniel Smith\n");
+    outfile->Printf("                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
+    outfile->Printf("                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1048576L);
+    outfile->Printf("         ---------------------------------------------------------\n");
+    outfile->Printf("\n");
+    outfile->Printf("  ==> Geometry <==\n\n");
 
     molecule_->print();
 
-
-    outfile->Printf( "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
+    outfile->Printf("  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
     molecule_->print_rotational_constants();
 
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
-    outfile->Printf( "  Charge       = %d\n", charge_);
-    outfile->Printf( "  Multiplicity = %d\n", multiplicity_);
-    outfile->Printf( "  Electrons    = %d\n", nelectron_);
-    outfile->Printf( "  Nalpha       = %d\n", nalpha_);
-    outfile->Printf( "  Nbeta        = %d\n\n", nbeta_);
+    outfile->Printf("  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
+    outfile->Printf("  Charge       = %d\n", charge_);
+    outfile->Printf("  Multiplicity = %d\n", multiplicity_);
+    outfile->Printf("  Electrons    = %d\n", nelectron_);
+    outfile->Printf("  Nalpha       = %d\n", nalpha_);
+    outfile->Printf("  Nbeta        = %d\n\n", nbeta_);
 
-    outfile->Printf( "  ==> Algorithm <==\n\n");
-    outfile->Printf( "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
-    outfile->Printf( "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    outfile->Printf("  ==> Algorithm <==\n\n");
+    outfile->Printf("  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
+    outfile->Printf("  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
     if (MOM_excited_)
-        outfile->Printf( "  Excited-state MOM enabled.\n");
+        outfile->Printf("  Excited-state MOM enabled.\n");
     else
-        outfile->Printf( "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
-    outfile->Printf( "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
-    outfile->Printf( "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
-    outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
-    outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
-    outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
+        outfile->Printf("  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
+    outfile->Printf("  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
+    outfile->Printf("  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
+    outfile->Printf("  Energy threshold   = %3.2e\n", energy_threshold_);
+    outfile->Printf("  Density threshold  = %3.2e\n", density_threshold_);
+    outfile->Printf("  Integral threshold = %3.2e\n\n", integral_threshold_);
 
-
-    outfile->Printf( "  ==> Primary Basis <==\n\n");
+    outfile->Printf("  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
 }
 
-
-void HF::print_preiterations()
-{
+void HF::print_preiterations() {
     CharacterTable ct = molecule_->point_group()->char_table();
 
-
-    outfile->Printf( "   -------------------------------------------------------\n");
-    outfile->Printf( "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
-    outfile->Printf( "   -------------------------------------------------------\n");
-    for (int h= 0; h < nirrep_; h++) {
-        outfile->Printf("     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n",
-                        ct.gamma(h).symbol(), nsopi_[h], nmopi_[h],
+    outfile->Printf("   -------------------------------------------------------\n");
+    outfile->Printf("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
+    outfile->Printf("   -------------------------------------------------------\n");
+    for (int h = 0; h < nirrep_; h++) {
+        outfile->Printf("     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h],
                         nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
     }
-    outfile->Printf( "   -------------------------------------------------------\n");
-    outfile->Printf("    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_,
-                    nalpha_, nbeta_, nbeta_, nalpha_ - nbeta_);
+    outfile->Printf("   -------------------------------------------------------\n");
+    outfile->Printf("    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_ - nbeta_);
     outfile->Printf("   -------------------------------------------------------\n\n");
 }
 
-void HF::form_H()
-{
+void HF::form_H() {
     T_ = SharedMatrix(factory_->create_matrix(PSIF_SO_T));
     V_ = SharedMatrix(factory_->create_matrix(PSIF_SO_V));
 
@@ -874,128 +822,117 @@ void HF::form_H()
     T_->load(psio_, PSIF_OEI);
     V_->load(psio_, PSIF_OEI);
 
-    if (debug_ > 2)
-        T_->print("outfile");
+    if (debug_ > 2) T_->print("outfile");
 
-    if (debug_ > 2)
-        V_->print("outfile");
+    if (debug_ > 2) V_->print("outfile");
 
     if (perturb_h_) {
-      if(perturb_ == embpot || perturb_ == sphere || perturb_ == dx) { // embedding potential read from file
-        if(nirrep_ > 1)
-          throw PSIEXCEPTION("RHF_embed: embedding, dx, and spherical potentials require 'symmetry c1'.");
-        int nso = 0;
-        for(int h=0; h < nirrep_; h++) nso += nsopi_[h];
-        int nao = basisset_->nao();
+        if (perturb_ == embpot || perturb_ == sphere || perturb_ == dx) {  // embedding potential read from file
+            if (nirrep_ > 1)
+                throw PSIEXCEPTION("RHF_embed: embedding, dx, and spherical potentials require 'symmetry c1'.");
+            int nso = 0;
+            for (int h = 0; h < nirrep_; h++) nso += nsopi_[h];
+            int nao = basisset_->nao();
 
-        // Set up AO->SO transformation matrix (u)
-        MintsHelper helper(basisset_, options_, 0);
-        SharedMatrix aotoso = helper.petite_list(true)->aotoso();
-        int *col_offset = new int[nirrep_];
-        col_offset[0] = 0;
-        for(int h=1; h < nirrep_; h++)
-          col_offset[h] = col_offset[h-1] + aotoso->coldim(h-1);
+            // Set up AO->SO transformation matrix (u)
+            MintsHelper helper(basisset_, options_, 0);
+            SharedMatrix aotoso = helper.petite_list(true)->aotoso();
+            int* col_offset = new int[nirrep_];
+            col_offset[0] = 0;
+            for (int h = 1; h < nirrep_; h++) col_offset[h] = col_offset[h - 1] + aotoso->coldim(h - 1);
 
-        double **u = block_matrix(nao, nso);
-        for(int h=0; h < nirrep_; h++)
-          for(int j=0; j < aotoso->coldim(h); j++)
-            for(int i=0; i < nao; i++)
-              u[i][j+col_offset[h]] = aotoso->get(h, i, j);
-        delete[] col_offset;
+            double** u = block_matrix(nao, nso);
+            for (int h = 0; h < nirrep_; h++)
+                for (int j = 0; j < aotoso->coldim(h); j++)
+                    for (int i = 0; i < nao; i++) u[i][j + col_offset[h]] = aotoso->get(h, i, j);
+            delete[] col_offset;
 
-        double *phi_ao, *phi_so, **V_eff;
-        phi_ao = init_array(nao);
-        phi_so = init_array(nso);
-        V_eff = block_matrix(nso, nso);
+            double *phi_ao, *phi_so, **V_eff;
+            phi_ao = init_array(nao);
+            phi_so = init_array(nso);
+            V_eff = block_matrix(nso, nso);
 
-        if(perturb_ == embpot) {
+            if (perturb_ == embpot) {
+                FILE* input = fopen("EMBPOT", "r");
+                int npoints;
+                int statusvalue = fscanf(input, "%d", &npoints);
+                outfile->Printf("  npoints = %d\n", npoints);
+                double x, y, z, w, v;
+                double max = 0;
+                for (int k = 0; k < npoints; k++) {
+                    statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+                    if (std::fabs(v) > max) max = std::fabs(v);
 
-          FILE* input = fopen("EMBPOT", "r");
-          int npoints;
-          int statusvalue=fscanf(input, "%d", &npoints);
-          outfile->Printf( "  npoints = %d\n", npoints);
-          double x, y, z, w, v;
-          double max = 0;
-          for(int k=0; k < npoints; k++) {
-            statusvalue=fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
-            if(std::fabs(v) > max) max = std::fabs(v);
+                    basisset_->compute_phi(phi_ao, x, y, z);
+                    // Transform phi_ao to SO basis
+                    C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
+                    for (int i = 0; i < nso; i++)
+                        for (int j = 0; j < nso; j++) V_eff[i][j] += w * v * phi_so[i] * phi_so[j];
+                }  // npoints
 
-            basisset_->compute_phi(phi_ao, x, y, z);
-            // Transform phi_ao to SO basis
-            C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
-            for(int i=0; i < nso; i++)
-              for(int j=0; j < nso; j++)
-                V_eff[i][j] += w * v * phi_so[i] * phi_so[j];
-          } // npoints
+                outfile->Printf("  Max. embpot value = %20.10f\n", max);
+                fclose(input);
 
-          outfile->Printf( "  Max. embpot value = %20.10f\n", max);
-          fclose(input);
+            }  // embpot
+            else if (perturb_ == dx) {
+                dx_read(V_eff, phi_ao, phi_so, nao, nso, u);
 
-        } // embpot
-        else if(perturb_ == dx) {
-          dx_read(V_eff, phi_ao, phi_so, nao, nso, u);
+            }  // dx file
+            else if (perturb_ == sphere) {
+                radius_ = options_.get_double("RADIUS");
+                thickness_ = options_.get_double("THICKNESS");
+                r_points_ = options_.get_int("R_POINTS");
+                theta_points_ = options_.get_int("THETA_POINTS");
+                phi_points_ = options_.get_int("PHI_POINTS");
+                outfile->Printf("  Hard spherical potential radius         = %3.2f bohr\n", radius_);
+                outfile->Printf("  Spherical potential thickness           = %3.2f bohr\n", thickness_);
+                outfile->Printf("  Number of radial integration points     = %d\n", r_points_);
+                outfile->Printf("  Number of colatitude integration points = %d\n", theta_points_);
+                outfile->Printf("  Number of azimuthal integration points  = %d\n", phi_points_);
 
-        } // dx file
-        else if(perturb_ == sphere) {
-          radius_ = options_.get_double("RADIUS");
-          thickness_ = options_.get_double("THICKNESS");
-          r_points_ = options_.get_int("R_POINTS");
-          theta_points_ = options_.get_int("THETA_POINTS");
-          phi_points_ = options_.get_int("PHI_POINTS");
-          outfile->Printf( "  Hard spherical potential radius         = %3.2f bohr\n", radius_);
-          outfile->Printf( "  Spherical potential thickness           = %3.2f bohr\n", thickness_);
-          outfile->Printf( "  Number of radial integration points     = %d\n", r_points_);
-          outfile->Printf( "  Number of colatitude integration points = %d\n", theta_points_);
-          outfile->Printf( "  Number of azimuthal integration points  = %d\n", phi_points_);
+                double r_step = thickness_ / r_points_;         // bohr
+                double theta_step = 2 * pc_pi / theta_points_;  // 1 degree in radians
+                double phi_step = 2 * pc_pi / phi_points_;      // 1 degree in radians
+                double weight = r_step * theta_step * phi_step;
+                for (double r = radius_; r < radius_ + thickness_; r += r_step) {
+                    for (double theta = 0.0; theta < pc_pi; theta += theta_step) { /* colatitude */
+                        for (double phi = 0.0; phi < 2 * pc_pi; phi += phi_step) { /* azimuthal */
 
-          double r_step = thickness_/r_points_; // bohr
-          double theta_step = 2*pc_pi/theta_points_; // 1 degree in radians
-          double phi_step = 2*pc_pi/phi_points_; // 1 degree in radians
-          double weight = r_step * theta_step * phi_step;
-          for(double r=radius_; r < radius_+thickness_; r += r_step) {
-            for(double theta=0.0; theta < pc_pi; theta += theta_step) {  /* colatitude */
-              for(double phi=0.0; phi < 2*pc_pi; phi += phi_step) { /* azimuthal */
+                            double x = r * sin(theta) * cos(phi);
+                            double y = r * sin(theta) * sin(phi);
+                            double z = r * cos(theta);
 
-                double x = r * sin(theta) * cos(phi);
-                double y = r * sin(theta) * sin(phi);
-                double z = r * cos(theta);
+                            double jacobian = weight * r * r * sin(theta);
 
-                double jacobian = weight * r * r * sin(theta);
+                            basisset_->compute_phi(phi_ao, x, y, z);
 
-                basisset_->compute_phi(phi_ao, x, y, z);
+                            C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
 
-                C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1,
-                        0.0, &(phi_so[0]), 1);
+                            for (int i = 0; i < nso; i++)
+                                for (int j = 0; j < nso; j++)
+                                    V_eff[i][j] += jacobian * (-1.0e6) * phi_so[i] * phi_so[j];
+                        }
+                    }
+                }
+            }  // sphere
 
-                for(int i=0; i < nso; i++)
-                  for(int j=0; j < nso; j++)
-                    V_eff[i][j] += jacobian * (-1.0e6) * phi_so[i] * phi_so[j];
-              }
+            outfile->Printf("  Perturbing H by %f %f %f V_eff.\n", perturb_dipoles_[0], perturb_dipoles_[1],
+                            perturb_dipoles_[2]);
+            if (options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, "outfile");
+
+            if (perturb_ == dx) {
+                for (int i = 0; i < nso; i++)
+                    for (int j = 0; j < nso; j++) V_->set(i, j, V_eff[i][j]);  // ignore nuclear potential
+            } else {
+                for (int i = 0; i < nso; i++)
+                    for (int j = 0; j < nso; j++) V_->set(i, j, (V_eff[i][j] + V_->get(i, j)));
             }
-          }
-        } // sphere
 
-
-          outfile->Printf( "  Perturbing H by %f %f %f V_eff.\n", perturb_dipoles_[0], perturb_dipoles_[1], perturb_dipoles_[2]);
-          if(options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, "outfile");
-
-
-        if(perturb_ == dx) {
-          for(int i=0; i < nso; i++)
-            for(int j=0; j < nso; j++)
-              V_->set(i, j, V_eff[i][j]); // ignore nuclear potential
-        }
-        else {
-          for(int i=0; i < nso; i++)
-            for(int j=0; j < nso; j++)
-              V_->set(i, j, (V_eff[i][j] + V_->get(i,j)));
-        }
-
-        free(phi_ao);
-        free(phi_so);
-        free_block(V_eff);
-      }  // embpot or sphere
-    } // end perturb_h_
+            free(phi_ao);
+            free(phi_so);
+            free_block(V_eff);
+        }  // embpot or sphere
+    }      // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
     if (external_pot_) {
@@ -1015,17 +952,15 @@ void HF::form_H()
             external_pot_->set_print(print_);
             external_pot_->print();
         }
-        if (print_ > 3)
-            Vprime->print();
+        if (print_ > 3) Vprime->print();
         V_->add(Vprime);
-
 
         // Extra nuclear repulsion
         double enuc2 = external_pot_->computeNuclearEnergy(molecule_);
         if (print_) {
-               outfile->Printf( "  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
-               outfile->Printf( "  Additional nuclear repulsion = %20.15f\n", enuc2);
-               outfile->Printf( "  Total nuclear repulsion      = %20.15f\n\n", nuclearrep_ + enuc2);
+            outfile->Printf("  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
+            outfile->Printf("  Additional nuclear repulsion = %20.15f\n", enuc2);
+            outfile->Printf("  Total nuclear repulsion      = %20.15f\n\n", nuclearrep_ + enuc2);
         }
         nuclearrep_ += enuc2;
 
@@ -1037,41 +972,37 @@ void HF::form_H()
     H_->copy(T_);
     H_->add(V_);
 
-    if (print_ > 3)
-        H_->print("outfile");
+    if (print_ > 3) H_->print("outfile");
 }
 
-void HF::form_Shalf()
-{
+void HF::form_Shalf() {
     // ==> SYMMETRIC ORTHOGONALIZATION <== //
 
     // S_ is computed by wavefunction
 
-    SharedMatrix eigvec= factory_->create_shared_matrix("L");
-    SharedMatrix eigtemp= factory_->create_shared_matrix("Temp");
-    SharedMatrix eigtemp2= factory_->create_shared_matrix("Temp2");
-    SharedMatrix eigvec_store= factory_->create_shared_matrix("TempStore");
+    SharedMatrix eigvec = factory_->create_shared_matrix("L");
+    SharedMatrix eigtemp = factory_->create_shared_matrix("Temp");
+    SharedMatrix eigtemp2 = factory_->create_shared_matrix("Temp2");
+    SharedMatrix eigvec_store = factory_->create_shared_matrix("TempStore");
     SharedVector eigval(factory_->create_vector());
     SharedVector eigval_store(factory_->create_vector());
 
-    //Used to do this 3 times, now only once
+    // Used to do this 3 times, now only once
     S_->diagonalize(eigvec, eigval);
     eigvec_store->copy(eigvec);
     eigval_store->copy(eigval.get());
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     const Dimension& dimpi = eigval->dimpi();
-    double min_S = std::fabs(eigval->get(0,0));
-    for (int h=0; h<nirrep_; ++h) {
-        for (int i=0; i<dimpi[h]; ++i) {
-            if (min_S > eigval->get(h,i))
-                min_S = eigval->get(h,i);
+    double min_S = std::fabs(eigval->get(0, 0));
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < dimpi[h]; ++i) {
+            if (min_S > eigval->get(h, i)) min_S = eigval->get(h, i);
             double scale = 1.0 / sqrt(eigval->get(h, i));
             eigval->set(h, i, scale);
         }
     }
-    if (print_ )
-        outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
+    if (print_) outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2->set_diagonal(eigval);
 
@@ -1083,24 +1014,20 @@ void HF::form_Shalf()
     // Decide symmetric or canonical
     double S_cutoff = options_.get_double("S_TOLERANCE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
-
-        if (print_)
-            outfile->Printf("  Using Symmetric Orthogonalization.\n\n");
+        if (print_) outfile->Printf("  Using Symmetric Orthogonalization.\n\n");
 
     } else {
+        if (print_) outfile->Printf("  Using Canonical Orthogonalization with cutoff of %14.10E.\n", S_cutoff);
 
-        if (print_)
-            outfile->Printf("  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
-
-        //Diagonalize S (or just get a fresh copy)
+        // Diagonalize S (or just get a fresh copy)
         eigvec->copy(eigvec_store.get());
         eigval->copy(eigval_store.get());
         int delta_mos = 0;
-        for (int h=0; h<nirrep_; ++h) {
-            //in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
+        for (int h = 0; h < nirrep_; ++h) {
+            // in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
             int start_index = 0;
-            for (int i=0; i<dimpi[h]; ++i) {
-                if (S_cutoff  < eigval->get(h,i)) {
+            for (int i = 0; i < dimpi[h]; ++i) {
+                if (S_cutoff < eigval->get(h, i)) {
                     double scale = 1.0 / sqrt(eigval->get(h, i));
                     eigvec->scale_column(h, i, scale);
                 } else {
@@ -1109,52 +1036,49 @@ void HF::form_Shalf()
                     nmo_--;
                 }
             }
-            if (print_>2)
-                outfile->Printf("  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
+            if (print_ > 2)
+                outfile->Printf("  Irrep %d, %d of %d possible MOs eliminated.\n", h, start_index, nsopi_[h]);
 
             delta_mos += start_index;
         }
 
-        X_->init(nirrep_,nsopi_,nmopi_,"X (Canonical Orthogonalization)");
-        for (int h=0; h<eigval->nirrep(); ++h) {
-            //Copy significant columns of eigvec into X in
-            //descending order
+        X_->init(nirrep_, nsopi_, nmopi_, "X (Canonical Orthogonalization)");
+        for (int h = 0; h < eigval->nirrep(); ++h) {
+            // Copy significant columns of eigvec into X in
+            // descending order
             int start_index = 0;
-            for (int i=0; i<dimpi[h]; ++i) {
-                if (S_cutoff  < eigval->get(h,i)) {
+            for (int i = 0; i < dimpi[h]; ++i) {
+                if (S_cutoff < eigval->get(h, i)) {
                 } else {
                     start_index++;
                 }
             }
-            for (int i=0; i<dimpi[h]-start_index; ++i) {
-                for (int m = 0; m < dimpi[h]; m++)
-                    X_->set(h,m,i,eigvec->get(h,m,dimpi[h]-i-1));
+            for (int i = 0; i < dimpi[h] - start_index; ++i) {
+                for (int m = 0; m < dimpi[h]; m++) X_->set(h, m, i, eigvec->get(h, m, dimpi[h] - i - 1));
             }
         }
 
-        if (print_)
-            outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
+        if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", delta_mos, nso_);
 
         // Double check occupation vectors
-        for(int h = 0; h < eigval->nirrep(); ++h) {
-          if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
-            throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
-          }
+        for (int h = 0; h < eigval->nirrep(); ++h) {
+            if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+                throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
+            }
         }
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
-        Ca_->init(nirrep_,nsopi_,nmopi_,"Alpha MO coefficients");
+        Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
         epsilon_b_->init(nmopi_);
-        Cb_->init(nirrep_,nsopi_,nmopi_,"Beta MO coefficients");
+        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
 
         // Extra matrix dimension changes for specific derived classes
         prepare_canonical_orthogonalization();
-
     }
 
     // Temporary variables needed by diagonalize_F
-    diag_temp_   = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
+    diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
     diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
     diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
 
@@ -1162,11 +1086,9 @@ void HF::form_Shalf()
         S_->print("outfile");
         X_->print("outfile");
     }
-
 }
 
-void HF::compute_fcpi()
-{
+void HF::compute_fcpi() {
     // FROZEN_DOCC takes precedence, FREEZE_CORE directive has second priority
     if (options_["FROZEN_DOCC"].has_changed()) {
         if (options_["FROZEN_DOCC"].size() != epsilon_a_->nirrep()) {
@@ -1176,7 +1098,6 @@ void HF::compute_fcpi()
             frzcpi_[h] = options_["FROZEN_DOCC"][h].to_integer();
         }
     } else {
-
         int nfzc = 0;
         if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
             nfzc = options_.get_int("NUM_FROZEN_DOCC");
@@ -1185,23 +1106,20 @@ void HF::compute_fcpi()
         }
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;
-        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-                pairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+        for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) pairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
             frzcpi_[h] = 0;
         }
-        sort(pairs.begin(),pairs.end());
+        sort(pairs.begin(), pairs.end());
 
-        for (int i=0; i<nfzc; ++i)
-            frzcpi_[pairs[i].second]++;
+        for (int i = 0; i < nfzc; ++i) frzcpi_[pairs[i].second]++;
     }
     // total frozen core
     nfrzc_ = 0;
     for (int h = 0; h < epsilon_a_->nirrep(); h++) nfrzc_ += frzcpi_[h];
 }
 
-void HF::compute_fvpi()
-{
+void HF::compute_fvpi() {
     // FROZEN_UOCC takes precedence, FREEZE_UOCC directive has second priority
     if (options_["FROZEN_UOCC"].has_changed()) {
         if (options_["FROZEN_UOCC"].size() != epsilon_a_->nirrep()) {
@@ -1214,58 +1132,48 @@ void HF::compute_fvpi()
         int nfzv = options_.get_int("NUM_FROZEN_UOCC");
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;
-        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-                pairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+        for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) pairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
             frzvpi_[h] = 0;
         }
-        sort(pairs.begin(),pairs.end(), std::greater<std::pair<double, int> >());
+        sort(pairs.begin(), pairs.end(), std::greater<std::pair<double, int> >());
 
-        for (int i=0; i<nfzv; ++i)
-            frzvpi_[pairs[i].second]++;
+        for (int i = 0; i < nfzv; ++i) frzvpi_[pairs[i].second]++;
     }
 }
 
-void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<std::string, int> > > orbs)
-{
-        outfile->Printf( "    %-70s\n\n    ", header);
-        int count = 0;
-        for (int i = 0; i < orbs.size(); i++) {
-            outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first.c_str(), orbs[i].first);
-            if (count++ % 3 == 2 && count != orbs.size())
-                outfile->Printf( "\n    ");
-        }
-        outfile->Printf( "\n\n");
+void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<std::string, int> > > orbs) {
+    outfile->Printf("    %-70s\n\n    ", header);
+    int count = 0;
+    for (int i = 0; i < orbs.size(); i++) {
+        outfile->Printf("%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first.c_str(), orbs[i].first);
+        if (count++ % 3 == 2 && count != orbs.size()) outfile->Printf("\n    ");
+    }
+    outfile->Printf("\n\n");
 }
 
-void HF::print_orbitals()
-{
+void HF::print_orbitals() {
     std::vector<std::string> labels = molecule_->irrep_labels();
 
-    outfile->Printf( "    Orbital Energies (a.u.)\n    -----------------------\n\n");
+    outfile->Printf("    Orbital Energies (a.u.)\n    -----------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
-    if((reference == "RHF") || (reference == "RKS")){
-
+    if ((reference == "RHF") || (reference == "RKS")) {
         std::vector<std::pair<double, std::pair<std::string, int> > > occ;
         std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
         for (int h = 0; h < nirrep_; h++) {
-
             std::vector<std::pair<double, int> > orb_e;
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_e.push_back(std::make_pair(epsilon_a_->get(h,a), a));
+            for (int a = 0; a < nmopi_[h]; a++) orb_e.push_back(std::make_pair(epsilon_a_->get(h, a), a));
             std::sort(orb_e.begin(), orb_e.end());
 
             std::vector<int> orb_order(nmopi_[h]);
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_order[orb_e[a].second] = a;
+            for (int a = 0; a < nmopi_[h]; a++) orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occ.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
+                occ.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
-
+                vir.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
         }
         std::sort(occ.begin(), occ.end());
         std::sort(vir.begin(), vir.end());
@@ -1273,44 +1181,36 @@ void HF::print_orbitals()
         print_orbitals("Doubly Occupied:", occ);
         print_orbitals("Virtual:", vir);
 
-    }else if((reference == "UHF") || (reference == "UKS") ||
-        (reference == "CUHF")){
-
+    } else if ((reference == "UHF") || (reference == "UKS") || (reference == "CUHF")) {
         std::vector<std::pair<double, std::pair<std::string, int> > > occA;
         std::vector<std::pair<double, std::pair<std::string, int> > > virA;
         std::vector<std::pair<double, std::pair<std::string, int> > > occB;
         std::vector<std::pair<double, std::pair<std::string, int> > > virB;
 
         for (int h = 0; h < nirrep_; h++) {
-
             std::vector<std::pair<double, int> > orb_eA;
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_eA.push_back(std::make_pair(epsilon_a_->get(h,a), a));
+            for (int a = 0; a < nmopi_[h]; a++) orb_eA.push_back(std::make_pair(epsilon_a_->get(h, a), a));
             std::sort(orb_eA.begin(), orb_eA.end());
 
             std::vector<int> orb_orderA(nmopi_[h]);
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_orderA[orb_eA[a].second] = a;
+            for (int a = 0; a < nmopi_[h]; a++) orb_orderA[orb_eA[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
+                occA.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_orderA[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                virA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
+                virA.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_orderA[a] + 1)));
 
             std::vector<std::pair<double, int> > orb_eB;
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_eB.push_back(std::make_pair(epsilon_b_->get(h,a), a));
+            for (int a = 0; a < nmopi_[h]; a++) orb_eB.push_back(std::make_pair(epsilon_b_->get(h, a), a));
             std::sort(orb_eB.begin(), orb_eB.end());
 
             std::vector<int> orb_orderB(nmopi_[h]);
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_orderB[orb_eB[a].second] = a;
+            for (int a = 0; a < nmopi_[h]; a++) orb_orderB[orb_eB[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                occB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
+                occB.push_back(std::make_pair(epsilon_b_->get(h, a), std::make_pair(labels[h], orb_orderB[a] + 1)));
             for (int a = nbetapi_[h]; a < nmopi_[h]; a++)
-                virB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
-
+                virB.push_back(std::make_pair(epsilon_b_->get(h, a), std::make_pair(labels[h], orb_orderB[a] + 1)));
         }
         std::sort(occA.begin(), occA.end());
         std::sort(virA.begin(), virA.end());
@@ -1322,30 +1222,25 @@ void HF::print_orbitals()
         print_orbitals("Beta Occupied:", occB);
         print_orbitals("Beta Virtual:", virB);
 
-    }else if(reference == "ROHF"){
-
+    } else if (reference == "ROHF") {
         std::vector<std::pair<double, std::pair<std::string, int> > > docc;
         std::vector<std::pair<double, std::pair<std::string, int> > > socc;
         std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
         for (int h = 0; h < nirrep_; h++) {
-
             std::vector<std::pair<double, int> > orb_e;
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_e.push_back(std::make_pair(epsilon_a_->get(h,a), a));
+            for (int a = 0; a < nmopi_[h]; a++) orb_e.push_back(std::make_pair(epsilon_a_->get(h, a), a));
             std::sort(orb_e.begin(), orb_e.end());
 
             std::vector<int> orb_order(nmopi_[h]);
-            for (int a = 0; a < nmopi_[h]; a++)
-                orb_order[orb_e[a].second] = a;
+            for (int a = 0; a < nmopi_[h]; a++) orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                docc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
-            for (int a = nbetapi_[h] ; a < nalphapi_[h]; a++)
-                socc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
-            for (int a = nalphapi_[h] ; a < nmopi_[h]; a++)
-                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
-
+                docc.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
+            for (int a = nbetapi_[h]; a < nalphapi_[h]; a++)
+                socc.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
+            for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
+                vir.push_back(std::make_pair(epsilon_a_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
         }
         std::sort(docc.begin(), docc.end());
         std::sort(socc.begin(), socc.end());
@@ -1355,26 +1250,23 @@ void HF::print_orbitals()
         print_orbitals("Singly Occupied:", socc);
         print_orbitals("Virtual:", vir);
 
-    }else{
+    } else {
         throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
     }
 
-    outfile->Printf( "    Final Occupation by Irrep:\n");
+    outfile->Printf("    Final Occupation by Irrep:\n");
     print_occupation();
-
 }
 
-
-void HF::guess()
-{
+void HF::guess() {
     // don't save guess energy as "the" energy because we need to avoid
     // a false positive test for convergence on the first iteration (that
     // was happening before in tests/scf-guess-read before I removed
     // the statements putting this into E_).  -CDS 3/25/13
     double guess_E;
 
-    //What does the user want?
-    //Options will be:
+    // What does the user want?
+    // Options will be:
     // ref_C_-C matrices were detected in the incoming wavefunction
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
@@ -1387,53 +1279,52 @@ void HF::guess()
     //     guess_type = "CORE";
     // }
     // Take care of options that should be overridden
-    if (guess_type == "AUTO"){
+    if (guess_type == "AUTO") {
         outfile->Printf("\nWarning! Guess was AUTO, switching to CORE!\n\n");
         outfile->Printf("           This option should have been configured at the driver level.\n\n");
         guess_type = "CORE";
     }
 
-    if ((guess_type == "READ") && !guess_Ca_){
+    if ((guess_type == "READ") && !guess_Ca_) {
         outfile->Printf("\nWarning! Guess was READ without Ca set, switching to CORE!\n");
         outfile->Printf("           This option should have been configured at the driver level.\n\n");
         guess_type = "CORE";
     }
 
-    if (guess_Ca_){
-        if (print_)
-            outfile->Printf( "  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");
+    if (guess_Ca_) {
+        if (print_) outfile->Printf("  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");
 
         std::string reference = options_.get_str("REFERENCE");
         bool single_orb = (reference == "RHF");
 
-        if (single_orb){
+        if (single_orb) {
             guess_Cb_ = guess_Ca_;
         } else {
-            if (!guess_Cb_){
+            if (!guess_Cb_) {
                 throw PSIEXCEPTION("Guess Ca was set, but did not find a matching Cb!\n");
             }
         }
 
-
         if ((guess_Ca_->nirrep() != nirrep_) or (guess_Cb_->nirrep() != nirrep_)) {
-            throw PSIEXCEPTION("Number of guess of the input orbitals do not match number of irreps of the wavefunction.");
+            throw PSIEXCEPTION(
+                "Number of guess of the input orbitals do not match number of irreps of the wavefunction.");
         }
         if ((guess_Ca_->rowspi() != nsopi_) or (guess_Cb_->rowspi() != nsopi_)) {
             throw PSIEXCEPTION("Nso of the guess orbitals do not match Nso of the wavefunction.");
         }
 
-       for (int h = 0; h < nirrep_; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             for (int i = 0; i < guess_Ca_->colspi()[h]; i++) {
-                C_DCOPY(nsopi_[h], &guess_Ca_->pointer(h)[0][i], guess_Ca_->colspi()[h],
-                        &Ca_->pointer(h)[0][i], nmopi_[h]);
+                C_DCOPY(nsopi_[h], &guess_Ca_->pointer(h)[0][i], guess_Ca_->colspi()[h], &Ca_->pointer(h)[0][i],
+                        nmopi_[h]);
             }
         }
 
-        if (!single_orb){
-           for (int h = 0; h < nirrep_; h++) {
+        if (!single_orb) {
+            for (int h = 0; h < nirrep_; h++) {
                 for (int i = 0; i < guess_Cb_->colspi()[h]; i++) {
-                    C_DCOPY(nsopi_[h], &guess_Cb_->pointer(h)[0][i], guess_Cb_->colspi()[h],
-                            &Cb_->pointer(h)[0][i], nmopi_[h]);
+                    C_DCOPY(nsopi_[h], &guess_Cb_->pointer(h)[0][i], guess_Cb_->colspi()[h], &Cb_->pointer(h)[0][i],
+                            nmopi_[h]);
                 }
             }
         } else {
@@ -1458,31 +1349,28 @@ void HF::guess()
         guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
+        if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
-        if (print_)
-            outfile->Printf( "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
-
-        //Superposition of Atomic Density
+        // Superposition of Atomic Density
         iteration_ = -1;
         reset_occ_ = true;
         compute_SAD_guess();
         guess_E = compute_initial_E();
 
     } else if (guess_type == "GWH") {
-        //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        if (print_)
-            outfile->Printf( "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
+        // Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
+        if (print_) outfile->Printf("  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
 
-        Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
+        Fa_->zero();  // Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        const int *opi = S_->rowspi();
+        const int* opi = S_->rowspi();
         int nirreps = S_->nirrep();
-        for (h=0; h<nirreps; ++h) {
-            for (i=0; i<opi[h]; ++i) {
-                Fa_->set(h,i,i,H_->get(h,i,i));
-                for (j=0; j<i; ++j) {
-                    Fa_->set(h,i,j,0.875*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
-                    Fa_->set(h,j,i,Fa_->get(h,i,j));
+        for (h = 0; h < nirreps; ++h) {
+            for (i = 0; i < opi[h]; ++i) {
+                Fa_->set(h, i, i, H_->get(h, i, i));
+                for (j = 0; j < i; ++j) {
+                    Fa_->set(h, i, j, 0.875 * S_->get(h, i, j) * (H_->get(h, i, i) + H_->get(h, j, j)));
+                    Fa_->set(h, j, i, Fa_->get(h, i, j));
                 }
             }
         }
@@ -1493,11 +1381,9 @@ void HF::guess()
         guess_E = compute_initial_E();
 
     } else if (guess_type == "CORE") {
+        if (print_) outfile->Printf("  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
-        if (print_)
-            outfile->Printf( "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
-
-        Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
+        Fa_->copy(H_);  // Try the core Hamiltonian as the Fock Matrix
         Fb_->copy(H_);
 
         form_initial_C();
@@ -1506,7 +1392,6 @@ void HF::guess()
         guess_E = compute_initial_E();
     } else {
         throw PSIEXCEPTION("  SCF Guess: No guess was found!");
-
     }
 
     if (print_ > 3) {
@@ -1518,19 +1403,15 @@ void HF::guess()
         Fb_->print();
     }
 
-
-    E_ = 0.0; // don't use this guess in our convergence checks
+    E_ = 0.0;  // don't use this guess in our convergence checks
 }
 
-void HF::format_guess()
-{
+void HF::format_guess() {
     // Nothing to do, only for special cases
 }
 
-
-void HF::check_phases()
-{
-    for (int h=0; h<nirrep_; ++h) {
+void HF::check_phases() {
+    for (int h = 0; h < nirrep_; ++h) {
         for (int p = 0; p < Ca_->colspi(h); ++p) {
             for (int mu = 0; mu < Ca_->rowspi(h); ++mu) {
                 if (std::fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
@@ -1544,7 +1425,7 @@ void HF::check_phases()
     }
 
     if (Ca_ != Cb_) {
-        for (int h=0; h<nirrep_; ++h) {
+        for (int h = 0; h < nirrep_; ++h) {
             for (int p = 0; p < Cb_->colspi(h); ++p) {
                 for (int mu = 0; mu < Cb_->rowspi(h); ++mu) {
                     if (std::fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
@@ -1559,35 +1440,30 @@ void HF::check_phases()
     }
 }
 
-
-void HF::initialize()
-{
+void HF::initialize() {
     converged_ = false;
 
     iteration_ = 0;
 
-    if (print_)
-        outfile->Printf( "  ==> Pre-Iterations <==\n\n");
+    if (print_) outfile->Printf("  ==> Pre-Iterations <==\n\n");
 
-    if (print_)
-        print_preiterations();
+    if (print_) print_preiterations();
 
     // Andy trick 2.0
     old_scf_type_ = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT") ) {
-         outfile->Printf( "  Starting with a DF guess...\n\n");
-         if(!options_["DF_BASIS_SCF"].has_changed()) {
-             // TODO: Match Dunning basis sets
-             molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
-         }
-         scf_type_ = "DF";
-         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
+    if (options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT")) {
+        outfile->Printf("  Starting with a DF guess...\n\n");
+        if (!options_["DF_BASIS_SCF"].has_changed()) {
+            // TODO: Match Dunning basis sets
+            molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+        }
+        scf_type_ = "DF";
+        options_.set_str("SCF", "SCF_TYPE", "DF");  // Scope is reset in proc.py. This is not pretty, but it works
     }
 
-    if(attempt_number_ == 1){
+    if (attempt_number_ == 1) {
         auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
-        if ((options_.get_str("RELATIVISTIC") == "X2C") ||
-            (options_.get_str("RELATIVISTIC") == "DKH")) {
+        if ((options_.get_str("RELATIVISTIC") == "X2C") || (options_.get_str("RELATIVISTIC") == "DKH")) {
             mints->set_rel_basisset(get_basisset("BASIS_RELATIVISTIC"));
         }
 
@@ -1596,43 +1472,42 @@ void HF::initialize()
         integrals();
 
         timer_on("HF: Form H");
-        form_H(); //Core Hamiltonian
+        form_H();  // Core Hamiltonian
         timer_off("HF: Form H");
 
 #ifdef USING_libefp
         // EFP: Add in permanent moment contribution and cache
-        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        if (Process::environment.get_efp()->get_frag_count() > 0) {
             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
             H_->add(Vefp);
             Horig_ = std::make_shared<Matrix>("H orig Matrix", basisset_->nbf(), basisset_->nbf());
             Horig_->copy(H_);
-            outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
+            outfile->Printf("  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
         }
 #endif
 
         timer_on("HF: Form S/X");
-        form_Shalf(); //S and X Matrix
+        form_Shalf();  // S and X Matrix
         timer_off("HF: Form S/X");
 
         timer_on("HF: Guess");
-        guess(); // Guess
+        guess();  // Guess
         timer_off("HF: Guess");
 
-    }else{
+    } else {
         // We're reading the orbitals from the previous set of iterations.
         form_D();
         E_ = compute_initial_E();
     }
 
 #ifdef USING_libefp
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
         Process::environment.get_efp()->set_qm_atoms();
     }
 #endif
 }
 
-void HF::iterations()
-{
+void HF::iterations() {
     std::string reference = options_.get_str("REFERENCE");
 
     MOM_performed_ = false;
@@ -1640,9 +1515,8 @@ void HF::iterations()
 
     bool df = (options_.get_str("SCF_TYPE") == "DF");
 
-    outfile->Printf( "  ==> Iterations <==\n\n");
-    outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
-
+    outfile->Printf("  ==> Iterations <==\n\n");
+    outfile->Printf("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
 
     // SCF iterations
     do {
@@ -1650,12 +1524,12 @@ void HF::iterations()
 
         save_density_and_energy();
 
-        // Call any preiteration callbacks
+// Call any preiteration callbacks
 //        call_preiteration_callbacks();
 
 #ifdef USING_libefp
         // add efp contribution to Fock matrix
-        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        if (Process::environment.get_efp()->get_frag_count() > 0) {
             H_->copy(Horig_);
             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
             H_->add(Vefp);
@@ -1669,7 +1543,7 @@ void HF::iterations()
         timer_off("HF: Form G");
 
         // Reset fractional SAD occupation
-        if ((iteration_ == 0) && reset_occ_){
+        if ((iteration_ == 0) && reset_occ_) {
             reset_occupation();
         }
 
@@ -1677,7 +1551,7 @@ void HF::iterations()
         form_F();
         timer_off("HF: Form F");
 
-        if (print_>3) {
+        if (print_ > 3) {
             Fa_->print("outfile");
             Fb_->print("outfile");
         }
@@ -1686,7 +1560,7 @@ void HF::iterations()
 
 #ifdef USING_libefp
         // add efp contribution to energy
-        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        if (Process::environment.get_efp()->get_frag_count() > 0) {
             double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
             E_ += efp_wfn_dependent_energy;
         }
@@ -1695,40 +1569,40 @@ void HF::iterations()
 #ifdef USING_PCMSolver
         // The PCM potential must be added to the Fock operator *after* the
         // energy computation, not in form_F()
-        if(pcm_enabled_) {
-          // Prepare the density
-          SharedMatrix D_pcm(Da_->clone());
-          if(same_a_b_orbs()) {
-            D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
-          } else {
-            D_pcm->add(Db_);
-          }
+        if (pcm_enabled_) {
+            // Prepare the density
+            SharedMatrix D_pcm(Da_->clone());
+            if (same_a_b_orbs()) {
+                D_pcm->scale(2.0);  // PSI4's density doesn't include the occupation
+            } else {
+                D_pcm->add(Db_);
+            }
 
-          // Compute the PCM charges and polarization energy
-          double epcm = 0.0;
-          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
-            epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
-          } else {
-            epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
-          }
-          energies_["PCM Polarization"] = epcm;
-          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-          E_ += epcm;
+            // Compute the PCM charges and polarization energy
+            double epcm = 0.0;
+            if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
+                epcm = hf_pcm_->compute_E(D_pcm, PCM::CalcType::Total);
+            } else {
+                epcm = hf_pcm_->compute_E(D_pcm, PCM::CalcType::NucAndEle);
+            }
+            energies_["PCM Polarization"] = epcm;
+            variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            E_ += epcm;
 
-          // Add the PCM potential to the Fock matrix
-          SharedMatrix V_pcm;
-          V_pcm = hf_pcm_->compute_V();
-          if (same_a_b_orbs()) {
-            Fa_->add(V_pcm);
-          } else {
-            Fa_->add(V_pcm);
-            Fb_->add(V_pcm);
-          }
+            // Add the PCM potential to the Fock matrix
+            SharedMatrix V_pcm;
+            V_pcm = hf_pcm_->compute_V();
+            if (same_a_b_orbs()) {
+                Fa_->add(V_pcm);
+            } else {
+                Fa_->add(V_pcm);
+                Fb_->add(V_pcm);
+            }
         } else {
-          energies_["PCM Polarization"] = 0.0;
-          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            energies_["PCM Polarization"] = 0.0;
+            variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+            Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
         }
 #endif
         std::string status = "";
@@ -1753,8 +1627,7 @@ void HF::iterations()
                     did_soscf = true;  // Stops DIIS
                 } else {
                     if (print_) {
-                        outfile->Printf(
-                            "Did not take a SOSCF step, using normal convergence methods\n");
+                        outfile->Printf("Did not take a SOSCF step, using normal convergence methods\n");
                     }
                     did_soscf = false;  // Back to DIIS
                 }
@@ -1768,12 +1641,11 @@ void HF::iterations()
             }
         }  // End SOSCF block
 
-        if (!did_soscf){ // Normal convergence procedures if we do not do SOSCF
+        if (!did_soscf) {  // Normal convergence procedures if we do not do SOSCF
 
             timer_on("HF: DIIS");
             bool add_to_diis_subspace = false;
-            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-                add_to_diis_subspace = true;
+            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_) add_to_diis_subspace = true;
 
             compute_orbital_gradient(add_to_diis_subspace);
 
@@ -1784,7 +1656,7 @@ void HF::iterations()
             }
             timer_off("HF: DIIS");
 
-            if (print_>4 && diis_performed_) {
+            if (print_ > 4 && diis_performed_) {
                 outfile->Printf("  After DIIS:\n");
                 Fa_->print("outfile");
                 Fb_->print("outfile");
@@ -1798,20 +1670,20 @@ void HF::iterations()
         // If we're too well converged, or damping wasn't enabled, do DIIS
         damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
 
-        if(diis_performed_){
-            if(status != "") status += "/";
+        if (diis_performed_) {
+            if (status != "") status += "/";
             status += "DIIS";
         }
-        if(MOM_performed_){
-            if(status != "") status += "/";
+        if (MOM_performed_) {
+            if (status != "") status += "/";
             status += "MOM";
         }
-        if(damping_performed_){
-            if(status != "") status += "/";
+        if (damping_performed_) {
+            if (status != "") status += "/";
             status += "DAMP";
         }
-        if(frac_performed_){
-            if(status != "") status += "/";
+        if (frac_performed_) {
+            if (status != "") status += "/";
             status += "FRAC";
         }
 
@@ -1822,9 +1694,9 @@ void HF::iterations()
         Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         // After we've built the new D, damp the update if
-        if(damping_performed_) damp_update();
+        if (damping_performed_) damp_update();
 
-        if (print_ > 3){
+        if (print_ > 3) {
             Ca_->print("outfile");
             Cb_->print("outfile");
             Da_->print("outfile");
@@ -1835,10 +1707,8 @@ void HF::iterations()
 
         df = (options_.get_str("SCF_TYPE") == "DF");
 
-
-        outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
-                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
-
+        outfile->Printf("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "", reference.c_str(),
+                        iteration_, E_, E_ - Eold_, Drms_, status.c_str());
 
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged_ = false;
@@ -1848,50 +1718,47 @@ void HF::iterations()
 
         // If a DF Guess environment, reset the JK object, and keep running
         if (converged_ && options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT")) {
-            outfile->Printf( "\n  DF guess converged.\n\n"); // Be cool dude.
+            outfile->Printf("\n  DF guess converged.\n\n");  // Be cool dude.
             converged_ = false;
-            if(initialized_diis_manager_)
-                diis_manager_->reset_subspace();
+            if (initialized_diis_manager_) diis_manager_->reset_subspace();
             scf_type_ = old_scf_type_;
-            options_.set_str("SCF","SCF_TYPE",old_scf_type_);
+            options_.set_str("SCF", "SCF_TYPE", old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
         }
 
         // Call any postiteration callbacks
-//        call_postiteration_callbacks();
+        //        call_postiteration_callbacks();
 
-    } while (!converged_ && iteration_ < maxiter_ );
-
+    } while (!converged_ && iteration_ < maxiter_);
 }
 
-void HF::print_energies()
-{
-    if (!pcm_enabled_){
+void HF::print_energies() {
+    if (!pcm_enabled_) {
         energies_["PCM Polarization"] = 0.0;
     }
 
     double hf_energy = energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"];
     double dft_energy = hf_energy + energies_["XC"] + energies_["-D"] + energies_["VV10"];
-    double total_energy = dft_energy  + energies_["EFP"] + energies_["PCM Polarization"];
+    double total_energy = dft_energy + energies_["EFP"] + energies_["PCM Polarization"];
 
     outfile->Printf("   => Energetics <=\n\n");
     outfile->Printf("    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
     outfile->Printf("    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
     outfile->Printf("    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
-    if(functional_->needs_xc()){
+    if (functional_->needs_xc()) {
         outfile->Printf("    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
         outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
         outfile->Printf("    VV10 Nonlocal Energy =            %24.16f\n", energies_["VV10"]);
     }
-    if (pcm_enabled_){
+    if (pcm_enabled_) {
         outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
     }
-    if (Process::environment.get_efp()->get_frag_count() > 0){
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
         outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
     }
     outfile->Printf("    Total Energy =                    %24.16f\n", total_energy);
-    outfile->Printf( "\n");
+    outfile->Printf("\n");
 
     Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
     Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
@@ -1899,8 +1766,7 @@ void HF::print_energies()
     if (std::fabs(energies_["XC"]) > 1.0e-14) {
         Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
         Process::environment.globals["DFT VV10 ENERGY"] = energies_["VV10"];
-        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = hf_energy +
-            energies_["XC"] + energies_["VV10"];
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = hf_energy + energies_["XC"] + energies_["VV10"];
         Process::environment.globals["DFT TOTAL ENERGY"] = dft_energy;
     } else {
         Process::environment.globals["HF TOTAL ENERGY"] = hf_energy;
@@ -1912,81 +1778,73 @@ void HF::print_energies()
     Process::environment.globals["SCF ITERATIONS"] = iteration_;
 
     // Only print this alert if we are actually doing EFP or PCM
-    if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
+    if (pcm_enabled_ || (Process::environment.get_efp()->get_frag_count() > 0)) {
         outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
     }
     Process::environment.globals["SCF N ITERS"] = iteration_;
-//  Comment so that autodoc utility will find this PSI variable
-//     It doesn't really belong here but needs to be linked somewhere
-//  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
+    //  Comment so that autodoc utility will find this PSI variable
+    //     It doesn't really belong here but needs to be linked somewhere
+    //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
 }
 
-void HF::print_occupation()
-{
+void HF::print_occupation() {
+    std::vector<std::string> labels = molecule_->irrep_labels();
+    std::string reference = options_.get_str("REFERENCE");
+    outfile->Printf("          ");
+    for (int h = 0; h < nirrep_; ++h) outfile->Printf(" %4s ", labels[h].c_str());
+    outfile->Printf("\n");
+    outfile->Printf("    DOCC [ ");
+    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", doccpi_[h]);
+    outfile->Printf(" %4d ]\n", doccpi_[nirrep_ - 1]);
+    if (reference != "RHF" && reference != "RKS") {
+        outfile->Printf("    SOCC [ ");
+        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", soccpi_[h]);
+        outfile->Printf(" %4d ]\n", soccpi_[nirrep_ - 1]);
+    }
+    if (MOM_excited_) {
+        // Also print nalpha and nbeta per irrep, which are more physically meaningful
+        outfile->Printf("    NA   [ ");
+        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nalphapi_[h]);
+        outfile->Printf(" %4d ]\n", nalphapi_[nirrep_ - 1]);
+        outfile->Printf("    NB   [ ");
+        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nbetapi_[h]);
+        outfile->Printf(" %4d ]\n", nbetapi_[nirrep_ - 1]);
+    }
 
-        std::vector<std::string> labels = molecule_->irrep_labels();
-        std::string reference = options_.get_str("REFERENCE");
-        outfile->Printf( "          ");
-        for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h].c_str()); outfile->Printf( "\n");
-        outfile->Printf( "    DOCC [ ");
-        for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", doccpi_[h]);
-        outfile->Printf( " %4d ]\n", doccpi_[nirrep_-1]);
-        if(reference != "RHF" && reference != "RKS"){
-            outfile->Printf( "    SOCC [ ");
-            for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", soccpi_[h]);
-            outfile->Printf( " %4d ]\n", soccpi_[nirrep_-1]);
-        }
-        if (MOM_excited_) {
-            // Also print nalpha and nbeta per irrep, which are more physically meaningful
-            outfile->Printf( "    NA   [ ");
-            for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", nalphapi_[h]);
-            outfile->Printf( " %4d ]\n", nalphapi_[nirrep_-1]);
-            outfile->Printf( "    NB   [ ");
-            for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", nbetapi_[h]);
-            outfile->Printf( " %4d ]\n", nbetapi_[nirrep_-1]);
-        }
-
-        outfile->Printf("\n");
-
+    outfile->Printf("\n");
 }
 
 //  Returns a vector of the occupation of the a orbitals
-std::shared_ptr<Vector> HF::occupation_a() const
-{
-  auto occA = std::make_shared<Vector>(nmopi_);
-  for(int h=0; h < nirrep_;++h)
-    for(int n=0; n < nalphapi()[h]; n++)
-      occA->set(h, n, 1.0);
+std::shared_ptr<Vector> HF::occupation_a() const {
+    auto occA = std::make_shared<Vector>(nmopi_);
+    for (int h = 0; h < nirrep_; ++h)
+        for (int n = 0; n < nalphapi()[h]; n++) occA->set(h, n, 1.0);
 
-  return occA;
+    return occA;
 }
 
 //  Returns a vector of the occupation of the b orbitals
-std::shared_ptr<Vector> HF::occupation_b() const
-{
-  auto occB = std::make_shared<Vector>(nmopi_);
-  for(int h=0; h < nirrep_;++h)
-    for(int n=0; n < nbetapi()[h]; n++)
-      occB->set(h, n, 1.0);
+std::shared_ptr<Vector> HF::occupation_b() const {
+    auto occB = std::make_shared<Vector>(nmopi_);
+    for (int h = 0; h < nirrep_; ++h)
+        for (int n = 0; n < nbetapi()[h]; n++) occB->set(h, n, 1.0);
 
-  return occB;
+    return occB;
 }
 
-void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm)
-{
-    //Form F' = X'FX for canonical orthogonalization
+void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm) {
+    // Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
     diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
 
-    //Form C' = eig(F')
+    // Form C' = eig(F')
     diag_F_temp_->diagonalize(diag_C_temp_, epsm);
 
-    //Form C = XC'
+    // Form C = XC'
     Cm->gemm(false, false, 1.0, X_, diag_C_temp_, 0.0);
 }
 
-void HF::reset_occupation()
-{
+void HF::reset_occupation() {
     // RHF style for now
     doccpi_ = original_doccpi_;
     soccpi_ = original_soccpi_;
@@ -1996,16 +1854,13 @@ void HF::reset_occupation()
     // These may not match the per irrep. Will remap correctly next find_occupation call
     nalpha_ = original_nalpha_;
     nbeta_ = original_nbeta_;
-
 }
-SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
-{
+SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     const int* nsopi = Cso->rowspi();
     const int* nmopi = Cso->colspi();
     int* nvirpi = new int[nirrep_];
 
-    for (int h = 0; h < nirrep_; h++)
-        nvirpi[h] = nmopi[h] - noccpi[h];
+    for (int h = 0; h < nirrep_; h++) nvirpi[h] = nmopi[h] - noccpi[h];
 
     auto Fia = std::make_shared<Matrix>("Fia (Some Basis)", nirrep_, noccpi, nvirpi);
 
@@ -2022,38 +1877,36 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 
         if (nmo == 0 || nso == 0 || nvir == 0 || nocc == 0) continue;
 
-        //double** C = Cso->pointer(h);
+        // double** C = Cso->pointer(h);
         double** C = C2->pointer(h);
         double** F = Fso->pointer(h);
         double** Fiap = Fia->pointer(h);
 
         double** Temp = block_matrix(nocc, nso);
 
-        C_DGEMM('T','N',nocc,nso,nso,1.0,C[0],nmo,F[0],nso,0.0,Temp[0],nso);
-        C_DGEMM('N','N',nocc,nvir,nso,1.0,Temp[0],nso,&C[0][nocc],nmo,0.0,Fiap[0],nvir);
+        C_DGEMM('T', 'N', nocc, nso, nso, 1.0, C[0], nmo, F[0], nso, 0.0, Temp[0], nso);
+        C_DGEMM('N', 'N', nocc, nvir, nso, 1.0, Temp[0], nso, &C[0][nocc], nmo, 0.0, Fiap[0], nvir);
 
         free_block(Temp);
 
-        //double* eps = E2->pointer(h);
-        //for (int i = 0; i < nocc; i++)
+        // double* eps = E2->pointer(h);
+        // for (int i = 0; i < nocc; i++)
         //    for (int a = 0; a < nvir; a++)
         //        Fiap[i][a] /= eps[a + nocc] - eps[i];
-
     }
 
-    //Fia->print();
+    // Fia->print();
 
     delete[] nvirpi;
 
     return Fia;
 }
-SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso)
-{
+SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
     auto FDSmSDF = std::make_shared<Matrix>("FDS-SDF", nirrep_, nsopi_, nsopi_);
     auto DS = std::make_shared<Matrix>("DS", nirrep_, nsopi_, nsopi_);
 
-    DS->gemm(false,false,1.0,Dso,S_,0.0);
-    FDSmSDF->gemm(false,false,1.0,Fso,DS,0.0);
+    DS->gemm(false, false, 1.0, Dso, S_, 0.0);
+    FDSmSDF->gemm(false, false, 1.0, Fso, DS, 0.0);
 
     SharedMatrix SDF(FDSmSDF->transpose());
     FDSmSDF->subtract(SDF);
@@ -2063,40 +1916,38 @@ SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso)
 
     auto XP = std::make_shared<Matrix>("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_);
     auto XPX = std::make_shared<Matrix>("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_);
-    XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
-    XPX->gemm(false,false,1.0,XP,X_,0.0);
+    XP->gemm(true, false, 1.0, X_, FDSmSDF, 0.0);
+    XPX->gemm(false, false, 1.0, XP, X_, 0.0);
 
-    //XPX->print();
+    // XPX->print();
 
     return XPX;
 }
 
-void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
-{
+void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) {
     std::sort(vec.begin(), vec.end());
     std::vector<std::pair<double, int> >::const_iterator iter = vec.begin();
-    outfile->Printf( "    ");
+    outfile->Printf("    ");
     std::vector<std::string> irrep_labels = molecule_->irrep_labels();
     int count = 0;
-    for(; iter != vec.end(); ++iter){
+    for (; iter != vec.end(); ++iter) {
         ++count;
-        outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second].c_str(), iter->first);
-        if(count == 4){
-            outfile->Printf( "\n    ");
+        outfile->Printf("%4s %-10.6f", irrep_labels[iter->second].c_str(), iter->first);
+        if (count == 4) {
+            outfile->Printf("\n    ");
             count = 0;
-        }else{
-            outfile->Printf( "    ");
+        } else {
+            outfile->Printf("    ");
         }
     }
-    if(count)
-        outfile->Printf( "\n\n");
+    if (count)
+        outfile->Printf("\n\n");
     else
-        outfile->Printf( "\n");
-
+        outfile->Printf("\n");
 }
-bool HF::stability_analysis()
-{
+bool HF::stability_analysis() {
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
     return false;
 }
-}}
+}
+}

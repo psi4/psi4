@@ -26,17 +26,28 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/potentialint.h"
+#include "psi4/pybind11.h"
 
-namespace psi {
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsipcm/psipcm.h"
 
-PCMPotentialInt::PCMPotentialInt(std::vector<SphericalTransform>& trans, std::shared_ptr<BasisSet> bs1,
-                                 std::shared_ptr<BasisSet> /* bs2 */, int /* deriv */)
-    : PotentialInt(trans, bs1, bs1) {
-    // We don't want to transform the integrals from Cartesian (6d, 10f, ...) to Pure (5d, 7f, ...)
-    // for each external charge.  It'll be better to backtransform the density / Fock matrices to
-    // the Cartesian basis, if necessary.
-    force_cartesian_ = true;
+using namespace psi;
+#ifdef USING_PCMSolver
+
+void export_pcm(py::module& m) {
+    py::class_<PCM, std::shared_ptr<PCM>> pcm(m, "PCM", "Class interfacing with PCMSolver");
+
+    py::enum_<PCM::CalcType>(pcm, "CalcType")
+        .value("Total", PCM::CalcType::Total)
+        .value("NucAndEle", PCM::CalcType::NucAndEle)
+        .value("EleOnly", PCM::CalcType::EleOnly);
+
+    pcm.def(py::init<int, std::shared_ptr<BasisSet>>())
+        .def("compute_E", &PCM::compute_E, "Compute PCM polarization energy", py::arg("D"), py::arg("type"))
+        .def("compute_V", &PCM::compute_V, "Compute PCM potential")
+        .def("compute_V_electronic", &PCM::compute_V_electronic,
+             "Compute PCM potential due to electronic charge density only");
 }
-
-}  // Namespace
+#endif
