@@ -145,13 +145,6 @@ protected:
     /// TODO We should really get rid of that and put it in the driver
     std::string old_scf_type_;
 
-    /// Perturb the Hamiltonian?
-    int perturb_h_;
-    /// How big of a perturbation
-    Vector3 perturb_dipoles_;
-    /// With what...
-    enum perturb { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
-    perturb perturb_;
 
     /// The value below which integrals are neglected
     double integral_threshold_;
@@ -448,6 +441,7 @@ public:
 
     /** Forms the G matrix */
     virtual void form_G() = 0;
+
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);

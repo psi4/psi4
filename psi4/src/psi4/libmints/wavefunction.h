@@ -35,6 +35,7 @@
 
 #include <stddef.h>
 #include <vector>
+#include <array>
 #include <memory>
 #include <map>
 
@@ -119,6 +120,15 @@ protected:
     /// How much memory you have access to.
     long int memory_;
 
+    /// Perturb the Hamiltonian?
+    int perturb_h_;
+    /// With what...
+    enum FieldType { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
+    FieldType dipole_field_type_;
+    /// How big of a field perturbation to apply
+    std::array<double,3> dipole_field_strength_;
+
+
     /// Debug flag
     size_t debug_;
     /// Print flag
@@ -147,6 +157,7 @@ protected:
     Dimension nsopi_;
     /// Number of mo per irrep
     Dimension nmopi_;
+
 
     /// Whether this wavefunction was obtained using density fitting
     bool density_fitted_;
@@ -342,6 +353,10 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+
+    /* Return the magnitude of the dipole perturbation strength in the x,y,z direction */
+    std::array<double,3> get_dipole_field_strength() const;
+    FieldType get_dipole_perturbation_type() const;
 
     void set_doccpi(const Dimension& doccpi);
     void set_soccpi(const Dimension& soccpi);

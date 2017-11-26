@@ -86,7 +86,7 @@ void MOInfoBase::read_data()
     // Read sopi and save as a STL vector
     sopi           = convert_int_array_to_vector(nirreps, ref_wfn.nsopi());
     irr_labs       = ref_wfn.molecule()->irrep_labels();
-    nuclear_energy = ref_wfn.molecule()->nuclear_repulsion_energy();
+    nuclear_energy = ref_wfn.molecule()->nuclear_repulsion_energy(ref_wfn.get_dipole_field_strength());
 }
 
 void MOInfoBase::compute_number_of_electrons()

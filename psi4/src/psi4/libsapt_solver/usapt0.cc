@@ -72,6 +72,10 @@ USAPT0::USAPT0(SharedWavefunction d, SharedWavefunction mA, SharedWavefunction m
     primary_A_ = mA->basisset();
     primary_B_ = mB->basisset();
 
+    dimer_field_ = d->get_dipole_field_strength();
+    monomer_A_field_ = mA->get_dipole_field_strength();
+    monomer_B_field_ = mB->get_dipole_field_strength();
+
     mp2fit_ = d->get_basisset("DF_BASIS_SAPT");
     jkfit_ = d->get_basisset("DF_BASIS_SCF");
 
@@ -572,9 +576,9 @@ void USAPT0::fock_terms() {
     // Classical physics (watch for cancellation!)
 
     double Enuc = 0.0;
-    Enuc += dimer_->nuclear_repulsion_energy();
-    Enuc -= monomer_A_->nuclear_repulsion_energy();
-    Enuc -= monomer_B_->nuclear_repulsion_energy();
+    Enuc += dimer_->nuclear_repulsion_energy(dimer_field_);
+    Enuc -= monomer_A_->nuclear_repulsion_energy(monomer_A_field_);
+    Enuc -= monomer_B_->nuclear_repulsion_energy(monomer_B_field_);
 
     SharedMatrix D_A(Da_A->clone());
     D_A->add(Db_A);

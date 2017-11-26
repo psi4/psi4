@@ -53,7 +53,7 @@ DCFTSolver::init()
     nso_        = reference_wavefunction_->nso();
     nirrep_     = reference_wavefunction_->nirrep();
     nmo_        = reference_wavefunction_->nmo();
-    enuc_       = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
+    enuc_       = reference_wavefunction_->molecule()->nuclear_repulsion_energy(reference_wavefunction_->get_dipole_field_strength());
     scf_energy_ = reference_wavefunction_->reference_energy();
     ntriso_     = nso_ * (nso_ + 1) / 2;
     soccpi_ = reference_wavefunction_->soccpi();

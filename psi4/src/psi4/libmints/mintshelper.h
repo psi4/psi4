@@ -83,9 +83,10 @@ private:
 
     void common_init();
 
-    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> obv, SharedMatrix out, bool symm);
+    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
+    void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
 
-public:
+   public:
 
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
     void init_helper(std::shared_ptr<BasisSet> basis);
@@ -217,7 +218,6 @@ public:
 
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
-    // JWM 4/3/2015
     SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
@@ -275,6 +275,18 @@ public:
     /// N^5 ao->mo transform, in memory, smart indexing
     SharedMatrix mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
                                                 SharedMatrix C3, SharedMatrix C4);
+
+    /// Gradient Integrals
+    SharedMatrix overlap_grad(SharedMatrix D);
+
+    // Computes all "core" gradient terms T + V + perturb
+    SharedMatrix core_hamiltonian_grad(SharedMatrix D);
+
+    SharedMatrix kinetic_grad(SharedMatrix D);
+    SharedMatrix potential_grad(SharedMatrix D);
+    SharedMatrix perturb_grad(SharedMatrix D);
+    SharedMatrix perturb_grad(SharedMatrix D, double xlambda, double ylambda, double zlambda);
+
     /// Play function
     void play();
 };

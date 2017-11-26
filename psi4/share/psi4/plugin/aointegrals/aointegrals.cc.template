@@ -65,7 +65,9 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     // Molecule is a member of the wavefunction option
     // Lets print out some molecule information here
     ref_wfn->molecule()->print();
-    double nucrep = ref_wfn->molecule()->nuclear_repulsion_energy();
+
+    // Compute the nuclear repulsion energy under a neutral field
+    double nucrep = ref_wfn->molecule()->nuclear_repulsion_energy({0, 0, 0});
     psi::outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 
     // MintsHelper are convenient objects that take a basisset, options, and print level

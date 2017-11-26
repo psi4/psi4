@@ -170,7 +170,7 @@ void RCPHF::print_header()
 
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
@@ -361,7 +361,7 @@ void RCIS::print_header()
 
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
@@ -1149,7 +1149,7 @@ void RTDHF::print_header()
 
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
@@ -1271,7 +1271,7 @@ void RCPKS::print_header()
 
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
@@ -1369,7 +1369,7 @@ void RTDA::print_header()
 
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
@@ -1520,7 +1520,7 @@ void RTDDFT::print_header()
 
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy(dipole_field_strength_));
     outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
