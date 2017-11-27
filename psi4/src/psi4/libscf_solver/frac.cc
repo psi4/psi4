@@ -61,18 +61,16 @@
 #include <utility>
 #include <tuple>
 
+namespace psi {
+namespace scf {
 
-namespace psi { namespace scf {
-
-void HF::frac()
-{
+void HF::frac() {
     // Perhaps no frac?
-    if (iteration_ < options_.get_int("FRAC_START") || options_.get_int("FRAC_START") == 0)  return;
+    if (iteration_ < options_.get_int("FRAC_START") || options_.get_int("FRAC_START") == 0) return;
     frac_performed_ = true;
 
     // First frac iteration, blow away the diis and print the frac task
     if (iteration_ == options_.get_int("FRAC_START")) {
-
         // Throw unless UHF/UKS
         if (!(options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS"))
             throw PSIEXCEPTION("Fractional Occupation SCF is only implemented for UHF/UKS");
@@ -86,30 +84,28 @@ void HF::frac()
             throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC/FRAC_VAL are of different dimensions");
 
         // Throw if the user is being an idiot with docc/socc
-        if (input_docc_ || input_socc_)
-            throw PSIEXCEPTION("Fractional Occupation SCF: Turn off DOCC/SOCC");
+        if (input_docc_ || input_socc_) throw PSIEXCEPTION("Fractional Occupation SCF: Turn off DOCC/SOCC");
 
         // Throw if the user is trying to start MOM before FRAC
         if (options_.get_int("MOM_START") <= options_.get_int("FRAC_START") && options_.get_int("MOM_START") != 0)
             throw PSIEXCEPTION("Fractional Occupation SCF: MOM must start after FRAC");
 
         // Throw if the user is just way too eager
-        if (MOM_excited_)
-            throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
+        if (MOM_excited_) throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
 
         // Close off a previous burn-in SCF
-        outfile->Printf( "\n");
+        outfile->Printf("\n");
         print_orbitals();
 
         // frac header
-        outfile->Printf( "\n  ==> Fractionally-Occupied SCF Iterations <==\n\n");
+        outfile->Printf("\n  ==> Fractionally-Occupied SCF Iterations <==\n\n");
         for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
             int i = options_["FRAC_OCC"][ind].to_integer();
             double val = options_["FRAC_VAL"][ind].to_double();
 
             // Throw if user requests frac occ above nalpha/nbeta
-            int max_i = (i > 0 ? nalpha_: nbeta_);
-            if(std::abs(i) > max_i) {
+            int max_i = (i > 0 ? nalpha_ : nbeta_);
+            if (std::abs(i) > max_i) {
                 if (i > 0)
                     nalpha_++;
                 else
@@ -118,11 +114,14 @@ void HF::frac()
 
             // Throw if the user is insane
             if (val < 0.0)
-                throw PSIEXCEPTION("Fractional Occupation SCF: Psi4 is not configured for positrons. Please annihilate and start again");
+                throw PSIEXCEPTION(
+                    "Fractional Occupation SCF: Psi4 is not configured for positrons. Please annihilate and start "
+                    "again");
 
-            outfile->Printf( "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), std::abs(i), val);
+            outfile->Printf("    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"),
+                            std::abs(i), val);
         }
-        outfile->Printf( "\n");
+        outfile->Printf("\n");
 
         // Make sure diis restarts correctly/frac plays well with MOM
         if (initialized_diis_manager_) {
@@ -139,9 +138,9 @@ void HF::frac()
 
         // Load the old orbitals in if requested
         if (options_.get_bool("FRAC_LOAD")) {
-            outfile->Printf( "    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
+            outfile->Printf("    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
             throw PSIEXCEPTION("FRAC_LOAD is currently not an avilable feature");
-            //load_orbitals();
+            // load_orbitals();
         }
 
         // Prevent spurious convergence (technically this iteration comes from the N-electron system anyways)
@@ -151,27 +150,27 @@ void HF::frac()
     // Every frac iteration: renormalize the Ca/Cb matrices
 
     // Sort the eigenvalues in the usual manner
-    std::vector<std::tuple<double,int,int> > pairs_a;
-    std::vector<std::tuple<double,int,int> > pairs_b;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(std::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
+    std::vector<std::tuple<double, int, int> > pairs_a;
+    std::vector<std::tuple<double, int, int> > pairs_b;
+    for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+        for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i)
+            pairs_a.push_back(std::tuple<double, int, int>(epsilon_a_->get(h, i), h, i));
     }
-    for (int h=0; h<epsilon_b_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(std::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
+    for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
+        for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i)
+            pairs_b.push_back(std::tuple<double, int, int>(epsilon_b_->get(h, i), h, i));
     }
-    sort(pairs_a.begin(),pairs_a.end());
-    sort(pairs_b.begin(),pairs_b.end());
+    sort(pairs_a.begin(), pairs_a.end());
+    sort(pairs_b.begin(), pairs_b.end());
 
     // Renormalize the C matrix entries
     for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
         int i = options_["FRAC_OCC"][ind].to_integer();
         double val = options_["FRAC_VAL"][ind].to_double();
         bool is_alpha = (i > 0);
-        i = std::abs(i) - 1; // Back to C ordering
+        i = std::abs(i) - 1;  // Back to C ordering
 
-        int h   = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
+        int h = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
@@ -182,37 +181,36 @@ void HF::frac()
         C_DSCAL(nso, sqrt(val), &Cp[0][i], nmo);
     }
 }
-void HF::frac_renormalize()
-{
+void HF::frac_renormalize() {
     if ((options_.get_int("FRAC_START") == 0)       // frac disabled
         || !options_.get_bool("FRAC_RENORMALIZE"))  // || don't renormalize C
         return;
 
     // Renormalize the fractional occupations back to 1, if possible before storage
-    outfile->Printf( "    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
+    outfile->Printf("    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
 
     // Sort the eigenvalues in the usual manner
-    std::vector<std::tuple<double,int,int> > pairs_a;
-    std::vector<std::tuple<double,int,int> > pairs_b;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(std::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
+    std::vector<std::tuple<double, int, int> > pairs_a;
+    std::vector<std::tuple<double, int, int> > pairs_b;
+    for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+        for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i)
+            pairs_a.push_back(std::tuple<double, int, int>(epsilon_a_->get(h, i), h, i));
     }
-    for (int h=0; h<epsilon_b_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(std::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
+    for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
+        for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i)
+            pairs_b.push_back(std::tuple<double, int, int>(epsilon_b_->get(h, i), h, i));
     }
-    sort(pairs_a.begin(),pairs_a.end());
-    sort(pairs_b.begin(),pairs_b.end());
+    sort(pairs_a.begin(), pairs_a.end());
+    sort(pairs_b.begin(), pairs_b.end());
 
     // Renormalize the C matrix entries
     for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
         int i = options_["FRAC_OCC"][ind].to_integer();
         double val = options_["FRAC_VAL"][ind].to_double();
         bool is_alpha = (i > 0);
-        i = std::abs(i) - 1; // Back to C ordering
+        i = std::abs(i) - 1;  // Back to C ordering
 
-        int h   = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
+        int h = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
@@ -220,18 +218,17 @@ void HF::frac_renormalize()
         double** Cp = ((is_alpha) ? Ca_->pointer(h) : Cb_->pointer(h));
 
         // And I say all that to say this: TODO: This destroys FMP2 computations if val == 0
-        if (val != 0.0)
-            C_DSCAL(nso, 1.0 / sqrt(val), &Cp[0][i], nmo);
+        if (val != 0.0) C_DSCAL(nso, 1.0 / sqrt(val), &Cp[0][i], nmo);
     }
 }
 
-void HF::compute_spin_contamination()
-{
-    if (!(options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "CUHF"))
+void HF::compute_spin_contamination() {
+    if (!(options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS" ||
+          options_.get_str("REFERENCE") == "CUHF"))
         return;
 
-    double nalpha = (double) nalpha_;
-    double nbeta  = (double) nbeta_;
+    double nalpha = (double)nalpha_;
+    double nbeta = (double)nbeta_;
 
     // Adjust for fractional occupation
     if (frac_performed_) {
@@ -242,25 +239,24 @@ void HF::compute_spin_contamination()
             if (is_alpha) {
                 nalpha -= (1.0 - val);
             } else {
-                nbeta  -= (1.0 - val);
+                nbeta -= (1.0 - val);
             }
         }
     }
 
     SharedMatrix S = SharedMatrix(factory_->create_matrix("S (Overlap)"));
-    auto fact = std::make_shared<IntegralFactory>(basisset_,basisset_, basisset_,basisset_);
+    auto fact = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
     std::shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
     so_overlap->compute(S);
 
     double dN = 0.0;
 
-    for (int h =0; h < S->nirrep(); h++) {
+    for (int h = 0; h < S->nirrep(); h++) {
         int nbf = S->colspi()[h];
         int nmo = Ca_->colspi()[h];
         int na = nalphapi_[h];
         int nb = nbetapi_[h];
-        if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
-            continue;
+        if (na == 0 || nb == 0 || nbf == 0 || nmo == 0) continue;
 
         auto Ht = std::make_shared<Matrix>("H Temp", nbf, nb);
         auto Ft = std::make_shared<Matrix>("F Temp", na, nb);
@@ -271,10 +267,10 @@ void HF::compute_spin_contamination()
         double** Htp = Ht->pointer(0);
         double** Ftp = Ft->pointer(0);
 
-        C_DGEMM('N','N',nbf,nb,nbf,1.0,Sp[0],nbf,Cbp[0],nmo,0.0,Htp[0],nb);
-        C_DGEMM('T','N',na,nb,nbf,1.0,Cap[0],nmo,Htp[0],nb,0.0,Ftp[0],nb);
+        C_DGEMM('N', 'N', nbf, nb, nbf, 1.0, Sp[0], nbf, Cbp[0], nmo, 0.0, Htp[0], nb);
+        C_DGEMM('T', 'N', na, nb, nbf, 1.0, Cap[0], nmo, Htp[0], nb, 0.0, Ftp[0], nb);
 
-        dN += C_DDOT(na*(long int)nb, Ftp[0], 1, Ftp[0], 1);
+        dN += C_DDOT(na * (long int)nb, Ftp[0], 1, Ftp[0], 1);
     }
 
     double nmin = (nbeta < nalpha ? nbeta : nalpha);
@@ -282,17 +278,17 @@ void HF::compute_spin_contamination()
     double nm = (nalpha - nbeta) / 2.0;
     double S2 = std::fabs(nm) * (std::fabs(nm) + 1.0);
 
-    outfile->Printf( "   @Spin Contamination Metric: %17.9E\n", dS);
-    outfile->Printf( "   @S^2 Expected:              %17.9E\n", S2);
-    outfile->Printf( "   @S^2 Observed:              %17.9E\n", S2 + dS);
-    outfile->Printf( "   @S   Expected:              %17.9E\n", nm);
-    outfile->Printf( "   @S   Observed:              %17.9E\n", nm);
+    outfile->Printf("   @Spin Contamination Metric: %17.9E\n", dS);
+    outfile->Printf("   @S^2 Expected:              %17.9E\n", S2);
+    outfile->Printf("   @S^2 Observed:              %17.9E\n", S2 + dS);
+    outfile->Printf("   @S   Expected:              %17.9E\n", nm);
+    outfile->Printf("   @S   Observed:              %17.9E\n", nm);
 
     if (frac_performed_) {
-        outfile->Printf( "   @Nalpha:                    %17.9E\n", nalpha);
-        outfile->Printf( "   @Nbeta:                     %17.9E\n", nbeta);
+        outfile->Printf("   @Nalpha:                    %17.9E\n", nalpha);
+        outfile->Printf("   @Nbeta:                     %17.9E\n", nbeta);
     }
-    outfile->Printf( "\n");
+    outfile->Printf("\n");
 }
-
-}}
+}
+}

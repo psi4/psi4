@@ -46,7 +46,7 @@ class PSIO;
 namespace scf {
 
 class HF : public Wavefunction {
-protected:
+   protected:
     double Drms_;
 
     /// The kinetic energy matrix
@@ -107,7 +107,7 @@ protected:
     /// Whether its broken symmetry solution or not
     bool broken_symmetry_;
 
-    //Initial SAD doubly occupied may be more than ndocc
+    // Initial SAD doubly occupied may be more than ndocc
     // int sad_nocc_[8];
     Dimension original_doccpi_;
     Dimension original_soccpi_;
@@ -116,8 +116,8 @@ protected:
     bool reset_occ_;
 
     /// Mapping arrays
-    int *so2symblk_;
-    int *so2index_;
+    int* so2symblk_;
+    int* so2index_;
 
     /// SCF algorithm type
     std::string scf_type_;
@@ -149,16 +149,15 @@ protected:
     int diis_enabled_;
 
     // parameters for hard-sphere potentials
-    double radius_; // radius of spherical potential
-    double thickness_; // thickness of spherical barrier
-    int r_points_; // number of radial integration points
-    int theta_points_; // number of colatitude integration points
-    int phi_points_; // number of azimuthal integration points
+    double radius_;     // radius of spherical potential
+    double thickness_;  // thickness of spherical barrier
+    int r_points_;      // number of radial integration points
+    int theta_points_;  // number of colatitude integration points
+    int phi_points_;    // number of azimuthal integration points
 
     /// DFT variables
     std::shared_ptr<SuperFunctional> functional_;
     std::shared_ptr<VBase> potential_;
-
 
     // CPHF info
     int cphf_nfock_builds_;
@@ -181,16 +180,14 @@ protected:
     /// Fractional occupation UHF/UKS
     void frac();
 
-    void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
-
+    void print_stability_analysis(std::vector<std::pair<double, int>>& vec);
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
     void compute_fvpi();
 
     /// Prints the orbitals energies and symmetries (helper method)
-    void print_orbital_pairs(const char* header, std::vector<std::pair<double,
-                             std::pair< std::string, int> > > orbs);
+    void print_orbital_pairs(const char* header, std::vector<std::pair<double, std::pair<std::string, int>>> orbs);
 
     /// Which set of iterations we're on in this computation, e.g., for stability
     /// analysis, where we want to retry SCF without going through all of the setup
@@ -223,9 +220,9 @@ protected:
     /** Performs any operations required for a incoming guess **/
     virtual void format_guess();
 
-public:
-    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
-       Options& options, std::shared_ptr<PSIO> psio);
+   public:
+    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct, Options& options,
+       std::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 
@@ -377,9 +374,8 @@ public:
     virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
                                                std::string return_basis = "MO");
     virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
-                                                 double conv_tol = 1.e-4, int max_iter = 10,
-                                                 int print_lvl = 1);
+    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
+                                                 int max_iter = 10, int print_lvl = 1);
 
     // CPHF data
     bool cphf_converged() { return cphf_converged_; }
@@ -399,7 +395,9 @@ public:
 
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
-    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
+    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
+        sad_fitting_basissets_ = basis_vec;
+    }
 
     // Energies data
     void set_energies(std::string key, double value) { energies_[key] = value; }
@@ -409,7 +407,7 @@ public:
     bool pcm_enabled_;
     std::shared_ptr<PCM> hf_pcm_;
 };
-
-}} // Namespaces
+}
+}  // Namespaces
 
 #endif
