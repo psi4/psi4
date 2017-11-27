@@ -79,18 +79,18 @@ void DFOCC::fno_wrapper() {
             for (int h = 0; h < nirrep_; h++) {
                 navir_fno += (int)options_["ACTIVE_NAT_ORBS"][h].to_double();
             }
-            fnoA = SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
-                                         fno_percentage, navir_fno, false, true));
+            fnoA = std::make_shared<FnoCC>("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
+                                         fno_percentage, navir_fno, false, true);
         }
 
         else if (options_["OCC_PERCENTAGE"].has_changed()) {
-            fnoA = SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
-                                         fno_percentage, navir_fno, true, false));
+            fnoA = std::make_shared<FnoCC>("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
+                                         fno_percentage, navir_fno, true, false);
         }
 
         else {
-            fnoA = SharedFnoCC(new FnoCC("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
-                                         fno_percentage, navir_fno, false, false));
+            fnoA = std::make_shared<FnoCC>("RHF FNO", nQ, nso_, nfrzc, naoccA, nvirA, CmoA, FockA, bQiaA, tol_fno,
+                                         fno_percentage, navir_fno, false, false);
         }
 
         // Get MP2 energy

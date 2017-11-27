@@ -88,7 +88,7 @@ void DFOCC::ekt_ip() {
         psA = std::make_shared<Tensor1d>("alpha occupied pole strength vector", noccA);
 
         // Call EKT
-        SharedEktip ektA = SharedEktip(new Ektip("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5));
+        auto ektA = std::make_shared<Ektip>("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5);
 
         // Print IPs
         outfile->Printf("\n\tEKT Ionization Potentials (Alpha Spin Case) \n");
