@@ -439,7 +439,7 @@ def scf_finalize_energy(self):
     core.print_out("  @%s%s Final Energy: %20.14f" % (prefix, reference, energy))
     # if (perturb_h_) {
     #     core.print_out(" with %f %f %f perturbation" %
-    #                    (perturb_dipoles_[0], perturb_dipoles_[1], perturb_dipoles_[2]))
+    #                    (dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]))
     # }
     core.print_out("\n\n")
     self.print_energies()
