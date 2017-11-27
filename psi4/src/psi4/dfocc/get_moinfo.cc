@@ -65,8 +65,7 @@ void DFOCC::get_moinfo() {
         natom = molecule_->natom();
 
         // Read in nuclear repulsion energy
-        Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy(
-            reference_wavefunction_->get_dipole_field_strength());
+        Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy(reference_wavefunction_->get_dipole_field_strength());
 
         // Read SCF energy
         Escf = reference_wavefunction_->reference_energy();
@@ -171,8 +170,7 @@ void DFOCC::get_moinfo() {
         natom = molecule_->natom();
 
         // Read in nuclear repulsion energy
-        Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy(
-            reference_wavefunction_->get_dipole_field_strength());
+        Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy(reference_wavefunction_->get_dipole_field_strength());
 
         // Read SCF energy
         Escf = reference_wavefunction_->reference_energy();
