@@ -56,47 +56,43 @@
 
 using namespace psi;
 
-
-namespace psi { namespace scf {
+namespace psi {
+namespace scf {
 
 ROHF::ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
-    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object())
-{
+    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
     common_init();
 }
 
-ROHF::ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
-           Options& options, std::shared_ptr<PSIO> psio)
-    : HF(ref_wfn, func, options, psio)
-{
+ROHF::ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options,
+           std::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, func, options, psio) {
     common_init();
 }
 
-ROHF::~ROHF() {
-}
+ROHF::~ROHF() {}
 
-void ROHF::common_init()
-{
-    Fa_      = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
-    Fb_      = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
-    moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
-    soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
-    Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_      = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
-    Cb_      = Ca_;
-    Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
-    Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
+void ROHF::common_init() {
+    Fa_ = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
+    Fb_ = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
+    moFeff_ = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
+    soFeff_ = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
+    Ct_ = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
+    Ca_ = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
+    Cb_ = Ca_;
+    Da_ = SharedMatrix(factory_->create_matrix("SCF alpha density"));
+    Db_ = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
-    Ka_      = SharedMatrix(factory_->create_matrix("K alpha"));
-    Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
-    Ga_      = SharedMatrix(factory_->create_matrix("G alpha"));
-    Gb_      = SharedMatrix(factory_->create_matrix("G beta"));
-    Dt_      = SharedMatrix(factory_->create_matrix("Total SCF density"));
-    Dt_old_  = SharedMatrix(factory_->create_matrix("Old total SCF density"));
-    Da_old_  = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
-    Db_old_  = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
-    moFa_    = SharedMatrix(factory_->create_matrix("MO alpha Fock Matrix (MO basis)"));
-    moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
+    Ka_ = SharedMatrix(factory_->create_matrix("K alpha"));
+    Kb_ = SharedMatrix(factory_->create_matrix("K beta"));
+    Ga_ = SharedMatrix(factory_->create_matrix("G alpha"));
+    Gb_ = SharedMatrix(factory_->create_matrix("G beta"));
+    Dt_ = SharedMatrix(factory_->create_matrix("Total SCF density"));
+    Dt_old_ = SharedMatrix(factory_->create_matrix("Old total SCF density"));
+    Da_old_ = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
+    Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
+    moFa_ = SharedMatrix(factory_->create_matrix("MO alpha Fock Matrix (MO basis)"));
+    moFb_ = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_a_->set_name("orbital energies");
@@ -104,37 +100,33 @@ void ROHF::common_init()
     same_a_b_dens_ = false;
     same_a_b_orbs_ = true;
 
-    if (functional_->needs_xc()){
+    if (functional_->needs_xc()) {
         throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
     }
 }
 
-void ROHF::format_guess()
-{
+void ROHF::format_guess() {
     // Need to build Ct_
 
     // Canonical Orthogonalization
-    if (X_->rowspi() != X_->colspi()){
+    if (X_->rowspi() != X_->colspi()) {
         throw PSIEXCEPTION("ROHF::format_guess: 'GUESS READ' is not available for canonical orthogonalization cases.");
 
-    // Symmetric Orthogonalization
+        // Symmetric Orthogonalization
     } else {
         Ct_ = Matrix::triplet(X_, S_, Ca_);
     }
 }
 
-void ROHF::semicanonicalize()
-{
+void ROHF::semicanonicalize() {
     // Quick sanity checks
-    if(Fa_ == 0 || Fb_ == 0)
+    if (Fa_ == 0 || Fb_ == 0)
         throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but Fock matrices are not initialized.");
-    if(Ca_ == 0 || Cb_ == 0)
+    if (Ca_ == 0 || Cb_ == 0)
         throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbitals are not initialized.");
-    if(Ca_ != Cb_)
-        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbitals are not the same.");
-    if(Fa_ == Fb_)
-        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but Fock matrices are the same.");
-    if(epsilon_a_ != epsilon_b_)
+    if (Ca_ != Cb_) throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbitals are not the same.");
+    if (Fa_ == Fb_) throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but Fock matrices are the same.");
+    if (epsilon_a_ != epsilon_b_)
         throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbital energies are not the same.");
     // Now, make space for the new orbitals
     Cb_ = SharedMatrix(Ca_->clone());
@@ -161,31 +153,31 @@ void ROHF::semicanonicalize()
     Dimension boccpi = doccpi_;
     Dimension avirpi = nmopi_ - aoccpi;
     Dimension bvirpi = nmopi_ - boccpi;
-    Slice aocc_slice(dim_zero,aoccpi);
-    Slice bocc_slice(dim_zero,boccpi);
-    Slice avir_slice(aoccpi,nmopi_);
-    Slice bvir_slice(boccpi,nmopi_);
-    SharedMatrix aFOO = moFa->get_block(aocc_slice,aocc_slice);
-    SharedMatrix aFVV = moFa->get_block(avir_slice,avir_slice);
-    SharedMatrix bFOO = moFb->get_block(bocc_slice,bocc_slice);
-    SharedMatrix bFVV = moFb->get_block(bvir_slice,bvir_slice);
+    Slice aocc_slice(dim_zero, aoccpi);
+    Slice bocc_slice(dim_zero, boccpi);
+    Slice avir_slice(aoccpi, nmopi_);
+    Slice bvir_slice(boccpi, nmopi_);
+    SharedMatrix aFOO = moFa->get_block(aocc_slice, aocc_slice);
+    SharedMatrix aFVV = moFa->get_block(avir_slice, avir_slice);
+    SharedMatrix bFOO = moFb->get_block(bocc_slice, bocc_slice);
+    SharedMatrix bFVV = moFb->get_block(bvir_slice, bvir_slice);
 
     // Canonicalize the Alpha occ-occ block
     evecs = std::make_shared<Matrix>(aoccpi, aoccpi);
     evals = std::make_shared<Vector>(aoccpi);
     aFOO->diagonalize(evecs, evals);
-    for(int h = 0; h < nirrep_; ++h){
-        double **pC  = Crohf->pointer(h);
-        double **pCa = Ca_->pointer(h);
-        double **pR  = evecs->pointer(h);
-        if(aoccpi[h]){
-            C_DGEMM('n', 'n', nsopi_[h], aoccpi[h], aoccpi[h], 1.0, pC[0],
-                    nmopi_[h], pR[0], aoccpi[h], 0.0, pCa[0], nmopi_[h]);
-            for(int p = 0; p < aoccpi[h]; ++p){
+    for (int h = 0; h < nirrep_; ++h) {
+        double** pC = Crohf->pointer(h);
+        double** pCa = Ca_->pointer(h);
+        double** pR = evecs->pointer(h);
+        if (aoccpi[h]) {
+            C_DGEMM('n', 'n', nsopi_[h], aoccpi[h], aoccpi[h], 1.0, pC[0], nmopi_[h], pR[0], aoccpi[h], 0.0, pCa[0],
+                    nmopi_[h]);
+            for (int p = 0; p < aoccpi[h]; ++p) {
                 double epsilon = evals->get(h, p);
                 epsilon_a_->set(h, p, epsilon);
-                for(int q = 0; q < aoccpi[h]; ++q){
-                    moFa->set(h, p, q, p==q ? epsilon : 0.0);
+                for (int q = 0; q < aoccpi[h]; ++q) {
+                    moFa->set(h, p, q, p == q ? epsilon : 0.0);
                 }
             }
         }
@@ -194,18 +186,18 @@ void ROHF::semicanonicalize()
     evecs = std::make_shared<Matrix>(avirpi, avirpi);
     evals = std::make_shared<Vector>(avirpi);
     aFVV->diagonalize(evecs, evals);
-    for(int h = 0; h < nirrep_; ++h){
-        double **pC  = Crohf->pointer(h);
-        double **pCa = Ca_->pointer(h);
-        double **pR  = evecs->pointer(h);
-        if(avirpi[h]){
-            C_DGEMM('n', 'n', nsopi_[h], avirpi[h], avirpi[h], 1.0, &(pC[0][aoccpi[h]]),
-                    nmopi_[h], pR[0], avirpi[h], 0.0, &(pCa[0][aoccpi[h]]), nmopi_[h]);
-            for(int p = 0; p < avirpi[h]; ++p){
+    for (int h = 0; h < nirrep_; ++h) {
+        double** pC = Crohf->pointer(h);
+        double** pCa = Ca_->pointer(h);
+        double** pR = evecs->pointer(h);
+        if (avirpi[h]) {
+            C_DGEMM('n', 'n', nsopi_[h], avirpi[h], avirpi[h], 1.0, &(pC[0][aoccpi[h]]), nmopi_[h], pR[0], avirpi[h],
+                    0.0, &(pCa[0][aoccpi[h]]), nmopi_[h]);
+            for (int p = 0; p < avirpi[h]; ++p) {
                 double epsilon = evals->get(h, p);
-                epsilon_a_->set(h, p+aoccpi[h], epsilon);
-                for(int q = 0; q < avirpi[h]; ++q){
-                    moFa->set(h, p+aoccpi[h], q+aoccpi[h], p==q ? epsilon : 0.0);
+                epsilon_a_->set(h, p + aoccpi[h], epsilon);
+                for (int q = 0; q < avirpi[h]; ++q) {
+                    moFa->set(h, p + aoccpi[h], q + aoccpi[h], p == q ? epsilon : 0.0);
                 }
             }
         }
@@ -214,18 +206,18 @@ void ROHF::semicanonicalize()
     evecs = std::make_shared<Matrix>(boccpi, boccpi);
     evals = std::make_shared<Vector>(boccpi);
     bFOO->diagonalize(evecs, evals);
-    for(int h = 0; h < nirrep_; ++h){
-        double **pC  = Crohf->pointer(h);
-        double **pCb = Cb_->pointer(h);
-        double **pR  = evecs->pointer(h);
-        if(boccpi[h]){
-            C_DGEMM('n', 'n', nsopi_[h], boccpi[h], boccpi[h], 1.0, pC[0],
-                    nmopi_[h], pR[0], boccpi[h], 0.0, pCb[0], nmopi_[h]);
-            for(int p = 0; p < boccpi[h]; ++p){
+    for (int h = 0; h < nirrep_; ++h) {
+        double** pC = Crohf->pointer(h);
+        double** pCb = Cb_->pointer(h);
+        double** pR = evecs->pointer(h);
+        if (boccpi[h]) {
+            C_DGEMM('n', 'n', nsopi_[h], boccpi[h], boccpi[h], 1.0, pC[0], nmopi_[h], pR[0], boccpi[h], 0.0, pCb[0],
+                    nmopi_[h]);
+            for (int p = 0; p < boccpi[h]; ++p) {
                 double epsilon = evals->get(h, p);
                 epsilon_b_->set(h, p, epsilon);
-                for(int q = 0; q < boccpi[h]; ++q){
-                    moFb->set(h, p, q, p==q ? epsilon : 0.0);
+                for (int q = 0; q < boccpi[h]; ++q) {
+                    moFb->set(h, p, q, p == q ? epsilon : 0.0);
                 }
             }
         }
@@ -234,18 +226,18 @@ void ROHF::semicanonicalize()
     evecs = std::make_shared<Matrix>(bvirpi, bvirpi);
     evals = std::make_shared<Vector>(bvirpi);
     bFVV->diagonalize(evecs, evals);
-    for(int h = 0; h < nirrep_; ++h){
-        double **pC  = Crohf->pointer(h);
-        double **pCb = Cb_->pointer(h);
-        double **pR  = evecs->pointer(h);
-        if(bvirpi[h]){
-            C_DGEMM('n', 'n', nsopi_[h], bvirpi[h], bvirpi[h], 1.0, &(pC[0][boccpi[h]]),
-                    nmopi_[h], pR[0], bvirpi[h], 0.0, &(pCb[0][boccpi[h]]), nmopi_[h]);
-            for(int p = 0; p < bvirpi[h]; ++p){
+    for (int h = 0; h < nirrep_; ++h) {
+        double** pC = Crohf->pointer(h);
+        double** pCb = Cb_->pointer(h);
+        double** pR = evecs->pointer(h);
+        if (bvirpi[h]) {
+            C_DGEMM('n', 'n', nsopi_[h], bvirpi[h], bvirpi[h], 1.0, &(pC[0][boccpi[h]]), nmopi_[h], pR[0], bvirpi[h],
+                    0.0, &(pCb[0][boccpi[h]]), nmopi_[h]);
+            for (int p = 0; p < bvirpi[h]; ++p) {
                 double epsilon = evals->get(h, p);
-                epsilon_b_->set(h, p+boccpi[h], epsilon);
-                for(int q = 0; q < bvirpi[h]; ++q){
-                    moFb->set(h, p+boccpi[h], q+boccpi[h], p==q ? epsilon : 0.0);
+                epsilon_b_->set(h, p + boccpi[h], epsilon);
+                for (int q = 0; q < bvirpi[h]; ++q) {
+                    moFb->set(h, p + boccpi[h], q + boccpi[h], p == q ? epsilon : 0.0);
                 }
             }
         }
@@ -257,8 +249,7 @@ void ROHF::semicanonicalize()
     // will be obtained.
 }
 
-void ROHF::finalize()
-{
+void ROHF::finalize() {
     // Form Lagrangian
     //
     // In HF, the Lagrangian is Xpi = Fpi. For RHF and UHF, this reduces
@@ -273,15 +264,15 @@ void ROHF::finalize()
     moFeff_->zero();
     moFa_->transform(Fa_, Ca_);
     moFb_->transform(Fb_, Ca_);
-    for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<moFeff_->rowdim(h); ++m) {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int m = 0; m < moFeff_->rowdim(h); ++m) {
             double tval;
-            for (int i=0; i<doccpi_[h]; ++i) {
+            for (int i = 0; i < doccpi_[h]; ++i) {
                 tval = moFa_->get(h, m, i);
                 tval += moFb_->get(h, m, i);
                 moFeff_->set(h, m, i, tval);
             }
-            for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
+            for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i) {
                 tval = moFa_->get(h, m, i);
                 moFeff_->set(h, m, i, tval);
             }
@@ -304,30 +295,27 @@ void ROHF::finalize()
     HF::finalize();
 }
 
-void ROHF::save_density_and_energy()
-{
+void ROHF::save_density_and_energy() {
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
 }
 
-double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors)
-{
-
+double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
     // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
     Dimension noccpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
-    Slice row_slice(dim_zero,noccpi);
-    Slice col_slice(doccpi_,doccpi_ + virpi);
-    SharedMatrix MOgradient = moFeff_->get_block(row_slice,col_slice);
+    Slice row_slice(dim_zero, noccpi);
+    Slice col_slice(doccpi_, doccpi_ + virpi);
+    SharedMatrix MOgradient = moFeff_->get_block(row_slice, col_slice);
 
     // Zero out act-act part
-    for (size_t h=0; h < nirrep_; h++){
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!soccpi_[h]) continue;
 
-        for (size_t i=0; i < soccpi_[h]; i++){
-            for (size_t j=0; j < soccpi_[h]; j++){
+        for (size_t i = 0; i < soccpi_[h]; i++) {
+            for (size_t j = 0; j < soccpi_[h]; j++) {
                 MOgradient->set(h, i + doccpi_[h], j, 0.0);
             }
         }
@@ -335,16 +323,17 @@ double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors)
 
     // Grab inact-act and act-vir orbs
     // Ct_ is actuall (nmo x nmo)
-    SharedMatrix Cia = Ct_->get_block({dim_zero,nmopi_},{dim_zero,noccpi});
-    SharedMatrix Cav = Ct_->get_block({dim_zero,nmopi_},{doccpi_,doccpi_ + virpi});
+    SharedMatrix Cia = Ct_->get_block({dim_zero, nmopi_}, {dim_zero, noccpi});
+    SharedMatrix Cav = Ct_->get_block({dim_zero, nmopi_}, {doccpi_, doccpi_ + virpi});
 
     // Back transform MOgradient
     SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
     double Drms = gradient->rms();
 
-    if(save_diis){
+    if (save_diis) {
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk);
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
+                                                          DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
             diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
             initialized_diis_manager_ = true;
@@ -354,13 +343,9 @@ double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors)
     return Drms;
 }
 
-bool ROHF::diis()
-{
-    return diis_manager_->extrapolate(1, soFeff_.get());
-}
+bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
 
-void ROHF::form_initialF()
-{
+void ROHF::form_initialF() {
     // Form the initial Fock matrix, closed and open variants
     Fa_->copy(H_);
     Fa_->transform(X_);
@@ -368,17 +353,15 @@ void ROHF::form_initialF()
 
 #ifdef _DEBUG
     if (debug_) {
-        outfile->Printf( "Initial alpha Fock matrix:\n");
+        outfile->Printf("Initial alpha Fock matrix:\n");
         Fa_->print("outfile");
-        outfile->Printf( "Initial beta Fock matrix:\n");
+        outfile->Printf("Initial beta Fock matrix:\n");
         Fb_->print("outfile");
     }
 #endif
 }
 
-void ROHF::form_F()
-{
-
+void ROHF::form_F() {
     // Start by constructing the standard Fa and Fb matrices encountered in UHF
     Fa_->copy(H_);
     Fb_->copy(H_);
@@ -439,51 +422,46 @@ void ROHF::form_F()
     }
 }
 
-void ROHF::form_C()
-{
+void ROHF::form_C() {
     soFeff_->diagonalize(Ct_, epsilon_a_);
-    //Form C = XC'
+    // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
     find_occupation();
 
     if (debug_) {
         Ca_->print("outfile");
-        outfile->Printf( "In ROHF::form_C:\n");
+        outfile->Printf("In ROHF::form_C:\n");
         Ct_->eivprint(epsilon_a_);
     }
 }
-void ROHF::prepare_canonical_orthogonalization()
-{
+void ROHF::prepare_canonical_orthogonalization() {
     // Some matrix size changes if we canonical orthogonalization
     Ct_->init(nirrep_, nmopi_, nmopi_);
     moFa_->init(nirrep_, nmopi_, nmopi_);
     moFb_->init(nirrep_, nmopi_, nmopi_);
     moFeff_->init(nirrep_, nmopi_, nmopi_);
-    soFeff_->init(nirrep_, nmopi_, nmopi_); // This is in the "Orthogonalized SO" basis
+    soFeff_->init(nirrep_, nmopi_, nmopi_);  // This is in the "Orthogonalized SO" basis
 }
-void ROHF::form_initial_C()
-{
+void ROHF::form_initial_C() {
     // In ROHF the creation of the C matrix depends on the previous iteration's C
     // matrix. Here we use Fa to generate the first C, where Fa was set by guess()
     // to either H or the GWH Hamiltonian.
 
-    //Form F' = X'FX for canonical orthogonalization
+    // Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fa_, 0.0);
     diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
 
-    //Form C' = eig(F')
+    // Form C' = eig(F')
     diag_F_temp_->diagonalize(Ct_, epsilon_a_);
 
-    //Form C = XC'
+    // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
-    if (print_ > 3)
-        Ca_->print("outfile", "initial C");
+    if (print_ > 3) Ca_->print("outfile", "initial C");
 }
 
-void ROHF::form_D()
-{
+void ROHF::form_D() {
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -496,34 +474,26 @@ void ROHF::form_D()
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
 
-        if (na == 0)
-            memset(static_cast<void*>(Da[0]), '\0', sizeof(double)*nso*nso);
-        if (nb == 0)
-            memset(static_cast<void*>(Db[0]), '\0', sizeof(double)*nso*nso);
+        if (na == 0) memset(static_cast<void*>(Da[0]), '\0', sizeof(double) * nso * nso);
+        if (nb == 0) memset(static_cast<void*>(Db[0]), '\0', sizeof(double) * nso * nso);
 
-
-        C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Da[0],nso);
-        C_DGEMM('N','T',nso,nso,nb,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Db[0],nso);
-
+        C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Da[0], nso);
+        C_DGEMM('N', 'T', nso, nso, nb, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Db[0], nso);
     }
 
     Dt_->copy(Da_);
     Dt_->add(Db_);
 
     if (debug_) {
-        outfile->Printf( "in ROHF::form_D:\n");
+        outfile->Printf("in ROHF::form_D:\n");
         Da_->print();
         Db_->print();
     }
 }
 
-double ROHF::compute_initial_E()
-{
-    return 0.5 * (compute_E() + nuclearrep_);
-}
+double ROHF::compute_initial_E() { return 0.5 * (compute_E() + nuclearrep_); }
 
-double ROHF::compute_E()
-{
+double ROHF::compute_E() {
     double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);
     double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
 
@@ -534,7 +504,7 @@ double ROHF::compute_E()
     energies_["VV10_E"] = 0.0;
     energies_["-D"] = 0.0;
 
-    double DH  = Da_->vector_dot(H_);
+    double DH = Da_->vector_dot(H_);
     DH += Db_->vector_dot(H_);
     double DFa = Da_->vector_dot(Fa_);
     double DFb = Db_->vector_dot(Fb_);
@@ -543,9 +513,8 @@ double ROHF::compute_E()
     return Etotal;
 }
 
-void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
-{
-    if (functional_->needs_xc()){
+void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
+    if (functional_->needs_xc()) {
         throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
     }
     // Index reference
@@ -556,12 +525,12 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     // Spaces
     Dimension occpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
-    Dimension pvir  = nmopi_ - doccpi_ - soccpi_;
+    Dimension pvir = nmopi_ - doccpi_ - soccpi_;
 
-    if (ret->rowspi() != occpi){
+    if (ret->rowspi() != occpi) {
         throw PSIEXCEPTION("ROHF:Hx First dimension of rotation matrix is not correct.");
     }
-    if (ret->colspi() != virpi){
+    if (ret->colspi() != virpi) {
         throw PSIEXCEPTION("ROHF:Hx Second dimension of rotation matrix is not correct.");
     }
 
@@ -572,13 +541,12 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     // Passing these guys is annoying, pretty cheap to rebuild
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
 
-
-    SharedMatrix Cocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,ret->rowspi()});
+    SharedMatrix Cocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, ret->rowspi()});
     Cocc->set_name("Cocc");
-    SharedMatrix Cvir = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + ret->colspi()});
+    SharedMatrix Cvir = Ca_->get_block({dim_zero, nsopi_}, {doccpi_, doccpi_ + ret->colspi()});
     Cvir->set_name("Cvir");
 
-    for (size_t h=0; h<nirrep_; h++){
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!occpi[h] || !virpi[h]) continue;
 
         double** leftp = Hx_left->pointer(h);
@@ -588,42 +556,29 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
         double** Fbp = moFb_->pointer(h);
 
         // left_ov += 0.5 * x_op Fa_pv
-        C_DGEMM('N','N',occpi[h],virpi[h],pvir[h],0.5,
-                (xp[0] + soccpi_[h]),virpi[h],
-                (Fap[occpi[h]]+doccpi_[h]),nmopi_[h],
-                0.0,leftp[0],virpi[h]);
+        C_DGEMM('N', 'N', occpi[h], virpi[h], pvir[h], 0.5, (xp[0] + soccpi_[h]), virpi[h],
+                (Fap[occpi[h]] + doccpi_[h]), nmopi_[h], 0.0, leftp[0], virpi[h]);
 
         // left_ov -= Fa_oo x_ov
-        C_DGEMM('N','N',occpi[h],virpi[h],occpi[h],-0.5,
-                Fap[0],nmopi_[h],
-                xp[0],virpi[h],
-                1.0,leftp[0],virpi[h]);
+        C_DGEMM('N', 'N', occpi[h], virpi[h], occpi[h], -0.5, Fap[0], nmopi_[h], xp[0], virpi[h], 1.0, leftp[0],
+                virpi[h]);
 
         // right_ov += 0.5 * x_ov Fb_vv
-        C_DGEMM('N','N',occpi[h],virpi[h],virpi[h],0.5,
-                xp[0],virpi[h],
-                (Fbp[doccpi_[h]]+doccpi_[h]),nmopi_[h],
-                0.0,rightp[0],virpi[h]);
+        C_DGEMM('N', 'N', occpi[h], virpi[h], virpi[h], 0.5, xp[0], virpi[h], (Fbp[doccpi_[h]] + doccpi_[h]), nmopi_[h],
+                0.0, rightp[0], virpi[h]);
 
         // right_ov -= Fb_oi x_iv
-        C_DGEMM('N','N',occpi[h],virpi[h],doccpi_[h],-0.5,
-                Fbp[0],nmopi_[h],
-                xp[0],virpi[h],
-                1.0,rightp[0],virpi[h]);
+        C_DGEMM('N', 'N', occpi[h], virpi[h], doccpi_[h], -0.5, Fbp[0], nmopi_[h], xp[0], virpi[h], 1.0, rightp[0],
+                virpi[h]);
 
         // Socc terms
         // left_av += 0.5 * x_oa.T Fb_ov
-        C_DGEMM('T','N',soccpi_[h],virpi[h],occpi[h],0.5,
-                xp[0],virpi[h],
-                (Fbp[0]+doccpi_[h]),nmopi_[h],
-                1.0,leftp[doccpi_[h]],virpi[h]);
+        C_DGEMM('T', 'N', soccpi_[h], virpi[h], occpi[h], 0.5, xp[0], virpi[h], (Fbp[0] + doccpi_[h]), nmopi_[h], 1.0,
+                leftp[doccpi_[h]], virpi[h]);
 
         // right_oa += 0.5 * Fb_op x_ap.T
-        C_DGEMM('N','T',occpi[h],soccpi_[h],pvir[h],0.5,
-                (Fbp[0]+occpi[h]),nmopi_[h],
-                (xp[doccpi_[h]] + soccpi_[h]),virpi[h],
-                1.0,rightp[0],virpi[h]);
-
+        C_DGEMM('N', 'T', occpi[h], soccpi_[h], pvir[h], 0.5, (Fbp[0] + occpi[h]), nmopi_[h],
+                (xp[doccpi_[h]] + soccpi_[h]), virpi[h], 1.0, rightp[0], virpi[h]);
     }
 
     // => Two electron part <= //
@@ -633,19 +588,18 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     Cr.clear();
 
     // If scf_type is DF we can do some extra JK voodo
-    if ((options_.get_str("SCF_TYPE") == "DF") || (options_.get_str("SCF_TYPE") == "CD")){
-
-        SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
+    if ((options_.get_str("SCF_TYPE") == "DF") || (options_.get_str("SCF_TYPE") == "CD")) {
+        SharedMatrix Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, doccpi_});
         Cdocc->set_name("Cdocc");
 
-        SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
+        SharedMatrix Csocc = Ca_->get_block({dim_zero, nsopi_}, {doccpi_, doccpi_ + soccpi_});
         Csocc->set_name("Csocc");
 
-        auto Cr_i = std::make_shared<Matrix>("Cright for docc", nsopi_,  doccpi_);
-        auto Cr_a = std::make_shared<Matrix>("Cright for socc", nsopi_,  soccpi_);
-        auto Cl_a = std::make_shared<Matrix>("Cleft for socc", nsopi_,  soccpi_);
+        auto Cr_i = std::make_shared<Matrix>("Cright for docc", nsopi_, doccpi_);
+        auto Cr_a = std::make_shared<Matrix>("Cright for socc", nsopi_, soccpi_);
+        auto Cl_a = std::make_shared<Matrix>("Cleft for socc", nsopi_, soccpi_);
 
-        for (size_t h=0; h<nirrep_; h++){
+        for (size_t h = 0; h < nirrep_; h++) {
             if (!nsopi_[h]) continue;
 
             double** xp = x->pointer(h);
@@ -654,28 +608,22 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
             double** Cr_ap = Cr_a->pointer(h);
             double** Cl_ap = Cl_a->pointer(h);
 
-            if (doccpi_[h] && pvir[h]){
+            if (doccpi_[h] && pvir[h]) {
                 // C_lambda,i = C_lambda,p x_ip.T
-                C_DGEMM('N','T',nsopi_[h],doccpi_[h],pvir[h],1.0,
-                        Cp[0]+occpi[h],nmopi_[h],
-                        (xp[0]+soccpi_[h]),virpi[h],
-                        0.0,Cr_ip[0],doccpi_[h]);
+                C_DGEMM('N', 'T', nsopi_[h], doccpi_[h], pvir[h], 1.0, Cp[0] + occpi[h], nmopi_[h],
+                        (xp[0] + soccpi_[h]), virpi[h], 0.0, Cr_ip[0], doccpi_[h]);
             }
 
-            if (soccpi_[h] && pvir[h]){
+            if (soccpi_[h] && pvir[h]) {
                 // C_lambda,a = C_lambda,p x_ap.T
-                C_DGEMM('N','T',nsopi_[h],soccpi_[h],pvir[h],1.0,
-                        Cp[0]+occpi[h],nmopi_[h],
-                        (xp[doccpi_[h]]+soccpi_[h]),virpi[h],
-                        0.0,Cr_ap[0],soccpi_[h]);
+                C_DGEMM('N', 'T', nsopi_[h], soccpi_[h], pvir[h], 1.0, Cp[0] + occpi[h], nmopi_[h],
+                        (xp[doccpi_[h]] + soccpi_[h]), virpi[h], 0.0, Cr_ap[0], soccpi_[h]);
             }
 
-            if (soccpi_[h] && doccpi_[h]){
+            if (soccpi_[h] && doccpi_[h]) {
                 // C_lambda,a = C_lambda,i x_ia
-                C_DGEMM('N','N',nsopi_[h],soccpi_[h],doccpi_[h],1.0,
-                        Cp[0],nmopi_[h],
-                        xp[0],virpi[h],
-                        0.0,Cl_ap[0],soccpi_[h]);
+                C_DGEMM('N', 'N', nsopi_[h], soccpi_[h], doccpi_[h], 1.0, Cp[0], nmopi_[h], xp[0], virpi[h], 0.0,
+                        Cl_ap[0], soccpi_[h]);
             }
         }
 
@@ -730,18 +678,17 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 
         half_trans.reset();
 
-    }
-    else{
-        SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
+    } else {
+        SharedMatrix Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, doccpi_});
         Cdocc->set_name("Cdocc");
 
         Cl.push_back(Cocc);
         Cl.push_back(Cdocc);
 
-        auto Cr_a = std::make_shared<Matrix>("Cright for alpha", nsopi_,  occpi);
-        auto Cr_b = std::make_shared<Matrix>("Cright for beta", nsopi_,  doccpi_);
+        auto Cr_a = std::make_shared<Matrix>("Cright for alpha", nsopi_, occpi);
+        auto Cr_b = std::make_shared<Matrix>("Cright for beta", nsopi_, doccpi_);
 
-        for (size_t h=0; h<nirrep_; h++){
+        for (size_t h = 0; h < nirrep_; h++) {
             if (!nsopi_[h]) continue;
 
             double** xp = x->pointer(h);
@@ -749,20 +696,16 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
             double** Cr_ap = Cr_a->pointer(h);
             double** Cr_bp = Cr_b->pointer(h);
 
-            if (occpi[h] && pvir[h]){
+            if (occpi[h] && pvir[h]) {
                 // C_lambda,o = C_lambda,p x_op.T
-                C_DGEMM('N','T',nsopi_[h],occpi[h],pvir[h],1.0,
-                        Cp[0]+occpi[h],nmopi_[h],
-                        (xp[0]+soccpi_[h]), virpi[h],
-                        0.0,Cr_ap[0],occpi[h]);
+                C_DGEMM('N', 'T', nsopi_[h], occpi[h], pvir[h], 1.0, Cp[0] + occpi[h], nmopi_[h], (xp[0] + soccpi_[h]),
+                        virpi[h], 0.0, Cr_ap[0], occpi[h]);
             }
 
-            if (doccpi_[h] && virpi[h]){
+            if (doccpi_[h] && virpi[h]) {
                 // C_lambda,i = C_lambda,p x_ip.T
-                C_DGEMM('N','T',nsopi_[h],doccpi_[h],virpi[h],1.0,
-                        Cp[0]+doccpi_[h],nmopi_[h],
-                        xp[0],virpi[h],
-                        0.0,Cr_bp[0],doccpi_[h]);
+                C_DGEMM('N', 'T', nsopi_[h], doccpi_[h], virpi[h], 1.0, Cp[0] + doccpi_[h], nmopi_[h], xp[0], virpi[h],
+                        0.0, Cr_bp[0], doccpi_[h]);
             }
         }
 
@@ -807,17 +750,17 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     }
 
     // Zero out socc-socc terms
-    for (size_t h=0; h<nirrep_; h++){
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!occpi[h] || !virpi[h]) continue;
 
         double** leftp = Hx_left->pointer(h);
         double** rightp = Hx_right->pointer(h);
 
-        for (size_t i=0; i < soccpi_[h]; i++){
-            for (size_t j=0; j < occpi[h]; j++){
+        for (size_t i = 0; i < soccpi_[h]; i++) {
+            for (size_t j = 0; j < occpi[h]; j++) {
                 leftp[j][i] = 0.0;
             }
-            for (size_t j=0; j < virpi[h]; j++){
+            for (size_t j = 0; j < virpi[h]; j++) {
                 rightp[doccpi_[h] + i][j] = 0.0;
             }
         }
@@ -828,22 +771,22 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     ret->add(Hx_right);
     ret->scale(4.0);
 
-    Hx_left.reset(); Hx_right.reset();
-    Cocc.reset(); Cvir.reset();
+    Hx_left.reset();
+    Hx_right.reset();
+    Cocc.reset();
+    Cvir.reset();
 }
 
-void ROHF::damping_update(double damping_percentage)
-{
-  Da_->scale(1.0 - damping_percentage);
-  Da_->axpy(damping_percentage, Da_old_);
-  Db_->scale(1.0 - damping_percentage);
-  Db_->axpy(damping_percentage, Db_old_);
-  Dt_->copy(Da_);
-  Dt_->add(Db_);
+void ROHF::damping_update(double damping_percentage) {
+    Da_->scale(1.0 - damping_percentage);
+    Da_->axpy(damping_percentage, Da_old_);
+    Db_->scale(1.0 - damping_percentage);
+    Db_->axpy(damping_percentage, Db_old_);
+    Dt_->copy(Da_);
+    Dt_->add(Db_);
 }
 
-int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print)
-{
+int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     time_t start, stop;
     start = time(nullptr);
 
@@ -854,11 +797,11 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
     Dimension occpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
 
-    SharedMatrix Gradient = moFeff_->get_block({dim_zero,occpi},{doccpi_,nmopi_});
+    SharedMatrix Gradient = moFeff_->get_block({dim_zero, occpi}, {doccpi_, nmopi_});
     Gradient->scale(-4.0);
     auto Precon = std::make_shared<Matrix>("Precon", nirrep_, occpi, virpi);
 
-    for (size_t h=0; h < nirrep_; h++){
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!occpi[h] || !virpi[h]) continue;
 
         double** preconp = Precon->pointer(h);
@@ -866,8 +809,8 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
         double** feffp = moFeff_->pointer(h);
 
         // Precon
-        for (size_t i=0; i < occpi[h]; i++){
-            for (size_t j=0; j < virpi[h]; j++){
+        for (size_t i = 0; i < occpi[h]; i++) {
+            for (size_t j = 0; j < virpi[h]; j++) {
                 // Should be scaled but 3.5 works better (4 * 0.875 or GWH coef)
                 preconp[i][j] = -3.5 * (feffp[i][i] - feffp[doccpi_[h] + j][doccpi_[h] + j]);
             }
@@ -875,16 +818,16 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
 
         // Divide docc-socc and socc-vir by two
         // Fix socc-socc term to avoid divide by zero errors
-        for (size_t i=0; i < soccpi_[h]; i++){
-            for (size_t j=0; j < occpi[h]; j++){
+        for (size_t i = 0; i < soccpi_[h]; i++) {
+            for (size_t j = 0; j < occpi[h]; j++) {
                 gradientp[j][i] *= 0.5;
                 preconp[j][i] *= 0.5;
             }
-            for (size_t j=0; j < virpi[h]; j++){
+            for (size_t j = 0; j < virpi[h]; j++) {
                 gradientp[doccpi_[h] + i][j] *= 0.5;
                 preconp[doccpi_[h] + i][j] *= 0.5;
             }
-            for (size_t j=0; j < soccpi_[h]; j++){
+            for (size_t j = 0; j < soccpi_[h]; j++) {
                 preconp[doccpi_[h] + i][j] = 1.0;
                 gradientp[doccpi_[h] + i][j] = 0.0;
             }
@@ -892,14 +835,14 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
     }
 
     // Make sure the MO gradient is reasonably small
-    if (Gradient->absmax() > 0.3){
-        if (print_ > 1){
+    if (Gradient->absmax() > 0.3) {
+        if (print_ > 1) {
             outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
         }
         return 0;
     }
 
-    if (soscf_print){
+    if (soscf_print) {
         outfile->Printf("\n");
         outfile->Printf("    ==> SOROHF Iterations <==\n");
         outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter);
@@ -924,13 +867,13 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
     // Print iteration 0 timings and rms
     double rconv = r->vector_dot(r);
     double grad_rms = Gradient->vector_dot(Gradient);
-    if (grad_rms < 1.e-14){
-        grad_rms = 1.e-14; // Prevent rel denom from being too small
+    if (grad_rms < 1.e-14) {
+        grad_rms = 1.e-14;  // Prevent rel denom from being too small
     }
     double rms = sqrt(rconv / grad_rms);
     stop = time(nullptr);
-    if (soscf_print){
-        outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
+    if (soscf_print) {
+        outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop - start);
     }
 
     // Build new p and z vectors
@@ -940,8 +883,7 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
 
     // => CG iterations <= //
     int fock_builds = 1;
-    for (int cg_iter=1; cg_iter<soscf_max_iter; cg_iter++) {
-
+    for (int cg_iter = 1; cg_iter < soscf_max_iter; cg_iter++) {
         // Calc hessian vector product
         Hx(p, Ap);
         fock_builds += 1;
@@ -949,7 +891,7 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
         // Find factors and scale
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
-        if (std::isnan(alpha)){
+        if (std::isnan(alpha)) {
             outfile->Printf("ROHF::SOSCF Warning CG alpha is zero/nan. Stopping CG.\n");
             alpha = 0.0;
         }
@@ -961,12 +903,12 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
         double rconv = r->sum_of_squares();
         double rms = sqrt(rconv / grad_rms);
         stop = time(nullptr);
-        if (soscf_print){
-            outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
+        if (soscf_print) {
+            outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop - start);
         }
 
         // Check convergence
-        if (((rms < soscf_conv) && (cg_iter >= soscf_min_iter)) || (alpha==0.0)) {
+        if (((rms < soscf_conv) && (cg_iter >= soscf_min_iter)) || (alpha == 0.0)) {
             break;
         }
 
@@ -978,10 +920,9 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
 
         p->scale(beta);
         p->add(z);
-
     }
 
-    if (soscf_print){
+    if (soscf_print) {
         outfile->Printf("    ---------------------------------------\n");
         outfile->Printf("\n");
     }
@@ -1001,28 +942,26 @@ int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter,
     return fock_builds;
 }
 
-
-void ROHF::form_G()
-{
+void ROHF::form_G() {
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
 
-    std::vector<SharedMatrix> & C = jk_->C_left();
+    std::vector<SharedMatrix>& C = jk_->C_left();
     C.clear();
 
     // Push back docc orbitals
-    SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
+    SharedMatrix Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, doccpi_});
     C.push_back(Cdocc);
 
     // Push back socc orbitals
-    SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
+    SharedMatrix Csocc = Ca_->get_block({dim_zero, nsopi_}, {doccpi_, doccpi_ + soccpi_});
     C.push_back(Csocc);
 
     // Run the JK object
     jk_->compute();
 
     // Pull the J and K matrices off
-    const std::vector<SharedMatrix> & J = jk_->J();
-    const std::vector<SharedMatrix> & K = jk_->K();
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
     Ga_->copy(J[0]);
     Ga_->scale(2.0);
     Ga_->add(J[1]);
@@ -1036,11 +975,10 @@ void ROHF::form_G()
     Gb_->subtract(Kb_);
 }
 
-bool ROHF::stability_analysis()
-{
-    if(scf_type_ == "DF" || scf_type_ == "CD"){
+bool ROHF::stability_analysis() {
+    if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
-    }else{
+    } else {
         Dimension nvirpi = nmopi_ - nalphapi_;
         Dimension zero = Dimension(nirrep_);
         Dimension soccpi = nalphapi_ - doccpi_;
@@ -1054,10 +992,10 @@ bool ROHF::stability_analysis()
         auto FIA = std::make_shared<Matrix>("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir);
         auto Fia = std::make_shared<Matrix>("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir);
 
-        SharedMatrix Cocc = Ca_->get_block({zero,nsopi_},{zero,nalphapi_});
+        SharedMatrix Cocc = Ca_->get_block({zero, nsopi_}, {zero, nalphapi_});
         std::vector<SharedMatrix> virandsoc;
-        virandsoc.push_back(Ca_->get_block({zero,nsopi_},{nalphapi_,nmopi_}));
-        virandsoc.push_back(Ca_->get_block({zero,nsopi_},{doccpi_,nalphapi_}));
+        virandsoc.push_back(Ca_->get_block({zero, nsopi_}, {nalphapi_, nmopi_}));
+        virandsoc.push_back(Ca_->get_block({zero, nsopi_}, {doccpi_, nalphapi_}));
         SharedMatrix Cvir = Matrix::horzcat(virandsoc);
         FIJ->transform(Fa_, Cocc);
         Fij->transform(Fb_, Cocc);
@@ -1069,27 +1007,27 @@ bool ROHF::stability_analysis()
         Fab->transform(Fb_, Cvir);
 
         // Zero out alpha socc terms corresponding to vir indices
-        for (int h = 0; h < nirrep_; ++h){
-            for(int mo1 = navir[h]; mo1 < nbvir[h]; ++mo1){
-                for(int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2){
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int mo1 = navir[h]; mo1 < nbvir[h]; ++mo1) {
+                for (int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2) {
                     FAB->set(h, mo1, mo2, 0.0);
                 }
             }
-            for(int mo1 = 0; mo1 < nalphapi_[h]; ++mo1){
-                for(int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2){
+            for (int mo1 = 0; mo1 < nalphapi_[h]; ++mo1) {
+                for (int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2) {
                     FIA->set(h, mo1, mo2, 0.0);
                 }
             }
         }
         // Zero out beta socc terms corresponding to occ indices
-        for (int h = 0; h < nirrep_; ++h){
-            for(int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1){
-                for(int mo2 = doccpi_[h]; mo2 < nalphapi_[h]; ++mo2){
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1) {
+                for (int mo2 = doccpi_[h]; mo2 < nalphapi_[h]; ++mo2) {
                     Fij->set(h, mo1, mo2, 0.0);
                 }
             }
-            for(int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1){
-                for(int mo2 = 0; mo2 < nbvir[h]; ++mo2){
+            for (int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1) {
+                for (int mo2 = 0; mo2 < nbvir[h]; ++mo2) {
                     Fia->set(h, mo1, mo2, 0.0);
                 }
             }
@@ -1098,13 +1036,11 @@ bool ROHF::stability_analysis()
         // Some indexing arrays to allow us to compare occ and vir spatial orbitals, below.
         int occ_offsets[8];
         occ_offsets[0] = 0;
-        for(int h = 1; h < nirrep_; ++h)
-            occ_offsets[h] = occ_offsets[h-1] + doccpi_[h-1];
+        for (int h = 1; h < nirrep_; ++h) occ_offsets[h] = occ_offsets[h - 1] + doccpi_[h - 1];
 
         int vir_offsets[8];
         vir_offsets[0] = doccpi_[0] - navir[0];
-        for(int h = 1; h < nirrep_; ++h)
-            vir_offsets[h] = vir_offsets[h-1] + doccpi_[h] - navir[h];
+        for (int h = 1; h < nirrep_; ++h) vir_offsets[h] = vir_offsets[h - 1] + doccpi_[h] - navir[h];
 
         std::vector<std::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
@@ -1119,41 +1055,41 @@ bool ROHF::stability_analysis()
         dpdbuf4 Aaa, Aab, Aba, Abb, I, A;
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "MO Ints (OV|OV)");
         // A_IA_JB = (IA|JB)
         global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "ROHF Hessian (IA|JB)", 1.0);
         // A_IA_jb = (IA|jb)
         global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "ROHF Hessian (IA|jb)", 1.0);
 
         // A_IA_JB -= 0.5 (IB|JA)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
-                           ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (IA|JB)", -0.5);
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (IA|JB)",
+                                    -0.5);
         global_dpd_->buf4_close(&I);
 
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+                               "MO Ints (OO|VV)");
         // A_IA_JB -= 0.5 (IJ|AB)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
-                           ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (IA|JB)", -0.5);
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (IA|JB)",
+                                    -0.5);
         global_dpd_->buf4_close(&I);
 
-        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|JB)");
+        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (IA|JB)");
 
         // A_ia_jb = A_IA_JB
         global_dpd_->buf4_copy(&Aaa, PSIF_LIBTRANS_DPD, "ROHF Hessian (ia|jb)");
-        for(int h = 0; h < Aaa.params->nirreps; ++h){
+        for (int h = 0; h < Aaa.params->nirreps; ++h) {
             global_dpd_->buf4_mat_irrep_init(&Aaa, h);
             global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
-            for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
+            for (int ia = 0; ia < Aaa.params->rowtot[h]; ++ia) {
                 int iabs = Aaa.params->roworb[h][ia][0];
                 int aabs = Aaa.params->roworb[h][ia][1];
                 int isym = Aaa.params->psym[iabs];
                 int asym = Aaa.params->qsym[aabs];
                 int irel = iabs - Aaa.params->poff[isym];
                 int arel = aabs - Aaa.params->qoff[asym];
-                for(int jb = 0; jb < Aaa.params->coltot[h]; ++jb){
+                for (int jb = 0; jb < Aaa.params->coltot[h]; ++jb) {
                     int jabs = Aaa.params->colorb[h][jb][0];
                     int babs = Aaa.params->colorb[h][jb][1];
                     int jsym = Aaa.params->rsym[jabs];
@@ -1162,40 +1098,37 @@ bool ROHF::stability_analysis()
                     int brel = babs - Aaa.params->soff[bsym];
                     double val = Aaa.matrix[h][ia][jb];
                     // A_IA_JB += 0.5 delta_IJ F_AB - 0.5 delta_AB F_IJ
-                    if((iabs == jabs) && (asym == bsym))
-                        val += 0.5 * FAB->get(asym, arel, brel);
-                    if((aabs == babs) && (isym == jsym))
-                        val -= 0.5 * FIJ->get(isym, irel, jrel);
+                    if ((iabs == jabs) && (asym == bsym)) val += 0.5 * FAB->get(asym, arel, brel);
+                    if ((aabs == babs) && (isym == jsym)) val -= 0.5 * FIJ->get(isym, irel, jrel);
                     // Zero out any socc-socc terms
-                    if(arel >= nvirpi[asym] || brel >= nvirpi[bsym])
-                        val = 0.0;
+                    if (arel >= nvirpi[asym] || brel >= nvirpi[bsym]) val = 0.0;
                     Aaa.matrix[h][ia][jb] = val;
                 }
             }
             global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
         }
-        //global_dpd_->buf4_sort(&Aaa, PSIF_LIBTRANS_DPD, qpsr, ID("[V,O]"), ID("[V,O]"), "tmp");
+        // global_dpd_->buf4_sort(&Aaa, PSIF_LIBTRANS_DPD, qpsr, ID("[V,O]"), ID("[V,O]"), "tmp");
         global_dpd_->buf4_close(&Aaa);
 
-        //global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+        // global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
         //              ID("[V,O]"), ID("[V,O]"), 0, "tmp");
-        //global_dpd_->buf4_print(&Aaa, "outfile", 1);
-        //global_dpd_->buf4_close(&Aaa);
-        //exit(1);
+        // global_dpd_->buf4_print(&Aaa, "outfile", 1);
+        // global_dpd_->buf4_close(&Aaa);
+        // exit(1);
 
-        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|jb)");
-        for(int h = 0; h < Abb.params->nirreps; ++h){
+        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (ia|jb)");
+        for (int h = 0; h < Abb.params->nirreps; ++h) {
             global_dpd_->buf4_mat_irrep_init(&Abb, h);
             global_dpd_->buf4_mat_irrep_rd(&Abb, h);
-            for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
+            for (int ia = 0; ia < Abb.params->rowtot[h]; ++ia) {
                 int iabs = Abb.params->roworb[h][ia][0];
                 int aabs = Abb.params->roworb[h][ia][1];
                 int isym = Abb.params->psym[iabs];
                 int asym = Abb.params->qsym[aabs];
                 int irel = iabs - Abb.params->poff[isym];
                 int arel = aabs - Abb.params->qoff[asym];
-                for(int jb = 0; jb < Abb.params->coltot[h]; ++jb){
+                for (int jb = 0; jb < Abb.params->coltot[h]; ++jb) {
                     int jabs = Abb.params->colorb[h][jb][0];
                     int babs = Abb.params->colorb[h][jb][1];
                     int jsym = Abb.params->rsym[jabs];
@@ -1204,14 +1137,12 @@ bool ROHF::stability_analysis()
                     int brel = babs - Abb.params->soff[bsym];
                     double val = Abb.matrix[h][ia][jb];
                     // A_ia_jb += 0.5 delta_ij F_ab - 0.5 delta_ab F_ij
-                    if((iabs == jabs) && (asym == bsym)){
+                    if ((iabs == jabs) && (asym == bsym)) {
                         val += 0.5 * Fab->get(asym, arel, brel);
                     }
-                    if((aabs == babs) && (isym == jsym))
-                        val -= 0.5 * Fij->get(isym, irel, jrel);
+                    if ((aabs == babs) && (isym == jsym)) val -= 0.5 * Fij->get(isym, irel, jrel);
                     // Zero out any socc-socc terms
-                    if(irel >= doccpi_[isym] || jrel >= doccpi_[jsym])
-                        val = 0.0;
+                    if (irel >= doccpi_[isym] || jrel >= doccpi_[jsym]) val = 0.0;
                     Abb.matrix[h][ia][jb] = val;
                 }
             }
@@ -1219,20 +1150,19 @@ bool ROHF::stability_analysis()
         }
         global_dpd_->buf4_close(&Abb);
 
-
-        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
-        for(int h = 0; h < Aab.params->nirreps; ++h){
+        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (IA|jb)");
+        for (int h = 0; h < Aab.params->nirreps; ++h) {
             global_dpd_->buf4_mat_irrep_init(&Aab, h);
             global_dpd_->buf4_mat_irrep_rd(&Aab, h);
-            for(int ia = 0; ia < Aab.params->rowtot[h]; ++ia){
+            for (int ia = 0; ia < Aab.params->rowtot[h]; ++ia) {
                 int iabs = Aab.params->roworb[h][ia][0];
                 int aabs = Aab.params->roworb[h][ia][1];
                 int isym = Aab.params->psym[iabs];
                 int asym = Aab.params->qsym[aabs];
                 int irel = iabs - Aab.params->poff[isym];
                 int arel = aabs - Aab.params->qoff[asym];
-                for(int jb = 0; jb < Aab.params->coltot[h]; ++jb){
+                for (int jb = 0; jb < Aab.params->coltot[h]; ++jb) {
                     int jabs = Aab.params->colorb[h][jb][0];
                     int babs = Aab.params->colorb[h][jb][1];
                     int jsym = Aab.params->rsym[jabs];
@@ -1242,11 +1172,10 @@ bool ROHF::stability_analysis()
                     // A_IA_jb += 0.5 delta_Ib F(beta)_jA
                     // The delta_Ib is actually comparing spatial orbitals, so we have to use
                     // offsets to make the comparison properly.
-                    if( ((irel + occ_offsets[isym]) == (brel + vir_offsets[bsym])) && (jsym == asym))
+                    if (((irel + occ_offsets[isym]) == (brel + vir_offsets[bsym])) && (jsym == asym))
                         Aab.matrix[h][ia][jb] += 0.5 * Fia->get(jsym, jrel, arel);
                     // Zero out any socc-socc terms
-                    if(jrel >= doccpi_[jsym] || arel >= navir[asym])
-                        Aab.matrix[h][ia][jb] = 0.0;
+                    if (jrel >= doccpi_[jsym] || arel >= navir[asym]) Aab.matrix[h][ia][jb] = 0.0;
                 }
             }
             global_dpd_->buf4_mat_irrep_wrt(&Aab, h);
@@ -1257,25 +1186,25 @@ bool ROHF::stability_analysis()
         global_dpd_->buf4_close(&Aab);
 
         // Alpha-Alpha
-        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|JB)");
+        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (IA|JB)");
         global_dpd_->buf4_copy(&Aaa, PSIF_LIBTRANS_DPD, "ROHF Hessian");
         global_dpd_->buf4_close(&Aaa);
-        global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian");
+        global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian");
         // Alpha-Beta
-        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
+        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (IA|jb)");
         global_dpd_->buf4_axpy(&Aab, &A, 1.0);
         global_dpd_->buf4_close(&Aab);
         // Beta-Alpha
-        global_dpd_->buf4_init(&Aba, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|JB)");
+        global_dpd_->buf4_init(&Aba, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (ia|JB)");
         global_dpd_->buf4_axpy(&Aba, &A, 1.0);
         global_dpd_->buf4_close(&Aba);
         // Beta-Beta
-        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|jb)");
+        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian (ia|jb)");
         global_dpd_->buf4_axpy(&Abb, &A, 1.0);
         global_dpd_->buf4_close(&Abb);
         global_dpd_->buf4_close(&A);
@@ -1283,9 +1212,9 @@ bool ROHF::stability_analysis()
         /*
          *  Perform the stability analysis
          */
-        std::vector<std::pair<double, int> >eval_sym;
-        global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian");
+        std::vector<std::pair<double, int> > eval_sym;
+        global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "ROHF Hessian");
 
         // Allocate some space for the eigenvalues
         int nsave = options_.get_int("SOLVER_N_ROOT");
@@ -1295,34 +1224,34 @@ bool ROHF::stability_analysis()
         Dimension evalsdim(dimvec);
         auto stabvals = std::make_shared<Matrix>("Eigenvalues from ROHF stability calculation", evalsdim, ones);
 
-        for(int h = 0; h < A.params->nirreps; ++h) {
-            double **pEvals = stabvals->pointer(h);
+        for (int h = 0; h < A.params->nirreps; ++h) {
+            double** pEvals = stabvals->pointer(h);
             int npairs = A.params->rowtot[h];
-            if(npairs == 0) continue;
+            if (npairs == 0) continue;
 
             // Store the row indices, for convenience
             size_t rank = 0;
-            double **U = block_matrix(npairs, npairs);
-            for(int ia = 0; ia < npairs; ++ia){
+            double** U = block_matrix(npairs, npairs);
+            for (int ia = 0; ia < npairs; ++ia) {
                 int iabs = Aab.params->roworb[h][ia][0];
                 int aabs = Aab.params->roworb[h][ia][1];
                 int isym = Aab.params->psym[iabs];
                 int asym = Aab.params->qsym[aabs];
                 int irel = iabs - Aab.params->poff[isym];
                 int arel = aabs - Aab.params->qoff[asym];
-                if((arel >= nvirpi[asym]) && (irel >= doccpi_[isym])){
+                if ((arel >= nvirpi[asym]) && (irel >= doccpi_[isym])) {
                     U[ia][ia] = 0.0;
-                }else{
+                } else {
                     U[ia][ia] = 1.0;
                     rank++;
                 }
             }
-            if(rank == 0) continue;
+            if (rank == 0) continue;
             int lastcol = npairs - 1;
-            for(int ia = 0; ia < npairs; ++ia){
-                if(U[ia][ia] == 0.0){
-                    while(U[lastcol][lastcol] == 0.0) lastcol--;
-                    if(lastcol > ia){
+            for (int ia = 0; ia < npairs; ++ia) {
+                if (U[ia][ia] == 0.0) {
+                    while (U[lastcol][lastcol] == 0.0) lastcol--;
+                    if (lastcol > ia) {
                         U[lastcol][ia] = U[ia][lastcol] = 1.0;
                         U[lastcol][lastcol] = 0.0;
                     }
@@ -1333,30 +1262,26 @@ bool ROHF::stability_analysis()
             global_dpd_->buf4_mat_irrep_rd(&A, h);
 
             // Use the transformation matrix to rearrange the columns
-            double **temp = block_matrix(npairs, npairs);
-            C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, A.matrix[h][0], npairs,
-                    U[0], npairs, 0.0, temp[0], npairs);
-            C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs,
-                    temp[0], npairs, 0.0, A.matrix[h][0], npairs);
+            double** temp = block_matrix(npairs, npairs);
+            C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, A.matrix[h][0], npairs, U[0], npairs, 0.0, temp[0], npairs);
+            C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs, temp[0], npairs, 0.0, A.matrix[h][0], npairs);
 
-            double *evals = new double[rank];
-            double **evecs = block_matrix(rank, rank);
+            double* evals = new double[rank];
+            double** evecs = block_matrix(rank, rank);
 
             sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);
             global_dpd_->buf4_mat_irrep_close(&A, h);
             int mindim = rank < 15 ? rank : 15;
-            for(int i = 0; i < mindim; i++)
-                eval_sym.push_back(std::make_pair(evals[i], h));
-            for(int i = 0; i < nsave; ++i)
-                pEvals[i][0] = evals[i];
+            for (int i = 0; i < mindim; i++) eval_sym.push_back(std::make_pair(evals[i], h));
+            for (int i = 0; i < nsave; ++i) pEvals[i][0] = evals[i];
 
             free_block(evecs);
-            delete [] evals;
+            delete[] evals;
         }
         global_dpd_->buf4_close(&A);
         Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
 
-        outfile->Printf( "    Lowest ROHF->ROHF stability eigenvalues:-\n");
+        outfile->Printf("    Lowest ROHF->ROHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
@@ -1364,9 +1289,7 @@ bool ROHF::stability_analysis()
     return false;
 }
 
-
-std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
-{
+std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<ROHF>(wfn, functional_, wfn->options(), wfn->psio());
 
@@ -1391,6 +1314,5 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
 
     return hf_wfn;
 }
-
-
-}}
+}
+}

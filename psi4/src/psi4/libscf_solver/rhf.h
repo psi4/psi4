@@ -37,8 +37,7 @@ namespace psi {
 namespace scf {
 
 class RHF : public HF {
-protected:
-
+   protected:
     // Temporary matrices
     SharedMatrix D_;
     SharedMatrix Dold_;
@@ -49,14 +48,12 @@ protected:
 
     double compute_initial_E();
 
-
     void common_init();
 
-
-public:
+   public:
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
-    RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
-        Options& options, std::shared_ptr<PSIO> psio);
+    RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
+        std::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
     virtual SharedMatrix Da() const;
@@ -85,14 +82,12 @@ public:
     virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
                                                std::string return_basis = "MO");
     virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
-                                                 double conv_tol = 1.e-4, int max_iter = 10,
-                                                 int print_lvl = 1);
+    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
+                                                 int max_iter = 10, int print_lvl = 1);
 
     std::shared_ptr<RHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
-
 };
-
-}}
+}
+}
 
 #endif

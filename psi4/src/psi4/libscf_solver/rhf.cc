@@ -233,10 +233,7 @@ double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
     return gradient->rms();
 }
 
-bool RHF::diis()
-{
-    return diis_manager_->extrapolate(1, Fa_.get());
-}
+bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
 
 void RHF::form_F() {
     Fa_->copy(H_);
@@ -929,8 +926,7 @@ bool RHF::stability_analysis() {
     return false;
 }
 
-std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
-{
+std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<RHF>(wfn, functional_, wfn->options(), wfn->psio());
     // now just have to copy the matrices that RHF initializes
@@ -942,7 +938,7 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
     if (Da_) {
         hf_wfn->Da_ = Da_subset("AO");
         hf_wfn->Db_ = hf_wfn->Da_;
-        hf_wfn->D_  = hf_wfn->Da_;
+        hf_wfn->D_ = hf_wfn->Da_;
     }
     if (Fa_) {
         hf_wfn->Fa_ = Fa_subset("AO");
@@ -959,6 +955,5 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
 
     return hf_wfn;
 }
-
 }
 }
