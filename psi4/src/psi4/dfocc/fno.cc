@@ -58,19 +58,19 @@ FnoCC::FnoCC(std::string name, int naux, int nao, int nfrzc, int naocc, int nvir
     cutoff_ = 1.0E-10;
 
     // malloc
-    Corb_ = SharedTensor2d(new Tensor2d("FNO Alpha MO Coefficients", naob_, norb_));
+    Corb_ = std::make_shared<Tensor2d>("FNO Alpha MO Coefficients", naob_, norb_);
     Corb_->copy(Corb);
-    Fock_ = SharedTensor2d(new Tensor2d("FNO Fock matrix", norb_, norb_));
+    Fock_ = std::make_shared<Tensor2d>("FNO Fock matrix", norb_, norb_);
     Fock_->copy(Fock);
-    bQ_ = SharedTensor2d(new Tensor2d("FNO DF_BASIS_CC B (Q|IA)", naux_, naocc_, nvir_));
+    bQ_ = std::make_shared<Tensor2d>("FNO DF_BASIS_CC B (Q|IA)", naux_, naocc_, nvir_);
     bQ_->copy(bQ);
-    Gamma_ = SharedTensor2d(new Tensor2d("OPDM VV Block", nvir_, nvir_));
-    Tvv_ = SharedTensor2d(new Tensor2d("FNO T matrix <V|V>", nvir_, nvir_));
-    Tmat_ = SharedTensor2d(new Tensor2d("FNO T matrix", norb_, norb_));
-    Vmat_ = SharedTensor2d(new Tensor2d("Alpha FNO Coefficients", naob_, norb_));
+    Gamma_ = std::make_shared<Tensor2d>("OPDM VV Block", nvir_, nvir_);
+    Tvv_ = std::make_shared<Tensor2d>("FNO T matrix <V|V>", nvir_, nvir_);
+    Tmat_ = std::make_shared<Tensor2d>("FNO T matrix", norb_, norb_);
+    Vmat_ = std::make_shared<Tensor2d>("Alpha FNO Coefficients", naob_, norb_);
 
     // 1D
-    diag_n_ = SharedTensor1d(new Tensor1d("Diag G1", nvir_));
+    diag_n_ = std::make_shared<Tensor1d>("Diag G1", nvir_);
 
     // fno
     // std::cout << "Before compute_fno\n" << std::endl;
@@ -96,14 +96,14 @@ void FnoCC::compute_fno() {
 
     // Compute T2
     // Build amplitudes in Mulliken order
-    T = SharedTensor2d(new Tensor2d("FNO T2_1 (ia|jb)", naocc_, nvir_, naocc_, nvir_));
-    K = SharedTensor2d(new Tensor2d("FNO (IA|JB)", naocc_, nvir_, naocc_, nvir_));
+    T = std::make_shared<Tensor2d>("FNO T2_1 (ia|jb)", naocc_, nvir_, naocc_, nvir_);
+    K = std::make_shared<Tensor2d>("FNO (IA|JB)", naocc_, nvir_, naocc_, nvir_);
     K->gemm(true, false, bQ_, bQ_, 1.0, 0.0);
     T->copy(K);
     T->apply_denom_chem(nfrzc_, nocc_, Fock_);
 
     // form U(ia,jb)
-    U = SharedTensor2d(new Tensor2d("FNO U2_1 (ia|jb)", naocc_, nvir_, naocc_, nvir_));
+    U = std::make_shared<Tensor2d>("FNO U2_1 (ia|jb)", naocc_, nvir_, naocc_, nvir_);
     U->sort(1432, T, 1.0, 0.0);
     U->scale(-1.0);
     U->axpy(T, 2.0);
@@ -141,7 +141,7 @@ void FnoCC::compute_fno() {
 
     /*
     // check Unitary?
-    X = SharedTensor2d(new Tensor2d("FNO Ttr*T matrix", norb_, norb_));
+    X = std::make_shared<Tensor2d>("FNO Ttr*T matrix", norb_, norb_);
     X->gemm(true, false, Tmat_, Tmat_, 1.0, 0.0);
     X->print();
     X.reset();
@@ -150,16 +150,16 @@ void FnoCC::compute_fno() {
     // main if
     if (nfrzv_ > 0) {
         // Semicanonic Fock
-        SharedTensor2d UfvA = SharedTensor2d(new Tensor2d("UfvA", nfrzv_, nfrzv_));
-        SharedTensor2d UvvA = SharedTensor2d(new Tensor2d("UvvA", navir_, navir_));
-        SharedTensor2d FockfvA = SharedTensor2d(new Tensor2d("Fock <App|Bpp>", nfrzv_, nfrzv_));
-        SharedTensor2d FockvvA = SharedTensor2d(new Tensor2d("Fock <Ap|Bp>", navir_, navir_));
-        SharedTensor1d eigfvA = SharedTensor1d(new Tensor1d("Epsilon <App>", nfrzv_));
-        SharedTensor1d eigvvA = SharedTensor1d(new Tensor1d("Epsilon <Ap>", navir_));
+        SharedTensor2d UfvA = std::make_shared<Tensor2d>("UfvA", nfrzv_, nfrzv_);
+        SharedTensor2d UvvA = std::make_shared<Tensor2d>("UvvA", navir_, navir_);
+        SharedTensor2d FockfvA = std::make_shared<Tensor2d>("Fock <App|Bpp>", nfrzv_, nfrzv_);
+        SharedTensor2d FockvvA = std::make_shared<Tensor2d>("Fock <Ap|Bp>", navir_, navir_);
+        SharedTensor1d eigfvA = std::make_shared<Tensor1d>("Epsilon <App>", nfrzv_);
+        SharedTensor1d eigvvA = std::make_shared<Tensor1d>("Epsilon <Ap>", navir_);
 
         // Form VV Block of old Fock matrix
-        SharedTensor2d oldFvv_ = SharedTensor2d(new Tensor2d("Old Fock <V|V>", nvir_, nvir_));
-        SharedTensor2d newFvv_ = SharedTensor2d(new Tensor2d("New Fock <V|V>", nvir_, nvir_));
+        SharedTensor2d oldFvv_ = std::make_shared<Tensor2d>("Old Fock <V|V>", nvir_, nvir_);
+        SharedTensor2d newFvv_ = std::make_shared<Tensor2d>("New Fock <V|V>", nvir_, nvir_);
 #pragma omp parallel for
         for (int a = 0; a < nvir_; ++a) {
             int aa = a + nocc_;
@@ -208,7 +208,7 @@ void FnoCC::compute_fno() {
         FockvvA->diagonalize(UvvA, eigvvA, cutoff_);
 
         // Build U
-        SharedTensor2d Uorb_ = SharedTensor2d(new Tensor2d("FNO U orb", nvir_, nvir_));
+        SharedTensor2d Uorb_ = std::make_shared<Tensor2d>("FNO U orb", nvir_, nvir_);
 
 // Ufv contribution alpha spin case
 #pragma omp parallel for
@@ -236,7 +236,7 @@ void FnoCC::compute_fno() {
         eigvvA.reset();
 
         // Get new Transformation matrix
-        SharedTensor2d Tvv_copy = SharedTensor2d(new Tensor2d("FNO T matrix copy", nvir_, nvir_));
+        SharedTensor2d Tvv_copy = std::make_shared<Tensor2d>("FNO T matrix copy", nvir_, nvir_);
         Tvv_copy->copy(Tvv_);
         Tvv_->gemm(false, false, Tvv_copy, Uorb_, 1.0, 0.0);
         Uorb_.reset();

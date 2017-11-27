@@ -46,7 +46,7 @@ void DFOCC::fno_wrapper() {
 
     // Trans b_ia^Q
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ia)
@@ -57,7 +57,7 @@ void DFOCC::fno_wrapper() {
     bQso.reset();
 
     // Read Ints
-    bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     bQiaA->read(psio_, PSIF_DFOCC_INTS);
 
     // Remove old integrals file
@@ -67,10 +67,10 @@ void DFOCC::fno_wrapper() {
     timer_on("fno");
     if (reference_ == "RESTRICTED") {
         // malloc
-        // T = SharedTensor2d(new Tensor2d("FNO T matrix <V|V>", nvirA, nvirA));
-        TfnoA = SharedTensor2d(new Tensor2d("FNO T matrix", nmo_, nmo_));
-        VfnoA = SharedTensor2d(new Tensor2d("FNO V matrix", nso_, nmo_));
-        diag = SharedTensor1d(new Tensor1d("Occupation numbers", nvirA));
+        // T = std::make_shared<Tensor2d>("FNO T matrix <V|V>", nvirA, nvirA);
+        TfnoA = std::make_shared<Tensor2d>("FNO T matrix", nmo_, nmo_);
+        VfnoA = std::make_shared<Tensor2d>("FNO V matrix", nso_, nmo_);
+        diag = std::make_shared<Tensor1d>("Occupation numbers", nvirA);
 
         // Call FnoCC
         SharedFnoCC fnoA;
@@ -124,10 +124,10 @@ void DFOCC::fno_wrapper() {
             CavirA.reset();
 
             // build mo coeff blocks
-            CoccA = SharedTensor2d(new Tensor2d("Alpha C(mu,i)", nso_, noccA));
-            CvirA = SharedTensor2d(new Tensor2d("Alpha C(mu,a)", nso_, nvirA));
-            CaoccA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,i)", nso_, naoccA));
-            CavirA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,a)", nso_, navirA));
+            CoccA = std::make_shared<Tensor2d>("Alpha C(mu,i)", nso_, noccA);
+            CvirA = std::make_shared<Tensor2d>("Alpha C(mu,a)", nso_, nvirA);
+            CaoccA = std::make_shared<Tensor2d>("Alpha Active C(mu,i)", nso_, naoccA);
+            CavirA = std::make_shared<Tensor2d>("Alpha Active C(mu,a)", nso_, navirA);
             mo_coeff_blocks();
 
             // modify pair indices

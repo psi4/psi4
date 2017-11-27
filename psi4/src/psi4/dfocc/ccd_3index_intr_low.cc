@@ -40,11 +40,11 @@ void DFOCC::ccd_3index_intr_low() {
     SharedTensor2d K, T, U, Tau;
 
     // T(Q,ia) = \sum_{jb} b_jb^Q u_ij^ab = \sum_{jb} b(Q,jb) U(jb,ia)
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->gemm(false, false, K, U, 1.0, 0.0);
     U.reset();
     K.reset();

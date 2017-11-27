@@ -41,6 +41,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/mintshelper.h"
 #ifdef _OPENMP
 #include <omp.h>
 #include "psi4/libpsi4util/process.h"
@@ -62,12 +63,12 @@ void DFOCC::ref_grad() {
     timer_off("DF-SCF integrals");
 
     // Build SO-Basis OPDM
-    Dso = SharedTensor2d(new Tensor2d("SO-basis Density Matrix", nso_, nso_));
+    Dso = std::make_shared<Tensor2d>("SO-basis Density Matrix", nso_, nso_);
     Dso->gemm(false, true, CoccA, CoccA, 2.0, 0.0);
 
     // Build TPDM OO Blok in the MO Basis
     // G_ij^Q = 4*\delta_ij \sum_{k} c_kk^Q - 2*c_ij^Q
-    gQoo_ref = SharedTensor2d(new Tensor2d("DF_BASIS_SCF 3-Index TPDM <O|O>", nQ_ref, naoccA * naoccA));
+    gQoo_ref = std::make_shared<Tensor2d>("DF_BASIS_SCF 3-Index TPDM <O|O>", nQ_ref, naoccA * naoccA);
     gQoo_ref->copy(cQooA);
     gQoo_ref->scale(-2.0);
     for (int Q = 0; Q < nQ_ref; Q++) {
@@ -83,8 +84,8 @@ void DFOCC::ref_grad() {
     }
 
     // Backtransform MO basis 3-Index TPDM to SO-basis 3-index TPDM
-    gQso_ref = SharedTensor2d(new Tensor2d("3-Index TPDM", nQ_ref, nso2_));
-    gQon_ref = SharedTensor2d(new Tensor2d("DF_BASIS_SCF G_imu^Q", nQ_ref, nso_ * noccA));
+    gQso_ref = std::make_shared<Tensor2d>("3-Index TPDM", nQ_ref, nso2_);
+    gQon_ref = std::make_shared<Tensor2d>("DF_BASIS_SCF G_imu^Q", nQ_ref, nso_ * noccA);
     // G_im^Q = \sum_{j} G_ij^Q * Cnj
     gQon_ref->contract(false, true, nQ_ref * noccA, nso_, noccA, gQoo_ref, CoccA, 1.0, 0.0);
     // G_mn^Q = \sum_{i} Cmi * G_in^Q
@@ -92,7 +93,7 @@ void DFOCC::ref_grad() {
     // gQso_ref->print();
 
     // Build G(P,Q) : 2-Index TPDM
-    Gaux_ref = SharedTensor2d(new Tensor2d("2-Index TPDM", nQ_ref, nQ_ref));
+    Gaux_ref = std::make_shared<Tensor2d>("2-Index TPDM", nQ_ref, nQ_ref);
     // Gaux_ref->gemm(false, true, cQso, gQso_ref, 0.5, 0.0); // SO basis
     Gaux_ref->gemm(false, true, cQooA, gQoo_ref, 0.5, 0.0);  // MO basis
     // Gaux_ref->print();
@@ -100,7 +101,7 @@ void DFOCC::ref_grad() {
     // Build Wmn = 2*\sum_{i} e_i * Cmi Cni
     for (int i = 0; i < noccA; ++i) FockA->set(i, i, epsilon_a_->get(0, i));
     for (int a = 0; a < nvirA; ++a) FockA->set(a + noccA, a + noccA, epsilon_a_->get(0, a + noccA));
-    Wso = SharedTensor2d(new Tensor2d("SO-basis GFM", nso_, nso_));
+    Wso = std::make_shared<Tensor2d>("SO-basis GFM", nso_, nso_);
     for (int mu = 0; mu < nso_; mu++) {
         for (int nu = 0; nu < nso_; nu++) {
             double summ = 0.0;
@@ -117,263 +118,42 @@ void DFOCC::ref_grad() {
     std::map<std::string, SharedMatrix> gradients;
     std::vector<std::string> gradient_terms;
     gradient_terms.push_back("Nuclear");
-    gradient_terms.push_back("Kinetic");
-    gradient_terms.push_back("Potential");
+    gradient_terms.push_back("Core");
     gradient_terms.push_back("Overlap");
     gradient_terms.push_back("3index");
     gradient_terms.push_back("Metric");
     gradient_terms.push_back("Total");
 
-    // Pointers
-    double** Dp = Dso->to_block_matrix();
-    double** Wp = Wso->to_block_matrix();
-
     /********************************************************************************************/
     /************************** Nuclear Gradient ************************************************/
     /********************************************************************************************/
     // => Nuclear Gradient <= //
-    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1(dipole_field_strength_).clone());
     gradients["Nuclear"]->set_name("Nuclear Gradient");
     gradients["Nuclear"]->print_atom_vector();
 
     /********************************************************************************************/
-    /************************** Kinetic Gradient ************************************************/
+    /************************** One-Electron Gradient *******************************************/
     /********************************************************************************************/
-    // => Kinetic Gradient <= //
-    timer_on("Grad: T");
-    {
-        gradients["Kinetic"] = SharedMatrix(gradients["Nuclear"]->clone());
-        gradients["Kinetic"]->set_name("Kinetic Gradient");
-        gradients["Kinetic"]->zero();
-        double** Tp = gradients["Kinetic"]->pointer();
+    auto mints = std::make_shared<MintsHelper>(basisset_, options_);
 
-        // Kinetic derivatives
-        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-                Tint->compute_shell_deriv1(P, Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aP][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-            }
-        }
-    }
-    gradients["Kinetic"]->print_atom_vector();
-    timer_off("Grad: T");
-
-    /********************************************************************************************/
-    /************************** Potential Gradient **********************************************/
-    /********************************************************************************************/
-    // => Potential Gradient <= //
-    timer_on("Grad: V");
-    {
-        gradients["Potential"] = SharedMatrix(gradients["Nuclear"]->clone());
-        gradients["Potential"]->set_name("Potential Gradient");
-        gradients["Potential"]->zero();
-
-        // Thread count
-        int threads = 1;
-#ifdef _OPENMP
-        threads = Process::environment.get_n_threads();
-#endif
-
-        // Potential derivatives
-        std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
-        std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) {
-            Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
-            Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
-        }
-
-        // Lower Triangle
-        std::vector<std::pair<int, int> > PQ_pairs;
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-                PQ_pairs.push_back(std::pair<int, int>(P, Q));
-            }
-        }
-
-#pragma omp parallel for schedule(dynamic) num_threads(threads)
-        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-            int P = PQ_pairs[PQ].first;
-            int Q = PQ_pairs[PQ].second;
-
-            int thread = 0;
-#ifdef _OPENMP
-            thread = omp_get_thread_num();
-#endif
-
-            Vint[thread]->compute_shell_deriv1(P, Q);
-            const double* buffer = Vint[thread]->buffer();
-
-            int nP = basisset_->shell(P).nfunction();
-            int oP = basisset_->shell(P).function_index();
-            int aP = basisset_->shell(P).ncenter();
-
-            int nQ = basisset_->shell(Q).nfunction();
-            int oQ = basisset_->shell(Q).function_index();
-            int aQ = basisset_->shell(Q).ncenter();
-
-            double perm = (P == Q ? 1.0 : 2.0);
-
-            double** Vp = Vtemps[thread]->pointer();
-
-            for (int A = 0; A < natom; A++) {
-                const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-                const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-                const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        double Vval = perm * Dp[p + oP][q + oQ];
-                        Vp[A][0] += Vval * (*ref0++);
-                        Vp[A][1] += Vval * (*ref1++);
-                        Vp[A][2] += Vval * (*ref2++);
-                    }
-                }
-            }
-        }
-
-        for (int t = 0; t < threads; t++) {
-            gradients["Potential"]->add(Vtemps[t]);
-        }
-    }
-    gradients["Potential"]->print_atom_vector();
-    timer_off("Grad: V");
+    timer_on("Grad: T V Perturb");
+    auto D = std::make_shared<Matrix>("AO-basis OPDM", nmo_, nmo_);
+    Dso->to_shared_matrix(D);
+    gradients["Core"] = mints->core_hamiltonian_grad(D);
+    gradients["Core"]->print_atom_vector();
+    timer_off("Grad: T V Perturb");
 
     /********************************************************************************************/
     /************************** Overlap Gradient ************************************************/
     /********************************************************************************************/
-    // => Overlap Gradient <= //
     timer_on("Grad: S");
-    {
-        gradients["Overlap"] = SharedMatrix(gradients["Nuclear"]->clone());
-        gradients["Overlap"]->set_name("Overlap Gradient");
-        gradients["Overlap"]->zero();
-        double** Sp = gradients["Overlap"]->pointer();
-
-        // Overlap derivatives
-        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();
-
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-                Sint->compute_shell_deriv1(P, Q);
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aP][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
-            }
-        }
-    }
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    Wso->to_shared_matrix(W);
+    gradients["Overlap"] = mints->overlap_grad(W);
+    gradients["Overlap"]->scale(-1.0);
     gradients["Overlap"]->print_atom_vector();
     timer_off("Grad: S");
-
-    // mem free
-    free_block(Dp);
-    free_block(Wp);
 
     /********************************************************************************************/
     /************************** Two-electron Gradient *******************************************/

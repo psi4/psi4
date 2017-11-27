@@ -41,7 +41,7 @@ void DFOCC::ccd_t2_amps() {
 
     // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = \sum_{e} t_ij^ae F_be = \sum_{e} T(ia,je) F_be
-    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X = std::make_shared<Tensor2d>("X (IA|JB)", naoccA, navirA, naoccA, navirA);
     X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2, FabA, 1.0, 0.0);
     // X->cont424("IAJB", "IAJE", "BE", false, t2, FabA, 1.0, 0.0); // it works
 
@@ -52,7 +52,7 @@ void DFOCC::ccd_t2_amps() {
     X->symmetrize();
 
     // t_ij^ab <= <ij|ab>
-    Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Tnew = std::make_shared<Tensor2d>("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     Tnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
 
     // Contributions of X
@@ -81,7 +81,7 @@ void DFOCC::ccd_t2_amps() {
         ccd_WabefT2_high_mem();
 
     // Denom
-    Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Tnew = std::make_shared<Tensor2d>("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew->apply_denom_chem(nfrzc, noccA, FockA);
 
@@ -89,17 +89,17 @@ void DFOCC::ccd_t2_amps() {
     rms_t2 = Tnew->rms(t2);
 
     // Error vector
-    Tau = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Tau = std::make_shared<Tensor2d>("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     Tau->copy(Tnew);
     Tau->subtract(t2);
     t2->copy(Tnew);
     Tnew.reset();
 
     // DIIS
-    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
+    auto RT2 =  std::make_shared<Matrix>("RT2", naoccA * navirA, naoccA * navirA);
     Tau->to_matrix(RT2);
     Tau.reset();
-    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+    auto T2 =  std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
     t2->to_matrix(T2);
 
     // add entry
@@ -114,11 +114,11 @@ void DFOCC::ccd_t2_amps() {
     T2.reset();
 
     // Form U(ia,jb) = 2*T(ia,jb) - T (ib,ja)
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     ccsd_u2_amps(U, t2);
 
     // Energy
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
     Ecorr = U->vector_dot(K);
     U.reset();

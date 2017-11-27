@@ -226,6 +226,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- List of basis function indices for which cube files are generated
   (1-based). All basis functions computed if empty.-*/
   options.add("CUBEPROP_BASIS_FUNCTIONS", new ArrayType());
+  /* Fraction of density captured by adaptive isocontour values */
+  options.add_double("CUBEPROP_ISOCONTOUR_THRESHOLD",0.85);
   /*- CubicScalarGrid basis cutoff. !expert -*/
   options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
   /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
@@ -236,7 +238,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("CUBIC_GRID_SPACING", new ArrayType());
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
-
 
 
   if (name == "DETCI" || options.read_globals()) {
@@ -941,6 +942,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAPT_FDDS_DISP_NUM_POINTS", 10);
     /*- Lambda shift in the space morphing for the FDDS Dispersion time integration !expert -*/
     options.add_double("SAPT_FDDS_DISP_LEG_LAMBDA", 0.3);
+    /*- Minimum rho cutoff for the in the LDA response for FDDS !expert -*/
+    options.add_double("SAPT_FDDS_V2_RHO_CUTOFF", 1.e-6);
     /*- Which MP2 Exch-Disp module to use? !expert -*/
     options.add_str("SAPT_DFT_MP2_DISP_ALG", "SAPT", "FISAPT SAPT");
     /*- Interior option to clean up printing !expert -*/
@@ -1355,7 +1358,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The operator used to perturb the Hamiltonian, if requested.  DIPOLE_X, DIPOLE_Y and DIPOLE_Z will be
         removed in favor of the DIPOLE option in the future -*/
     options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
-    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    /*- An ExternalPotential (built by Python or nullptr/None) -*/
     options.add_bool("EXTERN", false);
 
     /*- Radius (bohr) of a hard-sphere external potential -*/
@@ -1428,11 +1431,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
-    /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a
-        custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
-    options.add_str("DFT_FUNCTIONAL", "HF");
-    /*- A custom DFT functional object (built by Python or NULL/None) -*/
-    options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
@@ -4390,7 +4388,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computed force-constant matrix is performed, rotationally projected
       frequencies are computed, infrared intensities are determined, and
       zero-point energies (ZPE) are evaluated. -*/
-      options.add_str("CFOUR_VIBRATION", "NO", "NO ANALYTIC FINDIF");
+      options.add_str("CFOUR_VIBRATION", "NO", "NO ANALYTIC FINDIF EXACT");
 
       /*- This keyword defines what type of integral transformation is to
       be performed in the program ``xvtran``. FULL/PARTIAL (=0) allows the

@@ -39,8 +39,8 @@ namespace dfoccwave {
 void DFOCC::tei_oooo_chem_ref() {
     timer_on("Build (oo|oo)");
     // AA spin case
-    JooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA));
-    bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
+    JooooAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA);
+    bQooA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA);
     bQooA->read(psio_, PSIF_DFOCC_INTS);
     JooooAA->gemm(true, false, bQooA, bQooA, 1.0, 0.0);
     if (reference_ == "RESTRICTED") bQooA.reset();
@@ -49,15 +49,15 @@ void DFOCC::tei_oooo_chem_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        JooooBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|oo)", noccB, noccB, noccB, noccB));
-        bQooB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
+        JooooBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|oo)", noccB, noccB, noccB, noccB);
+        bQooB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB);
         bQooB->read(psio_, PSIF_DFOCC_INTS);
         JooooBB->gemm(true, false, bQooB, bQooB, 1.0, 0.0);
         JooooBB->write(psio_, PSIF_DFOCC_INTS);
         JooooBB.reset();
 
         // AB spin case
-        JooooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|oo)", noccA, noccA, noccB, noccB));
+        JooooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|oo)", noccA, noccA, noccB, noccB);
         JooooAB->gemm(true, false, bQooA, bQooB, 1.0, 0.0);
         bQooA.reset();
         bQooB.reset();
@@ -73,9 +73,9 @@ void DFOCC::tei_oooo_chem_ref() {
 void DFOCC::tei_ooov_chem_ref() {
     timer_on("Build (oo|ov)");
     // AA spin case
-    JooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OV)", noccA, noccA, noccA, nvirA));
-    bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
+    JooovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|OV)", noccA, noccA, noccA, nvirA);
+    bQooA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA);
+    bQovA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA);
     bQooA->read(psio_, PSIF_DFOCC_INTS);
     bQovA->read(psio_, PSIF_DFOCC_INTS);
     JooovAA->gemm(true, false, bQooA, bQovA, 1.0, 0.0);
@@ -86,9 +86,9 @@ void DFOCC::tei_ooov_chem_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        JooovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|ov)", noccB, noccB, noccB, nvirB));
-        bQooB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
+        JooovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|ov)", noccB, noccB, noccB, nvirB);
+        bQooB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB);
         bQooB->read(psio_, PSIF_DFOCC_INTS);
         bQovB->read(psio_, PSIF_DFOCC_INTS);
         JooovBB->gemm(true, false, bQooB, bQovB, 1.0, 0.0);
@@ -96,7 +96,7 @@ void DFOCC::tei_ooov_chem_ref() {
         JooovBB.reset();
 
         // AB spin case
-        JooovAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|ov)", noccA, noccA, noccB, nvirB));
+        JooovAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|ov)", noccA, noccA, noccB, nvirB);
         JooovAB->gemm(true, false, bQooA, bQovB, 1.0, 0.0);
         bQooA.reset();
         bQovB.reset();
@@ -104,7 +104,7 @@ void DFOCC::tei_ooov_chem_ref() {
         JooovAB.reset();
 
         // BA spin case
-        JovooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|oo)", noccA, nvirA, noccB, noccB));
+        JovooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|oo)", noccA, nvirA, noccB, noccB);
         JovooAB->gemm(true, false, bQovA, bQooB, 1.0, 0.0);
         bQooB.reset();
         bQovA.reset();
@@ -120,9 +120,9 @@ void DFOCC::tei_ooov_chem_ref() {
 void DFOCC::tei_oovv_chem_ref() {
     timer_on("Build (oo|vv)");
     // AA spin case
-    JoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    JoovvAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
+    bQooA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA);
+    bQvvA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
     bQooA->read(psio_, PSIF_DFOCC_INTS);
     bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
     JoovvAA->gemm(true, false, bQooA, bQvvA, 1.0, 0.0);
@@ -133,9 +133,9 @@ void DFOCC::tei_oovv_chem_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        JoovvBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
-        bQooB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
-        bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+        JoovvBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB);
+        bQooB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB);
+        bQvvB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB);
         bQooB->read(psio_, PSIF_DFOCC_INTS);
         bQvvB->read(psio_, PSIF_DFOCC_INTS, true, true);
         JoovvBB->gemm(true, false, bQooB, bQvvB, 1.0, 0.0);
@@ -143,7 +143,7 @@ void DFOCC::tei_oovv_chem_ref() {
         JoovvBB.reset();
 
         // AB spin case
-        JoovvAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB));
+        JoovvAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB);
         JoovvAB->gemm(true, false, bQooA, bQvvB, 1.0, 0.0);
         bQooA.reset();
         bQvvB.reset();
@@ -151,7 +151,7 @@ void DFOCC::tei_oovv_chem_ref() {
         JoovvAB.reset();
 
         // BA spin case
-        JvvooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB));
+        JvvooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB);
         JvvooAB->gemm(true, false, bQvvA, bQooB, 1.0, 0.0);
         bQooB.reset();
         bQvvA.reset();
@@ -167,8 +167,8 @@ void DFOCC::tei_oovv_chem_ref() {
 void DFOCC::tei_ovov_chem_ref() {
     timer_on("Build (ov|ov)");
     // AA spin case
-    JovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
+    JovovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
+    bQovA = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA);
     bQovA->read(psio_, PSIF_DFOCC_INTS);
     JovovAA->gemm(true, false, bQovA, bQovA, 1.0, 0.0);
     if (reference_ == "RESTRICTED") bQovA.reset();
@@ -177,15 +177,15 @@ void DFOCC::tei_ovov_chem_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        JovovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
+        JovovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB);
         bQovB->read(psio_, PSIF_DFOCC_INTS);
         JovovBB->gemm(true, false, bQovB, bQovB, 1.0, 0.0);
         JovovBB->write(psio_, PSIF_DFOCC_INTS);
         JovovBB.reset();
 
         // AB spin case
-        JovovAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB));
+        JovovAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB);
         JovovAB->gemm(true, false, bQovA, bQovB, 1.0, 0.0);
         bQovA.reset();
         bQovB.reset();
@@ -202,8 +202,8 @@ void DFOCC::tei_oooo_phys_ref() {
     timer_on("Build <ij|kl>");
 
     // AA spin case
-    IooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO|OO>", noccA, noccA, noccA, noccA));
-    JooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA));
+    IooooAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO|OO>", noccA, noccA, noccA, noccA);
+    JooooAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA);
     JooooAA->read(psio_, PSIF_DFOCC_INTS);
     IooooAA->sort(1324, JooooAA, 1.0, 0.0);
     JooooAA.reset();
@@ -212,8 +212,8 @@ void DFOCC::tei_oooo_phys_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        IooooBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo|oo>", noccB, noccB, noccB, noccB));
-        JooooBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|oo)", noccB, noccB, noccB, noccB));
+        IooooBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo|oo>", noccB, noccB, noccB, noccB);
+        JooooBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|oo)", noccB, noccB, noccB, noccB);
         JooooBB->read(psio_, PSIF_DFOCC_INTS);
         IooooBB->sort(1324, JooooBB, 1.0, 0.0);
         JooooBB.reset();
@@ -221,8 +221,8 @@ void DFOCC::tei_oooo_phys_ref() {
         IooooBB.reset();
 
         // AB spin case
-        IooooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <Oo|Oo>", noccA, noccB, noccA, noccB));
-        JooooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|oo)", noccA, noccA, noccB, noccB));
+        IooooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <Oo|Oo>", noccA, noccB, noccA, noccB);
+        JooooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|oo)", noccA, noccA, noccB, noccB);
         JooooAB->read(psio_, PSIF_DFOCC_INTS);
         IooooAB->sort(1324, JooooAB, 1.0, 0.0);
         JooooAB.reset();
@@ -238,8 +238,8 @@ void DFOCC::tei_oooo_phys_ref() {
 void DFOCC::tei_ooov_phys_ref() {
     timer_on("Build <ij|ka>");
     // AA spin case
-    IooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO|OV>", noccA, noccA, noccA, nvirA));
-    JooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OV)", noccA, noccA, noccA, nvirA));
+    IooovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO|OV>", noccA, noccA, noccA, nvirA);
+    JooovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|OV)", noccA, noccA, noccA, nvirA);
     JooovAA->read(psio_, PSIF_DFOCC_INTS);
     IooovAA->sort(1324, JooovAA, 1.0, 0.0);
     JooovAA.reset();
@@ -248,8 +248,8 @@ void DFOCC::tei_ooov_phys_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        IooovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo|ov>", noccB, noccB, noccB, nvirB));
-        JooovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|ov)", noccB, noccB, noccB, nvirB));
+        IooovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo|ov>", noccB, noccB, noccB, nvirB);
+        JooovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|ov)", noccB, noccB, noccB, nvirB);
         JooovBB->read(psio_, PSIF_DFOCC_INTS);
         IooovBB->sort(1324, JooovBB, 1.0, 0.0);
         JooovBB.reset();
@@ -257,8 +257,8 @@ void DFOCC::tei_ooov_phys_ref() {
         IooovBB.reset();
 
         // AB spin case
-        IooovAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <Oo|Ov>", noccA, noccB, noccA, nvirB));
-        JooovAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|ov)", noccA, noccA, noccB, nvirB));
+        IooovAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <Oo|Ov>", noccA, noccB, noccA, nvirB);
+        JooovAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|ov)", noccA, noccA, noccB, nvirB);
         JooovAB->read(psio_, PSIF_DFOCC_INTS);
         IooovAB->sort(1324, JooovAB, 1.0, 0.0);
         JooovAB.reset();
@@ -266,8 +266,8 @@ void DFOCC::tei_ooov_phys_ref() {
         IooovAB.reset();
 
         // BA spin case
-        IoovoAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <Oo|Vo>", noccA, noccB, nvirA, noccB));
-        JovooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|oo)", noccA, nvirA, noccB, noccB));
+        IoovoAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <Oo|Vo>", noccA, noccB, nvirA, noccB);
+        JovooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|oo)", noccA, nvirA, noccB, noccB);
         JovooAB->read(psio_, PSIF_DFOCC_INTS);
         IoovoAB->sort(1324, JovooAB, 1.0, 0.0);
         JovooAB.reset();
@@ -284,8 +284,8 @@ void DFOCC::tei_oovv_phys_ref() {
     timer_on("Build <ij|ab>");
 
     // AA spin case
-    IoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO|VV>", noccA, noccA, nvirA, nvirA));
-    JovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
+    IoovvAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO|VV>", noccA, noccA, nvirA, nvirA);
+    JovovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
     JovovAA->read(psio_, PSIF_DFOCC_INTS);
     IoovvAA->sort(1324, JovovAA, 1.0, 0.0);
     JovovAA.reset();
@@ -294,8 +294,8 @@ void DFOCC::tei_oovv_phys_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        IoovvBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo|vv>", noccB, noccB, nvirB, nvirB));
-        JovovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
+        IoovvBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo|vv>", noccB, noccB, nvirB, nvirB);
+        JovovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB);
         JovovBB->read(psio_, PSIF_DFOCC_INTS);
         IoovvBB->sort(1324, JovovBB, 1.0, 0.0);
         JovovBB.reset();
@@ -303,8 +303,8 @@ void DFOCC::tei_oovv_phys_ref() {
         IoovvBB.reset();
 
         // AB spin case
-        IoovvAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <Oo|Vv>", noccA, noccB, nvirA, nvirB));
-        JovovAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB));
+        IoovvAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <Oo|Vv>", noccA, noccB, nvirA, nvirB);
+        JovovAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB);
         JovovAB->read(psio_, PSIF_DFOCC_INTS);
         IoovvAB->sort(1324, JovovAB, 1.0, 0.0);
         JovovAB.reset();
@@ -320,8 +320,8 @@ void DFOCC::tei_oovv_phys_ref() {
 void DFOCC::tei_ovov_phys_ref() {
     timer_on("Build <ia|jb>");
     // AA spin case
-    IovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OV|OV>", noccA, nvirA, noccA, nvirA));
-    JoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
+    IovovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OV|OV>", noccA, nvirA, noccA, nvirA);
+    JoovvAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
     JoovvAA->read(psio_, PSIF_DFOCC_INTS);
     IovovAA->sort(1324, JoovvAA, 1.0, 0.0);
     JoovvAA.reset();
@@ -330,8 +330,8 @@ void DFOCC::tei_ovov_phys_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        IovovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <ov|ov>", noccB, nvirB, noccB, nvirB));
-        JoovvBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
+        IovovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <ov|ov>", noccB, nvirB, noccB, nvirB);
+        JoovvBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB);
         JoovvBB->read(psio_, PSIF_DFOCC_INTS);
         IovovBB->sort(1324, JoovvBB, 1.0, 0.0);
         JoovvBB.reset();
@@ -339,8 +339,8 @@ void DFOCC::tei_ovov_phys_ref() {
         IovovBB.reset();
 
         // AB spin case
-        IovovAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <Ov|Ov>", noccA, nvirB, noccA, nvirB));
-        JoovvAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB));
+        IovovAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <Ov|Ov>", noccA, nvirB, noccA, nvirB);
+        JoovvAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB);
         JoovvAB->read(psio_, PSIF_DFOCC_INTS);
         IovovAB->sort(1324, JoovvAB, 1.0, 0.0);
         JoovvAB.reset();
@@ -348,8 +348,8 @@ void DFOCC::tei_ovov_phys_ref() {
         IovovAB.reset();
 
         // BA spin case
-        IvovoAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <Vo|Vo>", nvirA, noccB, nvirA, noccB));
-        JvvooAB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB));
+        IvovoAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <Vo|Vo>", nvirA, noccB, nvirA, noccB);
+        JvvooAB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB);
         JvvooAB->read(psio_, PSIF_DFOCC_INTS);
         IvovoAB->sort(1324, JvvooAB, 1.0, 0.0);
         JvvooAB.reset();
@@ -366,8 +366,8 @@ void DFOCC::tei_oooo_anti_symm_ref() {
     timer_on("Build <ij||kl>");
 
     // AA spin case
-    AIooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO||OO>", noccA, noccA, noccA, noccA));
-    IooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO|OO>", noccA, noccA, noccA, noccA));
+    AIooooAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO||OO>", noccA, noccA, noccA, noccA);
+    IooooAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO|OO>", noccA, noccA, noccA, noccA);
     IooooAA->read(psio_, PSIF_DFOCC_INTS);
     AIooooAA->sort(1243, IooooAA, 1.0, 0.0);
     AIooooAA->scale(-1.0);
@@ -378,8 +378,8 @@ void DFOCC::tei_oooo_anti_symm_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        AIooooBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo||oo>", noccB, noccB, noccB, noccB));
-        IooooBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo|oo>", noccB, noccB, noccB, noccB));
+        AIooooBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo||oo>", noccB, noccB, noccB, noccB);
+        IooooBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo|oo>", noccB, noccB, noccB, noccB);
         IooooBB->read(psio_, PSIF_DFOCC_INTS);
         AIooooBB->sort(1243, IooooBB, 1.0, 0.0);
         AIooooBB->scale(-1.0);
@@ -398,8 +398,8 @@ void DFOCC::tei_ooov_anti_symm_ref() {
     timer_on("Build <ij||ka>");
     // <ij||ka> = <ij|ka> - <ji|ka>
     // AA spin case
-    AIooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO||OV>", noccA, noccA, noccA, nvirA));
-    IooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO|OV>", noccA, noccA, noccA, nvirA));
+    AIooovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO||OV>", noccA, noccA, noccA, nvirA);
+    IooovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO|OV>", noccA, noccA, noccA, nvirA);
     IooovAA->read(psio_, PSIF_DFOCC_INTS);
     AIooovAA->sort(2134, IooovAA, 1.0, 0.0);
     AIooovAA->scale(-1.0);
@@ -410,8 +410,8 @@ void DFOCC::tei_ooov_anti_symm_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        AIooovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo||ov>", noccB, noccB, noccB, nvirB));
-        IooovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo|ov>", noccB, noccB, noccB, nvirB));
+        AIooovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo||ov>", noccB, noccB, noccB, nvirB);
+        IooovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo|ov>", noccB, noccB, noccB, nvirB);
         IooovBB->read(psio_, PSIF_DFOCC_INTS);
         AIooovBB->sort(2134, IooovBB, 1.0, 0.0);
         AIooovBB->scale(-1.0);
@@ -430,8 +430,8 @@ void DFOCC::tei_oovv_anti_symm_ref() {
     timer_on("Build <ij||ab>");
 
     // AA spin case
-    AIoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO||VV>", noccA, noccA, nvirA, nvirA));
-    IoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OO|VV>", noccA, noccA, nvirA, nvirA));
+    AIoovvAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO||VV>", noccA, noccA, nvirA, nvirA);
+    IoovvAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OO|VV>", noccA, noccA, nvirA, nvirA);
     IoovvAA->read(psio_, PSIF_DFOCC_INTS);
     AIoovvAA->sort(1243, IoovvAA, 1.0, 0.0);
     AIoovvAA->scale(-1.0);
@@ -442,8 +442,8 @@ void DFOCC::tei_oovv_anti_symm_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        AIoovvBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo||vv>", noccB, noccB, nvirB, nvirB));
-        IoovvBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <oo|vv>", noccB, noccB, nvirB, nvirB));
+        AIoovvBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo||vv>", noccB, noccB, nvirB, nvirB);
+        IoovvBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <oo|vv>", noccB, noccB, nvirB, nvirB);
         IoovvBB->read(psio_, PSIF_DFOCC_INTS);
         AIoovvBB->sort(1243, IoovvBB, 1.0, 0.0);
         AIoovvBB->scale(-1.0);
@@ -462,13 +462,13 @@ void DFOCC::tei_ovov_anti_symm_ref() {
     timer_on("Build <ia||jb>");
     // <ia||jb> = <ia|jb> - <ia|bj> = <ia|jb> - (ib|ja)
     // AA spin case
-    AIovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OV||OV>", noccA, nvirA, noccA, nvirA));
-    JovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
+    AIovovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OV||OV>", noccA, nvirA, noccA, nvirA);
+    JovovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
     JovovAA->read(psio_, PSIF_DFOCC_INTS);
     AIovovAA->sort(1432, JovovAA, 1.0, 0.0);
     JovovAA.reset();
     AIovovAA->scale(-1.0);
-    IovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <OV|OV>", noccA, nvirA, noccA, nvirA));
+    IovovAA = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <OV|OV>", noccA, nvirA, noccA, nvirA);
     IovovAA->read(psio_, PSIF_DFOCC_INTS);
     AIovovAA->add(IovovAA);
     IovovAA.reset();
@@ -477,13 +477,13 @@ void DFOCC::tei_ovov_anti_symm_ref() {
 
     if (reference_ == "UNRESTRICTED") {
         // BB spin case
-        AIovovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <ov||ov>", noccB, nvirB, noccB, nvirB));
-        JovovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
+        AIovovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <ov||ov>", noccB, nvirB, noccB, nvirB);
+        JovovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB);
         JovovBB->read(psio_, PSIF_DFOCC_INTS);
         AIovovBB->sort(1432, JovovBB, 1.0, 0.0);
         JovovBB.reset();
         AIovovBB->scale(-1.0);
-        IovovBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints <ov|ov>", noccB, nvirB, noccB, nvirB));
+        IovovBB = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints <ov|ov>", noccB, nvirB, noccB, nvirB);
         IovovBB->read(psio_, PSIF_DFOCC_INTS);
         AIovovBB->add(IovovBB);
         IovovBB.reset();

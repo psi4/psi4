@@ -57,7 +57,7 @@ void DFOCC::lccd_iterations() {
     if (do_diis_ == 1) {
         // RHF
         if (reference_ == "RESTRICTED") {
-            std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+            auto T2 = std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
             ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
@@ -67,9 +67,9 @@ void DFOCC::lccd_iterations() {
 
         // UHF
         else if (reference_ == "UNRESTRICTED") {
-            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
-            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
-            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+            auto T2AA = std::make_shared<Matrix>("T2AA", ntri_anti_ijAA, ntri_anti_abAA);
+            auto T2BB = std::make_shared<Matrix>("T2BB", ntri_anti_ijBB, ntri_anti_abBB);
+            auto T2AB = std::make_shared<Matrix>("T2AB", naoccA * naoccB, navirA * navirB);
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
             ccsdDiisManager->set_error_vector_size(3, DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(),

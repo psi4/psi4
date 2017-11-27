@@ -72,7 +72,7 @@ void DFOCC::tei_grad_ref() {
     //========================= Metric Gradient:RefSep ==========================================
     //===========================================================================================
     // Read Gaux_ref
-    Gaux_ref = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+    Gaux_ref = std::make_shared<Tensor2d>("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref);
     // Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
     Gaux_ref->read_symm(psio_, PSIF_DFOCC_DENS);
 
@@ -178,7 +178,7 @@ void DFOCC::tei_grad_ref() {
     //========================= 3-Index Gradient:RefSep =========================================
     //===========================================================================================
     // Read gQso
-    gQso_ref = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
+    gQso_ref = std::make_shared<Tensor2d>("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_);
     gQso_ref->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
