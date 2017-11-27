@@ -202,7 +202,6 @@ void CUHF::compute_spin_contamination() {
     outfile->Printf("  @S^2 Observed:              %8.5F\n", S2 + dS);
 }
 
-
 void CUHF::form_initialF() {
     Fa_->copy(H_);
     Fb_->copy(H_);
@@ -364,8 +363,8 @@ double CUHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
 
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
-                                                          DIISManager::LargestError, DIISManager::OnDisk);
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
+                                                          DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, grad_a.get(), DIISEntry::Matrix, grad_b.get());
             diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
             initialized_diis_manager_ = true;
@@ -383,7 +382,6 @@ bool CUHF::stability_analysis() {
     return false;
 }
 
-
 std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<CUHF>(wfn, functional_, wfn->options(), wfn->psio());
@@ -396,10 +394,8 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
-    if (epsilon_a_) hf_wfn->epsilon_a_ =
-        epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    if (epsilon_b_) hf_wfn->epsilon_b_ =
-        epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
+    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
     // H_ ans X_ reset in the HF constructor, copy them over here
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
@@ -407,7 +403,5 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
-
-
 }
 }

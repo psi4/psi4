@@ -33,10 +33,11 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
-namespace psi { namespace scf {
+namespace psi {
+namespace scf {
 
 class ROHF : public HF {
-protected:
+   protected:
     SharedMatrix moFeff_;
     SharedMatrix soFeff_;
     SharedMatrix Dt_;
@@ -64,15 +65,15 @@ protected:
 
     void common_init();
 
-public:
+   public:
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
-    ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
-         Options& options, std::shared_ptr<PSIO> psio);
+    ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
+         std::shared_ptr<PSIO> psio);
     virtual ~ROHF();
 
-    SharedMatrix moFeff() const {return moFeff_; }
-    SharedMatrix moFa() const {return moFa_; }
-    SharedMatrix moFb() const {return moFb_; }
+    SharedMatrix moFeff() const { return moFeff_; }
+    SharedMatrix moFa() const { return moFa_; }
+    SharedMatrix moFb() const { return moFb_; }
 
     bool diis();
     void save_density_and_energy();
@@ -91,7 +92,7 @@ public:
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };
-
-}}
+}
+}
 
 #endif
