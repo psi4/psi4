@@ -277,7 +277,7 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Ca2p = C_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        ::memcpy(Ca2p[ml], Cap[mg], na * sizeof(double));
+        std::fill(Ca2p[ml], Cap[mg] + na, 0.0);
     }
 
     // => Build orbitals <= //
@@ -553,7 +553,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     double** Ca2p = Ca_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        ::memcpy(Ca2p[ml], Cap[mg], na * sizeof(double));
+        std::fill(Ca2p[ml], Cap[mg] + na, 0.0);
     }
 
     int nb = Cb_AO_->colspi()[0];
@@ -561,7 +561,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     double** Cb2p = Cb_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        ::memcpy(Cb2p[ml], Cbp[mg], nb * sizeof(double));
+        std::fill(Cb2p[ml], Cbp[mg] + nb, 0.0);
     }
 
     // => Build orbitals <= //
@@ -725,7 +725,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         double** purep = basis_values_["PHI"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(purep[P]),'\0',nsig_functions*sizeof(double));
+            std::fill(purep[P], purep[P] + nsig_functions, 0.0);
         }
 
         int function_offset = 0;
@@ -805,10 +805,10 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         double** purezp = basis_values_["PHI_Z"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(purep[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purexp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(pureyp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purezp[P]), '\0', nsig_functions * sizeof(double));
+            std::fill(purep[P], purep[P] + nsig_functions, 0.0);
+            std::fill(purexp[P], purexp[P] + nsig_functions, 0.0);
+            std::fill(pureyp[P], pureyp[P] + nsig_functions, 0.0);
+            std::fill(purezp[P], purezp[P] + nsig_functions, 0.0);
         }
 
         int function_offset = 0;
@@ -930,16 +930,16 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         double** purezzp = basis_values_["PHI_ZZ"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(purep[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purexp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(pureyp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purezp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purexxp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purexyp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purexzp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(pureyyp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(pureyzp[P]), '\0', nsig_functions * sizeof(double));
-            ::memset(static_cast<void*>(purezzp[P]), '\0', nsig_functions * sizeof(double));
+            std::fill(purep[P], purep[P] + nsig_functions, 0.0);
+            std::fill(purexp[P], purexp[P] + nsig_functions, 0.0);
+            std::fill(pureyp[P], pureyp[P] + nsig_functions, 0.0);
+            std::fill(purezp[P], purezp[P] + nsig_functions, 0.0);
+            std::fill(purexxp[P], purexxp[P] + nsig_functions, 0.0);
+            std::fill(purexyp[P], purexyp[P] + nsig_functions, 0.0);
+            std::fill(purexzp[P], purexzp[P] + nsig_functions, 0.0);
+            std::fill(pureyyp[P], pureyyp[P] + nsig_functions, 0.0);
+            std::fill(pureyzp[P], pureyzp[P] + nsig_functions, 0.0);
+            std::fill(purezzp[P], purezzp[P] + nsig_functions, 0.0);
         }
 
         int function_offset = 0;

@@ -361,7 +361,7 @@ double VBase::vv10_nlc(SharedMatrix ret){
         parallel_timer_on("VV10 Fock", rank);
         // => LSDA contribution (symmetrized) <= //
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
         }
 
@@ -534,7 +534,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         // => LSDA contribution (symmetrized) <= //
         parallel_timer_on("LSDA", rank);
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
         }
         parallel_timer_off("LSDA", rank);
@@ -588,7 +588,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
             for (int i = 0; i < 3; i++) {
                 double** phiw = phi_w[i];
                 for (int P = 0; P < npoints; P++) {
-                    ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+                    std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                     C_DAXPY(nlocal, v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
                 }
                 C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tp[0],
@@ -834,7 +834,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             parallel_timer_on("V_XCd", rank);
             parallel_timer_on("LSDA", rank);
             for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 if (rho_a[P] < v2_rho_cutoff_) continue;
                 C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
             }
@@ -1021,7 +1021,7 @@ SharedMatrix RV::compute_gradient()
 
         // => LSDA Contribution <= //
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tp[P], 1);
         }
 
@@ -1067,7 +1067,7 @@ SharedMatrix RV::compute_gradient()
 
             // x
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), Up[P], 1, Tp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
@@ -1079,7 +1079,7 @@ SharedMatrix RV::compute_gradient()
 
             // y
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P]), Up[P], 1, Tp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
@@ -1091,7 +1091,7 @@ SharedMatrix RV::compute_gradient()
 
             // z
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P]), Up[P], 1, Tp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
@@ -1133,7 +1133,7 @@ SharedMatrix RV::compute_gradient()
                 double*** phi_j = phi_ij[i];
                 C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_i[i][0],max_functions,Dp[0],max_functions,0.0,Up[0],max_functions);
                 for (int P = 0; P < npoints; P++) {
-                    ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+                    std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                     C_DAXPY(nlocal, -2.0 * w[P] * (v_tau_a[P]), Up[P], 1, Tp[P], 1);
                 }
                 for (int ml = 0; ml < nlocal; ml++) {
@@ -1294,7 +1294,7 @@ SharedMatrix RV::compute_hessian()
         double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            std::fill(Up[P], Up[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 4.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
         }
 
@@ -1323,7 +1323,7 @@ SharedMatrix RV::compute_hessian()
         }
 
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            std::fill(Up[P], Up[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 4.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
         }
 
@@ -1358,7 +1358,7 @@ SharedMatrix RV::compute_hessian()
          *                            ∂ ρ
          */
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            std::fill(Up[P], Up[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], Tp[P], 1, Up[P], 1);
         }
         for (int ml = 0; ml < nlocal; ml++) {
@@ -1391,7 +1391,7 @@ SharedMatrix RV::compute_hessian()
         C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_z[0],max_functions,Dp[0],max_functions,0.0,pTz2[0],max_functions);
         // x derivatives
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            std::fill(Up[P], Up[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], pTx2[P], 1, Up[P], 1);
         }
         for (int ml = 0; ml < nlocal; ml++) {
@@ -1402,7 +1402,7 @@ SharedMatrix RV::compute_hessian()
         }
         // y derivatives
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            std::fill(Up[P], Up[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], pTy2[P], 1, Up[P], 1);
         }
         for (int ml = 0; ml < nlocal; ml++) {
@@ -1413,7 +1413,7 @@ SharedMatrix RV::compute_hessian()
         }
         // x derivatives
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            std::fill(Up[P], Up[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], pTz2[P], 1, Up[P], 1);
         }
         for (int ml = 0; ml < nlocal; ml++) {
@@ -1587,8 +1587,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret)
         // => LSDA contribution (symmetrized) <= //
         // timer_on("V: LSDA");
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(Tap[P]), '\0', nlocal * sizeof(double));
-            ::memset(static_cast<void*>(Tbp[P]), '\0', nlocal * sizeof(double));
+            std::fill(Tap[P], Tap[P] + nlocal, 0.0);
+            std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tap[P], 1);
             C_DAXPY(nlocal, 0.5 * v_rho_b[P] * w[P], phi[P], 1, Tbp[P], 1);
         }
@@ -1665,7 +1665,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret)
                 for (int i = 0; i < 3; i++) {
                     double** phiw = phi[i];
                     for (int P = 0; P < npoints; P++) {
-                        ::memset(static_cast<void*>(Tap[P]), '\0', nlocal * sizeof(double));
+                        std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                         C_DAXPY(nlocal, v_taup[P] * w[P], phiw[P], 1, Tap[P], 1);
                     }
                     C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tap[0],
@@ -1970,8 +1970,8 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             // => LSDA contribution (symmetrized) <= //
             double tmp_val = 0.0, tmp_ab_val = 0.0;
             for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]), '\0', nlocal * sizeof(double));
-                ::memset(static_cast<void*>(Tbp[P]), '\0', nlocal * sizeof(double));
+                std::fill(Tap[P], Tap[P] + nlocal, 0.0);
+                std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
 
                 if (rho_a[P] > v2_rho_cutoff_){
                     tmp_val  = v2_rho2_aa[P] * rho_ak[P];
@@ -2316,8 +2316,8 @@ SharedMatrix UV::compute_gradient()
 
         // => LSDA Contribution <= //
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*)Tap[P], '\0', sizeof(double) * nlocal);
-            ::memset((void*)Tbp[P], '\0', sizeof(double) * nlocal);
+            std::fill(Tap[P], Tap[P] + nlocal, 0.0);
+            std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tap[P], 1);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_b[P], phi[P], 1, Tbp[P], 1);
         }
@@ -2397,8 +2397,8 @@ SharedMatrix UV::compute_gradient()
 
             // x
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*)Tap[P], '\0', sizeof(double) * nlocal);
-                ::memset((void*)Tbp[P], '\0', sizeof(double) * nlocal);
+                std::fill(Tap[P], Tap[P] + nlocal, 0.0);
+                std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal,
                         -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]),
                         Uap[P], 1, Tap[P], 1);
@@ -2424,8 +2424,8 @@ SharedMatrix UV::compute_gradient()
 
             // y
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
-                ::memset((void*) Tbp[P], '\0', sizeof(double) * nlocal);
+                std::fill(Tap[P], Tap[P] + nlocal, 0.0);
+                std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P] + v_gamma_ab[P] * rho_by[P]), Uap[P], 1, Tap[P], 1);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_by[P] + v_gamma_ab[P] * rho_ay[P]), Ubp[P], 1, Tbp[P], 1);
             }
@@ -2441,8 +2441,8 @@ SharedMatrix UV::compute_gradient()
 
             // z
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
-                ::memset((void*) Tbp[P], '\0', sizeof(double) * nlocal);
+                std::fill(Tap[P], Tap[P] + nlocal, 0.0);
+                std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P] + v_gamma_ab[P] * rho_bz[P]), Uap[P], 1, Tap[P], 1);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bz[P] + v_gamma_ab[P] * rho_az[P]), Ubp[P], 1, Tbp[P], 1);
             }
@@ -2500,7 +2500,7 @@ SharedMatrix UV::compute_gradient()
                     double*** phi_j = phi_ij[i];
                     C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_i[i][0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
                     for (int P = 0; P < npoints; P++) {
-                        ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
+                        std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                         C_DAXPY(nlocal, -2.0 * w[P] * (v_tau[P]), Uap[P], 1, Tap[P], 1);
                     }
                     for (int ml = 0; ml < nlocal; ml++) {
