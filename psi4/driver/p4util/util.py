@@ -25,14 +25,16 @@
 #
 # @END LICENSE
 #
-
 """Module with utility functions for use in input files."""
 from __future__ import division
+#from __future__ import absolute_import
 import re
 import sys
 import os
 import math
 import numpy as np
+from datetime import datetime
+from uuid import uuid4
 from .exceptions import *
 
 
@@ -91,10 +93,9 @@ def cubeprop(wfn, **kwargs):
     """
     # By default compute the orbitals
     if not core.has_global_option_changed('CUBEPROP_TASKS'):
-        core.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
+        core.set_global_option('CUBEPROP_TASKS', ['ORBITALS'])
 
-    if ((core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and
-        ('ESP' in core.get_global_option('CUBEPROP_TASKS'))):
+    if ((core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and ('ESP' in core.get_global_option('CUBEPROP_TASKS'))):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with electrostatic potential, so stopping.')
 
     cp = core.CubeProperties(wfn)
@@ -182,12 +183,14 @@ def set_memory(inputval, execute=True):
     # Check minimum memory requirement
     min_mem_allowed = 262144000
     if memory_amount < min_mem_allowed:
-        raise ValidationError("""set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 250 MiB (263 MB). Please, sir, I want some more.""".format(
-                memory_amount / 1024 ** 2, memory_amount / 1000 ** 2))
+        raise ValidationError(
+            """set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 250 MiB (263 MB). Please, sir, I want some more.""".format(
+                memory_amount / 1024**2, memory_amount / 1000**2))
 
     if execute:
         core.set_memory_bytes(memory_amount)
     return memory_amount
+
 
 def get_memory():
     """Function to return the total memory allocation."""
@@ -215,8 +218,9 @@ def compare_values(expected, computed, digits, label, exitonfail=True):
 
     """
     if digits > 1:
-        thresh = 10 ** -digits
-        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." % (label, digits+1, computed, digits+1, expected, digits))
+        thresh = 10** -digits
+        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." %
+                   (label, digits + 1, computed, digits + 1, expected, digits))
     else:
         thresh = digits
         message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
@@ -252,7 +256,7 @@ def compare_strings(expected, computed, label):
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
-    if(expected != computed):
+    if (expected != computed):
         message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
         raise TestComparisonError(message)
     success(label)
@@ -267,31 +271,36 @@ def compare_matrices(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        message = ("\t%s has %d irreps, but %s has %d\n." %
+                   (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
         raise TestComparisonError(message)
     if (expected.symmetry() != computed.symmetry()):
-        message = ("\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
+        message = ("\t%s has %d symmetry, but %s has %d\n." %
+                   (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
         raise TestComparisonError(message)
     nirreps = expected.nirrep()
     symmetry = expected.symmetry()
     for irrep in range(nirreps):
-        if(expected.rows(irrep) != computed.rows(irrep)):
-            message = ("\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
+        if (expected.rows(irrep) != computed.rows(irrep)):
+            message = ("\t%s has %d rows in irrep %d, but %s has %d\n." %
+                       (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
             raise TestComparisonError(message)
-        if(expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
-            message = ("\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
+        if (expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
+            message = ("\t%s has %d columns in irrep, but %s has %d\n." %
+                       (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
             raise TestComparisonError(message)
         rows = expected.rows(irrep)
         cols = expected.cols(irrep ^ symmetry)
         failed = 0
         for row in range(rows):
             for col in range(cols):
-                if(abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10 ** (-digits)):
-                    print("\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col), computed.get(irrep, row, col)))
+                if (abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10**(-digits)):
+                    print("\t%s: computed value (%s) does not match (%s)." %
+                          (label, expected.get(irrep, row, col), computed.get(irrep, row, col)))
                     failed = 1
                     break
 
-        if(failed):
+        if (failed):
             print("Check your output file for reporting of the matrices.")
             core.print_out("The Failed Test Matrices\n")
             core.print_out("Computed Matrix (2nd matrix passed in)\n")
@@ -311,26 +320,29 @@ def compare_vectors(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        message = ("\t%s has %d irreps, but %s has %d\n." %
+                   (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
         raise TestComparisonError(message)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
-        if(expected.dim(irrep) != computed.dim(irrep)):
-            message = ("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep)))
+        if (expected.dim(irrep) != computed.dim(irrep)):
+            message = ("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." %
+                       (expected.dim(irrep), irrep, computed.dim(irrep)))
             raise TestComparisonError(message)
         dim = expected.dim(irrep)
         failed = 0
         for entry in range(dim):
-            if(abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10 ** (-digits)):
+            if (abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10**(-digits)):
                 failed = 1
                 break
 
-        if(failed):
+        if (failed):
             core.print_out("The computed vector\n")
             computed.print_out()
             core.print_out("The reference vector\n")
             expected.print_out()
-            message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
+            message = ("\t%s: computed value (%s) does not match (%s)." %
+                       (label, computed.get(irrep, entry), expected.get(irrep, entry)))
             raise TestComparisonError(message)
     success(label)
     return True
@@ -353,7 +365,7 @@ def compare_arrays(expected, computed, digits, label):
     if shape1 != shape2:
         TestComparisonError("Input shapes do not match.")
 
-    tol = 10 ** (-digits)
+    tol = 10**(-digits)
     if not np.allclose(expected, computed, atol=tol):
         message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
         raise TestComparisonError(message)
@@ -368,8 +380,8 @@ def compare_cubes(expected, computed, label):
 
     """
     # Grab grid points. Skip the first nine lines and the last one
-    evec = np.genfromtxt(expected,skip_header=9,skip_footer=1)
-    cvec = np.genfromtxt(computed,skip_header=9,skip_footer=1)
+    evec = np.genfromtxt(expected, skip_header=9, skip_footer=1)
+    cvec = np.genfromtxt(computed, skip_header=9, skip_footer=1)
     if evec.size == cvec.size:
         if not np.allclose(cvec, evec, rtol=5e-05, atol=1e-10):
             message = ("\t%s: computed cube file does not match expected cube file." % label)
@@ -379,7 +391,6 @@ def compare_cubes(expected, computed, label):
         raise TestComparisonError(message)
     success(label)
     return True
-
 
 # Uncomment and use if compare_arrays above is inadequate
 #def compare_lists(expected, computed, digits, label):
@@ -410,8 +421,7 @@ def compare_cubes(expected, computed, label):
 #    success(label)
 
 
-def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
-
+def copy_file_to_scratch(filename, prefix, namespace, unit, move=False):
     """Function to move file into scratch with correct naming
     convention.
 
@@ -441,9 +451,9 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     pid = str(os.getpid())
     scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
-    cp = '/bin/cp';
+    cp = '/bin/cp'
     if move:
-        cp = '/bin/mv';
+        cp = '/bin/mv'
 
     unit = str(unit)
 
@@ -462,8 +472,8 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     os.system(command)
     #print command
 
-def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
 
+def copy_file_from_scratch(filename, prefix, namespace, unit, move=False):
     """Function to move file out of scratch with correct naming
     convention.
 
@@ -493,9 +503,9 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     pid = str(os.getpid())
     scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
-    cp = '/bin/cp';
+    cp = '/bin/cp'
     if move:
-        cp = '/bin/mv';
+        cp = '/bin/mv'
 
     unit = str(unit)
 
@@ -540,7 +550,8 @@ def csx2endict():
     dictionary.
 
     """
-    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState', 'singleDeterminant']
+    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState',
+                   'singleDeterminant']
     blockmidfix = ['energies', 'energy']
     prefix = 'cs:'
 
@@ -583,3 +594,180 @@ def compare_csx():
             compare_integers(len(enedict) >= 2, True, 'CSX harvested')
             for pv, en in enedict.items():
                 compare_values(core.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))
+
+
+def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
+    """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
+    Additional one-electron integrals, including orbital energies, can also be saved.
+    This latter format can be used with the HANDE QMC code but is not standard.
+
+    :returns: None
+
+    :raises: ValidationError when SCF wavefunction is neither RHF nor UHF
+
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+    :param fname: name of the integrals file, defaults to INTDUMP
+    :param write_footer: whether to write a timestamp in the file footer, defaults to False.
+    :param oe_ints: list of additional one-electron integrals to save to file.
+    So far only EIGENVALUES is a valid option.
+
+    :examples:
+
+    >>> # [1] Save one- and two-electron integrals to standard FCIDUMP format
+    >>> E, wfn = energy('scf', return_wfn=True)
+    >>> fcidump(wfn)
+
+    >>> # [2] Save orbital energies, one- and two-electron integrals. Print timestamp in footer.
+    >>> E, wfn = energy('scf', return_wfn=True)
+    >>> fcidump(wfn, oe_ints=['EIGENVALUES'], write_footer=True)
+
+    """
+    from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
+    # Get some options
+    reference = core.get_option('SCF', 'REFERENCE')
+    ints_tolerance = core.get_option('SCF', 'INTS_TOLERANCE')
+    # Some sanity checks
+    if reference not in ['RHF', 'UHF']:
+        raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
+    if oe_ints is None:
+        oe_ints = []
+
+    molecule = wfn.molecule()
+    docc = wfn.doccpi()
+    frzcpi = wfn.frzcpi()
+    frzvpi = wfn.frzvpi()
+    active_docc = docc - frzcpi
+    active_socc = wfn.soccpi()
+    active_mopi = wfn.nmopi() - frzcpi - frzvpi
+
+    nbf = active_mopi.sum() if wfn.same_a_b_orbs() else 2 * active_mopi.sum()
+    nirrep = wfn.nirrep()
+    nelectron = 2 * active_docc.sum() + active_socc.sum()
+
+    core.print_out('Writing integrals in FCIDUMP format to ' + fname + '\n')
+    # Generate FCIDUMP header
+    header = '&FCI\n'
+    header += 'NORB={:d},\n'.format(nbf)
+    header += 'NELEC={:d},\n'.format(nelectron)
+    header += 'MS2={:d},\n'.format(wfn.nalpha() - wfn.nbeta())
+    header += 'UHF=.{}.,\n'.format(not wfn.same_a_b_orbs()).upper()
+    orbsym = ''
+    for h in range(active_mopi.n()):
+        for n in range(frzcpi[h], frzcpi[h] + active_mopi[h]):
+            orbsym += '{:d},'.format(h + 1)
+            if not wfn.same_a_b_orbs():
+                orbsym += '{:d},'.format(h + 1)
+    header += 'ORBSYM={}\n'.format(orbsym)
+    header += '&END\n'
+    with open(fname, 'w') as intdump:
+        intdump.write(header)
+
+    # Get an IntegralTransform object
+    check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), wfn)
+    spaces = [core.MOSpace.all()]
+    transType = core.IntegralTransform.TransformationType.Restricted
+    if not wfn.same_a_b_orbs():
+        transType = core.IntegralTransform.TransformationType.Unrestricted
+    ints = core.IntegralTransform(wfn, spaces, transType)
+    ints.transform_tei(core.MOSpace.all(), core.MOSpace.all(), core.MOSpace.all(), core.MOSpace.all())
+    core.print_out('Integral transformation complete!\n')
+
+    DPD_info = {'instance_id': ints.get_dpd_id(), 'alpha_MO': ints.DPD_ID('[A>=A]+'), 'beta_MO': 0}
+    if not wfn.same_a_b_orbs():
+        DPD_info['beta_MO'] = ints.DPD_ID("[a>=a]+")
+    # Write TEI to fname in FCIDUMP format
+    core.fcidump_tei_helper(nirrep, wfn.same_a_b_orbs(), DPD_info, ints_tolerance, fname)
+
+    # Read-in OEI and write them to fname in FCIDUMP format
+    PSIF_OEI = 35
+
+    # Indexing functions to translate from zero-based (C and Python) to
+    # one-based (Fortran)
+    mo_idx = lambda x: x + 1
+    alpha_mo_idx = lambda x: 2 * x + 1
+    beta_mo_idx = lambda x: 2 * (x + 1)
+
+    with open(fname, 'a') as intdump:
+        core.print_out('Writing frozen core operator in FCIDUMP format to ' + fname + '\n')
+        if reference == 'RHF':
+            PSIF_MO_FZC = 'MO-basis Frozen-Core Operator'
+            moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
+            moH.load(core.IO.shared_object(), PSIF_OEI)
+            slice = core.Slice(frzcpi, active_mopi)
+            MO_FZC = moH.get_block(slice, slice).to_array()
+            offset = 0
+            for h, block in enumerate(MO_FZC):
+                il = np.tril_indices(block.shape[0])
+                for index, x in np.ndenumerate(block[il]):
+                    row = mo_idx(il[0][index] + offset)
+                    col = mo_idx(il[1][index] + offset)
+                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                offset += block.shape[0]
+            # Additional one-electron integrals as requested in oe_ints
+            # Orbital energies
+            core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
+            if 'EIGENVALUES' in oe_ints:
+                iorb = 0
+                eps_a = wfn.epsilon_a().get_block(slice).to_array()
+                for h, block in enumerate(eps_a):
+                    for idx, x in np.ndenumerate(block):
+                        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0))
+                        iorb += 1
+        else:
+            PSIF_MO_A_FZC = 'MO-basis Alpha Frozen-Core Oper'
+            moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
+            moH_A.load(core.IO.shared_object(), PSIF_OEI)
+            slice = core.Slice(frzcpi, active_mopi)
+            MO_FZC_A = moH_A.get_block(slice, slice).to_array()
+            offset = 0
+            for h, block in enumerate(MO_FZC_A):
+                il = np.tril_indices(block.shape[0])
+                for index, x in np.ndenumerate(block[il]):
+                    row = alpha_mo_idx(il[0][index] + offset)
+                    col = alpha_mo_idx(il[1][index] + offset)
+                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                offset += block.shape[0]
+            PSIF_MO_B_FZC = 'MO-basis Beta Frozen-Core Oper'
+            moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
+            moH_B.load(core.IO.shared_object(), PSIF_OEI)
+            slice = core.Slice(frzcpi, active_mopi)
+            MO_FZC_B = moH_B.get_block(slice, slice).to_array()
+            offset = 0
+            for h, block in enumerate(MO_FZC_B):
+                il = np.tril_indices(block.shape[0])
+                for index, x in np.ndenumerate(block[il]):
+                    row = beta_mo_idx(il[0][index] + offset)
+                    col = beta_mo_idx(il[1][index] + offset)
+                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                offset += block.shape[0]
+            # Additional one-electron integrals as requested in oe_ints
+            # Orbital energies
+            core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
+            if 'EIGENVALUES' in oe_ints:
+                iorb = 0
+                eps_a = wfn.epsilon_a().get_block(slice).to_array()
+                for h, block in enumerate(eps_a):
+                    for idx, x in np.ndenumerate(block):
+                        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, alpha_mo_idx(iorb), 0, 0, 0))
+                        iorb += 1
+                eps_b = wfn.epsilon_b().get_block(slice).to_array()
+                for h, block in enumerate(eps_b):
+                    for idx, x in np.ndenumerate(block):
+                        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, beta_mo_idx(iorb), 0, 0, 0))
+                        iorb += 1
+        # Dipole integrals
+        #core.print_out('Writing dipole moment OEI in FCIDUMP format to ' + fname + '\n')
+        # Traceless quadrupole integrals
+        #core.print_out('Writing traceless quadrupole moment OEI in FCIDUMP format to ' + fname + '\n')
+        # Frozen core + nuclear repulsion energy
+        core.print_out('Writing frozen core + nuclear repulsion energy in FCIDUMP format to ' + fname + '\n')
+        e_fzc = ints.get_frozen_core_energy()
+        e_nuc = molecule.nuclear_repulsion_energy(wfn.get_dipole_field_strength())
+        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
+        if write_footer:
+            time_string = datetime.now().strftime('%A, %d %B %Y %I:%M%p')
+            footer = 'Generated on {} using Psi4 {}\n'.format(time_string, core.version())
+            footer += 'UUID {}\n'.format(uuid4())
+            intdump.write(footer)
+    core.print_out('Done generating {} with integrals in FCIDUMP format.'.format(fname))

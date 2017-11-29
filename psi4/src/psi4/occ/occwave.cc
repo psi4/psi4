@@ -273,19 +273,19 @@ if (reference_ == "RESTRICTED") {
 
 if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
     ints = new IntegralTransform(shared_from_this(), spaces,
-                           IntegralTransform::Restricted,
-                           IntegralTransform::IWLAndDPD,
-                           IntegralTransform::QTOrder,
-                           IntegralTransform::OccOnly,
+                           IntegralTransform::TransformationType::Restricted,
+                           IntegralTransform::OutputType::IWLAndDPD,
+                           IntegralTransform::MOOrdering::QTOrder,
+                           IntegralTransform::FrozenOrbitals::OccOnly,
                            false);
 }
 
 else {
     ints = new IntegralTransform(shared_from_this(), spaces,
-                           IntegralTransform::Restricted,
-                           IntegralTransform::DPDOnly,
-                           IntegralTransform::QTOrder,
-                           IntegralTransform::OccOnly,
+                           IntegralTransform::TransformationType::Restricted,
+                           IntegralTransform::OutputType::DPDOnly,
+                           IntegralTransform::MOOrdering::QTOrder,
+                           IntegralTransform::FrozenOrbitals::OccOnly,
                            false);
 }
 
@@ -356,10 +356,10 @@ else if (reference_ == "UNRESTRICTED") {
     spaces.push_back(MOSpace::vir);
 
     ints = new IntegralTransform(shared_from_this(), spaces,
-                           IntegralTransform::Unrestricted,
-                           IntegralTransform::DPDOnly,
-                           IntegralTransform::QTOrder,
-                           IntegralTransform::OccOnly,
+                           IntegralTransform::TransformationType::Unrestricted,
+                           IntegralTransform::OutputType::DPDOnly,
+                           IntegralTransform::MOOrdering::QTOrder,
+                           IntegralTransform::FrozenOrbitals::OccOnly,
                            false);
 
 

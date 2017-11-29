@@ -359,16 +359,16 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 
   IntegralTransform *ints;
   if(options.get_str("REFERENCE") == "RHF")
-    ints = new IntegralTransform(ref, transspaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly);
+    ints = new IntegralTransform(ref, transspaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly);
   else if(options.get_str("REFERENCE") == "ROHF") {
     if(semicanonical)
       // Importantly the transform is handled python-side so we technically have unrestricted orbitals at this point
-      ints = new IntegralTransform(ref, transspaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly);
+      ints = new IntegralTransform(ref, transspaces, IntegralTransform::TransformationType::Unrestricted, IntegralTransform::OutputType::DPDOnly);
     else
-      ints = new IntegralTransform(ref, transspaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly);
+      ints = new IntegralTransform(ref, transspaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly);
   }
   else if(options.get_str("REFERENCE") == "UHF")
-    ints = new IntegralTransform(ref, transspaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly);
+    ints = new IntegralTransform(ref, transspaces, IntegralTransform::TransformationType::Unrestricted, IntegralTransform::OutputType::DPDOnly);
   else
     throw PSIEXCEPTION("Invalid choice of reference wave function.");
 
@@ -399,27 +399,27 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   */
 
   outfile->Printf("\t(OO|OO)...\n");
-  ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
+  ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::HalfTrans::MakeAndKeep);
   outfile->Printf("\t(OO|OV)...\n");
-  ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
+  ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir, IntegralTransform::HalfTrans::ReadAndKeep);
   outfile->Printf("\t(OO|VV)...\n");
-  ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
+  ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir, IntegralTransform::HalfTrans::ReadAndNuke);
 
   outfile->Printf("\t(OV|OO)...\n");
-  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
+  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::HalfTrans::MakeAndKeep);
   outfile->Printf("\t(OV|OV)...\n");
-  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
+  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::HalfTrans::ReadAndKeep);
   outfile->Printf("\t(OV|VV)...\n");
-  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
+  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::HalfTrans::ReadAndNuke);
 
   if(options.get_bool("DELETE_TEI")) ints->set_keep_dpd_so_ints(false);
 
   outfile->Printf("\t(VV|OO)...\n");
-  ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
+  ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::HalfTrans::MakeAndKeep);
   outfile->Printf("\t(VV|OV)...\n");
-  ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
+  ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::HalfTrans::ReadAndKeep);
   outfile->Printf("\t(VV|VV)...\n");
-  ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
+  ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::HalfTrans::ReadAndNuke);
 
   double efzc;
   psio->open(PSIF_CC_INFO, PSIO_OPEN_OLD);

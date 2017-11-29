@@ -47,9 +47,7 @@
 using namespace psi;
 ;
 
-void
-IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2)
-{
+void IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2) {
     check_initialized();
 
     // This can be safely called - it returns immediately if the SO ints are already sorted
@@ -82,76 +80,73 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
 
     /*** AA/AB two-electron integral transformation ***/
 
-    if(print_) {
-        if(transformationType_ == Restricted){
-            outfile->Printf( "\tStarting first half-transformation.\n");
-        }else{
-            outfile->Printf( "\tStarting AA/AB first half-transformation.\n");
+    if (print_) {
+        if (transformationType_ == TransformationType::Restricted) {
+            outfile->Printf("\tStarting first half-transformation.\n");
+        } else {
+            outfile->Printf("\tStarting AA/AB first half-transformation.\n");
         }
-
     }
 
     psio_->open(PSIF_SO_PRESORT, PSIO_OPEN_OLD);
     psio_->open(PSIF_HALFT0, PSIO_OPEN_NEW);
 
     dpdbuf4 J, K;
-    global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
-                  DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
+    global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"), DPD_ID("[n>=n]+"),
+                           DPD_ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
 
     int braCore = DPD_ID("[n>=n]+");
-    int ketCore = DPD_ID(s1, s2, Alpha, false);
+    int ketCore = DPD_ID(s1, s2, SpinType::Alpha, false);
     int braDisk = DPD_ID("[n>=n]+");
-    int ketDisk = DPD_ID(s1, s2, Alpha, true);
+    int ketDisk = DPD_ID(s1, s2, SpinType::Alpha, true);
     sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
-    if(print_ > 5)
-        outfile->Printf( "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
-                            label, braCore, ketCore, braDisk, ketDisk);
+    if (print_ > 5)
+        outfile->Printf("Initializing %s, in core:(%d|%d) on disk(%d|%d)\n", label, braCore, ketCore, braDisk, ketDisk);
 
-    for(int h=0; h < nirreps_; h++) {
-        if(J.params->coltot[h] && J.params->rowtot[h]) {
+    for (int h = 0; h < nirreps_; h++) {
+        if (J.params->coltot[h] && J.params->rowtot[h]) {
             memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
-            rowsPerBucket = memFree/(2 * J.params->coltot[h]);
-            if(rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = (size_t) J.params->rowtot[h];
-            nBuckets = static_cast<int>(ceil(static_cast<double>(J.params->rowtot[h])/
-                                        static_cast<double>(rowsPerBucket)));
+            rowsPerBucket = memFree / (2 * J.params->coltot[h]);
+            if (rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = (size_t)J.params->rowtot[h];
+            nBuckets =
+                static_cast<int>(ceil(static_cast<double>(J.params->rowtot[h]) / static_cast<double>(rowsPerBucket)));
             rowsLeft = static_cast<size_t>(J.params->rowtot[h] % rowsPerBucket);
-        }else{
+        } else {
             nBuckets = 0;
             rowsPerBucket = 0;
             rowsLeft = 0;
         }
 
-        if(print_ > 1) {
-            outfile->Printf( "\th = %d; memfree         = %lu\n", h, memFree);
-            outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-            outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-            outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-
+        if (print_ > 1) {
+            outfile->Printf("\th = %d; memfree         = %lu\n", h, memFree);
+            outfile->Printf("\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+            outfile->Printf("\th = %d; rows_left       = %lu\n", h, rowsLeft);
+            outfile->Printf("\th = %d; nbuckets        = %d\n", h, nBuckets);
         }
 
         global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
         global_dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
-        for(int n=0; n < nBuckets; n++){
-            if(nBuckets == 1)
+        for (int n = 0; n < nBuckets; n++) {
+            if (nBuckets == 1)
                 thisBucketRows = rowsPerBucket;
             else
-                thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-            global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
-            for(int pq=0; pq < thisBucketRows; pq++) {
-                for(int Gr=0; Gr < nirreps_; Gr++) {
+                thisBucketRows = (n < nBuckets - 1) ? rowsPerBucket : rowsLeft;
+            global_dpd_->buf4_mat_irrep_rd_block(&J, h, n * rowsPerBucket, thisBucketRows);
+            for (int pq = 0; pq < thisBucketRows; pq++) {
+                for (int Gr = 0; Gr < nirreps_; Gr++) {
                     // Transform ( n n | n n ) -> ( n n | n S2 )
-                    int Gs = h^Gr;
+                    int Gs = h ^ Gr;
                     int nrows = sopi_[Gr];
                     int ncols = aOrbsPI2[Gs];
                     int nlinks = sopi_[Gs];
                     int rs = J.col_offset[h][Gr];
                     double **pc2a = c2a->pointer(Gs);
-                    if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
-                                nlinks, pc2a[0], ncols, 0.0, TMP[0], nso_);
-                    //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
+                    if (nrows && ncols && nlinks)
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs], nlinks, pc2a[0], ncols, 0.0,
+                                TMP[0], nso_);
+                    // TODO else if s1->label() == MOSPACE_NIL, copy buffer...
 
                     // Transform ( n n | n S2 ) -> ( n n | S1 S2 )
                     nrows = aOrbsPI1[Gr];
@@ -159,13 +154,13 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
                     nlinks = sopi_[Gr];
                     rs = K.col_offset[h][Gr];
                     double **pc1a = c1a->pointer(Gr);
-                    if(nrows && ncols && nlinks)
-                        C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc1a[0], nrows,
-                                TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
-                    //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
+                    if (nrows && ncols && nlinks)
+                        C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc1a[0], nrows, TMP[0], nso_, 0.0,
+                                &K.matrix[h][pq][rs], ncols);
+                    // TODO else if s2->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
-            } /* pq */
-            global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            }     /* pq */
+            global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n * rowsPerBucket, thisBucketRows);
         }
         global_dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
         global_dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
@@ -173,24 +168,22 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&J);
 
-    if(print_) {
-        if(transformationType_ == Restricted){
-            outfile->Printf( "\tSorting half-transformed integrals.\n");
-        }else{
-            outfile->Printf( "\tSorting AA/AB half-transformed integrals.\n");
+    if (print_) {
+        if (transformationType_ == TransformationType::Restricted) {
+            outfile->Printf("\tSorting half-transformed integrals.\n");
+        } else {
+            outfile->Printf("\tSorting AA/AB half-transformed integrals.\n");
         }
-
     }
 
     psio_->open(aHtIntFile_, PSIO_OPEN_NEW);
 
     braCore = braDisk = DPD_ID("[n>=n]+");
-    ketCore = ketDisk = DPD_ID(s1, s2, Alpha, true);
+    ketCore = ketDisk = DPD_ID(s1, s2, SpinType::Alpha, true);
     sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
-    if(print_ > 5)
-        outfile->Printf( "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
-                            label, braCore, ketCore, braDisk, ketDisk);
+    if (print_ > 5)
+        outfile->Printf("Initializing %s, in core:(%d|%d) on disk(%d|%d)\n", label, braCore, ketCore, braDisk, ketDisk);
     sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_sort(&K, aHtIntFile_, rspq, ketCore, braCore, label);
     global_dpd_->buf4_close(&K);
@@ -198,73 +191,70 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
     psio_->close(aHtIntFile_, 1);
     psio_->close(PSIF_HALFT0, 0);
 
-    if(transformationType_ != Restricted){
+    if (transformationType_ != TransformationType::Restricted) {
         /*** BB two-electron integral transformation ***/
-        if(print_) {
-            outfile->Printf( "\tStarting BB first half-transformation.\n");
-
+        if (print_) {
+            outfile->Printf("\tStarting BB first half-transformation.\n");
         }
 
         psio_->open(PSIF_HALFT0, PSIO_OPEN_NEW);
 
-        global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
-                      DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
+        global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"), DPD_ID("[n>=n]+"),
+                               DPD_ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
 
         braCore = DPD_ID("[n>=n]+");
-        ketCore = DPD_ID(s1, s2, Beta, false);
+        ketCore = DPD_ID(s1, s2, SpinType::Beta, false);
         braDisk = DPD_ID("[n>=n]+");
-        ketDisk = DPD_ID(s1, s2, Beta, true);
+        ketDisk = DPD_ID(s1, s2, SpinType::Beta, true);
         sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
         global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
-        if(print_ > 5)
-            outfile->Printf( "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
-                                label, braCore, ketCore, braDisk, ketDisk);
+        if (print_ > 5)
+            outfile->Printf("Initializing %s, in core:(%d|%d) on disk(%d|%d)\n", label, braCore, ketCore, braDisk,
+                            ketDisk);
 
-        for(int h=0; h < nirreps_; h++) {
-            if(J.params->coltot[h] && J.params->rowtot[h]) {
+        for (int h = 0; h < nirreps_; h++) {
+            if (J.params->coltot[h] && J.params->rowtot[h]) {
                 memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
-                rowsPerBucket = memFree/(2 * J.params->coltot[h]);
-                if(rowsPerBucket > J.params->rowtot[h])
-                    rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
-                nBuckets = static_cast<int>(ceil(static_cast<double>(J.params->rowtot[h])/
-                        static_cast<double>(rowsPerBucket)));
+                rowsPerBucket = memFree / (2 * J.params->coltot[h]);
+                if (rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
+                nBuckets = static_cast<int>(
+                    ceil(static_cast<double>(J.params->rowtot[h]) / static_cast<double>(rowsPerBucket)));
                 rowsLeft = static_cast<size_t>(J.params->rowtot[h] % rowsPerBucket);
-            }else{
+            } else {
                 nBuckets = 0;
                 rowsPerBucket = 0;
                 rowsLeft = 0;
             }
 
-            if(print_ > 1){
-                outfile->Printf( "\th = %d; memfree         = %lu\n", h, memFree);
-                outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-                outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-                outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-
+            if (print_ > 1) {
+                outfile->Printf("\th = %d; memfree         = %lu\n", h, memFree);
+                outfile->Printf("\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+                outfile->Printf("\th = %d; rows_left       = %lu\n", h, rowsLeft);
+                outfile->Printf("\th = %d; nbuckets        = %d\n", h, nBuckets);
             }
 
             global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
             global_dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
-            for(int n=0; n < nBuckets; n++) {
-                if(nBuckets == 1)
+            for (int n = 0; n < nBuckets; n++) {
+                if (nBuckets == 1)
                     thisBucketRows = rowsPerBucket;
                 else
-                    thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-                global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
-                for(int pq=0; pq < thisBucketRows; pq++) {
-                    for(int Gr=0; Gr < nirreps_; Gr++) {
+                    thisBucketRows = (n < nBuckets - 1) ? rowsPerBucket : rowsLeft;
+                global_dpd_->buf4_mat_irrep_rd_block(&J, h, n * rowsPerBucket, thisBucketRows);
+                for (int pq = 0; pq < thisBucketRows; pq++) {
+                    for (int Gr = 0; Gr < nirreps_; Gr++) {
                         // Transform ( n n | n n ) -> ( n n | n s2 )
-                        int Gs = h^Gr;
+                        int Gs = h ^ Gr;
                         int nrows = sopi_[Gr];
                         int ncols = bOrbsPI2[Gs];
                         int nlinks = sopi_[Gs];
                         int rs = J.col_offset[h][Gr];
                         double **pc2b = c2b->pointer(Gs);
-                        if(nrows && ncols && nlinks)
-                            C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
-                            nlinks, pc2b[0], ncols, 0.0, TMP[0], nso_);
-                        //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
+                        if (nrows && ncols && nlinks)
+                            C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs], nlinks, pc2b[0], ncols,
+                                    0.0, TMP[0], nso_);
+                        // TODO else if s2->label() == MOSPACE_NIL, copy buffer...
 
                         // Transform ( n n | n s2 ) -> ( n n | s1 s2 )
                         nrows = bOrbsPI1[Gr];
@@ -272,13 +262,13 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
                         nlinks = sopi_[Gr];
                         rs = K.col_offset[h][Gr];
                         double **pc1b = c1b->pointer(Gr);
-                        if(nrows && ncols && nlinks)
-                            C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc1b[0], nrows,
-                                    TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
-                        //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
+                        if (nrows && ncols && nlinks)
+                            C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc1b[0], nrows, TMP[0], nso_, 0.0,
+                                    &K.matrix[h][pq][rs], ncols);
+                        // TODO else if s1->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */
-                } /* pq */
-                global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+                }     /* pq */
+                global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n * rowsPerBucket, thisBucketRows);
             }
             global_dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
             global_dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
@@ -286,22 +276,21 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&J);
 
-        if(print_) {
-            outfile->Printf( "\tSorting BB half-transformed integrals.\n");
-
+        if (print_) {
+            outfile->Printf("\tSorting BB half-transformed integrals.\n");
         }
 
         psio_->open(bHtIntFile_, PSIO_OPEN_NEW);
 
         braCore = DPD_ID("[n>=n]+");
-        ketCore = DPD_ID(s1, s2, Beta, true);
+        ketCore = DPD_ID(s1, s2, SpinType::Beta, true);
         braDisk = DPD_ID("[n>=n]+");
-        ketDisk = DPD_ID(s1, s2, Beta, true);
+        ketDisk = DPD_ID(s1, s2, SpinType::Beta, true);
         sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
         global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
-        if(print_ > 5)
-            outfile->Printf( "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
-                                label, braCore, ketCore, braDisk, ketDisk);
+        if (print_ > 5)
+            outfile->Printf("Initializing %s, in core:(%d|%d) on disk(%d|%d)\n", label, braCore, ketCore, braDisk,
+                            ketDisk);
 
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
         global_dpd_->buf4_sort(&K, bHtIntFile_, rspq, ketCore, braCore, label);
@@ -309,16 +298,15 @@ IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, c
 
         psio_->close(bHtIntFile_, 1);
         psio_->close(PSIF_HALFT0, 0);
-    } // End "if not restricted transformation"
+    }  // End "if not restricted transformation"
 
     psio_->close(PSIF_SO_PRESORT, keepDpdSoInts_);
 
     free_block(TMP);
-    delete [] label;
+    delete[] label;
 
-    if(print_){
-        outfile->Printf( "\tFirst half integral transformation complete.\n");
-
+    if (print_) {
+        outfile->Printf("\tFirst half integral transformation complete.\n");
     }
 
     // Hand DPD control back to the user

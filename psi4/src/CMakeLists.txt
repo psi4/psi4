@@ -18,6 +18,7 @@ set(sources_list
         export_oeprop.cc
         export_plugins.cc
         export_psio.cc
+        export_trans.cc
         export_wavefunction.cc
         export_options.cc
         create_new_plugin.cc

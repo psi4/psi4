@@ -581,10 +581,10 @@ SharedMatrix Deriv::compute()
                 std::shared_ptr<IntegralTransform> ints_transform = std::shared_ptr<IntegralTransform>(
                             new IntegralTransform(wfn_,
                                                   spaces,
-                                                  wfn_->same_a_b_orbs() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
-                                                  IntegralTransform::DPDOnly,    // Output buffer
-                                                  IntegralTransform::QTOrder,    // MO ordering
-                                                  IntegralTransform::None));     // Frozen orbitals?
+                                                  wfn_->same_a_b_orbs() ? IntegralTransform::TransformationType::Restricted : IntegralTransform::TransformationType::Unrestricted, // Transformation type
+                                                  IntegralTransform::OutputType::DPDOnly,    // Output buffer
+                                                  IntegralTransform::MOOrdering::QTOrder,    // MO ordering
+                                                  IntegralTransform::FrozenOrbitals::None));     // Frozen orbitals?
                 dpd_set_default(ints_transform->get_dpd_id());
 
                 // Some codes already presort the tpdm, do not follow this as an example

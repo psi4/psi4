@@ -39,16 +39,18 @@ void export_psio(py::module &m) {
         .def("close", &PSIO::close, "docstring")
         .def("rehash", &PSIO::rehash, "docstring")
         .def("open_check", &PSIO::open_check, "docstring")
-        .def("tocclean", &PSIO::tocclean, "docstring")
-        .def("tocprint", &PSIO::tocprint, "docstring")
-        .def("tocwrite", &PSIO::tocwrite, "docstring")
+        .def("tocclean", &PSIO::tocclean,
+             "Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped")
+        .def("tocprint", &PSIO::tocprint, "Print the table of contents for the given unit")
+        .def("tocentry_exists", &PSIO::tocentry_exists,
+             "Checks the TOC to see if a particular keyword exists there or not")
+        .def("tocwrite", &PSIO::tocwrite, "Write the table of contents for passed file number")
         .def("set_pid", &PSIO::set_pid, "docstring")
         .def_static("shared_object", &PSIO::shared_object, "docstring")
         .def_static("get_default_namespace", &PSIO::get_default_namespace, "docstring")
-        .def_static("set_default_namespace", &PSIO::set_default_namespace, py::arg("ns"),
-                    "docstring")
-        .def_static("change_file_namespace", &PSIO::change_file_namespace, py::arg("fileno"),
-                    py::arg("ns1"), py::arg("ns2"), "docstring");
+        .def_static("set_default_namespace", &PSIO::set_default_namespace, py::arg("ns"), "docstring")
+        .def_static("change_file_namespace", &PSIO::change_file_namespace, py::arg("fileno"), py::arg("ns1"),
+                    py::arg("ns2"), "docstring");
 
     py::class_<PSIOManager, std::shared_ptr<PSIOManager> >(m, "IOManager", "docstring")
         .def_static("shared_object", &PSIOManager::shared_object, "docstring")

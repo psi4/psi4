@@ -243,6 +243,11 @@ void export_mints(py::module& m) {
         .def("__getitem__", &Dimension::get, py::return_value_policy::copy, "Get the i'th value", py::arg("i"))
         .def("__setitem__", &Dimension::set, "Set element i to value val", py::arg("i"), py::arg("val"));
 
+    py::class_<Slice>(m, "Slice", "Slicing for Matrix and Vector objects")
+        .def(py::init<Dimension&, Dimension&>())
+        .def("begin", &Slice::begin, "Get the first element of this slice")
+        .def("end", &Slice::end, "Get the past-the-end element of this slice");
+
     py::class_<Vector, std::shared_ptr<Vector>>(m, "Vector", "Class for creating and manipulating vectors",
                                                 py::dynamic_attr())
         .def(py::init<int>())
@@ -262,6 +267,8 @@ void export_mints(py::module& m) {
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", py::arg("sc"))
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", py::arg("h"))
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
+        .def("get_block", &Vector::get_block, "Get a vector block", py::arg("slice"))
+        .def("set_block", &Vector::set_block, "Set a vector block", py::arg("slice"), py::arg("block"))
         .def("array_interface",
              [](Vector& v) {
 
@@ -338,7 +345,15 @@ void export_mints(py::module& m) {
     typedef double (Matrix::*matrix_get3)(const int&, const int&, const int&) const;
     typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void (Matrix::*matrix_load)(const std::string&);
+    typedef bool (Matrix::*matrix_load_psio1)(std::shared_ptr<psi::PSIO>&, size_t, const std::string&, int);
+    typedef void (Matrix::*matrix_load_psio2)(std::shared_ptr<psi::PSIO>&, size_t, Matrix::SaveType);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
+
+    py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
+        .value("Full", Matrix::SaveType::Full)
+        .value("SubBlocks", Matrix::SaveType::SubBlocks)
+        .value("LowerTriangle", Matrix::SaveType::LowerTriangle)
+        .export_values();
 
     py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "Class for creating and manipulating matrices",
                                                 py::dynamic_attr(), py::buffer_protocol())
@@ -450,12 +465,14 @@ void export_mints(py::module& m) {
              py::arg("h"), py::arg("m"), py::arg("n"))
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"),
              py::arg("n"))
+        .def("get_block", &Matrix::get_block, "Get a matrix block", py::arg("rows"), py::arg("cols"))
         .def("set", matrix_set1(&Matrix::set), "Sets every element of a matrix to val", py::arg("val"))
         .def("set", matrix_set3(&Matrix::set), "Sets a single element of a matrix to val at row m, col n", py::arg("m"),
              py::arg("n"), py::arg("val"))
         .def("set", matrix_set4(&Matrix::set),
              "Sets a single element of a matrix, subblock h, row m, col n, with value val", py::arg("h"), py::arg("m"),
              py::arg("n"), py::arg("val"))
+        .def("set_block", &Matrix::set_block, "Set a matrix block", py::arg("rows"), py::arg("cols"), py::arg("block"))
         // destroyed according to matrix.h file
         //.def("project_out", &Matrix::project_out, "docstring")
         .def("save", matrix_save(&Matrix::save),
@@ -463,8 +480,13 @@ void export_mints(py::module& m) {
              py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg("saveSubBlocks") = false)
         .def("load", matrix_load(&Matrix::load),
              "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
-        .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format",
-             py::arg("filename"))
+        .def("load_mpqc", &Matrix::load_mpqc, "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
+        .def("load", matrix_load_psio1(&Matrix::load),
+             "Load a matrix from a PSIO object from fileno with tocentry of size nso", py::arg("psio"),
+             py::arg("fileno"), py::arg("tocentry"), py::arg("nso"))
+        .def("load", matrix_load_psio2(&Matrix::load),
+             "Load a matrix from a PSIO object from fileno and with toc position of the name of the matrix",
+             py::arg("psio"), py::arg("fileno"), py::arg("savetype") = Matrix::SaveType::LowerTriangle)
         // should this take Petite List's sotoao() function as a default transfomer argument? has to be set C++ side
         // first i think
         .def("remove_symmetry", &Matrix::remove_symmetry, "Remove symmetry from a matrix A with PetiteList::sotoao()",
@@ -808,7 +830,8 @@ void export_mints(py::module& m) {
         .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals")
         .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
-        .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals")
+        .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
+             py::arg("include_perturbations") = true)
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")

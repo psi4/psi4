@@ -86,10 +86,10 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
         spaces.push_back(aocc);
         spaces.push_back(avir);
         ints = new IntegralTransform(ref_wfn, spaces,
-                                     IntegralTransform::Restricted,
-                                     IntegralTransform::DPDOnly,
-                                     IntegralTransform::PitzerOrder,
-                                     IntegralTransform::None);
+                                     IntegralTransform::TransformationType::Restricted,
+                                     IntegralTransform::OutputType::DPDOnly,
+                                     IntegralTransform::MOOrdering::PitzerOrder,
+                                     IntegralTransform::FrozenOrbitals::None);
         ints->set_keep_dpd_so_ints(true);
         // Only transform the subclasses needed for MRPT2
         ints->transform_tei(aocc, MOSpace::all, aocc, MOSpace::all);
@@ -98,10 +98,10 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
         build_integrals_mrpt2(ints);
     }else{
         ints = new IntegralTransform(ref_wfn, spaces,
-                                     IntegralTransform::Restricted,
-                                     IntegralTransform::IWLOnly,
-                                     IntegralTransform::PitzerOrder,
-                                     IntegralTransform::None);
+                                     IntegralTransform::TransformationType::Restricted,
+                                     IntegralTransform::OutputType::IWLOnly,
+                                     IntegralTransform::MOOrdering::PitzerOrder,
+                                     IntegralTransform::FrozenOrbitals::None);
         ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
         // Presort the integrals in the CCTransform class
         trans->presort_integrals();
