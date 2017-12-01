@@ -158,7 +158,7 @@ private:
     // Derivative of one and two electron integrals in both AO and MO basis 
 
     std::vector<SharedMatrix>  ao_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints);
-    std::vector<SharedMatrix>  ao_tei_deriv2_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints);
+    std::vector<SharedMatrix>  ao_tei_deriv2_helper(int atom1, int atom2, std::shared_ptr <TwoBodyAOInt> ints);
     std::vector<SharedMatrix>  ao_tei_deriv1(int atom);
     std::vector<SharedMatrix>  ao_tei_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
                                              std::shared_ptr<BasisSet> bs2,
@@ -166,11 +166,11 @@ private:
                                              std::shared_ptr<BasisSet> bs4);
     std::vector<SharedMatrix>  mo_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
                                                     SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv2_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
+    std::vector<SharedMatrix>  mo_tei_deriv2_helper(int atom1, int atom2, std::shared_ptr <TwoBodyAOInt> ints, 
                                                     SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     std::vector<SharedMatrix>  mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2, 
                                              SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv2(int atom, SharedMatrix C1, SharedMatrix C2, 
+    std::vector<SharedMatrix>  mo_tei_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2, 
                                              SharedMatrix C3, SharedMatrix C4);
     std::vector<SharedMatrix>  mo_tei_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
                                              std::shared_ptr<BasisSet> bs2,

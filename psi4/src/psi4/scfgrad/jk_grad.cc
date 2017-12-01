@@ -2451,17 +2451,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
 
         if (!sieve_->shell_significant(P,Q,R,S)) continue;
 
-        outfile->Printf("(%d,%d,%d,%d)\n", P,Q,R,S);
-        outfile->Printf(" %d ", primary_->shell(P).nfunction());
-        outfile->Printf(" %d ", primary_->shell(Q).nfunction());
-        outfile->Printf(" %d ", primary_->shell(R).nfunction());
-        outfile->Printf(" %d ", primary_->shell(S).nfunction());
-        outfile->Printf("\n");
-        outfile->Printf(" %d ", primary_->shell(P).ncenter());
-        outfile->Printf(" %d ", primary_->shell(Q).ncenter());
-        outfile->Printf(" %d ", primary_->shell(R).ncenter());
-        outfile->Printf(" %d ", primary_->shell(S).ncenter());
-        outfile->Printf("\n");
+        //outfile->Printf("(%d,%d,%d,%d)\n", P,Q,R,S);
 
         int thread = 0;
 #ifdef _OPENMP
@@ -2533,18 +2523,6 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
                         Dx += val * buffer[6 * stride + delta];
                         Dy += val * buffer[7 * stride + delta];
                         Dz += val * buffer[8 * stride + delta];
-                    
-                        //outfile->Printf(" %20.14lf \n", Ax);
-                        //outfile->Printf(" %20.14lf \n", Ay);
-                        //outfile->Printf(" %20.14lf \n", Az);
-                        //outfile->Printf(" %20.14lf \n", Cx);
-                        //outfile->Printf(" %20.14lf \n", Cy);
-                        //outfile->Printf(" %20.14lf \n", Cz);
-                        //outfile->Printf(" %20.14lf \n", Dx);
-                        //outfile->Printf(" %20.14lf \n", Dy);
-                        //outfile->Printf(" %20.14lf \n", Dz);
-                        //outfile->Printf(" \n ");
-
                         delta++;
                     }
                 }
@@ -2566,13 +2544,6 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         Jp[Scenter][0] += Dx;
         Jp[Scenter][1] += Dy;
         Jp[Scenter][2] += Dz;
-
-        //outfile->Printf(" %20.14lf ", Jp[Pcenter][2]);
-        //outfile->Printf(" %20.14lf ", Jp[Pcenter][0]);
-        //outfile->Printf(" %20.14lf ", Jp[Pcenter][0]);
-        //outfile->Printf(" %20.14lf ", Jp[Pcenter][0]);
-        //outfile->Printf("\n");
-
 
         // => Exchange Term <= //
 
@@ -3215,7 +3186,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vect
     double **Kp = Khess[0]->pointer();
     for (int row = 0; row < dim; ++row){
         for (int col = 0; col < row; ++col){
-            //Jp[row][col] = Jp[col][row] = (Jp[row][col] + Jp[col][row]);
+            Jp[row][col] = Jp[col][row] = (Jp[row][col] + Jp[col][row]);
             Kp[row][col] = Kp[col][row] = (Kp[row][col] + Kp[col][row]);
         }
     }

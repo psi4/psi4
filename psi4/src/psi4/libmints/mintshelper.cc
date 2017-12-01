@@ -52,6 +52,9 @@
 #include <cmath>
 #include <sstream>
 #include <vector>
+#include <map>
+#include <list>    
+#include <utility>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -60,7 +63,6 @@
 #ifdef USING_dkh
 #include <DKH/DKH_MANGLE.h>
 #define F_DKH DKH_MANGLE_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
-#include <map>
 
 extern "C" {
 void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
@@ -1429,47 +1431,44 @@ std::vector <SharedMatrix> MintsHelper::so_angular_momentum()
     return am;
 }
 
-std::vector <SharedMatrix> MintsHelper::ao_angular_momentum()
-{
+std::vector<SharedMatrix> MintsHelper::ao_angular_momentum() {
     // Create a vector of matrices with the proper symmetry
-    std::vector <SharedMatrix> angmom;
+    std::vector<SharedMatrix> angmom;
 
-    angmom.push_back(SharedMatrix(new Matrix("AO Lx", basisset_->nbf(), basisset_->nbf())));
-    angmom.push_back(SharedMatrix(new Matrix("AO Ly", basisset_->nbf(), basisset_->nbf())));
-    angmom.push_back(SharedMatrix(new Matrix("AO Lz", basisset_->nbf(), basisset_->nbf())));
+    angmom.push_back(std::make_shared<Matrix>("AO Lx", basisset_->nbf(), basisset_->nbf()));
+    angmom.push_back(std::make_shared<Matrix>("AO Ly", basisset_->nbf(), basisset_->nbf()));
+    angmom.push_back(std::make_shared<Matrix>("AO Lz", basisset_->nbf(), basisset_->nbf()));
 
-    std::shared_ptr <OneBodyAOInt> ints(integral_->ao_angular_momentum());
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_angular_momentum());
     ints->compute(angmom);
 
     return angmom;
 }
 
-std::vector <SharedMatrix> MintsHelper::ao_dipole()
-{
+std::vector<SharedMatrix> MintsHelper::ao_dipole() {
     // Create a vector of matrices with the proper symmetry
-    std::vector <SharedMatrix> dipole;
+    std::vector<SharedMatrix> dipole;
 
-    dipole.push_back(SharedMatrix(new Matrix("AO Mux", basisset_->nbf(), basisset_->nbf())));
-    dipole.push_back(SharedMatrix(new Matrix("AO Muy", basisset_->nbf(), basisset_->nbf())));
-    dipole.push_back(SharedMatrix(new Matrix("AO Muz", basisset_->nbf(), basisset_->nbf())));
+    dipole.push_back(std::make_shared<Matrix>("AO Mux", basisset_->nbf(), basisset_->nbf()));
+    dipole.push_back(std::make_shared<Matrix>("AO Muy", basisset_->nbf(), basisset_->nbf()));
+    dipole.push_back(std::make_shared<Matrix>("AO Muz", basisset_->nbf(), basisset_->nbf()));
 
-    std::shared_ptr <OneBodyAOInt> ints(integral_->ao_dipole());
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_dipole());
     ints->compute(dipole);
 
     return dipole;
 }
 
-std::vector <SharedMatrix> MintsHelper::ao_quadrupole()
-{
+std::vector<SharedMatrix> MintsHelper::ao_quadrupole() {
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> quadrupole;
 
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
 
     std::shared_ptr<OneBodyAOInt> ints(integral_->ao_quadrupole());
     ints->compute(quadrupole);
@@ -1477,17 +1476,16 @@ std::vector <SharedMatrix> MintsHelper::ao_quadrupole()
     return quadrupole;
 }
 
-std::vector <SharedMatrix> MintsHelper::ao_traceless_quadrupole()
-{
+std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> quadrupole;
 
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
-    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Traceless Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Traceless Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Traceless Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Traceless Quadrupole YY", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Traceless Quadrupole YZ", basisset_->nbf(), basisset_->nbf()));
+    quadrupole.push_back(std::make_shared<Matrix>("AO Traceless Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
 
     std::shared_ptr<OneBodyAOInt> ints(integral_->ao_traceless_quadrupole());
     ints->compute(quadrupole);
@@ -1495,20 +1493,69 @@ std::vector <SharedMatrix> MintsHelper::ao_traceless_quadrupole()
     return quadrupole;
 }
 
-std::vector <SharedMatrix> MintsHelper::ao_nabla()
-{
+std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+
+    std::vector<SharedMatrix> mult;
+    mult.push_back(std::make_shared<Matrix>("AO EFP Charge 0", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole X", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole Y", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole Z", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole YY", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole YZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXX", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYY", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole ZZZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXY", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYY", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XZZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YZZ", basisset_->nbf(), basisset_->nbf()));
+    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYZ", basisset_->nbf(), basisset_->nbf()));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_efp_multipole_potential(deriv));
+    ints->set_origin(v3origin);
+    ints->compute(mult);
+
+    return mult;
+}
+
+std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> &origin, int deriv) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+
+    std::vector<SharedMatrix> field;
+    field.push_back(std::make_shared<Matrix>("Ex integrals", basisset_->nbf(), basisset_->nbf()));
+    field.push_back(std::make_shared<Matrix>("Ey integrals", basisset_->nbf(), basisset_->nbf()));
+    field.push_back(std::make_shared<Matrix>("Ez integrals", basisset_->nbf(), basisset_->nbf()));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->electric_field(deriv));
+    ints->set_origin(v3origin);
+    ints->compute(field);
+
+    return field;
+}
+
+std::vector<SharedMatrix> MintsHelper::ao_nabla() {
     // Create a vector of matrices with the proper symmetry
-    std::vector <SharedMatrix> nabla;
+    std::vector<SharedMatrix> nabla;
 
-    nabla.push_back(SharedMatrix(new Matrix("AO Px", basisset_->nbf(), basisset_->nbf())));
-    nabla.push_back(SharedMatrix(new Matrix("AO Py", basisset_->nbf(), basisset_->nbf())));
-    nabla.push_back(SharedMatrix(new Matrix("AO Pz", basisset_->nbf(), basisset_->nbf())));
+    nabla.push_back(std::make_shared<Matrix>("AO Px", basisset_->nbf(), basisset_->nbf()));
+    nabla.push_back(std::make_shared<Matrix>("AO Py", basisset_->nbf(), basisset_->nbf()));
+    nabla.push_back(std::make_shared<Matrix>("AO Pz", basisset_->nbf(), basisset_->nbf()));
 
-    std::shared_ptr <OneBodyAOInt> ints(integral_->ao_nabla());
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_nabla());
     ints->compute(nabla);
 
     return nabla;
 }
+
 
 std::shared_ptr <CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
                                                   bool project_out_translations,
@@ -1992,6 +2039,7 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
         ret->add(perturb_grad(D));
     }
     return ret;
+}
 
 void MintsHelper::play()
 {
@@ -2002,7 +2050,7 @@ The following lines of code are for exporting first and second derivatives of on
 and two electron integrals to the python side.
 */
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints)
+std::vector<psi::SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints)
 {
     char lbl[32];
     char ** cartcomp;
@@ -2024,7 +2072,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
 
     int natom = basisset_->molecule()->natom();
 
-    std::vector<SharedMatrix> grad;
+    std::vector<psi::SharedMatrix> grad;
         for (int p=0; p<3; p++){
             sprintf(lbl, "ao_tei_deriv1_%d_%s", atom, cartcomp[p]);
             grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
@@ -2146,14 +2194,14 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
     return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints)
+std::vector<psi::SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom1, int atom2, std::shared_ptr <TwoBodyAOInt> ints)
 {
     char lbl[32];
     char ** cartcomp;
     cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+    cartcomp[0] = strdup("x");
+    cartcomp[1] = strdup("y");
+    cartcomp[2] = strdup("z");
 
     std::shared_ptr <BasisSet> bs1 = ints->basis1();
     std::shared_ptr <BasisSet> bs2 = ints->basis2();
@@ -2165,15 +2213,15 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom, std::share
     int nbf3 = bs3->nbf();
     int nbf4 = bs4->nbf();
 
+    //outfile->Printf(" (%d %d) \n", atom1, atom2);
 
-    int natom = basisset_->molecule()->natom();
-
-    std::vector<SharedMatrix> grad;
-        for (int p=0; p<3; p++)
-          for (int q=0; q<3; q++){
-            sprintf(lbl, "ao_tei_deriv1_%d_%s_%s", atom, cartcomp[p], cartcomp[q]);
-            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
+    std::vector<psi::SharedMatrix> grad;
+    for (int p=0; p<3; p++)
+      for (int q=p; q<3; q++){
+        sprintf(lbl, "ao_tei_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
+        grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
       }
+
     const double *buffer = ints->buffer();
 
 
@@ -2202,32 +2250,10 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom, std::share
                   int Rcenter = bs3->shell(R).ncenter();
                   int Scenter = bs4->shell(S).ncenter();
 
-                  if( Pcenter != atom && Qcenter != atom && Rcenter != atom && Scenter != atom)
-                      continue;
 
-                  if( Pcenter == atom && Qcenter == atom && Rcenter == atom && Scenter == atom)
-                      continue;
-
-                  //int Px = 3 * Pcenter + 0;
-                  //int Py = 3 * Pcenter + 1;
-                  //int Pz = 3 * Pcenter + 2;
-
-                  //int Qx = 3 * Qcenter + 0;
-                  //int Qy = 3 * Qcenter + 1;
-                  //int Qz = 3 * Qcenter + 2;
-
-                  //int Rx = 3 * Rcenter + 0;
-                  //int Ry = 3 * Rcenter + 1;
-                  //int Rz = 3 * Rcenter + 2;
-
-                  //int Sx = 3 * Scenter + 0;
-                  //int Sy = 3 * Scenter + 1;
-                  //int Sz = 3 * Scenter + 2;
-
-
-                  double XX = 0, XY = 0, XZ = 0;
-                  double YX = 0, YY = 0, YZ = 0; 
-                  double ZX = 0, ZY = 0, ZZ = 0;  
+                  //double XX = 0, XY = 0, XZ = 0;
+                  //double YX = 0, YY = 0, YZ = 0; 
+                  //double ZX = 0, ZY = 0, ZZ = 0;  
 
 
                   size_t stride = Pncart * Qncart * Rncart * Sncart;
@@ -2235,19 +2261,65 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom, std::share
 
                   delta = 0L;
 
+                  std::pair <int, int> atoms(atom1, atom2);  
+                  std::vector<std::pair<int, int> > vec_pairs; 
+                  std::vector<int> vec_pos; 
+                  std::map<int, std::string> pos_map;
+                  std::string strings;
+                  std::string key; 
+                  std::map<std::string, double> grad_map;
+
+                  vec_pairs.push_back(std::make_pair(Pcenter,Pcenter)); 
+                  vec_pairs.push_back(std::make_pair(Qcenter,Qcenter)); 
+                  vec_pairs.push_back(std::make_pair(Rcenter,Rcenter)); 
+                  vec_pairs.push_back(std::make_pair(Scenter,Scenter)); 
+                  vec_pairs.push_back(std::make_pair(Pcenter,Qcenter)); 
+                  vec_pairs.push_back(std::make_pair(Pcenter,Rcenter)); 
+                  vec_pairs.push_back(std::make_pair(Pcenter,Scenter)); 
+                  vec_pairs.push_back(std::make_pair(Qcenter,Rcenter)); 
+                  vec_pairs.push_back(std::make_pair(Qcenter,Scenter)); 
+                  vec_pairs.push_back(std::make_pair(Rcenter,Scenter)); 
+
+                  /* Now I need to find a pair in a list of pairs 
+                     and extract the index of the match */
+
+                  for (std::vector<std::pair<int, int> >::iterator it = vec_pairs.begin() ; it != vec_pairs.end(); ++it){
+                      if ((*it).first == atoms.first && (*it).second == atoms.second)
+                          vec_pos.push_back(it - vec_pairs.begin());
+                    }
+
+                  //for (std::vector<int>::iterator it = vec_pos.begin() ; it != vec_pos.end(); ++it)
+                  //      outfile->Printf(" (%d) ", *it);
+
+                  pos_map[0] = "AA"; pos_map[1] = "BB"; pos_map[2] = "CC";
+                  pos_map[3] = "DD"; pos_map[4] = "AB"; pos_map[5] = "AC";
+                  pos_map[6] = "AD"; pos_map[7] = "BC"; pos_map[8] = "BD";
+                  pos_map[9] = "CD";
+                  
+                  for (int p=0,pq=0; p<3; p++)
+                      for (int q=p; q<3; q++,pq++){
+                          std::string grad_key = std::string(cartcomp[p]) + std::string(cartcomp[q]);
+                          grad_map[grad_key] = 0;
+                      }
+
+                  //outfile->Printf("  (%d %d %d %d)  \n", Pcenter, Qcenter, Rcenter, Scenter);
+
+                  if (vec_pos.empty())
+                      continue;
+
 
                   ints->compute_shell_deriv2(P, Q, R, S);
 
-                  double AxAx, AxAy, AxAz, AyAy, AyAz, AzAz;
-                  double BxBx, BxBy, BxBz, ByBy, ByBz, BzBz;
-                  double CxCx, CxCy, CxCz, CyCy, CyCz, CzCz;
-                  double DxDx, DxDy, DxDz, DyDy, DyDz, DzDz;
-                  double AxBx, AxBy, AxBz, AyBx, AyBy, AyBz, AzBx, AzBy, AzBz;
-                  double AxCx, AxCy, AxCz, AyCx, AyCy, AyCz, AzCx, AzCy, AzCz;
-                  double AxDx, AxDy, AxDz, AyDx, AyDy, AyDz, AzDx, AzDy, AzDz;
-                  double BxCx, BxCy, BxCz, ByCx, ByCy, ByCz, BzCx, BzCy, BzCz;
-                  double BxDx, BxDy, BxDz, ByDx, ByDy, ByDz, BzDx, BzDy, BzDz;
-                  double CxDx, CxDy, CxDz, CyDx, CyDy, CyDz, CzDx, CzDy, CzDz;
+                  //double AxAx, AxAy, AxAz, AyAy, AyAz, AzAz;
+                  //double BxBx, BxBy, BxBz, ByBy, ByBz, BzBz;
+                  //double CxCx, CxCy, CxCz, CyCy, CyCz, CzCz;
+                  //double DxDx, DxDy, DxDz, DyDy, DyDz, DzDz;
+                  //double AxBx, AxBy, AxBz, AyBx, AyBy, AyBz, AzBx, AzBy, AzBz;
+                  //double AxCx, AxCy, AxCz, AyCx, AyCy, AyCz, AzCx, AzCy, AzCz;
+                  //double AxDx, AxDy, AxDz, AyDx, AyDy, AyDz, AzDx, AzDy, AzDz;
+                  //double BxCx, BxCy, BxCz, ByCx, ByCy, ByCz, BzCx, BzCy, BzCz;
+                  //double BxDx, BxDy, BxDz, ByDx, ByDy, ByDz, BzDx, BzDy, BzDz;
+                  //double CxDx, CxDy, CxDz, CyDx, CyDy, CyDz, CzDx, CzDy, CzDz;
 
 
                   for (int p = 0; p < Psize; p++) {
@@ -2255,345 +2327,132 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom, std::share
                           for (int r = 0; r < Rsize; r++) {
                               for (int s = 0; s < Ssize; s++) {
 
+                                      int i = (Poff + p) * nbf2 + Qoff + q;
+                                      int j = (Roff + r) * nbf4 + Soff + s;
 
-                                      AxAx =  buffer[9  * stride + delta];
-                                      AxAy =  buffer[10 * stride + delta];
-                                      AxAz =  buffer[11 * stride + delta];
-                                      AxCx =  buffer[12 * stride + delta];
-                                      AxCy =  buffer[13 * stride + delta];
-                                      AxCz =  buffer[14 * stride + delta];
-                                      AxDx =  buffer[15 * stride + delta];
-                                      AxDy =  buffer[16 * stride + delta];
-                                      AxDz =  buffer[17 * stride + delta];
-                                      AyAy =  buffer[18 * stride + delta];
-                                      AyAz =  buffer[19 * stride + delta];
-                                      AyCx =  buffer[20 * stride + delta];
-                                      AyCy =  buffer[21 * stride + delta];
-                                      AyCz =  buffer[22 * stride + delta];
-                                      AyDx =  buffer[23 * stride + delta];
-                                      AyDy =  buffer[24 * stride + delta];
-                                      AyDz =  buffer[25 * stride + delta];
-                                      AzAz =  buffer[26 * stride + delta];
-                                      AzCx =  buffer[27 * stride + delta];
-                                      AzCy =  buffer[28 * stride + delta];
-                                      AzCz =  buffer[29 * stride + delta];
-                                      AzDx =  buffer[30 * stride + delta];
-                                      AzDy =  buffer[31 * stride + delta];
-                                      AzDz =  buffer[32 * stride + delta];
-                                      CxCx =  buffer[33 * stride + delta];
-                                      CxCy =  buffer[34 * stride + delta];
-                                      CxCz =  buffer[35 * stride + delta];
-                                      CxDx =  buffer[36 * stride + delta];
-                                      CxDy =  buffer[37 * stride + delta];
-                                      CxDz =  buffer[38 * stride + delta];
-                                      CyCy =  buffer[39 * stride + delta];
-                                      CyCz =  buffer[40 * stride + delta];
-                                      CyDx =  buffer[41 * stride + delta];
-                                      CyDy =  buffer[42 * stride + delta];
-                                      CyDz =  buffer[43 * stride + delta];
-                                      CzCz =  buffer[44 * stride + delta];
-                                      CzDx =  buffer[45 * stride + delta];
-                                      CzDy =  buffer[46 * stride + delta];
-                                      CzDz =  buffer[47 * stride + delta];
-                                      DxDx =  buffer[48 * stride + delta];
-                                      DxDy =  buffer[49 * stride + delta];
-                                      DxDz =  buffer[50 * stride + delta];
-                                      DyDy =  buffer[51 * stride + delta];
-                                      DyDz =  buffer[52 * stride + delta];
-                                      DzDz =  buffer[53 * stride + delta];
+                                      std::map<std::string, double> hess_map;
+
+                                      hess_map["AxAx"] =  buffer[9  * stride + delta];
+                                      hess_map["AxAy"] =  buffer[10 * stride + delta];
+                                      hess_map["AxAz"] =  buffer[11 * stride + delta];
+                                      hess_map["AxCx"] =  buffer[12 * stride + delta];
+                                      hess_map["AxCy"] =  buffer[13 * stride + delta];
+                                      hess_map["AxCz"] =  buffer[14 * stride + delta];
+                                      hess_map["AxDx"] =  buffer[15 * stride + delta];
+                                      hess_map["AxDy"] =  buffer[16 * stride + delta];
+                                      hess_map["AxDz"] =  buffer[17 * stride + delta];
+                                      hess_map["AyAy"] =  buffer[18 * stride + delta];
+                                      hess_map["AyAz"] =  buffer[19 * stride + delta];
+                                      hess_map["AyCx"] =  buffer[20 * stride + delta];
+                                      hess_map["AyCy"] =  buffer[21 * stride + delta];
+                                      hess_map["AyCz"] =  buffer[22 * stride + delta];
+                                      hess_map["AyDx"] =  buffer[23 * stride + delta];
+                                      hess_map["AyDy"] =  buffer[24 * stride + delta];
+                                      hess_map["AyDz"] =  buffer[25 * stride + delta];
+                                      hess_map["AzAz"] =  buffer[26 * stride + delta];
+                                      hess_map["AzCx"] =  buffer[27 * stride + delta];
+                                      hess_map["AzCy"] =  buffer[28 * stride + delta];
+                                      hess_map["AzCz"] =  buffer[29 * stride + delta];
+                                      hess_map["AzDx"] =  buffer[30 * stride + delta];
+                                      hess_map["AzDy"] =  buffer[31 * stride + delta];
+                                      hess_map["AzDz"] =  buffer[32 * stride + delta];
+                                      hess_map["CxCx"] =  buffer[33 * stride + delta];
+                                      hess_map["CxCy"] =  buffer[34 * stride + delta];
+                                      hess_map["CxCz"] =  buffer[35 * stride + delta];
+                                      hess_map["CxDx"] =  buffer[36 * stride + delta];
+                                      hess_map["CxDy"] =  buffer[37 * stride + delta];
+                                      hess_map["CxDz"] =  buffer[38 * stride + delta];
+                                      hess_map["CyCy"] =  buffer[39 * stride + delta];
+                                      hess_map["CyCz"] =  buffer[40 * stride + delta];
+                                      hess_map["CyDx"] =  buffer[41 * stride + delta];
+                                      hess_map["CyDy"] =  buffer[42 * stride + delta];
+                                      hess_map["CyDz"] =  buffer[43 * stride + delta];
+                                      hess_map["CzCz"] =  buffer[44 * stride + delta];
+                                      hess_map["CzDx"] =  buffer[45 * stride + delta];
+                                      hess_map["CzDy"] =  buffer[46 * stride + delta];
+                                      hess_map["CzDz"] =  buffer[47 * stride + delta];
+                                      hess_map["DxDx"] =  buffer[48 * stride + delta];
+                                      hess_map["DxDy"] =  buffer[49 * stride + delta];
+                                      hess_map["DxDz"] =  buffer[50 * stride + delta];
+                                      hess_map["DyDy"] =  buffer[51 * stride + delta];
+                                      hess_map["DyDz"] =  buffer[52 * stride + delta];
+                                      hess_map["DzDz"] =  buffer[53 * stride + delta];
 
                                       // Translational invariance relationships
 
-                                      AxBx = -(AxAx + AxCx + AxDx);
-                                      AxBy = -(AxAy + AxCy + AxDy);
-                                      AxBz = -(AxAz + AxCz + AxDz);
-                                      AyBx = -(AxAy + AyCx + AyDx);
-                                      AyBy = -(AyAy + AyCy + AyDy);
-                                      AyBz = -(AyAz + AyCz + AyDz);
-                                      AzBx = -(AxAz + AzCx + AzDx);
-                                      AzBy = -(AyAz + AzCy + AzDy);
-                                      AzBz = -(AzAz + AzCz + AzDz);
-                                      BxCx = -(AxCx + CxCx + CxDx);
-                                      BxCy = -(AxCy + CxCy + CyDx);
-                                      BxCz = -(AxCz + CxCz + CzDx);
-                                      ByCx = -(AyCx + CxCy + CxDy);
-                                      ByCy = -(AyCy + CyCy + CyDy);
-                                      ByCz = -(AyCz + CyCz + CzDy);
-                                      BzCx = -(AzCx + CxCz + CxDz);
-                                      BzCy = -(AzCy + CyCz + CyDz);
-                                      BzCz = -(AzCz + CzCz + CzDz);
-                                      BxDx = -(AxDx + CxDx + DxDx);
-                                      BxDy = -(AxDy + CxDy + DxDy);
-                                      BxDz = -(AxDz + CxDz + DxDz);
-                                      ByDx = -(AyDx + CyDx + DxDy);
-                                      ByDy = -(AyDy + CyDy + DyDy);
-                                      ByDz = -(AyDz + CyDz + DyDz);
-                                      BzDx = -(AzDx + CzDx + DxDz);
-                                      BzDy = -(AzDy + CzDy + DyDz);
-                                      BzDz = -(AzDz + CzDz + DzDz);
+                                      hess_map["AxBx"] = -(hess_map["AxAx"] + hess_map["AxCx"] + hess_map["AxDx"]);
+                                      hess_map["AxBy"] = -(hess_map["AxAy"] + hess_map["AxCy"] + hess_map["AxDy"]);
+                                      hess_map["AxBz"] = -(hess_map["AxAz"] + hess_map["AxCz"] + hess_map["AxDz"]);
+                                      hess_map["AyBx"] = -(hess_map["AxAy"] + hess_map["AyCx"] + hess_map["AyDx"]);
+                                      hess_map["AyBy"] = -(hess_map["AyAy"] + hess_map["AyCy"] + hess_map["AyDy"]);
+                                      hess_map["AyBz"] = -(hess_map["AyAz"] + hess_map["AyCz"] + hess_map["AyDz"]);
+                                      hess_map["AzBx"] = -(hess_map["AxAz"] + hess_map["AzCx"] + hess_map["AzDx"]);
+                                      hess_map["AzBy"] = -(hess_map["AyAz"] + hess_map["AzCy"] + hess_map["AzDy"]);
+                                      hess_map["AzBz"] = -(hess_map["AzAz"] + hess_map["AzCz"] + hess_map["AzDz"]);
+                                      hess_map["BxCx"] = -(hess_map["AxCx"] + hess_map["CxCx"] + hess_map["CxDx"]);
+                                      hess_map["BxCy"] = -(hess_map["AxCy"] + hess_map["CxCy"] + hess_map["CyDx"]);
+                                      hess_map["BxCz"] = -(hess_map["AxCz"] + hess_map["CxCz"] + hess_map["CzDx"]);
+                                      hess_map["ByCx"] = -(hess_map["AyCx"] + hess_map["CxCy"] + hess_map["CxDy"]);
+                                      hess_map["ByCy"] = -(hess_map["AyCy"] + hess_map["CyCy"] + hess_map["CyDy"]);
+                                      hess_map["ByCz"] = -(hess_map["AyCz"] + hess_map["CyCz"] + hess_map["CzDy"]);
+                                      hess_map["BzCx"] = -(hess_map["AzCx"] + hess_map["CxCz"] + hess_map["CxDz"]);
+                                      hess_map["BzCy"] = -(hess_map["AzCy"] + hess_map["CyCz"] + hess_map["CyDz"]);
+                                      hess_map["BzCz"] = -(hess_map["AzCz"] + hess_map["CzCz"] + hess_map["CzDz"]);
+                                      hess_map["BxDx"] = -(hess_map["AxDx"] + hess_map["CxDx"] + hess_map["DxDx"]);
+                                      hess_map["BxDy"] = -(hess_map["AxDy"] + hess_map["CxDy"] + hess_map["DxDy"]);
+                                      hess_map["BxDz"] = -(hess_map["AxDz"] + hess_map["CxDz"] + hess_map["DxDz"]);
+                                      hess_map["ByDx"] = -(hess_map["AyDx"] + hess_map["CyDx"] + hess_map["DxDy"]);
+                                      hess_map["ByDy"] = -(hess_map["AyDy"] + hess_map["CyDy"] + hess_map["DyDy"]);
+                                      hess_map["ByDz"] = -(hess_map["AyDz"] + hess_map["CyDz"] + hess_map["DyDz"]);
+                                      hess_map["BzDx"] = -(hess_map["AzDx"] + hess_map["CzDx"] + hess_map["DxDz"]);
+                                      hess_map["BzDy"] = -(hess_map["AzDy"] + hess_map["CzDy"] + hess_map["DyDz"]);
+                                      hess_map["BzDz"] = -(hess_map["AzDz"] + hess_map["CzDz"] + hess_map["DzDz"]);
                                       
-                                      BxBx = AxAx + AxCx + AxDx
-                                              + AxCx + CxCx + CxDx
-                                              + AxDx + CxDx + DxDx;
-                                      ByBy = AyAy + AyCy + AyDy
-                                              + AyCy + CyCy + CyDy
-                                              + AyDy + CyDy + DyDy;
-                                      BzBz = AzAz + AzCz + AzDz
-                                              + AzCz + CzCz + CzDz
-                                              + AzDz + CzDz + DzDz;
-                                      BxBy = AxAy + AxCy + AxDy
-                                              + AyCx + CxCy + CxDy
-                                              + AyDx + CyDx + DxDy;
-                                      BxBz = AxAz + AxCz + AxDz
-                                              + AzCx + CxCz + CxDz
-                                              + AzDx + CzDx + DxDz;
-                                      ByBz = AyAz + AyCz + AyDz
-                                              + AzCy + CyCz + CyDz
-                                              + AzDy + CzDy + DyDz;
-                                   // Singles                           
+                                      hess_map["BxBx"] = hess_map["AxAx"] + hess_map["AxCx"] + hess_map["AxDx"]
+                                                        + hess_map["AxCx"] + hess_map["CxCx"] + hess_map["CxDx"]
+                                                        + hess_map["AxDx"] + hess_map["CxDx"] + hess_map["DxDx"];
 
-                                   if (Pcenter == atom && Qcenter != atom && Rcenter != atom && Scenter != atom)  {
+                                      hess_map["ByBy"] = hess_map["AyAy"] + hess_map["AyCy"] + hess_map["AyDy"]
+                                                        + hess_map["AyCy"] + hess_map["CyCy"] + hess_map["CyDy"]
+                                                        + hess_map["AyDy"] + hess_map["CyDy"] + hess_map["DyDy"];
 
-                                        XX += AxAx ;
-                                        XY += AxAy;
-                                        XZ += AxAz;
-                                        YY += AyAy;
-                                        YZ += AyAz;
-                                        ZZ += AzAz;
+                                      hess_map["BzBz"] = hess_map["AzAz"] + hess_map["AzCz"] + hess_map["AzDz"]
+                                                        + hess_map["AzCz"] + hess_map["CzCz"] + hess_map["CzDz"]
+                                                        + hess_map["AzDz"] + hess_map["CzDz"] + hess_map["DzDz"];
 
-                                        //YX = XY;
-                                        //ZX = XZ;
-                                        //ZY = YZ;
-                                    }
+                                      hess_map["BxBy"] = hess_map["AxAy"] + hess_map["AxCy"] + hess_map["AxDy"]
+                                                        + hess_map["AyCx"] + hess_map["CxCy"] + hess_map["CxDy"]
+                                                        + hess_map["AyDx"] + hess_map["CyDx"] + hess_map["DxDy"];
 
-                                   if (Pcenter != atom && Qcenter == atom && Rcenter != atom && Scenter != atom)  {
+                                      hess_map["BxBz"] = hess_map["AxAz"] + hess_map["AxCz"] + hess_map["AxDz"]
+                                                        + hess_map["AzCx"] + hess_map["CxCz"] + hess_map["CxDz"]
+                                                        + hess_map["AzDx"] + hess_map["CzDx"] + hess_map["DxDz"];
 
-                                        XX += BxBx ;
-                                        XY += BxBy;
-                                        XZ += BxBz;
-                                        YY += ByBy;
-                                        YZ += ByBz;
-                                        ZZ += BzBz;
+                                      hess_map["ByBz"] = hess_map["AyAz"] + hess_map["AyCz"] + hess_map["AyDz"]
+                                                        + hess_map["AzCy"] + hess_map["CyCz"] + hess_map["CyDz"]
+                                                        + hess_map["AzDy"] + hess_map["CzDy"] + hess_map["DyDz"];
 
-                                        //YX = XY;
-                                        //ZX = XZ;
-                                        //ZY = YZ;
-                                    }
-
-                                   if (Pcenter != atom && Qcenter != atom && Rcenter == atom && Scenter != atom)  {
-
-                                        XX += CxCx ;
-                                        XY += CxCy;
-                                        XZ += CxCz;
-                                        YY += CyCy;
-                                        YZ += CyCz;
-                                        ZZ += CzCz;
-
-                                        //YX = XY;
-                                        //ZX = XZ;
-                                        //ZY = YZ;
-                                    }
-
-                                   if (Pcenter != atom && Qcenter != atom && Rcenter != atom && Scenter == atom)  {
-
-                                        XX += DxDx ;
-                                        XY += DxDy;
-                                        XZ += DxDz;
-                                        YY += DyDy;
-                                        YZ += DyDz;
-                                        ZZ += DzDz;
-
-                                        //YX = XY;
-                                        //ZX = XZ;
-                                        //ZY = YZ;
-                                    }
-
-                                   // Doubles                           
-
-                                   if (Pcenter == atom && Qcenter == atom && Rcenter != atom && Scenter != atom)  {
-
-
-                                        XX += AxAx + BxBx + 2.0 * AxBx;
-                                        XY += AxAy + BxBy + AxBy;
-                                        XZ += AxAz + BxBz + AxBz;
-                                        YY += AyAy + ByBy + 2.0 * AyBy;
-                                        YZ += AyAz + ByBz + AyBz;
-                                        ZZ += AzAz + BzBz + 2.0 * AzBz;
-
-                                        YX += AyBx;
-                                        ZX += AzBx;
-                                        ZY += AzBy;
-                                    }
-
-                                   if (Pcenter != atom && Qcenter == atom && Rcenter == atom && Scenter != atom)  {
-
-                                        XX += BxBx + CxCx + 2.0 * BxCx;
-                                        XY += BxBy + CxCy + BxCy;
-                                        XZ += BxBz + CxCz + BxCz;
-                                        YY += ByBy + CyCy + 2.0 * ByCy;
-                                        YZ += ByBz + CyCz + ByCz;
-                                        ZZ += BzBz + CzCz + 2.0 * BzCz;
-
-                                        YX += ByCx;
-                                        ZX += BzCx;
-                                        ZY += BzCy;
-                                    }
-
-                                   if (Pcenter != atom && Qcenter != atom && Rcenter == atom && Scenter == atom)  {
-
-
-                                        XX += CxCx + DxDx + 2.0 * CxDx;
-                                        XY += CxCy + DxDy + CxDy;
-                                        XZ += CxCz + DxDz + CxDz;
-                                        YY += CyCy + DyDy + 2.0 * CyDy;
-                                        YZ += CyCz + DyDz + CyDz;
-                                        ZZ += CzCz + DzDz + 2.0 * CzDz;
-
-                                        YX += CyDx;
-                                        ZX += CzDx;
-                                        ZY += CzDy;
-                                    }
-
-                                   if (Pcenter == atom && Qcenter != atom && Rcenter == atom && Scenter != atom)  {
-
-
-                                        XX += AxAx + CxCx + 2.0 * AxCx;
-                                        XY += AxAy + CxCy + AxCy;
-                                        XZ += AxAz + CxCz + AxCz;
-                                        YY += AyAy + CyCy + 2.0 * AyCy;
-                                        YZ += AyAz + CyCz + AyCz;
-                                        ZZ += AzAz + CzCz + 2.0 * AzCz;
-
-                                        YX += AyCx;
-                                        ZX += AzCx;
-                                        ZY += AzCy;
-                                    }
-
-
-                                   if (Pcenter == atom && Qcenter != atom && Rcenter != atom && Scenter == atom)  {
-
-
-                                        XX += AxAx + DxDx + 2.0 * AxDx;
-                                        XY += AxAy + DxDy + AxDy;
-                                        XZ += AxAz + DxDz + AxDz;
-                                        YY += AyAy + DyDy + 2.0 * AyDy;
-                                        YZ += AyAz + DyDz + AyDz;
-                                        ZZ += AzAz + DzDz + 2.0 * AzDz;
-
-                                        YX += AyDx;
-                                        ZX += AzDx;
-                                        ZY += AzDy;
-                                    }
-
-                                   if (Pcenter != atom && Qcenter == atom && Rcenter != atom && Scenter == atom)  {
-
-
-                                        XX += BxBx + DxDx + 2.0 * BxDx;
-                                        XY += BxBy + DxDy + BxDy;
-                                        XZ += BxBz + DxDz + BxDz;
-                                        YY += ByBy + DyDy + 2.0 * ByDy;
-                                        YZ += ByBz + DyDz + ByDz;
-                                        ZZ += BzBz + DzDz + 2.0 * BzDz;
-
-                                        YX += ByDx;
-                                        ZX += BzDx;
-                                        ZY += BzDy;
-                                    }
-
-                                   // Triples                           
-
-                                   if (Pcenter == atom && Qcenter == atom && Rcenter == atom && Scenter != atom)  {
-
-
-                                        XX += AxAx + BxBx + CxCx + 2.0 * AxBx + 2.0 * AxCx + 2.0 * BxCx;
-                                        XY += AxAy + BxBy + CxCy + AxBy + AxCy + BxCy;
-                                        XZ += AxAz + BxBz + CxCz + AxBz + AxCz + BxCz;
-                                        YY += AyAy + ByBy + CyCy + 2.0 * AyBy + 2.0 * AyCy + 2.0 * ByCy;
-                                        YZ += AyAz + ByBz + CyCz + AyBz + AyCz + ByCz;
-                                        ZZ += AzAz + BzBz + CzCz + 2.0 * AzBz + 2.0 * AzCz + 2.0 * BzCz;
-
-                                        YX += AyBx + AyCx + ByCx;
-                                        ZX += AzBx + AzCx + BzCx;
-                                        ZY += AzBy + AzCy + BzCy;
-
-                                    }
-
-                                    if (Pcenter != atom && Qcenter == atom && Rcenter == atom && Scenter == atom)  {
-
-
-                                        XX += BxBx + CxCx + DxDx + 2.0 * BxCx + 2.0 * CxDx + 2.0 * BxDx;
-                                        XY += BxBy + CxCy + DxDy + BxCy + CxDy + BxDy;
-                                        XZ += BxBz + CxCz + DxDz + BxCz + CxDz + BxDz;
-                                        YY += ByBy + CyCy + DyDy + 2.0 * ByCy + 2.0 * CyDy + 2.0 * ByDy;
-                                        YZ += ByBz + CyCz + DyDz + ByCz + CyDz + ByDz;
-                                        ZZ += BzBz + CzCz + DzDz + 2.0 * BzCz + 2.0 * CzDz + 2.0 * BzDz;
-
-                                        YX += ByCx + CyDx + ByDx;
-                                        ZX += BzCx + CzDx + BzDx;
-                                        ZY += BzCy + CzDy + BzDy;
-                                    }
-
-
-                                    if (Pcenter == atom && Qcenter != atom && Rcenter == atom && Scenter == atom)  {
-
-                                        XX += AxAx + CxCx + DxDx + 2.0 * AxCx + 2.0 * CxDx + 2.0 * AxDx;
-                                        XY += AxAy + CxCy + DxDy + AxCy + CxDy + AxDy;
-                                        XZ += AxAz + CxCz + DxDz + AxCz + CxDz + AxDz;
-                                        YY += AyAy + CyCy + DyDy + 2.0 * AyCy + 2.0 * CyDy + 2.0 * AyDy;
-                                        YZ += AyAz + CyCz + DyDz + AyCz + CyDz + AyDz;
-                                        ZZ += AzAz + CzCz + DzDz + 2.0 * AzCz + 2.0 * CzDz + 2.0 * AzDz;
-
-                                        YX += AyCx + CyDx + AyDx;
-                                        ZX += AzCx + CzDx + AzDx;
-                                        ZY += AzCy + CzDy + AzDy;
-                                    }
-
-                                    if (Pcenter == atom && Qcenter == atom && Rcenter != atom && Scenter == atom)  {
-
-
-                                        XX += AxAx + BxBx + DxDx + 2.0 * AxBx + 2.0 * BxDx + 2.0 * AxDx;
-                                        XY += AxAy + BxBy + DxDy + AxBy + BxDy + AxDy;
-                                        XZ += AxAz + BxBz + DxDz + AxBz + BxDz + AxDz;
-                                        YY += AyAy + ByBy + DyDy + 2.0 * AyBy + 2.0 * ByDy + 2.0 * AyDy;
-                                        YZ += AyAz + ByBz + DyDz + AyBz + ByDz + AyDz;
-                                        ZZ += AzAz + BzBz + DzDz + 2.0 * AzBz + 2.0 * BzDz + 2.0 * AzDz;
-
-                                        YX += AyBx + ByDx + AyDx;
-                                        ZX += AzBx + BzDx + AzDx;
-                                        ZY += AzBy + BzDy + AzDy;
-                                    }
-
-                                    /*if (Pcenter == atom && Qcenter == atom && Rcenter == atom && Scenter == atom)  {
-
-                                        XX += AxAx + BxBx + CxCx + DxDx + 2.0 * (AxBx + BxCx + CxDx + AxDx + BxDx + AxCx);
-                                        //XY += AxAy + BxBy + DxDy + AxBy + AyBx + ByDx + BxDy + AyDx + AxDy;
-                                        //XZ += AxAz + BxBz + DxDz + AxBz + AzBx + BxDz + BzDx + AxDz + AzDx;
-                                        YY += AyAy + ByBy + CyCy + DyDy + 2.0 * (AyBy + ByCy + CyDy + AyDy + ByDy + AyCy);
-                                        //YZ += AyAz + ByBz + DyDz + AyBz + AzBy + ByDz + BzDy + AzDy + AyDz;
-                                        ZZ += AzAz + BzBz + CzCz + DzDz + 2.0 * (AzBz + BzCz + CzDz + AzDz + BzDz + AzCz);
-
-                                        //YX = XY;
-                                        //ZX = XZ;
-                                        //ZY = YZ;
-                                    } */
-
-                                        //YX = XY;
-                                        //ZX = XZ;
-                                        //ZY = YZ;
-
-                                  grad[0]->set(i, j, XX);
-                                  grad[1]->set(i, j, XY);
-                                  grad[2]->set(i, j, XZ);
-                                  grad[3]->set(i, j, YX);
-                                  grad[4]->set(i, j, YY);
-                                  grad[5]->set(i, j, YZ);
-                                  grad[6]->set(i, j, ZX);
-                                  grad[7]->set(i, j, ZY);
-                                  grad[8]->set(i, j, ZZ);
-
-                                  XX=0, XY=0, XZ=0;
-                                  YX=0, YY=0, YZ=0;
-                                  ZX=0, ZY=0, ZZ=0;
+                                      for (std::vector<int>::iterator it = vec_pos.begin() ; it != vec_pos.end(); ++it){
+                                          strings = pos_map[*it] ;
+                                          //outfile->Printf("  (%s)  \n", strings.c_str());
+                                          //outfile->Printf("  (%d  %d)  \n", i, j);
+                                          for (int p=0; p<3; p++)
+                                              for (int q=p; q<3; q++){
+                                                  key = strings[0] + std::string(cartcomp[p]) + strings[1] + std::string(cartcomp[q]);
+                                                  //outfile->Printf("  (%s)  \n", key.c_str());
+                                                  std::string grad_key = std::string(cartcomp[p]) + std::string(cartcomp[q]);
+                                                  if (atom1 == atom2 && (*it) <= 3)  
+                                                      grad_map[grad_key] +=  hess_map[key];
+                                                  else
+                                                      grad_map[grad_key] +=  2.0 * hess_map[key];
+                                                  }  
+                                          }   
+                                      for (int p=0,pq=0; p<3; p++)
+                                          for (int q=p; q<3; q++,pq++){
+                                              std::string grad_key = std::string(cartcomp[p]) + std::string(cartcomp[q]);
+                                              grad[pq]->set(i, j, grad_map[grad_key]);
+                                              grad_map[grad_key] = 0;
+                                          }
 
                                   delta++;
 
@@ -2601,20 +2460,20 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2_helper(int atom, std::share
                          }
                      }
                  }
-             }
+            }
           }
        }
     }
 
     //Build numpy and final matrix shape
     std::vector<int> nshape{nbf1, nbf2, nbf3, nbf4};
-       for (int p=0; p<9; p++)
+       for (int p=0; p<6; p++)
             grad[p]->set_numpy_shape(nshape);
 
     return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints,
+std::vector<psi::SharedMatrix> MintsHelper::mo_tei_deriv2_helper(int atom1, int atom2, std::shared_ptr <TwoBodyAOInt> ints,
                                  SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
@@ -2626,34 +2485,34 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2_helper(int atom, std::share
     cartcomp[1] = strdup("Y");
     cartcomp[2] = strdup("Z");
 
-    std::vector<SharedMatrix> ao_grad = ao_tei_deriv2_helper(atom, ints);
-    std::vector<SharedMatrix> mo_grad;
+    std::vector<psi::SharedMatrix> ao_grad = ao_tei_deriv2_helper(atom1, atom2, ints);
+    std::vector<psi::SharedMatrix> mo_grad;
     for(int p=0, pq=0; p<3; p++)
-        for(int q=0; q<3; q++, pq++){
-        sprintf(lbl, "mo_tei_deriv2_%d_%s_%s", atom, cartcomp[p], cartcomp[q]);
-        SharedMatrix temp = mo_eri_helper(ao_grad[pq], C1, C2, C3, C4) ;
-        temp->set_name(lbl);
-        mo_grad.push_back(temp);
+        for(int q=p; q<3; q++, pq++){
+            sprintf(lbl, "mo_tei_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
+            SharedMatrix temp = mo_eri_helper(ao_grad[pq], C1, C2, C3, C4) ;
+            temp->set_name(lbl);
+            mo_grad.push_back(temp);
     }
     return mo_grad;
 }
 
 
-std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom, SharedMatrix C1, SharedMatrix C2,
+std::vector<psi::SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
     std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(2));
-    return mo_tei_deriv2_helper(atom, ints, C1, C2, C3, C4);
+    return mo_tei_deriv2_helper(atom1, atom2, ints, C1, C2, C3, C4);
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom)
+std::vector<psi::SharedMatrix> MintsHelper::ao_tei_deriv1(int atom)
 {
     std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
     return ao_tei_deriv1_helper(atom, ints);
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                  std::shared_ptr <BasisSet> bs2,
                                  std::shared_ptr <BasisSet> bs3,
                                  std::shared_ptr <BasisSet> bs4) 
@@ -2663,7 +2522,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, std::shared_ptr <
     return ao_tei_deriv1_helper(atom, ints);
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
+std::vector<psi::SharedMatrix> MintsHelper::mo_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
                                  SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
@@ -2686,14 +2545,14 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1_helper(int atom, std::share
     return mo_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2,
+std::vector<psi::SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
     std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
     return mo_tei_deriv1_helper(atom, ints, C1, C2, C3, C4);
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                  std::shared_ptr <BasisSet> bs2,
                                  std::shared_ptr <BasisSet> bs3,
                                  std::shared_ptr <BasisSet> bs4,
@@ -2707,7 +2566,7 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint)
+std::vector<psi::SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint)
 {
 
         char lbl[32];
@@ -2816,14 +2675,14 @@ std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom,
 
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
+std::vector<psi::SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
 {
   std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
   return ao_kinetic_energy_deriv1_helper(atom, Tint);
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2)
 {
  IntegralFactory factory(bs1, bs2, bs1, bs2);
@@ -2832,7 +2691,7 @@ std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom, std::s
 }
 
 
-std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2,
                                                                 SharedMatrix C1, SharedMatrix C2)
 {
@@ -2857,7 +2716,7 @@ std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, std::s
 }
 
 
-std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
+std::vector<psi::SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
 {
     char lbl[32];
     char ** cartcomp;
@@ -2877,7 +2736,7 @@ std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, Shared
     return mo_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Vint)
+std::vector<psi::SharedMatrix> MintsHelper::ao_potential_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Vint)
 {
 
         char lbl[32];
@@ -2934,14 +2793,14 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1_helper(int ato
         return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom)
+std::vector<psi::SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom)
 {
   std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_potential(1));
   return ao_potential_energy_deriv1_helper(atom, Tint);
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2)
 {
  IntegralFactory factory(bs1, bs2, bs1, bs2);
@@ -2950,7 +2809,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom, std:
 }
 
 
-std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2,
                                                                 SharedMatrix C1, SharedMatrix C2)
 {
@@ -2975,7 +2834,7 @@ std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, std:
 }
 
 
-std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
+std::vector<psi::SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
 {
     char lbl[32];
     char ** cartcomp;
@@ -2996,7 +2855,7 @@ std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, Shar
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Sint)
+std::vector<psi::SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Sint)
 {
         char lbl[32];
         char ** cartcomp;
@@ -3095,16 +2954,15 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
 
         return grad;
 }
-}
 
-std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1(int atom)
+std::vector<psi::SharedMatrix> MintsHelper::ao_overlap_deriv1(int atom)
 {
   std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
   return ao_overlap_deriv1_helper(atom, Sint);
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::ao_overlap_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2)
 {
   IntegralFactory factory(bs1, bs2, bs1, bs2);
@@ -3112,7 +2970,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1(int atom, std::shared_p
   return ao_overlap_deriv1_helper(atom, Sint);
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_overlap_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+std::vector<psi::SharedMatrix> MintsHelper::mo_overlap_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2,
                                                                 SharedMatrix C1, SharedMatrix C2)
 {
@@ -3137,7 +2995,7 @@ std::vector<SharedMatrix> MintsHelper::mo_overlap_deriv1(int atom, std::shared_p
 }
 
 
-std::vector<SharedMatrix> MintsHelper::mo_overlap_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
+std::vector<psi::SharedMatrix> MintsHelper::mo_overlap_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
 {
     char lbl[32];
     char ** cartcomp;
