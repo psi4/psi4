@@ -265,7 +265,7 @@ void buildHamDMRG( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSp
     const int nirrep = wfn->nirrep();
 
     // Econstant and one-electron integrals
-    double Econstant = wfn->molecule()->nuclear_repulsion_energy();
+    double Econstant = wfn->molecule()->nuclear_repulsion_energy(wfn->get_dipole_field_strength());
     for (int h = 0; h < iHandler->getNirreps(); h++){
         const int NOCC = iHandler->getNOCC(h);
         for (int froz = 0; froz < NOCC; froz++){
