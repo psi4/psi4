@@ -723,342 +723,105 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 
     int nsig_functions = block->functions_local_to_global().size();
 
+    // Declare pointers
+    double* cartp, *cartxp, *cartyp, *cartzp;
+    double* cartxxp, *cartxyp, *cartxzp, *cartyyp, *cartyzp, cartzzp;
+    double* purep, *purexp, *pureyp, *purezp;
+    double* purexxp, *purexyp, *purexzp, *pureyyp, *pureyzp, purezzp;
+
     if (deriv_ == 0) {
-        double* cartp = basis_temps_["PHI"]->pointer()[0];
-        double* purep = basis_values_["PHI"]->pointer()[0];
-
-        // for (int P = 0; P < npoints; P++) {
-        //     std::fill(purep[P], purep[P] + nsig_functions, 0.0);
-        // }
-
-        int nvals = 0;
-        int function_offset = 0;
-        for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
-            int Qglobal = shells[Qlocal];
-            const GaussianShell& Qshell = primary_->shell(Qglobal);
-            Vector3 v     = Qshell.center();
-            int L         = Qshell.am();
-            int nQ        = Qshell.nfunction();
-            int nprim     = Qshell.nprimitive();
-            const double *alpha = Qshell.exps();
-            const double *norm  = Qshell.coefs();
-
-            centerp[0] = v[0];
-            centerp[1] = v[1];
-            centerp[2] = v[2];
-
-            // Copmute collocation
-            double* phi_start = cartp + (nvals * npoints);
-            gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start);
-
-            function_offset += nQ;
-            if (puream_){
-                nvals += 2 * L + 1;
-            } else {
-                nvals += nQ;
-            }
-        }
-        // GG spits it out tranpose of what we need
-        gg_fast_transpose(nso, npoints, cartp, purep);
-    } else if (deriv_ == 1) {
-        double** cartp = basis_temps_["PHI"]->pointer();
-        double** cartxp = basis_temps_["PHI_X"]->pointer();
-        double** cartyp = basis_temps_["PHI_Y"]->pointer();
-        double** cartzp = basis_temps_["PHI_Z"]->pointer();
-        double** purep = basis_values_["PHI"]->pointer();
-        double** purexp = basis_values_["PHI_X"]->pointer();
-        double** pureyp = basis_values_["PHI_Y"]->pointer();
-        double** purezp = basis_values_["PHI_Z"]->pointer();
-
-        for (int P = 0; P < npoints; P++) {
-            std::fill(purep[P], purep[P] + nsig_functions, 0.0);
-            std::fill(purexp[P], purexp[P] + nsig_functions, 0.0);
-            std::fill(pureyp[P], pureyp[P] + nsig_functions, 0.0);
-            std::fill(purezp[P], purezp[P] + nsig_functions, 0.0);
-        }
-
-        int function_offset = 0;
-        for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
-            int Qglobal = shells[Qlocal];
-            const GaussianShell& Qshell = primary_->shell(Qglobal);
-            Vector3 v     = Qshell.center();
-            int L         = Qshell.am();
-            int nQ        = Qshell.nfunction();
-            int nprim     = Qshell.nprimitive();
-            const double *alpha = Qshell.exps();
-            const double *norm  = Qshell.coefs();
-
-            const std::vector<std::tuple<int,int,double> >& transform = spherical_transforms_[L];
-
-            xc_pow[0] = 0.0;
-            yc_pow[0] = 0.0;
-            zc_pow[0] = 0.0;
-            xc_pow[1] = 1.0;
-            yc_pow[1] = 1.0;
-            zc_pow[1] = 1.0;
-
-            for (int P = 0; P < npoints; P++) {
-
-                double xc = x[P] - v[0];
-                double yc = y[P] - v[1];
-                double zc = z[P] - v[2];
-
-                for (int LL = 2; LL < L + 2; LL++) {
-                    xc_pow[LL] = xc_pow[LL - 1] * xc;
-                    yc_pow[LL] = yc_pow[LL - 1] * yc;
-                    zc_pow[LL] = zc_pow[LL - 1] * zc;
-                }
-
-                double R2 = xc * xc + yc * yc + zc * zc;
-                double V1 = 0.0;
-                double V2 = 0.0;
-//                double V3 = 0.0;
-                double T1,T2;
-                for (int K = 0; K < nprim; K++) {
-                    T1 =  norm[K] * exp(-alpha[K] * R2);
-                    T2 =  -2.0 * alpha[K] * T1;
-                    V1 += T1;
-                    V2 += T2;
-                }
-                double S0 = V1;
-                double SX = V2 * xc;
-                double SY = V2 * yc;
-                double SZ = V2 * zc;
-
-                // # pragma simd
-                for (int i = 0, index = 0; i <= L; ++i) {
-                    int l = L - i + 1;
-
-                    for (int j = 0; j <= i; j++, index++) {
-                        int m = i - j + 1;
-                        int n = j + 1;
-
-                        int lp = l - 1;
-                        int mp = m - 1;
-                        int np = n - 1;
-
-                        double xyz = xc_pow[l] * yc_pow[m] * zc_pow[n];
-                        cartp[P][index] = S0 * xyz;
-                        cartxp[P][index] = S0 * lp * xc_pow[l-1] * yc_pow[m] * zc_pow[n] + SX * xyz;
-                        cartyp[P][index] = S0 * mp * xc_pow[l] * yc_pow[m-1] * zc_pow[n] + SY * xyz;
-                        cartzp[P][index] = S0 * np * xc_pow[l] * yc_pow[m] * zc_pow[n-1] + SZ * xyz;
-                    }
-                }
-            }
-
-            // Spherical transform
-            if (puream_) {
-                for (size_t index = 0; index < transform.size(); index++) {
-                    int pureindex = std::get<0>(transform[index]);
-                    int cartindex = std::get<1>(transform[index]);
-                    double coef   = std::get<2>(transform[index]);
-
-                    C_DAXPY(npoints, coef, &cartp[0][cartindex], max_cart,
-                            &purep[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartxp[0][cartindex], max_cart,
-                            &purexp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartyp[0][cartindex], max_cart,
-                            &pureyp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartzp[0][cartindex], max_cart,
-                            &purezp[0][pureindex + function_offset], nso);
-                }
-            } else {
-                for (int q = 0; q < nQ; q++) {
-                    C_DCOPY(npoints, &cartp[0][q], max_cart, &purep[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartxp[0][q], max_cart, &purexp[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartyp[0][q], max_cart, &pureyp[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartzp[0][q], max_cart, &purezp[0][q + function_offset], nso);
-                }
-            }
-
-            function_offset += nQ;
-        }
-    } else if (deriv_ == 2) {
-        double** cartp = basis_temps_["PHI"]->pointer();
-        double** cartxp = basis_temps_["PHI_X"]->pointer();
-        double** cartyp = basis_temps_["PHI_Y"]->pointer();
-        double** cartzp = basis_temps_["PHI_Z"]->pointer();
-        double** cartxxp = basis_temps_["PHI_XX"]->pointer();
-        double** cartxyp = basis_temps_["PHI_XY"]->pointer();
-        double** cartxzp = basis_temps_["PHI_XZ"]->pointer();
-        double** cartyyp = basis_temps_["PHI_YY"]->pointer();
-        double** cartyzp = basis_temps_["PHI_YZ"]->pointer();
-        double** cartzzp = basis_temps_["PHI_ZZ"]->pointer();
-        double** purep = basis_values_["PHI"]->pointer();
-        double** purexp = basis_values_["PHI_X"]->pointer();
-        double** pureyp = basis_values_["PHI_Y"]->pointer();
-        double** purezp = basis_values_["PHI_Z"]->pointer();
-        double** purexxp = basis_values_["PHI_XX"]->pointer();
-        double** purexyp = basis_values_["PHI_XY"]->pointer();
-        double** purexzp = basis_values_["PHI_XZ"]->pointer();
-        double** pureyyp = basis_values_["PHI_YY"]->pointer();
-        double** pureyzp = basis_values_["PHI_YZ"]->pointer();
-        double** purezzp = basis_values_["PHI_ZZ"]->pointer();
-
-        for (int P = 0; P < npoints; P++) {
-            std::fill(purep[P], purep[P] + nsig_functions, 0.0);
-            std::fill(purexp[P], purexp[P] + nsig_functions, 0.0);
-            std::fill(pureyp[P], pureyp[P] + nsig_functions, 0.0);
-            std::fill(purezp[P], purezp[P] + nsig_functions, 0.0);
-            std::fill(purexxp[P], purexxp[P] + nsig_functions, 0.0);
-            std::fill(purexyp[P], purexyp[P] + nsig_functions, 0.0);
-            std::fill(purexzp[P], purexzp[P] + nsig_functions, 0.0);
-            std::fill(pureyyp[P], pureyyp[P] + nsig_functions, 0.0);
-            std::fill(pureyzp[P], pureyzp[P] + nsig_functions, 0.0);
-            std::fill(purezzp[P], purezzp[P] + nsig_functions, 0.0);
-        }
-
-        int function_offset = 0;
-        for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
-            int Qglobal = shells[Qlocal];
-            const GaussianShell& Qshell = primary_->shell(Qglobal);
-            Vector3 v     = Qshell.center();
-            int L         = Qshell.am();
-            int nQ        = Qshell.nfunction();
-            int nprim     = Qshell.nprimitive();
-            const double *alpha = Qshell.exps();
-            const double *norm  = Qshell.coefs();
-
-            const std::vector<std::tuple<int,int,double> >& transform = spherical_transforms_[L];
-
-            xc_pow[0] = 0.0;
-            yc_pow[0] = 0.0;
-            zc_pow[0] = 0.0;
-            xc_pow[1] = 0.0;
-            yc_pow[1] = 0.0;
-            zc_pow[1] = 0.0;
-            xc_pow[2] = 1.0;
-            yc_pow[2] = 1.0;
-            zc_pow[2] = 1.0;
-
-            for (int P = 0; P < npoints; P++) {
-                double xc = x[P] - v[0];
-                double yc = y[P] - v[1];
-                double zc = z[P] - v[2];
-
-                for (int LL = 3; LL < L + 3; LL++) {
-                    xc_pow[LL] = xc_pow[LL - 1] * xc;
-                    yc_pow[LL] = yc_pow[LL - 1] * yc;
-                    zc_pow[LL] = zc_pow[LL - 1] * zc;
-                }
-
-                double R2 = xc * xc + yc * yc + zc * zc;
-                double V1 = 0.0;
-                double V2 = 0.0;
-                double V3 = 0.0;
-                double T1, T2, T3;
-                for (int K = 0; K < nprim; K++) {
-                    T1 = norm[K] * exp(-alpha[K] * R2);
-                    T2 = -2.0 * alpha[K] * T1;
-                    T3 = -2.0 * alpha[K] * T2;
-                    V1 += T1;
-                    V2 += T2;
-                    V3 += T3;
-                }
-                double S = V1;
-                double SX = V2 * xc;
-                double SY = V2 * yc;
-                double SZ = V2 * zc;
-                double SXY = V3 * xc * yc;
-                double SXZ = V3 * xc * zc;
-                double SYZ = V3 * yc * zc;
-                double SXX = V3 * xc * xc + V2;
-                double SYY = V3 * yc * yc + V2;
-                double SZZ = V3 * zc * zc + V2;
-
-                for (int i = 0, index = 0; i <= L; ++i) {
-                    int l = L - i + 2;
-
-                    // # pragma omp simd
-                    for (int j = 0; j <= i; j++, index++) {
-                        int m = i - j + 2;
-                        int n = j + 2;
-
-                        int lp = l - 2;
-                        int mp = m - 2;
-                        int np = n - 2;
-
-                        double A = xc_pow[l] * yc_pow[m] * zc_pow[n];
-                        double AX = lp * xc_pow[l - 1] * yc_pow[m] * zc_pow[n];
-                        double AY = mp * xc_pow[l] * yc_pow[m - 1] * zc_pow[n];
-                        double AZ = np * xc_pow[l] * yc_pow[m] * zc_pow[n - 1];
-                        double AXY = lp * mp * xc_pow[l - 1] * yc_pow[m - 1] * zc_pow[n];
-                        double AXZ = lp * np * xc_pow[l - 1] * yc_pow[m] * zc_pow[n - 1];
-                        double AYZ = mp * np * xc_pow[l] * yc_pow[m - 1] * zc_pow[n - 1];
-                        double AXX = lp * (lp - 1) * xc_pow[l - 2] * yc_pow[m] * zc_pow[n];
-                        double AYY = mp * (mp - 1) * xc_pow[l] * yc_pow[m - 2] * zc_pow[n];
-                        double AZZ = np * (np - 1) * xc_pow[l] * yc_pow[m] * zc_pow[n - 2];
-
-                        cartp[P][index] = S * A;
-                        cartxp[P][index] = S * AX + SX * A;
-                        cartyp[P][index] = S * AY + SY * A;
-                        cartzp[P][index] = S * AZ + SZ * A;
-                        cartxxp[P][index] = SXX * A + SX * AX + SX * AX + S * AXX;
-                        cartyyp[P][index] = SYY * A + SY * AY + SY * AY + S * AYY;
-                        cartzzp[P][index] = SZZ * A + SZ * AZ + SZ * AZ + S * AZZ;
-                        cartxyp[P][index] = SXY * A + SX * AY + SY * AX + S * AXY;
-                        cartxzp[P][index] = SXZ * A + SX * AZ + SZ * AX + S * AXZ;
-                        cartyzp[P][index] = SYZ * A + SY * AZ + SZ * AY + S * AYZ;
-                    }
-                }
-            }
-
-            // Spherical transform
-            if (puream_) {
-                for (size_t index = 0; index < transform.size(); index++) {
-                    int pureindex = std::get<0>(transform[index]);
-                    int cartindex = std::get<1>(transform[index]);
-                    double coef = std::get<2>(transform[index]);
-
-                    C_DAXPY(npoints, coef, &cartp[0][cartindex], max_cart,
-                            &purep[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartxp[0][cartindex], max_cart,
-                            &purexp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartyp[0][cartindex], max_cart,
-                            &pureyp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartzp[0][cartindex], max_cart,
-                            &purezp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartxxp[0][cartindex], max_cart,
-                            &purexxp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartxyp[0][cartindex], max_cart,
-                            &purexyp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartxzp[0][cartindex], max_cart,
-                            &purexzp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartyyp[0][cartindex], max_cart,
-                            &pureyyp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartyzp[0][cartindex], max_cart,
-                            &pureyzp[0][pureindex + function_offset], nso);
-                    C_DAXPY(npoints, coef, &cartzzp[0][cartindex], max_cart,
-                            &purezzp[0][pureindex + function_offset], nso);
-                }
-            } else {
-                for (int q = 0; q < nQ; q++) {
-                    C_DCOPY(npoints, &cartp[0][q], max_cart, &purep[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartxp[0][q], max_cart, &purexp[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartyp[0][q], max_cart, &pureyp[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartzp[0][q], max_cart, &purezp[0][q + function_offset], nso);
-                    C_DCOPY(npoints, &cartxxp[0][q], max_cart, &purexxp[0][q + function_offset],
-                            nso);
-                    C_DCOPY(npoints, &cartxyp[0][q], max_cart, &purexyp[0][q + function_offset],
-                            nso);
-                    C_DCOPY(npoints, &cartxzp[0][q], max_cart, &purexzp[0][q + function_offset],
-                            nso);
-                    C_DCOPY(npoints, &cartyyp[0][q], max_cart, &pureyyp[0][q + function_offset],
-                            nso);
-                    C_DCOPY(npoints, &cartyzp[0][q], max_cart, &pureyzp[0][q + function_offset],
-                            nso);
-                    C_DCOPY(npoints, &cartzzp[0][q], max_cart, &purezzp[0][q + function_offset],
-                            nso);
-                }
-            }
-
-            function_offset += nQ;
-        }
+        cartp = basis_temps_["PHI"]->pointer()[0];
+        purep = basis_values_["PHI"]->pointer()[0];
+    }
+    if (deriv_ == 1) {
+        cartxp = basis_temps_["PHI_X"]->pointer()[0];
+        cartyp = basis_temps_["PHI_Y"]->pointer()[0];
+        cartzp = basis_temps_["PHI_Z"]->pointer()[0];
+        purexp = basis_values_["PHI_X"]->pointer()[0];
+        pureyp = basis_values_["PHI_Y"]->pointer()[0];
+        purezp = basis_values_["PHI_Z"]->pointer()[0];
+    }
+    if (deriv_ == 2) {
+        cartxxp = basis_temps_["PHI_XX"]->pointer()[0];
+        cartxyp = basis_temps_["PHI_XY"]->pointer()[0];
+        cartxzp = basis_temps_["PHI_XZ"]->pointer()[0];
+        cartyyp = basis_temps_["PHI_YY"]->pointer()[0];
+        cartyzp = basis_temps_["PHI_YZ"]->pointer()[0];
+        cartzzp = basis_temps_["PHI_ZZ"]->pointer()[0];
+        purexxp = basis_values_["PHI_XX"]->pointer()[0];
+        purexyp = basis_values_["PHI_XY"]->pointer()[0];
+        purexzp = basis_values_["PHI_XZ"]->pointer()[0];
+        pureyyp = basis_values_["PHI_YY"]->pointer()[0];
+        pureyzp = basis_values_["PHI_YZ"]->pointer()[0];
+        purezzp = basis_values_["PHI_ZZ"]->pointer()[0];
     }
 
-    delete[] xc_pow;
-    delete[] yc_pow;
-    delete[] zc_pow;
+
+    int nvals = 0;
+    int function_offset = 0;
+    for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
+        int Qglobal = shells[Qlocal];
+        const GaussianShell& Qshell = primary_->shell(Qglobal);
+        Vector3 v     = Qshell.center();
+        int L         = Qshell.am();
+        int nQ        = Qshell.nfunction();
+        int nprim     = Qshell.nprimitive();
+        const double *alpha = Qshell.exps();
+        const double *norm  = Qshell.coefs();
+
+        centerp[0] = v[0];
+        centerp[1] = v[1];
+        centerp[2] = v[2];
+
+        // Copmute collocation
+        double* phi_start = cartp + (nvals * npoints);
+        if (deriv_ == 0){
+            gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start);
+        } else if (deriv_ == 1){
+            double* phi_x_start = cartxp + (nvals * npoints);
+            double* phi_y_start = cartyp + (nvals * npoints);
+            double* phi_z_start = cartzp + (nvals * npoints);
+            gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start,
+                                  phi_x_start, phi_y_start, phi_z_start);
+
+        } else if (deriv_ == 2){
+            double* phi_x_start = cartxp + (nvals * npoints);
+            double* phi_y_start = cartyp + (nvals * npoints);
+            double* phi_z_start = cartzp + (nvals * npoints);
+            double* phi_xx_start = cartxxp + (nvals * npoints);
+            double* phi_xy_start = cartxyp + (nvals * npoints);
+            double* phi_xz_start = cartxzp + (nvals * npoints);
+            double* phi_yy_start = cartyyp + (nvals * npoints);
+            double* phi_yz_start = cartyzp + (nvals * npoints);
+            double* phi_zz_start = cartzzp + (nvals * npoints);
+            gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start,
+                                  phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
+                                  phi_yy_start, phi_yz_start, phi_zz_start);
+        }
+
+        function_offset += nQ;
+        if (puream_){
+            nvals += 2 * L + 1;
+        } else {
+            nvals += nQ;
+        }
+    }
+    // GG spits it out tranpose of what we need
+    gg_fast_transpose(nso, npoints, cartp, purep);
+    if (deriv_ > 1){
+        gg_fast_transpose(nso, npoints, cartxp, purexp);
+        gg_fast_transpose(nso, npoints, cartyp, pureyp);
+        gg_fast_transpose(nso, npoints, cartzp, purezp);
+    }
+    if (deriv_ > 2){
+        gg_fast_transpose(nso, npoints, cartxxp, purexxp);
+        gg_fast_transpose(nso, npoints, cartxyp, purexyp);
+        gg_fast_transpose(nso, npoints, cartxzp, purexzp);
+        gg_fast_transpose(nso, npoints, cartyyp, pureyyp);
+        gg_fast_transpose(nso, npoints, cartyzp, pureyzp);
+        gg_fast_transpose(nso, npoints, cartzzp, purezzp);
+    }
+
     delete[] centerp;
 }
 void BasisFunctions::print(std::string out, int print) const
