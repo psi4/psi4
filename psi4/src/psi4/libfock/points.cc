@@ -27,6 +27,7 @@
  */
 
 
+
 #include "psi4/libqt/qt.h"
 #include "points.h"
 #include "cubature.h"
@@ -37,6 +38,7 @@
 #include "psi4/libmints/vector.h"
 
 #include <cmath>
+#include </Users/daniel/install/gau2grid/include/gau2grid/gau2grid.h>
 
 namespace psi {
 
@@ -664,16 +666,16 @@ void BasisFunctions::allocate()
 
     if (deriv_ >= 0) {
         basis_values_["PHI"] = std::make_shared<Matrix>("PHI", max_points_, max_functions_);
-        basis_temps_["PHI"] = std::make_shared<Matrix>("PHI", max_points_, max_cart);
+        basis_temps_["PHI"] = std::make_shared<Matrix>("PHI", max_points_, max_functions_);
     }
 
     if (deriv_ >= 1) {
         basis_values_["PHI_X"] = std::make_shared<Matrix>("PHI_X", max_points_, max_functions_);
         basis_values_["PHI_Y"] = std::make_shared<Matrix>("PHI_Y", max_points_, max_functions_);
         basis_values_["PHI_Z"] = std::make_shared<Matrix>("PHI_Z", max_points_, max_functions_);
-        basis_temps_["PHI_X"] = std::make_shared<Matrix>("PHI_X", max_points_, max_cart);
-        basis_temps_["PHI_Y"] = std::make_shared<Matrix>("PHI_Y", max_points_, max_cart);
-        basis_temps_["PHI_Z"] = std::make_shared<Matrix>("PHI_Z", max_points_, max_cart);
+        basis_temps_["PHI_X"] = std::make_shared<Matrix>("PHI_X", max_points_, max_functions_);
+        basis_temps_["PHI_Y"] = std::make_shared<Matrix>("PHI_Y", max_points_, max_functions_);
+        basis_temps_["PHI_Z"] = std::make_shared<Matrix>("PHI_Z", max_points_, max_functions_);
     }
 
     if (deriv_ >= 2) {
@@ -683,12 +685,12 @@ void BasisFunctions::allocate()
         basis_values_["PHI_YY"] = std::make_shared<Matrix>("PHI_YY", max_points_, max_functions_);
         basis_values_["PHI_YZ"] = std::make_shared<Matrix>("PHI_YZ", max_points_, max_functions_);
         basis_values_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_functions_);
-        basis_temps_["PHI_XX"] = std::make_shared<Matrix>("PHI_XX", max_points_, max_cart);
-        basis_temps_["PHI_XY"] = std::make_shared<Matrix>("PHI_XY", max_points_, max_cart);
-        basis_temps_["PHI_XZ"] = std::make_shared<Matrix>("PHI_XZ", max_points_, max_cart);
-        basis_temps_["PHI_YY"] = std::make_shared<Matrix>("PHI_YY", max_points_, max_cart);
-        basis_temps_["PHI_YZ"] = std::make_shared<Matrix>("PHI_YZ", max_points_, max_cart);
-        basis_temps_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_cart);
+        basis_temps_["PHI_XX"] = std::make_shared<Matrix>("PHI_XX", max_points_, max_functions_);
+        basis_temps_["PHI_XY"] = std::make_shared<Matrix>("PHI_XY", max_points_, max_functions_);
+        basis_temps_["PHI_XZ"] = std::make_shared<Matrix>("PHI_XZ", max_points_, max_functions_);
+        basis_temps_["PHI_YY"] = std::make_shared<Matrix>("PHI_YY", max_points_, max_functions_);
+        basis_temps_["PHI_YZ"] = std::make_shared<Matrix>("PHI_YZ", max_points_, max_functions_);
+        basis_temps_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_functions_);
     }
 
     if (deriv_ >= 3)
@@ -715,19 +717,21 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     double * xc_pow = new double[maxL + 3];
     double * yc_pow = new double[maxL + 3];
     double * zc_pow = new double[maxL + 3];
+    double * centerp = new double[3];
 
     const std::vector<int>& shells = block->shells_local_to_global();
 
     int nsig_functions = block->functions_local_to_global().size();
 
     if (deriv_ == 0) {
-        double** cartp = basis_temps_["PHI"]->pointer();
-        double** purep = basis_values_["PHI"]->pointer();
+        double* cartp = basis_temps_["PHI"]->pointer()[0];
+        double* purep = basis_values_["PHI"]->pointer()[0];
 
-        for (int P = 0; P < npoints; P++) {
-            std::fill(purep[P], purep[P] + nsig_functions, 0.0);
-        }
+        // for (int P = 0; P < npoints; P++) {
+        //     std::fill(purep[P], purep[P] + nsig_functions, 0.0);
+        // }
 
+        int nvals = 0;
         int function_offset = 0;
         for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
             int Qglobal = shells[Qlocal];
@@ -739,61 +743,23 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             const double *alpha = Qshell.exps();
             const double *norm  = Qshell.coefs();
 
-            const std::vector<std::tuple<int, int, double>>& transform = spherical_transforms_[L];
+            centerp[0] = v[0];
+            centerp[1] = v[1];
+            centerp[2] = v[2];
 
-            xc_pow[0] = 1.0;
-            yc_pow[0] = 1.0;
-            zc_pow[0] = 1.0;
-
-            // Computation of points
-            for (int P = 0; P < npoints; P++) {
-
-                double xc = x[P] - v[0];
-                double yc = y[P] - v[1];
-                double zc = z[P] - v[2];
-
-                for (int LL = 1; LL < L + 1; LL++) {
-                    xc_pow[LL] = xc_pow[LL - 1] * xc;
-                    yc_pow[LL] = yc_pow[LL - 1] * yc;
-                    zc_pow[LL] = zc_pow[LL - 1] * zc;
-                }
-
-                double R2 = xc * xc + yc * yc + zc * zc;
-                double S0 = 0.0;
-                for (int K = 0; K < nprim; K++) {
-                    S0 += norm[K] * exp(-alpha[K] * R2);
-                }
-
-                for (int i=0, index = 0; i<=L; ++i) {
-                    int l = L-i;
-
-                    // # pragma omp simd
-                    for (int j=0; j<=i; j++, index++) {
-                        int m = i-j;
-                        int n = j;
-
-                        cartp[P][index] = S0 * xc_pow[l] * yc_pow[m] * zc_pow[n];
-                    }
-                }
-            }
-
-            // Spherical transform
-            if (puream_) {
-                for (size_t index = 0; index < transform.size(); index++) {
-                    int pureindex = std::get<0>(transform[index]);
-                    int cartindex = std::get<1>(transform[index]);
-                    double coef   = std::get<2>(transform[index]);
-
-                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                }
-            } else {
-                for (int q = 0; q < nQ; q++) {
-                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
-                }
-            }
+            // Copmute collocation
+            double* phi_start = cartp + (nvals * npoints);
+            gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start);
 
             function_offset += nQ;
+            if (puream_){
+                nvals += 2 * L + 1;
+            } else {
+                nvals += nQ;
+            }
         }
+        // GG spits it out tranpose of what we need
+        gg_fast_transpose(nso, npoints, cartp, purep);
     } else if (deriv_ == 1) {
         double** cartp = basis_temps_["PHI"]->pointer();
         double** cartxp = basis_temps_["PHI_X"]->pointer();
@@ -1093,6 +1059,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     delete[] xc_pow;
     delete[] yc_pow;
     delete[] zc_pow;
+    delete[] centerp;
 }
 void BasisFunctions::print(std::string out, int print) const
 {
