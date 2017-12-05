@@ -25,7 +25,7 @@ else()
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    # OpenMP irrelevant
                    -DENABLE_XHOST=${ENABLE_XHOST}
-                   #-DBUILD_FPIC=${BUILD_FPIC}
+                   -DBUILD_FPIC=${BUILD_FPIC}
                    #-DENABLE_GENERIC=${ENABLE_GENERIC}
                    #-DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -Dpybind11_DIR=${pybind11_DIR}
