@@ -715,7 +715,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     const std::vector<int>& shells = block->shells_local_to_global();
 
     // Declare tmps
-    double* centerp = new double[3];
+    std::vector<double> center(3, 0.0);
 
     // Declare pointers
     double *cartp, *cartxp, *cartyp, *cartzp;
@@ -753,7 +753,6 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 
     // parallel_timer_on("Functions: GG", 0);
     int nvals = 0;
-    int function_offset = 0;
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
         int Qglobal = shells[Qlocal];
         const GaussianShell& Qshell = primary_->shell(Qglobal);
@@ -765,19 +764,21 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         const double *norm  = Qshell.coefs();
 
         // Copy over centerp to a double*
-        centerp[0] = v[0];
-        centerp[1] = v[1];
-        centerp[2] = v[2];
+        center[0] = v[0];
+        center[1] = v[1];
+        center[2] = v[2];
+
+        // Make new pointers, gg computes along rows so we need to skip down `nval` rows.
+        double* phi_start = cartp + (nvals * npoints);
 
         // Copmute collocation
-        double* phi_start = cartp + (nvals * npoints);
         if (deriv_ == 0){
-            gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start);
+            gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start);
         } else if (deriv_ == 1){
             double* phi_x_start = cartxp + (nvals * npoints);
             double* phi_y_start = cartyp + (nvals * npoints);
             double* phi_z_start = cartzp + (nvals * npoints);
-            gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start,
+            gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start);
 
         } else if (deriv_ == 2){
@@ -790,16 +791,15 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             double* phi_yy_start = cartyyp + (nvals * npoints);
             double* phi_yz_start = cartyzp + (nvals * npoints);
             double* phi_zz_start = cartzzp + (nvals * npoints);
-            gg_collocation_deriv2(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start,
+            gg_collocation_deriv2(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
                                   phi_yy_start, phi_yz_start, phi_zz_start);
         }
 
-        function_offset += nQ;
         if (puream_){
             nvals += 2 * L + 1;
         } else {
-            nvals += nQ;
+            nvals += nQ; // Cartesian is already computed
         }
     }
     // parallel_timer_off("Functions: GG", 0);
@@ -821,9 +821,6 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         gg_fast_transpose(nso, npoints, cartzzp, purezzp);
     }
     // parallel_timer_off("Functions: Transpose", 0);
-
-    // Cleanup tmps
-    delete[] centerp;
 }
 void BasisFunctions::print(std::string out, int print) const
 {
