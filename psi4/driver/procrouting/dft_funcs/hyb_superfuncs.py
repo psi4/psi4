@@ -264,6 +264,59 @@ def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
     return (sup, ("PBEH3C", "-d3bj"))
 
 
+def build_pw6b95_superfunctional(name, npoints, deriv, restricted):
+
+
+   # Call this first
+   sup = core.SuperFunctional.blank()
+   sup.set_max_points(npoints)
+   sup.set_deriv(deriv)
+
+   # => User-Customization <= #
+
+   # No spaces, keep it short and according to convention
+   sup.set_name('pw6b95')
+   # Tab in, trailing newlines
+   sup.set_description('    PW^B95 Hybrid-meta XC Functional\n')
+   # Tab in, trailing newlines
+   sup.set_citation('   Zhao and Truhlar, J Phys Chem A., 109, 25, 2005, 5656-5667 \n')
+   #PW6B95(hybrid) 0.00538      1.7382  3.8901  0.00262 0.03668 0.28
+   # Add member functionals
+   pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
+   # modify PW91 suitable for libxc 
+   X2S=0.1282782438530421943003109254455883701296
+   bt=0.00538 
+   a_pw6=6.0*bt/X2S
+   c_pw=1.7382 
+   alpha_pw6=c_pw/X2S/X2S
+   expo_pw6=3.8901 
+   pw6.set_tweak([a_pw6,7.7956, 0.2743, -0.1508, 0.004, alpha_pw6, expo_pw6])
+   pw6.set_alpha(0.72)
+   sup.add_x_functional(pw6)
+
+   mb95 = core.LibXCFunctional('XC_MGGA_C_BC95', restricted)
+   copp=0.00262
+   css=0.03668
+   mb95.set_tweak([css,copp])
+   sup.add_c_functional(mb95)
+
+   # Set GKS up after adding functionals
+   sup.set_x_omega(0.0)
+   sup.set_c_omega(0.0)
+   sup.set_x_alpha(0.28)
+   sup.set_c_alpha(0.0)
+
+   # => End User-Customization <= #
+
+   # Call this last
+   sup.allocate()
+   return (sup, False)
+
+
+
+
+
+
 hyb_superfunc_list = {
           "pbeh3c"   : build_pbeh3c_superfunctional,
           "pbe0"     : build_pbe0_superfunctional,
@@ -275,6 +328,7 @@ hyb_superfunc_list = {
           "hf"       : build_hf_superfunctional,
           "scf"      : build_hf_superfunctional,
           "hf3c"     : build_hf3c_superfunctional,
+          "pw6b95"   : build_pw6b95_superfunctional,
 
 }
 

@@ -84,30 +84,74 @@ def build_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
     sup.set_name('DSD-BLYP')
     # Tab in, trailing newlines
     sup.set_description('    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n')
+    sup.set_description('    (frozen-core parameterization) \n')
     # Tab in, trailing newlines
     sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
     # Add member functionals
     X = core.LibXCFunctional('XC_GGA_X_B88', restricted)
-    X.set_alpha(0.29)
+    X.set_alpha(0.30)
     sup.add_x_functional(X)
     C = core.LibXCFunctional('XC_GGA_C_LYP', restricted)
-    C.set_alpha(0.55) #  Fix this!
+    C.set_alpha(0.56) #  Fix this!
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.71)
+    sup.set_x_alpha(0.70)
     sup.set_c_alpha(1.0)
     sup.set_c_os_alpha(0.46)
-    sup.set_c_ss_alpha(0.43)
+    sup.set_c_ss_alpha(0.40)
 
     # => End User-Customization <= #
 
     # Call this last
     sup.allocate()
     return (sup, False)
+
+
+def build_core_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('cDSD-BLYP')
+    # Tab in, trailing newlines
+    sup.set_description('    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n')
+    sup.set_description('    (full-core parameterization) \n')
+    # Tab in, trailing newlines
+    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
+
+    # Add member functionals
+    X = core.LibXCFunctional('XC_GGA_X_B88', restricted)
+    X.set_alpha(0.31)
+    sup.add_x_functional(X)
+    C = core.LibXCFunctional('XC_GGA_C_LYP', restricted)
+    C.set_alpha(0.54) 
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.69)
+    sup.set_c_alpha(1.0)
+    sup.set_c_os_alpha(0.46)
+    sup.set_c_ss_alpha(0.37)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+
 
 
 def build_pbe0_2_superfunctional(name, npoints, deriv, restricted):
@@ -224,12 +268,157 @@ def build_dsd_pbepbe_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 
+def build_b2gpplyp_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('B2GPPLYP')
+    # Tab in, trailing newlines
+    sup.set_description('    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    \n')
+
+    # Add member functionals
+    becke = core.LibXCFunctional('XC_GGA_X_B88', restricted)
+    becke.set_alpha(0.35)
+    sup.add_x_functional(becke)
+    lyp = core.LibXCFunctional('XC_GGA_C_LYP', restricted)
+    lyp.set_alpha(0.64)
+    sup.add_c_functional(lyp)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.65)
+    sup.set_c_alpha(0.36)
+
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+
+
+def build_pwpb95_superfunctional(name, npoints, deriv, restricted):
+
+
+   # Call this first
+   sup = core.SuperFunctional.blank()
+   sup.set_max_points(npoints)
+   sup.set_deriv(deriv)
+
+   # => User-Customization <= #
+
+   # No spaces, keep it short and according to convention
+   sup.set_name('pwpb95')
+   # Tab in, trailing newlines
+   sup.set_description('    PWPB95 SOS Double Hybrid XC Functional\n')
+   # Tab in, trailing newlines
+   sup.set_citation('    L. Goerigk, S.Grimme JCTC 7, 291-309, 2011 \n')
+   #PWPB95         0.00444	0.3262	3.7868	0.00250	0.03241	0.50	0.269
+   #PW6B95(hybrid) 0.00538	1.7382	3.8901	0.00262	0.03668	0.28
+   # Add member functionals
+   pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
+   # modify PW91 suitable for libxc 
+   X2S=0.1282782438530421943003109254455883701296 
+   bt=0.00444 # b_pw in paper 
+   a_pw6=6.0*bt/X2S 
+   c_pw=0.32620 # c_pw in paper
+   alpha_pw6=c_pw/X2S/X2S
+   expo_pw6=3.78680 # d_pw in paper
+   #              a        b       c        d      f      alpha  expo
+   #     PW91: 0.19645, 7.7956, 0.2743, -0.1508, 0.004, 100.0, 4.0
+#   pw6.set_tweak([a_pw6,7.7956, 0.2743, -0.1508, 0.004, alpha_pw6, expo_pw6])
+   pw6.set_alpha(0.50)
+   sup.add_x_functional(pw6)
+
+   mb95 = core.LibXCFunctional('XC_MGGA_C_BC95', restricted)
+   copp=0.00250
+   css=0.03241
+   mb95.set_tweak([css,copp])
+   mb95.set_alpha(0.731)
+   #sup.add_c_functional(mb95)
+
+   # Set GKS up after adding functionals
+   sup.set_x_omega(0.0)
+   sup.set_c_omega(0.0)
+   sup.set_x_alpha(0.50)
+   sup.set_c_alpha(1.0)
+   sup.set_c_ss_alpha(0.00)
+   sup.set_c_os_alpha(0.269)
+
+   # => End User-Customization <= #
+
+   # Call this last
+   sup.allocate()
+   return (sup, False)
+
+def build_ptpss_superfunctional(name, npoints, deriv, restricted):
+
+   # Call this first
+   sup = core.SuperFunctional.blank()
+   sup.set_max_points(npoints)
+   sup.set_deriv(deriv)
+
+   # => User-Customization <= #
+
+   # No spaces, keep it short and according to convention
+   sup.set_name('ptpss')
+   # Tab in, trailing newlines
+   sup.set_description('    PTPSS SOS Double Hybrid XC Functional\n')
+   # Tab in, trailing newlines
+   sup.set_citation('    L. Goerigk, S.Grimme JCTC 7, 291-309, 2011 \n')
+
+   # Add member functionals
+   X = core.LibXCFunctional('XC_MGGA_X_TPSS', restricted)
+ # needs modified TPSS
+   X.set_tweak([0.15, 0.88491, 0.047, 0.872, 0.16952 ])
+   X.set_alpha(0.50)
+   sup.add_x_functional(X)
+   C = core.LibXCFunctional('XC_MGGA_C_TPSS', restricted)
+ # needs modified TPSS
+   C.set_tweak([ 0.06080, 6.3, 0.53, 0.87, 0.50, 2.26])
+#   C.set_tweak([0.06672455060314922, 2.8, 0.53, 0.87, 0.50, 2.26]) # =TPSS
+
+   C.set_alpha(0.625)
+   sup.add_c_functional(C)
+
+   # Set GKS up after adding functionals
+   sup.set_x_omega(0.0)
+   sup.set_c_omega(0.0)
+   sup.set_x_alpha(0.50)
+   sup.set_c_alpha(1.0)
+   sup.set_c_ss_alpha(0.00)
+   sup.set_c_os_alpha(0.375)
+
+   # => End User-Customization <= #
+
+   # Call this last
+   sup.allocate()
+   return (sup, False)
+
+
+
+
 double_hyb_superfunc_list = {
           "b2plyp"     : build_b2plyp_superfunctional,
           "pbe0-2"     : build_pbe0_2_superfunctional,
-          # "dsd-blyp"   : build_dsd_blyp_superfunctional,
+          "dsd-blyp"   : build_dsd_blyp_superfunctional,
+          "cdsd-blyp"  : build_dsd_blyp_superfunctional,
           "dsd-pbep86" : build_dsd_pbep86_superfunctional,
           "dsd-pbepbe" : build_dsd_pbepbe_superfunctional,
+          "b2gpplyp"   : build_b2gpplyp_superfunctional,
+          "pwpb95"     : build_pwpb95_superfunctional,
+          "ptpss"      : build_ptpss_superfunctional,
 }
 
 
