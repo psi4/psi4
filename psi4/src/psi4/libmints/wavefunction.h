@@ -365,8 +365,9 @@ public:
      * @param doccpi the new list of doubly occupied orbitals per irrep
      */
     void force_doccpi(const Dimension& doccpi);
-   /**     * @brief Expert specialized use only. Sets the number of singly occupied orbitals per irrep. Results in inconsistent Wavefunction object for SCF, so caution is advised.
-     * @param doccpi the new list of singly occupied orbitals per irrep
+    /**
+     * @brief Expert specialized use only. Sets the number of singly occupied orbitals per irrep. Results in inconsistent Wavefunction object for SCF, so caution is advised.
+     * @param soccpi the new list of singly occupied orbitals per irrep
      */
     void force_soccpi(const Dimension& soccpi);
 
