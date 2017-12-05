@@ -2093,10 +2093,6 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                 Sint->compute_shell_deriv1(P,Q);
                 int offset = 0;
 
-                const double* ref0 = &buffer[3 * atom * nP * nQ + 0 * nP * nQ];
-                const double* ref1 = &buffer[3 * atom * nP * nQ + 1 * nP * nQ];
-                const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
-
                 if(aP == atom){
                 // Px
                 for (int p = 0; p < nP; p++) {
@@ -2104,6 +2100,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                         grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+                offset += nP*nQ;
 
                 // Py
                 for (int p = 0; p < nP; p++) {
@@ -2111,6 +2108,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                         grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+                offset += nP*nQ;
 
                 // Pz
                 for (int p = 0; p < nP; p++) {
@@ -2118,6 +2116,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                         grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                  }
+                offset += nP*nQ;
               }
                 else {offset += 3 * nP * nQ ;}
 
@@ -2128,6 +2127,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                         grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+                offset += nP*nQ;
 
                 // Qy
                 for (int p = 0; p < nP; p++) {
@@ -2135,6 +2135,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                         grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+                offset += nP*nQ;
 
                 // Qz
                 for (int p = 0; p < nP; p++) {
@@ -2142,6 +2143,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                         grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                   }
+                offset += nP*nQ;
                 }
 
                 else {offset += 3 * nP * nQ ;}
@@ -2180,16 +2182,13 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1_helper(int ato
         for (int P = 0; P < bs1->nshell(); P++)
             for (int Q = 0; Q < bs2->nshell(); Q++) {
 
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
+                int nP = bs1->shell(P).nfunction();
+                int oP = bs1->shell(P).function_index();
+                int aP = bs1->shell(P).ncenter();
 
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                if( aP!=atom && aQ!=atom)
-                      continue;
+                int nQ = bs2->shell(Q).nfunction();
+                int oQ = bs2->shell(Q).function_index();
+                int aQ = bs2->shell(Q).ncenter();
 
                 Vint->compute_shell_deriv1(P,Q);
                 
@@ -2198,9 +2197,9 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1_helper(int ato
                 const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
                 for (int p = 0; p < nP; p++) 
                     for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p+oP, q+oQ,(*ref0++));
-                        grad[1]->add(p+oP, q+oQ,(*ref1++));
-                        grad[2]->add(p+oP, q+oQ,(*ref2++));
+                        grad[0]->set(p+oP, q+oQ,(*ref0++));
+                        grad[1]->set(p+oP, q+oQ,(*ref1++));
+                        grad[2]->set(p+oP, q+oQ,(*ref2++));
                 }
         }
 
@@ -2234,10 +2233,8 @@ std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom,
 
         const double* buffer = Tint->buffer();
 
-        for (int P = 0; P < bs1->nshell(); P++) {
+        for (int P = 0; P < bs1->nshell(); P++)
             for (int Q = 0; Q < bs2->nshell(); Q++) {
-
-                //Tint->compute_shell_deriv1(P,Q);
 
                 int nP = bs1->shell(P).nfunction();
                 int oP = bs1->shell(P).function_index();
@@ -2310,9 +2307,365 @@ std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom,
             }
              else {offset += 3*nP*nQ ;}
         }
-    }
     
     return grad;
+
+}
+
+    // => Potential Hessian <= //
+
+std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv2_helper(int atom1, int atom2, std::shared_ptr<OneBodyAOInt> Vint)
+{
+
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("x");
+    cartcomp[1] = strdup("y");
+    cartcomp[2] = strdup("z");
+
+    std::shared_ptr <BasisSet> bs1 = Vint->basis1();
+    std::shared_ptr <BasisSet> bs2 = Vint->basis2();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+    int natom = molecule_->natom();
+    auto Zxyz = std::make_shared<Matrix>("Zxyz", 1, 4);
+
+    std::vector<SharedMatrix> grad;
+    for (int a=0,ab=0; a<3; a++)
+      for (int b=0; b<3; b++,ab++){
+        sprintf(lbl, "ao_potential_energy_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[a], cartcomp[b]);
+        grad.push_back(SharedMatrix(new Matrix(lbl, nbf1, nbf2)));
+        grad[ab]->zero();    
+      }
+
+    const double *buffer = Vint->buffer();
+
+    for (int P = 0; P < bs1->nshell(); P++) {
+            for (int Q = 0; Q < bs2->nshell(); Q++) {
+
+                int nP = bs1->shell(P).nfunction();
+                int oP = bs1->shell(P).function_index();
+                int aP = bs1->shell(P).ncenter();
+
+                int nQ = bs2->shell(Q).nfunction();
+                int oQ = bs2->shell(Q).function_index();
+                int aQ = bs2->shell(Q).ncenter();
+
+                size_t offset = nP*nQ;
+
+                std::map<std::string, double> grad_map;
+                for (int a=0; a<3; a++)
+                    for (int b=0; b<3; b++){
+                        std::string grad_key = std::string(cartcomp[a]) + std::string(cartcomp[b]);
+                        grad_map[grad_key] = 0;
+                    }
+
+                for(int atom = 0; atom < natom; atom++){
+
+                   double Z = molecule_->Z(atom);
+                   Vint->set_origin(molecule_->xyz(atom));
+
+                   std::pair <int, int> target_atoms(atom1, atom2);  
+                   std::vector<std::pair<int, int> > vec_pairs; 
+                   std::vector<int> vec_pos; 
+                   std::map<int, std::string> pos_map;
+                   std::string strings;
+                   std::string key; 
+
+                   vec_pairs.push_back(std::make_pair(aP,aP)); 
+                   vec_pairs.push_back(std::make_pair(aQ,aQ)); 
+                   vec_pairs.push_back(std::make_pair(atom,atom)); 
+                   vec_pairs.push_back(std::make_pair(atom,aP)); 
+                   vec_pairs.push_back(std::make_pair(aP,aQ)); 
+                   vec_pairs.push_back(std::make_pair(atom,aQ)); 
+
+
+                   for (std::vector<std::pair<int, int> >::iterator it = vec_pairs.begin() ; it != vec_pairs.end(); ++it){
+                       if ((*it).first == target_atoms.first && (*it).second == target_atoms.second)
+                           vec_pos.push_back(it - vec_pairs.begin());
+                       }
+
+
+                   pos_map[0] = "AA"; pos_map[1] = "BB"; pos_map[2] = "CC";
+                   pos_map[3] = "CA"; pos_map[4] = "AB"; pos_map[5] = "CB";
+
+                   //for (std::vector<int>::iterator it = vec_pos.begin() ; it != vec_pos.end(); ++it)
+                   //        outfile->Printf("\n shell1: %d shell2: %d C1: %d C2: %d atom: %d key: %s \n", P, Q, aP, aQ, atom, pos_map[(*it)].c_str());
+
+                   if (vec_pos.empty())
+                       continue;
+
+
+                   Vint->compute_shell_deriv2(P,Q);
+
+                   const double *CxAx = buffer +  0*offset;
+                   const double *CxAy = buffer +  1*offset;
+                   const double *CxAz = buffer +  2*offset;
+                   const double *CyAx = buffer +  3*offset;
+                   const double *CyAy = buffer +  4*offset;
+                   const double *CyAz = buffer +  5*offset;
+                   const double *CzAx = buffer +  6*offset;
+                   const double *CzAy = buffer +  7*offset;
+                   const double *CzAz = buffer +  8*offset;
+                   const double *AxAx = buffer +  9*offset;
+                   const double *AxAy = buffer + 10*offset;
+                   const double *AxAz = buffer + 11*offset;
+                   const double *AyAy = buffer + 12*offset;
+                   const double *AyAz = buffer + 13*offset;
+                   const double *AzAz = buffer + 14*offset;
+                   const double *BxBx = buffer + 15*offset;
+                   const double *BxBy = buffer + 16*offset;
+                   const double *BxBz = buffer + 17*offset;
+                   const double *ByBy = buffer + 18*offset;
+                   const double *ByBz = buffer + 19*offset;
+                   const double *BzBz = buffer + 20*offset;
+                   const double *CxCx = buffer + 21*offset;
+                   const double *CxCy = buffer + 22*offset;
+                   const double *CxCz = buffer + 23*offset;
+                   const double *CyCy = buffer + 24*offset;
+                   const double *CyCz = buffer + 25*offset;
+                   const double *CzCz = buffer + 26*offset;
+
+                   for (int p = 0; p < nP; p++) {
+                       for (int q = 0; q < nQ; q++) {
+
+                           std::map<std::string, double> hess_map;
+
+                           hess_map["CxAx"] = Z * (*CxAx);
+                           hess_map["CxAy"] = Z * (*CxAy);
+                           hess_map["CxAz"] = Z * (*CxAz);
+                           hess_map["CyAx"] = Z * (*CyAx);
+                           hess_map["CyAy"] = Z * (*CyAy);
+                           hess_map["CyAz"] = Z * (*CyAz);
+                           hess_map["CzAx"] = Z * (*CzAx);
+                           hess_map["CzAy"] = Z * (*CzAy);
+                           hess_map["CzAz"] = Z * (*CzAz);
+                           hess_map["AxAx"] = Z * (*AxAx);
+                           hess_map["AxAy"] = Z * (*AxAy);
+                           hess_map["AxAz"] = Z * (*AxAz);
+                           hess_map["AyAy"] = Z * (*AyAy);
+                           hess_map["AyAz"] = Z * (*AyAz);
+                           hess_map["AzAz"] = Z * (*AzAz);
+                           hess_map["BxBx"] = Z * (*BxBx);
+                           hess_map["BxBy"] = Z * (*BxBy);
+                           hess_map["BxBz"] = Z * (*BxBz);
+                           hess_map["ByBy"] = Z * (*ByBy);
+                           hess_map["ByBz"] = Z * (*ByBz);
+                           hess_map["BzBz"] = Z * (*BzBz);
+                           hess_map["CxCx"] = Z * (*CxCx);
+                           hess_map["CxCy"] = Z * (*CxCy);
+                           hess_map["CxCz"] = Z * (*CxCz);
+                           hess_map["CyCy"] = Z * (*CyCy);
+                           hess_map["CyCz"] = Z * (*CyCz);
+                           hess_map["CzCz"] = Z * (*CzCz);
+
+                           hess_map["AyAx"] =  hess_map["AxAy"];
+                           hess_map["AzAx"] =  hess_map["AxAz"];
+                           hess_map["AzAy"] =  hess_map["AyAz"];
+                           hess_map["ByBx"] =  hess_map["BxBy"];
+                           hess_map["BzBx"] =  hess_map["BxBz"];
+                           hess_map["BzBy"] =  hess_map["ByBz"];
+                           hess_map["CyCx"] =  hess_map["CxCy"];
+                           hess_map["CzCx"] =  hess_map["CxCz"];
+                           hess_map["CzCy"] =  hess_map["CyCz"];
+
+                           for (std::vector<int>::iterator it = vec_pos.begin() ; it != vec_pos.end(); ++it){
+                               strings = pos_map[*it];
+                               for (int a=0; a<3; a++)
+                                   for (int b=0; b<3; b++){
+                                       key = strings[0] + std::string(cartcomp[a]) + strings[1] + std::string(cartcomp[b]);
+                                       std::string grad_key = std::string(cartcomp[a]) + std::string(cartcomp[b]);
+                                       if ((*it) < 3 && a<=b){
+                                          grad_map[grad_key] +=  hess_map[key];
+                                       } 
+                                       if ((*it) == 3){
+                                          if (aP == atom && a == b)  
+                                             grad_map[grad_key] +=  2.0 * hess_map[key];
+                                          else
+                                             grad_map[grad_key] += hess_map[key];
+                                          }   
+                                       if ((*it) == 4){
+                                          std::string key1 = pos_map[2][0] + std::string(cartcomp[a]) + pos_map[2][1] + std::string(cartcomp[b]); 
+                                          std::string key2 = pos_map[3][0] + std::string(cartcomp[a]) + pos_map[3][1] + std::string(cartcomp[b]); 
+                                          std::string key3 = pos_map[1][0] + std::string(cartcomp[a]) + pos_map[1][1] + std::string(cartcomp[b]); 
+                                          if (aP == aQ && a == b)
+                                             grad_map[grad_key] +=  2.0 *(hess_map[key1] + hess_map[key2] - hess_map[key3]);
+                                          else  
+                                             grad_map[grad_key] +=  hess_map[key1] + hess_map[key2] - hess_map[key3];
+                                          }
+                                       if ((*it) == 5){
+                                          std::string key1 = pos_map[3][0] + std::string(cartcomp[b]) + pos_map[3][1] + std::string(cartcomp[a]); 
+                                          std::string key2 = pos_map[0][0] + std::string(cartcomp[a]) + pos_map[0][1] + std::string(cartcomp[b]); 
+                                          std::string key3 = pos_map[1][0] + std::string(cartcomp[a]) + pos_map[1][1] + std::string(cartcomp[b]); 
+                                          if (aQ == atom && a == b)
+                                             grad_map[grad_key] +=  2.0 *(hess_map[key1] + hess_map[key2] - hess_map[key3]);
+                                          else  
+                                             grad_map[grad_key] +=  hess_map[key1] + hess_map[key2] - hess_map[key3];
+                                          }
+                                   }                        
+                               }
+
+                           for (int a=0,ab=0; a<3; a++)
+                               for (int b=0; b<3; b++,ab++){
+                                   std::string grad_key = std::string(cartcomp[a]) + std::string(cartcomp[b]);
+                                   grad[ab]->add(p+oP, q+oQ, grad_map[grad_key]);
+                                   grad_map[grad_key] = 0;
+                               }
+
+                           ++CxAx;
+                           ++CxAy;
+                           ++CxAz;
+                           ++CyAx;
+                           ++CyAy;
+                           ++CyAz;
+                           ++CzAx;
+                           ++CzAy;
+                           ++CzAz;
+                           ++AxAx;
+                           ++AxAy;
+                           ++AxAz;
+                           ++AyAy;
+                           ++AyAz;
+                           ++AzAz;
+                           ++BxBx;
+                           ++BxBy;
+                           ++BxBz;
+                           ++ByBy;
+                           ++ByBz;
+                           ++BzBz;
+                           ++CxCx;
+                           ++CxCy;
+                           ++CxCz;
+                           ++CyCy;
+                           ++CyCz;
+                           ++CzCz;
+                      }
+                    }
+                }
+            }
+        }
+    
+    //Build numpy and final matrix shape
+    std::vector<int> nshape{nbf1, nbf2};
+       for (int p=0; p<9; p++)
+            grad[p]->set_numpy_shape(nshape);
+
+    return grad;
+}
+    
+std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv2_helper(int atom1, int atom2, std::shared_ptr<OneBodyAOInt> Tint)
+{
+
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("x");
+    cartcomp[1] = strdup("y");
+    cartcomp[2] = strdup("z");
+
+    std::shared_ptr <BasisSet> bs1 = Tint->basis1();
+    std::shared_ptr <BasisSet> bs2 = Tint->basis2();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+
+    std::vector<SharedMatrix> grad;
+    for (int p=0; p<3; p++)
+      for (int q=0; q<3; q++){
+        sprintf(lbl, "ao_kinetic_energy_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
+        grad.push_back(SharedMatrix(new Matrix(lbl, nbf1, nbf2)));
+      }
+
+    const double *buffer = Tint->buffer();
+
+    for (int P = 0; P < bs1->nshell(); P++) {
+            for (int Q = 0; Q < bs2->nshell(); Q++) {
+
+                int nP = bs1->shell(P).nfunction();
+                int oP = bs1->shell(P).function_index();
+                int aP = bs1->shell(P).ncenter();
+
+                int nQ = bs2->shell(Q).nfunction();
+                int oQ = bs2->shell(Q).function_index();
+                int aQ = bs2->shell(Q).ncenter();
+
+
+                if (aP != atom1 && aQ != atom1 && aP != atom2 && aQ != atom2)
+                    continue;
+
+                Tint->compute_shell_deriv2(P,Q);
+
+                size_t offset = nP*nQ;
+
+                const double *pxx = buffer + 0*offset;
+                const double *pxy = buffer + 1*offset;
+                const double *pxz = buffer + 2*offset;
+                const double *pyy = buffer + 3*offset;
+                const double *pyz = buffer + 4*offset;
+                const double *pzz = buffer + 5*offset;
+
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+
+                        double tmpxx = (*pxx);
+                        double tmpxy = (*pxy);
+                        double tmpxz = (*pxz);
+                        double tmpyy = (*pyy);
+                        double tmpyz = (*pyz);
+                        double tmpzz = (*pzz);
+
+                       if (atom1 == atom2) {
+                          if (aP == aQ){ 
+                             grad[0]->set(p+oP, q+oQ, 0);   
+                             grad[1]->set(p+oP, q+oQ, tmpxy);   
+                             grad[2]->set(p+oP, q+oQ, tmpxz);   
+                             grad[3]->set(p+oP, q+oQ, tmpxy);   
+                             grad[4]->set(p+oP, q+oQ, 0);   
+                             grad[5]->set(p+oP, q+oQ, tmpyz);   
+                             grad[6]->set(p+oP, q+oQ, tmpxz);   
+                             grad[7]->set(p+oP, q+oQ, tmpyz);   
+                             grad[8]->set(p+oP, q+oQ, 0);   
+                             }
+                          else{  
+                             grad[0]->set(p+oP, q+oQ, tmpxx);
+                             grad[1]->set(p+oP, q+oQ, tmpxy);   
+                             grad[2]->set(p+oP, q+oQ, tmpxz);   
+                             grad[3]->set(p+oP, q+oQ, tmpxy);   
+                             grad[4]->set(p+oP, q+oQ, tmpyy);   
+                             grad[5]->set(p+oP, q+oQ, tmpyz);   
+                             grad[6]->set(p+oP, q+oQ, tmpxz);   
+                             grad[7]->set(p+oP, q+oQ, tmpyz);   
+                             grad[8]->set(p+oP, q+oQ, tmpzz);   
+                             }
+                          }
+                       else{
+                          if (aP == atom1 && aQ == atom2){
+                             grad[0]->set(p+oP, q+oQ, -2.0 * tmpxx);
+                             grad[1]->set(p+oP, q+oQ, -2.0 * tmpxy);
+                             grad[2]->set(p+oP, q+oQ, -2.0 * tmpxz);   
+                             grad[3]->set(p+oP, q+oQ, -2.0 * tmpxy);   
+                             grad[4]->set(p+oP, q+oQ, -2.0 * tmpyy);   
+                             grad[5]->set(p+oP, q+oQ, -2.0 * tmpyz);   
+                             grad[6]->set(p+oP, q+oQ, -2.0 * tmpxz);   
+                             grad[7]->set(p+oP, q+oQ, -2.0 * tmpyz);   
+                             grad[8]->set(p+oP, q+oQ, -2.0 * tmpzz);   
+                             } 
+                           }
+
+                        ++pxx;
+                        ++pxy;
+                        ++pxz;
+                        ++pyy;
+                        ++pyz;
+                        ++pzz;
+                    }
+                }
+            }
+        }
+
+        return grad;
 
 }
 
@@ -2748,22 +3101,28 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom)
 std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2)
 {
- IntegralFactory factory(bs1, bs2, bs1, bs2);
- std::shared_ptr<OneBodyAOInt> Tint(factory.ao_potential(1));
-  return ao_potential_energy_deriv1_helper(atom, Tint);
+  IntegralFactory factory(bs1, bs2, bs1, bs2);
+  std::shared_ptr<OneBodyAOInt> Vint(factory.ao_potential(1));
+  return ao_potential_energy_deriv1_helper(atom, Vint);
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
                                                                 std::shared_ptr <BasisSet> bs2)
 {
- IntegralFactory factory(bs1, bs2, bs1, bs2);
- std::shared_ptr<OneBodyAOInt> Tint(factory.ao_kinetic(1));
+  IntegralFactory factory(bs1, bs2, bs1, bs2);
+  std::shared_ptr<OneBodyAOInt> Tint(factory.ao_kinetic(1));
   return ao_kinetic_energy_deriv1_helper(atom, Tint);
+}
+
+std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv2(int atom1, int atom2)
+{
+  std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
+  return ao_kinetic_energy_deriv2_helper(atom1, atom2, Tint);
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
 {
- std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+  std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
   return ao_kinetic_energy_deriv1_helper(atom, Tint);
 }
 
@@ -2856,12 +3215,12 @@ std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, std:
     cartcomp[2] = strdup("Z");
 
     IntegralFactory factory(bs1, bs2, bs1, bs2);
-    std::shared_ptr<OneBodyAOInt> Tint(factory.ao_potential(1));
-    std::vector<SharedMatrix> ao_grad = ao_potential_energy_deriv1_helper(atom, Tint);
+    std::shared_ptr<OneBodyAOInt> Vint(factory.ao_potential(1));
+    std::vector<SharedMatrix> ao_grad = ao_potential_energy_deriv1_helper(atom, Vint);
     std::vector<SharedMatrix> mo_grad;
     for(int p=0; p<3; p++){
         sprintf(lbl, "mo_potential_energy_deriv1_%d_%s", atom, cartcomp[p]);
-        SharedMatrix temp(new Matrix(lbl, Tint->basis1()->nbf(), Tint->basis2()->nbf()));
+        SharedMatrix temp(new Matrix(lbl, Vint->basis1()->nbf(), Vint->basis2()->nbf()));
         temp->transform(C1, ao_grad[p], C2) ;
         mo_grad.push_back(temp);
     }
@@ -2876,12 +3235,12 @@ std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, Shar
     cartcomp[0] = strdup("X");
     cartcomp[1] = strdup("Y");
     cartcomp[2] = strdup("Z");
-    std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_potential(1));
-    std::vector<SharedMatrix> ao_grad = ao_potential_energy_deriv1_helper(atom, Tint);
+    std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
+    std::vector<SharedMatrix> ao_grad = ao_potential_energy_deriv1_helper(atom, Vint);
     std::vector<SharedMatrix> mo_grad ;
     for(int p=0; p<3; p++){
         sprintf(lbl, "mo_potential_energy_deriv1_%d_%s", atom, cartcomp[p]);
-        SharedMatrix temp(new Matrix(lbl, Tint->basis1()->nbf(), Tint->basis2()->nbf()));
+        SharedMatrix temp(new Matrix(lbl, Vint->basis1()->nbf(), Vint->basis2()->nbf()));
         temp->transform(C1, ao_grad[p], C2) ;
         mo_grad.push_back(temp);
     }
@@ -2929,6 +3288,51 @@ std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, Shared
         temp->transform(C1, ao_grad[p], C2) ;
         mo_grad.push_back(temp);
     }
+    return mo_grad;
+}
+
+std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2)
+{
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
+    std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
+    //std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_overlap(2));
+    std::vector<SharedMatrix> ao_grad = ao_kinetic_energy_deriv2_helper(atom1, atom2, Tint);
+    std::vector<SharedMatrix> mo_grad ;
+    for(int p=0,pq=0; p<3; p++)
+       for(int q=0; q<3; q++,pq++){
+        sprintf(lbl, "mo_kinetic_energy_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
+        SharedMatrix temp(new Matrix(lbl, Tint->basis1()->nbf(), Tint->basis2()->nbf()));
+        temp->transform(C1, ao_grad[pq], C2) ;
+        mo_grad.push_back(temp);
+       }
+    
+    return mo_grad;
+}
+
+std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2)
+{
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
+    std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
+    std::vector<SharedMatrix> ao_grad = ao_potential_energy_deriv2_helper(atom1, atom2, Vint);
+    std::vector<SharedMatrix> mo_grad ;
+    for(int p=0,pq=0; p<3; p++)
+       for(int q=0; q<3; q++,pq++){
+        sprintf(lbl, "mo_potential_energy_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
+        SharedMatrix temp(new Matrix(lbl, Vint->basis1()->nbf(), Vint->basis2()->nbf()));
+        temp->transform(C1, ao_grad[pq], C2) ;
+        mo_grad.push_back(temp);
+       }
+    
     return mo_grad;
 }
 
