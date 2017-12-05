@@ -613,8 +613,8 @@ void Wavefunction::force_doccpi(const Dimension &doccpi) {
         nalphapi_[h] = doccpi_[h] + soccpi_[h];
         nbetapi_[h] = doccpi_[h];
     }
-    nalphapi_ = doccpi_.sum() + soccpi_.sum();
-    nbetapi_ = doccpi_.sum();
+    nalpha_ = doccpi_.sum() + soccpi_.sum();
+    nbeta_ = doccpi_.sum();
 }
 
 void Wavefunction::force_soccpi(const Dimension &soccpi) {
@@ -623,8 +623,8 @@ void Wavefunction::force_soccpi(const Dimension &soccpi) {
         nalphapi_[h] = doccpi_[h] + soccpi_[h];
         nbetapi_[h] = doccpi_[h];
     }
-    nalphapi_ = doccpi_.sum() + soccpi_.sum();
-    nbetapi_ = doccpi_.sum();
+    nalpha_ = doccpi_.sum() + soccpi_.sum();
+    nbeta_ = doccpi_.sum();
 }
 
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
