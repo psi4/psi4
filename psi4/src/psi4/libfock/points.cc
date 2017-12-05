@@ -28,17 +28,19 @@
 
 
 
-#include "psi4/libqt/qt.h"
 #include "points.h"
 #include "cubature.h"
+
+#include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
 
+#include "gau2grid/gau2grid.h"
+
 #include <cmath>
-#include </Users/daniel/install/gau2grid/include/gau2grid/gau2grid.h>
 
 namespace psi {
 
@@ -115,9 +117,9 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
     // => Build basis function values <= //
-    // timer_on("Functions: Points");
+    // parallel_timer_on("Functions: Points", 0);
     BasisFunctions::compute_functions(block);
-    // timer_off("Functions: Points");
+    // parallel_timer_off("Functions: Points", 0);
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -749,6 +751,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     }
 
 
+    // parallel_timer_on("Functions: GG", 0);
     int nvals = 0;
     int function_offset = 0;
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
@@ -799,7 +802,9 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             nvals += nQ;
         }
     }
+    // parallel_timer_off("Functions: GG", 0);
 
+    // parallel_timer_on("Functions: Transpose", 0);
     // GG spits it out tranpose of what we need
     gg_fast_transpose(nso, npoints, cartp, purep);
     if (deriv_ >= 1){
@@ -815,6 +820,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         gg_fast_transpose(nso, npoints, cartyzp, pureyzp);
         gg_fast_transpose(nso, npoints, cartzzp, purezzp);
     }
+    // parallel_timer_off("Functions: Transpose", 0);
 
     // Cleanup tmps
     delete[] centerp;
