@@ -702,38 +702,30 @@ SharedMatrix BasisFunctions::basis_value(const std::string& key)
 }
 void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 {
-    int max_am = primary_->max_am();
-    int max_cart = (max_am + 1) * (max_am + 2) / 2;
-
+    // Pull out data
     int nso = max_functions_;
 
     int npoints = block->npoints();
-    double * x = block->x();
-    double * y = block->y();
-    double * z = block->z();
-
-    int maxL = primary_->max_am();
-
-    double * xc_pow = new double[maxL + 3];
-    double * yc_pow = new double[maxL + 3];
-    double * zc_pow = new double[maxL + 3];
-    double * centerp = new double[3];
+    double* x = block->x();
+    double* y = block->y();
+    double* z = block->z();
 
     const std::vector<int>& shells = block->shells_local_to_global();
 
-    int nsig_functions = block->functions_local_to_global().size();
+    // Declare tmps
+    double* centerp = new double[3];
 
     // Declare pointers
-    double* cartp, *cartxp, *cartyp, *cartzp;
-    double* cartxxp, *cartxyp, *cartxzp, *cartyyp, *cartyzp, cartzzp;
-    double* purep, *purexp, *pureyp, *purezp;
-    double* purexxp, *purexyp, *purexzp, *pureyyp, *pureyzp, purezzp;
+    double *cartp, *cartxp, *cartyp, *cartzp;
+    double *cartxxp, *cartxyp, *cartxzp, *cartyyp, *cartyzp, *cartzzp;
+    double *purep, *purexp, *pureyp, *purezp;
+    double *purexxp, *purexyp, *purexzp, *pureyyp, *pureyzp, *purezzp;
 
-    if (deriv_ == 0) {
+    if (deriv_ >= 0) {
         cartp = basis_temps_["PHI"]->pointer()[0];
         purep = basis_values_["PHI"]->pointer()[0];
     }
-    if (deriv_ == 1) {
+    if (deriv_ >= 1) {
         cartxp = basis_temps_["PHI_X"]->pointer()[0];
         cartyp = basis_temps_["PHI_Y"]->pointer()[0];
         cartzp = basis_temps_["PHI_Z"]->pointer()[0];
@@ -741,7 +733,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         pureyp = basis_values_["PHI_Y"]->pointer()[0];
         purezp = basis_values_["PHI_Z"]->pointer()[0];
     }
-    if (deriv_ == 2) {
+    if (deriv_ >= 2) {
         cartxxp = basis_temps_["PHI_XX"]->pointer()[0];
         cartxyp = basis_temps_["PHI_XY"]->pointer()[0];
         cartxzp = basis_temps_["PHI_XZ"]->pointer()[0];
@@ -769,6 +761,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         const double *alpha = Qshell.exps();
         const double *norm  = Qshell.coefs();
 
+        // Copy over centerp to a double*
         centerp[0] = v[0];
         centerp[1] = v[1];
         centerp[2] = v[2];
@@ -794,7 +787,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             double* phi_yy_start = cartyyp + (nvals * npoints);
             double* phi_yz_start = cartyzp + (nvals * npoints);
             double* phi_zz_start = cartzzp + (nvals * npoints);
-            gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start,
+            gg_collocation_deriv2(L, npoints, x, y, z, nprim, norm, alpha, centerp, (int)puream_, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
                                   phi_yy_start, phi_yz_start, phi_zz_start);
         }
@@ -806,14 +799,15 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             nvals += nQ;
         }
     }
+
     // GG spits it out tranpose of what we need
     gg_fast_transpose(nso, npoints, cartp, purep);
-    if (deriv_ > 1){
+    if (deriv_ >= 1){
         gg_fast_transpose(nso, npoints, cartxp, purexp);
         gg_fast_transpose(nso, npoints, cartyp, pureyp);
         gg_fast_transpose(nso, npoints, cartzp, purezp);
     }
-    if (deriv_ > 2){
+    if (deriv_ >= 2){
         gg_fast_transpose(nso, npoints, cartxxp, purexxp);
         gg_fast_transpose(nso, npoints, cartxyp, purexyp);
         gg_fast_transpose(nso, npoints, cartxzp, purexzp);
@@ -822,6 +816,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         gg_fast_transpose(nso, npoints, cartzzp, purezzp);
     }
 
+    // Cleanup tmps
     delete[] centerp;
 }
 void BasisFunctions::print(std::string out, int print) const
