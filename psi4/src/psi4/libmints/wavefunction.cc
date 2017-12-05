@@ -607,6 +607,26 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
     reference_wavefunction_ = wfn;
 }
 
+void Wavefunction::force_doccpi(const Dimension &doccpi) {
+    for (int h = 0; h < nirrep_; h++) {
+        doccpi_[h] = doccpi[h];
+        nalphapi_[h] = doccpi_[h] + soccpi_[h];
+        nbetapi_[h] = doccpi_[h];
+    }
+    nalphapi_ = doccpi_.sum() + soccpi_.sum();
+    nbetapi_ = doccpi_.sum();
+}
+
+void Wavefunction::force_soccpi(const Dimension &soccpi) {
+    for (int h = 0; h < nirrep_; h++) {
+        soccpi_[h] = soccpi[h];
+        nalphapi_[h] = doccpi_[h] + soccpi_[h];
+        nbetapi_[h] = doccpi_[h];
+    }
+    nalphapi_ = doccpi_.sum() + soccpi_.sum();
+    nbetapi_ = doccpi_.sum();
+}
+
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
     for (int h = 0; h < nirrep_; h++) {
         frzvpi_[h] = frzvpi[h];
