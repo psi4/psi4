@@ -1150,7 +1150,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             # Figure out the fitting basis set
             if castdf is True:
                 core.set_global_option('DF_BASIS_SCF', '')
-            elif isinstance(castdf, (unicode, str)):
+            elif isinstance(castdf, str):
                 core.set_global_option('DF_BASIS_SCF', castdf)
             else:
                 raise ValidationError("Unexpected castdf option (%s)." % castdf)
@@ -1222,7 +1222,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
-        if "_disp_functor" in dir(ref_wfn):
+        if hasattr(ref_wfn, "_disp_functor"):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
@@ -1311,7 +1311,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         old_ref = str(data["reference"]).replace("KS", "").replace("HF", "")
         new_ref = core.get_option('SCF', 'REFERENCE').replace("KS", "").replace("HF", "")
         if old_ref != new_ref:
-            scf_wfn.reset_occ(True)
+            scf_wfn.reset_occ_ = True
 
 
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
@@ -1344,7 +1344,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
-    if "_disp_functor" in dir(scf_wfn):
+    if hasattr(scf_wfn, "_disp_functor"):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
         scf_wfn.set_variable("-D Energy", disp_energy)
 

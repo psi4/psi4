@@ -53,9 +53,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   // dodoc == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
 
-  /*- Units used in geometry specification -*/
-  options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
-
   /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
@@ -1313,7 +1310,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SOSCF_MIN_ITER", 1);
     /*- Maximum number of second-order microiterations to perform. -*/
     options.add_int("SOSCF_MAX_ITER", 5);
-    /*- Second order convergence threshold. -*/
+    /*- Second order convergence threshold. Cease microiterating at this value. -*/
     options.add_double("SOSCF_CONV", 5.0E-3);
     /*- Do we print the SOSCF microiterations?. -*/
     options.add_bool("SOSCF_PRINT", false);

@@ -28,14 +28,15 @@
 
 #include "psi4/pybind11.h"
 
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
+#include "psi4/libdiis/diisentry.h"
+#include "psi4/libdiis/diismanager.h"
 
 using namespace psi;
 
-void export_misc(py::module &m) {
-    m.def("timer_on", timer_on, "docstring");
-    m.def("timer_off", timer_off, "docstring");
-    m.def("tstart", tstart, "docstring");
-    m.def("tstop", tstop, "docstring");
+void export_diis(py::module &m) {
+
+    py::class_<DIISManager, std::shared_ptr<DIISManager> >(m, "DIISManager", "docstring")
+        .def(py::init<>())
+        .def("reset_subspace", &DIISManager::reset_subspace, "docstring")
+        .def("delete_diis_file", &DIISManager::delete_diis_file, "docstring");
 }

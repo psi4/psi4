@@ -37,9 +37,7 @@ class Molecule;
 namespace scf {
 
 class SADGuess {
-
-protected:
-
+   protected:
     int print_;
     int debug_;
 
@@ -62,20 +60,17 @@ protected:
     void common_init();
 
     SharedMatrix form_D_AO();
-    void form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, SharedMatrix D,
-                      SharedMatrix S, SharedMatrix X);
+    void form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X);
     void get_uhf_atomic_density(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
                                 int n_electrons, int multiplicity, SharedMatrix D);
-    void form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
-                                  SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
-                                  SharedMatrix D);
+    void form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc,
+                      SharedVector occ, SharedMatrix D);
 
     void form_D();
     void form_C();
 
-public:
-    SADGuess(std::shared_ptr<BasisSet> basis,
-             std::vector<std::shared_ptr<BasisSet>> atomic_bases, int nalpha,
+   public:
+    SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int nalpha,
              int nbeta, Options& options);
     virtual ~SADGuess();
 
@@ -89,9 +84,8 @@ public:
     void set_atomic_fit_bases(std::vector<std::shared_ptr<BasisSet>> fit_bases) { atomic_fit_bases_ = fit_bases; }
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
-
 };
-
-}}
+}
+}
 
 #endif

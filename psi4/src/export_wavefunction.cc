@@ -59,6 +59,8 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
+#include "psi4/libdiis/diismanager.h"
+
 #include <string>
 
 using namespace psi;
@@ -172,43 +174,73 @@ void export_wavefunction(py::module& m) {
         .def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
-        .def("form_C", &scf::HF::form_C,
-             "Forms the Orbital Matrices from the current Fock Matrices.")
-        .def("form_D", &scf::HF::form_D,
-             "Forms the Density Matrices from the current Orbitals Matrices")
-        .def("form_V", &scf::HF::form_V,
-             "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
+        .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
+        .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
+        .def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
         .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
-        .def("form_F", &scf::HF::form_V, "Forms the F matrix.")
+        .def("form_F", &scf::HF::form_F, "Forms the F matrix.")
+        .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
+        .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
+        .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
+        .def("integrals", &scf::HF::integrals, "Sets up the JK object")
         .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
         .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
         .def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).")
-        .def("cphf_solve", &scf::HF::cphf_solve, py::arg("x_vec"), py::arg("conv_tol"),
-             py::arg("max_iter"), py::arg("print_lvl") = 2,
-             "Solves the CPHF equations for a given set of x vectors.")
+        .def("cphf_solve", &scf::HF::cphf_solve, py::arg("x_vec"), py::arg("conv_tol"), py::arg("max_iter"),
+             py::arg("print_lvl") = 2, "Solves the CPHF equations for a given set of x vectors.")
         .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.")
         .def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix")
         .def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix")
-        .def("reset_occ", &scf::HF::reset_occ,
-             "If True, the occupation will be reset after the guess to the inital occupation.")
-        .def("set_sad_basissets", &scf::HF::set_sad_basissets,
-             "Sets the Superposition of Atomic Densities basisset.")
+        .def_property("reset_occ_", &scf::HF::reset_occ, &scf::HF::set_reset_occ,
+             "Do reset the occupation after the guess to the inital occupation.")
+        .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
-        .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Shame Potential Matrix.")
-        .def("Vb", &scf::HF::Vb, "Returns the Alpha Kohn-Shame Potential Matrix.")
+        .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Sham Potential Matrix.")
+        .def("Vb", &scf::HF::Vb, "Returns the Beta Kohn-Sham Potential Matrix.")
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
         .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
-        .def("initialize", &scf::HF::initialize, "Initializes the Wavefunction.")
-        .def("iterations", &scf::HF::iterations,
-             "Iterates the Wavefunction until convergence criteria have been met.")
-        .def("finalize_E", &scf::HF::finalize_E, "Computes the final SCF energy.")
+        .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunction's temporary data.")
+        .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
         .def("occupation_a", &scf::HF::occupation_a, "Returns the Alpha occupation numbers.")
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
-        .def("semicanonicalize", &scf::HF::semicanonicalize,
-             "Semicanonicalizes the orbitals for ROHF.");
+        .def("reset_occupation", &scf::HF::reset_occupation, "docstring")
+        .def("compute_E", &scf::HF::compute_E, "docstring")
+        .def("compute_initial_E", &scf::HF::compute_initial_E, "docstring")
+        .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
+        .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
+        .def("find_occupation", &scf::HF::find_occupation, "docstring")
+        .def("diis", &scf::HF::diis, "docstring")
+        .def("diis_manager", &scf::HF::diis_manager, "docstring")
+        .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager, 
+                                                   &scf::HF::set_initialized_diis_manager, "docstring")
+        .def("damping_update", &scf::HF::damping_update, "docstring")
+        .def("check_phases", &scf::HF::check_phases, "docstring")
+        .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
+        .def("print_energies", &scf::HF::print_energies, "docstring")
+        .def("print_header", &scf::HF::print_header, "docstring")
+        .def("get_energies", &scf::HF::get_energies, "docstring")
+        .def("set_energies", &scf::HF::set_energies, "docstring")
+        .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
+        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
+        .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
+        .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
+        .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,
+            "Frac performed current iteration?")
+        .def_property("MOM_excited_", &scf::HF::MOM_excited, &scf::HF::set_MOM_excited,
+            "Are we to do excited-state MOM?")
+        .def_property("MOM_performed_", &scf::HF::MOM_performed, &scf::HF::set_MOM_performed,
+            "MOM performed current iteration?")
+        .def_property("attempt_number_", &scf::HF::attempt_number, &scf::HF::set_attempt_number,
+            "Current macroiteration (1-indexed) for stability analysis")
+        .def("stability_analysis", &scf::HF::stability_analysis,
+            "Assess wfn stability and correct if requested")
+        .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
+        .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
+        .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
 
+    /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::RHF::c1_deep_copy,
@@ -232,12 +264,14 @@ void export_wavefunction(py::module& m) {
         .def("c1_deep_copy", &scf::CUHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *basis*", py::arg("basis"));
 
+    /// EP2 functions
     py::class_<dfep2::DFEP2Wavefunction, std::shared_ptr<dfep2::DFEP2Wavefunction>, Wavefunction>(
         m, "DFEP2Wavefunction", "A density-fitted second-order Electron Propagator Wavefunction.")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("compute", &dfep2::DFEP2Wavefunction::compute,
              "Computes the density-fitted EP2 energy for the input orbitals");
 
+    /// FISAPT functions
     py::class_<fisapt::FISAPT, std::shared_ptr<fisapt::FISAPT>>(m, "FISAPT",
                                                                 "A Fragment-SAPT Wavefunction")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -246,7 +280,7 @@ void export_wavefunction(py::module& m) {
         .def("disp", &fisapt::FISAPT::disp,
              "Computes the MP2-based DispE20 and Exch-DispE20 energy.");
 
-    /// CIWavefunction data
+    /// CIWavefunction functions
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,
                                                std::shared_ptr<psi::detci::CIvect>, int, int) =
         &detci::CIWavefunction::sigma;
