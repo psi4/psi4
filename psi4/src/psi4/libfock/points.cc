@@ -26,17 +26,15 @@
  * @END LICENSE
  */
 
-
-
 #include "points.h"
 #include "cubature.h"
 
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 
 #include "gau2grid/gau2grid.h"
 
@@ -44,52 +42,39 @@
 
 namespace psi {
 
-RKSFunctions::RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
-    PointFunctions(primary,max_points,max_functions)
-{
+RKSFunctions::RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
+    : PointFunctions(primary, max_points, max_functions) {
     set_ansatz(0);
 }
-RKSFunctions::~RKSFunctions()
-{
-}
-std::vector<SharedMatrix> RKSFunctions::scratch()
-{
+RKSFunctions::~RKSFunctions() {}
+std::vector<SharedMatrix> RKSFunctions::scratch() {
     std::vector<SharedMatrix> vec;
     vec.push_back(temp_);
     return vec;
 }
-std::vector<SharedMatrix> RKSFunctions::D_scratch()
-{
+std::vector<SharedMatrix> RKSFunctions::D_scratch() {
     std::vector<SharedMatrix> vec;
     vec.push_back(D_local_);
     return vec;
 }
-void RKSFunctions::build_temps()
-{
-    temp_ = std::make_shared<Matrix>("Temp",max_points_,max_functions_);
-    D_local_ = std::make_shared<Matrix>("Dlocal",max_functions_,max_functions_);
+void RKSFunctions::build_temps() {
+    temp_ = std::make_shared<Matrix>("Temp", max_points_, max_functions_);
+    D_local_ = std::make_shared<Matrix>("Dlocal", max_functions_, max_functions_);
 }
-void RKSFunctions::allocate()
-{
+void RKSFunctions::allocate() {
     BasisFunctions::allocate();
 
     point_values_.clear();
 
     if (ansatz_ >= 0) {
         point_values_["RHO_A"] = std::make_shared<Vector>("RHO_A", max_points_);
-        // point_values_["RHO_B"] = point_values_["RHO_A"];
     }
 
     if (ansatz_ >= 1) {
         point_values_["RHO_AX"] = std::make_shared<Vector>("RHO_AX", max_points_);
         point_values_["RHO_AY"] = std::make_shared<Vector>("RHO_AY", max_points_);
         point_values_["RHO_AZ"] = std::make_shared<Vector>("RHO_AZ", max_points_);
-        // point_values_["RHO_BX"] = point_values_["RHO_AX"];
-        // point_values_["RHO_BY"] = point_values_["RHO_AY"];
-        // point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
         point_values_["GAMMA_AA"] = std::make_shared<Vector>("GAMMA_AA", max_points_);
-        // point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
-        // point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
     }
 
     if (ansatz_ >= 2) {
@@ -97,24 +82,15 @@ void RKSFunctions::allocate()
         point_values_["RHO_YY"] = std::make_shared<Vector>("RHO_YY", max_points_);
         point_values_["RHO_ZZ"] = std::make_shared<Vector>("RHO_ZZ", max_points_);
         point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
-        // point_values_["TAU_B"] = point_values_["TAU_A"];
-        // point_values_["LAPL_RHO_A"] = std::make_shared<Vector>("LAPL_RHO_A", max_points_);
-        // point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
     }
     build_temps();
 }
-void RKSFunctions::set_pointers(SharedMatrix D_AO)
-{
-    D_AO_ = D_AO;
-}
-void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/)
-{
+void RKSFunctions::set_pointers(SharedMatrix D_AO) { D_AO_ = D_AO; }
+void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/) {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
-void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
-{
-    if (!D_AO_)
-        throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
+void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
+    if (!D_AO_) throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
     // => Build basis function values <= //
     // parallel_timer_on("Functions: Points", 0);
@@ -150,8 +126,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
     double* rhoap = point_values_["RHO_A"]->pointer();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
-    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], nglobal, D2p[0], nglobal, 0.0, Tp[0],
-            nglobal);
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], nglobal, D2p[0], nglobal, 0.0, Tp[0], nglobal);
     for (int P = 0; P < npoints; P++) {
         rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tp[P], 1);
     }
@@ -167,7 +142,6 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double* rhoazp = point_values_["RHO_AZ"]->pointer();
         double* gammaaap = point_values_["GAMMA_AA"]->pointer();
 
-        # pragma simd
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
             double rho_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tp[P], 1);
@@ -196,8 +170,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 
         for (int x = 0; x < 3; x++) {
             double** phic = phi[x];
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, D2p[0], nglobal, 0.0,
-                    Tp[0], nglobal);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, D2p[0], nglobal, 0.0, Tp[0], nglobal);
             for (int P = 0; P < npoints; P++) {
                 taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
             }
@@ -223,7 +196,6 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         //      rhoyyp[P] = 2.0 * C_DDOT(nlocal,phiyyp[P],1,Tp[P],1);
         //      rhozzp[P] = 2.0 * C_DDOT(nlocal,phizzp[P],1,Tp[P],1);
         // }
-
 
         // // Cross terms phi^x_a D_ab phi^x_b
         // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phixp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
@@ -253,8 +225,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 void RKSFunctions::set_Cs(SharedMatrix C_AO) {
     C_AO_ = C_AO;
     C_local_ = std::make_shared<Matrix>("C local", max_functions_, C_AO_->colspi()[0]);
-    orbital_values_["PSI_A"] =
-        std::make_shared<Matrix>("PSI_A", C_AO_->colspi()[0], max_points_);
+    orbital_values_["PSI_A"] = std::make_shared<Matrix>("PSI_A", C_AO_->colspi()[0], max_points_);
     orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
 }
 void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
@@ -289,13 +260,11 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** phip = basis_values_["PHI"]->pointer();
     double** psiap = orbital_values_["PSI_A"]->pointer();
 
-    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0],
-            max_points_);
+    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0], max_points_);
 }
 
 void RKSFunctions::print(std::string out, int print) const {
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -320,37 +289,30 @@ void RKSFunctions::print(std::string out, int print) const {
     BasisFunctions::print(out, print);
 }
 
-UKSFunctions::UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
-    PointFunctions(primary,max_points, max_functions)
-{
+UKSFunctions::UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
+    : PointFunctions(primary, max_points, max_functions) {
     set_ansatz(0);
 }
-UKSFunctions::~UKSFunctions()
-{
-}
-std::vector<SharedMatrix> UKSFunctions::scratch()
-{
+UKSFunctions::~UKSFunctions() {}
+std::vector<SharedMatrix> UKSFunctions::scratch() {
     std::vector<SharedMatrix> vec;
     vec.push_back(tempa_);
     vec.push_back(tempb_);
     return vec;
 }
-std::vector<SharedMatrix> UKSFunctions::D_scratch()
-{
+std::vector<SharedMatrix> UKSFunctions::D_scratch() {
     std::vector<SharedMatrix> vec;
     vec.push_back(Da_local_);
     vec.push_back(Db_local_);
     return vec;
 }
-void UKSFunctions::build_temps()
-{
-    tempa_ = std::make_shared<Matrix>("Temp",max_points_,max_functions_);
-    Da_local_ = std::make_shared<Matrix>("Dlocal",max_functions_,max_functions_);
-    tempb_ = std::make_shared<Matrix>("Temp",max_points_,max_functions_);
-    Db_local_ = std::make_shared<Matrix>("Dlocal",max_functions_,max_functions_);
+void UKSFunctions::build_temps() {
+    tempa_ = std::make_shared<Matrix>("Temp", max_points_, max_functions_);
+    Da_local_ = std::make_shared<Matrix>("Dlocal", max_functions_, max_functions_);
+    tempb_ = std::make_shared<Matrix>("Temp", max_points_, max_functions_);
+    Db_local_ = std::make_shared<Matrix>("Dlocal", max_functions_, max_functions_);
 }
-void UKSFunctions::allocate()
-{
+void UKSFunctions::allocate() {
     BasisFunctions::allocate();
 
     point_values_.clear();
@@ -378,19 +340,15 @@ void UKSFunctions::allocate()
     }
     build_temps();
 }
-void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/)
-{
+void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/) {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
-void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
-{
+void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO) {
     Da_AO_ = Da_AO;
     Db_AO_ = Db_AO;
 }
-void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
-{
-    if (!Da_AO_)
-        throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
+void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
+    if (!Da_AO_) throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
 
     // => Build basis function values <= //
     // timer_on("Functions: Points");
@@ -401,7 +359,7 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
     int nglobal = max_functions_;
-    int nlocal  = function_map.size();
+    int nlocal = function_map.size();
 
     double** Tap = tempa_->pointer();
     double** Tbp = tempb_->pointer();
@@ -432,19 +390,18 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
     double* rhoap = point_values_["RHO_A"]->pointer();
     double* rhobp = point_values_["RHO_B"]->pointer();
 
-    C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phip[0],nglobal,Da2p[0],nglobal,0.0,Tap[0],nglobal);
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], nglobal, Da2p[0], nglobal, 0.0, Tap[0], nglobal);
     for (int P = 0; P < npoints; P++) {
-        rhoap[P] = C_DDOT(nlocal,phip[P],1,Tap[P],1);
+        rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tap[P], 1);
     }
 
-    C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phip[0],nglobal,Db2p[0],nglobal,0.0,Tbp[0],nglobal);
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], nglobal, Db2p[0], nglobal, 0.0, Tbp[0], nglobal);
     for (int P = 0; P < npoints; P++) {
-        rhobp[P] = C_DDOT(nlocal,phip[P],1,Tbp[P],1);
+        rhobp[P] = C_DDOT(nlocal, phip[P], 1, Tbp[P], 1);
     }
 
     // => Build GGA quantities <= //
     if (ansatz_ >= 1) {
-
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
@@ -486,8 +443,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double* tauap = point_values_["TAU_A"]->pointer();
         double* taubp = point_values_["TAU_B"]->pointer();
 
-        ::memset((void*) tauap, '\0', sizeof(double) * npoints);
-        ::memset((void*) taubp, '\0', sizeof(double) * npoints);
+        ::memset((void*)tauap, '\0', sizeof(double) * npoints);
+        ::memset((void*)taubp, '\0', sizeof(double) * npoints);
 
         double** phi[3];
         phi[0] = phixp;
@@ -511,9 +468,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
                 double** phic = phi[x];
                 double** Dc = D[t];
                 double** Tc = T[t];
-                double*  tauc = tau[t];
-                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, Dc[0], nglobal,
-                        0.0, Tc[0], nglobal);
+                double* tauc = tau[t];
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, Dc[0], nglobal, 0.0, Tc[0], nglobal);
                 for (int P = 0; P < npoints; P++) {
                     tauc[P] += C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
                 }
@@ -522,12 +478,10 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
     }
 }
 
-void UKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/)
-{
+void UKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/) {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
-void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
-{
+void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO) {
     Ca_AO_ = Ca_AO;
     Cb_AO_ = Cb_AO;
     Ca_local_ = std::make_shared<Matrix>("Ca local", max_functions_, Ca_AO_->colspi()[0]);
@@ -535,8 +489,7 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
     orbital_values_["PSI_A"] = std::make_shared<Matrix>("PSI_A", Ca_AO_->colspi()[0], max_points_);
     orbital_values_["PSI_B"] = std::make_shared<Matrix>("PSI_B", Cb_AO_->colspi()[0], max_points_);
 }
-void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
-{
+void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     // => Build basis function values <= //
 
     // timer_on("Functions: Points");
@@ -548,7 +501,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
     int nglobal = max_functions_;
-    int nlocal  = function_map.size();
+    int nlocal = function_map.size();
 
     // => Build local C matrix <= //
 
@@ -574,18 +527,13 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     double** psiap = orbital_values_["PSI_A"]->pointer();
     double** psibp = orbital_values_["PSI_B"]->pointer();
 
-    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0],
-            max_points_);
-    C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], nglobal, 0.0, psibp[0],
-            max_points_);
+    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0], max_points_);
+    C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], nglobal, 0.0, psibp[0], max_points_);
 }
 
-
-void UKSFunctions::print(std::string out, int print) const
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   std::string ans;
+void UKSFunctions::print(std::string out, int print) const {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
     } else if (ansatz_ == 1) {
@@ -594,50 +542,37 @@ void UKSFunctions::print(std::string out, int print) const
         ans = "Meta-GGA";
     }
 
-    printer->Printf( "   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
+    printer->Printf("   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
-    printer->Printf( "    Point Values:\n");
+    printer->Printf("    Point Values:\n");
     for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
-        it != point_values_.end(); it++) {
-        printer->Printf( "    %s\n", (*it).first.c_str());
+         it != point_values_.end(); it++) {
+        printer->Printf("    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
     printer->Printf("\n\n");
 
-    BasisFunctions::print(out,print);
+    BasisFunctions::print(out, print);
 }
 
-PointFunctions::PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
-    BasisFunctions(primary,max_points, max_functions)
-{
+PointFunctions::PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
+    : BasisFunctions(primary, max_points, max_functions) {
     set_ansatz(0);
 }
-PointFunctions::~PointFunctions()
-{
-}
-SharedVector PointFunctions::point_value(const std::string& key)
-{
-    return point_values_[key];
-}
+PointFunctions::~PointFunctions() {}
+SharedVector PointFunctions::point_value(const std::string& key) { return point_values_[key]; }
 
-SharedMatrix PointFunctions::orbital_value(const std::string& key)
-{
-    return orbital_values_[key];
-}
+SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbital_values_[key]; }
 
-BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
-    primary_(primary), max_points_(max_points), max_functions_(max_functions)
-{
+BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
+    : primary_(primary), max_points_(max_points), max_functions_(max_functions) {
     build_spherical();
     set_deriv(0);
 }
-BasisFunctions::~BasisFunctions()
-{
-}
-void BasisFunctions::build_spherical()
-{
+BasisFunctions::~BasisFunctions() {}
+void BasisFunctions::build_spherical() {
     if (!primary_->has_puream()) {
         puream_ = false;
         return;
@@ -645,21 +580,18 @@ void BasisFunctions::build_spherical()
 
     puream_ = true;
 
-    std::shared_ptr<IntegralFactory> fact(
-        new IntegralFactory(primary_, primary_, primary_, primary_));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
 
     for (int L = 0; L <= primary_->max_am(); L++) {
         std::vector<std::tuple<int, int, double> > comp;
         std::shared_ptr<SphericalTransformIter> trans(fact->spherical_transform_iter(L));
         for (trans->first(); !trans->is_done(); trans->next()) {
-            comp.push_back(std::tuple<int, int, double>(trans->pureindex(), trans->cartindex(),
-                                                        trans->coef()));
+            comp.push_back(std::tuple<int, int, double>(trans->pureindex(), trans->cartindex(), trans->coef()));
         }
         spherical_transforms_.push_back(comp);
     }
 }
-void BasisFunctions::allocate()
-{
+void BasisFunctions::allocate() {
     basis_values_.clear();
     basis_temps_.clear();
 
@@ -695,15 +627,10 @@ void BasisFunctions::allocate()
         basis_temps_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_functions_);
     }
 
-    if (deriv_ >= 3)
-        throw PSIEXCEPTION("BasisFunctions: Only up to Hessians are currently supported");
+    if (deriv_ >= 3) throw PSIEXCEPTION("BasisFunctions: Only up to Hessians are currently supported");
 }
-SharedMatrix BasisFunctions::basis_value(const std::string& key)
-{
-    return basis_values_[key];
-}
-void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
-{
+SharedMatrix BasisFunctions::basis_value(const std::string& key) { return basis_values_[key]; }
+void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     // Pull out data
     int nso = max_functions_;
 
@@ -750,18 +677,17 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         purezzp = basis_values_["PHI_ZZ"]->pointer()[0];
     }
 
-
     // parallel_timer_on("Functions: GG", 0);
     int nvals = 0;
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
         int Qglobal = shells[Qlocal];
         const GaussianShell& Qshell = primary_->shell(Qglobal);
-        Vector3 v     = Qshell.center();
-        int L         = Qshell.am();
-        int nQ        = Qshell.nfunction();
-        int nprim     = Qshell.nprimitive();
-        const double *alpha = Qshell.exps();
-        const double *norm  = Qshell.coefs();
+        Vector3 v = Qshell.center();
+        int L = Qshell.am();
+        int nQ = Qshell.nfunction();
+        int nprim = Qshell.nprimitive();
+        const double* alpha = Qshell.exps();
+        const double* norm = Qshell.coefs();
 
         // Copy over centerp to a double*
         center[0] = v[0];
@@ -772,16 +698,16 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         double* phi_start = cartp + (nvals * npoints);
 
         // Copmute collocation
-        if (deriv_ == 0){
+        if (deriv_ == 0) {
             gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start);
-        } else if (deriv_ == 1){
+        } else if (deriv_ == 1) {
             double* phi_x_start = cartxp + (nvals * npoints);
             double* phi_y_start = cartyp + (nvals * npoints);
             double* phi_z_start = cartzp + (nvals * npoints);
             gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start);
 
-        } else if (deriv_ == 2){
+        } else if (deriv_ == 2) {
             double* phi_x_start = cartxp + (nvals * npoints);
             double* phi_y_start = cartyp + (nvals * npoints);
             double* phi_z_start = cartzp + (nvals * npoints);
@@ -796,10 +722,10 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                                   phi_yy_start, phi_yz_start, phi_zz_start);
         }
 
-        if (puream_){
+        if (puream_) {
             nvals += 2 * L + 1;
         } else {
-            nvals += nQ; // Cartesian is already computed
+            nvals += nQ;  // Cartesian is already computed
         }
     }
     // parallel_timer_off("Functions: GG", 0);
@@ -807,12 +733,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     // parallel_timer_on("Functions: Transpose", 0);
     // GG spits it out tranpose of what we need
     gg_fast_transpose(nso, npoints, cartp, purep);
-    if (deriv_ >= 1){
+    if (deriv_ >= 1) {
         gg_fast_transpose(nso, npoints, cartxp, purexp);
         gg_fast_transpose(nso, npoints, cartyp, pureyp);
         gg_fast_transpose(nso, npoints, cartzp, purezp);
     }
-    if (deriv_ >= 2){
+    if (deriv_ >= 2) {
         gg_fast_transpose(nso, npoints, cartxxp, purexxp);
         gg_fast_transpose(nso, npoints, cartxyp, purexyp);
         gg_fast_transpose(nso, npoints, cartxzp, purexzp);
@@ -822,16 +748,14 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     }
     // parallel_timer_off("Functions: Transpose", 0);
 }
-void BasisFunctions::print(std::string out, int print) const
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   printer->Printf( "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
+void BasisFunctions::print(std::string out, int print) const {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
-    printer->Printf( "    Basis Values:\n");
-    for (std::map<std::string, SharedMatrix >::const_iterator it = basis_values_.begin();
-        it != basis_values_.end(); it++) {
-        printer->Printf( "    %s\n", (*it).first.c_str());
+    printer->Printf("    Basis Values:\n");
+    for (std::map<std::string, SharedMatrix>::const_iterator it = basis_values_.begin(); it != basis_values_.end();
+         it++) {
+        printer->Printf("    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
@@ -839,4 +763,4 @@ void BasisFunctions::print(std::string out, int print) const
     printer->Printf("\n\n");
 }
 
-} // Namespace psi
+}  // Namespace psi
