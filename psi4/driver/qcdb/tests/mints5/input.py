@@ -307,6 +307,9 @@ data['C2H2']['mol'] = """
   r1 = 0.65
   r2 = 1.75
 """
+data['isoC2H2']['idx'] = 0
+data['isoC2H2']['pg'] = 'C_inf_v'
+data['isoC2H2']['rsn'] = 1
 
 
 data['N2']['pg'] = 'D_inf_h'
@@ -316,6 +319,9 @@ data['N2']['mol'] = """
   N 0.0 0.0 r
   r = 1.1
 """
+data['isoN2']['idx'] = 0
+data['isoN2']['pg'] = 'C_inf_v'
+data['isoN2']['rsn'] = 1
 
 
 data['CN']['pg'] = 'C_inf_v'
@@ -326,6 +332,9 @@ data['CN']['mol'] = """
   N 0.0 0.0 r
   r = 1.4
 """
+data['isoCN']['idx'] = 0
+data['isoCN']['pg'] = 'C_inf_v'
+data['isoCN']['rsn'] =  1
 
 
 data['HCCCl']['pg'] = 'C_inf_v'
@@ -336,6 +345,9 @@ data['HCCCl']['mol'] = """
   C  0 0  1.1
   Cl 0 0  2.6
 """
+data['isoHCCCl']['idx'] = 1
+data['isoHCCCl']['pg'] = 'C_inf_v'
+data['isoHCCCl']['rsn'] = 1
 
 
 data['CHFClBr']['pg'] = "C1"
@@ -347,6 +359,9 @@ data["CHFClBr"]['mol'] = """
   Cl 2 1.0 1 105.0 3  120.0
   Br 2 1.0 1 105.0 3 -120.0
 """
+data['isoCHFClBr']['idx'] = 0
+data['isoCHFClBr']['pg'] = 'C1'
+data['isoCHFClBr']['rsn'] = 1
 
 
 data['CH2ClBr']['pg'] = "Cs"
@@ -358,6 +373,9 @@ data['CH2ClBr']['mol'] = """
   H  2 1.0 1 105.0 3  120.0
   H  2 1.0 1 105.0 3 -120.0
 """
+data['isoCH2ClBr']['idx'] = 4
+data['isoCH2ClBr']['pg'] = 'C1'
+data['isoCH2ClBr']['rsn'] = 1
 
 
 data['HOCl']['pg'] = "Cs"
@@ -367,6 +385,9 @@ data['HOCl']['mol'] = """
   O 1 1.0
   Cl 2 1.7 1 110.0
 """
+data['isoHOCl']['idx'] = 0
+data['isoHOCl']['pg'] = 'Cs'
+data['isoHOCl']['rsn'] = 1
 
 
 data['C4H4Cl2F2']['au'] = True
@@ -387,6 +408,9 @@ data['C4H4Cl2F2']['mol'] = """
   F    -1.913713787211    -3.739567959534     0.258534542158
   F     1.913713787211     3.739567959534    -0.258534542158
 """
+data['isoC4H4Cl2F2']['idx'] = 2
+data['isoC4H4Cl2F2']['pg'] = 'C1'
+data['isoC4H4Cl2F2']['rsn'] = 1
 
 
 data['HOOH_dimer']['pg'] = "Ci"
@@ -401,16 +425,22 @@ data['HOOH_dimer']['mol'] = """
   O  -2.7691093095   1.3485218649   0.0071557684
   H  -0.9911262285   1.7979226333  -0.1465182515
 """
+data['isoHOOH_dimer']['idx'] = 7
+data['isoHOOH_dimer']['pg'] = 'C1'
+data['isoHOOH_dimer']['rsn'] = 1
 
 
 data['HOOH']['pg'] = "C2"
 data['HOOH']['rsn'] = 2
 data['HOOH']['mol'] = """
   H
-  O 1 1.0 
+  O 1 1.0
   O 2 1.5 1 110.0
   H 3 1.0 2 110.0 1 60.0
 """
+data['isoHOOH']['idx'] = 2
+data['isoHOOH']['pg'] = 'C1'
+data['isoHOOH']['rsn'] = 1
 
 
 data['NOHOHOH']['pg'] = 'C3'
@@ -425,6 +455,9 @@ data['NOHOHOH']['mol'] = """
   H 4 1.0 2 110.0 5 0.0
   H 5 1.0 2 110.0 3 0.0
 """
+data['isoNOHOHOH']['idx'] = 2
+data['isoNOHOHOH']['pg'] = 'Cs'
+data['isoNOHOHOH']['rsn'] = 1
 
 
 data['H2O']['pg'] = "C2v"
@@ -434,6 +467,9 @@ data['H2O']['mol'] = """
   O 1 1.0
   H 2 1.0 1 109.5
 """
+data['isoH2O']['idx'] = 2
+data['isoH2O']['pg'] = 'Cs'
+data['isoH2O']['rsn'] = 1
 
 
 data['CH2F2']['au'] = True
@@ -447,6 +483,9 @@ data['CH2F2']['mol'] = """
   H     1.7084139850   0.0000000000   2.1841068002
   H    -1.7084139850  -0.0000000000   2.1841068002
 """
+data['isoCH2F2']['idx'] = 3
+data['isoCH2F2']['pg'] = 'Cs'
+data['isoCH2F2']['rsn'] = 1
 
 
 data['NH3']['pg'] = "C3v"
@@ -461,6 +500,9 @@ data['NH3']['mol'] = """
   rNH = 0.95
   aXNH = 115.0
 """
+data['isoNH3']['idx'] = 3
+data['isoNH3']['pg'] = 'Cs'
+data['isoNH3']['rsn'] = 1
 
 
 data['BrF5']['pg'] = "C4v"
@@ -474,6 +516,9 @@ data['BrF5']['mol'] = """
  F  2 r 1 90.0 3 180.0
  r = 1.7
 """
+data['isoBrF5']['idx'] = 3
+data['isoBrF5']['pg'] = 'Cs'
+data['isoBrF5']['rsn'] = 1
 
 
 data['N2H2']['pg'] = "C2h"
@@ -487,6 +532,9 @@ data['N2H2']['mol'] = """
   rNN  = 1.4
   aHNN = 140.0
 """
+#data['isoN2H2XX']['idx'] = 
+#data['isoN2H2XX']['pg'] = ''
+#data['isoN2H2XX']['rsn'] = 
 
 
 data['NOHOHOH']['pg'] = "C3h"
@@ -501,6 +549,9 @@ data['NOHOHOH']['mol'] = """
   H 4 1.0 2 110.0 5 0.0
   H 5 1.0 2 110.0 3 0.0
 """
+data['isoNOHOHOH']['idx'] = 5
+data['isoNOHOHOH']['pg'] = 'Cs'
+data['isoNOHOHOH']['rsn'] = 1
 
 
 # 1,3,5,7-tetrafluorocyclooctatetraene
@@ -524,6 +575,9 @@ data['TFCOT']['mol'] = """
   H       -0.878010      2.418132      1.029595
   H        2.418132      0.878010     -1.029595
 """
+#data['isoTFCOTXX']['idx'] = 
+#data['isoTFCOTXX']['pg'] = ''
+#data['isoTFCOTXX']['rsn'] = 
 
 
 data['Li_H2O_4_p']['pg'] = "S4"
@@ -555,6 +609,9 @@ data['Li_H2O_4_p']['mol'] = """
    xlioh1=-40.0
    xlioh2=135.0
 """
+#data['isoLi_H2O_4_pXX']['idx'] = 
+#data['isoLi_H2O_4_pXX']['pg'] = ''
+#data['isoLi_H2O_4_pXX']['rsn'] = 
 
 
 data['ethylene_cation']['pg'] = "D2"
@@ -571,6 +628,9 @@ data['ethylene_cation']['mol'] = """
   aHCC = 122.0
   D    = 45.0
 """
+#data['isoethylene_cationXX']['idx'] = 
+#data['isoethylene_cationXX']['pg'] = ''
+#data['isoethylene_cationXX']['rsn'] = 
 
 
 data['ethane_gauche']['pg'] = "D3"
@@ -585,6 +645,9 @@ data['ethane_gauche']['mol'] = """
   H 2 1.0 3 110.0 1  120.0
   H 2 1.0 3 110.0 1 -120.0
 """
+#data['isoethane_gaucheXX']['idx'] = 
+#data['isoethane_gaucheXX']['pg'] = ''
+#data['isoethane_gaucheXX']['rsn'] = 
 
 
 data['triplet_ethylene']['pg'] = "D2d"
@@ -601,6 +664,9 @@ data['triplet_ethylene']['mol'] = """
   aHCC = 122.0
   D    = 90.0
 """
+#data['isotriplet_ethyleneXX']['idx'] = 
+#data['isotriplet_ethyleneXX']['pg'] = ''
+#data['isotriplet_ethyleneXX']['rsn'] = 
 
 
 data['allene']['pg'] = "D2d"
@@ -614,6 +680,9 @@ data['allene']['mol'] = """
   H  2.0  1.0  0.0
   H  2.0 -1.0  0.0
 """
+data['isoallene']['idx'] = [0, 6]
+data['isoallene']['pg'] = 'C2'
+data['isoallene']['rsn'] = 2
 
 
 data['ethane_staggered']['pg'] = "D3d"
@@ -628,6 +697,9 @@ data['ethane_staggered']['mol'] = """
   H 2 1.0 3 110.0 1  120.0
   H 2 1.0 3 110.0 1 -120.0
 """
+#data['isoethane_staggeredXX']['idx'] = 
+#data['isoethane_staggeredXX']['pg'] = ''
+#data['isoethane_staggeredXX']['rsn'] = 
 
 
 data['singlet_ethylene']['pg'] = "D2h"
@@ -644,6 +716,9 @@ data['singlet_ethylene']['mol'] = """
     aHCC = 122.0
     D    = 0.0
 """
+data['isosinglet_ethylene']['idx'] = [2, 4]
+data['isosinglet_ethylene']['pg'] = 'C2v'
+data['isosinglet_ethylene']['rsn'] = 2
 
 
 data['ethane_eclipsed']['pg'] = "D3h"
@@ -658,6 +733,9 @@ data['ethane_eclipsed']['mol'] = """
   H 2 1.0 3 110.0 1  120.0
   H 2 1.0 3 110.0 1 -120.0
 """
+#data['isoethane_eclipsedXX']['idx'] = 
+#data['isoethane_eclipsedXX']['pg'] = ''
+#data['isoethane_eclipsedXX']['rsn'] = 
 
 
 data['BH4p']['pg'] = "D4h"
@@ -671,6 +749,9 @@ data['BH4p']['mol'] = """
  H 2 1.0 1 90.0 3 180.0
  H 2 1.0 1 90.0 3 -90.0
 """
+data['isoBH4p']['idx'] = [2, 4]
+data['isoBH4p']['pg'] = 'D2h'
+data['isoBH4p']['rsn'] = 4
 
 
 data['CH4']['pg'] = "Td"
@@ -683,6 +764,9 @@ data['CH4']['mol'] = """
    H 1 r 2 TDA 4 120
    r = 1.09
 """
+data['isoCH4']['idx'] = 1
+data['isoCH4']['pg'] = 'C3v'
+data['isoCH4']['rsn'] = 3
 
 
 data['SF6']['pg'] = "Oh"
@@ -694,9 +778,12 @@ data['SF6']['mol'] = """
   F 2 r 1 90.0 3  90.0
   F 2 r 1 90.0 3 180.0
   F 2 r 1 90.0 3 -90.0
-  F 2 r 5 90.0 1 180.0 
+  F 2 r 5 90.0 1 180.0
   r = 1.8
 """
+data['isoSF6']['idx'] = [0, 2, 4, 6]
+data['isoSF6']['pg'] = 'D4h'
+data['isoSF6']['rsn'] = 8
 
 
 data['Ih']['au'] = True
@@ -719,12 +806,21 @@ data['Ih']['mol'] = """
   H  -x   0  -1
   x = 1.618033988749894848
 """
+data['isoIh']['idx'] = [1, 4, 5, 8, 10]
+data['isoIh']['pg'] = 'C5v'
+data['isoIh']['rsn'] = 5
 
 
-def test_mol(lbl, molstr, pg, sigma, refgeomang, isbohr=False):
+def test_mol(lbl, molstr, pg, sigma, refgeomang, isbohr=False, iso=False):
     symmol = qcdb.Molecule(molstr)
-    #symmol.reset_point_group('c1')
+    if iso is not False:
+        if isinstance(iso, int):
+            iso = [iso]
+        for at in iso:
+            # mass needn't make sense for element, just breaking the symmetry
+            symmol.set_mass(at, 2.014)
     symmol.update_geometry()
+    #symmol.print_out()
     symmol.axis_representation()
     qcdb.compare_strings(pg, symmol.get_full_point_group(), pg + " point group: " + lbl)
     qcdb.compare_integers(sigma, symmol.rotational_symmetry_number(), pg + " sigma")
@@ -732,10 +828,16 @@ def test_mol(lbl, molstr, pg, sigma, refgeomang, isbohr=False):
         geom_now = symmol.full_geometry()
     else:
         geom_now = qcdb.mscale(symmol.full_geometry(), qcdb.psi_bohr2angstroms)
-    qcdb.compare_matrices(refgeomang, geom_now, 6, pg + " orientation")
+    if refgeomang:
+        qcdb.compare_matrices(refgeomang, geom_now, 6, pg + " orientation")
 
 
 for sys in data:
-    isbohr = data[sys].get('au', False)
-    test_mol(sys, data[sys]['mol'], data[sys]['pg'], data[sys]['rsn'], data[sys]['ref'], isbohr)
+    if sys.startswith('iso'):
+        base = sys[3:]
+        isbohr = data[base].get('au', False)
+        test_mol(sys, data[base]['mol'], data[sys]['pg'], data[sys]['rsn'], None, isbohr, iso=data[sys]['idx'])
+    else:
+        isbohr = data[sys].get('au', False)
+        test_mol(sys, data[sys]['mol'], data[sys]['pg'], data[sys]['rsn'], data[sys]['ref'], isbohr)
 

@@ -295,6 +295,10 @@ class CoordEntry(object):
         """The atomic mass of the current atom."""
         return self.PYmass
 
+    def set_mass(self, mass):
+        """Assign the mass of the atom (useful for isotopic substitutions)."""
+        self.PYmass = mass
+
     def symbol(self):
         """The atomic symbol."""
         return self.PYsymbol
