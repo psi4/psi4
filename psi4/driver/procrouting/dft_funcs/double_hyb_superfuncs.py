@@ -325,10 +325,11 @@ def build_pwpb95_superfunctional(name, npoints, deriv, restricted):
    # Add member functionals
    pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
    # modify PW91 suitable for libxc 
-   beta=0.0018903811666999256 # 5.0*(36.0*math.pi)**(-5.0/3.0)
+#   beta=0.0018903811666999256 # 5.0*(36.0*math.pi)**(-5.0/3.0)
+   beta=5.0*(36.0*3.141592653589793)**(-5.0/3.0)
    X2S=0.1282782438530421943003109254455883701296
    X_FACTOR_C=0.9305257363491000250020102180716672510262 #    /* 3/8*cur(3/pi)*4^(2/3) */
-   bt=0.004444 # paper values
+   bt=0.004440 # paper values
    c_pw=0.32620 # paper values
    expo_pw6=3.7868 # paper values
 
@@ -338,7 +339,6 @@ def build_pwpb95_superfunctional(name, npoints, deriv, restricted):
    c_pw6=bt/(X_FACTOR_C*X2S*X2S)
    d_pw6=-(bt-beta)/(X_FACTOR_C*X2S*X2S)
    f_pw6=1.0e-6/(X_FACTOR_C*X2S**expo_pw6)
-   print 
    pw6.set_tweak([a_pw6,b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
    pw6.set_alpha(0.50)
    sup.add_x_functional(pw6)
