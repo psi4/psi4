@@ -692,7 +692,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         center[2] = v[2];
 
         // Make new pointers, gg computes along rows so we need to skip down `nval` rows.
-        ptrdiff_t row_shift = nvals * npoints;
+        size_t row_shift = nvals * npoints;
         double* phi_start = tmpp + row_shift;
 
         // Copmute collocation
