@@ -357,6 +357,10 @@ class LibmintsMolecule(dict):
             # TODO outfile
         return z2mass[int(self.atoms[atom].Z())]
 
+    def set_mass(self, atom, mass):
+        """Set the mass of a particular atom (good for isotopic substitutions)"""
+        self.full_atoms[atom].set_mass(mass)
+
     def symbol(self, atom):
         """Returns the cleaned up label of the atom (C2 => C, H4 = H) (0-indexed)
 
