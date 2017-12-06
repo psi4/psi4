@@ -93,9 +93,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     if (!D_AO_) throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
     // => Build basis function values <= //
-    // parallel_timer_on("Functions: Points", 0);
     BasisFunctions::compute_functions(block);
-    // parallel_timer_off("Functions: Points", 0);
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -126,18 +124,13 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     double* rhoap = point_values_["RHO_A"]->pointer();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
-    // parallel_timer_on("Functions: density", 0);
-    // parallel_timer_on("Functions: density_gemm", 0);
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], nglobal, D2p[0], nglobal, 0.0, Tp[0], nglobal);
-    // parallel_timer_off("Functions: density_gemm", 0);
     for (int P = 0; P < npoints; P++) {
         rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tp[P], 1);
     }
-    // parallel_timer_off("Functions: density", 0);
 
     // => Build GGA quantities <= //
     // Rho^l_a = D_xy phi_xa phi^l_ya
-    // parallel_timer_on("Functions: gamma", 0);
     if (ansatz_ >= 1) {
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
@@ -158,7 +151,6 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
             gammaaap[P] = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
         }
     }
-    // parallel_timer_off("Functions: gamma", 0);
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
@@ -651,39 +643,38 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     std::vector<double> center(3, 0.0);
 
     // Declare pointers
-    double *cartp, *cartxp, *cartyp, *cartzp;
-    double *cartxxp, *cartxyp, *cartxzp, *cartyyp, *cartyzp, *cartzzp;
-    double *purep, *purexp, *pureyp, *purezp;
-    double *purexxp, *purexyp, *purexzp, *pureyyp, *pureyzp, *purezzp;
+    double *tmpp, *tmp_xp, *tmp_yp, *tmp_zp;
+    double *tmp_xxp, *tmp_xyp, *tmp_xzp, *tmp_yyp, *tmp_yzp, *tmp_zzp;
+    double *valuesp, *values_xp, *values_yp, *values_zp;
+    double *values_xxp, *values_xyp, *values_xzp, *values_yyp, *values_yzp, *values_zzp;
 
     if (deriv_ >= 0) {
-        cartp = basis_temps_["PHI"]->pointer()[0];
-        purep = basis_values_["PHI"]->pointer()[0];
+        tmpp = basis_temps_["PHI"]->pointer()[0];
+        valuesp = basis_values_["PHI"]->pointer()[0];
     }
     if (deriv_ >= 1) {
-        cartxp = basis_temps_["PHI_X"]->pointer()[0];
-        cartyp = basis_temps_["PHI_Y"]->pointer()[0];
-        cartzp = basis_temps_["PHI_Z"]->pointer()[0];
-        purexp = basis_values_["PHI_X"]->pointer()[0];
-        pureyp = basis_values_["PHI_Y"]->pointer()[0];
-        purezp = basis_values_["PHI_Z"]->pointer()[0];
+        tmp_xp = basis_temps_["PHI_X"]->pointer()[0];
+        tmp_yp = basis_temps_["PHI_Y"]->pointer()[0];
+        tmp_zp = basis_temps_["PHI_Z"]->pointer()[0];
+        values_xp = basis_values_["PHI_X"]->pointer()[0];
+        values_yp = basis_values_["PHI_Y"]->pointer()[0];
+        values_zp = basis_values_["PHI_Z"]->pointer()[0];
     }
     if (deriv_ >= 2) {
-        cartxxp = basis_temps_["PHI_XX"]->pointer()[0];
-        cartxyp = basis_temps_["PHI_XY"]->pointer()[0];
-        cartxzp = basis_temps_["PHI_XZ"]->pointer()[0];
-        cartyyp = basis_temps_["PHI_YY"]->pointer()[0];
-        cartyzp = basis_temps_["PHI_YZ"]->pointer()[0];
-        cartzzp = basis_temps_["PHI_ZZ"]->pointer()[0];
-        purexxp = basis_values_["PHI_XX"]->pointer()[0];
-        purexyp = basis_values_["PHI_XY"]->pointer()[0];
-        purexzp = basis_values_["PHI_XZ"]->pointer()[0];
-        pureyyp = basis_values_["PHI_YY"]->pointer()[0];
-        pureyzp = basis_values_["PHI_YZ"]->pointer()[0];
-        purezzp = basis_values_["PHI_ZZ"]->pointer()[0];
+        tmp_xxp = basis_temps_["PHI_XX"]->pointer()[0];
+        tmp_xyp = basis_temps_["PHI_XY"]->pointer()[0];
+        tmp_xzp = basis_temps_["PHI_XZ"]->pointer()[0];
+        tmp_yyp = basis_temps_["PHI_YY"]->pointer()[0];
+        tmp_yzp = basis_temps_["PHI_YZ"]->pointer()[0];
+        tmp_zzp = basis_temps_["PHI_ZZ"]->pointer()[0];
+        values_xxp = basis_values_["PHI_XX"]->pointer()[0];
+        values_xyp = basis_values_["PHI_XY"]->pointer()[0];
+        values_xzp = basis_values_["PHI_XZ"]->pointer()[0];
+        values_yyp = basis_values_["PHI_YY"]->pointer()[0];
+        values_yzp = basis_values_["PHI_YZ"]->pointer()[0];
+        values_zzp = basis_values_["PHI_ZZ"]->pointer()[0];
     }
 
-    // parallel_timer_on("Functions: GG", 0);
     int nvals = 0;
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
         int Qglobal = shells[Qlocal];
@@ -701,28 +692,29 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         center[2] = v[2];
 
         // Make new pointers, gg computes along rows so we need to skip down `nval` rows.
-        double* phi_start = cartp + (nvals * npoints);
+        ptrdiff_t row_shift = nvals * npoints;
+        double* phi_start = tmpp + row_shift;
 
         // Copmute collocation
         if (deriv_ == 0) {
             gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start);
         } else if (deriv_ == 1) {
-            double* phi_x_start = cartxp + (nvals * npoints);
-            double* phi_y_start = cartyp + (nvals * npoints);
-            double* phi_z_start = cartzp + (nvals * npoints);
+            double* phi_x_start = tmp_xp + row_shift;
+            double* phi_y_start = tmp_yp + row_shift;
+            double* phi_z_start = tmp_zp + row_shift;
             gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start);
 
         } else if (deriv_ == 2) {
-            double* phi_x_start = cartxp + (nvals * npoints);
-            double* phi_y_start = cartyp + (nvals * npoints);
-            double* phi_z_start = cartzp + (nvals * npoints);
-            double* phi_xx_start = cartxxp + (nvals * npoints);
-            double* phi_xy_start = cartxyp + (nvals * npoints);
-            double* phi_xz_start = cartxzp + (nvals * npoints);
-            double* phi_yy_start = cartyyp + (nvals * npoints);
-            double* phi_yz_start = cartyzp + (nvals * npoints);
-            double* phi_zz_start = cartzzp + (nvals * npoints);
+            double* phi_x_start = tmp_xp + row_shift;
+            double* phi_y_start = tmp_yp + row_shift;
+            double* phi_z_start = tmp_zp + row_shift;
+            double* phi_xx_start = tmp_xxp + row_shift;
+            double* phi_xy_start = tmp_xyp + row_shift;
+            double* phi_xz_start = tmp_xzp + row_shift;
+            double* phi_yy_start = tmp_yyp + row_shift;
+            double* phi_yz_start = tmp_yzp + row_shift;
+            double* phi_zz_start = tmp_zzp + row_shift;
             gg_collocation_deriv2(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
                                   phi_yy_start, phi_yz_start, phi_zz_start);
@@ -734,25 +726,22 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
             nvals += nQ;  // Cartesian is already computed
         }
     }
-    // parallel_timer_off("Functions: GG", 0);
 
-    // parallel_timer_on("Functions: Transpose", 0);
     // GG spits it out tranpose of what we need
-    gg_fast_transpose(nso, npoints, cartp, purep);
+    gg_fast_transpose(nso, npoints, tmpp, valuesp);
     if (deriv_ >= 1) {
-        gg_fast_transpose(nso, npoints, cartxp, purexp);
-        gg_fast_transpose(nso, npoints, cartyp, pureyp);
-        gg_fast_transpose(nso, npoints, cartzp, purezp);
+        gg_fast_transpose(nso, npoints, tmp_xp, values_xp);
+        gg_fast_transpose(nso, npoints, tmp_yp, values_yp);
+        gg_fast_transpose(nso, npoints, tmp_zp, values_zp);
     }
     if (deriv_ >= 2) {
-        gg_fast_transpose(nso, npoints, cartxxp, purexxp);
-        gg_fast_transpose(nso, npoints, cartxyp, purexyp);
-        gg_fast_transpose(nso, npoints, cartxzp, purexzp);
-        gg_fast_transpose(nso, npoints, cartyyp, pureyyp);
-        gg_fast_transpose(nso, npoints, cartyzp, pureyzp);
-        gg_fast_transpose(nso, npoints, cartzzp, purezzp);
+        gg_fast_transpose(nso, npoints, tmp_xxp, values_xxp);
+        gg_fast_transpose(nso, npoints, tmp_xyp, values_xyp);
+        gg_fast_transpose(nso, npoints, tmp_xzp, values_xzp);
+        gg_fast_transpose(nso, npoints, tmp_yyp, values_yyp);
+        gg_fast_transpose(nso, npoints, tmp_yzp, values_yzp);
+        gg_fast_transpose(nso, npoints, tmp_zzp, values_zzp);
     }
-    // parallel_timer_off("Functions: Transpose", 0);
 }
 void BasisFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
