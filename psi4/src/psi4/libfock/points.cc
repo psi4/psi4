@@ -126,13 +126,18 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     double* rhoap = point_values_["RHO_A"]->pointer();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
+    // parallel_timer_on("Functions: density", 0);
+    // parallel_timer_on("Functions: density_gemm", 0);
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], nglobal, D2p[0], nglobal, 0.0, Tp[0], nglobal);
+    // parallel_timer_off("Functions: density_gemm", 0);
     for (int P = 0; P < npoints; P++) {
         rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tp[P], 1);
     }
+    // parallel_timer_off("Functions: density", 0);
 
     // => Build GGA quantities <= //
     // Rho^l_a = D_xy phi_xa phi^l_ya
+    // parallel_timer_on("Functions: gamma", 0);
     if (ansatz_ >= 1) {
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
@@ -153,6 +158,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
             gammaaap[P] = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
         }
     }
+    // parallel_timer_off("Functions: gamma", 0);
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
@@ -252,7 +258,7 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Ca2p = C_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        std::fill(Ca2p[ml], Cap[mg] + na, 0.0);
+        C_DCOPY(na, Cap[ml], 1, Ca2p[mg], 1);
     }
 
     // => Build orbitals <= //
