@@ -358,8 +358,6 @@ public:
     std::array<double,3> get_dipole_field_strength() const;
     FieldType get_dipole_perturbation_type() const;
 
-    void set_doccpi(const Dimension& doccpi);
-    void set_soccpi(const Dimension& soccpi);
     /**
      * @brief Expert specialized use only. Sets the number of doubly occupied orbitals per irrep. Results in an inconsistent Wavefunction object for SCF purposes, so caution is advised.
      * @param doccpi the new list of doubly occupied orbitals per irrep
