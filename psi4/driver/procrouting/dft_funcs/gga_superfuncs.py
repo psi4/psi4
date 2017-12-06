@@ -217,6 +217,81 @@ def build_pw91_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
+
+def build_custom_mpwpw_superfunctional(name, npoints, deriv, restricted):
+# Test on how PW91 needs to be modified for LibXC
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('custom_mPWPW')
+    sup.set_description('    mPWPW GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    Adamo, C.; Barone, V. J. Chem. Phys. 1998, 108, 664 \n')
+
+    # Add member functionals
+    #sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_mPW', restricted))
+
+
+    # Add member functionals
+    pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
+    # modify PW91 suitable for libxc b=1/X2S is unchanged
+    #  beta =  5.0*POW(36.0*M_PI,-5.0/3.0); 
+    #  a    =  6.0*bt/X2S;
+    #  b    =  1.0/X2S;
+    #  c    =  bt/(X_FACTOR_C*X2S*X2S);
+    #  d    = -(bt - beta)/(X_FACTOR_C*X2S*X2S);
+    #  f    = 1.0e-6/(X_FACTOR_C*POW(X2S, expo));
+    beta=0.0018903811666999256 # 5.0*(36.0*math.pi)**(-5.0/3.0)
+    X2S=0.1282782438530421943003109254455883701296
+    X_FACTOR_C=0.9305257363491000250020102180716672510262 #    /* 3/8*cur(3/pi)*4^(2/3) */
+    bt=0.00426 # paper values
+    c_pw=1.6455 # paper values
+    expo_pw6=3.72 # paperl values
+
+    alpha_pw6=c_pw/X2S/X2S 
+    a_pw6=6.0*bt/X2S
+    b_pw6=1.0/X2S
+    c_pw6=bt/(X_FACTOR_C*X2S*X2S)
+    d_pw6=-(bt-beta)/(X_FACTOR_C*X2S*X2S)
+    f_pw6=1.0e-6/(X_FACTOR_C*X2S**expo_pw6)
+    pw6.set_tweak([a_pw6,b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
+    sup.add_x_functional(pw6)
+
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PW91', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_mpwpw_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('mPWPW')
+    sup.set_description('    mPWPW GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    Adamo, C.; Barone, V. J. Chem. Phys. 1998, 108, 664 \n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_mPW91', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PW91', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
 def build_bp86_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -273,4 +348,6 @@ gga_superfunc_list = {
           "pw91"    : build_pw91_superfunctional,
           "ft97"    : build_ft97_superfunctional,
           "bop"     : build_bop_superfunctional,
+          "custom_mpwpw"   : build_custom_mpwpw_superfunctional,
+          "mpwpw"   : build_mpwpw_superfunctional,
 }

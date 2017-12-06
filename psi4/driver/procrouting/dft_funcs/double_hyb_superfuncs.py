@@ -32,7 +32,6 @@ List of GGA SuperFunctionals built from LibXC primitives.
 
 from psi4 import core
 
-
 def build_b2plyp_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -72,7 +71,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv, restricted):
 
 
 def build_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
-
+#This is the recommended version
     # Call this first
     sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
@@ -310,7 +309,6 @@ def build_b2gpplyp_superfunctional(name, npoints, deriv, restricted):
 
 def build_pwpb95_superfunctional(name, npoints, deriv, restricted):
 
-
    # Call this first
    sup = core.SuperFunctional.blank()
    sup.set_max_points(npoints)
@@ -321,23 +319,27 @@ def build_pwpb95_superfunctional(name, npoints, deriv, restricted):
    # No spaces, keep it short and according to convention
    sup.set_name('pwpb95')
    # Tab in, trailing newlines
-   sup.set_description('    PWPB95 SOS Double Hybrid XC Functional\n')
+   sup.set_description('    PWPB95  SOS Double Hybrid XC Functional\n')
    # Tab in, trailing newlines
    sup.set_citation('    L. Goerigk, S.Grimme JCTC 7, 291-309, 2011 \n')
-   #PWPB95         0.00444	0.3262	3.7868	0.00250	0.03241	0.50	0.269
-   #PW6B95(hybrid) 0.00538	1.7382	3.8901	0.00262	0.03668	0.28
    # Add member functionals
    pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
    # modify PW91 suitable for libxc 
-   X2S=0.1282782438530421943003109254455883701296 
-   bt=0.00444 # b_pw in paper 
-   a_pw6=6.0*bt/X2S 
-   c_pw=0.32620 # c_pw in paper
+   beta=0.0018903811666999256 # 5.0*(36.0*math.pi)**(-5.0/3.0)
+   X2S=0.1282782438530421943003109254455883701296
+   X_FACTOR_C=0.9305257363491000250020102180716672510262 #    /* 3/8*cur(3/pi)*4^(2/3) */
+   bt=0.004444 # paper values
+   c_pw=0.32620 # paper values
+   expo_pw6=3.7868 # paper values
+
    alpha_pw6=c_pw/X2S/X2S
-   expo_pw6=3.78680 # d_pw in paper
-   #              a        b       c        d      f      alpha  expo
-   #     PW91: 0.19645, 7.7956, 0.2743, -0.1508, 0.004, 100.0, 4.0
-#   pw6.set_tweak([a_pw6,7.7956, 0.2743, -0.1508, 0.004, alpha_pw6, expo_pw6])
+   a_pw6=6.0*bt/X2S
+   b_pw6=1.0/X2S
+   c_pw6=bt/(X_FACTOR_C*X2S*X2S)
+   d_pw6=-(bt-beta)/(X_FACTOR_C*X2S*X2S)
+   f_pw6=1.0e-6/(X_FACTOR_C*X2S**expo_pw6)
+   print 
+   pw6.set_tweak([a_pw6,b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
    pw6.set_alpha(0.50)
    sup.add_x_functional(pw6)
 
@@ -346,7 +348,7 @@ def build_pwpb95_superfunctional(name, npoints, deriv, restricted):
    css=0.03241
    mb95.set_tweak([css,copp])
    mb95.set_alpha(0.731)
-   #sup.add_c_functional(mb95)
+   sup.add_c_functional(mb95)
 
    # Set GKS up after adding functionals
    sup.set_x_omega(0.0)

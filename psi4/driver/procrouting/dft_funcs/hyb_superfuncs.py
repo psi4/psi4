@@ -277,22 +277,35 @@ def build_pw6b95_superfunctional(name, npoints, deriv, restricted):
    # No spaces, keep it short and according to convention
    sup.set_name('pw6b95')
    # Tab in, trailing newlines
-   sup.set_description('    PW^B95 Hybrid-meta XC Functional\n')
+   sup.set_description('    PW6B95 Hybrid-meta XC Functional\n')
    # Tab in, trailing newlines
    sup.set_citation('   Zhao and Truhlar, J Phys Chem A., 109, 25, 2005, 5656-5667 \n')
    #PW6B95(hybrid) 0.00538      1.7382  3.8901  0.00262 0.03668 0.28
    # Add member functionals
    pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
-   # modify PW91 suitable for libxc 
+   # modify PW91 suitable for libxc b=1/X2S is unchanged
+   #  a    =  6.0*bt/X2S;
+   #  b    =  1.0/X2S;
+   #  c    =  bt/(X_FACTOR_C*X2S*X2S);
+   #  d    = -(bt - beta)/(X_FACTOR_C*X2S*X2S);
+   #  f    = 1.0e-6/(X_FACTOR_C*POW(X2S, expo));
+   beta=0.0018903811666999256 # 5.0*(36.0*math.pi)**(-5.0/3.0)
    X2S=0.1282782438530421943003109254455883701296
-   bt=0.00538 
-   a_pw6=6.0*bt/X2S
-   c_pw=1.7382 
+   X_FACTOR_C=0.9305257363491000250020102180716672510262 #    /* 3/8*cur(3/pi)*4^(2/3) */
+   bt=0.00538 # paper values
+   c_pw=1.7382 # paper values
+   expo_pw6=3.8901 # paperl values
+
    alpha_pw6=c_pw/X2S/X2S
-   expo_pw6=3.8901 
-   pw6.set_tweak([a_pw6,7.7956, 0.2743, -0.1508, 0.004, alpha_pw6, expo_pw6])
+   a_pw6=6.0*bt/X2S
+   b_pw6=1.0/X2S
+   c_pw6=bt/(X_FACTOR_C*X2S*X2S)
+   d_pw6=-(bt-beta)/(X_FACTOR_C*X2S*X2S)
+   f_pw6=1.0e-6/(X_FACTOR_C*X2S**expo_pw6)
+   pw6.set_tweak([a_pw6,b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
    pw6.set_alpha(0.72)
    sup.add_x_functional(pw6)
+
 
    mb95 = core.LibXCFunctional('XC_MGGA_C_BC95', restricted)
    copp=0.00262
