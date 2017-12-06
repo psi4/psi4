@@ -1,21 +1,19 @@
 if(${ENABLE_snsmp2})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_snsmp2}))
         include(FindPythonModule)
-        find_python_module(snsmp2 QUIET)
+        find_python_module(snsmp2 ATLEAST 1.0.0 QUIET)
     endif()
 
     if(${snsmp2_FOUND})
-        message(STATUS "${Cyan}Found snsnp2${ColourReset}: ${PY_snsmp2}") # (found version ${snsmp2_VERSION})")
+        message(STATUS "${Cyan}Found snsnp2${ColourReset}: ${PY_snsmp2} (found version ${snsmp2_VERSION})")
+
     else()
         include(ExternalProject)
         message(STATUS "Suitable snsmp2 could not be located, ${Magenta}Building snsmp2${ColourReset} instead.")
 
-
         ExternalProject_Add(snsmp2_external
-            #GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
-            #GIT_TAG 1.0
-            GIT_REPOSITORY https://github.com/loriab/sns-mp2
-            GIT_TAG psifixes
+            GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
+            GIT_TAG 117d24b
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
