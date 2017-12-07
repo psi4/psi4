@@ -358,7 +358,7 @@ double VBase::vv10_nlc(SharedMatrix ret){
         double * zk = vals["V"]->pointer();
         double * v_rho_a = vals["V_RHO_A"]->pointer();
 
-        parallel_timer_on("VV10 Fock", rank);
+        parallel_timer_on("Fock", rank);
         // => LSDA contribution (symmetrized) <= //
         for (int P = 0; P < npoints; P++) {
             std::fill(Tp[P], Tp[P] + nlocal, 0.0);

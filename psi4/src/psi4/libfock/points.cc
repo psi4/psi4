@@ -159,7 +159,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
         double** phizp = basis_values_["PHI_Z"]->pointer();
         double* taup = point_values_["TAU_A"]->pointer();
 
-        ::memset((void*)taup, '\0', sizeof(double) * npoints);
+        std::fill(taup, taup + npoints, 0.0);
 
         double** phi[3];
         phi[0] = phixp;
@@ -441,8 +441,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
         double* tauap = point_values_["TAU_A"]->pointer();
         double* taubp = point_values_["TAU_B"]->pointer();
 
-        ::memset((void*)tauap, '\0', sizeof(double) * npoints);
-        ::memset((void*)taubp, '\0', sizeof(double) * npoints);
+        std::fill(tauap, tauap + npoints, 0.0);
+        std::fill(taubp, taubp + npoints, 0.0);
 
         double** phi[3];
         phi[0] = phixp;
@@ -508,7 +508,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Ca2p = Ca_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        std::fill(Ca2p[ml], Cap[mg] + na, 0.0);
+        C_DCOPY(na, Cap[ml], 1, Ca2p[mg], 1);
     }
 
     int nb = Cb_AO_->colspi()[0];
@@ -516,7 +516,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Cb2p = Cb_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        std::fill(Cb2p[ml], Cbp[mg] + nb, 0.0);
+        C_DCOPY(na, Cbp[ml], 1, Cb2p[mg], 1);
     }
 
     // => Build orbitals <= //
