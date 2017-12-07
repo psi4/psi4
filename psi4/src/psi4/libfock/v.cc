@@ -514,7 +514,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
             pworker->print("outfile", debug_);
         }
 
-        parallel_timer_on("V_XC", rank);
+        parallel_timer_on("V_xc", rank);
         double** phi = pworker->basis_value("PHI")->pointer();
         double * rho_a = pworker->point_value("RHO_A")->pointer();
         double * zk = vals["V"]->pointer();
@@ -532,16 +532,16 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         rhoazq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
 
         // => LSDA contribution (symmetrized) <= //
-        parallel_timer_on("LSDA", rank);
+        // parallel_timer_on("LSDA Phi_tmp", rank);
         for (int P = 0; P < npoints; P++) {
             std::fill(Tp[P], Tp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
         }
-        parallel_timer_off("LSDA", rank);
+        // parallel_timer_off("LSDA Phi_tmp", rank);
 
         // => GGA contribution (symmetrized) <= //
         if (ansatz >= 1) {
-            parallel_timer_on("GGA", rank);
+            // parallel_timer_on("GGA Phi_tmp", rank);
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
@@ -555,11 +555,11 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                 C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
                 C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
             }
-            parallel_timer_off("GGA", rank);
+            // parallel_timer_off("GGA Phi_tmp", rank);
         }
 
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        parallel_timer_on("LSDA", rank);
+        // parallel_timer_on("LSDA/GGA V form", rank);
         // printf("nlocal: %d, npoints %d, maxf %d\n", nlocal, npoints, max_functions);
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions,
                 0.0, V2p[0], max_functions);
@@ -570,11 +570,11 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                 V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
             }
         }
-        parallel_timer_off("LSDA", rank);
+        // parallel_timer_off("LSDA/GGA V form", rank);
 
         // => Meta contribution <= //
         if (ansatz >= 2) {
-            parallel_timer_on("Meta", rank);
+            // parallel_timer_on("Meta", rank);
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
@@ -594,7 +594,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                 C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tp[0],
                         max_functions, 1.0, V2p[0], max_functions);
             }
-            parallel_timer_off("Meta", rank);
+            // parallel_timer_off("Meta", rank);
         }
 
         // => Unpacking <= //
@@ -610,7 +610,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
             #pragma omp atomic update
             Vp[mg][mg] += V2p[ml][ml];
         }
-        parallel_timer_off("V_XC", rank);
+        parallel_timer_off("V_xc", rank);
     }
 
     // Do we need VV10?
@@ -832,16 +832,16 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             // => LSDA contribution (symmetrized) <= //
             parallel_timer_on("V_XCd", rank);
-            parallel_timer_on("LSDA", rank);
+            // parallel_timer_on("LSDA", rank);
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 if (rho_a[P] < v2_rho_cutoff_) continue;
                 C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
             }
-            parallel_timer_off("LSDA", rank);
+            // parallel_timer_off("LSDA", rank);
 
             // => GGA contribution <= //
-            parallel_timer_on("GGA", rank);
+            // parallel_timer_on("GGA", rank);
             if (ansatz >= 1) {
                 double* v_gamma = vals["V_GAMMA_AA"]->pointer();
                 double* v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
@@ -868,13 +868,13 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tp[P], 1);
                 }
             }
-            parallel_timer_off("GGA", rank);
+            // parallel_timer_off("GGA", rank);
 
             // Put it all together
-            parallel_timer_on("LSDA", rank);
+            // parallel_timer_on("LSDA", rank);
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0],
                     max_functions, 0.0, Vx_localp[0], max_functions);
-            parallel_timer_off("LSDA", rank);
+            // parallel_timer_off("LSDA", rank);
 
             // Symmetrization (V is *always* Hermitian)
             for (int m = 0; m < nlocal; m++) {
@@ -993,14 +993,15 @@ SharedMatrix RV::compute_gradient()
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
-        // timer_on("V: Properties");
+        parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
-        // timer_off("V: Properties");
+        parallel_timer_off("Properties", rank);
 
-        // timer_on("V: Functional");
+        parallel_timer_on("Functional", rank);
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        // timer_off("V: Functional");
+        parallel_timer_off("Functional", rank);
 
+        parallel_timer_on("V_xc gradient", rank);
         double** phi = pworker->basis_value("PHI")->pointer();
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
@@ -1145,6 +1146,7 @@ SharedMatrix RV::compute_gradient()
             }
         }
         U_local.reset();
+        parallel_timer_off("V_xc gradient", rank);
     }
 
     // Sum up the matrix
@@ -1548,20 +1550,20 @@ void UV::compute_V(std::vector<SharedMatrix> ret)
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
-        // timer_on("V: Properties");
+        parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
-        // timer_off("V: Properties");
+        parallel_timer_off("Properties", rank);
 
-        // timer_on("V: Functional");
+        parallel_timer_on("Functional", rank);
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        // timer_off("V: Functional");
+        parallel_timer_off("Functional", rank);
 
         if (debug_ > 3) {
             block->print("outfile", debug_);
             pworker->print("outfile", debug_);
         }
 
-        // timer_on("V: V_XC");
+        parallel_timer_on("V_xc", rank);
         double** phi = pworker->basis_value("PHI")->pointer();
         double* rho_a = pworker->point_value("RHO_A")->pointer();
         double* rho_b = pworker->point_value("RHO_B")->pointer();
@@ -1695,7 +1697,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret)
             # pragma omp atomic update
             Vbp[mg][mg] += Vb2p[ml][ml];
         }
-        // timer_off("V: V_XC");
+        parallel_timer_off("V_xc", rank);
     }
 
     // Set the result
@@ -1729,6 +1731,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret)
     }
 }
 void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+    timer_on("UV: Form Vx");
     if (D_AO_.size() != 2) {
         throw PSIEXCEPTION("Vx: UKS should have two D matrices.");
     }
@@ -1845,10 +1848,14 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         int nlocal = function_map.size();
 
         // Compute Rho, Phi, etc
+        parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
+        parallel_timer_off("Properties", rank);
 
         // Compute functional values
+        parallel_timer_on("Functional", rank);
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        parallel_timer_off("Functional", rank);
 
         // => Grab quantities <= //
         // LDA
@@ -1923,6 +1930,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             // Rho_a = D^k_xy phi_xa phi_ya
             // Alpha
+            parallel_timer_on("Derivative Properties", rank);
             C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dax_localp[0],
                     max_functions, 0.0, Tap[0], max_functions);
             C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dax_localp[0],
@@ -1966,8 +1974,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     gamma_abk[P] += rho_ak_z[P] * rho_bz[P] + rho_bk_z[P] * rho_az[P];
                 }
             }
+            parallel_timer_off("Derivative Properties", rank);
 
             // => LSDA contribution (symmetrized) <= //
+            parallel_timer_on("V_XCd", rank);
             double tmp_val = 0.0, tmp_ab_val = 0.0;
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
@@ -2176,6 +2186,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 Vbxp[mg][mg] += Vbx_localp[ml][ml];
             }
         }
+        parallel_timer_off("V_XCd", rank);
     }
 
     // Set the result
@@ -2195,6 +2206,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
          functional_workers_[i]->allocate();
     }
 
+    timer_off("UV: Form Vx");
 }
 SharedMatrix UV::compute_gradient()
 {
@@ -2278,15 +2290,16 @@ SharedMatrix UV::compute_gradient()
         int nlocal = function_map.size();
 
         // Compute grid and functional
-        // timer_on("V: Properties");
+        parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
-        // timer_off("V: Properties");
+        parallel_timer_off("Properties", rank);
 
-        // timer_on("V: Functional");
+        parallel_timer_on("Functional", rank);
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        // timer_off("V: Functional");
+        parallel_timer_off("Functional", rank);
 
         // More pointers
+        parallel_timer_on("V_xc gradient", rank);
         double** phi = pworker->basis_value("PHI")->pointer();
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
@@ -2514,6 +2527,7 @@ SharedMatrix UV::compute_gradient()
         }
         Ua_local.reset();
         Ub_local.reset();
+        parallel_timer_off("V_xc gradient", rank);
 
     }
     // timer_off("V: V_XC");
