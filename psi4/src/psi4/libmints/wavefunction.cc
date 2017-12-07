@@ -609,8 +609,8 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
 
 void Wavefunction::force_doccpi(const Dimension &doccpi) {
     for (int h = 0; h < nirrep_; h++) {
-        if(doccpi[h] > nmopi_[h]) {
-            throw PSIEXCEPTION("Wavefunction::force_doccpi: Number of doubly occupied orbitals in an irrep cannot exceed the number of molecular orbitals.");
+        if((soccpi_[h] + doccpi[h]) > nmopi_[h]) {
+            throw PSIEXCEPTION("Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed the total number of molecular orbitals.");
         }
         doccpi_[h] = doccpi[h];
         nalphapi_[h] = doccpi_[h] + soccpi_[h];
@@ -625,8 +625,8 @@ void Wavefunction::force_soccpi(const Dimension &soccpi) {
        throw PSIEXCEPTION("Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this Wavefunction."); 
     }
     for (int h = 0; h < nirrep_; h++) {
-        if(soccpi[h] > nmopi_[h]) {
-            throw PSIEXCEPTION("Wavefunction::force_soccpi: Number of singly occupied orbitals in an irrep cannot exceed the number of molecular orbitals.");
+        if((soccpi[h] + doccpi_[h]) > nmopi_[h]) {
+            throw PSIEXCEPTION("Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed the total number of molecular orbitals.");
         }
         soccpi_[h] = soccpi[h];
         nalphapi_[h] = doccpi_[h] + soccpi_[h];
