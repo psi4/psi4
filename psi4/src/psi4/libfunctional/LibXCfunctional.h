@@ -29,9 +29,10 @@
 #ifndef LibXC_FUNCTIONAL_H
 #define LibXC_FUNCTIONAL_H
 
-#include "libxc/xc.h"
 #include "psi4/libfunctional/functional.h"
 #include "psi4/libmints/typedefs.h"
+
+struct xc_func_type;
 
 namespace psi {
 
@@ -43,7 +44,7 @@ class LibXCFunctional : public Functional {
 
 private:
     std::string xc_func_name_;
-    xc_func_type xc_functional_;
+    std::unique_ptr<xc_func_type> xc_functional_;
     int func_id_;
     bool user_omega_;
     bool exc_;

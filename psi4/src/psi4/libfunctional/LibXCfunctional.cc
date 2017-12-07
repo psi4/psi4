@@ -35,6 +35,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
 
+#include "libxc/xc.h"
 #include <cmath>
 #include <string>
 #include <algorithm>
@@ -57,49 +58,53 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     } else {
         polar_value = 2;
     }
-    if (xc_func_init(&xc_functional_, func_id_, polar_value) != 0) {
+
+    // Replace in C++14
+    xc_functional_ = std::unique_ptr<xc_func_type>(new xc_func_type);
+
+    if (xc_func_init(xc_functional_.get(), func_id_, polar_value) != 0) {
         outfile->Printf("Functional '%d' not found\n", xc_name.c_str());
         throw PSIEXCEPTION("Could not find required LIBXC functional");
     }
 
     // Extract citation information
     name_ = xc_name;
-    description_ = "    " + std::string(xc_functional_.info->name);
+    description_ = "    " + std::string(xc_functional_->info->name);
     for (size_t i = 0; i < 5; i++) {
-        if (xc_functional_.info->refs[i]) {
+        if (xc_functional_->info->refs[i]) {
             if (i != 0) {
                 citation_ += "\n";
             }
             citation_ += "    ";
-            citation_ += xc_functional_.info->refs[i]->ref;
+            citation_ += xc_functional_->info->refs[i]->ref;
         }
     }
 
     // Extract variables
-    if (xc_functional_.info->family == XC_FAMILY_HYB_GGA ||
-        xc_functional_.info->family == XC_FAMILY_HYB_MGGA) {
+    if (xc_functional_->info->family == XC_FAMILY_HYB_GGA ||
+        xc_functional_->info->family == XC_FAMILY_HYB_MGGA) {
         /* Range separation? */
         int rangesep = 0;
-        if (xc_functional_.info->flags & XC_FLAGS_HYB_CAM) rangesep++;
-        if (xc_functional_.info->flags & XC_FLAGS_HYB_CAMY) rangesep++;
-        if (xc_functional_.info->flags & XC_FLAGS_HYB_LC) rangesep++;
-        if (xc_functional_.info->flags & XC_FLAGS_HYB_LCY) rangesep++;
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_CAM) rangesep++;
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) rangesep++;
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_LC) rangesep++;
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_LCY) rangesep++;
         if (rangesep) {
             lrc_ = true;
 
             double alpha, beta;
-            xc_hyb_cam_coef(&xc_functional_, &omega_, &alpha, &beta);
+            xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
 
             global_exch_ = alpha + beta;
             lr_exch_ = std::abs(beta);
 
         } else {
-            global_exch_ = xc_hyb_exx_coef(&xc_functional_);
+            global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
         }
     }
 
     // Figure out the family
-    int family = xc_functional_.info->family;
+    int family = xc_functional_->info->family;
 
     std::vector<int> gga_vec = {XC_FAMILY_GGA, XC_FAMILY_HYB_GGA};
     if (std::find(gga_vec.begin(), gga_vec.end(), family) != gga_vec.end()) {
@@ -114,21 +119,21 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 
     // Set any other parameters
     user_omega_ = false;
-    exc_ = xc_functional_.info->flags & XC_FLAGS_HAVE_EXC;
-    vxc_ = xc_functional_.info->flags & XC_FLAGS_HAVE_VXC;
-    fxc_ = xc_functional_.info->flags & XC_FLAGS_HAVE_FXC;
+    exc_ = xc_functional_->info->flags & XC_FLAGS_HAVE_EXC;
+    vxc_ = xc_functional_->info->flags & XC_FLAGS_HAVE_VXC;
+    fxc_ = xc_functional_->info->flags & XC_FLAGS_HAVE_FXC;
 
     // VV10 info, ONLY for passing up the chain
     needs_vv10_ = false;
     vv10_c_ = 0.0;
     vv10_b_ = 0.0;
-    if (xc_functional_.info->flags & XC_FLAGS_VV10){
-        xc_nlc_coef(&xc_functional_, &vv10_b_, &vv10_c_);
+    if (xc_functional_->info->flags & XC_FLAGS_VV10){
+        xc_nlc_coef(xc_functional_.get(), &vv10_b_, &vv10_c_);
         needs_vv10_ = true;
     }
 
 }
-LibXCFunctional::~LibXCFunctional() { xc_func_end(&xc_functional_); }
+LibXCFunctional::~LibXCFunctional() { xc_func_end(xc_functional_.get()); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
     auto func = std::make_shared<LibXCFunctional>(xc_func_name_, unpolarized_);
@@ -158,17 +163,17 @@ void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;
     if (xc_func_name_ == "XC_GGA_X_WPBEH") {
-        xc_gga_x_wpbeh_set_params(&xc_functional_, omega);
+        xc_gga_x_wpbeh_set_params(xc_functional_.get(), omega);
     } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {
-        xc_gga_x_hjs_set_params(&xc_functional_, omega);
+        xc_gga_x_hjs_set_params(xc_functional_.get(), omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") {
-        xc_gga_x_wpbeh_set_params(xc_functional_.func_aux[0], omega);
+        xc_gga_x_wpbeh_set_params(xc_functional_->func_aux[0], omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
-        xc_functional_.cam_omega = omega;
-        xc_lda_x_set_params(xc_functional_.func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
+        xc_functional_->cam_omega = omega;
+        xc_lda_x_set_params(xc_functional_->func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
-        xc_functional_.cam_omega = omega;
-        xc_lda_x_set_params(xc_functional_.func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
+        xc_functional_->cam_omega = omega;
+        xc_lda_x_set_params(xc_functional_->func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
     } else {
         outfile->Printf("LibXCfunctional: set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
         throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");
@@ -180,94 +185,94 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
     if (xc_func_name_ == "XC_LDA_X") {
         if (vsize == 3) {
             // (XC(func_type) *p, FLOAT alpha, int relativistic, FLOAT omega);
-            xc_lda_x_set_params(&xc_functional_, values[0], (int)values[1], values[2]);
+            xc_lda_x_set_params(xc_functional_.get(), values[0], (int)values[1], values[2]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_B86") {
         if (vsize == 3) {
             // (XC(func_type) *p, FLOAT beta, FLOAT gamma, FLOAT omega);
-            xc_gga_x_b86_set_params(&xc_functional_, values[0], values[1], values[2]);
+            xc_gga_x_b86_set_params(xc_functional_.get(), values[0], values[1], values[2]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_B88") {
         if (vsize == 2) {
             // (XC(func_type) *p, FLOAT beta, FLOAT gamma);
-            xc_gga_x_b88_set_params(&xc_functional_, values[0], values[1]);
+            xc_gga_x_b88_set_params(xc_functional_.get(), values[0], values[1]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_PBE") {
         if (vsize == 2) {
             //  (XC(func_type) *p, FLOAT kappa, FLOAT mu);
-            xc_gga_x_pbe_set_params(&xc_functional_, values[0], values[1]);
+            xc_gga_x_pbe_set_params(xc_functional_.get(), values[0], values[1]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_C_PBE") {
         if (vsize == 1) {
             // (XC(func_type) *p, FLOAT beta);
-            xc_gga_c_pbe_set_params(&xc_functional_, values[0]);
+            xc_gga_c_pbe_set_params(xc_functional_.get(), values[0]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_PW91") {
         if (vsize == 7) {
             // (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT c, FLOAT d, FLOAT f, FLOAT alpha, FLOAT expo);
-            xc_gga_x_pw91_set_params(&xc_functional_, values[0], values[1], values[2], values[3], values[4], values[5],
+            xc_gga_x_pw91_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3], values[4], values[5],
                                      values[6]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_RPBE") {
         if (vsize == 2) {
             // (XC(func_type) *p, FLOAT kappa, FLOAT mu);
-            xc_gga_x_rpbe_set_params(&xc_functional_, values[0], values[1]);
+            xc_gga_x_rpbe_set_params(xc_functional_.get(), values[0], values[1]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_OPTX") {
         if (vsize == 3) {
             // (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT gamma);
-            xc_gga_x_optx_set_params(&xc_functional_, values[0], values[1], values[2]);
+            xc_gga_x_optx_set_params(xc_functional_.get(), values[0], values[1], values[2]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_C_LYP") {
         if (vsize == 4) {
             // (XC(func_type) *p, FLOAT A, FLOAT B, FLOAT c, FLOAT d);
-            xc_gga_c_lyp_set_params(&xc_functional_, values[0], values[1], values[2], values[3]);
+            xc_gga_c_lyp_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3]);
             failed = false;
         }
     } else if ((xc_func_name_ == "XC_HYB_GGA_XC_HSE03") || (xc_func_name_ == "XC_HYB_GGA_XC_HSE06")) {
         if (vsize == 1) {
             // (XC(func_type) *p, FLOAT alpha, FLOAT omega);
-            xc_hyb_gga_xc_pbeh_set_params(&xc_functional_, values[0]);
+            xc_hyb_gga_xc_pbeh_set_params(xc_functional_.get(), values[0]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_PBEH") {
         if (vsize == 1) {
             // (XC(func_type) *p, FLOAT alpha);
-            xc_hyb_gga_xc_pbeh_set_params(&xc_functional_, values[0]);
+            xc_hyb_gga_xc_pbeh_set_params(xc_functional_.get(), values[0]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_X_TB09") {
         if (vsize == 1) {
             // (XC(func_type) *p, FLOAT c);
-            xc_mgga_x_tb09_set_params(&xc_functional_, values[0]);
+            xc_mgga_x_tb09_set_params(xc_functional_.get(), values[0]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_X_TPSS") {
         if (vsize == 5) {
             // (XC(func_type) *p, FLOAT b, FLOAT c, FLOAT e, FLOAT kappa, FLOAT mu);
-            xc_mgga_x_tpss_set_params(&xc_functional_, values[0], values[1], values[2], values[3],
+            xc_mgga_x_tpss_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3],
                                       values[4]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_C_BC95") {
         if (vsize == 2) {
             // (XC(func_type) *p, FLOAT css, FLOAT copp);
-            xc_mgga_c_bc95_set_params(&xc_functional_, values[0], values[1]);
+            xc_mgga_c_bc95_set_params(xc_functional_.get(), values[0], values[1]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_C_PKZB") {
         if (vsize == 6) {
             // ((XC(func_type) *p, FLOAT beta, FLOAT d, FLOAT C0_0, FLOAT C0_1, FLOAT C0_2, FLOAT
             // C0_3);
-            xc_mgga_c_pkzb_set_params(&xc_functional_, values[0], values[1], values[2], values[3],
+            xc_mgga_c_pkzb_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3],
                                       values[4], values[5]);
             failed = false;
         }
@@ -289,17 +294,17 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
 std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data() {
     std::vector<std::tuple<std::string, int, double>> ret;
 
-    if (xc_functional_.mix_coef == nullptr) {
-        std::string name = std::string(xc_functional_.info->name);
-        int kind = xc_functional_.info->kind;
+    if (xc_functional_->mix_coef == nullptr) {
+        std::string name = std::string(xc_functional_->info->name);
+        int kind = xc_functional_->info->kind;
         double coef = 1.0;
         ret.push_back(std::make_tuple(name, kind, coef));
 
     } else {
-        for (size_t i = 0; i < xc_functional_.n_func_aux; i++) {
-            std::string name = std::string(xc_functional_.func_aux[i]->info->name);
-            int kind = xc_functional_.func_aux[i]->info->kind;
-            double coef = xc_functional_.mix_coef[i];
+        for (size_t i = 0; i < xc_functional_->n_func_aux; i++) {
+            std::string name = std::string(xc_functional_->func_aux[i]->info->name);
+            int kind = xc_functional_->func_aux[i]->info->kind;
+            double coef = xc_functional_->mix_coef[i];
 
             ret.push_back(std::make_tuple(name, kind, coef));
         }
@@ -525,15 +530,15 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
             // Compute
             if (meta_) {
-                xc_mgga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, flapl.data(), tau_ap,
+                xc_mgga_exc_vxc(xc_functional_.get(), npoints, rho_ap, gamma_aap, flapl.data(), tau_ap,
                                 fvp, fv_rho.data(), fv_gamma.data(), fv_lapl.data(),
                                 fv_tau.data());
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, fvp,
+                xc_gga_exc_vxc(xc_functional_.get(), npoints, rho_ap, gamma_aap, fvp,
                                fv_rho.data(), fv_gamma.data());
 
             } else {
-                xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, fvp, fv_rho.data());
+                xc_lda_exc_vxc(xc_functional_.get(), npoints, rho_ap, fvp, fv_rho.data());
             }
             // printf("%s | %lf %lf\n", xc_func_name_.c_str(), fv_rho[0], fv_gamma[0]);
 
@@ -567,7 +572,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 std::vector<double> fv2_rho_gamma(npoints);
                 std::vector<double> fv2_gamma2(npoints);
 
-                xc_gga_fxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv2_rho2.data(),
+                xc_gga_fxc(xc_functional_.get(), npoints, rho_ap, gamma_aap, fv2_rho2.data(),
                            fv2_rho_gamma.data(), fv2_gamma2.data());
 
                 C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
@@ -577,7 +582,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             } else {
                 std::vector<double> fv2_rho2(npoints);
 
-                xc_lda_fxc(&xc_functional_, npoints, rho_ap, fv2_rho2.data());
+                xc_lda_fxc(xc_functional_.get(), npoints, rho_ap, fv2_rho2.data());
 
                 C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
             }
@@ -629,16 +634,16 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             if (meta_) {
-                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), flapl.data(),
+                xc_mgga_exc_vxc(xc_functional_.get(), npoints, frho.data(), fgamma.data(), flapl.data(),
                                 ftau.data(), fvp, fv_rho.data(), fv_gamma.data(), fv_lapl.data(),
                                 fv_tau.data());
 
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), fvp,
+                xc_gga_exc_vxc(xc_functional_.get(), npoints, frho.data(), fgamma.data(), fvp,
                                fv_rho.data(), fv_gamma.data());
 
             } else {
-                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fvp, fv_rho.data());
+                xc_lda_exc_vxc(xc_functional_.get(), npoints, frho.data(), fvp, fv_rho.data());
             }
 
             // Re-apply
@@ -674,7 +679,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 std::vector<double> fv2_rhogamma(npoints * 6);
                 std::vector<double> fv2_gamma2(npoints * 6);
 
-                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fgamma.data(), fv2_rho2.data(),
+                xc_gga_fxc(xc_functional_.get(), npoints, frho.data(), fgamma.data(), fv2_rho2.data(),
                            fv2_rhogamma.data(), fv2_gamma2.data());
 
                 for (size_t i = 0; i < npoints; i++) {
@@ -704,7 +709,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
                 std::vector<double> fv2_rho2(npoints * 3);
 
-                xc_lda_fxc(&xc_functional_, npoints, frho.data(), fv2_rho2.data());
+                xc_lda_fxc(xc_functional_.get(), npoints, frho.data(), fv2_rho2.data());
 
                 for (size_t i = 0; i < npoints; i++) {
                     // v2rho2(3)       = (u_u, u_d, d_d)
