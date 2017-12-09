@@ -33,6 +33,7 @@ incremental improvements by other psi4 developers.
 """
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import division
 import math
 import copy
 from .exceptions import *
@@ -80,7 +81,7 @@ def normalize(v):
 
 def distance(v, u):
     """Compute the distance between points defined by vectors *v* and *u*."""
-    return norm(sub(v, u))
+    return math.sqrt(sum(((v[i] - u[i]) * (v[i] - u[i]) for i in range(len(v)))))
 
 
 def cross(v, u):

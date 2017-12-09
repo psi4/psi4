@@ -32,6 +32,7 @@ import os
 import re
 import copy
 import math
+import numpy as np
 try:
     from collections import OrderedDict
 except ImportError:
@@ -117,6 +118,9 @@ class LibmintsMolecule(object):
         self.all_variables = []
         # A listing of the variables used to define the geometries
         self.geometry_variables = {}
+
+        # Limited lifetime efficiency boost
+        self.wholegeom = None
 
         # <<< Fragmentation >>>
 
@@ -328,7 +332,7 @@ class LibmintsMolecule(object):
         """
         return self.input_units_to_au * self.atoms[atom].compute()[2]
 
-    def xyz(self, atom, posn=None):
+    def xyz(self, atom, npout=False):
         """Returns a Vector3 with x, y, z position of atom (0-indexed)
         in Bohr or coordinate at *posn*
 
@@ -336,11 +340,11 @@ class LibmintsMolecule(object):
         [3.175492014248769, -0.7062681346308132, -1.4334725450878665]
 
         """
-        temp = scale(self.atoms[atom].compute(), self.input_units_to_au)
-        if posn is None:
-            return temp
+        xyz = self.input_units_to_au * np.asarray(self.atoms[atom].compute())
+        if npout:
+            return xyz
         else:
-            return temp[posn]
+            return xyz.tolist()
 
     def mass(self, atom):
         """Returns mass of atom (0-indexed)
@@ -978,8 +982,7 @@ class LibmintsMolecule(object):
 
             for i in range(self.natom()):
                 text += """    %8s%4s """ % (self.symbol(i), "" if self.Z(i) else "(Gh)")
-                for j in range(3):
-                    text += """  %17.12f""" % (self.xyz(i, j))
+                text += ("""  %17.12f""" * 3).format(*(self.xyz(i)))
                 text += "\n"
             text += "\n"
         else:
@@ -1005,8 +1008,7 @@ class LibmintsMolecule(object):
 
             for i in range(self.natom()):
                 text += """    %8s%4s """ % (self.symbol(i), "" if self.Z(i) else "(Gh)")
-                for j in range(3):
-                    text += """  %17.12f""" % (self.xyz(i, j) * psi_bohr2angstroms)
+                text += ("""  %17.12f""" * 3).format(*self.xyz(i) * psi_bohr2angstroms)
                 text += "\n"
             text += "\n"
         else:
@@ -1180,7 +1182,7 @@ class LibmintsMolecule(object):
         return self.atoms[atom]
 
     def atom_at_position(self, b, tol=0.05):
-        """Tests to see of an atom is at the passed position *b* in Bohr with a tolerance *tol*.
+        """Tests to see if an atom is at the passed position *b* in Bohr with a tolerance *tol*.
 
         >>> print H2OH2O.atom_at_position([1.35*(1.0/psi_bohr2angstroms), 0.10*(1.0/psi_bohr2angstroms), 0.0*(1.0/psi_bohr2angstroms)])
         3
@@ -1189,11 +1191,20 @@ class LibmintsMolecule(object):
         if len(b) != 3:
             raise ValidationError('Molecule::atom_at_position: Argument vector not of length 3\n')
 
-        for at in range(self.natom()):
-            a = self.xyz(at)
-            if distance(b, a) < tol:
-                return at
-        return -1
+        if self.natom() == 0:
+            return -1
+
+        if self.wholegeom is not None:
+            current_geom = self.wholegeom
+        else:
+            current_geom = self.geometry(npout=True)
+        shifted_geom = current_geom - np.asarray(b)
+        dist2 = np.sum(np.square(shifted_geom), axis=1)
+        distminidx = np.argmin(dist2)
+        if dist2[distminidx] < tol * tol:
+            return distminidx
+        else:
+            return -1
 
     def is_variable(self, vstr):
         """Checks to see if the variable str is in the list, returns
@@ -1203,8 +1214,6 @@ class LibmintsMolecule(object):
         False
 
         """
-        #if self.all_variables
-        #print 'vstr', vstr, 'all_variables', self.all_variables, (vstr.upper() in self.all_variables), '\n'
         return True if vstr.upper() in self.all_variables else False
 
     def get_variable(self, vstr):
@@ -1250,17 +1259,19 @@ class LibmintsMolecule(object):
                     return i
             raise ValidationError("Molecule::get_anchor_atom: Illegal value %s in atom specification on line %s.\n" % (vstr, line))
 
-    def geometry(self):
+    def geometry(self, npout=False):
         """Returns the geometry in Bohr as a N X 3 array.
 
         >>> print H2OH2O.geometry()
         [[-2.930978460188563, -0.21641143673806384, 0.0], [-3.655219780069251, 1.4409218455037016, 0.0], [-1.1332252981904638, 0.0769345303220403, 0.0], [2.5523113582286716, 0.21064588230662976, 0.0], [3.175492014248769, -0.7062681346308132, -1.4334725450878665], [3.175492014248769, -0.7062681346308132, 1.4334725450878665]]
 
         """
-        geom = []
-        for at in range(self.natom()):
-            geom.append([self.x(at), self.y(at), self.z(at)])
-        return geom
+        geom = np.asarray([self.atoms[at].compute() for at in range(self.natom())])
+        geom *= self.input_units_to_au
+        if npout:
+            return geom
+        else:
+            return geom.tolist()
 
     def full_geometry(self):
         """Returns the full (dummies included) geometry in Bohr as a N X 3 array.
@@ -1563,6 +1574,7 @@ class LibmintsMolecule(object):
             self.move_to_com()
         #print("after com:")
         #self.print_full()
+        self.wholegeom = self.geometry(npout=True)
 
         # If the no_reorient command was given, don't reorient
         if not self.PYfix_orientation:
@@ -1575,10 +1587,12 @@ class LibmintsMolecule(object):
             self.rotate_full(frame)
             #print("after rotate:")
             #self.print_full()
+            self.wholegeom = self.geometry(npout=True)
 
         # Recompute point group of the molecule, so the symmetry info is updated to the new frame
         self.set_point_group(self.find_point_group())
         self.set_full_point_group()
+        self.wholegeom = self.geometry(npout=True)
 
         # Disabling symmetrize for now if orientation is fixed, as it is not
         #   correct.  We may want to fix this in the future, but in some cases of
@@ -1588,6 +1602,7 @@ class LibmintsMolecule(object):
         #print "after symmetry:"
         #self.print_full()
 
+        self.wholegeom = None
         self.lock_frame = True
 
     # <<< Methods for Miscellaneous >>>
@@ -2300,10 +2315,11 @@ class LibmintsMolecule(object):
         """Does the molecule have an inversion center at origin
 
         """
-        for i in range(self.natom()):
-            inverted = sub(origin, sub(self.xyz(i), origin))
-            atom = self.atom_at_position(inverted, tol)
-            if atom < 0 or not self.atoms[atom].is_equivalent_to(self.atoms[i]):
+        geom = self.geometry(npout=True)
+        inverted = 2. * np.asarray(origin) - geom
+        for at in range(self.natom()):
+            atom = self.atom_at_position(inverted[at], tol)
+            if atom < 0 or not self.atoms[atom].is_equivalent_to(self.atoms[at]):
                 return False
         return True
 
@@ -2527,6 +2543,13 @@ class LibmintsMolecule(object):
 
         """
         com = self.center_of_mass()
+        if self.wholegeom is not None:
+            current_geom = self.wholegeom
+        else:
+            current_geom = self.geometry(npout=True)
+        shifted_geom = current_geom - np.asarray(com)
+        shifted_geom = shifted_geom.tolist()
+
         worldxaxis = [1.0, 0.0, 0.0]
         worldyaxis = [0.0, 1.0, 0.0]
         worldzaxis = [0.0, 0.0, 1.0]
@@ -2569,13 +2592,13 @@ class LibmintsMolecule(object):
         else:
             # loop through pairs of atoms to find c2 axis candidates
             for i in range(self.natom()):
-                A = sub(self.xyz(i), com)
+                A = shifted_geom[i]
                 AdotA = dot(A, A)
                 for j in range(i + 1):
                     # the atoms must be identical
                     if not self.atoms[i].is_equivalent_to(self.atoms[j]):
                         continue
-                    B = sub(self.xyz(j), com)
+                    B = shifted_geom[j]
                     # the atoms must be the same distance from the com
                     if math.fabs(AdotA - dot(B, B)) > tol:
                         continue
@@ -2871,11 +2894,14 @@ class LibmintsMolecule(object):
 
         ct = self.point_group().char_table()
         so = SymmetryOperation()
-        np = [0.0, 0.0, 0.0]
+        np3 = [0.0, 0.0, 0.0]
 
+        current_geom = self.geometry(npout=False)
+        current_Z = [self.Z(at) for at in range(self.natom())]
+        current_mass = [self.mass(at) for at in range(self.natom())]
         # Find the equivalent atoms
         for i in range(1, self.natom()):
-            ac = self.xyz(i)
+            ac = current_geom[i]
             i_is_unique = True
             i_equiv = 0
 
@@ -2883,17 +2909,17 @@ class LibmintsMolecule(object):
             for g in range(ct.order()):
                 so = ct.symm_operation(g)
                 for ii in range(3):
-                    np[ii] = 0
+                    np3[ii] = 0
                     for jj in range(3):
-                        np[ii] += so[ii][jj] * ac[jj]
+                        np3[ii] += so[ii][jj] * ac[jj]
 
                 # See if the transformed atom is equivalent to a unique atom
                 for j in range(self.PYnunique):
                     unique = self.equiv[j][0]
-                    aj = self.xyz(unique)
-                    if distance(np, aj) < tol and \
-                        self.Z(unique) == self.Z(i) and \
-                        abs(self.mass(unique) - self.mass(i)) < tol:
+                    aj = current_geom[unique]
+                    if current_Z[unique] == current_Z[i] and \
+                        abs(current_mass[unique] - current_mass[i]) < tol and \
+                        distance(np3, aj) < tol:
                         i_is_unique = False
                         i_equiv = j
                         break
@@ -2919,10 +2945,9 @@ class LibmintsMolecule(object):
             jmaxzero = 0
             for j in range(self.nequiv[i]):
                 nzero = 0
-                for k in range(3):
-                    tmp = self.equiv[i][j]
-                    if abs(self.xyz(tmp, k)) < ztol:
-                        nzero += 1
+                tmp = self.equiv[i][j]
+                arr = np.asarray(current_geom[tmp])
+                nzero = len(np.where(np.abs(arr) < ztol))
                 if nzero > maxzero:
                     maxzero = nzero
                     jmaxzero = j
@@ -2995,7 +3020,7 @@ class LibmintsMolecule(object):
         """Check if current geometry fits current point group
 
         """
-        np = [0.0, 0.0, 0.0]
+        np3 = [0.0, 0.0, 0.0]
         ct = self.point_group().char_table()
 
         # loop over all centers
@@ -3008,13 +3033,33 @@ class LibmintsMolecule(object):
                 so = ct.symm_operation(g)
 
                 for ii in range(3):
-                    np[ii] = 0
+                    np3[ii] = 0
                     for jj in range(3):
-                        np[ii] += so[ii][jj] * ac[jj]
+                        np3[ii] += so[ii][jj] * ac[jj]
 
-                if self.atom_at_position(np, tol) < 0:
+                if self.atom_at_position(np3, tol) < 0:
                     return False
         return True
+
+    #def valid_atom_map(self, tol=0.01):
+    #    """Check if current geometry fits current point group
+
+    #    """
+    #    np3 = np.zeros(3)
+    #    ct = self.point_group().char_table()
+    #    current_geom = self.geometry(npout=True)
+
+    #    # loop over all centers
+    #    for at in range(self.natom()):
+    #        # For each operation in the pointgroup, transform the coordinates of
+    #        #   center "at" and see which atom it maps into
+    #        for g in range(ct.order()):
+    #            so = ct.symm_operation(g)
+    #            np3 = so.dot(current_geom[at])
+
+    #            if self.atom_at_position(np3, tol) < 0:
+    #                return False
+    #    return True
 
     def full_point_group_with_n(self):
         """Return point group name such as Cnv or Sn."""
@@ -3215,7 +3260,7 @@ def compute_atom_map(mol):
     for i in range(natom):
         atom_map[i] = [0] * ng
 
-    np = [0.0, 0.0, 0.0]
+    np3 = [0.0, 0.0, 0.0]
     so = SymmetryOperation()
 
     # loop over all centers
@@ -3228,16 +3273,16 @@ def compute_atom_map(mol):
             so = ct.symm_operation(g)
 
             for ii in range(3):
-                np[ii] = 0
+                np3[ii] = 0
                 for jj in range(3):
-                    np[ii] += so[ii][jj] * ac[jj]
+                    np3[ii] += so[ii][jj] * ac[jj]
 
-            atom_map[i][g] = mol.atom_at_position(np, 0.05)
+            atom_map[i][g] = mol.atom_at_position(np3, 0.05)
             if atom_map[i][g] < 0:
                 print("""  Molecule:\n""")
                 mol.print_out()
                 print("""  attempted to find atom at\n""")
-                print("""    %lf %lf %lf\n""" % (np[0], np[1], np[2]))
+                print("""    %lf %lf %lf\n""" % (np3[0], np3[1], np3[2]))
                 raise ValidationError("ERROR: Symmetry operation %d did not map atom %d to another atom:\n" % (g, i + 1))
 
     return atom_map
