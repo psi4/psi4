@@ -56,7 +56,7 @@ class Molecule(LibmintsMolecule):
 
     def __init__(self, psi4molstr=None):
         """Initialize Molecule object from LibmintsMolecule"""
-        LibmintsMolecule.__init__(self, psi4molstr)
+        super(Molecule, self).__init__(psi4molstr=psi4molstr)
 
         # The comment line
         self.tagline = ""
@@ -67,13 +67,25 @@ class Molecule(LibmintsMolecule):
         text += self.create_psi4_string_from_molecule()
         return text
 
-#    def __getstate__(self):
-#        print 'im being pickled'
-#        return self.__dict__
+    def __setattr__(self, name, value):
+        """Function to overload setting attributes to allow geometry
+        variable assigment as if member data.
 
-#    def __setstate__(self, d):
-#        print 'im being unpickled with these values', d
-#        self.__dict__ = d
+        """
+        if 'all_variables' in self.__dict__:
+            if name.upper() in self.__dict__['all_variables']:
+                self.set_variable(name, value)
+        super(Molecule, self).__setattr__(name, value)
+
+    def __getattr__(self, name):
+        """Function to overload accessing attribute contents to allow
+        retrival of geometry variable values as if member data.
+
+        """
+        if 'all_variables' in self.__dict__ and name.upper() in self.__dict__['all_variables']:
+            return self.get_variable(name)
+        else:
+            raise AttributeError
 
     @classmethod
     def init_with_xyz(cls, xyzfilename, no_com=False, no_reorient=False, contentsNotFilename=False):

@@ -55,7 +55,7 @@ ZERO = 1.0E-14
 NOISY_ZERO = 1.0E-8
 
 
-class LibmintsMolecule(dict):
+class LibmintsMolecule(object):
     """Class to store the elements, coordinates, fragmentation pattern,
     charge, multiplicity of a molecule. Largely replicates psi4's libmints
     Molecule class, developed by Justin M. Turney and Andy M. Simmonett
@@ -114,9 +114,9 @@ class LibmintsMolecule(dict):
         # Atom info vector (includes dummy atoms)
         self.full_atoms = []
         # A list of all variables known, whether they have been set or not.
-        self["all_variables"] = []
+        self.all_variables = []
         # A listing of the variables used to define the geometries
-        self["geometry_variables"] = {}
+        self.geometry_variables = {}
 
         # <<< Fragmentation >>>
 
@@ -1214,7 +1214,7 @@ class LibmintsMolecule(dict):
         """
         vstr = vstr.upper()
         try:
-            return self["geometry_variables"][vstr]
+            return self.geometry_variables[vstr]
         except KeyError:
             raise ValidationError('Molecule::get_variable: Geometry variable %s not known.\n' % (vstr))
 
@@ -1224,7 +1224,7 @@ class LibmintsMolecule(dict):
 
         """
         self.lock_frame = False
-        self["geometry_variables"][vstr.upper()] = val
+        self.geometry_variables[vstr.upper()] = val
         print("""Setting geometry variable %s to %f""" % (vstr.upper(), val))
         try:
             self.update_geometry()
@@ -1232,34 +1232,6 @@ class LibmintsMolecule(dict):
             # Update geometry might have added some atoms, delete them to be safe.
             self.atoms = []
         # TODO outfile
-
-    def __setattr__(self, name, value):
-        """Function to overload setting attributes to allow geometry
-        variable assigment as if member data.
-
-        """
-    
-        if "all_variables" not in self.keys():
-            self["all_variables"] = []
-
-        if name.upper() in list(self["all_variables"]):
-            self.set_variable(name, value)
-        else:
-            self[name] = value
-
-    def __getattr__(self, name):
-        """Function to overload accessing attribute contents to allow
-        retrivial geometry variable values as if member data.
-
-        """
-
-        if name.upper() in list(self["all_variables"]):
-            return self.get_variable(name)
-        elif name in list(self):
-            return self[name]
-        else:
-            raise AttributeError
-
 
     def get_anchor_atom(self, vstr, line):
         """Attempts to interpret a string *vstr* as an atom specifier in
