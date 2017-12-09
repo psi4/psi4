@@ -155,72 +155,24 @@ private:
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
 
-    // Derivative of one and two electron integrals in both AO and MO basis 
-
-    std::vector<SharedMatrix>  ao_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints);
-    std::vector<SharedMatrix>  ao_tei_deriv2_helper(int atom1, int atom2, std::shared_ptr <TwoBodyAOInt> ints);
+    // Derivatives of OEI in AO and MO basis 
+    std::vector<SharedMatrix> ao_oei_deriv1(const std::string & oei_type, int atom);
+    std::vector<SharedMatrix> ao_oei_deriv2(const std::string & oei_type, int atom1, int atom2);
+    std::vector<SharedMatrix> ao_overlap_kinetic_deriv1_helper(const std::string & type, int atom);
+    std::vector<SharedMatrix> ao_potential_deriv1_helper(int atom);
+    std::vector<SharedMatrix> ao_overlap_kinetic_deriv2_helper(const std::string & type, int atom1, int atom2);
+    std::vector<SharedMatrix> ao_potential_deriv2_helper(int atom1, int atom2);
+    std::vector<SharedMatrix> mo_oei_deriv1(const std::string & oei_type, int atom, 
+                                             SharedMatrix C1, SharedMatrix C2);
+    std::vector<SharedMatrix> mo_oei_deriv2(const std::string & oei_type, int atom1, 
+                                             int atom2, SharedMatrix C1, SharedMatrix C2);
+    // Derivatives of TEI in AO and MO basis 
     std::vector<SharedMatrix>  ao_tei_deriv1(int atom);
-    std::vector<SharedMatrix>  ao_tei_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
-                                             std::shared_ptr<BasisSet> bs2,
-                                             std::shared_ptr<BasisSet> bs3,
-                                             std::shared_ptr<BasisSet> bs4);
     std::vector<SharedMatrix>  ao_tei_deriv2(int atom1, int atom2);
-    std::vector<SharedMatrix>  ao_tei_deriv2(int atom1, int atom2, std::shared_ptr<BasisSet> bs1,
-                                             std::shared_ptr<BasisSet> bs2,
-                                             std::shared_ptr<BasisSet> bs3,
-                                             std::shared_ptr<BasisSet> bs4);
-    std::vector<SharedMatrix>  mo_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
-                                                    SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv2_helper(int atom1, int atom2, std::shared_ptr <TwoBodyAOInt> ints, 
-                                                    SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv2(int atom1, int atom2, 
-                                                    SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv2(int atom1, int atom2, std::shared_ptr<BasisSet> bs1,
-                                             std::shared_ptr<BasisSet> bs2,
-                                             std::shared_ptr<BasisSet> bs3,
-                                             std::shared_ptr<BasisSet> bs4,
-                                             SharedMatrix C1, SharedMatrix C2,
+    std::vector<SharedMatrix>  mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2,
                                              SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2, 
+    std::vector<SharedMatrix>  mo_tei_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2,
                                              SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix>  mo_tei_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
-                                             std::shared_ptr<BasisSet> bs2,
-                                             std::shared_ptr<BasisSet> bs3,
-                                             std::shared_ptr<BasisSet> bs4,
-                                             SharedMatrix C1, SharedMatrix C2,
-                                             SharedMatrix C3, SharedMatrix C4);
-    std::vector<SharedMatrix> ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint);
-    std::vector<SharedMatrix> ao_kinetic_energy_deriv2_helper(int atom1, int atom2, std::shared_ptr<OneBodyAOInt> Tint);
-    std::vector<SharedMatrix> ao_potential_energy_deriv2_helper(int atom1, int atom2, std::shared_ptr<OneBodyAOInt> Vint);
-    std::vector<SharedMatrix> ao_kinetic_energy_deriv2(int atom1, int atom2);
-    std::vector<SharedMatrix> ao_kinetic_energy_deriv1(int atom);
-    std::vector<SharedMatrix> ao_kinetic_energy_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
-                                                       std::shared_ptr<BasisSet> bs2);
-    std::vector<SharedMatrix> mo_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
-                                                       std::shared_ptr <BasisSet> bs2,
-                                                       SharedMatrix C1, SharedMatrix C2);
-    std::vector<SharedMatrix> mo_kinetic_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
-    std::vector<SharedMatrix> mo_kinetic_energy_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2);
-    std::vector<SharedMatrix> mo_potential_energy_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2);
-
-
-    std::vector<SharedMatrix> ao_potential_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint);
-    std::vector<SharedMatrix> ao_potential_energy_deriv1(int atom);
-    std::vector<SharedMatrix> ao_potential_energy_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
-                                                       std::shared_ptr<BasisSet> bs2);
-    std::vector<SharedMatrix> mo_potential_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
-                                                       std::shared_ptr <BasisSet> bs2,
-                                                       SharedMatrix C1, SharedMatrix C2);
-    std::vector<SharedMatrix> mo_potential_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
-
-    std::vector<SharedMatrix> ao_overlap_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint);
-    std::vector<SharedMatrix> ao_overlap_deriv1(int atom);
-    std::vector<SharedMatrix> ao_overlap_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
-                                                std::shared_ptr<BasisSet> bs2);
-    std::vector<SharedMatrix> mo_overlap_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
-                                                std::shared_ptr <BasisSet> bs2,
-                                                SharedMatrix C1, SharedMatrix C2);
-    std::vector<SharedMatrix> mo_overlap_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);

@@ -705,44 +705,6 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MintsHelper::*normal_eri2)(
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
         std::shared_ptr<BasisSet>);
-
-
-
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_tei_deriv1)(int);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_tei_deriv12)(int,
-        std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-        std::shared_ptr<BasisSet>);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv1)(int, SharedMatrix,
-        SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv12)(int,
-        std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-        std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv2)(int, int, SharedMatrix,
-        SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv21)(int, int, 
-        std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-        std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_ke_deriv1)(int);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_ke_deriv12)(int,
-        std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_ke_deriv1)(int, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_ke_deriv12)(int, std::shared_ptr<BasisSet>,
-             std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_pe_deriv1)(int);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_pe_deriv12)(int, std::shared_ptr<BasisSet>,
-             std::shared_ptr<BasisSet>);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_pe_deriv1)(int, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_pe_deriv12)(int, std::shared_ptr<BasisSet>,
-             std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_S_deriv1)(int);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_S_deriv12)(int, std::shared_ptr<BasisSet>,
-             std::shared_ptr<BasisSet>);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_S_deriv1)(int, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_S_deriv12)(int, std::shared_ptr<BasisSet>,
-             std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
-
-
-
     typedef SharedMatrix (MintsHelper::*normal_3c)(
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
 
@@ -820,31 +782,6 @@ void export_mints(py::module& m)
         .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals",
               py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
-
-        // First and second derivatives of one and two electron integrals in both ao and mo basis.
-        .def("ao_tei_deriv1", normal_ao_tei_deriv1(&MintsHelper::ao_tei_deriv1), "docstring")
-        .def("ao_tei_deriv1", normal_ao_tei_deriv12(&MintsHelper::ao_tei_deriv1), "docstring")
-        .def("mo_tei_deriv1", normal_mo_tei_deriv1(&MintsHelper::mo_tei_deriv1), "docstring")
-        .def("mo_tei_deriv1", normal_mo_tei_deriv12(&MintsHelper::mo_tei_deriv1), "docstring")
-        .def("ao_kinetic_energy_deriv1", normal_ao_ke_deriv1(&MintsHelper::ao_kinetic_energy_deriv1), "docstring")
-        .def("ao_kinetic_energy_deriv1", normal_ao_ke_deriv12(&MintsHelper::ao_kinetic_energy_deriv1), "docstring")
-        .def("mo_kinetic_energy_deriv1", normal_mo_ke_deriv1(&MintsHelper::mo_kinetic_energy_deriv1), "docstring")
-        .def("mo_kinetic_energy_deriv1", normal_mo_ke_deriv12(&MintsHelper::mo_kinetic_energy_deriv1), "docstring")
-        .def("ao_potential_energy_deriv1", normal_ao_pe_deriv1(&MintsHelper::ao_potential_energy_deriv1), "docstring")
-        .def("ao_potential_energy_deriv1", normal_ao_pe_deriv12(&MintsHelper::ao_potential_energy_deriv1), "docstring")
-        .def("mo_potential_energy_deriv1", normal_mo_pe_deriv1(&MintsHelper::mo_potential_energy_deriv1), "docstring")
-        .def("mo_potential_energy_deriv1", normal_mo_pe_deriv12(&MintsHelper::mo_potential_energy_deriv1), "docstring")
-        .def("ao_overlap_deriv1", normal_ao_S_deriv1(&MintsHelper::ao_overlap_deriv1), "docstring")
-        .def("ao_overlap_deriv1", normal_ao_S_deriv12(&MintsHelper::ao_overlap_deriv1), "docstring")
-        .def("mo_overlap_deriv1", normal_mo_S_deriv1(&MintsHelper::mo_overlap_deriv1), "docstring")
-        .def("mo_overlap_deriv1", normal_mo_S_deriv12(&MintsHelper::mo_overlap_deriv1), "docstring")
-        .def("mo_tei_deriv2", normal_mo_tei_deriv2(&MintsHelper::mo_tei_deriv2), "docstring")
-        .def("mo_tei_deriv2", normal_mo_tei_deriv21(&MintsHelper::mo_tei_deriv2), "docstring")
-        .def("mo_kinetic_energy_deriv2", &MintsHelper::mo_kinetic_energy_deriv2, "docstring")
-        .def("mo_potential_energy_deriv2", &MintsHelper::mo_potential_energy_deriv2, "docstring")
-
-
-
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
@@ -864,6 +801,7 @@ void export_mints(py::module& m)
              "AO F12 double commutator integrals", py::arg("corr"))
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", py::arg("bs1"), py::arg("bs2"), py::arg("bs3"))
+
 
         // Two-electron MO and transformers
         .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients",
@@ -890,9 +828,19 @@ void export_mints(py::module& m)
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
         .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
         .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
-        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals");
+        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals")
 
-    py::class_<Vector3>(m, "Vector3",
+        // First and second derivatives of one and two electron integrals in AO and MO basis.
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "docstring") 
+        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "docstring")
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "docstring")
+        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "docstring")
+        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "docstring")
+        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "docstring")
+        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1, "docstring")
+        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2, "docstring");
+
+        py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
                         "and their common operations")
         .def(py::init<double>())
