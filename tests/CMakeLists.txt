@@ -226,6 +226,13 @@ if(ENABLE_simint)
     message(STATUS "Adding test cases: Psi4 + simint")
 endif()
 
+# <<<  V2RDM_CASSCF  >>>
+
+if(ENABLE_v2rdm_casscf)
+    add_subdirectory(v2rdm_casscf)
+    message(STATUS "Adding test cases: Psi4 + v2rdm_casscf")
+endif()
+
 # plugin regime
 if(ENABLE_PLUGIN_TESTING)
     add_subdirectory(plugins)
