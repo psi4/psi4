@@ -73,6 +73,7 @@ void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
 void export_cubeprop(py::module&);
 void export_efp(py::module&);
+void export_pcm(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
 void export_mints(py::module&);
@@ -1131,6 +1132,9 @@ PYBIND11_MODULE(core, core) {
 
     // EFP
     export_efp(core);
+
+    // PCM
+    export_pcm(core);
 
     // CubeProperties
     export_cubeprop(core);
