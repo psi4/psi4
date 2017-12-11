@@ -1,0 +1,197 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+import math
+import collections
+import numpy as np
+from .physconst import *
+
+
+def array_BFS(mol_geom, mol_elem, seed_atoms=None, bond_threshold=1.20):
+    """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
+
+    Parameters
+    ----------
+    mol_geom : np.array of np.float
+        (Nat x 3) Cartesian coordinates [a0] of real atoms
+    mol_elem : np.array of str
+        (Nat) Element symbols corresponding to `mol_geom`
+    seed_atoms : list (optional)
+        List of lists of atoms (0-indexed) belonging to independent fragments.
+        Useful to prompt algorithm or to define intramolecular fragments through
+        border atoms. Example: `[[1, 0], [2]]` 
+    bond_threshold : float (optional)
+        Factor beyond average of covalent radii to determine bond cutoff
+
+    Returns
+    -------
+    list of lists
+        Array of atom indices (0-indexed) of detected fragments.
+
+    Notes
+    -----
+    Relies upon van der Waals radii and so faulty for close (especially
+        hydrogen-bonded) fragments.
+    Any existing fragmentation info/chgmult encoded in `self` is lost.
+
+    Authors
+    -------
+    Original code from Michael S. Marshall, linear-scaling algorithm from
+    Trent M. Parker, revamped by Lori A. Burns
+
+    """
+    natom = mol_geom.shape[0]
+
+    radii = _get_covalent_radii(mol_elem)
+    max_covalent_radius = np.max(radii)
+    blocksize = int(math.ceil(2.0 * bond_threshold * max_covalent_radius))
+    allblocks = _get_blocks(mol_geom, blocksize)
+
+    bond_tree = _get_bond_tree(radii, mol_geom, allblocks, blocksize, bond_threshold)
+    if seed_atoms is None:
+        seed_atoms = []
+    allfragments = seed_atoms
+
+    # bare queues
+    new_list = []
+    break_list = []
+    unfound_list = list(range(natom))
+
+    # seed queues from intrafrag atom hints
+    for ifr, fr in enumerate(allfragments):
+        new_list.append([])
+        for at in fr:
+            new_list[ifr].append(at)
+            break_list.append(at)
+            unfound_list.remove(at)
+
+    # perform BFS
+    while len(unfound_list) > 0:
+        for ifr, fr in enumerate(new_list):
+            while len(fr) > 0:
+                for at1 in reversed(fr):
+                    for at2 in bond_tree[at1]:
+                        if at2 in unfound_list and at2 not in break_list:
+                            allfragments[ifr].append(at2)
+                            new_list[ifr].append(at2)
+                            unfound_list.remove(at2)
+                    new_list[ifr].remove(at1)
+        if len(unfound_list) > 0:
+            at_new = unfound_list[0]
+            allfragments.append([at_new])
+            new_list.append([at_new])
+            unfound_list.remove(at_new)
+
+    for fr in range(len(allfragments)):
+        allfragments[fr] = sorted(allfragments[fr])
+
+    #_print_xyz_allfrags(mol_elem, mol_geom, allfragments)
+    #for ifr, fr in enumerate(allfragments):
+    #    print(ifr, ':  ', fr)
+    return allfragments
+
+
+def _get_covalent_radii(mol_elem):
+    """Return covalent radii [a0] for all atoms
+
+    Look-up values for covalent (or ionic) radii by atomic element [A] from
+    "Inorganic Chemistry" 3rd ed, Housecroft, Appendix 6, pgs 1013-1014
+
+    """
+    covalent_radii_lookup = {
+        'H' : 0.37,                                                                                     'He': 0.30,
+        'Li': 1.02, 'Be': 0.27,             'B' : 0.88, 'C' : 0.77, 'O' : 0.73, 'N' : 0.75, 'F' : 0.71, 'Ne': 0.84,
+        'Na': 1.02, 'Mg': 0.72,             'Al': 1.30, 'Si': 1.18, 'P' : 1.10, 'S' : 1.03, 'Cl': 0.99, 'Ar': 1.00,
+        'K' : 1.38, 'Ca': 1.00,       
+                                'Sc': 0.75, 'Ti': 0.86, 'V' : 0.79, 'Cr': 0.73, 'Mn': 0.67,
+                                'Fe': 0.61, 'Co': 0.64, 'Ni': 0.55, 'Cu': 0.46, 'Zn': 0.60,
+                                            'Ga': 1.22, 'Ge': 1.22, 'As': 1.22, 'Se': 1.17, 'Br': 1.14, 'Kr': 1.03,
+                                                                                            'I' : 1.33,
+                                                                                                        'X' : 0.00}
+        #'RN': 2.40 / 1.5,  # extrapolation
+        #'H': 1.06 / 1.5,  # Bondi JPC 68 441 (1964)
+        #'SN': 2.16 / 1.5,  # Bondi JPC 68 441 (1964)
+        #'SB': 2.12 / 1.5,  # Bondi JPC 68 441 (1964)
+        #'TE': 2.08 / 1.5,  # Bondi JPC 68 441 (1964)
+        #'XE': 2.05 / 1.5}  # Bondi JPC 68 441 (1964)
+    natom = mol_elem.shape[0]
+    covrad = np.fromiter(
+        (covalent_radii_lookup[mol_elem[at].capitalize()] for at in range(natom)), dtype=np.float, count=natom)
+    return np.divide(covrad, psi_bohr2angstroms)
+
+
+def _get_key(x, y, z, b):
+    """Return key string from point values and block resolution"""
+
+    return """{},{},{}""".format(x - x%b, y - y%b, z - z%b)
+
+
+def _distance2(v, u):
+    """Compute the square distance between points defined by vectors *v* and *u*."""
+
+    return sum(((v[i] - u[i]) * (v[i] - u[i]) for i in range(len(v))))
+
+
+def _get_blocks(mol_geom, blocksize):
+    """Parition atoms into spatial blocks"""
+
+    allblocks = collections.defaultdict(list)
+    for at in range(mol_geom.shape[0]):
+        x, y, z = (int(math.floor(mol_geom[at][j])) for j in range(3))
+        xyz_key = _get_key(x, y, z, blocksize)
+        allblocks[xyz_key].append(at)
+    return allblocks
+
+
+def _get_bond_tree(radii, mol_geom, allblocks, blocksize, bond_threshold):
+    """Create bond tree from atomic coordinates"""
+
+    bond_tree = [[] for at in range(mol_geom.shape[0])]
+    for blk in allblocks:
+        atom_list = _get_atoms_from_blocks(_get_neighbor_blocks(blk, blocksize, allblocks), allblocks)
+        for at1 in allblocks[blk]:
+            for at2 in atom_list:
+                r2_ij = _distance2(mol_geom[at1], mol_geom[at2])
+                r2_thresh = bond_threshold * (radii[at1] + radii[at2]) ** 2
+                if at1 != at2 and r2_ij <= r2_thresh:
+                    if at2 not in bond_tree[at1]:
+                        bond_tree[at1].append(at2)
+                    if at1 not in bond_tree[at2]:
+                        bond_tree[at2].append(at1)
+    return bond_tree
+
+
+def _get_neighbor_blocks(block, blocksize, allblocks):
+    """Find occupied blocks which neighbor `block`, including self"""
+
+    x, y, z = (int(block.split(',')[j]) for j in range(3))
+    neighbor_blocks = [_get_key(x + blocksize * (i - 1),
+                                y + blocksize * (j - 1),
+                                z + blocksize * (k - 1),
+                                blocksize)
+                       for i in range(3)
+                       for j in range(3)
+                       for k in range(3)]
+    active_blocks = list(set(neighbor_blocks) & set(allblocks))
+    return active_blocks
+
+
+def _get_atoms_from_blocks(blocks, master_blocks):
+    """Get list of atoms in a set of blocks"""
+
+    atoms_nested = [master_blocks[blk] for blk in blocks]
+    atoms = [at for sublist in atoms_nested for at in sublist]
+    return atoms
+
+
+## print geometry of all fragments to screen
+#def _print_xyz_allfrags(mol_elem, mol_geom, allfragments):
+#    for frag_num in range(len(allfragments)):
+#        n_frag_atoms = len(allfragments[frag_num])
+#        print('{}\n'.format(n_frag_atoms))
+#        for q in range(n_frag_atoms):
+#            i = allfragments[frag_num][q]
+#            print(' %-2s' % (mol_elem[i]), end='')
+#            for j in range(3):
+#                print('%14.8f' % (mol_geom[i][j] * psi_bohr2angstroms), end='')
+#            print('')

@@ -825,12 +825,14 @@ class Molecule(LibmintsMolecule):
         subset.update_geometry()
         return subset
 
-    def BFS(self):
+    def old_BFS(self):
         """Perform a breadth-first search (BFS) on the real atoms
         in molecule, returning an array of atom indices of fragments.
         Relies upon van der Waals radii and so faulty for close
         (esp. hydrogen-bonded) fragments. Original code from
         Michael S. Marshall.
+
+        This code falters on large systems, so the linear-scaling BFS method preferred.
 
         """
         vdW_diameter = {
@@ -1221,6 +1223,73 @@ class Molecule(LibmintsMolecule):
             ar = '~' + ar
 
         return ar
+
+    def toarrays(self):
+        """Exports coordinate info into NumPy arrays.
+
+        Returns
+        -------
+        np.array, np.array, np.array, np.array, np.array
+            (nat x 3) geometry.
+            (nat) mass.
+            (nat) element symbol.
+            (nat) atomic number.
+            (nat) hash of element symbol and mass.
+            Note that coordinate, orientation, and element information is
+            preserved but fragmentation and chgmult is lost.
+
+        Usage
+        -----
+        geom, mass, elem, elez, uniq = molinstance.toarrays()
+
+        """
+        import hashlib
+
+        self.update_geometry()
+        geom = self.geometry(npout=True)
+        mass = np.asarray([self.mass(at) for at in range(self.natom())])
+        elem = np.asarray([self.symbol(at) for at in range(self.natom())])
+        elez = np.asarray([self.Z(at) for at in range(self.natom())])
+        uniq = np.asarray([hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
+
+        return geom, mass, elem, elez, uniq
+
+    def BFS(self, seed_atoms=None, bond_threshold=1.20):
+        """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
+
+        Parameters
+        ----------
+        seed_atoms : list (optional)
+            List of lists of atoms (0-indexed) belonging to independent fragments.
+            Useful to prompt algorithm or to define intramolecular fragments through
+            border atoms. Example: `[[1, 0], [2]]`
+        bond_threshold : float (optional)
+            Factor beyond average of covalent radii to determine bond cutoff
+
+        Returns
+        -------
+        list of lists
+            Array of atom indices (0-indexed) of detected fragments.
+
+        Notes
+        -----
+        Relies upon van der Waals radii and so faulty for close (especially
+            hydrogen-bonded) fragments.
+        Any existing fragmentation info/chgmult encoded in `self` is lost.
+
+        Authors
+        -------
+        Original code from Michael S. Marshall, linear-scaling algorithm from
+        Trent M. Parker, revamped by Lori A. Burns
+
+        """
+        from .bfs import array_BFS
+
+        self.update_geometry()
+        mol_geom, rmass, mol_elem, relez, runiq = self.toarrays()
+        frag_pattern = array_BFS(mol_geom, mol_elem, seed_atoms=seed_atoms, bond_threshold=bond_threshold)
+        return frag_pattern
+
 
 
 # Attach methods to qcdb.Molecule class
