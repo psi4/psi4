@@ -263,8 +263,12 @@ void HF::common_init() {
 
 // Initialize PCM object, if requested
 #ifdef USING_PCMSolver
-    if ((pcm_enabled_ = (options_.get_bool("PCM"))))
-        hf_pcm_ = std::make_shared<PCM>(options_, psio_, nirrep_, basisset_);
+    if ((pcm_enabled_ = (options_.get_bool("PCM")))) {
+        if (nirrep_ > 1)
+            throw PSIEXCEPTION("You must add\n\n\tsymmetry c1\n\nto the molecule{} block to run the PCM code.");
+
+        hf_pcm_ = std::make_shared<PCM>(options_.get_int("PRINT"), basisset_);
+    }
 #endif
 }
 
