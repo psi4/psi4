@@ -74,6 +74,7 @@ class Vector;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
+class PCM;
 class PSIO;
 class OrbitalSpace;
 class ExternalPotential;
@@ -243,6 +244,10 @@ protected:
     // Collection of variables
     std::map<std::string, double> variables_;
     std::map<std::string, SharedMatrix> arrays_;
+
+    // Polarizable continuum model
+    bool PCM_enabled_;
+    std::shared_ptr<PCM> PCM_;
 
 private:
     // Wavefunction() {}
@@ -657,6 +662,10 @@ public:
     SharedMatrix get_array(const std::string key);
     void set_array(const std::string key, SharedMatrix value) { arrays_[key] = value; }
     std::map<std::string, SharedMatrix> arrays(void) { return arrays_; }
+
+    /// Get PCM object
+    bool PCM_enabled() const { return PCM_enabled_; }
+    std::shared_ptr<PCM> get_PCM() const;
 };
 
 }
