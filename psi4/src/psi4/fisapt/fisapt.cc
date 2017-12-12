@@ -2877,7 +2877,7 @@ void FISAPT::fexch() {
     for (size_t a = 0; a < na; a++) {
         dfh->fill_tensor("Aar", TrQ, {a, a + 1});
         C_DGEMM('N', 'N', nb, nQ, nr, 1.0, Sbrp[0], nr, TrQp[0], nQ, 0.0, TbQp[0], nQ);
-        dfh->write_disk_tensor("Bab", TrQ, {a, a + 1});
+        dfh->write_disk_tensor("Bab", TbQ, {a, a + 1});
     }
 
     dfh->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
@@ -2885,7 +2885,7 @@ void FISAPT::fexch() {
     for (size_t b = 0; b < nb; b++) {
         dfh->fill_tensor("Abs", TsQ, {b, b + 1});
         C_DGEMM('N', 'N', na, nQ, ns, 1.0, Sasp[0], ns, TsQp[0], nQ, 0.0, TaQp[0], nQ);
-        dfh->write_disk_tensor("Bba", TrQ, {b, b + 1});
+        dfh->write_disk_tensor("Bba", TaQ, {b, b + 1});
     }
 
     auto E_exch3 = std::make_shared<Matrix>("E_exch [a <x-x> b]", na, nb);
@@ -3011,6 +3011,7 @@ void FISAPT::find() {
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B, Vtemp2, Cvir_B, true, false, false);
+        double *Vbsp = Vbs->pointer()[0];
         dfh->write_disk_tensor("WAbs", Vbs, {A, A + 1});
     }
 
@@ -3023,6 +3024,7 @@ void FISAPT::find() {
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A, Vtemp2, Cvir_A, true, false, false);
+        double *Varp = Var->pointer()[0];
         dfh->write_disk_tensor("WBar", Var, {B, B + 1});
     }
 
