@@ -3011,7 +3011,6 @@ void FISAPT::find() {
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B, Vtemp2, Cvir_B, true, false, false);
-        double *Vbsp = Vbs->pointer()[0];
         dfh->write_disk_tensor("WAbs", Vbs, {A, A + 1});
     }
 
@@ -3024,7 +3023,6 @@ void FISAPT::find() {
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A, Vtemp2, Cvir_A, true, false, false);
-        double *Varp = Var->pointer()[0];
         dfh->write_disk_tensor("WBar", Var, {B, B + 1});
     }
 
