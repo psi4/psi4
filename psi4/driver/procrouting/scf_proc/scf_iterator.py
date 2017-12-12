@@ -131,6 +131,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     self.diis_enabled_ = _validate_diis()
     self.MOM_excited_ = _validate_MOM()
     self.diis_start_ = core.get_option('SCF', 'DIIS_START')
+    self.pcm_enabled_ = core.get_option('SCF', 'PCM')
     damping_enabled = _validate_damping()
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
@@ -171,6 +172,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # #endif
 
         SCFE = 0.0
+        self.clear_external_potentials()
 
         core.timer_on("HF: Form G")
         self.form_G()
@@ -179,6 +181,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # reset fractional SAD occupation
         if (self.iteration_ == 0) and self.reset_occ_:
             self.reset_occupation()
+
+        upcm = 0.0
+        if self.pcm_enabled_:
+           Dt = self.Da().clone()
+           Dt.add(self.Db())
+           upcm = self.get_PCM().compute_E(Dt, core.PCM.CalcType.Total)
+           SCFE += upcm
+           self.set_energies("PCM Polarization", upcm)
+           self.set_variable("PCM POLARIZATION ENERGY", upcm)
+           self.push_back_external_potential(self.get_PCM().compute_V())
+        else:
+           self.set_energies("PCM polarization", upcm)
+           self.set_variable("PCM POLARIZATION ENERGY", upcm)
 
         core.timer_on("HF: Form F")
         self.form_F()
@@ -195,46 +210,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         #        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         #            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update()
         #            E_ += efp_wfn_dependent_energy
-        #        }
-        # #endif
-
-        # #ifdef USING_PCMSolver
-        #        # The PCM potential must be added to the Fock operator *after* the
-        #        # energy computation, not in form_F()
-        #        if(pcm_enabled_) {
-        #          # Prepare the density
-        #          SharedMatrix D_pcm(Da_->clone())
-        #          if(same_a_b_orbs()) {
-        #            D_pcm->scale(2.0) # PSI4's density doesn't include the occupation
-        #          } else {
-        #            D_pcm->add(Db_)
-        #          }
-        #
-        #          # Compute the PCM charges and polarization energy
-        #          double epcm = 0.0
-        #          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
-        #            epcm = hf_pcm_->compute_E(D_pcm, PCM::Total)
-        #          } else {
-        #            epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle)
-        #          }
-        #          energies_["PCM Polarization"] = epcm
-        #          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"]
-        #          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"]
-        #          E_ += epcm
-        #
-        #          # Add the PCM potential to the Fock matrix
-        #          SharedMatrix V_pcm
-        #          V_pcm = hf_pcm_->compute_V()
-        #          if (same_a_b_orbs()) {
-        #            Fa_->add(V_pcm)
-        #          } else {
-        #            Fa_->add(V_pcm)
-        #            Fb_->add(V_pcm)
-        #          }
-        #        } else {
-        #          energies_["PCM Polarization"] = 0.0
-        #          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"]
-        #          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"]
         #        }
         # #endif
 
@@ -474,31 +449,16 @@ def scf_finalize_energy(self):
     core.print_out("\n\n")
     self.print_energies()
 
+    self.clear_external_potentials()
+    if self.pcm_enabled_:
+       Dt = self.Da().clone()
+       Dt.add(self.Db())
+       _ = self.get_PCM().compute_E(Dt, core.PCM.CalcType.Total)
+       self.push_back_external_potential(self.get_PCM().compute_V())
+
     # recompute the Fock matrices as they are modified during the SCF
     #   iteration and might need to be dumped to checkpoint later
     self.form_F()
-
-    # ifdef USING_PCMSolver
-    #  if(pcm_enabled_) {
-    #      # Prepare the density
-    #      SharedMatrix D_pcm(Da_->clone())
-    #      if(same_a_b_orbs()) {
-    #        D_pcm->scale(2.0) # PSI4's density doesn't include the occupation
-    #      }
-    #      else {
-    #        D_pcm->add(Db_)
-    #      }
-
-    #      # Add the PCM potential to the Fock matrix
-    #      SharedMatrix V_pcm
-    #      V_pcm = hf_pcm_->compute_V()
-    #      if(same_a_b_orbs()) Fa_->add(V_pcm)
-    #      else {
-    #        Fa_->add(V_pcm)
-    #        Fb_->add(V_pcm)
-    #      }
-    #  }
-    # endif
 
     # Properties
     #  Comments so that autodoc utility will find these PSI variables
@@ -515,6 +475,10 @@ def scf_finalize_energy(self):
     # Orbitals are always saved, in case an MO guess is requested later
     # save_orbitals()
 
+    # Shove variables into global space
+    for k, v in self.variables().items():
+        core.set_variable(k, v)
+
     self.finalize()
 
     core.print_out("\nComputation Completed\n")
@@ -522,10 +486,57 @@ def scf_finalize_energy(self):
     return energy
 
 
+def scf_print_energies(self):
+    enuc = self.get_energies('Nuclear')
+    e1 = self.get_energies('One-Electron')
+    e2 = self.get_energies('Two-Electron')
+    exc = self.get_energies('XC')
+    ed = self.get_energies('-D')
+    evv10 = self.get_energies('VV10')
+    eefp = self.get_energies('EFP')
+    epcm = self.get_energies('PCM Polarization')
+
+    hf_energy = enuc + e1 + e2
+    dft_energy = hf_energy + exc + ed + evv10
+    total_energy = dft_energy + eefp + epcm
+
+    core.print_out("   => Energetics <=\n\n");
+    core.print_out("    Nuclear Repulsion Energy =        {:24.16f}\n".format(enuc))
+    core.print_out("    One-Electron Energy =             {:24.16f}\n".format(e1))
+    core.print_out("    Two-Electron Energy =             {:24.16f}\n".format(e2))
+    if self.functional().needs_xc():
+        core.print_out("    DFT Exchange-Correlation Energy = {:24.16f}\n".format(exc))
+        core.print_out("    Empirical Dispersion Energy =     {:24.16f}\n".format(ed))
+        core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
+    if self.pcm_enabled_:
+        core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
+    #if (Process::environment.get_efp()->get_frag_count() > 0) {
+    #    outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
+    #}
+    core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
+
+    self.set_variable('NUCLEAR REPULSION ENERGY', enuc)
+    self.set_variable('ONE-ELECTRON ENERGY', e1)
+    self.set_variable('TWO-ELECTRON ENERGY', e2)
+    if abs(exc) > 1.0e-14:
+        self.set_variable('DFT XC ENERGY', exc)
+        self.set_variable('DFT VV10 ENERGY', evv10)
+        self.set_variable('DFT FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
+        self.set_variable('DFT TOTAL ENERGY', dft_energy)
+    else:
+        self.set_variable('HF TOTAL ENERGY', hf_energy)
+    if abs(ed) > 1.0e-14:
+        self.set_variable('DISPERSION CORRECTION ENERGY', ed)
+
+    self.set_variable('SCF ITERATIONS', self.iteration_)
+    self.set_variable('SCF N ITERS', self.iteration_)
+
+
 core.HF.initialize = scf_initialize
 core.HF.iterations = scf_iterate
 core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
+core.HF.print_energies = scf_print_energies
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
