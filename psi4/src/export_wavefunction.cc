@@ -61,6 +61,10 @@
 
 #include "psi4/libdiis/diismanager.h"
 
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
+
 #include <string>
 
 using namespace psi;
@@ -177,7 +181,9 @@ void export_wavefunction(py::module& m) {
         .def("variables", &Wavefunction::variables, "Returns the map of all internal variables.")
         .def("get_array", &Wavefunction::get_array, "Sets the requested internal array.")
         .def("set_array", &Wavefunction::set_array, "Returns the requested internal array.")
-        .def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.");
+        .def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.")
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
+        .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
@@ -219,7 +225,7 @@ void export_wavefunction(py::module& m) {
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
         .def("diis_manager", &scf::HF::diis_manager, "docstring")
-        .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager, 
+        .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,
                                                    &scf::HF::set_initialized_diis_manager, "docstring")
         .def("damping_update", &scf::HF::damping_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
@@ -257,12 +263,12 @@ void export_wavefunction(py::module& m) {
         .def("moFeff", &scf::ROHF::moFeff, "docstring")
         .def("moFa", &scf::ROHF::moFa, "docstring")
         .def("moFb", &scf::ROHF::moFb, "docstring")
-        .def("c1_deep_copy", &scf::ROHF::c1_deep_copy, 
+        .def("c1_deep_copy", &scf::ROHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *basis*", py::arg("basis"));
 
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
-        .def("c1_deep_copy", &scf::UHF::c1_deep_copy, 
+        .def("c1_deep_copy", &scf::UHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *basis*", py::arg("basis"));
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")

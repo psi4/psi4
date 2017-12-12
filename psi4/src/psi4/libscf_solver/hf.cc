@@ -260,16 +260,6 @@ void HF::common_init() {
     // CPHF info
     cphf_nfock_builds_ = 0;
     cphf_converged_ = false;
-
-// Initialize PCM object, if requested
-#ifdef USING_PCMSolver
-    if ((pcm_enabled_ = (options_.get_bool("PCM")))) {
-        if (nirrep_ > 1)
-            throw PSIEXCEPTION("You must add\n\n\tsymmetry c1\n\nto the molecule{} block to run the PCM code.");
-
-        hf_pcm_ = std::make_shared<PCM>(options_.get_int("PRINT"), basisset_);
-    }
-#endif
 }
 
 void HF::damping_update(double damping_percentage) {
@@ -1182,9 +1172,9 @@ void HF::check_phases() {
 }
 
 void HF::print_energies() {
-    if (!pcm_enabled_) {
-        energies_["PCM Polarization"] = 0.0;
-    }
+    // if (!ref_wfn->PCM_enabled()) {
+    //    energies_["PCM Polarization"] = 0.0;
+    //}
 
     double hf_energy = energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"];
     double dft_energy = hf_energy + energies_["XC"] + energies_["-D"] + energies_["VV10"];
@@ -1199,9 +1189,9 @@ void HF::print_energies() {
         outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
         outfile->Printf("    VV10 Nonlocal Energy =            %24.16f\n", energies_["VV10"]);
     }
-    if (pcm_enabled_) {
-        outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
-    }
+    // if (ref_wfn->PCM_enabled()) {
+    //    outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
+    //}
     if (Process::environment.get_efp()->get_frag_count() > 0) {
         outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
     }
@@ -1226,7 +1216,8 @@ void HF::print_energies() {
     Process::environment.globals["SCF ITERATIONS"] = iteration_;
 
     // Only print this alert if we are actually doing EFP or PCM
-    if (pcm_enabled_ || (Process::environment.get_efp()->get_frag_count() > 0)) {
+    // if (pcm_enabled_ || (Process::environment.get_efp()->get_frag_count() > 0)) {
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
         outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
     }
     Process::environment.globals["SCF N ITERS"] = iteration_;

@@ -402,10 +402,6 @@ class HF : public Wavefunction {
     // Energies data
     void set_energies(std::string key, double value) { energies_[key] = value; }
     double get_energies(std::string key) { return energies_[key]; }
-
-    // PCM interface
-    bool pcm_enabled_;
-    std::shared_ptr<PCM> hf_pcm_;
 };
 }
 }  // Namespaces

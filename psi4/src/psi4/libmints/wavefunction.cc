@@ -48,9 +48,11 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
 
 #include <typeinfo>
-
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -150,6 +152,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 
     variables_ = other->variables_;
     arrays_ = other->arrays_;
+    PCM_ = other->PCM_;
 }
 
 void Wavefunction::deep_copy(SharedWavefunction other) { deep_copy(other.get()); }
@@ -230,6 +233,9 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     for (auto const &kv : other->arrays_) {
         arrays_[kv.first] = kv.second->clone();
     }
+
+    // Not sure...
+    PCM_ = other->PCM_;
 }
 
 std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSet> basis)
@@ -239,7 +245,7 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisS
     }
 
     auto wfn = std::make_shared<Wavefunction>(basis->molecule(), basis, options_);
-  
+
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
     wfn->name_ = name_;
@@ -307,7 +313,7 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisS
     wfn->H_->remove_symmetry(H_, SO2AO);
 
     /* This stuff we need to copy in the subclass functions, b/c
-    ** constructors like RHF() just blow these away anyway 
+    ** constructors like RHF() just blow these away anyway
     if (Ca_) wfn->Ca_ = Ca_subset("AO", "ALL");
     if (Cb_) wfn->Cb_ = Cb_subset("AO", "ALL");
     if (Da_) wfn->Da_ = Da_subset("AO");
@@ -316,7 +322,7 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisS
     if (Fb_) wfn->Fb_ = Fb_subset("AO");
     if (epsilon_a_) wfn->epsilon_a_ =
         epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    if (epsilon_b_) wfn->epsilon_b_ = 
+    if (epsilon_b_) wfn->epsilon_b_ =
         epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
     */
 
@@ -333,6 +339,9 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisS
     for (auto const &kv : arrays_) {
         wfn->arrays_[kv.first] = kv.second->clone();
     }
+
+    // ok for deep copy?
+    wfn->PCM_ = PCM_;
 
     return wfn;
 }
@@ -500,6 +509,16 @@ void Wavefunction::common_init() {
                 outfile->Printf( "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
     }
+
+// Initialize PCM object, if requested
+#ifdef USING_PCMSolver
+    PCM_enabled_ = options_.get_bool("PCM");
+    if (PCM_enabled_) {
+        if (nirrep_ > 1)
+            throw PSIEXCEPTION("You must add\n\n\tsymmetry c1\n\nto the molecule{} block to run the PCM code.");
+        PCM_ = std::make_shared<PCM>(options_.get_int("PRINT"), basisset_);
+    }
+#endif
 }
 
 std::array<double,3> Wavefunction::get_dipole_field_strength() const
@@ -977,7 +996,7 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C,
         SharedMatrix M2 = M->clone();
         std::string m2_name = matrix_basename + " (SO basis)";
         M2->set_name(m2_name);
-        return M2; 
+        return M2;
     } else if (basis == "MO") {
         std::string m2_name = matrix_basename + " (MO basis)";
         SharedMatrix M2(new Matrix(m2_name, C->colspi(), C->colspi()));
@@ -1016,7 +1035,7 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C,
 
 SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
                                             std::shared_ptr<BasisSet> old_basis,
-                                            std::shared_ptr<BasisSet> new_basis) { 
+                                            std::shared_ptr<BasisSet> new_basis) {
 // Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     std::shared_ptr<IntegralFactory> newfactory =
         std::make_shared<IntegralFactory>(new_basis, new_basis, new_basis, new_basis);
@@ -1296,4 +1315,8 @@ SharedMatrix Wavefunction::get_array(std::string label) {
     } else {
         return arrays_[label];
     }
+}
+
+std::shared_ptr<PCM> Wavefunction::get_PCM() const {
+  return PCM_;
 }
