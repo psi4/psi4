@@ -237,9 +237,17 @@ void UHF::form_initialF() {
 void UHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(Ga_);
+    if (!external_potentials_.empty()) {
+        std::for_each(external_potentials_.begin(), external_potentials_.end(),
+                      [this](const SharedMatrix & Vext) { Fa_->add(Vext); });
+    }
 
     Fb_->copy(H_);
     Fb_->add(Gb_);
+    if (!external_potentials_.empty()) {
+        std::for_each(external_potentials_.begin(), external_potentials_.end(),
+                      [this](const SharedMatrix & Vext) { Fb_->add(Vext); });
+    }
 
     if (debug_) {
         Fa_->print("outfile");

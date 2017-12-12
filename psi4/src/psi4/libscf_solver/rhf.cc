@@ -238,6 +238,10 @@ bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
 void RHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(G_);
+    if (!external_potentials_.empty()) {
+        std::for_each(external_potentials_.begin(), external_potentials_.end(),
+                      [this](const SharedMatrix & Vext) { Fa_->add(Vext); });
+    }
 
     if (debug_) {
         Fa_->print();

@@ -1171,61 +1171,6 @@ void HF::check_phases() {
     }
 }
 
-void HF::print_energies() {
-    // if (!ref_wfn->PCM_enabled()) {
-    //    energies_["PCM Polarization"] = 0.0;
-    //}
-
-    double hf_energy = energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"];
-    double dft_energy = hf_energy + energies_["XC"] + energies_["-D"] + energies_["VV10"];
-    double total_energy = dft_energy + energies_["EFP"] + energies_["PCM Polarization"];
-
-    outfile->Printf("   => Energetics <=\n\n");
-    outfile->Printf("    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
-    outfile->Printf("    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
-    outfile->Printf("    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
-    if (functional_->needs_xc()) {
-        outfile->Printf("    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
-        outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
-        outfile->Printf("    VV10 Nonlocal Energy =            %24.16f\n", energies_["VV10"]);
-    }
-    // if (ref_wfn->PCM_enabled()) {
-    //    outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
-    //}
-    if (Process::environment.get_efp()->get_frag_count() > 0) {
-        outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
-    }
-    outfile->Printf("    Total Energy =                    %24.16f\n", total_energy);
-    outfile->Printf("\n");
-
-    Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
-    Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
-    Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
-    if (std::fabs(energies_["XC"]) > 1.0e-14) {
-        Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
-        Process::environment.globals["DFT VV10 ENERGY"] = energies_["VV10"];
-        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = hf_energy + energies_["XC"] + energies_["VV10"];
-        Process::environment.globals["DFT TOTAL ENERGY"] = dft_energy;
-    } else {
-        Process::environment.globals["HF TOTAL ENERGY"] = hf_energy;
-    }
-    if (std::fabs(energies_["-D"]) > 1.0e-14) {
-        Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
-    }
-
-    Process::environment.globals["SCF ITERATIONS"] = iteration_;
-
-    // Only print this alert if we are actually doing EFP or PCM
-    // if (pcm_enabled_ || (Process::environment.get_efp()->get_frag_count() > 0)) {
-    if (Process::environment.get_efp()->get_frag_count() > 0) {
-        outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
-    }
-    Process::environment.globals["SCF N ITERS"] = iteration_;
-    //  Comment so that autodoc utility will find this PSI variable
-    //     It doesn't really belong here but needs to be linked somewhere
-    //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
-}
-
 void HF::print_occupation() {
     std::vector<std::string> labels = molecule_->irrep_labels();
     std::string reference = options_.get_str("REFERENCE");
