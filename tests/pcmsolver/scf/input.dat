@@ -3,8 +3,8 @@
 from functools import reduce
 
 nucenergy   =  12.0367196636183458 #TEST
-polenergy   =  -0.0053060443528559 #TEST
-totalenergy = -55.4559426361734040 #TEST
+polenergy   =  -0.0053060023819867 #TEST
+totalenergy = -55.4559426361762604 #TEST
 
 import glob
 import os
@@ -45,10 +45,10 @@ pcm = {
 }
 
 print('RHF-PCM, total algorithm')
-energy_scf1, wfn1 = energy('scf', return_wfn=True)
+energy_scf1 = energy('scf')
 compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(totalenergy, energy_scf1, 10, "Total energy (PCM, total algorithm)") #TEST
-compare_values(polenergy, wfn1.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
 pid = str(os.getpid())
 scratch_dir = os.path.join(core.IOManager.shared_object().get_default_path(), 'psi.' + pid + '.pcmsolver')
@@ -65,6 +65,14 @@ compare_values(polenergy, wfn2.get_variable("PCM POLARIZATION ENERGY"), 6, "Pola
 set pcm_scf_type total
 set reference uhf
 print('UHF-PCM, total algorithm')
-energy_scf3, wfn3 = energy('scf', return_wfn=True)
+energy_scf3 = energy('scf')
 compare_values(totalenergy, energy_scf3, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn3.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print('ROHF-PCM, total algorithm')
+energy_scf4 = energy('scf')
+compare_values(totalenergy, energy_scf4, 10, "Total energy (PCM, separate algorithm)") #TEST
+compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST

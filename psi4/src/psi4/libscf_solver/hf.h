@@ -66,6 +66,9 @@ class HF : public Wavefunction {
     SharedMatrix diag_F_temp_;
     /// Temporary matrix for diagonalize_F
     SharedMatrix diag_C_temp_;
+    /// List of external potentials to add to Fock matrix and updated at every iteration
+    /// e.g. PCM potential
+    std::vector<SharedMatrix> external_potentials_;
 
     /// Old C Alpha matrix (if needed for MOM)
     SharedMatrix Ca_old_;
@@ -269,9 +272,6 @@ class HF : public Wavefunction {
     /// Prints the orbitals in arbitrary order (works with MOM)
     void print_orbitals();
 
-    /// Prints the energy breakdown from this SCF
-    void print_energies();
-
     /// Prints some opening information
     void print_header();
 
@@ -402,6 +402,10 @@ class HF : public Wavefunction {
     // Energies data
     void set_energies(std::string key, double value) { energies_[key] = value; }
     double get_energies(std::string key) { return energies_[key]; }
+
+    // External potentials
+    void clear_external_potentials() { external_potentials_.clear(); }
+    void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
 };
 }
 }  // Namespaces
