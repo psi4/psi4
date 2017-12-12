@@ -269,7 +269,6 @@ double PCM::compute_E_total(SharedMatrix &D) {
 
     // Grab the polarization energy from PCMSolver
     double Epol = pcmsolver_compute_polarization_energy(context_.get(), tot_potential_name, tot_charge_name);
-    outfile->Printf("   PCM polarization energy = %16.14f\n", Epol);
 
     return Epol;
 }
@@ -340,7 +339,6 @@ double PCM::compute_E_separate(SharedMatrix &D) {
     outfile->Printf("  U_NN = %16.14f\n", 2.0 * U_NN);
     outfile->Printf("  U_eN - U_Ne = %16.14f\n", U_eN - U_Ne);
     double Epol = U_NN + U_eN + U_Ne + U_ee;
-    outfile->Printf("   PCM polarization energy = %16.14f\n", Epol);
     return Epol;
 }
 
