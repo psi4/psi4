@@ -81,10 +81,11 @@ class ConvergenceError(PsiException):
     error message *msg* to standard output stream and output file.
 
     """
-    def __init__(self, eqn_description, maxit):
+    def __init__(self, eqn_description, maxit, wfn=None):
         msg = "Could not converge %s in %d iterations." % (eqn_description, maxit)
         PsiException.__init__(self, msg)
         self.message = msg
+        self.wfn = wfn
         core.print_out('\nPsiException: %s\n\n' % (msg))
 
 

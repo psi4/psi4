@@ -977,6 +977,15 @@ def optimize(name, **kwargs):
     >>> # cbs-xtpl* for more examples of this input style
     >>> optimize("MP2/aug-cc-pv([d,t]+d)z + d:ccsd(t)/cc-pvdz", corl_scheme=myxtplfn_2)
 
+    >>> # [6] Get info like geometry, gradient, energy back after an
+    >>> #     optimization fails. Note that the energy and gradient
+    >>> #     correspond to the last optimization cycle, whereas the
+    >>> #     geometry (by default) is the anticipated *next* optimization step.
+    >>> try:
+    >>>     optimize('hf/cc-pvtz')
+    >>> except psi4.ConvergenceError as ex:
+    >>>     next_geom_coords_as_numpy_array = np.asarray(ex.wfn.molecule().geometry())
+
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
@@ -1144,7 +1153,7 @@ def optimize(name, **kwargs):
             molecule.set_geometry(moleculeclone.geometry())
             core.clean()
             optstash.restore()
-            raise ConvergenceError("""geometry optimization""", n - 1)
+            raise ConvergenceError("""geometry optimization""", n - 1, wfn)
             return thisenergy
 
         core.print_out('\n    Structure for next step:\n')
@@ -1162,7 +1171,7 @@ def optimize(name, **kwargs):
             core.opt_clean()
 
     optstash.restore()
-    raise ConvergenceError("""geometry optimization""", n - 1)
+    raise ConvergenceError("""geometry optimization""", n - 1, wfn)
 
 
 def hessian(name, **kwargs):
