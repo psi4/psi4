@@ -16,10 +16,8 @@ if(${ENABLE_v2rdm_casscf})
 
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
-            GIT_REPOSITORY https://github.com/loriab/v2rdm_casscf
-            GIT_TAG cmakeinstall
-            #GIT_REPOSITORY https://github.com/edeprince3/v2rdm_casscf
-            #GIT_TAG v0.5  #55d6b38  # v1.8.3-12
+            GIT_REPOSITORY https://github.com/edeprince3/v2rdm_casscf
+            GIT_TAG 35a9ba6  # v1.8.3-12
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
