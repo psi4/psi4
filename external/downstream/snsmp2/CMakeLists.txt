@@ -13,7 +13,7 @@ if(${ENABLE_snsmp2})
 
         ExternalProject_Add(snsmp2_external
             GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
-            GIT_TAG 117d24b
+            GIT_TAG 83281dc
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build

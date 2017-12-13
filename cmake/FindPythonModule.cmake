@@ -78,8 +78,10 @@ macro(find_python_module module)
                 OUTPUT_VARIABLE _${module}_verenuf
                 ERROR_QUIET
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-                if((NOT ${_${module}_verenuf_status}) AND (${_${module}_verenuf} STREQUAL "True"))
-                    set(_${module}_requested_version_found "${PYTHON_EXECUTABLE}")
+                if(NOT ${_${module}_verenuf_status})
+                    if(${_${module}_verenuf} STREQUAL "True")
+                        set(_${module}_requested_version_found "${PYTHON_EXECUTABLE}")
+                    endif()
                 endif()
             endif()
         endif()
