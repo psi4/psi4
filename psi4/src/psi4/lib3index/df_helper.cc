@@ -2141,7 +2141,7 @@ void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t
     check_file_tuple(key, i0, i1, i2);
 
     // you write over transformed integrals or you write new disk tensors
-    std::string op = (transf_.count(key) ? "r+b" : "wb");
+    std::string op = (files_.count(key) ? "r+b" : "wb");
     put_tensor(std::get<1>(files_[key]), b, i0, i1, i2, op);
 }
 
