@@ -843,7 +843,7 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :raises: psi4.ConvergenceError if |optking__geom_maxiter| exceeded without reaching geometry convergence.
+    :raises: psi4.OptimizationConvergenceError if |optking__geom_maxiter| exceeded without reaching geometry convergence.
 
     :PSI variables:
 
@@ -983,7 +983,7 @@ def optimize(name, **kwargs):
     >>> #     geometry (by default) is the anticipated *next* optimization step.
     >>> try:
     >>>     optimize('hf/cc-pvtz')
-    >>> except psi4.ConvergenceError as ex:
+    >>> except psi4.OptimizationConvergenceError as ex:
     >>>     next_geom_coords_as_numpy_array = np.asarray(ex.wfn.molecule().geometry())
 
     """
@@ -1153,7 +1153,7 @@ def optimize(name, **kwargs):
             molecule.set_geometry(moleculeclone.geometry())
             core.clean()
             optstash.restore()
-            raise ConvergenceError("""geometry optimization""", n - 1, wfn)
+            raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
             return thisenergy
 
         core.print_out('\n    Structure for next step:\n')
@@ -1171,7 +1171,7 @@ def optimize(name, **kwargs):
             core.opt_clean()
 
     optstash.restore()
-    raise ConvergenceError("""geometry optimization""", n - 1, wfn)
+    raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
 
 
 def hessian(name, **kwargs):

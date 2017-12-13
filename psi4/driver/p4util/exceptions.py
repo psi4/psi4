@@ -81,12 +81,19 @@ class ConvergenceError(PsiException):
     error message *msg* to standard output stream and output file.
 
     """
-    def __init__(self, eqn_description, maxit, wfn=None):
+    def __init__(self, eqn_description, maxit):
         msg = "Could not converge %s in %d iterations." % (eqn_description, maxit)
         PsiException.__init__(self, msg)
         self.message = msg
-        self.wfn = wfn
         core.print_out('\nPsiException: %s\n\n' % (msg))
+
+
+class OptimizationConvergenceError(ConvergenceError):
+    """Error called for problems with geometry optimizer."""
+
+    def __init__(self, eqn_description, maxit, wfn):
+        ConvergenceError.__init__(self, eqn_description, maxit)
+        self.wfn = wfn
 
 
 class CSXError(PsiException):
