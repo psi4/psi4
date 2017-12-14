@@ -44,7 +44,7 @@ void export_psio(py::module &m) {
         .def("tocentry_exists", &PSIO::tocentry_exists, "Checks the TOC to see if a particular keyword exists there or not")
         .def("tocwrite", &PSIO::tocwrite, "Write the table of contents for passed file number")
         .def("tocscan", &PSIO::tocscan,
-             "Seek string in binary file. This export is only good for catching None, as returned sucess object not exported.")
+             "Seek string in binary file. This export is only good for catching None, as returned success object not exported.")
         .def("getpid", &PSIO::getpid, "Lookup process id")
         .def("set_pid", &PSIO::set_pid, "Set process id", py::arg("pid"))
         .def_static("shared_object", &PSIO::shared_object, "Return the global shared object")

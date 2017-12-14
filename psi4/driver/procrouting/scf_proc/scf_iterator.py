@@ -380,19 +380,22 @@ def scf_finalize_energy(self):
         # compute it if needed
         if core.get_option('SCF', 'REFERENCE') != "UHF":
             psio = core.IO.shared_object()
-            psio.open(constants.PSIF_SO_TEI, 1)  # PSIO_OPEN_OLD
-            try:
-                psio.tocscan(constants.PSIF_SO_TEI, "IWL Buffers")
-            except TypeError:
-                # "IWL Buffers" actually found but psio_tocentry can't be returned to Py
-                psio.close(constants.PSIF_SO_TEI, 1)
-            else:
-                # tocscan returned None
-                psio.close(constants.PSIF_SO_TEI, 1)
-                core.print_out("    SO Integrals not on disk, computing...")
-                mints = core.MintsHelper(self.basisset())
-                mints.integrals()
-                core.print_out("done.\n")
+            #psio.open(constants.PSIF_SO_TEI, 1)  # PSIO_OPEN_OLD
+            #try:
+            #    psio.tocscan(constants.PSIF_SO_TEI, "IWL Buffers")
+            #except TypeError:
+            #    # "IWL Buffers" actually found but psio_tocentry can't be returned to Py
+            #    psio.close(constants.PSIF_SO_TEI, 1)
+            #else:
+            #    # tocscan returned None
+            #    psio.close(constants.PSIF_SO_TEI, 1)
+
+            # logic above foiled by psio_tocentry not returning None<--nullptr in pb11 2.2.1
+            #   so forcibly recomputing for now until stability revamp
+            core.print_out("    SO Integrals not on disk, computing...")
+            mints = core.MintsHelper(self.basisset())
+            mints.integrals()
+            core.print_out("done.\n")
 
             # Q: Not worth exporting all the layers of psio, right?
 
