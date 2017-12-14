@@ -1,4 +1,4 @@
-find_package(gau2grid CONFIG QUIET)  # TODO add version
+find_package(gau2grid CONFIG QUIET 0.1)
 
 if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
@@ -19,22 +19,16 @@ else()
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                   # OpenMP irrelevant
+                    # OpenMP irrelevant
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DMAX_AM=${MAX_AM_ERI}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
-                   -DLIBC_INTERJECT=${LIBC_INTERJECT}
-                   -Dpybind11_DIR=${pybind11_DIR}
-                   -Dgau2grid_CXX_STANDARD=${psi4_CXX_STANDARD}
-                   -DENABLE_PYTHON_BINDINGS=OFF
                    -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
     set(gau2grid_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gau2grid CACHE PATH "path to internally built gau2gridConfig.cmake" FORCE)
