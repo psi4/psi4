@@ -178,6 +178,7 @@ before_script:
 script:
 - ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - ls -l ./stage/${TRAVIS_BUILD_DIR}/Install/lib/
+- cat ./stage/${TRAVIS_BUILD_DIR}/Install/lib/snsmp2/__init__.py
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
 
