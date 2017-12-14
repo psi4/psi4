@@ -9,8 +9,12 @@ He 0 0 0
 He 2 0 0
 }
 
+#print(snsmp2.__file__)
+#print('snsmp2 version {}\n\n'.format(snsmp2.__version__))
+#print(str(psi4.driver.procedures['energy'].keys()) + '\n\n')
 print_out('snsmp2 version {}\n\n'.format(snsmp2.__version__))
 print_out(str(psi4.driver.procedures['energy'].keys()) + '\n\n')
+print_out(snsmp2.__file__)
 energy('sns-mp2')
 
 compare_values(  0.00176708227, get_variable('SNS-MP2 TOTAL ENERGY'),                         5, "SNS-MP2 IE [Eh]")  #TEST

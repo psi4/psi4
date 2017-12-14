@@ -38,7 +38,8 @@ try:
 except ImportError:
     pass
 
-try:
-    import snsmp2
-except ImportError:
-    pass
+#try:
+#    import snsmp2
+#except ImportError:
+#    pass
+
