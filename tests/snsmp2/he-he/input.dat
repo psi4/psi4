@@ -1,5 +1,7 @@
 #! sns-mp2 on helium dimer
 
+import snsmp2
+
 molecule mol {
 0 1
 He 0 0 0

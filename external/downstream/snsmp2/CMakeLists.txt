@@ -13,7 +13,7 @@ if(${ENABLE_snsmp2})
         message(STATUS "Suitable snsmp2 could not be located, ${Magenta}Building snsmp2${ColourReset} instead.")
 
         ExternalProject_Add(snsmp2_external
-            DEPENDS psi4-core
+            BUILD_ALWAYS 1
             GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
             GIT_TAG 83281dc
             CONFIGURE_COMMAND ""
@@ -28,7 +28,6 @@ if(${ENABLE_snsmp2})
 else()
     add_library(snsmp2_external INTERFACE)  # dummy
 endif()
-
                                                           #--install-scripts=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
                                                           #--install-data=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}
                                                           #--install-headers=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
