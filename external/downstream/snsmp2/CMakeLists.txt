@@ -6,12 +6,14 @@ if(${ENABLE_snsmp2})
 
     if(${snsmp2_FOUND})
         message(STATUS "${Cyan}Found snsnp2${ColourReset}: ${PY_snsmp2} (found version ${snsmp2_VERSION})")
+        add_library(snsmp2_external INTERFACE)  # dummy
 
     else()
         include(ExternalProject)
         message(STATUS "Suitable snsmp2 could not be located, ${Magenta}Building snsmp2${ColourReset} instead.")
 
         ExternalProject_Add(snsmp2_external
+            DEPENDS psi4-core
             GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
             GIT_TAG 83281dc
             CONFIGURE_COMMAND ""
@@ -23,6 +25,8 @@ if(${ENABLE_snsmp2})
                                                           --single-version-externally-managed
                                                           --install-lib=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR})
     endif()
+else()
+    add_library(snsmp2_external INTERFACE)  # dummy
 endif()
 
                                                           #--install-scripts=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
