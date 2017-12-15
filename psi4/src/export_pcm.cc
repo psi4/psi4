@@ -30,7 +30,6 @@
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsipcm/psipcm.h"
 
 using namespace psi;
@@ -45,9 +44,7 @@ void export_pcm(py::module& m) {
         .value("EleOnly", PCM::CalcType::EleOnly);
 
     pcm.def(py::init<int, std::shared_ptr<BasisSet>>())
-        .def("compute_E", &PCM::compute_E, "Compute PCM polarization energy", py::arg("D"), py::arg("type"))
-        .def("compute_V", &PCM::compute_V, "Compute PCM potential")
-        .def("compute_V_electronic", &PCM::compute_V_electronic,
-             "Compute PCM potential due to electronic charge density only");
+        .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix",
+             py::arg("D"), py::arg("type"));
 }
 #endif

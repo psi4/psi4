@@ -184,16 +184,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         upcm = 0.0
         if self.pcm_enabled_:
-           Dt = self.Da().clone()
-           Dt.add(self.Db())
-           upcm = self.get_PCM().compute_E(Dt, core.PCM.CalcType.Total)
-           SCFE += upcm
-           self.set_energies("PCM Polarization", upcm)
-           self.set_variable("PCM POLARIZATION ENERGY", upcm)
-           self.push_back_external_potential(self.get_PCM().compute_V())
+            calc_type = core.PCM.CalcType.Total
+            if core.get_option("PCM", "PCM_SCF_TYPE") is "SEPARATE":
+                calc_type = core.PCM.CalcType.NucAndEle
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            upcm, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
+            SCFE += upcm
+            self.set_energies("PCM Polarization", upcm)
+            self.set_variable("PCM POLARIZATION ENERGY", upcm)
+            self.push_back_external_potential(Vpcm)
         else:
-           self.set_energies("PCM polarization", upcm)
-           self.set_variable("PCM POLARIZATION ENERGY", upcm)
+            self.set_energies("PCM polarization", upcm)
+            self.set_variable("PCM POLARIZATION ENERGY", upcm)
 
         core.timer_on("HF: Form F")
         self.form_F()
@@ -220,8 +223,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # We either do SOSCF or DIIS
-        if (soscf_enabled and self.iteration_ > 3 and
-                Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE')):
+        if (soscf_enabled and self.iteration_ > 3 and Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE')):
 
             Drms = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
@@ -451,10 +453,13 @@ def scf_finalize_energy(self):
 
     self.clear_external_potentials()
     if self.pcm_enabled_:
-       Dt = self.Da().clone()
-       Dt.add(self.Db())
-       _ = self.get_PCM().compute_E(Dt, core.PCM.CalcType.Total)
-       self.push_back_external_potential(self.get_PCM().compute_V())
+        calc_type = core.PCM.CalcType.Total
+        if core.get_option("PCM", "PCM_SCF_TYPE") is "SEPARATE":
+            calc_type = core.PCM.CalcType.NucAndEle
+        Dt = self.Da().clone()
+        Dt.add(self.Db())
+        _, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
+        self.push_back_external_potential(Vpcm)
 
     # recompute the Fock matrices as they are modified during the SCF
     #   iteration and might need to be dumped to checkpoint later
@@ -500,7 +505,7 @@ def scf_print_energies(self):
     dft_energy = hf_energy + exc + ed + evv10
     total_energy = dft_energy + eefp + epcm
 
-    core.print_out("   => Energetics <=\n\n");
+    core.print_out("   => Energetics <=\n\n")
     core.print_out("    Nuclear Repulsion Energy =        {:24.16f}\n".format(enuc))
     core.print_out("    One-Electron Energy =             {:24.16f}\n".format(e1))
     core.print_out("    Two-Electron Energy =             {:24.16f}\n".format(e2))

@@ -30,7 +30,8 @@
 #include <algorithm>
 #include <array>
 #include <memory>
-#include <tuple>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "psipcm.h"
@@ -38,6 +39,7 @@
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -51,7 +53,7 @@
 namespace psi {
 
 namespace detail {
-std::tuple<std::vector<double>, std::vector<double>> collect_atoms(std::shared_ptr<Molecule> molecule) {
+std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_ptr<Molecule> molecule) {
     int nat = molecule->natom();
     std::vector<double> charges(nat);
     for (int i = 0; i < nat; ++i) {
@@ -67,7 +69,7 @@ std::tuple<std::vector<double>, std::vector<double>> collect_atoms(std::shared_p
         }
     }
 
-    return std::make_tuple(charges, centers);
+    return std::make_pair(charges, centers);
 }
 
 PCMInput pcmsolver_input() {
@@ -110,7 +112,6 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
     if (!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
 
     std::shared_ptr<Molecule> molecule = basisset_->molecule();
-    int natom = molecule->natom();
 
     auto integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
 
@@ -126,8 +127,10 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
      *    PSI4_provides_input = true;
      * }
      */
+    int natom = molecule->natom();
     std::vector<double> charges(natom), coordinates(3 * natom);
     std::tie(charges, coordinates) = detail::collect_atoms(molecule);
+    // TODO grab point group generators into this array
     std::array<int, 4> symmetry_info{{0, 0, 0, 0}};
     int PSI4_provides_input = false;
     PCMInput host_input;
@@ -147,13 +150,9 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
     pcmsolver_print(context_.get());
     ntess_ = pcmsolver_get_cavity_size(context_.get());
     ntessirr_ = pcmsolver_get_irreducible_cavity_size(context_.get());
-    outfile->Printf("  There are %d tesserae, %d of which irreducible.\n\n", ntess_, ntessirr_);
-    tess_pot_ = new double[ntess_];
-    tess_pot_e_ = new double[ntess_];
-    tess_pot_n_ = new double[ntess_];
-    tess_charges_e_ = new double[ntess_];
-    tess_charges_n_ = new double[ntess_];
-    tess_charges_ = new double[ntess_];
+    std::vector<int> tmp(int(ntess_ / ntessirr_));
+    std::fill(tmp.begin(), tmp.end(), ntessirr_);
+    tesspi_ = Dimension(tmp);
 
     // The charge and {x,y,z} coordinates (in bohr) for each tessera
     tess_Zxyz_ = std::make_shared<Matrix>("Tess Zxyz", ntess_, 4);
@@ -161,8 +160,8 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
     // Set the tesserae's coordinates (note the loop bounds; this function is 1-based)
     for (int tess = 1; tess <= ntess_; ++tess) pcmsolver_get_center(context_.get(), tess, &(ptess_Zxyz[tess - 1][1]));
 
+    MEP_n_ = std::make_shared<Vector>(tesspi_);
     // Compute the nuclear potentials at the tesserae
-    std::fill(tess_pot_n_, tess_pot_n_ + ntess_, 0.0);
     for (int atom = 0; atom < natom; ++atom) {
         double Z = charges[atom];
         for (int tess = 0; tess < ntess_; ++tess) {
@@ -170,63 +169,31 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
             double dy = ptess_Zxyz[tess][2] - coordinates[atom * 3 + 1];
             double dz = ptess_Zxyz[tess][3] - coordinates[atom * 3 + 2];
             double r = std::sqrt(dx * dx + dy * dy + dz * dz);
-            tess_pot_n_[tess] += Z / r;
-            if (r < 1.0E-3) outfile->Printf("Warning! Tessera %d is only %.3f bohr from atom %d!\n", tess, r, atom + 1);
+            MEP_n_->add(0, tess, Z / r);
         }
     }
 
-    // A little debug info
-    if (pcm_print_ > 2) {
-        outfile->Printf("Nuclear MEP at each tessera:\n");
-        outfile->Printf("----------------------------\n");
-        for (int tess = 0; tess < ntess_; ++tess) outfile->Printf("tess[%4d] -> %16.10f\n", tess, tess_pot_n_[tess]);
-    }
-
     // Compute the nuclear charges, since they don't change
-    std::fill(tess_charges_n_, tess_charges_n_ + ntess_, 0.0);
-    const char *potential_name = "NucMEP";
-    const char *charge_name = "NucASC";
-    pcmsolver_set_surface_function(context_.get(), ntess_, tess_pot_n_, potential_name);
+    std::string MEP_n_label("NucMEP");
+    std::string ASC_n_label("NucASC");
+    pcmsolver_set_surface_function(context_.get(), ntess_, MEP_n_->pointer(0), MEP_n_label.c_str());
     int irrep = 0;
-    pcmsolver_compute_asc(context_.get(), potential_name, charge_name, irrep);
-    pcmsolver_get_surface_function(context_.get(), ntess_, tess_charges_n_, charge_name);
+    pcmsolver_compute_asc(context_.get(), MEP_n_label.c_str(), ASC_n_label.c_str(), irrep);
 
-    // A little debug info
     if (pcm_print_ > 2) {
-        outfile->Printf("Nuclear ASC at each tessera:\n");
-        outfile->Printf("----------------------------\n");
+        auto tess_charges_n = std::make_shared<Vector>(tesspi_);
+        pcmsolver_get_surface_function(context_.get(), ntess_, tess_charges_n->pointer(0), ASC_n_label.c_str());
+        outfile->Printf("Nuclear MEP & ASC at each tessera:\n");
+        outfile->Printf("-------------------------------------------------\n");
+        outfile->Printf("Tessera# Nuclear MEP       Nuclear ASC\n");
+        outfile->Printf("----------------------------------------------------------------------------\n");
         for (int tess = 0; tess < ntess_; ++tess)
-            outfile->Printf("tess[%4d] -> %16.10f\n", tess, tess_charges_n_[tess]);
-    }
-
-}  // PCM()
-
-PCM::~PCM() {
-    delete[] tess_pot_;
-    delete[] tess_pot_e_;
-    delete[] tess_pot_n_;
-    delete[] tess_charges_;
-    delete[] tess_charges_e_;
-    delete[] tess_charges_n_;
-}
-
-double PCM::compute_E(SharedMatrix &D, CalcType type) {
-    switch (type) {
-        case CalcType::Total:
-            return compute_E_total(D);
-        case CalcType::NucAndEle:
-            return compute_E_separate(D);
-        case CalcType::EleOnly:
-            return compute_E_electronic(D);
-        default:
-            throw PSIEXCEPTION("Unknown PCM calculation type.");
+            outfile->Printf("%4d  %16.10f  %16.10f\n", tess, MEP_n_->get(0, tess), tess_charges_n->get(0, tess));
     }
 }
 
-double PCM::compute_E_total(SharedMatrix &D) {
+SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
     double **ptess_Zxyz = tess_Zxyz_->pointer();
-    std::fill(tess_pot_e_, tess_pot_e_ + ntess_, 0.0);
-    std::fill(tess_charges_e_, tess_charges_e_ + ntess_, 0.0);
     for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
     potential_int_->set_charge_field(tess_Zxyz_);
 
@@ -237,7 +204,8 @@ double PCM::compute_E_total(SharedMatrix &D) {
     } else
         D_carts = D;
 
-    ContractOverDensityFunctor contract_density_functor(ntess_, tess_pot_e_, D_carts);
+    auto MEP = std::make_shared<Vector>(tesspi_);
+    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
     // Add in the electronic contribution to the potential at each tessera
     potential_int_->compute(contract_density_functor);
 
@@ -245,93 +213,95 @@ double PCM::compute_E_total(SharedMatrix &D) {
     if (pcm_print_ > 2) {
         outfile->Printf("Electronic MEP at each tessera:\n");
         outfile->Printf("-------------------------------\n");
-        for (int tess = 0; tess < ntess_; ++tess) outfile->Printf("tess[%4d] -> %16.10f\n", tess, tess_pot_e_[tess]);
+        for (int tess = 0; tess < ntess_; ++tess) outfile->Printf("tess[%4d] -> %16.10f\n", tess, MEP->get(0, tess));
     }
 
-    // Combine the nuclear and electronic potentials at each tessera
-    for (int tess = 0; tess < ntess_; ++tess) tess_pot_[tess] = tess_pot_n_[tess] + tess_pot_e_[tess];
+    return MEP;
+}
 
-    const char *tot_potential_name = "TotMEP";
-    const char *tot_charge_name = "TotASC";
-    pcmsolver_set_surface_function(context_.get(), ntess_, tess_pot_, tot_potential_name);
+std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, CalcType type) const {
+    double upcm = 0.0;
+    auto MEP_e = compute_electronic_MEP(D);
+    auto ASC = std::make_shared<Vector>(tesspi_);
+    switch (type) {
+        case CalcType::Total:
+            upcm = compute_E_total(MEP_e);
+            pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");
+            break;
+        case CalcType::NucAndEle:
+            upcm = compute_E_separate(MEP_e);
+            pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");
+            break;
+        case CalcType::EleOnly:
+            upcm = compute_E_electronic(MEP_e);
+            pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "EleASC");
+        default:
+            throw PSIEXCEPTION("Unknown PCM calculation type.");
+    }
+    return std::make_pair(upcm, compute_V(ASC));
+}
+
+double PCM::compute_E_total(const SharedVector &MEP_e) const {
+    // Combine the nuclear and electronic potentials at each tessera
+    MEP_e->add(MEP_n_);
+    std::string MEP_label("TotMEP");
+    std::string ASC_label("TotASC");
+    pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
     int irrep = 0;
-    pcmsolver_compute_asc(context_.get(), tot_potential_name, tot_charge_name, irrep);
-    pcmsolver_get_surface_function(context_.get(), ntess_, tess_charges_, tot_charge_name);
+    pcmsolver_compute_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
 
     if (pcm_print_ > 2) {
+        auto ASC = std::make_shared<Vector>(tesspi_);
+        pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), ASC_label.c_str());
         outfile->Printf("Total MEP & ASC at each tessera:\n");
         outfile->Printf("-------------------------------------------------\n");
         outfile->Printf("Tessera# Total MEP       Total ASC\n");
         outfile->Printf("----------------------------------------------------------------------------\n");
         for (int tess = 0; tess < ntess_; ++tess)
-            outfile->Printf("%4d  %16.10f  %16.10f\n", tess, tess_pot_[tess], tess_charges_[tess]);
+            outfile->Printf("%4d  %16.10f  %16.10f\n", tess, MEP_e->get(0, tess), ASC->get(0, tess));
     }
 
     // Grab the polarization energy from PCMSolver
-    double Epol = pcmsolver_compute_polarization_energy(context_.get(), tot_potential_name, tot_charge_name);
-
+    double Epol = pcmsolver_compute_polarization_energy(context_.get(), MEP_label.c_str(), ASC_label.c_str());
     return Epol;
 }
 
-double PCM::compute_E_separate(SharedMatrix &D) {
-    double **ptess_Zxyz = tess_Zxyz_->pointer();
-    std::fill(tess_pot_e_, tess_pot_e_ + ntess_, 0.0);
-    std::fill(tess_charges_, tess_charges_ + ntess_, 0.0);
-    std::fill(tess_charges_e_, tess_charges_e_ + ntess_, 0.0);
-    for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
-    potential_int_->set_charge_field(tess_Zxyz_);
+double PCM::compute_E_separate(const SharedVector &MEP_e) const {
+    // Surface functions labels
+    std::string MEP_n_label("NucMEP");
+    std::string ASC_n_label("NucASC");
+    std::string MEP_e_label("EleMEP");
+    std::string ASC_e_label("EleASC");
+    std::string MEP_label("TotMEP");
+    std::string ASC_label("TotASC");
 
-    SharedMatrix D_carts;
-    if (basisset_->has_puream()) {
-        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
-        D_carts->back_transform(D, my_aotoso_);
-    } else
-        D_carts = D;
-
-    ContractOverDensityFunctor contract_density_functor(ntess_, tess_pot_e_, D_carts);
-    // Add in the electronic contribution to the potential at each tessera
-    potential_int_->compute(contract_density_functor);
-
-    // A little debug info
-    if (pcm_print_ > 2) {
-        outfile->Printf("Electronic MEP at each tessera:\n");
-        outfile->Printf("-------------------------------\n");
-        for (int tess = 0; tess < ntess_; ++tess) outfile->Printf("tess[%4d] -> %16.10f\n", tess, tess_pot_e_[tess]);
-    }
-
-    const char *e_potential_name = "EleMEP";
-    const char *e_charge_name = "EleASC";
-    pcmsolver_set_surface_function(context_.get(), ntess_, tess_pot_e_, e_potential_name);
+    pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_e_label.c_str());
     int irrep = 0;
-    pcmsolver_compute_asc(context_.get(), e_potential_name, e_charge_name, irrep);
-    pcmsolver_get_surface_function(context_.get(), ntess_, tess_charges_e_, e_charge_name);
-
-    // Combine the nuclear and electronic potentials at each tessera
-    for (int tess = 0; tess < ntess_; ++tess) tess_pot_[tess] = tess_pot_n_[tess] + tess_pot_e_[tess];
+    pcmsolver_compute_asc(context_.get(), MEP_e_label.c_str(), ASC_e_label.c_str(), irrep);
 
     if (pcm_print_ > 2) {
+        auto ASC_n = std::make_shared<Vector>(tesspi_);
+        pcmsolver_get_surface_function(context_.get(), ntess_, ASC_n->pointer(0), ASC_n_label.c_str());
+        auto ASC_e = std::make_shared<Vector>(tesspi_);
+        pcmsolver_get_surface_function(context_.get(), ntess_, ASC_e->pointer(0), ASC_e_label.c_str());
         outfile->Printf("Nuclear and Electronic MEP & ASC at each tessera:\n");
         outfile->Printf("-------------------------------------------------\n");
         outfile->Printf("Tessera# Nuclear MEP       Nuclear ASC       Elec. MEP         Elec. ASC:\n");
         outfile->Printf("----------------------------------------------------------------------------\n");
         for (int tess = 0; tess < ntess_; ++tess)
-            outfile->Printf("%4d  %16.10f  %16.10f  %16.10f  %16.10f\n", tess, tess_pot_n_[tess], tess_charges_n_[tess],
-                            tess_pot_e_[tess], tess_charges_e_[tess]);
+            outfile->Printf("%4d  %16.10f  %16.10f  %16.10f  %16.10f\n", tess, MEP_n_->get(0, tess),
+                            ASC_n->get(0, tess), MEP_e->get(0, tess), ASC_e->get(0, tess));
     }
 
-    const char *tot_potential_name = "TotMEP";
-    const char *tot_charge_name = "TotASC";
-    pcmsolver_set_surface_function(context_.get(), ntess_, tess_pot_, tot_potential_name);
-    pcmsolver_compute_asc(context_.get(), tot_potential_name, tot_charge_name, irrep);
-    pcmsolver_get_surface_function(context_.get(), ntess_, tess_charges_, tot_charge_name);
+    MEP_e->add(MEP_n_);
+    pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
+    pcmsolver_compute_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
 
     // Grab the polarization energy from PCMSolver
-    const char *n_potential_name = "NucMEP";
-    const char *n_charge_name = "NucASC";
-    double U_NN = pcmsolver_compute_polarization_energy(context_.get(), n_potential_name, n_charge_name);
-    double U_eN = pcmsolver_compute_polarization_energy(context_.get(), n_potential_name, e_charge_name);
-    double U_Ne = pcmsolver_compute_polarization_energy(context_.get(), e_potential_name, n_charge_name);
-    double U_ee = pcmsolver_compute_polarization_energy(context_.get(), e_potential_name, e_charge_name);
+    double U_NN = pcmsolver_compute_polarization_energy(context_.get(), MEP_n_label.c_str(), ASC_n_label.c_str());
+    double U_eN = pcmsolver_compute_polarization_energy(context_.get(), MEP_n_label.c_str(), ASC_e_label.c_str());
+    double U_Ne = pcmsolver_compute_polarization_energy(context_.get(), MEP_e_label.c_str(), ASC_n_label.c_str());
+    double U_ee = pcmsolver_compute_polarization_energy(context_.get(), MEP_e_label.c_str(), ASC_e_label.c_str());
     outfile->Printf("  Polarization energy components\n");
     outfile->Printf("  U_ee = %16.14f\n", 2.0 * U_ee);
     outfile->Printf("  U_eN = %16.14f\n", 2.0 * U_eN);
@@ -342,56 +312,33 @@ double PCM::compute_E_separate(SharedMatrix &D) {
     return Epol;
 }
 
-double PCM::compute_E_electronic(SharedMatrix &D) {
-    double **ptess_Zxyz = tess_Zxyz_->pointer();
-    std::fill(tess_pot_e_, tess_pot_e_ + ntess_, 0.0);
-    std::fill(tess_charges_e_, tess_charges_e_ + ntess_, 0.0);
-    for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
-    potential_int_->set_charge_field(tess_Zxyz_);
-
-    SharedMatrix D_carts;
-    if (basisset_->has_puream()) {
-        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
-        D_carts->back_transform(D, my_aotoso_);
-    } else
-        D_carts = D;
-
-    ContractOverDensityFunctor contract_density_functor(ntess_, tess_pot_e_, D_carts);
-    // Add in the electronic contribution to the potential at each tessera
-    potential_int_->compute(contract_density_functor);
-
-    // A little debug info
-    if (pcm_print_ > 2) {
-        outfile->Printf("Electronic MEP at each tessera:\n");
-        outfile->Printf("-------------------------------\n");
-        for (int tess = 0; tess < ntess_; ++tess) outfile->Printf("tess[%4d] -> %16.10f\n", tess, tess_pot_e_[tess]);
-    }
-
-    const char *e_potential_name = "EleMEP";
-    const char *e_charge_name = "EleASC";
-    pcmsolver_set_surface_function(context_.get(), ntess_, tess_pot_e_, e_potential_name);
+double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
+    std::string MEP_e_label("EleMEP");
+    std::string ASC_e_label("EleASC");
+    pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_e_label.c_str());
     int irrep = 0;
-    pcmsolver_compute_asc(context_.get(), e_potential_name, e_charge_name, irrep);
-    pcmsolver_get_surface_function(context_.get(), ntess_, tess_charges_e_, e_charge_name);
+    pcmsolver_compute_asc(context_.get(), MEP_e_label.c_str(), ASC_e_label.c_str(), irrep);
 
     if (pcm_print_ > 2) {
+        auto ASC_e = std::make_shared<Vector>(tesspi_);
+        pcmsolver_get_surface_function(context_.get(), ntess_, ASC_e->pointer(0), ASC_e_label.c_str());
         outfile->Printf("Electronic MEP & ASC at each tessera:\n");
         outfile->Printf("-------------------------------------------------\n");
         outfile->Printf("Tessera# Elec. MEP         Elec. ASC:\n");
         outfile->Printf("----------------------------------------------------------------------------\n");
         for (int tess = 0; tess < ntess_; ++tess)
-            outfile->Printf("%4d  %16.10f  %16.10f\n", tess, tess_pot_e_[tess], tess_charges_e_[tess]);
+            outfile->Printf("%4d  %16.10f  %16.10f\n", tess, MEP_e->get(0, tess), ASC_e->get(0, tess));
     }
 
     // Grab the polarization energy from PCMSolver
-    double Epol = pcmsolver_compute_polarization_energy(context_.get(), e_potential_name, e_charge_name);
+    double Epol = pcmsolver_compute_polarization_energy(context_.get(), MEP_e_label.c_str(), ASC_e_label.c_str());
     outfile->Printf("   PCM polarization energy (electronic only) = %16.14f\n", Epol);
     return Epol;
 }
 
-SharedMatrix PCM::compute_V() {
+SharedMatrix PCM::compute_V(const SharedVector &ASC) const {
     auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
-    ContractOverChargesFunctor contract_charges_functor(tess_charges_, V_pcm_cart);
+    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
     potential_int_->compute(contract_charges_functor);
     // The potential might need to be transformed to the spherical harmonic basis
     SharedMatrix V_pcm_pure;
@@ -404,22 +351,5 @@ SharedMatrix PCM::compute_V() {
     else
         return V_pcm_cart;
 }
-
-SharedMatrix PCM::compute_V_electronic() {
-    auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
-    ContractOverChargesFunctor contract_charges_functor(tess_charges_e_, V_pcm_cart);
-    potential_int_->compute(contract_charges_functor);
-    // The potential might need to be transformed to the spherical harmonic basis
-    SharedMatrix V_pcm_pure;
-    if (basisset_->has_puream()) {
-        V_pcm_pure = std::make_shared<Matrix>("PCM potential pure", basisset_->nbf(), basisset_->nbf());
-        V_pcm_pure->transform(V_pcm_cart, my_aotoso_);
-    }
-    if (basisset_->has_puream())
-        return V_pcm_pure;
-    else
-        return V_pcm_cart;
-}
-
 }  // psi namespace
 #endif

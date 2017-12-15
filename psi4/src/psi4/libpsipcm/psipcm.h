@@ -31,57 +31,54 @@
 #ifdef USING_PCMSolver
 
 #include <memory>
-#include <tuple>
 #include <vector>
+#include <utility>
+
+#include "psi4/libmints/dimension.h"
+#include "psi4/libmints/typedefs.h"
 
 #include <PCMSolver/pcmsolver.h>
 
 namespace psi {
 class BasisSet;
-class Matrix;
-class Molecule;
 class Options;
 class PCMPotentialInt;
-class Vector;
 
-using SharedMatrix = std::shared_ptr<Matrix>;
-using SharedVector = std::shared_ptr<Vector>;
-
-class PCM {
+class PCM final {
    public:
     enum class CalcType : int { Total, NucAndEle, EleOnly };
     PCM() = default;
     PCM(int print_level, std::shared_ptr<BasisSet> basisset);
-    ~PCM();
-    double compute_E(SharedMatrix &D, CalcType type = CalcType::Total);
-    SharedMatrix compute_V();
-    SharedMatrix compute_V_electronic();  // This is needed by the CC code (and maybe the LR-SCF code)
+    ~PCM() {}
+    /*! \brief Compute polarization energy and Fock matrix contribution
+     *  \param[in] D density matrix
+     *  \param[in] type how to treat MEP and ASC
+     */
+    std::pair<double, SharedMatrix> compute_PCM_terms(const SharedMatrix &D, CalcType type = CalcType::Total) const;
 
-   protected:
+   private:
     /// The number of tesserae in PCMSolver.
     int ntess_;
     /// The number of irreducible tesserae in PCMSolver.
     int ntessirr_;
-    /// A matrix to hold the charges and {x,y,z} coordinates of the tesserae
+    Dimension tesspi_;
+    /// Charges and {x,y,z} coordinates of the cavity points
     SharedMatrix tess_Zxyz_;
-    /// A scratch array to hold the electronic potential values at the tesserae
-    double *tess_pot_e_;
-    /// A scratch array to hold the nuclear potential values at the tesserae (unchanging)
-    double *tess_pot_n_;
-    /// A scratch array to hold the total potential values at the tesserae
-    double *tess_pot_;
-    /// A scratch array to hold the electronic charges at the tesserae
-    double *tess_charges_e_;
-    /// A scratch array to hold the nuclear charges at the tesserae
-    double *tess_charges_n_;
-    /// A scratch array to hold the charges at the tesserae
-    double *tess_charges_;
+    /// Nucler MEP at cavity points
+    SharedVector MEP_n_;
+    /// Computes electronic MEP at cavity points
+    SharedVector compute_electronic_MEP(const SharedMatrix &D) const;
     /// Calculate energy using total charges and potentials
-    double compute_E_total(SharedMatrix &D);
+    double compute_E_total(const SharedVector &MEP_e) const;
     /// Calculate energy separating between charges and potentials
-    double compute_E_separate(SharedMatrix &D);
+    double compute_E_separate(const SharedVector &MEP_e) const;
     /// Calculate electronic polarization energy (U_ee) only (for CC step)
-    double compute_E_electronic(SharedMatrix &D);
+    double compute_E_electronic(const SharedVector &MEP_e) const;
+    /*! \brief Compute PCM potential
+     *  \param[in] ASC the apparent surface charge to contract with
+     *  charge-attraction integrals
+     */
+    SharedMatrix compute_V(const SharedVector &ASC) const;
 
     /// Current basis set (for puream and nao/nso info)
     std::shared_ptr<BasisSet> basisset_;
@@ -101,12 +98,11 @@ class PCM {
 };
 
 namespace detail {
-std::tuple<std::vector<double>, std::vector<double>> collect_atoms(std::shared_ptr<Molecule>);
+std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_ptr<Molecule>);
 
 PCMInput pcmsolver_input();
 
 void host_writer(const char *);
-
 }  // detail
 }  // psi
 #endif
