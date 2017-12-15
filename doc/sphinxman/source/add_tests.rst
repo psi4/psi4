@@ -28,12 +28,12 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:add_tests`:
+.. _`faq:add_tests`:
 
 Adding Test Cases
-=========
+=================
 
-To create a new test case, first make a folder in :source:`tests`. This directory will need two files. The first is ``CMakeLists.txt``, which is necessary to add the test case to the suite. This file should have the following lines::
+To create a new test case, first make a folder in :source:`tests`. The directory name may not contain an underscore; to indicate spaces, use a hyphen instead. This directory will need two files. The first is ``CMakeLists.txt``, which is necessary to add the test case to the suite. This file should have the following lines::
 
     include(TestingMacros)
     

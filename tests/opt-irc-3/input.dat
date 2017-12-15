@@ -24,7 +24,6 @@ set {
   basis                      sto-3g
   opt_type                   irc
   geom_maxiter               10
-  g_convergence              gau_verytight
   irc_step_size              0.5
 }
 
