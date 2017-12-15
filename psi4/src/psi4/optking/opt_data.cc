@@ -219,6 +219,12 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   }
 
 // Test for convergence
+
+  // The initial TS of an IRC doesn't count
+  if (Opt_params.opt_type == OPT_PARAMS::IRC && g_iteration() == 1) {
+    return false;
+  }
+
 #if defined(OPTKING_PACKAGE_PSI)
 
   // Q-Chem and Gaussian have convergence tests involving interplay among criteria.
