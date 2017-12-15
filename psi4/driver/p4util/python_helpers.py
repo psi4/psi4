@@ -225,10 +225,26 @@ def set_module_options(module, options_dict):
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
 
+
 ## OEProp helpers
 
+
 def pcm_helper(block):
-    """Passes multiline string *block* to PCMSolver parser."""
+    """
+    Passes multiline string *block* to PCMSolver parser.
+
+    Parameters
+    ----------
+    block: multiline string with PCM input in PCMSolver syntax.
+
+    Notes
+    -----
+    !Warning! This function changes directory from launch site to scratch and
+    back. This is needed because PCMSolver does not have a notion of an
+    absolute paths for its input file. If you are looking at this function as
+    an example, remember that changing directories is usually a **bad idea**
+    and **should not be done**.
+    """
 
     # Setup unique scratch directory and move in, as done for other add-ons
     psioh = core.IOManager.shared_object()
