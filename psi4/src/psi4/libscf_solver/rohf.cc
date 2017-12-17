@@ -366,15 +366,17 @@ void ROHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(Ga_);
     if (!external_potentials_.empty()) {
-        std::for_each(external_potentials_.begin(), external_potentials_.end(),
-                      [this](const SharedMatrix & Vext) { Fa_->add(Vext); });
+        for (const auto& Vext : external_potentials_) {
+            Fa_->add(Vext);
+        }
     }
 
     Fb_->copy(H_);
     Fb_->add(Gb_);
     if (!external_potentials_.empty()) {
-        std::for_each(external_potentials_.begin(), external_potentials_.end(),
-                      [this](const SharedMatrix & Vext) { Fb_->add(Vext); });
+        for (const auto& Vext : external_potentials_) {
+            Fb_->add(Vext);
+        }
     }
 
     moFa_->transform(Fa_, Ca_);
