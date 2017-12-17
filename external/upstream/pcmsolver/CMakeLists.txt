@@ -1,5 +1,5 @@
     if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.1.11 CONFIG QUIET)
+    find_package(PCMSolver 1.1.10 CONFIG QUIET)
 
     if(${PCMSolver_FOUND})
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
@@ -23,7 +23,7 @@
 
         ExternalProject_Add(pcmsolver_external
             GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-              GIT_TAG v1.1.11
+            GIT_TAG v1.1.11
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
