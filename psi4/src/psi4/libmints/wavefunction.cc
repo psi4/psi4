@@ -67,25 +67,20 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
-                           std::shared_ptr<BasisSet> basis,
-                           Options &options) :
-        options_(options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}}
-{
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options &options)
+    : options_(options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}} {
     common_init();
 }
 
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
-                           std::shared_ptr<BasisSet> basis) :
-        options_(Process::environment.options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}}
-{
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
+    : options_(Process::environment.options),
+      basisset_(basis),
+      molecule_(molecule),
+      dipole_field_strength_{{0.0, 0.0, 0.0}} {
     common_init();
 }
 
-Wavefunction::Wavefunction(Options &options) :
-        options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}
-{
-}
+Wavefunction::Wavefunction(Options &options) : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}} {}
 
 Wavefunction::~Wavefunction() {}
 
@@ -126,7 +121,8 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 
     dipole_field_type_ = other->dipole_field_type_;
     perturb_h_ = other->perturb_h_;
-    std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(), dipole_field_strength_.begin());
+    std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(),
+              dipole_field_strength_.begin());
 
     nso_ = other->nso_;
     nmo_ = other->nmo_;
@@ -183,7 +179,8 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
 
     dipole_field_type_ = other->dipole_field_type_;
     perturb_h_ = other->perturb_h_;
-    std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(), dipole_field_strength_.begin());
+    std::copy(other->dipole_field_strength_.begin(), other->dipole_field_strength_.end(),
+              dipole_field_strength_.begin());
 
     print_ = other->print_;
     debug_ = other->debug_;
@@ -234,12 +231,10 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
         arrays_[kv.first] = kv.second->clone();
     }
 
-    // Not sure...
-    PCM_ = other->PCM_;
+    PCM_ = std::make_shared<PCM>(other->PCM_.get());
 }
 
-std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSet> basis)
-{
+std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (!S_) {
         throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
     }
@@ -262,7 +257,7 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisS
     auto pet = std::make_shared<PetiteList>(wfn->basisset_, wfn->integral_);
     wfn->AO2SO_ = pet->aotoso();
 
-    wfn->psio_ = psio_; // We dont actually copy psio
+    wfn->psio_ = psio_;  // We dont actually copy psio
     wfn->memory_ = memory_;
     wfn->nalpha_ = nalpha_;
     wfn->nbeta_ = nbeta_;
@@ -299,7 +294,6 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisS
 
     wfn->same_a_b_dens_ = same_a_b_dens_;
     wfn->same_a_b_orbs_ = same_a_b_orbs_;
-
 
     /// Need the SO2AO matrix for remove_symmetry(), have the AO2SO matrix
     SharedMatrix SO2AO = aotoso()->transpose();
@@ -475,38 +469,37 @@ void Wavefunction::common_init() {
             if (perturb_with == "DIPOLE_X") {
                 dipole_field_type_ = dipole_x;
                 dipole_field_strength_[0] = options_.get_double("PERTURB_MAGNITUDE");
-                outfile->Printf(" WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+                outfile->Printf(
+                    " WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
+                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
             } else if (perturb_with == "DIPOLE_Y") {
                 dipole_field_type_ = dipole_y;
                 dipole_field_strength_[1] = options_.get_double("PERTURB_MAGNITUDE");
-                outfile->Printf(" WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+                outfile->Printf(
+                    " WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
+                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
             } else if (perturb_with == "DIPOLE_Z") {
                 dipole_field_type_ = dipole_z;
                 dipole_field_strength_[2] = options_.get_double("PERTURB_MAGNITUDE");
-                outfile->Printf(" WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
-                                "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
+                outfile->Printf(
+                    " WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
+                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
             } else if (perturb_with == "DIPOLE") {
                 dipole_field_type_ = dipole;
-                if(options_["PERTURB_DIPOLE"].size() !=3)
+                if (options_["PERTURB_DIPOLE"].size() != 3)
                     throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-                for(int n = 0; n < 3; ++n)
-                    dipole_field_strength_[n] = options_["PERTURB_DIPOLE"][n].to_double();
+                for (int n = 0; n < 3; ++n) dipole_field_strength_[n] = options_["PERTURB_DIPOLE"][n].to_double();
             } else if (perturb_with == "EMBPOT") {
                 dipole_field_type_ = embpot;
-            }
-            else if (perturb_with == "DX") {
+            } else if (perturb_with == "DX") {
                 dipole_field_type_ = dx;
-            }
-            else if (perturb_with == "SPHERE") {
+            } else if (perturb_with == "SPHERE") {
                 dipole_field_type_ = sphere;
-            }
-            else {
-                outfile->Printf( "Unknown PERTURB_WITH. Applying no perturbation.\n");
+            } else {
+                outfile->Printf("Unknown PERTURB_WITH. Applying no perturbation.\n");
             }
         } else {
-                outfile->Printf( "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
+            outfile->Printf("PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
     }
 
@@ -521,15 +514,9 @@ void Wavefunction::common_init() {
 #endif
 }
 
-std::array<double,3> Wavefunction::get_dipole_field_strength() const
-{
-    return dipole_field_strength_;
-}
+std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }
 
-Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const
-{
-    return dipole_field_type_;
-}
+Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
 
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
     std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
@@ -683,7 +670,8 @@ SharedMatrix Wavefunction::Cb() const {
     return Cb_;
 }
 
-std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &noccpi, const std::string &subset) const {
+std::vector<std::vector<int>> Wavefunction::subset_occupation(const Dimension &noccpi,
+                                                              const std::string &subset) const {
     if (!(subset == "FROZEN_OCC" || subset == "FROZEN_VIR" || subset == "ACTIVE_OCC" || subset == "ACTIVE_VIR" ||
           subset == "FROZEN" || subset == "ACTIVE" || subset == "OCC" || subset == "VIR" || subset == "ALL"))
         throw PSIEXCEPTION(
@@ -764,8 +752,9 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
     return C2;
 }
 
-SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi, const std::string &basis, const std::string &subset) const {
-    std::vector <std::vector<int>> positions = subset_occupation(noccpi, subset);
+SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi,
+                                                 const std::string &basis, const std::string &subset) const {
+    std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
     for (int h = 0; h < (int)positions.size(); h++) {
@@ -942,9 +931,8 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
     }
 }
 
-SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C,
-    const std::string &basis, const std::string matrix_basename) const
-{
+SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, const std::string &basis,
+                                                const std::string matrix_basename) const {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
         std::string m2_name = matrix_basename + " (AO basis)";
@@ -1032,11 +1020,9 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C,
     }
 }
 
-
-SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
-                                            std::shared_ptr<BasisSet> old_basis,
+SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, std::shared_ptr<BasisSet> old_basis,
                                             std::shared_ptr<BasisSet> new_basis) {
-// Based on Werner's method from Mol. Phys. 102, 21-22, 2311
+    // Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     std::shared_ptr<IntegralFactory> newfactory =
         std::make_shared<IntegralFactory>(new_basis, new_basis, new_basis, new_basis);
     std::shared_ptr<IntegralFactory> hybfactory =
@@ -1317,6 +1303,4 @@ SharedMatrix Wavefunction::get_array(std::string label) {
     }
 }
 
-std::shared_ptr<PCM> Wavefunction::get_PCM() const {
-  return PCM_;
-}
+std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }
