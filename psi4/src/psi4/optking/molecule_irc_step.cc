@@ -205,7 +205,7 @@ void MOLECULE::irc_step(void)
     }
   }
 
-    if (p_irc_data->sphere_step == 1) {
+    if (p_irc_data->sphere_step == 1 && p_irc_data->size() > 3) {
 
       double *u_f_q = init_array(Nintco);
       double *u_f_q_0 = init_array(Nintco);
@@ -219,21 +219,19 @@ void MOLECULE::irc_step(void)
         p_irc_data->in_min_range = 1;
       }
 
-      if(p_irc_data->size() > 3) {
-        if (u_f_q_dot < -0.7 ||
-            (
-              std::fabs(p_irc_data->g_line_dist(p_irc_data->size()-1) - p_irc_data->g_line_dist(p_irc_data->size()-2)) < s*10e-03
-            )
-           ) {
-          oprintf_out("\n@IRC\n@IRC Houston, we've found a minimum!\n@IRC\n");
+      if (u_f_q_dot < -0.7 ||
+          (
+            std::fabs(p_irc_data->g_line_dist(p_irc_data->size()-1) - p_irc_data->g_line_dist(p_irc_data->size()-2)) < s*10e-03
+          )
+         ) {
+        oprintf_out("\n@IRC\n@IRC Houston, we've found a minimum!\n@IRC\n");
 
-          if(Opt_params.IRC_stop == OPT_PARAMS::ASK) {
-            std::cout << "Would you like to proceed? (1=yes, 0=no):";
-            std::cin >> answer;
-          }
-          if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer) {
-            p_irc_data->go = 0;
-          }
+        if(Opt_params.IRC_stop == OPT_PARAMS::ASK) {
+          std::cout << "Would you like to proceed? (1=yes, 0=no):";
+          std::cin >> answer;
+        }
+        if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer) {
+          p_irc_data->go = 0;
         }
       }
 

@@ -67,3 +67,4 @@ Versioning |PSIfour|
 Miscellaneous
 -------------
 
+#. :ref:`faq:add_tests`
