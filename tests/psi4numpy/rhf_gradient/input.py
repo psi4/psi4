@@ -41,6 +41,7 @@ def rhf_gradient(mol, options):
 
     Gradient["N"] = np.zeros((natoms, 3))
     Gradient["S"] = np.zeros((natoms, 3))
+    Gradient["S'"] = np.zeros((natoms, 3))
     Gradient["V"] = np.zeros((natoms, 3))
     Gradient["T"] = np.zeros((natoms, 3))
     Gradient["J"] = np.zeros((natoms, 3))
@@ -65,6 +66,7 @@ def rhf_gradient(mol, options):
                 deriv1_np[map_key] = np.asarray(deriv1_mat[key + str(atom)][p])
                 if key == "S":
                     Gradient[key][atom][p] = -2.0 * np.einsum("ii,ii->", F[:occ,:occ], deriv1_np[map_key][:occ,:occ])
+                    Gradient["S'"][atom][p] = 2.0 * np.einsum("ii->", deriv1_np[map_key][:occ,:occ]) # For comparison with PSI4's overlap_grad
                 else:
                     Gradient[key][atom][p] = 2.0 * np.einsum("ii->", deriv1_np[map_key][:occ,:occ])
 
@@ -103,7 +105,20 @@ def rhf_gradient(mol, options):
     Gradient["TEI"] = Gradient["J"] + Gradient["K"]
     Gradient["Total"] = Gradient["OEI"] + Gradient["TEI"] + Gradient["N"]
 
-    return Gradient
+
+    # PIS4's overlap_grad, kinetic_grad and potential_grad
+
+    PSI4_Grad = {}
+    D = wfn.Da()
+    D.add(wfn.Db())
+
+    PSI4_Grad["S"] = mints.overlap_grad(D) 
+    PSI4_Grad["T"] = mints.kinetic_grad(D)
+    PSI4_Grad["V"] = mints.potential_grad(D)
+
+    
+
+    return Gradient, PSI4_Grad
 
 
 psi4.set_memory(int(1e9), False)
@@ -126,12 +141,23 @@ options = {'BASIS':'STO-3G', 'SCF_TYPE':'PK',
 
 psi4.set_options(options)
 
-# Compute SCF Gradient
-G_psi4 = psi4.core.Matrix.from_list([                                     
+G_python, PSI4_Grad = rhf_gradient(mol, options)
+
+#Convert np array into PSI4 Matrix 
+G_python_S_mat = psi4.core.Matrix.from_array(G_python["S'"])
+G_python_T_mat = psi4.core.Matrix.from_array(G_python["T"])
+G_python_V_mat = psi4.core.Matrix.from_array(G_python["V"])
+
+# Test OEI gradients with that of PSI4
+psi4.compare_matrices(PSI4_Grad["S"], G_python_S_mat, 10, "OVERLAP_GRADIENT_TEST")   # TEST 
+psi4.compare_matrices(PSI4_Grad["T"], G_python_T_mat, 10, "KINETIC_GRADIENT_TEST")   # TEST
+psi4.compare_matrices(PSI4_Grad["V"], G_python_V_mat, 10, "POTENTIAL_GRADIENT_TEST") # TEST
+
+# PSI4's Total Gradient 
+Total_G_psi4 = psi4.core.Matrix.from_list([                                     
              [ 0.000000000000, -0.000000000000, -0.097441440379], 
              [-0.000000000000, -0.086300100260,  0.048720720189],
              [-0.000000000000,  0.086300100260,  0.048720720189]
        ])
-G_python = rhf_gradient(mol, options)
-G_python_mat = psi4.core.Matrix.from_array(G_python["Total"])
-psi4.compare_matrices(G_psi4, G_python_mat, 10, "RHF-GRADIENT-TEST") # TEST
+G_python_Total_mat = psi4.core.Matrix.from_array(G_python["Total"])
+psi4.compare_matrices(Total_G_psi4, G_python_Total_mat, 10, "RHF_TOTAL_GRADIENT_TEST") # TEST

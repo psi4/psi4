@@ -2003,185 +2003,176 @@ void MintsHelper::play()
 
 /* 1st and 2nd derivatives of OEI in AO basis  */
 
-std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv1_helper(const std::string & type, int atom)
-{
-        char lbl[32];
-        char lbl1[32];
-        char ** cartcomp;
-        cartcomp = (char **) malloc (3 * sizeof(char *));
-        cartcomp[0] = strdup("X");
-        cartcomp[1] = strdup("Y");
-        cartcomp[2] = strdup("Z");
+std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv1_helper(const std::string & type, int atom) {
 
-        sprintf(lbl, "ao_%s_deriv1_", type.c_str());
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
+    
+    std::shared_ptr<OneBodyAOInt> GInt;
 
-        std::shared_ptr<OneBodyAOInt> GInt;
+    if (type == "OVERLAP"){
+       std::shared_ptr<OneBodyAOInt> Int(integral_->ao_overlap(1));
+       GInt = Int;
+    }    
+    else {
+       std::shared_ptr<OneBodyAOInt> Int(integral_->ao_kinetic(1));
+       GInt = Int;
+    }        
 
-        if (type == "OVERLAP"){
-           std::shared_ptr<OneBodyAOInt> Int(integral_->ao_overlap(1));
-           GInt = Int;
-        }    
-        else {
-           std::shared_ptr<OneBodyAOInt> Int(integral_->ao_kinetic(1));
-           GInt = Int;
-        }        
+    std::shared_ptr <BasisSet> bs1 = GInt->basis1();
+    std::shared_ptr <BasisSet> bs2 = GInt->basis2();
 
-        std::shared_ptr <BasisSet> bs1 = GInt->basis1();
-        std::shared_ptr <BasisSet> bs2 = GInt->basis2();
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
 
-        int nbf1 = bs1->nbf();
-        int nbf2 = bs2->nbf();
+    std::vector<SharedMatrix> grad;
+    for (int p=0; p<3; p++){
+        std::stringstream sstream;
+        sstream << "ao_" << type << "_deriv1_" << atom << cartcomp[p];
+        grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1, nbf2)));
+        }
 
-        std::vector<SharedMatrix> grad;
-        for (int p=0; p<3; p++){
-            sprintf(lbl1, "%s%d_%s", lbl, atom, cartcomp[p]);
-            grad.push_back(SharedMatrix(new Matrix(lbl1, nbf1, nbf2)));
+    const double* buffer = GInt->buffer();
+
+    for (int P = 0; P < bs1->nshell(); P++)
+        for (int Q = 0; Q < bs2->nshell(); Q++) {
+
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
+
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
+
+            if( aP!=atom && aQ!=atom)
+                  continue;
+
+            GInt->compute_shell_deriv1(P,Q);
+            int offset = 0;
+
+            if(aP == atom){
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
+                }
+            }
+            offset += nP*nQ;
+
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
+                }
+            }
+            offset += nP*nQ;
+
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
+                }
+             }
+            offset += nP*nQ;
+          }
+            else {offset += 3 * nP * nQ ;}
+
+            if(aQ == atom){
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
+                }
+            }
+            offset += nP*nQ;
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
+                }
+            }
+            offset += nP*nQ;
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
+                }
+              }
+            offset += nP*nQ;
             }
 
-        const double* buffer = GInt->buffer();
+            else {offset += 3 * nP * nQ ;}
+    }
 
-        for (int P = 0; P < bs1->nshell(); P++)
-            for (int Q = 0; Q < bs2->nshell(); Q++) {
-
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
-
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
-
-                if( aP!=atom && aQ!=atom)
-                      continue;
-
-                GInt->compute_shell_deriv1(P,Q);
-                int offset = 0;
-
-                if(aP == atom){
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
-                    }
-                }
-                offset += nP*nQ;
-
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
-                    }
-                }
-                offset += nP*nQ;
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
-                    }
-                 }
-                offset += nP*nQ;
-              }
-                else {offset += 3 * nP * nQ ;}
-
-                if(aQ == atom){
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
-                    }
-                }
-                offset += nP*nQ;
-
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
-                    }
-                }
-                offset += nP*nQ;
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
-                    }
-                  }
-                offset += nP*nQ;
-                }
-
-                else {offset += 3 * nP * nQ ;}
-        }
-
-        return grad;
+    return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_potential_deriv1_helper(int atom)
-{
+std::vector<SharedMatrix> MintsHelper::ao_potential_deriv1_helper(int atom) {
 
-        char lbl[32];
-        char ** cartcomp;
-        cartcomp = (char **) malloc (3 * sizeof(char *));
-        cartcomp[0] = strdup("X");
-        cartcomp[1] = strdup("Y");
-        cartcomp[2] = strdup("Z");
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
-        std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
+    std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
 
-        std::shared_ptr <BasisSet> bs1 = Vint->basis1();
-        std::shared_ptr <BasisSet> bs2 = Vint->basis2();
+    std::shared_ptr <BasisSet> bs1 = Vint->basis1();
+    std::shared_ptr <BasisSet> bs2 = Vint->basis2();
 
-        int nbf1 = bs1->nbf();
-        int nbf2 = bs2->nbf();
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
 
-        int natom = basisset_->molecule()->natom();
+    int natom = basisset_->molecule()->natom();
 
-        std::vector<SharedMatrix> grad;
-        for (int p=0; p<3; p++){
-            sprintf(lbl, "ao_potential_deriv1_%d_%s", atom, cartcomp[p]);
-            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1, nbf2)));
-          }
+    std::vector<SharedMatrix> grad;
+    for (int p=0; p<3; p++){
+        std::stringstream sstream;
+        sstream << "ao_potential_deriv1_" << atom << cartcomp[p];
+        grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1, nbf2)));
+      }
 
 
-        const double* buffer = Vint->buffer();
+    const double* buffer = Vint->buffer();
 
-        for (int P = 0; P < bs1->nshell(); P++)
-            for (int Q = 0; Q < bs2->nshell(); Q++) {
+    for (int P = 0; P < bs1->nshell(); P++)
+        for (int Q = 0; Q < bs2->nshell(); Q++) {
 
-                int nP = bs1->shell(P).nfunction();
-                int oP = bs1->shell(P).function_index();
-                int aP = bs1->shell(P).ncenter();
+            int nP = bs1->shell(P).nfunction();
+            int oP = bs1->shell(P).function_index();
+            int aP = bs1->shell(P).ncenter();
 
-                int nQ = bs2->shell(Q).nfunction();
-                int oQ = bs2->shell(Q).function_index();
-                int aQ = bs2->shell(Q).ncenter();
+            int nQ = bs2->shell(Q).nfunction();
+            int oQ = bs2->shell(Q).function_index();
+            int aQ = bs2->shell(Q).ncenter();
 
-                Vint->compute_shell_deriv1(P,Q);
-                
-                const double* ref0 = &buffer[3 * atom * nP * nQ + 0 * nP * nQ];
-                const double* ref1 = &buffer[3 * atom * nP * nQ + 1 * nP * nQ];
-                const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
-                for (int p = 0; p < nP; p++) 
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->set(p+oP, q+oQ,(*ref0++));
-                        grad[1]->set(p+oP, q+oQ,(*ref1++));
-                        grad[2]->set(p+oP, q+oQ,(*ref2++));
-                }
-        }
+            Vint->compute_shell_deriv1(P,Q);
+            
+            const double* ref0 = &buffer[3 * atom * nP * nQ + 0 * nP * nQ];
+            const double* ref1 = &buffer[3 * atom * nP * nQ + 1 * nP * nQ];
+            const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
+            for (int p = 0; p < nP; p++) 
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->set(p+oP, q+oQ,(*ref0++));
+                    grad[1]->set(p+oP, q+oQ,(*ref1++));
+                    grad[2]->set(p+oP, q+oQ,(*ref2++));
+            }
+    }
 
-        return grad;
+    return grad;
 }
 
 
-std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int atom2)
-{
+std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int atom2) {
 
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("x");
-    cartcomp[1] = strdup("y");
-    cartcomp[2] = strdup("z");
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("x");
+    cartcomp.push_back("y");
+    cartcomp.push_back("z");
   
     std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
 
@@ -2195,9 +2186,10 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
     std::vector<SharedMatrix> grad;
     for (int a=0,ab=0; a<3; a++)
       for (int b=0; b<3; b++,ab++){
-        sprintf(lbl, "ao_potential_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[a], cartcomp[b]);
-        grad.push_back(SharedMatrix(new Matrix(lbl, nbf1, nbf2)));
-        grad[ab]->zero();    
+          std::stringstream sstream;
+          sstream << "ao_potential_deriv2_" << atom1 << atom2 << cartcomp[a] << cartcomp[b];
+          grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1, nbf2)));
+          grad[ab]->zero();    
       }
 
     const double *buffer = Vint->buffer();
@@ -2218,7 +2210,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
                 std::map<std::string, double> grad_map;
                 for (int a=0; a<3; a++)
                     for (int b=0; b<3; b++){
-                        std::string grad_key = std::string(cartcomp[a]) + std::string(cartcomp[b]);
+                        std::string grad_key = cartcomp[a] + cartcomp[b];
                         grad_map[grad_key] = 0;
                     }
 
@@ -2329,34 +2321,34 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
                            hess_map["CzCx"] =  hess_map["CxCz"];
                            hess_map["CzCy"] =  hess_map["CyCz"];
 
-                           for (std::vector<int>::iterator it = vec_pos.begin() ; it != vec_pos.end(); ++it){
-                               strings = pos_map[*it];
+                           for (auto pos : vec_pos){
+                               strings = pos_map[pos];
                                for (int a=0; a<3; a++)
                                    for (int b=0; b<3; b++){
-                                       key = strings[0] + std::string(cartcomp[a]) + strings[1] + std::string(cartcomp[b]);
-                                       std::string grad_key = std::string(cartcomp[a]) + std::string(cartcomp[b]);
-                                       if ((*it) < 3 && a<=b){
+                                       key = strings[0] + cartcomp[a] + strings[1] + cartcomp[b];
+                                       std::string grad_key = cartcomp[a] + cartcomp[b];
+                                       if (pos < 3 && a<=b){
                                           grad_map[grad_key] +=  hess_map[key];
                                        } 
-                                       if ((*it) == 3){
+                                       if (pos == 3){
                                           if (aP == atom && a == b)  
                                              grad_map[grad_key] +=  2.0 * hess_map[key];
                                           else
                                              grad_map[grad_key] += hess_map[key];
                                           }   
-                                       if ((*it) == 4){
-                                          std::string key1 = pos_map[2][0] + std::string(cartcomp[a]) + pos_map[2][1] + std::string(cartcomp[b]); 
-                                          std::string key2 = pos_map[3][0] + std::string(cartcomp[a]) + pos_map[3][1] + std::string(cartcomp[b]); 
-                                          std::string key3 = pos_map[1][0] + std::string(cartcomp[a]) + pos_map[1][1] + std::string(cartcomp[b]); 
+                                       if (pos == 4){
+                                          std::string key1 = pos_map[2][0] + cartcomp[a] + pos_map[2][1] + cartcomp[b]; 
+                                          std::string key2 = pos_map[3][0] + cartcomp[a] + pos_map[3][1] + cartcomp[b]; 
+                                          std::string key3 = pos_map[1][0] + cartcomp[a] + pos_map[1][1] + cartcomp[b]; 
                                           if (aP == aQ && a == b)
                                              grad_map[grad_key] +=  2.0 *(hess_map[key1] + hess_map[key2] - hess_map[key3]);
                                           else  
                                              grad_map[grad_key] +=  hess_map[key1] + hess_map[key2] - hess_map[key3];
                                           }
-                                       if ((*it) == 5){
-                                          std::string key1 = pos_map[3][0] + std::string(cartcomp[b]) + pos_map[3][1] + std::string(cartcomp[a]); 
-                                          std::string key2 = pos_map[0][0] + std::string(cartcomp[a]) + pos_map[0][1] + std::string(cartcomp[b]); 
-                                          std::string key3 = pos_map[1][0] + std::string(cartcomp[a]) + pos_map[1][1] + std::string(cartcomp[b]); 
+                                       if (pos == 5){
+                                          std::string key1 = pos_map[3][0] + cartcomp[b] + pos_map[3][1] + cartcomp[a]; 
+                                          std::string key2 = pos_map[0][0] + cartcomp[a] + pos_map[0][1] + cartcomp[b]; 
+                                          std::string key3 = pos_map[1][0] + cartcomp[a] + pos_map[1][1] + cartcomp[b]; 
                                           if (aQ == atom && a == b)
                                              grad_map[grad_key] +=  2.0 *(hess_map[key1] + hess_map[key2] - hess_map[key3]);
                                           else  
@@ -2367,7 +2359,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
 
                            for (int a=0,ab=0; a<3; a++)
                                for (int b=0; b<3; b++,ab++){
-                                   std::string grad_key = std::string(cartcomp[a]) + std::string(cartcomp[b]);
+                                   std::string grad_key = cartcomp[a] + cartcomp[b];
                                    grad[ab]->add(p+oP, q+oQ, grad_map[grad_key]);
                                    grad_map[grad_key] = 0;
                                }
@@ -2413,18 +2405,13 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
     return grad;
 }
     
-std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const std::string & type, int atom1, int atom2)
-{
+std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const std::string & type, int atom1, int atom2) {
 
-    char lbl[32];
-    char lbl1[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("x");
-    cartcomp[1] = strdup("y");
-    cartcomp[2] = strdup("z");
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
-    sprintf(lbl, "ao_%s_deriv2_", type.c_str());
     std::shared_ptr<OneBodyAOInt> GInt;
 
     if (type == "OVERLAP"){
@@ -2445,8 +2432,9 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
     std::vector<SharedMatrix> grad;
     for (int p=0; p<3; p++)
       for (int q=0; q<3; q++){
-        sprintf(lbl1, "%s%d_%d_%s_%s", lbl, atom1, atom2, cartcomp[p], cartcomp[q]);
-        grad.push_back(SharedMatrix(new Matrix(lbl1, nbf1, nbf2)));
+          std::stringstream sstream;
+          sstream << "ao_" << type  << "_deriv2_" << atom1 << atom2 << cartcomp[p] << cartcomp[q];
+          grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1, nbf2)));
       }
 
     const double *buffer = GInt->buffer();
@@ -2539,14 +2527,12 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
 
 /* 1st and 2nd derivatives of TEI in AO basis  */
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom)
-{
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom) {
+
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
     std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
 
@@ -2564,12 +2550,13 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom)
     int natom = basisset_->molecule()->natom();
 
     std::vector<SharedMatrix> grad;
-        for (int p=0; p<3; p++){
-            sprintf(lbl, "ao_tei_deriv1_%d_%s", atom, cartcomp[p]);
-            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
+    for (int p=0; p<3; p++){
+        std::stringstream sstream;
+        sstream << "ao_tei_deriv1_" << atom  << cartcomp[p];
+        grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1 * nbf2, nbf3 * nbf4)));
       }
-    const double *buffer = ints->buffer();
 
+    const double *buffer = ints->buffer();
 
     for (int P = 0; P < bs1->nshell(); P++) {
         for (int Q = 0; Q < bs2->nshell(); Q++) {
@@ -2685,14 +2672,12 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom)
     return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2)
-{
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("x");
-    cartcomp[1] = strdup("y");
-    cartcomp[2] = strdup("z");
+std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
+    
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("x");
+    cartcomp.push_back("y");
+    cartcomp.push_back("z");
 
     int nthreads = 1;
 #ifdef _OPENMP
@@ -2716,11 +2701,12 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2)
     std::vector<SharedMatrix> grad;
     for (int p=0; p<3; p++)
       for (int q=0; q<3; q++){
-        sprintf(lbl, "ao_tei_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
-        grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
+        std::stringstream sstream;
+        sstream << "ao_tei_deriv2_" << atom1  << atom2 << cartcomp[p] << cartcomp[q];
+        grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1 * nbf2, nbf3 * nbf4)));
       }
 
-        std::vector<std::vector<int> >shell_quartets;
+      std::vector<std::vector<int> >shell_quartets;
 
 
     for (int P = 0; P < bs1->nshell(); P++) 
@@ -2806,7 +2792,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2)
                   
                   for (int p=0,pq=0; p<3; p++)
                       for (int q=0; q<3; q++,pq++){
-                          std::string grad_key = std::string(cartcomp[p]) + std::string(cartcomp[q]);
+                          std::string grad_key = cartcomp[p] + cartcomp[q];
                           grad_map[grad_key] = 0;
                       }
 
@@ -2950,8 +2936,8 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2)
                                           strings = pos_map[*it] ;
                                           for (int p=0; p<3; p++)
                                               for (int q=0; q<3; q++){
-                                                  key = strings[0] + std::string(cartcomp[p]) + strings[1] + std::string(cartcomp[q]);
-                                                  std::string grad_key = std::string(cartcomp[p]) + std::string(cartcomp[q]);
+                                                  key = strings[0] + cartcomp[p] + strings[1] + cartcomp[q];
+                                                  std::string grad_key = cartcomp[p] + cartcomp[q];
                                                   if (atom1 == atom2 && (*it) <= 3)  
                                                       grad_map[grad_key] +=  hess_map[key];
                                                   else
@@ -2961,7 +2947,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2)
 
                                       for (int p=0,pq=0; p<3; p++)
                                           for (int q=0; q<3; q++,pq++){
-                                              std::string grad_key = std::string(cartcomp[p]) + std::string(cartcomp[q]);
+                                              std::string grad_key = cartcomp[p] + cartcomp[q];
                                               grad[pq]->set(i, j, grad_map[grad_key]);
                                               grad_map[grad_key] = 0;
                                           } 
@@ -2984,71 +2970,69 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2)
 
 /* OEI derivatives in both ao and mo basis */
 
-std::vector<SharedMatrix> MintsHelper::ao_oei_deriv1(const std::string & oei_type, int atom)
-{
-       std::vector<SharedMatrix> ao_grad;
-        
-        if (oei_type == "OVERLAP")
-           ao_grad = ao_overlap_kinetic_deriv1_helper("OVERLAP", atom);    
-        else if (oei_type == "KINETIC")
-           ao_grad = ao_overlap_kinetic_deriv1_helper("KINETIC", atom);   
-        else if (oei_type == "POTENTIAL")
-           ao_grad = ao_potential_deriv1_helper(atom);   
-        else
-           throw PSIEXCEPTION("Not a valid choice of OEI");
+std::vector<SharedMatrix> MintsHelper::ao_oei_deriv1(const std::string & oei_type, int atom) {
 
-        return ao_grad;
+    std::vector<SharedMatrix> ao_grad;
+     
+     if (oei_type == "OVERLAP")
+        ao_grad = ao_overlap_kinetic_deriv1_helper("OVERLAP", atom);    
+     else if (oei_type == "KINETIC")
+        ao_grad = ao_overlap_kinetic_deriv1_helper("KINETIC", atom);   
+     else if (oei_type == "POTENTIAL")
+        ao_grad = ao_potential_deriv1_helper(atom);   
+     else
+        throw PSIEXCEPTION("Not a valid choice of OEI");
+
+     return ao_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_oei_deriv2(const std::string & oei_type, int atom1, int atom2)
-{
-       std::vector<SharedMatrix> ao_grad_12;
-       std::vector<SharedMatrix> ao_grad_21;
-        
-        if (oei_type == "OVERLAP"){
-           ao_grad_12 = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom1, atom2); 
-           if (atom1 != atom2) 
-              ao_grad_21 = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom2, atom1); 
-           } 
-        else if (oei_type == "KINETIC"){
-           ao_grad_12 = ao_overlap_kinetic_deriv2_helper("KINETIC", atom1, atom2);  
-           if (atom1 != atom2) 
-               ao_grad_21 = ao_overlap_kinetic_deriv2_helper("KINETIC", atom2, atom1); 
-           } 
-        else if (oei_type == "POTENTIAL"){
-           ao_grad_12 = ao_potential_deriv2_helper(atom1, atom2);  
-           if (atom1 != atom2) 
-               ao_grad_21 = ao_potential_deriv2_helper(atom2, atom1);  
-           }    
-        else
-           throw PSIEXCEPTION("Not a valid choice of OEI");
+std::vector<SharedMatrix> MintsHelper::ao_oei_deriv2(const std::string & oei_type, int atom1, int atom2) {
 
-        for (int p=0; p<3; p++) 
-            for (int q=0; q<3; q++) {
-                int pq = p * 3 + q;  
-                int qp = q * 3 + p;  
+    std::vector<SharedMatrix> ao_grad_12;
+    std::vector<SharedMatrix> ao_grad_21;
+     
+     if (oei_type == "OVERLAP"){
+        ao_grad_12 = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom1, atom2); 
+        if (atom1 != atom2) 
+           ao_grad_21 = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom2, atom1); 
+        } 
+     else if (oei_type == "KINETIC"){
+        ao_grad_12 = ao_overlap_kinetic_deriv2_helper("KINETIC", atom1, atom2);  
+        if (atom1 != atom2) 
+            ao_grad_21 = ao_overlap_kinetic_deriv2_helper("KINETIC", atom2, atom1); 
+        } 
+     else if (oei_type == "POTENTIAL"){
+        ao_grad_12 = ao_potential_deriv2_helper(atom1, atom2);  
+        if (atom1 != atom2) 
+            ao_grad_21 = ao_potential_deriv2_helper(atom2, atom1);  
+        }    
+     else
+        throw PSIEXCEPTION("Not a valid choice of OEI");
 
-                if (atom1 == atom2){
-                   if (q < p){
-                       ao_grad_12[pq]->add(ao_grad_12[qp]); 
-                       ao_grad_12[qp] = ao_grad_12[pq]; 
-                   }     
-                }
-                else
-                   ao_grad_12[pq]->add(ao_grad_21[qp]);
-               }
+     for (int p=0; p<3; p++) 
+         for (int q=0; q<3; q++) {
+             int pq = p * 3 + q;  
+             int qp = q * 3 + p;  
 
-        return ao_grad_12;
+             if (atom1 == atom2){
+                if (q < p){
+                    ao_grad_12[pq]->add(ao_grad_12[qp]); 
+                    ao_grad_12[qp] = ao_grad_12[pq]; 
+                }     
+             }
+             else
+                ao_grad_12[pq]->add(ao_grad_21[qp]);
+            }
+
+     return ao_grad_12;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_oei_deriv1(const std::string & oei_type, int atom, SharedMatrix C1, SharedMatrix C2)
-{
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+std::vector<SharedMatrix> MintsHelper::mo_oei_deriv1(const std::string & oei_type, int atom, SharedMatrix C1, SharedMatrix C2) {
+
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad;
     ao_grad = ao_oei_deriv1(oei_type, atom);
@@ -3059,22 +3043,21 @@ std::vector<SharedMatrix> MintsHelper::mo_oei_deriv1(const std::string & oei_typ
 
     std::vector<SharedMatrix> mo_grad ;
     for(int p=0; p<3; p++){
-        sprintf(lbl, "mo_%s_deriv1_%d_%s", oei_type.c_str(), atom, cartcomp[p]);
-        SharedMatrix temp(new Matrix(lbl, nbf1, nbf2)); 
+        std::stringstream sstream;
+        sstream << "mo_" << oei_type << "_deriv1_" << atom << cartcomp[p];
+        SharedMatrix temp(new Matrix(sstream.str(), nbf1, nbf2)); 
         temp->transform(C1, ao_grad[p], C2) ;
         mo_grad.push_back(temp);
-    }
+      }
         return mo_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_oei_deriv2(const std::string & oei_type, int atom1, int atom2, SharedMatrix C1, SharedMatrix C2)
-{
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+std::vector<SharedMatrix> MintsHelper::mo_oei_deriv2(const std::string & oei_type, int atom1, int atom2, SharedMatrix C1, SharedMatrix C2) {
+    
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad;
     ao_grad = ao_oei_deriv2(oei_type, atom1, atom2);
@@ -3085,12 +3068,13 @@ std::vector<SharedMatrix> MintsHelper::mo_oei_deriv2(const std::string & oei_typ
 
     std::vector<SharedMatrix> mo_grad ;
     for(int p=0, pq=0; p<3; p++)
-       for(int q=0; q<3; q++,pq++){
-        sprintf(lbl, "mo_%s_deriv2_%d_%d_%s_%s", oei_type.c_str(), atom1, atom2, cartcomp[p], cartcomp[q]);
-        SharedMatrix temp(new Matrix(lbl, nbf1, nbf2));
-        temp->transform(C1, ao_grad[pq], C2) ;
-        mo_grad.push_back(temp);
-    }
+      for(int q=0; q<3; q++,pq++){
+         std::stringstream sstream;
+         sstream << "mo_" << oei_type << "_deriv2_" << atom1 << atom2 << cartcomp[p] << cartcomp[q];
+         SharedMatrix temp(new Matrix(sstream.str(), nbf1, nbf2));
+         temp->transform(C1, ao_grad[pq], C2) ;
+         mo_grad.push_back(temp);
+      }
         return mo_grad;
 }
 
@@ -3098,47 +3082,43 @@ std::vector<SharedMatrix> MintsHelper::mo_oei_deriv2(const std::string & oei_typ
 /*  TEI derivatives in  MO basis */
 
 std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2,
-                                                     SharedMatrix C3, SharedMatrix C4)
-{
+                                                     SharedMatrix C3, SharedMatrix C4) {
 
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad = ao_tei_deriv1(atom);
 
     std::vector<SharedMatrix> mo_grad;
     for(int p=0; p<3; p++){
-        sprintf(lbl, "mo_tei_deriv1_%d_%s", atom, cartcomp[p]);
+        std::stringstream sstream;
+        sstream << "mo_tei_deriv1_" << atom << cartcomp[p];
         SharedMatrix temp = mo_eri_helper(ao_grad[p], C1, C2, C3, C4) ;
-        temp->set_name(lbl);
+        temp->set_name(sstream.str());
         mo_grad.push_back(temp);
     }
     return mo_grad;
 }
 
 std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2,
-                                                     SharedMatrix C3, SharedMatrix C4)
-{
+                                                     SharedMatrix C3, SharedMatrix C4) {
 
-    char lbl[32];
-    char ** cartcomp;
-    cartcomp = (char **) malloc (3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad = ao_tei_deriv2(atom1, atom2);
     std::vector<SharedMatrix> mo_grad;
     for(int p=0, pq=0; p<3; p++)
         for(int q=0; q<3; q++, pq++){
-            sprintf(lbl, "mo_tei_deriv2_%d_%d_%s_%s", atom1, atom2, cartcomp[p], cartcomp[q]);
-            SharedMatrix temp = mo_eri_helper(ao_grad[pq], C1, C2, C3, C4) ;
-            temp->set_name(lbl);
-            mo_grad.push_back(temp);
+           std::stringstream sstream;
+           sstream << "mo_tei_deriv2_" << atom1 << atom2 << cartcomp[p] << cartcomp[q];
+           SharedMatrix temp = mo_eri_helper(ao_grad[pq], C1, C2, C3, C4) ;
+           temp->set_name(sstream.str());
+           mo_grad.push_back(temp);
     }
     return mo_grad;
 }

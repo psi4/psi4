@@ -1,7 +1,7 @@
   Threads set to 1 by Python driver.
 
 *** tstart() called on nrlogin1
-*** at Sat Dec 16 20:15:11 2017
+*** at Sun Dec 17 18:40:46 2017
 
    => Loading Basis Set <=
 
@@ -151,10 +151,9 @@
     Nuclear Repulsion Energy =              8.0023664507190766
     One-Electron Energy =                -120.1995577011332728
     Two-Electron Energy =                  37.2551113533346765
-    PCM Polarization Energy =               0.0000000000000000
     Total Energy =                        -74.9420798970795090
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -173,18 +172,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     1.5340     Total:     1.5340
 
 
-*** tstop() called on nrlogin1 at Sat Dec 16 20:15:11 2017
+*** tstop() called on nrlogin1 at Sun Dec 17 18:40:46 2017
 Module time:
 	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 
-  ## NUCLEAR HESSIAN (Symmetry 0) ##
+  ## NUCLEAR GRADIENT (Symmetry 0) ##
   Irrep: 1 Size: 3 x 3
 
                  1                   2                   3
@@ -197,33 +196,9 @@ Total time:
 
 
 
- OEI Hessians
+ OEI Gradients
 
-  ## OVERLAP HESSIAN (Symmetry 0) ##
-  Irrep: 1 Size: 3 x 3
-
-                 1                   2                   3
-
-    1     0.00000000000000    -0.00000000000000     0.28761927369127
-    2     0.00000000000000     0.16453262080298    -0.14380963684563
-    3    -0.00000000000000    -0.16453262080298    -0.14380963684563
-
-
-
-
-  ## POTENTIAL HESSIAN (Symmetry 0) ##
-  Irrep: 1 Size: 3 x 3
-
-                 1                   2                   3
-
-    1     0.00000000000000     0.00000000000001    -6.12402317383457
-    2    -0.00000000000000    -4.08589349524705     3.06201158691732
-    3    -0.00000000000000     4.08589349524704     3.06201158691732
-
-
-
-
-  ## KINETIC HESSIAN (Symmetry 0) ##
+  ## KINETIC GRADIENT (Symmetry 0) ##
   Irrep: 1 Size: 3 x 3
 
                  1                   2                   3
@@ -235,11 +210,35 @@ Total time:
 
 
 
+  ## POTENTIAL GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1     0.00000000000000     0.00000000000001    -6.12402317383457
+    2    -0.00000000000000    -4.08589349524705     3.06201158691732
+    3    -0.00000000000000     4.08589349524704     3.06201158691732
 
 
- TEI Hessians
 
-  ##  COULOMB  HESSIAN (Symmetry 0) ##
+
+  ## OVERLAP GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1     0.00000000000000    -0.00000000000000     0.28761927369127
+    2     0.00000000000000     0.16453262080298    -0.14380963684563
+    3    -0.00000000000000    -0.16453262080298    -0.14380963684563
+
+
+
+
+
+
+ TEI Gradients
+
+  ##  COULOMB  GRADIENT (Symmetry 0) ##
   Irrep: 1 Size: 3 x 3
 
                  1                   2                   3
@@ -250,7 +249,7 @@ Total time:
 
 
 
-  ##  EXCHANGE HESSIAN (Symmetry 0) ##
+  ##  EXCHANGE GRADIENT (Symmetry 0) ##
   Irrep: 1 Size: 3 x 3
 
                  1                   2                   3
@@ -261,4 +260,7 @@ Total time:
 
 
 
-	RHF-GRADIENT-TEST.................................................PASSED
+	OVERLAP_GRADIENT_TEST.............................................PASSED
+	KINETIC_GRADIENT_TEST.............................................PASSED
+	POTENTIAL_GRADIENT_TEST...........................................PASSED
+	RHF_TOTAL_GRADIENT_TEST...........................................PASSED
