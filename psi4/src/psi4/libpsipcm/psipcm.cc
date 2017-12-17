@@ -106,20 +106,8 @@ void host_writer(const char *message) {
     outfile->Printf(message);
     outfile->Printf("\n");
 }
-}
 
-PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print_level), basisset_(basisset) {
-    if (!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
-
-    std::shared_ptr<Molecule> molecule = basisset_->molecule();
-
-    auto integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
-
-    PetiteList petite(basisset, integrals, true);
-    my_aotoso_ = petite.aotoso();
-
-    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint());
-
+std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::shared_ptr<Molecule> &molecule) {
     /* PCMSolver needs to know who has to parse the input.
      * We should have something like this here:
      * int PSI4_provides_input = false;
@@ -136,16 +124,32 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
     PCMInput host_input;
     if (PSI4_provides_input) {
         host_input = detail::pcmsolver_input();
-        context_ = std::shared_ptr<pcmsolver_context_t>(
+        return std::shared_ptr<pcmsolver_context_t>(
             pcmsolver_new(PCMSOLVER_READER_HOST, natom, charges.data(), coordinates.data(), symmetry_info.data(),
                           &host_input, detail::host_writer),
             pcmsolver_delete);
     } else {
-        context_ = std::shared_ptr<pcmsolver_context_t>(
+        return std::shared_ptr<pcmsolver_context_t>(
             pcmsolver_new(PCMSOLVER_READER_OWN, natom, charges.data(), coordinates.data(), symmetry_info.data(),
                           &host_input, detail::host_writer),
             pcmsolver_delete);
     }
+}
+}
+
+PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print_level), basisset_(basisset) {
+    if (!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
+
+    std::shared_ptr<Molecule> molecule = basisset_->molecule();
+
+    auto integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
+
+    PetiteList petite(basisset, integrals, true);
+    my_aotoso_ = petite.aotoso();
+
+    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint());
+
+    context_ = detail::init_PCMSolver(molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
     pcmsolver_print(context_.get());
     ntess_ = pcmsolver_get_cavity_size(context_.get());
@@ -160,6 +164,9 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
     // Set the tesserae's coordinates (note the loop bounds; this function is 1-based)
     for (int tess = 1; tess <= ntess_; ++tess) pcmsolver_get_center(context_.get(), tess, &(ptess_Zxyz[tess - 1][1]));
 
+    int natom = molecule->natom();
+    std::vector<double> charges(natom), coordinates(3 * natom);
+    std::tie(charges, coordinates) = detail::collect_atoms(molecule);
     MEP_n_ = std::make_shared<Vector>(tesspi_);
     // Compute the nuclear potentials at the tesserae
     for (int atom = 0; atom < natom; ++atom) {
@@ -190,6 +197,19 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
         for (int tess = 0; tess < ntess_; ++tess)
             outfile->Printf("%4d  %16.10f  %16.10f\n", tess, MEP_n_->get(0, tess), tess_charges_n->get(0, tess));
     }
+}
+
+PCM::PCM(const PCM *other) {
+    ntess_ = other->ntess_;
+    ntessirr_ = other->ntessirr_;
+    tesspi_ = other->tesspi_;
+    tess_Zxyz_ = other->tess_Zxyz_->clone();
+    MEP_n_ = SharedVector(other->MEP_n_->clone());
+    basisset_ = other->basisset_;
+    my_aotoso_ = other->my_aotoso_->clone();
+    potential_int_ = other->potential_int_;
+    context_ = detail::init_PCMSolver(basisset_->molecule());
+    pcm_print_ = other->pcm_print_;
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
@@ -350,6 +370,7 @@ SharedMatrix PCM::compute_V(const SharedVector &ASC) const {
     } else {
         return V_pcm_cart;
     }
+}
 }  // psi namespace
 
 #endif
