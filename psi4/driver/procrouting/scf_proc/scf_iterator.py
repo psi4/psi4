@@ -449,7 +449,7 @@ def scf_finalize_energy(self):
     self.clear_external_potentials()
     if self.pcm_enabled_:
         calc_type = core.PCM.CalcType.Total
-        /f core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
+        if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
             calc_type = core.PCM.CalcType.NucAndEle
         Dt = self.Da().clone()
         Dt.add(self.Db())

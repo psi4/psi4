@@ -49,6 +49,7 @@ class PCM final {
     enum class CalcType : int { Total, NucAndEle, EleOnly };
     PCM() = default;
     PCM(int print_level, std::shared_ptr<BasisSet> basisset);
+    PCM(const PCM *);
     ~PCM() {}
     /*! \brief Compute polarization energy and Fock matrix contribution
      *  \param[in] D density matrix
@@ -103,6 +104,8 @@ std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_pt
 PCMInput pcmsolver_input();
 
 void host_writer(const char *);
+
+std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::shared_ptr<Molecule> &molecule);
 }  // detail
 }  // psi
 #endif
