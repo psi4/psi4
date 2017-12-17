@@ -187,11 +187,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             Dt.add(self.Db())
             upcm, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
             SCFE += upcm
-            self.set_energies("PCM Polarization", upcm)
             self.set_variable("PCM POLARIZATION ENERGY", upcm)
             self.push_back_external_potential(Vpcm)
         else:
-            self.set_energies("PCM polarization", upcm)
             self.set_variable("PCM POLARIZATION ENERGY", upcm)
 
         core.timer_on("HF: Form F")
@@ -424,7 +422,7 @@ def scf_finalize_energy(self):
     self.clear_external_potentials()
     if self.pcm_enabled_:
         calc_type = core.PCM.CalcType.Total
-        if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
+        /f core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
             calc_type = core.PCM.CalcType.NucAndEle
         Dt = self.Da().clone()
         Dt.add(self.Db())
