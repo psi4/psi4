@@ -831,14 +831,14 @@ void export_mints(py::module& m)
         .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals")
 
         // First and second derivatives of one and two electron integrals in AO and MO basis.
-        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "docstring") 
-        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "docstring")
-        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "docstring")
-        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "docstring")
-        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "docstring")
-        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "docstring")
-        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1, "docstring")
-        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2, "docstring");
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices") 
+        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
+        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1, "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2, "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices");
 
         py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "

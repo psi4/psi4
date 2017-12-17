@@ -2236,7 +2236,6 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
     int nbf1 = bs1->nbf();
     int nbf2 = bs2->nbf();
     int natom = molecule_->natom();
-    auto Zxyz = std::make_shared<Matrix>("Zxyz", 1, 4);
 
     std::vector<SharedMatrix> grad;
     for (int a=0,ab=0; a<3; a++)
@@ -2535,39 +2534,36 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
 
                        if (atom1 == atom2) {
                           if (aP == aQ){ 
-                             grad[0]->set(p+oP, q+oQ, 0);   
-                             grad[1]->set(p+oP, q+oQ, tmpxy);   
-                             grad[2]->set(p+oP, q+oQ, tmpxz);   
-                             grad[3]->set(p+oP, q+oQ, tmpxy);   
-                             grad[4]->set(p+oP, q+oQ, 0);   
-                             grad[5]->set(p+oP, q+oQ, tmpyz);   
-                             grad[6]->set(p+oP, q+oQ, tmpxz);   
-                             grad[7]->set(p+oP, q+oQ, tmpyz);   
-                             grad[8]->set(p+oP, q+oQ, 0);   
+                             grad[0]->set(p+oP, q+oQ,  0);   
+                             grad[1]->set(p+oP, q+oQ,  tmpxy);   
+                             grad[2]->set(p+oP, q+oQ,  tmpxz);   
+                             grad[3]->set(p+oP, q+oQ, -tmpxy);   
+                             grad[4]->set(p+oP, q+oQ,  0);   
+                             grad[5]->set(p+oP, q+oQ,  tmpyz);   
+                             grad[6]->set(p+oP, q+oQ, -tmpxz);   
+                             grad[7]->set(p+oP, q+oQ, -tmpyz);   
+                             grad[8]->set(p+oP, q+oQ,  0);   
                              }
                           else{  
                              grad[0]->set(p+oP, q+oQ, tmpxx);
                              grad[1]->set(p+oP, q+oQ, tmpxy);   
                              grad[2]->set(p+oP, q+oQ, tmpxz);   
-                             grad[3]->set(p+oP, q+oQ, tmpxy);   
                              grad[4]->set(p+oP, q+oQ, tmpyy);   
                              grad[5]->set(p+oP, q+oQ, tmpyz);   
-                             grad[6]->set(p+oP, q+oQ, tmpxz);   
-                             grad[7]->set(p+oP, q+oQ, tmpyz);   
                              grad[8]->set(p+oP, q+oQ, tmpzz);   
                              }
                           }
                        else{
                           if (aP == atom1 && aQ == atom2){
-                             grad[0]->set(p+oP, q+oQ, -2.0 * tmpxx);
-                             grad[1]->set(p+oP, q+oQ, -2.0 * tmpxy);
-                             grad[2]->set(p+oP, q+oQ, -2.0 * tmpxz);   
-                             grad[3]->set(p+oP, q+oQ, -2.0 * tmpxy);   
-                             grad[4]->set(p+oP, q+oQ, -2.0 * tmpyy);   
-                             grad[5]->set(p+oP, q+oQ, -2.0 * tmpyz);   
-                             grad[6]->set(p+oP, q+oQ, -2.0 * tmpxz);   
-                             grad[7]->set(p+oP, q+oQ, -2.0 * tmpyz);   
-                             grad[8]->set(p+oP, q+oQ, -2.0 * tmpzz);   
+                             grad[0]->set(p+oP, q+oQ, -1.0 * tmpxx);
+                             grad[1]->set(p+oP, q+oQ, -1.0 * tmpxy);
+                             grad[2]->set(p+oP, q+oQ, -1.0 * tmpxz);   
+                             grad[3]->set(p+oP, q+oQ, -1.0 * tmpxy);   
+                             grad[4]->set(p+oP, q+oQ, -1.0 * tmpyy);   
+                             grad[5]->set(p+oP, q+oQ, -1.0 * tmpyz);   
+                             grad[6]->set(p+oP, q+oQ, -1.0 * tmpxz);   
+                             grad[7]->set(p+oP, q+oQ, -1.0 * tmpyz);   
+                             grad[8]->set(p+oP, q+oQ, -1.0 * tmpzz);   
                              } 
                            }
 
@@ -3051,31 +3047,43 @@ std::vector<SharedMatrix> MintsHelper::ao_oei_deriv1(const std::string & oei_typ
 
 std::vector<SharedMatrix> MintsHelper::ao_oei_deriv2(const std::string & oei_type, int atom1, int atom2)
 {
-       std::vector<SharedMatrix> ao_grad;
+       std::vector<SharedMatrix> ao_grad_12;
+       std::vector<SharedMatrix> ao_grad_21;
         
-        if (oei_type == "OVERLAP")
-           ao_grad = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom1, atom2); 
-        else if (oei_type == "KINETIC")
-           ao_grad = ao_overlap_kinetic_deriv2_helper("KINETIC", atom1, atom2);  
+        if (oei_type == "OVERLAP"){
+           ao_grad_12 = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom1, atom2); 
+           if (atom1 != atom2) 
+              ao_grad_21 = ao_overlap_kinetic_deriv2_helper("OVERLAP", atom2, atom1); 
+           } 
+        else if (oei_type == "KINETIC"){
+           ao_grad_12 = ao_overlap_kinetic_deriv2_helper("KINETIC", atom1, atom2);  
+           if (atom1 != atom2) 
+               ao_grad_21 = ao_overlap_kinetic_deriv2_helper("KINETIC", atom2, atom1); 
+           } 
         else if (oei_type == "POTENTIAL"){
-             //if (atom1 != atom2){
-                std::vector<SharedMatrix> ao_grad_21;
-                ao_grad = ao_potential_deriv2_helper(atom1, atom2);  
-                ao_grad_21 = ao_potential_deriv2_helper(atom2, atom1);  
-                for (int p=0; p<3; p++) 
-                    for (int q=0; q<3; q++) {
-                        int pq = p * 3 + q;  
-                        int qp = q * 3 + p;  
-                        if (p!=q || atom1!= atom2)    
-                            ao_grad[pq]->add(ao_grad_21[qp]); 
-                }
-             //}
-             //else ao_grad = ao_potential_deriv2_helper(atom1, atom2); 
-        }      
+           ao_grad_12 = ao_potential_deriv2_helper(atom1, atom2);  
+           if (atom1 != atom2) 
+               ao_grad_21 = ao_potential_deriv2_helper(atom2, atom1);  
+           }    
         else
            throw PSIEXCEPTION("Not a valid choice of OEI");
 
-        return ao_grad;
+        for (int p=0; p<3; p++) 
+            for (int q=0; q<3; q++) {
+                int pq = p * 3 + q;  
+                int qp = q * 3 + p;  
+
+                if (atom1 == atom2){
+                   if (q < p){
+                       ao_grad_12[pq]->add(ao_grad_12[qp]); 
+                       ao_grad_12[qp] = ao_grad_12[pq]; 
+                   }     
+                }
+                else
+                   ao_grad_12[pq]->add(ao_grad_21[qp]);
+               }
+
+        return ao_grad_12;
 }
 
 std::vector<SharedMatrix> MintsHelper::mo_oei_deriv1(const std::string & oei_type, int atom, SharedMatrix C1, SharedMatrix C2)

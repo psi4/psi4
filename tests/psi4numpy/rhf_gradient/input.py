@@ -1,0 +1,137 @@
+import time
+import numpy as np
+np.set_printoptions(precision=15, linewidth=200, suppress=True)
+import psi4
+
+def rhf_gradient(mol, options):
+
+    psi4.core.set_active_molecule(mol)
+    psi4.set_options(options)
+
+    rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
+
+    # Assuming C1 symmetry    
+    occ = wfn.doccpi()[0]
+    nmo = wfn.nmo()
+
+    C = wfn.Ca()
+    npC = np.asarray(C)
+
+    mints = psi4.core.MintsHelper(wfn.basisset())
+    H_ao = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
+
+    # Update H, transform to MO basis 
+    H = np.einsum('uj,vi,uv', npC, npC, H_ao)
+
+    # Integral generation from Psi4's MintsHelper
+    MO = np.asarray(mints.mo_eri(C, C, C, C))
+    # Physicist notation    
+    MO = MO.swapaxes(1,2)
+
+    F = H + 2.0 * np.einsum('pmqm->pq', MO[:, :occ, :, :occ])
+    F -= np.einsum('pmmq->pq', MO[:, :occ, :occ, :])
+    natoms = mol.natom()
+    cart = {}; cart[0] = '_X'; cart[1] = '_Y'; cart[2] = '_Z'
+    oei_dict = {"S" : "OVERLAP", "T" : "KINETIC", "V" : "POTENTIAL"}
+
+    deriv1_mat = {}
+    deriv1_np = {}
+
+    Gradient = {};
+
+    Gradient["N"] = np.zeros((natoms, 3))
+    Gradient["S"] = np.zeros((natoms, 3))
+    Gradient["V"] = np.zeros((natoms, 3))
+    Gradient["T"] = np.zeros((natoms, 3))
+    Gradient["J"] = np.zeros((natoms, 3))
+    Gradient["K"] = np.zeros((natoms, 3))
+    Gradient["Total"] = np.zeros((natoms, 3))
+
+    Gradient["N"] = np.asarray(mol.nuclear_repulsion_energy_deriv1([0,0,0]))
+
+    psi4.core.print_out("\n\n")
+    Mat = psi4.core.Matrix.from_array(Gradient["N"])
+    Mat.name = "NUCLEAR GRADIENT"
+    Mat.print_out()
+    
+
+    # 1st Derivative of OEIs 
+
+    for atom in range(natoms):
+        for key in  oei_dict:
+            deriv1_mat[key + str(atom)] = mints.mo_oei_deriv1(oei_dict[key], atom, C, C)
+            for p in range(3):
+                map_key = key + str(atom) + cart[p]
+                deriv1_np[map_key] = np.asarray(deriv1_mat[key + str(atom)][p])
+                if key == "S":
+                    Gradient[key][atom][p] = -2.0 * np.einsum("ii,ii->", F[:occ,:occ], deriv1_np[map_key][:occ,:occ])
+                else:
+                    Gradient[key][atom][p] = 2.0 * np.einsum("ii->", deriv1_np[map_key][:occ,:occ])
+
+    psi4.core.print_out("\n\n OEI Gradients\n\n")
+    for key in Gradient: 
+        Mat = psi4.core.Matrix.from_array(Gradient[key])
+        if key in oei_dict:
+            Mat.name = oei_dict[key] + " GRADIENT"
+            Mat.print_out()    
+            psi4.core.print_out("\n")
+
+
+    Gradient["J"] = np.zeros((natoms, 3))
+    Gradient["K"] = np.zeros((natoms, 3))
+
+    # 1st Derivative of TEIs 
+
+    for atom in range(natoms):
+        string = "TEI" + str(atom)
+        deriv1_mat[string] = mints.mo_tei_deriv1(atom, C, C, C, C)
+        for p in range(3):
+            map_key = string + cart[p]
+            deriv1_np[map_key] = np.asarray(deriv1_mat[string][p])
+            Gradient["J"][atom][p] =  2.0 * np.einsum("iijj->", deriv1_np[map_key][:occ,:occ,:occ,:occ])
+            Gradient["K"][atom][p] = -1.0 * np.einsum("ijij->", deriv1_np[map_key][:occ,:occ,:occ,:occ])
+
+    psi4.core.print_out("\n\n TEI Gradients\n\n")
+    JMat = psi4.core.Matrix.from_array(Gradient["J"])
+    KMat = psi4.core.Matrix.from_array(Gradient["K"])
+    JMat.name = " COULOMB  GRADIENT"
+    KMat.name = " EXCHANGE GRADIENT"
+    JMat.print_out()    
+    KMat.print_out()    
+
+    Gradient["OEI"] = Gradient["S"] + Gradient["V"] + Gradient["T"] 
+    Gradient["TEI"] = Gradient["J"] + Gradient["K"]
+    Gradient["Total"] = Gradient["OEI"] + Gradient["TEI"] + Gradient["N"]
+
+    return Gradient
+
+
+psi4.set_memory(int(1e9), False)
+psi4.core.set_output_file('output.dat', False)
+psi4.core.set_num_threads(1)
+
+
+mol = psi4.geometry("""
+O
+H 1 1.1
+H 1 1.1 2 104
+symmetry c1
+""")
+
+psi4.core.set_active_molecule(mol)
+
+options = {'BASIS':'STO-3G', 'SCF_TYPE':'PK',
+           'E_CONVERGENCE':1e-10,
+           'D_CONVERGENCE':1e-10}
+
+psi4.set_options(options)
+
+# Compute SCF Gradient
+G_psi4 = psi4.core.Matrix.from_list([                                     
+             [ 0.000000000000, -0.000000000000, -0.097441440379], 
+             [-0.000000000000, -0.086300100260,  0.048720720189],
+             [-0.000000000000,  0.086300100260,  0.048720720189]
+       ])
+G_python = rhf_gradient(mol, options)
+G_python_mat = psi4.core.Matrix.from_array(G_python["Total"])
+psi4.compare_matrices(G_psi4, G_python_mat, 10, "RHF-GRADIENT-TEST") # TEST

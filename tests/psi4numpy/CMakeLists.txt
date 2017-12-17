@@ -1,4 +1,6 @@
 add_subdirectory(cphf)
 add_subdirectory(dfmp2)
 add_subdirectory(rhf)
+add_subdirectory(rhf_gradient)
+add_subdirectory(rhf_hessian)
 add_subdirectory(fci)
