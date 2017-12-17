@@ -239,8 +239,9 @@ void RHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(G_);
     if (!external_potentials_.empty()) {
-        std::for_each(external_potentials_.begin(), external_potentials_.end(),
-                      [this](const SharedMatrix & Vext) { Fa_->add(Vext); });
+        for (const auto& Vext : external_potentials_) {
+            Fa_->add(Vext);
+        }
     }
 
     if (debug_) {

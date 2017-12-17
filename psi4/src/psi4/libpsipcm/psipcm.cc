@@ -201,8 +201,9 @@ SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
     if (basisset_->has_puream()) {
         D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
         D_carts->back_transform(D, my_aotoso_);
-    } else
+    } else {
         D_carts = D;
+    }
 
     auto MEP = std::make_shared<Vector>(tesspi_);
     ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
@@ -345,11 +346,10 @@ SharedMatrix PCM::compute_V(const SharedVector &ASC) const {
     if (basisset_->has_puream()) {
         V_pcm_pure = std::make_shared<Matrix>("PCM potential pure", basisset_->nbf(), basisset_->nbf());
         V_pcm_pure->transform(V_pcm_cart, my_aotoso_);
-    }
-    if (basisset_->has_puream())
         return V_pcm_pure;
-    else
+    } else {
         return V_pcm_cart;
-}
+    }
 }  // psi namespace
+
 #endif
