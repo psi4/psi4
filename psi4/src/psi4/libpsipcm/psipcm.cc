@@ -27,13 +27,6 @@
  */
 #ifdef USING_PCMSolver
 
-#include <algorithm>
-#include <array>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "psipcm.h"
 
 #include "psi4/psi4-dec.h"
@@ -49,6 +42,13 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <PCMSolver/PCMInput.h>
+
+#include <algorithm>
+#include <array>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace psi {
 
