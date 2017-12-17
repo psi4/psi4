@@ -11,7 +11,6 @@ from psi4 import core
 #logger = logging.getLogger("scf.scf_iterator")
 #logger.setLevel(logging.DEBUG)
 
-
 # Q: I expect more local settings of options for part of SCF.
 #    For convcrit, do we want:
 #   (A) easy to grep
@@ -141,8 +140,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     if self.iteration_ < 2:
         core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" %
-                       ("   " if is_dfjk else ""))
+        core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   "
+                                                                                                      if is_dfjk else ""))
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -223,7 +222,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # We either do SOSCF or DIIS
-        if (soscf_enabled and self.iteration_ > 3 and Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE')):
+        if (soscf_enabled and (self.iteration_ > 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
 
             Drms = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
@@ -233,10 +232,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 base_name = "SOSCF, nmicro="
 
             if not _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
-                nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
-                                           core.get_option('SCF', 'SOSCF_MIN_ITER'),
-                                           core.get_option('SCF', 'SOSCF_MAX_ITER'),
-                                           core.get_option('SCF', 'SOSCF_PRINT'))
+                nmicro = self.soscf_update(
+                    core.get_option('SCF', 'SOSCF_CONV'),
+                    core.get_option('SCF', 'SOSCF_MIN_ITER'),
+                    core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
                 if nmicro > 0:
                     # if zero, the soscf call bounced for some reason
                     self.find_occupation()
@@ -267,8 +266,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-            if (self.diis_enabled_ and
-                    self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
+            if (self.diis_enabled_
+                    and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
                 diis_performed = self.diis()
 
             if diis_performed:
@@ -299,8 +298,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # After we've built the new D, damp the update
-        if (damping_enabled and self.iteration_ > 1 and
-                Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
+        if (damping_enabled and self.iteration_ > 1 and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
             damping_percentage = core.get_option('SCF', "DAMPING_PERCENTAGE")
             self.damping_update(damping_percentage * 0.01)
             status.append("DAMP={}%".format(round(damping_percentage)))
@@ -313,8 +311,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Print out the iteration
         core.print_out("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Drms,
-                        '/'.join(status)))
+                       ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Drms, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
         if self.MOM_excited_ and not self.MOM_performed_:
@@ -454,7 +451,7 @@ def scf_finalize_energy(self):
     self.clear_external_potentials()
     if self.pcm_enabled_:
         calc_type = core.PCM.CalcType.Total
-        if core.get_option("PCM", "PCM_SCF_TYPE") is "SEPARATE":
+        if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
             calc_type = core.PCM.CalcType.NucAndEle
         Dt = self.Da().clone()
         Dt.add(self.Db())
@@ -609,8 +606,8 @@ def _validate_diis():
 
         maxvecs = core.get_option('SCF', 'DIIS_MAX_VECS')
         if maxvecs < minvecs:
-            raise ValidationError('SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(
-                                  maxvecs, minvecs))
+            raise ValidationError(
+                'SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(maxvecs, minvecs))
 
     return enabled
 
@@ -687,8 +684,8 @@ def _validate_soscf():
 
         maxiter = core.get_option('SCF', 'SOSCF_MAX_ITER')
         if maxiter < miniter:
-            raise ValidationError('SCF SOSCF_MAX_ITER ({}) must be at least SOSCF_MIN_ITER ({})'.format(
-                                  maxiter, miniter))
+            raise ValidationError(
+                'SCF SOSCF_MAX_ITER ({}) must be at least SOSCF_MIN_ITER ({})'.format(maxiter, miniter))
 
         conv = core.get_option('SCF', 'SOSCF_CONV')
         if conv < 1.e-10:
