@@ -30,14 +30,14 @@
 #define PCM_H
 #ifdef USING_PCMSolver
 
-#include <memory>
-#include <vector>
-#include <utility>
-
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 
 #include <PCMSolver/pcmsolver.h>
+
+#include <memory>
+#include <vector>
+#include <utility>
 
 namespace psi {
 class BasisSet;
