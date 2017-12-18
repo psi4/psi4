@@ -32,7 +32,7 @@ def rhf_hessian(mol, options):
     F = H + 2.0 * np.einsum('pmqm->pq', MO[:, :occ, :, :occ])
     F -= np.einsum('pmmq->pq', MO[:, :occ, :occ, :])
     natoms = mol.natom()
-    cart = {}; cart[0] = '_X'; cart[1] = '_Y'; cart[2] = '_Z'
+    cart = ['_X', '_Y', '_Z']
     oei_dict = {"S" : "OVERLAP", "T" : "KINETIC", "V" : "POTENTIAL"}
 
     deriv1_mat = {}
