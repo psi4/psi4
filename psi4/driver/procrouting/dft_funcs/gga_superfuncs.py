@@ -251,7 +251,7 @@ def build_custom_mpwpw_superfunctional(name, npoints, deriv, restricted):
     X_FACTOR_C=0.9305257363491000250020102180716672510262 #    /* 3/8*cur(3/pi)*4^(2/3) */
     bt=0.00426 # paper values
     c_pw=1.6455 # paper values
-    expo_pw6=3.72 # paperl values
+    expo_pw6=3.72 # paper values
 
     alpha_pw6=c_pw/X2S/X2S 
     a_pw6=6.0*bt/X2S
