@@ -272,8 +272,12 @@ class LibmintsMolecule(object):
         >>> H2OH2O.set_units('Angstom')
 
         """
-        if units == 'Angstrom' or units == 'Bohr':
+        if units == 'Angstrom':
             self.PYunits = units
+            self.input_units_to_au = 1.0 / psi_bohr2angstroms
+        elif units == 'Bohr':
+            self.PYunits = units
+            self.input_units_to_au = 1.0
         else:
             raise ValidationError("""Molecule::set_units: argument must be 'Angstrom' or 'Bohr'.""")
 
@@ -332,7 +336,7 @@ class LibmintsMolecule(object):
         """
         return self.input_units_to_au * self.atoms[atom].compute()[2]
 
-    def xyz(self, atom, npout=False):
+    def xyz(self, atom, np_out=False):
         """Returns a Vector3 with x, y, z position of atom (0-indexed)
         in Bohr or coordinate at *posn*
 
@@ -341,7 +345,7 @@ class LibmintsMolecule(object):
 
         """
         xyz = self.input_units_to_au * np.asarray(self.atoms[atom].compute())
-        if npout:
+        if np_out:
             return xyz
         else:
             return xyz.tolist()
@@ -1197,7 +1201,7 @@ class LibmintsMolecule(object):
         if self.wholegeom is not None:
             current_geom = self.wholegeom
         else:
-            current_geom = self.geometry(npout=True)
+            current_geom = self.geometry(np_out=True)
         shifted_geom = current_geom - np.asarray(b)
         dist2 = np.sum(np.square(shifted_geom), axis=1)
         distminidx = np.argmin(dist2)
@@ -1259,7 +1263,7 @@ class LibmintsMolecule(object):
                     return i
             raise ValidationError("Molecule::get_anchor_atom: Illegal value %s in atom specification on line %s.\n" % (vstr, line))
 
-    def geometry(self, npout=False):
+    def geometry(self, np_out=False):
         """Returns the geometry in Bohr as a N X 3 array.
 
         >>> print H2OH2O.geometry()
@@ -1268,7 +1272,7 @@ class LibmintsMolecule(object):
         """
         geom = np.asarray([self.atoms[at].compute() for at in range(self.natom())])
         geom *= self.input_units_to_au
-        if npout:
+        if np_out:
             return geom
         else:
             return geom.tolist()
@@ -1574,7 +1578,7 @@ class LibmintsMolecule(object):
             self.move_to_com()
         #print("after com:")
         #self.print_full()
-        self.wholegeom = self.geometry(npout=True)
+        self.wholegeom = self.geometry(np_out=True)
 
         # If the no_reorient command was given, don't reorient
         if not self.PYfix_orientation:
@@ -1587,12 +1591,12 @@ class LibmintsMolecule(object):
             self.rotate_full(frame)
             #print("after rotate:")
             #self.print_full()
-            self.wholegeom = self.geometry(npout=True)
+            self.wholegeom = self.geometry(np_out=True)
 
         # Recompute point group of the molecule, so the symmetry info is updated to the new frame
         self.set_point_group(self.find_point_group())
         self.set_full_point_group()
-        self.wholegeom = self.geometry(npout=True)
+        self.wholegeom = self.geometry(np_out=True)
 
         # Disabling symmetrize for now if orientation is fixed, as it is not
         #   correct.  We may want to fix this in the future, but in some cases of
@@ -2315,7 +2319,7 @@ class LibmintsMolecule(object):
         """Does the molecule have an inversion center at origin
 
         """
-        geom = self.geometry(npout=True)
+        geom = self.geometry(np_out=True)
         inverted = 2. * np.asarray(origin) - geom
         for at in range(self.natom()):
             atom = self.atom_at_position(inverted[at], tol)
@@ -2546,7 +2550,7 @@ class LibmintsMolecule(object):
         if self.wholegeom is not None:
             current_geom = self.wholegeom
         else:
-            current_geom = self.geometry(npout=True)
+            current_geom = self.geometry(np_out=True)
         shifted_geom = current_geom - np.asarray(com)
         shifted_geom = shifted_geom.tolist()
 
@@ -2896,7 +2900,7 @@ class LibmintsMolecule(object):
         so = SymmetryOperation()
         np3 = [0.0, 0.0, 0.0]
 
-        current_geom = self.geometry(npout=False)
+        current_geom = self.geometry(np_out=False)
         current_Z = [self.Z(at) for at in range(self.natom())]
         current_mass = [self.mass(at) for at in range(self.natom())]
         # Find the equivalent atoms
@@ -3047,7 +3051,7 @@ class LibmintsMolecule(object):
     #    """
     #    np3 = np.zeros(3)
     #    ct = self.point_group().char_table()
-    #    current_geom = self.geometry(npout=True)
+    #    current_geom = self.geometry(np_out=True)
 
     #    # loop over all centers
     #    for at in range(self.natom()):
