@@ -1224,29 +1224,29 @@ class Molecule(LibmintsMolecule):
 
         return ar
 
-    def toarrays(self):
+    def to_arrays(self):
         """Exports coordinate info into NumPy arrays.
 
         Returns
         -------
         np.array, np.array, np.array, np.array, np.array
-            (nat x 3) geometry.
-            (nat) mass.
+            (nat x 3) geometry [a0].
+            (nat) mass [u].
             (nat) element symbol.
             (nat) atomic number.
             (nat) hash of element symbol and mass.
             Note that coordinate, orientation, and element information is
-            preserved but fragmentation and chgmult is lost.
+            preserved but fragmentation, chgmult, and dummy/ghost is lost.
 
         Usage
         -----
-        geom, mass, elem, elez, uniq = molinstance.toarrays()
+        geom, mass, elem, elez, uniq = molinstance.to_arrays()
 
         """
         import hashlib
 
         self.update_geometry()
-        geom = self.geometry(npout=True)
+        geom = self.geometry(np_out=True)
         mass = np.asarray([self.mass(at) for at in range(self.natom())])
         elem = np.asarray([self.symbol(at) for at in range(self.natom())])
         elez = np.asarray([self.Z(at) for at in range(self.natom())])
@@ -1254,7 +1254,117 @@ class Molecule(LibmintsMolecule):
 
         return geom, mass, elem, elez, uniq
 
-    def BFS(self, seed_atoms=None, bond_threshold=1.20):
+    @classmethod
+    def from_arrays(cls, geom, mass, elem, elez, elbl=None, charge=None, multiplicity=None,
+                    name=None, units='Angstroms', fix_com=False, fix_orientation=False, fix_symmetry=None,
+                    fragments=None): #, fragment_types=None, fragment_charges=None, fragment_multiplicities=None)
+
+        # TODO not handled: elbl, fragment_*, validation of chgmult overall vs frag
+
+        # TODO presently assuming fully expanded and validated wrt g/m/e/e/e.
+        #      in final form only geom and one of elem, elez, elbl required
+
+        mol = cls()
+        mol.lock_frame = False
+
+        mol.set_units(units)  ##  TODO contradiction in internal meaning
+        mol.PYmove_to_com = not fix_com
+        mol.fix_orientation(fix_orientation)
+        if charge is None:
+            mol.PYmolecular_charge = 0
+        else:
+            mol.PYmolecular_charge = charge
+            mol.PYcharge_specified = True
+        if multiplicity is None:
+            mol.PYmultiplicity = 1
+        else:
+            mol.PYmultiplicity = multiplicity
+            mol.PYmultiplicity_specified = True
+        if name is not None:
+            mol.set_name(name)
+        if fix_symmetry is not None:
+            mol.reset_point_group(fix_symmetry)
+
+        if fragments is None:
+            frag = [0, geom.shape[0]]
+        else:
+            frag = fragments
+            frag = np.insert(frag, 0, 0)
+        frpr = [[frag[ifr], fr-1] for ifr, fr in enumerate(frag[1:])]
+        frtp = ['Real'] * len(frag)
+        frcg = [0] * len(frag)
+        frmp = [1] * len(frag)
+
+        mol.fragments = frpr
+        mol.fragment_types = frtp
+        mol.fragment_charges = frcg
+        mol.fragment_multiplicities = frmp
+
+
+#    def from_arrays_basic(cls, geom, mass, elem, elez, charge=0, multiplicity=1):
+#                    fragments, fragment_types, fragment_charges, fragment_multiplicities)
+#        """Limited qcdb.Molecule constructor from atom arrays.
+#
+#        Parameters
+#        ----------
+#        geom : np.array or list-of-lists
+#            (nat x 3) Cartesian coordinates [a0].
+#        mass : np.array or list
+#            (nat) mass [u].
+#        elem : np.array or list
+#            (nat) element symbol.
+#        elez : np.array or list
+#            (nat) atomic number.
+#        charge : int (optional)
+#            molecular charge
+#        multiplicity : int (optional)
+#            molecular multiplicity
+#
+#        Returns
+#        -------
+#        qcdb.Molecule
+#            Basic molecule object with single fragment, Bohr native units,
+#            locked orientation, no ghost/dummy.
+#
+#        """
+        geom = np.asarray(geom)
+        mass = np.asarray(mass)
+        elem = np.asarray(elem)
+        elez = np.asarray(elez)
+
+        assert ((geom.shape[0] == mass.shape[0] == elem.shape[0] == elez.shape[0]) and (geom.shape[1] == 3)), \
+                """Dimension mismatch for nat"""
+        nat = geom.shape[0]
+
+#        frag = np.asarray(fragments)
+#        frtp = np.asarray(fragment_types)
+#        frcg = np.asarray(fragment_charges)
+#        frmp = np.asarray(fragment_multiplicities)
+#
+#        assert (frag.shape[0] == frtp.shape[0] == frcg.shape[0] == frmp.shape[0]), \
+#                """Dimension mismatch for nfr"""
+#        nfr = fragments.shape[0]
+
+        #mol.PYmove_to_com = False
+        #mol.PYfix_orientation = True
+    
+        for at in range(nat):
+            mol.add_atom(elez[at], geom[at][0], geom[at][1], geom[at][2], elem[at], mass[at], elez[at])
+    
+        #mol.set_molecular_charge(charge)
+        #mol.set_multiplicity(multiplicity)
+        #mol.fragments.append([0, nat - 1])
+        #mol.fragment_types.append('Real')
+        #mol.fragment_charges.append(charge)
+        #mol.fragment_multiplicities.append(multiplicity)
+        #mol.input_units_to_au = 1.0
+        #mol.set_units('Bohr')
+    
+        mol.update_geometry()
+        return mol
+
+    def BFS(self, seed_atoms=None, bond_threshold=1.20,
+            return_arrays=False, return_molecules=False, return_molecule=False):
         """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
 
         Parameters
