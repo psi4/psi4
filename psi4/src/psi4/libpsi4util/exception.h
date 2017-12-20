@@ -43,6 +43,8 @@
 #define PSI4_CURRENT_FUNCTION "(unknown)"
 #endif
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 #define PSIEXCEPTION(message) PsiException(message, __FILE__, __LINE__)
@@ -51,7 +53,7 @@ namespace psi {
 /**
     Generic exception class for Psi4
 */
-class PsiException : public std::runtime_error
+class PSI_API PsiException : public std::runtime_error
 {
 
 private:

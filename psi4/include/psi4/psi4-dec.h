@@ -37,7 +37,7 @@
 namespace psi {
 
     class PsiOutStream;
-    extern std::shared_ptr<PsiOutStream> outfile;
+    extern PSI_API std::shared_ptr<PsiOutStream> outfile;
     extern std::string outfile_name;
 
     extern char *psi_file_prefix;

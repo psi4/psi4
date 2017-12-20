@@ -29,6 +29,8 @@
 #ifndef _psi_src_lib_libpsio_config_h_
 #define _psi_src_lib_libpsio_config_h_
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 #define PSIO_OPEN_NEW 0
@@ -86,7 +88,7 @@ typedef struct {
 } psio_ud;
 
 /** A convenient address initialization struct */
-extern psio_address PSIO_ZERO;
+extern PSI_API psio_address PSIO_ZERO;
 
 }
 

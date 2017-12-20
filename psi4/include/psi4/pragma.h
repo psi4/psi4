@@ -56,7 +56,7 @@
 #define PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS      _Pragma("warning(disable:1478)")
 #define PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
 
-#elif defined(__clang__)   // Do clang before GNU because clang defined __GNUC__, too.
+#elif defined(__clang__)   // Do clang before GNU because clang defines __GNUC__, too.
 
 #define PRAGMA_WARNING_PUSH                                _Pragma("clang diagnostic push")
 #define PRAGMA_WARNING_POP                                 _Pragma("clang diagnostic pop")
@@ -106,5 +106,26 @@
 #define PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
 
 #endif
+
+// The following is adapted from https://gcc.gnu.org/wiki/Visibility the step-by-step guide at the very bottom
+// Visibility macros
+#if defined _WIN32 || defined __CYGWIN__
+#   define PSI_HELPER_SO_EXPORT __declspec(dllexport)
+#   define PSI_HELPER_SO_LOCAL
+#else
+#   if __GNUC__ >= 4
+#       define PSI_HELPER_SO_EXPORT __attribute__ ((visibility ("default")))
+#       define PSI_HELPER_SO_LOCAL  __attribute__ ((visibility ("hidden")))
+#   else
+#       define PSI_HELPER_SO_EXPORT
+#       define PSI_HELPER_SO_LOCAL
+#   endif
+#endif
+
+// Use generic helper definitions to define PSI_API and PSI_LOCAL
+// PSI_API is used for the public API symbols.
+// PSI_LOCAL is used for non-API symbols.
+#define PSI_API PSI_HELPER_SO_EXPORT
+#define PSI_LOCAL PSI_HELPER_SO_LOCAL
 
 #endif
