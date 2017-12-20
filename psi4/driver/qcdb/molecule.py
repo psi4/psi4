@@ -1259,17 +1259,33 @@ class Molecule(LibmintsMolecule):
 
         Parameters
         ----------
-        seed_atoms : list (optional)
+        seed_atoms : list, optional
             List of lists of atoms (0-indexed) belonging to independent fragments.
             Useful to prompt algorithm or to define intramolecular fragments through
             border atoms. Example: `[[1, 0], [2]]`
-        bond_threshold : float (optional)
+        bond_threshold : float, optional
             Factor beyond average of covalent radii to determine bond cutoff
+        return_molecules : bool, optional
+            If True, also return
 
         Returns
         -------
         list of lists
             Array of atom indices (0-indexed) of detected fragments.
+        bfs_arrays : tuple of lists of ndarray
+            geom, mass, elem info per-fragment.
+            Only provided if `return_arrays` is True.
+        bfs_molecules : list of qcdb.Molecule, optional
+            List of molecules, each built from one fragment. Center and
+            orientation of fragments is fixed so orientation info from `self` is
+            not lost. Loses chgmult and ghost/dummy info from `self` and contains
+            default chgmult.
+            Only provided if `return_molecules` is True.
+        bfs_molecule : qcdb.Molecule
+            Single molecule with same number of real atoms as `self` with atoms
+            reordered into adjacent fragments and fragment markers inserted.
+            Loses ghost/dummy info from `self` and contains default fragment chgmult.
+            Only provided if `return_molecule` is True.
 
         Notes
         -----
@@ -1283,13 +1299,48 @@ class Molecule(LibmintsMolecule):
         Trent M. Parker, revamped by Lori A. Burns
 
         """
-        from .bfs import array_BFS
+        from .bfs import BFS
 
         self.update_geometry()
-        mol_geom, rmass, mol_elem, relez, runiq = self.toarrays()
-        frag_pattern = array_BFS(mol_geom, mol_elem, seed_atoms=seed_atoms, bond_threshold=bond_threshold)
-        return frag_pattern
+        if self.natom() != self.nallatom():
+            raise ValidationError("""BFS not adapted for dummy atoms""")
+        cgeom, cmass, celem, celez, cuniq = self.to_arrays()
+        frag_pattern = BFS(cgeom, celez, seed_atoms=seed_atoms, bond_threshold=bond_threshold)
+        outputs = [frag_pattern]
 
+        frlen = [len(fr) for fr in frag_pattern]
+        vsplt = np.cumsum(frlen)
+        assert vsplt[-1] == self.natom(), """BFS dropped atoms"""
+
+        fgeoms = [cgeom[fr] for fr in frag_pattern]
+        fmasss = [cmass[fr] for fr in frag_pattern]
+        felems = [celem[fr] for fr in frag_pattern]
+        felezs = [celez[fr] for fr in frag_pattern]
+        fgeom = np.vstack(fgeoms)
+        fmass = np.concatenate(fmasss, axis=0)
+        felem = np.concatenate(felems, axis=0)
+        felez = np.concatenate(felezs, axis=0)
+
+        if return_arrays:
+            outputs.append((fgeoms, fmasss, felems))
+
+        if return_molecules:
+            ret_mols = [Molecule.from_arrays(cgeom[fr], cmass[fr], celem[fr], celez[fr],
+                                             units='Bohr', fix_com=True, fix_orientation=True) for fr in frag_pattern]
+            outputs.append(ret_mols)
+
+        if return_molecule:
+            ret_mol = Molecule.from_arrays(fgeom, fmass, felem, felez,
+                                       units='Bohr',
+                                       charge=self.molecular_charge(),
+                                       multiplicity=self.multiplicity(),
+                                       fix_com=(not self.PYmove_to_com),
+                                       fix_orientation=self.orientation_fixed(),
+                                       fragments=vsplt)
+            outputs.append(ret_mol)
+
+        outputs = tuple(outputs)
+        return (frag_pattern,) + outputs[1:]
 
 
 # Attach methods to qcdb.Molecule class
