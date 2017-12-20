@@ -161,8 +161,7 @@ void CubicScalarGrid::populate_grid() {
     extents_ = std::make_shared<BasisExtents>(primary_, epsilon);
 
     int max_points = options_.get_int("CUBIC_BLOCK_MAX_POINTS");
-    double xyz = pow((double)max_points, 1.0 / 3.0);
-    nxyz_ = (size_t)pow((double)max_points, 1.0 / 3.0);
+    nxyz_ = std::llround(pow((double)max_points, 1.0 / 3.0));
 
     blocks_.clear();
     size_t offset = 0L;
