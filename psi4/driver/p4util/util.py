@@ -371,7 +371,7 @@ def compare_cubes(expected, computed, label):
     evec = np.genfromtxt(expected,skip_header=9,skip_footer=1)
     cvec = np.genfromtxt(computed,skip_header=9,skip_footer=1)
     if evec.size == cvec.size:
-        if not np.allclose(cvec, evec, rtol=5e-02, atol=1e-10):
+        if not np.allclose(cvec, evec, rtol=5e-05, atol=1e-10):
             message = ("\t%s: computed cube file does not match expected cube file." % label)
             raise TestComparisonError(message)
     else:
