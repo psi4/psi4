@@ -82,7 +82,7 @@ class ExternalPotential;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class Wavefunction : public std::enable_shared_from_this<Wavefunction>
+class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction>
 {
 protected:
     /// Name of the wavefunction
@@ -514,15 +514,15 @@ public:
 
 
     /**
-    * Transform a matrix M into the desired basis 
+    * Transform a matrix M into the desired basis
     * @param M matrix in the SO basis to transform
     * @param C matrix in the SO basis to use for transforms to MO basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO, CartAO
     * @return the matrix M in the desired basis
     **/
-    SharedMatrix matrix_subset_helper(SharedMatrix M, 
-        SharedMatrix C, const std::string &basis, 
+    SharedMatrix matrix_subset_helper(SharedMatrix M,
+        SharedMatrix C, const std::string &basis,
         const std::string matrix_basename) const;
 
     /**

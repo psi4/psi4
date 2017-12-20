@@ -31,6 +31,7 @@
 
 #include <map>
 
+#include "psi4/pragma.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/wavefunction.h"
 
@@ -38,7 +39,7 @@ namespace psi {
 
 class CubicScalarGrid;
 
-class CubeProperties {
+class PSI_API CubeProperties {
    protected:
     // => Task specification <= //
 

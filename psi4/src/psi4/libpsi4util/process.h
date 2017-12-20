@@ -51,9 +51,9 @@
  class EFP;
  }
 
- class Process {
+ class PSI_API Process {
     public:
-     class Environment {
+     class PSI_API Environment {
          std::map<std::string, std::string> environment_;
          size_t memory_;
          int nthread_;
