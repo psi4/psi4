@@ -352,7 +352,7 @@ class MapType : public DataType {
     virtual std::string to_string() const;
 };
 
-class Options {
+class PSI_API Options {
     bool edit_globals_;
 
     /// A temporary map used for validation of local options
