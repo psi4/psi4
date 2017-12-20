@@ -10,7 +10,8 @@ from .psiutil import *
 
 try:
     from itertools import izip as zip
-except ImportError: # will be 3.x series
+except ImportError:
+    # will be 3.x series
     pass
 
 
