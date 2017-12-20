@@ -39,7 +39,7 @@ namespace psi {
  * The MOSpace class is used to define orbital spaces in which to transform
  * integrals
  */
-class MOSpace {
+class PSI_API MOSpace {
    public:
     MOSpace(const char label);
     ~MOSpace();
