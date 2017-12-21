@@ -140,7 +140,7 @@ void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double
 void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b, int ldb);
 
 // BLAS 3 Double routines
-void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc);
+PSI_API void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc);
 void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc);
 void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b, int ldb);
 void C_DSYRK(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double beta, double* c, int ldc);

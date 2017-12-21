@@ -45,7 +45,7 @@ class Matrix;
 class VectorIterator;
 
 /*! \ingroup MINTS */
-class Vector
+class PSI_API Vector
 {
 protected:
     /// Actual data, of size dimpi_.sum()
