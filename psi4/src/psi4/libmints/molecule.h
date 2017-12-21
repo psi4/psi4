@@ -59,7 +59,7 @@ const std::string FullPointGroupList[] = {"ATOM", "C_inf_v", "D_inf_h", "C1", "C
  *  \class Molecule
  *  \brief Molecule information class.
  */
-class Molecule
+class PSI_API Molecule
 {
 public:
     /**

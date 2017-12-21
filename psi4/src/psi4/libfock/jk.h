@@ -223,7 +223,7 @@ class PKManager;
  *
  *
  */
-class JK {
+class PSI_API JK {
    protected:
     // => Utility Variables <= //
 

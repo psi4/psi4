@@ -45,7 +45,7 @@ class SOBasisSet;
  * The objects this factory creates can automatically be sized based on information
  * from checkpoint.
  */
-class MatrixFactory {
+class PSI_API MatrixFactory {
     /// Number of irreps
     int nirrep_;
     /// Number of orbitals

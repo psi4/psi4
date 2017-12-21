@@ -128,7 +128,7 @@ public:
 
 /** An SOBasis object describes the transformation from an atomic orbital basis
     to a symmetry orbital basis. */
-class SOBasisSet
+class PSI_API SOBasisSet
 {
 protected:
     std::shared_ptr<BasisSet> basis_;

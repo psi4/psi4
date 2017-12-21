@@ -58,7 +58,7 @@ class GaussianShell;
  *  \class TwoBodyInt
  *  \brief Two body integral base class.
  */
-class TwoBodyAOInt
+class PSI_API TwoBodyAOInt
 {
 protected:
     const IntegralFactory* integral_;

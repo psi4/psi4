@@ -62,7 +62,7 @@ enum diagonalize_order {
  *
  * Using a matrix factory makes creating these a breeze.
  */
-class Matrix : public std::enable_shared_from_this<Matrix> {
+class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
 protected:
     /// Matrix data
     double ***matrix_;

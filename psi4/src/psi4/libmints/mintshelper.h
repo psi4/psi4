@@ -48,7 +48,7 @@ class OneBodyAOInt;
 * The MintsHelper object, places molecular integrals
 * (and later derivative integrals) on disk
 **/
-class MintsHelper {
+class PSI_API MintsHelper {
 
 private:
     /// The Options reference for basis sets and things
