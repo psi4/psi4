@@ -337,6 +337,7 @@ hyb_superfunc_list = {
           "wpbe0"    : build_wpbe0_superfunctional,
           "b5050lyp" : build_b5050lyp_superfunctional,
           "wb97x-d"  : build_wb97xd_superfunctional,
+#          "wb97x-d3" : build_wb97xd3_superfunctional,
           "hf-d"     : build_hfd_superfunctional,
           "hf"       : build_hf_superfunctional,
           "scf"      : build_hf_superfunctional,
@@ -390,3 +391,40 @@ hyb_superfunc_list = {
 #     sup.set_x_omega(0.3)
 #     sup.set_x_alpha(0.25)
 #     return (sup, False)
+
+#def build_wb97xd3_superfunctional(name, npoints, deriv, restricted):
+#   UNFINISHED/IMPOSSIBLE
+#   # this needs custom parameters since B97 is re-parametrized again.
+#   # But there is no interface in LibXC
+#   # Call this first
+#   sup = core.SuperFunctional.blank()
+#   sup.set_max_points(npoints)
+#   sup.set_deriv(deriv)
+#
+#   # => User-Customization <= #
+#
+#   # No spaces, keep it short and according to convention
+#   sup.set_name('wB97X-D3')
+#   # Tab in, trailing newlines
+#   sup.set_description('    Parameterized Hybrid LRC B97 GGA XC Functional with D3(0) Dispersion\n')
+#   # Tab in, trailing newlines
+#   sup.set_citation(' Y.-S. Lin, G.-D. Li, S.-P. M., and J.-D. Chai J. Chem. Theory and Comput., 9,  263-272, 2013 \n')
+#
+#   # Add member functionals
+#   wb97_x = core.LibXCFunctional('XC_GGA_X_', restricted)
+#   wb97_x.set_omega(0.3)
+#   wb97_x.set_alpha(0.804272)
+#   sup.add_x_functional(wb97_x)
+#   sup.add_c_functional(core.LibXCFunctional('XC_GGA_', restricted))
+#
+#   # Set GKS up after adding functionals
+#   sup.set_x_omega(0.25)
+#   sup.set_c_omega(0.0)
+#   sup.set_x_alpha(0.195728)
+#   sup.set_c_alpha(0.0)
+#
+#   # Call this last
+#   sup.allocate()
+#   return (sup, ('wB97', '-d3zero'))
+
+

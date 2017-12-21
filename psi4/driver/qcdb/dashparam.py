@@ -128,6 +128,7 @@ dashcoeff = {
         'revpbe0'     : {'s6': 1.0,  's8': 0.792, 'sr6': 0.949, 'alpha6': 14.0},
         'revpbe38'    : {'s6': 1.0,  's8': 0.862, 'sr6': 1.021, 'alpha6': 14.0},
         'rpw86pbe'    : {'s6': 1.0,  's8': 0.901, 'sr6': 1.224, 'alpha6': 14.0},
+        'wb97x'       : {'s6': 1.0,  's8': 1.094, 'sr6': 1.281, 'alpha6': 14.0},
     },
     'd3bj': {
         # special HF/DFT with eBSSE correction

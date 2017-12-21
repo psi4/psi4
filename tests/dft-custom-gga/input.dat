@@ -1,0 +1,77 @@
+# DFT (LDA/GGA) test of custom implementations in: gga_superfuncs.py
+
+
+## Programs/References
+# ORCA v.4.0.1: cc-pVDZ, RI-MP2, no FC, GRID7, nori
+# Gaussian 09: cc-pVDZ 5D SP Int(Grid=99770)
+# Turbomole 7.2, nori, grid 7
+## Notes
+# M11L only up to 4 decimals even for Ne with fine grid
+
+ggalist=[]
+#ggalist=["blyp","svwn","pbe","pw91","mpwpw"]
+#ggalist=["blyp","svwn","pbe","bp86","pw91","mpwpw"]
+
+ggaval ={
+"blyp"    : -128.894855380969,
+"svwn"    : -128.357941704   ,
+"pbe"     : -128.79305010293, # TM  LDA-PW91
+#"pbe"     : -128.793027408,   # G09
+#"pbe"     : -128.793068569269 # ORCA LDA-PW91
+#"bp86"    : -128.905683777641, # ORCA LDA-PW91
+#"bp86"    : -128.9092927447,  # TM = LDA-VWN
+"bp86"    :-128.903070321, #G09
+"pw91"    : -128.871229934635,
+"mpwpw"   : -128.893378250504,
+#"b86bpbe" : ,
+#"pw86pbe" : ,
+#"ft97"    : ,
+#"bop"     : ,
+}
+
+
+psi4.core.set_output_file("output.dat", False)
+
+molecule ne {
+  0 1
+  Ne
+}
+
+set df_scf_guess false
+set basis cc-pvdz
+set reference rks
+set dft_radial_points 99
+set dft_spherical_points 770 
+set scf_type direct
+
+for func in ggalist[:]:
+  edft = energy(func)
+  label=func.upper()
+  val=float(ggaval[func])
+  compare_values(ggaval[func], edft, 4, 'Ne: '+label)   #TEST
+  clean()
+
+## against unknown q-chem.
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+activate(h2o)
+set basis 6-31G
+set dft_radial_points 75
+set dft_spherical_points 302
+set scf_type df
+
+#edft = energy('bp86')
+#compare_values(-76.3908828384000032, edft, 4, 'Ne: BP86(VWN)')   #TEST
+#clean()
+#edft = energy('pw91')
+#compare_values(-76.3566903836999984, edft, 4, 'Ne: PW91')   #TEST
+#clean()
+edft = energy('bop')
+compare_values(-76.3668805134000053, edft, 4, 'Ne: BOP ')   #TEST
+clean()
