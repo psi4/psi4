@@ -251,7 +251,7 @@ enum indices {pqrs, pqsr, prqs, prsq, psqr, psrq,
 /* Useful for the 3-index sorting function dpd_3d_sort() */
 enum pattern {abc, acb, cab, cba, bca, bac};
 
-class DPD{
+class PSI_API DPD{
 public:
 
     // These used to live in the dpd_data struct
@@ -526,7 +526,7 @@ extern dpd_gbl dpd_main;
 extern PSI_API DPD* global_dpd_;
 extern int dpd_default;
 extern DPD* dpd_list[2];
-extern int dpd_set_default(int dpd_num);
+extern PSI_API int dpd_set_default(int dpd_num);
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
             int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
             int num_subspaces, std::vector<int*> &spaceArrays);

@@ -268,7 +268,7 @@ public:
     AOIntegralsIterator integrals_iterator();
 };
 
-class SOShellCombinationsIterator
+class PSI_API SOShellCombinationsIterator
 {
 private:
     struct ShellQuartet {
@@ -381,7 +381,7 @@ public:
 
 
 /*! \ingroup MINTS */
-class IntegralFactory
+class PSI_API IntegralFactory
 {
 protected:
     /// Center 1 basis set
