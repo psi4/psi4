@@ -178,7 +178,7 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
 
     """
     import time
-    from psi4.driver.qcdb.physconst import psi_bohr2angstroms
+    from .physconst import psi_bohr2angstroms
 
     # validation
     if rgeom.shape != cgeom.shape or rgeom.shape[1] != 3:
@@ -208,7 +208,8 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
 
     # start_rmsd is nonsense if not atoms_map
     start_rmsd = np.linalg.norm(cgeom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
-    print('Start RMSD = {:8.4f} (naive)'.format(start_rmsd))
+    if verbose >= 1:
+        print('Start RMSD = {:8.4f} (naive)'.format(start_rmsd))
 
     def _plausible_atom_orderings_wrapper(runiq, cuniq, rgeom, cgeom, run_resorting, verbose=1, uno_cutoff=1.e-3):
         """Wrapper to _plausible_atom_orderings that bypasses it (`run_resorting=False`) when
@@ -241,7 +242,8 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
         if temp_rmsd < best_rmsd:
             best_rmsd = temp_rmsd
             hold_solution = temp_solution
-            print('<<<  trial {:8} {} yields RMSD {}  >>>'.format(ocount, npordd, temp_rmsd))
+            if verbose >= 1:
+                print('<<<  trial {:8} {} yields RMSD {}  >>>'.format(ocount, npordd, temp_rmsd))
             if not run_to_completion and mols_align and best_rmsd < 1.e-3:
                 break
         else:
@@ -249,17 +251,19 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
                 print('     trial {:8} {} yields RMSD {}'.format(ocount, npordd, temp_rmsd))
 
     t3 = time.time()
-    print('Total time [s] for {:6} iterations: {:.3}'.format(ocount, t3-t0))
-    print('Hungarian time [s] for atom ordering: {:.3}'.format(t3-t0-tc))
-    print('Kabsch time [s] for mol alignment:    {:.3}'.format(tc))
+    if verbose >= 1:
+        print('Total time [s] for {:6} iterations: {:.3}'.format(ocount, t3-t0))
+        print('Hungarian time [s] for atom ordering: {:.3}'.format(t3-t0-tc))
+        print('Kabsch time [s] for mol alignment:    {:.3}'.format(tc))
 
     #ageom, amass, aelem, aelez, auniq = hold_solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
     ageom, auniq = hold_solution.align_mini_system(cgeom, cuniq, reverse=False)
     final_rmsd = np.linalg.norm(ageom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
     assert(abs(best_rmsd - final_rmsd) < 1.e-3)
 
-    print('Final RMSD = {:8.4f}'.format(final_rmsd))
-    print(hold_solution)
+    if verbose >=1:
+        print('Final RMSD = {:8.4f}'.format(final_rmsd))
+        print(hold_solution)
 
 
     # final presentation & plotting
@@ -304,7 +308,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
     try:
         assert(sorted(ref) == sorted(current))
     except AssertionError:
-        raise qcdb.ValidationError("""ref and current can't map to each other.\n""" + 'R:  ' + str(ref) + '\nC:  ' + str(current))
+        raise ValidationError("""ref and current can't map to each other.\n""" + 'R:  ' + str(ref) + '\nC:  ' + str(current))
 
     where = collections.defaultdict(list)
     for iuq, uq in enumerate(ref):
@@ -336,16 +340,19 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         Only suitable for total system size up to about 20 atoms.
 
         """
-        print("""Space:     {} <--> {}""".format(rgp, cgp))
+        if verbose >= 1:
+            print("""Space:     {} <--> {}""".format(rgp, cgp))
         bnbn = [rrdistmat[first, second] for first, second in zip(rgp, rgp[1:])]
         for pm in itertools.permutations(cgp):
             cncn = [ccdistmat[first, second] for first, second in zip(pm, pm[1:])]
             if np.allclose(bnbn, cncn, atol=0.5):
-                print('Candidate:', rgp, '<--', pm)
+                if verbose >= 1:
+                    print('Candidate:', rgp, '<--', pm)
                 yield pm
 
     def filter_hungarian(rgp, cgp):
-        print("""Space:     {} <--> {}""".format(rgp, cgp))
+        if verbose >= 1:
+            print("""Space:     {} <--> {}""".format(rgp, cgp))
         submatCR = crdistmat[np.ix_(cgp, rgp)]  # this one gets manipulated by hungarian call
         submatCRcopy = np.copy(submatCR)
         lapCR = hungarian.lap(submatCR)
@@ -355,7 +362,8 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         subans = lapCR[1]
         npcgp = np.array(cgp)
         ans = tuple(npcgp[np.array(subans)])
-        print('Best Candidate ({:6.3}):'.format(sumCR), rgp, '<--', ans, '     from', cgp, subans)
+        if verbose >= 1:
+            print('Best Candidate ({:6.3}):'.format(sumCR), rgp, '<--', ans, '     from', cgp, subans)
         yield ans
 
     def filter_hungarian_uno(rgp, cgp):
@@ -367,7 +375,8 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         ref and concern and run Uno algorithm to enumerate them.
 
         """
-        print("""Space:     {} <--> {}""".format(rgp, cgp))
+        if verbose >= 1:
+            print("""Space:     {} <--> {}""".format(rgp, cgp))
 
         # formulate cost matrix from internal (not Cartesian) layouts of R & C
         npcgp = np.array(cgp)
@@ -391,13 +400,15 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         t01 = time.time()
         if verbose >= 2:
             print('Reduced cost:\n', cost)
-        print('Hungarian time [s] for space:         {:.3}'.format(t01-t00))
+        if verbose >= 1:
+            print('Hungarian time [s] for space:         {:.3}'.format(t01-t00))
 
         # final _all_ best matches btwn R & C atoms through Uno algorithm, seeded from Hungarian sol'n
         edges = np.argwhere(cost < uno_cutoff)  #2.)  #0.9)  #2.)  #5.e-1)  #1.e-3)
         gooduns = uno(edges, ptsCR)
         t02 = time.time()
-        print('Uno time [s] for space:               {:.3}'.format(t02-t01))
+        if verbose >= 1:
+            print('Uno time [s] for space:               {:.3}'.format(t02-t01))
 
         for gu in gooduns:
             gu2 = gu[:]
@@ -429,7 +440,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         try:
             import hungarian
         except ImportError:
-            print("install this repository: https://github.com/loriab/hungarian/tree/py3")
+            raise ValidationError("install this repository: https://github.com/loriab/hungarian/tree/py3")
         from .util.gph_uno_bipartite import uno
 
     # collect candidate atom orderings from algofn for each of the atom classes,
@@ -482,7 +493,7 @@ def kabsch_align(rgeom, cgeom, weight=None):
     Author: DAS
 
     """
-    from psi4.driver.qcdb.physconst import psi_bohr2angstroms
+    from .physconst import psi_bohr2angstroms
 
     if weight is None:
         w = np.ones((rgeom.shape[0]))
@@ -491,7 +502,7 @@ def kabsch_align(rgeom, cgeom, weight=None):
     elif isinstance(weight, np.ndarray):
         w = weight
     else:
-        raise qcdb.ValidationError(
+        raise ValidationError(
             """Unrecognized argument type {} for kwarg 'weight'.""".format(type(weight)))
 
     R = rgeom

@@ -1516,10 +1516,13 @@ class Molecule(LibmintsMolecule):
                                     fix_com=True,
                                     fix_orientation=True)
 
-        compare_values(concern_mol.nuclear_repulsion_energy(), amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE uncorrupted')
+        compare_values(concern_mol.nuclear_repulsion_energy(), amol.nuclear_repulsion_energy(), 4,
+            'Q: concern_mol-->returned_mol NRE uncorrupted')
         if mols_align:
-            compare_values(ref_mol.nuclear_repulsion_energy(), amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE matches ref_mol')
-            compare_integers(True, np.allclose(ref_mol.geometry(np_out=True), amol.geometry(np_out=True), atol=4), 'Q: concern_mol-->returned_mol geometry matches ref_mol')
+            compare_values(ref_mol.nuclear_repulsion_energy(), amol.nuclear_repulsion_energy(), 4,
+                'Q: concern_mol-->returned_mol NRE matches ref_mol')
+            compare_integers(True, np.allclose(ref_mol.geometry(np_out=True), amol.geometry(np_out=True), atol=4),
+                'Q: concern_mol-->returned_mol geometry matches ref_mol')
 
         return rmsd, solution, amol
 
@@ -1577,7 +1580,8 @@ class Molecule(LibmintsMolecule):
                                     fix_orientation=True)
 
         rmsd = np.linalg.norm(cgeom - rgeom) / np.sqrt(nat)
-        print('Start RMSD = {:8.4f}'.format(rmsd))
+        if verbose >= 1:
+            print('Start RMSD = {:8.4f}'.format(rmsd))
 
         rmsd, solution, amol = cmol.B787(ref_mol, do_plot=do_plot,
                                          atoms_map=(not do_resort),
