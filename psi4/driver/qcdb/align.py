@@ -224,7 +224,7 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
 
         """
         if run_resorting:
-            return _plausible_atom_orderings(runiq, cuniq, rgeom, cgeom, verbose=verbose)
+            return _plausible_atom_orderings(runiq, cuniq, rgeom, cgeom, verbose=verbose, uno_cutoff=uno_cutoff)
         else:
             return [np.arange(rgeom.shape[0])]
 
@@ -278,6 +278,9 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
         print('<<<  Aligned:')
         for at, hsh in enumerate(auniq):
             print(atomfmt2.format(auniq[at][:6], *ageom[at]))
+        print('<<<  Aligned Diff:')
+        for at, hsh in enumerate(auniq):
+            print(atomfmt2.format(auniq[at][:6], *[ageom[at][i] - rgeom[at][i] for i in range(3)]))
 
     if do_plot:
         plot_coord(ref=rgeom, cand=ageom, orig=cgeom, comment='Final RMSD = {:8.4f}'.format(final_rmsd))
@@ -411,7 +414,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
             print('Hungarian time [s] for space:         {:.3}'.format(t01-t00))
 
         # final _all_ best matches btwn R & C atoms through Uno algorithm, seeded from Hungarian sol'n
-        edges = np.argwhere(cost < uno_cutoff)  #2.)  #0.9)  #2.)  #5.e-1)  #1.e-3)
+        edges = np.argwhere(cost < uno_cutoff)
         gooduns = uno(edges, ptsCR)
         t02 = time.time()
         if verbose >= 1:
