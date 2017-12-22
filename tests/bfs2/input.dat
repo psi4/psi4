@@ -29,7 +29,7 @@ H    -0.8103758    2.3643033   -2.0618643
 """)
 
 for trial in range(5):
-    s22_12.scramble(do_shift=True, do_rotate=True, do_resort=True, do_plot=False)
+    s22_12.scramble(do_shift=True, do_rotate=True, do_resort=True, do_plot=False, verbose=0)
 
 
 trop_cs = qcdb.Molecule("""
@@ -70,8 +70,8 @@ trop_gs_c2v = qcdb.Molecule("""
      units au
 """)
 
-#rms, mill, mol = trop_gs_c2v.B787(trop_cs, do_plot=True)
-#print(rms)
+rmsd, mill, mol = trop_cs.B787(trop_gs_c2v, do_plot=False, verbose=0, uno_cutoff=0.5)
+compare_values(0.1413, rmsd, 2, 'cs<-->c2v tropolones align')
 
 oco10 = qcdb.Molecule("""
 O  1.0 0.0 0.0
@@ -91,7 +91,6 @@ rmsd, mill, mol = oco12.B787(oco10, verbose=0)
 qcdb.compare_values(ref_rmsd, rmsd, 6, 'known rmsd Mol.B787')
 
 from psi4.driver.qcdb.align import B787
-B787(oco10.geometry(np_out=True), oco12.geometry(np_out=True), np.array(['O', 'C', 'O']), np.array(['O', 'O', 'C']), verbose=0, do_plot=False)
+rmsd, mill = B787(oco10.geometry(np_out=True), oco12.geometry(np_out=True), np.array(['O', 'C', 'O']), np.array(['O', 'O', 'C']), verbose=0, do_plot=False)
 qcdb.compare_values(ref_rmsd, rmsd, 6, 'known rmsd B787')
-
 
