@@ -172,7 +172,9 @@ dashcoeff = {
         'b97-d'       : {'s6': 1.000, 's8':  2.2609, 'a1':  0.5545, 'a2': 3.2297},  # in psi4  #IN
         'blyp'        : {'s6': 1.000, 's8':  2.6996, 'a1':  0.4298, 'a2': 4.2359},  # in psi4  #IN
         'bp86'        : {'s6': 1.000, 's8':  3.2822, 'a1':  0.3946, 'a2': 4.8516},  # in psi4  #IN
-        'dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.000,  'a2': 6.0519},  # in psi4
+        'dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.0000, 'a2': 6.0519},  # in psi4
+        'fc-dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.0000, 'a2': 6.0519},  # in psi4; S.Grimme recommends same parameters for both DSD-BLYP versions
+#   'fc-dsd-blyp'    : {'s6': 0.500, 's8':  0.2112, 'a1':  0.0009, 'a2': 5.9807},  # in psi4; special params for frozen-core DSD-BLYP version
         'pbe0'        : {'s6': 1.000, 's8':  1.2177, 'a1':  0.4145, 'a2': 4.8593},  # in psi4  #IN
         'pbe'         : {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407},  # in psi4  #IN
         'pw6b95'      : {'s6': 1.000, 's8':  0.7257, 'a1':  0.2076, 'a2': 6.3750},

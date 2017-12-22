@@ -22,6 +22,8 @@ $rundimensions
    rhfshells=1
    nbf(AO)=14
 $scfmo   file=mos
+$closed shells
+ a       1-5                                    ( 2 )
 $scfiterlimit      125
 $thize     0.10000000E-06
 $thime        4
@@ -53,12 +55,12 @@ $energy    file=energy
 $grad    file=gradient
 $forceapprox    file=forceapprox
 $dft
-   functional pwlda
-   gridsize   7
+   functional b-p
+   gridsize   m4
 $scfconv        7
 $scfdamp   start=0.700  step=0.050  min=0.050
 $last step     dscf
-$maxcor   8000 MiB  per_core
+$maxcor  8000
 $rpacor  1000
 $pop
 $statpt
@@ -71,13 +73,11 @@ $statpt
 $ricore_slave 1
 $pardft
 $statistics off
-$last SCF energy change = 0.75676261
+$last SCF energy change = -.12436601E-07
 $charge from dscf
          -0.000 (not to be modified here)
 $dipole from dscf
-  x    -0.00000000000000    y     0.00000000000000    z    -0.00000000000000    a.u.
+  x     0.00000000000000    y     0.00000000000001    z     0.00000000000001    a.u.
    | dipole | =    0.0000000000  debye
-$closed shells
- a       1-5                                    ( 2 )
-$orbital_max_rnorm 0.15851561672123E-03
+$orbital_max_rnorm 0.41016156608634E-04
 $end

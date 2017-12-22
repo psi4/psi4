@@ -120,7 +120,7 @@ def build_core_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
     # => User-Customization <= #
 
     # No spaces, keep it short and according to convention
-    sup.set_name('cDSD-BLYP')
+    sup.set_name('core-DSD-BLYP')
     # Tab in, trailing newlines
     sup.set_description('    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n')
     sup.set_description('    (full-core parameterization) \n')
@@ -415,7 +415,7 @@ double_hyb_superfunc_list = {
           "b2plyp"     : build_b2plyp_superfunctional,
           "pbe0-2"     : build_pbe0_2_superfunctional,
           "dsd-blyp"   : build_dsd_blyp_superfunctional,
-          "cdsd-blyp"  : build_core_dsd_blyp_superfunctional,
+          "core-dsd-blyp"  : build_core_dsd_blyp_superfunctional,
           "dsd-pbep86" : build_dsd_pbep86_superfunctional,
           "dsd-pbepbe" : build_dsd_pbepbe_superfunctional,
           "b2gpplyp"   : build_b2gpplyp_superfunctional,

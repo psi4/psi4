@@ -53,6 +53,15 @@ compare_values(-0.109088934, e_mp2, 6,  'Ne: B2GPPLYP_PT2')   #TEST
 compare_values(-128.897024329309, edhdf, 6,  'Ne: B2GPPLYP')   #TEST
 clean()
 
+#edhdf = energy('core-dsd-blyp')
+#e_dft=get_variable('SCF TOTAL ENERGY')
+#e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#compare_values(, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+#compare_values(, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+#compare_values(, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+#clean()
+
+
 set freeze_core true # this is the recommended version
 edhdf = energy('dsd-blyp')
 e_dft=get_variable('SCF TOTAL ENERGY')
@@ -61,6 +70,7 @@ compare_values(-128.75560404, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
 compare_values(-0.126886573, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
 compare_values(-128.882490613961, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
 set freeze_core false
+clean()
 
 edhdf = energy('ptpss')
 e_dft=get_variable('SCF TOTAL ENERGY')

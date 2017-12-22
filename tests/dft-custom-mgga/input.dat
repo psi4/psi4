@@ -43,7 +43,7 @@ compare_values(-128.873042062, edft, 4, 'Ne: M11-L')   #TEST
 clean()
 #  
 
-### old dft-dldf test
+#====== former dft-dldf test ==========
 #! Dispersionless density functional (dlDF+D) internal match to Psi4
 #! Extensive testing has been done to match supplemental info of
 #! Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
