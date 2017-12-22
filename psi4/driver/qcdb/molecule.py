@@ -1502,7 +1502,7 @@ class Molecule(LibmintsMolecule):
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
 
-        rmsd, solution = B787(rgeom, cgeom, runiq, cuniq,
+        rmsd, solution = B787(cgeom, rgeom, cuniq, runiq,
                               do_plot=do_plot, verbose=verbose,
                               atoms_map=atoms_map, run_resorting=run_resorting,
                               mols_align=mols_align, run_to_completion=run_to_completion,

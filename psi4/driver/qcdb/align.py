@@ -124,7 +124,7 @@ def _pseudo_nre(Zhash, geom):
 #         1         2         3         4         5         6         7         8         9         10
 
 
-def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
+def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
          atoms_map=False, run_resorting=False, mols_align=False, run_to_completion=False,
          uno_cutoff=1.e-3):
     """Use Kabsch algorithm to find best alignment of geometry `cgeom` onto
@@ -157,10 +157,11 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
         may be passed as `None`, and much time will be saved.
     run_resorting : bool, optional
         Run the resorting machinery even if unnecessary because `atoms_map=True`.
-    mols_align : bool, optional
+    mols_align : bool or float, optional
         Whether ref_mol and concern_mol have identical geometries by eye
         (barring orientation or atom mapping) and expected final RMSD = 0.
         If `True`, procedure is truncated when RMSD condition met, saving time.
+        convcrit at which search for minimium truncates
     run_to_completion : bool, optional
         Run reorderings to completion (past RMSD = 0) even if unnecessary because
         `mols_align=True`. Used to test worst-case timings.
@@ -192,6 +193,12 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
     ocount = 0
     hold_solution = None
     run_resorting = run_resorting or not atoms_map
+    if mols_align is True:
+        a_convergence = 1.e-3
+    elif mols_align is False:
+        a_convergence = 0.0
+    else:
+        a_convergence = mols_align
 
     # initial presentation
     atomfmt1 = """  {:6} {:16.8f} {:16.8f} {:16.8f}    {m:16.8f} {hsh:}"""
@@ -244,7 +251,7 @@ def B787(rgeom, cgeom, runiq, cuniq, do_plot=False, verbose=1,
             hold_solution = temp_solution
             if verbose >= 1:
                 print('<<<  trial {:8} {} yields RMSD {}  >>>'.format(ocount, npordd, temp_rmsd))
-            if not run_to_completion and mols_align and best_rmsd < 1.e-3:
+            if not run_to_completion and best_rmsd < a_convergence:
                 break
         else:
             if verbose >= 3:
