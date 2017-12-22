@@ -1,5 +1,3 @@
-memory 1 Gb
-
 molecule h2o {
    1 2
    O
