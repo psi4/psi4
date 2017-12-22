@@ -202,7 +202,7 @@ size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
 
 double VBase::vv10_nlc(SharedMatrix ret) {
-    timer_on("V: V10");
+    timer_on("V: VV10");
     timer_on("Setup");
 
     // Densities should be set by the calling functional
@@ -347,7 +347,7 @@ double VBase::vv10_nlc(SharedMatrix ret) {
         double* zk = vals["V"]->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
 
-        parallel_timer_on("Fock", rank);
+        parallel_timer_on("VV10 Fock", rank);
         // => LSDA contribution (symmetrized) <= //
         for (int P = 0; P < npoints; P++) {
             std::fill(Tp[P], Tp[P] + nlocal, 0.0);
@@ -397,7 +397,7 @@ double VBase::vv10_nlc(SharedMatrix ret) {
     }
 
     double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
-    timer_off("V: V10");
+    timer_off("V: VV10");
     return vv10_e;
 }
 

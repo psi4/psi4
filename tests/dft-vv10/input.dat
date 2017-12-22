@@ -1,8 +1,8 @@
 #! He Dimer VV10 functional test.
 
-bench = {"DFT VV10 ENERGY": 0.0187972621212943, # TEST
-         "DFT XC ENERGY": -2.1610011925928672,  # TEST
-         "CURRENT ENERGY": -5.8199576848715910} # TEST
+bench = {"DFT VV10 ENERGY": 0.0187968521080026, # TEST
+         "DFT XC ENERGY":  -2.1610005616974943, # TEST
+         "CURRENT ENERGY": -5.8199580945288449} # TEST
 
 molecule ne {
   0 1
@@ -11,9 +11,13 @@ molecule ne {
 }
 
 
-set basis aug-cc-pVDZ
+set BASIS aug-cc-pVDZ
+set DFT_VV10_SPHERICAL_POINTS 50
+set DFT_VV10_RADIAL_POINTS 20
+set E_CONVERGENCE 1.e-12
+set D_CONVERGENCE 1.e-10
 
 scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
 for k, v in bench.items():                        # TEST
-    compare_values(v, psi4.get_variable(k), 6, k) # TEST
+    compare_values(v, psi4.get_variable(k), 9, k) # TEST
