@@ -30,8 +30,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - C++ and C compilers (C++11 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl mkl-include`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
-#    - NumPy (also runtime; e.g., `conda install numpy`)
-#    - mpmath (e.g., `conda install mpmath`)
+#    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
+#    - mpmath (avoidable if gau2grid pre-built; e.g., `conda install mpmath`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -87,6 +87,8 @@ option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
+option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
+option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (can also be added at runtime)" OFF)
 # These options are relevant to pasture
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)

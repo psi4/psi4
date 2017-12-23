@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 1.2a1.dev770 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {snsmp2build4} 2084e95 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,16 +12,16 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
     (doi: 10.1021/acs.jctc.7b00174)
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:35PM
+    Psi4 started on: Wednesday, 20 December 2017 12:42PM
 
-    Process ID:  13412
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID:  30387
+    PSIDATADIR: /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -43,36 +43,39 @@ set scf_type pk
 set cubeprop_tasks ['orbitals','density']
 set cubeprop_orbitals [1,2,3,4,5]
 set cubic_grid_overage [1.0,1.0,1.0]
+set e_convergence 8
+set d_convergence 7
 
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 cubeprop(scf_wfn)
 
 for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
-    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
-    this_cube = open('Psi_a_%s.cube' % n,'r').read()
+    ref_cube = 'Psi_a_%s.cube.ref' % n
+    this_cube ='Psi_a_%s.cube' % n
     compare_cubes(ref_cube,this_cube,"Comparing MO %s" % n) #TEST
 
 for s in ['Da','Db','Dt','Ds']:
-    ref_cube = open('%s.cube.ref' % s,'r').read()
-    this_cube = open('%s.cube' % s,'r').read()
+    ref_cube = '%s.cube.ref' % s
+    this_cube = '%s.cube' % s
     compare_cubes(ref_cube,this_cube,"Comparing %s" % s) #TEST
 --------------------------------------------------------------------------
 
 *** tstart() called on psinet
-*** at Mon May 15 15:35:15 2017
+*** at Wed Dec 20 12:42:15 2017
 
    => Loading Basis Set <=
 
     Name: CC-PVQZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   319 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
-    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
+    atoms 1   entry O          line   339 file /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
+    atoms 2-3 entry H          line    22 file /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -109,8 +112,8 @@ for s in ['Da','Db','Dt','Ds']:
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is SAD.
-  Energy threshold   = 1.00e-06
-  Density threshold  = 1.00e-06
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
@@ -176,14 +179,16 @@ for s in ['Da','Db','Dt','Ds']:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -75.93955651979707   -7.59396e+01   2.64147e-02 
-   @RHF iter   1:   -76.01228405195225   -7.27275e-02   5.41676e-03 
-   @RHF iter   2:   -76.04518050314418   -3.28965e-02   3.32981e-03 DIIS
-   @RHF iter   3:   -76.05791410475618   -1.27336e-02   4.50258e-04 DIIS
-   @RHF iter   4:   -76.05843669425619   -5.22590e-04   1.37229e-04 DIIS
-   @RHF iter   5:   -76.05851086088282   -7.41666e-05   2.87391e-05 DIIS
-   @RHF iter   6:   -76.05851495280578   -4.09192e-06   4.08113e-06 DIIS
-   @RHF iter   7:   -76.05851502748918   -7.46834e-08   5.23816e-07 DIIS
+   @RHF iter   0:   -75.89737656609290   -7.58974e+01   2.63098e-02 
+   @RHF iter   1:   -76.01732641277300   -1.19950e-01   5.18677e-03 
+   @RHF iter   2:   -76.04634170368597   -2.90153e-02   3.22161e-03 DIIS
+   @RHF iter   3:   -76.05812260866387   -1.17809e-02   3.75118e-04 DIIS
+   @RHF iter   4:   -76.05846385777696   -3.41249e-04   1.13682e-04 DIIS
+   @RHF iter   5:   -76.05851169424562   -4.78365e-05   2.52704e-05 DIIS
+   @RHF iter   6:   -76.05851493912051   -3.24487e-06   4.16068e-06 DIIS
+   @RHF iter   7:   -76.05851502651912   -8.73986e-08   6.27529e-07 DIIS
+   @RHF iter   8:   -76.05851502839877   -1.87966e-09   1.16871e-07 DIIS
+   @RHF iter   9:   -76.05851502847057   -7.17932e-11   2.81101e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -192,48 +197,48 @@ for s in ['Da','Db','Dt','Ds']:
 
     Doubly Occupied:                                                      
 
-       1A1   -20.567048     2A1    -1.328484     1B2    -0.691523  
-       3A1    -0.573766     1B1    -0.504851  
+       1A1   -20.567047     2A1    -1.328483     1B2    -0.691522  
+       3A1    -0.573765     1B1    -0.504851  
 
     Virtual:                                                              
 
-       4A1     0.113252     2B2     0.168201     3B2     0.436918  
+       4A1     0.113253     2B2     0.168201     3B2     0.436918  
        5A1     0.463664     6A1     0.485794     2B1     0.584065  
        7A1     0.599913     4B2     0.609800     1A2     0.651030  
-       3B1     0.714927     8A1     0.856105     5B2     0.905723  
-       9A1     1.090098     6B2     1.134274     7B2     1.356312  
-      10A1     1.417664     4B1     1.474231     2A2     1.484683  
-      11A1     1.585003    12A1     1.674381     8B2     1.904609  
-       5B1     2.066265    13A1     2.181546     3A2     2.280740  
+       3B1     0.714927     8A1     0.856106     5B2     0.905724  
+       9A1     1.090098     6B2     1.134274     7B2     1.356313  
+      10A1     1.417664     4B1     1.474232     2A2     1.484684  
+      11A1     1.585003    12A1     1.674382     8B2     1.904609  
+       5B1     2.066266    13A1     2.181546     3A2     2.280740  
        9B2     2.348030     6B1     2.418451    14A1     2.467290  
-      10B2     2.512866     4A2     2.553299     7B1     2.559302  
+      10B2     2.512866     4A2     2.553300     7B1     2.559302  
       11B2     2.627245    15A1     2.658070     5A2     2.816538  
-      16A1     2.842669     8B1     3.045870    12B2     3.090265  
-      13B2     3.248384    17A1     3.360141    18A1     3.379033  
-      14B2     3.578318    19A1     3.856506     9B1     3.948143  
-       6A2     4.149117    10B1     4.215020    20A1     4.237090  
-      15B2     4.407528    21A1     4.494319    22A1     4.552358  
-      11B1     4.646896    16B2     4.809412     7A2     4.815795  
-      17B2     5.273408    23A1     5.351556    12B1     5.991133  
+      16A1     2.842670     8B1     3.045871    12B2     3.090266  
+      13B2     3.248385    17A1     3.360141    18A1     3.379034  
+      14B2     3.578319    19A1     3.856507     9B1     3.948144  
+       6A2     4.149118    10B1     4.215021    20A1     4.237091  
+      15B2     4.407529    21A1     4.494320    22A1     4.552359  
+      11B1     4.646897    16B2     4.809413     7A2     4.815796  
+      17B2     5.273409    23A1     5.351557    12B1     5.991134  
       24A1     6.071739     8A2     6.201085    18B2     6.252753  
-       9A2     6.569344    25A1     6.709653    19B2     6.951621  
-      20B2     7.179334    13B1     7.243361    14B1     7.328602  
+       9A2     6.569345    25A1     6.709653    19B2     6.951622  
+      20B2     7.179334    13B1     7.243362    14B1     7.328602  
       10A2     7.418950    26A1     7.428880    21B2     7.454640  
       27A1     7.568361    22B2     7.983948    15B1     8.037281  
       28A1     8.085548    16B1     8.102076    11A2     8.190490  
       29A1     8.226798    23B2     8.247298    12A2     8.313637  
       30A1     8.400817    24B2     8.554301    17B1     8.739634  
-      13A2     8.755388    31A1     8.832111    25B2     9.061042  
-      32A1     9.185621    26B2     9.262913    33A1    10.053603  
-      18B1    10.132372    27B2    10.185944    34A1    10.375329  
-      19B1    10.579551    14A2    10.632280    35A1    10.674445  
-      28B2    11.112324    15A2    11.281362    36A1    11.513063  
-      20B1    11.618727    29B2    11.620679    21B1    11.847044  
-      37A1    11.967656    22B1    12.158423    38A1    12.254046  
-      16A2    12.291615    30B2    12.422791    31B2    13.373944  
-      39A1    13.421948    23B1    13.982684    17A2    14.315581  
-      40A1    14.362729    32B2    14.419063    41A1    16.145878  
-      33B2    16.508331    42A1    43.886097  
+      13A2     8.755389    31A1     8.832111    25B2     9.061042  
+      32A1     9.185622    26B2     9.262913    33A1    10.053604  
+      18B1    10.132373    27B2    10.185945    34A1    10.375330  
+      19B1    10.579553    14A2    10.632282    35A1    10.674446  
+      28B2    11.112325    15A2    11.281363    36A1    11.513064  
+      20B1    11.618728    29B2    11.620681    21B1    11.847045  
+      37A1    11.967657    22B1    12.158424    38A1    12.254048  
+      16A2    12.291616    30B2    12.422792    31B2    13.373945  
+      39A1    13.421949    23B1    13.982685    17A2    14.315582  
+      40A1    14.362730    32B2    14.419064    41A1    16.145879  
+      33B2    16.508332    42A1    43.886099  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -241,18 +246,14 @@ for s in ['Da','Db','Dt','Ds']:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.05851502748918
+  @RHF Final Energy:   -76.05851502847057
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.3886497277595424
-    Two-Electron Energy =                  37.5286691702982935
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0585150274891930
+    One-Electron Energy =                -122.3886246608907840
+    Two-Electron Energy =                  37.5286441024481547
+    Total Energy =                        -76.0585150284705662
 
 
 
@@ -273,14 +274,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0412     Total:     2.0412
 
 
-*** tstop() called on psinet at Mon May 15 15:35:20 2017
+*** tstop() called on psinet at Wed Dec 20 12:42:20 2017
 Module time:
-	user time   =       3.83 seconds =       0.06 minutes
-	system time =       1.83 seconds =       0.03 minutes
+	user time   =       3.45 seconds =       0.06 minutes
+	system time =       2.12 seconds =       0.04 minutes
 	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       3.83 seconds =       0.06 minutes
-	system time =       1.83 seconds =       0.03 minutes
+	user time   =       3.45 seconds =       0.06 minutes
+	system time =       2.12 seconds =       0.04 minutes
 	total time  =          5 seconds =       0.08 minutes
   ==> One Electron Grid Properties (v2.0) <==
 

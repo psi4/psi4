@@ -125,7 +125,7 @@ endif()
 #   maintained in the Psi4 codebase and (2) has Psi4-dependent tests _not_ in
 #   the external codebase, tests should
 #   * get their own directory in tests (e.g., tests/dftd3)
-#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not test/dftd3/dftd3-energy)
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not tests/dftd3/dftd3-energy)
 #   * be listed in the test case CMakeLists.txt as addon-testname (e.g., `add_regression_test(dftd3-energy ...`)
 #   * alphabetize the addons
 
@@ -231,6 +231,13 @@ endif()
 if(ENABLE_v2rdm_casscf)
     add_subdirectory(v2rdm_casscf)
     message(STATUS "Adding test cases: Psi4 + v2rdm_casscf")
+endif()
+
+# <<<  SNSMP2  >>>
+
+if(ENABLE_snsmp2)
+    add_subdirectory(snsmp2)
+    message(STATUS "Adding test cases: Psi4 + snsmp2")
 endif()
 
 # plugin regime

@@ -23,7 +23,6 @@ set {
 
 set v2rdm_casscf {
   positivity dqg
-  #r_convergence  1e-7
   r_convergence  1e-5
   e_convergence  1e-5
   orbopt_gradient_convergence 1e-8
@@ -34,11 +33,11 @@ activate(n2)
 
 optimize('v2rdm-casscf')
 
-refnuc   =   23.1968666562054260  # TEST
-refscf   = -108.95016246035139    # TEST
-refv2rdm = -109.095505119442     # TEST
+refnuc   =   23.1965726633423515  #TEST
+refscf   = -108.95016246035139    #TEST
+refv2rdm = -109.095505119442      #TEST
 
-compare_values(refnuc,   n2.nuclear_repulsion_energy(),  4, "Nuclear repulsion energy")  #TEST
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF total energy")          # TEST
-compare_values(refv2rdm, get_variable("CURRENT ENERGY"), 4, "v2RDM-CASSCF total energy") # TEST
+compare_values(refnuc,   n2.nuclear_repulsion_energy(),  3, "Nuclear repulsion energy")   #TEST
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 4, "SCF total energy")           #TEST
+compare_values(refv2rdm, get_variable("CURRENT ENERGY"), 4, "v2RDM-CASSCF total energy")  #TEST
 
