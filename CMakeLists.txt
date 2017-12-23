@@ -30,8 +30,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - C++ and C compilers (C++11 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl mkl-include`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
-#    - NumPy (also runtime; e.g., `conda install numpy`)
-#    - mpmath (e.g., `conda install mpmath`)
+#    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
+#    - mpmath (avoidable if gau2grid pre-built; e.g., `conda install mpmath`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
