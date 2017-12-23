@@ -2984,9 +2984,10 @@ class LibmintsMolecule(object):
         """
         return self.PYsymmetry_from_input
 
-    def symmetrize(self):
+    def symmetrize(self, tol=None):
         """Force the molecule to have the symmetry specified in pg.
-        This is to handle noise coming in from optking.
+        This is to handle noise coming in from optking.  Exception is thrown if
+        atoms cannot be mapped within tol(erance).
 
         """
         #raise FeatureNotImplemented('Molecule::symmetrize')  # FINAL SYMM
@@ -2994,7 +2995,11 @@ class LibmintsMolecule(object):
         ct = self.point_group().char_table()
 
         # Obtain atom mapping of atom * symm op to atom
-        atom_map = compute_atom_map(self)
+        # Allow compute_atom_map() to use its own default, if not specified here.
+        if tol is not None:
+            atom_map = compute_atom_map(self, tol)
+        else:
+            atom_map = compute_atom_map(self)
 
         # Symmetrize the molecule to remove any noise
         for at in range(self.natom()):
@@ -3248,7 +3253,7 @@ def equal_but_for_row_order(mat, rhs, tol=DEFAULT_SYM_TOL):
         return True
 
 
-def compute_atom_map(mol):
+def compute_atom_map(mol, tol=0.05):
     """Computes atom mappings during symmetry operations. Useful in
     generating SO information and Cartesian displacement SALCs.
     param mol Molecule to form mapping matrix from.
@@ -3281,7 +3286,7 @@ def compute_atom_map(mol):
                 for jj in range(3):
                     np3[ii] += so[ii][jj] * ac[jj]
 
-            atom_map[i][g] = mol.atom_at_position(np3, 0.05)
+            atom_map[i][g] = mol.atom_at_position(np3, tol)
             if atom_map[i][g] < 0:
                 print("""  Molecule:\n""")
                 mol.print_out()
