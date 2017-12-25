@@ -3050,6 +3050,9 @@ class LibmintsMolecule(object):
                     return False
         return True
 
+    # provide a more transparent name for this utility
+    is_symmetric = valid_atom_map
+
     #def valid_atom_map(self, tol=0.01):
     #    """Check if current geometry fits current point group
 
