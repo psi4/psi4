@@ -3053,6 +3053,13 @@ class LibmintsMolecule(object):
     # provide a more transparent name for this utility
     is_symmetric = valid_atom_map
 
+    # Test a set of xyz coordinates to see if they satisfy the symmetry operations
+    # of the current molecule.
+    def is_XYZ_symmetric(self, XYZ, tol=0.01):
+        testmol = self.clone()
+        testmol.set_geometry(XYZ)
+        return testmol.is_symmetric(tol)
+
     #def valid_atom_map(self, tol=0.01):
     #    """Check if current geometry fits current point group
 
