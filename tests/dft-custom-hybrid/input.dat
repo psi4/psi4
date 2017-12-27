@@ -28,7 +28,6 @@ set dft_block_scheme naive
 set scf_type direct
 
 
-
 edft = energy('pw6b95')
 compare_values(-129.039641602003, edft, 4, 'Ne: PW6B95')   
 clean()
@@ -49,11 +48,11 @@ compare_values(-128.695398806080, edft, 4, 'Ne: PBEh3c')
 clean()
 
 
-#edft = energy('wpbe')
-#compare_values(, edft, 5, 'Ne: wPBE')   
-#clean()
 #edft = energy('b5050lyp')
 #compare_values(, edft, 5, 'Ne: B5050LYP')   
+#clean()
+#edft = energy('wpbe')
+#compare_values(, edft, 5, 'Ne: wPBE')   
 #clean()
 #edft = energy('wpbe0')
 #compare_values(, edft, 5, 'Ne: wPBE0')   
