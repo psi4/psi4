@@ -386,7 +386,6 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 def run_sf_sapt(name, **kwargs):
     optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'],
                                    ['SCF', 'REFERENCE'],
-                                   ['SCF', 'DFT_FUNCTIONAL'],
                                    ['SCF', 'DFT_GRAC_SHIFT'],
                                    ['SCF', 'SAVE_JK'])
 
