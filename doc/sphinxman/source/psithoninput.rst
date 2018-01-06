@@ -96,7 +96,9 @@ to |PSIfour|::
     
     memory 2000 MB
     
-    memory 2000000 KB
+    memory 2000000 kB
+
+Please note that memory can be specified both in IEC binary units (1 KiB = 1024 bytes) and SI units (1 kB = 1000 bytes). |PSIfour| recognizes and obeys both of them correctly.
 
 One convenient way to override the |PSIfour| default memory is to place a
 memory command in the |psirc| file (Sec. :ref:`sec:psirc`). For example,
