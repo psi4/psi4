@@ -100,6 +100,13 @@ to |PSIfour|::
 
 Please note that memory can be specified both in IEC binary units (1 KiB = 1024 bytes) and SI units (1 kB = 1000 bytes). |PSIfour| recognizes and obeys both of them correctly. The units are not case sensitive (Kb and KB are equivalent to kB).
 
+By default, |PSIfour| performs a "sanity check" when parsing Psithon input files, enforcing a minimum memory requirement of 250 MiB. While it is generally not recomennded to do so, expert users can bypass this check by directly setting the number of bytes availble to |PSIfour|::
+
+    # setting available memory to 2 MB
+    set_memory_bytes(2000000)
+    
+Please note that this memory setting only governs the maximal memory usage of the major data structures and actual total memory usage is slightly higher. This is usually a negligible, except when setting tiny memory allowances.
+
 One convenient way to override the |PSIfour| default memory is to place a
 memory command in the |psirc| file (Sec. :ref:`sec:psirc`). For example,
 the following makes the default memory 2 GB. ::
