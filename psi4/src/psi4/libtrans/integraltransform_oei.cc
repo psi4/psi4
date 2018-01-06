@@ -86,7 +86,7 @@ void IntegralTransform::transform_T_plus_V(const std::shared_ptr<MOSpace> s1, co
  * 0. labels[0] is the AO integrals label,
  * 1. labels[1] is the MO integrals label, for the restricted case
  * 2. labels[2] is the alpha MO integrals label, for the unrestricted case
- * 3. labels[3] is the alpha MO integrals label, for the unrestricted case
+ * 3. labels[3] is the beta MO integrals label, for the unrestricted case
  */
 void IntegralTransform::transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
                                       std::array<std::string, 4> labels) {
