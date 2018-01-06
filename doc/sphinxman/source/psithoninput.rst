@@ -84,7 +84,7 @@ PsiAPI mode, access as, *e.g.*, ``psi4.constants.h``.
 Memory Specification
 ====================
 
-By default, |PSIfour| assumes that 512 MiB of memory are available. While this is
+By default, |PSIfour| assumes that 500 MiB of memory are available. While this is
 enough for many computations, many of the algorithms will perform better if
 more is available. To specify memory, the ``memory`` keyword should be used. The following
 lines are all equivalent methods for specifying that 2 GB of RAM is available
