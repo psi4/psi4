@@ -29,9 +29,11 @@
 from __future__ import division
 import numpy as np
 from datetime import datetime
+from difflib import unified_diff
 from uuid import uuid4
 from .exceptions import *
 from psi4.driver import constants
+from psi4.driver.p4util.util import compare_arrays
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
 
@@ -207,3 +209,28 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             footer += 'UUID {}\n'.format(uuid4())
             intdump.write(footer)
     core.print_out('Done generating {} with integrals in FCIDUMP format.'.format(fname))
+
+
+def compare_fcidumps(expected, computed, label):
+    """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
+    when value *computed* matches value *expected*.
+    Performs a system exit on failure. Used in input files in the test suite.
+    """
+    # Grab expected header and integrals
+    with open(expected) as ref_dump:
+        ref_header = [next(ref_dump) for x in range(7)]
+    ref_intdump = np.loadtxt(expected, skiprows=7)
+    # Grab computed header and integrals
+    with open(computed) as dump:
+        header = [next(dump) for x in range(7)]
+    intdump = np.loadtxt(computed, skiprows=7)
+
+    # Compare headers
+    header_diff = list(unified_diff(ref_header, header, fromfile=expected, tofile=computed))
+    if header_diff:
+        message = ("\tComputed FCIDUMP file header does not match expected header.\n")
+        for l in header_diff:
+            message += l
+        raise TestComparisonError(message)
+    # Compare integrals
+    compare_arrays(ref_intdump, intdump, 10, label)

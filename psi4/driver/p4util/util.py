@@ -33,8 +33,6 @@ import sys
 import os
 import math
 import numpy as np
-from datetime import datetime
-from uuid import uuid4
 from .exceptions import *
 
 
