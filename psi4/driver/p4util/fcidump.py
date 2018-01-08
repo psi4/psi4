@@ -208,7 +208,7 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             footer = 'Generated on {} using Psi4 {}\n'.format(time_string, core.version())
             footer += 'UUID {}\n'.format(uuid4())
             intdump.write(footer)
-    core.print_out('Done generating {} with integrals in FCIDUMP format.'.format(fname))
+    core.print_out('Done generating {} with integrals in FCIDUMP format.\n'.format(fname))
 
 
 def compare_fcidumps(expected, computed, label):
