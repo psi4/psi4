@@ -1,0 +1,13 @@
+molecule ne { 
+   Ne  0  0  0
+}
+
+set {
+  basis 6-311g
+  scf_type pk
+}
+
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+fcidump(scf_wfn, fname='Ne.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
+
+compare_fcidumps('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 'Ne, 6-311g, integrals in FCIDUMP format')  # TEST
