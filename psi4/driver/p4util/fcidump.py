@@ -146,12 +146,9 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                iorb = 0
-                eps_a = wfn.epsilon_a().get_block(mo_slice).to_array()
-                for h, block in enumerate(eps_a):
-                    for idx, x in np.ndenumerate(block):
-                        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0))
-                        iorb += 1
+                eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(),
+                                  mo_idx)
+                intdump.write(eigs_dump)
         else:
             PSIF_MO_A_FZC = 'MO-basis Alpha Frozen-Core Oper'
             moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
@@ -183,17 +180,11 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                iorb = 0
-                eps_a = wfn.epsilon_a().get_block(mo_slice).to_array()
-                for h, block in enumerate(eps_a):
-                    for idx, x in np.ndenumerate(block):
-                        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, alpha_mo_idx(iorb), 0, 0, 0))
-                        iorb += 1
-                eps_b = wfn.epsilon_b().get_block(mo_slice).to_array()
-                for h, block in enumerate(eps_b):
-                    for idx, x in np.ndenumerate(block):
-                        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, beta_mo_idx(iorb), 0, 0, 0))
-                        iorb += 1
+                alpha_eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(),
+                                  alpha_mo_idx)
+                beta_eigs_dump = write_eigenvalues(wfn.epsilon_b().get_block(mo_slice).to_array(),
+                                  beta_mo_idx)
+                intdump.write(alpha_eigs_dump + beta_eigs_dump)
         # Dipole integrals
         #core.print_out('Writing dipole moment OEI in FCIDUMP format to ' + fname + '\n')
         # Traceless quadrupole integrals
@@ -209,6 +200,18 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             footer += 'UUID {}\n'.format(uuid4())
             intdump.write(footer)
     core.print_out('Done generating {} with integrals in FCIDUMP format.\n'.format(fname))
+
+
+def write_eigenvalues(eigs, mo_idx):
+    """Prepare multi-line string with one-particle eigenvalues to be written to the FCIDUMP file.
+    """
+    eigs_dump = ''
+    iorb = 0
+    for h, block in enumerate(eigs):
+        for idx, x in np.ndenumerate(block):
+            eigs_dump += '{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0)
+            iorb += 1
+    return eigs_dump
 
 
 def compare_fcidumps(expected, computed, label):
