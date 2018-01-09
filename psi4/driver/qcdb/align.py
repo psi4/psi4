@@ -15,9 +15,17 @@ except ImportError:
     pass
 
 
-AlignmentRecipe = collections.namedtuple('AlignmentRecipe', 'shift rotation atommap')
+class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atommap mirror')):
+    """Facilitates the application of the simple transformation operations
+    defined by namedtuple of arrays as recipe to the data structures
+    describing Cartesian molecular coordinates. Attaches functions to
+    transform the geometry, element list, gradient, etc. to the
+    AlignmentRecipe. When `mirror` attribute (defaults to False) active,
+    then molecular system can be substantively changed by procedure.
 
-class AlignmentMill(AlignmentRecipe):
+    """
+    def __new__(cls, shift, rotation, atommap, mirror=False):
+        return super(AlignmentMill, cls).__new__(cls, shift, rotation, atommap, mirror)
 
     def __str__(self, label=''):
         width = 40
@@ -27,6 +35,7 @@ class AlignmentMill(AlignmentRecipe):
         if label:
             text.append('{:^{width}}'.format(label))
         text.append('-' * width)
+        text.append('Mirror:   {}'.format(self.mirror))
         text.append('Atom Map: {}'.format(self.atommap))
         text.append('Shift:    {}'.format(self.shift))
         text.append('Rotation:')
@@ -37,13 +46,19 @@ class AlignmentMill(AlignmentRecipe):
     def align_coordinates(self, geom, reverse=False):
         """suitable for geometry or displaced geometry"""
 
+        algeom = np.copy(geom)
         if reverse:
-            algeom = geom.dot(self.rotation)
+            algeom = algeom.dot(self.rotation)
             algeom = algeom + self.shift
+            if self.mirror:
+                algeom[:, 1] *= -1.
         else:
-            algeom = geom - self.shift
+            if self.mirror:
+                algeom[:, 1] *= -1.
+            algeom = algeom - self.shift
             algeom = algeom.dot(self.rotation)
         algeom = algeom[self.atommap, :]
+        # mirror-wise, rsm/msr == rms/msr
 
         return algeom
 
@@ -55,11 +70,19 @@ class AlignmentMill(AlignmentRecipe):
     def align_vector(self, vec):
         """suitable for vector attached to molecule"""
 
+        # sensible? TODO
+        #alvec = np.copy(vec)
+        #if self.mirror:
+        #    alvec[:, 1] *= -1
         return vec.dot(self.rotation)
 
     def align_gradient(self, grad):
         """suitable for vector system attached to atoms"""
 
+        # sensible? TODO
+        #algrad = np.copy(grad)
+        #if self.mirror:
+        #    algrad[:, 1] *= -1
         algrad = grad.dot(self.rotation)
         algrad = algrad[self.atommap]
 
@@ -178,8 +201,8 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
         First item is RMSD [A] between `rgeom` and the optimally aligned
         geometry computed.
         Second item is a AlignmentMill namedtuple with fields
-        (shift, rotation, atommap) that prescribe the transformation from
-        `cgeom` and the optimally aligned geometry.
+        (shift, rotation, atommap, mirror) that prescribe the transformation
+        from `cgeom` and the optimally aligned geometry.
 
     """
     import time
@@ -492,7 +515,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         try:
             import hungarian
         except ImportError:
-            raise ValidationError("install this repository: https://github.com/loriab/hungarian/tree/py3")
+            raise ValidationError("install this repository: https://github.com/hrldcpr/hungarian (tag v0.3.0)")
         from .util.gph_uno_bipartite import uno
 
     # collect candidate atom orderings from algofn for each of the atom classes,
@@ -658,7 +681,7 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
     Returns
     -------
     tuple
-        AlignmentMill namedtuple with fields (shift, rotation, atommap)
+        AlignmentMill namedtuple with fields (shift, rotation, atommap, mirror)
         as requested: identity, random, or specified.
 
     """
