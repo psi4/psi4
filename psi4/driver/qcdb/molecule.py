@@ -1455,7 +1455,7 @@ class Molecule(LibmintsMolecule):
 
     def B787(concern_mol, ref_mol, do_plot=False, verbose=1,
             atoms_map=False, run_resorting=False, mols_align=False, run_to_completion=False,
-            uno_cutoff=1.e-3):
+            uno_cutoff=1.e-3, run_mirror=False):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
@@ -1482,6 +1482,10 @@ class Molecule(LibmintsMolecule):
             Run the resorting machinery even if unnecessary because `atoms_map=True`.
         uno_cutoff : float, optional
             TODO
+        run_mirror : bool, optional
+            Run alternate geometries potentially allowing best match to `ref_mol`
+            from mirror image of `concern_mol`. Only run if system confirmed to
+            be nonsuperimposable upon mirror reflection.
 
         Returns
         -------
@@ -1489,8 +1493,8 @@ class Molecule(LibmintsMolecule):
             First item is RMSD [A] between `ref_mol` and the optimally aligned
             geometry computed.
             Second item is a AlignmentMill namedtuple with fields
-            (shift, rotation, atommap) that prescribe the transformation from
-            `concern_mol` and the optimally aligned geometry.
+            (shift, rotation, atommap, mirror) that prescribe the transformation
+            from `concern_mol` and the optimally aligned geometry.
             Third item is a crude charge-, multiplicity-, fragment-less Molecule
             at optimally aligned (and atom-ordered) geometry.
 
@@ -1506,6 +1510,7 @@ class Molecule(LibmintsMolecule):
                               do_plot=do_plot, verbose=verbose,
                               atoms_map=atoms_map, run_resorting=run_resorting,
                               mols_align=mols_align, run_to_completion=run_to_completion,
+                              run_mirror=run_mirror,
                               uno_cutoff=uno_cutoff)
 
         ageom, amass, aelem, aelez, auniq = solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
@@ -1526,8 +1531,8 @@ class Molecule(LibmintsMolecule):
 
         return rmsd, solution, amol
 
-    def scramble(ref_mol, do_shift=True, do_rotate=True, do_resort=True, deflection=1.0, do_plot=False,
-             run_to_completion=False, run_resorting=False, verbose=1):
+    def scramble(ref_mol, do_shift=True, do_rotate=True, do_resort=True, deflection=1.0, do_mirror=False,
+            do_plot=False, run_to_completion=False, run_resorting=False, verbose=1):
         """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
         checking that the aligner returns the opposite transformation.
 
@@ -1548,6 +1553,8 @@ class Molecule(LibmintsMolecule):
         deflection : float, optional
             If `do_rotate`, how random a rotation: 0.0 is no change, 0.1 is small
             perturbation, 1.0 is completely random.
+        do_mirror : bool, optional
+            Whether to construct the mirror image structure by inverting y-axis.
         do_plot : bool, optional
             Pops up a mpl plot showing before, after, and ref geometries.
         run_to_completion : bool, optional
@@ -1557,7 +1564,7 @@ class Molecule(LibmintsMolecule):
         run_resorting : bool, optional
             Even if atoms not shuffled, test the resorting machinery.
         verbose : int, optional
-            TODO
+            Print level.
 
         Returns
         -------
@@ -1570,7 +1577,9 @@ class Molecule(LibmintsMolecule):
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         nat = rgeom.shape[0]
 
-        perturbation = compute_scramble(rgeom.shape[0], do_shift=do_shift, do_rotate=do_rotate, do_resort=do_resort, deflection=deflection)
+        perturbation = compute_scramble(rgeom.shape[0], do_shift=do_shift,
+                                        do_rotate=do_rotate, deflection=deflection,
+                                        do_resort=do_resort, do_mirror=do_mirror)
         cgeom, cmass, celem, celez, cuniq = perturbation.align_system(rgeom, rmass, relem, relez, runiq, reverse=True)
         cmol = Molecule.from_arrays(cgeom, cmass, celem, celez,
                                     units='Bohr',
@@ -1579,20 +1588,23 @@ class Molecule(LibmintsMolecule):
                                     fix_com=True,
                                     fix_orientation=True)
 
-        rmsd = np.linalg.norm(cgeom - rgeom) / np.sqrt(nat)
+        rmsd = np.linalg.norm(cgeom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
         if verbose >= 1:
-            print('Start RMSD = {:8.4f}'.format(rmsd))
+            print('Start RMSD = {:8.4f} [A]'.format(rmsd))
 
         rmsd, solution, amol = cmol.B787(ref_mol, do_plot=do_plot,
                                          atoms_map=(not do_resort),
                                          run_resorting=run_resorting,
                                          mols_align=True,
                                          run_to_completion=run_to_completion,
+                                         run_mirror=do_mirror,
                                          verbose=verbose)
 
         compare_integers(True, np.allclose(solution.shift, perturbation.shift, atol=6), 'shifts equiv')
         if not do_resort:
             compare_integers(True, np.allclose(solution.rotation.T, perturbation.rotation), 'rotations transpose')
+        if solution.mirror:
+            compare_integers(True, do_mirror, 'mirror allowed')
 
 
 # Attach methods to qcdb.Molecule class
