@@ -126,7 +126,7 @@ def _pseudo_nre(Zhash, geom):
 
 def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
          atoms_map=False, run_resorting=False, mols_align=False, run_to_completion=False,
-         uno_cutoff=1.e-3):
+         uno_cutoff=1.e-3, run_mirror=False):
     """Use Kabsch algorithm to find best alignment of geometry `cgeom` onto
     `rgeom` while sampling atom mappings restricted by `runiq` and `cuniq`.
 
@@ -161,12 +161,16 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
         Whether ref_mol and concern_mol have identical geometries by eye
         (barring orientation or atom mapping) and expected final RMSD = 0.
         If `True`, procedure is truncated when RMSD condition met, saving time.
-        convcrit at which search for minimium truncates
+        If float, convcrit at which search for minimium truncates.
     run_to_completion : bool, optional
         Run reorderings to completion (past RMSD = 0) even if unnecessary because
         `mols_align=True`. Used to test worst-case timings.
     uno_cutoff : float, optional
         TODO
+    run_mirror : bool, optional
+        Run alternate geometries potentially allowing best match to `rgeom`
+        from mirror image of `cgeom`. Only run if system confirmed to
+        be nonsuperimposable upon mirror reflection.
 
     Returns
     -------
@@ -187,6 +191,16 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
     if sorted(runiq) != sorted(cuniq):
         raise ValidationError("""atom subclasses unequal:\n  {}\n  {}""".format(runiq, cuniq))
     nat = rgeom.shape[0]
+
+    if run_mirror:
+        mcgeom = np.copy(cgeom)
+        mcgeom[:, 1] *= -1.
+        exact = 1.e-6
+        mrmsd, msolution = B787(mcgeom, cgeom, cuniq, cuniq, do_plot=False, verbose=0,
+                                atoms_map=False, mols_align=exact, run_mirror=False, uno_cutoff=0.1)
+        superimposable = mrmsd < exact
+        if verbose >= 1 and superimposable:
+            print('Not testing for mirror-image matches (despite `run_mirror`) since system and its mirror are superimposable')
 
     # initialization
     best_rmsd = 100.  # [A]
@@ -216,7 +230,7 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
     # start_rmsd is nonsense if not atoms_map
     start_rmsd = np.linalg.norm(cgeom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
     if verbose >= 1:
-        print('Start RMSD = {:8.4f} (naive)'.format(start_rmsd))
+        print('Start RMSD = {:8.4f} [A] (naive)'.format(start_rmsd))
 
     def _plausible_atom_orderings_wrapper(runiq, cuniq, rgeom, cgeom, run_resorting, verbose=1, uno_cutoff=1.e-3):
         """Wrapper to _plausible_atom_orderings that bypasses it (`run_resorting=False`) when
@@ -237,7 +251,7 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
         orrmsd, RR, TT = kabsch_align(rgeom, cgeom[npordd, :], weight=None)
         orrmsd = np.around(orrmsd, decimals=8)
 
-        temp_solution = AlignmentMill(TT, RR, npordd)
+        temp_solution = AlignmentMill(TT, RR, npordd, False)
         tgeom = temp_solution.align_coordinates(cgeom, reverse=False)
         if verbose >= 4:
             print('temp geom diff\n', tgeom - rgeom)
@@ -250,12 +264,40 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
             best_rmsd = temp_rmsd
             hold_solution = temp_solution
             if verbose >= 1:
-                print('<<<  trial {:8} {} yields RMSD {}  >>>'.format(ocount, npordd, temp_rmsd))
+                print('<<<  trial {:8}  {} yields RMSD {}  >>>'.format(ocount, npordd, temp_rmsd))
             if not run_to_completion and best_rmsd < a_convergence:
                 break
         else:
             if verbose >= 3:
-                print('     trial {:8} {} yields RMSD {}'.format(ocount, npordd, temp_rmsd))
+                print('     trial {:8}  {} yields RMSD {}'.format(ocount, npordd, temp_rmsd))
+
+        if run_mirror and not superimposable:
+            t1 = time.time()
+            ocount += 1
+            icgeom = np.copy(cgeom)
+            icgeom[:, 1] *= -1.
+            orrmsd, RR, TT = kabsch_align(rgeom, icgeom[npordd, :], weight=None)
+            orrmsd = np.around(orrmsd, decimals=8)
+
+            temp_solution = AlignmentMill(TT, RR, npordd, True)
+            tgeom = temp_solution.align_coordinates(cgeom, reverse=False)
+            if verbose >= 4:
+                print('temp geom diff\n', tgeom - rgeom)
+            temp_rmsd = np.linalg.norm(tgeom - rgeom) * psi_bohr2angstroms / np.sqrt(rgeom.shape[0])
+            temp_rmsd = np.around(temp_rmsd, decimals=8)
+            t2 = time.time()
+            tc += t2 - t1
+
+            if temp_rmsd < best_rmsd:
+                best_rmsd = temp_rmsd
+                hold_solution = temp_solution
+                if verbose >= 1:
+                    print('<<<  trial {:8}m {} yields RMSD {}  >>>'.format(ocount-1, npordd, temp_rmsd))
+                if not run_to_completion and best_rmsd < a_convergence:
+                    break
+            else:
+                if verbose >= 3:
+                    print('     trial {:8}m {} yields RMSD {}'.format(ocount-1, npordd, temp_rmsd))
 
     t3 = time.time()
     if verbose >= 1:
@@ -263,13 +305,13 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
         print('Hungarian time [s] for atom ordering: {:.3}'.format(t3-t0-tc))
         print('Kabsch time [s] for mol alignment:    {:.3}'.format(tc))
 
-    #ageom, amass, aelem, aelez, auniq = hold_solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
     ageom, auniq = hold_solution.align_mini_system(cgeom, cuniq, reverse=False)
     final_rmsd = np.linalg.norm(ageom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
     assert(abs(best_rmsd - final_rmsd) < 1.e-3)
 
     if verbose >=1:
-        print('Final RMSD = {:8.4f}'.format(final_rmsd))
+        print('Final RMSD = {:8.4f} [A]'.format(final_rmsd))
+        print('Mirror match:', hold_solution.mirror)
         print(hold_solution)
 
 
@@ -287,7 +329,7 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
 
     # sanity checks
     compare_values(_pseudo_nre(cuniq, cgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE uncorrupted')
-    if mols_align:
+    if mols_align is True:
         compare_values(_pseudo_nre(runiq, rgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE matches ref_mol')
         compare_integers(True, np.allclose(rgeom, ageom, atol=4), 'D: concern_mol-->returned_mol geometry matches ref_mol')
         compare_values(0., final_rmsd, 4, 'D: null RMSD')
@@ -589,7 +631,7 @@ def kabsch_quaternion(P, Q):
     return U
 
 
-def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflection=1.0):
+def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflection=1.0, do_mirror=False):
     """Generate a random or directed translation, rotation, and atom shuffling.
 
     Parameters
@@ -609,6 +651,9 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
     deflection : float, optional
         If `do_rotate`, how random a rotation: 0.0 is no change, 0.1 is small
         perturbation, 1.0 is completely random.
+    do_mirror : bool, optional
+        Whether to set mirror reflection instruction. Changes identity of
+        molecule so off by default.
 
     Returns
     -------
@@ -644,7 +689,7 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
         rand_rot3d = np.array(do_rotate)
         assert(rand_rot3d.shape == (3, 3))
 
-    perturbation = AlignmentMill(rand_shift, rand_rot3d, rand_elord)
+    perturbation = AlignmentMill(rand_shift, rand_rot3d, rand_elord, do_mirror)
     print(perturbation)
 
     return perturbation
