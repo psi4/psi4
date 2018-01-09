@@ -31,6 +31,18 @@ H    -0.8103758    2.3643033   -2.0618643
 for trial in range(5):
     s22_12.scramble(do_shift=True, do_rotate=True, do_resort=True, do_plot=False, verbose=0)
 
+chiral = qcdb.Molecule("""
+ C     0.000000     0.000000     0.000000
+Br     0.000000     0.000000     1.949834
+ F     1.261262     0.000000    -0.451181
+Cl    -0.845465     1.497406    -0.341118
+ H    -0.524489    -0.897662    -0.376047
+""")
+
+chiral.scramble(do_shift=True, do_rotate=True, do_resort=True, do_plot=False, verbose=0, do_mirror=False)
+for trial in range(5):
+    chiral.scramble(do_shift=True, do_rotate=True, do_resort=True, do_plot=False, verbose=0, do_mirror=True)
+
 
 trop_cs = qcdb.Molecule("""
      C        -3.19247825     2.43488661     0.00000000
