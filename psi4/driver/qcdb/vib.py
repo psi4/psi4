@@ -48,7 +48,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
                     print('\tdif: Different, inspect arrays')
 
     if tol >= 1.0:
-        tol = 10 ** -tol
+        tol = 10. ** -tol
 
     if forgive is None:
         forgive = []
@@ -69,12 +69,13 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             same = np.allclose(eenc, ccnc, atol=tol)
             print_stuff(asp=asp, same=same, ref=eenc, val=ccnc, space='\n')
 
-        elif asp in ['gamma']:
+        elif asp in ['gamma', 'TRV']:
             same = all([computed[asp].data[idx] == val for idx, val in enumerate(expected[asp].data)])
             print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
 
         else:
-            same = np.allclose(expected[asp].data, computed[asp].data, atol=tol)
+            same = np.allclose(expected[asp].data, computed[asp].data, atol=tol) and \
+                   (expected[asp].data.shape == computed[asp].data.shape)
             print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
 
         if asp not in forgive:
@@ -143,7 +144,7 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
     Parameters
     ----------
     vibinfo : dict of VibrationAspect
-        Holds result of vibrational analysis
+        Holds results of vibrational analysis.
     molinfo
         TODO
     standalone : bool, optional
@@ -427,7 +428,7 @@ def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
 
     # degeneracies
     ufreq, uinv, ucts = np.unique(np.around(frequency_cm_1, 2), return_inverse=True, return_counts=True)
-    vibinfo['degeneracy'] = ucts[uinv]
+    vibinfo['degeneracy'] = VibrationAspect('degeneracy', '', ucts[uinv], '')
 
     # look among the symmetry subspaces h for one to which the normco
     #   of vib does *not* add an extra dof to the vector space
@@ -531,8 +532,8 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
     ----------
     vibinfo : dict of VibrationAspect
         Results of a Hessian solution.
-    atom_lbl : list of str
-        Atomic symbols for printing.
+    atom_lbl : list of str, optional
+        Atomic symbols for printing. If None, integers used.
     normco : str, optional
         Which normal coordinate definition to print (reduced mass, etc. unaffected by this parameter).
         Must be `q` [a0 u^1/2], the mass-weighted normalized eigenvectors of the Hessian,
@@ -541,7 +542,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
     shortlong : bool, optional
         Whether normal coordinates should be in (Nat, 3) `True` or (Nat * 3, 1) `False` format.
     groupby : int, optional
-        How many normal coordinates per row. Defaults to 3 for shortlong=short and 6 for shortlong=long. Value of `-1` uses one row.
+        How many normal coordinates per row. Defaults to 3/6 for shortlong=T/F. Value of `-1` uses one row.
     prec : int, optional
         Number of decimal places for frequencies, reduced masses, etc.
     ncprec : int, optional
@@ -882,17 +883,41 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     return therminfo, text
 
 
-def filter_nonvib(vibinfo):
-    """Returns copy of input dictionary `vibinfo` with any R, T, or TR vibrations (as labeled in `vibinfo['TRV']`) removed."""
+def filter_nonvib(vibinfo, remove=None):
+    """From a dictionary of VibrationAspect, remove normal coordinates.
 
+    Parameters
+    ----------
+    vibinfo : dict of VibrationAspect
+        Results of Hessian analysis.
+    remove : list of int, optional
+	    0-indexed indices of normal modes to remove from `vibinfo`. If
+	    None, non-vibrations (R, T, or TR as labeled in `vibinfo['TRV']`)
+	    will be removed.
+
+    Returns
+    -------
+    dict of VibrationAspect
+        Copy of input `vibinfo` with the specified modes removed from all
+        dictionary entries.
+
+    Examples
+    --------
+    # after a harmonic analysis, remove first translations and rotations and then all non-A1 vibs
+    >>> allnormco = harmonic_analysis(...)
+    >>> allvibs = filter_nonvib(allnormco)
+    >>> a1vibs = filter_nonvib(allvibs, remove=[i for i, d in enumerate(allvibs['gamma'].data) if d != 'A1'])
+
+    """
     work = {}
-    remove = [idx for idx, dat in enumerate(vibinfo['TRV'].data) if dat != 'V']
-    for asp in vibinfo.keys():
+    if remove is None:
+        remove = [idx for idx, dat in enumerate(vibinfo['TRV'].data) if dat != 'V']
+    for asp, oasp in vibinfo.items():
         if asp in ['q', 'w', 'x']:
             axis = 1
         else:
             axis = 0
-        work[asp] = VibrationAspect('', '', np.delete(vibinfo[asp].data, remove, axis=axis), '')
+        work[asp] = VibrationAspect(oasp.lbl, oasp.unit, np.delete(oasp.data, remove, axis=axis), oasp.comment)
 
     return work
 

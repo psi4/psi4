@@ -1782,8 +1782,8 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None):
 
     if irrep is None:
         therminfo, thermtext = qcdb.vib.thermo(vibinfo,
-                                      T=core.get_option("THERMO", "T"),  # 298.15,
-                                      P=core.get_option("THERMO", "P"),  # 101325.,
+                                      T=core.get_option("THERMO", "T"),  # 298.15
+                                      P=core.get_option("THERMO", "P"),  # 101325.
                                       multiplicity=mol.multiplicity(),
                                       molecular_mass=np.sum(m),
                                       sigma=rsn,
