@@ -155,25 +155,25 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
 
     Parameters
     ----------
-    rgeom : np.array(float)
-        Natom x 3 array of reference/target/unchanged geometry. Assumed [a0]
+    rgeom : ndarray of float
+        (nat, 3) array of reference/target/unchanged geometry. Assumed [a0]
         for RMSD purposes.
-    cgeom : np.array(float)
-        Natom x 3 array of concern/changeable geometry. Assumed [a0] for RMSD
-        purposes. Must have same Natom, units, and atom content as rgeom.
-    runiq : np.array(str)
-        Natom array indicating which rows (atoms) in `rgeom` are shuffleable
+    cgeom : ndarray of float
+        (nat, 3) array of concern/changeable geometry. Assumed [a0] for RMSD
+        purposes. Must have same nat, units, and atom content as rgeom.
+    runiq : ndarray of str
+        (nat,) array indicating which rows (atoms) in `rgeom` are shuffleable
         without changing the molecule. Generally hashes of element symbol and
         mass are used, but could be as simple as ['C', 'H', 'H', 'D', 'H'] for
         monodeuterated methane.
-    cuniq : np.array(str)
-        Natom array indicating which rows (atoms) in `cgeom` are shuffleable.
+    cuniq : ndarray of str
+        (nat,) array indicating which rows (atoms) in `cgeom` are shuffleable.
         See `runiq` for more details. Strings and count in `cuniq` must match
         `runiq`. That is, `sorted(cuniq) == sorted(runiq)`.
     do_plot : bool, optional
         Pops up a mpl plot showing before, after, and ref geometries.
     verbose : int, optional
-        TODO
+        Quantity of printing. 0 to silence.
     atoms_map : bool, optional
         Whether atom1 of rgeom already corresponds to atom1 of cgeom and so on.
         If `True`, no resorting will be run, parameters `runiq` and `cuniq`
@@ -535,14 +535,14 @@ def kabsch_align(rgeom, cgeom, weight=None):
 
     Parameters
     ----------
-    rgeom : np.array(float)
-        Natom x 3 array of reference/target/unchanged geometry. Assumed [a0]
+    rgeom : ndarray of float
+        (nat, 3) array of reference/target/unchanged geometry. Assumed [a0]
         for RMSD purposes.
-    cgeom : np.array(float)
-        Natom x 3 array of concern/changeable geometry. Assumed [a0] for RMSD
+    cgeom : ndarray of float
+        (nat, 3) array of concern/changeable geometry. Assumed [a0] for RMSD
         purposes. Must have same Natom, units, and 1-to-1 atom ordering as rgeom.
-    weight : np.array(float)
-        Natom array of weights applied to `rgeom`. Note that definitions of
+    weight : ndarray of float
+        (nat,) array of weights applied to `rgeom`. Note that definitions of
         weights (nothing to do with atom masses) are several, and I haven't
         seen one yet that can make centroid the center-of-mass and
         also make the RMSD match the usual mass-wtd-RMSD definition.
@@ -551,11 +551,11 @@ def kabsch_align(rgeom, cgeom, weight=None):
 
     Returns
     -------
-    float, np.array, np.array
+    float, ndarray, ndarray
         First item is RMSD [A] between `rgeom` and the optimally aligned
         geometry computed.
-        Second item is 3 x 3 rotation matrix to optimal alignment.
-        Third item is 1 x 3 translation vector [a0] to optimal alignment.
+        Second item is (3, 3) rotation matrix to optimal alignment.
+        Third item is (3,) translation vector [a0] to optimal alignment.
 
     Sources
     -------
