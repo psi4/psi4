@@ -92,15 +92,15 @@ def hessian_symmetrize(hess, mol):
 
     Parameters
     ----------
-    hess : np.array
-        (3 * nat x 3 * nat) Hessian array perhaps with jitter unbecoming a symmetric molecule.
+    hess : ndarray of float
+        (3 * nat, 3 * nat) Hessian array perhaps with jitter unbecoming a symmetric molecule.
     mol : qcdb.Molecule
         Molecule at which Hessian computed.
 
     Returns
     -------
-    np.array
-        (3 * nat x 3 * nat) symmetrized Hessian array.
+    ndarray
+        (3 * nat, 3 * nat) symmetrized Hessian array.
 
     """
     ct = mol.point_group().char_table()
@@ -145,8 +145,10 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
     ----------
     vibinfo : dict of VibrationAspect
         Holds results of vibrational analysis.
-    molinfo
-        TODO
+    atom_symbol : array-like of str
+        (nat,) element symbols for geometry of vibrational analysis.
+    geom : array-like of float
+        (nat, 3) geometry of vibrational analysis [a0].
     standalone : bool, optional
         Whether returned string prefixed "[Molden Format]" for standalone rather than append.
 
@@ -229,7 +231,7 @@ def _check_degen_modes(arr, freq, verbose=1):
     return arr2
 
 
-def _phase_cols_to_max_element(arr, tol=1.0e-2, verbose=1):
+def _phase_cols_to_max_element(arr, tol=1.e-2, verbose=1):
     """Returns copy of 2D `arr` scaled such that, within cols, max(fabs)
     element is positive. If max(fabs) is pos/neg pair, scales so first
     element (within `tol`) is positive.
@@ -264,58 +266,58 @@ def _phase_cols_to_max_element(arr, tol=1.0e-2, verbose=1):
 
 
 
-def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
+def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
     """Like so much other Psi4 goodness, originally by @andysim
 
     Parameters
     ----------
-    nmwhess_in : np.array
-        3*nat x 3*nat non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
-    geom : np.array
-        nat x 3 geometry [a0] at which Hessian computed.
-    mass : np.array
-        nat [u] atomic masses.
+    hess : ndarray of float
+        (3*nat, 3*nat) non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
+    geom : ndarray of float
+        (nat, 3) geometry [a0] at which Hessian computed.
+    mass : ndarray of float
+        (nat,) atomic masses [u].
     basisset : psi4.core.BasisSet
-        for SALCs
+        Basis set object (can be dummy, e.g., STO-3G) for SALCs.
     irrep_labels : list of str
         Irreducible representation labels.
 
     Returns
     -------
     dict, text
-        Returns dictionary of VibrationAspect objects (fields: lbl unit data comment)
-        Also returns text suitable for printing
+        Returns dictionary of VibrationAspect objects (fields: lbl unit data comment).
+        Also returns text suitable for printing.
 
-    .. _`table:vibinfo`:
+    .. _`table:vibaspectinfo`:
 
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | key           | description (lbl & comment)                | units     | data (real/imaginary modes)                          |
     +===============+============================================+===========+======================================================+
-    | omega         | frequency                                  | cm^-1     | np.array(ndof) complex (real/imag)                   |
+    | omega         | frequency                                  | cm^-1     | nd.array(ndof) complex (real/imag)                   |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | q             | normal mode, normalized mass-weighted      | a0 u^1/2  | np.array(ndof, ndof) float                           |
+    | q             | normal mode, normalized mass-weighted      | a0 u^1/2  | ndarray(ndof, ndof) float                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | w             | normal mode, un-mass-weighted              | a0        | np.array(ndof, ndof) float                           |
+    | w             | normal mode, un-mass-weighted              | a0        | ndarray(ndof, ndof) float                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | x             | normal mode, normalized un-mass-weighted   | a0        | np.array(ndof, ndof) float                           |
+    | x             | normal mode, normalized un-mass-weighted   | a0        | ndarray(ndof, ndof) float                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | degeneracy    | degree of degeneracy                       |           | np.array(ndof) int                                   |
+    | degeneracy    | degree of degeneracy                       |           | ndarray(ndof) int                                    |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | TRV           | translation/rotation/vibration             |           | np.array(ndof) str 'TR' or 'V' or '-' for partial    |
+    | TRV           | translation/rotation/vibration             |           | ndarray(ndof) str 'TR' or 'V' or '-' for partial     |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | gamma         | irreducible representation                 |           | np.array(ndof) str irrep or None if unclassifiable   |
+    | gamma         | irreducible representation                 |           | ndarray(ndof) str irrep or None if unclassifiable    |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | mu            | reduced mass                               | u         | np.array(ndof) float (+/+)                           |
+    | mu            | reduced mass                               | u         | ndarray(ndof) float (+/+)                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | k             | force constant                             | mDyne/A   | np.array(ndof) float (+/-)                           |
+    | k             | force constant                             | mDyne/A   | ndarray(ndof) float (+/-)                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | DQ0           | RMS deviation v=0                          | a0 u^1/2  | np.array(ndof) float (+/0)                           |
+    | DQ0           | RMS deviation v=0                          | a0 u^1/2  | ndarray(ndof) float (+/0)                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | Qtp0          | Turning point v=0                          | a0 u^1/2  | np.array(ndof) float (+/0)                           |
+    | Qtp0          | Turning point v=0                          | a0 u^1/2  | ndarray(ndof) float (+/0)                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | Xtp0          | Turning point v=0                          | a0        | np.array(ndof) float (+/0)                           |
+    | Xtp0          | Turning point v=0                          | a0        | ndarray(ndof) float (+/0)                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
-    | theta_vib     | char temp                                  | K         | np.array(ndof) float (+/0)                           |
+    | theta_vib     | char temp                                  | K         | ndarray(ndof) float (+/0)                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
 
     Examples
@@ -329,11 +331,11 @@ def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
     """
     from psi4 import core
 
-    if (mass.shape[0] == geom.shape[0] == (nmwhess_in.shape[0] // 3) == (nmwhess_in.shape[1] // 3)) and (geom.shape[1] == 3):
+    if (mass.shape[0] == geom.shape[0] == (hess.shape[0] // 3) == (hess.shape[1] // 3)) and (geom.shape[1] == 3):
             pass
     else:
         raise ValidationError("""Dimension mismatch among mass ({}), geometry ({}), and Hessian ({})""".format(
-            mass.shape, geom.shape, nmwhess_in.shape))
+            mass.shape, geom.shape, hess.shape))
 
     def mat_symm_info(a, atol=1e-14, lbl='array', stol=None):
         import numpy as np
@@ -362,7 +364,7 @@ def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
     else:
         nrt_expected = 6
 
-    nmwhess = nmwhess_in.copy()
+    nmwhess = hess.copy()
     text.append(mat_symm_info(nmwhess, lbl='non-mass-weighted Hessian') + ' (0)')
 
     # get SALC object with trans & rot projected
@@ -516,6 +518,10 @@ def harmonic_analysis(nmwhess_in, geom, mass, basisset, irrep_labels):
 
 
 def _format_omega(omega, decimals):
+    """Return complex frequencies in `omega` into strings showing only real or imag ("i"-labeled)
+    to `decimals` precision.
+
+    """
     freqs = []
     for fr in omega:
         if fr.imag > fr.real:
@@ -534,13 +540,13 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         Results of a Hessian solution.
     atom_lbl : list of str, optional
         Atomic symbols for printing. If None, integers used.
-    normco : str, optional
+    normco : {'q', 'w', 'x'}, optional
         Which normal coordinate definition to print (reduced mass, etc. unaffected by this parameter).
         Must be `q` [a0 u^1/2], the mass-weighted normalized eigenvectors of the Hessian,
                 `w` [a0], the un-mass-weighted (Cartesian) of q, or
                 `x` [a0], the normalized w.
     shortlong : bool, optional
-        Whether normal coordinates should be in (Nat, 3) `True` or (Nat * 3, 1) `False` format.
+        Whether normal coordinates should be in (nat, 3) `True` or (nat * 3, 1) `False` format.
     groupby : int, optional
         How many normal coordinates per row. Defaults to 3/6 for shortlong=T/F. Value of `-1` uses one row.
     prec : int, optional
@@ -700,8 +706,8 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
         Mass in [u] of molecule under analysis.
     multiplicity: int
         Spin multiplicity of molecule under analysis.
-    rot_const : np.array of shape (3, ) of floats
-        Rotational constants in [cm^-1] of molecule under analysis.
+    rot_const : ndarray of floats
+        (3,) rotational constants in [cm^-1] of molecule under analysis.
     sigma : int
         The rotational or external symmetry number determined from the point group.
     rotor_type : str
@@ -788,7 +794,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
     # convert to atomic units
     for term in ['elec', 'trans', 'rot', 'vib']:
-        # terms above are unitless (S, Cv, Cp) or in units of temperature (ZPE, E, H, G) as expressions are divided by R
+        # terms above are unitless (S, Cv, Cp) or in units of temperature (ZPE, E, H, G) as expressions are divided by R.
         # R [Eh/K], computed as below, slightly diff in 7th sigfig from 3.1668114e-6 (k_B in [Eh/K])
         #    value listed https://en.wikipedia.org/wiki/Boltzmann_constant
         uconv_R_EhK = psi_R / psi_hartree2kJmol
@@ -923,7 +929,7 @@ def filter_nonvib(vibinfo, remove=None):
 
 
 def filter_omega_to_real(omega):
-    """Returns np.array (float) of `omega` (complex) where imaginary entries are converted to negative reals."""
+    """Returns ndarray (float) of `omega` (complex) where imaginary entries are converted to negative reals."""
     freqs = []
     for fr in omega:
         if fr.imag > fr.real:
