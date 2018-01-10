@@ -113,7 +113,8 @@ class Molecule(LibmintsMolecule):
             try:
                 infile = open(xyzfilename, 'r')
             except IOError:
-                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" % (xyzfilename))
+                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" %
+                                      (xyzfilename))
             if os.stat(xyzfilename).st_size == 0:
                 raise ValidationError("""Molecule::init_with_xyz: given filename '%s' is blank.""" % (xyzfilename))
             text = infile.readlines()
@@ -135,7 +136,6 @@ class Molecule(LibmintsMolecule):
                 fileUnits = 'Bohr'
         else:
             raise ValidationError("Molecule::init_with_xyz: Malformed first line\n%s" % (text[0]))
-
 
         # Try to match the second line
         if xyz2.match(text[1]):
@@ -177,9 +177,11 @@ class Molecule(LibmintsMolecule):
                     instance.add_atom(fileAtom, fileX, fileY, fileZ, z2el[fileAtom], z2mass[fileAtom], fileAtom)
 
                 else:
-                    raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d.\n%s:%s" % (i + 3, xyzfilename, text[i + 2]))
+                    raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d.\n%s:%s" %
+                                          (i + 3, xyzfilename, text[i + 2]))
             except IndexError:
-                raise ValidationError("Molecule::init_with_xyz: Expected atom in file at line %d.\n%s" % (i + 3, text[i + 2]))
+                raise ValidationError("Molecule::init_with_xyz: Expected atom in file at line %d.\n%s" % (i + 3,
+                                                                                                          text[i + 2]))
 
         # We need to make 1 fragment with all atoms
         instance.fragments.append([0, fileNatom - 1])
@@ -223,7 +225,8 @@ class Molecule(LibmintsMolecule):
             try:
                 infile = open(xyzfilename, 'r')
             except IOError:
-                raise ValidationError("""Molecule::init_with_mol2: given filename '%s' does not exist.""" % (xyzfilename))
+                raise ValidationError("""Molecule::init_with_mol2: given filename '%s' does not exist.""" %
+                                      (xyzfilename))
             if os.stat(xyzfilename).st_size == 0:
                 raise ValidationError("""Molecule::init_with_mol2: given filename '%s' is blank.""" % (xyzfilename))
             text = infile.readlines()
@@ -288,7 +291,8 @@ class Molecule(LibmintsMolecule):
                     raise ValidationError("Molecule::init_with_mol2: Malformed atom information line %d." % (i + 5))
 
             except IndexError:
-                raise ValidationError("Molecule::init_with_mol2: Expected atom in file at line %d.\n%s" % (i + 5, text[i + 4]))
+                raise ValidationError("Molecule::init_with_mol2: Expected atom in file at line %d.\n%s" %
+                                      (i + 5, text[i + 4]))
 
         # We need to make 1 fragment with all atoms
         instance.fragments.append([0, fileNatom - 1])
@@ -1027,7 +1031,8 @@ class Molecule(LibmintsMolecule):
                 -1.0 * (evecs[0][midx] * cent[0] + evecs[1][midx] * cent[1] + evecs[2][midx] * cent[2])]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])
-            dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] + evecs[2][midx] * evecs[2][midx])
+            dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] +
+                              evecs[2][midx] * evecs[2][midx])
             hessplane = [evecs[0][midx] / dtemp, evecs[1][midx] / dtemp, evecs[2][midx] / dtemp, xplane[3] / dtemp]
             hessplane2 = [xplane[0] / dtemp, xplane[1] / dtemp, xplane[2] / dtemp, xplane[3] / dtemp]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0] H\n' % \
@@ -1251,14 +1256,26 @@ class Molecule(LibmintsMolecule):
         mass = np.asarray([self.mass(at) for at in range(self.natom())])
         elem = np.asarray([self.symbol(at) for at in range(self.natom())])
         elez = np.asarray([self.Z(at) for at in range(self.natom())])
-        uniq = np.asarray([hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
+        uniq = np.asarray(
+            [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
 
         return geom, mass, elem, elez, uniq
 
     @classmethod
-    def from_arrays(cls, geom, mass, elem, elez, elbl=None, charge=None, multiplicity=None,
-                    name=None, units='Angstroms', fix_com=False, fix_orientation=False, fix_symmetry=None,
-                    fragments=None): #, fragment_types=None, fragment_charges=None, fragment_multiplicities=None)
+    def from_arrays(cls,
+                    geom,
+                    mass,
+                    elem,
+                    elez,
+                    elbl=None,
+                    charge=None,
+                    multiplicity=None,
+                    name=None,
+                    units='Angstroms',
+                    fix_com=False,
+                    fix_orientation=False,
+                    fix_symmetry=None,
+                    fragments=None):  #, fragment_types=None, fragment_charges=None, fragment_multiplicities=None)
 
         # TODO not handled: elbl, fragment_*, validation of chgmult overall vs frag
 
@@ -1291,7 +1308,7 @@ class Molecule(LibmintsMolecule):
         else:
             frag = fragments
             frag = np.insert(frag, 0, 0)
-        frpr = [[frag[ifr], fr-1] for ifr, fr in enumerate(frag[1:])]
+        frpr = [[frag[ifr], fr - 1] for ifr, fr in enumerate(frag[1:])]
         frtp = ['Real'] * len(frag)
         frcg = [0] * len(frag)
         frmp = [1] * len(frag)
@@ -1364,8 +1381,12 @@ class Molecule(LibmintsMolecule):
         mol.update_geometry()
         return mol
 
-    def BFS(self, seed_atoms=None, bond_threshold=1.20,
-            return_arrays=False, return_molecules=False, return_molecule=False):
+    def BFS(self,
+            seed_atoms=None,
+            bond_threshold=1.20,
+            return_arrays=False,
+            return_molecules=False,
+            return_molecule=False):
         """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
 
         Parameters
@@ -1441,21 +1462,32 @@ class Molecule(LibmintsMolecule):
             outputs.append(ret_mols)
 
         if return_molecule:
-            ret_mol = Molecule.from_arrays(fgeom, fmass, felem, felez,
-                                       units='Bohr',
-                                       charge=self.molecular_charge(),
-                                       multiplicity=self.multiplicity(),
-                                       fix_com=(not self.PYmove_to_com),
-                                       fix_orientation=self.orientation_fixed(),
-                                       fragments=vsplt)
+            ret_mol = Molecule.from_arrays(
+                fgeom,
+                fmass,
+                felem,
+                felez,
+                units='Bohr',
+                charge=self.molecular_charge(),
+                multiplicity=self.multiplicity(),
+                fix_com=(not self.PYmove_to_com),
+                fix_orientation=self.orientation_fixed(),
+                fragments=vsplt)
             outputs.append(ret_mol)
 
         outputs = tuple(outputs)
-        return (frag_pattern,) + outputs[1:]
+        return (frag_pattern, ) + outputs[1:]
 
-    def B787(concern_mol, ref_mol, do_plot=False, verbose=1,
-            atoms_map=False, run_resorting=False, mols_align=False, run_to_completion=False,
-            uno_cutoff=1.e-3, run_mirror=False):
+    def B787(concern_mol,
+             ref_mol,
+             do_plot=False,
+             verbose=1,
+             atoms_map=False,
+             run_resorting=False,
+             mols_align=False,
+             run_to_completion=False,
+             uno_cutoff=1.e-3,
+             run_mirror=False):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
@@ -1506,33 +1538,53 @@ class Molecule(LibmintsMolecule):
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
 
-        rmsd, solution = B787(cgeom, rgeom, cuniq, runiq,
-                              do_plot=do_plot, verbose=verbose,
-                              atoms_map=atoms_map, run_resorting=run_resorting,
-                              mols_align=mols_align, run_to_completion=run_to_completion,
-                              run_mirror=run_mirror,
-                              uno_cutoff=uno_cutoff)
+        rmsd, solution = B787(
+            cgeom,
+            rgeom,
+            cuniq,
+            runiq,
+            do_plot=do_plot,
+            verbose=verbose,
+            atoms_map=atoms_map,
+            run_resorting=run_resorting,
+            mols_align=mols_align,
+            run_to_completion=run_to_completion,
+            run_mirror=run_mirror,
+            uno_cutoff=uno_cutoff)
 
         ageom, amass, aelem, aelez, auniq = solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
-        amol = Molecule.from_arrays(ageom, amass, aelem, aelez,
-                                    units='Bohr',
-                                    charge=concern_mol.molecular_charge(),
-                                    multiplicity=concern_mol.multiplicity(),
-                                    fix_com=True,
-                                    fix_orientation=True)
+        amol = Molecule.from_arrays(
+            ageom,
+            amass,
+            aelem,
+            aelez,
+            units='Bohr',
+            charge=concern_mol.molecular_charge(),
+            multiplicity=concern_mol.multiplicity(),
+            fix_com=True,
+            fix_orientation=True)
 
-        compare_values(concern_mol.nuclear_repulsion_energy(), amol.nuclear_repulsion_energy(), 4,
-            'Q: concern_mol-->returned_mol NRE uncorrupted')
+        compare_values(concern_mol.nuclear_repulsion_energy(),
+                       amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE uncorrupted')
         if mols_align:
-            compare_values(ref_mol.nuclear_repulsion_energy(), amol.nuclear_repulsion_energy(), 4,
-                'Q: concern_mol-->returned_mol NRE matches ref_mol')
-            compare_integers(True, np.allclose(ref_mol.geometry(np_out=True), amol.geometry(np_out=True), atol=4),
-                'Q: concern_mol-->returned_mol geometry matches ref_mol')
+            compare_values(ref_mol.nuclear_repulsion_energy(),
+                           amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE matches ref_mol')
+            compare_integers(True,
+                             np.allclose(ref_mol.geometry(np_out=True), amol.geometry(np_out=True), atol=4),
+                             'Q: concern_mol-->returned_mol geometry matches ref_mol')
 
         return rmsd, solution, amol
 
-    def scramble(ref_mol, do_shift=True, do_rotate=True, do_resort=True, deflection=1.0, do_mirror=False,
-            do_plot=False, run_to_completion=False, run_resorting=False, verbose=1):
+    def scramble(ref_mol,
+                 do_shift=True,
+                 do_rotate=True,
+                 do_resort=True,
+                 deflection=1.0,
+                 do_mirror=False,
+                 do_plot=False,
+                 run_to_completion=False,
+                 run_resorting=False,
+                 verbose=1):
         """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
         checking that the aligner returns the opposite transformation.
 
@@ -1577,28 +1629,38 @@ class Molecule(LibmintsMolecule):
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         nat = rgeom.shape[0]
 
-        perturbation = compute_scramble(rgeom.shape[0], do_shift=do_shift,
-                                        do_rotate=do_rotate, deflection=deflection,
-                                        do_resort=do_resort, do_mirror=do_mirror)
+        perturbation = compute_scramble(
+            rgeom.shape[0],
+            do_shift=do_shift,
+            do_rotate=do_rotate,
+            deflection=deflection,
+            do_resort=do_resort,
+            do_mirror=do_mirror)
         cgeom, cmass, celem, celez, cuniq = perturbation.align_system(rgeom, rmass, relem, relez, runiq, reverse=True)
-        cmol = Molecule.from_arrays(cgeom, cmass, celem, celez,
-                                    units='Bohr',
-                                    charge=ref_mol.molecular_charge(),
-                                    multiplicity=ref_mol.multiplicity(),
-                                    fix_com=True,
-                                    fix_orientation=True)
+        cmol = Molecule.from_arrays(
+            cgeom,
+            cmass,
+            celem,
+            celez,
+            units='Bohr',
+            charge=ref_mol.molecular_charge(),
+            multiplicity=ref_mol.multiplicity(),
+            fix_com=True,
+            fix_orientation=True)
 
         rmsd = np.linalg.norm(cgeom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
         if verbose >= 1:
             print('Start RMSD = {:8.4f} [A]'.format(rmsd))
 
-        rmsd, solution, amol = cmol.B787(ref_mol, do_plot=do_plot,
-                                         atoms_map=(not do_resort),
-                                         run_resorting=run_resorting,
-                                         mols_align=True,
-                                         run_to_completion=run_to_completion,
-                                         run_mirror=do_mirror,
-                                         verbose=verbose)
+        rmsd, solution, amol = cmol.B787(
+            ref_mol,
+            do_plot=do_plot,
+            atoms_map=(not do_resort),
+            run_resorting=run_resorting,
+            mols_align=True,
+            run_to_completion=run_to_completion,
+            run_mirror=do_mirror,
+            verbose=verbose)
 
         compare_integers(True, np.allclose(solution.shift, perturbation.shift, atol=6), 'shifts equiv')
         if not do_resort:

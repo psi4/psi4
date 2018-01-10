@@ -62,9 +62,9 @@ def _formDirected(g, match):
                 d.add_edge(ee[1], ee[0])
         else:
             if g.node[ee[0]]['bipartite'] == 0:
-                d.add_edge(ee[1],ee[0])
+                d.add_edge(ee[1], ee[0])
             else:
-                d.add_edge(ee[0],ee[1])
+                d.add_edge(ee[0], ee[1])
 
     return d
 
@@ -203,7 +203,7 @@ def _enumMaximumMatchingIter(g, match, all_matches, add_e=None):
         if add_e is not None:
             for ii in add_e:
                 new_match.append(ii)
-        
+
         all_matches.append(new_match)
 
         #---------------------Select e---------------------
@@ -218,7 +218,9 @@ def _enumMaximumMatchingIter(g, match, all_matches, add_e=None):
 
         g_minus.remove_edge(e[0], e[1])
 
-        add_e_new = [e,]
+        add_e_new = [
+            e,
+        ]
         if add_e is not None:
             add_e_new.extend(add_e)
 
@@ -250,7 +252,7 @@ def _enumMaximumMatchingIter(g, match, all_matches, add_e=None):
         #-----------------Choose an edge E-----------------
         e = set(match).intersection(set(cycle))
         e = list(e)[0]
-        
+
         #-----------------Form subproblems-----------------
         g_plus = g.copy()
         g_minus = g.copy()
@@ -258,7 +260,9 @@ def _enumMaximumMatchingIter(g, match, all_matches, add_e=None):
         g_plus.remove_node(e[1])
         g_minus.remove_edge(e[0], e[1])
 
-        add_e_new = [e,]
+        add_e_new = [
+            e,
+        ]
         if add_e is not None:
             add_e_new.extend(add_e)
 
@@ -266,7 +270,7 @@ def _enumMaximumMatchingIter(g, match, all_matches, add_e=None):
         all_matches = _enumMaximumMatchingIter(g_plus, match, all_matches, add_e_new)
 
     return all_matches
-    
+
 
 def _enumMaximumMatching2(g):
     """Find all maximum matchings in an undirected bipartite graph `g`.
@@ -402,8 +406,10 @@ def _enumMaximumMatchingIter2(adj, matchadj, all_matches, n1, add_e=None, check_
         g_plus[e[1], :] = 0
         g_minus[e[0], e[1]] = 0
         g_minus[e[1], e[0]] = 0
-        
-        add_e_new = [e,]
+
+        add_e_new = [
+            e,
+        ]
         if add_e is not None:
             add_e_new.extend(add_e)
 
@@ -457,7 +463,9 @@ def _enumMaximumMatchingIter2(adj, matchadj, all_matches, n1, add_e=None, check_
         g_minus[e[0], e[1]] = 0
         g_minus[e[1], e[0]] = 0
 
-        add_e_new = [e,]
+        add_e_new = [
+            e,
+        ]
         if add_e is not None:
             add_e_new.extend(add_e)
 
@@ -482,7 +490,7 @@ def _findCycle(adj, n1):
             return False
         visited.add(v)
         path.append(v)
-        neighbours = sparse.find(adj[v,:] == 1)[1]
+        neighbours = sparse.find(adj[v, :] == 1)[1]
         for nn in neighbours:
             if nn in path or visit(nn):
                 return True
@@ -491,7 +499,7 @@ def _findCycle(adj, n1):
 
     nodes = range(n1)
     result = any(visit(v) for v in nodes)
-    return result,path
+    return result, path
 
 
 def uno(edges, match=None, verbose=1):
@@ -642,8 +650,8 @@ def _check(msg, ans, ref, verbose=1):
             print('Supplied:', a)
 
     try:
-        assert(extra_answers == set())
-        assert(missd_answers == set())
+        assert (extra_answers == set())
+        assert (missd_answers == set())
     except AssertionError as err:
         print(msg, 'failed:')
         if extra_answers != set():
@@ -695,8 +703,8 @@ def example2(alg=1):
 #Match2: [(1, 6), (3, 8), (5, 2), (7, 4)]
 
     for ii in edges:
-        g.add_node(ii[0],bipartite=0)
-        g.add_node(ii[1],bipartite=1)
+        g.add_node(ii[0], bipartite=0)
+        g.add_node(ii[1], bipartite=1)
 
     g.add_edges_from(edges)
     #plotGraph(g)
@@ -721,12 +729,12 @@ def example2(alg=1):
         if ans in ref:
             ref.remove(ans)
         print('Match2:', ans)
-        g_match=nx.Graph()
+        g_match = nx.Graph()
         for ii in mm:
-            g_match.add_edge(ii[0],ii[1])
+            g_match.add_edge(ii[0], ii[1])
         #plotGraph(g_match)
 
-    assert(ref == [])
+    assert (ref == [])
     print('Example 2 passed')
 
 
@@ -752,8 +760,8 @@ def example1(alg=1):
             ]
 
     for ii in edges:
-        g.add_node(ii[0],bipartite=0)
-        g.add_node(ii[1],bipartite=1)
+        g.add_node(ii[0], bipartite=0)
+        g.add_node(ii[1], bipartite=1)
         print('  Node:', ii[0], ii[1])
 
     g.add_edges_from(edges)
@@ -768,14 +776,14 @@ def example1(alg=1):
         ans = [(ii[0][1], ii[1][1]) for ii in mm]
         #print('Match:', mm)
         print('Match2:', sorted(ans))
-        g_match=nx.Graph()
+        g_match = nx.Graph()
         for ii in mm:
-            g_match.add_edge(ii[0],ii[1])
+            g_match.add_edge(ii[0], ii[1])
         #plotGraph(g_match)
 
 
 #-------------Main---------------------------------
-if __name__=='__main__':
+if __name__ == '__main__':
     import time
 
     t0 = time.time()
@@ -797,4 +805,3 @@ if __name__=='__main__':
     print('ex2 alg2:', t4 - t3)
     print('ex3 alg1:', t5 - t4)
     print('ex4 alg1:', t6 - t5)
-

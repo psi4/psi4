@@ -28,13 +28,13 @@ def random_rotation_matrix(deflection=1.0, randnums=None):
 
     """
     if randnums is None:
-        randnums = np.random.uniform(size=(3,))
+        randnums = np.random.uniform(size=(3, ))
 
     theta, phi, z = randnums
 
     # rotation about the pole (Z)
     #   from Wolfram, improved by subtr half so rotation unbiased
-    theta = (theta - 1/2) * deflection * 2 * np.pi
+    theta = (theta - 1 / 2) * deflection * 2 * np.pi
     # direction of pole deflection
     phi = phi * 2 * np.pi
     # magnitude of pole deflection
@@ -46,9 +46,7 @@ def random_rotation_matrix(deflection=1.0, randnums=None):
     # the reflected points will be uniform on the sphere.  Note that V
     # has length sqrt(2) to eliminate the 2 in the Householder matrix.
     r = np.sqrt(z)
-    V = (np.sin(phi) * r,
-         np.cos(phi) * r,
-         np.sqrt(2.0 - z))
+    V = (np.sin(phi) * r, np.cos(phi) * r, np.sqrt(2.0 - z))
 
     st = np.sin(theta)
     ct = np.cos(theta)

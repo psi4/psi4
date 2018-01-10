@@ -24,6 +24,7 @@ class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atom
     then molecular system can be substantively changed by procedure.
 
     """
+
     def __new__(cls, shift, rotation, atommap, mirror=False):
         return super(AlignmentMill, cls).__new__(cls, shift, rotation, atommap, mirror)
 
@@ -41,7 +42,7 @@ class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atom
         text.append('Rotation:')
         text.append('{}'.format(self.rotation))
         text.append('-' * width)
-        return('\n'.join(text))
+        return ('\n'.join(text))
 
     def align_coordinates(self, geom, reverse=False):
         """suitable for geometry or displaced geometry"""
@@ -147,9 +148,18 @@ def _pseudo_nre(Zhash, geom):
 #         1         2         3         4         5         6         7         8         9         10
 
 
-def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
-         atoms_map=False, run_resorting=False, mols_align=False, run_to_completion=False,
-         uno_cutoff=1.e-3, run_mirror=False):
+def B787(cgeom,
+         rgeom,
+         cuniq,
+         runiq,
+         do_plot=False,
+         verbose=1,
+         atoms_map=False,
+         run_resorting=False,
+         mols_align=False,
+         run_to_completion=False,
+         uno_cutoff=1.e-3,
+         run_mirror=False):
     """Use Kabsch algorithm to find best alignment of geometry `cgeom` onto
     `rgeom` while sampling atom mappings restricted by `runiq` and `cuniq`.
 
@@ -219,11 +229,22 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
         mcgeom = np.copy(cgeom)
         mcgeom[:, 1] *= -1.
         exact = 1.e-6
-        mrmsd, msolution = B787(mcgeom, cgeom, cuniq, cuniq, do_plot=False, verbose=0,
-                                atoms_map=False, mols_align=exact, run_mirror=False, uno_cutoff=0.1)
+        mrmsd, msolution = B787(
+            mcgeom,
+            cgeom,
+            cuniq,
+            cuniq,
+            do_plot=False,
+            verbose=0,
+            atoms_map=False,
+            mols_align=exact,
+            run_mirror=False,
+            uno_cutoff=0.1)
         superimposable = mrmsd < exact
         if verbose >= 1 and superimposable:
-            print('Not testing for mirror-image matches (despite `run_mirror`) since system and its mirror are superimposable')
+            print(
+                'Not testing for mirror-image matches (despite `run_mirror`) since system and its mirror are superimposable'
+            )
 
     # initialization
     best_rmsd = 100.  # [A]
@@ -267,7 +288,8 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
 
     t0 = time.time()
     tc = 0.
-    for ordering in _plausible_atom_orderings_wrapper(runiq, cuniq, rgeom, cgeom, run_resorting, verbose=verbose, uno_cutoff=uno_cutoff):
+    for ordering in _plausible_atom_orderings_wrapper(
+            runiq, cuniq, rgeom, cgeom, run_resorting, verbose=verbose, uno_cutoff=uno_cutoff):
         t1 = time.time()
         ocount += 1
         npordd = np.asarray(ordering)
@@ -315,28 +337,27 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
                 best_rmsd = temp_rmsd
                 hold_solution = temp_solution
                 if verbose >= 1:
-                    print('<<<  trial {:8}m {} yields RMSD {}  >>>'.format(ocount-1, npordd, temp_rmsd))
+                    print('<<<  trial {:8}m {} yields RMSD {}  >>>'.format(ocount - 1, npordd, temp_rmsd))
                 if not run_to_completion and best_rmsd < a_convergence:
                     break
             else:
                 if verbose >= 3:
-                    print('     trial {:8}m {} yields RMSD {}'.format(ocount-1, npordd, temp_rmsd))
+                    print('     trial {:8}m {} yields RMSD {}'.format(ocount - 1, npordd, temp_rmsd))
 
     t3 = time.time()
     if verbose >= 1:
-        print('Total time [s] for {:6} iterations: {:.3}'.format(ocount, t3-t0))
-        print('Hungarian time [s] for atom ordering: {:.3}'.format(t3-t0-tc))
+        print('Total time [s] for {:6} iterations: {:.3}'.format(ocount, t3 - t0))
+        print('Hungarian time [s] for atom ordering: {:.3}'.format(t3 - t0 - tc))
         print('Kabsch time [s] for mol alignment:    {:.3}'.format(tc))
 
     ageom, auniq = hold_solution.align_mini_system(cgeom, cuniq, reverse=False)
     final_rmsd = np.linalg.norm(ageom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
-    assert(abs(best_rmsd - final_rmsd) < 1.e-3)
+    assert (abs(best_rmsd - final_rmsd) < 1.e-3)
 
-    if verbose >=1:
+    if verbose >= 1:
         print('Final RMSD = {:8.4f} [A]'.format(final_rmsd))
         print('Mirror match:', hold_solution.mirror)
         print(hold_solution)
-
 
     # final presentation & plotting
     if verbose >= 2:
@@ -345,16 +366,20 @@ def B787(cgeom, rgeom, cuniq, runiq, do_plot=False, verbose=1,
             print(atomfmt2.format(auniq[at][:6], *ageom[at]))
         print('<<<  Aligned Diff:')
         for at, hsh in enumerate(auniq):
-            print(atomfmt2.format(auniq[at][:6], *[ageom[at][i] - rgeom[at][i] for i in range(3)]))
+            print(atomfmt2.format(auniq[at][:6], * [ageom[at][i] - rgeom[at][i] for i in range(3)]))
 
     if do_plot:
         plot_coord(ref=rgeom, cand=ageom, orig=cgeom, comment='Final RMSD = {:8.4f}'.format(final_rmsd))
 
     # sanity checks
-    compare_values(_pseudo_nre(cuniq, cgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE uncorrupted')
+    compare_values(
+        _pseudo_nre(cuniq, cgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE uncorrupted')
     if mols_align is True:
-        compare_values(_pseudo_nre(runiq, rgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE matches ref_mol')
-        compare_integers(True, np.allclose(rgeom, ageom, atol=4), 'D: concern_mol-->returned_mol geometry matches ref_mol')
+        compare_values(
+            _pseudo_nre(runiq, rgeom),
+            _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE matches ref_mol')
+        compare_integers(True,
+                         np.allclose(rgeom, ageom, atol=4), 'D: concern_mol-->returned_mol geometry matches ref_mol')
         compare_values(0., final_rmsd, 4, 'D: null RMSD')
 
     return final_rmsd, hold_solution
@@ -381,9 +406,10 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
     import collections
 
     try:
-        assert(sorted(ref) == sorted(current))
+        assert (sorted(ref) == sorted(current))
     except AssertionError:
-        raise ValidationError("""ref and current can't map to each other.\n""" + 'R:  ' + str(ref) + '\nC:  ' + str(current))
+        raise ValidationError("""ref and current can't map to each other.\n""" + 'R:  ' + str(ref) + '\nC:  ' +
+                              str(current))
 
     where = collections.defaultdict(list)
     for iuq, uq in enumerate(ref):
@@ -402,7 +428,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         `scipy.spatial.distance.cdist(a, b, 'euclidean')`. Returns a.shape[0] x b.shape[0] array.
 
         """
-        assert(a.shape[1] == b.shape[1])
+        assert (a.shape[1] == b.shape[1])
         distm = np.zeros([a.shape[0], b.shape[0]])
         for i in range(a.shape[0]):
             for j in range(b.shape[0]):
@@ -462,7 +488,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         cost = np.zeros((len(cgp), len(rgp)))
         for j in range(cost.shape[1]):
             for i in range(cost.shape[0]):
-                cost[i, j] = (sumCC[i] - sumRR[j]) ** 2
+                cost[i, j] = (sumCC[i] - sumRR[j])**2
         if verbose >= 2:
             print('Cost:\n', cost)
         costcopy = np.copy(cost)  # other one gets manipulated by hungarian call
@@ -476,14 +502,14 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         if verbose >= 2:
             print('Reduced cost:\n', cost)
         if verbose >= 1:
-            print('Hungarian time [s] for space:         {:.3}'.format(t01-t00))
+            print('Hungarian time [s] for space:         {:.3}'.format(t01 - t00))
 
         # final _all_ best matches btwn R & C atoms through Uno algorithm, seeded from Hungarian sol'n
         edges = np.argwhere(cost < uno_cutoff)
         gooduns = uno(edges, ptsCR)
         t02 = time.time()
         if verbose >= 1:
-            print('Uno time [s] for space:               {:.3}'.format(t02-t01))
+            print('Uno time [s] for space:               {:.3}'.format(t02 - t01))
 
         for gu in gooduns:
             gu2 = gu[:]
@@ -577,8 +603,7 @@ def kabsch_align(rgeom, cgeom, weight=None):
     elif isinstance(weight, np.ndarray):
         w = weight
     else:
-        raise ValidationError(
-            """Unrecognized argument type {} for kwarg 'weight'.""".format(type(weight)))
+        raise ValidationError("""Unrecognized argument type {} for kwarg 'weight'.""".format(type(weight)))
 
     R = rgeom
     C = cgeom
@@ -620,36 +645,36 @@ def kabsch_quaternion(P, Q):
     cov = Q.dot(P.T)
 
     # Form the quaternion transformation matrix F
-    F = np.zeros((4,4))
+    F = np.zeros((4, 4))
     # diagonal
-    F[0,0] = cov[0,0] + cov[1,1] + cov[2,2]
-    F[1,1] = cov[0,0] - cov[1,1] - cov[2,2]
-    F[2,2] = -cov[0,0] + cov[1,1] - cov[2,2]
-    F[3,3] = -cov[0,0] - cov[1,1] + cov[2,2]
+    F[0, 0] = cov[0, 0] + cov[1, 1] + cov[2, 2]
+    F[1, 1] = cov[0, 0] - cov[1, 1] - cov[2, 2]
+    F[2, 2] = -cov[0, 0] + cov[1, 1] - cov[2, 2]
+    F[3, 3] = -cov[0, 0] - cov[1, 1] + cov[2, 2]
     # Upper & lower triangle
-    F[1,0] = F[0,1] = cov[1,2] - cov[2,1]
-    F[2,0] = F[0,2] = cov[2,0] - cov[0,2]
-    F[3,0] = F[0,3] = cov[0,1] - cov[1,0]
-    F[2,1] = F[1,2] = cov[0,1] + cov[1,0]
-    F[3,1] = F[1,3] = cov[0,2] + cov[2,0]
-    F[3,2] = F[2,3] = cov[1,2] + cov[2,1]
+    F[1, 0] = F[0, 1] = cov[1, 2] - cov[2, 1]
+    F[2, 0] = F[0, 2] = cov[2, 0] - cov[0, 2]
+    F[3, 0] = F[0, 3] = cov[0, 1] - cov[1, 0]
+    F[2, 1] = F[1, 2] = cov[0, 1] + cov[1, 0]
+    F[3, 1] = F[1, 3] = cov[0, 2] + cov[2, 0]
+    F[3, 2] = F[2, 3] = cov[1, 2] + cov[2, 1]
 
     # Compute ew, ev of F
     ew, ev = np.linalg.eigh(F)
 
     # Construct optimal rotation matrix from leading ev
-    q = ev[:,-1]
-    U = np.zeros((3,3))
+    q = ev[:, -1]
+    U = np.zeros((3, 3))
 
-    U[0,0] = q[0]**2 + q[1]**2 - q[2]**2 - q[3]**2
-    U[0,1] = 2*(q[1]*q[2] - q[0]*q[3])
-    U[0,2] = 2*(q[1]*q[3] + q[0]*q[2])
-    U[1,0] = 2*(q[1]*q[2] + q[0]*q[3])
-    U[1,1] = q[0]**2 - q[1]**2 + q[2]**2 - q[3]**2
-    U[1,2] = 2*(q[2]*q[3] - q[0]*q[1])
-    U[2,0] = 2*(q[1]*q[3] - q[0]*q[2])
-    U[2,1] = 2*(q[2]*q[3] + q[0]*q[1])
-    U[2,2] = q[0]**2 - q[1]**2 - q[2]**2 + q[3]**2
+    U[0, 0] = q[0]**2 + q[1]**2 - q[2]**2 - q[3]**2
+    U[0, 1] = 2 * (q[1] * q[2] - q[0] * q[3])
+    U[0, 2] = 2 * (q[1] * q[3] + q[0] * q[2])
+    U[1, 0] = 2 * (q[1] * q[2] + q[0] * q[3])
+    U[1, 1] = q[0]**2 - q[1]**2 + q[2]**2 - q[3]**2
+    U[1, 2] = 2 * (q[2] * q[3] - q[0] * q[1])
+    U[2, 0] = 2 * (q[1] * q[3] - q[0] * q[2])
+    U[2, 1] = 2 * (q[2] * q[3] + q[0] * q[1])
+    U[2, 2] = q[0]**2 - q[1]**2 - q[2]**2 + q[3]**2
 
     return U
 
@@ -694,15 +719,15 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
         pass
     else:
         rand_elord = np.array(do_resort)
-        assert(rand_elord.shape == (nat,))
+        assert (rand_elord.shape == (nat, ))
 
     if do_shift is True:
-        rand_shift = 6 * np.random.random_sample((3,)) - 3
+        rand_shift = 6 * np.random.random_sample((3, )) - 3
     elif do_shift is False:
-        rand_shift = np.zeros((3,))
+        rand_shift = np.zeros((3, ))
     else:
         rand_shift = np.array(do_shift)
-        assert(rand_shift.shape == (3,))
+        assert (rand_shift.shape == (3, ))
 
     if do_rotate is True:
         rand_rot3d = random_rotation_matrix(deflection=deflection)
@@ -710,7 +735,7 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
         rand_rot3d = np.identity(3)
     else:
         rand_rot3d = np.array(do_rotate)
-        assert(rand_rot3d.shape == (3, 3))
+        assert (rand_rot3d.shape == (3, 3))
 
     perturbation = AlignmentMill(rand_shift, rand_rot3d, rand_elord, do_mirror)
     print(perturbation)

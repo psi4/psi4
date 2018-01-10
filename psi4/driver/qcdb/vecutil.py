@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 r"""File for accessory procedures in the chem module.
 Credit for the libmints vector3 class to Justin M. Turney and
 incremental improvements by other psi4 developers.
@@ -76,7 +75,7 @@ def naivemult(v, u):
 def normalize(v):
     """Compute normalized vector *v*."""
     vmag = norm(v)
-    return [v[i] / vmag  for i in range(len(v))]
+    return [v[i] / vmag for i in range(len(v))]
 
 
 def distance(v, u):
@@ -90,7 +89,7 @@ def cross(v, u):
         raise ValidationError('cross() only defined for vectors of length 3\n')
     return [v[1] * u[2] - v[2] * u[1],
             v[2] * u[0] - v[0] * u[2],
-            v[0] * u[1] - v[1] * u[0]]
+            v[0] * u[1] - v[1] * u[0]]  # yapf: disable
 
 
 def rotate(v, theta, axis):
