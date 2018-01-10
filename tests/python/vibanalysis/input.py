@@ -284,6 +284,7 @@ ref_nh3_vibonly = {
 
     # freq from cfour after proj
     'omega': qcdb.vib.VibrationAspect('', '', np.asarray([760.3060, 1763.7937, 1763.7937, 3639.0750, 3817.6146, 3817.6146]), ''), 
+    'degeneracy': qcdb.vib.VibrationAspect('', '', np.asarray([1, 2, 2, 1, 2, 2]), ''),
     'gamma': qcdb.vib.VibrationAspect('', '', ['A1', 'E', 'E', 'A1', 'E', 'E'], ''),
 
     # from vibsuite after cfour
@@ -750,9 +751,9 @@ def test_psi4_hessian_indep(ref_geom_str, ref_vibonly, geom_str, tol, comparison
 
 #def test_psi4_hessian_new(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
 def test_psi4_hessian(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
-    pmol = psi4.geometry(geom_str)
-    rpmol = psi4.geometry(ref_geom_str)
-    rmsd, mill, aqmol = qcdb.align.B787(rpmol, pmol, atoms_map=True, mols_align=True)
+    qmol = qcdb.Molecule(geom_str)
+    rqmol = qcdb.Molecule(ref_geom_str)
+    rmsd, mill, aqmol = qmol.B787(rqmol, atoms_map=True, mols_align=True)
     apmol = psi4.geometry(aqmol.create_psi4_string_from_molecule())
     
     psi4.core.clean()
