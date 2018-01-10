@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """Module to facilitate quantum chemical computations on chemical
 databases. Contains Molecule class and physical constants from psi4 suite.
 
@@ -46,7 +45,7 @@ from . import cfour
 from . import jajo
 from . import orca
 from .orient import OrientMols
-from .dbwrap import Database, DB4 #DatabaseWrapper  #ReactionDatum, Reagent, Reaction
+from .dbwrap import Database, DB4  #DatabaseWrapper, ReactionDatum, Reagent, Reaction
 from .libmintspointgrp import SymmetryOperation, PointGroup
 from .libmintsbasisset import BasisSet
 from .libmintsmolecule import LibmintsMolecule

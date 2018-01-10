@@ -108,33 +108,32 @@ def _get_covalent_radii(elem):
         'H' : 0.37,                                                                                     'He': 0.30,
         'Li': 1.02, 'Be': 0.27,             'B' : 0.88, 'C' : 0.77, 'O' : 0.73, 'N' : 0.75, 'F' : 0.71, 'Ne': 0.84,
         'Na': 1.02, 'Mg': 0.72,             'Al': 1.30, 'Si': 1.18, 'P' : 1.10, 'S' : 1.03, 'Cl': 0.99, 'Ar': 1.00,
-        'K' : 1.38, 'Ca': 1.00,       
+        'K' : 1.38, 'Ca': 1.00,
                                 'Sc': 0.75, 'Ti': 0.86, 'V' : 0.79, 'Cr': 0.73, 'Mn': 0.67,
                                 'Fe': 0.61, 'Co': 0.64, 'Ni': 0.55, 'Cu': 0.46, 'Zn': 0.60,
                                             'Ga': 1.22, 'Ge': 1.22, 'As': 1.22, 'Se': 1.17, 'Br': 1.14, 'Kr': 1.03,
                                                                                             'I' : 1.33,
-                                                                                                        'X' : 0.00}
-        #'RN': 2.40 / 1.5,  # extrapolation
-        #'H': 1.06 / 1.5,  # Bondi JPC 68 441 (1964)
-        #'SN': 2.16 / 1.5,  # Bondi JPC 68 441 (1964)
-        #'SB': 2.12 / 1.5,  # Bondi JPC 68 441 (1964)
-        #'TE': 2.08 / 1.5,  # Bondi JPC 68 441 (1964)
-        #'XE': 2.05 / 1.5}  # Bondi JPC 68 441 (1964)
+                                                                                                        'X' : 0.00}  # yapf: disable
+    #'RN': 2.40 / 1.5,  # extrapolation
+    #'H': 1.06 / 1.5,  # Bondi JPC 68 441 (1964)
+    #'SN': 2.16 / 1.5,  # Bondi JPC 68 441 (1964)
+    #'SB': 2.12 / 1.5,  # Bondi JPC 68 441 (1964)
+    #'TE': 2.08 / 1.5,  # Bondi JPC 68 441 (1964)
+    #'XE': 2.05 / 1.5}  # Bondi JPC 68 441 (1964)
     nat = elem.shape[0]
     try:
         caps = [el.capitalize() for el in elem]
     except AttributeError:
         caps = [z2el[z].capitalize() for z in elem]
 
-    covrad = np.fromiter(
-        (covalent_radii_lookup[caps[at]] for at in range(nat)), dtype=np.float, count=nat)
+    covrad = np.fromiter((covalent_radii_lookup[caps[at]] for at in range(nat)), dtype=np.float, count=nat)
     return np.divide(covrad, psi_bohr2angstroms)
 
 
 def _get_key(x, y, z, b):
     """Return key string from point values and block resolution"""
 
-    return """{},{},{}""".format(x - x%b, y - y%b, z - z%b)
+    return """{},{},{}""".format(x - x % b, y - y % b, z - z % b)
 
 
 def _distance2(v, u):
@@ -163,7 +162,7 @@ def _get_bond_tree(radii, geom, allblocks, blocksize, bond_threshold):
         for at1 in allblocks[blk]:
             for at2 in atom_list:
                 r2_ij = _distance2(geom[at1], geom[at2])
-                r2_thresh = bond_threshold * (radii[at1] + radii[at2]) ** 2
+                r2_thresh = bond_threshold * (radii[at1] + radii[at2])**2
                 if at1 != at2 and r2_ij <= r2_thresh:
                     if at2 not in bond_tree[at1]:
                         bond_tree[at1].append(at2)
@@ -182,7 +181,7 @@ def _get_neighbor_blocks(block, blocksize, allblocks):
                                 blocksize)
                        for i in range(3)
                        for j in range(3)
-                       for k in range(3)]
+                       for k in range(3)]  # yapf: disable
     active_blocks = list(set(neighbor_blocks) & set(allblocks))
     return active_blocks
 

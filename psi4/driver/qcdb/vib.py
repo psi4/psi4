@@ -14,6 +14,7 @@ VibrationAspect = collections.namedtuple('VibrationAspect', 'lbl unit data comme
 
 LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 
+
 def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, required=None):
     """Compare two dictionaries of VibrationAspect objects. All items in
     `expected` must be present in `computed` and agree to `tol` (outright
@@ -48,7 +49,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
                     print('\tdif: Different, inspect arrays')
 
     if tol >= 1.0:
-        tol = 10. ** -tol
+        tol = 10.**-tol
 
     if forgive is None:
         forgive = []
@@ -137,7 +138,6 @@ def hessian_symmetrize(hess, mol):
     return m_tot
 
 
-
 def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
     """Format vibrational analysis for Molden.
 
@@ -190,6 +190,7 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
         for at in range(nat):
             text += ('   ' + """{:20.10f}""" * 3 + '\n').format(*(vibinfo['x'].data[:, vib].reshape(nat, 3)[at].real))
 
+
 #     text += """\n[INT]\n"""
 #     for vib in active:
 #         text += """1.0\n"""
@@ -218,9 +219,9 @@ def _check_degen_modes(arr, freq, verbose=1):
         #             (sep evec that in this coord sys have diff elements)
         #   & secondarily (2nd-to-last arg) by index of extreme element
         #             (order evec with same elements in diff (xyz) arrangements)
-        idx_sort_wi_degen = np.lexsort((idx_max_elem_each_normco[istart: istart + degree],
-                                            max_elem_each_normco[istart: istart + degree]))
-        idx_vib_reordering[istart: istart+degree] = np.arange(istart, istart+degree)[idx_sort_wi_degen]
+        idx_sort_wi_degen = np.lexsort((idx_max_elem_each_normco[istart:istart + degree],
+                                        max_elem_each_normco[istart:istart + degree]))
+        idx_vib_reordering[istart:istart + degree] = np.arange(istart, istart + degree)[idx_sort_wi_degen]
 
     arr2 = arr[:, idx_vib_reordering]
 
@@ -263,7 +264,6 @@ def _phase_cols_to_max_element(arr, tol=1.e-2, verbose=1):
         print('Negative modes rephased:', ', '.join(rephasing))
 
     return arr2
-
 
 
 def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
@@ -332,7 +332,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
     from psi4 import core
 
     if (mass.shape[0] == geom.shape[0] == (hess.shape[0] // 3) == (hess.shape[1] // 3)) and (geom.shape[1] == 3):
-            pass
+        pass
     else:
         raise ValidationError("""Dimension mismatch among mass ({}), geometry ({}), and Hessian ({})""".format(
             mass.shape, geom.shape, hess.shape))
@@ -344,7 +344,6 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
         herm = np.allclose(a, a.conj().T, atol=atol)
         ivrt = a.shape[0] - np.linalg.matrix_rank(a, tol=stol)
         return """  {:32} Symmetric? {}   Hermitian? {}   Lin Dep Dim? {:2}""".format(lbl + ':', symm, herm, ivrt)
-
 
     def vec_in_space(vec, space, tol=1.0e-4):
         merged = np.vstack((space, vec))
@@ -380,7 +379,8 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
     # form projector of translations and rotations
     TRspace = _get_TR_space(mass, geom, space='TR', tol=LINEAR_A_TOL)
     nrt = TRspace.shape[0]
-    text.append('  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
+    text.append(
+        '  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
 
     P = np.identity(3 * nat)
     for irt in TRspace:
@@ -471,20 +471,20 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
 
     # general conversion factors, LAB II.11
     uconv_K = (psi_h * psi_na * 1.0e21) / (8 * np.pi * np.pi * psi_c)
-    uconv_S = np.sqrt((psi_c * (2 * np.pi * psi_bohr2angstroms) ** 2) / (psi_h * psi_na * 1.0e21))
+    uconv_S = np.sqrt((psi_c * (2 * np.pi * psi_bohr2angstroms)**2) / (psi_h * psi_na * 1.0e21))
 
     # normco & reduced mass, LAB II.14 & II.15
     wL = np.einsum('i,ij->ij', sqrtmmminv, qL)
     vibinfo['w'] = VibrationAspect('normal mode', '[a0]', wL, 'un-mass-weighted')
 
-    reduced_mass_u = np.divide(1.0, np.linalg.norm(wL, axis=0) ** 2)
+    reduced_mass_u = np.divide(1.0, np.linalg.norm(wL, axis=0)**2)
     vibinfo['mu'] = VibrationAspect('reduced mass', '[u]', reduced_mass_u, '')
 
     xL = np.sqrt(reduced_mass_u) * wL
     vibinfo['x'] = VibrationAspect('normal mode', '[a0]', xL, 'normalized un-mass-weighted')
 
     # force constants, LAB II.16 (real compensates for earlier sqrt)
-    uconv_mdyne_a = (0.1 * (2 * np.pi * psi_c) ** 2) / psi_na
+    uconv_mdyne_a = (0.1 * (2 * np.pi * psi_c)**2) / psi_na
     force_constant_mdyne_a = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_mdyne_a
     vibinfo['k'] = VibrationAspect('force constant', '[mDyne/A]', force_constant_mdyne_a, '')
 
@@ -573,7 +573,6 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         else:
             return itertools.izip_longest(*args, fillvalue=fillvalue)
 
-
     if normco not in ['q', 'w', 'x']:
         raise ValidationError("""Requested normal coordinates not among allowed q/w/x: """ + normco)
 
@@ -629,40 +628,50 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
             text += """{:^{width}}{:{colsp}}""".format(val, '', width=width, colsp=colsp)
         text += '\n'
 
-        text += """{:{presp}}{:{prewidth}}""".format('', 'Reduced mass ' + vibinfo['mu'].unit, prewidth=prewidth, presp=presp)
+        text += """{:{presp}}{:{prewidth}}""".format(
+            '', 'Reduced mass ' + vibinfo['mu'].unit, prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['mu'].data[vib], '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(
+                vibinfo['mu'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
-        text += """{:{presp}}{:{prewidth}}""".format('', 'Force const ' + vibinfo['k'].unit, prewidth=prewidth, presp=presp)
+        text += """{:{presp}}{:{prewidth}}""".format(
+            '', 'Force const ' + vibinfo['k'].unit, prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['k'].data[vib], '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(
+                vibinfo['k'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
-        text += """{:{presp}}{:{prewidth}}""".format('', 'Turning point v=0 ' + vibinfo['Xtp0'].unit, prewidth=prewidth, presp=presp)
+        text += """{:{presp}}{:{prewidth}}""".format(
+            '', 'Turning point v=0 ' + vibinfo['Xtp0'].unit, prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['Xtp0'].data[vib], '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(
+                vibinfo['Xtp0'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
-        text += """{:{presp}}{:{prewidth}}""".format('', 'RMS dev v=0 ' + vibinfo['DQ0'].unit, prewidth=prewidth, presp=presp)
+        text += """{:{presp}}{:{prewidth}}""".format(
+            '', 'RMS dev v=0 ' + vibinfo['DQ0'].unit, prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
-            text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['DQ0'].data[vib], '', width=width, prec=prec, colsp=colsp)
+            text += """{:^{width}.{prec}f}{:{colsp}}""".format(
+                vibinfo['DQ0'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
         if 'theta_vib' in vibinfo:
-            text += """{:{presp}}{:{prewidth}}""".format('', 'Char temp ' + vibinfo['theta_vib'].unit, prewidth=prewidth, presp=presp)
+            text += """{:{presp}}{:{prewidth}}""".format(
+                '', 'Char temp ' + vibinfo['theta_vib'].unit, prewidth=prewidth, presp=presp)
             for vib in row:
                 if vib is None:
                     break
-                text += """{:^{width}.{prec}f}{:{colsp}}""".format(vibinfo['theta_vib'].data[vib], '', width=width, prec=prec, colsp=colsp)
+                text += """{:^{width}.{prec}f}{:{colsp}}""".format(
+                    vibinfo['theta_vib'].data[vib], '', width=width, prec=prec, colsp=colsp)
             text += '\n'
 
         #text += 'IR activ [KM/mol]\n'
@@ -671,28 +680,29 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
 
         if shortlong:
             for at in range(nat):
-                text += """{:{presp}}{:5d}   {:{width}}""".format('', at + 1, atom_lbl[at], width=prewidth-8, presp=presp)
+                text += """{:{presp}}{:5d}   {:{width}}""".format(
+                    '', at + 1, atom_lbl[at], width=prewidth - 8, presp=presp)
                 for vib in row:
                     if vib is None:
                         break
-                    text += ("""{:^{width}.{prec}f}""" * 3).format(*(vibinfo[normco].data[:, vib].reshape(nat, 3)[at]),
-                                                               width=int(width/3), prec=ncprec)
+                    text += ("""{:^{width}.{prec}f}""" * 3).format(
+                        *(vibinfo[normco].data[:, vib].reshape(nat, 3)[at]), width=int(width / 3), prec=ncprec)
                     text += """{:{colsp}}""".format('', colsp=colsp)
                 text += '\n'
         else:
             for at in range(nat):
                 for xyz in range(3):
-                    text += """{:{presp}}{:5d}    {}    {:{width}}""".format('', at + 1, 'XYZ'[xyz], atom_lbl[at], width=prewidth-14, presp=presp)
+                    text += """{:{presp}}{:5d}    {}    {:{width}}""".format(
+                        '', at + 1, 'XYZ' [xyz], atom_lbl[at], width=prewidth - 14, presp=presp)
                     for vib in row:
                         if vib is None:
                             break
-                        text += """{:^{width}.{prec}f}""".format((vibinfo[normco].data[3 * at + xyz, vib]),
-                                                               width=width, prec=ncprec)
+                        text += """{:^{width}.{prec}f}""".format(
+                            (vibinfo[normco].data[3 * at + xyz, vib]), width=width, prec=ncprec)
                         text += """{:{colsp}}""".format('', colsp=colsp)
                     text += '\n'
 
     return text
-
 
 
 def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, rotor_type=None):
@@ -735,12 +745,12 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
     # translational
     beta = 1 / (psi_kb * T)
-    q_trans = (2.0 * np.pi * molecular_mass * psi_amu2kg / (beta * psi_h * psi_h)) ** 1.5 * psi_na / (beta * P)
-    sm[('S', 'trans')] = 5/2 + math.log(q_trans / psi_na)
-    sm[('Cv', 'trans')] = 3/2
-    sm[('Cp', 'trans')] = 5/2
-    sm[('E', 'trans')] = 3/2 * T
-    sm[('H', 'trans')] = 5/2 * T
+    q_trans = (2.0 * np.pi * molecular_mass * psi_amu2kg / (beta * psi_h * psi_h))**1.5 * psi_na / (beta * P)
+    sm[('S', 'trans')] = 5 / 2 + math.log(q_trans / psi_na)
+    sm[('Cv', 'trans')] = 3 / 2
+    sm[('Cp', 'trans')] = 5 / 2
+    sm[('E', 'trans')] = 3 / 2 * T
+    sm[('H', 'trans')] = 5 / 2 * T
 
     # rotational
     if rotor_type == "RT_ATOM":
@@ -753,16 +763,16 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
         sm[('E', 'rot')] = T
     else:
         phi_A, phi_B, phi_C = rot_const * 100 * psi_c * psi_h / psi_kb
-        q_rot = math.sqrt(math.pi) * T ** 1.5 / (sigma * math.sqrt(phi_A * phi_B * phi_C))
-        sm[('S', 'rot')] = 3/2 + math.log(q_rot)
-        sm[('Cv', 'rot')] = 3/2
-        sm[('Cp', 'rot')] = 3/2
-        sm[('E', 'rot')] = 3/2 * T
+        q_rot = math.sqrt(math.pi) * T**1.5 / (sigma * math.sqrt(phi_A * phi_B * phi_C))
+        sm[('S', 'rot')] = 3 / 2 + math.log(q_rot)
+        sm[('Cv', 'rot')] = 3 / 2
+        sm[('Cp', 'rot')] = 3 / 2
+        sm[('E', 'rot')] = 3 / 2 * T
     sm[('H', 'rot')] = sm[('E', 'rot')]
 
     # vibrational
     vibonly = filter_nonvib(vibinfo)
-    ZPE_cm_1 = 1/2 * np.sum(vibonly['omega'].data.real)
+    ZPE_cm_1 = 1 / 2 * np.sum(vibonly['omega'].data.real)
     omega_str = _format_omega(vibonly['omega'].data, decimals=4)
 
     imagfreqidx = np.where(vibonly['omega'].data.imag > vibonly['omega'].data.real)[0]
@@ -775,16 +785,17 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
     lowfreqidx = np.where(filtered_theta_vib < 900.)[0]
     if len(lowfreqidx):
-        print("Warning: used thermodynamics relations inappropriate for low-frequency modes: {}".format(filtered_omega_str[lowfreqidx]))
+        print("Warning: used thermodynamics relations inappropriate for low-frequency modes: {}".format(
+            filtered_omega_str[lowfreqidx]))
 
     sm[('S', 'vib')] = np.sum(rT / np.expm1(rT) - np.log(1 - np.exp(-rT)))
-    sm[('Cv', 'vib')] = np.sum(np.exp(rT) * (rT / np.expm1(rT)) ** 2)
+    sm[('Cv', 'vib')] = np.sum(np.exp(rT) * (rT / np.expm1(rT))**2)
     sm[('Cp', 'vib')] = sm[('Cv', 'vib')]
     sm[('ZPE', 'vib')] = np.sum(rT) * T / 2
     sm[('E', 'vib')] = sm[('ZPE', 'vib')] + np.sum(rT * T / np.expm1(rT))
     sm[('H', 'vib')] = sm[('E', 'vib')]
 
-    assert(abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * psi_R * psi_hartree2wavenumbers * 0.001 / psi_hartree2kJmol) < 0.1)
+    assert (abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * psi_R * psi_hartree2wavenumbers * 0.001 / psi_hartree2kJmol) < 0.1)
 
     #real_vibs = np.ma.masked_where(vibinfo['omega'].data.imag > vibinfo['omega'].data.real, vibinfo['omega'].data)
 
@@ -833,7 +844,6 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     format_ZPE_E_H_G = """\n  {:19} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
     uconv = np.asarray([psi_hartree2kcalmol, psi_hartree2kJmol, 1.])
 
-
     # TODO rot_const, rotor_type
     text = ''
     text += """\n  ==> Thermochemistry Components <=="""
@@ -869,22 +879,26 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
         text += format_ZPE_E_H_G.format(terms[term] + ' ZPE', *sm[('ZPE', term)] * uconv)
         if term in ['vib', 'corr']:
             text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * psi_hartree2wavenumbers)
-    text += """\n  Total ZPE, Electronic energy at 0 [K]                             {:15.8f} [Eh]""".format(sm[('ZPE', 'tot')])
+    text += """\n  Total ZPE, Electronic energy at 0 [K]                             {:15.8f} [Eh]""".format(
+        sm[('ZPE', 'tot')])
 
     text += """\n\n  Thermal Energy, E (includes ZPE)"""
     for term in terms:
         text += format_ZPE_E_H_G.format(terms[term] + ' E', *sm[('E', term)] * uconv)
-    text += """\n  Total E, Electronic energy at {:7.2f} [K]                         {:15.8f} [Eh]""".format(T, sm[('E', 'tot')])
+    text += """\n  Total E, Electronic energy at {:7.2f} [K]                         {:15.8f} [Eh]""".format(
+        T, sm[('E', 'tot')])
 
     text += """\n\n  Enthalpy, H_trans = E_trans + k_B * T"""
     for term in terms:
         text += format_ZPE_E_H_G.format(terms[term] + ' H', *sm[('H', term)] * uconv)
-    text += """\n  Total H, Enthalpy at {:7.2f} [K]                                  {:15.8f} [Eh]""".format(T, sm[('H', 'tot')])
+    text += """\n  Total H, Enthalpy at {:7.2f} [K]                                  {:15.8f} [Eh]""".format(
+        T, sm[('H', 'tot')])
 
     text += """\n\n  Gibbs free energy, G = H - T * S"""
     for term in terms:
         text += format_ZPE_E_H_G.format(terms[term] + ' G', *sm[('G', term)] * uconv)
-    text += """\n  Total G, Free enthalpy at {:7.2f} [K]                             {:15.8f} [Eh]\n""".format(T, sm[('G', 'tot')])
+    text += """\n  Total G, Free enthalpy at {:7.2f} [K]                             {:15.8f} [Eh]\n""".format(
+        T, sm[('G', 'tot')])
 
     return therminfo, text
 
@@ -938,7 +952,7 @@ def filter_omega_to_real(omega):
             freqs.append(fr.real)
     return np.asarray(freqs)
 
-    
+
 def _get_TR_space(m, geom, space='TR', tol=None, verbose=1):
     """Form the idealized translation and rotation dof from geometry `geom` and masses `m`.
     Remove any linear dependencies and return an array of shape (3, 3) for atoms, (5, 3 * nat) for linear `geom`,

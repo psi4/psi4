@@ -9,7 +9,7 @@ def blockwise_contract(arr):
     if len(arr.shape) != 4:
         print('Not appropriate for un_blockwise')
     gr, gc, lr, lc = arr.shape
-    ans = np.reshape(arr, (gr*gc, lr, lc))
+    ans = np.reshape(arr, (gr * gc, lr, lc))
 
     def unblockshaped(arr, h, w):
         """
@@ -22,11 +22,9 @@ def blockwise_contract(arr):
         From: https://stackoverflow.com/a/16873755
         """
         n, nrows, ncols = arr.shape
-        return (arr.reshape(h//nrows, -1, nrows, ncols)
-                   .swapaxes(1,2)
-                   .reshape(h, w))
+        return (arr.reshape(h // nrows, -1, nrows, ncols).swapaxes(1, 2).reshape(h, w))
 
-    ans = unblockshaped(ans, gr*lr, gc*lc)
+    ans = unblockshaped(ans, gr * lr, gc * lc)
     return ans
 
 
@@ -100,9 +98,7 @@ def blockwise_expand(a, blockshape, aslist=False, require_aligned_blocks=True):
 
     # This is where the magic happens.
     # Generate a view with our new strides (outer+inner).
-    view = np.lib.stride_tricks.as_strided(a,
-                                           shape=view_shape,
-                                           strides=(inter_block_strides+intra_block_strides))
+    view = np.lib.stride_tricks.as_strided(a, shape=view_shape, strides=(inter_block_strides + intra_block_strides))
 
     if aslist:
         return list(map(view.__getitem__, np.ndindex(outershape)))
