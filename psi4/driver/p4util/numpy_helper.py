@@ -80,7 +80,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
         given in the matrix besides the diagonal blocks determined by the passed
         dimension.
     dim2 :
-        Same as dim1 only if using a Psi4.Dimension object.
+        Same as dim1 only if using a psi4.core.Dimension object.
 
     Returns
     -------
@@ -212,20 +212,20 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 def _to_array(matrix, copy=True, dense=False):
     """
     Converts a Psi4 Matrix or Vector to a numpy array. Either copies the data or simply
-    consturcts a view.
+    constructs a view.
 
     Parameters
     ----------
     matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
         Pointers to which Psi4 core class should be used in the construction.
-    copy : bool
-        Copy the data if True, return a view otherwise
-    dense : bool
-        Converts irreped Psi4 objects to diagonally blocked dense arrays. Returns a list of arrays otherwise.
+    copy : bool, optional
+        Copy the data if `True`, return a view otherwise
+    dense : bool, optional
+        Converts irreped Psi4 objects to diagonally blocked dense arrays if `True`. Returns a list of arrays otherwise.
 
     Returns
     -------
-    array : np.array or list of of np.array
+    array : ndarray or list of ndarray
        Returns either a list of np.array's or the base array depending on options.
 
     Notes

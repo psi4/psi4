@@ -43,7 +43,7 @@ def frac_traverse(name, **kwargs):
 
     Parameters
     ----------
-    name : string, functional function
+    name : string or function
         DFT functional string name or function defining functional
         whose omega is to be optimized.
     molecule : :ref:`molecule <op_py_molecule>`, optional
@@ -484,7 +484,7 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
 
     Parameters
     ----------
-    name : string, functional function
+    name : string or function
         DFT functional string name or function defining functional
         whose omega is to be optimized.
     omega_l : float, optional

@@ -50,16 +50,16 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the Hessian-vector product.
     preconditioner : function
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the preconditioned value.
-    guess : list of :py:class:`~psi4.core.Matrix`
+    guess : list of :py:class:`~psi4.core.Matrix`, optional
         Starting vectors, if None use a preconditioner(rhs) guess
-    printer : function
+    printer : function, optional
         Takes in a list of current x and residual vectors and provides a print function. This function can also
         return a value that represents the current residual.
-    printlvl : int
+    printlvl : int, optional
         The level of printing provided by this function.
-    maxiter : int
+    maxiter : int, optional
         The maximum number of iterations this function will take.
-    rcond : float
+    rcond : float, optional
         The residual norm for convergence.
 
     Returns
@@ -200,9 +200,9 @@ class DIIS(object):
 
         Parameters
         ----------
-        max_vect : int
+        max_vect : int, optional
             The maximum number of error and state vectors to hold. These are pruned based off the removal policy.
-        removal_policy : str, ("OLDEST", "LARGEST")
+        removal_policy : {"OLDEST", "LARGEST"}, optional
             How the state and error vectors are removed once at the maximum. OLDEST will remove the oldest vector while
             largest will remove the residual with the largest RMS value.
 
@@ -234,8 +234,8 @@ class DIIS(object):
 
         Parameters
         ----------
-        out : :py:class:`~psi4.core.Matrix` (optional)
-            A array in which to place the next state vector in.
+        out : :py:class:`~psi4.core.Matrix`, optional
+            A array in which to place the next state vector.
 
         Returns
         -------

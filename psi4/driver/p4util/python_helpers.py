@@ -129,11 +129,11 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
     ----------
     orbital_basis : :py:class:`~psi4.core.BasisSet`
         Orbital basis to use in the JK object.
-    aux : :py:class:`~psi4.core.BasisSet`
+    aux : :py:class:`~psi4.core.BasisSet`, optional
         Optional auxiliary basis set for density-fitted tensors. Defaults
         to the DF_BASIS_SCF if set, otherwise the correspond JKFIT basis
-        to the passed in orbital_basis.
-    type : str
+        to the passed in `orbital_basis`.
+    jk_type : str, optional
         Type of JK object to build (DF, Direct, PK, etc). Defaults to the
         current global SCF_TYPE option.
 
