@@ -389,20 +389,16 @@ def process_pcm_command(matchobj):
     spacing = str(matchobj.group(1)) # Ignore..
     name = str(matchobj.group(2)) # Ignore..
     block = str(matchobj.group(3)) # Get input to PCMSolver
-    # Setup unique scratch directory and move in, as done for other add-ons
-    psioh = core.IOManager.shared_object()
-    psio = core.IO.shared_object()
-    os.chdir(psioh.get_default_path())
-    pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-        'pcmsolver.' + str(uuid.uuid4())[:8]
-    if os.path.exists(pcm_tmpdir) is False:
-        os.mkdir(pcm_tmpdir)
-    os.chdir(pcm_tmpdir)
     with open('pcmsolver.inp', 'w') as handle:
         handle.write(block)
     import pcmsolver
-    pcmsolver.parse_pcm_input('pcmsolver.inp')
-    return "" # The file has been written to disk; nothing needed in Psi4 input
+    parsed_pcm = pcmsolver.parse_pcm_input('pcmsolver.inp').splitlines()
+    pcmsolver_parsed_fname = '@pcmsolver.' + str(os.getpid()) + '.' + str(uuid.uuid4())[:8]
+    write_input_for_pcm  = "parsedFile = os.path.join(os.getcwd(), '{}')\n".format(pcmsolver_parsed_fname)
+    write_input_for_pcm += "with open(parsedFile, 'w') as tmp:\n"
+    write_input_for_pcm += "    tmp.write('\\n'.join({}))\n\n".format(parsed_pcm)
+    write_input_for_pcm += "core.set_global_option(\'PCMSOLVER_PARSED_FNAME\', \'{}\')\n\n".format(pcmsolver_parsed_fname)
+    return write_input_for_pcm
 
 
 def process_external_command(matchobj):

@@ -236,31 +236,16 @@ def pcm_helper(block):
     Parameters
     ----------
     block: multiline string with PCM input in PCMSolver syntax.
-
-    Notes
-    -----
-    !Warning! This function changes directory from launch site to scratch and
-    back. This is needed because PCMSolver does not have a notion of an
-    absolute paths for its input file. If you are looking at this function as
-    an example, remember that changing directories is usually a **bad idea**
-    and **should not be done**.
     """
 
-    # Setup unique scratch directory and move in, as done for other add-ons
-    psioh = core.IOManager.shared_object()
-    psio = core.IO.shared_object()
-    curdir = os.getcwd()
-    os.chdir(psioh.get_default_path())
-    pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-        'pcmsolver.' + str(uuid.uuid4())[:8]
-    if os.path.exists(pcm_tmpdir) is False:
-        os.mkdir(pcm_tmpdir)
-    os.chdir(pcm_tmpdir)
     with open('pcmsolver.inp', 'w') as handle:
         handle.write(block)
     import pcmsolver
-    pcmsolver.parse_pcm_input('pcmsolver.inp')
-    os.chdir(curdir)
+    parsed_pcm = pcmsolver.parse_pcm_input('pcmsolver.inp')
+    pcmsolver_parsed_fname = '@pcmsolver.' + str(os.getpid()) + '.' + str(uuid.uuid4())[:8]
+    with open(pcmsolver_parsed_fname, 'w') as tmp:
+        tmp.write(parsed_pcm)
+    core.set_global_option('PCMSOLVER_PARSED_FNAME', '{}'.format(pcmsolver_parsed_fname))
 
 
 def filter_comments(string):
