@@ -378,24 +378,29 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
 
     // Transform Hessian into cartesian coordinates
     if (print_lvl >= 3) {
-        outfile->Printf("\n\tFull force constant matrix in mass-weighted SALCS.\n");
+        outfile->Printf("\n\tForce constant matrix for all computed irreps in mass-weighted SALCS.\n");
         mat_print(H, Nsalc_all, Nsalc_all, "outfile");
     }
 
     // Build Bu^-1/2 matrix for the whole Hessian
-    SharedMatrix B_shared = salc_list.matrix();
-    double **B = B_shared->pointer();
+    //SharedMatrix B_shared = salc_list.matrix();
+    //double **B = B_shared->pointer();
 
     // double **Hx = block_matrix(3*Natom, 3*Natom);
     auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
     double **Hx = mat_Hx->pointer();
 
     // Hx = Bt H B
-    for (int i = 0; i < Nsalc_all; ++i)
-        for (int j = 0; j < Nsalc_all; ++j)
-            for (int x1 = 0; x1 < 3 * Natom; ++x1)
-                for (int x2 = 0; x2 <= x1; ++x2)
-                    Hx[x1][x2] += B[i][x1] * H[i][j] * B[j][x2];
+    for (int h = 0; h < Nirrep; ++h) {
+        SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
+        double **B_irr = B_irr_shared->pointer();
+        int start = salc_irr_start[h];
+        for (int i = 0; i < salcs_pi[h].size(); ++i)
+            for (int j = 0; j < salcs_pi[h].size(); ++j)
+                for (int x1 = 0; x1 < 3 * Natom; ++x1)
+                    for (int x2 = 0; x2 <= x1; ++x2)
+                        Hx[x1][x2] += B_irr[i][x1] * H[start + i][start + j] * B_irr[j][x2];
+    }
 
     for (int x1 = 0; x1 < 3 * Natom; ++x1)
         for (int x2 = 0; x2 < x1; ++x2)
