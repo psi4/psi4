@@ -1235,12 +1235,12 @@ class Molecule(LibmintsMolecule):
 
         Returns
         -------
-        np.array, np.array, np.array, np.array, np.array
-            (nat x 3) geometry [a0].
-            (nat) mass [u].
-            (nat) element symbol.
-            (nat) atomic number.
-            (nat) hash of element symbol and mass.
+        geom, mass, elem, elez, uniq : ndarray, ndarray, ndarray, ndarray, ndarray
+            (nat, 3) geometry [a0].
+            (nat,) mass [u].
+            (nat,) element symbol.
+            (nat,) atomic number.
+            (nat,) hash of element symbol and mass.
             Note that coordinate, orientation, and element information is
             preserved but fragmentation, chgmult, and dummy/ghost is lost.
 
@@ -1331,7 +1331,7 @@ class Molecule(LibmintsMolecule):
 #            (nat) mass [u].
 #        elem : np.array or list
 #            (nat) element symbol.
-#        elez : np.array or list
+#        elez : ndarray or list
 #            (nat) atomic number.
 #        charge : int (optional)
 #            molecular charge
@@ -1396,13 +1396,17 @@ class Molecule(LibmintsMolecule):
             Useful to prompt algorithm or to define intramolecular fragments through
             border atoms. Example: `[[1, 0], [2]]`
         bond_threshold : float, optional
-            Factor beyond average of covalent radii to determine bond cutoff
+            Factor beyond average of covalent radii to determine bond cutoff.
+        return_arrays : bool, optional
+            If `True`, also return fragments as list of arrays.
         return_molecules : bool, optional
-            If True, also return
+            If True, also return fragments as list of Molecules.
+        return_molecule : bool, optional
+            If True, also return one big Molecule with fragmentation encoded.
 
         Returns
         -------
-        list of lists
+        bfs_map : list of lists
             Array of atom indices (0-indexed) of detected fragments.
         bfs_arrays : tuple of lists of ndarray
             geom, mass, elem info per-fragment.
@@ -1491,6 +1495,10 @@ class Molecule(LibmintsMolecule):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
+	    Wraps qcdb.align.B787 for qcdb.Molecule. The former employs the
+	    Kabsch, Hungarian, and Uno algorithms to exhaustively locate the
+	    best alignment for non-oriented, non-ordered structures.
+
         Parameters
         ----------
         concern_mol : qcdb.Molecule
@@ -1529,8 +1537,6 @@ class Molecule(LibmintsMolecule):
             from `concern_mol` and the optimally aligned geometry.
             Third item is a crude charge-, multiplicity-, fragment-less Molecule
             at optimally aligned (and atom-ordered) geometry.
-
-        basically a qcdb.Molecule wrapper around permutative_kabsch
 
         """
         from .align import B787
