@@ -1,4 +1,15 @@
 # DFT (LDA/GGA) test of custom implementations in: gga_superfuncs.py
+# copy&paste list:
+#          "b86bpbe" : build_b86bpbe_superfunctional,
+#          "blyp"    : build_blyp_superfunctional,
+#          "svwn"    : build_svwn_superfunctional,
+#          "pw86pbe" : build_pw86pbe_superfunctional,
+#          "pbe"     : build_pbe_superfunctional,
+#          "bp86"    : build_bp86_superfunctional,
+#          "pw91"    : build_pw91_superfunctional,
+#          "ft97"    : build_ft97_superfunctional,
+#          "bop"     : build_bop_superfunctional,
+#          "mpwpw"   : build_mpwpw_superfunctional,
 
 
 ## Programs/References
