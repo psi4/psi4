@@ -71,7 +71,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv, restricted):
 
 
 def build_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
-#This is the recommended version
+
     # Call this first
     sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
@@ -111,7 +111,8 @@ def build_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
 
 
 def build_core_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
-
+# This is the version from the GMTKN30/55 benchmarks
+# GMTKN55 used full-core parametrization with frozen-core approximation for consistency
     # Call this first
     sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
@@ -281,7 +282,7 @@ def build_b2gpplyp_superfunctional(name, npoints, deriv, restricted):
     # Tab in, trailing newlines
     sup.set_description('    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
-    sup.set_citation('    \n')
+    sup.set_citation(' A. Karton, A. Tarnopolsky, J.-F. Lamère, G. C. Schatz, J.M. L. Martin J.Phys Chem. A, 112, 12868-12886,2008   \n')
 
     # Add member functionals
     becke = core.LibXCFunctional('XC_GGA_X_B88', restricted)

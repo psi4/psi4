@@ -297,6 +297,5 @@ gga_superfunc_list = {
           "pw91"    : build_pw91_superfunctional,
           "ft97"    : build_ft97_superfunctional,
           "bop"     : build_bop_superfunctional,
-          "custom_mpwpw"   : build_custom_mpwpw_superfunctional,
           "mpwpw"   : build_mpwpw_superfunctional,
 }
