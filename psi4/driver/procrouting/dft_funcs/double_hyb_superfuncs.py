@@ -282,7 +282,7 @@ def build_b2gpplyp_superfunctional(name, npoints, deriv, restricted):
     # Tab in, trailing newlines
     sup.set_description('    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
-    sup.set_citation(' A. Karton, A. Tarnopolsky, J.-F. Lamère, G. C. Schatz, J.M. L. Martin J.Phys Chem. A, 112, 12868-12886,2008   \n')
+    sup.set_citation(' A. Karton, A. Tarnopolsky, J.-F. Lamere, G. C. Schatz, J.M. L. Martin J.Phys Chem. A, 112, 12868-12886,2008   \n')
 
     # Add member functionals
     becke = core.LibXCFunctional('XC_GGA_X_B88', restricted)
