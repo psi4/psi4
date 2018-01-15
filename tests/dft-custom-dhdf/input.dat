@@ -62,7 +62,7 @@ clean()
 #clean()
 
 
-set freeze_core true # this is the recommended version
+set freeze_core true 
 edhdf = energy('dsd-blyp')
 e_dft=get_variable('SCF TOTAL ENERGY')
 e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')

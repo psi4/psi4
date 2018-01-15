@@ -21,8 +21,6 @@
 # M11L only up to 4 decimals even for Ne with fine grid
 # BP86 can come with PW91 or VWN5 LDA correlation. Deviations are quite large either way.
 
-ggalist=["pw86pbe","bop","ft97","blyp","svwn","pbe","pw91","mpwpw"]
-#ggalist=["b86bpbe","pw86pbe","bop","ft97","blyp","svwn","pbe","pw91","mpwpw"]
 
 ggaval ={
 "blyp"    : -128.894855380969, # ORCA
@@ -32,7 +30,7 @@ ggaval ={
 #"pbe"     : -128.793068569269 # ORCA LDA-PW91
 #"bp86"    : -128.905683777641, # ORCA LDA-PW91
 #"bp86"    : -128.9092927447,  # TM = LDA-VWN, or iop(3/74=418) in Gaussian
-"bp86"    : -128.903070321, #G09  LDA-PW86
+#"bp86"    : -128.903070321, #G09  LDA-PW86
 "pw91"    : -128.871229934635,  # ORCA
 "mpwpw"   : -128.893378250504,  # ORCA
 "ft97"    : -128.850056371480 , # NWCHEM xfine xc ft97 screening 1-e14
@@ -56,17 +54,17 @@ set dft_radial_points 99
 set dft_spherical_points 770 
 set scf_type direct
 
-for func in ggalist[:]:
+for func, val in ggaval.items():
   edft = energy(func)
   label=func.upper()
-  val=float(ggaval[func])
-  compare_values(ggaval[func], edft, 4, 'Ne: '+label)   #TEST
+  compare_values(val, edft, 4, 'Ne: '+label)   #TEST
   clean()
 
 
 # special flower BP86; low accuracy
+# #G09  LDA-PW86
 edft = energy('bp86')
-compare_values(ggaval["bp86"], edft, 3, 'Ne: BP86(PW)')   #TEST
+compare_values(-128.903070321, edft, 3, 'Ne: BP86(PW)')   #TEST
 clean()
 
 
