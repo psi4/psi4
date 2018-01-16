@@ -392,7 +392,7 @@ def scf_finalize_energy(self):
 
             # logic above foiled by psio_tocentry not returning None<--nullptr in pb11 2.2.1
             #   so forcibly recomputing for now until stability revamp
-            core.print_out("    SO Integrals not on disk, computing...")
+            core.print_out("    SO Integrals not on disk. Computing...")
             mints = core.MintsHelper(self.basisset())
             mints.integrals()
             core.print_out("done.\n")
