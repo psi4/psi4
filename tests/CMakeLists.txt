@@ -53,8 +53,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2 
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
-                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf dft-grac dft-dsd 
-                  dft-freq dft-grad1 dft-grad2 dft-pbe0-2 dft-psivar dft-b3lyp dft1 dft-vv10 
+                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac  
+                  dft-freq dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10 
                   dft1-alt dft2 dft3 dft-omega docs-bases docs-dft extern1 extern2
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 fci-coverage 
@@ -87,6 +87,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
+                  dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

@@ -1,0 +1,6 @@
+! VeryTightSCF GRID7 NOFINALGRID
+! cc-pVDZ NORI
+! S-VWN
+*xyz 0 1
+Ne 0 0 0
+*
