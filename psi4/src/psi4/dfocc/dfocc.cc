@@ -279,7 +279,7 @@ void DFOCC::title() {
     else if (wfn_type_ == "QCHF")
         outfile->Printf("                      QCHF   \n");
     outfile->Printf("              Program Written by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision November 27, 2017\n");
+    outfile->Printf("              Latest Revision January 17, 2018\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
