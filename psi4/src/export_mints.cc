@@ -828,9 +828,19 @@ void export_mints(py::module& m)
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
         .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
         .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
-        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals");
+        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals")
 
-    py::class_<Vector3>(m, "Vector3",
+        // First and second derivatives of one and two electron integrals in AO and MO basis.
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices") 
+        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
+        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1, "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2, "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices");
+
+        py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
                         "and their common operations")
         .def(py::init<double>())
@@ -1076,7 +1086,11 @@ void export_mints(py::module& m)
                       "Units (Angstrom or Bohr) used to define the geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
         .def("geometry", &Molecule::geometry,
-             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
+             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
+        .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,
+                     "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
+        .def("nuclear_repulsion_energy_deriv2", &Molecule::nuclear_repulsion_energy_deriv2,
+                     "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")
         .def("aotoso", &PetiteList::aotoso, "Return the AO->SO coefficient matrix")

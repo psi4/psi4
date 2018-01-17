@@ -1,0 +1,266 @@
+  Threads set to 1 by Python driver.
+
+*** tstart() called on nrlogin1
+*** at Sun Dec 17 18:40:46 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /home/akumar1/newriver/installed/psi4/latest_psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /home/akumar1/newriver/installed/psi4/latest_psi4/share/psi4/basis/sto-3g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.075791843589    15.994914619560
+           H          0.000000000000    -0.866811828967     0.601435779270     1.007825032070
+           H          0.000000000000     0.866811828967     0.601435779270     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     20.53324  B =     11.13094  C =      7.21807 [cm^-1]
+  Rotational constants: A = 615570.97611  B = 333697.07564  C = 216392.23421 [MHz]
+  Nuclear repulsion =    8.002366450719077
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 4.3422219878E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -74.47822390286233   -7.44782e+01   1.55600e-01 
+   @RHF iter   1:   -74.87493925585242   -3.96715e-01   3.74103e-02 
+   @RHF iter   2:   -74.93818342921409   -6.32442e-02   8.54801e-03 DIIS
+   @RHF iter   3:   -74.94126796873751   -3.08454e-03   2.94953e-03 DIIS
+   @RHF iter   4:   -74.94207455922205   -8.06590e-04   2.95729e-04 DIIS
+   @RHF iter   5:   -74.94207972782127   -5.16860e-06   5.18994e-05 DIIS
+   @RHF iter   6:   -74.94207989698428   -1.69163e-07   1.17462e-06 DIIS
+   @RHF iter   7:   -74.94207989707948   -9.51985e-11   6.04429e-09 DIIS
+   @RHF iter   8:   -74.94207989707952   -4.26326e-14   7.21760e-11 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.262892     2A     -1.209697     3A     -0.547965  
+       4A     -0.436527     5A     -0.387587  
+
+    Virtual:                                                              
+
+       6A      0.477619     7A      0.588139  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.94207989707952
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.0023664507190766
+    One-Electron Energy =                -120.1995577011332728
+    Two-Electron Energy =                  37.2551113533346765
+    Total Energy =                        -74.9420798970795090
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.1273
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.5238
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.6035     Total:     0.6035
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     1.5340     Total:     1.5340
+
+
+*** tstop() called on nrlogin1 at Sun Dec 17 18:40:46 2017
+Module time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+
+  ## NUCLEAR GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1     0.00000000000000     0.00000000000000     2.27970605727242
+    2     0.00000000000000     1.55211888936099    -1.13985302863621
+    3     0.00000000000000    -1.55211888936099    -1.13985302863621
+
+
+
+
+
+ OEI Gradients
+
+  ## KINETIC GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1    -0.00000000000000    -0.00000000000000     0.53634166670629
+    2     0.00000000000000     0.35733010728515    -0.26817083335314
+    3     0.00000000000000    -0.35733010728514    -0.26817083335314
+
+
+
+
+  ## POTENTIAL GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1     0.00000000000000     0.00000000000001    -6.12402317383457
+    2    -0.00000000000000    -4.08589349524705     3.06201158691732
+    3    -0.00000000000000     4.08589349524704     3.06201158691732
+
+
+
+
+  ## OVERLAP GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1     0.00000000000000    -0.00000000000000     0.28761927369127
+    2     0.00000000000000     0.16453262080298    -0.14380963684563
+    3    -0.00000000000000    -0.16453262080298    -0.14380963684563
+
+
+
+
+
+
+ TEI Gradients
+
+  ##  COULOMB  GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1    -0.00000000000000    -0.00000000000001     3.35694026456619
+    2     0.00000000000000     2.21382592688352    -1.67847013228309
+    3     0.00000000000000    -2.21382592688351    -1.67847013228310
+
+
+
+  ##  EXCHANGE GRADIENT (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1                   2                   3
+
+    1     0.00000000000000     0.00000000000000    -0.43402552878220
+    2    -0.00000000000000    -0.28821414934500     0.21701276439110
+    3    -0.00000000000000     0.28821414934500     0.21701276439110
+
+
+
+	OVERLAP_GRADIENT_TEST.............................................PASSED
+	KINETIC_GRADIENT_TEST.............................................PASSED
+	POTENTIAL_GRADIENT_TEST...........................................PASSED
+	RHF_TOTAL_GRADIENT_TEST...........................................PASSED
