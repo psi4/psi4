@@ -43,7 +43,7 @@ void export_psio(py::module &m) {
         .def("tocprint", &PSIO::tocprint, "docstring")
         .def("tocwrite", &PSIO::tocwrite, "docstring")
         .def("tocscan", &PSIO::tocscan,
-             "Seek string in binary file. This export is only good for catching None, as returned sucess object not exported.")
+             "Seek string in binary file. This export is only good for catching None, as returned success object not exported.")
         .def("set_pid", &PSIO::set_pid, "docstring")
         .def_static("shared_object", &PSIO::shared_object, "docstring")
         .def_static("get_default_namespace", &PSIO::get_default_namespace, "docstring")

@@ -28,7 +28,7 @@ if(${ENABLE_CheMPS2})
             DEPENDS lapack_external
                     hdf5_external
             GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
-            GIT_TAG 55d6b38  # v1.8.3-12
+            GIT_TAG v1.8.4
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

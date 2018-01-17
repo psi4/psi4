@@ -1086,8 +1086,8 @@ void psi4_python_module_finalize() {
     psi_file_prefix = nullptr;
 }
 
-PYBIND11_PLUGIN(core) {
-    py::module core("core", "C++ Innards of Psi4: Open-Source Quantum Chemistry");
+PYBIND11_MODULE(core, core) {
+    core.doc() = "C++ Innards of Psi4: Open-Source Quantum Chemistry";
     //    py::module core("core", R"pbdoc(
     //
     //        Psi4: An Open-Source Ab Initio Electronic Structure Package
@@ -1365,6 +1365,4 @@ PYBIND11_PLUGIN(core) {
 
     // py::class_<Process>(core, "Process").
     //        def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
-
-    return core.ptr();
 }

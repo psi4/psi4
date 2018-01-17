@@ -109,7 +109,7 @@ bool operator==(const Dimension& a, const Dimension& b) { return (a.blocks_ == b
 
 bool operator!=(const Dimension& a, const Dimension& b) { return !operator==(a, b); }
 
-Dimension operator+(const Dimension& a, const Dimension& b) {
+PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
     Dimension result = a;
     if (a.n() == b.n()) {
         for (int i = 0, maxi = a.n(); i < maxi; ++i) result[i] += b[i];
@@ -122,7 +122,7 @@ Dimension operator+(const Dimension& a, const Dimension& b) {
     return result;
 }
 
-Dimension operator-(const Dimension& a, const Dimension& b) {
+PSI_API Dimension operator-(const Dimension& a, const Dimension& b) {
     Dimension result = a;
     if (a.n() == b.n()) {
         for (int i = 0, maxi = a.n(); i < maxi; ++i) result[i] -= b[i];
