@@ -14,7 +14,6 @@
 #          "wpbe0"    : build_wpbe0_superfunctional,
 #          "b5050lyp" : build_b5050lyp_superfunctional,
 
-psi4.core.set_output_file("output.dat", False)
 
 molecule ne {
   0 1

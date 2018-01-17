@@ -11,7 +11,6 @@
 ## Notes
 # M11L only up to 4 decimals even for Ne with fine grid
 
-psi4.core.set_output_file("output.dat", False)
 
 molecule ne {
   0 1
