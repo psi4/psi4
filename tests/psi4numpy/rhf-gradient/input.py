@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 """
 This script calculates nuclear gradients of RHF Wavefunction using
 gradients of one and two electron integrals obtained from PSI4. 
@@ -149,9 +150,9 @@ G_python_T_mat = psi4.core.Matrix.from_array(Gradient["T"])
 G_python_V_mat = psi4.core.Matrix.from_array(Gradient["V"])
 
 # Test OEI gradients with that of PSI4
-psi4.compare_matrices(PSI4_Grad["S"], G_python_S_mat, 10, "OVERLAP_GRADIENT_TEST")   # TEST 
-psi4.compare_matrices(PSI4_Grad["T"], G_python_T_mat, 10, "KINETIC_GRADIENT_TEST")   # TEST
-psi4.compare_matrices(PSI4_Grad["V"], G_python_V_mat, 10, "POTENTIAL_GRADIENT_TEST") # TEST
+psi4.compare_matrices(PSI4_Grad["S"], G_python_S_mat, 10, "OVERLAP_GRADIENT_TEST")   #TEST 
+psi4.compare_matrices(PSI4_Grad["T"], G_python_T_mat, 10, "KINETIC_GRADIENT_TEST")   #TEST
+psi4.compare_matrices(PSI4_Grad["V"], G_python_V_mat, 10, "POTENTIAL_GRADIENT_TEST") #TEST
 
 # PSI4's Total Gradient 
 Total_G_psi4 = psi4.core.Matrix.from_list([                                     
@@ -160,4 +161,4 @@ Total_G_psi4 = psi4.core.Matrix.from_list([
              [-0.000000000000,  0.086300100260,  0.048720720189]
        ])
 G_python_Total_mat = psi4.core.Matrix.from_array(Gradient["Total"])
-psi4.compare_matrices(Total_G_psi4, G_python_Total_mat, 10, "RHF_TOTAL_GRADIENT_TEST") # TEST
+psi4.compare_matrices(Total_G_psi4, G_python_Total_mat, 10, "RHF_TOTAL_GRADIENT_TEST") #TEST

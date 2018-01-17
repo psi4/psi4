@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 """
 This script calculates nuclear Hessians of RHF Wavefunction using
 derivatives of one and two electron integrals obtained from PSI4
@@ -196,6 +197,7 @@ G = G.swapaxes(1,2)
 G += np.einsum('ai,ij,ab->iajb', eps_diag, I_occ, I_vir)
 
 # Inverse of G
+
 Ginv = np.linalg.inv(G.reshape(occ * vir, -1))
 Ginv = Ginv.reshape(occ,vir,occ,vir)
 
@@ -204,6 +206,7 @@ F_grad = {}
 U = {}
 
 # Build Fpq^x now
+
 for atom in range(natoms):
     for p in range(3):
         key = str(atom) + cart[p]
@@ -281,4 +284,4 @@ H_psi4 = psi4.core.Matrix.from_list([
 ])
 
 H_python_mat = psi4.core.Matrix.from_array(Hessian)
-psi4.compare_matrices(H_psi4, H_python_mat, 10, "RHF-HESSIAN-TEST") # TEST
+psi4.compare_matrices(H_psi4, H_python_mat, 10, "RHF-HESSIAN-TEST") #TEST

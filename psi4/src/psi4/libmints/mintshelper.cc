@@ -46,16 +46,16 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-#include <iostream>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <sstream>
-#include <vector>
-#include <map>
-#include <unordered_map>
+#include <iostream>
 #include <list>    
+#include <map>
+#include <sstream>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #ifdef _OPENMP
 #include <omp.h>
