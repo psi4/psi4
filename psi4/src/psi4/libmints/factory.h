@@ -40,7 +40,7 @@ class SOBasisSet;
 
 /*! \ingroup MINTS
  *  \class MatrixFactory
- *  \brief A class for creating Matrix, SimpleMatrix, Vector, and SimpleVector objects.
+ *  \brief A class for creating Matrix and Vector objects.
  *
  * The objects this factory creates can automatically be sized based on information
  * from checkpoint.
