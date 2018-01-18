@@ -159,11 +159,10 @@ public:
                int needed_irreps=0xFF,
                bool project_out_translations=true,
                bool project_out_rotations=true);
-    virtual ~CdSalcList();
+    ~CdSalcList();
 
-    /*! Returns the number of combintations. It may not be 3n-5 or 3n-6.
-     *  The value returned depends on needed_irreps and the project_out*
-     *  settings.
+    /*! Returns the number of SALCs. It may not be 3n-5 or 3n-6. The value
+     *  returned depends on needed_irreps and the project_out* settings.
      */
     size_t ncd() const { return salcs_.size(); }
 
@@ -180,8 +179,8 @@ public:
 
     const CdSalcWRTAtom& atom_salc(int i) const { return atom_salcs_[i]; }
 
-    SharedMatrix matrix();
-    SharedMatrix matrix_irrep(int h); // return only salcs of a given irrep
+    SharedMatrix matrix() const;
+    SharedMatrix matrix_irrep(int h) const; // return only salcs of a given irrep
     //SharedMatrix matrix_projected_out() const;
 
     void print() const;
