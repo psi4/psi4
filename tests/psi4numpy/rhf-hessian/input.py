@@ -86,15 +86,6 @@ for atom in range(natoms):
     deriv1_mat[string] = mints.mo_tei_deriv1(atom, C, C, C, C)
     for p in range(3):
         map_key = string + cart[p]
-        deriv1[map_key] = np.asarray(deriv1_mat[key + str(atom)][p])
-
-# 1st Derivative of TEIs 
-
-for atom in range(natoms):
-    string = "TEI" + str(atom)
-    deriv1_mat[string] = mints.mo_tei_deriv1(atom, C, C, C, C)
-    for p in range(3):
-        map_key = string + cart[p]
         deriv1[map_key] = np.asarray(deriv1_mat[string][p])
 
 Hes = {};
