@@ -498,8 +498,8 @@ void export_mints(py::module& m)
              "Is the deriv_density already backtransformed? Default is False", py::arg("val") = false)
         .def("compute", &Deriv::compute, "Compute the gradient");
 
-    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
-    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;
 //Something here is wrong. These will not work with py::args defined, not sure why
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
         .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),

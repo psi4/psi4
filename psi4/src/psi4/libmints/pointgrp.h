@@ -524,10 +524,10 @@ public:
     const std::string& symbol() const
     { return symb; }
     /// Returns the i'th irrep.
-    IrreducibleRepresentation& gamma(int i)
+    IrreducibleRepresentation& gamma(int i) const
     { return gamma_[i]; }
     /// Returns the i'th symmetry operation.
-    SymmetryOperation& symm_operation(int i)
+    SymmetryOperation& symm_operation(int i) const
     { return symop[i]; }
 
     /** Cn, Cnh, Sn, T, and Th point groups have complex representations.
