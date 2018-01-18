@@ -84,10 +84,8 @@ void CdSalcWRTAtom::print() const {
     }
 }
 
-CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFactory> fact, int needed_irreps,
-                       bool project_out_translations, bool project_out_rotations)
+CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool project_out_translations, bool project_out_rotations)
     : molecule_(mol),
-      factory_(fact),
       needed_irreps_(needed_irreps),
       project_out_translations_(project_out_translations),
       project_out_rotations_(project_out_rotations) {
@@ -291,21 +289,21 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
 
 CdSalcList::~CdSalcList() {}
 
-std::vector<SharedMatrix> CdSalcList::create_matrices(const std::string &basename) {
+std::vector<SharedMatrix> CdSalcList::create_matrices(const std::string &basename, const MatrixFactory &factory) const {
     std::vector<SharedMatrix> matrices;
     std::string name;
 
     for (size_t i = 0; i < salcs_.size(); ++i) {
-        name = basename + " " + name_of_component(i);
-        matrices.push_back(factory_->create_shared_matrix(name, salcs_[i].irrep()));
+        name = basename + " " + salc_name(i);
+        matrices.push_back(factory.create_shared_matrix(name, salcs_[i].irrep()));
     }
 
     return matrices;
 }
 
-std::string CdSalcList::name_of_component(int component) {
+std::string CdSalcList::salc_name(int index) const {
     std::string name;
-    CdSalc &salc = salcs_[component];
+    const CdSalc &salc = salcs_[index];
 
     for (size_t i = 0; i < salc.ncomponent(); ++i) {
         const CdSalc::Component &com = salc.component(i);

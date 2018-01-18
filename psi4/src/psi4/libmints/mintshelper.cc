@@ -1517,8 +1517,7 @@ std::vector<SharedMatrix> MintsHelper::ao_nabla() {
 
 std::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps, bool project_out_translations,
                                                  bool project_out_rotations) {
-    return std::make_shared<CdSalcList>(molecule_, factory_, needed_irreps, project_out_translations,
-                                        project_out_rotations);
+    return std::make_shared<CdSalcList>(molecule_, needed_irreps, project_out_translations, project_out_rotations);
 }
 
 SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3,

@@ -124,7 +124,6 @@ public:
 class CdSalcList
 {
     SharedMolecule molecule_;
-    std::shared_ptr<MatrixFactory> factory_;
 
     char needed_irreps_;
     bool project_out_translations_;
@@ -155,7 +154,6 @@ public:
      *  \param project_out_rotations Project out rotational SALCs
      */
     CdSalcList(SharedMolecule mol,
-               std::shared_ptr<MatrixFactory> fact,
                int needed_irreps=0xFF,
                bool project_out_translations=true,
                bool project_out_rotations=true);
@@ -166,8 +164,8 @@ public:
      */
     size_t ncd() const { return salcs_.size(); }
 
-    std::vector<SharedMatrix > create_matrices(const std::string& basename);
-    std::string name_of_component(int component);
+    std::vector<SharedMatrix > create_matrices(const std::string &basename, const MatrixFactory &factory) const;
+    std::string salc_name(int index) const;
 
     char needed_irreps() const { return needed_irreps_; }
     int nirrep(void) const { return nirrep_; }
