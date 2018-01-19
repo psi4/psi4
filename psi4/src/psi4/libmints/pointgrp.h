@@ -684,6 +684,9 @@ public:
     static bool full_name_to_bits(const std::string& pg, unsigned char& bits);
 
     void print(std::string out_fname = "outfile") const;
+
+    /// Convert an irrep bit string to a human readable irrep list
+    std::string irrep_bits_to_string(int irrep_bits) const;
 };
 
 }

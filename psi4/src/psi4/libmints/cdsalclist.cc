@@ -360,12 +360,14 @@ SharedMatrix CdSalcList::matrix_irrep(int h) const {
 }
 
 void CdSalcList::print() const {
+    const PointGroup &pg = *molecule_->point_group().get();
+    const std::string irreps = pg.irrep_bits_to_string(needed_irreps_);
     outfile->Printf("  Cartesian Displacement SALCs\n  By SALC:\n");
     outfile->Printf(
-        "  Number of SALCs: %ld, nirreps: %d\n"
+        "  Number of SALCs: %ld, nirreps: %s\n"
         "  Project out translations: %s\n"
         "  Project out rotations: %s\n",
-        salcs_.size(), needed_irreps_, project_out_translations_ ? "True" : "False",
+        salcs_.size(), irreps.c_str(), project_out_translations_ ? "True" : "False",
         project_out_rotations_ ? "True" : "False");
 
     for (size_t i = 0; i < salcs_.size(); ++i) salcs_[i].print();

@@ -509,10 +509,13 @@ void export_mints(py::module& m)
              "Returns a new Matrix object named name with default dimensions");
 //              py::arg("name"), py::arg("symmetry"));
 
-    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
+    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
+        m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
         .def(py::init<std::shared_ptr<Molecule>, int, bool, bool>())
         .def("ncd", &CdSalcList::ncd, "Return the number of cartesian displacements SALCs")
-        .def("create_matrices", &CdSalcList::create_matrices, "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.", py::arg("basename"), py::arg("factory"))
+        .def("create_matrices", &CdSalcList::create_matrices,
+             "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.",
+             py::arg("basename"), py::arg("factory"))
         .def("salc_name", &CdSalcList::salc_name, "Return the name of SALC #i.", py::arg("i"))
         .def("print_out", &CdSalcList::print, "Print the SALC to the output file")
         .def("matrix", &CdSalcList::matrix, "Return the SALCs")
