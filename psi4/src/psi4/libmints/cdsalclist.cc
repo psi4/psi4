@@ -84,10 +84,8 @@ void CdSalcWRTAtom::print() const {
     }
 }
 
-CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFactory> fact, int needed_irreps,
-                       bool project_out_translations, bool project_out_rotations)
+CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool project_out_translations, bool project_out_rotations)
     : molecule_(mol),
-      factory_(fact),
       needed_irreps_(needed_irreps),
       project_out_translations_(project_out_translations),
       project_out_rotations_(project_out_rotations) {
@@ -96,7 +94,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
         throw PSIEXCEPTION("CdSalcList::CdSalcList: Molecule point group has not been set.");
     }
 
-    int natom = molecule_->natom();
+    const int natom = molecule_->natom();
     ncd_ = 3 * natom;
 
     // Immediately create the rotation and translation vectors to be projected out.
@@ -112,9 +110,9 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
     //    X.eivprint(ev);
 
     // Pull out data to local variables to reduce memory lookup
-    double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
-    double X10 = X(1, 0), X11 = X(1, 1), X12 = X(1, 2);
-    double X20 = X(2, 0), X21 = X(2, 1), X22 = X(2, 2);
+    const double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
+    const double X10 = X(1, 0), X11 = X(1, 1), X12 = X(1, 2);
+    const double X20 = X(2, 0), X21 = X(2, 1), X22 = X(2, 2);
 
     //    Matrix constraints("COM & Rotational Constraints", 6, 3*natom);
     double tval0, tval1, tval2;
@@ -175,8 +173,8 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
     double *salc = new double[ncd_];
 
     // Obtain handy reference to point group.
-    PointGroup &pg = *molecule_->point_group().get();
-    CharacterTable char_table = pg.char_table();
+    const PointGroup &pg = *molecule_->point_group().get();
+    const CharacterTable char_table = pg.char_table();
     nirrep_ = char_table.nirrep();
 
     // I don't know up front how many I have per irrep
@@ -230,18 +228,17 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
                 if (stab_order == 0)
                     throw PSIEXCEPTION("CdSalcList::CdSalcList: Stabilizer order is 0 this is not possible.");
 
-                int nonzero = 0;
+                bool nonzero = false;
                 for (int cd = 0; cd < ncd_; ++cd) {
                     // Normalize the salc
                     salc[cd] /= sqrt((double)nirrep_ * stab_order);
 
                     // Count number of nonzeros
-                    if (std::fabs(salc[cd]) > 1e-10) ++nonzero;
+                    if (std::fabs(salc[cd]) > 1e-10) nonzero = true;
                 }
 
                 // We're only interested in doing the following if there are nonzeros
                 // AND the irrep that we're on is what the user wants.
-                // if (nonzero && (1 << irrep) & needed_irreps) {
                 if (nonzero && (1 << irrep) & needed_irreps) {
                     // Store the salc so we can project out constraints below
                     salcs.copy_to_row(irrep, cdsalcpi_[irrep], salc);
@@ -292,21 +289,21 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, std::shared_ptr<MatrixFact
 
 CdSalcList::~CdSalcList() {}
 
-std::vector<SharedMatrix> CdSalcList::create_matrices(const std::string &basename) {
+std::vector<SharedMatrix> CdSalcList::create_matrices(const std::string &basename, const MatrixFactory &factory) const {
     std::vector<SharedMatrix> matrices;
     std::string name;
 
     for (size_t i = 0; i < salcs_.size(); ++i) {
-        name = basename + " " + name_of_component(i);
-        matrices.push_back(factory_->create_shared_matrix(name, salcs_[i].irrep()));
+        name = basename + " " + salc_name(i);
+        matrices.push_back(factory.create_shared_matrix(name, salcs_[i].irrep()));
     }
 
     return matrices;
 }
 
-std::string CdSalcList::name_of_component(int component) {
+std::string CdSalcList::salc_name(int index) const {
     std::string name;
-    CdSalc &salc = salcs_[component];
+    const CdSalc &salc = salcs_[index];
 
     for (size_t i = 0; i < salc.ncomponent(); ++i) {
         const CdSalc::Component &com = salc.component(i);
@@ -326,7 +323,7 @@ std::string CdSalcList::name_of_component(int component) {
     return name;
 }
 
-SharedMatrix CdSalcList::matrix() {
+SharedMatrix CdSalcList::matrix() const {
     auto temp = std::make_shared<Matrix>("Cartesian/SALC transformation", ncd(), 3 * molecule_->natom());
 
     for (size_t i = 0; i < ncd(); ++i) {
@@ -342,19 +339,10 @@ SharedMatrix CdSalcList::matrix() {
     return temp;
 }
 
-SharedMatrix CdSalcList::matrix_irrep(int h) {
-    // cdsalcpi_ does not get updated after projected out translation and rotations
-    // why?  if it ever is, I can use it.
-    // SharedMatrix temp = std::make_shared<Matrix>("Cartesian/SALC transformation", cdsalcpi_[h],
-    // 3*molecule_->natom());
+SharedMatrix CdSalcList::matrix_irrep(int h) const {
+    auto temp = std::make_shared<Matrix>("Cartesian/SALC transformation", cdsalcpi_[h], 3 * molecule_->natom());
 
     int cnt = 0;
-    for (size_t i = 0; i < ncd(); ++i)
-        if (salcs_[i].irrep() == h) ++cnt;
-
-    auto temp = std::make_shared<Matrix>("Cartesian/SALC transformation", cnt, 3 * molecule_->natom());
-
-    cnt = 0;
     for (size_t i = 0; i < ncd(); ++i) {
         if (salcs_[i].irrep() == h) {
             int nc = salcs_[i].ncomponent();
@@ -372,12 +360,14 @@ SharedMatrix CdSalcList::matrix_irrep(int h) {
 }
 
 void CdSalcList::print() const {
+    const PointGroup &pg = *molecule_->point_group().get();
+    const std::string irreps = pg.irrep_bits_to_string(needed_irreps_);
     outfile->Printf("  Cartesian Displacement SALCs\n  By SALC:\n");
     outfile->Printf(
-        "  Number of SALCs: %ld, nirreps: %d\n"
+        "  Number of SALCs: %ld, nirreps: %s\n"
         "  Project out translations: %s\n"
         "  Project out rotations: %s\n",
-        salcs_.size(), needed_irreps_, project_out_translations_ ? "True" : "False",
+        salcs_.size(), irreps.c_str(), project_out_translations_ ? "True" : "False",
         project_out_rotations_ ? "True" : "False");
 
     for (size_t i = 0; i < salcs_.size(); ++i) salcs_[i].print();

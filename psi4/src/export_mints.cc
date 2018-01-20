@@ -498,8 +498,8 @@ void export_mints(py::module& m)
              "Is the deriv_density already backtransformed? Default is False", py::arg("val") = false)
         .def("compute", &Deriv::compute, "Compute the gradient");
 
-    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
-    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;
 //Something here is wrong. These will not work with py::args defined, not sure why
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
         .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
@@ -509,7 +509,14 @@ void export_mints(py::module& m)
              "Returns a new Matrix object named name with default dimensions");
 //              py::arg("name"), py::arg("symmetry"));
 
-    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations")
+    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
+        m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
+        .def(py::init<std::shared_ptr<Molecule>, int, bool, bool>())
+        .def("ncd", &CdSalcList::ncd, "Return the number of cartesian displacements SALCs")
+        .def("create_matrices", &CdSalcList::create_matrices,
+             "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.",
+             py::arg("basename"), py::arg("factory"))
+        .def("salc_name", &CdSalcList::salc_name, "Return the name of SALC #i.", py::arg("i"))
         .def("print_out", &CdSalcList::print, "Print the SALC to the output file")
         .def("matrix", &CdSalcList::matrix, "Return the SALCs")
         .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return only the SALCS in irrep h", py::arg("h"));

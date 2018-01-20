@@ -80,9 +80,8 @@ std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Optio
 
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
-  std::shared_ptr<MatrixFactory> fact;
   bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
-  CdSalcList salc_list(mol, fact, 0xFF, project, project);
+  CdSalcList salc_list(mol, 0xFF, project, project);
 
   int Natom = mol->natom();
   int Nirrep = salc_list.nirrep();
