@@ -469,7 +469,7 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
                 double* tauc = tau[t];
                 C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, Dc[0], nglobal, 0.0, Tc[0], nglobal);
                 for (int P = 0; P < npoints; P++) {
-                    tauc[P] += C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
+                    tauc[P] += 0.5 * C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
                 }
             }
         }
