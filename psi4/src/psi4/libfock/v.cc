@@ -201,7 +201,7 @@ std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
 
-double VBase::vv10_nlc(SharedMatrix ret) {
+double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     timer_on("V: VV10");
     timer_on("Setup");
 
@@ -236,7 +236,7 @@ double VBase::vv10_nlc(SharedMatrix ret) {
         // Need a points worker per thread, only need RKS-like terms
         auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
         point_tmp->set_ansatz(functional_->ansatz());
-        point_tmp->set_pointers(D_AO_[0]);
+        point_tmp->set_pointers(D);
         nl_point_workers.push_back(point_tmp);
 
         // Scratch dir
@@ -599,7 +599,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     // Do we need VV10?
     double vv10_e = 0.0;
     if (functional_->needs_vv10()) {
-        vv10_e = vv10_nlc(V_AO);
+        vv10_e = vv10_nlc(D_AO_[0], V_AO);
     }
 
     // Set the result
