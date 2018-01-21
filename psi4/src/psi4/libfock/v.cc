@@ -1444,8 +1444,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
     }
 
-    if (functional_->needs_grac() || functional_->needs_vv10()) {
-        throw PSIEXCEPTION("V: UKS cannot compute VV10 or GRAC corrections.");
+    if (functional_->needs_grac()) {
+        throw PSIEXCEPTION("V: UKS cannot compute GRAC corrections.");
     }
 
     // Thread info
@@ -1671,6 +1671,22 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_off("V_xc", rank);
     }
 
+    // Do we need VV10?
+    double vv10_e = 0.0;
+    if (functional_->needs_vv10()) {
+        SharedMatrix Ds = D_AO_[0]->clone();
+        Ds->axpy(1.0, D_AO_[1]);
+        Ds->scale(0.5); // Will be scaled by a factor of 2 later.
+
+        SharedMatrix ret = Ds->clone();
+        ret->zero();
+
+        vv10_e = vv10_nlc(Ds, ret);
+
+        Va_AO->axpy(1.0, ret);
+        Vb_AO->axpy(1.0, ret);
+    }
+
     // Set the result
     if (AO2USO_) {
         ret[0]->apply_symmetry(Va_AO, AO2USO_);
@@ -1680,6 +1696,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         ret[1]->copy(Vb_AO);
     }
 
+    quad_values_["VV10"] = vv10_e;
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"] = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
     quad_values_["RHO_AX"] = std::accumulate(rhoaxq.begin(), rhoaxq.end(), 0.0);
