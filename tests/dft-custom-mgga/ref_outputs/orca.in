@@ -1,0 +1,10 @@
+! VeryTightSCF GRID7 NOFINALGRID
+! revTPSS
+#! PBE0
+#! PW6B95
+! cc-pVDZ NORI
+#! PBEh-3c
+#! HF-3c NOSOSCF
+*xyz 0 1
+Ne 0 0 0
+*

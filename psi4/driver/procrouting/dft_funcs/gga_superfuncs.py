@@ -25,12 +25,12 @@
 #
 # @END LICENSE
 #
-
 """
 List of GGA SuperFunctionals built from LibXC primitives.
 """
 
 from psi4 import core
+
 
 def build_svwn_superfunctional(name, npoints, deriv, restricted):
 
@@ -54,6 +54,7 @@ def build_svwn_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_blyp_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -66,7 +67,9 @@ def build_blyp_superfunctional(name, npoints, deriv, restricted):
     # No spaces, keep it short and according to convention
     sup.set_name('BLYP')
     sup.set_description('    BLYP GGA Exchange-Correlation Functional\n')
-    sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
+    sup.set_citation(
+        '    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n'
+    )
 
     # Add member functionals
     sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', restricted))
@@ -75,6 +78,7 @@ def build_blyp_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_bop_superfunctional(name, npoints, deriv, restricted):
 
@@ -98,6 +102,7 @@ def build_bop_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_b86bpbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -119,6 +124,7 @@ def build_b86bpbe_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_pw86pbe_superfunctional(name, npoints, deriv, restricted):
 
@@ -142,6 +148,7 @@ def build_pw86pbe_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_pbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -163,6 +170,7 @@ def build_pbe_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 # def build_wsvwn_superfunctional(name, npoints, deriv, restricted):
 
@@ -195,6 +203,7 @@ def build_pbe_superfunctional(name, npoints, deriv, restricted):
 #     sup.allocate()
 #     return (sup, False)
 
+
 def build_pw91_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -217,6 +226,30 @@ def build_pw91_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
+def build_mpwpw_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MPWPW')
+    sup.set_description('    mPWPW GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    C. Adamo, V. Barone, J. Chem. Phys., 108, 664, 1998\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_mPW91', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PW91', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
 def build_bp86_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -229,7 +262,8 @@ def build_bp86_superfunctional(name, npoints, deriv, restricted):
     # No spaces, keep it short and according to convention
     sup.set_name('BP86')
     sup.set_description('    BP86 GGA Exchange-Correlation Functional\n')
-    sup.set_citation('    Null\n')
+    sup.set_citation(
+        '   A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n   J. P. Perdew, Phys. Rev. B, 33, 8822, 1986')
 
     # Add member functionals
     sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', restricted))
@@ -238,6 +272,7 @@ def build_bp86_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_ft97_superfunctional(name, npoints, deriv, restricted):
 
@@ -257,20 +292,20 @@ def build_ft97_superfunctional(name, npoints, deriv, restricted):
     sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_FT97_B', restricted))
     sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_FT97', restricted))
 
-
     # Call this last
     sup.allocate()
     return (sup, False)
 
 
 gga_superfunc_list = {
-          "b86bpbe" : build_b86bpbe_superfunctional,
-          "blyp"    : build_blyp_superfunctional,
-          "svwn"    : build_svwn_superfunctional,
-          "pw86pbe" : build_pw86pbe_superfunctional,
-          "pbe"     : build_pbe_superfunctional,
-          "bp86"    : build_bp86_superfunctional,
-          "pw91"    : build_pw91_superfunctional,
-          "ft97"    : build_ft97_superfunctional,
-          "bop"     : build_bop_superfunctional,
+    "b86bpbe": build_b86bpbe_superfunctional,
+    "blyp": build_blyp_superfunctional,
+    "svwn": build_svwn_superfunctional,
+    "pw86pbe": build_pw86pbe_superfunctional,
+    "pbe": build_pbe_superfunctional,
+    "bp86": build_bp86_superfunctional,
+    "pw91": build_pw91_superfunctional,
+    "ft97": build_ft97_superfunctional,
+    "bop": build_bop_superfunctional,
+    "mpwpw": build_mpwpw_superfunctional,
 }

@@ -25,12 +25,12 @@
 #
 # @END LICENSE
 #
-
 """
 List of GGA SuperFunctionals built from LibXC primitives.
 """
 
 from psi4 import core
+
 
 def build_pbe0_superfunctional(name, npoints, deriv, restricted):
 
@@ -46,7 +46,9 @@ def build_pbe0_superfunctional(name, npoints, deriv, restricted):
     # Tab in, trailing newlines
     sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
-    sup.set_citation('    J.P. Perdew et. al., J. Chem. Phys., 105(22), 9982-9985, 1996\n    C. Adamo et. a., J. Chem Phys., 110(13), 6158-6170, 1999\n')
+    sup.set_citation(
+        '    J.P. Perdew et. al., J. Chem. Phys., 105(22), 9982-9985, 1996\n    C. Adamo et. a., J. Chem Phys., 110(13), 6158-6170, 1999\n'
+    )
 
     # Add member functionals
     pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
@@ -59,6 +61,7 @@ def build_pbe0_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_b5050lyp_superfunctional(name, npoints, deriv, restricted):
     # Call this first
@@ -95,6 +98,7 @@ def build_b5050lyp_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_wpbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -109,7 +113,9 @@ def build_wpbe_superfunctional(name, npoints, deriv, restricted):
     # Tab in, trailing newlines
     sup.set_description('    PBE SR-XC Functional (HJS Model)\n')
     # Tab in, trailing newlines
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+    sup.set_citation(
+        '    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n'
+    )
 
     # Add member functionals
     pbe_x = core.LibXCFunctional('XC_GGA_X_HJS_PBE', restricted)
@@ -129,6 +135,7 @@ def build_wpbe_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_wpbe0_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -143,7 +150,9 @@ def build_wpbe0_superfunctional(name, npoints, deriv, restricted):
     # Tab in, trailing newlines
     sup.set_description('    PBE0 SR-XC Functional (HJS Model)\n')
     # Tab in, trailing newlines
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+    sup.set_citation(
+        '    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n'
+    )
 
     # Add member functionals
     pbe_x = core.LibXCFunctional('XC_GGA_X_HJS_PBE', restricted)
@@ -163,6 +172,7 @@ def build_wpbe0_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_wb97xd_superfunctional(name, npoints, deriv, restricted):
 
@@ -196,6 +206,7 @@ def build_hfd_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, ('HF', '-DAS2010'))
 
+
 def build_hf_superfunctional(name, npoints, deriv, restricted):
 
     sup = core.SuperFunctional.blank()
@@ -206,6 +217,7 @@ def build_hf_superfunctional(name, npoints, deriv, restricted):
 
     sup.allocate()
     return (sup, False)
+
 
 def build_hf3c_superfunctional(name, npoints, deriv, restricted):
 
@@ -226,6 +238,7 @@ def build_hf3c_superfunctional(name, npoints, deriv, restricted):
 
     sup.allocate()
     return (sup, ('HF3C', '-d3bj'))
+
 
 def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
 
@@ -264,23 +277,80 @@ def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
     return (sup, ("PBEH3C", "-d3bj"))
 
 
+def build_pw6b95_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('pw6b95')
+    # Tab in, trailing newlines
+    sup.set_description('    PW6B95 Hybrid-meta XC Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('  Y. Zhao and D. Truhlar, J. Phys. Chem. A., 109,5656-5667, 2005\n')
+    #PW6B95(hybrid) 0.00538      1.7382  3.8901  0.00262 0.03668 0.28
+    # Add member functionals
+    pw6 = core.LibXCFunctional('XC_GGA_X_PW91', restricted)
+    # modify PW91 suitable for libxc b=1/X2S is unchanged
+    #  a    =  6.0*bt/X2S;
+    #  b    =  1.0/X2S;
+    #  c    =  bt/(X_FACTOR_C*X2S*X2S);
+    #  d    = -(bt - beta)/(X_FACTOR_C*X2S*X2S);
+    #  f    = 1.0e-6/(X_FACTOR_C*POW(X2S, expo));
+    beta = 0.0018903811666999256  # 5.0*(36.0*math.pi)**(-5.0/3.0)
+    X2S = 0.1282782438530421943003109254455883701296
+    X_FACTOR_C = 0.9305257363491000250020102180716672510262  #    /* 3/8*cur(3/pi)*4^(2/3) */
+    bt = 0.00538  # paper values
+    c_pw = 1.7382  # paper values
+    expo_pw6 = 3.8901  # paperl values
+
+    alpha_pw6 = c_pw / X2S / X2S
+    a_pw6 = 6.0 * bt / X2S
+    b_pw6 = 1.0 / X2S
+    c_pw6 = bt / (X_FACTOR_C * X2S * X2S)
+    d_pw6 = -(bt - beta) / (X_FACTOR_C * X2S * X2S)
+    f_pw6 = 1.0e-6 / (X_FACTOR_C * X2S**expo_pw6)
+    pw6.set_tweak([a_pw6, b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
+    pw6.set_alpha(0.72)
+    sup.add_x_functional(pw6)
+
+    mb95 = core.LibXCFunctional('XC_MGGA_C_BC95', restricted)
+    copp = 0.00262
+    css = 0.03668
+    mb95.set_tweak([css, copp])
+    sup.add_c_functional(mb95)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.28)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
 hyb_superfunc_list = {
-          "pbeh3c"   : build_pbeh3c_superfunctional,
-          "pbe0"     : build_pbe0_superfunctional,
-          "wpbe"     : build_wpbe_superfunctional,
-          "wpbe0"    : build_wpbe0_superfunctional,
-          "b5050lyp" : build_b5050lyp_superfunctional,
-          "wb97x-d"  : build_wb97xd_superfunctional,
-          "hf-d"     : build_hfd_superfunctional,
-          "hf"       : build_hf_superfunctional,
-          "scf"      : build_hf_superfunctional,
-          "hf3c"     : build_hf3c_superfunctional,
-
+    "pbeh3c": build_pbeh3c_superfunctional,
+    "pbe0": build_pbe0_superfunctional,
+    "wpbe": build_wpbe_superfunctional,
+    "wpbe0": build_wpbe0_superfunctional,
+    "b5050lyp": build_b5050lyp_superfunctional,
+    "wb97x-d": build_wb97xd_superfunctional,
+    #          "wb97x-d3" : build_wb97xd3_superfunctional,
+    "hf-d": build_hfd_superfunctional,
+    "hf": build_hf_superfunctional,
+    "scf": build_hf_superfunctional,
+    "hf3c": build_hf3c_superfunctional,
+    "pw6b95": build_pw6b95_superfunctional,
 }
-
-
-
-
 
 # def build_wpbesol_superfunctional(name, npoints, deriv, restricted):
 
@@ -314,7 +384,6 @@ hyb_superfunc_list = {
 #     sup.allocate()
 #     return (sup, False)
 
-
 # def build_wpbesol0_superfunctional(name, npoints, deriv, restricted):
 
 #     sup = build_wpbesol_superfunctional(name, npoints, deriv)[0]
@@ -323,3 +392,38 @@ hyb_superfunc_list = {
 #     sup.set_x_omega(0.3)
 #     sup.set_x_alpha(0.25)
 #     return (sup, False)
+
+#def build_wb97xd3_superfunctional(name, npoints, deriv, restricted):
+#   UNFINISHED/IMPOSSIBLE
+#   # this needs custom parameters since B97 is re-parametrized again.
+#   # But there is no interface in LibXC
+#   # Call this first
+#   sup = core.SuperFunctional.blank()
+#   sup.set_max_points(npoints)
+#   sup.set_deriv(deriv)
+#
+#   # => User-Customization <= #
+#
+#   # No spaces, keep it short and according to convention
+#   sup.set_name('wB97X-D3')
+#   # Tab in, trailing newlines
+#   sup.set_description('    Parameterized Hybrid LRC B97 GGA XC Functional with D3(0) Dispersion\n')
+#   # Tab in, trailing newlines
+#   sup.set_citation(' Y.-S. Lin, G.-D. Li, S.-P. M., and J.-D. Chai J. Chem. Theory and Comput., 9,  263-272, 2013 \n')
+#
+#   # Add member functionals
+#   wb97_x = core.LibXCFunctional('XC_GGA_X_', restricted)
+#   wb97_x.set_omega(0.3)
+#   wb97_x.set_alpha(0.804272)
+#   sup.add_x_functional(wb97_x)
+#   sup.add_c_functional(core.LibXCFunctional('XC_GGA_', restricted))
+#
+#   # Set GKS up after adding functionals
+#   sup.set_x_omega(0.25)
+#   sup.set_c_omega(0.0)
+#   sup.set_x_alpha(0.195728)
+#   sup.set_c_alpha(0.0)
+#
+#   # Call this last
+#   sup.allocate()
+#   return (sup, ('wB97', '-d3zero'))

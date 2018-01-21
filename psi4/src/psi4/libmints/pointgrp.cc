@@ -370,6 +370,19 @@ PointGroup::print(std::string out) const
     printer->Printf("PointGroup: %s\n", symb.c_str());
 }
 
+std::string PointGroup::irrep_bits_to_string(int irrep_bits) const {
+    std::string irrep_str;
+    const CharacterTable c_table = char_table();
+    for (int irrep = 0; irrep < c_table.nirrep(); ++irrep) {
+        if ((1 << irrep) & irrep_bits) {
+            if (!irrep_str.empty()) {
+                irrep_str += ", ";
+            }
+            irrep_str += c_table.gamma(irrep).symbol();
+        }
+    }
+    return irrep_str;
+}
 }
 
 /////////////////////////////////////////////////////////////////////////////

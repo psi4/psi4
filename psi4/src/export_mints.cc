@@ -498,8 +498,8 @@ void export_mints(py::module& m)
              "Is the deriv_density already backtransformed? Default is False", py::arg("val") = false)
         .def("compute", &Deriv::compute, "Compute the gradient");
 
-    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
-    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;
 //Something here is wrong. These will not work with py::args defined, not sure why
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
         .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
@@ -509,7 +509,14 @@ void export_mints(py::module& m)
              "Returns a new Matrix object named name with default dimensions");
 //              py::arg("name"), py::arg("symmetry"));
 
-    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations")
+    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
+        m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
+        .def(py::init<std::shared_ptr<Molecule>, int, bool, bool>())
+        .def("ncd", &CdSalcList::ncd, "Return the number of cartesian displacements SALCs")
+        .def("create_matrices", &CdSalcList::create_matrices,
+             "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.",
+             py::arg("basename"), py::arg("factory"))
+        .def("salc_name", &CdSalcList::salc_name, "Return the name of SALC #i.", py::arg("i"))
         .def("print_out", &CdSalcList::print, "Print the SALC to the output file")
         .def("matrix", &CdSalcList::matrix, "Return the SALCs")
         .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return only the SALCS in irrep h", py::arg("h"));
@@ -828,9 +835,19 @@ void export_mints(py::module& m)
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
         .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
         .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
-        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals");
+        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad, "First nuclear derivative T + V + Perturb integrals")
 
-    py::class_<Vector3>(m, "Vector3",
+        // First and second derivatives of one and two electron integrals in AO and MO basis.
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices") 
+        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
+        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1, "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2, "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices");
+
+        py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
                         "and their common operations")
         .def(py::init<double>())
@@ -1076,7 +1093,11 @@ void export_mints(py::module& m)
                       "Units (Angstrom or Bohr) used to define the geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
         .def("geometry", &Molecule::geometry,
-             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
+             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
+        .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,
+                     "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
+        .def("nuclear_repulsion_energy_deriv2", &Molecule::nuclear_repulsion_energy_deriv2,
+                     "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")
         .def("aotoso", &PetiteList::aotoso, "Return the AO->SO coefficient matrix")

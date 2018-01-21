@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 1.2a1.dev770 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {snsmp2build4} 2084e95 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,16 +12,16 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
     (doi: 10.1021/acs.jctc.7b00174)
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:40PM
+    Psi4 started on: Wednesday, 20 December 2017 12:42PM
 
-    Process ID:  20574
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID:  30405
+    PSIDATADIR: /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -39,37 +39,35 @@ H 1 1.0 2 104.5
 
 set basis cc-pvqz
 set cubeprop_tasks ['esp']
+set e_convergence 8
+set d_convergence 7
 
 e, wfn = energy('scf', return_wfn=True)
 cubeprop(wfn)
 
-#for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
-#    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
-#    this_cube = open('Psi_a_%s.cube' % n,'r').read()
-#    compare_cubes(ref_cube,this_cube,"Comparing MO %s" % n) #TEST
-#
 for s in ['Dt', 'ESP']:
-    ref_cube = open('%s.cube.ref' % s,'r').read()
-    this_cube = open('%s.cube' % s,'r').read()
+    ref_cube = '%s.cube.ref' % s
+    this_cube = '%s.cube' % s
     compare_cubes(ref_cube,this_cube,"Comparing %s" % s) #TEST
 
 --------------------------------------------------------------------------
 
 *** tstart() called on psinet
-*** at Mon May 15 15:40:18 2017
+*** at Wed Dec 20 12:42:21 2017
 
    => Loading Basis Set <=
 
     Name: CC-PVQZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   319 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
-    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
+    atoms 1   entry O          line   339 file /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
+    atoms 2-3 entry H          line    22 file /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4/basis/cc-pvqz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -106,8 +104,8 @@ for s in ['Dt', 'ESP']:
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is SAD.
-  Energy threshold   = 1.00e-06
-  Density threshold  = 1.00e-06
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
@@ -125,8 +123,8 @@ for s in ['Dt', 'ESP']:
     Name: (CC-PVQZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   252 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvqz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvqz-jkfit.gbs 
+    atoms 1   entry O          line   253 file /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4/basis/cc-pvqz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /home/psilocaluser/gits/hrw-ecp/objdir-gnu/stage/usr/local/psi4/share/psi4/basis/cc-pvqz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -175,14 +173,16 @@ for s in ['Dt', 'ESP']:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.93955398282627   -7.59396e+01   2.64148e-02 
-   @DF-RHF iter   1:   -76.01228253329379   -7.27286e-02   5.41678e-03 
-   @DF-RHF iter   2:   -76.04517976166221   -3.28972e-02   3.32984e-03 DIIS
-   @DF-RHF iter   3:   -76.05791359169598   -1.27338e-02   4.50246e-04 DIIS
-   @DF-RHF iter   4:   -76.05843617689634   -5.22585e-04   1.37230e-04 DIIS
-   @DF-RHF iter   5:   -76.05851034178541   -7.41649e-05   2.87403e-05 DIIS
-   @DF-RHF iter   6:   -76.05851443387724   -4.09209e-06   4.08121e-06 DIIS
-   @DF-RHF iter   7:   -76.05851450856505   -7.46878e-08   5.23981e-07 DIIS
+   @DF-RHF iter   0:   -75.89737393755593   -7.58974e+01   2.63099e-02 
+   @DF-RHF iter   1:   -76.01732499876968   -1.19951e-01   5.18679e-03 
+   @DF-RHF iter   2:   -76.04634099673332   -2.90160e-02   3.22164e-03 DIIS
+   @DF-RHF iter   3:   -76.05812208961348   -1.17811e-02   3.75110e-04 DIIS
+   @DF-RHF iter   4:   -76.05846333752271   -3.41248e-04   1.13684e-04 DIIS
+   @DF-RHF iter   5:   -76.05851117472366   -4.78372e-05   2.52722e-05 DIIS
+   @DF-RHF iter   6:   -76.05851442015249   -3.24543e-06   4.16129e-06 DIIS
+   @DF-RHF iter   7:   -76.05851450759140   -8.74389e-08   6.27944e-07 DIIS
+   @DF-RHF iter   8:   -76.05851450947463   -1.88324e-09   1.17003e-07 DIIS
+   @DF-RHF iter   9:   -76.05851450954660   -7.19638e-11   2.81337e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -191,48 +191,48 @@ for s in ['Dt', 'ESP']:
 
     Doubly Occupied:                                                      
 
-       1A1   -20.567047     2A1    -1.328482     1B2    -0.691521  
-       3A1    -0.573764     1B1    -0.504850  
+       1A1   -20.567045     2A1    -1.328482     1B2    -0.691521  
+       3A1    -0.573763     1B1    -0.504849  
 
     Virtual:                                                              
 
        4A1     0.113371     2B2     0.168248     3B2     0.436970  
-       5A1     0.463766     6A1     0.485948     2B1     0.584148  
+       5A1     0.463767     6A1     0.485948     2B1     0.584148  
        7A1     0.599987     4B2     0.609939     1A2     0.651067  
-       3B1     0.715000     8A1     0.856374     5B2     0.905773  
+       3B1     0.715000     8A1     0.856375     5B2     0.905774  
        9A1     1.090279     6B2     1.134387     7B2     1.356625  
-      10A1     1.417923     4B1     1.474359     2A2     1.484790  
-      11A1     1.585241    12A1     1.674545     8B2     1.904710  
-       5B1     2.066372    13A1     2.181672     3A2     2.280836  
+      10A1     1.417924     4B1     1.474360     2A2     1.484791  
+      11A1     1.585241    12A1     1.674545     8B2     1.904711  
+       5B1     2.066372    13A1     2.181673     3A2     2.280836  
        9B2     2.348130     6B1     2.418545    14A1     2.467411  
       10B2     2.512937     4A2     2.553423     7B1     2.559448  
       11B2     2.627396    15A1     2.658214     5A2     2.816721  
-      16A1     2.842879     8B1     3.046096    12B2     3.090456  
-      13B2     3.248693    17A1     3.360576    18A1     3.379298  
-      14B2     3.578615    19A1     3.857201     9B1     3.948685  
-       6A2     4.149721    10B1     4.215792    20A1     4.237701  
-      15B2     4.407993    21A1     4.494818    22A1     4.552677  
-      11B1     4.647383    16B2     4.809861     7A2     4.816346  
-      17B2     5.273683    23A1     5.352045    12B1     5.991632  
+      16A1     2.842880     8B1     3.046097    12B2     3.090456  
+      13B2     3.248694    17A1     3.360577    18A1     3.379299  
+      14B2     3.578615    19A1     3.857202     9B1     3.948686  
+       6A2     4.149722    10B1     4.215793    20A1     4.237702  
+      15B2     4.407994    21A1     4.494819    22A1     4.552678  
+      11B1     4.647384    16B2     4.809862     7A2     4.816347  
+      17B2     5.273684    23A1     5.352046    12B1     5.991633  
       24A1     6.072246     8A2     6.201554    18B2     6.253254  
-       9A2     6.570139    25A1     6.710242    19B2     6.952429  
+       9A2     6.570140    25A1     6.710243    19B2     6.952429  
       20B2     7.179774    13B1     7.244158    14B1     7.329008  
-      10A2     7.419264    26A1     7.429323    21B2     7.455000  
-      27A1     7.568594    22B2     7.984300    15B1     8.037735  
+      10A2     7.419264    26A1     7.429324    21B2     7.455000  
+      27A1     7.568593    22B2     7.984300    15B1     8.037735  
       28A1     8.085897    16B1     8.102732    11A2     8.191329  
       29A1     8.227090    23B2     8.247578    12A2     8.313927  
       30A1     8.401405    24B2     8.554706    17B1     8.740049  
-      13A2     8.755907    31A1     8.832917    25B2     9.061613  
-      32A1     9.186757    26B2     9.263817    33A1    10.054914  
-      18B1    10.135485    27B2    10.186663    34A1    10.377851  
-      19B1    10.580241    14A2    10.635379    35A1    10.677421  
-      28B2    11.114972    15A2    11.284916    36A1    11.516652  
-      20B1    11.623001    29B2    11.625122    21B1    11.852778  
-      37A1    11.971207    22B1    12.163851    38A1    12.258894  
-      16A2    12.297233    30B2    12.427037    31B2    13.377333  
-      39A1    13.426883    23B1    13.988473    17A2    14.321398  
-      40A1    14.368401    32B2    14.422786    41A1    16.151465  
-      33B2    16.513935    42A1    43.886493  
+      13A2     8.755908    31A1     8.832917    25B2     9.061613  
+      32A1     9.186758    26B2     9.263817    33A1    10.054914  
+      18B1    10.135486    27B2    10.186664    34A1    10.377852  
+      19B1    10.580242    14A2    10.635380    35A1    10.677422  
+      28B2    11.114973    15A2    11.284917    36A1    11.516653  
+      20B1    11.623002    29B2    11.625123    21B1    11.852779  
+      37A1    11.971208    22B1    12.163852    38A1    12.258896  
+      16A2    12.297234    30B2    12.427038    31B2    13.377334  
+      39A1    13.426884    23B1    13.988474    17A2    14.321399  
+      40A1    14.368402    32B2    14.422787    41A1    16.151465  
+      33B2    16.513936    42A1    43.886494  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -240,18 +240,14 @@ for s in ['Dt', 'ESP']:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.05851450856505
+  @DF-RHF Final Energy:   -76.05851450954660
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.3886638712793768
-    Two-Electron Energy =                  37.5286838327422601
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0585145085650538
+    One-Electron Energy =                -122.3886388396394551
+    Two-Electron Energy =                  37.5286588001207875
+    Total Energy =                        -76.0585145095465975
 
 
 
@@ -272,14 +268,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0412     Total:     2.0412
 
 
-*** tstop() called on psinet at Mon May 15 15:40:19 2017
+*** tstop() called on psinet at Wed Dec 20 12:42:22 2017
 Module time:
-	user time   =       1.04 seconds =       0.02 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.04 seconds =       0.02 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
   ==> One Electron Grid Properties (v2.0) <==
 

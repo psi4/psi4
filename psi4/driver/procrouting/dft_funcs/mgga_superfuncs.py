@@ -25,12 +25,12 @@
 #
 # @END LICENSE
 #
-
 """
 List of MGGA SuperFunctionals built from LibXC primitives.
 """
 
 from psi4 import core
+
 
 def build_dldf_superfunctional(name, npoints, deriv, restricted):
 
@@ -59,17 +59,20 @@ def build_dldf_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_dldfd09_superfunctional(name, npoints, deriv, restricted):
     sup, disp = build_dldf_superfunctional(name, npoints, deriv, restricted)
     sup.set_name('dlDF+D09')
 
     return (sup, ('dlDF', '-DAS2009'))
 
+
 def build_dldfd10_superfunctional(name, npoints, deriv, restricted):
     sup, disp = build_dldf_superfunctional(name, npoints, deriv, restricted)
     sup.set_name('dlDF+D')
 
     return (sup, ('dlDF', '-DAS2010'))
+
 
 def build_m11_l_superfunctional(name, npoints, deriv, restricted):
 
@@ -92,6 +95,7 @@ def build_m11_l_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_mgga_ms0_superfunctional(name, npoints, deriv, restricted):
 
@@ -138,6 +142,7 @@ def build_mgga_ms1_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -161,12 +166,60 @@ def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 
+def build_tpss_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('TPSS')
+    sup.set_description('    TPSS Meta-GGA XC Functional\n')
+    sup.set_citation('   J. Tao, J. P. Perdew, V. N. Staroverov, G. E. Scuseria, Phys. Rev. Lett., 91, 146401, 2003\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_TPSS', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_TPSS', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_revtpss_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('REVTPSS')
+    sup.set_description('    revised TPSS Meta-GGA XC Functional\n')
+    sup.set_citation('   J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_REVTPSS', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_REVTPSS', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
 mgga_superfunc_list = {
-          "dldf"     : build_dldf_superfunctional,
-          "dldf+d09" : build_dldfd09_superfunctional,
-          "dldf+d"   : build_dldfd10_superfunctional,
-          "m11-l"    : build_m11_l_superfunctional,
-          "mgga_ms0" : build_mgga_ms0_superfunctional,
-          "mgga_ms1" : build_mgga_ms1_superfunctional,
-          "mgga_ms2" : build_mgga_ms2_superfunctional,
+    "dldf": build_dldf_superfunctional,
+    "dldf+d09": build_dldfd09_superfunctional,
+    "dldf+d": build_dldfd10_superfunctional,
+    "m11-l": build_m11_l_superfunctional,
+    "mgga_ms0": build_mgga_ms0_superfunctional,
+    "mgga_ms1": build_mgga_ms1_superfunctional,
+    "mgga_ms2": build_mgga_ms2_superfunctional,
+    "tpss": build_tpss_superfunctional,
+    "revtpss": build_revtpss_superfunctional,
 }

@@ -1073,7 +1073,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     bool ignore_symmetry = nirrep_ == 1 || jk->C1();
 
     Dimension nvirpi = nmopi_ - doccpi_;
-    CdSalcList SALCList(molecule_, factory_, 0xFF, false, false);
+    CdSalcList SALCList(molecule_, 0xFF, false, false);
 
 
     /*

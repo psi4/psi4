@@ -44,7 +44,6 @@ struct dpdfile2;
 
 class PSIO;
 class Vector;
-class SimpleMatrix;
 class Dimension;
 class Molecule;
 class Vector3;
@@ -148,7 +147,6 @@ public:
     /**
      * Constructor, sets up the matrix
      * Convenience case for 1 irrep
-     * Note: You should be using SimpleMatrix
      *
      * @param rows Row dimensionality.
      * @param cols Column dimensionality.
@@ -157,7 +155,6 @@ public:
     /**
      * Constructor, sets up the matrix
      * Convenience case for 1 irrep
-     * Note: You should be using SimpleMatrix
      *
      * @param name Name of the matrix.
      * @param rows Row dimensionality.
@@ -360,16 +357,6 @@ public:
     /** @} */
 
     /**
-     * @{
-     * Copies sq to matrix_
-     *
-     * @param sq SimpleMatrix object to set this matrix to.
-     */
-    void set(const SimpleMatrix * const sq);
-    void set(const std::shared_ptr<SimpleMatrix>& sq);
-    /** @} */
-
-    /**
      * Set a single element of matrix_
      *
      * @param h Subblock to address
@@ -537,13 +524,6 @@ public:
      * @returns the matrix
      */
     double *to_lower_triangle() const;
-
-    /**
-     * Converts this to a full non-symmetry-block matrix
-     *
-     * @returns The SimpleMatrix copy of the current matrix.
-     */
-    SimpleMatrix *to_simple_matrix() const;
 
     /**
      * Sets the name of the matrix, used in print(...) and save(...)
@@ -747,16 +727,14 @@ public:
     /// Scale column n of irrep h by a
     void scale_column(int h, int n, double a);
 
-    /** Special function to transform a SimpleMatrix (no symmetry) into
-     *  a symmetry matrix.
+    /** Special function to add symmetry to a Matrix .
      *
-     *  \param a SimpleMatrix to transform
+     *  \param a Matrix to transform
      *  \param transformer The matrix returned by PetiteList::aotoso() that acts as the transformer
      */
     void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
-    /** Special function to transform a symmetry matrix into
-     *  a SimpleMatrix (no symmetry).
+    /** Special function to remove symmetry from a matrix.
      *
      *  \param a symmetry matrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer

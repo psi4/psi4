@@ -24,6 +24,15 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
 #    >>> make install
 
+#  <<<  Required build dependencies that Psi4 can't build itself  >>>
+#
+#    - CMake (e.g., `conda install cmake`)
+#    - C++ and C compilers (C++11 compliant)
+#    - BLAS/LAPACK (also runtime; e.g., `conda install mkl mkl-include`)
+#    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
+#    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
+#    - mpmath (avoidable if gau2grid pre-built; e.g., `conda install mpmath`)
+
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
 #  <<<  Compilers and flags  >>>
@@ -42,7 +51,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gdma, Libint, PCMSolver, pybind11, simint, Libxc
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint, PCMSolver, pybind11, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -67,7 +76,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"
 #    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
 #    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /)
-#                            Must start with /"
+#                            Must start with: / . Used to imitate python install: /python3.6/site-packages ."
 
 ############################  Options: Build What?  ############################
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
@@ -78,6 +87,8 @@ option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
+option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
+option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (can also be added at runtime)" OFF)
 # These options are relevant to pasture
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -168,6 +179,7 @@ ExternalProject_Add(psi4-core
            dkh_external
            libefp_external
            erd_external
+           gau2grid_external
            gdma_external
            libint_external
            pcmsolver_external
@@ -213,6 +225,7 @@ ExternalProject_Add(psi4-core
               -Ddkh_DIR=${dkh_DIR}
               -Dlibefp_DIR=${libefp_DIR}
               -Derd_DIR=${erd_DIR}
+              -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
               -DLibint_DIR=${Libint_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}

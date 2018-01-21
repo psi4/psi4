@@ -1473,7 +1473,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Spread alpha for logarithmic pruning. !expert -*/
     options.add_double("DFT_PRUNING_ALPHA",1.0);
     /*- The maximum number of grid points per evaluation block. !expert -*/
-    options.add_int("DFT_BLOCK_MAX_POINTS",200);
+    options.add_int("DFT_BLOCK_MAX_POINTS",256);
     /*- The minimum number of grid points per evaluation block. !expert -*/
     options.add_int("DFT_BLOCK_MIN_POINTS",100);
     /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/

@@ -31,6 +31,7 @@
 #include "psi4/libmints/typedefs.h"
 #include <vector>
 #include <map>
+#include <string>
 
 namespace psi {
 class BasisSet;
@@ -134,7 +135,7 @@ public:
     virtual void print_header() const;
 };
 
-// => APPLIED CLASSES <= //
+// => Derived Classes <= //
 
 class RV : public VBase {
 

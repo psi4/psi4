@@ -124,7 +124,6 @@ public:
 class CdSalcList
 {
     SharedMolecule molecule_;
-    std::shared_ptr<MatrixFactory> factory_;
 
     char needed_irreps_;
     bool project_out_translations_;
@@ -155,20 +154,18 @@ public:
      *  \param project_out_rotations Project out rotational SALCs
      */
     CdSalcList(SharedMolecule mol,
-               std::shared_ptr<MatrixFactory> fact,
                int needed_irreps=0xFF,
                bool project_out_translations=true,
                bool project_out_rotations=true);
-    virtual ~CdSalcList();
+    ~CdSalcList();
 
-    /*! Returns the number of combintations. It may not be 3n-5 or 3n-6.
-     *  The value returned depends on needed_irreps and the project_out*
-     *  settings.
+    /*! Returns the number of SALCs. It may not be 3n-5 or 3n-6. The value
+     *  returned depends on needed_irreps and the project_out* settings.
      */
     size_t ncd() const { return salcs_.size(); }
 
-    std::vector<SharedMatrix > create_matrices(const std::string& basename);
-    std::string name_of_component(int component);
+    std::vector<SharedMatrix > create_matrices(const std::string &basename, const MatrixFactory &factory) const;
+    std::string salc_name(int index) const;
 
     char needed_irreps() const { return needed_irreps_; }
     int nirrep(void) const { return nirrep_; }
@@ -180,8 +177,8 @@ public:
 
     const CdSalcWRTAtom& atom_salc(int i) const { return atom_salcs_[i]; }
 
-    SharedMatrix matrix();
-    SharedMatrix matrix_irrep(int h); // return only salcs of a given irrep
+    SharedMatrix matrix() const;
+    SharedMatrix matrix_irrep(int h) const; // return only salcs of a given irrep
     //SharedMatrix matrix_projected_out() const;
 
     void print() const;

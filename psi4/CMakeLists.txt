@@ -99,6 +99,11 @@ else()
     message(STATUS "Disabled erd")
 endif()
 
+find_package(gau2grid 0.1 CONFIG REQUIRED)
+get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
+
 if(${ENABLE_gdma})
     find_package(gdma 2.2.6 CONFIG REQUIRED)
     get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)

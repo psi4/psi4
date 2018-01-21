@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """
 Module to hold and distribute the -D dispersion correction parameters.
 """
@@ -36,18 +35,17 @@ try:
 except ImportError:
     from .exceptions import *
 
-
 ## ==> Dispersion Aliases and Parameters <== ##
 
 # This defines the -D aliases for all of psi4
 dash_alias = {
-    '-d': '-d2p4',     # means -D aliases to a -D2 level dispersion correction, as opposed to -D3
-    '-d2': '-d2p4',    # means -D2 uses psi4's internal -D2 correction, as opposed to calling dftd3
+    '-d': '-d2p4',  # means -D aliases to a -D2 level dispersion correction, as opposed to -D3
+    '-d2': '-d2p4',  # means -D2 uses psi4's internal -D2 correction, as opposed to calling dftd3
     '-d3': '-d3zero',  # means -D3 uses the original zero-damping fn, as opposed to bj-damping
     '-d3m': '-d3mzero',  # means -D3 uses the 3-param zero-damping fn, refit for short-range
-    }
+}
 
-dash_alias_reverse = {v : k for k, v in dash_alias.items()}
+dash_alias_reverse = {v: k for k, v in dash_alias.items()}
 
 # The dashcoeff dict below defines the -D parameters for all of psi4. 'd2p4' are
 #   taken from already defined functionals in psi4. The remainder of the parameters are
@@ -80,6 +78,7 @@ dashcoeff = {
         'b2plyp'      : {'s6': 0.55, 'alpha6': 20.0},  # in psi4  #IN
         'b2gp-plyp'   : {'s6': 0.4,  'alpha6': 20.0},
         'dsd-blyp'    : {'s6': 0.41, 'alpha6': 60.0},  # in psi4
+        'core-dsd-blyp'    : {'s6': 0.41, 'alpha6': 60.0},  # in psi4
     },
     'd3zero': {
         'hf'          : {'s6': 1.0,  's8': 1.746, 'sr6': 1.158, 'alpha6': 14.0},  # in psi4  #IN
@@ -128,6 +127,7 @@ dashcoeff = {
         'revpbe0'     : {'s6': 1.0,  's8': 0.792, 'sr6': 0.949, 'alpha6': 14.0},
         'revpbe38'    : {'s6': 1.0,  's8': 0.862, 'sr6': 1.021, 'alpha6': 14.0},
         'rpw86pbe'    : {'s6': 1.0,  's8': 0.901, 'sr6': 1.224, 'alpha6': 14.0},
+        'wb97x'       : {'s6': 1.0,  's8': 1.094, 'sr6': 1.281, 'alpha6': 14.0},
     },
     'd3bj': {
         # special HF/DFT with eBSSE correction
@@ -171,7 +171,9 @@ dashcoeff = {
         'b97-d'       : {'s6': 1.000, 's8':  2.2609, 'a1':  0.5545, 'a2': 3.2297},  # in psi4  #IN
         'blyp'        : {'s6': 1.000, 's8':  2.6996, 'a1':  0.4298, 'a2': 4.2359},  # in psi4  #IN
         'bp86'        : {'s6': 1.000, 's8':  3.2822, 'a1':  0.3946, 'a2': 4.8516},  # in psi4  #IN
-        'dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.000,  'a2': 6.0519},  # in psi4
+        'dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.0000, 'a2': 6.0519},  # in psi4
+        'core-dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.0000, 'a2': 6.0519},  # in psi4
+        #   'dsd-blyp'    : {'s6': 0.500, 's8':  0.2112, 'a1':  0.0009, 'a2': 5.9807},  # in psi4; special params for frozen-core DSD-BLYP version; not published
         'pbe0'        : {'s6': 1.000, 's8':  1.2177, 'a1':  0.4145, 'a2': 4.8593},  # in psi4  #IN
         'pbe'         : {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407},  # in psi4  #IN
         'pw6b95'      : {'s6': 1.000, 's8':  0.7257, 'a1':  0.2076, 'a2': 6.3750},
@@ -182,6 +184,11 @@ dashcoeff = {
         'rpw86pbe'    : {'s6': 1.000, 's8':  1.3845, 'a1':  0.4613, 'a2': 4.5062},
         'tpss0'       : {'s6': 1.000, 's8':  1.2576, 'a1':  0.3768, 'a2': 4.5865},
         'tpss'        : {'s6': 1.000, 's8':  1.9435, 'a1':  0.4535, 'a2': 4.4752},
+        'revtpss'     : {'s6': 1.000, 's8':  1.4023, 'a1':  0.4426, 'a2': 4.4723},
+        'dsd-pbeb86'  : {'s6': 0.418, 's8':  0.0000, 'a1':  0.0000, 'a2': 5.6500},
+        'dsd-pbeb95'  : {'s6': 0.610, 's8':  0.0000, 'a1':  0.0000, 'a2': 6.2000},
+        'b2gpplyp'    : {'s6': 0.560, 's8':  0.2597, 'a1':  0.0000, 'a2': 6.3332},
+        'scan'        : {'s6': 1.000, 's8':  0.0000, 'a1':  0.5380, 'a2': 5.4200},
     },
     'd3mzero': {  # alpha6 = 14.0
         'b2plyp'      : {'s6': 0.640, 's8':  0.717543, 'sr6': 1.313134, 'beta': 0.016035},
@@ -208,6 +215,7 @@ dashcoeff = {
 # Full list of all possible endings
 full_dash_keys = list(dashcoeff) + [x.replace('-', '') for x in list(dash_alias)]
 
+
 def dash_server(func, dashlvl):
     """ Returns the dictionary of keys for default empirical parameters"""
 
@@ -216,7 +224,8 @@ def dash_server(func, dashlvl):
     dashlvleff = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
 
     if dashlvleff not in dashcoeff.keys():
-        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
+        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl,
+                                                                                                 dashcoeff.keys()))
 
     func = func.lower()
     if func not in dashcoeff[dashlvleff].keys():
@@ -278,6 +287,7 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
              dashcoeff['a2'],
              0.0, 6)
     else:
-        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
+        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl,
+                                                                                                 dashcoeff.keys()))
 
     return returnstring
