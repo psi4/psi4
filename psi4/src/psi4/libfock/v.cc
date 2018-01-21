@@ -1444,8 +1444,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
     }
 
-    if (functional_->needs_grac()) {
-        throw PSIEXCEPTION("V: UKS cannot compute GRAC corrections.");
+    if (functional_->needs_grac() || functional_->needs_vv10()) {
+        throw PSIEXCEPTION("V: UKS cannot compute VV10 or GRAC corrections.");
     }
 
     // Thread info
@@ -1683,8 +1683,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
 
         vv10_e = vv10_nlc(Ds, ret);
 
-        Va_AO->axpy(1.0, ret);
-        Vb_AO->axpy(1.0, ret);
+        Va_AO->axpy(0.5, ret);
+        Vb_AO->axpy(0.5, ret);
     }
 
     // Set the result
