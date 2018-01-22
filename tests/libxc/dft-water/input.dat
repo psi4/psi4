@@ -1,0 +1,152 @@
+molecule h2o {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+no_reorient
+}
+
+set {
+   basis 6-31G
+   dft_radial_points 200
+   dft_spherical_points 590                
+   guess sad
+   e_convergence 9 
+   d_convergence 9 
+}
+
+qchem_data = {                       #TEST
+      'M06':  -76.3513036943,        #TEST
+ 'wB97X-D3':  -76.3631809917,        #TEST
+     'BB1K':  -76.3484183323,        #TEST
+    'B1LYP':   -76.353775513,        #TEST
+'LRC-wPBEh':  -76.3105124439,        #TEST
+     'wB97':  -76.3679448108,        #TEST
+    'B3LYP':  -76.3850899091,        #TEST
+ 'B5050LYP':  -76.3352092048,        #TEST
+   'B1PW91':  -76.3662735666,        #TEST
+   'B97M-V':   -76.359760211,        #TEST
+ 'MGGA_MS2':  -76.3943498117,        #TEST
+ 'MGGA_MS0':  -76.3994320535,        #TEST
+    'wB97X':  -76.3633308351,        #TEST
+  'LC-VV10':  -76.2999698219,        #TEST
+    'B3P86':  -76.4018451142,        #TEST
+  'wB97M-V':  -76.3525086294,        #TEST
+      'M05':  -76.3495839034,        #TEST
+'CAM-B3LYP':  -76.3556131153,        #TEST
+   'M06-2X':   -76.349002993,        #TEST
+  'MPW1B95':  -76.3509384412,        #TEST
+     'TPSS':  -76.3883300339,        #TEST
+    'PWB6K':   -76.409863593,        #TEST
+    'B97-1':  -76.3600126249,        #TEST
+     'EDF2':  -76.3450487085,        #TEST
+    'O3LYP':  -76.3594550251,        #TEST
+   'BHHLYP':  -76.3431790184,        #TEST
+     'VV10':  -76.4786514994,        #TEST
+     'BP86':  -76.3853464707,        #TEST
+      'B97':  -76.3583049672,        #TEST
+    'B97-2':  -76.3592390011,        #TEST
+    'TPSSh':  -76.3806321561,        #TEST
+   'B97-D3':  -76.3448830742,        #TEST
+    'B97-K':  -76.3532885259,        #TEST
+ 'LRC-wPBE':  -76.3231977319,        #TEST
+ 'revTPSSh':   -76.353009954,        #TEST
+      'BOP':  -76.3655205429,        #TEST
+    'B1B95':  -76.3542909285,        #TEST
+  'HCTH147':  -76.3795700801,        #TEST
+    'M11-L':  -76.3634719346,        #TEST
+   'M08-SO':  -76.3328381854,        #TEST
+     'PBE0':  -76.3011288827,        #TEST
+      'PBE':  -76.2983301284,        #TEST
+     'PW91':  -76.3556764834,        #TEST
+    'B97-D':  -76.3448936668,        #TEST
+    'MPW1K':  -76.3571352506,        #TEST
+   'MPWB1K':  -76.3458871109,        #TEST
+  'HCTH407':  -76.3751427842,        #TEST
+     'dlDF':  -76.8428067094,        #TEST
+   'M08-HX':   -76.349820226,        #TEST
+  'HCTH120':  -76.3756781889,        #TEST
+   'M05-2X':  -76.3685940515,        #TEST
+   'B3PW91':  -76.3574933252,        #TEST
+  'wB97X-V':  -76.3540786402,        #TEST
+     'EDF1':  -76.3971372179,        #TEST
+  'revTPSS':  -76.3563235056,        #TEST
+  'wB97X-D':  -76.3625422648,        #TEST
+    'B97-3':   -76.365757473,        #TEST
+ 'MGGA_MS1':  -76.3863611957,        #TEST
+      'M11':  -76.3548246737,        #TEST
+   'PW6B95':  -76.4636801397,        #TEST
+   'B3LYP5':  -76.3479565264,        #TEST
+    'X3LYP':  -76.3550695373,        #TEST
+     'BLYP':  -76.3649513839,        #TEST
+   'HCTH93':  -76.3690959506,        #TEST
+   'M06-HF':  -76.3438580561         #TEST
+#   'PBEOP':  -76.3113060897,        #TEST
+# 'MN12-SX':  -76.3292426233,        #TEST
+#     'GAM':   -76.351646627,        #TEST
+#MGGA_MS2h':  -76.3874519076,        #TEST
+# 'SOGGA11':  -76.3728240224,        #TEST
+# 'LRC-BOP':  -76.2298882864,        #TEST
+#    'PKZB':  -76.2392402265,        #TEST
+# 'revPBE0':  -76.3469704408,        #TEST
+#  'N12-SX':  -76.3362254975,        #TEST
+#  'revPBE':  -76.3594661693,        #TEST
+# 't-HCTHh':  -76.3688723507,        #TEST
+# 'wM06-D3':  -76.3597621058,        #TEST
+#   'PBE50':  -76.3045269871,        #TEST
+#     'N12':  -76.3313530822,        #TEST
+#   'M06-L':     -76.3773597,        #TEST
+#  'MN12-L':  -76.3121263959,        #TEST
+#  'B3TLAP':  -76.1762459451,        #TEST
+# 'MPW1LYP':  -76.3515538422,        #TEST
+#SOGGA11-X':  -76.3579662706,        #TEST
+#    'VSXC':  -76.4031806261,        #TEST
+# 'MPW1PBE':  -76.3399258699,        #TEST
+#   'SOGGA':  -75.9775522776,        #TEST
+#    'SCAN':  -76.3525050753,        #TEST
+#'MPW1PW91':  -76.3639997875,        #TEST
+#     'BMK':  -76.3477995384,        #TEST
+#  'MN15-L':  -76.3003777073,        #TEST
+#  'PBEsol':  -76.0376457772,        #TEST
+#   'SCAN0':  -76.3393392953,        #TEST
+#'MGGA_MVS':  -76.3432912834,        #TEST
+#MGGA_MVSh':  -76.3375136868,        #TEST
+#  'wM05-D':   -76.355280694,        #TEST
+#  't-HCTH':  -76.3695334542,        #TEST
+# 'BP86VWN':  -76.3897099046,        #TEST
+}                                    #TEST
+
+old_psi4_data = {                    #TEST 
+   'BP86': -76.38528296852736,       #TEST
+   'BLYP': -76.36495922440312,       #TEST
+ 'B97-D3': -76.34489583201652,       #TEST
+ 'B3LYP5': -76.34795958728918,       #TEST
+  'wB97X': -76.36677266785263,       #TEST
+    'PBE': -76.29833784290976,       #TEST
+ 'M05-2X': -76.36858376817408,       #TEST
+'wB97X-D': -76.36256087667938,       #TEST
+   'wB97':  -76.3680050769001,       #TEST
+'HCTH120': -76.37568880282406,       #TEST
+   'dlDF':  -76.8428069903893,       #TEST
+   'PBE0': -76.30113068157736,       #TEST
+  'B97-1': -76.36001872648792,       #TEST
+   'PW91': -76.35555307829662,       #TEST
+  'B97-D': -76.34490642131334,       #TEST
+    'M05':  -76.3495817363072,       #TEST
+  'B3LYP': -76.38509296980465,       #TEST
+'HCTH407': -76.37515280900291,       #TEST
+'HCTH147': -76.37958046443578,       #TEST
+  'SOGGA': -75.97737386477169,       #TEST
+  'B97-2': -76.35924563701468        #TEST
+}                                    #TEST
+
+for func in qchem_data.keys():                                #TEST
+    psi4_energy = energy(func, molecule=h2o)                  #TEST
+                                                              #TEST 
+    qchem_energy = qchem_data[func]                           #TEST
+                                                              #TEST 
+    if func in old_psi4_data:                                 #TEST
+        old_psi4_energy = old_psi4_data[func]                 #TEST
+        compare_values(old_psi4_energy, psi4_energy, 6, func) #TEST
+                                                              #TEST
+    compare_values(qchem_energy, psi4_energy, 4, func)        #TEST
