@@ -219,13 +219,13 @@ public:
      * \param x cartesian coordinate
      * \param y cartesian coordinate
      * \param z cartesian coordinate
-     * \param symb atomic symbol to use
+     * \param sym atomic symbol to use
      * \param mass mass to use if non standard
      * \param charge charge to use if non standard
-     * \param lineno line number when taken from a string
+     * \param lbl extended atomic symbol
      */
-    void add_atom(int Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
-                  double charge = 0.0);
+    void add_atom(double Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
+                  double charge = 0.0, std::string lbl = "");
 
     /// Whether the multiplicity was given by the user
     bool multiplicity_specified() const { return multiplicity_specified_; }
@@ -618,6 +618,11 @@ public:
     const std::vector<int>& fragment_charges() const { return fragment_charges_; }
     /// The multiplicity of each fragment
     const std::vector<int>& fragment_multiplicities() const { return fragment_multiplicities_; }
+    /// Sets the fragmentation information directly
+    void set_fragment_pattern(const std::vector<std::pair<int, int>>,
+                              const std::vector<FragmentType>,
+                              const std::vector<int>,
+                              const std::vector<int>);
 
     /// Sets whether this molecule contains at least one cartesian entry
     void set_has_cartesian(bool tf) { cart_ = tf; }
@@ -641,23 +646,30 @@ public:
         molecular_charge_ = charge;
     }
     /// Gets the molecular charge
-    int molecular_charge() const;
+    int molecular_charge() const { return molecular_charge_; }
     /// Sets the multiplicity (defined as 2Ms + 1)
     void set_multiplicity(int mult) {
         multiplicity_specified_ = true;
         multiplicity_ = mult;
     }
     /// Get the multiplicity (defined as 2Ms + 1)
-    int multiplicity() const;
+    int multiplicity() const { return multiplicity_; }
+
     /// Sets the geometry units
-    void set_units(GeometryUnits units) { units_ = units; }
+    void set_units(GeometryUnits units);
     /// Gets the geometry units
     GeometryUnits units() const { return units_; }
-
+    /// Sets the geometry unit conversion.
+    /// May be used to override internal a2b physconst. Call _after_ units set.
+    void set_input_units_to_au(double conv);
+    /// Gets the geometry unit conversion
+    double input_units_to_au() const { return input_units_to_au_; }
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
     /// Fix the orientation at its current frame
     void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix; }
+    /// Get whether or not COM is fixed
+    bool com_fixed() const { return !move_to_com_; }
     /// Fix the center of mass at its current frame
     void set_com_fixed(bool fix = true) { move_to_com_ = !fix; }
     /// Returns the Schoenflies symbol

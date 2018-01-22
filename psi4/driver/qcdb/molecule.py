@@ -191,9 +191,9 @@ class Molecule(LibmintsMolecule):
         # Set the units properly
         instance.PYunits = fileUnits
         if fileUnits == 'Bohr':
-            instance.input_units_to_au = 1.0
+            instance.PYinput_units_to_au = 1.0
         elif fileUnits == 'Angstrom':
-            instance.input_units_to_au = 1.0 / psi_bohr2angstroms
+            instance.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
 
         instance.update_geometry()
         return instance
@@ -302,9 +302,9 @@ class Molecule(LibmintsMolecule):
         # Set the units properly
         instance.PYunits = fileUnits
         if fileUnits == 'Bohr':
-            instance.input_units_to_au = 1.0
+            instance.PYinput_units_to_au = 1.0
         elif fileUnits == 'Angstrom':
-            instance.input_units_to_au = 1.0 / psi_bohr2angstroms
+            instance.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
 
         instance.update_geometry()
         return instance
@@ -1201,8 +1201,8 @@ class Molecule(LibmintsMolecule):
         Returns
         -------
         str
-		    Representation code IR, IIR, IIIR, IL, IIL, IIIL. When
-	        molecule not in inertial frame, string is prefixed by "~".
+            Representation code IR, IIR, IIIR, IL, IIL, IIIL. When
+            molecule not in inertial frame, string is prefixed by "~".
 
         Notes
         -----
@@ -1271,7 +1271,7 @@ class Molecule(LibmintsMolecule):
                     charge=None,
                     multiplicity=None,
                     name=None,
-                    units='Angstroms',
+                    units='Angstrom',
                     fix_com=False,
                     fix_orientation=False,
                     fix_symmetry=None,
@@ -1673,6 +1673,17 @@ class Molecule(LibmintsMolecule):
             compare_integers(True, np.allclose(solution.rotation.T, perturbation.rotation), 'rotations transpose')
         if solution.mirror:
             compare_integers(True, do_mirror, 'mirror allowed')
+
+    def set_fragment_pattern(self, frl, frt, frc, frm):
+        """Set fragment member data through public method analogous to psi4.core.Molecule"""
+
+        if not (len(frl) == len(frt) == len(frc) == len(frm)):
+            raise ValidationError("""Molecule::set_fragment_pattern: fragment arguments not of same length.""")
+
+        self.fragments = frl
+        self.fragment_types = frt
+        self.fragment_charges = frc
+        self.fragment_multiplicities = frm
 
 
 # Attach methods to qcdb.Molecule class
