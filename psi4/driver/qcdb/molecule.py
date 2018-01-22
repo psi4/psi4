@@ -2153,6 +2153,17 @@ class Molecule(LibmintsMolecule):
         if not do_resort:
             compare_integers(True, np.allclose(solution.rotation.T, perturbation.rotation), 'rotations transpose')
 
+    def set_fragment_pattern(self, frl, frt, frc, frm):
+        """Set fragment member data through public method analogous to psi4.core.Molecule"""
+
+        if not (len(frl) == len(frt) == len(frc) == len(frm)):
+            raise ValidationError("""Molecule::set_fragment_pattern: fragment arguments not of same length.""")
+
+        self.fragments = frl
+        self.fragment_types = frt
+        self.fragment_charges = frc
+        self.fragment_multiplicities = frm
+
 
 # Attach methods to qcdb.Molecule class
 from .interface_dftd3 import run_dftd3 as _dftd3_qcdb_yo
