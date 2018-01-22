@@ -81,7 +81,8 @@ qchem_data = {                        #TEST
      'BLYP':   -76.3649513839,        #TEST
    'HCTH93':   -76.3690959506,        #TEST
    'M06-HF':   -76.3438580561         #TEST
-# The following functionals are not included in Psi4 at the moment. 
+# The following functionals are not included 
+# in Psi4 at the moment. 
 #   'PBEOP':   -76.3113060897,        #TEST
 # 'MN12-SX':   -76.3292426233,        #TEST
 #     'GAM':    -76.351646627,        #TEST
@@ -117,7 +118,8 @@ qchem_data = {                        #TEST
 # 'BP86VWN':   -76.3897099046,        #TEST
 }                                     #TEST
 
-# The following data is from an older version of Psi4 (~April 2017, SHA: 53e752c)  
+# The following data is from an older 
+# version of Psi4 (~April 2017, SHA: 53e752c)  
 old_psi4_data = {                     #TEST 
    'BP86': -76.38528296852736,        #TEST
    'BLYP': -76.36495922440312,        #TEST
@@ -142,13 +144,13 @@ old_psi4_data = {                     #TEST
   'B97-2': -76.35924563701468         #TEST
 }                                     #TEST
 
-for func in qchem_data.keys():                                #TEST
-    psi4_energy = energy(func, molecule=h2o)                  #TEST
-                                                              #TEST 
-    qchem_energy = qchem_data[func]                           #TEST
-                                                              #TEST 
-    if func in old_psi4_data:                                 #TEST
-        old_psi4_energy = old_psi4_data[func]                 #TEST
-        compare_values(old_psi4_energy, psi4_energy, 6, func) #TEST
-                                                              #TEST
-    compare_values(qchem_energy, psi4_energy, 4, func)        #TEST
+for func in qchem_data.keys():                                                                        #TEST
+    psi4_energy = energy(func, molecule=h2o)                                                          #TEST
+                                                                                                      #TEST 
+    qchem_energy = qchem_data[func]                                                                   #TEST
+                                                                                                      #TEST 
+    compare_values(qchem_energy, psi4_energy, 4, func + ': Psi4 vs. Q-Chem')                          #TEST
+                                                                                                      #TEST
+    if func in old_psi4_data:                                                                         #TEST
+            old_psi4_energy = old_psi4_data[func]                                                     #TEST
+            compare_values(old_psi4_energy, psi4_energy, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)') #TEST
