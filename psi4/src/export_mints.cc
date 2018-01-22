@@ -333,8 +333,16 @@ void export_mints(py::module& m) {
         .value("Bohr", Molecule::Bohr)
         .export_values();
 
-    typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
-    typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&, diagonalize_order);
+    py::enum_<Molecule::FragmentType>(m, "FragmentType", "Fragment activation status")
+        .value("Absent", Molecule::Absent)  // Neglect completely
+        .value("Real", Molecule::Real)  // Include, as normal
+        .value("Ghost", Molecule::Ghost)  // Include, but with ghost atoms
+        .export_values();
+
+    typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&,
+                                            const SharedMatrix&, double);
+    typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&,
+                                               diagonalize_order);
     typedef void (Matrix::*matrix_one)(const SharedMatrix&);
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
@@ -1027,6 +1035,9 @@ void export_mints(py::module& m) {
         .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame")
         .def("fix_com", &Molecule::set_com_fixed,
              "Whether to fix the Cartesian position, or to translate to the C.O.M.")
+        .def("orientation_fixed", &Molecule::orientation_fixed, "Get whether or not orientation is fixed")
+        .def("com_fixed", &Molecule::com_fixed, "Get whether or not COM is fixed")
+        .def("symmetry_from_input", &Molecule::symmetry_from_input, "Returns the symmetry specified in the input")
         .def("add_atom", &Molecule::add_atom,
              "Adds to Molecule arg1 an atom with atomic number arg2, Cartesian coordinates in Bohr "
              "(arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and "
@@ -1144,8 +1155,15 @@ void export_mints(py::module& m) {
         .def("print_out_of_planes", &Molecule::print_out_of_planes,
              "Print the out-of-plane angle geometrical parameters to output file")
         .def("irrep_labels", &Molecule::irrep_labels, "Returns Irreducible Representation symmetry labels")
-        .def_property("units", py::cpp_function(&Molecule::units), py::cpp_function(&Molecule::set_units),
-                      "Units (Angstrom or Bohr) used to define the geometry")
+        .def("units",
+            [](Molecule& mol) {
+                const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
+                std::string srt = GeometryUnitsList[mol.units()];
+                return srt; },
+            "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
+        .def("set_units", &Molecule::set_units, "Sets units (Angstrom or Bohr) used to define the geometry")
+        .def("input_units_to_au", &Molecule::input_units_to_au, "Returns unit conversion to [a0] for geometry")
+        .def("set_input_units_to_au", &Molecule::set_input_units_to_au, "Sets unit conversion to [a0] for geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
         .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
             "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")

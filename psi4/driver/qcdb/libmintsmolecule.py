@@ -104,7 +104,7 @@ class LibmintsMolecule(object):
         # The units used to define the geometry
         self.PYunits = 'Angstrom'
         # The conversion factor to take input units to Bohr
-        self.input_units_to_au = 1.0 / psi_bohr2angstroms
+        self.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
         # Whether this molecule has at least one zmatrix entry
         self.zmat = False  # TODO None?
 
@@ -269,17 +269,29 @@ class LibmintsMolecule(object):
     def set_units(self, units):
         """Sets the geometry units
 
-        >>> H2OH2O.set_units('Angstom')
+        >>> H2OH2O.set_units('Angstrom')
 
         """
         if units == 'Angstrom':
             self.PYunits = units
-            self.input_units_to_au = 1.0 / psi_bohr2angstroms
+            self.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
         elif units == 'Bohr':
             self.PYunits = units
-            self.input_units_to_au = 1.0
+            self.PYinput_units_to_au = 1.0
         else:
             raise ValidationError("""Molecule::set_units: argument must be 'Angstrom' or 'Bohr'.""")
+
+    def input_units_to_au(self):
+        """Gets the geometry unit conversion."""
+        return self.PYinput_units_to_au
+
+    def set_input_units_to_au(self, conv):
+        """Sets the geometry unit conversion. May be used to override internal a2b physconst"""
+
+        if abs(conv - self.PYinput_units_to_au) < 0.05:
+            self.PYinput_units_to_au = conv
+        else:
+            raise ValidationError("""No big perturbations to physical constants!""")
 
     def has_zmatrix(self):
         """Gets the presence of any zmatrix entry
@@ -316,7 +328,7 @@ class LibmintsMolecule(object):
         3.17549201425
 
         """
-        return self.input_units_to_au * self.atoms[atom].compute()[0]
+        return self.input_units_to_au() * self.atoms[atom].compute()[0]
 
     def y(self, atom):
         """y position of atom (0-indexed) in Bohr
@@ -325,7 +337,7 @@ class LibmintsMolecule(object):
         -0.706268134631
 
         """
-        return self.input_units_to_au * self.atoms[atom].compute()[1]
+        return self.input_units_to_au() * self.atoms[atom].compute()[1]
 
     def z(self, atom):
         """z position of atom (0-indexed) in Bohr
@@ -334,7 +346,7 @@ class LibmintsMolecule(object):
         -1.43347254509
 
         """
-        return self.input_units_to_au * self.atoms[atom].compute()[2]
+        return self.input_units_to_au() * self.atoms[atom].compute()[2]
 
     def xyz(self, atom, np_out=False):
         """Returns a Vector3 with x, y, z position of atom (0-indexed)
@@ -344,7 +356,7 @@ class LibmintsMolecule(object):
         [3.175492014248769, -0.7062681346308132, -1.4334725450878665]
 
         """
-        xyz = self.input_units_to_au * np.asarray(self.atoms[atom].compute())
+        xyz = self.input_units_to_au() * np.asarray(self.atoms[atom].compute())
         if np_out:
             return xyz
         else:
@@ -413,7 +425,7 @@ class LibmintsMolecule(object):
         2.55231135823
 
         """
-        return self.input_units_to_au * self.full_atoms[atom].compute()[0]
+        return self.input_units_to_au() * self.full_atoms[atom].compute()[0]
 
     def fy(self, atom):
         """y position of atom (0-indexed, includes dummies) in Bohr
@@ -422,7 +434,7 @@ class LibmintsMolecule(object):
         0.210645882307
 
         """
-        return self.input_units_to_au * self.full_atoms[atom].compute()[1]
+        return self.input_units_to_au() * self.full_atoms[atom].compute()[1]
 
     def fz(self, atom):
         """z position of atom (0-indexed, includes dummies) in Bohr
@@ -431,7 +443,7 @@ class LibmintsMolecule(object):
         0.0
 
         """
-        return self.input_units_to_au * self.full_atoms[atom].compute()[2]
+        return self.input_units_to_au() * self.full_atoms[atom].compute()[2]
 
     def fxyz(self, atom):
         """Returns a Vector3 with x, y, z position of atom
@@ -441,7 +453,7 @@ class LibmintsMolecule(object):
         [2.5523113582286716, 0.21064588230662976, 0.0]
 
         """
-        return scale(self.full_atoms[atom].compute(), self.input_units_to_au)
+        return scale(self.full_atoms[atom].compute(), self.input_units_to_au())
 
     def fmass(self, atom):
         """Returns mass of atom (0-indexed, includes dummies)
@@ -622,10 +634,8 @@ class LibmintsMolecule(object):
             # handle units
             elif ang.match(line):
                 self.set_units('Angstrom')
-                self.input_units_to_au = 1.0 / psi_bohr2angstroms
             elif bohr.match(line):
                 self.set_units('Bohr')
-                self.input_units_to_au = 1.0
 
             # handle no_reorient
             elif orient.match(line):
@@ -904,7 +914,7 @@ class LibmintsMolecule(object):
         instance.fragment_multiplicities.append(1)
         # Set the units to bohr since we did the conversion above, if needed.
         instance.PYunits = 'Bohr'
-        instance.input_units_to_au = 1.0
+        instance.PYinput_units_to_au = 1.0
 
         instance.update_geometry()
         return instance
@@ -1076,7 +1086,7 @@ class LibmintsMolecule(object):
         text += """  Natom         %d\t\tNallatom       %d\n""" % (self.natom(), self.nallatom())
         text += """  charge        %d\t\tspecified?     %s\n""" % (self.molecular_charge(), self.charge_specified())
         text += """  multiplicity  %d\t\tspecified?     %s\n""" % (self.multiplicity(), self.multiplicity_specified())
-        text += """  units         %s\tconversion     %f\n""" % (self.units(), self.input_units_to_au)
+        text += """  units         %s\tconversion     %f\n""" % (self.units(), self.input_units_to_au())
         text += """  DOcom?        %s\t\tDONTreorient?  %s\n""" % (self.PYmove_to_com, self.orientation_fixed())
         text += """  reinterpret?  %s\t\tlock_frame?    %s\n""" % (self.PYreinterpret_coordentries, self.lock_frame)
         text += """  input symm    %s\n""" % (self.symmetry_from_input())
@@ -1271,7 +1281,7 @@ class LibmintsMolecule(object):
 
         """
         geom = np.asarray([self.atoms[at].compute() for at in range(self.natom())])
-        geom *= self.input_units_to_au
+        geom *= self.input_units_to_au()
         if np_out:
             return geom
         else:
@@ -1297,9 +1307,9 @@ class LibmintsMolecule(object):
         """
         self.lock_frame = False
         for at in range(self.natom()):
-            self.atoms[at].set_coordinates(geom[at][0] / self.input_units_to_au,
-                                           geom[at][1] / self.input_units_to_au,
-                                           geom[at][2] / self.input_units_to_au)
+            self.atoms[at].set_coordinates(geom[at][0] / self.input_units_to_au(),
+                                           geom[at][1] / self.input_units_to_au(),
+                                           geom[at][2] / self.input_units_to_au())
 
     def set_full_geometry(self, geom):
         """Sets the full geometry (dummies included), given a N X 3 array of coordinates *geom* in Bohr.
@@ -1309,9 +1319,9 @@ class LibmintsMolecule(object):
         """
         self.lock_frame = False
         for at in range(self.nallatom()):
-            self.full_atoms[at].set_coordinates(geom[at][0] / self.input_units_to_au,
-                                                geom[at][1] / self.input_units_to_au,
-                                                geom[at][2] / self.input_units_to_au)
+            self.full_atoms[at].set_coordinates(geom[at][0] / self.input_units_to_au(),
+                                                geom[at][1] / self.input_units_to_au(),
+                                                geom[at][2] / self.input_units_to_au())
 
     def distance_matrix(self):
         """Computes a matrix depicting distances between atoms. Prints
@@ -1747,9 +1757,9 @@ class LibmintsMolecule(object):
         """
         temp = [None, None, None]
         for at in range(self.nallatom()):
-            temp = scale(self.full_atoms[at].compute(), self.input_units_to_au)
+            temp = scale(self.full_atoms[at].compute(), self.input_units_to_au())
             temp = add(temp, r)
-            temp = scale(temp, 1.0 / self.input_units_to_au)
+            temp = scale(temp, 1.0 / self.input_units_to_au())
             self.full_atoms[at].set_coordinates(temp[0], temp[1], temp[2])
 
     def center_of_mass(self):
@@ -1929,6 +1939,23 @@ class LibmintsMolecule(object):
         geom = self.full_geometry()
         new_geom = mult(geom, R)
         self.set_full_geometry(new_geom)
+
+    def com_fixed(self):
+        """Get whether or not center of mass is fixed.
+
+        >>> H2OH2O.com_fixed()
+        True
+
+        """
+        return not self.PYmove_to_com
+
+    def fix_com(self, _fix=True):
+        """Whether to fix the Cartesian position (True) in its current frame or
+        to translate to the C.O.M. (False).
+        (method name in libmints is set_com_fixed)
+
+        """
+        self.PYmove_to_com = not _fix
 
     def orientation_fixed(self):
         """Get whether or not orientation is fixed.

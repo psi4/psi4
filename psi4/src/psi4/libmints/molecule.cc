@@ -262,14 +262,17 @@ void Molecule::clear() {
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(int Z, double x, double y, double z, std::string label, double mass, double charge) {
+void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass,
+                        double charge, std::string label) {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
+    if (label == "")
+        label = symbol;
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
         full_atoms_.push_back(std::make_shared<CartesianEntry>(
-            full_atoms_.size(), Z, charge, mass, label, label, std::make_shared<NumberValue>(x),
+            full_atoms_.size(), Z, charge, mass, symbol, label, std::make_shared<NumberValue>(x),
             std::make_shared<NumberValue>(y), std::make_shared<NumberValue>(z)));
         if ((label != "X") && (label != "x")) {
             atoms_.push_back(full_atoms_.back());
@@ -723,7 +726,7 @@ void Molecule::init_with_xyz(const std::string &xyzfilename) {
             }
 
             // Add it to the molecule.
-            add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), an2masses[(int)Z[atomSym]]);
+            add_atom(Z[atomSym], x, y, z, atomSym, an2masses[(int)Z[atomSym]]);
         } else {
             throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed atom information line.\n" + line);
         }
@@ -744,19 +747,18 @@ void Molecule::init_with_xyz(const std::string &xyzfilename) {
     update_geometry();
 }
 
-/**
- * Checks whether the user has specified the charge in the options, and returns the appropriate value.
- * @return The charge from the options keywords, if specified.  If not, the value passed to the molecule
- *         specification, which takes the default value provided by liboptions if not specified.
- */
-int Molecule::molecular_charge() const { return molecular_charge_; }
 
-/**
- * Checks whether the user has specified the multiplicity in the options, and returns the appropriate value.
- * @return The multiplicity from the options keywords, if specified.  If not, the value passed to the molecule
- *         specification, which takes the default value provided by liboptions if not specified.
- */
-int Molecule::multiplicity() const { return multiplicity_; }
+void Molecule::set_units(GeometryUnits units) {
+    units_ = units;
+    input_units_to_au_ = units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
+}
+
+void Molecule::set_input_units_to_au(double conv) {
+    if (std::fabs(conv - input_units_to_au_) < 0.05)
+        input_units_to_au_ = conv;
+    else
+        throw PSIEXCEPTION("No big perturbations to physical constants!");
+}
 
 std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text) {
     std::smatch reMatches;
@@ -3245,6 +3247,16 @@ std::string Molecule::full_point_group() const {
 }
 
 int Molecule::natom() const { return atoms_.size(); }
+
+void Molecule::set_fragment_pattern(const std::vector<std::pair<int,int>> frag,
+                                    const std::vector<FragmentType> frag_tp,
+                                    const std::vector<int> frag_cg,
+                                    const std::vector<int> frag_mp) {
+    fragments_ = frag;
+    fragment_types_ = frag_tp;
+    fragment_charges_ = frag_cg;
+    fragment_multiplicities_ = frag_mp;
+}
 
 int Molecule::rotational_symmetry_number() const {
     int sigma;
