@@ -42,8 +42,6 @@ H            5.626490   0.711093   7.176000
 H            3.425160   0.000000   0.191360
 H            2.606641   0.000000   1.280640
 """
-qmol = qcdb.Molecule.init_with_xyz(iceIh, no_com=True, no_reorient=True, contentsNotFilename=True)
-frag, arrs, bmol = qmol.BFS(seed_atoms=[[3,16], [21]], return_arrays=True, return_molecule=True)
 
 ref_fragmentation = [  #TEST
   [3, 16],  #TEST
@@ -62,10 +60,25 @@ ref_fragmentation = [  #TEST
   [17],  #TEST
   [18]]  #TEST
 
-compare_integers(frag == ref_fragmentation, 1, 'BFS from qcdb.Molecule')  #TEST
-compare_arrays(qmol.geometry(np_out=True)[[1, 14, 19]], arrs[0][3], 4, 'geom back from BFS')  #TEST
-compare_integers(15, bmol.nfragments(), 'nfrag')  #TEST
-compare_values(qmol.nuclear_repulsion_energy(), bmol.nuclear_repulsion_energy(), 4, 'nre')  #TEST
+qmol = qcdb.Molecule.init_with_xyz(iceIh, no_com=True, no_reorient=True, contentsNotFilename=True)
+frag, arrs, bmols, bmol = qmol.BFS(seed_atoms=[[3,16], [21]], return_arrays=True, return_molecule=True, return_molecules=True)
+
+compare_integers(frag == ref_fragmentation, 1, 'Q: BFS from qcdb.Molecule')  #TEST
+compare_arrays(qmol.geometry(np_out=True)[[1, 14, 19]], arrs[0][3], 4, 'Q: geom back from BFS')  #TEST
+compare_integers(15, bmol.nfragments(), 'Q: nfrag')  #TEST
+compare_values(qmol.nuclear_repulsion_energy(), bmol.nuclear_repulsion_energy(), 4, 'Q: nre')  #TEST
+compare_arrays(qmol.geometry(np_out=True)[[2, 13, 20]], bmols[4].geometry(np_out=True), 4, 'Q: frag geom back from BFS')  #TEST
+compare_integers(True, type(bmol) == qcdb.Molecule, 'Q return type')  #TEST
+
+pmol = psi4.geometry('\n'.join(iceIh.splitlines()[2:]))
+frag, arrs, bmols, bmol = pmol.BFS(seed_atoms=[[3, 16], [21]], return_arrays=True, return_molecule=True, return_molecules=True)
+
+compare_integers(frag == ref_fragmentation, 1, 'P: BFS from psi4.core.Molecule')  #TEST
+compare_arrays(np.array(pmol.geometry())[[1, 14, 19]], arrs[0][3], 4, 'P: geom back from BFS')  #TEST
+compare_integers(15, bmol.nfragments(), 'P: nfrag')  #TEST
+compare_values(pmol.nuclear_repulsion_energy(), bmol.nuclear_repulsion_energy(), 4, 'P: nre')  #TEST
+compare_arrays(np.array(pmol.geometry())[[2, 13, 20]], np.array(bmols[4].geometry()), 4, 'P: frag geom back from BFS')  #TEST
+compare_integers(True, type(bmol) == psi4.core.Molecule, 'P return type')  #TEST
 
 import numpy as np
 from psi4.driver.qcdb.bfs import BFS

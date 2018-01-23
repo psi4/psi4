@@ -32,19 +32,26 @@ from psi4 import core
 
 
 def auto_fragments(**kwargs):
-    r"""Detects fragments if the user does not supply them.
+    r"""Detects fragments in unfragmented molecule using BFS algorithm.
     Currently only used for the WebMO implementation of SAPT.
 
-    :returns: :py:class:`~psi4.core.Molecule`) |w--w| fragmented molecule.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
+    Parameters
+    ----------
+    molecule : :ref:`molecule <op_py_molecule>`, optional
         The target molecule, if not the last molecule defined.
+    seed_atoms : list, optional
+        List of lists of atoms (0-indexed) belonging to independent fragments.
+        Useful to prompt algorithm or to define intramolecular fragments through
+        border atoms. Example: `[[1, 0], [2]]`
 
-    :examples:
+    Returns
+    -------
+    :py:class:`~psi4.core.Molecule` |w--w| fragmented molecule in
+    Cartesian, fixed-geom (no variable values), no dummy-atom format.
 
-    >>> # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')
+    Examples
+    --------
+    >>> # [1] prepare unfragmented (and non-adjacent-atom) HHFF into (HF)_2 molecule ready for SAPT
     >>> molecule mol {\nH 0.0 0.0 0.0\nH 2.0 0.0 0.0\nF 0.0 1.0 0.0\nF 2.0 1.0 0.0\n}
     >>> print mol.nfragments()  # 1
     >>> fragmol = auto_fragments()
@@ -53,9 +60,14 @@ def auto_fragments(**kwargs):
     """
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
+    seeds = kwargs.pop('seed_atoms', None)
     molecule.update_geometry()
     molname = molecule.name()
 
+    frag, bmol = molecule.BFS(seed_atoms=seeds, return_molecule=True)
 
+    bmol.set_name(molname)
+    bmol.print_cluster()
     core.print_out("""  Exiting auto_fragments\n""")
 
+    return bmol
