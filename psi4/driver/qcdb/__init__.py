@@ -53,6 +53,7 @@ from .basislist import *
 from . import align
 from . import vib
 from .vib import compare_vibinfos
+from . import molparse
 
 # Load items that are useful to access from an input file
 from .psiutil import *

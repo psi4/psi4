@@ -172,7 +172,7 @@ void FISAPT::partition() {
 
     // => Monomer Atoms <= //
 
-    const std::vector<std::pair<int, int> >& fragment_list = mol->fragments();
+    const std::vector<std::pair<int, int> >& fragment_list = mol->get_fragments();
     if (!(fragment_list.size() == 2 || fragment_list.size() == 3)) {
         throw PSIEXCEPTION("FISAPT: Molecular system must have 2 (A+B) or 3 (A+B+C) fragments");
     }
@@ -406,7 +406,7 @@ void FISAPT::partition() {
 
     // => Remaining Orbitals <= //
 
-    const std::vector<int>& fragment_charges = mol->fragment_charges();
+    const std::vector<int>& fragment_charges = mol->get_fragment_charges();
     int CA2 = fragment_charges[0];
     int CB2 = fragment_charges[1];
     int CC2 = (fragment_charges.size() == 3 ? fragment_charges[2] : 0);
