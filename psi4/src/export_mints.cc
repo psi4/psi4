@@ -288,17 +288,6 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         fragment_types.push_back(Molecule::Real);
     }
 
-    //for (auto item : molrec["fragment_types"]) {
-    //    if (item.cast<std::string>() == "Real")
-    //        fragment_types.push_back(Molecule::Real);
-    //    else if (item.cast<std::string>() == "Ghost")
-    //        fragment_types.push_back(Molecule::Ghost);
-    //    else if (item.cast<std::string>() == "Absent")
-    //        fragment_types.push_back(Molecule::Absent);
-    //    else
-    //        throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
-    //}
-
     std::vector<int> fragment_charges;
     for (auto item : molrec["fragment_charges"])
         fragment_charges.push_back(static_cast<int>(item.cast<double>()));
