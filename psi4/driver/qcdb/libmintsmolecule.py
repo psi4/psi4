@@ -599,6 +599,22 @@ class LibmintsMolecule(object):
         subset.update_geometry()
         return subset
 
+    def get_fragments(self):
+        """The list of atom ranges defining each fragment from parent molecule"""
+        return self.fragments
+
+    def get_fragment_types(self):
+        """A list describing how to handle each fragment"""
+        return self.fragment_types
+
+    def get_fragment_charges(self):
+        """The charge of each fragment"""
+        return self.fragment_charges
+
+    def get_fragment_multiplicities(self):
+        """The multiplicity of each fragment"""
+        return self.fragment_multiplicities
+
     # <<< Methods for Construction >>>
 
     def create_molecule_from_string(self, text):
@@ -1338,7 +1354,11 @@ class LibmintsMolecule(object):
           [6]         3.32935     3.86422     2.43843     0.95895     1.51712     0.00000
 
         """
-        distm = [[None] * self.natom() for _ in range(self.natom())]
+        from .util import distance_matrix
+
+        distm = distance_matrix(self.geometry(np_out=True), self.geometry(np_out=True))
+        distm *= psi_bohr2angstroms
+
         text = "        Interatomic Distances (Angstroms)\n\n          "
         for i in range(self.natom()):
             text += '%11s ' % ('[' + str(i + 1) + ']')
@@ -1348,15 +1368,8 @@ class LibmintsMolecule(object):
             for j in range(self.natom()):
                 if j > i:
                     continue
-                if j == i:
-                    text += '%10.5f  ' % (0.0)
-                    distm[i][j] = 0.0
                 else:
-                    eij = sub(self.xyz(j), self.xyz(i))
-                    dist = norm(eij) * psi_bohr2angstroms
-                    text += '%10.5f  ' % (dist)
-                    distm[i][j] = dist
-                    distm[j][i] = dist
+                    text += '%10.5f  ' % (distm(i, j))
             text += "\n"
         text += "\n\n"
         print(text)

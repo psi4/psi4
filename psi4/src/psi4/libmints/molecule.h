@@ -611,13 +611,13 @@ public:
 
     /// The list of atom ranges defining each fragment from parent molecule (fragments[frag_ind] =
     /// <Afirst,Alast+1>)
-    const std::vector<std::pair<int, int> >& fragments() const { return fragments_; }
+    const std::vector<std::pair<int, int> >& get_fragments() const { return fragments_; }
     /// A list describing how to handle each fragment
-    const std::vector<FragmentType>& fragment_types() const { return fragment_types_; }
+    const std::vector<FragmentType>& get_fragment_types() const { return fragment_types_; }
     /// The charge of each fragment
-    const std::vector<int>& fragment_charges() const { return fragment_charges_; }
+    const std::vector<int>& get_fragment_charges() const { return fragment_charges_; }
     /// The multiplicity of each fragment
-    const std::vector<int>& fragment_multiplicities() const { return fragment_multiplicities_; }
+    const std::vector<int>& get_fragment_multiplicities() const { return fragment_multiplicities_; }
     /// Sets the fragmentation information directly
     void set_fragment_pattern(const std::vector<std::pair<int, int>>,
                               const std::vector<FragmentType>,

@@ -1264,119 +1264,193 @@ class Molecule(LibmintsMolecule):
     @classmethod
     def from_arrays(cls,
                     geom,
-                    mass,
-                    elem,
-                    elez,
+
+                    mass=None,
+                    elem=None,
+                    elez=None,
+                    elea=None,
                     elbl=None,
-                    charge=None,
-                    multiplicity=None,
+
                     name=None,
                     units='Angstrom',
+                    input_units_to_au=None,
                     fix_com=False,
                     fix_orientation=False,
                     fix_symmetry=None,
-                    fragments=None):  #, fragment_types=None, fragment_charges=None, fragment_multiplicities=None)
 
-        # TODO not handled: elbl, fragment_*, validation of chgmult overall vs frag
+                    fragment_separators=None,
+                    fragment_types=None,
+                    fragment_charges=None,
+                    fragment_multiplicities=None,
 
-        # TODO presently assuming fully expanded and validated wrt g/m/e/e/e.
-        #      in final form only geom and one of elem, elez, elbl required
+                    molecular_charge=None,
+                    molecular_multiplicity=None,
+
+                    nonphysical=False,
+                    mtol=1.e-3,
+                    verbose=1,
+
+                    return_dict=False):
+        """Construct Molecule from unvalidated arrays and variables.
+
+        Light wrapper around :py:func:`~qcdb.molparse.from_arrays`
+        that is a full-featured constructor to dictionary representa-
+        tion of Molecule. This follows one step further to return
+        Molecule instance.
+
+        Parameters
+        ----------
+        See :py:func:`~qcdb.molparse.from_arrays`.
+        return_dict : bool, optional
+            Additionally return Molecule dictionary intermediate.
+
+        Returns
+        -------
+        mol : :py:class:`~qcdb.Molecule`
+        molrec : dict, optional
+            Dictionary representation of instance.
+            Only provided if `return_dict` is True.
+
+        """
+        from . import molparse
+
+        molrec = molparse.from_arrays(geom=geom,
+                                      mass=mass,
+                                      elem=elem,
+                                      elez=elez,
+                                      elea=elea,
+                                      elbl=elbl,
+                                      name=name,
+                                      units=units,
+                                      input_units_to_au=input_units_to_au,
+                                      fix_com=fix_com,
+                                      fix_orientation=fix_orientation,
+                                      fix_symmetry=fix_symmetry,
+                                      fragment_separators=fragment_separators,
+                                      fragment_types=fragment_types,
+                                      fragment_charges=fragment_charges,
+                                      fragment_multiplicities=fragment_multiplicities,
+                                      molecular_charge=molecular_charge,
+                                      molecular_multiplicity=molecular_multiplicity,
+                                      nonphysical=nonphysical,
+                                      mtol=mtol,
+                                      verbose=verbose)
+        if return_dict:
+            return Molecule.from_dict(molrec), molrec
+        else:
+            return Molecule.from_dict(molrec)
+
+    def to_dict(self, force_c1=False, force_au=False):
+        """Serializes instance into Molecule dictionary."""
+
+        molrec = {}
+
+        if self.name() not in ['', 'default']:
+            molrec['name'] = self.name()
+
+        if force_au:
+            molrec['units'] = 'Bohr'
+        else:
+            units = self.units()
+            #if not isinstance(self, Molecule):
+            #    # psi4.core.Molecule
+            #    from psi4 import core
+            #    if units == core.GeometryUnits.Angstrom:
+            #        units = 'Angstrom'
+            #    elif units == core.GeometryUnits.Bohr:
+            #        units = 'Bohr'
+            molrec['units'] = units
+            if units == 'Angstrom' and abs(self.input_units_to_au() * psi_bohr2angstroms - 1.) > 1.e-6:
+                molrec['input_units_to_au'] = self.input_units_to_au()
+
+        molrec['fix_com'] = self.com_fixed()
+        molrec['fix_orientation'] = self.orientation_fixed()
+        if force_c1:
+            molrec['fix_symmetry'] = 'c1'
+        elif self.symmetry_from_input():
+            #molrec['fix_symmetry'] = self.pg.symbol()
+            molrec['fix_symmetry'] = self.symmetry_from_input()
+
+        # if self.has_zmatrix:
+        #     moldict['zmat'] = self.zmat
+        # TODO zmat, geometry_variables
+        # TODO charge and ghost
+
+        nat = self.natom()
+        geom = np.array(self.geometry())
+        if not force_au:
+            geom /= self.input_units_to_au()
+        molrec['geom'] = geom.reshape((-1))
+        molrec['elez'] = np.array([int(self.Z(at)) for at in range(nat)])
+        molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
+        molrec['mass'] = np.array([self.mass(at) for at in range(nat)])
+        molrec['elbl'] = np.array([self.label(at).capitalize() for at in range(nat)])
+
+        ftypes = self.get_fragment_types()
+        if not isinstance(self, Molecule):
+            # psi4.core.Molecule
+            from psi4 import core
+            adaptor = {core.FragmentType.Real: 'Real',
+                       core.FragmentType.Ghost: 'Ghost',
+                       core.FragmentType.Absent: 'Absent'}
+            ftypes = [adaptor[f] for f in ftypes]
+        molrec['fragment_separators'] = [f[0] for f in self.get_fragments()[1:]]
+        molrec['fragment_types'] = ftypes
+        molrec['fragment_charges'] = [float(f) for f in self.get_fragment_charges()]
+        molrec['fragment_multiplicities'] = self.get_fragment_multiplicities()
+
+        molrec['molecular_charge'] = float(self.molecular_charge())
+        molrec['molecular_multiplicity'] = self.multiplicity()
+
+        return molrec
+
+    @classmethod
+    def from_dict(cls, molrec):
+        """Constructs instance from fully validated and defaulted dictionary `molrec`."""
+
+        # Compromises for qcdb.Molecule
+        # * molecular_charge is int, not float
+        # * fragment_charges are int, not float
 
         mol = cls()
         mol.lock_frame = False
 
-        mol.set_units(units)  ##  TODO contradiction in internal meaning
-        mol.PYmove_to_com = not fix_com
-        mol.fix_orientation(fix_orientation)
-        if charge is None:
-            mol.PYmolecular_charge = 0
-        else:
-            mol.PYmolecular_charge = charge
-            mol.PYcharge_specified = True
-        if multiplicity is None:
-            mol.PYmultiplicity = 1
-        else:
-            mol.PYmultiplicity = multiplicity
-            mol.PYmultiplicity_specified = True
-        if name is not None:
-            mol.set_name(name)
-        if fix_symmetry is not None:
-            mol.reset_point_group(fix_symmetry)
+        if 'name' in molrec:
+            mol.set_name(molrec['name'])
 
-        if fragments is None:
-            frag = [0, geom.shape[0]]
-        else:
-            frag = fragments
-            frag = np.insert(frag, 0, 0)
-        frpr = [[frag[ifr], fr - 1] for ifr, fr in enumerate(frag[1:])]
-        frtp = ['Real'] * len(frag)
-        frcg = [0] * len(frag)
-        frmp = [1] * len(frag)
+        mol.set_units(molrec['units'])
+        #mol.units = molrec['units']
+        if 'input_units_to_au' in molrec:
+            mol.set_input_units_to_au(molrec['input_units_to_au'])
+            #mol.input_units_to_au = molrec['input_units_to_au']
 
-        mol.fragments = frpr
-        mol.fragment_types = frtp
-        mol.fragment_charges = frcg
-        mol.fragment_multiplicities = frmp
+        mol.fix_com(molrec['fix_com'])
+        mol.fix_orientation(molrec['fix_orientation'])
+        if 'fix_symmetry' in molrec:
+            mol.reset_point_group(molrec['fix_symmetry'])
 
-
-#    def from_arrays_basic(cls, geom, mass, elem, elez, charge=0, multiplicity=1):
-#                    fragments, fragment_types, fragment_charges, fragment_multiplicities)
-#        """Limited qcdb.Molecule constructor from atom arrays.
-#
-#        Parameters
-#        ----------
-#        geom : np.array or list-of-lists
-#            (nat x 3) Cartesian coordinates [a0].
-#        mass : np.array or list
-#            (nat) mass [u].
-#        elem : np.array or list
-#            (nat) element symbol.
-#        elez : ndarray or list
-#            (nat) atomic number.
-#        charge : int (optional)
-#            molecular charge
-#        multiplicity : int (optional)
-#            molecular multiplicity
-#
-#        Returns
-#        -------
-#        qcdb.Molecule
-#            Basic molecule object with single fragment, Bohr native units,
-#            locked orientation, no ghost/dummy.
-#
-#        """
-        geom = np.asarray(geom)
-        mass = np.asarray(mass)
-        elem = np.asarray(elem)
-        elez = np.asarray(elez)
-
-        assert ((geom.shape[0] == mass.shape[0] == elem.shape[0] == elez.shape[0]) and (geom.shape[1] == 3)), \
-                """Dimension mismatch for nat"""
+        geom = molrec['geom'].reshape((-1, 3))
         nat = geom.shape[0]
+        for iat in range(nat):
+            x, y, z = geom[iat]
+            mol.add_atom(molrec['elez'][iat], x, y, z, molrec['elem'][iat], molrec['mass'][iat],
+                         molrec['elez'][iat], molrec['elbl'][iat])
+            # TODO charge and 2nd elez site
 
-#        frag = np.asarray(fragments)
-#        frtp = np.asarray(fragment_types)
-#        frcg = np.asarray(fragment_charges)
-#        frmp = np.asarray(fragment_multiplicities)
-#
-#        assert (frag.shape[0] == frtp.shape[0] == frcg.shape[0] == frmp.shape[0]), \
-#                """Dimension mismatch for nfr"""
-#        nfr = fragments.shape[0]
+        # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
+        fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
+        fragment_separators = np.insert(fragment_separators, 0, 0)
+        #fragment_separators = np.insert(molrec['fragment_separators'], 0, 0)
+        fragment_separators = np.append(fragment_separators, nat)
+        fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
 
-        #mol.PYmove_to_com = False
-        #mol.PYfix_orientation = True
+        mol.set_fragment_pattern(fragments,
+                                 molrec['fragment_types'],
+                                 [int(f) for f in molrec['fragment_charges']],
+                                 molrec['fragment_multiplicities'])
 
-        for at in range(nat):
-            mol.add_atom(elez[at], geom[at][0], geom[at][1], geom[at][2], elem[at], mass[at], elez[at])
-
-        #mol.set_molecular_charge(charge)
-        #mol.set_multiplicity(multiplicity)
-        #mol.fragments.append([0, nat - 1])
-        #mol.fragment_types.append('Real')
-        #mol.fragment_charges.append(charge)
-        #mol.fragment_multiplicities.append(multiplicity)
-        #mol.input_units_to_au = 1.0
-        #mol.set_units('Bohr')
+        mol.set_molecular_charge(int(molrec['molecular_charge']))
+        mol.set_multiplicity(molrec['molecular_multiplicity'])
 
         mol.update_geometry()
         return mol

@@ -191,6 +191,98 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     return basisset;
 }
 
+bool _has_key(const py::dict &data, const std::string &key) {
+    for (auto item : data) {
+        if (std::string(py::str(item.first)) == key)
+            return true;
+    }
+    return false;
+}
+
+std::shared_ptr<Molecule> from_dict(py::dict molrec) {
+    // Compromises for psi4.core.Molecule
+    // * molecular_charge is int, not float
+    // * fragment_charges are int, not float
+    // * elez are float, not int
+
+    std::shared_ptr <Molecule> mol(new Molecule);
+    //mol->set_lock_frame() = false;
+
+    if (_has_key(molrec, "name"))
+        mol->set_name(molrec["name"].cast<std::string>());
+
+    if (molrec["units"].cast<std::string>() == "Angstrom")
+        mol->set_units(Molecule::Angstrom);
+    else if (molrec["units"].cast<std::string>() == "Bohr")
+        mol->set_units(Molecule::Bohr);
+    else
+        throw PSIEXCEPTION("Invalid geometry units to construct Molecule.");
+    if (_has_key(molrec, "input_units_to_au"))
+        mol->set_input_units_to_au(molrec["input_units_to_au"].cast<double>());
+
+    mol->set_com_fixed(molrec["fix_com"].cast<bool>());
+    mol->set_orientation_fixed(molrec["fix_orientation"].cast<bool>());
+    if (_has_key(molrec, "fix_symmetry"))
+        mol->reset_point_group(molrec["fix_symmetry"].cast<std::string>());
+
+    std::vector <double> geom = molrec["geom"].cast<std::vector <double>>();
+    std::vector <double> elez = molrec["elez"].cast<std::vector <double>>();
+    std::vector <std::string> elem = molrec["elem"].cast<std::vector <std::string>>();
+    std::vector <double> mass = molrec["mass"].cast<std::vector <double>>();
+    std::vector <std::string> elbl= molrec["elbl"].cast<std::vector <std::string>>();
+    size_t nat = geom.size() / 3;
+
+    for (size_t iat=0; iat<nat; ++iat)
+        mol->add_atom(elez[iat],
+                      geom[3*iat], geom[3*iat+1], geom[3*iat+2],
+                      elem[iat],
+                      mass[iat],
+                      elez[iat],
+                      elbl[iat]);
+
+    ////    # TODO add_atom charge at 2nd elez site
+    ////    mol->set_has_zmatrix(false);  // TODO
+    ////    moldict['zmat'] = self.zmat
+    ////    moldict['reinterpret_coordentries'] = self.PYreinterpret_coordentries
+    ////    moldict['lock_frame'] = self.lock_frame
+    ////    mol->set_reinterpret_coordentry(false);
+
+    std::vector<int> fragment_separators;
+    fragment_separators = molrec["fragment_separators"].cast<std::vector <int>>();
+    std::vector <std::pair <int, int>> fragments;
+    fragment_separators.insert(fragment_separators.begin(), 0);
+    fragment_separators.push_back(nat);
+    for (size_t i=1; i<fragment_separators.size(); ++i)
+        fragments.push_back(std::make_pair (fragment_separators[i-1], fragment_separators[i]));
+
+    std::vector<Molecule::FragmentType> fragment_types;
+    for (auto item : molrec["fragment_types"]) {
+        if (item.cast<std::string>() == "Real")
+            fragment_types.push_back(Molecule::Real);
+        else if (item.cast<std::string>() == "Ghost")
+            fragment_types.push_back(Molecule::Ghost);
+        else if (item.cast<std::string>() == "Absent")
+            fragment_types.push_back(Molecule::Absent);
+        else
+            throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
+    }
+
+    std::vector<int> fragment_charges;
+    for (auto item : molrec["fragment_charges"])
+        fragment_charges.push_back(static_cast<int>(item.cast<double>()));
+
+    mol->set_fragment_pattern(fragments,
+                              fragment_types,
+                              fragment_charges,
+                              molrec["fragment_multiplicities"].cast<std::vector <int>>());
+
+    mol->set_molecular_charge(static_cast<int>(molrec["molecular_charge"].cast<double>()));
+    mol->set_multiplicity(molrec["molecular_multiplicity"].cast<int>());
+
+    mol->update_geometry();
+    return mol;
+}
+
 void export_mints(py::module& m) {
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
     // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
@@ -1097,7 +1189,17 @@ void export_mints(py::module& m) {
         .def("set_active_fragment", &Molecule::set_active_fragment, "Sets the specified fragment arg2 to be Real")
         .def("set_ghost_fragments", &Molecule::set_ghost_fragments,
              "Sets the specified list arg2 of fragments to be Ghost")
-        .def("set_ghost_fragment", &Molecule::set_ghost_fragment, "Sets the specified fragment arg2 to be Ghost")
+        .def("set_ghost_fragment", &Molecule::set_ghost_fragment,
+             "Sets the specified fragment arg2 to be Ghost")
+        .def("get_fragments", &Molecule::get_fragments,
+              "Returns list of pairs of atom ranges defining each fragment from parent molecule"
+              "(fragments[frag_ind] = <Afirst,Alast+1>)")
+        .def("get_fragment_types", &Molecule::get_fragment_types,
+              "A list describing how to handle each fragment {Real, Ghost, Absent}")
+        .def("get_fragment_charges", &Molecule::get_fragment_charges,
+              "Gets the charge of each fragment")
+        .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
+              "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Tests to see if an atom is at the position arg2 with a given tolerance arg3")
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
@@ -1165,6 +1267,8 @@ void export_mints(py::module& m) {
         .def("input_units_to_au", &Molecule::input_units_to_au, "Returns unit conversion to [a0] for geometry")
         .def("set_input_units_to_au", &Molecule::set_input_units_to_au, "Sets unit conversion to [a0] for geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
+        .def_static("from_dict", from_dict,
+                    "Returns a new Molecule constructed from python dictionary. In progress: name and capabilities should not be relied upon")
         .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
             "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
         .def("rotor_type",
