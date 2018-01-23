@@ -1128,7 +1128,12 @@ class Molecule(LibmintsMolecule):
         import hashlib
 
         self.update_geometry()
-        geom = self.geometry(np_out=True)
+        if isinstance(self, Molecule):
+            # normal qcdb.Molecule
+            geom = self.geometry(np_out=True)
+        else:
+            # psi4.core.Molecule
+            geom = np.array(self.geometry())
         mass = np.asarray([self.mass(at) for at in range(self.natom())])
         elem = np.asarray([self.symbol(at) for at in range(self.natom())])
         elez = np.asarray([self.Z(at) for at in range(self.natom())])
@@ -1341,6 +1346,7 @@ class Molecule(LibmintsMolecule):
 
         Parameters
         ----------
+        self : qcdb.Molecule or psi4.core.Molecule
         seed_atoms : list, optional
             List of lists of atoms (0-indexed) belonging to independent fragments.
             Useful to prompt algorithm or to define intramolecular fragments through
@@ -1358,25 +1364,27 @@ class Molecule(LibmintsMolecule):
         -------
         bfs_map : list of lists
             Array of atom indices (0-indexed) of detected fragments.
-        bfs_arrays : tuple of lists of ndarray
+        bfs_arrays : tuple of lists of ndarray, optional
             geom, mass, elem info per-fragment.
             Only provided if `return_arrays` is True.
-        bfs_molecules : list of qcdb.Molecule, optional
+        bfs_molecules : list of qcdb.Molecule or psi4.core.Molecule, optional
             List of molecules, each built from one fragment. Center and
             orientation of fragments is fixed so orientation info from `self` is
             not lost. Loses chgmult and ghost/dummy info from `self` and contains
             default chgmult.
             Only provided if `return_molecules` is True.
-        bfs_molecule : qcdb.Molecule
+            Returned are of same type as `self`.
+        bfs_molecule : qcdb.Molecule or psi4.core.Molecule, optional
             Single molecule with same number of real atoms as `self` with atoms
             reordered into adjacent fragments and fragment markers inserted.
-            Loses ghost/dummy info from `self` and contains default fragment chgmult.
+            Loses ghost/dummy info from `self`; keeps total charge but not total mult.
             Only provided if `return_molecule` is True.
+            Returned is of same type as `self`.
 
         Notes
         -----
         Relies upon van der Waals radii and so faulty for close (especially
-            hydrogen-bonded) fragments.
+            hydrogen-bonded) fragments. See `seed_atoms`.
         Any existing fragmentation info/chgmult encoded in `self` is lost.
 
         Authors
@@ -1386,6 +1394,7 @@ class Molecule(LibmintsMolecule):
 
         """
         from .bfs import BFS
+        from . import molparse
 
         self.update_geometry()
         if self.natom() != self.nallatom():
@@ -1411,22 +1420,39 @@ class Molecule(LibmintsMolecule):
             outputs.append((fgeoms, fmasss, felems))
 
         if return_molecules:
-            ret_mols = [Molecule.from_arrays(cgeom[fr], cmass[fr], celem[fr], celez[fr],
-                                             units='Bohr', fix_com=True, fix_orientation=True) for fr in frag_pattern]
+            molrecs = [molparse.from_arrays(geom=cgeom[fr],
+                                            mass=cmass[fr],
+                                            elem=celem[fr],
+                                            elez=celez[fr],
+                                            units='Bohr',
+                                            fix_com=True,
+                                            fix_orientation=True) for fr in frag_pattern]
+            if isinstance(self, Molecule):
+                ret_mols = [Molecule.from_dict(molrec) for molrec in molrecs]
+            else:
+                from psi4 import core
+                ret_mols = [core.Molecule.from_dict(molrec) for molrec in molrecs]
             outputs.append(ret_mols)
 
         if return_molecule:
-            ret_mol = Molecule.from_arrays(
-                fgeom,
-                fmass,
-                felem,
-                felez,
-                units='Bohr',
-                charge=self.molecular_charge(),
-                multiplicity=self.multiplicity(),
-                fix_com=(not self.PYmove_to_com),
-                fix_orientation=self.orientation_fixed(),
-                fragments=vsplt)
+            molrec = molparse.from_arrays(geom=fgeom,
+                                          mass=fmass,
+                                          elem=felem,
+                                          elez=felez,
+                                          units='Bohr',
+                                          molecular_charge=self.molecular_charge(),
+                                          # molecular_multiplicity may not be conservable upon fragmentation
+                                          #   potentially could do two passes and try to preserve it
+                                          fix_com=self.com_fixed(),
+                                          fix_orientation=self.orientation_fixed(),
+                                          fix_symmetry=(None if self.symmetry_from_input() == '' else self.symmetry_from_input()),
+                                          fragment_separators=vsplt[:-1])
+            if isinstance(self, Molecule):
+                ret_mol = Molecule.from_dict(molrec)
+            else:
+                from psi4 import core
+                ret_mol = core.Molecule.from_dict(molrec)
+
             outputs.append(ret_mol)
 
         outputs = tuple(outputs)
@@ -1445,22 +1471,23 @@ class Molecule(LibmintsMolecule):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
-	    Wraps qcdb.align.B787 for qcdb.Molecule. The former employs the
-	    Kabsch, Hungarian, and Uno algorithms to exhaustively locate the
-	    best alignment for non-oriented, non-ordered structures.
+        Wraps :py:func:`qcdb.align.B787` for :py:class:`qcdb.Molecule` or
+        :py:class:`psi4.core.Molecule`. Employs the Kabsch, Hungarian, and
+        Uno algorithms to exhaustively locate the best alignment for
+        non-oriented, non-ordered structures.
 
         Parameters
         ----------
-        concern_mol : qcdb.Molecule
+        concern_mol : qcdb.Molecule or psi4.core.Molecule
             Molecule of concern, to be shifted, rotated, and reordered into
             best coincidence with `ref_mol`.
-        ref_mol : qcdb.Molecule
+        ref_mol : qcdb.Molecule or psi4.core.Molecule
             Molecule to match.
         atoms_map : bool, optional
-            Whether atom1 of ref_mol corresponds to atom1 of concern_mol, etc.
+            Whether atom1 of `ref_mol` corresponds to atom1 of `concern_mol`, etc.
             If true, specifying `True` can save much time.
         mols_align : bool, optional
-            Whether ref_mol and concern_mol have identical geometries by eye
+            Whether `ref_mol` and `concern_mol` have identical geometries by eye
             (barring orientation or atom mapping) and expected final RMSD = 0.
             If `True`, procedure is truncated when RMSD condition met, saving time.
         do_plot : bool, optional
@@ -1479,26 +1506,28 @@ class Molecule(LibmintsMolecule):
 
         Returns
         -------
-        float, tuple, qcdb.Molecule
+        float, tuple, qcdb.Molecule or psi4.core.Molecule
             First item is RMSD [A] between `ref_mol` and the optimally aligned
             geometry computed.
             Second item is a AlignmentMill namedtuple with fields
             (shift, rotation, atommap, mirror) that prescribe the transformation
             from `concern_mol` and the optimally aligned geometry.
             Third item is a crude charge-, multiplicity-, fragment-less Molecule
-            at optimally aligned (and atom-ordered) geometry.
+            at optimally aligned (and atom-ordered) geometry. Return type
+            determined by `concern_mol` type.
 
         """
         from .align import B787
+        from . import molparse
 
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
 
         rmsd, solution = B787(
-            cgeom,
-            rgeom,
-            cuniq,
-            runiq,
+            cgeom=cgeom,
+            rgeom=rgeom,
+            cuniq=cuniq,
+            runiq=runiq,
             do_plot=do_plot,
             verbose=verbose,
             atoms_map=atoms_map,
@@ -1509,16 +1538,21 @@ class Molecule(LibmintsMolecule):
             uno_cutoff=uno_cutoff)
 
         ageom, amass, aelem, aelez, auniq = solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
-        amol = Molecule.from_arrays(
-            ageom,
-            amass,
-            aelem,
-            aelez,
+        adict = molparse.from_arrays(
+            geom=ageom,
+            mass=amass,
+            elem=aelem,
+            elez=aelez,
             units='Bohr',
-            charge=concern_mol.molecular_charge(),
-            multiplicity=concern_mol.multiplicity(),
+            molecular_charge=concern_mol.molecular_charge(),
+            molecular_multiplicity=concern_mol.multiplicity(),
             fix_com=True,
             fix_orientation=True)
+        if isinstance(concern_mol, Molecule):
+            amol = Molecule.from_dict(adict)
+        else:
+            from psi4 import core
+            amol = core.Molecule.from_dict(adict)
 
         compare_values(concern_mol.nuclear_repulsion_energy(),
                        amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE uncorrupted')
@@ -1526,7 +1560,7 @@ class Molecule(LibmintsMolecule):
             compare_values(ref_mol.nuclear_repulsion_energy(),
                            amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE matches ref_mol')
             compare_integers(True,
-                             np.allclose(ref_mol.geometry(np_out=True), amol.geometry(np_out=True), atol=4),
+                             np.allclose(ref_mol.geometry(), amol.geometry(), atol=4),
                              'Q: concern_mol-->returned_mol geometry matches ref_mol')
 
         return rmsd, solution, amol
@@ -1546,7 +1580,7 @@ class Molecule(LibmintsMolecule):
 
         Parameters
         ----------
-        ref_mol : qcdb.Molecule
+        ref_mol : qcdb.Molecule or psi4.core.Molecule
             Molecule to perturb.
         do_shift : bool or array-like, optional
             Whether to generate a random atom shift on interval [-3, 3) in each
@@ -1594,13 +1628,13 @@ class Molecule(LibmintsMolecule):
             do_mirror=do_mirror)
         cgeom, cmass, celem, celez, cuniq = perturbation.align_system(rgeom, rmass, relem, relez, runiq, reverse=True)
         cmol = Molecule.from_arrays(
-            cgeom,
-            cmass,
-            celem,
-            celez,
+            geom=cgeom,
+            mass=cmass,
+            elem=celem,
+            elez=celez,
             units='Bohr',
-            charge=ref_mol.molecular_charge(),
-            multiplicity=ref_mol.multiplicity(),
+            molecular_charge=ref_mol.molecular_charge(),
+            molecular_multiplicity=ref_mol.multiplicity(),
             fix_com=True,
             fix_orientation=True)
 

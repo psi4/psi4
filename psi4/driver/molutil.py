@@ -59,6 +59,74 @@ def molecule_get_attr(self, name):
     return object.__getattribute__(self, name)
 
 
+def molecule_from_arrays(geom,
+                         mass=None,
+                         elem=None,
+                         elez=None,
+                         elea=None,
+                         elbl=None,
+
+                         name=None,
+                         units='Angstrom',
+                         input_units_to_au=None,
+                         fix_com=False,
+                         fix_orientation=False,
+                         fix_symmetry=None,
+
+                         fragment_separators=None,
+                         fragment_types=None,
+                         fragment_charges=None,
+                         fragment_multiplicities=None,
+
+                         molecular_charge=None,
+                         molecular_multiplicity=None,
+
+                         nonphysical=False,
+                         mtol=1.e-3,
+                         verbose=1,
+
+                         return_dict=False):
+        """Construct Molecule from unvalidated arrays and variables.
+
+        Light wrapper around :py:func:`~qcdb.molparse.from_arrays`
+        that is a full-featured constructor to dictionary representa-
+        tion of Molecule. This follows one step further to return
+        Molecule instance.
+
+        Parameters
+        ----------
+        See :py:func:`~qcdb.molparse.from_arrays`.
+
+        Returns
+        -------
+        :py:class:`psi4.core.Molecule`
+
+        """
+        molrec = qcdb.molparse.from_arrays(geom=geom,
+                                           mass=mass,
+                                           elem=elem,
+                                           elez=elez,
+                                           elea=elea,
+                                           elbl=elbl,
+                                           name=name,
+                                           units=units,
+                                           input_units_to_au=input_units_to_au,
+                                           fix_com=fix_com,
+                                           fix_orientation=fix_orientation,
+                                           fix_symmetry=fix_symmetry,
+                                           fragment_separators=fragment_separators,
+                                           fragment_types=fragment_types,
+                                           fragment_charges=fragment_charges,
+                                           fragment_multiplicities=fragment_multiplicities,
+                                           molecular_charge=molecular_charge,
+                                           molecular_multiplicity=molecular_multiplicity,
+                                           nonphysical=nonphysical,
+                                           mtol=mtol,
+                                           verbose=verbose)
+        if return_dict:
+            return core.Molecule.from_dict(molrec), molrec
+        else:
+            return core.Molecule.from_dict(molrec)
 
 
 def dynamic_variable_bind(cls):
@@ -69,7 +137,12 @@ def dynamic_variable_bind(cls):
     cls.__setattr__ = molecule_set_attr
     cls.__getattr__ = molecule_get_attr
 
-    cls.BFS = BFS
+    cls.to_arrays = qcdb.Molecule.to_arrays
+    cls.to_dict = qcdb.Molecule.to_dict
+    cls.BFS = qcdb.Molecule.BFS
+    cls.B787 = qcdb.Molecule.B787
+    cls.scramble = qcdb.Molecule.scramble
+    cls.from_arrays = molecule_from_arrays
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
