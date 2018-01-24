@@ -221,9 +221,12 @@ def B787(cgeom,
     # validation
     if rgeom.shape != cgeom.shape or rgeom.shape[1] != 3:
         raise ValidationError("""natom doesn't match: {} != {}""".format(rgeom.shape, cgeom.shape))
+    nat = rgeom.shape[0]
+    if atoms_map and runiq is None and cuniq is None:
+        runiq = np.array([''] * nat)
+        cuniq = np.array([''] * nat)
     if sorted(runiq) != sorted(cuniq):
         raise ValidationError("""atom subclasses unequal:\n  {}\n  {}""".format(runiq, cuniq))
-    nat = rgeom.shape[0]
 
     if run_mirror:
         mcgeom = np.copy(cgeom)

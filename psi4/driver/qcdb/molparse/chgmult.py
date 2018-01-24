@@ -56,7 +56,7 @@ def _alpha_beta_allocator(z, c, m):
     return nalpha, nbeta
 
 
-def validate_and_fill_chgmult(elez,
+def validate_and_fill_chgmult(zeff,
                               fragment_separators,
                               molecular_charge,
                               fragment_charges,
@@ -70,25 +70,25 @@ def validate_and_fill_chgmult(elez,
 
     Parameters
     ----------
-    elez : ndarray of float
+    zeff : ndarray of float
         (nat,) electron counts for neutral atoms, generally Z nuclear charge.
         0 indicates ghosts such that a full fragment of 0s will be constained
         to `0 1` charge & multiplicity.
     fragment_separators : ndarray of int
-        (nfr-1,) indices splitting `elez` into nfr fragments.
+        (nfr - 1, ) indices splitting `zeff` into nfr fragments.
     molecular_charge : float or None
         Total charge for molecular system.
     fragment_charges : list of float or None
         (nfr,) known fragment charges with `None` as placeholder for
         unknown. Expected pre-defaulted so even if nothing known if
-        `fragment_separators` breaks `elez` into `nfr=2` fragments, input
+        `fragment_separators` breaks `zeff` into `nfr=2` fragments, input
         value should be `fragment_charges=[None, None]`.
     molecular_multiplicity : int or None
         Total multiplicity for molecular system.
     fragment_multiplicity : list of int or None
         (nfr,) known fragment charges with `None` as placeholder for
         unknown. Expected pre-defaulted so even if nothing known if
-        `fragment_separators` breaks `elez` into `nfr=2` fragments, input
+        `fragment_separators` breaks `zeff` into `nfr=2` fragments, input
         value should be `fragment_multiplicities=[None, None]`.
     verbose : int
         Amount of printing.
@@ -107,7 +107,7 @@ def validate_and_fill_chgmult(elez,
     R6 * require chg match input argument values
     R7 * require mult match input argument values
     R8 * require that tot = sum(frag) mult follow high spin addition unless tot & frag mult fully specified
-    R9 * require that ghost fragments (elez all 0) be neutral singlet
+    R9 * require that ghost fragments (zeff all 0) be neutral singlet
 
     * Allowed values
     S1 * suggest input argument values for tot chg, frag chg, tot mult or frag mult
@@ -126,8 +126,11 @@ def validate_and_fill_chgmult(elez,
     I3 * missing chg or mult from tot - frags will always be allocated as a block, not distributed
 
     """
-    felez = np.split(elez, fragment_separators)
+    text = []
+
+    felez = np.split(zeff, fragment_separators)
     nfr = len(felez)
+    text.append('felez: {}'.format(felez))
 
     cgmp_exact_c = []  # exact_* are candidates for the final value
     cgmp_exact_fc = [[] for f in range(nfr)]
@@ -136,7 +139,6 @@ def validate_and_fill_chgmult(elez,
 
     cgmp_range = []  # tests that the final value must pass to be valid
     cgmp_rules = []  # key to what rules in cgmp_range are T/F
-    text = []
 
     # <<< assert broad physical requirements
 
@@ -157,8 +159,10 @@ def validate_and_fill_chgmult(elez,
 
     # <<< assert electron count requirements
 
-    zel = np.sum(elez)  # note: number electrons in neutral species, not number total electrons
+    zel = np.sum(zeff)  # note: number electrons in neutral species, not number total electrons
     fzel = [np.sum(f) for f in felez]
+    text.append('zel: {}'.format(zel))
+    text.append('fzel: {}'.format(fzel))
 
     #   * (R4) require sufficient electrons for mult: mult - 1 <= neutral_electrons - chg
     cgmp_range.append(lambda c, fc, m, fm: _sufficient_electrons_for_mult(zel, c, m))
@@ -292,6 +296,10 @@ def validate_and_fill_chgmult(elez,
         fcgmp = '{:^4}'
         return fcgmp.format(final) if final == start else fcgmp.format('(' + str(int(final)) + ')')
 
+    # TODO could winnow down the exact_* lists a bit by ruling out
+    #      independent values. do this if many-frag molecular systems take too
+    #      long in the itertools.product
+
     c_final, fc_final, m_final, fm_final = reconcile(cgmp_exact_c, cgmp_exact_fc, cgmp_exact_m, cgmp_exact_fm)
 
     c_text = stringify(molecular_charge, c_final)
@@ -325,7 +333,7 @@ def validate_and_fill_chgmult(elez,
 
     return {
         'molecular_charge': float(c_final),
-        'fragment_charges': list(fc_final),
+        'fragment_charges': [float(f) for f in fc_final],
         'molecular_multiplicity': m_final,
         'fragment_multiplicities': list(fm_final)
     }
@@ -333,6 +341,7 @@ def validate_and_fill_chgmult(elez,
 
 if __name__ == '__main__':
 
+    # NOTE: to run tests as python module, comment out relative imports at top
     import sys
 
     class ValidationError(Exception):

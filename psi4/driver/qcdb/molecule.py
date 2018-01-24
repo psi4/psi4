@@ -1251,13 +1251,11 @@ class Molecule(LibmintsMolecule):
         if force_c1:
             molrec['fix_symmetry'] = 'c1'
         elif self.symmetry_from_input():
-            #molrec['fix_symmetry'] = self.pg.symbol()
             molrec['fix_symmetry'] = self.symmetry_from_input()
 
         # if self.has_zmatrix:
         #     moldict['zmat'] = self.zmat
         # TODO zmat, geometry_variables
-        # TODO charge and ghost
 
         nat = self.natom()
         geom = np.array(self.geometry())
@@ -1279,7 +1277,7 @@ class Molecule(LibmintsMolecule):
                        core.FragmentType.Ghost: 'Ghost',
                        core.FragmentType.Absent: 'Absent'}
             ftypes = [adaptor[f] for f in ftypes]
-        molrec['fragment_separators'] = [f[0] for f in self.get_fragments()[1:]]
+        molrec['fragment_separators'] = [int(f[0]) for f in self.get_fragments()[1:]]  # np.int --> int
         molrec['fragment_types'] = ftypes
         molrec['fragment_charges'] = [float(f) for f in self.get_fragment_charges()]
         molrec['fragment_multiplicities'] = self.get_fragment_multiplicities()
@@ -1317,8 +1315,9 @@ class Molecule(LibmintsMolecule):
         for iat in range(nat):
             x, y, z = geom[iat]
             label = molrec['elem'][iat] + molrec['elbl'][iat]
-            mol.add_atom(molrec['elez'][iat], x, y, z, molrec['elem'][iat], molrec['mass'][iat],
-                         molrec['elez'][iat], label, molrec['elea'][iat])
+            Z = molrec['elez'][iat] * int(molrec['real'][iat])
+            mol.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
+                         Z, label, molrec['elea'][iat])
             # TODO charge and 2nd elez site
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_

@@ -231,19 +231,19 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     std::vector <double> elez = molrec["elez"].cast<std::vector <double>>();
     std::vector <std::string> elem = molrec["elem"].cast<std::vector <std::string>>();
     std::vector <double> mass = molrec["mass"].cast<std::vector <double>>();
+    std::vector <int> real = molrec["real"].cast<std::vector <int>>();
     std::vector <std::string> elbl= molrec["elbl"].cast<std::vector <std::string>>();
     size_t nat = geom.size() / 3;
 
     for (size_t iat=0; iat<nat; ++iat)
-        mol->add_atom(elez[iat],
+        mol->add_atom(elez[iat] * real[iat],
                       geom[3*iat], geom[3*iat+1], geom[3*iat+2],
                       elem[iat],
                       mass[iat],
-                      elez[iat],
+                      elez[iat] * real[iat],
                       elem[iat] + elbl[iat],
                       elea[iat]);
 
-    ////    # TODO add_atom charge at 2nd elez site
     ////    mol->set_has_zmatrix(false);  // TODO
     ////    moldict['zmat'] = self.zmat
     ////    moldict['reinterpret_coordentries'] = self.PYreinterpret_coordentries
@@ -1089,11 +1089,11 @@ void export_mints(py::module& m)
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")
         .def("z", &Molecule::z, "z position of atom")
-        .def("fZ", &Molecule::Z, py::return_value_policy::copy,
+        .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
              "Nuclear charge of atom arg1 (0-indexed including dummies)")
-        .def("fx", &Molecule::x, "x position of atom arg1 (0-indexed including dummies in Bohr)")
-        .def("fy", &Molecule::y, "y position of atom arg1 (0-indexed including dummies in Bohr)")
-        .def("fz", &Molecule::z, "z position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fx", &Molecule::fx, "x position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fy", &Molecule::fy, "y position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fz", &Molecule::fz, "z position of atom arg1 (0-indexed including dummies in Bohr)")
         .def("center_of_mass", &Molecule::center_of_mass,
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg2")
