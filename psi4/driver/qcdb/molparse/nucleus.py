@@ -303,11 +303,11 @@ def parse_nucleus_label(label):
 
 if __name__ == "__main__":
 
+    # NOTE: to run tests as python module, comment out relative imports at top
     import qcdb
     from qcdb import periodictable
     from qcdb.exceptions import *
     from qcdb.molparse import regex
-    # NOTE: to run tests as python module, comment out relative imports at top
 
     co_dominant = (59, 27, 'Co', 58.933195048, True, '')
     co_dominant_mine = (59, 27, 'Co', 58.933195048, True, '_mine')

@@ -131,14 +131,14 @@ def from_arrays(geom,
                                                 fragment_charges=fragment_charges,
                                                 fragment_multiplicities=fragment_multiplicities))
 
-    molinit.update(validate_and_fill_chgmult(   elez=molinit['elez'],
+    Z_available = molinit['elez'] * molinit['real'] * 1.
+    molinit.update(validate_and_fill_chgmult(   zeff=Z_available,
                                                 fragment_separators=molinit['fragment_separators'],
                                                 molecular_charge=molecular_charge,
                                                 fragment_charges=molinit['fragment_charges'],
                                                 molecular_multiplicity=molecular_multiplicity,
                                                 fragment_multiplicities=molinit['fragment_multiplicities'],
                                                 verbose=verbose))
-    # TODO for chgmult call elez needs to be elec and/or elez modulated by ghosted
 
     return molinit
 
@@ -258,7 +258,7 @@ def validate_and_fill_nuclei(nat,
             'elez': np.array(Z, dtype=np.int),
             'elem': np.array(E),
             'mass': np.array(mass, dtype=np.float),
-            'real': np.array(real),
+            'real': np.array(real, dtype=np.bool),
             'elbl': np.array(label)}
 
 
