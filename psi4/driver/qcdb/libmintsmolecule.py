@@ -409,6 +409,15 @@ class LibmintsMolecule(object):
         """
         return self.atoms[atom].charge()
 
+    def A(self, atom):
+        """Mass number of atom (0-indexed)
+
+        >>> print H2OH2O.A(4)
+        1
+
+        """
+        return self.atoms[atom].A()
+
     def fZ(self, atom):
         """Nuclear charge of atom (includes dummies)
 
@@ -492,6 +501,15 @@ class LibmintsMolecule(object):
 
         """
         return self.full_atoms[atom].charge()
+
+    def fA(self, atom):
+        """Mass number of atom (0-indexed)
+
+        >>> print H2OH2O.fA(4)
+        1
+
+        """
+        return self.full_atoms[atom].A()
 
     # <<< Simple Methods for Fragmentation >>>
 
@@ -740,6 +758,7 @@ class LibmintsMolecule(object):
                 zVal = el2z[atomSym]
                 atomMass = el2mass[atomSym] if atomm.group('mass') is None else float(atomm.group('mass'))
                 charge = float(zVal)
+                aVal = -1
                 if ghostAtom:
                     zVal = 0
                     charge = 0.0
@@ -750,16 +769,16 @@ class LibmintsMolecule(object):
                     xval = self.get_coord_value(entries[1])
                     yval = self.get_coord_value(entries[2])
                     zval = self.get_coord_value(entries[3])
-                    self.full_atoms.append(CartesianEntry(iatom, zVal, charge, \
-                        atomMass, atomSym, atomLabel, \
+                    self.full_atoms.append(CartesianEntry(iatom, zVal, charge,
+                        atomMass, atomSym, atomLabel, aVal,
                         xval, yval, zval))
 
                 # handle first line of Zmat
                 elif len(entries) == 1:
                     zmatrix = True
                     tempfrag.append(iatom)
-                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        atomMass, atomSym, atomLabel))
+                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge,
+                        atomMass, atomSym, atomLabel, aVal))
 
                 # handle second line of Zmat
                 elif len(entries) == 3:
@@ -774,8 +793,8 @@ class LibmintsMolecule(object):
                     if self.full_atoms[rTo].symbol() == 'X':
                         rval.set_fixed(True)
 
-                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        atomMass, atomSym, atomLabel, \
+                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge,
+                        atomMass, atomSym, atomLabel, aVal,
                         self.full_atoms[rTo], rval))
 
                 # handle third line of Zmat
@@ -799,9 +818,9 @@ class LibmintsMolecule(object):
                     if self.full_atoms[aTo].symbol() == 'X':
                         aval.set_fixed(True)
 
-                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        atomMass, atomSym, atomLabel, \
-                        self.full_atoms[rTo], rval, \
+                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge,
+                        atomMass, atomSym, atomLabel, aVal,
+                        self.full_atoms[rTo], rval,
                         self.full_atoms[aTo], aval))
 
                 # handle fourth line of Zmat
@@ -832,10 +851,10 @@ class LibmintsMolecule(object):
                     if self.full_atoms[dTo].symbol() == 'X':
                         dval.set_fixed(True)
 
-                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        atomMass, atomSym, atomLabel, \
-                        self.full_atoms[rTo], rval, \
-                        self.full_atoms[aTo], aval, \
+                    self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge,
+                        atomMass, atomSym, atomLabel, aVal,
+                        self.full_atoms[rTo], rval,
+                        self.full_atoms[aTo], aval,
                         self.full_atoms[dTo], dval))
 
                 else:
@@ -981,7 +1000,8 @@ class LibmintsMolecule(object):
             # TODO if (Process::environment.options.get_int("PRINT") > 2) {
             text += "\n"
             for i in range(self.natom()):
-                text += """    %8s\n""" % (self.label(i))
+                Astr = '' if self.A(i) == -1 else str(self.A(i))
+                text += """    %8s\n""" % (Astr + self.label(i))
                 for bas in self.atoms[i].basissets().keys():
                     text += """              %-15s %-20s""" % (bas,
                         self.atoms[i].basissets()[bas])
@@ -1184,23 +1204,27 @@ class LibmintsMolecule(object):
                 self.all_variables.append(vstr)
                 return VariableValue(vstr, self.geometry_variables)
 
-    def add_atom(self, Z, x, y, z, label="", mass=0.0, charge=0.0, lineno=-1):
+    def add_atom(self, Z, x, y, z, symbol, mass=0.0, charge=0.0, label='', A=-1, lineno=-1):
         """Add an atom to the molecule
         *Z* atomic number
         *x* cartesian coordinate
         *y* cartesian coordinate
         *z* cartesian coordinate
-        *symb* atomic symbol to use
+        *symbol* atomic symbol to use
         *mass* mass to use if non standard
         *charge* charge to use if non standard
+        *label* extended symbol with user info
+        *A* mass number
         *lineno* line number when taken from a string
 
         """
         self.lock_frame = False
 
+        if label == '':
+            label = symbol
         if self.atom_at_position([x, y, z]) == -1:
             # Dummies go to full_atoms, ghosts need to go to both.
-            self.full_atoms.append(CartesianEntry(self.nallatom(), Z, charge, mass, label, label, \
+            self.full_atoms.append(CartesianEntry(self.nallatom(), Z, charge, mass, symbol, label, A,
                 NumberValue(x), NumberValue(y), NumberValue(z)))
             if label.upper() != 'X':
                 self.atoms.append(self.full_atoms[-1])
@@ -1845,7 +1869,7 @@ class LibmintsMolecule(object):
         Parameters
         ----------
         return_units : str, optional
-		    Selector for rotational constants (among: 'GHz', 'MHz', 'cm^-1') or
+            Selector for rotational constants (among: 'GHz', 'MHz', 'cm^-1') or
             moments of inertia (among: 'u a0^2', 'u A^2').
 
         Returns

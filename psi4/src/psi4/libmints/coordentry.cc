@@ -72,17 +72,17 @@ double VariableValue::compute()
     return negate_ ? -geometryVariables_[name_] : geometryVariables_[name_];
 }
 
-CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label)
+CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, int A)
     : entry_number_(entry_number), computed_(false), Z_(Z),
-      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false)
+      charge_(charge), mass_(mass), symbol_(symbol), label_(label), A_(A), ghosted_(false)
 {
 }
 
 CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-           const std::string& label, const std::map<std::string, std::string>& basis,
+           const std::string& label, int A, const std::map<std::string, std::string>& basis,
            const std::map<std::string, std::string>& shells)
     : entry_number_(entry_number), computed_(false), Z_(Z),
-      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false),
+      charge_(charge), mass_(mass), symbol_(symbol), label_(label), A_(A), ghosted_(false),
       basissets_(basis), shells_(shells)
 {
 }
@@ -153,17 +153,17 @@ const std::string& CoordEntry::shell(const std::string& type) const
 }
 
 
-CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, int A,
                std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y, std::shared_ptr<CoordValue> z)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, A), x_(x), y_(y), z_(z)
 {
 }
 
-CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, int A,
                std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y, std::shared_ptr<CoordValue> z,
                const std::map<std::string, std::string>& basis,
                const std::map<std::string, std::string>& shells)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis, shells), x_(x), y_(y), z_(z)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, A, basis, shells), x_(x), y_(y), z_(z)
 {
 }
 
@@ -213,18 +213,18 @@ void CartesianEntry::set_coordinates(double x, double y, double z)
     computed_ = true;
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, int A,
                            std::shared_ptr<CoordEntry> rto, std::shared_ptr<CoordValue> rval,
                            std::shared_ptr<CoordEntry> ato, std::shared_ptr<CoordValue> aval,
                            std::shared_ptr<CoordEntry> dto, std::shared_ptr<CoordValue> dval)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, label),
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, A),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)
 {
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, int A,
              const std::map<std::string, std::string>& basis,
              const std::map<std::string, std::string>& shells,
              std::shared_ptr<CoordEntry> rto,
@@ -233,7 +233,7 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mas
              std::shared_ptr<CoordValue> aval,
              std::shared_ptr<CoordEntry> dto,
              std::shared_ptr<CoordValue> dval)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis, shells),
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, A, basis, shells),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)

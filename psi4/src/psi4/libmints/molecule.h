@@ -223,9 +223,10 @@ public:
      * \param mass mass to use if non standard
      * \param charge charge to use if non standard
      * \param lbl extended atomic symbol
+     * \param A mass number
      */
     void add_atom(double Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
-                  double charge = 0.0, std::string lbl = "");
+                  double charge = 0.0, std::string lbl = "", int A = -1);
 
     /// Whether the multiplicity was given by the user
     bool multiplicity_specified() const { return multiplicity_specified_; }
@@ -286,6 +287,8 @@ public:
     std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
+    /// Returns mass number of atom
+    int A(int atom) const;
     /// Returns the true atomic number of an atom
     int true_atomic_number(int atom) const;
     int ftrue_atomic_number(int atom) const;
@@ -295,6 +298,8 @@ public:
     std::string flabel(int atom) const;
     /// Returns charge of atom
     double fcharge(int atom) const;
+    /// Returns mass number of atom
+    int fA(int atom) const;
     /// Returns the CoordEntry for an atom
     const std::shared_ptr<CoordEntry>& atom_entry(int atom) const;
 

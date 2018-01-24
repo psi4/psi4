@@ -148,6 +148,7 @@ class CoordEntry {
     double Z_;
     double charge_;
     double mass_;
+    int A_;
 
     /// Label of the atom minus any extra info (H1 => H)
     std::string symbol_;
@@ -194,9 +195,9 @@ class CoordEntry {
      */
     enum CoordEntryType { CartesianCoord, ZMatrixCoord };
     CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-               const std::string& label = "");
+               const std::string& label = "", int A = -1);
     CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-               const std::string& label, const std::map<std::string, std::string>& basis,
+               const std::string& label, int A, const std::map<std::string, std::string>& basis,
                const std::map<std::string, std::string>& shells);
     virtual ~CoordEntry();
 
@@ -232,6 +233,8 @@ class CoordEntry {
     const double& charge() const { return charge_; }
     /// The atomic mass of the current atom.
     const double& mass() const { return mass_; }
+    /// The mass number of the current atom, if known, else -1.
+    const int& A() const { return A_; }
     /// The atomic symbol.
     const std::string& symbol() const { return symbol_; }
     /// The atom label.
@@ -279,10 +282,10 @@ class CartesianEntry : public CoordEntry {
 
    public:
     CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-                   const std::string& label, std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y,
+                   const std::string& label, int A, std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y,
                    std::shared_ptr<CoordValue> z);
     CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-                   const std::string& label, std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y,
+                   const std::string& label, int A, std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y,
                    std::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis,
                    const std::map<std::string, std::string>& shells);
 
@@ -300,7 +303,7 @@ class CartesianEntry : public CoordEntry {
     std::shared_ptr<CoordEntry> clone(std::vector<std::shared_ptr<CoordEntry> >& /*atoms*/,
                                       std::map<std::string, double>& map) {
         std::shared_ptr<CoordEntry> temp =
-            std::make_shared<CartesianEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map),
+            std::make_shared<CartesianEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, x_->clone(map),
                                              y_->clone(map), z_->clone(map), basissets_, shells_);
         return temp;
     }
@@ -316,14 +319,14 @@ class ZMatrixEntry : public CoordEntry {
 
    public:
     ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-                 const std::string& label, std::shared_ptr<CoordEntry> rto = std::shared_ptr<CoordEntry>(),
+                 const std::string& label, int A, std::shared_ptr<CoordEntry> rto = std::shared_ptr<CoordEntry>(),
                  std::shared_ptr<CoordValue> rval = std::shared_ptr<CoordValue>(),
                  std::shared_ptr<CoordEntry> ato = std::shared_ptr<CoordEntry>(),
                  std::shared_ptr<CoordValue> aval = std::shared_ptr<CoordValue>(),
                  std::shared_ptr<CoordEntry> dto = std::shared_ptr<CoordEntry>(),
                  std::shared_ptr<CoordValue> dval = std::shared_ptr<CoordValue>());
     ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-                 const std::string& label, const std::map<std::string, std::string>& basis,
+                 const std::string& label, int A, const std::map<std::string, std::string>& basis,
                  const std::map<std::string, std::string>& shells,
                  std::shared_ptr<CoordEntry> rto = std::shared_ptr<CoordEntry>(),
                  std::shared_ptr<CoordValue> rval = std::shared_ptr<CoordValue>(),
@@ -349,16 +352,16 @@ class ZMatrixEntry : public CoordEntry {
         std::shared_ptr<CoordEntry> temp;
         if (rto_ == 0 && ato_ == 0 && dto_ == 0) {
             temp =
-                std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_);
+                std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, basissets_, shells_);
         } else if (ato_ == 0 && dto_ == 0) {
-            temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, basissets_,
                                                   shells_, atoms[rto_->entry_number()], rval_->clone(map));
         } else if (dto_ == 0) {
-            temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, basissets_,
                                                   shells_, atoms[rto_->entry_number()], rval_->clone(map),
                                                   atoms[ato_->entry_number()], aval_->clone(map));
         } else {
-            temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, basissets_,
                                                   shells_, atoms[rto_->entry_number()], rval_->clone(map),
                                                   atoms[ato_->entry_number()], aval_->clone(map),
                                                   atoms[dto_->entry_number()], dval_->clone(map));

@@ -263,7 +263,7 @@ void Molecule::clear() {
 }
 
 void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass,
-                        double charge, std::string label) {
+                        double charge, std::string label, int A) {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
     if (label == "")
@@ -272,7 +272,7 @@ void Molecule::add_atom(double Z, double x, double y, double z, std::string symb
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
         full_atoms_.push_back(std::make_shared<CartesianEntry>(
-            full_atoms_.size(), Z, charge, mass, symbol, label, std::make_shared<NumberValue>(x),
+            full_atoms_.size(), Z, charge, mass, symbol, label, A, std::make_shared<NumberValue>(x),
             std::make_shared<NumberValue>(y), std::make_shared<NumberValue>(z)));
         if ((label != "X") && (label != "x")) {
             atoms_.push_back(full_atoms_.back());
@@ -576,8 +576,9 @@ void Molecule::set_geometry(double **geom) {
             double mass = at->mass();
             std::string symbol = at->symbol();
             std::string label = at->label();
+            int aval = at->A();
             std::shared_ptr<CoordEntry> new_atom =
-                std::make_shared<CartesianEntry>(entrynum, zval, charge, mass, symbol, label,
+                std::make_shared<CartesianEntry>(entrynum, zval, charge, mass, symbol, label, aval,
                                                  std::make_shared<NumberValue>(geom[count][0] / input_units_to_au_),
                                                  std::make_shared<NumberValue>(geom[count][1] / input_units_to_au_),
                                                  std::make_shared<NumberValue>(geom[count][2] / input_units_to_au_));
@@ -1053,6 +1054,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     bool has_zmatrix = false;
     bool has_cart = false;
     double zVal, charge;
+    int aVal = -1;
     size_t currentFragment = 0;
     efpCount = 0;
 
@@ -1098,7 +1100,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
                 std::shared_ptr<CoordValue> zval =
                     std::make_shared<NumberValue>(frag_atom_coord[3 * at + 2] / mol->input_units_to_au_);
                 mol->full_atoms_.push_back(std::make_shared<CartesianEntry>(
-                    currentAtom + at, zVal, zVal, an2masses[(int)zVal], atomSym, atomLabel, xval, yval, zval));
+                    currentAtom + at, zVal, zVal, an2masses[(int)zVal], atomSym, atomLabel, aVal, xval, yval, zval));
                 ++currentAtom;
             }
             ++efpCount;
@@ -1152,12 +1154,12 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
                 std::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
                 std::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
                 mol->full_atoms_.push_back(std::make_shared<CartesianEntry>(currentAtom, zVal, charge, atomMass,
-                                                                            atomSym, atomLabel, xval, yval, zval));
+                                                                            atomSym, atomLabel, aVal, xval, yval, zval));
             } else if (numEntries == 1) {
                 // This is the first line of a Z-Matrix
                 has_zmatrix = true;
                 mol->full_atoms_.push_back(
-                    std::make_shared<ZMatrixEntry>(currentAtom, zVal, charge, atomMass, atomSym, atomLabel));
+                    std::make_shared<ZMatrixEntry>(currentAtom, zVal, charge, atomMass, atomSym, atomLabel, aVal));
             } else if (numEntries == 3) {
                 // This is the second line of a Z-Matrix
                 has_zmatrix = true;
@@ -1170,7 +1172,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
                 if (mol->full_atoms_[rTo]->symbol() == "X") rval->set_fixed(true);
 
                 mol->full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, zVal, charge, atomMass, atomSym,
-                                                                          atomLabel, mol->full_atoms_[rTo], rval));
+                                                                          atomLabel, aVal, mol->full_atoms_[rTo], rval));
 
                 //                mol->full_atoms_.back()->print_in_input_format();
             } else if (numEntries == 5) {
@@ -1192,7 +1194,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
                 if (mol->full_atoms_[aTo]->symbol() == "X") aval->set_fixed(true);
 
                 mol->full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, zVal, charge, atomMass, atomSym,
-                                                                          atomLabel, mol->full_atoms_[rTo], rval,
+                                                                          atomLabel, aVal, mol->full_atoms_[rTo], rval,
                                                                           mol->full_atoms_[aTo], aval));
                 //                mol->full_atoms_.back()->print_in_input_format();
             } else if (numEntries == 7) {
@@ -1221,7 +1223,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
                 if (mol->full_atoms_[dTo]->symbol() == "X") dval->set_fixed(true);
 
                 mol->full_atoms_.push_back(std::make_shared<ZMatrixEntry>(
-                    currentAtom, zVal, charge, atomMass, atomSym, atomLabel, mol->full_atoms_[rTo], rval,
+                    currentAtom, zVal, charge, atomMass, atomSym, atomLabel, aVal, mol->full_atoms_[rTo], rval,
                     mol->full_atoms_[aTo], aval, mol->full_atoms_[dTo], dval));
             } else {
                 throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
@@ -2765,6 +2767,10 @@ double Molecule::fz(int atom) const { return input_units_to_au_ * full_atoms_[at
 double Molecule::charge(int atom) const { return atoms_[atom]->charge(); }
 
 double Molecule::fcharge(int atom) const { return full_atoms_[atom]->charge(); }
+
+int Molecule::A(int atom) const { return atoms_[atom]->A(); }
+
+int Molecule::fA(int atom) const { return full_atoms_[atom]->A(); }
 
 void Molecule::set_nuclear_charge(int atom, double newZ) { atoms_[atom]->set_nuclear_charge(newZ); }
 

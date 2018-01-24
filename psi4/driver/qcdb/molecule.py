@@ -1300,10 +1300,8 @@ class Molecule(LibmintsMolecule):
             mol.set_name(molrec['name'])
 
         mol.set_units(molrec['units'])
-        #mol.units = molrec['units']
         if 'input_units_to_au' in molrec:
             mol.set_input_units_to_au(molrec['input_units_to_au'])
-            #mol.input_units_to_au = molrec['input_units_to_au']
 
         mol.fix_com(molrec['fix_com'])
         mol.fix_orientation(molrec['fix_orientation'])
