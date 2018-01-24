@@ -346,7 +346,6 @@ if __name__ == '__main__':
         print('\t{0:.<100}PASSED'.format(label))
         sys.stdout.flush()
 
-
     def compare_integers(expected, computed, label):
         """Function to compare two integers. Prints :py:func:`util.success`
         when value *computed* matches value *expected*.
@@ -474,5 +473,4 @@ if __name__ == '__main__':
                 raise err
         else:
             #qcdb.compare_integers(ans == dict(zip(keys, test[6])), 1,
-            compare_integers(ans == dict(zip(keys, test[6])), 1,
-                                  """{:3}. {}: {}, {}, {}, {} --> {}""".format(*test))
+            compare_integers(ans == dict(zip(keys, test[6])), 1, """{:3}. {}: {}, {}, {}, {} --> {}""".format(*test))

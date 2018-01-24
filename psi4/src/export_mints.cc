@@ -204,7 +204,7 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     // Compromises for psi4.core.Molecule
     // * molecular_charge is int, not float
     // * fragment_charges are int, not float
-    // * elez are float, not int
+    // * elez are float, not int, b/c Psi4 Z is approx. elez * real
 
     std::shared_ptr <Molecule> mol(new Molecule);
     //mol->set_lock_frame() = false;
@@ -227,6 +227,7 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         mol->reset_point_group(molrec["fix_symmetry"].cast<std::string>());
 
     std::vector <double> geom = molrec["geom"].cast<std::vector <double>>();
+    std::vector <int> elea = molrec["elea"].cast<std::vector<int>>();
     std::vector <double> elez = molrec["elez"].cast<std::vector <double>>();
     std::vector <std::string> elem = molrec["elem"].cast<std::vector <std::string>>();
     std::vector <double> mass = molrec["mass"].cast<std::vector <double>>();
@@ -239,7 +240,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
                       elem[iat],
                       mass[iat],
                       elez[iat],
-                      elbl[iat]);
+                      elem[iat] + elbl[iat],
+                      elea[iat]);
 
     ////    # TODO add_atom charge at 2nd elez site
     ////    mol->set_has_zmatrix(false);  // TODO

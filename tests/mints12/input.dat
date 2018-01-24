@@ -1,0 +1,54 @@
+#! test roundtrip-ness of dict repr for psi4.core.Molecule and qcdb.Molecule
+
+from psi4.driver import qcdb
+
+
+def compare_molrecs(expected, computed, tol, label):
+
+    # deepdiff can't cope with np.int type
+    expected['elez'] = [int(z) for z in expected['elez']]
+    computed['elez'] = [int(z) for z in computed['elez']]
+    expected['elea'] = [int(a) for a in expected['elea']]
+    computed['elea'] = [int(a) for a in computed['elea']]
+
+    qcdb.compare_dicts(expected, computed, tol, label)
+
+
+kwargs1 = {
+    'geom': [[0., 0., 0.], [1.4, 0., 0.], [-0.5, -0.7, 0.], [-0.5, 0.7, 0.]],
+    'elem': ['C', 'O', 'H', 'h'],
+    'units': 'Angstrom', 
+    'input_units_to_au': 1.88972,
+    'fix_com': True,
+    'fix_orientation': True,
+    'fix_symmetry': 'cS',
+    }
+
+kwargs2 = {
+    'geom': [[0., 0., 0.], [1.4, 0., 0.], [-0.5, -0.7, 0.], [-0.5, 0.7, 0.]],
+    'elbl': ['C@12.5', 'O5', 'H_r', 'H_L'],
+    'units': 'Bohr', 
+    'fix_com': True,
+    'fix_orientation': True,
+    }
+
+def test_mol(kwargs, label):
+    pmol, pdict = psi4.core.Molecule.from_arrays(**kwargs, return_dict=True)
+    qmol, qdict = qcdb.Molecule.from_arrays(**kwargs, return_dict=True)
+    tpdict = pmol.to_dict()
+    tqdict = qmol.to_dict()
+
+    compare_molrecs(pdict, qdict, 4, label + ': from_arrays P vs. Q')
+    compare_molrecs(pdict, tpdict, 4, label + ': from_arrays P vs. to_dict P')
+    compare_molrecs(tpdict, tqdict, 4, label + ': to_dict P vs. Q')
+
+    compare_molrecs(pdict, tqdict, 4, label + ': from_arrays P vs. to_dict Q')
+    compare_molrecs(qdict, tpdict, 4, label + ': from_arrays Q vs. to_dict P')
+    compare_molrecs(qdict, tqdict, 4, label + ': from_arrays Q vs. to_dict Q')
+
+    #print(tpdict)
+    #qmol.print_out()
+
+test_mol(kwargs1, label='H2CO plain')
+test_mol(kwargs2, label='H2CO labeled')
+
