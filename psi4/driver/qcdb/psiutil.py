@@ -272,6 +272,21 @@ def compare_arrays(expected, computed, digits, label, verbose=1):
         _success(label)
 
 
+def compare_dicts(expected, computed, tol, label):
+    """Compares dictionaries *computed* to *expected* using DeepDiff
+    Float comparisons made to *tol* significant decimal places.
+    Note that a clean DeepDiff returns {}, which evaluates to False, hence the compare_integers.
+    """
+    import pprint
+    import deepdiff
+
+    ans = deepdiff.DeepDiff(expected, computed, significant_digits=tol, verbose_level=2)
+    clean = not bool(ans)
+    if not clean:
+        pprint.pprint(ans)
+    return compare_integers(True, clean, label)
+
+
 def query_yes_no(question, default=True):
     """Ask a yes/no question via raw_input() and return their answer.
 
