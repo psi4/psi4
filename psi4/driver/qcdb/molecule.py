@@ -1146,10 +1146,11 @@ class Molecule(LibmintsMolecule):
     def from_arrays(cls,
                     geom,
 
-                    mass=None,
-                    elem=None,
-                    elez=None,
                     elea=None,
+                    elez=None,
+                    elem=None,
+                    mass=None,
+                    real=None,
                     elbl=None,
 
                     name=None,
@@ -1196,10 +1197,11 @@ class Molecule(LibmintsMolecule):
         from . import molparse
 
         molrec = molparse.from_arrays(geom=geom,
-                                      mass=mass,
-                                      elem=elem,
-                                      elez=elez,
                                       elea=elea,
+                                      elez=elez,
+                                      elem=elem,
+                                      mass=mass,
+                                      real=real,
                                       elbl=elbl,
                                       name=name,
                                       units=units,
@@ -1262,10 +1264,12 @@ class Molecule(LibmintsMolecule):
         if not force_au:
             geom /= self.input_units_to_au()
         molrec['geom'] = geom.reshape((-1))
-        molrec['elez'] = np.array([int(self.Z(at)) for at in range(nat)])
+        molrec['elea'] = np.array([self.A(at) for at in range(nat)])
+        molrec['elez'] = np.array([el2z[self.symbol(at).upper()] for at in range(nat)])
         molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
         molrec['mass'] = np.array([self.mass(at) for at in range(nat)])
-        molrec['elbl'] = np.array([self.label(at).capitalize() for at in range(nat)])
+        molrec['real'] = np.array([bool(self.Z(at)) for at in range(nat)])
+        molrec['elbl'] = np.array([self.label(at)[len(self.symbol(at)):] for at in range(nat)])
 
         ftypes = self.get_fragment_types()
         if not isinstance(self, Molecule):
@@ -1312,8 +1316,9 @@ class Molecule(LibmintsMolecule):
         nat = geom.shape[0]
         for iat in range(nat):
             x, y, z = geom[iat]
+            label = molrec['elem'][iat] + molrec['elbl'][iat]
             mol.add_atom(molrec['elez'][iat], x, y, z, molrec['elem'][iat], molrec['mass'][iat],
-                         molrec['elez'][iat], molrec['elbl'][iat])
+                         molrec['elez'][iat], label, molrec['elea'][iat])
             # TODO charge and 2nd elez site
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_

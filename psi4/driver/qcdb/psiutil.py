@@ -50,7 +50,7 @@ def _success(label):
     sys.stdout.flush()
 
 
-def compare_values(expected, computed, digits, label, exitonfail=True):
+def compare_values(expected, computed, digits, label, exitonfail=True, passnone=False):
     """Function to compare two values. Prints :py:func:`util.success`
     when value *computed* matches value *expected* to number of *digits*
     (or to *digits* itself when *digits* > 1 e.g. digits=0.04). Performs
@@ -58,6 +58,11 @@ def compare_values(expected, computed, digits, label, exitonfail=True):
     returns error message. Used in input files in the test suite.
 
     """
+    if passnone:
+        if expected is None and computed is None:
+            _success(label)
+            return
+
     thresh = 10 ** -digits if digits > 1 else digits
     if abs(expected - computed) > thresh:
         print("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
@@ -123,6 +128,21 @@ def compare_matrices(expected, computed, digits, label):
         show(expected)
         sys.exit(1)
     _success(label)
+
+
+def compare_dicts(expected, computed, tol, label):
+    """Compares dictionaries *computed* to *expected* using DeepDiff
+    Float comparisons made to *tol* significant decimal places.
+    Note that a clean DeepDiff returns {}, which evaluates to False, hence the compare_integers.
+    """
+    import pprint
+    import deepdiff
+
+    ans = deepdiff.DeepDiff(expected, computed, significant_digits=tol, verbose_level=2)
+    clean = not bool(ans)
+    if not clean:
+        pprint.pprint(ans)
+    return compare_integers(True, clean, label)
 
 
 def query_yes_no(question, default=True):

@@ -6,28 +6,24 @@ from ..exceptions import *
 
 
 def from_arrays(geom,
-
-                mass=None,
-                elem=None,
-                elez=None,
                 elea=None,
+                elez=None,
+                elem=None,
+                mass=None,
+                real=None,
                 elbl=None,
-
                 name=None,
                 units='Angstrom',
                 input_units_to_au=None,
                 fix_com=False,
                 fix_orientation=False,
                 fix_symmetry=None,
-
                 fragment_separators=None,
                 fragment_types=None,
                 fragment_charges=None,
                 fragment_multiplicities=None,
-
                 molecular_charge=None,
                 molecular_multiplicity=None,
-
                 nonphysical=False,
                 mtol=1.e-3,
                 verbose=1):
@@ -45,6 +41,8 @@ def from_arrays(geom,
         (nfr - 1, ) list of atom indices at which to split `geom` into fragments.
     fragment_types : array-like of {'Real', 'Ghost', 'Absent'}, optional
         (nfr, ) list of fragment types. If given, size must be consistent with `fragment_separators`.
+    elbl : ndarray of str
+        (nat, ) Label extending `elem` symbol, possibly conveying isotope, mass, tagging information.
 
     nonphysical : bool, optional
 
@@ -75,14 +73,18 @@ def from_arrays(geom,
         Maximal point group symmetry which `geom` should be treated. Lowercase.
     geom : ndarray of float
         (3 * nat, ) Cartesian coordinates in `units`.
-    elez : ndarray of float
+    elea : ndarray of int
+        (nat, ) Mass number for atoms, if known isotope, else -1.
+    elez : ndarray of int
         (nat, ) Number of protons, nuclear charge for atoms.
     elem : ndarray of str
         (nat, ) Element symbol for atoms.
     mass : ndarray of float
         (nat, ) Atomic mass [u] for atoms.
+    real : ndarray of bool
+        (nat, ) Real/ghostedness for atoms.
     elbl : ndarray of str
-        (nat, ) Label extending `elem` symbol, possibly conveying isotope, mass, tagging information.
+        (nat, ) Label with any tagging information from element spec.
     fragment_separators : list of int
         (nfr - 1, ) list of atom indices at which to split `geom` into fragments.
     fragment_types : list of {'Real', 'Ghost', 'Absent'}
@@ -117,6 +119,7 @@ def from_arrays(geom,
                                                 elez=elez,
                                                 elem=elem,
                                                 mass=mass,
+                                                real=real,
                                                 elbl=elbl,
                                                 nonphysical=nonphysical,
                                                 mtol=mtol,
@@ -198,6 +201,7 @@ def validate_and_fill_nuclei(nat,
                              elez=None,
                              elem=None,
                              mass=None,
+                             real=None,
                              elbl=None,
                              # processing details
                              nonphysical=False,
@@ -227,23 +231,34 @@ def validate_and_fill_nuclei(nat,
     else:
         mass = np.array(mass)
 
+    if real is None:
+        real = np.full((nat,), None)
+    else:
+        real = np.array(real)
+
     if elbl is None:
         elbl = np.full((nat,), None)
     else:
         elbl = np.array(elbl)
-    print('input_label', elbl)
 
-    if not ((nat, ) == elea.shape == elez.shape == elem.shape == mass.shape == elbl.shape):
-        raise ValidationError("""Dimension mismatch ({}) among A ({}), Z ({}), E ({}), mass ({}), and elbl({})""".format(
-            (nat,), elea.shape, elez.shape, elem.shape, mass.shape, elbl.shape))
+    if not ((nat, ) == elea.shape == elez.shape == elem.shape == mass.shape == real.shape == elbl.shape):
+        raise ValidationError("""Dimension mismatch ({}) among A ({}), Z ({}), E ({}), mass ({}), real ({}), and elbl({})""".format(
+            (nat,), elea.shape, elez.shape, elem.shape, mass.shape, real.shape, elbl.shape))
 
-    A, Z, E, mass, label = zip(*[reconcile_nucleus(A=elea[at], Z=elez[at], E=elem[at], mass=mass[at], label=elbl[at],
-                                 nonphysical=nonphysical, mtol=mtol, verbose=verbose) for at in range(nat)])
-    print('otput_label', label)
-    return {#'elea': np.array(A),
+    A, Z, E, mass, real, label = zip(*[reconcile_nucleus(A=elea[at],
+                                                         Z=elez[at],
+                                                         E=elem[at],
+                                                         mass=mass[at],
+                                                         real=real[at],
+                                                         label=elbl[at],
+                                                         nonphysical=nonphysical,
+                                                         mtol=mtol,
+                                                         verbose=verbose) for at in range(nat)])
+    return {'elea': np.array(A, dtype=np.int),
             'elez': np.array(Z, dtype=np.int),
             'elem': np.array(E),
             'mass': np.array(mass, dtype=np.float),
+            'real': np.array(real),
             'elbl': np.array(label)}
 
 
@@ -313,33 +328,3 @@ def validate_and_fill_fragments(nat,
             'fragment_types': frt,
             'fragment_charges': frc,
             'fragment_multiplicities': frm}
-
-
-
-
-#    def from_arrays_basic(cls, geom, mass, elem, elez, charge=0, multiplicity=1):
-#                    fragments, fragment_types, fragment_charges, fragment_multiplicities)
-#        """Limited qcdb.Molecule constructor from atom arrays.
-#
-#        Parameters
-#        ----------
-#        geom : np.array or list-of-lists
-#            (nat x 3) Cartesian coordinates [a0].
-#        mass : np.array or list
-#            (nat) mass [u].
-#        elem : np.array or list
-#            (nat) element symbol.
-#        elez : ndarray or list
-#            (nat) atomic number.
-#        charge : int (optional)
-#            molecular charge
-#        multiplicity : int (optional)
-#            molecular multiplicity
-#
-#        Returns
-#        -------
-#        qcdb.Molecule
-#            Basic molecule object with single fragment, Bohr native units,
-#            locked orientation, no ghost/dummy.
-#
-#        """

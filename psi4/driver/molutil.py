@@ -60,10 +60,11 @@ def molecule_get_attr(self, name):
 
 
 def molecule_from_arrays(geom,
-                         mass=None,
-                         elem=None,
-                         elez=None,
                          elea=None,
+                         elez=None,
+                         elem=None,
+                         mass=None,
+                         real=None,
                          elbl=None,
 
                          name=None,
@@ -103,10 +104,11 @@ def molecule_from_arrays(geom,
 
         """
         molrec = qcdb.molparse.from_arrays(geom=geom,
-                                           mass=mass,
-                                           elem=elem,
-                                           elez=elez,
                                            elea=elea,
+                                           elez=elez,
+                                           elem=elem,
+                                           mass=mass,
+                                           real=real,
                                            elbl=elbl,
                                            name=name,
                                            units=units,
