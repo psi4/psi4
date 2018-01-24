@@ -1,0 +1,36 @@
+  ==> F-ISAPT: Links by Charge <==
+
+   => Full Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+MethylA   All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+
+   => Reduced Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+MethylA   All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+
+  ==> F-ISAPT: Links 50-50 <==
+
+   => Full Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+MethylA   All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+
+   => Reduced Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+MethylA   All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       MethylB     -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+All       All         -0.002    0.000   -0.000   -0.000   -0.021   -0.023 
+

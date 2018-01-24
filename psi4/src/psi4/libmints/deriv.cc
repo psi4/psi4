@@ -431,7 +431,6 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction>& wave,
              bool project_out_rotations)
     : wfn_(wave),
       cdsalcs_(wave->molecule(),
-          wave->matrix_factory(),
           needed_irreps,
           project_out_translations,
           project_out_rotations)
@@ -478,8 +477,7 @@ SharedMatrix Deriv::compute()
     so_eri.set_only_totally_symmetric(true);
 
     // Compute one-electron derivatives.
-    std::vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'");
-
+    std::vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'", *factory_);
     std::shared_ptr<OneBodySOInt> s_int(integral_->so_overlap(1));
 
     s_int->compute_deriv1(s_deriv, cdsalcs_);

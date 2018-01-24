@@ -119,6 +119,7 @@ _addons_ = {
     "gcp": _psi4_which("gcp"),
     "v2rdm_casscf": _plugin_import("v2rdm_casscf"),
     "forte": _plugin_import("forte"),
+    "snsmp2": _plugin_import("snsmp2"),
 }
 
 def addons(request=None):

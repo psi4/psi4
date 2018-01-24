@@ -53,10 +53,10 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2 
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
-                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf dft-grac dft-dsd 
-                  dft-freq dft-grad1 dft-grad2 dft-pbe0-2 dft-psivar dft-b3lyp dft1 dft-vv10 
+                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac  
+                  dft-freq dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10 
                   dft1-alt dft2 dft3 dft-omega docs-bases docs-dft extern1 extern2
-                  fsapt1 fsapt2 isapt1 isapt2
+                  fsapt1 fsapt2 fsapt-terms fsapt-allterms isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 fci-coverage 
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
@@ -71,7 +71,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2 
                   omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change 
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9 
-                  opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-freeze-coords 
+                  opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-irc-3 opt-freeze-coords 
                   props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 
                   psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1 
                   psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2 
@@ -87,6 +87,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
+                  dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
@@ -125,7 +126,7 @@ endif()
 #   maintained in the Psi4 codebase and (2) has Psi4-dependent tests _not_ in
 #   the external codebase, tests should
 #   * get their own directory in tests (e.g., tests/dftd3)
-#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not test/dftd3/dftd3-energy)
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not tests/dftd3/dftd3-energy)
 #   * be listed in the test case CMakeLists.txt as addon-testname (e.g., `add_regression_test(dftd3-energy ...`)
 #   * alphabetize the addons
 
@@ -224,6 +225,20 @@ endif()
 if(ENABLE_simint)
     add_subdirectory(simint)
     message(STATUS "Adding test cases: Psi4 + simint")
+endif()
+
+# <<<  V2RDM_CASSCF  >>>
+
+if(ENABLE_v2rdm_casscf)
+    add_subdirectory(v2rdm_casscf)
+    message(STATUS "Adding test cases: Psi4 + v2rdm_casscf")
+endif()
+
+# <<<  SNSMP2  >>>
+
+if(ENABLE_snsmp2)
+    add_subdirectory(snsmp2)
+    message(STATUS "Adding test cases: Psi4 + snsmp2")
 endif()
 
 # plugin regime

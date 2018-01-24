@@ -192,7 +192,9 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * CMake (3.3+) http://www.cmake.org/download/
 
-* NumPy (needed at runtime, not buildtime) http://www.numpy.org/
+* NumPy (needed at runtime *and* buildtime) http://www.numpy.org/
+
+* mpmath (needed at buildtime) http://mpmath.org/
 
 * System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
 
@@ -200,6 +202,8 @@ The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
 
 * :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is this?] <sec:libint>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
+
+* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is this?] <sec:libxc>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc.txt#L1>`_
 
 * pybind11 |w---w| `[what is this?] <https://pybind11.readthedocs.io/en/master/>`_ `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
 
@@ -1446,4 +1450,54 @@ Ways to refer to |PSIfour| in text, in order of decreasing goodness:
   * as ``psi4`` in code
 
   * **NOT** ``PSI4`` or ``PSI``
+
+
+.. _`faq:localaddon`:
+
+How to use a local Add-On repository in the Psi4 build
+------------------------------------------------------
+
+For each Add-On, |PSIfour| pulls source from a specific online Git
+repository and a specific tag/branch/commit in it. This ensures success
+of the |PSIfour| build, reproducibility of the runtime results, and
+freedom for continued upstream development. Sometimes, you're the one
+doing that development, and you need the CMake superbuild to pull source
+from a local path rather than the approved codeset.
+
+Find the ``CMakeLists.txt`` governing the target Add-On in
+:source:`external` and make changes analogous to the below::
+
+    #GIT_REPOSITORY https://github.com/jturney/ambit
+    #GIT_TAG 1.0
+    DOWNLOAD_COMMAND ""
+    SOURCE_DIR "/path/to/ambit-directclone"
+
+If you're changing the |PSIfour| repo codebase between compiles, there's
+nothing more to do as CMake will handle the code rebuild deps for you.
+
+If you're changing the local Add-On repo codebase between compiles,
+CMake *does not* know when ``libaddon.a/so/dylib`` needs rebuilding. It
+is recommended that the |PSIfour| build be initially configured with
+``-DBUILD_SHARED_LIBS=ON`` (easier to notice changes). And to trigger
+Add-On library rebuild, ``rm -rf {objdir}/external/upstream/addon/``
+and ``rm -rf {objdir}/stage/{prefix}/share/cmake/AddOn``. This should
+re-clone the Add-On, rebuild and install it, rebuild any parts of
+|PSIfour| that interface to it, and relink the main ``core.so``.
+If you're modifying the Add-On's file or directory structure, be
+smart and ``rm`` all traces of it within ``{objdir}/stage/{prefix}``,
+especially any ``*.pyc`` files.
+
+Alternatively to the above, you can instead build and install the
+Add-On library yourself, external to the |PSIfour| repository. This
+is especially useful if you want to avoid full recompiles of the
+Add-On at each change to the Add-On's source. Build the Add-On
+library dynamically (``-DBUILD_SHARED_LIBS=ON``) and mind any
+"Psi4 wants" in the Add-On's top-level CMakeLists.txt. Install the
+Add-On and note the full path to ``AddOnConfig.cmake``. Pass
+the path containing that file to |PSIfours| CMake as
+``-DAddon_DIR=/path/to/config/usually/ending/in/share/cmake/AddON``
+and build |PSIfour|. The main ``core.so`` should be dynamically linked
+to your dev AddOn dynamic lib and update automatically when you rebuild
+the AddOn lib. Naturally, you may need to delete ``core.so`` and remake
+as needed.
 

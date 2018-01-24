@@ -1,0 +1,1199 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.1a2.dev376 
+
+                         Git: Rev {HEAD} 39338c2 
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    submitted.
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 11 December 2017 08:00PM
+
+    Process ID:  29151
+    PSIDATADIR: /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4
+    Memory:     500.0 MiB
+    Threads:    6
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! This test case shows an example of running and analyzing a standard
+#! F-SAPT0/jun-cc-pvdz procedure for HSG-18-dimer from the HSG database.
+
+memory 1 GB
+
+molecule mol {
+0 1
+C   11.54100       27.68600       13.69600
+H   12.45900       27.15000       13.44600
+C   10.79000       27.96500       12.40600
+H   10.55700       27.01400       11.92400
+H   9.879000       28.51400       12.64300
+H   11.44300       28.56800       11.76200
+H   10.90337       27.06487       14.34224
+H   11.78789       28.62476       14.21347
+--
+0 1
+C   10.60200       24.81800       6.466000
+O   10.95600       23.84000       7.103000
+N   10.17800       25.94300       7.070000
+C   10.09100       26.25600       8.476000
+C   9.372000       27.59000       8.640000
+C   11.44600       26.35600       9.091000
+C   9.333000       25.25000       9.282000
+H   9.874000       26.68900       6.497000
+H   9.908000       28.37100       8.093000
+H   8.364000       27.46400       8.233000
+H   9.317000       27.84600       9.706000
+H   9.807000       24.28200       9.160000
+H   9.371000       25.57400       10.32900
+H   8.328000       25.26700       8.900000
+H   11.28800       26.57600       10.14400
+H   11.97000       27.14900       8.585000
+H   11.93200       25.39300       8.957000
+H   10.61998       24.85900       5.366911
+units angstrom
+
+symmetry c1
+no_reorient
+no_com
+}
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+energy('fisapt0')
+
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
+
+Eref = {  #TEST
+    'Enuc'  : 474.748080304143684,     #TEST
+    'Eelst' : -0.002069850948615226,   #TEST
+    'Eexch' : 0.006873900478860527,    #TEST
+    'Eind'  : -0.0007820179915634428,  #TEST
+    'Edisp' : -0.0037376257449601522,  #TEST
+    'Etot'  : 0.00028440579372170614  #TEST
+    }  #TEST
+
+Epsi = {  #TEST
+    'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
+    'Eelst' : get_variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : get_variable("SAPT EXCH ENERGY"),    #TEST    
+    'Eind'  : get_variable("SAPT IND ENERGY"),     #TEST   
+    'Edisp' : get_variable("SAPT DISP ENERGY"),    #TEST   
+    'Etot'  : get_variable("SAPT0 TOTAL ENERGY"),  #TEST   
+    }  #TEST
+
+for key in keys:  #TEST
+    compare_values(Eref[key], Epsi[key], 6, key)  #TEST
+
+import os                                                             #TEST
+
+os.chdir('fsapt/')                                                    #TEST
+with open('fA.dat', 'w') as fA:                                       #TEST
+    fA.write("Methyl1_A 1 2 7 8\n")                                   #TEST
+    fA.write("Methyl2_A 3 4 5 6")                                     #TEST
+with open('fB.dat', 'w') as fB:                                       #TEST 
+    fB.write("Peptide_B  9 10 11 16 26\n")                            #TEST
+    fB.write("T-Butyl_B  12 13 14 15 17 18 19 20 21 22 23 24 25")     #TEST
+os.system('/theoryfs2/ds/bakr/psi4/psi4/share/psi4/fsapt/fsapt.py')   #TEST
+                                                                   
+refInteractions = {
+"Methyl1_A Peptide_B": {"fEelst":  0.463, "fEexch":  0.000, "fEindAB": -0.010, 
+                        "fEindBA":  0.000, "fEdisp": -0.009, "fEtot":  0.443}, 
+"Methyl1_A T-Butyl_B": {"fEelst": -0.328, "fEexch":  0.023, "fEindAB":  0.001,
+                        "fEindBA":  0.024, "fEdisp": -0.186, "fEtot": -0.467}, 
+"Methyl1_A Link-1":    {"fEelst":  0.434, "fEexch":  0.000, "fEindAB": -0.010,
+                        "fEindBA":  0.001, "fEdisp": -0.005, "fEtot":  0.421}, 
+"Methyl2_A Peptide_B": {"fEelst": -0.827, "fEexch":  0.014, "fEindAB": -0.041,
+                        "fEindBA": -0.001, "fEdisp": -0.040, "fEtot": -0.895}, 
+"Methyl2_A T-Butyl_B": {"fEelst": -0.611, "fEexch":  4.130, "fEindAB": -0.217,
+                        "fEindBA": -0.143, "fEdisp": -1.812, "fEtot":  1.347}, 
+"Methyl2_A Link-1":    {"fEelst": -0.770, "fEexch":  0.051, "fEindAB": -0.066,
+                        "fEindBA": -0.004, "fEdisp": -0.035, "fEtot": -0.823}, 
+"Link-1 Peptide_B":    {"fEelst":  0.257, "fEexch": -0.000, "fEindAB": -0.015,
+                        "fEindBA":  0.000, "fEdisp": -0.008, "fEtot":  0.235}, 
+"Link-1 T-Butyl_B":    {"fEelst": -0.162, "fEexch":  0.097, "fEindAB": -0.013,
+                        "fEindBA":  0.017, "fEdisp": -0.244, "fEtot": -0.305}, 
+"Link-1 Link-1":       {"fEelst":  0.245, "fEexch": -0.001, "fEindAB": -0.016,
+                        "fEindBA":  0.001, "fEdisp": -0.006, "fEtot":  0.223}, 
+"Methyl1_A All":       {"fEelst":  0.569, "fEexch":  0.023, "fEindAB": -0.020,
+                        "fEindBA":  0.025, "fEdisp": -0.201, "fEtot":  0.397}, 
+"Methyl2_A All":       {"fEelst": -2.208, "fEexch":  4.195, "fEindAB": -0.324,
+                        "fEindBA": -0.147, "fEdisp": -1.887, "fEtot": -0.371}, 
+"Link-1 All":          {"fEelst":  0.340, "fEexch":  0.096, "fEindAB": -0.044,
+                        "fEindBA":  0.018, "fEdisp": -0.258, "fEtot":  0.153}, 
+"All Peptide_B":       {"fEelst": -0.107, "fEexch":  0.014, "fEindAB": -0.066,
+                        "fEindBA": -0.000, "fEdisp": -0.057, "fEtot": -0.217}, 
+"All T-Butyl_B":       {"fEelst": -1.100, "fEexch":  4.249, "fEindAB": -0.230,
+                        "fEindBA": -0.102, "fEdisp": -2.242, "fEtot":  0.574}, 
+"All Link-1":          {"fEelst": -0.091, "fEexch":  0.050, "fEindAB": -0.091,
+                        "fEindBA": -0.001, "fEdisp": -0.046, "fEtot": -0.179}, 
+"All All":             {"fEelst": -1.299, "fEexch":  4.313, "fEindAB": -0.387,
+                        "fEindBA": -0.103, "fEdisp": -2.345, "fEtot":  0.178} 
+}
+
+fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEtot']     #TEST
+
+with open('fsapt.dat', 'r') as fsapt:                                     #TEST
+    for line in fsapt.readlines()[40:56]:                                 #TEST
+        interaction = ' '.join(line.split()[:2])                          #TEST
+        testInteractions = dict(zip(fkeys,map(float, line.split()[2:])))  #TEST
+        for key in fkeys:                                                 #TEST 
+            compare_values(refInteractions[interaction][key],             #TEST 
+            testInteractions[key], 2, interaction+" "+key)                #TEST
+
+--------------------------------------------------------------------------
+
+  Memory set to 953.674 MiB by Python driver.
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Dec 11 20:00:28 2017
+
+   => Loading Basis Set <=
+
+    Name: JUN-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3, 9, 12-15 entry C          line   157 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz.gbs 
+    atoms 2, 4-8, 16-26  entry H          line    35 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz.gbs 
+    atoms 10             entry O          line   225 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz.gbs 
+    atoms 11             entry N          line   191 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        6 Threads,    953 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C         11.541000000000    27.686000000000    13.696000000000    12.000000000000
+           H         12.459000000000    27.150000000000    13.446000000000     1.007825032070
+           C         10.790000000000    27.965000000000    12.406000000000    12.000000000000
+           H         10.557000000000    27.014000000000    11.924000000000     1.007825032070
+           H          9.879000000000    28.514000000000    12.643000000000     1.007825032070
+           H         11.443000000000    28.568000000000    11.762000000000     1.007825032070
+           H         10.903370000000    27.064870000000    14.342240000000     1.007825032070
+           H         11.787890000000    28.624760000000    14.213470000000     1.007825032070
+           C         10.602000000000    24.818000000000     6.466000000000    12.000000000000
+           O         10.956000000000    23.840000000000     7.103000000000    15.994914619560
+           N         10.178000000000    25.943000000000     7.070000000000    14.003074004780
+           C         10.091000000000    26.256000000000     8.476000000000    12.000000000000
+           C          9.372000000000    27.590000000000     8.640000000000    12.000000000000
+           C         11.446000000000    26.356000000000     9.091000000000    12.000000000000
+           C          9.333000000000    25.250000000000     9.282000000000    12.000000000000
+           H          9.874000000000    26.689000000000     6.497000000000     1.007825032070
+           H          9.908000000000    28.371000000000     8.093000000000     1.007825032070
+           H          8.364000000000    27.464000000000     8.233000000000     1.007825032070
+           H          9.317000000000    27.846000000000     9.706000000000     1.007825032070
+           H          9.807000000000    24.282000000000     9.160000000000     1.007825032070
+           H          9.371000000000    25.574000000000    10.329000000000     1.007825032070
+           H          8.328000000000    25.267000000000     8.900000000000     1.007825032070
+           H         11.288000000000    26.576000000000    10.144000000000     1.007825032070
+           H         11.970000000000    27.149000000000     8.585000000000     1.007825032070
+           H         11.932000000000    25.393000000000     8.957000000000     1.007825032070
+           H         10.619980000000    24.859000000000     5.366911000000     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      0.02840  B =      0.00015  C =      0.00014 [cm^-1]
+  Rotational constants: A =    851.43264  B =      4.35525  C =      4.34088 [MHz]
+  Nuclear repulsion =  474.748080304143684
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 74
+  Nalpha       = 37
+  Nbeta        = 37
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: JUN-CC-PVDZ
+    Blend: JUN-CC-PVDZ
+    Number of shells: 123
+    Number of basis function: 247
+    Number of Cartesian functions: 256
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (JUN-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 3, 9, 12-15 entry C          line   145 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+    atoms 2, 4-8, 16-26  entry H          line    69 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+    atoms 10             entry O          line   257 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+    atoms 11             entry N          line   201 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A        247     247       0       0       0       0
+   -------------------------------------------------------
+    Total     247     247      37      37      37       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              6
+    Integrals threads:           6
+    Memory (MB):               715
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (JUN-CC-PVDZ AUX)
+    Blend: JUN-CC-PVDZ-JKFIT
+    Number of shells: 396
+    Number of basis function: 1102
+    Number of Cartesian functions: 1244
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.0694438022E-05.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:  -408.06446656560587   -4.08064e+02   5.84903e-02 
+   @DF-RHF iter   1:  -404.01910571376789    4.04536e+00   3.63730e-03 
+   @DF-RHF iter   2:  -404.22835834669752   -2.09253e-01   4.44130e-03 DIIS
+   @DF-RHF iter   3:  -404.30892100992702   -8.05627e-02   7.54796e-04 DIIS
+   @DF-RHF iter   4:  -404.31863136434879   -9.71035e-03   1.43718e-04 DIIS
+   @DF-RHF iter   5:  -404.31919203798930   -5.60674e-04   5.09976e-05 DIIS
+   @DF-RHF iter   6:  -404.31926358714372   -7.15492e-05   1.84200e-05 DIIS
+   @DF-RHF iter   7:  -404.31927498876718   -1.14016e-05   7.67341e-06 DIIS
+   @DF-RHF iter   8:  -404.31927699608349   -2.00732e-06   2.59613e-06 DIIS
+   @DF-RHF iter   9:  -404.31927749071855   -4.94635e-07   1.23566e-06 DIIS
+   @DF-RHF iter  10:  -404.31927758339776   -9.26792e-08   4.28785e-07 DIIS
+   @DF-RHF iter  11:  -404.31927759251920   -9.12144e-09   1.32618e-07 DIIS
+   @DF-RHF iter  12:  -404.31927759305205   -5.32850e-10   4.18258e-08 DIIS
+   @DF-RHF iter  13:  -404.31927759309667   -4.46221e-11   1.30292e-08 DIIS
+   @DF-RHF iter  14:  -404.31927759309912   -2.44427e-12   3.71823e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.528203     2A    -15.592371     3A    -11.359768  
+       4A    -11.268289     5A    -11.234618     6A    -11.224561  
+       7A    -11.222928     8A    -11.209117     9A    -11.208185  
+      10A     -1.386863    11A     -1.253620    12A     -1.094558  
+      13A     -1.028907    14A     -0.951724    15A     -0.938817  
+      16A     -0.866066    17A     -0.838709    18A     -0.761236  
+      19A     -0.731394    20A     -0.653850    21A     -0.627307  
+      22A     -0.617574    23A     -0.609588    24A     -0.607699  
+      25A     -0.597714    26A     -0.580489    27A     -0.553499  
+      28A     -0.537185    29A     -0.527506    30A     -0.517151  
+      31A     -0.499933    32A     -0.490073    33A     -0.489620  
+      34A     -0.476362    35A     -0.471710    36A     -0.422677  
+      37A     -0.387581  
+
+    Virtual:                                                              
+
+      38A      0.053112    39A      0.065523    40A      0.067286  
+      41A      0.071707    42A      0.081267    43A      0.092589  
+      44A      0.097904    45A      0.100647    46A      0.107180  
+      47A      0.113155    48A      0.119511    49A      0.126903  
+      50A      0.137220    51A      0.140802    52A      0.144765  
+      53A      0.157351    54A      0.164346    55A      0.171437  
+      56A      0.176061    57A      0.179742    58A      0.191195  
+      59A      0.209175    60A      0.210544    61A      0.227945  
+      62A      0.229475    63A      0.240016    64A      0.245446  
+      65A      0.251014    66A      0.256683    67A      0.260914  
+      68A      0.279223    69A      0.290977    70A      0.297982  
+      71A      0.303536    72A      0.313299    73A      0.318946  
+      74A      0.325270    75A      0.326016    76A      0.331190  
+      77A      0.337078    78A      0.342736    79A      0.363903  
+      80A      0.370844    81A      0.380752    82A      0.393493  
+      83A      0.394104    84A      0.406820    85A      0.407457  
+      86A      0.417952    87A      0.426575    88A      0.446154  
+      89A      0.448797    90A      0.460440    91A      0.463579  
+      92A      0.478715    93A      0.492449    94A      0.515810  
+      95A      0.537160    96A      0.593672    97A      0.612565  
+      98A      0.642059    99A      0.678044   100A      0.704627  
+     101A      0.712353   102A      0.715714   103A      0.756262  
+     104A      0.759562   105A      0.785085   106A      0.786038  
+     107A      0.804437   108A      0.836770   109A      0.838605  
+     110A      0.845437   111A      0.869059   112A      0.871373  
+     113A      0.893422   114A      0.911178   115A      0.914802  
+     116A      0.917757   117A      0.922493   118A      0.933200  
+     119A      0.936245   120A      0.945500   121A      0.954317  
+     122A      0.961612   123A      0.970370   124A      0.976054  
+     125A      0.989651   126A      1.004013   127A      1.010203  
+     128A      1.015880   129A      1.043654   130A      1.066321  
+     131A      1.091749   132A      1.106156   133A      1.113198  
+     134A      1.120348   135A      1.129419   136A      1.146979  
+     137A      1.158136   138A      1.165449   139A      1.172122  
+     140A      1.229368   141A      1.261162   142A      1.266445  
+     143A      1.302300   144A      1.341501   145A      1.367493  
+     146A      1.393829   147A      1.417490   148A      1.431105  
+     149A      1.485936   150A      1.497305   151A      1.504834  
+     152A      1.511643   153A      1.518527   154A      1.541892  
+     155A      1.547149   156A      1.596070   157A      1.634060  
+     158A      1.651516   159A      1.658254   160A      1.665914  
+     161A      1.676179   162A      1.696238   163A      1.699790  
+     164A      1.718201   165A      1.738809   166A      1.757935  
+     167A      1.783399   168A      1.812984   169A      1.829670  
+     170A      1.866519   171A      1.871079   172A      1.885435  
+     173A      1.890872   174A      1.895743   175A      1.924006  
+     176A      1.930499   177A      1.941380   178A      1.957573  
+     179A      1.965385   180A      1.976849   181A      1.992473  
+     182A      2.000935   183A      2.007123   184A      2.017255  
+     185A      2.028285   186A      2.035232   187A      2.043454  
+     188A      2.063825   189A      2.066257   190A      2.077980  
+     191A      2.104385   192A      2.120388   193A      2.138884  
+     194A      2.151016   195A      2.163572   196A      2.204519  
+     197A      2.223096   198A      2.235769   199A      2.260738  
+     200A      2.273480   201A      2.292519   202A      2.318364  
+     203A      2.328050   204A      2.351769   205A      2.367889  
+     206A      2.378921   207A      2.394325   208A      2.422164  
+     209A      2.466743   210A      2.488028   211A      2.496715  
+     212A      2.499808   213A      2.505648   214A      2.511421  
+     215A      2.560671   216A      2.566760   217A      2.576923  
+     218A      2.594554   219A      2.650368   220A      2.754562  
+     221A      2.759690   222A      2.786233   223A      2.793020  
+     224A      2.803609   225A      2.827317   226A      2.841498  
+     227A      2.849490   228A      2.860676   229A      2.866443  
+     230A      2.888474   231A      2.894200   232A      2.908948  
+     233A      2.929763   234A      2.950367   235A      2.960896  
+     236A      2.967287   237A      2.983833   238A      3.003558  
+     239A      3.028430   240A      3.098115   241A      3.123017  
+     242A      3.284757   243A      3.324568   244A      3.472618  
+     245A      3.496259   246A      3.970348   247A      4.012177  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [    37 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:  -404.31927759309912
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            474.7480803041436843
+    One-Electron Energy =               -1489.3998086213459828
+    Two-Electron Energy =                 610.3324507241031824
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -404.3192775930990592
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:  1465.9593      Y:  3674.1050      Z:  1298.1618
+
+  Electronic Dipole Moment: (a.u.)
+     X: -1466.4910      Y: -3672.5941      Z: -1298.4296
+
+  Dipole Moment: (a.u.)
+     X:    -0.5318      Y:     1.5109      Z:    -0.2678     Total:     1.6240
+
+  Dipole Moment: (Debye)
+     X:    -1.3516      Y:     3.8403      Z:    -0.6807     Total:     4.1277
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Dec 11 20:00:41 2017
+Module time:
+	user time   =      60.67 seconds =       1.01 minutes
+	system time =      71.84 seconds =       1.20 minutes
+	total time  =         13 seconds =       0.22 minutes
+Total time:
+	user time   =      60.67 seconds =       1.01 minutes
+	system time =      71.84 seconds =       1.20 minutes
+	total time  =         13 seconds =       0.22 minutes
+   => Loading Basis Set <=
+
+    Name: (JUN-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 3, 9, 12-15 entry C          line   145 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+    atoms 2, 4-8, 16-26  entry H          line    69 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+    atoms 10             entry O          line   257 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+    atoms 11             entry N          line   201 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (JUN-CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_SAPT
+    atoms 1, 3, 9, 12-15 entry C          line    99 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-ri.gbs 
+    atoms 2, 4-8, 16-26  entry H          line    29 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-ri.gbs 
+    atoms 10             entry O          line   187 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-ri.gbs 
+    atoms 11             entry N          line   143 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/jun-cc-pvdz-ri.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ-MINAO
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3, 9, 12-15 entry C          line   130 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/cc-pvtz-minao.gbs 
+    atoms 2, 4-8, 16-26  entry H          line    19 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/cc-pvtz-minao.gbs 
+    atoms 10             entry O          line   190 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/cc-pvtz-minao.gbs 
+    atoms 11             entry N          line   160 file /theoryfs2/ds/bakr/psi4/objdir/stage/theoryfs2/ds/bakr/psi4/build_release/share/psi4/basis/cc-pvtz-minao.gbs 
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Dec 11 20:00:42 2017
+
+	 --------------------------------------------
+	                    FISAPT0                  
+	                  Rob Parrish                
+	 --------------------------------------------
+
+    Do F-SAPT =         Yes
+    Do Plot   =          No
+    Memory    =       0.105 [GD]
+
+  ==> Localization (IBO) <==
+
+  ==> IBO Localizer 2 <==
+
+    MinAO Basis = CC-PVTZ-MINAO
+    Use Ghosts  =       FALSE
+    Use Stars   =       FALSE
+    Condition   =   1.000E-07
+    Power       =           4
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    @IBO Iter:                   Metric       Gradient
+    @IBO    1:   1.7412392277413269E+00   2.069989E+00
+    @IBO    2:   1.9118413793555915E+00   9.050283E-01
+    @IBO    3:   1.9545481054386076E+00   3.453434E-01
+    @IBO    4:   1.9578690456726751E+00   1.432730E-02
+    @IBO    5:   1.9578749675392260E+00   1.177946E-04
+    @IBO    6:   1.9578749679608534E+00   2.126113E-06
+    @IBO    7:   1.9578749679609844E+00   7.091110E-08
+    @IBO    8:   1.9578749679609841E+00   2.926079E-09
+    @IBO    9:   1.9578749679609846E+00   1.317792E-10
+    @IBO   10:   1.9578749679609844E+00   6.059515E-12
+    @IBO   11:   1.9578749679609846E+00   2.821734E-13
+
+    IBO Localizer 2 converged.
+
+  ==> Partitioning <==
+
+   => Atomic Partitioning <= 
+
+    Monomer A:   8 atoms
+    Monomer B:  18 atoms
+    Monomer C:   0 atoms
+
+   => Link Bond Identification <=
+
+    Link Bond Selection = AUTOMATIC
+
+    Charge Completeness = 0.800
+
+    Total Link Bonds = 0
+
+   => Link Bond Assignment <=
+
+    Link Bond Assignment      = C
+
+   => Partition Summary <=
+
+    Monomer A:  0 charge,  18 protons,  18 electrons,   9 docc
+    Monomer B:  0 charge,  56 protons,  56 electrons,  28 docc
+    Monomer C:  0 charge,   0 protons,   0 electrons,   0 docc
+
+  ==> Overlap Integrals <==
+
+  ==> Kinetic Integrals <==
+
+  ==> Nuclear Integrals <==
+
+    Nuclear Repulsion Tot:   4.7474808030414363E+02 [Eh]
+
+  ==> Coulomb Integrals <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              6
+    Integrals threads:           6
+    Memory (MB):               858
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (JUN-CC-PVDZ AUX)
+    Blend: JUN-CC-PVDZ-JKFIT
+    Number of shells: 396
+    Number of basis function: 1102
+    Number of Cartesian functions: 1244
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Relaxed SCF Equations <==
+
+  ==> SCF A: <==
+
+    Maxiter =          50
+    E Tol   =   1.000E-06
+    D Tol   =   1.000E-08
+
+    Max DIIS Vectors = 5
+
+    Iter   N:                        E          dE         |D|
+    Iter   1:  -7.9225766164703657E+01  -7.923E+01   9.694E-04 
+    Iter   2:  -7.9233114559547062E+01  -7.348E-03   7.436E-05 DIIS
+    Iter   3:  -7.9233251075358893E+01  -1.365E-04   1.330E-05 DIIS
+    Iter   4:  -7.9233257420919301E+01  -6.346E-06   2.389E-06 DIIS
+    Iter   5:  -7.9233257626235854E+01  -2.053E-07   8.679E-07 DIIS
+    Iter   6:  -7.9233257651318581E+01  -2.508E-08   1.584E-07 DIIS
+    Iter   7:  -7.9233257652347021E+01  -1.028E-09   2.392E-08 DIIS
+    Iter   8:  -7.9233257652366774E+01  -1.975E-11   7.294E-09 DIIS
+
+    FISAPTSCF Converged.
+
+    Final SCF Energy:  -7.9233257652366774E+01 [Eh]
+
+   => Occupied Orbital Energies <=
+
+       1  -11.218840     2  -11.217734     3   -1.022791  
+       4   -0.832007     5   -0.603734     6   -0.601282  
+       7   -0.497231     8   -0.487117     9   -0.484034  
+
+   => Virtual Orbital Energies <=
+
+      10    0.032170    11    0.052581    12    0.056013  
+      13    0.059270    14    0.075371    15    0.085025  
+      16    0.091902    17    0.097671    18    0.103666  
+      19    0.107880    20    0.111378    21    0.117540  
+      22    0.123252    23    0.134533    24    0.139376  
+      25    0.148015    26    0.154028    27    0.160155  
+      28    0.168294    29    0.174102    30    0.180388  
+      31    0.191566    32    0.194449    33    0.200297  
+      34    0.206104    35    0.227674    36    0.228422  
+      37    0.244006    38    0.255507    39    0.257746  
+      40    0.263852    41    0.267606    42    0.271525  
+      43    0.289114    44    0.302712    45    0.310072  
+      46    0.318543    47    0.322437    48    0.332993  
+      49    0.335156    50    0.365026    51    0.372041  
+      52    0.384908    53    0.387967    54    0.397673  
+      55    0.401170    56    0.412736    57    0.420001  
+      58    0.421731    59    0.424002    60    0.444975  
+      61    0.459201    62    0.473015    63    0.519790  
+      64    0.522738    65    0.539333    66    0.570695  
+      67    0.577204    68    0.583837    69    0.596540  
+      70    0.618426    71    0.638090    72    0.644570  
+      73    0.651947    74    0.664523    75    0.689678  
+      76    0.704349    77    0.719720    78    0.722519  
+      79    0.733475    80    0.737800    81    0.754181  
+      82    0.776919    83    0.785809    84    0.796694  
+      85    0.808263    86    0.836539    87    0.869580  
+      88    0.878858    89    0.891433    90    0.922236  
+      91    0.925805    92    0.931362    93    0.950754  
+      94    0.959133    95    0.970967    96    0.978022  
+      97    1.002715    98    1.058886    99    1.075000  
+     100    1.104164   101    1.128798   102    1.139353  
+     103    1.144940   104    1.209945   105    1.271272  
+     106    1.326919   107    1.487680   108    1.500255  
+     109    1.533117   110    1.543543   111    1.595130  
+     112    1.611458   113    1.614264   114    1.627899  
+     115    1.652692   116    1.673833   117    1.688447  
+     118    1.719786   119    1.733970   120    1.773563  
+     121    1.793918   122    1.801180   123    1.808229  
+     124    1.828044   125    1.853709   126    1.860112  
+     127    1.889848   128    1.898908   129    1.907352  
+     130    1.922682   131    1.946155   132    1.949131  
+     133    1.959666   134    1.970422   135    1.992793  
+     136    1.997273   137    2.000071   138    2.012908  
+     139    2.019605   140    2.027857   141    2.035335  
+     142    2.039270   143    2.054378   144    2.060178  
+     145    2.063151   146    2.076537   147    2.096619  
+     148    2.106680   149    2.122506   150    2.126737  
+     151    2.144480   152    2.150409   153    2.150658  
+     154    2.177239   155    2.185027   156    2.200152  
+     157    2.232250   158    2.274342   159    2.281727  
+     160    2.295380   161    2.309714   162    2.336835  
+     163    2.339875   164    2.351947   165    2.385041  
+     166    2.400267   167    2.428421   168    2.443570  
+     169    2.476490   170    2.487246   171    2.513399  
+     172    2.515678   173    2.516739   174    2.543615  
+     175    2.550335   176    2.564966   177    2.577737  
+     178    2.597034   179    2.617072   180    2.630920  
+     181    2.666656   182    2.672724   183    2.731669  
+     184    2.735492   185    2.797139   186    2.811138  
+     187    2.813821   188    2.833949   189    2.846281  
+     190    2.850385   191    2.860401   192    2.887300  
+     193    2.891608   194    2.917492   195    2.940002  
+     196    2.949871   197    2.963089   198    2.980615  
+     199    2.991762   200    2.992715   201    3.012106  
+     202    3.027375   203    3.096419   204    3.129005  
+     205    3.161419   206    3.262560   207    3.378738  
+     208    3.389583   209    3.410602   210    3.446209  
+     211    3.539546   212    3.607271   213    3.701039  
+     214    3.735830   215    3.764576   216    3.794335  
+     217    4.057154   218    4.207439   219    4.253903  
+     220    4.356696   221    4.363158   222    4.403371  
+     223    4.701320   224    4.743594   225    4.771714  
+     226    4.796649   227    4.858048   228    5.000905  
+     229    5.073045   230    5.083257   231    5.097455  
+     232    5.139596   233    5.208306   234    5.222004  
+     235    5.566323   236    5.594765   237    5.627983  
+     238    5.834241   239    6.214633   240    6.848169  
+     241   18.211606   242   18.450051   243   18.458675  
+     244   18.498774   245   18.679595   246   25.399108  
+     247   33.500920  
+
+  ==> SCF B: <==
+
+    Maxiter =          50
+    E Tol   =   1.000E-06
+    D Tol   =   1.000E-08
+
+    Max DIIS Vectors = 5
+
+    Iter   N:                        E          dE         |D|
+    Iter   1:  -3.2508148034345140E+02  -3.251E+02   1.915E-03 
+    Iter   2:  -3.2508984796426660E+02  -8.368E-03   6.886E-05 DIIS
+    Iter   3:  -3.2509003140818862E+02  -1.834E-04   1.385E-05 DIIS
+    Iter   4:  -3.2509004161566588E+02  -1.021E-05   4.740E-06 DIIS
+    Iter   5:  -3.2509004193206863E+02  -3.164E-07   1.855E-06 DIIS
+    Iter   6:  -3.2509004196869341E+02  -3.662E-08   3.129E-07 DIIS
+    Iter   7:  -3.2509004197193667E+02  -3.243E-09   1.599E-07 DIIS
+    Iter   8:  -3.2509004197221361E+02  -2.769E-10   4.449E-08 DIIS
+    Iter   9:  -3.2509004197226375E+02  -5.014E-11   1.242E-08 DIIS
+    Iter  10:  -3.2509004197227148E+02  -7.731E-12   8.918E-09 DIIS
+
+    FISAPTSCF Converged.
+
+    Final SCF Energy:  -3.2509004197227148E+02 [Eh]
+
+   => Occupied Orbital Energies <=
+
+       1  -20.529157     2  -15.593649     3  -11.360737  
+       4  -11.269759     5  -11.236682     6  -11.211383  
+       7  -11.209733     8   -1.387829     9   -1.254855  
+      10   -1.095847    11   -0.953366    12   -0.939942  
+      13   -0.866936    14   -0.762309    15   -0.732507  
+      16   -0.654775    17   -0.627748    18   -0.617072  
+      19   -0.599581    20   -0.581750    21   -0.554738  
+      22   -0.534925    23   -0.527969    24   -0.517865  
+      25   -0.477804    26   -0.473234    27   -0.423807  
+      28   -0.388833  
+
+   => Virtual Orbital Energies <=
+
+      29    0.040193    30    0.052496    31    0.064007  
+      32    0.068582    33    0.077703    34    0.080724  
+      35    0.089417    36    0.097275    37    0.103153  
+      38    0.108595    39    0.116036    40    0.123983  
+      41    0.128411    42    0.136781    43    0.139286  
+      44    0.153290    45    0.158920    46    0.161372  
+      47    0.171392    48    0.182965    49    0.183828  
+      50    0.189347    51    0.204138    52    0.211351  
+      53    0.224592    54    0.236998    55    0.240859  
+      56    0.248918    57    0.252405    58    0.260706  
+      59    0.281722    60    0.293573    61    0.295674  
+      62    0.303416    63    0.312077    64    0.320910  
+      65    0.327729    66    0.329922    67    0.336491  
+      68    0.340125    69    0.352924    70    0.363650  
+      71    0.367271    72    0.376560    73    0.378578  
+      74    0.391502    75    0.402617    76    0.410654  
+      77    0.415135    78    0.424063    79    0.435127  
+      80    0.444522    81    0.455602    82    0.468442  
+      83    0.474438    84    0.498149    85    0.533912  
+      86    0.561123    87    0.566426    88    0.577503  
+      89    0.583551    90    0.599630    91    0.612723  
+      92    0.619388    93    0.639590    94    0.646101  
+      95    0.664942    96    0.692572    97    0.717612  
+      98    0.758597    99    0.784550   100    0.790847  
+     101    0.817955   102    0.837221   103    0.848445  
+     104    0.870281   105    0.877469   106    0.907578  
+     107    0.921617   108    0.935339   109    0.949892  
+     110    0.952638   111    0.962889   112    0.967980  
+     113    0.979865   114    0.987945   115    1.002425  
+     116    1.018488   117    1.033148   118    1.089583  
+     119    1.109802   120    1.127318   121    1.132826  
+     122    1.155851   123    1.162512   124    1.194129  
+     125    1.252749   126    1.261355   127    1.270493  
+     128    1.342202   129    1.391564   130    1.401609  
+     131    1.426602   132    1.489314   133    1.507006  
+     134    1.516583   135    1.530152   136    1.539121  
+     137    1.541839   138    1.549183   139    1.571996  
+     140    1.589760   141    1.617353   142    1.630059  
+     143    1.633467   144    1.649149   145    1.664799  
+     146    1.692380   147    1.700302   148    1.708886  
+     149    1.733419   150    1.754007   151    1.756425  
+     152    1.777462   153    1.794196   154    1.810902  
+     155    1.833652   156    1.851341   157    1.865444  
+     158    1.869519   159    1.874500   160    1.882956  
+     161    1.892064   162    1.906745   163    1.925870  
+     164    1.959133   165    1.975575   166    1.980623  
+     167    2.000358   168    2.008810   169    2.017703  
+     170    2.024948   171    2.032107   172    2.041726  
+     173    2.043017   174    2.059430   175    2.061281  
+     176    2.073748   177    2.078669   178    2.103498  
+     179    2.132316   180    2.150693   181    2.161287  
+     182    2.177117   183    2.204552   184    2.224828  
+     185    2.236864   186    2.262772   187    2.274363  
+     188    2.284873   189    2.311332   190    2.332661  
+     191    2.348896   192    2.356609   193    2.371260  
+     194    2.386556   195    2.396869   196    2.411210  
+     197    2.422043   198    2.447828   199    2.475111  
+     200    2.499428   201    2.500516   202    2.505863  
+     203    2.534766   204    2.541916   205    2.553940  
+     206    2.560359   207    2.573838   208    2.624640  
+     209    2.649538   210    2.656976   211    2.688561  
+     212    2.756729   213    2.760516   214    2.785985  
+     215    2.804027   216    2.847627   217    2.861410  
+     218    2.883113   219    2.889705   220    2.908426  
+     221    2.936770   222    2.949589   223    2.959664  
+     224    2.970174   225    3.022105   226    3.072171  
+     227    3.080985   228    3.096063   229    3.122073  
+     230    3.147985   231    3.209573   232    3.221619  
+     233    3.230988   234    3.284759   235    3.323607  
+     236    3.471617   237    3.495358   238    3.933632  
+     239    3.969373   240    4.011284   241    4.747086  
+     242    4.899875   243    4.934310   244    5.151046  
+     245    5.182124   246   18.303020   247   18.528197  
+
+  ==> Frozen Core <==
+
+
+    ------------------
+    Range      A     B
+    ------------------
+    nbf      247   247
+    nmo      247   247
+    nocc       9    28
+    nvir     238   219
+    nfocc      2     7
+    naocc      7    21
+    navir    238   219
+    nfvir      0     0
+    ------------------
+
+  ==> Unification <==
+
+  ==> dHF <==
+
+    E ABC(HF) =  -4.0431927759309912E+02 [Eh]
+    E AC(0)   =  -7.9233257652366774E+01 [Eh]
+    E BC(0)   =  -3.2509004197227148E+02 [Eh]
+    E A(0)    =  -7.9233257652366774E+01 [Eh]
+    E B(0)    =  -3.2509004197227148E+02 [Eh]
+    E AC(HF)  =  -7.9225766164703643E+01 [Eh]
+    E BC(HF)  =  -3.2508148034345140E+02 [Eh]
+    E AB(HF)  =  -4.0431927759309940E+02 [Eh]
+    E A(HF)   =  -7.9225766164703643E+01 [Eh]
+    E B(HF)   =  -3.2508148034345140E+02 [Eh]
+    E C       =   0.0000000000000000E+00 [Eh]
+    E HF      =   4.0220315391366057E-03 [Eh]
+
+  ==> Electrostatics <==
+
+    Elst10,r            =    -0.002069850949 [Eh]
+
+  ==> Exchange <==
+
+    Exch10(S^2)         =     0.006833298370 [Eh]
+    Exch10              =     0.006873900479 [Eh]
+
+  ==> Induction <==
+
+    Ind20,u (A<-B)      =    -0.000480526675 [Eh]
+    Ind20,u (B<-A)      =    -0.000424602845 [Eh]
+    Ind20,u             =    -0.000905129520 [Eh]
+    Exch-Ind20,u (A<-B) =     0.000301904941 [Eh]
+    Exch-Ind20,u (B<-A) =     0.000365507905 [Eh]
+    Exch-Ind20,u        =     0.000667412846 [Eh]
+
+  ==> CPHF Iterations <==
+
+    Maxiter     =          50
+    Convergence =   1.000E-08
+
+    -----------------------------------------
+    Iter   Monomer A    Monomer B    Time [s]
+    -----------------------------------------
+    1      1.831E-01    1.535E-01           2
+    2      4.730E-02    2.931E-02           4
+    3      1.386E-02    1.176E-02           6
+    4      2.451E-03    3.083E-03           8
+    5      4.041E-04    1.197E-03          10
+    6      1.085E-04    2.975E-04          12
+    7      2.582E-05    8.793E-05          14
+    8      5.752E-06    3.025E-05          16
+    9      9.242E-07    1.459E-05          19
+    10     2.210E-07    5.219E-06          21
+    11     2.817E-08    2.013E-06          22
+    12     4.147E-09*   4.979E-07          24
+    13     4.147E-09*   2.192E-07          25
+    14     4.147E-09*   6.788E-08          26
+    15     4.147E-09*   2.528E-08          27
+    16     4.147E-09*   5.818E-09*         28
+    -----------------------------------------
+
+    Ind20,r (A<-B)      =    -0.000614640840 [Eh]
+    Ind20,r (B<-A)      =    -0.000519494345 [Eh]
+    Ind20,r             =    -0.001134135185 [Eh]
+    Exch-Ind20,r (A<-B) =     0.000406344225 [Eh]
+    Exch-Ind20,r (B<-A) =     0.000463942850 [Eh]
+    Exch-Ind20,r        =     0.000870287075 [Eh]
+
+  ==> F-SAPT Localization (IBO) <==
+
+  Local Orbitals for Monomer A:
+
+  ==> IBO Localizer 2 <==
+
+    MinAO Basis = CC-PVTZ-MINAO
+    Use Ghosts  =       FALSE
+    Use Stars   =       FALSE
+    Condition   =   1.000E-07
+    Power       =           4
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    @IBO Iter:                   Metric       Gradient
+    @IBO    1:   1.1110688462468166E+00   1.673878E+00
+    @IBO    2:   1.2750234914250866E+00   2.809381E-01
+    @IBO    3:   1.3011189238591814E+00   7.994251E-02
+    @IBO    4:   1.3022803140987351E+00   4.817538E-03
+    @IBO    5:   1.3022829380435506E+00   2.314653E-05
+    @IBO    6:   1.3022829381018930E+00   9.844810E-08
+    @IBO    7:   1.3022829381018952E+00   1.589906E-09
+    @IBO    8:   1.3022829381018952E+00   3.013814E-12
+    @IBO    9:   1.3022829381018952E+00   1.224712E-14
+
+    IBO Localizer 2 converged.
+
+  Local Orbitals for Monomer B:
+
+  ==> IBO Localizer 2 <==
+
+    MinAO Basis = CC-PVTZ-MINAO
+    Use Ghosts  =       FALSE
+    Use Stars   =       FALSE
+    Condition   =   1.000E-07
+    Power       =           4
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    @IBO Iter:                   Metric       Gradient
+    @IBO    1:   1.6503801622893597E+00   1.567461E+00
+    @IBO    2:   1.8116929655688043E+00   8.684856E-01
+    @IBO    3:   1.8511616855094872E+00   3.143016E-01
+    @IBO    4:   1.8540149336964828E+00   1.322313E-02
+    @IBO    5:   1.8540192794774575E+00   9.445696E-05
+    @IBO    6:   1.8540192797273567E+00   1.750252E-06
+    @IBO    7:   1.8540192797274542E+00   6.388463E-08
+    @IBO    8:   1.8540192797274540E+00   2.661074E-09
+    @IBO    9:   1.8540192797274544E+00   1.182655E-10
+    @IBO   10:   1.8540192797274540E+00   5.419261E-12
+    @IBO   11:   1.8540192797274542E+00   2.515758E-13
+
+    IBO Localizer 2 converged.
+
+  ==> F-SAPT Electrostatics <==
+
+  ==> DFERI: Density Fitted 3-Index Tensors <==
+
+    Schwarz cutoff =   0.000E+00
+    J cutoff       =   1.000E-12
+    Mem (GB)       =           0
+
+   => Auxiliary Basis <=
+
+  Basis Set: (JUN-CC-PVDZ AUX)
+    Blend: JUN-CC-PVDZ-JKFIT
+    Number of shells: 396
+    Number of basis function: 1102
+    Number of Cartesian functions: 1244
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+    Elst10,r            =    -0.002069850779 [Eh]
+
+  ==> F-SAPT Exchange <==
+
+  ==> DFERI: Density Fitted 3-Index Tensors <==
+
+    Schwarz cutoff =   0.000E+00
+    J cutoff       =   1.000E-12
+    Mem (GB)       =           0
+
+   => Auxiliary Basis <=
+
+  Basis Set: (JUN-CC-PVDZ AUX)
+    Blend: JUN-CC-PVDZ-JKFIT
+    Number of shells: 396
+    Number of basis function: 1102
+    Number of Cartesian functions: 1244
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+    Exch10(S^2)         =     0.006833298370 [Eh]
+
+    Scaling F-SAPT Exch10(S^2) by   1.006E+00 to match Exch10
+
+  ==> F-SAPT Induction <==
+
+  ==> DFERI: Density Fitted 3-Index Tensors <==
+
+    Schwarz cutoff =   0.000E+00
+    J cutoff       =   1.000E-12
+    Mem (GB)       =           0
+
+   => Auxiliary Basis <=
+
+  Basis Set: (JUN-CC-PVDZ AUX)
+    Blend: JUN-CC-PVDZ-JKFIT
+    Number of shells: 396
+    Number of basis function: 1102
+    Number of Cartesian functions: 1244
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+    Ind20,u (A<-B)      =    -0.000480526674 [Eh]
+    Ind20,u (B<-A)      =    -0.000424602845 [Eh]
+    Ind20,u             =    -0.000905129520 [Eh]
+    Exch-Ind20,u (A<-B) =     0.000301904941 [Eh]
+    Exch-Ind20,u (B<-A) =     0.000365507905 [Eh]
+    Exch-Ind20,u        =     0.000667412846 [Eh]
+
+    Scaling for delta HF        =   2.964E+00
+    Scaling for response (A<-B) =   1.166E+00
+    Scaling for response (B<-A) =   9.400E-01
+    Scaling for total (A<-B)    =   3.456E+00
+    Scaling for total (B<-A)    =   2.786E+00
+
+  ==> F-SAPT Dispersion <==
+
+  ==> DFERI: Density Fitted 3-Index Tensors <==
+
+    Schwarz cutoff =   0.000E+00
+    J cutoff       =   1.000E-12
+    Mem (GB)       =           0
+
+   => Auxiliary Basis <=
+
+  Basis Set: (JUN-CC-PVDZ AUX)
+    Blend: JUN-CC-PVDZ-RI
+    Number of shells: 291
+    Number of basis function: 823
+    Number of Cartesian functions: 939
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+    Disp20              =    -0.004176779998 [Eh]
+    Exch-Disp20         =     0.000439154253 [Eh]
+
+  ==> F-SAPT Output <==
+
+    F-SAPT Data Filepath = fsapt/
+
+  ==> Results <==
+
+
+    SAPT Results  
+  --------------------------------------------------------------------------------------------------------
+    Electrostatics                 -2.06985095 [mEh]      -1.29885113 [kcal/mol]      -5.43439367 [kJ/mol]
+      Elst10,r                     -2.06985095 [mEh]      -1.29885113 [kcal/mol]      -5.43439367 [kJ/mol]
+
+    Exchange                        6.87390048 [mEh]       4.31343785 [kcal/mol]      18.04742571 [kJ/mol]
+      Exch10                        6.87390048 [mEh]       4.31343785 [kcal/mol]      18.04742571 [kJ/mol]
+      Exch10(S^2)                   6.83329837 [mEh]       4.28795964 [kcal/mol]      17.94082487 [kJ/mol]
+
+    Induction                      -0.78201799 [mEh]      -0.49072372 [kcal/mol]      -2.05318824 [kJ/mol]
+      Ind20,r                      -1.13413519 [mEh]      -0.71168060 [kcal/mol]      -2.97767193 [kJ/mol]
+      Exch-Ind20,r                  0.87028708 [mEh]       0.54611341 [kcal/mol]       2.28493872 [kJ/mol]
+      delta HF,r (2)               -0.51816988 [mEh]      -0.32515652 [kcal/mol]      -1.36045502 [kJ/mol]
+      Induction (A<-B)             -0.61736922 [mEh]      -0.38740505 [kcal/mol]      -1.62090287 [kJ/mol]
+      Induction (B<-A)             -0.16464878 [mEh]      -0.10331867 [kcal/mol]      -0.43228536 [kJ/mol]
+
+    Dispersion                     -3.73762574 [mEh]      -2.34539566 [kcal/mol]      -9.81313639 [kJ/mol]
+      Disp20                       -4.17678000 [mEh]      -2.62096913 [kcal/mol]     -10.96613588 [kJ/mol]
+      Exch-Disp20                   0.43915425 [mEh]       0.27557347 [kcal/mol]       1.15299949 [kJ/mol]
+
+  Total HF                          4.02203154 [mEh]       2.52386300 [kcal/mol]      10.55984381 [kJ/mol]
+  Total SAPT0                       0.28440579 [mEh]       0.17846734 [kcal/mol]       0.74670741 [kJ/mol]
+
+  --------------------------------------------------------------------------------------------------------
+    Han Solo: This is *not* gonna work.
+    Luke Skywalker: Why didn't you say so before?
+    Han Solo: I *did* say so before.
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Dec 11 20:02:59 2017
+Module time:
+	user time   =     709.68 seconds =      11.83 minutes
+	system time =     821.36 seconds =      13.69 minutes
+	total time  =        137 seconds =       2.28 minutes
+Total time:
+	user time   =     771.72 seconds =      12.86 minutes
+	system time =     893.69 seconds =      14.89 minutes
+	total time  =        151 seconds =       2.52 minutes
+	Enuc..............................................................PASSED
+	Eelst.............................................................PASSED
+	Eexch.............................................................PASSED
+	Eind..............................................................PASSED
+	Edisp.............................................................PASSED
+	Etot..............................................................PASSED
+	Methyl1_A Peptide_B fEelst........................................PASSED
+	Methyl1_A Peptide_B fEexch........................................PASSED
+	Methyl1_A Peptide_B fEindAB.......................................PASSED
+	Methyl1_A Peptide_B fEindBA.......................................PASSED
+	Methyl1_A Peptide_B fEdisp........................................PASSED
+	Methyl1_A Peptide_B fEtot.........................................PASSED
+	Methyl1_A T-Butyl_B fEelst........................................PASSED
+	Methyl1_A T-Butyl_B fEexch........................................PASSED
+	Methyl1_A T-Butyl_B fEindAB.......................................PASSED
+	Methyl1_A T-Butyl_B fEindBA.......................................PASSED
+	Methyl1_A T-Butyl_B fEdisp........................................PASSED
+	Methyl1_A T-Butyl_B fEtot.........................................PASSED
+	Methyl1_A Link-1 fEelst...........................................PASSED
+	Methyl1_A Link-1 fEexch...........................................PASSED
+	Methyl1_A Link-1 fEindAB..........................................PASSED
+	Methyl1_A Link-1 fEindBA..........................................PASSED
+	Methyl1_A Link-1 fEdisp...........................................PASSED
+	Methyl1_A Link-1 fEtot............................................PASSED
+	Methyl2_A Peptide_B fEelst........................................PASSED
+	Methyl2_A Peptide_B fEexch........................................PASSED
+	Methyl2_A Peptide_B fEindAB.......................................PASSED
+	Methyl2_A Peptide_B fEindBA.......................................PASSED
+	Methyl2_A Peptide_B fEdisp........................................PASSED
+	Methyl2_A Peptide_B fEtot.........................................PASSED
+	Methyl2_A T-Butyl_B fEelst........................................PASSED
+	Methyl2_A T-Butyl_B fEexch........................................PASSED
+	Methyl2_A T-Butyl_B fEindAB.......................................PASSED
+	Methyl2_A T-Butyl_B fEindBA.......................................PASSED
+	Methyl2_A T-Butyl_B fEdisp........................................PASSED
+	Methyl2_A T-Butyl_B fEtot.........................................PASSED
+	Methyl2_A Link-1 fEelst...........................................PASSED
+	Methyl2_A Link-1 fEexch...........................................PASSED
+	Methyl2_A Link-1 fEindAB..........................................PASSED
+	Methyl2_A Link-1 fEindBA..........................................PASSED
+	Methyl2_A Link-1 fEdisp...........................................PASSED
+	Methyl2_A Link-1 fEtot............................................PASSED
+	Link-1 Peptide_B fEelst...........................................PASSED
+	Link-1 Peptide_B fEexch...........................................PASSED
+	Link-1 Peptide_B fEindAB..........................................PASSED
+	Link-1 Peptide_B fEindBA..........................................PASSED
+	Link-1 Peptide_B fEdisp...........................................PASSED
+	Link-1 Peptide_B fEtot............................................PASSED
+	Link-1 T-Butyl_B fEelst...........................................PASSED
+	Link-1 T-Butyl_B fEexch...........................................PASSED
+	Link-1 T-Butyl_B fEindAB..........................................PASSED
+	Link-1 T-Butyl_B fEindBA..........................................PASSED
+	Link-1 T-Butyl_B fEdisp...........................................PASSED
+	Link-1 T-Butyl_B fEtot............................................PASSED
+	Link-1 Link-1 fEelst..............................................PASSED
+	Link-1 Link-1 fEexch..............................................PASSED
+	Link-1 Link-1 fEindAB.............................................PASSED
+	Link-1 Link-1 fEindBA.............................................PASSED
+	Link-1 Link-1 fEdisp..............................................PASSED
+	Link-1 Link-1 fEtot...............................................PASSED
+	Methyl1_A All fEelst..............................................PASSED
+	Methyl1_A All fEexch..............................................PASSED
+	Methyl1_A All fEindAB.............................................PASSED
+	Methyl1_A All fEindBA.............................................PASSED
+	Methyl1_A All fEdisp..............................................PASSED
+	Methyl1_A All fEtot...............................................PASSED
+	Methyl2_A All fEelst..............................................PASSED
+	Methyl2_A All fEexch..............................................PASSED
+	Methyl2_A All fEindAB.............................................PASSED
+	Methyl2_A All fEindBA.............................................PASSED
+	Methyl2_A All fEdisp..............................................PASSED
+	Methyl2_A All fEtot...............................................PASSED
+	Link-1 All fEelst.................................................PASSED
+	Link-1 All fEexch.................................................PASSED
+	Link-1 All fEindAB................................................PASSED
+	Link-1 All fEindBA................................................PASSED
+	Link-1 All fEdisp.................................................PASSED
+	Link-1 All fEtot..................................................PASSED
+	All Peptide_B fEelst..............................................PASSED
+	All Peptide_B fEexch..............................................PASSED
+	All Peptide_B fEindAB.............................................PASSED
+	All Peptide_B fEindBA.............................................PASSED
+	All Peptide_B fEdisp..............................................PASSED
+	All Peptide_B fEtot...............................................PASSED
+	All T-Butyl_B fEelst..............................................PASSED
+	All T-Butyl_B fEexch..............................................PASSED
+	All T-Butyl_B fEindAB.............................................PASSED
+	All T-Butyl_B fEindBA.............................................PASSED
+	All T-Butyl_B fEdisp..............................................PASSED
+	All T-Butyl_B fEtot...............................................PASSED
+	All Link-1 fEelst.................................................PASSED
+	All Link-1 fEexch.................................................PASSED
+	All Link-1 fEindAB................................................PASSED
+	All Link-1 fEindBA................................................PASSED
+	All Link-1 fEdisp.................................................PASSED
+	All Link-1 fEtot..................................................PASSED
+	All All fEelst....................................................PASSED
+	All All fEexch....................................................PASSED
+	All All fEindAB...................................................PASSED
+	All All fEindBA...................................................PASSED
+	All All fEdisp....................................................PASSED
+	All All fEtot.....................................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

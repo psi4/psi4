@@ -84,23 +84,32 @@ PsiAPI mode, access as, *e.g.*, ``psi4.constants.h``.
 Memory Specification
 ====================
 
-By default, |PSIfour| assumes that 256 Mb of memory are available. While this is
+By default, |PSIfour| assumes that 500 MiB of memory are available. While this is
 enough for many computations, many of the algorithms will perform better if
 more is available. To specify memory, the ``memory`` keyword should be used. The following
-lines are all equivalent methods for specifying that 2 Gb of RAM is available
+lines are all equivalent methods for specifying that 2 GB of RAM is available
 to |PSIfour|::
 
     # all equivalent
 
-    memory 2 Gb
+    memory 2 GB
     
-    memory 2000 Mb
+    memory 2000 MB
     
-    memory 2000000 Kb
+    memory 2000000 kB
+
+Please note that memory can be specified both in IEC binary units (1 KiB = 1024 bytes) and SI units (1 kB = 1000 bytes). |PSIfour| recognizes and obeys both of them correctly. The units are not case sensitive (Kb and KB are equivalent to kB).
+
+By default, |PSIfour| performs a "sanity check" when parsing Psithon input files, enforcing a minimum memory requirement of 250 MiB. While it is generally not recomennded to do so, expert users can bypass this check by directly setting the number of bytes availble to |PSIfour|::
+
+    # setting available memory to 2 MB
+    set_memory_bytes(2000000)
+    
+Please note that this memory setting only governs the maximal memory usage of the major data structures and actual total memory usage is slightly higher. This is usually a negligible, except when setting tiny memory allowances.
 
 One convenient way to override the |PSIfour| default memory is to place a
 memory command in the |psirc| file (Sec. :ref:`sec:psirc`). For example,
-the following makes the default memory 2 Gb. ::
+the following makes the default memory 2 GB. ::
 
     set_memory(2000000000)
 

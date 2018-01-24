@@ -88,6 +88,14 @@ class ConvergenceError(PsiException):
         core.print_out('\nPsiException: %s\n\n' % (msg))
 
 
+class OptimizationConvergenceError(ConvergenceError):
+    """Error called for problems with geometry optimizer."""
+
+    def __init__(self, eqn_description, maxit, wfn):
+        ConvergenceError.__init__(self, eqn_description, maxit)
+        self.wfn = wfn
+
+
 class CSXError(PsiException):
     """Error called when CSX generation fails.
 

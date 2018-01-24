@@ -40,7 +40,7 @@ class SOBasisSet;
 
 /*! \ingroup MINTS
  *  \class MatrixFactory
- *  \brief A class for creating Matrix, SimpleMatrix, Vector, and SimpleVector objects.
+ *  \brief A class for creating Matrix and Vector objects.
  *
  * The objects this factory creates can automatically be sized based on information
  * from checkpoint.
@@ -93,18 +93,18 @@ public:
     Matrix * create_matrix(int symmetry=0);
 
     /// Returns a new Matrix object with default dimensions
-    SharedMatrix create_shared_matrix();
+    SharedMatrix create_shared_matrix() const;
 
     void create_matrix(Matrix& mat, int symmetry=0);
 
     /// Returns a new Matrix object named name with default dimensions
     Matrix * create_matrix(std::string name, int symmetry=0);
 
-    SharedMatrix create_shared_matrix(const std::string& name);
+    SharedMatrix create_shared_matrix(const std::string& name) const;
 
-    SharedMatrix create_shared_matrix(const std::string& name, int symmetry);
+    SharedMatrix create_shared_matrix(const std::string& name, int symmetry) const;
 
-    SharedMatrix create_shared_matrix(const std::string& name, int rows, int cols);
+    SharedMatrix create_shared_matrix(const std::string& name, int rows, int cols) const;
 
     void create_matrix(Matrix& mat, std::string name, int symmetry=0);
 

@@ -69,7 +69,7 @@ std::string get_writer_file_prefix(const std::string& molecule_name)
         return label+pid;
     }
 
-    // If no available options WRITER_FILE_LABEL, then we build a defult:
+    // If no available options WRITER_FILE_LABEL, then we build a default:
     // Get the basename of the output filename, append any active molecule name
     // to it, and return the resulting string
     std::string prefix=outfile_name.substr(0, outfile_name.find_last_of('.'));

@@ -56,8 +56,9 @@ platform capabilities, *etc*.
    molden
    mrcc
    pcmsolver
-   plugin_v2rdm_casscf
    simint
+   plugin_snsmp2
+   plugin_v2rdm_casscf
 
 .. comment * MPI4Py
 .. comment * MADNESS

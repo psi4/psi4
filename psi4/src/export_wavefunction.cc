@@ -140,8 +140,10 @@ void export_wavefunction(py::module& m) {
         .def("molecule", &Wavefunction::molecule, "Returns the Wavefunctions molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
              "Returns the number of doubly occupied orbitals per irrep.")
+        .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy,
              "Returns the number of singly occupied orbitals per irrep.")
+        .def("force_soccpi", &Wavefunction::force_soccpi, "Specialized expert use only. Sets the number of singly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
              "Returns the number of symmetry orbitals per irrep.")
         .def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy,

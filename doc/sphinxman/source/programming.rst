@@ -36,6 +36,7 @@ Programming: Using the Core Libraries
    optionshandling
    proc_py
    prog_blas
+   add_tests
 
 ..   prog_basissets
 

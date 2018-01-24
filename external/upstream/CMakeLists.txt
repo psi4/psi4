@@ -1,12 +1,13 @@
-foreach(dir ambit
+foreach(dir pybind11
+            ambit
             chemps2
             dkh
             libefp
             erd
+            gau2grid
             gdma
             libint
             pcmsolver
-            pybind11
             simint
             libxc
 )
