@@ -262,6 +262,28 @@ def build_ft97_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+def build_sogga11_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SOGGA11')
+    sup.set_description('   SOGGA11 Exchange-Correlation Functional\n')
+    sup.set_citation('    R. Peverati, Y. Zhao, and D. G. Truhlar, J. Phys. Chem. Lett. 2, 1991-1997, 2011\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_SOGGA11', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_SOGGA11', restricted))
+
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
 
 gga_superfunc_list = {
           "b86bpbe" : build_b86bpbe_superfunctional,
@@ -273,4 +295,5 @@ gga_superfunc_list = {
           "pw91"    : build_pw91_superfunctional,
           "ft97"    : build_ft97_superfunctional,
           "bop"     : build_bop_superfunctional,
+          "sogga11" : build_sogga11_superfunctional,
 }

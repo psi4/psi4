@@ -128,23 +128,99 @@ def build_pbe0_2_superfunctional(name, npoints, deriv, restricted):
 
     # Add member functionals
     X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
-    X.set_alpha(0.206299)
+    X.set_alpha(0.206299)     # GGA exchange
     sup.add_x_functional(X)
     C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
-    C.set_alpha(0.5)
+    C.set_alpha(0.5)          # GGA correlation
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.793701)
-    sup.set_c_alpha(0.5)
+    sup.set_x_alpha(0.793701) # HF exchange
+    sup.set_c_alpha(0.5)      # MP2 correlation
 
     # => End User-Customization <= #
 
     # Call this last
     sup.allocate()
     return (sup, False)
+    
+
+def build_pbe0_dh_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0-DH')
+    # Tab in, trailing newlines
+    sup.set_description('    PBE0-DH Double Hydrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n')
+
+    # Add member functionals
+    X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    X.set_alpha(0.5)
+    sup.add_x_functional(X)
+    C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
+    C.set_alpha(0.125)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.5)
+    sup.set_c_alpha(0.875)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+#def build_xdh_pbe0_superfunctional(name, npoints, deriv, restricted):
+#
+#    # Call this first
+#    sup = core.SuperFunctional.blank()
+#    sup.set_max_points(npoints)
+#    sup.set_deriv(deriv)
+#
+#    # => User-Customization <= #
+#
+#    # No spaces, keep it short and according to convention
+#    sup.set_name('xDH-PBE0')
+#    # Tab in, trailing newlines
+#    sup.set_description('    xDH-PBE0 Dispersion-corrected XYG3 Double Hybrid XC Functional\n')
+#    # Tab in, trailing newlines
+#    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
+#
+#    # Add member functionals
+#    X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+#    X.set_alpha(1 - 0.8335)
+#    sup.add_x_functional(X)
+#    C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
+#    C.set_alpha(0.5292)
+#    sup.add_c_functional(C)
+#
+#    # Set GKS up after adding functionals
+#    sup.set_x_omega(0.0)
+#    sup.set_c_omega(0.0)
+#    sup.set_x_alpha(0.8335)
+#    sup.set_c_alpha(1.0)
+#    sup.set_c_ss_alpha(0.0000)
+#    sup.set_c_os_alpha(0.5428)
+#
+#    # => End User-Customization <= #
+#
+#    # Call this last
+#    sup.allocate()
+#    return (sup, False)
+
 
 def build_dsd_pbep86_superfunctional(name, npoints, deriv, restricted):
 
@@ -227,6 +303,7 @@ def build_dsd_pbepbe_superfunctional(name, npoints, deriv, restricted):
 double_hyb_superfunc_list = {
           "b2plyp"     : build_b2plyp_superfunctional,
           "pbe0-2"     : build_pbe0_2_superfunctional,
+          "pbe0-dh"    : build_pbe0_dh_superfunctional,
           # "dsd-blyp"   : build_dsd_blyp_superfunctional,
           "dsd-pbep86" : build_dsd_pbep86_superfunctional,
           "dsd-pbepbe" : build_dsd_pbepbe_superfunctional,

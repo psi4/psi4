@@ -71,6 +71,28 @@ def build_dldfd10_superfunctional(name, npoints, deriv, restricted):
 
     return (sup, ('dlDF', '-DAS2010'))
 
+def build_m06_l_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('M06-L')
+    sup.set_description('    M06-L Meta-GGA XC Functional\n')
+    sup.set_citation('    Y. Zhao and D. G. Truhlar, J. Chem. Phys. 125, 194101, 2006\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_M06_L', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_M06_L', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 def build_m11_l_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -88,6 +110,50 @@ def build_m11_l_superfunctional(name, npoints, deriv, restricted):
     # Add member functionals
     sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_M11_L', restricted))
     sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_M11_L', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+def build_mn12_l_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MN12-L')
+    sup.set_description('    MN12-L Meta-GGA XC Functional\n')
+    sup.set_citation('    R. Peverati and D. G. Truhlar, Phys. Chem. Chem. Phys. 14, 13171-13174, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_MN12_L', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_MN12_L', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+def build_mn15_l_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MN15-L')
+    sup.set_description('    MN15-L Meta-GGA XC Functional\n')
+    sup.set_citation('    H. S. Yu, X. He, and D. G. Truhlar, J. Chem. Theory Comput. 12, 1280-1293, 2016\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_MN15_L', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_MN15_L', restricted))
 
     # Call this last
     sup.allocate()
@@ -160,13 +226,39 @@ def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+def build_scan_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SCAN')
+    sup.set_description('    SCAN Meta-GGA XC Functional\n')
+    sup.set_citation('    J. Sun, A. Ruzsinszky, and J. P. Perdew, Phys. Rev. Lett. 115, 036402, 2015\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_SCAN', restricted))
+    #sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_SCAN', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
 
 mgga_superfunc_list = {
           "dldf"     : build_dldf_superfunctional,
           "dldf+d09" : build_dldfd09_superfunctional,
           "dldf+d"   : build_dldfd10_superfunctional,
+          "m06-l"    : build_m06_l_superfunctional,
           "m11-l"    : build_m11_l_superfunctional,
+          "mn12-l"   : build_mn12_l_superfunctional,
+          "mn15-l"   : build_mn15_l_superfunctional,
           "mgga_ms0" : build_mgga_ms0_superfunctional,
           "mgga_ms1" : build_mgga_ms1_superfunctional,
           "mgga_ms2" : build_mgga_ms2_superfunctional,
+          "scan"     : build_scan_superfunctional,
 }

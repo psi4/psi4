@@ -263,6 +263,75 @@ def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, ("PBEH3C", "-d3bj"))
 
+def build_sogga11_x_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SOGGA11-X')
+    sup.set_description('   SOGGA11-X Hybrid Exchange-Correlation Functional\n')
+    sup.set_citation('    R. Peverati and D. G. Truhlar, J. Chem. Phys. 135, 191102, 2011\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_HYB_GGA_X_SOGGA11_X', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_SOGGA11_X', restricted))
+    sup.set_x_alpha(0.4015)
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+def build_scan0_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SCAN0')
+    sup.set_description('   SCAN0 Hybrid Exchange-Correlation Functional\n')
+    sup.set_citation('    K. Hui and J.-D. Chai, J. Chem. Phys. 144, 044114, 2016\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_HYB_MGGA_X_SCAN0', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_SCAN', restricted))
+    sup.set_x_alpha(0.25)
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+def build_mn15_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MN15')
+    sup.set_description('   MN15 Hybrid Exchange-Correlation Functional\n')
+    sup.set_citation('    H. S. Yu, X. He, S. L. Li, and D. G. Truhlar, Chem. Sci. 7, 5032-5051, 2016\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_HYB_MGGA_X_MN15', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_MN15', restricted))
+    sup.set_x_alpha(0.44)
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 
 hyb_superfunc_list = {
           "pbeh3c"   : build_pbeh3c_superfunctional,
@@ -275,7 +344,9 @@ hyb_superfunc_list = {
           "hf"       : build_hf_superfunctional,
           "scf"      : build_hf_superfunctional,
           "hf3c"     : build_hf3c_superfunctional,
-
+          "scan0"    : build_scan0_superfunctional,
+          "sogga11-x": build_sogga11_x_superfunctional,
+          "mn15"     : build_mn15_superfunctional,
 }
 
 
