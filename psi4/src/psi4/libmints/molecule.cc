@@ -241,21 +241,6 @@ Molecule::Molecule(const Molecule &other) { *this = other; }
 
 void Molecule::set_reinterpret_coordentry(bool rc) { reinterpret_coordentries_ = rc; }
 
-/// Addition
-// Molecule Molecule::operator+(const Molecule& other)
-//{
-
-//}
-
-///// Subtraction
-// Molecule Molecule::operator-(const Molecule& other)
-//{
-
-//}
-
-/// Plus equals
-void Molecule::operator+=(const Molecule & /*other*/) { throw PSIEXCEPTION("Empty method?"); }
-
 void Molecule::clear() {
     lock_frame_ = false;
     atoms_.empty();
@@ -974,19 +959,21 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
 
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-            mol->fragment_types_.push_back(Real);
+            //mol->fragment_types_.push_back(Real);
             if (std::regex_search(lines[lineNumber - 1], reMatches, efpFileMarker_)) {
 #ifdef USING_libefp
                 fragment_levels.push_back(EFPatom);
                 // Overwrite the overall molecule chgmult written before loop
-                if (mol->fragments_.size() == 1) {
-                    mol->fragment_multiplicities_.pop_back();
-                    mol->fragment_charges_.pop_back();
-                    mol->fragment_multiplicities_.push_back(
-                        Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
-                    mol->fragment_charges_.push_back(
-                        int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
-                }
+                // fragment counting when EFP involved is very messed up.
+                //  All EFP fragments are 0 1 anyways, so just skip
+                //if (mol->fragments_.size() == 1) {
+                //    mol->fragment_multiplicities_.pop_back();
+                //    mol->fragment_charges_.pop_back();
+                //    mol->fragment_multiplicities_.push_back(
+                //        Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
+                //    mol->fragment_charges_.push_back(
+                //        int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
+                //}
 #else
                 outfile->Printf("    EFP fragments detected but are not available.\n");
                 throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
@@ -1024,12 +1011,12 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
         exit(EXIT_SUCCESS);
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-    mol->fragment_types_.push_back(Real);
+    //mol->fragment_types_.push_back(Real);
     if (std::regex_search(lines[lines.size() - 1], reMatches, efpFileMarker_)) {
 #ifdef USING_libefp
         fragment_levels.push_back(EFPatom);
-        mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
-        mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
+        //mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
+        //mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
 #else
         outfile->Printf("    EFP fragments detected but are not available.\n");
         throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
@@ -1251,6 +1238,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
         }
     }
     for (size_t i = 0, atom = 0; i < mol->fragments_.size(); ++i) {
+        mol->fragment_types_.push_back(Real);
         int frlen = mol->fragments_[i].second - mol->fragments_[i].first;
         mol->fragments_[i].first = atom;
         mol->fragments_[i].second = atom + frlen;

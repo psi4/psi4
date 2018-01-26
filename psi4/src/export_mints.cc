@@ -235,14 +235,17 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     std::vector <std::string> elbl= molrec["elbl"].cast<std::vector <std::string>>();
     size_t nat = geom.size() / 3;
 
-    for (size_t iat=0; iat<nat; ++iat)
+    for (size_t iat=0; iat<nat; ++iat) {
+        std::string symbol = elem[iat];
+        std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
         mol->add_atom(elez[iat] * real[iat],
                       geom[3*iat], geom[3*iat+1], geom[3*iat+2],
-                      elem[iat],
+                      symbol,
                       mass[iat],
                       elez[iat] * real[iat],
-                      elem[iat] + elbl[iat],
+                      symbol + elbl[iat],
                       elea[iat]);
+    }
 
     ////    mol->set_has_zmatrix(false);  // TODO
     ////    moldict['zmat'] = self.zmat
@@ -1133,12 +1136,18 @@ void export_mints(py::module& m)
         .def("get_fragments", &Molecule::get_fragments,
               "Returns list of pairs of atom ranges defining each fragment from parent molecule"
               "(fragments[frag_ind] = <Afirst,Alast+1>)")
-        .def("get_fragment_types", &Molecule::get_fragment_types,
-              "A list describing how to handle each fragment {Real, Ghost, Absent}")
+        .def("get_fragment_types",
+            [](Molecule& mol) {
+                const std::string FragmentTypeList [] = {"Absent", "Real", "Ghost"};
+                std::vector<std::string> srt;
+                for (auto item : mol.get_fragment_types())
+                    srt.push_back(FragmentTypeList[item]);
+                return srt; },
+             "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
         .def("get_fragment_charges", &Molecule::get_fragment_charges,
-              "Gets the charge of each fragment")
+             "Gets the charge of each fragment")
         .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
-              "Gets the multiplicity of each fragment")
+             "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Tests to see if an atom is at the position arg2 with a given tolerance arg3")
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")

@@ -402,7 +402,8 @@ class BasisSet(object):
         self.molecule = Molecule()
         self.molecule.add_atom(mol.Z(center),
             mol.x(center), mol.y(center), mol.z(center),
-            mol.label(center), mol.mass(center), mol.charge(center))
+            mol.symbol(center), mol.mass(center), mol.charge(center),
+            mol.label(center), mol.A(center))
         self.molecule.fragments.append([0, 0])
         self.molecule.fragment_types.append('Real')
         self.molecule.fragment_charges.append(0)
@@ -614,6 +615,9 @@ class BasisSet(object):
             returnBasisSet = False
         elif isinstance(mol, Molecule):
             returnBasisSet = True
+        elif isinstance(mol, dict):
+            mol = Molecule.from_dict(mol)
+            returnBasisSet = False
         else:
             raise ValidationError("""Argument mol must be psi4string or qcdb.Molecule""")
         mol.update_geometry()
@@ -681,7 +685,7 @@ class BasisSet(object):
                     bsdict['shell_map'] = atbs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
                     if ecp:
                         bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
-                    bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
+                    bsdict['molecule'] = atbs.molecule.to_dict(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
 

@@ -190,7 +190,7 @@ class CoordEntry(object):
         # Label of the atom minus any extra info (H1 => H)
         self.PYsymbol = symbol.upper()
         # Original label from the molecule from the input file (H1)
-        self.PYlabel = label
+        self.PYlabel = label.upper()
         # Mass number of the atom if known, else -1
         self.PYA = A
         # Is this a ghost atom?
