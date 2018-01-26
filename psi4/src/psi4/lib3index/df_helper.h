@@ -257,6 +257,7 @@ class DF_Helper {
     // => internal holders <=
     std::string method_ = "STORE";
     bool direct_;
+    bool direct_iaQ_;
     bool AO_core_ = 1;
     bool MO_core_ = 0;
     size_t nthreads_ = 1;
@@ -266,7 +267,7 @@ class DF_Helper {
     double mpower_ = -0.5;
     bool hold_met_ = false;
     bool JK_hint_ = false;
-    bool built = false;
+    bool built_ = false;
     bool transformed_ = false;
     std::pair<size_t, size_t> info_;
     bool ordered_ = 0;
@@ -280,11 +281,11 @@ class DF_Helper {
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
-    void compute_AO_Q(const size_t start, const size_t stop, double* Mp,
+    void compute_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p(const size_t start, const size_t stop, double* Mp,
+    void compute_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p_symm(const size_t start, const size_t stop, double* Mp,
+    void compute_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                            std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
@@ -335,8 +336,8 @@ class DF_Helper {
     std::map<std::string, std::vector<double>> transf_core_;
 
     // => transformation machinery <=
-    void transform_core();
-    void transform_disk();
+    void put_transformations(int naux, int begin, int end, int block_size, int bcount, 
+        int wsize, int bsize, double* Np, double* Fp, int ind, bool bleft);
     std::vector<std::pair<std::string, size_t>> sorted_spaces_;
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
