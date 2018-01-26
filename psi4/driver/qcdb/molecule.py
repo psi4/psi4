@@ -1235,13 +1235,6 @@ class Molecule(LibmintsMolecule):
             molrec['units'] = 'Bohr'
         else:
             units = self.units()
-            #if not isinstance(self, Molecule):
-            #    # psi4.core.Molecule
-            #    from psi4 import core
-            #    if units == core.GeometryUnits.Angstrom:
-            #        units = 'Angstrom'
-            #    elif units == core.GeometryUnits.Bohr:
-            #        units = 'Bohr'
             molrec['units'] = units
             if units == 'Angstrom' and abs(self.input_units_to_au() * psi_bohr2angstroms - 1.) > 1.e-6:
                 molrec['input_units_to_au'] = self.input_units_to_au()
@@ -1267,18 +1260,10 @@ class Molecule(LibmintsMolecule):
         molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
         molrec['mass'] = np.array([self.mass(at) for at in range(nat)])
         molrec['real'] = np.array([bool(self.Z(at)) for at in range(nat)])
-        molrec['elbl'] = np.array([self.label(at)[len(self.symbol(at)):] for at in range(nat)])
+        molrec['elbl'] = np.array([self.label(at)[len(self.symbol(at)):].lower() for at in range(nat)])
 
-        ftypes = self.get_fragment_types()
-        if not isinstance(self, Molecule):
-            # psi4.core.Molecule
-            from psi4 import core
-            adaptor = {core.FragmentType.Real: 'Real',
-                       core.FragmentType.Ghost: 'Ghost',
-                       core.FragmentType.Absent: 'Absent'}
-            ftypes = [adaptor[f] for f in ftypes]
         molrec['fragment_separators'] = [int(f[0]) for f in self.get_fragments()[1:]]  # np.int --> int
-        molrec['fragment_types'] = ftypes
+        molrec['fragment_types'] = self.get_fragment_types()
         molrec['fragment_charges'] = [float(f) for f in self.get_fragment_charges()]
         molrec['fragment_multiplicities'] = self.get_fragment_multiplicities()
 
