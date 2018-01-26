@@ -201,7 +201,7 @@ std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
 
-double VBase::vv10_nlc(SharedMatrix ret) {
+double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     timer_on("V: VV10");
     timer_on("Setup");
 
@@ -236,7 +236,7 @@ double VBase::vv10_nlc(SharedMatrix ret) {
         // Need a points worker per thread, only need RKS-like terms
         auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
         point_tmp->set_ansatz(functional_->ansatz());
-        point_tmp->set_pointers(D_AO_[0]);
+        point_tmp->set_pointers(D);
         nl_point_workers.push_back(point_tmp);
 
         // Scratch dir
@@ -599,7 +599,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     // Do we need VV10?
     double vv10_e = 0.0;
     if (functional_->needs_vv10()) {
-        vv10_e = vv10_nlc(V_AO);
+        vv10_e = vv10_nlc(D_AO_[0], V_AO);
     }
 
     // Set the result
@@ -1671,6 +1671,22 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_off("V_xc", rank);
     }
 
+    // Do we need VV10?
+    double vv10_e = 0.0;
+    if (functional_->needs_vv10()) {
+        SharedMatrix Ds = D_AO_[0]->clone();
+        Ds->axpy(1.0, D_AO_[1]);
+        Ds->scale(0.5); // Will be scaled by a factor of 2 later.
+
+        SharedMatrix ret = Ds->clone();
+        ret->zero();
+
+        vv10_e = vv10_nlc(Ds, ret);
+
+        Va_AO->axpy(0.5, ret);
+        Vb_AO->axpy(0.5, ret);
+    }
+
     // Set the result
     if (AO2USO_) {
         ret[0]->apply_symmetry(Va_AO, AO2USO_);
@@ -1680,6 +1696,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         ret[1]->copy(Vb_AO);
     }
 
+    quad_values_["VV10"] = vv10_e;
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"] = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
     quad_values_["RHO_AX"] = std::accumulate(rhoaxq.begin(), rhoaxq.end(), 0.0);

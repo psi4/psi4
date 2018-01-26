@@ -91,7 +91,7 @@ protected:
     bool grac_initialized_;
 
     // VV10 dispersion, return vv10_nlc energy
-    double vv10_nlc(SharedMatrix ret);
+    double vv10_nlc(SharedMatrix D, SharedMatrix ret);
 
     /// Set things up
     void common_init();
