@@ -125,6 +125,166 @@ def validate_and_fill_chgmult(zeff,
          matches distribute charge to later frags)
     I3 * missing chg or mult from tot - frags will always be allocated as a block, not distributed
 
+    Examples
+    --------
+    >>> validate_and_fill_chgmult(*sys('He'), 0, [0], 1, [1])
+    0, [0], 1, [1]
+    >>> validate_and_fill_chgmult(*sys('He'), None, [None], None, [None])
+    0, [0], 1, [1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], None, [None, None])
+    0, [0, 0], 1, [1, 1])
+    >>> validate_and_fill_chgmult(*sys('He/He'), 2, [None, None], None, [None, None])
+    2, [2, 0], 1, [1, 1])
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [2, None], None, [None, None])
+    2, [2, 0], 1, [1, 1])
+    >>> validate_and_fill_chgmult(*sys('He/He'), 0, [2, None], None, [None, None])
+    0, [2, -2], 1, [1, 1])
+    >>> validate_and_fill_chgmult(*sys('Ne/He/He'), -2, [None, 2, None], None, [None, None, None])
+    -2, [-4, 2, 0], 1, [1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('Ne/He/He'), 2, [None, -2, None], None, [None, None, None])
+    2, [4, -2, 0], 1, [1, 1, 1]
+    #  9 - residual +4 distributes to first fragment able to wholly accept it (He+4 is no-go)
+    >>> validate_and_fill_chgmult(*sys('He/He/Ne'), 2, [None, -2, None], None, [None, None, None])
+    2, [0, -2, 4], 1, [1, 1, 1]
+    # 10 - residual +4 unsuited for only open fragment, He, so irreconcilable
+    >>> validate_and_fill_chgmult(*sys('He/He/Ne'), 2, [None, -2, 0], None, [None, None, None])
+    ValidationError
+    # 11 - non-positive multiplicity
+    >>> validate_and_fill_chgmult(*sys('He/He/Ne'), 2, [2, -2, None], None, [None, None, None])
+    2, [2, -2, 2], 1, [1, 1, 1])
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [-2, 2], None, [None, None])
+    0, [-2, 2], 1, [1, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, -2], None, [None, None])
+    -2, [0, -2], 1, [1, 1]
+    >>> validate_and_fill_chgmult(*sys('Ne/Ne'), 0, [None, 4], None, [None, None])
+    0, [-4, 4], 1, [1, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He/He'), 4, [2, None, None], None, [None, None, None])
+    4, [2, 2, 0], 1, [1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), 0, [-2, 2], None, [None, None])
+    0, [-2, 2], 1, [1, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), 0, [-2, -2], None, [None, None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('He'), None, [None], 0, [None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('He'), None, [None], None, [1])
+    0, [0], 1, [1]
+    # 20 - doublet non consistent with closed-shell, neutral default charge
+    >>> validate_and_fill_chgmult(*sys('He'), None, [None], None, [2])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('He'), None, [None], None, [3])
+    0, [0], 3, [3]
+    # 22 - insufficient electrons for pentuplet
+    >>> validate_and_fill_chgmult(*sys('He'), None, [None], None, [5])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('He'), None, [-1], None, [2])
+    -1, [-1], 2, [2]
+    # 24 - doublet not consistent with even charge
+    >>> validate_and_fill_chgmult(*sys('He'), None, [-2], None, [2])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], None, [1, 1])
+    0, [0, 0], 1, [1, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], None, [3, 1])
+    0, [0, 0], 3, [3, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], None, [1, 3])
+    0, [0, 0], 3, [1, 3]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], None, [3, 3])
+    0, [0, 0], 5, [3, 3]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], 3, [3, 3])
+    0, [0, 0], 3, [3, 3]
+    # 30 - bad parity btwn mult and total # electrons
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [None, None], 2, [3, 3])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('H'), None, [None], None, [None])
+    0, [0], 2, [2]
+    >>> validate_and_fill_chgmult(*sys('H'), 1, [None], None, [None])
+    1, [1], 1, [1]
+    >>> validate_and_fill_chgmult(*sys('H'), None, [-1], None, [None])
+    -1, [-1], 1, [1]
+    >>> validate_and_fill_chgmult(*sys('funnyH'), None, [None], None, [None])
+    0, [0], 1, [1]
+    # 35 - insufficient electrons
+    >>> validate_and_fill_chgmult(*sys('funnierH'), None, [None], None, [None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('H/H'), None, [None, None], None, [None, None])
+    0, [0, 0], 3, [2, 2]
+    >>> validate_and_fill_chgmult(*sys('H/He'), None, [None, None], None, [None, None])
+    0, [0, 0], 2, [2, 1]
+    >>> validate_and_fill_chgmult(*sys('H/He'), None, [1, 1], None, [None, None])
+    2, [1, 1], 2, [1, 2]
+    >>> validate_and_fill_chgmult(*sys('H/He'), -2, [-1, None], None, [None, None])
+    -2, [-1, -1], 2, [1, 2]
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), None, [1, None, 1, None], None, [None, None, None, None])
+    2, [1, 0, 1, 0], 1, [1, 1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), None, [-1, None, 1, None], None, [None, None, None, None])
+    0, [-1, 0, 1, 0], 1, [1, 1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), 2, [None, None, 1, None], None, [None, None, None, None])
+    2, [1, 0, 1, 0], 1, [1, 1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), 3, [None, None, 1, None], None, [None, None, None, None])
+    3, [0, 2, 1, 0], 2, [2, 1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('H/He'), None, [1, None], None, [2, None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('H/He'), None, [None, 0], None, [None, 2])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('H/He'), None, [None, -1], None, [None, 3])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), None, [None, 1, 0, 1], None, [None, None, None, None])
+    2, [0, 1, 0, 1], 5, [2, 2, 2, 2]
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), None, [None, 1, 0, None], None, [None, None, None, None])
+    1, [0, 1, 0, 0], 4, [2, 2, 2, 1]
+    >>> validate_and_fill_chgmult(*sys('H/He/Na/Ne'), None, [None, 1, 0, None], None, [None, None, 4, None])
+    1, [0, 1, 0, 0], 6, [2, 2, 4, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He/He'), 0, [None, None, 1], None, [1, None, 2])
+    0, [0, -1, 1], 3, [1, 2, 2]
+    >>> validate_and_fill_chgmult(*sys('N/N/N'), None, [1, 1, 1], 3, [None, 3, None])
+    3, [1, 1, 1], 3, [1, 3, 1]
+    >>> validate_and_fill_chgmult(*sys('N/N/N'), None, [1, 1, 1], 3, [None, None, None])
+    3, [1, 1, 1], 3, [3, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('N/N/N'), None, [None, None, None], 3, [None, None, 2])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('N/N/N'), 1, [None, -1, None], 3, [None, None, 2])
+    1, [2, -1, 0], 3, [2, 1, 2]
+    # 55 - both (1, (1, 0.0, 0.0), 4, (1, 3, 2)) and (1, (0.0, 0.0, 1), 4, (2, 3, 1)) plausible
+    >>> validate_and_fill_chgmult(*sys('N/Ne/N'), 1, [None, None, None], 4, [None, 3, None])
+    1, [1, 0, 0], 4, [1, 3, 2]
+    >>> validate_and_fill_chgmult(*sys('N/Ne/N'), None, [None, None, 1], 4, [None, 3, None])
+    1, [0, 0, 1], 4, [2, 3, 1]
+    >>> validate_and_fill_chgmult(*sys('He/He'), None, [-1, 1], None, [None, None])
+    0, [-1, 1], 3, [2, 2]
+    >>> validate_and_fill_chgmult(*sys('Gh'), 1, [None], None, [None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('Gh'), -1, [None], None, [None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('Gh'), None, [None], 3, [None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('He/Gh'), None, [2, None], None, [None, None])
+    2, [2, 0], 1, [1, 1]
+    >>> validate_and_fill_chgmult(*sys('Gh/He'), None, [2, None], None, [None, None])
+    ValidationError
+    >>> validate_and_fill_chgmult(*sys('Gh/He/Ne'), 2, [None, -2, None], None, [None, None, None])
+    2, [0, -2, 4], 1, [1, 1, 1]
+    >>> validate_and_fill_chgmult(*sys('Gh/He/Gh'), 1, [None, None, None], None, [None, None, None])
+    1, [0, 1, 0], 2, [1, 2, 1]
+    >>> sys = {
+        'He': (np.array([2]), np.array([])),
+        'He/He': (np.array([2, 2]), np.array([1])),
+        'Ne/He/He': (np.array([10, 2, 2]), np.array([1, 2])),
+        'He/He/Ne': (np.array([2, 2, 10]), np.array([1, 2])),
+        'Ne/Ne': (np.array([10, 10]), np.array([1])),
+        'He/He/He': (np.array([2, 2, 2]), np.array([1, 2])),
+        'H': (np.array([1]), np.array([])),
+        'funnyH': (np.array([0]), np.array([])),  # has no electrons
+        'funnierH': (np.array([-1]), np.array([])),  # has positron
+        'H/H': (np.array([1, 1]), np.array([1])),
+        'H/He': (np.array([1, 2]), np.array([1])),
+        'H/He/Na/Ne': (np.array([1, 2, 11, 10]), np.array([1, 2, 3])),
+        'N/N/N': (np.array([7, 7, 7]), np.array([1, 2])),
+        'N/Ne/N': (np.array([7, 10, 7]), np.array([1, 2])),
+        'He/Gh': (np.array([2, 0]), np.array([1])),
+        'Gh/He': (np.array([0, 2]), np.array([1])),
+        'Gh': (np.array([0, 0]), np.array([])),
+        'Gh/He/Ne': (np.array([0, 0, 2, 10]), np.array([2, 3])),
+        'Gh/He/Gh': (np.array([0, 2, 0]), np.array([1, 2]))}
+
     """
     text = []
 
@@ -337,149 +497,3 @@ def validate_and_fill_chgmult(zeff,
         'molecular_multiplicity': m_final,
         'fragment_multiplicities': list(fm_final)
     }
-
-
-if __name__ == '__main__':
-
-    # NOTE: to run tests as python module, comment out relative imports at top
-    import sys
-
-    class ValidationError(Exception):
-        pass
-
-    def _success(label):
-        """Function to print a '*label*...PASSED' line to screen.
-        Used by :py:func:`util.compare_values` family when functions pass.
-
-        """
-        print('\t{0:.<100}PASSED'.format(label))
-        sys.stdout.flush()
-
-    def compare_integers(expected, computed, label):
-        """Function to compare two integers. Prints :py:func:`util.success`
-        when value *computed* matches value *expected*.
-        Performs a system exit on failure. Used in input files in the test suite.
-
-        """
-        if (expected != computed):
-            print("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
-            sys.exit(1)
-        _success(label)
-
-    tests = [
-        #    system shorthand   tot-chg, frag-chg, tot-mult, frag-mult         expected final tot/frag chg/mult
-        [ 1, 'He',              0, [0], 1, [1],                                (0, [0], 1, [1])],
-        [ 2, 'He',              None, [None], None, [None],                    (0, [0], 1, [1])],
-        [ 3, 'He/He',           None, [None, None], None, [None, None],        (0, [0, 0], 1, [1, 1])],
-        [ 4, 'He/He',           2, [None, None], None, [None, None],           (2, [2, 0], 1, [1, 1])],
-        [ 5, 'He/He',           None, [2, None], None, [None, None],           (2, [2, 0], 1, [1, 1])],
-        [ 6, 'He/He',           0, [2, None], None, [None, None],              (0, [2, -2], 1, [1, 1])],
-        [ 7, 'Ne/He/He',        -2, [None, 2, None], None, [None, None, None], (-2, [-4, 2, 0], 1, [1, 1, 1])],
-        [ 8, 'Ne/He/He',        2, [None, -2, None], None, [None, None, None], (2, [4, -2, 0], 1, [1, 1, 1])],
-        [ 9, 'He/He/Ne',        2, [None, -2, None], None, [None, None, None], (2, [0, -2, 4], 1, [1, 1, 1])],
-        [10, 'He/He/Ne',        2, [None, -2, 0], None, [None, None, None],    'Irreconcilable'],
-        [11, 'He/He/Ne',        2, [2, -2, None], None, [None, None, None],    (2, [2, -2, 2], 1, [1, 1, 1])],
-        [12, 'He/He',           None, [-2, 2], None, [None, None],             (0, [-2, 2], 1, [1, 1])],
-        [13, 'He/He',           None, [None, -2], None, [None, None],          (-2, [0, -2], 1, [1, 1])],
-        [14, 'Ne/Ne',           0, [None, 4], None, [None, None],              (0, [-4, 4], 1, [1, 1])],
-        [15, 'He/He/He',        4, [2, None, None], None, [None, None, None],  (4, [2, 2, 0], 1, [1, 1, 1])],
-        [16, 'He/He',           0, [-2, 2], None, [None, None],                (0, [-2, 2], 1, [1, 1])],
-        [17, 'He/He',           0, [-2, -2], None, [None, None],               'Irreconcilable'],
-        [18, 'He',              None, [None], 0, [None],                       'Irreconcilable'],
-        [19, 'He',              None, [None], None, [1],                       (0, [0], 1, [1])],
-        [20, 'He',              None, [None], None, [2],                       'Irreconcilable'],
-        [21, 'He',              None, [None], None, [3],                       (0, [0], 3, [3])],
-        [22, 'He',              None, [None], None, [5],                       'Irreconcilable'],
-        [23, 'He',              None, [-1], None, [2],                         (-1, [-1], 2, [2])],
-        [24, 'He',              None, [-2], None, [2],                         'Irreconcilable'],
-        [25, 'He/He',           None, [None, None], None, [1, 1],              (0, [0, 0], 1, [1, 1])],
-        [26, 'He/He',           None, [None, None], None, [3, 1],              (0, [0, 0], 3, [3, 1])],
-        [27, 'He/He',           None, [None, None], None, [1, 3],              (0, [0, 0], 3, [1, 3])],
-        [28, 'He/He',           None, [None, None], None, [3, 3],              (0, [0, 0], 5, [3, 3])],
-        [29, 'He/He',           None, [None, None], 3, [3, 3],                 (0, [0, 0], 3, [3, 3])],
-        [30, 'He/He',           None, [None, None], 2, [3, 3],                 'Irreconcilable'],
-        [31, 'H',               None, [None], None, [None],                    (0, [0], 2, [2])],
-        [32, 'H',               1, [None], None, [None],                       (1, [1], 1, [1])],
-        [33, 'H',               None, [-1], None, [None],                      (-1, [-1], 1, [1])],
-        [34, 'funnyH',          None, [None], None, [None],                    (0, [0], 1, [1])],
-        [35, 'funnierH',        None, [None], None, [None],                    'Irreconcilable'],
-        [36, 'H/H',             None, [None, None], None, [None, None],        (0, [0, 0], 3, [2, 2])],
-        [37, 'H/He',            None, [None, None], None, [None, None],        (0, [0, 0], 2, [2, 1])],
-        [38, 'H/He',            None, [1, 1], None, [None, None],              (2, [1, 1], 2, [1, 2])],
-        [39, 'H/He',            -2, [-1, None], None, [None, None],            (-2, [-1, -1], 2, [1, 2])],
-        [40, 'H/He/Na/Ne',      None, [1, None, 1, None], None, [None, None, None, None], (2, [1, 0, 1, 0], 1, [1, 1, 1, 1])],
-        [41, 'H/He/Na/Ne',      None, [-1, None, 1, None], None, [None, None, None, None], (0, [-1, 0, 1, 0], 1, [1, 1, 1, 1])],
-        [42, 'H/He/Na/Ne',      2, [None, None, 1, None], None, [None, None, None, None], (2, [1, 0, 1, 0], 1, [1, 1, 1, 1])],
-        [43, 'H/He/Na/Ne',      3, [None, None, 1, None], None, [None, None, None, None], (3, [0, 2, 1, 0], 2, [2, 1, 1, 1])],
-        [44, 'H/He',            None, [1, None], None, [2, None],              'Irreconcilable'],
-        [45, 'H/He',            None, [None, 0], None, [None, 2],              'Irreconcilable'],
-        [46, 'H/He',            None, [None, -1], None, [None, 3],             'Irreconcilable'],
-        [47, 'H/He/Na/Ne',      None, [None, 1, 0, 1], None, [None, None, None, None], (2, [0, 1, 0, 1], 5, [2, 2, 2, 2])],
-        [48, 'H/He/Na/Ne',      None, [None, 1, 0, None], None, [None, None, None, None], (1, [0, 1, 0, 0], 4, [2, 2, 2, 1])],
-        [49, 'H/He/Na/Ne',      None, [None, 1, 0, None], None, [None, None, 4, None], (1, [0, 1, 0, 0], 6, [2, 2, 4, 1])],
-        [50, 'He/He/He',        0, [None, None, 1], None, [1, None, 2],        (0, [0, -1, 1], 3, [1, 2, 2])],
-        [51, 'N/N/N',           None, [1, 1, 1], 3, [None, 3, None],           (3, [1, 1, 1], 3, [1, 3, 1])],
-        [52, 'N/N/N',           None, [1, 1, 1], 3, [None, None, None],        (3, [1, 1, 1], 3, [3, 1, 1])],
-        [53, 'N/N/N',           None, [None, None, None], 3, [None, None, 2],  'Irreconcilable'],
-        [54, 'N/N/N',           1, [None, -1, None], 3, [None, None, 2],       (1, [2, -1, 0], 3, [2, 1, 2])],
-        [55, 'N/Ne/N',          1, [None, None, None], 4, [None, 3, None],     (1, [1, 0, 0], 4, [1, 3, 2])],
-        [56, 'N/Ne/N',          None, [None, None, 1], 4, [None, 3, None],     (1, [0, 0, 1], 4, [2, 3, 1])],
-        [57, 'He/He',           None, [-1, 1], None, [None, None],             (0, [-1, 1], 3, [2, 2])],
-
-        [58, 'Gh',             1, [None], None, [None],                       'Irreconcilable'],
-        [59, 'Gh',             -1, [None], None, [None],                      'Irreconcilable'],
-        [60, 'Gh',             None, [None], 3, [None],                       'Irreconcilable'],
-        [61, 'He/Gh',          None, [2, None], None, [None, None],           (2, [2, 0], 1, [1, 1])],
-        [62, 'Gh/He',          None, [2, None], None, [None, None],           'Irreconcilable'],
-        [63, 'Gh/He/Ne',       2, [None, -2, None], None, [None, None, None], (2, [0, -2, 4], 1, [1, 1, 1])],
-        [64, 'Gh/He/Gh',       1, [None, None, None], None, [None, None, None], (1, [0, 1, 0], 2, [1, 2, 1])],
-            ]  # yapf: disable
-
-    # Notes
-    #  9 - residual +4 distributes to first fragment able to wholly accept it (He+4 is no-go)
-    # 10 - residual +4 unsuited for only open fragment, He, so irreconcilable
-    # 11 - non-positive multiplicity
-    # 20 - doublet non consistent with closed-shell, neutral default charge
-    # 22 - insufficient electrons for pentuplet
-    # 24 - doublet not consistent with even charge
-    # 30 - bad parity btwn mult and total # electrons
-    # 35 - insufficient electrons
-    # 55 - both (1, (1, 0.0, 0.0), 4, (1, 3, 2)) and (1, (0.0, 0.0, 1), 4, (2, 3, 1)) plausible
-
-    systemtranslator = {
-        'He': (np.array([2]), np.array([])),
-        'He/He': (np.array([2, 2]), np.array([1])),
-        'Ne/He/He': (np.array([10, 2, 2]), np.array([1, 2])),
-        'He/He/Ne': (np.array([2, 2, 10]), np.array([1, 2])),
-        'Ne/Ne': (np.array([10, 10]), np.array([1])),
-        'He/He/He': (np.array([2, 2, 2]), np.array([1, 2])),
-        'H': (np.array([1]), np.array([])),
-        'funnyH': (np.array([0]), np.array([])),  # has no electrons
-        'funnierH': (np.array([-1]), np.array([])),  # has positron
-        'H/H': (np.array([1, 1]), np.array([1])),
-        'H/He': (np.array([1, 2]), np.array([1])),
-        'H/He/Na/Ne': (np.array([1, 2, 11, 10]), np.array([1, 2, 3])),
-        'N/N/N': (np.array([7, 7, 7]), np.array([1, 2])),
-        'N/Ne/N': (np.array([7, 10, 7]), np.array([1, 2])),
-        'He/Gh': (np.array([2, 0]), np.array([1])),
-        'Gh/He': (np.array([0, 2]), np.array([1])),
-        'Gh': (np.array([0, 0]), np.array([])),
-        'Gh/He/Ne': (np.array([0, 0, 2, 10]), np.array([2, 3])),
-        'Gh/He/Gh': (np.array([0, 2, 0]), np.array([1, 2])),
-    }
-
-    verbose = 0
-    keys = ['molecular_charge', 'fragment_charges', 'molecular_multiplicity', 'fragment_multiplicities']
-    for test in tests:
-        system = systemtranslator[test[1]]
-        try:
-            ans = validate_and_fill_chgmult(system[0], system[1], test[2], test[3], test[4], test[5], verbose=verbose)
-        except ValidationError as err:
-            if test[6] == 'Irreconcilable':
-                #qcdb.compare_integers(1, 1, """{:3}. {}: {}, {}, {}, {} --> {}""".format(*test))
-                compare_integers(1, 1, """{:3}. {}: {}, {}, {}, {} --> {}""".format(*test))
-            else:
-                raise err
-        else:
-            #qcdb.compare_integers(ans == dict(zip(keys, test[6])), 1,
-            compare_integers(ans == dict(zip(keys, test[6])), 1, """{:3}. {}: {}, {}, {}, {} --> {}""".format(*test))

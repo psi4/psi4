@@ -57,6 +57,71 @@ def reconcile_nucleus(A=None,
         real/ghost.
         user portion of `label` if present, else ''.
 
+    Examples
+    --------
+    >>> reconcile_nucleus(E='co')
+    >>> reconcile_nucleus(Z=27)
+    >>> reconcile_nucleus(A=59, Z=27)
+    >>> reconcile_nucleus(E='cO', mass=58.933195048)
+    >>> reconcile_nucleus(A=59, Z=27, E='CO')
+    >>> reconcile_nucleus(A=59, E='cO', mass=58.933195048)
+    >>> reconcile_nucleus(label='co')
+    >>> reconcile_nucleus(label='59co')
+    >>> reconcile_nucleus(label='co@58.933195048')
+    >>> reconcile_nucleus(A=59, Z=27, E='cO', mass=58.933195048, label='co@58.933195048')
+    >>> reconcile_nucleus(A=59, Z=27, E='cO', mass=58.933195048, label='27@58.933195048')
+    >>> reconcile_nucleus(label='27')
+    59, 27, 'Co', 58.933195048, True, ''
+
+    >>> reconcile_nucleus(label='co_miNe')
+    >>> reconcile_nucleus(label='co_mIne@58.933195048')
+    59, 27, 'Co', 58.933195048, True, '_mine'
+
+    >>> reconcile_nucleus(E='cO', mass=58.933)
+    >>> reconcile_nucleus(label='cO@58.933')
+    59, 27, 'Co', 58.933, True, ''
+    >>> assert 59, 27, 'Co', 58.933, True, '' == reconcile_nucleus(E='cO', mass=58.933, mtol=1.e-4))
+    AssertionError
+
+    >>> reconcile_nucleus(E='Co', A=60)
+    >>> reconcile_nucleus(Z=27, A=60, real=True)
+    >>> reconcile_nucleus(E='Co', A=60)
+    >>> reconcile_nucleus(Z=27, mass=59.933817059)
+    >>> reconcile_nucleus(A=60, Z=27, mass=59.933817059)
+    >>> reconcile_nucleus(label='60Co')
+    >>> reconcile_nucleus(label='27', mass=59.933817059)
+    >>> reconcile_nucleus(label='Co', mass=59.933817059)
+    >>> reconcile_nucleus(A=60, label='Co')
+    60, 27, 'Co', 59.933817059, True, ''
+
+    >>> reconcile_nucleus(E='Co', A=60, real=False))
+    >>> reconcile_nucleus(A=60, Z=27, mass=59.933817059, real=0))
+    >>> reconcile_nucleus(label='@60Co'))
+    >>> reconcile_nucleus(label='Gh(27)', mass=59.933817059))
+    >>> reconcile_nucleus(label='@Co', mass=59.933817059))
+    >>> reconcile_nucleus(A=60, label='Gh(Co)'))
+    60, 27, 'Co', 59.933817059, False, ''
+
+    >>> reconcile_nucleus(Z=27, mass=200, nonphysical=True)
+    60, 27, 'Co', 200.00000000, True, ''
+
+    >>> reconcile_nucleus(mass=60.6, Z=27)
+    >>> reconcile_nucleus(mass=60.6, E='Co')
+    >>> reconcile_nucleus(mass=60.6, label='27')
+    >>> reconcile_nucleus(label='Co@60.6')
+    -1, 27, 'Co', 60.6, True, ''
+
+    >>> reconcile_nucleus(mass=60.6, Z=27, A=61))
+    >>> reconcile_nucleus(A=80, Z=27)
+    >>> reconcile_nucleus(Z=27, mass=200)
+    >>> reconcile_nucleus(Z=27, mass=-200, nonphysical=True)
+    >>> reconcile_nucleus(Z=-27, mass=200, nonphysical=True)
+    >>> reconcile_nucleus(Z=1, label='he')
+    >>> reconcile_nucleus(A=4, label='3he')
+    >>> reconcile_nucleus(label='@U', real=True)
+    >>> reconcile_nucleus(label='U', real=False)
+    ValidationError
+
     """
 
     # <<< define functions
@@ -265,6 +330,44 @@ def parse_nucleus_label(label):
     ValidationError
         If `label` does not match NUCLEUS.
 
+    Examples
+    --------
+    >>> parse_nucleus_label('@ca_miNe')
+    None, None, 'ca', None False, '_miNe'
+
+    >>> parse_nucleus_label('Gh(Ca_mine)')
+    None, None, 'Ca', None '_mine', False
+
+    >>> parse_nucleus_label('@Ca_mine@1.07')
+    None, None, 'Ca', 1.07 False, '_mine'
+
+    >>> parse_nucleus_label('Gh(cA_MINE@1.07)')
+    None, None, 'cA', 1.07 False, '_MINE'
+
+    >>> parse_nucleus_label('@40Ca_mine@1.07')
+    40, None, 'Ca', 1.07 False, '_mine'
+
+    >>> parse_nucleus_label('Gh(40Ca_mine@1.07)')
+    40, None, 'Ca', 1.07 False, '_mine'
+
+    >>> parse_nucleus_label('444lu333@4.0')
+    444, None, 'lu', 4.0 True, '333'
+
+    >>> parse_nucleus_label('@444lu333@4.4')
+    444, None, 'lu', 4.4 False, '333'
+
+    >>> parse_nucleus_label('8i')
+    8, None, 'i', None True, None
+
+    >>> parse_nucleus_label('53_mI4')
+    None, 53, None, None True, '_mI4'
+
+    >>> parse_nucleus_label('@5_MINEs3@4.4')
+    None, 5, None, 4.4 False, '_MINEs3'
+
+    >>> parse_nucleus_label('Gh(555_mines3@0.1)')
+    None, 555, None, 0.1 False, '_mines3'
+
     """
     nucleus = re.compile(r'\A' + regex.NUCLEUS + r'\Z', re.IGNORECASE | re.VERBOSE)
     matchobj = nucleus.match(label)
@@ -299,224 +402,3 @@ def parse_nucleus_label(label):
         raise ValidationError("""Nucleus label is not parseable: {}""".format(label))
 
     return A, Z, E, mass, real, user
-
-
-if __name__ == "__main__":
-
-    # NOTE: to run tests as python module, comment out relative imports at top
-    import qcdb
-    from qcdb import periodictable
-    from qcdb.exceptions import *
-    from qcdb.molparse import regex
-
-    co_dominant = (59, 27, 'Co', 58.933195048, True, '')
-    co_dominant_mine = (59, 27, 'Co', 58.933195048, True, '_mine')
-    assert (co_dominant == reconcile_nucleus(E='co'))
-    assert (co_dominant == reconcile_nucleus(Z=27))
-    assert (co_dominant == reconcile_nucleus(A=59, Z=27))
-    assert (co_dominant == reconcile_nucleus(E='cO', mass=58.933195048))
-    assert (co_dominant == reconcile_nucleus(A=59, Z=27, E='CO'))
-    assert (co_dominant == reconcile_nucleus(A=59, E='cO', mass=58.933195048))
-    assert (co_dominant == reconcile_nucleus(label='co'))
-    assert (co_dominant == reconcile_nucleus(label='59co'))
-    assert (co_dominant == reconcile_nucleus(label='co@58.933195048'))
-    assert (co_dominant == reconcile_nucleus(A=59, Z=27, E='cO', mass=58.933195048, label='co@58.933195048'))
-    assert (co_dominant == reconcile_nucleus(A=59, Z=27, E='cO', mass=58.933195048, label='27@58.933195048'))
-    assert (co_dominant == reconcile_nucleus(label='27'))
-    assert (co_dominant_mine == reconcile_nucleus(label='co_miNe'))
-    assert (co_dominant_mine == reconcile_nucleus(label='co_mIne@58.933195048'))
-
-    co_dominant_shortmass = (59, 27, 'Co', 58.933, True, '')
-    assert (co_dominant_shortmass == reconcile_nucleus(E='cO', mass=58.933))
-    assert (co_dominant_shortmass == reconcile_nucleus(label='cO@58.933'))
-    try:
-        assert (co_dominant_shortmass == reconcile_nucleus(E='cO', mass=58.933, mtol=1.e-4))
-    except AssertionError:
-        pass
-    try:
-        assert (co_dominant_shortmass == reconcile_nucleus(label='27@58.933', mtol=1.e-4))
-    except AssertionError:
-        pass
-
-    co60 = (60, 27, 'Co', 59.933817059, True, '')
-    assert (co60 == reconcile_nucleus(E='Co', A=60))
-    assert (co60 == reconcile_nucleus(Z=27, A=60, real=True))
-    assert (co60 == reconcile_nucleus(E='Co', A=60))
-    assert (co60 == reconcile_nucleus(Z=27, mass=59.933817059))
-    assert (co60 == reconcile_nucleus(A=60, Z=27, mass=59.933817059))
-    assert (co60 == reconcile_nucleus(label='60Co'))
-    assert (co60 == reconcile_nucleus(label='27', mass=59.933817059))
-    assert (co60 == reconcile_nucleus(label='Co', mass=59.933817059))
-    assert (co60 == reconcile_nucleus(A=60, label='Co'))
-
-    co60ghost = (60, 27, 'Co', 59.933817059, False, '')
-    assert (co60ghost == reconcile_nucleus(E='Co', A=60, real=False))
-    assert (co60ghost == reconcile_nucleus(A=60, Z=27, mass=59.933817059, real=0))
-    assert (co60ghost == reconcile_nucleus(label='@60Co'))
-    assert (co60ghost == reconcile_nucleus(label='Gh(27)', mass=59.933817059))
-    assert (co60ghost == reconcile_nucleus(label='@Co', mass=59.933817059))
-    assert (co60ghost == reconcile_nucleus(A=60, label='Gh(Co)'))
-
-    co_unspecified = (-1, 27, 'Co', 60.6, True, '')
-    assert (co_unspecified == reconcile_nucleus(mass=60.6, Z=27))
-    assert (co_unspecified == reconcile_nucleus(mass=60.6, E='Co'))
-    assert (co_unspecified == reconcile_nucleus(mass=60.6, label='27'))
-    assert (co_unspecified == reconcile_nucleus(label='Co@60.6'))
-    try:
-        assert (co_unspecified == reconcile_nucleus(mass=60.6, Z=27, A=61))
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(A=80, Z=27)
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(Z=27, mass=200)
-    except ValidationError:
-        pass
-
-    reconcile_nucleus(Z=27, mass=200, nonphysical=True)
-
-    try:
-        reconcile_nucleus(Z=27, mass=-200, nonphysical=True)
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(Z=-27, mass=200, nonphysical=True)
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(Z=1, label='he')
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(A=4, label='3he')
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(label='@U', real=True)
-    except ValidationError:
-        pass
-
-    try:
-        reconcile_nucleus(label='U', real=False)
-    except ValidationError:
-        pass
-
-    print('All reconcile_nucleus tests pass')
-
-    label_tests = {
-        '@ca_miNe': {
-            'E': 'ca',
-            'Z': None,
-            'user': '_miNe',
-            'A': None,
-            'real': False,
-            'mass': None
-        },
-        'Gh(Ca_mine)': {
-            'E': 'Ca',
-            'Z': None,
-            'user': '_mine',
-            'A': None,
-            'real': False,
-            'mass': None
-        },
-        '@Ca_mine@1.07': {
-            'E': 'Ca',
-            'Z': None,
-            'user': '_mine',
-            'A': None,
-            'real': False,
-            'mass': 1.07
-        },
-        'Gh(cA_MINE@1.07)': {
-            'E': 'cA',
-            'Z': None,
-            'user': '_MINE',
-            'A': None,
-            'real': False,
-            'mass': 1.07
-        },
-        '@40Ca_mine@1.07': {
-            'E': 'Ca',
-            'Z': None,
-            'user': '_mine',
-            'A': 40,
-            'real': False,
-            'mass': 1.07
-        },
-        'Gh(40Ca_mine@1.07)': {
-            'E': 'Ca',
-            'Z': None,
-            'user': '_mine',
-            'A': 40,
-            'real': False,
-            'mass': 1.07
-        },
-        '444lu333@4.0': {
-            'E': 'lu',
-            'Z': None,
-            'user': '333',
-            'A': 444,
-            'real': True,
-            'mass': 4.0
-        },
-        '@444lu333@4.4': {
-            'E': 'lu',
-            'Z': None,
-            'user': '333',
-            'A': 444,
-            'real': False,
-            'mass': 4.4
-        },
-        '8i': {
-            'E': 'i',
-            'Z': None,
-            'user': None,
-            'A': 8,
-            'real': True,
-            'mass': None
-        },
-        '53_mI4': {
-            'Z': 53,
-            'E': None,
-            'user': '_mI4',
-            'A': None,
-            'real': True,
-            'mass': None
-        },
-        '@5_MINEs3@4.4': {
-            'Z': 5,
-            'E': None,
-            'user': '_MINEs3',
-            'A': None,
-            'real': False,
-            'mass': 4.4
-        },
-        'Gh(555_mines3@0.1)': {
-            'Z': 555,
-            'E': None,
-            'user': '_mines3',
-            'A': None,
-            'real': False,
-            'mass': 0.1
-        },
-    }
-
-    for test, ans in label_tests.items():
-        lbl_A, lbl_Z, lbl_E, lbl_mass, lbl_real, lbl_user = parse_nucleus_label(test)
-
-        qcdb.compare_integers(ans['real'], lbl_real, test + " real")
-        qcdb.compare_integers(ans['A'], lbl_A, test + " A")
-        qcdb.compare_integers(ans['Z'], lbl_Z, test + " Z")
-        qcdb.compare_strings(ans['E'], lbl_E, test + " symbol")
-        qcdb.compare_strings(ans['user'], lbl_user, test + " user")
-        qcdb.compare_values(ans['mass'], lbl_mass, 6, test + " mass", passnone=True)
-    print('All parse_nucleus_label tests pass')
