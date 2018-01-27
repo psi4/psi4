@@ -140,8 +140,13 @@ void DF_Helper::initialize() {
         error << "DF_Helper:initialize: specified method (" << method_ << ") is incorrect";
         throw PSIEXCEPTION(error.str().c_str());
     }
+
+    // workflow holders
     direct_iaQ_ = (!method_.compare("DIRECT_iaQ") ? true : false);
     direct_ = (!method_.compare("DIRECT") ? true : false);
+
+    // use permutational symmetry for computations if only Q-blocking occurs
+    //symm_compute_ = (direct_iaQ_ || direct_);
 
     // if metric power is not zero, prepare it
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
@@ -263,16 +268,30 @@ void DF_Helper::prepare_sparsity() {
     }
 
     // build indexing skips
-    big_skips_[0] = 0;
-    size_t coltots = 0;
-    for (size_t j = 0; j < nao_; j++) {
-        size_t cols = small_skips_[j];
-        size_t size = cols * naux_;
-        coltots += cols;
-        big_skips_[j + 1] = size + big_skips_[j];
+    if(direct_iaQ_){
+        // building big skips based on 
+        big_skips_[0] = 0;
+        size_t coltots = 0;
+        for (size_t j = 0; j < nao_; j++) {
+            size_t cols = small_skips_[j];
+            size_t size = cols * naux_;
+            coltots += cols;
+            big_skips_[j + 1] = size + big_skips_[j];
+        }
+        small_skips_[nao_] = coltots;
+    } else {
+        big_skips_[0] = 0;
+        size_t coltots = 0;
+        for (size_t j = 0; j < nao_; j++) {
+            size_t cols = small_skips_[j];
+            size_t size = cols * naux_;
+            coltots += cols;
+            big_skips_[j + 1] = size + big_skips_[j];
+        }
+        small_skips_[nao_] = coltots;
     }
-    small_skips_[nao_] = coltots;
 
+    // symmetric indexing skips
     symm_skips_.reserve(nao_);
     symm_sizes_.reserve(nao_);
     for (size_t i = 0; i < nao_; i++) {
@@ -289,6 +308,7 @@ void DF_Helper::prepare_sparsity() {
     for (size_t i = 1; i < nao_ + 1; i++) symm_agg_sizes_[i] = symm_agg_sizes_[i - 1] + symm_sizes_[i - 1];
 }
 void DF_Helper::prepare_AO() {
+
     // prepare eris
     size_t rank = 0;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
@@ -779,6 +799,94 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, co
         }
     }
 }
+
+SharedMatrix DF_Helper::check_function(){
+    
+    // get each thread an eri object
+    size_t rank = 0;
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
+#pragma omp parallel for schedule(static) num_threads(nthreads_) private(rank)
+    for (size_t i = 0; i < nthreads_; i++) {
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    }
+
+    SharedMatrix M(new Matrix("M", naux_, nao_ * nao_));
+    double* Mp = M->pointer()[0];
+    compute_dense_Qpq_blocking_Q(0, Qshells_ - 1, Mp, eri); 
+    return M;
+
+}
+
+void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+                             std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
+    
+    // Here, we compute dense AO integrals in the Qpq memory layout.
+    // Sparsity and permutational symmetry are used in the computation,
+    // but not in the resulting tensor.
+ 
+    size_t begin = Qshell_aggs_[start];
+    size_t end = Qshell_aggs_[stop + 1] - 1;
+    size_t block_size = end - begin + 1;
+
+    // stripe the buffer
+    ::memset(Mp, 0, sizeof(double) * block_size * nao_ * nao_);
+
+    // prepare eri buffers
+    size_t nthread = nthreads_;
+    if (eri.size() != nthreads_) nthread = eri.size();
+
+    // TODO ~ should buffers be reallocated like this???? FIXME
+    int rank = 0;
+    std::vector<const double*> buffer(nthread);
+#pragma omp parallel private(rank) num_threads(nthread)
+    {
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        buffer[rank] = eri[rank]->buffer();
+    }
+
+    size_t MU, nummu, NU, numnu, Pshell, numP, mu, omu, nu, onu, P, PHI;
+#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, \
+                                 rank) schedule(guided) num_threads(nthreads_)
+    for (MU = 0; MU < pshells_; MU++) {
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        nummu = primary_->shell(MU).nfunction();
+        for (NU = 0; NU < pshells_; NU++) {
+            numnu = primary_->shell(NU).nfunction();
+            if (!schwarz_shell_mask_[MU * pshells_ + NU]) {
+                continue;
+            }
+            for (Pshell = start; Pshell <= stop; Pshell++) {
+                PHI = aux_->shell(Pshell).function_index();
+                numP = aux_->shell(Pshell).nfunction();
+                eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                for (mu = 0; mu < nummu; mu++) {
+                    omu = primary_->shell(MU).function_index() + mu;
+                    for (nu = 0; nu < numnu; nu++) {
+                        onu = primary_->shell(NU).function_index() + nu;
+                        if (!schwarz_fun_mask_[omu * nao_ + onu]) {
+                            continue;
+                        }
+                        for (P = 0; P < numP; P++) {
+                            Mp[(PHI + P - begin) * nao_ * nao_ + omu * nao_ + onu] =
+                            Mp[(PHI + P - begin) * nao_ * nao_ + onu * nao_ + omu] =
+                            buffer[rank][P * nummu * numnu + mu * numnu + nu];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void DF_Helper::compute_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = Qshell_aggs_[start];
@@ -1428,17 +1536,21 @@ void DF_Helper::transform() {
             // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
             // get AO chunk according to directives
-            timer_on("DFH: Grabbing AOs");
             if (AO_core_) {
                 Mp = Ppq_.data();
+            } else if (direct_iaQ_) {
+                timer_on("DFH: Total Workflow");
+                compute_dense_Qpq_blocking_Q(start, stop, Mp, eri);
+                timer_off("DFH: Total Workflow");
             } else if (direct_) {
                 timer_on("DFH: Total Workflow");
                 compute_pQq_blocking_Q(start, stop, Mp, eri);
                 timer_off("DFH: Total Workflow");
             } else {
+                timer_on("DFH: Grabbing AOs");
                 grab_AO(start, stop, Mp);
+                timer_off("DFH: Grabbing AOs");
             }
-            timer_off("DFH: Grabbing AOs");
 
             // stride through best spaces
             for (size_t i = 0, count = 0; i < bspace_.size(); count += strides_[i], i++) {

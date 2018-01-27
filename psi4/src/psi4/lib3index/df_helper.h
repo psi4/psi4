@@ -245,6 +245,9 @@ class DF_Helper {
     void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
                   std::vector<SharedMatrix> K);
 
+    // FIXME
+    SharedMatrix check_function();
+
    protected:
     // => basis sets <=
     std::shared_ptr<BasisSet> primary_;
@@ -259,6 +262,7 @@ class DF_Helper {
     std::string method_ = "STORE";
     bool direct_;
     bool direct_iaQ_;
+    bool symm_compute_;
     bool AO_core_ = 1;
     bool MO_core_ = 0;
     size_t nthreads_ = 1;
@@ -282,7 +286,7 @@ class DF_Helper {
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
-    void compute_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+    void compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
