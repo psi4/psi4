@@ -909,7 +909,7 @@ void export_mints(py::module& m) {
              "First nuclear derivative perturb integrals")
         .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
         .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad,
-             "First nuclear derivative T + V + Perturb integrals");
+             "First nuclear derivative T + V + Perturb integrals")
 
         // First and second derivatives of one and two electron integrals in AO and MO basis.
         .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices") 
