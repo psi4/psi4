@@ -120,15 +120,25 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
     std::tuple<std::string, std::string> files(pfilename.c_str(), filename.c_str());
     files_[name] = files;
 
-    std::tuple<size_t, size_t, size_t> sizes;
-    if (op) {
-        sizes = std::make_tuple(a1, a2, a0);
+    if(direct_iaQ_){
+    
+        sizes_[pfilename] = std::make_tuple(a0, a1, a2);
+        sizes_[filename ] = std::make_tuple(a1, a2, a0);
+        
     } else {
-        sizes = std::make_tuple(a0, a1, a2);
+
+        std::tuple<size_t, size_t, size_t> sizes;
+        if (op) {
+            sizes = std::make_tuple(a1, a2, a0);
+        } else {
+            sizes = std::make_tuple(a0, a1, a2);
+        }
+    
+        sizes_[pfilename] = sizes;
+        sizes_[filename] = sizes;
+    
     }
 
-    sizes_[pfilename] = sizes;
-    sizes_[filename] = sizes;
 }
 void DF_Helper::initialize() {
     
@@ -509,10 +519,18 @@ std::pair<size_t, size_t> DF_Helper::Qshell_blocks_for_transform(const size_t me
         begin = Qshell_aggs_[i];
         end = Qshell_aggs_[i + 1] - 1;
         tmpbs += end - begin + 1;
-        current = (end - begin + 1) * small_skips_[nao_];
-        total += current;
-        total = (AO_core_ ? big_skips_[nao_] : total);
 
+        if(direct_iaQ_) {
+            // the direct_iaQ method does not use sparse storage
+            current = (end - begin + 1) * nao_ * nao_;
+            total += current;
+            total = (AO_core_ ? naux_ * nao_ * nao_ : total);
+        } else {
+            current = (end - begin + 1) * small_skips_[nao_];
+            total += current;
+            total = (AO_core_ ? big_skips_[nao_] : total);
+        }
+    
         size_t constraint = total + (wtmp * nao_ + 2 * wfinal) * tmpbs + extra;
         // AOs + worst half transformed + worst final
         if (constraint > mem || i == Qshells_ - 1) {
@@ -1299,6 +1317,7 @@ void DF_Helper::add_space(std::string key, SharedMatrix M) {
     spaces_[key] = std::make_tuple(M, a1);
 }
 void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2, std::string order) {
+    
     if (spaces_.find(key1) == spaces_.end()) {
         std::stringstream error;
         error << "DF_Helper:add_transformation: first space (" << key1 << "), is not in space list!";
@@ -1328,6 +1347,7 @@ void DF_Helper::add_transformation(std::string name, std::string key1, std::stri
     transf_[name] = std::make_tuple(key1, key2, op);
 }
 void DF_Helper::clear_spaces() {
+    
     // clear spaces
     spaces_.clear();
     sorted_spaces_.clear();
@@ -1464,7 +1484,7 @@ void DF_Helper::transform() {
     size_t wfinal = std::get<1>(info_);
 
     // prep AO file stream
-    if (!direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
+    if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
 
     // blocking
     std::vector<std::pair<size_t, size_t>> Qsteps;
@@ -1551,6 +1571,7 @@ void DF_Helper::transform() {
                 grab_AO(start, stop, Mp);
                 timer_off("DFH: Grabbing AOs");
             }
+    
 
             // stride through best spaces
             for (size_t i = 0, count = 0; i < bspace_.size(); count += strides_[i], i++) {
@@ -1561,11 +1582,16 @@ void DF_Helper::transform() {
                 double* Bp = std::get<0>(spaces_[bspace])->pointer()[0];
 
                 // perform first contraction
-                // (bq)(p|Qq)->(p|Qb)
                 timer_on("DFH: Total Workflow");
                 timer_on("DFH: Total Transform");
                 timer_on("DFH: First Contraction");
-                first_transform_pQq(nao, naux, bsize, bcount, block_size, rank, Mp, Tp, Bp, C_buffers);
+                if (direct_iaQ_) {
+                    // (bq)(Q|pq)->(Q|pb)
+                    C_DGEMM('N', 'N', block_size * nao_, bsize, nao_, 1.0, Mp, nao_, Bp, bsize, 0.0, Tp, bsize);
+                } else {
+                    // (bq)(p|Qq)->(p|Qb)
+                    first_transform_pQq(nao, naux, bsize, bcount, block_size, rank, Mp, Tp, Bp, C_buffers);
+                }
                 timer_off("DFH: First Contraction");
                 timer_off("DFH: Total Transform");
                 timer_off("DFH: Total Workflow");
@@ -1583,24 +1609,44 @@ void DF_Helper::transform() {
                     size_t wsize = std::get<1>(I);
                     double* Wp = std::get<0>(I)->pointer()[0];
 
+                    // grab in-core pointer
+                    if(direct_iaQ_ && MO_core_){
+                        Fp = transf_core_[order_[count + k]].data();
+                    } else if (MO_core_) {
+                        Np = transf_core_[order_[count + k]].data();
+                    }
+    
                     // perform final contraction
                     // (wp)(p|Qb)->(w|Qb)
                     timer_on("DFH: Total Workflow");
                     timer_on("DFH: Total Transform");
                     timer_on("DFH: Second Contraction");
-                    C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
+                    if (direct_iaQ_) {
+                        size_t bump = 0;
+                        if(MO_core_) {
+                            bump = begin * wsize * bsize;
+                        }
+                        // (wp)(Q|pb)->(Q|wb)
+                        #pragma omp parallel for num_threads(nthreads_)
+                        for (size_t i = 0; i < block_size; i++){
+                            C_DGEMM('T', 'N', wsize, bsize, nao_, 1.0, Wp, wsize, &Tp[i * nao_ * bsize], 
+                                bsize, 0.0, &Fp[bump + i * wsize * bsize], bsize);
+                        }
+                    } else {
+                        // (wp)(p|Qb)->(w|Qb)
+                        C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
+                    }
                     timer_off("DFH: Second Contraction");
                     timer_off("DFH: Total Transform");
                     timer_off("DFH: Total Workflow");
                     
-                    // grab in-core pointer
-                    if(MO_core_)
-                        Np = transf_core_[order_[count + k]].data();
-
                     // put the transformations away
-                    put_transformations(naux, begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k, bleft);
-
+                    if (direct_iaQ_) {
+                        put_transformations_Qpq(naux, begin, end, wsize, bsize, Fp, count + k, bleft);
+                    } else {
+                        put_transformations_pQq(naux, begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k, bleft);
+                    }
                 }
             }
         }
@@ -1704,7 +1750,30 @@ void DF_Helper::first_transform_pQq(int nao, int naux, int bsize, int bcount, in
     }
 } 
 
-void DF_Helper::put_transformations(int naux, int begin, int end, int rblock_size, int bcount, 
+void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,  
+    int wsize, int bsize, double* Fp, int ind, bool bleft){
+    
+    // incoming transformed integrals to this function are in a Qpq format. 
+    // if MO_core is on, nothing is necessary
+    // else, the buffers are put to disk.
+
+    if(!MO_core_) {
+        
+        std::string putf = (!direct_ ? std::get<1>(files_[order_[ind]]) : std::get<0>(files_[order_[ind]]));
+        std::string op = "ab";
+        
+        if (bleft) {
+            put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, bsize - 1), 
+                std::make_pair(0, wsize - 1), "wb");
+        } else {
+            put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, wsize - 1), 
+                std::make_pair(0, bsize - 1), "wb");
+        }
+    }
+
+}
+
+void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock_size, int bcount, 
     int wsize, int bsize, double* Np, double* Fp, int ind, bool bleft){
     
     // incoming transformed integrals to this function are in a pQq format. 
