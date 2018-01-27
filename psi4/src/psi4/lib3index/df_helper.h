@@ -53,9 +53,10 @@ class DF_Helper {
 
     /// 
     /// Specify workflow for transforming and contracting integrals
-    /// @param method (STORE or DIRECT) to indicate workflow
-    /// DIRECT: pre-transform integrals before metric contraction 
+    /// @param method (STORE or DIRECT or DIRECT_iaQ) to indicate workflow
     /// STORE: contract and save AO integrals before transforming 
+    /// DIRECT: pre-transform integrals before metric contraction 
+    /// DIRECT_iaQ: special workflow when using integrals of the iaQ form
     /// (defaults to STORE)
     ///
     void set_method(std::string method) { method_ = method; }
@@ -281,6 +282,8 @@ class DF_Helper {
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
+    void compute_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
@@ -289,6 +292,11 @@ class DF_Helper {
                            std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
+
+    // first integral transforms
+    void first_transform_pQq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
+        double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers);
+    
 
     // => index vectors for screened AOs <=
     std::vector<size_t> small_skips_;
