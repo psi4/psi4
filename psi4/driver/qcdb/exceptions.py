@@ -129,3 +129,14 @@ class Dftd3Error(QcdbException):
         QcdbException.__init__(self, msg)
         self.msg = msg
         print('\nDftd3Error: %s\n\n' % (msg))
+
+class TestComparisonError(QcdbException):
+    """Error called when a test case fails due to a failed
+    compare_values() call. Prints error message *msg* to standard
+    output stream and output file.
+
+    """
+    def __init__(self, msg):
+        QcdbException.__init__(self, msg)
+        self.msg = msg
+        print('\nQcdbException: %s\n\n' % msg)

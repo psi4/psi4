@@ -123,26 +123,24 @@ def set_memory(inputval, execute=True):
     >>> psi4.get_memory()
     Out[2]: 30000000000L
 
-    :good examples:
+    >>> # Good examples
+    >>> psi4.set_memory(800000000)        # 800000000
+    >>> psi4.set_memory(2004088624.9)     # 2004088624
+    >>> psi4.set_memory(1.0e9)            # 1000000000
+    >>> psi4.set_memory('600 mb')         # 600000000
+    >>> psi4.set_memory('600.0 MiB')      # 629145600
+    >>> psi4.set_memory('.6 Gb')          # 600000000
+    >>> psi4.set_memory(' 100000000kB ')  # 100000000000
+    >>> psi4.set_memory('2 eb')           # 2000000000000000000
 
-    800000000         # 800000000
-    2004088624.9      # 2004088624
-    1.0e9             # 1000000000
-    '600 mb'          # 600000000
-    '600.0 MiB'       # 629145600
-    '.6 Gb'           # 600000000
-    ' 100000000kB '   # 100000000000
-    '2 eb'            # 2000000000000000000
-
-    :bad examples:
-
-    {}         # odd type
-    ''         # no info
-    "8 dimms"  # unacceptable units
-    "1e5 gb"   # string w/ exponent
-    "5e5"      # string w/o units
-    2000       # mem too small
-    -5e5       # negative (and too small)
+    >>> # Bad examples
+    >>> psi4.set_memory({})         # odd type
+    >>> psi4.set_memory('')         # no info
+    >>> psi4.set_memory("8 dimms")  # unacceptable units
+    >>> psi4.set_memory("1e5 gb")   # string w/ exponent
+    >>> psi4.set_memory("5e5")      # string w/o units
+    >>> psi4.set_memory(2000)       # mem too small
+    >>> psi4.set_memory(-5e5)       # negative (and too small)
 
     """
     # Handle memory given in bytes directly (int or float)
