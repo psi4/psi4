@@ -132,13 +132,14 @@ void polar(void) {
         trace[i] = tensor[i][0][0] + tensor[i][1][1] + tensor[i][2][2];
         outfile->Printf("\n\talpha_(%5.3f) = %20.12f a.u.\n", params.omega[i], trace[i] / 3.0);
 
-         std::string omega_nm_rd;
-         if (params.omega[i] == 0.0)
+        std::string omega_nm_rd;
+        if (params.omega[i] == 0.0) {
             omega_nm_rd = "INF ";
-         else
+        }
+        else {
             /* make sure omega in nm is rounded */
             omega_nm_rd = std::to_string(std::lround(omega_nm));
-
+        }
         if (params.wfn == "CC2") {
             std::stringstream tag;
             tag << "CC2 DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
