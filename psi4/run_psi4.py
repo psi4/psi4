@@ -28,6 +28,7 @@
 # @END LICENSE
 #
 
+import atexit
 import sys
 import os
 import json
@@ -242,7 +243,6 @@ if args["verbose"]:
 
 # Handle Messy
 if args["messy"]:
-    import atexit
 
     if sys.version_info >= (3, 0):
         atexit.unregister(psi4.core.clean)
@@ -252,7 +252,6 @@ if args["messy"]:
                 atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
-import atexit
 atexit.register(psi4.extras.exit_printing)
 
 # Run the program!

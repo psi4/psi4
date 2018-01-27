@@ -156,6 +156,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_bool("PCM", false);
   /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
   options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
+  /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
+  options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
   /*- PCM-CCSD algorithm type. -*/
   options.add_str("PCM_CC_TYPE", "PTE", "PTE");
   /*- The density fitting basis to use in coupled cluster computations. -*/
