@@ -731,29 +731,11 @@ psi4.set_options({'basis':'cc-pvdz',
                   'points': 5,
                   'scf_type': 'pk'})
 
-#def test_psi4_hessian(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
-def test_psi4_hessian_indep(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
-    pmol = psi4.geometry(geom_str)
-    rpmol = psi4.geometry(ref_geom_str)
-    rmsd, mill, aqmol = qcdb.align.B787(rpmol, pmol, atoms_map=True, mols_align=True)
-    apmol = psi4.geometry(aqmol.create_psi4_string_from_molecule())
-    
-    psi4.core.clean()
-    phess, pwfn = psi4.hessian('hf', return_wfn=True, molecule=apmol, dertype=dertype)
-    print(psi4.get_variable('CURRENT ENERGY'))
 
-    sphess = qcdb.vib.hessian_symmetrize(np.asarray(pwfn.hessian()), aqmol)
-    print('Symmetrization non-catastrophic:', np.allclose(np.asarray(phess), sphess, atol=1.0e-1))
-    pvibinfo = psi4.driver.vibanal_wfn(pwfn, hess=sphess)
-    pvibonly = qcdb.vib.filter_nonvib(pvibinfo)
-    
-    psi4.compare_integers(1, qcdb.compare_vibinfos(ref_vibonly, pvibonly, 2, comparison_label, verbose=verbose, forgive=forgive), comparison_label)
-
-#def test_psi4_hessian_new(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
 def test_psi4_hessian(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label, dertype, verbose=1, forgive=None):
     qmol = qcdb.Molecule(geom_str)
     rqmol = qcdb.Molecule(ref_geom_str)
-    rmsd, mill, aqmol = qmol.B787(rqmol, atoms_map=True, mols_align=True)
+    rmsd, mill, aqmol = qmol.B787(rqmol, atoms_map=True, mols_align=True, verbose=verbose-1)
     apmol = psi4.geometry(aqmol.create_psi4_string_from_molecule())
     
     psi4.core.clean()
@@ -837,6 +819,7 @@ test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H1: et
 test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H1: methane', verbose=2, forgive=['gamma'], dertype=1)
 test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H1: ammonia', verbose=1, forgive=['gamma'], dertype=1)
 test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H1: formaldehyde', verbose=1, dertype=1)
+test_psi4_hessian(c4_hooh_xyz, ref_hooh_vibonly, hooh_smol, 2, 'Cfour vs Psi H1: hydrogen peroxide TS', verbose=1, dertype=1)
 
 
 
@@ -847,16 +830,18 @@ test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H0: et
 test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H0: methane', verbose=1, forgive=['gamma'], dertype=0)
 test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H0: ammonia', verbose=1, forgive=['gamma'], dertype=0)
 test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H0: formaldehyde', verbose=1, dertype=0)
+test_psi4_hessian(c4_hooh_xyz, ref_hooh_vibonly, hooh_smol, 2, 'Cfour vs Psi H0: hydrogen peroxide TS', verbose=1, dertype=0)
 
 
 
 # <<<  Section IV: testing Psi4 analytic Hessians vs Cfour  >>>
 
-#test_psi4_hessian(c4_co2_xyz, ref_co2_vibonly, co2_smol, 2, 'Cfour vs Psi H2: carbon dioxide', verbose=1, forgive=['gamma'], dertype=2)
-#test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H2: ethene', verbose=1, dertype=2)
-test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H2: methane', verbose=1, forgive=['gamma'], dertype=2)
+test_psi4_hessian(c4_co2_xyz, ref_co2_vibonly, co2_smol, 2, 'Cfour vs Psi H2: carbon dioxide', verbose=1, forgive=['gamma'], dertype=2)
+test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H2: ethene', verbose=1, dertype=2)
+test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H2: methane', verbose=1, forgive=['gamma', 'q'], dertype=2)
 test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H2: ammonia', verbose=1, forgive=['gamma'], dertype=2)
-#test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H2: formaldehyde', verbose=1, dertype=2)
+test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H2: formaldehyde', verbose=1, dertype=2)
+test_psi4_hessian(c4_hooh_xyz, ref_hooh_vibonly, hooh_smol, 2, 'Cfour vs Psi H2: hydrogen peroxide TS', verbose=1, dertype=2)
 
 
 
@@ -932,7 +917,6 @@ ch4_hf_321g_thermoinfo = {
     'G_corr'  :   qcdb.vib.VibrationAspect('', '',   0.03070183, ''),
     'G_tot'   :   qcdb.vib.VibrationAspect('', '', -39.94617572, ''),
 }
-
 
 qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega'])
 

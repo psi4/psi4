@@ -74,6 +74,9 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             same = all([computed[asp].data[idx] == val for idx, val in enumerate(expected[asp].data)])
             print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
 
+        elif isinstance(expected[asp].data, float):
+            same = abs(expected[asp].data - computed[asp].data) < tol
+            print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
         else:
             same = np.allclose(expected[asp].data, computed[asp].data, atol=tol) and \
                    (expected[asp].data.shape == computed[asp].data.shape)
