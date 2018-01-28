@@ -155,9 +155,6 @@ void DF_Helper::initialize() {
     direct_iaQ_ = (!method_.compare("DIRECT_iaQ") ? true : false);
     direct_ = (!method_.compare("DIRECT") ? true : false);
 
-    // use permutational symmetry for computations if only Q-blocking occurs
-    //symm_compute_ = (direct_iaQ_ || direct_);
-
     // if metric power is not zero, prepare it
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
 
@@ -417,10 +414,24 @@ void DF_Helper::prepare_AO_core() {
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
 
     // allocate final AO vector
-    Ppq_.reserve(big_skips_[nao_]);
+    if (direct_iaQ_) {
+        Ppq_.reserve(naux_ * nao_ * nao_);
+    } else {
+        Ppq_.reserve(big_skips_[nao_]);
+    }
 
     // outfile->Printf("\n    ==> Begin AO Blocked Construction <==\n\n");
-    if (!direct_) {
+    if (direct_iaQ_ || direct_) {
+
+        timer_on("DFH: AO Construction");
+        if(direct_iaQ_) {
+            compute_dense_Qpq_blocking_Q(0, Qshells_ - 1, &Ppq_[0], eri);
+        } else {
+            compute_pQq_blocking_p(0, pshells_ - 1, &Ppq_[0], eri);
+        }        
+        timer_off("DFH: AO Construction");
+
+    } else {
 
         // declare sparse buffer
         std::vector<double> Qpq;
@@ -455,10 +466,6 @@ void DF_Helper::prepare_AO_core() {
         }
         // no more need for metrics
         if (hold_met_) metrics_.clear();
-    } else {
-        timer_on("DFH: AO Construction");
-        compute_pQq_blocking_p(0, pshells_ - 1, &Ppq_[0], eri);
-        timer_off("DFH: AO Construction");
     }
     // outfile->Printf("\n    ==> End AO Blocked Construction <==");
 }
@@ -1516,7 +1523,6 @@ void DF_Helper::print_order() {
 void DF_Helper::transform() {
 
     timer_on("DFH: transform()");
-    
     // outfile->Printf("\n     ==> DF_Helper:--Begin Transformations <==\n\n");
 
     size_t nthreads = nthreads_;
@@ -1630,13 +1636,16 @@ void DF_Helper::transform() {
                 size_t bsize = std::get<1>(spaces_[bspace]);
                 double* Bp = std::get<0>(spaces_[bspace])->pointer()[0];
 
+                // index bump if AOs are in core        
+                size_t bump = (AO_core_ ? bcount * nao_ * nao_ : 0); 
+                
                 // perform first contraction
                 timer_on("DFH: Total Workflow");
                 timer_on("DFH: Total Transform");
                 timer_on("DFH: First Contraction");
                 if (direct_iaQ_) {
                     // (bq)(Q|pq)->(Q|pb)
-                    C_DGEMM('N', 'N', block_size * nao_, bsize, nao_, 1.0, Mp, nao_, Bp, bsize, 0.0, Tp, bsize);
+                    C_DGEMM('N', 'N', block_size * nao_, bsize, nao_, 1.0, &Mp[bump], nao_, Bp, bsize, 0.0, Tp, bsize);
                 } else {
                     // (bq)(p|Qq)->(p|Qb)
                     first_transform_pQq(nao, naux, bsize, bcount, block_size, rank, Mp, Tp, Bp, C_buffers);
@@ -1644,7 +1653,7 @@ void DF_Helper::transform() {
                 timer_off("DFH: First Contraction");
                 timer_off("DFH: Total Transform");
                 timer_off("DFH: Total Workflow");
-
+            
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
                     
@@ -1671,10 +1680,7 @@ void DF_Helper::transform() {
                     timer_on("DFH: Total Transform");
                     timer_on("DFH: Second Contraction");
                     if (direct_iaQ_) {
-                        size_t bump = 0;
-                        if(MO_core_) {
-                            bump = begin * wsize * bsize;
-                        }
+                        size_t bump = (MO_core_ ? begin * wsize * bsize : 0);
                         // (wp)(Q|pb)->(Q|wb)
                         #pragma omp parallel for num_threads(nthreads_)
                         for (size_t i = 0; i < block_size; i++){
@@ -1689,7 +1695,7 @@ void DF_Helper::transform() {
                     timer_off("DFH: Second Contraction");
                     timer_off("DFH: Total Transform");
                     timer_off("DFH: Total Workflow");
-                    
+                   
                     // put the transformations away
                     if (direct_iaQ_) {
                         put_transformations_Qpq(naux, begin, end, wsize, bsize, Fp, count + k, bleft);
@@ -1717,7 +1723,6 @@ void DF_Helper::transform() {
             get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
         } else
             metp = metric_prep_core(mpower_);
-    
 
         if (direct_iaQ_) {
 
@@ -1741,7 +1746,7 @@ void DF_Helper::transform() {
 
             } else {
 
-               // total size allowed, in doubles
+                // total size allowed, in doubles
                 size_t total_mem =
                     (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
 
@@ -1835,7 +1840,7 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
     // incoming transformed integrals to this function are in a Qpq format. 
     // if MO_core is on, nothing is necessary
     // else, the buffers are put to disk.
-
+    
     if(!MO_core_) {
         
         std::string putf = std::get<0>(files_[order_[ind]]);
@@ -1859,7 +1864,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
     // first, the integrals are tranposed to the desired format specified in add_transformation().
     // if MO_core is on, then the LHS buffers are final destinations.
     // else, the buffers are put to disk.
-
+    
     // setup 
     int lblock_size = rblock_size;
     std::string putf, op;
