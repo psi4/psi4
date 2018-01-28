@@ -1176,6 +1176,55 @@ std::string DF_Helper::compute_metric(double pow) {
     }
     return return_metfile(pow);
 }
+void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t tots) {
+    
+    std::string getf = std::get<0>(files_[file]);
+    std::string putf = std::get<1>(files_[file]);
+
+    size_t Q = std::get<0>(sizes_[getf]);
+    size_t l = std::get<1>(sizes_[getf]);
+    size_t r = std::get<2>(sizes_[getf]);
+    size_t count = 0;
+    size_t maxim = 0;
+
+    std::string op = "wb";
+
+    // determine blocking, block through l
+    std::vector<std::pair<size_t, size_t>> steps;
+    for (size_t i = 0; i < l; i++) {
+        count++;
+        if (tots < count * Q * r || i == l - 1) {
+            if (count == 1 && i != l - 1) {
+                std::stringstream error;
+                error << "DF_Helper:contract_metric: not enough memory.";
+                throw PSIEXCEPTION(error.str().c_str());
+            }
+            if (tots < count * Q * r) {
+                maxim = (maxim < count ? count - 1 : maxim);
+                steps.push_back(std::make_pair(i - count + 1, i - 1));
+                i--;
+            } else {
+                maxim = (maxim < count ? count : maxim);
+                steps.push_back(std::make_pair(i - count + 1, i));
+            }
+            count = 0;
+        }
+    }
+    
+    for (size_t i = 0; i < steps.size(); i++) {
+        size_t begin = std::get<0>(steps[i]);
+        size_t end = std::get<1>(steps[i]);
+        size_t bs = end - begin + 1;
+        
+        get_tensor_(getf, Mp, 0, Q - 1, begin * r, (end + 1) * r - 1);
+        timer_on("DFH: Total Workflow");
+        C_DGEMM('T', 'N', bs*r, Q, Q, 1.0, Mp, bs*r, metp, Q, 0.0, Fp, Q);
+        timer_off("DFH: Total Workflow");
+        put_tensor(putf, Fp, begin, end, 0, r * Q - 1, op);
+    }
+    
+}
+
 void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t tots) {
     std::string getf = std::get<0>(files_[file]);
     std::string putf = std::get<1>(files_[file]);
@@ -1654,67 +1703,97 @@ void DF_Helper::transform() {
 
     // outfile->Printf("\n     ==> DF_Helper:--End Transformations (disk)<==\n\n");
 
-    if (direct_) {
+    // transformations complete, time for metric contractions
+    
+    if(direct_iaQ_ || direct_) {
+            
+        // prepare metric 
+        double* metp;
+        std::vector<double> metric;
+        if (!hold_met_) {
+            metric.reserve(naux_ * naux_);
+            metp = metric.data();
+            std::string filename = return_metfile(mpower_);
+            get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
+        } else
+            metp = metric_prep_core(mpower_);
+    
 
-        if(!MO_core_){
-         
-           // total size allowed, in doubles
-            size_t total_mem =
-                (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
+        if (direct_iaQ_) {
 
-            std::vector<double> M;
-            std::vector<double> F;
-            M.reserve(total_mem);
-            F.reserve(total_mem);
-            double* Mp = M.data();
-            double* Fp = F.data();
-            double* metp;
+            if(MO_core_) {
+                
+                std::vector<double> N;
+                N.reserve(naux * wfinal);
+                double* Np = N.data();
 
-            if (hold_met_) {
-                metp = metric_prep_core(mpower_);
-                for (std::vector<std::string>::iterator itr = order_.begin(); itr != order_.end(); itr++)
-                    contract_metric(*itr, metp, Mp, Fp, total_mem);
+                for (auto& kv : transf_core_) {
+                    size_t l = std::get<0>(sizes_[std::get<1>(files_[kv.first])]);
+                    size_t r = std::get<1>(sizes_[std::get<1>(files_[kv.first])]);
+                    size_t Q = std::get<2>(sizes_[std::get<1>(files_[kv.first])]);
+                    
+                    double* Lp = kv.second.data();
+                    C_DCOPY(l * r * Q, Lp, 1, Np, 1);
+
+                    // (Q|ia) (PQ) -> (ia|Q)
+                    C_DGEMM('T', 'N', l*r, Q, Q, 1.0, Np, l*r, metp, Q, 0.0, Lp, Q);
+                }
 
             } else {
-                std::vector<double> metric;
-                metric.reserve(naux * naux);
-                metp = metric.data();
 
-                std::string mfilename = return_metfile(mpower_);
-                get_tensor_(std::get<0>(files_[mfilename]), metp, 0, naux_ - 1, 0, naux_ - 1);
+               // total size allowed, in doubles
+                size_t total_mem =
+                    (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
+
+                std::vector<double> M;
+                std::vector<double> F;
+                M.reserve(total_mem);
+                F.reserve(total_mem);
+                double* Mp = M.data();
+                double* Fp = F.data();
+                for (std::vector<std::string>::iterator itr = order_.begin(); itr != order_.end(); itr++)
+                    contract_metric_Qpq(*itr, metp, Mp, Fp, total_mem);
+
+            }
+
+        } else if (direct_) {
+
+            if(!MO_core_){
+             
+               // total size allowed, in doubles
+                size_t total_mem =
+                    (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
+
+                std::vector<double> M;
+                std::vector<double> F;
+                M.reserve(total_mem);
+                F.reserve(total_mem);
+                double* Mp = M.data();
+                double* Fp = F.data();
 
                 for (std::vector<std::string>::iterator itr = order_.begin(); itr != order_.end(); itr++)
                     contract_metric(*itr, metp, Mp, Fp, total_mem);
-            }
-        } else {
-    
-            double* metp;
-            std::vector<double> metric;
-            if (!hold_met_) {
-                metric.reserve(naux_ * naux_);
-                metp = metric.data();
-                std::string filename = return_metfile(mpower_);
-                get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
-            } else
-                metp = metric_prep_core(mpower_);
+                
+            } else {
+        
+                std::vector<double> N;
+                N.reserve(naux * wfinal);
+                double* Np = N.data();
 
-            std::vector<double> N;
-            N.reserve(naux * wfinal);
-            double* Np = N.data();
+                for (auto& kv : transf_core_) {
+                    size_t a0 = std::get<0>(sizes_[std::get<1>(files_[kv.first])]);
+                    size_t a1 = std::get<1>(sizes_[std::get<1>(files_[kv.first])]);
+                    size_t a2 = std::get<2>(sizes_[std::get<1>(files_[kv.first])]);
 
-            for (auto& kv : transf_core_) {
-                size_t a0 = std::get<0>(sizes_[std::get<1>(files_[kv.first])]);
-                size_t a1 = std::get<1>(sizes_[std::get<1>(files_[kv.first])]);
-                size_t a2 = std::get<2>(sizes_[std::get<1>(files_[kv.first])]);
+                    double* Lp = kv.second.data();
+                    C_DCOPY(a0 * a1 * a2, Lp, 1, Np, 1);
 
-                double* Lp = kv.second.data();
-                C_DCOPY(a0 * a1 * a2, Lp, 1, Np, 1);
+                    if (std::get<2>(transf_[kv.first]))
+                        C_DGEMM('N', 'N', a0 * a1, a2, a2, 1.0, Np, a2, metp, a2, 0.0, Lp, a2);
+                    else
+                        C_DGEMM('N', 'N', a0, a1 * a2, a0, 1.0, metp, naux, Np, a1 * a2, 0.0, Lp, a1 * a2);
 
-                if (std::get<2>(transf_[kv.first]))
-                    C_DGEMM('N', 'N', a0 * a1, a2, a2, 1.0, Np, a2, metp, a2, 0.0, Lp, a2);
-                else
-                C_DGEMM('N', 'N', a0, a1 * a2, a0, 1.0, metp, naux, Np, a1 * a2, 0.0, Lp, a1 * a2);
-
+                }
             }
         }
     }
@@ -1759,15 +1838,15 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
 
     if(!MO_core_) {
         
-        std::string putf = (!direct_ ? std::get<1>(files_[order_[ind]]) : std::get<0>(files_[order_[ind]]));
+        std::string putf = std::get<0>(files_[order_[ind]]);
         std::string op = "ab";
         
         if (bleft) {
             put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, bsize - 1), 
-                std::make_pair(0, wsize - 1), "wb");
+                std::make_pair(0, wsize - 1), op);
         } else {
             put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, wsize - 1), 
-                std::make_pair(0, bsize - 1), "wb");
+                std::make_pair(0, bsize - 1), op);
         }
     }
 
@@ -1811,7 +1890,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
             if(!MO_core_){
                 timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1),
-                           std::make_pair(begin, end), "wb");
+                           std::make_pair(begin, end), op);
             }
 
         } else {  
@@ -1852,7 +1931,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
             if(!MO_core_){
                 timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(0, wsize - 1), std::make_pair(0, bsize - 1),
-                           std::make_pair(begin, end), "wb");
+                           std::make_pair(begin, end), op);
             }
 
         } else {  

@@ -298,6 +298,8 @@ class DF_Helper {
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
     // first integral transforms
+    void first_transform_Qpq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
+        double* Mp, double* Tp, double* Bp);
     void first_transform_pQq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
         double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers);
     
@@ -337,6 +339,7 @@ class DF_Helper {
     std::string compute_metric(double pow);
 
     // => metric operations <=
+    void contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t tots);
     void contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t tots);
     void contract_metric_core(std::string file);
     void contract_metric_AO(double* Mp);
@@ -348,7 +351,9 @@ class DF_Helper {
     std::map<std::string, std::vector<double>> transf_core_;
 
     // => transformation machinery <=
-    void put_transformations(int naux, int begin, int end, int block_size, int bcount, 
+    void put_transformations_Qpq(int naux, int begin, int end,  
+        int wsize, int bsize, double* Fp, int ind, bool bleft);
+    void put_transformations_pQq(int naux, int begin, int end, int block_size, int bcount, 
         int wsize, int bsize, double* Np, double* Fp, int ind, bool bleft);
     std::vector<std::pair<std::string, size_t>> sorted_spaces_;
     std::vector<std::string> order_;
