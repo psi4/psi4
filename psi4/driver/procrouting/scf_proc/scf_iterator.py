@@ -130,7 +130,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     self.diis_enabled_ = _validate_diis()
     self.MOM_excited_ = _validate_MOM()
     self.diis_start_ = core.get_option('SCF', 'DIIS_START')
-    self.pcm_enabled_ = core.get_option('SCF', 'PCM')
     damping_enabled = _validate_damping()
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
@@ -179,7 +178,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.reset_occupation()
 
         upcm = 0.0
-        if self.pcm_enabled_:
+        if core.get_option('SCF', 'PCM'):
             calc_type = core.PCM.CalcType.Total
             if core.get_option("PCM", "PCM_SCF_TYPE") is "SEPARATE":
                 calc_type = core.PCM.CalcType.NucAndEle
@@ -420,7 +419,7 @@ def scf_finalize_energy(self):
     self.print_energies()
 
     self.clear_external_potentials()
-    if self.pcm_enabled_:
+    if core.get_option('SCF', 'PCM'):
         calc_type = core.PCM.CalcType.Total
         if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
             calc_type = core.PCM.CalcType.NucAndEle
@@ -481,7 +480,7 @@ def scf_print_energies(self):
         core.print_out("    DFT Exchange-Correlation Energy = {:24.16f}\n".format(exc))
         core.print_out("    Empirical Dispersion Energy =     {:24.16f}\n".format(ed))
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
-    if self.pcm_enabled_:
+    if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
     #if (Process::environment.get_efp()->get_frag_count() > 0) {
     #    outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);

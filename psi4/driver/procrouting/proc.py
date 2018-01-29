@@ -1348,6 +1348,15 @@ def scf_helper(name, post_scf=True, **kwargs):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
         scf_wfn.set_variable("-D Energy", disp_energy)
 
+    # PCM preparation
+    if core.get_option('SCF', 'PCM'):
+        pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
+        pcm_print_level = core.get_option('SCF', "PRINT")
+        scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
+        core.print_out("""  PCM does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        use_c1 = True
+
     e_scf = scf_wfn.compute_energy()
     core.set_variable("SCF TOTAL ENERGY", e_scf)
     core.set_variable("CURRENT ENERGY", e_scf)

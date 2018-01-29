@@ -259,7 +259,7 @@ def pcm_helper(block):
     pcmsolver_parsed_fname = '@pcmsolver.' + suffix
     with open(pcmsolver_parsed_fname, 'w') as tmp:
         tmp.write(parsed_pcm)
-    core.set_global_option('PCMSOLVER_PARSED_FNAME', '{}'.format(pcmsolver_parsed_fname))
+    core.set_local_option('PCM', 'PCMSOLVER_PARSED_FNAME', '{}'.format(pcmsolver_parsed_fname))
 
 
 def filter_comments(string):

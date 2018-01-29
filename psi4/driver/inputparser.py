@@ -371,7 +371,8 @@ def process_basis_block(matchobj):
             result += """%s    basstrings['%s'] = \"\"\"\n%s\n\"\"\"\n""" % \
                 (spaces, basname(name), basblock[0])
         else:
-            message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+            message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label."
+                       "")
             raise TestComparisonError(message)
     else:
         # case with specs separated by [basname] markers
@@ -402,7 +403,7 @@ def process_pcm_command(matchobj):
     write_input_for_pcm = "parsedFile = os.path.join(os.getcwd(), '{}')\n".format(pcmsolver_parsed_fname)
     write_input_for_pcm += "with open(parsedFile, 'w') as tmp:\n"
     write_input_for_pcm += "    tmp.write('\\n'.join({}))\n\n".format(parsed_pcm)
-    write_input_for_pcm += "core.set_global_option(\'PCMSOLVER_PARSED_FNAME\', \'{}\')\n\n".format(
+    write_input_for_pcm += "core.set_local_option(\'PCM\', \'PCMSOLVER_PARSED_FNAME\', \'{}\')\n\n".format(
         pcmsolver_parsed_fname)
     return write_input_for_pcm
 

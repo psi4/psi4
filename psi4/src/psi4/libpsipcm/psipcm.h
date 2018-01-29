@@ -36,8 +36,9 @@
 #include <PCMSolver/pcmsolver.h>
 
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace psi {
 class BasisSet;
@@ -48,7 +49,7 @@ class PCM final {
    public:
     enum class CalcType : int { Total, NucAndEle, EleOnly };
     PCM() = default;
-    PCM(int print_level, std::shared_ptr<BasisSet> basisset);
+    PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared_ptr<BasisSet> basisset);
     PCM(const PCM *);
     ~PCM() {}
     /*! \brief Compute polarization energy and Fock matrix contribution
@@ -94,6 +95,9 @@ class PCM final {
     /// Handle to stuff provided by PCMSolver
     std::shared_ptr<pcmsolver_context_t> context_;
 
+    /// Filename for the PCM input file as parsed by PCMSolver
+    std::string pcmsolver_parsed_fname_;
+
     /// print level
     int pcm_print_;
 };
@@ -105,7 +109,8 @@ PCMInput pcmsolver_input();
 
 void host_writer(const char *);
 
-std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::shared_ptr<Molecule> &molecule);
+std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver_parsed_fname,
+                                                    const std::shared_ptr<Molecule> &molecule);
 }  // detail
 }  // psi
 #endif
