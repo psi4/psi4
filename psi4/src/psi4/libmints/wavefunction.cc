@@ -149,7 +149,9 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     variables_ = other->variables_;
     arrays_ = other->arrays_;
     PCM_enabled_ = other->PCM_enabled_;
-    PCM_ = other->PCM_;
+    if (PCM_enabled_) {
+      PCM_ = other->PCM_;
+    }
 }
 
 void Wavefunction::deep_copy(SharedWavefunction other) { deep_copy(other.get()); }
@@ -233,7 +235,9 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     }
 
     PCM_enabled_ = other->PCM_enabled_;
-    PCM_ = std::make_shared<PCM>(other->PCM_.get());
+    if (PCM_enabled_) {
+      PCM_ = std::make_shared<PCM>(other->PCM_.get());
+    }
 }
 
 std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
@@ -337,7 +341,9 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     }
 
     wfn->PCM_enabled_ = PCM_enabled_;
-    wfn->PCM_ = std::make_shared<PCM>(PCM_.get());
+    if (wfn->PCM_enabled_) {
+      wfn->PCM_ = std::make_shared<PCM>(PCM_.get());
+    }
 
     return wfn;
 }
