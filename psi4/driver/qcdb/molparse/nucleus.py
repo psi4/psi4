@@ -13,6 +13,7 @@ def reconcile_nucleus(A=None,
                       mass=None,
                       real=None,
                       label=None,
+                      speclabel=True,
                       nonphysical=False,
                       mtol=1.e-3,
                       verbose=1):
@@ -35,6 +36,11 @@ def reconcile_nucleus(A=None,
         Whether real or ghost/absent.
     label : str, optional
         Atom label according to :py:attribute:`qcdb.molparse.NUCLEUS`.
+    speclabel : bool, optional
+        If `True`, interpret `label` as potentially full nucleus spec including
+        ghosting, isotope, mass, tagging information, e.g., `@13C_mine` or
+        `He4@4.01`. If `False`, interpret `label` as only the user/tagging
+        extension to nucleus label, e.g. `_mine` or `4` in the previous examples.
     nonphysical : bool, optional
         When `True`, turns off sanity checking that prevents periodic table
         violations (e.g, light uranium: 1U@1.007).
@@ -236,7 +242,7 @@ def reconcile_nucleus(A=None,
         text.append("""For real/ghost, input rgh: {} requires rgh == {}""".format(rgh, rgh))
 
     def offer_user_label(lbl):
-        lbl = lbl.lower()
+        lbl = str(lbl).lower()
         l_exact.append(lbl)
         l_range.append(lambda x, lbl=lbl: x == lbl)
         text.append("""For user label, input lbl: {} requires lbl == {}""".format(lbl, lbl))
@@ -266,7 +272,7 @@ def reconcile_nucleus(A=None,
     if E is not None:
         offer_element_symbol(E)
 
-    if label is not None:
+    if label is not None and speclabel is True:
         lbl_A, lbl_Z, lbl_E, lbl_mass, lbl_real, lbl_user = parse_nucleus_label(label)
 
         if lbl_Z is not None:
@@ -289,13 +295,16 @@ def reconcile_nucleus(A=None,
         offer_reality(real)
 
     if label is not None:
-        offer_reality(lbl_real)
-        if lbl_A is not None:
-            offer_mass_number(Z_final, lbl_A)
-        if lbl_mass is not None:
-            offer_mass_value(Z_final, lbl_mass)
-        if lbl_user is not None:
-            offer_user_label(lbl_user)
+        if speclabel:
+            offer_reality(lbl_real)
+            if lbl_A is not None:
+                offer_mass_number(Z_final, lbl_A)
+            if lbl_mass is not None:
+                offer_mass_value(Z_final, lbl_mass)
+            if lbl_user is not None:
+                offer_user_label(lbl_user)
+        else:
+            offer_user_label(label)
 
     mass_final = reconcile(m_exact, m_range, 'mass')
     A_final = reconcile(A_exact, A_range, 'mass number')

@@ -252,25 +252,27 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     ////    moldict['lock_frame'] = self.lock_frame
     ////    mol->set_reinterpret_coordentry(false);
 
+    std::vector<Molecule::FragmentType> fragment_types;
     std::vector<int> fragment_separators;
     fragment_separators = molrec["fragment_separators"].cast<std::vector <int>>();
     std::vector <std::pair <int, int>> fragments;
     fragment_separators.insert(fragment_separators.begin(), 0);
     fragment_separators.push_back(nat);
-    for (size_t i=1; i<fragment_separators.size(); ++i)
+    for (size_t i=1; i<fragment_separators.size(); ++i) {
         fragments.push_back(std::make_pair (fragment_separators[i-1], fragment_separators[i]));
-
-    std::vector<Molecule::FragmentType> fragment_types;
-    for (auto item : molrec["fragment_types"]) {
-        if (item.cast<std::string>() == "Real")
-            fragment_types.push_back(Molecule::Real);
-        else if (item.cast<std::string>() == "Ghost")
-            fragment_types.push_back(Molecule::Ghost);
-        else if (item.cast<std::string>() == "Absent")
-            fragment_types.push_back(Molecule::Absent);
-        else
-            throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
+        fragment_types.push_back(Molecule::Real);
     }
+
+    //for (auto item : molrec["fragment_types"]) {
+    //    if (item.cast<std::string>() == "Real")
+    //        fragment_types.push_back(Molecule::Real);
+    //    else if (item.cast<std::string>() == "Ghost")
+    //        fragment_types.push_back(Molecule::Ghost);
+    //    else if (item.cast<std::string>() == "Absent")
+    //        fragment_types.push_back(Molecule::Absent);
+    //    else
+    //        throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
+    //}
 
     std::vector<int> fragment_charges;
     for (auto item : molrec["fragment_charges"])

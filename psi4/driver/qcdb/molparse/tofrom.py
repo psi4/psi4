@@ -19,11 +19,12 @@ def from_arrays(geom=None,
                 fix_orientation=False,
                 fix_symmetry=None,
                 fragment_separators=None,
-                fragment_types=None,
+                #fragment_types=None,  # keep?
                 fragment_charges=None,
                 fragment_multiplicities=None,
                 molecular_charge=None,
                 molecular_multiplicity=None,
+                speclabel=True,
                 nonphysical=False,
                 mtol=1.e-3,
                 verbose=1):
@@ -34,17 +35,23 @@ def from_arrays(geom=None,
 
     Parameters
     ----------
-    See fields of return  molrec below. Required parameters are `geom` and one of `elem`, `elez`, `elbl`
+    See fields of return  molrec below. Required parameters are `geom` and one of `elem`, `elez`, `elbl` (`speclabel=True`)
     geom : array-like
         (nat, 3) or (3 * nat, ) ndarray or list o'lists of Cartesian coordinates.
     fragment_separators : array-like of int, optional
         (nfr - 1, ) list of atom indices at which to split `geom` into fragments.
-    fragment_types : array-like of {'Real', 'Ghost', 'Absent'}, optional
-        (nfr, ) list of fragment types. If given, size must be consistent with `fragment_separators`.
+    #fragment_types : array-like of {'Real', 'Ghost', 'Absent'}, optional
+    #    (nfr, ) list of fragment types. If given, size must be consistent with `fragment_separators`.
     elbl : ndarray of str
-        (nat, ) Label extending `elem` symbol, possibly conveying isotope, mass, tagging information.
+        (nat, ) Label extending `elem` symbol, possibly conveying ghosting, isotope, mass, tagging information.
 
     nonphysical : bool, optional
+
+    speclabel : bool, optional
+        If `True`, interpret `elbl` as potentially full nucleus spec including
+        ghosting, isotope, mass, tagging information, e.g., `@13C_mine` or
+        `He4@4.01`. If `False`, interpret `elbl` as only the user/tagging
+        extension to nucleus label, e.g. `_mine` or `4` in the previous examples.
 
 
     Returns
@@ -87,8 +94,6 @@ def from_arrays(geom=None,
         (nat, ) Label with any tagging information from element spec.
     fragment_separators : list of int
         (nfr - 1, ) list of atom indices at which to split `geom` into fragments.
-    fragment_types : list of {'Real', 'Ghost', 'Absent'}
-        (nfr, ) list of fragment types.
     fragment_charges : list of float
         (nfr, ) list of charge allocated to each fragment.
     fragment_multiplicities : list of int
@@ -100,8 +105,6 @@ def from_arrays(geom=None,
 
     """
     from .chgmult import validate_and_fill_chgmult
-
-    # TODO not handled: elbl, fragment_*, validation of chgmult overall vs frag
 
     molinit = {}
     molinit.update(validate_and_fill_universals(name=name,
@@ -121,6 +124,7 @@ def from_arrays(geom=None,
                                                 mass=mass,
                                                 real=real,
                                                 elbl=elbl,
+                                                speclabel=speclabel,
                                                 nonphysical=nonphysical,
                                                 mtol=mtol,
                                                 verbose=verbose))
@@ -207,6 +211,7 @@ def validate_and_fill_nuclei(nat,
                              real=None,
                              elbl=None,
                              # processing details
+                             speclabel=True,
                              nonphysical=False,
                              mtol=1.e-3,
                              verbose=1):
@@ -217,7 +222,8 @@ def validate_and_fill_nuclei(nat,
     if elea is None:
         elea = np.full((nat,), None)
     else:
-        elea = np.array(elea)
+        # -1 equivalent to None
+        elea = np.array([(None if at == -1 else at) for at in elea])
 
     if elez is None:
         elez = np.full((nat,), None)
@@ -254,6 +260,7 @@ def validate_and_fill_nuclei(nat,
                                                          mass=mass[at],
                                                          real=real[at],
                                                          label=elbl[at],
+                                                         speclabel=speclabel,
                                                          nonphysical=nonphysical,
                                                          mtol=mtol,
                                                          verbose=verbose) for at in range(nat)])
@@ -328,6 +335,5 @@ def validate_and_fill_fragments(nat,
             frs.shape[0] + 1, len(frt), len(frc), len(frm)))
 
     return {'fragment_separators': list(frs),
-            'fragment_types': frt,
             'fragment_charges': frc,
             'fragment_multiplicities': frm}

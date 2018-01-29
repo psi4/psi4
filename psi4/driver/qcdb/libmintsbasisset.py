@@ -406,19 +406,10 @@ class BasisSet(object):
 
         # Create a "molecule", i.e., an atom, with 1 fragment
         mol = bs.molecule
-        self.molecule = Molecule()
-        self.molecule.add_atom(mol.Z(center),
-            mol.x(center), mol.y(center), mol.z(center),
-            mol.symbol(center), mol.mass(center), mol.charge(center),
-            mol.label(center), mol.A(center))
-        self.molecule.fragments.append([0, 0])
-        self.molecule.fragment_types.append('Real')
-        self.molecule.fragment_charges.append(0)
-        self.molecule.fragment_multiplicities.append(1)
-        self.molecule.PYmove_to_com = False
-        self.molecule.set_units('Bohr')
-        self.molecule.update_geometry()
-
+        self.molecule = Molecule.from_arrays(elem=[mol.symbol(center)],
+                                             geom=mol.xyz(center),
+                                             units='Bohr',
+                                             fix_com=True)
         # Allocate arrays
         self.n_prim_per_shell = [0] * self.n_shells
         # The unique primitives
