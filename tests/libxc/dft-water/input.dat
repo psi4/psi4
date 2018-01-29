@@ -152,5 +152,5 @@ for func in qchem_data.keys():                                                  
     compare_values(qchem_energy, psi4_energy, 4, func + ': Psi4 vs. Q-Chem')                          #TEST
                                                                                                       #TEST
     if func in old_psi4_data:                                                                         #TEST
-            old_psi4_energy = old_psi4_data[func]                                                     #TEST
-            compare_values(old_psi4_energy, psi4_energy, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)') #TEST
+        old_psi4_energy = old_psi4_data[func]                                                         #TEST
+        compare_values(old_psi4_energy, psi4_energy, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)')     #TEST
