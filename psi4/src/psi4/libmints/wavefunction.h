@@ -663,9 +663,11 @@ public:
     void set_array(const std::string key, SharedMatrix value) { arrays_[key] = value; }
     std::map<std::string, SharedMatrix> arrays(void) { return arrays_; }
 
+    /// Set PCM object
+    void set_PCM(const std::shared_ptr<PCM> & pcm);
     /// Get PCM object
-    bool PCM_enabled() const { return PCM_enabled_; }
     std::shared_ptr<PCM> get_PCM() const;
+    bool PCM_enabled() const { return PCM_enabled_; }
 };
 
 }

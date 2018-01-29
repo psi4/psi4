@@ -68,7 +68,7 @@ double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options &options)
-    : options_(options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}} {
+  : options_(options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
     common_init();
 }
 
@@ -76,11 +76,11 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     : options_(Process::environment.options),
       basisset_(basis),
       molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}} {
+      dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
     common_init();
 }
 
-Wavefunction::Wavefunction(Options &options) : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}} {}
+Wavefunction::Wavefunction(Options &options) : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
 
 Wavefunction::~Wavefunction() {}
 
@@ -148,6 +148,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 
     variables_ = other->variables_;
     arrays_ = other->arrays_;
+    PCM_enabled_ = other->PCM_enabled_;
     PCM_ = other->PCM_;
 }
 
@@ -231,6 +232,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
         arrays_[kv.first] = kv.second->clone();
     }
 
+    PCM_enabled_ = other->PCM_enabled_;
     PCM_ = std::make_shared<PCM>(other->PCM_.get());
 }
 
@@ -334,8 +336,8 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
         wfn->arrays_[kv.first] = kv.second->clone();
     }
 
-    // ok for deep copy?
-    wfn->PCM_ = PCM_;
+    wfn->PCM_enabled_ = PCM_enabled_;
+    wfn->PCM_ = std::make_shared<PCM>(PCM_.get());
 
     return wfn;
 }
@@ -502,16 +504,6 @@ void Wavefunction::common_init() {
             outfile->Printf("PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
     }
-
-// Initialize PCM object, if requested
-#ifdef USING_PCMSolver
-    PCM_enabled_ = options_.get_bool("PCM");
-    if (PCM_enabled_) {
-        if (nirrep_ > 1)
-            throw PSIEXCEPTION("You must add\n\n\tsymmetry c1\n\nto the molecule{} block to run the PCM code.");
-        PCM_ = std::make_shared<PCM>(options_.get_int("PRINT"), basisset_);
-    }
-#endif
 }
 
 std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }
@@ -1302,5 +1294,7 @@ SharedMatrix Wavefunction::get_array(std::string label) {
         return arrays_[label];
     }
 }
+
+void Wavefunction::set_PCM(const std::shared_ptr<PCM> & pcm) { PCM_ = pcm; PCM_enabled_ = true; }
 
 std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }

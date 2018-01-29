@@ -107,7 +107,8 @@ void host_writer(const char *message) {
     outfile->Printf("\n");
 }
 
-std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::shared_ptr<Molecule> &molecule) {
+std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver_parsed_fname,
+                                                    const std::shared_ptr<Molecule> &molecule) {
     /* PCMSolver needs to know who has to parse the input.
      * We should have something like this here:
      * int PSI4_provides_input = false;
@@ -130,14 +131,15 @@ std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::shared_ptr<Molecu
             pcmsolver_delete);
     } else {
         return std::shared_ptr<pcmsolver_context_t>(
-            pcmsolver_new(PCMSOLVER_READER_OWN, natom, charges.data(), coordinates.data(), symmetry_info.data(),
-                          &host_input, detail::host_writer),
+            pcmsolver_new_v1112(PCMSOLVER_READER_OWN, natom, charges.data(), coordinates.data(), symmetry_info.data(),
+                                pcmsolver_parsed_fname.c_str(), &host_input, detail::host_writer),
             pcmsolver_delete);
     }
 }
 }
 
-PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print_level), basisset_(basisset) {
+PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared_ptr<BasisSet> basisset)
+    : pcmsolver_parsed_fname_(pcmsolver_parsed_fname), pcm_print_(print_level), basisset_(basisset) {
     if (!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
 
     std::shared_ptr<Molecule> molecule = basisset_->molecule();
@@ -149,7 +151,7 @@ PCM::PCM(int print_level, std::shared_ptr<BasisSet> basisset) : pcm_print_(print
 
     potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint());
 
-    context_ = detail::init_PCMSolver(molecule);
+    context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
     pcmsolver_print(context_.get());
     ntess_ = pcmsolver_get_cavity_size(context_.get());
@@ -208,7 +210,7 @@ PCM::PCM(const PCM *other) {
     basisset_ = other->basisset_;
     my_aotoso_ = other->my_aotoso_->clone();
     potential_int_ = other->potential_int_;
-    context_ = detail::init_PCMSolver(basisset_->molecule());
+    context_ = detail::init_PCMSolver(other->pcmsolver_parsed_fname_, basisset_->molecule());
     pcm_print_ = other->pcm_print_;
 }
 
