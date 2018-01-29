@@ -43,7 +43,7 @@ void export_pcm(py::module& m) {
         .value("NucAndEle", PCM::CalcType::NucAndEle)
         .value("EleOnly", PCM::CalcType::EleOnly);
 
-    pcm.def(py::init<int, std::shared_ptr<BasisSet>>())
+    pcm.def(py::init<std::string, int, std::shared_ptr<BasisSet>>())
         .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix",
              py::arg("D"), py::arg("type"));
 }

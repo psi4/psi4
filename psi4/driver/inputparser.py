@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """Module with functions to parse the input file and convert
 Psithon into standard Python. Particularly, forms psi4
 module calls that access the C++ side of Psi4.
@@ -99,6 +98,7 @@ def quotify(string, isbasis=False):
         wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
+
 
 def dequotify(string):
     if string[0] == '"' and string[-1] == '"':
@@ -180,13 +180,13 @@ def process_set_commands(matchobj):
 def process_from_file_command(matchobj):
     """Function that process a match of ``from_file`` in molecule block."""
     string = matchobj.group(2)
-    mol=core.mol_from_file(string,1)
-    tempmol=[line for line in mol.split('\n') if line.strip() != '']
-    mol2=set(tempmol)
-    mol=""
+    mol = core.mol_from_file(string, 1)
+    tempmol = [line for line in mol.split('\n') if line.strip() != '']
+    mol2 = set(tempmol)
+    mol = ""
     for i in mol2:
-           mol+=i
-           mol+="\n"
+        mol += i
+        mol += "\n"
     return mol
 
 
@@ -236,7 +236,7 @@ def process_molecule_command(matchobj):
     geometry = matchobj.group(3)
     geometry = pubchemre.sub(process_pubchem_command, geometry)
     from_filere = re.compile(r'^(\s*from_file\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
-    geometry = from_filere.sub(process_from_file_command,geometry)
+    geometry = from_filere.sub(process_from_file_command, geometry)
     molecule = spaces
 
     if name != "":
@@ -329,7 +329,9 @@ def process_basis_block(matchobj):
     command_lines = re.split('\n', matchobj.group(4))
 
     symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
-    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    label_re = re.compile(
+        r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$',
+        re.IGNORECASE)
     all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
@@ -369,7 +371,8 @@ def process_basis_block(matchobj):
             result += """%s    basstrings['%s'] = \"\"\"\n%s\n\"\"\"\n""" % \
                 (spaces, basname(name), basblock[0])
         else:
-            message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+            message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label."
+                       "")
             raise TestComparisonError(message)
     else:
         # case with specs separated by [basname] markers
@@ -386,23 +389,23 @@ def process_basis_block(matchobj):
 
 def process_pcm_command(matchobj):
     """Function to process match of ``pcm name? { ... }``."""
-    spacing = str(matchobj.group(1)) # Ignore..
-    name = str(matchobj.group(2)) # Ignore..
-    block = str(matchobj.group(3)) # Get input to PCMSolver
-    # Setup unique scratch directory and move in, as done for other add-ons
-    psioh = core.IOManager.shared_object()
-    psio = core.IO.shared_object()
-    os.chdir(psioh.get_default_path())
-    pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-        'pcmsolver.' + str(uuid.uuid4())[:8]
-    if os.path.exists(pcm_tmpdir) is False:
-        os.mkdir(pcm_tmpdir)
-    os.chdir(pcm_tmpdir)
-    with open('pcmsolver.inp', 'w') as handle:
+    spacing = str(matchobj.group(1))  # Ignore..
+    name = str(matchobj.group(2))  # Ignore..
+    block = str(matchobj.group(3))  # Get input to PCMSolver
+    suffix = str(os.getpid()) + '.' + str(uuid.uuid4())[:8]
+    pcmsolver_fname = 'pcmsolver.' + suffix + '.inp'
+    with open(pcmsolver_fname, 'w') as handle:
         handle.write(block)
     import pcmsolver
-    pcmsolver.parse_pcm_input('pcmsolver.inp')
-    return "" # The file has been written to disk; nothing needed in Psi4 input
+    parsed_pcm = pcmsolver.parse_pcm_input(pcmsolver_fname).splitlines()
+    os.remove(pcmsolver_fname)
+    pcmsolver_parsed_fname = '@pcmsolver.' + suffix
+    write_input_for_pcm = "parsedFile = os.path.join(os.getcwd(), '{}')\n".format(pcmsolver_parsed_fname)
+    write_input_for_pcm += "with open(parsedFile, 'w') as tmp:\n"
+    write_input_for_pcm += "    tmp.write('\\n'.join({}))\n\n".format(parsed_pcm)
+    write_input_for_pcm += "core.set_local_option(\'PCM\', \'PCMSOLVER_PARSED_FNAME\', \'{}\')\n\n".format(
+        pcmsolver_parsed_fname)
+    return write_input_for_pcm
 
 
 def process_external_command(matchobj):
@@ -472,9 +475,11 @@ def process_external_command(matchobj):
         mobj = charge_re.match(line)
         if mobj:
             if units == 'ang':
-                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
+                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2),
+                                                                       mobj.group(3), mobj.group(4))
             if units == 'bohr':
-                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
+                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3),
+                                                                   mobj.group(4))
         else:
             lines2.append(line)
     lines = lines2
@@ -676,8 +681,7 @@ def process_input(raw_input, print_level=1):
     #   Must be stored then subbed in the end to escape the normal processing
 
     # Process "cfour name? { ... }"
-    cfour = re.compile(r'^(\s*?)cfour[=\s]*(\w*?)\s*\{(.*?)\}',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    cfour = re.compile(r'^(\s*?)cfour[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(cfour, process_cfour_command, raw_input)
 
     # Return from handling literal blocks to normal processing
@@ -706,31 +710,28 @@ def process_input(raw_input, print_level=1):
     temp = process_multiline_arrays(temp)
 
     # Process all "set name? { ... }"
-    set_commands = re.compile(r'^(\s*?)set\s*([-,\w]*?)[\s=]*\{(.*?)\}',
-                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    set_commands = re.compile(r'^(\s*?)set\s*([-,\w]*?)[\s=]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set (module_list) key  {[value_list] or $value or value}"
     # N.B. We have to be careful here, because \s matches \n, leading to potential problems
     # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
     # will match any space, tab, etc., except a newline
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$',
-                             re.MULTILINE | re.IGNORECASE)
+    set_command = re.compile(
+        r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$',
+        re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
-    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\S*?)\s*\{(.*?)\}',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\S*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 
     # Process "external name? { ... }"
-    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(external, process_external_command, temp)
 
     # Process "pcm name? { ... }"
-    pcm = re.compile(r'^(\s*?)pcm[=\s]*(\w*?)\s*\{(.*?)^\}',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    pcm = re.compile(r'^(\s*?)pcm[=\s]*(\w*?)\s*\{(.*?)^\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(pcm, process_pcm_command, temp)
 
     # Then remove repeated newlines
@@ -738,8 +739,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(multiplenewlines, '\n', temp)
 
     # Process " extract"
-    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*',
-                         re.IGNORECASE)
+    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*', re.IGNORECASE)
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "core.print_out()"
@@ -747,13 +747,13 @@ def process_input(raw_input, print_level=1):
     #temp = re.sub(print_string, process_print_command, temp)
 
     # Process "memory ... "
-    memory_string = re.compile(r'(\s*?)memory\s+(\d*\.?\d+)\s*([KMGTPBE]i?B)',
-                               re.IGNORECASE)
+    memory_string = re.compile(r'(\s*?)memory\s+(\d*\.?\d+)\s*([KMGTPBE]i?B)', re.IGNORECASE)
     temp = re.sub(memory_string, process_memory_command, temp)
 
     # Process "basis name? { ... }"
-    basis_block = re.compile(r'^(\s*?)(basis|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt)[=\s]*(\w*?)\s*\{(.*?)\}',
-                             re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    basis_block = re.compile(
+        r'^(\s*?)(basis|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt)[=\s]*(\w*?)\s*\{(.*?)\}',
+        re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
 
     # Process literal blocks by substituting back in
@@ -761,6 +761,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(lit_block, process_literal_blocks, temp)
 
     future_imports = []
+
     def future_replace(m):
         future_imports.append(m.group(0))
         return ''

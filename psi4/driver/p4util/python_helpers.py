@@ -40,7 +40,14 @@ from psi4 import core
 
 
 @staticmethod
-def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, puream=-1, return_atomlist=False, quiet=False):
+def pybuild_basis(mol,
+                  key=None,
+                  target=None,
+                  fitrole='ORBITAL',
+                  other=None,
+                  puream=-1,
+                  return_atomlist=False,
+                  quiet=False):
     if key == 'ORBITAL':
         key = 'BASIS'
 
@@ -64,8 +71,8 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
-                                          key, resolved_target, fitrole, other, return_atomlist=return_atomlist)
+    basisdict = qcdb.BasisSet.pyconstruct(
+        mol.create_psi4_string_from_molecule(), key, resolved_target, fitrole, other, return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []
@@ -75,8 +82,8 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
             atom_basis_list.append(lmbs)
             #lmbs.print_detail_out()
         return atom_basis_list
-    if ((sys.version_info < (3,0) and isinstance(resolved_target, basestring)) or
-        (sys.version_info >= (3,0) and isinstance(resolved_target, str))):
+    if ((sys.version_info < (3, 0) and isinstance(resolved_target, basestring))
+            or (sys.version_info >= (3, 0) and isinstance(resolved_target, str))):
         basisdict['name'] = basisdict['name'].split('/')[-1].replace('.gbs', '')
     if callable(resolved_target):
         basisdict['name'] = resolved_target.__name__.replace('basisspec_psi4_yo__', '').upper()
@@ -89,9 +96,11 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     return psibasis
 
+
 core.BasisSet.build = pybuild_basis
 
 ## Python wavefunction helps
+
 
 @staticmethod
 def pybuild_wavefunction(mol, basis=None):
@@ -105,9 +114,11 @@ def pybuild_wavefunction(mol, basis=None):
     wfn = core.Wavefunction(mol, basis)
     return wfn
 
+
 core.Wavefunction.build = pybuild_wavefunction
 
 ## Python JK helps
+
 
 @staticmethod
 def pybuild_JK(orbital_basis, aux=None, jk_type=None):
@@ -156,21 +167,21 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
     if aux is None:
         if core.get_option("SCF", "SCF_TYPE") == "DF":
             aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
-                                      core.get_option("SCF", "DF_BASIS_SCF"),
-                                      "JKFIT", core.get_global_option('BASIS'),
-                                      orbital_basis.has_puream())
+                                      core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
+                                      core.get_global_option('BASIS'), orbital_basis.has_puream())
         else:
             aux = core.BasisSet.zero_ao_basis_set()
-
 
     jk = core.JK.build_JK(orbital_basis, aux)
 
     optstash.restore()
     return jk
 
+
 core.JK.build = pybuild_JK
 
 ## Grid Helpers
+
 
 def get_np_xyzw(Vpot):
     """
@@ -200,6 +211,7 @@ def get_np_xyzw(Vpot):
 
     return (x, y, z, w)
 
+
 core.VBase.get_np_xyzw = get_np_xyzw
 
 ## Python other helps
@@ -225,24 +237,30 @@ def set_module_options(module, options_dict):
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
 
+
 ## OEProp helpers
 
-def pcm_helper(block):
-    """Passes multiline string *block* to PCMSolver parser."""
 
-    # Setup unique scratch directory and move in, as done for other add-ons
-    psioh = core.IOManager.shared_object()
-    psio = core.IO.shared_object()
-    os.chdir(psioh.get_default_path())
-    pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-        'pcmsolver.' + str(uuid.uuid4())[:8]
-    if os.path.exists(pcm_tmpdir) is False:
-        os.mkdir(pcm_tmpdir)
-    os.chdir(pcm_tmpdir)
-    with open('pcmsolver.inp', 'w') as handle:
+def pcm_helper(block):
+    """
+    Passes multiline string *block* to PCMSolver parser.
+
+    Parameters
+    ----------
+    block: multiline string with PCM input in PCMSolver syntax.
+    """
+
+    suffix = str(os.getpid()) + '.' + str(uuid.uuid4())[:8]
+    pcmsolver_fname = 'pcmsolver.' + suffix + '.inp'
+    with open(pcmsolver_fname, 'w') as handle:
         handle.write(block)
     import pcmsolver
-    pcmsolver.parse_pcm_input('pcmsolver.inp')
+    parsed_pcm = pcmsolver.parse_pcm_input(pcmsolver_fname)
+    os.remove(pcmsolver_fname)
+    pcmsolver_parsed_fname = '@pcmsolver.' + suffix
+    with open(pcmsolver_parsed_fname, 'w') as tmp:
+        tmp.write(parsed_pcm)
+    core.set_local_option('PCM', 'PCMSOLVER_PARSED_FNAME', '{}'.format(pcmsolver_parsed_fname))
 
 
 def filter_comments(string):
@@ -276,7 +294,9 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
     command_lines = re.split('\n', block)
 
     symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
-    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    label_re = re.compile(
+        r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$',
+        re.IGNORECASE)
     all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
@@ -315,7 +335,9 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
                 mol.set_basis_all_atoms(name, role=role)
                 basstrings[basname(name)] = basblock[0]
             else:
-                message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+                message = (
+                    "Conflicting basis set specification: assign lines present but shells have no [basname] label."
+                    "")
                 raise TestComparisonError(message)
         else:
             # case with specs separated by [basname] markers
@@ -323,18 +345,20 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
                 basstrings[basname(basblock[idx])] = basblock[idx + 1]
 
         return basstrings
+
     anon.__name__ = 'basisspec_psi4_yo__' + cleanbas
     qcdb.libmintsbasisset.basishorde[name.upper()] = anon
     if set_option:
         core.set_global_option(key, name)
 
+
 core.OEProp.valid_methods = [
-    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES',
-    'MAYER_INDICES', 'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
-    'NO_OCCUPATIONS'
+    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
+    'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'NO_OCCUPATIONS'
 ]
 
 ## Option helpers
+
 
 def py_psi_set_global_option_python(key, EXTERN):
     """
@@ -355,5 +379,3 @@ def py_psi_set_global_option_python(key, EXTERN):
 
 
 core.set_global_option_python = py_psi_set_global_option_python
-
-
