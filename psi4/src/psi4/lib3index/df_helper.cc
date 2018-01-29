@@ -100,6 +100,7 @@ void DF_Helper::AO_filename_maker(size_t i) {
     file.append(".dat");
     AO_files_[name] = file;
 }
+
 void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op) {
     std::string pfile = "dfh.p";
     pfile.append(name);
@@ -120,18 +121,24 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
     std::tuple<std::string, std::string> files(pfilename.c_str(), filename.c_str());
     files_[name] = files;
 
-    if(direct_iaQ_){
+    bool is_transf = transf_.count(name);
+
+    // direct_iaQ is special, because it has two different sizes
+    if(direct_iaQ_ && is_transf){
     
         sizes_[pfilename] = std::make_tuple(a0, a1, a2);
         sizes_[filename ] = std::make_tuple(a1, a2, a0);
         
     } else {
 
+        // op = (0 if Qpq, 1 if pQq, 2 if pqQ)
         std::tuple<size_t, size_t, size_t> sizes;
-        if (op) {
-            sizes = std::make_tuple(a1, a2, a0);
-        } else {
+        if (op == 0) {
             sizes = std::make_tuple(a0, a1, a2);
+        } else if (op == 1){
+            sizes = std::make_tuple(a1, a0, a2);
+        } else {
+            sizes = std::make_tuple(a1, a2, a0);
         }
     
         sizes_[pfilename] = sizes;
@@ -1268,17 +1275,36 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
             }
         }
 
-        for (size_t i = 0; i < steps.size(); i++) {
-            size_t begin = std::get<0>(steps[i]);
-            size_t end = std::get<1>(steps[i]);
-            size_t bs = end - begin + 1;
+        if (std::get<2>(transf_[file]) == 2) {
+            for (size_t i = 0; i < steps.size(); i++) {
+                size_t begin = std::get<0>(steps[i]);
+                size_t end = std::get<1>(steps[i]);
+                size_t bs = end - begin + 1;
 
-            get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
-            timer_on("DFH: Total Workflow");
-            C_DGEMM('N', 'N', bs * a1, a2, a2, 1.0, Mp, a2, metp, a2, 0.0, Fp, a2);
-            timer_off("DFH: Total Workflow");
-            put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
+                get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
+                timer_on("DFH: Total Workflow");
+                C_DGEMM('N', 'N', bs * a1, a2, a2, 1.0, Mp, a2, metp, a2, 0.0, Fp, a2);
+                timer_off("DFH: Total Workflow");
+                put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
+            }
+        } else {
+            for (size_t i = 0; i < steps.size(); i++) {
+                size_t begin = std::get<0>(steps[i]);
+                size_t end = std::get<1>(steps[i]);
+                size_t bs = end - begin + 1;
+
+                get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
+                timer_on("DFH: Total Workflow");
+                #pragma omp paralle form num_threads(nthreads_)
+                for(size_t i = 0; i < bs; i++){
+                    C_DGEMM('N', 'N', a1, a2, a1, 1.0, metp, a1, &Mp[i*a1*a2], a2, 
+                        0.0, &Fp[i*a1*a2], a2);
+                }
+                timer_off("DFH: Total Workflow");
+                put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
+            }
         }
+
     } else {
         // determine blocking
         std::vector<std::pair<size_t, size_t>> steps;
@@ -1385,22 +1411,21 @@ void DF_Helper::add_transformation(std::string name, std::string key1, std::stri
     }
 
     int op;
-    if (!order.compare("Qpq"))
+    if (!order.compare("Qpq")){
         op = 0;
-    else if (!order.compare("pqQ"))
+    } else if (!order.compare("pQq")){
         op = 1;
-    else {
+    } else if(!order.compare("pqQ")) {
+        op = 2;
+    } else {
         throw PSIEXCEPTION("Matt doesnt do exceptions.");
     }
-
+    transf_[name] = std::make_tuple(key1, key2, op);
+    
     size_t a1 = std::get<1>(spaces_[key1]);
     size_t a2 = std::get<1>(spaces_[key2]);
-    if (op)
-        filename_maker(name, naux_, a1, a2, 1);
-    else
-        filename_maker(name, naux_, a1, a2);
+    filename_maker(name, naux_, a1, a2, op);
 
-    transf_[name] = std::make_tuple(key1, key2, op);
 }
 void DF_Helper::clear_spaces() {
     
@@ -1793,11 +1818,18 @@ void DF_Helper::transform() {
                     double* Lp = kv.second.data();
                     C_DCOPY(a0 * a1 * a2, Lp, 1, Np, 1);
 
-                    if (std::get<2>(transf_[kv.first]))
+                    if (std::get<2>(transf_[kv.first]) == 2) {
                         C_DGEMM('N', 'N', a0 * a1, a2, a2, 1.0, Np, a2, metp, a2, 0.0, Lp, a2);
-                    else
+                    } else if (std::get<2>(transf_[kv.first]) == 0) {
                         C_DGEMM('N', 'N', a0, a1 * a2, a0, 1.0, metp, naux, Np, a1 * a2, 0.0, Lp, a1 * a2);
-
+                    } else {
+                        #pragma omp paralle form num_threads(nthreads_)
+                        for(size_t i = 0; i < a0; i++){
+                            C_DGEMM('N', 'N', a1, a2, a1, 1.0, metp, naux, &Np[i*a1*a2], a2, 
+                                0.0, &Lp[i*a1*a2], a2);
+                        }
+                    }
+                
                 }
             }
         }
@@ -1879,7 +1911,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
     timer_on("DFH: (w|Qb)->(bw|Q)");
     if (bleft) {
 
-        if (std::get<2>(transf_[order_[ind]])) {  
+        // result is in pqQ format
+        if (std::get<2>(transf_[order_[ind]]) == 2) {  
             
             // (w|Qb)->(bw|Q)
             #pragma omp parallel for num_threads(nthreads_)
@@ -1898,7 +1931,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                            std::make_pair(begin, end), op);
             }
 
-        } else {  
+        // result is in Qpq format
+        } else if (std::get<2>(transf_[order_[ind]]) == 0) {  
 
             // (w|Qb)->(Q|bw)
             #pragma omp parallel for num_threads(nthreads_)
@@ -1916,11 +1950,33 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                 put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, bsize - 1),
                            std::make_pair(0, wsize - 1), op);
             }
+        
+        // result is in pQq format
+        } else {
+            
+            // (w|Qb)->(bQw)
+            #pragma omp parallel for num_threads(nthreads_)
+            for (size_t x = 0; x < rblock_size; x++) {
+                for (size_t y = 0; y < bsize; y++) {
+                    for (size_t z = 0; z < wsize; z++) {
+                        Np[y * lblock_size * wsize + (bcount + x) * wsize + z] 
+                            = Fp[z * bsize *rblock_size + x * bsize + y];
+                    }
+                }
+            }
+            timer_off("DFH: (w|Qb)->(bw|Q)");
+            if(!MO_core_){
+                timer_on("DFH: MO to disk");
+                put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(begin, end),
+                           std::make_pair(0, wsize - 1), op);
+            }
+
         }
 
     } else {
         
-        if (std::get<2>(transf_[order_[ind]])) {  
+        // result is in pqQ format
+        if (std::get<2>(transf_[order_[ind]]) == 2) {  
             
             // (w|Qb)->(wbQ)
             #pragma omp parallel for num_threads(nthreads_)
@@ -1939,7 +1995,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                            std::make_pair(begin, end), op);
             }
 
-        } else {  
+        // result is in Qpq format
+        } else if (std::get<2>(transf_[order_[ind]]) == 0) {  
 
             // (w|Qb)->(Q|wb)
             #pragma omp parallel for num_threads(nthreads_)
@@ -1958,7 +2015,22 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                 put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, wsize - 1),
                            std::make_pair(0, bsize - 1), op);
             }
+ 
+        // result is in pQq format
+        } else {
+            
+            // (w|Qb)
+            timer_off("DFH: (w|Qb)->(bw|Q)");
+            if(!MO_core_){
+                timer_on("DFH: MO to disk");
+                put_tensor(putf, Fp, std::make_pair(0, wsize - 1), std::make_pair(begin, end),
+                           std::make_pair(0, bsize - 1), op);
+            } else {
+                C_DCOPY(wsize * bsize * rblock_size, Fp, 1, Np, 1);
+            }
+
         }
+    
     }
     if(!MO_core_)
         timer_off("DFH: MO to disk");

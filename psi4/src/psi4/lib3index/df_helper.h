@@ -388,7 +388,7 @@ class DF_Helper {
     std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
+    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op=0);
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
     void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,

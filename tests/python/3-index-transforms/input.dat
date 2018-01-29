@@ -56,63 +56,73 @@ for ind, i in enumerate(space_pairs):
         C1 = spaces[names[space_pairs[ind][0]]]
         C2 = spaces[names[space_pairs[ind][1]]]
         Qmo[ind][Q] = np.dot(C1.np.T, Qpq[Q]).dot(C2)
+    
+# get other forms (pQq and pqQ)
+Qmo_pQq = []    
+Qmo_pqQ = []    
+for i in range(ntransforms):
+    Qmo_pQq.append(np.swapaxes(Qmo[i], 0, 1))    
+    Qmo_pqQ.append(np.swapaxes(np.swapaxes(Qmo[i], 0, 2), 0, 1))    
 
 # setup ~
 methods = ['STORE', 'DIRECT', 'DIRECT_iaQ']
+forms = ['Qpq', 'pQq', 'pqQ']
 transformation_names = ['Qmo1', 'Qmo2', 'Qmo3', 'Qmo4', 'Qmo5', 'Qmo6']
 transformations = OrderedDict({})
 for ind, i in enumerate(transformation_names):
     transformations[i] = [names[space_pairs[ind][0]], names[space_pairs[ind][1]]] 
 
 # somewhat exhuastive search on all options
-switched = False
 for method in methods:
-    if((not switched) and method == 'DIRECT_iaQ'):
-        for i in range(ntransforms):
-            Qmo[i] = np.swapaxes(np.swapaxes(Qmo[i], 0, 2), 0, 1)    
-        switched = True        
-    for AO_core in [False, True]:
-        for MO_core in [True, False]:
-            for hold_met in [False, True]:
-                        
-                # get object
-                dfh = psi4.core.DF_Helper(primary, aux)
-                
-                # set test options
-                dfh.set_method(method)
-                dfh.set_memory(mem)
-                dfh.set_AO_core(AO_core)
-                dfh.set_MO_core(MO_core)
-                dfh.hold_met(hold_met)
+    for form in forms:
+        if(form != 'pqQ' and method == 'DIRECT_iaQ'): continue
+        for AO_core in [False, True]:
+            for MO_core in [True, False]:
+                for hold_met in [False, True]:
+                            
+                    # get object
+                    dfh = psi4.core.DF_Helper(primary, aux)
+                    
+                    # set test options
+                    dfh.set_method(method)
+                    dfh.set_memory(mem)
+                    dfh.set_AO_core(AO_core)
+                    dfh.set_MO_core(MO_core)
+                    dfh.hold_met(hold_met)
 
-                # build
-                dfh.initialize()
-                
-                # add spaces
-                for i in spaces:
-                    dfh.add_space(i, spaces[i])
+                    # build
+                    dfh.initialize()
+                    
+                    # add spaces
+                    for i in spaces:
+                        dfh.add_space(i, spaces[i])
 
-                # add transformations
-                for i in transformations:
-                    j = transformations[i]
-                    dfh.add_transformation(i, j[0], j[1]) 
+                    # add transformations
+                    for i in transformations:
+                        j = transformations[i]
+                        dfh.add_transformation(i, j[0], j[1], form) 
 
-                # invoke transformations
-                dfh.transform()
+                    # invoke transformations
+                    dfh.transform()
 
-                # grab transformed integrals
-                dfh_Qmo = []
-                for ind, i in enumerate(transformations):
-                    dfh_Qmo.append(np.asarray(dfh.get_tensor(i)))
+                    # grab transformed integrals
+                    dfh_Qmo = []
+                    for ind, i in enumerate(transformations):
+                        dfh_Qmo.append(np.asarray(dfh.get_tensor(i)))
 
-                test_string = 'Alg: ' + method + ' in core (AOs, MOs, met): [' 
-                test_string += str(AO_core) + ', ' + str(MO_core) + ', ' + str(hold_met) + ']' 
+                    test_string = 'Alg: ' + method + ' + ' + form + ' core (AOs, MOs, met): [' 
+                    test_string += str(AO_core) + ', ' + str(MO_core) + ', ' + str(hold_met) +  ']' 
 
-                # am i right?
-                for i in range(ntransforms):
-                    psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, test_string)
+                    # am i right?
+                    for i in range(ntransforms):
+                        if(form == 'pqQ'):    
+                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pqQ[i], 9, test_string)
+                        elif(form == 'pQq'):
+                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pQq[i], 9, test_string)
+                        else:
+                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, test_string)
 
-                del dfh
+                    del dfh
 
 # TODO:
 # test tensor slicing grabs
