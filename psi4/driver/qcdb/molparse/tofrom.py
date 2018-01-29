@@ -5,7 +5,7 @@ import numpy as np
 from ..exceptions import *
 
 
-def from_arrays(geom,
+def from_arrays(geom=None,
                 elea=None,
                 elez=None,
                 elem=None,
@@ -182,6 +182,9 @@ def validate_and_fill_geometry(geom=None):
     """Check `geom` for overlapping atoms. Return flattened"""
 
     from ..util import distance_matrix
+
+    if geom is None:
+        raise ValidationError("""Geometry must be provided.""")
 
     npgeom = np.array(geom, dtype=np.float).reshape((-1, 3))
     dm = distance_matrix(npgeom, npgeom)

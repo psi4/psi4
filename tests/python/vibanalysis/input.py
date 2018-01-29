@@ -838,7 +838,7 @@ test_psi4_hessian(c4_hooh_xyz, ref_hooh_vibonly, hooh_smol, 2, 'Cfour vs Psi H0:
 
 test_psi4_hessian(c4_co2_xyz, ref_co2_vibonly, co2_smol, 2, 'Cfour vs Psi H2: carbon dioxide', verbose=1, forgive=['gamma'], dertype=2)
 test_psi4_hessian(c4_eth_xyz, ref_eth_vibonly, eth_smol, 2, 'Cfour vs Psi H2: ethene', verbose=1, dertype=2)
-test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H2: methane', verbose=1, forgive=['gamma', 'q'], dertype=2)
+test_psi4_hessian(c4_ch4_xyz, ref_ch4_vibonly, ch4_smol, 2, 'Cfour vs Psi H2: methane', verbose=1, forgive=['gamma'], dertype=2)
 test_psi4_hessian(c4_nh3_xyz, ref_nh3_vibonly, nh3_smol, 2, 'Cfour vs Psi H2: ammonia', verbose=1, forgive=['gamma'], dertype=2)
 test_psi4_hessian(c4_form_xyz, ref_form_vibonly, form_smol, 2, 'Cfour vs Psi H2: formaldehyde', verbose=1, dertype=2)
 test_psi4_hessian(c4_hooh_xyz, ref_hooh_vibonly, hooh_smol, 2, 'Cfour vs Psi H2: hydrogen peroxide TS', verbose=1, dertype=2)

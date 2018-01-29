@@ -376,14 +376,14 @@ def B787(cgeom,
 
     # sanity checks
     compare_values(
-        _pseudo_nre(cuniq, cgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE uncorrupted')
+        _pseudo_nre(cuniq, cgeom), _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE uncorrupted', verbose=verbose-1)
     if mols_align is True:
         compare_values(
             _pseudo_nre(runiq, rgeom),
-            _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE matches ref_mol')
-        compare_integers(True,
-                         np.allclose(rgeom, ageom, atol=4), 'D: concern_mol-->returned_mol geometry matches ref_mol')
-        compare_values(0., final_rmsd, 4, 'D: null RMSD')
+            _pseudo_nre(auniq, ageom), 4, 'D: concern_mol-->returned_mol pNRE matches ref_mol', verbose=verbose-1)
+        compare_integers(True, np.allclose(rgeom, ageom, atol=4),
+                         'D: concern_mol-->returned_mol geometry matches ref_mol', verbose=verbose-1)
+        compare_values(0., final_rmsd, 4, 'D: null RMSD', verbose=verbose-1)
 
     return final_rmsd, hold_solution
 

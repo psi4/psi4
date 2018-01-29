@@ -149,6 +149,7 @@ mymol.print_out()
 
 
 mymol2 = psi4.geometry("""
+0 2
 C    0.0  0.0 0.0
 O    1.4  0.0 0.0
 H_r -0.5 -0.6 0.3
