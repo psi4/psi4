@@ -36,6 +36,14 @@ molkwargs4 = {
     'fragment_separators': [1, 2],
     }
 
+molkwargs5AB = {
+    'geom': np.arange(21),
+    'elez': [6, 6, 1, 6, 8, 1, 1],
+    'fragment_separators': [3],
+    'fragment_charges': [-1, 0],
+    }
+
+
 def test_molrec(kwargs, label):
     #pdict = qcdb.molparse.from_arrays(**kwargs)
     #print('PDICT', pdict)
@@ -57,6 +65,13 @@ def test_molrec(kwargs, label):
 
     return pdict
 
+def test_chgmult(expected, cgmpdict, label):
+    rc, rfc, rm, rfm = expected
+    compare_integers(rc, cgmpdict['molecular_charge'], label + ': c')
+    compare_integers(rm, cgmpdict['molecular_multiplicity'], label + ': m')
+    compare_integers(True, np.allclose(cgmpdict['fragment_charges'], rfc), label + ': fc')
+    compare_integers(True, np.allclose(cgmpdict['fragment_multiplicities'], rfm), label + ': fm')
+
 mdict = test_molrec(molkwargs1, label='H2CO plain')
 
 mdict = test_molrec(molkwargs2, label='H2CO labeled')
@@ -64,7 +79,20 @@ mdict = test_molrec(molkwargs2, label='H2CO labeled')
 mdict = test_molrec(molkwargs3, label='H2CO ghosted')
 
 mdict = test_molrec(molkwargs4, label='@H/He/@He')
-compare_integers(1, mdict['molecular_charge'], '@H/He/@He: c')
-compare_integers(2, mdict['molecular_multiplicity'], '@H/He/@He: m')
-compare_integers(1, np.allclose(mdict['fragment_charges'], [0, 1, 0]), '@H/He/@He: fc')
-compare_integers(1, np.allclose(mdict['fragment_multiplicities'], [1, 2, 1]), '@H/He/@He: fm')
+test_chgmult((1, [0, 1, 0], 2, [1, 2, 1]), mdict, '@H/He/@He')
+
+label = 'AB'
+mdict = test_molrec(molkwargs5AB, label=label)
+test_chgmult((-1, [-1, 0], 1, [1, 1]), mdict, label)
+
+label = 'Ab'
+molkwargs5AB['real'] = [True, True, True, False, False, False, False]
+mdict = test_molrec(molkwargs5AB, label)
+test_chgmult((-1, [-1, 0], 1, [1, 1]), mdict, label)
+
+label = 'aB'
+molkwargs5AB['real'] = [False, False, False, True, True, True, True]
+molkwargs5AB['zero_ghost_fragments'] = True
+mdict = test_molrec(molkwargs5AB, label)
+test_chgmult((0, [0, 0], 1, [1, 1]), mdict, label)
+

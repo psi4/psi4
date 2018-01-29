@@ -46,7 +46,7 @@ import random
 import numpy as np
 from collections import defaultdict
 from .libmintsmolecule import *
-from .psiutil import compare_values, compare_integers
+from .psiutil import compare_values, compare_integers, compare_molrecs
 
 
 class Molecule(LibmintsMolecule):
@@ -1144,7 +1144,7 @@ class Molecule(LibmintsMolecule):
 
     @classmethod
     def from_arrays(cls,
-                    geom,
+                    geom=None,
 
                     elea=None,
                     elez=None,
@@ -1255,6 +1255,7 @@ class Molecule(LibmintsMolecule):
         if not force_au:
             geom /= self.input_units_to_au()
         molrec['geom'] = geom.reshape((-1))
+
         molrec['elea'] = np.array([self.A(at) for at in range(nat)])
         molrec['elez'] = np.array([el2z[self.symbol(at).upper()] for at in range(nat)])
         molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
@@ -1542,13 +1543,16 @@ class Molecule(LibmintsMolecule):
             amol = core.Molecule.from_dict(adict)
 
         compare_values(concern_mol.nuclear_repulsion_energy(),
-                       amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE uncorrupted')
+                       amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE uncorrupted',
+                       verbose=verbose-1)
         if mols_align:
             compare_values(ref_mol.nuclear_repulsion_energy(),
-                           amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE matches ref_mol')
+                           amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE matches ref_mol',
+                           verbose=verbose-1)
             compare_integers(True,
                              np.allclose(ref_mol.geometry(), amol.geometry(), atol=4),
-                             'Q: concern_mol-->returned_mol geometry matches ref_mol')
+                             'Q: concern_mol-->returned_mol geometry matches ref_mol',
+                             verbose=verbose-1)
 
         return rmsd, solution, amol
 
@@ -1639,11 +1643,11 @@ class Molecule(LibmintsMolecule):
             run_mirror=do_mirror,
             verbose=verbose)
 
-        compare_integers(True, np.allclose(solution.shift, perturbation.shift, atol=6), 'shifts equiv')
+        compare_integers(True, np.allclose(solution.shift, perturbation.shift, atol=6), 'shifts equiv', verbose=verbose-1)
         if not do_resort:
-            compare_integers(True, np.allclose(solution.rotation.T, perturbation.rotation), 'rotations transpose')
+            compare_integers(True, np.allclose(solution.rotation.T, perturbation.rotation), 'rotations transpose', verbose=verbose-1)
         if solution.mirror:
-            compare_integers(True, do_mirror, 'mirror allowed')
+            compare_integers(True, do_mirror, 'mirror allowed', verbose=verbose-1)
 
     def set_fragment_pattern(self, frl, frt, frc, frm):
         """Set fragment member data through public method analogous to psi4.core.Molecule"""

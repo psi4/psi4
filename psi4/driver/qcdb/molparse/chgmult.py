@@ -446,7 +446,7 @@ def validate_and_fill_chgmult(zeff,
             if all(assessment):
                 return candidate
         else:
-            err = """Inconstent or unspecified chg/mult: sys chg: {}, frag chg: {}, sys mult: {}, frag mult: {}""".format(
+            err = """Inconsistent or unspecified chg/mult: sys chg: {}, frag chg: {}, sys mult: {}, frag mult: {}""".format(
                 molecular_charge, fragment_charges, molecular_multiplicity, fragment_multiplicities)
             if verbose > -1:
                 print('\n\n' + '\n'.join(text))

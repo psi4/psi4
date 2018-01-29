@@ -59,7 +59,7 @@ def molecule_get_attr(self, name):
     return object.__getattribute__(self, name)
 
 
-def molecule_from_arrays(geom,
+def molecule_from_arrays(geom=None,
                          elea=None,
                          elez=None,
                          elem=None,
