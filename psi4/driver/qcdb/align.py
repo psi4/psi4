@@ -682,14 +682,14 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
         Number of atoms for which to prepare an atom mapping.
     do_resort : bool or array-like, optional
         Whether to randomly shuffle atoms (`True`) or leave 1st atom 1st, etc. (`False`)
-        or shuffle according to specified indices (e.g., [2, 1, 0])
+        or shuffle according to specified (nat, ) indices (e.g., [2, 1, 0])
     do_shift : bool or array-like, optional
         Whether to generate a random atom shift on interval [-3, 3) in each
         dimension (`True`) or leave at current origin (`False`) or shift along
-        specified vector (e.g., np.array([0., 1., -1.])).
+        specified (3, ) vector (e.g., np.array([0., 1., -1.])).
     do_rotate : bool or array-like, optional
         Whether to generate a random 3D rotation according to algorithm of Arvo (`True`)
-        or leave at current orientation (`False`) or rotate with specified matrix.
+        or leave at current orientation (`False`) or rotate with specified (3, 3) matrix.
     deflection : float, optional
         If `do_rotate`, how random a rotation: 0.0 is no change, 0.1 is small
         perturbation, 1.0 is completely random.
