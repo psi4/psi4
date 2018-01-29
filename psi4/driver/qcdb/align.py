@@ -599,6 +599,9 @@ def kabsch_align(rgeom, cgeom, weight=None):
     R = rgeom
     C = cgeom
     N = rgeom.shape[0]
+    if np.allclose(R, C, atol=1.e-8):
+        # can hit a mixed non-identity translation/rotation, so head off
+        return 0., np.identity(3), np.zeros(3)
 
     Rcentroid = R.sum(axis=0) / N
     Ccentroid = C.sum(axis=0) / N

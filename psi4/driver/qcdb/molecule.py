@@ -1263,15 +1263,53 @@ class Molecule(LibmintsMolecule):
         molrec['real'] = np.array([bool(self.Z(at)) for at in range(nat)])
         molrec['elbl'] = np.array([self.label(at)[len(self.symbol(at)):].lower() for at in range(nat)])
 
-        molrec['fragment_separators'] = [int(f[0]) for f in self.get_fragments()[1:]]  # np.int --> int
-        molrec['fragment_types'] = self.get_fragment_types()
-        molrec['fragment_charges'] = [float(f) for f in self.get_fragment_charges()]
-        molrec['fragment_multiplicities'] = self.get_fragment_multiplicities()
+        fragments = self.get_fragments()
+        fragment_charges = [float(f) for f in self.get_fragment_charges()]
+        fragment_multiplicities = self.get_fragment_multiplicities()
+
+        # do trimming not performed in Molecule class b/c fragment_* member data never directly exposed
+        for ifr, fr in enumerate(self.get_fragment_types()):
+            if fr == 'Ghost':
+                fragment_charges[ifr] = 0.
+                fragment_multiplicities[ifr] = 1
+            elif fr == 'Absent':
+                del fragments[ifr]
+                del fragment_charges[ifr]
+                del fragment_multiplicities[ifr]
+
+        molrec['fragment_separators'] = [int(f[0]) for f in fragments[1:]]  # np.int --> int
+        molrec['fragment_charges'] = fragment_charges
+        molrec['fragment_multiplicities'] = fragment_multiplicities
 
         molrec['molecular_charge'] = float(self.molecular_charge())
         molrec['molecular_multiplicity'] = self.multiplicity()
 
-        return molrec
+        # * mass number (elea) untouched by qcdb.Molecule/psi4.core.Molecule and
+        #   likely to be array of -1s, so let from_arrays fill in the values and
+        #   (1) don't complain about the difference and
+        #   (2) return the from_arrays filled-in values
+        # * from.arrays is expecting speclabel "Co_userlbl" for elbl, but we're
+        #   sending "_userlbl", hence speclabel=False
+        forgive = ['elea']
+
+        # * from_arrays and comparison lines below are quite unnecessary to
+        #   to_dict, but is included as a check. in practice, only fills in mass
+        #   numbers and heals user chgmult.
+        from . import molparse
+        try:
+            validated_molrec = molparse.from_arrays(**molrec, speclabel=False)
+        except ValidationError as err:
+            # * this can legitimately happen if total chg or mult has been set
+            #   independently b/c fragment chg/mult not reset. so try again.
+            print('Have you been meddling with chgmult?')
+            molrec['fragment_charges'] = [None] * len(fragments)
+            molrec['fragment_multiplicities'] = [None] * len(fragments)
+            validated_molrec = molparse.from_arrays(**molrec, speclabel=False)
+            forgive.append('fragment_charges')
+            forgive.append('fragment_multiplicities')
+        compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
+
+        return validated_molrec
 
     @classmethod
     def from_dict(cls, molrec):
@@ -1305,16 +1343,16 @@ class Molecule(LibmintsMolecule):
             mol.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
                          Z, label, molrec['elea'][iat])
             # TODO charge and 2nd elez site
+            # TODO real back to type Ghost?
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
         fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
         fragment_separators = np.insert(fragment_separators, 0, 0)
-        #fragment_separators = np.insert(molrec['fragment_separators'], 0, 0)
         fragment_separators = np.append(fragment_separators, nat)
         fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
 
         mol.set_fragment_pattern(fragments,
-                                 molrec['fragment_types'],
+                                 ['Real'] * len(fragments),
                                  [int(f) for f in molrec['fragment_charges']],
                                  molrec['fragment_multiplicities'])
 
