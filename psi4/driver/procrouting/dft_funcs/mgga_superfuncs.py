@@ -230,6 +230,9 @@ def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 def build_scan_superfunctional(name, npoints, deriv, restricted):
+    # Disabled below, no SCAN correlation in LibXC 3.0.0
+    # SCAN correlation results unreliable.
+
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -245,7 +248,6 @@ def build_scan_superfunctional(name, npoints, deriv, restricted):
 
     # Add member functionals
     sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_SCAN', restricted))
-    #sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
     sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_SCAN', restricted))
 
     # Call this last
@@ -309,7 +311,7 @@ mgga_superfunc_list = {
     "mgga_ms0": build_mgga_ms0_superfunctional,
     "mgga_ms1": build_mgga_ms1_superfunctional,
     "mgga_ms2": build_mgga_ms2_superfunctional,
-    "scan": build_scan_superfunctional,
+#    "scan": build_scan_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "tpss": build_tpss_superfunctional,
     "revtpss": build_revtpss_superfunctional,
 }

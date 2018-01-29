@@ -292,6 +292,8 @@ def build_sogga11_x_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 def build_scan0_superfunctional(name, npoints, deriv, restricted):
+    # Disabled below, no SCAN correlation in LibXC 3.0.0
+    # SCAN correlation results unreliable.
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -409,7 +411,7 @@ hyb_superfunc_list = {
     "hf": build_hf_superfunctional,
     "scf": build_hf_superfunctional,
     "hf3c": build_hf3c_superfunctional,
-    "scan0": build_scan0_superfunctional,
+#    "scan0": build_scan0_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "sogga11-x": build_sogga11_x_superfunctional,
     "mn15": build_mn15_superfunctional,
     "pw6b95": build_pw6b95_superfunctional,
