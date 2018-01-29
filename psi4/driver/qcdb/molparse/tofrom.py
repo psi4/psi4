@@ -25,6 +25,7 @@ def from_arrays(geom=None,
                 molecular_charge=None,
                 molecular_multiplicity=None,
                 speclabel=True,
+                zero_ghost_fragments=False,
                 nonphysical=False,
                 mtol=1.e-3,
                 verbose=1):
@@ -131,7 +132,7 @@ def from_arrays(geom=None,
 
     molinit.update(validate_and_fill_fragments( nat,
                                                 fragment_separators=fragment_separators,
-                                                fragment_types=fragment_types,
+                                                #fragment_types=fragment_types,
                                                 fragment_charges=fragment_charges,
                                                 fragment_multiplicities=fragment_multiplicities))
 
@@ -142,6 +143,7 @@ def from_arrays(geom=None,
                                                 fragment_charges=molinit['fragment_charges'],
                                                 molecular_multiplicity=molecular_multiplicity,
                                                 fragment_multiplicities=molinit['fragment_multiplicities'],
+                                                zero_ghost_fragments=zero_ghost_fragments,
                                                 verbose=verbose))
 
     return molinit

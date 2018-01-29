@@ -62,6 +62,7 @@ def validate_and_fill_chgmult(zeff,
                               fragment_charges,
                               molecular_multiplicity,
                               fragment_multiplicities,
+                              zero_ghost_fragments=False,
                               verbose=1):
     """
     Applies physical constraints and sensible defaults to reconciling and
@@ -90,7 +91,16 @@ def validate_and_fill_chgmult(zeff,
         unknown. Expected pre-defaulted so even if nothing known if
         `fragment_separators` breaks `zeff` into `nfr=2` fragments, input
         value should be `fragment_multiplicities=[None, None]`.
-    verbose : int
+    zero_ghost_fragments : bool, optional
+        Fragments composed entirely of ghost atoms (Zeff=0) are required to have
+        chgmult `0 1`. When `False`, violations of this will cause a
+        ValidationError. When `True`, treat ghost fragments indicated by `zeff` to
+        contain superior information over chgmult arguments that might still
+        correspond to full-real molecule. Clears information from
+        `molecular_charge` and `molecular_multiplicity` and sets ghost fragments
+        to `0 1`, leaving other positions free to readjust. Unused (prefer to set
+        up such manipulations outside function call) but works.
+    verbose : int, optional
         Amount of printing.
 
     Notes
@@ -299,6 +309,17 @@ def validate_and_fill_chgmult(zeff,
 
     cgmp_range = []  # tests that the final value must pass to be valid
     cgmp_rules = []  # key to what rules in cgmp_range are T/F
+
+    real_fragments = np.array([not all(f == 0 for f in felez[ifr]) for ifr in range(nfr)])
+    all_fc_known = all(f is not None for f in fragment_charges)
+    all_fm_known = all(f is not None for f in fragment_multiplicities)
+
+    if zero_ghost_fragments and not all(real_fragments):
+        print('possibly adjusting charges')
+        molecular_charge = None
+        fragment_charges = [(fr if real_fragments[ifr] else 0.0) for ifr, fr in enumerate(fragment_charges)]
+        molecular_multiplicity = None
+        fragment_multiplicities = [(fr if real_fragments[ifr] else 1) for ifr, fr in enumerate(fragment_multiplicities)]
 
     # <<< assert broad physical requirements
 

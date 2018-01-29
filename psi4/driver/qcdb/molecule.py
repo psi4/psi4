@@ -1161,13 +1161,14 @@ class Molecule(LibmintsMolecule):
                     fix_symmetry=None,
 
                     fragment_separators=None,
-                    fragment_types=None,
+                    #fragment_types=None,
                     fragment_charges=None,
                     fragment_multiplicities=None,
 
                     molecular_charge=None,
                     molecular_multiplicity=None,
 
+                    zero_ghost_fragments=False,
                     nonphysical=False,
                     mtol=1.e-3,
                     verbose=1,
@@ -1210,11 +1211,12 @@ class Molecule(LibmintsMolecule):
                                       fix_orientation=fix_orientation,
                                       fix_symmetry=fix_symmetry,
                                       fragment_separators=fragment_separators,
-                                      fragment_types=fragment_types,
+                                      #fragment_types=fragment_types,
                                       fragment_charges=fragment_charges,
                                       fragment_multiplicities=fragment_multiplicities,
                                       molecular_charge=molecular_charge,
                                       molecular_multiplicity=molecular_multiplicity,
+                                      zero_ghost_fragments=zero_ghost_fragments,
                                       nonphysical=nonphysical,
                                       mtol=mtol,
                                       verbose=verbose)
