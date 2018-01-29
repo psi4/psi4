@@ -2553,6 +2553,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       determined by |globals__writer_file_label| (if set), or else by the name
       of the output file plus the name of the current molecule. -*/
       options.add_bool("NORMAL_MODES_WRITE", false);
+      /*- Do discount rotational degrees of freedom in a finite difference
+      frequency calculation. Turned off at non-stationary geometries and
+      in the presence of external perturbations. -*/
+      options.add_bool("FD_PROJECT", true);
   }
   if (name == "OCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/

@@ -30,7 +30,7 @@ def load_hessian(shess, dtype):
     return nhess
 
 
-def vibanal_str(mass, coord, fcm, hess=None):
+def vibanal_str(mass, coord, fcm, hess=None, project_trans=True, project_rot=True):
 
     if hess is None:
         nmwhess = load_hessian(fcm, dtype='fcmfinal')
@@ -46,7 +46,8 @@ def vibanal_str(mass, coord, fcm, hess=None):
     wfn = psi4.core.Wavefunction.build(mol, "STO-3G")  # dummy, obviously. only used for SALCs
     basisset = wfn.basisset()
     
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, basisset, irrep_labels)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, basisset, irrep_labels,
+                                                  project_trans=project_trans, project_rot=project_rot)
     print(vibtext)
     print(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='q', atom_lbl=symbols)) #, groupby=-1))
     
@@ -920,3 +921,171 @@ ch4_hf_321g_thermoinfo = {
 
 qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega'])
 
+
+# <<<  Section VI: Non-stationary geometries  >>>
+
+# Cfour on quantum chemists' water
+#   cfour_CALC_level hf
+#   basis cc-pvdz
+#   cfour_SCF_CONV 12
+#   cfour_vibration findif
+#   cfour_vibration exact       # TOGGLE analytic Hess (analytic)
+#   cfour_FD_PROJECT off        # TOGGLE Hess by findif G, project_rot=False --> RV-space (findifrot)
+#   cfour_FD_PROJECT on         # TOGGLE Hess by findif G, project_rot=True --> V-space (findifproj)
+
+
+c4_neqh2o_xyz = """
+O          0.0 0.0 0.0
+H          0.0 1.0 0.0
+H          0.0 0.0 1.0
+"""
+
+c4_neqh2o_mass = [15.994914630,      1.007825035,      1.007825035]
+
+c4_neqh2o_fcm_analytic = """
+    3    9
+        0.0711843445        0.0000000000        0.0000000000
+       -0.0355921722        0.0000000000        0.0000000000
+       -0.0355921722        0.0000000000        0.0000000000
+        0.0000000000        0.4725104616        0.0000000000
+        0.0000000000       -0.2362552308       -0.2006630586
+        0.0000000000       -0.2362552308        0.2006630586
+        0.0000000000        0.0000000000        0.4698256319
+        0.0000000000       -0.1475753402       -0.2349128160
+        0.0000000000        0.1475753402       -0.2349128160
+       -0.0355921722        0.0000000000        0.0000000000
+        0.0234474351        0.0000000000        0.0000000000
+        0.0121447371        0.0000000000        0.0000000000
+        0.0000000000       -0.2362552308       -0.1475753402
+        0.0000000000        0.2885428832        0.1741191993
+        0.0000000000       -0.0522876525       -0.0265438592
+        0.0000000000       -0.2006630586       -0.2349128160
+        0.0000000000        0.1741191993        0.2234392863
+        0.0000000000        0.0265438592        0.0114735296
+       -0.0355921722        0.0000000000        0.0000000000
+        0.0121447371        0.0000000000        0.0000000000
+        0.0234474351        0.0000000000        0.0000000000
+        0.0000000000       -0.2362552308        0.1475753402
+        0.0000000000       -0.0522876525        0.0265438592
+        0.0000000000        0.2885428832       -0.1741191993
+        0.0000000000        0.2006630586       -0.2349128160
+        0.0000000000       -0.0265438592        0.0114735296
+        0.0000000000       -0.1741191993        0.2234392863
+"""
+
+c4_neqh2o_fcm_findifproj = """
+    3    9
+        0.0000000000        0.0000000000        0.0000000000
+       -0.0000000000        0.0000000000        0.0000000000
+       -0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.4262958076        0.0000000000
+        0.0000000000       -0.2131479038       -0.2131479038
+        0.0000000000       -0.2131479038        0.2131479038
+        0.0000000000        0.0000000000        0.4698256163
+        0.0000000000       -0.1475753470       -0.2349128081
+        0.0000000000        0.1475753470       -0.2349128081
+       -0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+       -0.0000000000        0.0000000000        0.0000000000
+        0.0000000000       -0.2131479038       -0.1475753470
+        0.0000000000        0.2769892550        0.1803616254
+        0.0000000000       -0.0638413512       -0.0327862784
+        0.0000000000       -0.2131479038       -0.2349128081
+        0.0000000000        0.1803616254        0.2240303560
+        0.0000000000        0.0327862784        0.0108824522
+       -0.0000000000        0.0000000000        0.0000000000
+       -0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000       -0.2131479038        0.1475753470
+        0.0000000000       -0.0638413512        0.0327862784
+        0.0000000000        0.2769892550       -0.1803616254
+        0.0000000000        0.2131479038       -0.2349128081
+        0.0000000000       -0.0327862784        0.0108824522
+        0.0000000000       -0.1803616254        0.2240303560
+"""
+
+c4_neqh2o_fcm_findifrot = """
+    3    9
+        0.0711843601        0.0000000000        0.0000000000
+       -0.0355921801        0.0000000000        0.0000000000
+       -0.0355921801        0.0000000000        0.0000000000
+        0.0000000000        0.4725103356        0.0000000000
+        0.0000000000       -0.2362551678       -0.2006630655
+        0.0000000000       -0.2362551678        0.2006630655
+        0.0000000000        0.0000000000        0.4698256163
+        0.0000000000       -0.1475753470       -0.2349128081
+        0.0000000000        0.1475753470       -0.2349128081
+       -0.0355921801        0.0000000000        0.0000000000
+        0.0234474448        0.0000000000        0.0000000000
+        0.0121447353        0.0000000000        0.0000000000
+        0.0000000000       -0.2362551678       -0.1475753470
+        0.0000000000        0.2885428870        0.1741192062
+        0.0000000000       -0.0522877192       -0.0265438592
+        0.0000000000       -0.2006630655       -0.2349128081
+        0.0000000000        0.1741192062        0.2234392406
+        0.0000000000        0.0265438592        0.0114735676
+       -0.0355921801        0.0000000000        0.0000000000
+        0.0121447353        0.0000000000        0.0000000000
+        0.0234474448        0.0000000000        0.0000000000
+        0.0000000000       -0.2362551678        0.1475753470
+        0.0000000000       -0.0522877192        0.0265438592
+        0.0000000000        0.2885428870       -0.1741192062
+        0.0000000000        0.2006630655       -0.2349128081
+        0.0000000000       -0.0265438592        0.0114735676
+        0.0000000000       -0.1741192062        0.2234392406
+"""
+
+w_right = 3448.7842  # value when rotations allowed to mix in at non-eq geom
+w_wrong = 3446.9559  # value when rotations not computed (findif) or rashly projected out (analysis)
+
+projtrans = True
+projrot = False
+
+c4_neqh2o_analytic_vibinfo = vibanal_str(mass=c4_neqh2o_mass, coord=c4_neqh2o_xyz, fcm=c4_neqh2o_fcm_analytic,
+                                         project_trans=projtrans, project_rot=projrot)
+c4_neqh2o_analytic_vibonly = qcdb.vib.filter_nonvib(c4_neqh2o_analytic_vibinfo)
+
+c4_neqh2o_findifproj_vibinfo = vibanal_str(mass=c4_neqh2o_mass, coord=c4_neqh2o_xyz, fcm=c4_neqh2o_fcm_findifproj,
+                                           project_trans=projtrans, project_rot=projrot)
+c4_neqh2o_findifproj_vibonly = qcdb.vib.filter_nonvib(c4_neqh2o_findifproj_vibinfo)
+
+c4_neqh2o_findifrot_vibinfo = vibanal_str(mass=c4_neqh2o_mass, coord=c4_neqh2o_xyz, fcm=c4_neqh2o_fcm_findifrot,
+                                          project_trans=projtrans, project_rot=projrot)
+c4_neqh2o_findifrot_vibonly = qcdb.vib.filter_nonvib(c4_neqh2o_findifrot_vibinfo)
+
+qcdb.compare_values(w_right, c4_neqh2o_analytic_vibonly['omega'].data[-2].real, 0.2, 'Cfour analytic, analysis-T-projected mode')
+qcdb.compare_values(w_wrong, c4_neqh2o_findifproj_vibonly['omega'].data[-2].real, 0.2, 'Cfour G-findif-TR-projected, analysis-T-projected mode')
+qcdb.compare_values(w_right, c4_neqh2o_findifrot_vibonly['omega'].data[-2].real, 0.2, 'Cfour G-findif-T-projected, analysis-T-projected mode')
+
+qcdb.compare_vibinfos(c4_neqh2o_analytic_vibonly, c4_neqh2o_findifrot_vibonly, 3, 'Cfour analytic vs. Cfour G-findif-T-projected')
+
+psi4.set_options({'basis':'cc-pvdz',
+                  'g_convergence': 'gau_verytight',
+                  'e_convergence': 10,
+                  'd_convergence': 10,
+                  'points': 5,
+                  'scf_type': 'pk'})
+
+h2o = psi4.geometry(c4_neqh2o_xyz)
+
+# findif-by-G, auto inclusion of rot dof b/c non-eq
+e, wfn = psi4.frequency('hf', return_wfn=True, molecule=h2o, dertype=1)
+pvibinfo_1vr = wfn.frequency_analysis
+pvibonly_1vr = qcdb.vib.filter_nonvib(pvibinfo_1vr)
+
+qcdb.compare_vibinfos(c4_neqh2o_analytic_vibonly, pvibonly_1vr, 3, 'Cfour analytic vs. Psi4 G-findif-T-projected')
+
+# analytic, always include rot dof
+e, wfn = psi4.frequency('hf', return_wfn=True, molecule=h2o, dertype=2)
+pvibinfo_2 = wfn.frequency_analysis
+pvibonly_2 = qcdb.vib.filter_nonvib(pvibinfo_2)
+
+qcdb.compare_vibinfos(c4_neqh2o_analytic_vibonly, pvibonly_2, 3, 'Cfour analytic vs. Psi4 analytic')
+
+# even though same non-eq geometry, forcibly turn off rot dof
+psi4.set_options({'fd_project': True})
+e, wfn = psi4.frequency('hf', return_wfn=True, molecule=h2o, dertype=1)
+pvibinfo_1v = wfn.frequency_analysis
+pvibonly_1v = qcdb.vib.filter_nonvib(pvibinfo_1v)
+
+qcdb.compare_vibinfos(c4_neqh2o_findifproj_vibonly, pvibonly_1v, 3, 'Cfour G-findif-TR-projected vs. Psi4 G-findif-TR-projected')

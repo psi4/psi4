@@ -1263,6 +1263,7 @@ def hessian(name, **kwargs):
 
     optstash = p4util.OptionsState(
         ['FINDIF', 'HESSIAN_WRITE'],
+        ['FINDIF', 'FD_PROJECT'],
         )
 
     # Allow specification of methods to arbitrary order
@@ -1304,12 +1305,25 @@ def hessian(name, **kwargs):
             core.print_out("""hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
             dertype = 1
 
+    # At stationary point?
+    G0 = gradient(lowername, molecule=molecule, **kwargs)
+    nonzero_gradient = G0.rms() > 1.e-2  # pulled out of a hat
+    translations_projection_sound = not core.get_option('SCF', 'EXTERN') and \
+                                    not core.get_option('SCF', 'PERTURB_H')
+    rotations_projection_sound = translations_projection_sound and not nonzero_gradient
+    core.print_out('\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'.
+                   format(G0.rms(), '' if translations_projection_sound else 'not ',
+                   '' if rotations_projection_sound else 'not '))
+    if not core.has_option_changed('FINDIF', 'FD_PROJECT'):
+        core.set_local_option('FINDIF', 'FD_PROJECT', rotations_projection_sound)
+
     # Does an analytic procedure exist for the requested method?
     if dertype == 2:
         core.print_out("""hessian() will perform analytic frequency computation.\n""")
 
         # We have the desired method. Do it.
         wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
+        wfn.set_gradient(G0)
         optstash.restore()
         optstash_conv.restore()
 
@@ -1445,6 +1459,7 @@ def hessian(name, **kwargs):
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
         H = core.fd_freq_1(molecule, gradients, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(H)
+        wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
@@ -1580,6 +1595,7 @@ def hessian(name, **kwargs):
         # Assemble Hessian from energies
         H = core.fd_freq_0(molecule, energies, irrep)
         wfn.set_hessian(H)
+        wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
@@ -1723,8 +1739,13 @@ def frequency(name, **kwargs):
     if freq_mode == 'sow':
         return 0.0
 
+    # Project final frequencies?
+    translations_projection_sound = not core.get_option('SCF', 'EXTERN') and \
+                                    not core.get_option('SCF', 'PERTURB_H')
+    rotations_projection_sound = translations_projection_sound and wfn.gradient().rms() < 1.e-2  # aforementioned hat
+
     irrep = kwargs.get('irrep', None)
-    vibinfo = vibanal_wfn(wfn, irrep=irrep)
+    vibinfo = vibanal_wfn(wfn, irrep=irrep, project_trans=translations_projection_sound, project_rot=rotations_projection_sound)
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
     wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
     wfn.frequency_analysis = vibinfo
@@ -1742,7 +1763,7 @@ def frequency(name, **kwargs):
         return core.get_variable('CURRENT ENERGY')
 
 
-def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None):
+def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
     # TODO should go back to private
     import numpy as np
 
@@ -1770,7 +1791,8 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None):
     m = np.asarray([mol.mass(at) for at in range(mol.natom())])
     irrep_labels = mol.irrep_labels()
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels,
+                                                  project_trans=project_trans, project_rot=project_rot)
 
     core.print_out(vibtext)
     core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
@@ -1789,7 +1811,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None):
                                       sigma=rsn,
                                       rotor_type=mol.rotor_type(),
                                       rot_const=np.asarray(mol.rotational_constants()),
-                                      E0=wfn.energy())
+                                      E0=core.get_variable('CURRENT ENERGY'))  # someday, wfn.energy()
 
         core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
         core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
