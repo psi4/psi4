@@ -17,7 +17,8 @@ aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVTZ-jkfit")
 # setup ~
 nbf = primary.nbf()
 naux = aux.nbf()
-mem = 1000000
+mem = 100000
+mem_bump = naux * naux
 ntransforms = 6
 
 # form metric
@@ -77,7 +78,7 @@ for method in methods:
     for form in forms:
         if(form != 'pqQ' and method == 'DIRECT_iaQ'): continue
         for AO_core in [False, True]:
-            for MO_core in [True, False]:
+            for MO_core in [False, True]:
                 for hold_met in [False, True]:
                             
                     # get object
@@ -85,7 +86,9 @@ for method in methods:
                     
                     # set test options
                     dfh.set_method(method)
-                    dfh.set_memory(mem)
+                    memory = mem_bump if hold_met else 0
+                    memory += 10*mem if AO_core else mem
+                    dfh.set_memory(memory)
                     dfh.set_AO_core(AO_core)
                     dfh.set_MO_core(MO_core)
                     dfh.hold_met(hold_met)
@@ -113,11 +116,13 @@ for method in methods:
                     test_string = 'Alg: ' + method + ' + ' + form + ' core (AOs, MOs, met): [' 
                     test_string += str(AO_core) + ', ' + str(MO_core) + ', ' + str(hold_met) +  ']' 
 
+                    print(test_string)
                     # am i right?
                     for i in range(ntransforms):
                         if(form == 'pqQ'):    
                             psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pqQ[i], 9, test_string)
                         elif(form == 'pQq'):
+                            #print(np.linalg.norm(np.asarray(dfh_Qmo[i])), np.linalg.norm(Qmo_pqQ[i])) 
                             psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pQq[i], 9, test_string)
                         else:
                             psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, test_string)

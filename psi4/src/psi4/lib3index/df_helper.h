@@ -288,11 +288,11 @@ class DF_Helper {
     void prepare_AO_core();
     void compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+    void compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
+    void compute_sparse_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
+    void compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                            std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
@@ -364,8 +364,9 @@ class DF_Helper {
     struct stream {
         FILE* fp;
         std::string op;
+        bool exists = false;
     };
-    std::map<std::string, stream> file_status_;
+    std::map<std::string, stream> file_streams_;
     FILE* stream_check(std::string filename, std::string op);
 
     // => FILE IO machinery <=

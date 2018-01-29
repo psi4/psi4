@@ -62,7 +62,7 @@ DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
 }
 DF_Helper::~DF_Helper() {
     // close streams
-    for (auto& kv : file_status_) fclose(kv.second.fp);
+    for (auto& kv : file_streams_) fclose(kv.second.fp);
 
     // destroy all files
     std::string file1, file2;
@@ -381,7 +381,7 @@ void DF_Helper::prepare_AO() {
         // compute
         timer_on("DFH: Total Workflow");
         timer_on("DFH: AO Construction");
-        compute_pQq_blocking_p(start, stop, Mp, eri);
+        compute_sparse_pQq_blocking_p(start, stop, Mp, eri);
         timer_off("DFH: AO Construction");
         timer_on("DFH: AO-Met. Contraction");
         
@@ -434,7 +434,7 @@ void DF_Helper::prepare_AO_core() {
         if(direct_iaQ_) {
             compute_dense_Qpq_blocking_Q(0, Qshells_ - 1, &Ppq_[0], eri);
         } else {
-            compute_pQq_blocking_p(0, pshells_ - 1, &Ppq_[0], eri);
+            compute_sparse_pQq_blocking_p(0, pshells_ - 1, &Ppq_[0], eri);
         }        
         timer_off("DFH: AO Construction");
 
@@ -463,7 +463,7 @@ void DF_Helper::prepare_AO_core() {
 
             // compute
             timer_on("DFH: AO Construction");
-            compute_pQq_blocking_p_symm(start, stop, Mp, eri);
+            compute_sparse_pQq_blocking_p_symm(start, stop, Mp, eri);
             timer_off("DFH: AO Construction");
 
             // contract metric
@@ -627,23 +627,23 @@ std::tuple<size_t, size_t, size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build
 }
 FILE* DF_Helper::stream_check(std::string filename, std::string op) {
     // timer_on("stream checks             ");
-    if (file_status_.find(filename) == file_status_.end()) {
-        // outfile->Printf("file not found: %s\n", filename.c_str());
-        file_status_[filename].op = op;
-        file_status_[filename].fp = fopen(filename.c_str(), op.c_str());
+    // if no current stream exists, then open one
+    if (file_streams_.count(filename) == 0) {
+        file_streams_[filename].op = op;
+        file_streams_[filename].fp = fopen(filename.c_str(), op.c_str());
     } else {
-        if (op.compare(file_status_[filename].op)) {
+        // if the current stream is open in a different mode, change streams 
+        if (op.compare(file_streams_[filename].op)) {
             // timer_on("stream change           ");
-            // outfile->Printf("changing......: %s\n", filename.c_str());
-            file_status_[filename].op = op;
-            fflush(file_status_[filename].fp);
-            fclose(file_status_[filename].fp);
-            file_status_[filename].fp = fopen(filename.c_str(), op.c_str());
+            file_streams_[filename].op = op;
+            fflush(file_streams_[filename].fp);
+            fclose(file_streams_[filename].fp);
+            file_streams_[filename].fp = fopen(filename.c_str(), op.c_str());
             // timer_off("stream change           ");
         }
     }
     // timer_off("stream checks             ");
-    return file_status_[filename].fp;
+    return file_streams_[filename].fp;
 }
 void DF_Helper::put_tensor(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                            std::pair<size_t, size_t> i2, std::string op) {
@@ -833,7 +833,7 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, co
 }
 
 SharedMatrix DF_Helper::check_function(){
-    
+    // test function for new integral machinery, will delete FIXME    
     // get each thread an eri object
     size_t rank = 0;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
@@ -919,7 +919,7 @@ void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t st
     }
 }
 
-void DF_Helper::compute_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+void DF_Helper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = Qshell_aggs_[start];
     size_t end = Qshell_aggs_[stop + 1] - 1;
@@ -974,7 +974,7 @@ void DF_Helper::compute_pQq_blocking_Q(const size_t start, const size_t stop, do
         }
     }
 }
-void DF_Helper::compute_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
+void DF_Helper::compute_sparse_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
@@ -1032,7 +1032,7 @@ void DF_Helper::compute_pQq_blocking_p(const size_t start, const size_t stop, do
         }
     }
 }
-void DF_Helper::compute_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
+void DF_Helper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                                   std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
@@ -1254,6 +1254,7 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
     // contract in steps
     if (std::get<2>(transf_[file])) {
         // determine blocking
+        // both pqQ and pQq formats block through p, which is index 0
         std::vector<std::pair<size_t, size_t>> steps;
         for (size_t i = 0; i < a0; i++) {
             count++;
@@ -1274,39 +1275,33 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
                 count = 0;
             }
         }
-
-        if (std::get<2>(transf_[file]) == 2) {
-            for (size_t i = 0; i < steps.size(); i++) {
-                size_t begin = std::get<0>(steps[i]);
-                size_t end = std::get<1>(steps[i]);
-                size_t bs = end - begin + 1;
-
-                get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
-                timer_on("DFH: Total Workflow");
+        
+        // grab val, the inner contractions are different depending on the form
+        size_t val = std::get<2>(transf_[file]);
+        for (size_t i = 0; i < steps.size(); i++) {
+            size_t begin = std::get<0>(steps[i]);
+            size_t end = std::get<1>(steps[i]);
+            size_t bs = end - begin + 1;
+ 
+            get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
+            timer_on("DFH: Total Workflow");
+            
+            if(val == 2) {
                 C_DGEMM('N', 'N', bs * a1, a2, a2, 1.0, Mp, a2, metp, a2, 0.0, Fp, a2);
-                timer_off("DFH: Total Workflow");
-                put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
-            }
-        } else {
-            for (size_t i = 0; i < steps.size(); i++) {
-                size_t begin = std::get<0>(steps[i]);
-                size_t end = std::get<1>(steps[i]);
-                size_t bs = end - begin + 1;
-
-                get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
-                timer_on("DFH: Total Workflow");
-                #pragma omp paralle form num_threads(nthreads_)
+            } else {
+                #pragma omp parallel for num_threads(nthreads_)
                 for(size_t i = 0; i < bs; i++){
                     C_DGEMM('N', 'N', a1, a2, a1, 1.0, metp, a1, &Mp[i*a1*a2], a2, 
                         0.0, &Fp[i*a1*a2], a2);
                 }
-                timer_off("DFH: Total Workflow");
-                put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
             }
+            timer_off("DFH: Total Workflow");
+            put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
         }
 
     } else {
         // determine blocking
+        // the Qpq format blocks through p, which is index 1
         std::vector<std::pair<size_t, size_t>> steps;
         for (size_t i = 0; i < a1; i++) {
             count++;
@@ -1454,14 +1449,14 @@ void DF_Helper::clear_all() {
 
         // close streams
         if (!MO_core_) {
-            if (direct_) fclose(file_status_[left].fp);
-            fclose(file_status_[right].fp);
+            if (direct_) fclose(file_streams_[left].fp);
+            fclose(file_streams_[right].fp);
         }
 
         // delete stream holders
         if (!MO_core_) {
-            if (direct_) file_status_.erase(left);
-            file_status_.erase(right);
+            if (direct_) file_streams_.erase(left);
+            file_streams_.erase(right);
         }
 
         // delete file holders, sizes
@@ -1563,15 +1558,15 @@ void DF_Helper::transform() {
     size_t wtmp = std::get<0>(info_);
     size_t wfinal = std::get<1>(info_);
 
-    // prep AO file stream
+    // prep AO file stream if STORE + !AO_core_
     if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
 
-    // blocking
+    // get Q blocking
     std::vector<std::pair<size_t, size_t>> Qsteps;
     std::pair<size_t, size_t> Qlargest = Qshell_blocks_for_transform(memory_, wtmp, wfinal, Qsteps);
     size_t max_block = std::get<1>(Qlargest);
 
-    // prepare eri buffers per thread
+    // prepare eri and C buffers per thread
     size_t nthread = nthreads_;
     std::vector<std::vector<double>> C_buffers(nthreads_);
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
@@ -1587,7 +1582,7 @@ void DF_Helper::transform() {
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
-    // allocate in-core transformed integrals (if necessary)
+    // allocate in-core transformed integrals if necessary
     if(MO_core_){
         for (auto& kv : transf_) {
             size_t size = std::get<1>(spaces_[std::get<0>(kv.second)]) * std::get<1>(spaces_[std::get<1>(kv.second)]);
@@ -1597,6 +1592,7 @@ void DF_Helper::transform() {
    
     // scope buffer declarations
     {
+
         // declare buffers
         // T: first tmp.  F: final transform. N: transposing buffer.
         std::vector<double> T;
@@ -1612,16 +1608,17 @@ void DF_Helper::transform() {
             Np = N.data();
         }
 
-        // AO buffer
+        // AO buffer, allocate if not in-core, else point to in-core
         std::vector<double> M;  
         double* Mp;
         if (!AO_core_) {
             M.reserve(std::get<0>(Qlargest));
             Mp = M.data();
-        } else
+        } else {
             Mp = Ppq_.data();
+        }
 
-        // transform in steps, blocking over the auxiliary basis.
+        // transform in steps, blocking over the auxiliary basis (Q blocks)
         for (size_t j = 0, bcount = 0, block_size; j < Qsteps.size(); j++, bcount += block_size) {
             
             // Qshell step info
@@ -1637,14 +1634,14 @@ void DF_Helper::transform() {
 
             // get AO chunk according to directives
             if (AO_core_) {
-                Mp = Ppq_.data();
+                ; // pass
             } else if (direct_iaQ_) {
                 timer_on("DFH: Total Workflow");
                 compute_dense_Qpq_blocking_Q(start, stop, Mp, eri);
                 timer_off("DFH: Total Workflow");
             } else if (direct_) {
                 timer_on("DFH: Total Workflow");
-                compute_pQq_blocking_Q(start, stop, Mp, eri);
+                compute_sparse_pQq_blocking_Q(start, stop, Mp, eri);
                 timer_off("DFH: Total Workflow");
             } else {
                 timer_on("DFH: Grabbing AOs");
@@ -1823,13 +1820,12 @@ void DF_Helper::transform() {
                     } else if (std::get<2>(transf_[kv.first]) == 0) {
                         C_DGEMM('N', 'N', a0, a1 * a2, a0, 1.0, metp, naux, Np, a1 * a2, 0.0, Lp, a1 * a2);
                     } else {
-                        #pragma omp paralle form num_threads(nthreads_)
+                        #pragma omp parallel for num_threads(nthreads_)
                         for(size_t i = 0; i < a0; i++){
                             C_DGEMM('N', 'N', a1, a2, a1, 1.0, metp, naux, &Np[i*a1*a2], a2, 
                                 0.0, &Lp[i*a1*a2], a2);
                         }
                     }
-                
                 }
             }
         }
@@ -1870,7 +1866,7 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
     int wsize, int bsize, double* Fp, int ind, bool bleft){
     
     // incoming transformed integrals to this function are in a Qpq format. 
-    // if MO_core is on, nothing is necessary
+    // if MO_core is on, do nothing
     // else, the buffers are put to disk.
     
     if(!MO_core_) {
@@ -1885,6 +1881,7 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
             put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, wsize - 1), 
                 std::make_pair(0, bsize - 1), op);
         }
+
     }
 
 }
@@ -1902,7 +1899,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
     std::string putf, op;
     if(!MO_core_) {
         putf = (!direct_ ? std::get<1>(files_[order_[ind]]) : std::get<0>(files_[order_[ind]]));
-        op = "ab";
+        op = "wb";
         bcount = 0;
     } else {
         lblock_size = naux;
@@ -2311,7 +2308,7 @@ void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<s
     check_matrix_size(key, M, i0, i1, i2);
 
     // you write over transformed integrals or you write new disk tensors
-    std::string op = (transf_.count(key) ? "r+b" : "ab");
+    std::string op = (files_.count(key) ? "r+b" : "wb");
     put_tensor(std::get<1>(files_[key]), M->pointer()[0], i0, i1, i2, op);
 }
 
@@ -2689,9 +2686,9 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     // better be careful
     remove(filename.c_str());
     rename(new_filename.c_str(), filename.c_str());
-    file_status_[filename] = file_status_[new_filename];
+    file_streams_[filename] = file_streams_[new_filename];
     stream_check(filename, "rb");
-    file_status_.erase(new_filename);
+    file_streams_.erase(new_filename);
 
     // keep tsizes_ separate and do not ovwrt sizes_ in case of STORE directive
     files_.erase(new_file);
@@ -2833,7 +2830,7 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
         // get AO chunk according to directive
         timer_on("DFH: Grabbing AOs");
         if (direct_) {
-            compute_pQq_blocking_Q(start, stop, Mp, eri);
+            compute_sparse_pQq_blocking_Q(start, stop, Mp, eri);
         } else if (!AO_core_)
             grab_AO(start, stop, Mp);
         timer_off("DFH: Grabbing AOs");
