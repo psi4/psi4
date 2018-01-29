@@ -1299,14 +1299,14 @@ class Molecule(LibmintsMolecule):
         #   numbers and heals user chgmult.
         from . import molparse
         try:
-            validated_molrec = molparse.from_arrays(**molrec, speclabel=False)
+            validated_molrec = molparse.from_arrays(**molrec, speclabel=False, verbose=0)
         except ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
             print('Have you been meddling with chgmult?')
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
-            validated_molrec = molparse.from_arrays(**molrec, speclabel=False)
+            validated_molrec = molparse.from_arrays(**molrec, speclabel=False, verbose=0)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)

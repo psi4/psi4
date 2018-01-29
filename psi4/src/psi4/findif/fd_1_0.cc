@@ -53,8 +53,9 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::l
 
     int Natom = mol->natom();
 
-    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
-    CdSalcList cdsalc(mol, 0x1, project, project);
+    bool t_project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
+    bool r_project = t_project && options.get_bool("FD_PROJECT");
+    CdSalcList cdsalc(mol, 0x1, t_project, r_project);
     int Nsalc = cdsalc.ncd();
 
     // Compute number of displacements - check with number of energies passed in

@@ -409,7 +409,8 @@ class BasisSet(object):
         self.molecule = Molecule.from_arrays(elem=[mol.symbol(center)],
                                              geom=mol.xyz(center),
                                              units='Bohr',
-                                             fix_com=True)
+                                             fix_com=True,
+                                             verbose=0)
         # Allocate arrays
         self.n_prim_per_shell = [0] * self.n_shells
         # The unique primitives

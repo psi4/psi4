@@ -269,7 +269,7 @@ def _phase_cols_to_max_element(arr, tol=1.e-2, verbose=1):
     return arr2
 
 
-def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
+def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=True, project_rot=True):
     """Like so much other Psi4 goodness, originally by @andysim
 
     Parameters
@@ -284,6 +284,10 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
         Basis set object (can be dummy, e.g., STO-3G) for SALCs.
     irrep_labels : list of str
         Irreducible representation labels.
+    project_trans : bool, optional
+        Idealized translations projected out of final vibrational analysis.
+    project_rot : bool, optional
+        Idealized rotations projected out of final vibrational analysis.
 
     Returns
     -------
@@ -369,9 +373,9 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
     nmwhess = hess.copy()
     text.append(mat_symm_info(nmwhess, lbl='non-mass-weighted Hessian') + ' (0)')
 
-    # get SALC object with trans & rot projected
+    # get SALC object, possibly w/o trans & rot
     mints = core.MintsHelper(basisset)
-    cdsalcs = mints.cdsalcs(0xFF, True, True)
+    cdsalcs = mints.cdsalcs(0xFF, project_trans, project_rot)
 
     Uh = collections.OrderedDict()
     for h, lbl in enumerate(irrep_labels):
@@ -380,10 +384,12 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
             Uh[lbl] = tmp
 
     # form projector of translations and rotations
-    TRspace = _get_TR_space(mass, geom, space='TR', tol=LINEAR_A_TOL)
+    space = ('T' if project_trans else '') + ('R' if project_rot else '')
+    TRspace = _get_TR_space(mass, geom, space=space, tol=LINEAR_A_TOL)
     nrt = TRspace.shape[0]
     text.append(
-        '  projection of translations and rotations removed {} degrees of freedom ({})'.format(nrt, nrt_expected))
+        '  projection of translations ({}) and rotations ({}) removed {} degrees of freedom ({})'.
+        format(project_trans, project_rot, nrt, nrt_expected))
 
     P = np.identity(3 * nat)
     for irt in TRspace:
@@ -404,7 +410,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
     pre_frequency_cm_1 = np.lib.scimath.sqrt(pre_force_constant_au) * uconv_cm_1
 
     pre_lowfreq = np.where(np.real(pre_frequency_cm_1) < 100.0)[0]
-    pre_lowfreq = np.append(pre_lowfreq, np.arange(nrt))  # catch at least nrt modes
+    pre_lowfreq = np.append(pre_lowfreq, np.arange(nrt_expected))  # catch at least nrt modes
     for lf in set(pre_lowfreq):
         vlf = pre_frequency_cm_1[lf]
         if vlf.imag > vlf.real:
@@ -463,7 +469,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
     vibinfo['gamma'] = VibrationAspect('irreducible representation', '', irrep_classification, '')
 
     lowfreq = np.where(np.real(frequency_cm_1) < 100.0)[0]
-    lowfreq = np.append(lowfreq, np.arange(nrt))  # catch at least nrt modes
+    lowfreq = np.append(lowfreq, np.arange(nrt_expected))  # catch at least nrt modes
     for lf in set(lowfreq):
         vlf = frequency_cm_1[lf]
         if vlf.imag > vlf.real:
@@ -471,6 +477,10 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels):
         else:
             text.append('  post-proj low-frequency mode: {:9.4f}  [cm^-1] ({})'.format(vlf.real, active[lf]))
     text.append('  post-proj  all modes:' + str(_format_omega(frequency_cm_1, 4)) + '\n')
+    if project_trans and not project_rot:
+        text.append('  Note that "Vibration"s include {} un-projected rotation-like modes.'.format(nrt_expected - 3))
+    elif not project_trans and not project_rot:
+        text.append('  Note that "Vibration"s include {} un-projected rotation-like and translation-like modes.'.format(nrt_expected))
 
     # general conversion factors, LAB II.11
     uconv_K = (psi_h * psi_na * 1.0e21) / (8 * np.pi * np.pi * psi_c)
@@ -531,7 +541,7 @@ def _format_omega(omega, decimals):
             freqs.append("""{:.{prec}f}i""".format(fr.imag, prec=decimals))
         else:
             freqs.append("""{:.{prec}f}""".format(fr.real, prec=decimals))
-    return np.asarray(freqs)
+    return np.array(freqs)
 
 
 def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
@@ -1022,6 +1032,11 @@ def _get_TR_space(m, geom, space='TR', tol=None, verbose=1):
         TRspace.append([T1, T2, T3])
     if 'R' in space:
         TRspace.append([R4, R5, R6])
+    if not TRspace:
+        # not sure about this, but it runs
+        ZZ = np.zeros_like(T1)
+        TRspace.append([ZZ])
+
     TRspace = np.vstack(TRspace)
 
     def orth(A, tol=tol):
