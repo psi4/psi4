@@ -149,7 +149,7 @@ old_psi4_data = {                     #TEST
   'HCTH407': 0.46277176698060885,     #TEST
   'HCTH147': 0.46238465771986625,     #TEST
     'SOGGA': 0.45733831961008775,     #TEST
-    'B97-2': 0.4562076272818558       #TEST
+    'B97-2': 0.4562076272818558,      #TEST
 }                                     #TEST
 
 for func in qchem_data.keys():                                                                        #TEST

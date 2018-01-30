@@ -80,7 +80,7 @@ qchem_data = {                        #TEST
     'X3LYP':   -76.3550695373,        #TEST
      'BLYP':   -76.3649513839,        #TEST
    'HCTH93':   -76.3690959506,        #TEST
-   'M06-HF':   -76.3438580561         #TEST
+   'M06-HF':   -76.3438580561,        #TEST
 # The following functionals are not included 
 # in Psi4 at the moment. 
 #   'PBEOP':   -76.3113060897,        #TEST
@@ -141,7 +141,7 @@ old_psi4_data = {                     #TEST
 'HCTH407': -76.37515280900291,        #TEST
 'HCTH147': -76.37958046443578,        #TEST
   'SOGGA': -75.97737386477169,        #TEST
-  'B97-2': -76.35924563701468         #TEST
+  'B97-2': -76.35924563701468,        #TEST
 }                                     #TEST
 
 for func in qchem_data.keys():                                                                        #TEST
