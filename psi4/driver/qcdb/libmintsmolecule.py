@@ -409,10 +409,10 @@ class LibmintsMolecule(object):
         """
         return self.atoms[atom].charge()
 
-    def A(self, atom):
-        """Mass number of atom (0-indexed)
+    def mass_number(self, atom):
+        """Mass number (A) of atom (0-indexed)
 
-        >>> print H2OH2O.A(4)
+        >>> print H2OH2O.mass_number(4)
         1
 
         """
@@ -502,10 +502,10 @@ class LibmintsMolecule(object):
         """
         return self.full_atoms[atom].charge()
 
-    def fA(self, atom):
+    def fmass_number(self, atom):
         """Mass number of atom (0-indexed)
 
-        >>> print H2OH2O.fA(4)
+        >>> print H2OH2O.fmass_number(4)
         1
 
         """
@@ -1000,7 +1000,7 @@ class LibmintsMolecule(object):
             # TODO if (Process::environment.options.get_int("PRINT") > 2) {
             text += "\n"
             for i in range(self.natom()):
-                Astr = '' if self.A(i) == -1 else str(self.A(i))
+                Astr = '' if self.mass_number(i) == -1 else str(self.mass_number(i))
                 text += """    %8s\n""" % (Astr + self.label(i))
                 for bas in self.atoms[i].basissets().keys():
                     text += """              %-15s %-20s""" % (bas,
@@ -1571,7 +1571,7 @@ class LibmintsMolecule(object):
         temp_charge = self.PYmolecular_charge
         temp_multiplicity = self.PYmultiplicity
         self.PYmolecular_charge = 0
-        self.PYmultiplicity = 1
+        high_spin_multiplicity = 1
 
         for fr in range(self.nfragments()):
             if self.fragment_types[fr] == 'Absent':
@@ -1579,7 +1579,7 @@ class LibmintsMolecule(object):
 
             if self.fragment_types[fr] == 'Real':
                 self.PYmolecular_charge += self.fragment_charges[fr]
-                self.PYmultiplicity += self.fragment_multiplicities[fr] - 1
+                high_spin_multiplicity += self.fragment_multiplicities[fr] - 1
 
             for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
                 self.full_atoms[at].compute()
@@ -1592,6 +1592,12 @@ class LibmintsMolecule(object):
         if self.nfragments() < 2:
             self.PYmolecular_charge = temp_charge
             self.PYmultiplicity = temp_multiplicity
+        else:
+            if (self.fragment_types.count('Real') == len(self.fragments)) and ((temp_multiplicity % 2) == (high_spin_multiplicity % 2)):
+                # give low-spin a chance, so long as ghost/absent fragments can't be complicating the picture
+                self.PYmultiplicity = temp_multiplicity
+            else:
+                self.PYmultiplicity = high_spin_multiplicity
 
     def update_geometry(self):
         """Updates the geometry, by (re)interpreting the string used to

@@ -141,9 +141,10 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n p4env python=$PYTHON_VER numpy       cmake ci-psi4-lt psi4-lt-mp gau2grid dftd3 gcp snsmp2 scipy -c psi4/label/dev -c psi4
+- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp gau2grid dftd3 gcp snsmp2 scipy -c psi4/label/dev -c psi4
 - source activate p4env
 - conda install hungarian networkx -c psi4
+- conda install deepdiff -c conda-forge
 - conda list
 before_script:
 - python -V
