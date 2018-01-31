@@ -2049,7 +2049,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     // => Get integrals from DF_Helper <= //
     auto dfh(std::make_shared<DF_Helper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
-    dfh->set_method("DIRECT");
+    dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
     dfh->initialize();
     dfh->print_header();
@@ -2067,16 +2067,16 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     dfh->add_space("a4", Cs[10]);
     dfh->add_space("b4", Cs[11]);
 
-    dfh->add_transformation("Aar", "a", "r", "pqQ");
-    dfh->add_transformation("Abs", "b", "s", "pqQ");
-    dfh->add_transformation("Bas", "a", "s1", "pqQ");
-    dfh->add_transformation("Bbr", "b", "r1", "pqQ");
-    dfh->add_transformation("Cas", "a2", "s", "pqQ");
-    dfh->add_transformation("Cbr", "b2", "r", "pqQ");
-    dfh->add_transformation("Dar", "a", "r3", "pqQ");
-    dfh->add_transformation("Dbs", "b", "s3", "pqQ");
-    dfh->add_transformation("Ear", "a4", "r", "pqQ");
-    dfh->add_transformation("Ebs", "b4", "s", "pqQ");
+    dfh->add_transformation("Aar", "a" , "r" );
+    dfh->add_transformation("Abs", "b" , "s" );
+    dfh->add_transformation("Bas", "a" , "s1");
+    dfh->add_transformation("Bbr", "b" , "r1");
+    dfh->add_transformation("Cas", "a2", "s" );
+    dfh->add_transformation("Cbr", "b2", "r" );
+    dfh->add_transformation("Dar", "a" , "r3");
+    dfh->add_transformation("Dbs", "b" , "s3");
+    dfh->add_transformation("Ear", "a4", "r" );
+    dfh->add_transformation("Ebs", "b4", "s" );
 
     dfh->transform();
 
@@ -2637,7 +2637,7 @@ void FISAPT::felst() {
     // => Get integrals from DF_Helper <= //
     auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
-    dfh->set_method("DIRECT");
+    dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
     dfh->initialize();
     dfh->print_header();
@@ -2645,8 +2645,8 @@ void FISAPT::felst() {
     dfh->add_space("a", matrices_["Locc0A"]);
     dfh->add_space("b", matrices_["Locc0B"]);
 
-    dfh->add_transformation("Aaa", "a", "a", "pqQ");
-    dfh->add_transformation("Abb", "b", "b", "pqQ");
+    dfh->add_transformation("Aaa", "a", "a");
+    dfh->add_transformation("Abb", "b", "b");
 
     dfh->transform();
 
@@ -2793,7 +2793,7 @@ void FISAPT::fexch() {
     // => Get integrals from DF_Helper <= //
     auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
-    dfh->set_method("DIRECT");
+    dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
     dfh->initialize();
     dfh->print_header();
@@ -2803,9 +2803,9 @@ void FISAPT::fexch() {
     dfh->add_space("b", Cs[2]);
     dfh->add_space("s", Cs[3]);
 
-    dfh->add_transformation("Aar", "a", "r", "pqQ");
-    dfh->add_transformation("Abs", "b", "s", "pqQ");
-
+    dfh->add_transformation("Aar", "a", "r");
+    dfh->add_transformation("Abs", "b", "s");
+    
     dfh->transform();
 
     // ==> Electrostatic Potentials <== //
@@ -3789,7 +3789,7 @@ void FISAPT::fdisp() {
 
     auto dfh(std::make_shared<DF_Helper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
-    dfh->set_method("DIRECT");
+    dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
     dfh->initialize();
     dfh->print_header();
@@ -3807,16 +3807,16 @@ void FISAPT::fdisp() {
     dfh->add_space("a4", Cs[10]);
     dfh->add_space("b4", Cs[11]);
 
-    dfh->add_transformation("Aar", "r", "a", "pqQ");
-    dfh->add_transformation("Abs", "s", "b", "pqQ");
-    dfh->add_transformation("Bas", "s1", "a", "pqQ");
-    dfh->add_transformation("Bbr", "r1", "b", "pqQ");
-    dfh->add_transformation("Cas", "s", "a2", "pqQ");
-    dfh->add_transformation("Cbr", "r", "b2", "pqQ");
-    dfh->add_transformation("Dar", "r3", "a", "pqQ");
-    dfh->add_transformation("Dbs", "s3", "b", "pqQ");
-    dfh->add_transformation("Ear", "r", "a4", "pqQ");
-    dfh->add_transformation("Ebs", "s", "b4", "pqQ");
+    dfh->add_transformation("Aar", "r" , "a" );
+    dfh->add_transformation("Abs", "s" , "b" );
+    dfh->add_transformation("Bas", "s1", "a" );
+    dfh->add_transformation("Bbr", "r1", "b" );
+    dfh->add_transformation("Cas", "s" , "a2");
+    dfh->add_transformation("Cbr", "r" , "b2");
+    dfh->add_transformation("Dar", "r3", "a" );
+    dfh->add_transformation("Dbs", "s3", "b" );
+    dfh->add_transformation("Ear", "r" , "a4");
+    dfh->add_transformation("Ebs", "s" , "b4");
 
     dfh->transform();
 

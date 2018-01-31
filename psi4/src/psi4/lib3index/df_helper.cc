@@ -1540,6 +1540,7 @@ void DF_Helper::print_order() {
     }
     outfile->Printf("\n\n     ==> DF_Helper:--End Transformations Information <==\n\n");
 }
+
 void DF_Helper::transform() {
 
     timer_on("DFH: transform()");
@@ -1619,6 +1620,7 @@ void DF_Helper::transform() {
         }
 
         // transform in steps, blocking over the auxiliary basis (Q blocks)
+        printf("Q steps: %d\n", Qsteps.size());
         for (size_t j = 0, bcount = 0, block_size; j < Qsteps.size(); j++, bcount += block_size) {
             
             // Qshell step info
@@ -1871,6 +1873,7 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
     
     if(!MO_core_) {
         
+        // "ab" is great here since we are actually appending.
         std::string putf = std::get<0>(files_[order_[ind]]);
         std::string op = "ab";
         
@@ -2023,7 +2026,10 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                 put_tensor(putf, Fp, std::make_pair(0, wsize - 1), std::make_pair(begin, end),
                            std::make_pair(0, bsize - 1), op);
             } else {
-                C_DCOPY(wsize * bsize * rblock_size, Fp, 1, Np, 1);
+                #pragma omp parallel for num_threads(nthreads_)
+                for (size_t x = 0; x < wsize; x++) {
+                    C_DCOPY(bsize * rblock_size, Fp, 1, &Np[x * lblock_size * bsize + bcount * bsize], 1);
+                }
             }
 
         }
@@ -2307,8 +2313,9 @@ void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<s
     check_file_tuple(key, i0, i1, i2);
     check_matrix_size(key, M, i0, i1, i2);
 
-    // you write over transformed integrals or you write new disk tensors
-    std::string op = (files_.count(key) ? "r+b" : "wb");
+    // "wb" is the way to go. the stream will change when when the tensor is read,
+    // but this should be extendible to back-and-forth read/writes.
+    std::string op = "wb"; 
     put_tensor(std::get<1>(files_[key]), M->pointer()[0], i0, i1, i2, op);
 }
 
@@ -2344,8 +2351,9 @@ void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t
     check_file_key(key);
     check_file_tuple(key, i0, i1, i2);
 
-    // you write over transformed integrals or you write new disk tensors
-    std::string op = (files_.count(key) ? "r+b" : "wb");
+    // "wb" is the way to go. the stream will change when when the tensor is read,
+    // but this should be extendible to back-and-forth read/writes.
+    std::string op = "wb";
     put_tensor(std::get<1>(files_[key]), b, i0, i1, i2, op);
 }
 
