@@ -57,7 +57,7 @@ std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_pt
     int nat = molecule->natom();
     std::vector<double> charges(nat);
     for (int i = 0; i < nat; ++i) {
-        charges[i] = molecule->fZ(i);
+        charges[i] = molecule->Z(i);
     }
 
     Matrix geom = molecule->geometry();
