@@ -5,6 +5,12 @@ import numpy as np
 from ..exceptions import *
 
 
+try:
+    long(1)
+except NameError:
+    long = int
+
+
 def from_arrays(geom=None,
                 elea=None,
                 elez=None,
@@ -72,7 +78,7 @@ def from_arrays(geom=None,
     units : {'Angstrom', 'Bohr'}
         Units for `geom`.
     input_units_to_au : float, optional
-        If `units='Angstrom'`, overrides consumer's value for [Å]-->[a0] conversion.
+        If `units='Angstrom'`, overrides consumer's value for [A]-->[a0] conversion.
     fix_com : bool
         Whether translation of `geom` is allowed or disallowed.
     fix_orientation : bool
@@ -327,7 +333,7 @@ def validate_and_fill_fragments(nat,
 
         if fragment_multiplicities is None:
             frm = [None] * nfr
-        elif all(f is None or (isinstance(f, (int, np.int64)) and f >= 1) for f in fragment_multiplicities):
+        elif all(f is None or (isinstance(f, (int, np.int64, long)) and f >= 1) for f in fragment_multiplicities):
             frm = fragment_multiplicities
         else:
             raise ValidationError("""fragment_multiplicities not among None or positive integer: {}""".format(fragment_multiplicities))

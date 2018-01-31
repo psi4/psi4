@@ -1225,6 +1225,9 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     mol->set_has_zmatrix(has_zmatrix);
     mol->set_has_cartesian(has_cart);
 
+    for (size_t i = 0, atom = 0; i < mol->fragments_.size(); ++i)
+        mol->fragment_types_.push_back(Real);
+
     if (pubcheminput) mol->symmetrize_to_abelian_group(1.0e-3);
 
     // Filter out EFP from Molecule
@@ -1238,7 +1241,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
         }
     }
     for (size_t i = 0, atom = 0; i < mol->fragments_.size(); ++i) {
-        mol->fragment_types_.push_back(Real);
         int frlen = mol->fragments_[i].second - mol->fragments_[i].first;
         mol->fragments_[i].first = atom;
         mol->fragments_[i].second = atom + frlen;
@@ -1338,12 +1340,14 @@ void Molecule::reinterpret_coordentries() {
     int temp_charge = molecular_charge_;
     int temp_multiplicity = multiplicity_;
     molecular_charge_ = 0;
-    multiplicity_ = 1;
+    int high_spin_multiplicity = 1;
+    int real_frags = 0;
     for (size_t fragment = 0; fragment < fragments_.size(); ++fragment) {
         if (fragment_types_[fragment] == Absent) continue;
         if (fragment_types_[fragment] == Real) {
             molecular_charge_ += fragment_charges_[fragment];
-            multiplicity_ += fragment_multiplicities_[fragment] - 1;
+            high_spin_multiplicity += fragment_multiplicities_[fragment] - 1;
+            ++real_frags;
         }
         for (int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom) {
             full_atoms_[atom]->compute();
@@ -1356,6 +1360,13 @@ void Molecule::reinterpret_coordentries() {
     if (fragments_.size() < 2) {
         molecular_charge_ = temp_charge;
         multiplicity_ = temp_multiplicity;
+    }
+    else {
+        if ((real_frags == fragments_.size()) && ((temp_multiplicity % 2) == (high_spin_multiplicity % 2)))
+            // give low-spin a chance, so long as ghost/absent fragments can't be complicating the picture
+            multiplicity_ = temp_multiplicity;
+        else
+            multiplicity_ = high_spin_multiplicity;
     }
 
     if (zmat_) {
@@ -2756,9 +2767,9 @@ double Molecule::charge(int atom) const { return atoms_[atom]->charge(); }
 
 double Molecule::fcharge(int atom) const { return full_atoms_[atom]->charge(); }
 
-int Molecule::A(int atom) const { return atoms_[atom]->A(); }
+int Molecule::mass_number(int atom) const { return atoms_[atom]->A(); }
 
-int Molecule::fA(int atom) const { return full_atoms_[atom]->A(); }
+int Molecule::fmass_number(int atom) const { return full_atoms_[atom]->A(); }
 
 void Molecule::set_nuclear_charge(int atom, double newZ) { atoms_[atom]->set_nuclear_charge(newZ); }
 

@@ -1106,7 +1106,8 @@ class Molecule(LibmintsMolecule):
 
         return ar
 
-    def to_arrays(self):
+    @staticmethod
+    def _raw_to_arrays(self):
         """Exports coordinate info into NumPy arrays.
 
         Returns
@@ -1225,7 +1226,8 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
-    def to_dict(self, force_c1=False, force_au=False):
+    @staticmethod
+    def _raw_to_dict(self, force_c1=False, force_au=False):
         """Serializes instance into Molecule dictionary."""
 
         molrec = {}
@@ -1258,26 +1260,34 @@ class Molecule(LibmintsMolecule):
             geom /= self.input_units_to_au()
         molrec['geom'] = geom.reshape((-1))
 
-        molrec['elea'] = np.array([self.A(at) for at in range(nat)])
+        molrec['elea'] = np.array([self.mass_number(at) for at in range(nat)])
         molrec['elez'] = np.array([el2z[self.symbol(at).upper()] for at in range(nat)])
         molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
         molrec['mass'] = np.array([self.mass(at) for at in range(nat)])
         molrec['real'] = np.array([bool(self.Z(at)) for at in range(nat)])
         molrec['elbl'] = np.array([self.label(at)[len(self.symbol(at)):].lower() for at in range(nat)])
 
-        fragments = self.get_fragments()
+        fragments = [x[:] for x in self.get_fragments()]
         fragment_charges = [float(f) for f in self.get_fragment_charges()]
         fragment_multiplicities = self.get_fragment_multiplicities()
 
         # do trimming not performed in Molecule class b/c fragment_* member data never directly exposed
-        for ifr, fr in enumerate(self.get_fragment_types()):
+        for ifr, fr in reversed(list(enumerate(self.get_fragment_types()))):
             if fr == 'Ghost':
                 fragment_charges[ifr] = 0.
                 fragment_multiplicities[ifr] = 1
             elif fr == 'Absent':
-                del fragments[ifr]
                 del fragment_charges[ifr]
                 del fragment_multiplicities[ifr]
+                # readjust atom indices for subsequent fragments
+                renum = fragments[ifr][0]
+                for iffr, ffr in enumerate(fragments):
+                    if iffr <= ifr:
+                        continue
+                    lenfr = ffr[1] - ffr[0]
+                    fragments[iffr] = [renum, renum + lenfr]
+                    renum += lenfr
+                del fragments[ifr]
 
         molrec['fragment_separators'] = [int(f[0]) for f in fragments[1:]]  # np.int --> int
         molrec['fragment_charges'] = fragment_charges
@@ -1299,14 +1309,14 @@ class Molecule(LibmintsMolecule):
         #   numbers and heals user chgmult.
         from . import molparse
         try:
-            validated_molrec = molparse.from_arrays(**molrec, speclabel=False, verbose=0)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
         except ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
             print('Have you been meddling with chgmult?')
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
-            validated_molrec = molparse.from_arrays(**molrec, speclabel=False, verbose=0)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
@@ -1364,7 +1374,8 @@ class Molecule(LibmintsMolecule):
         mol.update_geometry()
         return mol
 
-    def BFS(self,
+    @staticmethod
+    def _raw_BFS(self,
             seed_atoms=None,
             bond_threshold=1.20,
             return_arrays=False,
@@ -1486,7 +1497,8 @@ class Molecule(LibmintsMolecule):
         outputs = tuple(outputs)
         return (frag_pattern, ) + outputs[1:]
 
-    def B787(concern_mol,
+    @staticmethod
+    def _raw_B787(concern_mol,
              ref_mol,
              do_plot=False,
              verbose=1,
@@ -1596,7 +1608,8 @@ class Molecule(LibmintsMolecule):
 
         return rmsd, solution, amol
 
-    def scramble(ref_mol,
+    @staticmethod
+    def _raw_scramble(ref_mol,
                  do_shift=True,
                  do_rotate=True,
                  do_resort=True,
@@ -1710,3 +1723,9 @@ from .parker import bond_profile as _parker_bondprofile_yo
 Molecule.bond_profile = _parker_bondprofile_yo
 from .interface_gcp import run_gcp as _gcp_qcdb_yo
 Molecule.run_gcp = _gcp_qcdb_yo
+
+Molecule.to_arrays = Molecule._raw_to_arrays
+Molecule.to_dict = Molecule._raw_to_dict
+Molecule.BFS = Molecule._raw_BFS
+Molecule.B787 = Molecule._raw_B787
+Molecule.scramble = Molecule._raw_scramble

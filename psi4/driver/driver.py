@@ -1743,9 +1743,11 @@ def frequency(name, **kwargs):
     translations_projection_sound = not core.get_option('SCF', 'EXTERN') and \
                                     not core.get_option('SCF', 'PERTURB_H')
     rotations_projection_sound = translations_projection_sound and wfn.gradient().rms() < 1.e-2  # aforementioned hat
+    project_trans = kwargs.get('project_trans', translations_projection_sound)
+    project_rot = kwargs.get('project_rot', rotations_projection_sound)
 
     irrep = kwargs.get('irrep', None)
-    vibinfo = vibanal_wfn(wfn, irrep=irrep, project_trans=translations_projection_sound, project_rot=rotations_projection_sound)
+    vibinfo = vibanal_wfn(wfn, irrep=irrep, project_trans=project_trans, project_rot=project_rot)
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
     wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
     wfn.frequency_analysis = vibinfo

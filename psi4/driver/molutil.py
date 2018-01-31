@@ -59,7 +59,9 @@ def molecule_get_attr(self, name):
     return object.__getattribute__(self, name)
 
 
-def molecule_from_arrays(geom=None,
+@classmethod
+def molecule_from_arrays(cls,
+                         geom=None,
                          elea=None,
                          elez=None,
                          elem=None,
@@ -141,11 +143,16 @@ def dynamic_variable_bind(cls):
     cls.__setattr__ = molecule_set_attr
     cls.__getattr__ = molecule_get_attr
 
-    cls.to_arrays = qcdb.Molecule.to_arrays
-    cls.to_dict = qcdb.Molecule.to_dict
-    cls.BFS = qcdb.Molecule.BFS
-    cls.B787 = qcdb.Molecule.B787
-    cls.scramble = qcdb.Molecule.scramble
+    # for py3-only, all these `cls.fn = qcdb.Molecule._raw_fn` can be
+    #   replaced by `cls.fn = qcdb.Molecule.fn` and in qcdb/molecule.py
+    #   itself, the raw, staticmethod fns can use their official names again
+    #   and not need the append line at bottom of file. what I do for you,
+    #   py2 ...
+    cls.to_arrays = qcdb.Molecule._raw_to_arrays
+    cls.to_dict = qcdb.Molecule._raw_to_dict
+    cls.BFS = qcdb.Molecule._raw_BFS
+    cls.B787 = qcdb.Molecule._raw_B787
+    cls.scramble = qcdb.Molecule._raw_scramble
     cls.from_arrays = molecule_from_arrays
 
 

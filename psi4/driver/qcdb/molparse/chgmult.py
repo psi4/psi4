@@ -1,9 +1,22 @@
 import re
+import sys
 import itertools
 
 import numpy as np
 
 from ..exceptions import *
+
+
+try:
+    long(1)
+except NameError:
+    long = int
+
+def _py23_itertools_filterfalse(*args, **kwargs):
+    if sys.version_info >= (3, 0):
+        return itertools.filterfalse(*args, **kwargs)
+    else:
+        return itertools.ifilterfalse(*args, **kwargs)
 
 
 def _unique_everseen(iterable, key=None):
@@ -14,7 +27,7 @@ def _unique_everseen(iterable, key=None):
     seen = set()
     seen_add = seen.add
     if key is None:
-        for element in itertools.filterfalse(seen.__contains__, iterable):
+        for element in _py23_itertools_filterfalse(seen.__contains__, iterable):
             seen_add(element)
             yield element
     else:
@@ -37,7 +50,7 @@ def _high_spin_sum(mult_list):
 
 
 def _mult_ok(m):
-    return isinstance(m, (int, np.int64)) and m >= 1
+    return isinstance(m, (int, np.int64, long)) and m >= 1
 
 
 def _sufficient_electrons_for_mult(z, c, m):

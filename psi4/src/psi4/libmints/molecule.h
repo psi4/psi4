@@ -276,7 +276,7 @@ public:
     /// Returns charge of atom
     double charge(int atom) const;
     /// Returns mass number of atom
-    int A(int atom) const;
+    int mass_number(int atom) const;
     /// Returns the true atomic number of an atom
     int true_atomic_number(int atom) const;
     int ftrue_atomic_number(int atom) const;
@@ -287,7 +287,7 @@ public:
     /// Returns charge of atom
     double fcharge(int atom) const;
     /// Returns mass number of atom
-    int fA(int atom) const;
+    int fmass_number(int atom) const;
     /// Returns the CoordEntry for an atom
     const std::shared_ptr<CoordEntry>& atom_entry(int atom) const;
 

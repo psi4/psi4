@@ -175,6 +175,69 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1):
     `expected` to `tol` number of digits (for float arrays).
 
     """
+    import copy
+    import numpy as np
+    from .align import B787
+
+    thresh = 10 ** -tol if tol >= 1 else tol
+
+    # Need to manipulate the dictionaries a bit, so hold values
+    xptd = copy.deepcopy(expected)
+    cptd = copy.deepcopy(computed)
+
+    # deepdiff can't cope with np.int type
+    #   https://github.com/seperman/deepdiff/issues/97
+    xptd['elez'] = [int(z) for z in xptd['elez']]
+    cptd['elez'] = [int(z) for z in cptd['elez']]
+    xptd['elea'] = [int(a) for a in xptd['elea']]
+    cptd['elea'] = [int(a) for a in cptd['elea']]
+    # deepdiff w/py27 complains about unicode type and val errors
+    xptd['elem'] = [str(e) for e in xptd['elem']]
+    cptd['elem'] = [str(e) for e in cptd['elem']]
+    xptd['elbl'] = [str(l) for l in xptd['elbl']]
+    cptd['elbl'] = [str(l) for l in cptd['elbl']]
+    if 'fix_symmetry' in xptd:
+        xptd['fix_symmetry'] = str(xptd['fix_symmetry'])
+    if 'fix_symmetry' in cptd:
+        cptd['fix_symmetry'] = str(cptd['fix_symmetry'])
+    xptd['units'] = str(xptd['units'])
+    cptd['units'] = str(cptd['units'])
+    # and about int vs long errors
+    xptd['molecular_multiplicity'] = int(xptd['molecular_multiplicity'])
+    cptd['molecular_multiplicity'] = int(cptd['molecular_multiplicity'])
+    xptd['fragment_multiplicities'] = [(m if m is None else int(m)) for m in xptd['fragment_multiplicities']]
+    cptd['fragment_multiplicities'] = [(m if m is None else int(m)) for m in cptd['fragment_multiplicities']]
+
+    # can't just expect geometries to match, so we'll align them, check that
+    #   they overlap and that the translation/rotation arrays jibe with
+    #   fix_com/orientation, then attach the oriented geom to computed before the
+    #   recursive dict comparison.
+    cgeom = cptd['geom'].reshape((-1, 3))
+    rmsd, mill = B787(rgeom=xptd['geom'].reshape((-1, 3)),
+                      cgeom=cgeom,
+                      runiq=None,
+                      cuniq=None,
+                      atoms_map=True,
+                      mols_align=True,
+                      run_mirror=False,
+                      verbose=0)
+    if cptd['fix_com']:
+        compare_integers(1, np.allclose(np.zeros((3)), mill.shift, atol=thresh), 'null shift', verbose=verbose)
+    if cptd['fix_orientation']:
+        compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
+    ageom = mill.align_coordinates(cgeom)
+    cptd['geom'] = ageom.reshape((-1))
+
+    compare_dicts(xptd, cptd, tol, label, forgive=forgive, verbose=verbose)
+
+
+def compare_molrecs_simple(expected, computed, tol, label, forgive=None, verbose=1):
+    """Function to compare Molecule dictionaries. Prints
+    :py:func:`util.success` when elements of `computed` match elements of
+    `expected` to `tol` number of digits (for float arrays).
+
+    """
+    import copy
     import numpy as np
     from .align import B787
 

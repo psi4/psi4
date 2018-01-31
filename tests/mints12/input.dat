@@ -49,8 +49,8 @@ def test_molrec(kwargs, label):
     #print('PDICT', pdict)
     #pmol = psi4.core.Molecule.from_dict(pdict)
 
-    pmol, pdict = psi4.core.Molecule.from_arrays(**kwargs, return_dict=True)
-    qmol, qdict = qcdb.Molecule.from_arrays(**kwargs, return_dict=True)
+    pmol, pdict = psi4.core.Molecule.from_arrays(return_dict=True, **kwargs)
+    qmol, qdict = qcdb.Molecule.from_arrays(return_dict=True, **kwargs)
     tpdict = pmol.to_dict()
     tqdict = qmol.to_dict()
     #qmol.print_out()
