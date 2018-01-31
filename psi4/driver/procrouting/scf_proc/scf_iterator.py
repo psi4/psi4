@@ -183,7 +183,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
             calc_type = core.PCM.CalcType.Total
-            if core.get_option("PCM", "PCM_SCF_TYPE") is "SEPARATE":
+            if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
                 calc_type = core.PCM.CalcType.NucAndEle
             Dt = self.Da().clone()
             Dt.add(self.Db())
