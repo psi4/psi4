@@ -36,7 +36,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import re
-import math
 import os
 import shutil
 
@@ -104,6 +103,27 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             % (method_name, str(dertype), alternatives))
 
     return dertype
+
+
+def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
+    """Polls options and probes `gradient` to return whether current method
+    and system expected to be invariant to translations and rotations of
+    the coordinate system.
+
+    """
+    stationary_point = gradient.rms() < stationary_criterion  # 1.e-2 pulled out of a hat
+
+    efp = core.get_active_efp()
+    efp_present = efp.nfragments() > 0
+
+    translations_projection_sound = (not core.get_option('SCF', 'EXTERN') and
+                                     not core.get_option('SCF', 'PERTURB_H') and
+                                     not efp_present)
+    rotations_projection_sound = (translations_projection_sound and 
+                                  stationary_point)
+
+    return translations_projection_sound, rotations_projection_sound
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -1307,10 +1327,7 @@ def hessian(name, **kwargs):
 
     # At stationary point?
     G0 = gradient(lowername, molecule=molecule, **kwargs)
-    nonzero_gradient = G0.rms() > 1.e-2  # pulled out of a hat
-    translations_projection_sound = not core.get_option('SCF', 'EXTERN') and \
-                                    not core.get_option('SCF', 'PERTURB_H')
-    rotations_projection_sound = translations_projection_sound and not nonzero_gradient
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
     core.print_out('\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'.
                    format(G0.rms(), '' if translations_projection_sound else 'not ',
                    '' if rotations_projection_sound else 'not '))
@@ -1740,9 +1757,7 @@ def frequency(name, **kwargs):
         return 0.0
 
     # Project final frequencies?
-    translations_projection_sound = not core.get_option('SCF', 'EXTERN') and \
-                                    not core.get_option('SCF', 'PERTURB_H')
-    rotations_projection_sound = translations_projection_sound and wfn.gradient().rms() < 1.e-2  # aforementioned hat
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(wfn.gradient())
     project_trans = kwargs.get('project_trans', translations_projection_sound)
     project_rot = kwargs.get('project_rot', rotations_projection_sound)
 
