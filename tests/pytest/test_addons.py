@@ -448,9 +448,9 @@ def test_pcmsolver():
 
     psi4.set_options({'pcm_scf_type': 'total', 'reference': 'rohf'})
     print('ROHF-PCM, total algorithm')
-    energy_scf4 = energy('scf')
-    assert compare_values(totalenergy, energy_scf4, 10, "Total energy (PCM, separate algorithm)") #TEST
-    assert compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+    energy_scf4 = psi4.energy('scf')
+    assert psi4.compare_values(totalenergy, energy_scf4, 10, "Total energy (PCM, separate algorithm)") #TEST
+    assert psi4.compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 
 def _test_scf5():
