@@ -48,7 +48,6 @@ no_reorient
 set {
     print 2
     basis sto-3g
-    guess sad
     scf_type direct
     dft_spherical_points 302
     dft_radial_points 99
@@ -109,9 +108,6 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set basis sto-3g
-# Must be reset in each new molecule
-
 V31 = energy('scf', dft_functional="svwn")
 compare_values(E31, V31, 7, "UKS  1 2    SVWN Energy") #TEST
 
@@ -140,7 +136,7 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set basis sto-3g
+set guess sad
 
 V41 = energy('scf', dft_functional="svwn")
 compare_values(E41, V41, 7, "UKS -1 2    SVWN Energy") #TEST
