@@ -37,6 +37,7 @@ ggaval ={
 "bop"     : -128.892404778404, # NWCHEM
 #"b86bpbe" : , # ???
 "pw86pbe" : -128.946484366 , # G09 iop(3/74=809)
+"sogga11" : -128.889273547 , # G09.D01 "SOGGA11/cc-pVDZ 5D SP Int(Grid=99770)"
 }
 
 
