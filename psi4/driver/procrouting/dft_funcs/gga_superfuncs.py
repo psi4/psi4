@@ -315,7 +315,6 @@ def build_sogga11_superfunctional(name, npoints, deriv, restricted):
     sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_SOGGA11', restricted))
     sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_SOGGA11', restricted))
 
-
     # Call this last
     sup.allocate()
     return (sup, False)

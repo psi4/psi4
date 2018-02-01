@@ -185,7 +185,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
-    
+
 
 def build_pbe0_dh_superfunctional(name, npoints, deriv, restricted):
     # Disabled below, as no Q-Chem or PSI4 test available.
@@ -261,7 +261,7 @@ def build_scan0_2_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
-    
+
 
 def build_scan0_dh_superfunctional(name, npoints, deriv, restricted):
     # Disabled below, SCAN correlation results unreliable.
@@ -524,9 +524,9 @@ def build_ptpss_superfunctional(name, npoints, deriv, restricted):
 double_hyb_superfunc_list = {
     "b2plyp": build_b2plyp_superfunctional,
     "pbe0-2": build_pbe0_2_superfunctional,
-#    "pbe0-dh": build_pbe0_dh_superfunctional, # no test available
-#    "scan0-2": build_scan0_2_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
-#    "scan0-dh": build_scan0_dh_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
+    #    "pbe0-dh": build_pbe0_dh_superfunctional, # no test available
+    #    "scan0-2": build_scan0_2_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
+    #    "scan0-dh": build_scan0_dh_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "dsd-blyp": build_dsd_blyp_superfunctional,
     "core-dsd-blyp": build_core_dsd_blyp_superfunctional,
     "dsd-pbep86": build_dsd_pbep86_superfunctional,

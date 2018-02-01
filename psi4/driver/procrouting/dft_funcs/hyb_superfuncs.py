@@ -62,6 +62,7 @@ def build_pbe0_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_b5050lyp_superfunctional(name, npoints, deriv, restricted):
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -96,6 +97,7 @@ def build_b5050lyp_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_wpbe_superfunctional(name, npoints, deriv, restricted):
 
@@ -132,6 +134,7 @@ def build_wpbe_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_wpbe0_superfunctional(name, npoints, deriv, restricted):
 
@@ -170,6 +173,7 @@ def build_wpbe0_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_wb97xd_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -190,6 +194,7 @@ def build_wb97xd_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, ('wB97', '-CHG'))
 
+
 def build_hfd_superfunctional(name, npoints, deriv, restricted):
 
     sup = core.SuperFunctional.blank()
@@ -201,6 +206,7 @@ def build_hfd_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, ('HF', '-DAS2010'))
 
+
 def build_hf_superfunctional(name, npoints, deriv, restricted):
 
     sup = core.SuperFunctional.blank()
@@ -211,6 +217,7 @@ def build_hf_superfunctional(name, npoints, deriv, restricted):
 
     sup.allocate()
     return (sup, False)
+
 
 def build_hf3c_superfunctional(name, npoints, deriv, restricted):
 
@@ -231,6 +238,7 @@ def build_hf3c_superfunctional(name, npoints, deriv, restricted):
 
     sup.allocate()
     return (sup, ('HF3C', '-d3bj'))
+
 
 def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
 
@@ -268,6 +276,7 @@ def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, ("PBEH3C", "-d3bj"))
 
+
 def build_sogga11_x_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -290,6 +299,7 @@ def build_sogga11_x_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_scan0_superfunctional(name, npoints, deriv, restricted):
     # Disabled below, no SCAN correlation in LibXC 3.0.0
@@ -316,6 +326,7 @@ def build_scan0_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_mn15_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -338,6 +349,7 @@ def build_mn15_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_pw6b95_superfunctional(name, npoints, deriv, restricted):
 
@@ -411,12 +423,11 @@ hyb_superfunc_list = {
     "hf": build_hf_superfunctional,
     "scf": build_hf_superfunctional,
     "hf3c": build_hf3c_superfunctional,
-#    "scan0": build_scan0_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
+    #    "scan0": build_scan0_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "sogga11-x": build_sogga11_x_superfunctional,
     "mn15": build_mn15_superfunctional,
     "pw6b95": build_pw6b95_superfunctional,
 }
-
 
 # def build_wpbesol_superfunctional(name, npoints, deriv, restricted):
 

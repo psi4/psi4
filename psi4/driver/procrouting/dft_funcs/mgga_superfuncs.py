@@ -73,6 +73,7 @@ def build_dldfd10_superfunctional(name, npoints, deriv, restricted):
 
     return (sup, ('dlDF', '-DAS2010'))
 
+
 def build_m06_l_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -94,6 +95,7 @@ def build_m06_l_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_m11_l_superfunctional(name, npoints, deriv, restricted):
 
@@ -117,6 +119,7 @@ def build_m11_l_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_mn12_l_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -139,6 +142,7 @@ def build_mn12_l_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_mn15_l_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -160,6 +164,7 @@ def build_mn15_l_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_mgga_ms0_superfunctional(name, npoints, deriv, restricted):
 
@@ -229,10 +234,10 @@ def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+
 def build_scan_superfunctional(name, npoints, deriv, restricted):
     # Disabled below, no SCAN correlation in LibXC 3.0.0
     # SCAN correlation results unreliable.
-
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -253,6 +258,7 @@ def build_scan_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, False)
+
 
 def build_tpss_superfunctional(name, npoints, deriv, restricted):
 
@@ -311,7 +317,7 @@ mgga_superfunc_list = {
     "mgga_ms0": build_mgga_ms0_superfunctional,
     "mgga_ms1": build_mgga_ms1_superfunctional,
     "mgga_ms2": build_mgga_ms2_superfunctional,
-#    "scan": build_scan_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
+    #    "scan": build_scan_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "tpss": build_tpss_superfunctional,
     "revtpss": build_revtpss_superfunctional,
 }
