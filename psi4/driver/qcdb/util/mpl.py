@@ -7,7 +7,10 @@ def plot_coord(ref, cand=None, orig=None, comment=None):
     
     """
     import numpy as np
-    from matplotlib import pyplot
+    try:
+        from matplotlib import pyplot
+    except ImportError:
+        raise ValidationError('Install matplotlib (e.g., `conda install matplotlib`)')
     from mpl_toolkits.mplot3d import Axes3D
 
     fig = pyplot.figure()

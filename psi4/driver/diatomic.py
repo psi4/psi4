@@ -162,79 +162,79 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     if(plot_fit):
         try:
             import matplotlib.pyplot as plt
-
-            # Correct the derivatives for the missing factorial prefactors
-            dvals = np.zeros(5)
-            dvals[0:5] = derivs[0:5]
-            dvals[2] /= 2
-            dvals[3] /= 6
-            dvals[4] /= 24
-
-            # Default plot range, before considering energy levels
-            minE = np.min(energies)
-            maxE = np.max(energies)
-            minR = np.min(rvals)
-            maxR = np.max(rvals)
-
-            # Plot vibrational energy levels
-            we_au = we / constants.hartree2wavenumbers
-            wexe_au = wexe / constants.hartree2wavenumbers
-            coefs2 = [ dvals[2], dvals[1], dvals[0] ]
-            coefs4 = [ dvals[4], dvals[3], dvals[2], dvals[1], dvals[0] ]
-            for n in range(3):
-                Eharm = we_au*(n+0.5)
-                Evpt2 = Eharm - wexe_au*(n+0.5)**2
-                coefs2[-1] = -Eharm
-                coefs4[-1] = -Evpt2
-                roots2 = np.roots(coefs2)
-                roots4 = np.roots(coefs4)
-                xvals2 = roots2 + re
-                xvals4 = np.choose(np.where(np.isreal(roots4)), roots4)[0].real + re
-                Eharm += dvals[0]
-                Evpt2 += dvals[0]
-                plt.plot(xvals2, [Eharm, Eharm], 'b', linewidth=1)
-                plt.plot(xvals4, [Evpt2, Evpt2], 'g', linewidth=1)
-                maxE = Eharm
-                maxR = np.max([xvals2,xvals4])
-                minR = np.min([xvals2,xvals4])
-
-            # Find ranges for the plot
-            dE = maxE - minE
-            minE -= 0.2*dE
-            maxE += 0.4*dE
-            dR = maxR - minR
-            minR -= 0.2*dR
-            maxR += 0.2*dR
-
-            # Generate the fitted PES
-            xpts = np.linspace(minR, maxR, 1000)
-            xrel = xpts-re
-            xpows = xrel[:,np.newaxis] ** range(5)
-            fit2 = np.einsum('xd,d', xpows[:,0:3], dvals[0:3])
-            fit4 = np.einsum('xd,d', xpows, dvals)
-
-            # Make / display the plot
-            plt.plot(xpts, fit2, 'b', linewidth=2.5, label='Harmonic (quadratic) fit')
-            plt.plot(xpts, fit4, 'g', linewidth=2.5, label='Anharmonic (quartic) fit')
-            plt.plot([re, re], [minE, maxE], 'b--', linewidth=0.5)
-            plt.plot([r0, r0], [minE, maxE], 'g--', linewidth=0.5)
-            plt.scatter(rvals, energies, c='Black', linewidth=3, label='Input Data')
-            plt.legend()
-
-            plt.xlabel('Bond length (Angstroms)')
-            plt.ylabel('Energy (Eh)')
-            plt.xlim(minR, maxR)
-            plt.ylim(minE, maxE)
-            if plot_fit == 'screen':
-                plt.show()
-            else:
-                plt.savefig(plot_fit)
-                core.print_out("\n\tPES fit saved to %s.\n\n" % plot_fit)
-
         except ImportError:
             msg = "\n\tPlot not generated; matplotlib is not installed on this machine.\n\n"
             print(msg)
             core.print_out(msg)
+
+        # Correct the derivatives for the missing factorial prefactors
+        dvals = np.zeros(5)
+        dvals[0:5] = derivs[0:5]
+        dvals[2] /= 2
+        dvals[3] /= 6
+        dvals[4] /= 24
+
+        # Default plot range, before considering energy levels
+        minE = np.min(energies)
+        maxE = np.max(energies)
+        minR = np.min(rvals)
+        maxR = np.max(rvals)
+
+        # Plot vibrational energy levels
+        we_au = we / constants.hartree2wavenumbers
+        wexe_au = wexe / constants.hartree2wavenumbers
+        coefs2 = [ dvals[2], dvals[1], dvals[0] ]
+        coefs4 = [ dvals[4], dvals[3], dvals[2], dvals[1], dvals[0] ]
+        for n in range(3):
+            Eharm = we_au*(n+0.5)
+            Evpt2 = Eharm - wexe_au*(n+0.5)**2
+            coefs2[-1] = -Eharm
+            coefs4[-1] = -Evpt2
+            roots2 = np.roots(coefs2)
+            roots4 = np.roots(coefs4)
+            xvals2 = roots2 + re
+            xvals4 = np.choose(np.where(np.isreal(roots4)), roots4)[0].real + re
+            Eharm += dvals[0]
+            Evpt2 += dvals[0]
+            plt.plot(xvals2, [Eharm, Eharm], 'b', linewidth=1)
+            plt.plot(xvals4, [Evpt2, Evpt2], 'g', linewidth=1)
+            maxE = Eharm
+            maxR = np.max([xvals2,xvals4])
+            minR = np.min([xvals2,xvals4])
+
+        # Find ranges for the plot
+        dE = maxE - minE
+        minE -= 0.2*dE
+        maxE += 0.4*dE
+        dR = maxR - minR
+        minR -= 0.2*dR
+        maxR += 0.2*dR
+
+        # Generate the fitted PES
+        xpts = np.linspace(minR, maxR, 1000)
+        xrel = xpts-re
+        xpows = xrel[:,np.newaxis] ** range(5)
+        fit2 = np.einsum('xd,d', xpows[:,0:3], dvals[0:3])
+        fit4 = np.einsum('xd,d', xpows, dvals)
+
+        # Make / display the plot
+        plt.plot(xpts, fit2, 'b', linewidth=2.5, label='Harmonic (quadratic) fit')
+        plt.plot(xpts, fit4, 'g', linewidth=2.5, label='Anharmonic (quartic) fit')
+        plt.plot([re, re], [minE, maxE], 'b--', linewidth=0.5)
+        plt.plot([r0, r0], [minE, maxE], 'g--', linewidth=0.5)
+        plt.scatter(rvals, energies, c='Black', linewidth=3, label='Input Data')
+        plt.legend()
+
+        plt.xlabel('Bond length (Angstroms)')
+        plt.ylabel('Energy (Eh)')
+        plt.xlim(minR, maxR)
+        plt.ylim(minE, maxE)
+        if plot_fit == 'screen':
+            plt.show()
+        else:
+            plt.savefig(plot_fit)
+            core.print_out("\n\tPES fit saved to %s.\n\n" % plot_fit)
+
     core.print_out("\nre     = %10.6f A  check: %10.6f\n" % (re, recheck))
     core.print_out("r0       = %10.6f A\n" % r0)
     core.print_out("we       = %10.4f cm-1\n" % we)
