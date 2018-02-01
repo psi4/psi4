@@ -148,17 +148,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   MOLDEN output file, the Hessian file, the internal coordinate file,
   etc. Use the add_str_i function to make this string case sensitive. -*/
   options.add_str_i("WRITER_FILE_LABEL", "");
-
-  /*- PCM boolean for pcmsolver module -*/
-  options.add_bool("PCM", false);
-  if (name == "PCM" || options.read_globals()) {
-    /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
-    options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
-    /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
-    options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
-    /*- PCM-CCSD algorithm type. -*/
-    options.add_str("PCM_CC_TYPE", "PTE", "PTE");
-  }
   /*- The density fitting basis to use in coupled cluster computations. -*/
   options.add_str("DF_BASIS_CC", "");
   /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
@@ -240,7 +229,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
 
+  /*- PCM boolean for pcmsolver module -*/
+  options.add_bool("PCM", false);
+  if (name == "PCM" || options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs polarizable continuum model (PCM) computations. -*/
 
+    /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
+    options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
+    /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
+    options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
+    /*- PCM-CCSD algorithm type. -*/
+    options.add_str("PCM_CC_TYPE", "PTE", "PTE");
+  }
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
