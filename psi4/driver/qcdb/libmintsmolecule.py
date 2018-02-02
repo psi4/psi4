@@ -32,21 +32,17 @@ import os
 import re
 import copy
 import math
+import collections
+
 import numpy as np
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .oldpymodules import OrderedDict
+
 from .periodictable import *
 from .physconst import *
 from .vecutil import *
 from .exceptions import *
-#from libmintscoordentry import *
 from .libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
 from .libmintspointgrp import SymmOps, similar, SymmetryOperation, PointGroup
-
-#from libmintspointgrp import PointGroups
-#print PointGroups
+from .util import distance_matrix
 
 
 LINEAR_A_TOL = 1.0E-2  # When sin(a) is below this, we consider the angle to be linear
@@ -1378,8 +1374,6 @@ class LibmintsMolecule(object):
           [6]         3.32935     3.86422     2.43843     0.95895     1.51712     0.00000
 
         """
-        from .util import distance_matrix
-
         distm = distance_matrix(self.geometry(np_out=True), self.geometry(np_out=True))
         distm *= psi_bohr2angstroms
 
@@ -1730,7 +1724,7 @@ class LibmintsMolecule(object):
     def clear_basis_all_atoms(self):
         """Remove all basis information from atoms."""
         for atom in self.full_atoms:
-            atom.PYbasissets = OrderedDict()
+            atom.PYbasissets = collections.OrderedDict()
 
     def set_basis_by_number(self, number, name, role="BASIS"):
         """Assigns basis *name* to atom number *number* (0-indexed, excludes dummies)."""
@@ -1888,8 +1882,6 @@ class LibmintsMolecule(object):
         This used to return a list with inf values as None.
 
         """
-        import numpy as np
-
         evals, evecs = diagonalize3x3symmat(self.inertia_tensor())
         evals = sorted(evals)
         evals = np.asarray(evals)

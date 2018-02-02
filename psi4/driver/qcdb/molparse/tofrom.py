@@ -2,8 +2,10 @@ import re
 
 import numpy as np
 
+from ..util import distance_matrix
 from ..exceptions import *
-
+from .chgmult import validate_and_fill_chgmult
+from .nucleus import reconcile_nucleus
 
 try:
     long(1)
@@ -111,8 +113,6 @@ def from_arrays(geom=None,
         total multiplicity on system.
 
     """
-    from .chgmult import validate_and_fill_chgmult
-
     molinit = {}
     molinit.update(validate_and_fill_universals(name=name,
                                                 units=units,
@@ -193,8 +193,6 @@ def validate_and_fill_universals(name=None,
 def validate_and_fill_geometry(geom=None):
     """Check `geom` for overlapping atoms. Return flattened"""
 
-    from ..util import distance_matrix
-
     if geom is None:
         raise ValidationError("""Geometry must be provided.""")
 
@@ -224,8 +222,6 @@ def validate_and_fill_nuclei(nat,
                              mtol=1.e-3,
                              verbose=1):
     """Check the nuclear identity arrays for consistency and fill in knowable values."""
-
-    from .nucleus import reconcile_nucleus
 
     if elea is None:
         elea = np.full((nat,), None)

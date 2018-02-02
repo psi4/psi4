@@ -12,11 +12,10 @@ try:
 except NameError:
     long = int
 
-def _py23_itertools_filterfalse(*args, **kwargs):
-    if sys.version_info >= (3, 0):
-        return itertools.filterfalse(*args, **kwargs)
-    else:
-        return itertools.ifilterfalse(*args, **kwargs)
+try:
+    from itertools import ifilterfalse as filterfalse  # py2
+except ImportError:
+    from itertools import filterfalse  # py3
 
 
 def _unique_everseen(iterable, key=None):
@@ -27,7 +26,7 @@ def _unique_everseen(iterable, key=None):
     seen = set()
     seen_add = seen.add
     if key is None:
-        for element in _py23_itertools_filterfalse(seen.__contains__, iterable):
+        for element in filterfalse(seen.__contains__, iterable):
             seen_add(element)
             yield element
     else:

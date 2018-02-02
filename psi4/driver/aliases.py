@@ -36,15 +36,13 @@ Place in this file quickly defined procedures such as
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import re
 import os
+import re
 import math
 import warnings
+
 from psi4.driver import driver_cbs
-#from wrappers import *
-#from gaussian_n import *  # CU
-#from wrappers_cfour import *  # CU
-#from qmmm import *  # CU
+
 
 # Python procedures like these can be run directly from the input file or integrated
 # with the energy(), etc. routines by means of lines like those at the end

@@ -33,10 +33,10 @@ response(), and frequency() function. *name* can be assumed lowercase by here.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import shutil
 import os
+import shutil
 import subprocess
-import re
+
 import numpy as np
 
 from psi4 import extras
@@ -45,6 +45,7 @@ from psi4.driver import qcdb
 from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
+# never import driver, wrappers, or aliases into this file
 
 from .roa import *
 from . import proc_util
@@ -53,7 +54,6 @@ from . import dft_funcs
 from . import mcscf
 from . import response
 
-# never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
 # consult http://psicode.org/psi4manual/master/proc_py.html

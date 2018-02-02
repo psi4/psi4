@@ -28,10 +28,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .oldpymodules import OrderedDict
+import collections
 
 # thinking now that QCEssential should have one doi and dictionary of
 # citations. that way the doi contains the record of the definition of the
@@ -83,7 +80,7 @@ class QCEssential(object):
             self.latex = latex
         # OrderedDict of roles as keys and qcdb.Citation as values
         if citations is None:
-            self.citations = OrderedDict()
+            self.citations = collections.OrderedDict()
         else:
             self.citations = citations
         self.doi = doi
@@ -110,7 +107,7 @@ class Publication(QCEssential):
     """
     def __init__(self, name, fullname=None, latex=None, dsdbid=None, doi=None, comment=None, owner=None):
         primary = Citation(doi=doi, fullname=fullname, dsdbid=dsdbid)
-        cits = OrderedDict()
+        cits = collections.OrderedDict()
         cits['primary'] = primary
         QCEssential.__init__(self, name=name, fullname=primary.fullname, latex=latex, citations=cits, doi=primary.doi, comment=comment)
         self.name = name.lower()

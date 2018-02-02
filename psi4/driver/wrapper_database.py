@@ -33,13 +33,12 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import re
 import os
+import re
 import math
-import warnings
 import pickle
-import copy
 import collections
+
 from psi4.driver import constants
 from psi4.driver.driver import *
 # never import aliases into this file

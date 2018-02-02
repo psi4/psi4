@@ -29,7 +29,6 @@
 r"""Module to provide mechanism to store and restore option states in driver.
 
 """
-import sys
 from .exceptions import *
 
 

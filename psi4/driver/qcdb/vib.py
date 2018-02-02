@@ -1,14 +1,21 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
-
+import sys
+import math
 import collections
+
 import numpy as np
 
 from .physconst import *
 from .psiutil import *
 from .util import *
 from .libmintsmolecule import compute_atom_map
+
+try:
+    from itertools import izip_longest as zip_longest  # py2
+except ImportError:
+    from itertools import zip_longest  # py3
 
 VibrationAspect = collections.namedtuple('VibrationAspect', 'lbl unit data comment')
 
@@ -23,8 +30,6 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
     not count against passing.
 
     """
-    import numpy as np
-
     np.set_printoptions(formatter={'float': '{: 0.4f}'.format})
 
     def _success(label):
@@ -345,8 +350,6 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
             mass.shape, geom.shape, hess.shape))
 
     def mat_symm_info(a, atol=1e-14, lbl='array', stol=None):
-        import numpy as np
-
         symm = np.allclose(a, a.T, atol=atol)
         herm = np.allclose(a, a.conj().T, atol=atol)
         ivrt = a.shape[0] - np.linalg.matrix_rank(a, tol=stol)
@@ -577,14 +580,8 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
     def grouper(iterable, n, fillvalue=None):
         "Collect data into fixed-length chunks or blocks"
         # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
-        import sys
-        import itertools
         args = [iter(iterable)] * n
-
-        if sys.version_info >= (3, 0):
-            return itertools.zip_longest(*args, fillvalue=fillvalue)
-        else:
-            return itertools.izip_longest(*args, fillvalue=fillvalue)
+        return zip_longest(*args, fillvalue=fillvalue)
 
     if normco not in ['q', 'w', 'x']:
         raise ValidationError("""Requested normal coordinates not among allowed q/w/x: """ + normco)
@@ -747,9 +744,6 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
         Second is formatted presentation of analysis.
 
     """
-    import math
-    import collections
-
     sm = collections.defaultdict(float)
 
     # electronic

@@ -27,8 +27,8 @@
 #
 
 from __future__ import print_function
-import math
 import re
+
 from psi4 import core
 from psi4.driver import qcdb
 from psi4.driver import p4util

@@ -35,15 +35,15 @@ module calls that access the C++ side of Psi4.
 #if sys.hexversion < 0x03000000:
 from __future__ import print_function
 from __future__ import absolute_import
-
 import re
 import os
 import sys
 import uuid
-from psi4.driver import pubchem
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.p4util.util import set_memory
+
 from psi4 import core
+from psi4.driver import pubchem
+from psi4.driver.p4util.util import set_memory
+from psi4.driver.p4util.exceptions import *
 
 # globally available regex strings
 pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)

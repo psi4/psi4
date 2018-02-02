@@ -30,8 +30,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import os
-import math
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver

@@ -32,9 +32,9 @@ import sys
 import uuid
 import numpy as np
 
-from . import optproc
-from psi4.driver import qcdb
 from psi4 import core
+from psi4.driver import qcdb
+from . import optproc
 
 ## Python basis helps
 

@@ -32,11 +32,16 @@ or some better way. Apologies to the coders.
 """
 from __future__ import absolute_import
 from __future__ import print_function
-import sys
-import math
-import re
 import os
-import string
+import re
+import sys
+import copy
+import math
+import pprint
+import collections
+
+import numpy as np
+
 from .vecutil import *
 
 
@@ -142,9 +147,10 @@ def compare_dicts(expected, computed, tol, label, forgive=None, verbose=1):
     triggering failure.
 
     """
-    import collections
-    import deepdiff
-    import pprint
+    try:
+        import deepdiff
+    except ImportError:
+        raise ImportError("""Install deepdiff. `conda install deepdiff` or `pip install deepdiff`""")
 
     if forgive is None:
         forgive = []
@@ -175,8 +181,6 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1):
     `expected` to `tol` number of digits (for float arrays).
 
     """
-    import copy
-    import numpy as np
     from .align import B787
 
     thresh = 10 ** -tol if tol >= 1 else tol
@@ -237,8 +241,6 @@ def compare_molrecs_simple(expected, computed, tol, label, forgive=None, verbose
     `expected` to `tol` number of digits (for float arrays).
 
     """
-    import copy
-    import numpy as np
     from .align import B787
 
     thresh = 10 ** -tol if tol >= 1 else tol
@@ -296,8 +298,6 @@ def compare_arrays(expected, computed, digits, label, verbose=1):
     structure, dimension, or element values. Used in input files in the test suite.
 
     """
-    import numpy as np
-
     try:
         shape1 = expected.shape
         shape2 = computed.shape

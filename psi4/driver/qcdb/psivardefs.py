@@ -26,16 +26,14 @@
 # @END LICENSE
 #
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .oldpymodules import OrderedDict
+import collections
+
 
 def sapt_psivars():
     """Returns dictionary of PsiVariable definitions.
 
     """
-    pv1 = OrderedDict()
+    pv1 = collections.OrderedDict()
     pv1['SAPT EXCHSCAL1'] = {'func': lambda x: 1.0 if x[0] < 1.0e-5 else x[0] / x[1], 'args': ['SAPT EXCH10 ENERGY', 'SAPT EXCH10(S^2) ENERGY']}  # special treatment in pandas
     pv1['SAPT EXCHSCAL3'] = {'func': lambda x: x[0] ** 3, 'args': ['SAPT EXCHSCAL1']}
     pv1['SAPT EXCHSCAL'] = {'func': lambda x: x[0] ** x[1], 'args': ['SAPT EXCHSCAL1', 'SAPT ALPHA']}
