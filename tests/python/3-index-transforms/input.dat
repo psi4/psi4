@@ -1,6 +1,5 @@
 import psi4
 import numpy as np
-import random
 from collections import OrderedDict
 
 mol = psi4.geometry("""
@@ -39,11 +38,7 @@ Qpq = Qpq.reshape(naux, nbf, -1)
 # construct spaces
 names = ['C1', 'C2', 'C3', 'C4']
 sizes = [_ * 5 for _ in range(1, 5)]
-spaces = {names[ind]: psi4.core.Matrix(nbf, _) for ind, _ in enumerate(sizes)}
-
-# make fake spaces
-for ind, i in enumerate(spaces):
-    spaces[i].np[:] = ind + 1
+spaces = {names[ind]: psi4.core.Matrix.from_array(np.random.rand(nbf, _)) for ind, _ in enumerate(sizes)}
 
 # set transformed integrals
 Qmo = []
@@ -95,7 +90,8 @@ for method in methods:
 
                     # build
                     dfh.initialize()
-                    
+                    dfh.print_header()                   
+ 
                     # add spaces
                     for i in spaces:
                         dfh.add_space(i, spaces[i])
@@ -110,8 +106,15 @@ for method in methods:
 
                     # grab transformed integrals
                     dfh_Qmo = []
-                    for ind, i in enumerate(transformations):
-                        dfh_Qmo.append(np.asarray(dfh.get_tensor(i)))
+                    if(form == 'pqQ'):    
+                        for ind, i in enumerate(transformations):
+                            j = space_pairs[ind]
+                            dfh_Qmo.append(np.zeros((sizes[j[0]], sizes[j[1]], naux)))
+                            for k in range(sizes[j[0]]):
+                                dfh_Qmo[ind][k,:,:] = np.asarray(dfh.get_tensor(i, [k, k+1], [0, sizes[j[1]]], [0, naux]))
+                    else:
+                        for ind, i in enumerate(transformations):
+                            dfh_Qmo.append(np.asarray(dfh.get_tensor(i)))
 
                     test_string = 'Alg: ' + method + ' + ' + form + ' core (AOs, MOs, met): [' 
                     test_string += str(AO_core) + ', ' + str(MO_core) + ', ' + str(hold_met) +  ']' 

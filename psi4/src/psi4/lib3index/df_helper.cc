@@ -51,6 +51,17 @@
 #include <omp.h>
 #endif
 
+// FIXME DELETE THIS WHEN DONE
+double rms(double* v, size_t n){
+    #include <math.h>
+    double x = 0.0;
+    for(size_t i=0; i<n; i++){
+        x += pow(v[i], 2);    
+    }
+    return  sqrt(x/n);
+}
+
+
 namespace psi {
 
 DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
@@ -1541,6 +1552,7 @@ void DF_Helper::print_order() {
     outfile->Printf("\n\n     ==> DF_Helper:--End Transformations Information <==\n\n");
 }
 
+
 void DF_Helper::transform() {
 
     timer_on("DFH: transform()");
@@ -1620,7 +1632,6 @@ void DF_Helper::transform() {
         }
 
         // transform in steps, blocking over the auxiliary basis (Q blocks)
-        printf("Q steps: %d\n", Qsteps.size());
         for (size_t j = 0, bcount = 0, block_size; j < Qsteps.size(); j++, bcount += block_size) {
             
             // Qshell step info
@@ -1705,12 +1716,24 @@ void DF_Helper::transform() {
                     timer_on("DFH: Second Contraction");
                     if (direct_iaQ_) {
                         size_t bump = (MO_core_ ? begin * wsize * bsize : 0);
-                        // (wp)(Q|pb)->(Q|wb)
-                        #pragma omp parallel for num_threads(nthreads_)
-                        for (size_t i = 0; i < block_size; i++){
-                            C_DGEMM('T', 'N', wsize, bsize, nao_, 1.0, Wp, wsize, &Tp[i * nao_ * bsize], 
-                                bsize, 0.0, &Fp[bump + i * wsize * bsize], bsize);
+                        // (pw)(Q|pb)->(Q|bw)
+                        if(bleft){
+                            printf("here\n");
+                            #pragma omp parallel for num_threads(nthreads_)
+                            for (size_t i = 0; i < block_size; i++){
+                                C_DGEMM('T', 'N', bsize, wsize, nao_, 1.0, &Tp[i * nao_ * bsize],  
+                                    bsize, Wp, wsize, 0.0, &Fp[bump + i * wsize * bsize], wsize);
+                            }
+                        } else {
+                        // (pw)(Q|pb)->(Q|wb)
+                            printf("no here\n");
+                            #pragma omp parallel for num_threads(nthreads_)
+                            for (size_t i = 0; i < block_size; i++){
+                                C_DGEMM('T', 'N', wsize, bsize, nao_, 1.0, Wp, wsize, &Tp[i * nao_ * bsize], 
+                                    bsize, 0.0, &Fp[bump + i * wsize * bsize], bsize);
+                            }
                         }
+                    
                     } else {
                         // (wp)(p|Qb)->(w|Qb)
                         C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
@@ -1877,6 +1900,7 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
         std::string putf = std::get<0>(files_[order_[ind]]);
         std::string op = "ab";
         
+        printf("%s: %d\n", order_[ind].c_str(), bleft);
         if (bleft) {
             put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, bsize - 1), 
                 std::make_pair(0, wsize - 1), op);
@@ -2105,7 +2129,7 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
-
+    
     fill_tensor(name, M, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
 void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {

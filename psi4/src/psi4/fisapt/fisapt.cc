@@ -2795,6 +2795,7 @@ void FISAPT::fexch() {
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
+
     dfh->initialize();
     dfh->print_header();
 
@@ -2803,8 +2804,8 @@ void FISAPT::fexch() {
     dfh->add_space("b", Cs[2]);
     dfh->add_space("s", Cs[3]);
 
-    dfh->add_transformation("Aar", "a", "r");
-    dfh->add_transformation("Abs", "b", "s");
+    dfh->add_transformation("Aar", "a", "r", "pqQ");
+    dfh->add_transformation("Abs", "b", "s", "pqQ");
     
     dfh->transform();
 
@@ -2874,16 +2875,21 @@ void FISAPT::fexch() {
 
     dfh->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
 
+    SharedMatrix A = dfh->get_tensor("Aar");
+    printf("Aar: %f\n", A->rms());
     for (size_t a = 0; a < na; a++) {
         dfh->fill_tensor("Aar", TrQ, {a, a + 1});
+        printf("----- (%d): %f\n", a, TrQ->rms());
         C_DGEMM('N', 'N', nb, nQ, nr, 1.0, Sbrp[0], nr, TrQp[0], nQ, 0.0, TbQp[0], nQ);
         dfh->write_disk_tensor("Bab", TbQ, {a, a + 1});
     }
 
     dfh->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
 
+    printf("Abs: %f\n", dfh->get_tensor("Abs")->rms());
     for (size_t b = 0; b < nb; b++) {
         dfh->fill_tensor("Abs", TsQ, {b, b + 1});
+        printf("----- (%d): %f\n", b, TsQ->rms());
         C_DGEMM('N', 'N', na, nQ, ns, 1.0, Sasp[0], ns, TsQp[0], nQ, 0.0, TaQp[0], nQ);
         dfh->write_disk_tensor("Bba", TaQ, {b, b + 1});
     }
@@ -2891,6 +2897,8 @@ void FISAPT::fexch() {
     auto E_exch3 = std::make_shared<Matrix>("E_exch [a <x-x> b]", na, nb);
     double** E_exch3p = E_exch3->pointer();
 
+    printf("Bab: %f\n", dfh->get_tensor("Bab")->rms());
+    printf("Bba: %f\n", dfh->get_tensor("Bba")->rms());
     for (size_t a = 0; a < na; a++) {
         dfh->fill_tensor("Bab", TbQ, {a, a + 1});
         for (size_t b = 0; b < nb; b++) {
