@@ -265,13 +265,23 @@ void SAPT0::print_results() {
                         e_exch10_s2_ * 1000.0, e_exch10_s2_ * pc_hartree2kcalmol, e_exch10_s2_ * pc_hartree2kJmol);
         outfile->Printf("\n    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scaled.c_str(), tot_ind * 1000.0, tot_ind * pc_hartree2kcalmol, tot_ind * pc_hartree2kJmol);
-        outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-                        e_ind20_ * 1000.0, e_ind20_ * pc_hartree2kcalmol, e_ind20_ * pc_hartree2kJmol);
-        outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-                        scaled.c_str(), *scal_it * e_exch_ind20_ * 1000.0,
-                        *scal_it * e_exch_ind20_ * pc_hartree2kcalmol, *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
-        outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-                        scaled.c_str(), dHF2 * 1000.0, dHF2 * pc_hartree2kcalmol, dHF2 * pc_hartree2kJmol);
+        if(no_response_) {
+            outfile->Printf("      Ind20,u                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            e_ind20_ * 1000.0, e_ind20_ * pc_hartree2kcalmol, e_ind20_ * pc_hartree2kJmol);
+            outfile->Printf("      Exch-Ind20,u %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            scaled.c_str(), *scal_it * e_exch_ind20_ * 1000.0,
+                            *scal_it * e_exch_ind20_ * pc_hartree2kcalmol, *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
+            outfile->Printf("      delta HF,u (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            scaled.c_str(), dHF2 * 1000.0, dHF2 * pc_hartree2kcalmol, dHF2 * pc_hartree2kJmol);
+        } else {
+            outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            e_ind20_ * 1000.0, e_ind20_ * pc_hartree2kcalmol, e_ind20_ * pc_hartree2kJmol);
+            outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            scaled.c_str(), *scal_it * e_exch_ind20_ * 1000.0,
+                            *scal_it * e_exch_ind20_ * pc_hartree2kcalmol, *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
+            outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            scaled.c_str(), dHF2 * 1000.0, dHF2 * pc_hartree2kcalmol, dHF2 * pc_hartree2kJmol);
+        }
         outfile->Printf("\n    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scaled.c_str(), tot_disp * 1000.0, tot_disp * pc_hartree2kcalmol, tot_disp * pc_hartree2kJmol);
         outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
@@ -321,8 +331,18 @@ void SAPT0::print_results() {
             Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
             Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
 
-            Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
-            Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
+            if(no_response_) {
+                // We still store in the R variants so the PsiVars machinery works.
+                outfile->Printf("    WARNING: **Uncoupled** SAPT induction stored in SAPT IND20,R ENERGY \n");
+                outfile->Printf("             and in SAPT EXCH-IND20,R ENERGY \n");
+                Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
+                Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
+                Process::environment.globals["SAPT IND20,U ENERGY"] = e_ind20_;
+                Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = e_exch_ind20_;
+            } else {
+                Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
+                Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
+            }
             Process::environment.globals["SAPT HF TOTAL ENERGY"] = eHF_;
             Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
 
