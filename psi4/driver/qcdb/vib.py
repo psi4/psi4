@@ -423,7 +423,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
     text.append('  pre-proj  all modes:' + str(_format_omega(pre_frequency_cm_1, 4)))
 
     # project & solve
-    mwhess_proj = np.einsum('ij,jk,kl->il', P.T, mwhess, P)
+    mwhess_proj = np.dot(P.T, mwhess).dot(P)
     text.append(mat_symm_info(mwhess_proj, lbl='projected mass-weighted Hessian') + ' ({})'.format(nrt))
 
     #print('projhess = ', np.array_repr(mwhess_proj))

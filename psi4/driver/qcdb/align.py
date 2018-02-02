@@ -103,8 +103,7 @@ class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atom
             for jat in range(nat):
                 alhess[iat, jat] = (self.rotation.T).dot(blocked_hess[iat, jat].dot(self.rotation))
 
-        alhess = alhess[:, self.atommap]
-        alhess = alhess[self.atommap, :]
+        alhess = alhess[np.ix_(self.atommap, self.atommap)]
 
         alhess = qcdb.util.blockwise_contract(alhess)
         return alhess
@@ -229,6 +228,9 @@ def B787(cgeom,
         raise ValidationError("""atom subclasses unequal:\n  {}\n  {}""".format(runiq, cuniq))
 
     if run_mirror:
+        # use aligner to check if system and its (xz-plane) mirror image are
+        #   superimposible and hence whether its worth doubling the number of Kabsch
+        #   runs below to check for mirror-image matches
         mcgeom = np.copy(cgeom)
         mcgeom[:, 1] *= -1.
         exact = 1.e-6
@@ -404,9 +406,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
     iterator of tuples
 
     """
-    try:
-        assert (sorted(ref) == sorted(current))
-    except AssertionError:
+    if sorted(ref) != sorted(current):
         raise ValidationError("""ref and current can't map to each other.\n""" + 'R:  ' + str(ref) + '\nC:  ' +
                               str(current))
 
@@ -593,17 +593,17 @@ def kabsch_align(rgeom, cgeom, weight=None):
     R = rgeom
     C = cgeom
     N = rgeom.shape[0]
-    if np.allclose(R, C, atol=1.e-8):
+    if np.allclose(R, C):
         # can hit a mixed non-identity translation/rotation, so head off
         return 0., np.identity(3), np.zeros(3)
 
     Rcentroid = R.sum(axis=0) / N
     Ccentroid = C.sum(axis=0) / N
-    R = R - Rcentroid
-    C = C - Ccentroid
+    R = np.subtract(R, Rcentroid)
+    C = np.subtract(C, Ccentroid)
 
-    R = R * np.sqrt(w[:, None])
-    C = C * np.sqrt(w[:, None])
+    R *= np.sqrt(w[:, None])
+    C *= np.sqrt(w[:, None])
 
     RR = kabsch_quaternion(C.T, R.T)
     TT = Ccentroid - RR.dot(Rcentroid)
