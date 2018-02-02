@@ -46,11 +46,11 @@ compare_values(-128.873042062, edft, 4, 'Ne: M11-L')   #TEST
 clean()
 #  
 edft = energy('m06-l')
-compare_values(-128.903194900, edft, 4, 'Ne: M06-L')   #TEST
+compare_values(-128.903194900, edft, 5, 'Ne: M06-L')   #TEST
 clean()
 #
 edft = energy('mn12-l')
-compare_values(-128.869792717, edft, 4, 'Ne: MN12-L')   #TEST
+compare_values(-128.869792717, edft, 5, 'Ne: MN12-L')   #TEST
 clean()
 #
 # Gaussian16

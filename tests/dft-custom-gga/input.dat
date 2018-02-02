@@ -18,8 +18,8 @@
 # Turbomole 7.2, nori, grid 7
 # NWCHEM  grid: xfine, TOLERANCES accCoul 1e-14
 ## Notes
-# M11L only up to 4 decimals even for Ne with fine grid
 # BP86 can come with PW91 or VWN5 LDA correlation. Deviations are quite large either way.
+# SOGGA11 only up to 4 decimals even for Ne with fine grid
 
 
 ggaval ={
