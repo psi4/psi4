@@ -10,6 +10,8 @@
 # wb97x
 # SOGGA11
 # SOGGA11-X
+##Gaussian 16: cc-pvdz 5D SP int=(grid=99770)
+# MN15
 
 # MISSING: 
 #          "wpbe"     : build_wpbe_superfunctional,
@@ -51,6 +53,9 @@ compare_values(-128.695398806080, edft, 4, 'Ne: PBEh3c')
 clean()
 edft = energy('sogga11-x')
 compare_values(-128.876075275, edft, 4, 'Ne: SOGGA11-X')   
+clean()
+edft = energy('mn15')
+compare_values(-128.825480424, edft, 4, 'Ne: MN15')   
 clean()
 
 #edft = energy('b5050lyp')

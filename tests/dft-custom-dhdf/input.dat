@@ -9,6 +9,13 @@
 #ESOS−PT2 −0.062530 −0.066777 
 #Etot −128.920697 −76.412502
 
+
+#PBE0-DH from Gaussian 16: "cc-pvdz 5d int=grid=99770 pbe0dh sp"
+#ESCF -128.773106818
+#ESOS−PT2 -0.02641704539
+#Etot −128.79952386314
+
+
 # Others from ORCA v.4.0.1, cc-pVTZ, RI-MP2, no FC, GRID7
 
 # from WATER27 test set
@@ -61,7 +68,6 @@ clean()
 #compare_values(, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
 #clean()
 
-
 set freeze_core true 
 edhdf = energy('dsd-blyp')
 e_dft=get_variable('SCF TOTAL ENERGY')
@@ -87,6 +93,13 @@ compare_values(-0.062529936, e_mp2, 5,  'Ne: PWPB95_PT2')   #TEST
 compare_values(-128.920706595202, edhdf, 5,  'Ne: PWPB95')   #TEST
 clean()
 
+edhdf = energy('pbe0-dh')
+e_dft=get_variable('SCF TOTAL ENERGY')
+e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.773106818, e_dft, 5, 'Ne: PBE0-DH')   #TEST 
+compare_values(-0.02641704539, e_mp2, 5,  'Ne: PBE0-DH')   #TEST
+compare_values(-128.79952386314, edhdf, 5,  'Ne: PBE0-DH')   #TEST
+clean()
 
 # =========== former dft-pbe0-2 ==========
 # internal match

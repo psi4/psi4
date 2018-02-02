@@ -10,6 +10,8 @@
 #-> M11L
 #-> M06L
 #-> MN12L
+# Gaussian 16: cc-pvdz 5D SP int=(grid=99770)
+#-> MN15L
 ## Notes
 # M11L only up to 4 decimals even for Ne with fine grid
 
@@ -49,6 +51,11 @@ clean()
 #
 edft = energy('mn12-l')
 compare_values(-128.869792717, edft, 4, 'Ne: MN12-L')   #TEST
+clean()
+#
+# Gaussian16
+edft = energy('mn15-l')
+compare_values(-128.826859054, edft, 4, 'Ne: MN15-L')   #TEST
 clean()
 #
 

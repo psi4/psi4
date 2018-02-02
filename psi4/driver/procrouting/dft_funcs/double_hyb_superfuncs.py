@@ -209,14 +209,14 @@ def build_pbe0_dh_superfunctional(name, npoints, deriv, restricted):
     X.set_alpha(0.5)
     sup.add_x_functional(X)
     C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
-    C.set_alpha(0.125)
+    C.set_alpha(0.875)
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
     sup.set_x_alpha(0.5)
-    sup.set_c_alpha(0.875)
+    sup.set_c_alpha(0.125)
 
     # => End User-Customization <= #
 
@@ -285,14 +285,14 @@ def build_scan0_dh_superfunctional(name, npoints, deriv, restricted):
     X.set_alpha(0.5)
     sup.add_x_functional(X)
     C = core.LibXCFunctional('XC_MGGA_C_SCAN', restricted)
-    C.set_alpha(0.125)
+    C.set_alpha(0.875)
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
     sup.set_x_alpha(0.5)
-    sup.set_c_alpha(0.875)
+    sup.set_c_alpha(0.125)
 
     # => End User-Customization <= #
 
@@ -524,7 +524,7 @@ def build_ptpss_superfunctional(name, npoints, deriv, restricted):
 double_hyb_superfunc_list = {
     "b2plyp": build_b2plyp_superfunctional,
     "pbe0-2": build_pbe0_2_superfunctional,
-    #    "pbe0-dh": build_pbe0_dh_superfunctional, # no test available
+    #    "pbe0-dh": build_pbe0_dh_superfunctional, # test compared to Gaussian16 fails
     #    "scan0-2": build_scan0_2_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     #    "scan0-dh": build_scan0_dh_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "dsd-blyp": build_dsd_blyp_superfunctional,
