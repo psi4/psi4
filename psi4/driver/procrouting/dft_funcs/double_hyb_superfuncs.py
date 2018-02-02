@@ -524,7 +524,7 @@ def build_ptpss_superfunctional(name, npoints, deriv, restricted):
 double_hyb_superfunc_list = {
     "b2plyp": build_b2plyp_superfunctional,
     "pbe0-2": build_pbe0_2_superfunctional,
-    #    "pbe0-dh": build_pbe0_dh_superfunctional, # test compared to Gaussian16 fails
+    "pbe0-dh": build_pbe0_dh_superfunctional,
     #    "scan0-2": build_scan0_2_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     #    "scan0-dh": build_scan0_dh_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "dsd-blyp": build_dsd_blyp_superfunctional,
