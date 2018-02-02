@@ -28,11 +28,13 @@
 
 """Module with utility functions for use in input files."""
 from __future__ import division
+import os
 import re
 import sys
-import os
 import math
+
 import numpy as np
+
 from .exceptions import *
 
 

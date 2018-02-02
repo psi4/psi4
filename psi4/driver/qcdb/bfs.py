@@ -3,7 +3,9 @@ from __future__ import print_function
 from __future__ import division
 import math
 import collections
+
 import numpy as np
+
 from .physconst import *
 from .periodictable import *
 
@@ -13,9 +15,9 @@ def BFS(geom, elem, seed_atoms=None, bond_threshold=1.20):
 
     Parameters
     ----------
-    geom : np.array of np.float
+    geom : ndarray of float
         (nat x 3) Cartesian coordinates [a0] of real atoms.
-    elem : np.array of str or int
+    elem : ndarray of str or int
         (nat) Either element symbols or atomic numbers corresponding to `geom`.
         Used for selecting van der Waals radius.
     seed_atoms : list (optional)

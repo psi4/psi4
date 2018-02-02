@@ -34,15 +34,14 @@ Organizationally, this module isolates qcdb code from psi4 code.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import shutil
 import os
-import subprocess
 import re
-import inspect
 import glob
 import shelve
-import datetime
+import shutil
 import difflib
+import datetime
+import subprocess
 
 from psi4.driver.p4util.exceptions import *
 

@@ -34,19 +34,18 @@ properties, and vibrational frequency calculations.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import sys
-import re
 import os
+import re
+import sys
 import shutil
 
-# Import driver helpers
+import numpy as np
+
 from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
 from psi4.driver import p4util
 from psi4.driver import qcdb
-# from psi4.driver.inputparser import parse_options_block
-
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 # never import wrappers or aliases into this file
@@ -1782,7 +1781,6 @@ def frequency(name, **kwargs):
 
 def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
     # TODO should go back to private
-    import numpy as np
 
     if hess is None:
         nmwhess = np.asarray(wfn.hessian())

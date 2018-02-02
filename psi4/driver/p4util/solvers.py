@@ -32,6 +32,7 @@ Generalized iterative solvers for Psi4.
 
 """
 import time
+
 import numpy as np
 
 from psi4 import core

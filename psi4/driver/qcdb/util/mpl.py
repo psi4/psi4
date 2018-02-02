@@ -1,3 +1,4 @@
+import numpy as np
 
 def plot_coord(ref, cand=None, orig=None, comment=None):
     """Display target geometry `ref` as black dots in 3D plot. If present, also
@@ -6,11 +7,10 @@ def plot_coord(ref, cand=None, orig=None, comment=None):
     black should overlap and pale blue shows where red started.
     
     """
-    import numpy as np
     try:
         from matplotlib import pyplot
     except ImportError:
-        raise ValidationError('Install matplotlib (e.g., `conda install matplotlib`)')
+        raise ImportError("""Install matplotlib. `conda install matplotlib` or https://matplotlib.org/faq/installing_faq.html""")
     from mpl_toolkits.mplot3d import Axes3D
 
     fig = pyplot.figure()

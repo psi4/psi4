@@ -28,17 +28,14 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-
 import math
+import itertools
+
 import numpy as np
-import itertools as it
 
 from psi4 import core
-
-# Import driver helpers
 from psi4.driver import p4util
 from psi4.driver import constants
-
 from psi4.driver.p4util.exceptions import *
 
 ### Math helper functions
@@ -247,22 +244,22 @@ def nbody_gufunc(func, method_string, **kwargs):
         # Everything is in dimer basis
         basis_tuple = tuple(fragment_range)
         for nbody in nbody_range:
-            for x in it.combinations(fragment_range, nbody):
+            for x in itertools.combinations(fragment_range, nbody):
                 cp_compute_list[nbody].add( (x, basis_tuple) )
 
     if do_nocp:
         # Everything in monomer basis
         for nbody in nbody_range:
-            for x in it.combinations(fragment_range, nbody):
+            for x in itertools.combinations(fragment_range, nbody):
                 nocp_compute_list[nbody].add( (x, x) )
 
     if do_vmfc:
         # Like a CP for all combinations of pairs or greater
         for nbody in nbody_range:
-            for cp_combos in it.combinations(fragment_range, nbody):
+            for cp_combos in itertools.combinations(fragment_range, nbody):
                 basis_tuple = tuple(cp_combos)
                 for interior_nbody in nbody_range:
-                    for x in it.combinations(cp_combos, interior_nbody):
+                    for x in itertools.combinations(cp_combos, interior_nbody):
                         combo_tuple = (x, basis_tuple)
                         vmfc_compute_list[interior_nbody].add( combo_tuple )
                         vmfc_level_list[len(basis_tuple)].add( combo_tuple )

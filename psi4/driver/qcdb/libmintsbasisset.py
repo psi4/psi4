@@ -30,16 +30,11 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 import os
-import re
 import sys
-import string
 import hashlib
 import itertools
-from collections import defaultdict
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .oldpymodules import OrderedDict
+import collections
+
 from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
@@ -47,6 +42,7 @@ from .periodictable import *
 from .libmintsgshell import ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis, corresponding_zeta
+
 if sys.version_info >= (3,0):
     basestring = str
 
@@ -144,7 +140,7 @@ class BasisSet(object):
         elif len(args) == 3 and \
             isinstance(args[0], basestring) and \
             isinstance(args[1], Molecule) and \
-            isinstance(args[2], OrderedDict):
+            isinstance(args[2], collections.OrderedDict):
             self.constructor_role_mol_shellmap(*args)
         else:
             raise ValidationError('BasisSet::constructor: Inappropriate configuration of constructor arguments')
@@ -619,7 +615,7 @@ class BasisSet(object):
         #   - error checking not needed since C-side already checked for NULL ptr
         mol.clear_basis_all_atoms()
         # TODO now need to clear shells, too
-        basstrings = defaultdict(dict)
+        basstrings = collections.defaultdict(dict)
         if orb is None or orb == '':
             raise ValidationError("""Orbital basis argument must not be empty.""")
         elif callable(orb):
@@ -739,9 +735,9 @@ class BasisSet(object):
                 raise ValidationError("""BasisSet::construct: deffit argument invalid: %s""" % (deffit))
 
         # Map of ShellInfo
-        atom_basis_shell = OrderedDict()
-        ecp_atom_basis_shell = OrderedDict()
-        ecp_atom_basis_ncore = OrderedDict()
+        atom_basis_shell = collections.OrderedDict()
+        ecp_atom_basis_shell = collections.OrderedDict()
+        ecp_atom_basis_ncore = collections.OrderedDict()
         names = {}
         summary = []
         bastitles = []
@@ -752,9 +748,9 @@ class BasisSet(object):
             basdict = mol.atom_entry(at).basissets()  # {'BASIS': 'sto-3g', 'DF_BASIS_MP2': 'cc-pvtz-ri'}
 
             if label not in atom_basis_shell:
-                atom_basis_shell[label] = OrderedDict()
+                atom_basis_shell[label] = collections.OrderedDict()
             if label not in ecp_atom_basis_shell:
-                ecp_atom_basis_shell[label] = OrderedDict()
+                ecp_atom_basis_shell[label] = collections.OrderedDict()
 
             # Establish search parameters for what/where basis entries suitable for atom
             seek = {}
@@ -889,10 +885,10 @@ class BasisSet(object):
         basisset.name = ' + '.join(bastitles)
 
         # Summary printing
-        tmp = defaultdict(list)
+        tmp = collections.defaultdict(list)
         for at, v in enumerate(summary):
             tmp[v].append(at + 1)
-        tmp2 = OrderedDict()
+        tmp2 = collections.OrderedDict()
         maxsats = 0
         for item in sorted(tmp.values()):
             for msg, ats in tmp.items():
@@ -1390,7 +1386,7 @@ class BasisSet(object):
         shell_list = []
 
         # map of AM to a vector of exponents for duplicate basis functions check
-        exp_map = defaultdict(list)
+        exp_map = collections.defaultdict(list)
 
         for shell in shells:
             am = shell.am()

@@ -1,18 +1,21 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
-
+import time
+import itertools
 import collections
+
 import numpy as np
+
 from .molecule import Molecule
 from .util import *
 from .psiutil import *
+from .physconst import psi_bohr2angstroms
 
 try:
-    from itertools import izip as zip
+    from itertools import izip as zip  # py2
 except ImportError:
-    # will be 3.x series
-    pass
+    pass  # py3
 
 
 class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atommap mirror')):
@@ -215,9 +218,6 @@ def B787(cgeom,
         from `cgeom` and the optimally aligned geometry.
 
     """
-    import time
-    from .physconst import psi_bohr2angstroms
-
     # validation
     if rgeom.shape != cgeom.shape or rgeom.shape[1] != 3:
         raise ValidationError("""natom doesn't match: {} != {}""".format(rgeom.shape, cgeom.shape))
@@ -404,10 +404,6 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
     iterator of tuples
 
     """
-    import time
-    import itertools
-    import collections
-
     try:
         assert (sorted(ref) == sorted(current))
     except AssertionError:
@@ -532,7 +528,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         try:
             import hungarian
         except ImportError:
-            raise ValidationError("install this repository: https://github.com/hrldcpr/hungarian (tag v0.3.0)")
+            raise ImportError("Install this repository: https://github.com/hrldcpr/hungarian (tag v0.3.0)")
         from .util.gph_uno_bipartite import uno
 
     # collect candidate atom orderings from algofn for each of the atom classes,
@@ -585,8 +581,6 @@ def kabsch_align(rgeom, cgeom, weight=None):
     Author: DAS
 
     """
-    from .physconst import psi_bohr2angstroms
-
     if weight is None:
         w = np.ones((rgeom.shape[0]))
     elif isinstance(weight, list):
@@ -704,8 +698,6 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
         as requested: identity, random, or specified.
 
     """
-    import numpy as np
-
     rand_elord = np.arange(nat)
     if do_resort is True:
         np.random.shuffle(rand_elord)

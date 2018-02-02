@@ -27,6 +27,7 @@
 #
 
 import pickle
+
 from . import dependency_check
 from psi4.driver.molutil import *
 from psi4.driver.inputparser import process_input

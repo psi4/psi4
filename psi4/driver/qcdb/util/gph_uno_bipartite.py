@@ -13,7 +13,11 @@ Updated Dec 2017 LAB for pep8, py3, more tests, starter_match, and simpler inter
 
 """
 from __future__ import print_function
-import networkx as nx
+
+try:
+    import networkx as nx
+except ImportError:
+    raise ImportError("""Install python module networkx. `conda install networkx` or `pip install networkx`""")
 from networkx import bipartite
 import numpy as np
 

@@ -27,6 +27,7 @@
 #
 
 import sys
+
 import numpy as np
 
 from psi4 import core

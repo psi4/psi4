@@ -29,24 +29,16 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
-
 import os
-#import re
-#import math
-#import copy
-#from periodictable import *
-#from physconst import *
-#from vecutil import *
-#from exceptions import *
-#from coordentry import *
-import subprocess
-import socket
-import shutil
-import random
+import hashlib
+import collections
+
 import numpy as np
-from collections import defaultdict
+
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
+from . import molparse
+from .bfs import BFS
 
 
 class Molecule(LibmintsMolecule):
@@ -360,7 +352,6 @@ class Molecule(LibmintsMolecule):
         NumPy array.
 
         """
-        import numpy as np
         factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
         self.update_geometry()
 
@@ -442,7 +433,7 @@ class Molecule(LibmintsMolecule):
         text += '$end\n\n'
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         #options['QCHEM'['QCHEM_CHARGE']['value'] = self.molecular_charge()
         #options['QCHEM'['QCHEM_MULTIPLICITY']['value'] = self.multiplicity()
         options['QCHEM']['QCHEM_INPUT_BOHR']['value'] = False
@@ -554,7 +545,7 @@ class Molecule(LibmintsMolecule):
         text += '\n'
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = 'ANGSTROM'
@@ -589,7 +580,7 @@ class Molecule(LibmintsMolecule):
                     cr += 1
         text += '\n'
 
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         options['CFOUR']['CFOUR_BASIS']['value'] = 'SPECIAL'
         options['CFOUR']['CFOUR_SPHERICAL']['value'] = puream
 
@@ -605,7 +596,7 @@ class Molecule(LibmintsMolecule):
         """
         Format the molecule into an orca xyz format
         """
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         self.update_geometry()
         factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
 
@@ -690,7 +681,7 @@ class Molecule(LibmintsMolecule):
                                                 # >>>
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         #options['QCHEM'['QCHEM_CHARGE']['value'] = self.molecular_charge()
         #options['QCHEM'['QCHEM_MULTIPLICITY']['value'] = self.multiplicity()
         options['QCHEM']['QCHEM_INPUT_BOHR']['value'] = False
@@ -760,7 +751,7 @@ class Molecule(LibmintsMolecule):
             text += "\n"
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = self.units()
@@ -1126,8 +1117,6 @@ class Molecule(LibmintsMolecule):
         geom, mass, elem, elez, uniq = molinstance.to_arrays()
 
         """
-        import hashlib
-
         self.update_geometry()
         if isinstance(self, Molecule):
             # normal qcdb.Molecule
@@ -1196,8 +1185,6 @@ class Molecule(LibmintsMolecule):
             Only provided if `return_dict` is True.
 
         """
-        from . import molparse
-
         molrec = molparse.from_arrays(geom=geom,
                                       elea=elea,
                                       elez=elez,
@@ -1307,7 +1294,6 @@ class Molecule(LibmintsMolecule):
         # * from_arrays and comparison lines below are quite unnecessary to
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
-        from . import molparse
         try:
             validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
         except ValidationError as err:
@@ -1432,9 +1418,6 @@ class Molecule(LibmintsMolecule):
         Trent M. Parker, revamped by Lori A. Burns
 
         """
-        from .bfs import BFS
-        from . import molparse
-
         self.update_geometry()
         if self.natom() != self.nallatom():
             raise ValidationError("""BFS not adapted for dummy atoms""")
@@ -1558,7 +1541,6 @@ class Molecule(LibmintsMolecule):
 
         """
         from .align import B787
-        from . import molparse
 
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
@@ -1657,7 +1639,6 @@ class Molecule(LibmintsMolecule):
         None
 
         """
-        import numpy as np
         from .align import compute_scramble
 
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
