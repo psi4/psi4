@@ -1,3 +1,4 @@
+import re
 
 NUCLEUS = r"""(?:
    (?P<gh1>@)|(?P<gh2>Gh\())?                # optional ghost: @stuff or Gh(stuff) ...
@@ -13,4 +14,22 @@ NUCLEUS = r"""(?:
         (?:@(?P<mass>\d+\.\d+))?             # optional mass value [u]
    (?(gh2)\)                                 # ... ghost
           )"""
+
+NUMBER = r"""(
+    (?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?) |   # .num with optional sign, exponent, wholenum
+    (?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?) |   # num. with optional sign, exponent, decimals
+    (?:[-+]?\d+(?:[DdEe][-+]?\d+)?)          # num with optional sign, exponent
+         )"""
+
+SEP = r"""[\t ,]+"""
+ENDL = r"""[\t ,]*$"""
+
+
+def filter_comments(string):
+    """Remove from `string` any Python-style comments ('#' to end of line)."""
+
+    comment = re.compile(r'(^|[^\\])#.*')
+    string = re.sub(comment, '', string)
+    return string
+
 

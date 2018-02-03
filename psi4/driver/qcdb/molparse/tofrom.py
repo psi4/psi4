@@ -6,6 +6,7 @@ from ..util import distance_matrix
 from ..exceptions import *
 from .chgmult import validate_and_fill_chgmult
 from .nucleus import reconcile_nucleus
+from .regex import *
 
 try:
     long(1)
@@ -33,6 +34,7 @@ def from_arrays(geom=None,
                 molecular_charge=None,
                 molecular_multiplicity=None,
                 speclabel=True,
+                tooclose=0.1,
                 zero_ghost_fragments=False,
                 nonphysical=False,
                 mtol=1.e-3,
@@ -54,6 +56,8 @@ def from_arrays(geom=None,
     elbl : ndarray of str
         (nat, ) Label extending `elem` symbol, possibly conveying ghosting, isotope, mass, tagging information.
 
+    tooclose : float, optional
+        Interatom distance (native `geom` units) nearer than which atoms not allowed.    
     nonphysical : bool, optional
 
     speclabel : bool, optional
@@ -121,7 +125,8 @@ def from_arrays(geom=None,
                                                 fix_orientation=fix_orientation,
                                                 fix_symmetry=fix_symmetry))
 
-    molinit.update(validate_and_fill_geometry(  geom=geom))
+    molinit.update(validate_and_fill_geometry(  geom=geom,
+                                                tooclose=tooclose))
     nat = molinit['geom'].shape[0] // 3
 
     molinit.update(validate_and_fill_nuclei(    nat,
@@ -190,7 +195,7 @@ def validate_and_fill_universals(name=None,
         return molinit
 
 
-def validate_and_fill_geometry(geom=None):
+def validate_and_fill_geometry(geom=None, tooclose=0.1):
     """Check `geom` for overlapping atoms. Return flattened"""
 
     if geom is None:
@@ -201,10 +206,11 @@ def validate_and_fill_geometry(geom=None):
 
     iu = np.triu_indices(dm.shape[0])
     dm[iu] = 10.
-    tooclose = np.where(dm < 0.1)
+    tooclosem = np.where(dm < tooclose)
 
-    if tooclose[0].shape[0]:
-        raise ValidationError("""Following atoms are too close: {}""".format([(i, j, trial[i, j]) for i, j in zip(*tooclose)]))
+    if tooclosem[0].shape[0]:
+        raise ValidationError(
+            """Following atoms are too close: {}""".format([(i, j, dm[i, j]) for i, j in zip(*tooclosem)]))
 
     return {'geom': npgeom.reshape((-1))}
 
@@ -224,33 +230,33 @@ def validate_and_fill_nuclei(nat,
     """Check the nuclear identity arrays for consistency and fill in knowable values."""
 
     if elea is None:
-        elea = np.full((nat,), None)
+        elea = np.full((nat, ), None)
     else:
         # -1 equivalent to None
         elea = np.array([(None if at == -1 else at) for at in elea])
 
     if elez is None:
-        elez = np.full((nat,), None)
+        elez = np.full((nat, ), None)
     else:
         elez = np.array(elez)
 
     if elem is None:
-        elem = np.full((nat,), None)
+        elem = np.full((nat, ), None)
     else:
         elem = np.array(elem)
 
     if mass is None:
-        mass = np.full((nat,), None)
+        mass = np.full((nat, ), None)
     else:
         mass = np.array(mass)
 
     if real is None:
-        real = np.full((nat,), None)
+        real = np.full((nat, ), None)
     else:
         real = np.array(real)
 
     if elbl is None:
-        elbl = np.full((nat,), None)
+        elbl = np.full((nat, ), None)
     else:
         elbl = np.array(elbl)
 
@@ -294,21 +300,23 @@ def validate_and_fill_fragments(nat,
             frm = [None]
         else:
             raise ValidationError(
-                """Fragment quantities given without separation info: sep ({}), types ({}), chg ({}), and mult ({})""".format(
-                fragment_separators, fragment_types, fragment_charges, fragment_multiplicities))
+                """Fragment quantities given without separation info: sep ({}), types ({}), chg ({}), and mult ({})""".
+                format(fragment_separators, fragment_types, fragment_charges, fragment_multiplicities))
     else:
         trial_geom = np.zeros((nat, 3))
         try:
             split_geom = np.split(trial_geom, fragment_separators, axis=0)
         except TypeError:
-            raise ValidationError(
-                """fragment_separators ({}) unable to perform trial np.split on geometry.""".format(fragment_separators))
+            raise ValidationError("""fragment_separators ({}) unable to perform trial np.split on geometry.""".format(
+                fragment_separators))
         if any(len(f) == 0 for f in split_geom):
             raise ValidationError(
-                """fragment_separators ({}) yields zero-length fragment(s) after trial np.split on geometry.""".format(split_geom))
+                """fragment_separators ({}) yields zero-length fragment(s) after trial np.split on geometry.""".format(
+                    split_geom))
         if sum(len(f) for f in split_geom) != nat:
             raise ValidationError(
-                """fragment_separators ({}) yields overlapping fragment(s) after trial np.split on geometry, possibly unsorted.""".format(split_geom))
+                """fragment_separators ({}) yields overlapping fragment(s) after trial np.split on geometry, possibly unsorted.""".
+                format(split_geom))
         frs = fragment_separators  #np.array(fragment_separators)
         nfr = len(split_geom)
 
@@ -332,12 +340,297 @@ def validate_and_fill_fragments(nat,
         elif all(f is None or (isinstance(f, (int, np.int64, long)) and f >= 1) for f in fragment_multiplicities):
             frm = fragment_multiplicities
         else:
-            raise ValidationError("""fragment_multiplicities not among None or positive integer: {}""".format(fragment_multiplicities))
+            raise ValidationError(
+                """fragment_multiplicities not among None or positive integer: {}""".format(fragment_multiplicities))
 
     if not (len(frt) == len(frc) == len(frm) == len(frs) + 1):
-        raise ValidationError("""Dimension mismatch among fragment quantities: sep + 1 ({}), types ({}), chg ({}), and mult({})""".format(
-            frs.shape[0] + 1, len(frt), len(frc), len(frm)))
+        raise ValidationError(
+            """Dimension mismatch among fragment quantities: sep + 1 ({}), types ({}), chg ({}), and mult({})""".
+            format(len(frs) + 1, len(frt), len(frc), len(frm)))
 
     return {'fragment_separators': list(frs),
             'fragment_charges': frc,
             'fragment_multiplicities': frm}
+
+
+def from_string(molstr, dtype='psi4', return_processed=False):
+    """
+
+    Parameters
+    ----------
+    molstr : str
+        Multiline string specification of molecule in a recognized format.
+    dtype : {'xyz', 'xyz+', 'psi4'}, optional
+        Molecule format name.
+    return_processed : bool, optional
+        Additionally return intermediate dictionary.
+
+    Returns
+    -------
+    molrec : dict
+        Molecule dictionary spec. See :py:func:`from_arrays`.
+    molinit : dict, optional
+        Intermediate "molrec"-like dictionary containing `molstr` info after
+        processing by this function but before the validation and defaulting of
+        `from_arrays` that returns the proper `molrec`.
+        Only provided if `return_processed` is True.
+
+    Raises
+    ------
+    ValidationError
+        After processing of `molstr`, only an empty string should remain. Anything left is a syntax error.
+
+    """
+    ##"""Module with utility functions that act on molecule objects."""
+    ##from psi4.driver.inputparser import process_pubchem_command, pubchemre
+    #molecule = init_psi4_molecule_from_any_string(geom, name=name)
+
+    ##    #if not has_efp:
+    #    # Figure out how and if we will parse the Molecule adata
+    #    mname = kwargs.pop("name", "default")
+    #    dtype = kwargs.pop("dtype", "psi4").lower()
+    #    if mol_str is not None:
+    # << 2 >> dict[m] -- seed Psi4 minimal and default fields
+
+    print('<<< QMMOL', molstr, '>>>')
+
+    # << 1 >> str -- discard comments
+    molstr = filter_comments(molstr)
+
+    if dtype == 'xyz':
+        """Strict XYZ file format
+
+        Specifiable: geom, elem/elez (element identity)
+        Inaccessible: mass, real (vs. ghost), elbl (user label), name, units (assumed [A]), input_units_to_au, fix_com/orientation/symmetry, fragmentation, molecular_charge, molecular_multiplicity
+
+        <number of atoms>
+        comment line
+        <element_symbol or atomic_number> <x> <y> <z>
+        ...
+        <element_symbol or atomic_number> <x> <y> <z>
+
+        """
+
+    elif dtype == 'xyz+':
+        """Enhanced XYZ format
+
+        <number of atoms> [<[bohr|au|ang]>]
+        [<molecular_charge> <molecular_multiplicity>] comment line
+        <psi4_nucleus_spec> <x> <y> <z>
+        ...
+        <psi4_nucleus_spec> <x> <y> <z>
+
+        Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label), units (defaults [A]), molecular_charge, molecular_multiplicity
+        Inaccessible: name, input_units_to_au, fix_com/orientation/symmetry, fragmentation
+
+        """
+
+    elif dtype == 'psi4':
+
+        molinit = {}
+
+        # << 2 >>  str-->dict[q] -- process units, com, orient, symm
+        molstr, processed = _filter_universals(molstr)
+        molinit.update(processed)
+
+        #        # << 3 >>  str-->dict[e] -- process efp
+        #        mol_str, efp_init = filter_libefp(mol_str, confer=mol_init)
+        #        if efp_init:
+        #            print('<<< core.EFP INTO', efp_init, '>>>')
+        #            # GOOD! core.efp_init()
+        #            # GOOD! efp = core.get_active_efp()
+        #            # GOOD! efp.construct_from_pydict(efp_init)
+        #            # << 4 >>  dict[e]-->dict[m] --- tie qm & efp axes
+        #            mol_init['fix_com'] = True
+        #            mol_init['fix_orientation'] = True
+        #            mol_init['fix_symmetry'] = 'c1'
+
+        # << 3 >> str-->dict[q] -- process atoms, chg, mult, frags
+        molstr, processed = _filter_mints(molstr)
+        molinit.update(processed)
+
+        if molstr:
+            print('\n<<< IFNAL:\n', molstr, '\n>>>\n')
+            raise ValidationError("""Unprocessable Molecule remanents:\n\t{}""".format(molstr))
+
+        import pprint
+        pprint.pprint(molinit)
+
+        print('\nINTO from_arrays <<<', molinit, '>>>\n')
+        molrec = from_arrays(**molinit, speclabel=True)
+        print('\nMOLREC <<<', molrec, '>>>\n')
+
+        #        return {'molecule': mol_init, 'libefp': efp_init}
+        #        #has_efp, geom = filter_libefp(geom)
+
+        if return_processed:
+            return molrec, molinit
+        else:
+            return molrec
+
+    else:
+        raise KeyError("Molecule: dtype of %s not recognized.")
+
+
+#def filter_pubchem(mol_str):
+#    pass
+#    pubchemerror = re.compile(r'^\s*PubchemError\s*$', re.IGNORECASE)
+#    pubcheminput = re.compile(r'^\s*PubchemInput\s*$', re.IGNORECASE)
+
+
+def _filter_universals(string):
+    """Process multiline `string` for fix_ and unit markers,
+    returning a string of unprocessed `string` and a dictionary of
+    processed fields.
+
+    fix_com
+    fix_orientation
+    fix_symmetry
+#    input_units_to_au (not settable)
+    units
+
+    """
+    com = re.compile(r'\A(no_com|nocom)\Z', re.IGNORECASE)
+    orient = re.compile(r'\A(no_reorient|noreorient)\Z', re.IGNORECASE)
+    bohrang = re.compile(r'\Aunits?[\s=]+((?P<ubohr>(bohr|au|a.u.))|(?P<uang>(ang|angstrom)))\Z', re.IGNORECASE)
+    symmetry = re.compile(r'\Asymmetry[\s=]+(?P<pg>\w+)\Z', re.IGNORECASE)
+
+    def process_com(matchobj):
+        processed['fix_com'] = True
+        return ''
+
+    def process_orient(matchobj):
+        processed['fix_orientation'] = True
+        return ''
+
+    def process_bohrang(matchobj):
+        if matchobj.group('uang'):
+            processed['units'] = 'Angstrom'
+        elif matchobj.group('ubohr'):
+            processed['units'] = 'Bohr'
+        return ''
+
+    def process_symmetry(matchobj):
+        processed['fix_symmetry'] = matchobj.group('pg').lower()
+        return ''
+
+    reconstitute = []
+    processed = {}
+
+    for line in string.split('\n'):
+        line = re.sub(com, process_com, line.strip())
+        line = re.sub(orient, process_orient, line)
+        line = re.sub(bohrang, process_bohrang, line)
+        line = re.sub(symmetry, process_symmetry, line)
+        if line:
+            reconstitute.append(line)
+
+    return '\n'.join(reconstitute), processed
+
+
+def _filter_mints(string):
+    """Handle extracting fragment, atom, and chg/mult lines from `string`.
+
+    Returns
+    -------
+    str, dict
+        Returns first a subset (plus some fragment separation guidance) of
+            `string` containing the unmatched contents. These are generally input
+            violations unless handled by a subsequent processing function.
+        Returns second a dictionary with processed extractions. Contains (some
+            optional) the following keys.
+
+            molecular_charge : float, optional
+            molecular_multiplicity : int, optional
+            geom
+            elbl
+            fragment_separators
+            fragment_charges
+            fragment_multiplicities
+
+    """
+    fragment_marker = re.compile(r'^\s*--\s*$', re.MULTILINE)
+    CHG = r'(?P<chg>' + NUMBER + r')'
+    MULT = r'(?P<mult>\d+)'
+    cgmp = re.compile(r'\A' + CHG + SEP + MULT + r'\Z', re.VERBOSE)
+    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<x>' + NUMBER + r')' + 
+                                                                           SEP + r'(?P<y>' + NUMBER + r')' +
+                                                                           SEP + r'(?P<z>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat1 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat2 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat3 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + 
+                                                                       SEP + r'(?P<Aidx>\d+)' + SEP + r'(?P<Aval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat4 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + 
+                                                                       SEP + r'(?P<Aidx>\d+)' + SEP + r'(?P<Aval>' + NUMBER + r')' +
+                                                                       SEP + r'(?P<Didx>\d+)' + SEP + r'(?P<Dval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    #variable = re.compile(r'^\s*(\w+)\s*=\s*(-?\d+\.\d+|-?\d+\.|-?\.\d+|-?\d+|tda)\s*$', re.IGNORECASE)
+
+
+    def process_system_cgmp(matchobj):
+        """Handles optional special first fragment with sole contents overall chg/mult."""
+
+        processed['molecular_charge'] = float(matchobj.group('chg'))
+        processed['molecular_multiplicity'] = int(matchobj.group('mult'))
+        return ''
+
+    def filter_fragment(fstring):
+        """Handles extraction from everything within a fragment marker "--" of a
+        single chg/mult (or None/None) and multiple atom lines.
+
+        """
+
+        def process_fragment_cgmp(matchobj):
+            print('frcgmp hit', matchobj.groups())
+            processed['fragment_charges'].append(float(matchobj.group('chg')))
+            processed['fragment_multiplicities'].append(int(matchobj.group('mult')))
+            return ''
+
+        def process_atom_cartesian(matchobj):
+            #atom_init['qm_type'] = 'qmcart'
+            #atom_init['z'] = float(matchobj.group(10)) * input_units_to_au
+
+            processed['elbl'].append(matchobj.group('nucleus'))
+            processed['geom'].append(float(matchobj.group('x')))
+            processed['geom'].append(float(matchobj.group('y')))
+            processed['geom'].append(float(matchobj.group('z')))
+            return ''
+
+        freconstitute = []
+        start_atom = len(processed["elbl"])
+        if start_atom > 0:
+            processed['fragment_separators'].append(start_atom)
+
+        fcgmp_found = False
+        for iln, line in enumerate(fstring.split('\n')):
+            if not fcgmp_found:
+                line, fcgmp_found = re.subn(cgmp, process_fragment_cgmp, line.strip())
+            line = re.sub(atom_cartesian, process_atom_cartesian, line)
+            #line = re.sub(atom_zmat1, process_atom_zmat1, line)
+            if line:
+                freconstitute.append(line)
+
+        if not fcgmp_found:
+            processed['fragment_charges'].append(None)
+            processed['fragment_multiplicities'].append(None)
+
+        return '\n'.join(freconstitute), processed
+
+    reconstitute = []
+    processed = {}
+    processed['geom'] = []
+    processed['elbl'] = []
+    processed['fragment_separators'] = []
+    processed['fragment_charges'] = []
+    processed['fragment_multiplicities'] = []
+
+    # handle `--`-demarcated blocks
+    for ifr, frag in enumerate(re.split(fragment_marker, string)):
+        frag = frag.strip()
+        if ifr == 0 and cgmp.match(frag):
+            frag, ntotch = re.subn(cgmp, process_system_cgmp, frag)
+        else:
+            frag, processed = filter_fragment(frag)
+        if frag:
+            reconstitute.append(frag)
+
+    return '\n-- (guidance)\n'.join(reconstitute), processed
