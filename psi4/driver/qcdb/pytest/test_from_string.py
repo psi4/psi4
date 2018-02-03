@@ -1,6 +1,5 @@
 import sys
 import copy
-import pprint
 
 import pytest
 import numpy as np

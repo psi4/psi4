@@ -132,7 +132,6 @@ void export_wavefunction(py::module& m) {
         .def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "Returns the set atomic point charges.")
         .def("get_dipole_field_strength", &Wavefunction::get_dipole_field_strength,
              "Returns a vector of length 3, containing the x, y, and z dipole field strengths.")
-        .def("normalmodes", &Wavefunction::normalmodes, "Returns the normal modes of the Wavefunction.")
         .def("set_name", &Wavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
         .def("name", &Wavefunction::name, py::return_value_policy::copy,
              "The level of theory this wavefunction corresponds to.")
