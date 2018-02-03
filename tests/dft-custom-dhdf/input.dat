@@ -9,7 +9,9 @@
 #ESOS−PT2 −0.062530 −0.066777 
 #Etot −128.920697 −76.412502
 
-# Others from ORCA v.4.0.1, cc-pVTZ, RI-MP2, no FC, GRID7
+# DSD-BLYP from ORCA v.4.0.1, cc-pVTZ, RI-MP2, FC, GRID7
+# PBE0-DH  from ORCA v.4.0.1, cc-pVTZ, RI-MP2, FC, GRID7
+# Others   from ORCA v.4.0.1, cc-pVTZ, RI-MP2, no FC, GRID7
 
 # from WATER27 test set
 molecule h2o {
@@ -61,17 +63,6 @@ clean()
 #compare_values(, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
 #clean()
 
-
-set freeze_core true 
-edhdf = energy('dsd-blyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
-compare_values(-128.75560404, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
-compare_values(-0.126886573, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
-compare_values(-128.882490613961, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
-set freeze_core false
-clean()
-
 edhdf = energy('ptpss')
 e_dft=get_variable('SCF TOTAL ENERGY')
 e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
@@ -87,6 +78,23 @@ compare_values(-0.062529936, e_mp2, 5,  'Ne: PWPB95_PT2')   #TEST
 compare_values(-128.920706595202, edhdf, 5,  'Ne: PWPB95')   #TEST
 clean()
 
+set freeze_core true 
+edhdf = energy('dsd-blyp')
+e_dft=get_variable('SCF TOTAL ENERGY')
+e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.75560404, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+compare_values(-0.126886573, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+compare_values(-128.882490613961, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+clean()
+
+edhdf = energy('pbe0-dh')
+e_dft=get_variable('SCF TOTAL ENERGY')
+e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.81862850, e_dft, 4, 'Ne: PBE0-DH DFT')   #TEST 
+compare_values(-0.037540749, e_mp2, 5,  'Ne: PBE0-DH PT2')   #TEST
+compare_values(-128.856169249025, edhdf, 4,  'Ne: PBE0-DH')   #TEST
+clean()
+set freeze_core false
 
 # =========== former dft-pbe0-2 ==========
 # internal match

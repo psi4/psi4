@@ -1,7 +1,7 @@
- Entering Gaussian System, Link 0=/usr/qc//g09.d01/g09/g09
+ Entering Gaussian System, Link 0=g09
  Initial command:
- /usr/qc//g09.d01/g09/l1.exe "/scratch/holger.26429/Gau-26431.inp" -scrdir="/scratch/holger.26429/"
- Entering Link 1 = /usr/qc//g09.d01/g09/l1.exe PID=     26432.
+ /opt/packages/gaussian-g09-D.01/l1.exe "/tmp/1561.1.opteron-2427/Gau-16377.inp" -scrdir="/tmp/1561.1.opteron-2427/"
+ Entering Link 1 = /opt/packages/gaussian-g09-D.01/l1.exe PID=     16379.
   
  Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
             Gaussian, Inc.  All Rights Reserved.
@@ -73,22 +73,31 @@
  and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
  
  ******************************************
- Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
-                21-Dec-2017 
+ Gaussian 09:  AS64L-G09RevD.01 24-Apr-2013
+                 1-Feb-2018 
  ******************************************
- ----------------------------------------------
- # revTPSSrevTPSS/cc-pVDZ 5D SP Int(Grid=99770)
- ----------------------------------------------
+ %rwf=test.rwf.tmp
+ %int=test.int.tmp
+ %d2e=test.d2e.tmp
+ %skr=test.skr.tmp
+ %nosave
+ %chk=test.chk
+ %mem=6GB
+ %nprocshared=12
+ Will use up to   12 processors via shared memory.
+ --------------------------------------
+ # MN12L/cc-pvdz 5D SP int=(grid=99770)
+ --------------------------------------
  1/38=1/1;
  2/12=2,17=6,18=5,40=1/2;
- 3/5=16,8=1,11=2,16=1,25=1,30=1,74=4840,75=99770/1,2,3;
+ 3/5=16,8=1,11=2,16=1,25=1,30=1,74=-68,75=99770/1,2,3;
  4//1;
  5/5=2,38=5/2;
  6/7=2,8=2,9=2,10=2,28=1/1;
  99/5=1,9=1/99;
- -------
- Ne test
- -------
+ --
+ Ne
+ --
  Symbolic Z-matrix:
  Charge =  0 Multiplicity = 1
  Ne                    0.        0.        0. 
@@ -154,15 +163,15 @@
        Virtual   (T1U) (T1U) (T1U) (A1G) (EG) (EG) (T2G) (T2G)
                  (T2G)
  The electronic state of the initial guess is 1-A1G.
- Keep J ints in memory in symmetry-blocked form, NReq=891278.
+ Keep J ints in memory in symmetry-blocked form, NReq=891404.
  Requested convergence on RMS density matrix=1.00D-08 within 128 cycles.
  Requested convergence on MAX density matrix=1.00D-06.
  Requested convergence on             energy=1.00D-06.
  No special actions if energy rises.
  Integral accuracy reduced to 1.0D-05 until final iterations.
  Initial convergence to 1.0D-05 achieved.  Increase integral accuracy.
- SCF Done:  E(RrevTPSS-revTPSS) =  -128.854622168     A.U. after    6 cycles
-            NFock=  6  Conv=0.26D-09     -V/T= 2.0042
+ SCF Done:  E(RMN12L) =  -128.869792717     A.U. after    6 cycles
+            NFock=  6  Conv=0.21D-08     -V/T= 2.0041
 
  **********************************************************************
 
@@ -175,9 +184,9 @@
        Virtual   (T1U) (T1U) (T1U) (A1G) (EG) (EG) (T2G) (T2G)
                  (T2G)
  The electronic state is 1-A1G.
- Alpha  occ. eigenvalues --  -30.68716  -1.33335  -0.45047  -0.45047  -0.45047
- Alpha virt. eigenvalues --    1.34505   1.34505   1.34505   1.79156   4.69927
- Alpha virt. eigenvalues --    4.69927   4.69927   4.69927   4.69927
+ Alpha  occ. eigenvalues --  -31.62388  -1.43988  -0.49940  -0.49940  -0.49940
+ Alpha virt. eigenvalues --    1.42227   1.42227   1.42227   1.95098   5.00777
+ Alpha virt. eigenvalues --    5.00777   5.00777   5.00777   5.00777
           Condensed to atoms (all electrons):
                1
      1  Ne  10.000000
@@ -188,12 +197,12 @@
  Mulliken charges with hydrogens summed into heavy atoms:
                1
      1  Ne   0.000000
- Electronic spatial extent (au):  <R**2>=              9.1052
+ Electronic spatial extent (au):  <R**2>=              9.0633
  Charge=              0.0000 electrons
  Dipole moment (field-independent basis, Debye):
     X=              0.0000    Y=              0.0000    Z=              0.0000  Tot=              0.0000
  Quadrupole moment (field-independent basis, Debye-Ang):
-   XX=             -4.0823   YY=             -4.0823   ZZ=             -4.0823
+   XX=             -4.0635   YY=             -4.0635   ZZ=             -4.0635
    XY=              0.0000   XZ=              0.0000   YZ=              0.0000
  Traceless Quadrupole moment (field-independent basis, Debye-Ang):
    XX=              0.0000   YY=              0.0000   ZZ=              0.0000
@@ -203,27 +212,26 @@
   XXY=              0.0000  XXZ=              0.0000  XZZ=              0.0000  YZZ=              0.0000
   YYZ=              0.0000  XYZ=              0.0000
  Hexadecapole moment (field-independent basis, Debye-Ang**3):
- XXXX=             -1.7158 YYYY=             -1.7158 ZZZZ=             -1.7158 XXXY=              0.0000
+ XXXX=             -1.7001 YYYY=             -1.7001 ZZZZ=             -1.7001 XXXY=              0.0000
  XXXZ=              0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=              0.0000
- ZZZY=              0.0000 XXYY=             -0.5719 XXZZ=             -0.5719 YYZZ=             -0.5719
+ ZZZY=              0.0000 XXYY=             -0.5667 XXZZ=             -0.5667 YYZZ=             -0.5667
  XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=              0.0000
- N-N= 0.000000000000D+00 E-N=-3.108473077557D+02  KE= 1.283095330566D+02
- Symmetry AG   KE= 1.028333975843D+02
- Symmetry B1G  KE= 2.518400402043D-62
- Symmetry B2G  KE= 2.801773733070D-62
- Symmetry B3G  KE= 2.639921825057D-62
+ N-N= 0.000000000000D+00 E-N=-3.109706800273D+02  KE= 1.283418545014D+02
+ Symmetry AG   KE= 1.026897035157D+02
+ Symmetry B1G  KE= 9.230702354272D-63
+ Symmetry B2G  KE= 1.012773726698D-62
+ Symmetry B3G  KE= 6.862395195517D-63
  Symmetry AU   KE= 0.000000000000D+00
- Symmetry B1U  KE= 8.492045157412D+00
- Symmetry B2U  KE= 8.492045157412D+00
- Symmetry B3U  KE= 8.492045157412D+00
- 1\1\GINC-THINK\SP\RrevTPSSrevTPSS\CC-pVDZ\Ne1\HOLGER\21-Dec-2017\0\\# 
- revTPSSrevTPSS/cc-pVDZ 5D SP Int(Grid=99770)\\Ne test\\0,1\Ne,0,0.,0.,
- 0.\\Version=ES64L-G09RevD.01\State=1-A1G\HF=-128.8546222\RMSD=2.562e-1
- 0\Dipole=0.,0.,0.\Quadrupole=0.,0.,0.,0.,0.,0.\PG=OH [O(Ne1)]\\@
+ Symmetry B1U  KE= 8.550716995244D+00
+ Symmetry B2U  KE= 8.550716995244D+00
+ Symmetry B3U  KE= 8.550716995244D+00
+ 1\1\GINC-SILVER-NODE19\SP\RMN12L\CC-pVDZ\Ne1\KRAUS\01-Feb-2018\0\\# MN
+ 12L/cc-pvdz 5D SP int=(grid=99770)\\Ne\\0,1\Ne,0,0.,0.,0.\\Version=AS6
+ 4L-G09RevD.01\State=1-A1G\HF=-128.8697927\RMSD=2.056e-09\Dipole=0.,0.,
+ 0.\Quadrupole=0.,0.,0.,0.,0.,0.\PG=OH [O(Ne1)]\\@
 
 
- When I told the people of Northern Ireland that I was
- an atheist, a woman in the audience stood up and said,
- "Yes, but is it the God of the Catholics or the God
- of the Protestants in whom you don't believe?"
-                               -- Quentin Crisp
+ SOME THINGS ARE EASY, THEY ARE ONLY HARD TO DO.
+            -- A. EINSTEIN TO J. O. HIRSCHFELDER
+ THE ONLY TROUBLE WITH A SURE THING IS THE UNCERTAINTY.
+     -- FROM A TEABAG (BELONGING TO W.H.?)

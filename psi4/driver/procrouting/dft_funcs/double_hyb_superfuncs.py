@@ -162,7 +162,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv, restricted):
     # No spaces, keep it short and according to convention
     sup.set_name('PBE0-2')
     # Tab in, trailing newlines
-    sup.set_description('    PBE0-2 Double Hydrid Exchange-Correlation Functional\n')
+    sup.set_description('    PBE0-2 Double Hybrid Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
     sup.set_citation('    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n')
 
@@ -179,6 +179,120 @@ def build_pbe0_2_superfunctional(name, npoints, deriv, restricted):
     sup.set_c_omega(0.0)
     sup.set_x_alpha(0.793701)
     sup.set_c_alpha(0.5)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_pbe0_dh_superfunctional(name, npoints, deriv, restricted):
+    # Disabled below, as no Q-Chem or PSI4 test available.
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0-DH')
+    # Tab in, trailing newlines
+    sup.set_description('    PBE0-DH Double Hybrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    E. Bremond, C. Adamo, J. Chem. Phys., 135, 024106, 2011\n')
+
+    # Add member functionals
+    X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    X.set_alpha(0.5)
+    sup.add_x_functional(X)
+    C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
+    C.set_alpha(0.875)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.5)
+    sup.set_c_alpha(0.125)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_scan0_2_superfunctional(name, npoints, deriv, restricted):
+    # Disabled below, SCAN correlation results unreliable.
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SCAN0-2')
+    # Tab in, trailing newlines
+    sup.set_description('    SCAN0-2 Double Meta Hybrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    K. Hui, J. Chai, J. Chem. Phys., 144, 044114, 2016\n')
+
+    # Add member functionals
+    X = core.LibXCFunctional('XC_HYB_MGGA_X_SCAN0', restricted)
+    X.set_alpha(0.206299)
+    sup.add_x_functional(X)
+    C = core.LibXCFunctional('XC_MGGA_C_SCAN', restricted)
+    C.set_alpha(0.5)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.793701)
+    sup.set_c_alpha(0.5)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_scan0_dh_superfunctional(name, npoints, deriv, restricted):
+    # Disabled below, SCAN correlation results unreliable.
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0-DH')
+    # Tab in, trailing newlines
+    sup.set_description('    SCAN0-2 Double Meta Hybrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    K. Hui, J. Chai, J. Chem. Phys., 144, 044114, 2016\n')
+
+    # Add member functionals
+    X = core.LibXCFunctional('XC_HYB_MGGA_X_SCAN0', restricted)
+    X.set_alpha(0.5)
+    sup.add_x_functional(X)
+    C = core.LibXCFunctional('XC_MGGA_C_SCAN', restricted)
+    C.set_alpha(0.875)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.5)
+    sup.set_c_alpha(0.125)
 
     # => End User-Customization <= #
 
@@ -410,6 +524,9 @@ def build_ptpss_superfunctional(name, npoints, deriv, restricted):
 double_hyb_superfunc_list = {
     "b2plyp": build_b2plyp_superfunctional,
     "pbe0-2": build_pbe0_2_superfunctional,
+    "pbe0-dh": build_pbe0_dh_superfunctional,
+    #    "scan0-2": build_scan0_2_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
+    #    "scan0-dh": build_scan0_dh_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "dsd-blyp": build_dsd_blyp_superfunctional,
     "core-dsd-blyp": build_core_dsd_blyp_superfunctional,
     "dsd-pbep86": build_dsd_pbep86_superfunctional,

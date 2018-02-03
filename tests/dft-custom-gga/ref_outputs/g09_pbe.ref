@@ -1,7 +1,7 @@
  Entering Gaussian System, Link 0=/usr/qc//g09.d01/g09/g09
  Initial command:
- /usr/qc//g09.d01/g09/l1.exe "/scratch/holger.26429/Gau-26431.inp" -scrdir="/scratch/holger.26429/"
- Entering Link 1 = /usr/qc//g09.d01/g09/l1.exe PID=     26432.
+ /usr/qc//g09.d01/g09/l1.exe "/scratch/holger.931/Gau-933.inp" -scrdir="/scratch/holger.931/"
+ Entering Link 1 = /usr/qc//g09.d01/g09/l1.exe PID=       934.
   
  Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
             Gaussian, Inc.  All Rights Reserved.
@@ -76,23 +76,41 @@
  Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
                 21-Dec-2017 
  ******************************************
- ----------------------------------------------
- # revTPSSrevTPSS/cc-pVDZ 5D SP Int(Grid=99770)
- ----------------------------------------------
+ -------------------------------------
+ #pbepbe/cc-pVDZ 5D SP Int(Grid=99770)
+ -------------------------------------
  1/38=1/1;
  2/12=2,17=6,18=5,40=1/2;
- 3/5=16,8=1,11=2,16=1,25=1,30=1,74=4840,75=99770/1,2,3;
+ 3/5=16,8=1,11=2,16=1,25=1,30=1,74=1009,75=99770/1,2,3;
  4//1;
  5/5=2,38=5/2;
  6/7=2,8=2,9=2,10=2,28=1/1;
  99/5=1,9=1/99;
- -------
- Ne test
- -------
+ Leave Link    1 at Thu Dec 21 14:04:57 2017, MaxMem=           0 cpu:         0.0
+ (Enter /usr/qc//g09.d01/g09/l101.exe)
+ -----
+ title
+ -----
  Symbolic Z-matrix:
  Charge =  0 Multiplicity = 1
  Ne                    0.        0.        0. 
  
+ NAtoms=      1 NQM=        1 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1
+ IAtWgt=          20
+ AtmWgt=  19.9924391
+ NucSpn=           0
+ AtZEff=   0.0000000
+ NQMom=    0.0000000
+ NMagM=    0.0000000
+ AtZNuc=  10.0000000
+ Leave Link  101 at Thu Dec 21 14:04:57 2017, MaxMem=    33554432 cpu:         0.0
+ (Enter /usr/qc//g09.d01/g09/l202.exe)
                           Input orientation:                          
  ---------------------------------------------------------------------
  Center     Atomic      Atomic             Coordinates (Angstroms)
@@ -113,7 +131,11 @@
  ---------------------------------------------------------------------
       1         10           0        0.000000    0.000000    0.000000
  ---------------------------------------------------------------------
+ Leave Link  202 at Thu Dec 21 14:04:57 2017, MaxMem=    33554432 cpu:         0.0
+ (Enter /usr/qc//g09.d01/g09/l301.exe)
  Standard basis: CC-pVDZ (5D, 7F)
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+ Ernie:  2 primitive shells out of 22 were deleted.
  There are     6 symmetry adapted cartesian basis functions of AG  symmetry.
  There are     1 symmetry adapted cartesian basis functions of B1G symmetry.
  There are     1 symmetry adapted cartesian basis functions of B2G symmetry.
@@ -133,13 +155,29 @@
     14 basis functions,    33 primitive gaussians,    15 cartesian basis functions
      5 alpha electrons        5 beta electrons
        nuclear repulsion energy         0.0000000000 Hartrees.
+ IExCor= 1009 DFT=T Ex=PBE Corr=PBE ExCW=0 ScaHFX=  0.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=  99770 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
  NAtoms=    1 NActive=    1 NUniq=    1 SFac= 1.00D+00 NAtFMM=   60 NAOKFM=F Big=F
  Integral buffers will be    131072 words long.
  Raffenetti 2 integral format.
  Two-electron integral symmetry is turned on.
+ Leave Link  301 at Thu Dec 21 14:04:57 2017, MaxMem=    33554432 cpu:         0.0
+ (Enter /usr/qc//g09.d01/g09/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
  One-electron integrals computed using PRISM.
  NBasis=    14 RedAO= T EigKep=  5.96D-01  NBF=     5     1     1     1     0     2     2     2
  NBsUse=    14 1.00D-06 EigRej= -1.00D+00 NBFU=     5     1     1     1     0     2     2     2
+ Precomputing XC quadrature grid using
+ IXCGrd= 4 IRadAn=       99770 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
+ Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
+ NSgBfM=    15    15    15    15    15 MxSgAt=     1 MxSgA2=     1.
+ Leave Link  302 at Thu Dec 21 14:04:57 2017, MaxMem=    33554432 cpu:         0.1
+ (Enter /usr/qc//g09.d01/g09/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Thu Dec 21 14:04:57 2017, MaxMem=    33554432 cpu:         0.0
+ (Enter /usr/qc//g09.d01/g09/l401.exe)
  ExpMin= 4.32D-01 ExpMax= 1.79D+04 ExpMxC= 6.12D+02 IAcc=4 IRadAn=    199770 AccDes= 0.00D+00
  Harris functional with IExCor= 1009 and IRadAn=  199770 diagonalized for initial guess.
  HarFok:  IExCor= 1009 AccDes= 0.00D+00 IRadAn=    199770 IDoV= 1 UseB2=F ITyADJ=14
@@ -149,20 +187,109 @@
          wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
          NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
  Petite list used in FoFCou.
+ Harris En= -128.778709902498    
+ JPrj=0 DoOrth=F DoCkMO=F.
  Initial guess orbital symmetries:
        Occupied  (A1G) (A1G) (T1U) (T1U) (T1U)
        Virtual   (T1U) (T1U) (T1U) (A1G) (EG) (EG) (T2G) (T2G)
                  (T2G)
  The electronic state of the initial guess is 1-A1G.
- Keep J ints in memory in symmetry-blocked form, NReq=891278.
+ Leave Link  401 at Thu Dec 21 14:04:58 2017, MaxMem=    33554432 cpu:         0.1
+ (Enter /usr/qc//g09.d01/g09/l502.exe)
+ Closed shell SCF:
+ Using DIIS extrapolation, IDIIS=  1040.
+ Integral symmetry usage will be decided dynamically.
+ Keep J ints in memory in symmetry-blocked form, NReq=890512.
+ IVT=       20457 IEndB=       20457 NGot=    33554432 MDV=    33531445
+ LenX=    33531445 LenY=    33530563
  Requested convergence on RMS density matrix=1.00D-08 within 128 cycles.
  Requested convergence on MAX density matrix=1.00D-06.
  Requested convergence on             energy=1.00D-06.
  No special actions if energy rises.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=           0 FMFlg1=           0
+         NFxFlg=           0 DoJE=F BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=     600 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=    105 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
  Integral accuracy reduced to 1.0D-05 until final iterations.
+
+ Cycle   1  Pass 0  IDiag  1:
+ E= -128.792900865108    
+ DIIS: error= 8.78D-03 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -128.792900865108     IErMin= 1 ErrMin= 8.78D-03
+ ErrMax= 8.78D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 4.50D-04 BMatP= 4.50D-04
+ IDIUse=3 WtCom= 9.12D-01 WtEn= 8.78D-02
+ Coeff-Com:  0.100D+01
+ Coeff-En:   0.100D+01
+ Coeff:      0.100D+01
+ Gap=     1.754 Goal=   None    Shift=    0.000
+ GapD=    1.754 DampG=2.000 DampE=1.000 DampFc=2.0000 IDamp=-1.
+ RMSDP=1.02D-03 MaxDP=6.34D-03              OVMax= 3.63D-03
+
+ Cycle   2  Pass 0  IDiag  1:
+ E= -128.792900898107     Delta-E=       -0.000000032999 Rises=F Damp=F
+ DIIS: error= 4.13D-03 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 2 EnMin= -128.792900898107     IErMin= 2 ErrMin= 4.13D-03
+ ErrMax= 4.13D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.60D-04 BMatP= 4.50D-04
+ IDIUse=3 WtCom= 9.59D-01 WtEn= 4.13D-02
+ Coeff-Com:  0.423D+00 0.577D+00
+ Coeff-En:   0.500D+00 0.500D+00
+ Coeff:      0.426D+00 0.574D+00
+ Gap=     1.751 Goal=   None    Shift=    0.000
+ RMSDP=6.02D-04 MaxDP=3.42D-03 DE=-3.30D-08 OVMax= 1.36D-03
+
+ Cycle   3  Pass 0  IDiag  1:
+ E= -128.793021383532     Delta-E=       -0.000120485425 Rises=F Damp=F
+ DIIS: error= 9.03D-04 at cycle   3 NSaved=   3.
+ NSaved= 3 IEnMin= 3 EnMin= -128.793021383532     IErMin= 3 ErrMin= 9.03D-04
+ ErrMax= 9.03D-04  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.24D-05 BMatP= 2.60D-04
+ IDIUse=3 WtCom= 9.91D-01 WtEn= 9.03D-03
+ Coeff-Com:  0.422D-02 0.182D+00 0.814D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.100D+01
+ Coeff:      0.419D-02 0.180D+00 0.816D+00
+ Gap=     1.752 Goal=   None    Shift=    0.000
+ RMSDP=1.09D-04 MaxDP=6.18D-04 DE=-1.20D-04 OVMax= 2.46D-04
+
+ Cycle   4  Pass 0  IDiag  1:
+ E= -128.793027409020     Delta-E=       -0.000006025488 Rises=F Damp=F
+ DIIS: error= 7.91D-06 at cycle   4 NSaved=   4.
+ NSaved= 4 IEnMin= 4 EnMin= -128.793027409020     IErMin= 4 ErrMin= 7.91D-06
+ ErrMax= 7.91D-06  0.00D+00 EMaxC= 1.00D-01 BMatC= 9.49D-10 BMatP= 1.24D-05
+ IDIUse=1 WtCom= 1.00D+00 WtEn= 0.00D+00
+ Coeff-Com: -0.707D-05-0.143D-02 0.225D-02 0.999D+00
+ Coeff:     -0.707D-05-0.143D-02 0.225D-02 0.999D+00
+ Gap=     1.752 Goal=   None    Shift=    0.000
+ RMSDP=9.44D-07 MaxDP=5.37D-06 DE=-6.03D-06 OVMax= 2.12D-06
+
  Initial convergence to 1.0D-05 achieved.  Increase integral accuracy.
- SCF Done:  E(RrevTPSS-revTPSS) =  -128.854622168     A.U. after    6 cycles
-            NFock=  6  Conv=0.26D-09     -V/T= 2.0042
+ Cycle   5  Pass 1  IDiag  1:
+ E= -128.793027408270     Delta-E=        0.000000000750 Rises=F Damp=F
+ DIIS: error= 2.16D-09 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -128.793027408270     IErMin= 1 ErrMin= 2.16D-09
+ ErrMax= 2.16D-09  0.00D+00 EMaxC= 1.00D-01 BMatC= 7.13D-17 BMatP= 7.13D-17
+ IDIUse=1 WtCom= 1.00D+00 WtEn= 0.00D+00
+ Coeff-Com:  0.100D+01
+ Coeff:      0.100D+01
+ Gap=     1.752 Goal=   None    Shift=    0.000
+ RMSDP=9.44D-07 MaxDP=5.37D-06 DE= 7.50D-10 OVMax= 1.24D-09
+
+ Cycle   6  Pass 1  IDiag  1:
+ E= -128.793027408270     Delta-E=        0.000000000000 Rises=F Damp=F
+ DIIS: error= 2.43D-09 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 1 EnMin= -128.793027408270     IErMin= 1 ErrMin= 2.16D-09
+ ErrMax= 2.43D-09  0.00D+00 EMaxC= 1.00D-01 BMatC= 8.94D-17 BMatP= 7.13D-17
+ IDIUse=1 WtCom= 1.00D+00 WtEn= 0.00D+00
+ Coeff-Com:  0.528D+00 0.472D+00
+ Coeff:      0.528D+00 0.472D+00
+ Gap=     1.752 Goal=   None    Shift=    0.000
+ RMSDP=2.91D-10 MaxDP=1.65D-09 DE= 5.68D-14 OVMax= 6.56D-10
+
+ SCF Done:  E(RPBE-PBE) =  -128.793027408     A.U. after    6 cycles
+            NFock=  6  Conv=0.29D-09     -V/T= 2.0040
+ KE= 1.282862365195D+02 PE=-3.108530095796D+02 EE= 5.377374565181D+01
+ Leave Link  502 at Thu Dec 21 14:04:58 2017, MaxMem=    33554432 cpu:         0.2
+ (Enter /usr/qc//g09.d01/g09/l601.exe)
+ Copying SCF densities to generalized density rwf, IOpCl= 0 IROHF=0.
 
  **********************************************************************
 
@@ -175,9 +302,9 @@
        Virtual   (T1U) (T1U) (T1U) (A1G) (EG) (EG) (T2G) (T2G)
                  (T2G)
  The electronic state is 1-A1G.
- Alpha  occ. eigenvalues --  -30.68716  -1.33335  -0.45047  -0.45047  -0.45047
- Alpha virt. eigenvalues --    1.34505   1.34505   1.34505   1.79156   4.69927
- Alpha virt. eigenvalues --    4.69927   4.69927   4.69927   4.69927
+ Alpha  occ. eigenvalues --  -30.47247  -1.29161  -0.44200  -0.44200  -0.44200
+ Alpha virt. eigenvalues --    1.30975   1.30975   1.30975   1.75904   4.62081
+ Alpha virt. eigenvalues --    4.62081   4.62081   4.62081   4.62081
           Condensed to atoms (all electrons):
                1
      1  Ne  10.000000
@@ -188,12 +315,12 @@
  Mulliken charges with hydrogens summed into heavy atoms:
                1
      1  Ne   0.000000
- Electronic spatial extent (au):  <R**2>=              9.1052
+ Electronic spatial extent (au):  <R**2>=              9.0903
  Charge=              0.0000 electrons
  Dipole moment (field-independent basis, Debye):
     X=              0.0000    Y=              0.0000    Z=              0.0000  Tot=              0.0000
  Quadrupole moment (field-independent basis, Debye-Ang):
-   XX=             -4.0823   YY=             -4.0823   ZZ=             -4.0823
+   XX=             -4.0756   YY=             -4.0756   ZZ=             -4.0756
    XY=              0.0000   XZ=              0.0000   YZ=              0.0000
  Traceless Quadrupole moment (field-independent basis, Debye-Ang):
    XX=              0.0000   YY=              0.0000   ZZ=              0.0000
@@ -203,27 +330,27 @@
   XXY=              0.0000  XXZ=              0.0000  XZZ=              0.0000  YZZ=              0.0000
   YYZ=              0.0000  XYZ=              0.0000
  Hexadecapole moment (field-independent basis, Debye-Ang**3):
- XXXX=             -1.7158 YYYY=             -1.7158 ZZZZ=             -1.7158 XXXY=              0.0000
+ XXXX=             -1.7099 YYYY=             -1.7099 ZZZZ=             -1.7099 XXXY=              0.0000
  XXXZ=              0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=              0.0000
- ZZZY=              0.0000 XXYY=             -0.5719 XXZZ=             -0.5719 YYZZ=             -0.5719
+ ZZZY=              0.0000 XXYY=             -0.5700 XXZZ=             -0.5700 YYZZ=             -0.5700
  XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=              0.0000
- N-N= 0.000000000000D+00 E-N=-3.108473077557D+02  KE= 1.283095330566D+02
- Symmetry AG   KE= 1.028333975843D+02
- Symmetry B1G  KE= 2.518400402043D-62
- Symmetry B2G  KE= 2.801773733070D-62
- Symmetry B3G  KE= 2.639921825057D-62
+ N-N= 0.000000000000D+00 E-N=-3.108530096331D+02  KE= 1.282862365195D+02
+ Symmetry AG   KE= 1.027356994810D+02
+ Symmetry B1G  KE= 1.670403589142D-62
+ Symmetry B2G  KE= 1.651246257507D-62
+ Symmetry B3G  KE= 1.573185655113D-62
  Symmetry AU   KE= 0.000000000000D+00
- Symmetry B1U  KE= 8.492045157412D+00
- Symmetry B2U  KE= 8.492045157412D+00
- Symmetry B3U  KE= 8.492045157412D+00
- 1\1\GINC-THINK\SP\RrevTPSSrevTPSS\CC-pVDZ\Ne1\HOLGER\21-Dec-2017\0\\# 
- revTPSSrevTPSS/cc-pVDZ 5D SP Int(Grid=99770)\\Ne test\\0,1\Ne,0,0.,0.,
- 0.\\Version=ES64L-G09RevD.01\State=1-A1G\HF=-128.8546222\RMSD=2.562e-1
- 0\Dipole=0.,0.,0.\Quadrupole=0.,0.,0.,0.,0.,0.\PG=OH [O(Ne1)]\\@
+ Symmetry B1U  KE= 8.516845679492D+00
+ Symmetry B2U  KE= 8.516845679492D+00
+ Symmetry B3U  KE= 8.516845679492D+00
+ No NMR shielding tensors so no spin-rotation constants.
+ Leave Link  601 at Thu Dec 21 14:04:58 2017, MaxMem=    33554432 cpu:         0.1
+ (Enter /usr/qc//g09.d01/g09/l9999.exe)
+ 1\1\GINC-THINK\SP\RPBEPBE\CC-pVDZ\Ne1\HOLGER\21-Dec-2017\0\\#pbepbe/cc
+ -pVDZ 5D SP Int(Grid=99770)\\title\\0,1\Ne,0,0.,0.,0.\\Version=ES64L-G
+ 09RevD.01\State=1-A1G\HF=-128.7930274\RMSD=2.906e-10\Dipole=0.,0.,0.\Q
+ uadrupole=0.,0.,0.,0.,0.,0.\PG=OH [O(Ne1)]\\@
 
 
- When I told the people of Northern Ireland that I was
- an atheist, a woman in the audience stood up and said,
- "Yes, but is it the God of the Catholics or the God
- of the Protestants in whom you don't believe?"
-                               -- Quentin Crisp
+ THE ONLY DIFFERENCE BETWEEN ECCENTRICS AND JOGGERS
+ IS THAT JOGGERS WEAR SWEATBANDS WHEN THEY RUN IN THE RAIN.
