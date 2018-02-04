@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(cc53 "psi;cc")
+add_regression_test(cc53 "psi;cc;cart")
