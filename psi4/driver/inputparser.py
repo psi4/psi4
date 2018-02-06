@@ -41,12 +41,9 @@ import sys
 import uuid
 
 from psi4 import core
-from psi4.driver.qcdb.molparse import pubchem
 from psi4.driver.p4util.util import set_memory
 from psi4.driver.p4util.exceptions import *
 
-# globally available regex strings
-pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
 
 # inputfile contents to be preserved from the processor
 literals = {}
@@ -190,51 +187,11 @@ def process_from_file_command(matchobj):
     return mol
 
 
-def process_pubchem_command(matchobj):
-    """Function to process match of ``pubchem`` in molecule block."""
-    string = matchobj.group(2)
-    if re.match(r'^\s*[0-9]+\s*$', string):
-        # This is just a number - must be a CID
-        pcobj = pubchem.PubChemObj(int(string), '', '')
-        try:
-            return pcobj.getMoleculeString()
-        except Exception as e:
-            return e.message
-    else:
-        # Search pubchem for the provided string
-        try:
-            results = pubchem.getPubChemResults(string)
-        except Exception as e:
-            return e.message
-
-        # N.B. Anything starting with PubchemError will be handled correctly by the molecule parser
-        # in libmints, which will just print the rest of the string and exit gracefully.
-        if not results:
-            # Nothing!
-            return "PubchemError\n\tNo results were found when searching PubChem for %s.\n" % (string)
-        elif len(results) == 1:
-            # There's only 1 result - use it
-            return results[0].getMoleculeString()
-        else:
-            # There are multiple results. Print and exit
-            msg = "\tPubchemError\n"
-            msg += "\tMultiple pubchem results were found. Replace\n\n\t\tpubchem:%s\n\n" % (string)
-            msg += "\twith the Chemical ID number or exact name from one of the following and re-run.\n\n"
-            msg += "\t Chemical ID     IUPAC Name\n\n"
-            for result in results:
-                msg += "%s" % (result)
-                if result.name().lower() == string.lower():
-                    #We've found an exact match!
-                    return result.getMoleculeString()
-            return msg
-
-
 def process_molecule_command(matchobj):
     """Function to process match of ``molecule name? { ... }``."""
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     geometry = matchobj.group(3)
-    geometry = pubchemre.sub(process_pubchem_command, geometry)
     from_filere = re.compile(r'^(\s*from_file\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = from_filere.sub(process_from_file_command, geometry)
     molecule = spaces
@@ -794,7 +751,7 @@ def process_input(raw_input, print_level=1):
         psirc = ''
 
     blank_mol = 'geometry("""\n'
-    blank_mol += '0 1\nH\nH 1 0.74\n'
+    blank_mol += '0 1\nH 0 0 0\nH 0.74 0 0\n'
     blank_mol += '""","blank_molecule_psi4_yo")\n'
 
     temp = imports + psirc + blank_mol + temp
