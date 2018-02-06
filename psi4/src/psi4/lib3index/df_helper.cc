@@ -51,17 +51,6 @@
 #include <omp.h>
 #endif
 
-// FIXME DELETE THIS WHEN DONE
-double rms(double* v, size_t n){
-    #include <math.h>
-    double x = 0.0;
-    for(size_t i=0; i<n; i++){
-        x += pow(v[i], 2);    
-    }
-    return  sqrt(x/n);
-}
-
-
 namespace psi {
 
 DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
@@ -71,18 +60,13 @@ DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
     naux_ = aux_->nbf();
     prepare_blocking();
 }
-DF_Helper::~DF_Helper() {
-    // close streams
-    for (auto& kv : file_streams_) fclose(kv.second.fp);
 
-    // destroy all files
-    std::string file1, file2;
-    for (auto& kv : files_) {
-        remove(std::get<0>(kv.second).c_str());
-        remove(std::get<1>(kv.second).c_str());
-    }
-    for (auto& kv : AO_files_) remove(kv.second.c_str());
+DF_Helper::~DF_Helper() {
+    
+    clear_all();
+
 }
+
 void DF_Helper::prepare_blocking() {
     Qshells_ = aux_->nshell();
     pshells_ = primary_->nshell();
@@ -98,6 +82,7 @@ void DF_Helper::prepare_blocking() {
     pshell_aggs_[0] = 0;
     for (size_t i = 0; i < pshells_; i++) pshell_aggs_[i + 1] = pshell_aggs_[i] + primary_->shell(i).nfunction();
 }
+
 void DF_Helper::AO_filename_maker(size_t i) {
     std::string name = PSIOManager::shared_object()->get_default_path();
     name.append("dfh.AO");
@@ -158,6 +143,7 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
     }
 
 }
+
 void DF_Helper::initialize() {
     
     timer_on("DFH: initialize()");
@@ -190,7 +176,7 @@ void DF_Helper::initialize() {
         ann << big_skips_[nao_] / 0.9 * 8 / 1e9 << "GB), but it only got (" << memory_ * 8 / 1e9 << "GB)\n";
         outfile->Printf(ann.str().c_str());
     }
-
+    
     // prepare AOs for STORE method
     if (AO_core_)
         prepare_AO_core();
@@ -200,6 +186,7 @@ void DF_Helper::initialize() {
     built_ = true;
     timer_off("DFH: initialize()");
 }
+
 void DF_Helper::print_header() {
     outfile->Printf("\n    ==> DF_Helper <==\n");
     outfile->Printf("      nao           = %zu\n", nao_);
@@ -216,6 +203,7 @@ void DF_Helper::print_header() {
     outfile->Printf("  Mask sparsity (%%) = (%f)\n", 100. * (1.0 - (double)small_skips_[nao_] / (double)(nao_ * nao_)));
     outfile->Printf("\n\n");
 }
+
 void DF_Helper::prepare_sparsity() {
     // prep info vectors
     std::vector<double> fun_prints(nao_ * nao_, 0.0);
@@ -332,6 +320,7 @@ void DF_Helper::prepare_sparsity() {
     symm_agg_sizes_[0] = 0;
     for (size_t i = 1; i < nao_ + 1; i++) symm_agg_sizes_[i] = symm_agg_sizes_[i - 1] + symm_sizes_[i - 1];
 }
+
 void DF_Helper::prepare_AO() {
 
     // prepare eris
@@ -636,26 +625,69 @@ std::tuple<size_t, size_t, size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build
     // returns tuple(largest buffer size, largest block size, wcleft, wcright)
     return std::make_tuple(largest, block_size, wcleft, wcright);
 }
+
 FILE* DF_Helper::stream_check(std::string filename, std::string op) {
-    // timer_on("stream checks             ");
-    // if no current stream exists, then open one
+    
     if (file_streams_.count(filename) == 0) {
-        file_streams_[filename].op = op;
-        file_streams_[filename].fp = fopen(filename.c_str(), op.c_str());
+        file_streams_[filename] = std::make_shared<Stream>(filename, op);
+    } 
+    
+    return file_streams_[filename]->get_stream(op);
+}
+
+DF_Helper::StreamStruct::StreamStruct(std::string filename, std::string op, bool activate){
+
+    op_ = op;
+    filename_ = filename;
+    if(activate) {
+        fp_ = fopen(filename.c_str(), op_.c_str());
+        open_ = true; 
+    }
+
+}
+
+DF_Helper::StreamStruct::StreamStruct(){
+    
+}
+
+DF_Helper::StreamStruct::~StreamStruct(){
+    
+    fflush(fp_);
+    fclose(fp_);
+    std::remove(filename_.c_str());
+}
+
+FILE* DF_Helper::StreamStruct::get_stream(std::string op){
+   
+    if (op.compare(op_)) {
+        change_stream(op); 
     } else {
-        // if the current stream is open in a different mode, change streams 
-        if (op.compare(file_streams_[filename].op)) {
-            // timer_on("stream change           ");
-            file_streams_[filename].op = op;
-            fflush(file_streams_[filename].fp);
-            fclose(file_streams_[filename].fp);
-            file_streams_[filename].fp = fopen(filename.c_str(), op.c_str());
-            // timer_off("stream change           ");
+        if(!open_) {
+            fp_ = fopen(filename_.c_str(), op_.c_str());
+            open_ = true;
         }
     }
-    // timer_off("stream checks             ");
-    return file_streams_[filename].fp;
+    
+    return fp_;
 }
+        
+void DF_Helper::StreamStruct::change_stream(std::string op){
+
+    if(open_) {
+        close_stream();
+    }
+    op_ = op;
+    fp_ = fopen(filename_.c_str(), op_.c_str());
+
+}
+    
+void DF_Helper::StreamStruct::close_stream(){
+        
+    fflush(fp_);
+    fclose(fp_);
+
+}    
+
 void DF_Helper::put_tensor(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                            std::pair<size_t, size_t> i2, std::string op) {
     // collapse to 2D, assume file has form (i1 | i2 i3)
@@ -1143,6 +1175,7 @@ double* DF_Helper::metric_prep_core(double pow) {
     return metrics_[power]->pointer()[0];
 }
 void DF_Helper::prepare_metric() {
+    
     // construct metric
     auto Jinv = std::make_shared<FittingMetric>(aux_, true);
     Jinv->form_fitting_metric();
@@ -1445,45 +1478,24 @@ void DF_Helper::clear_spaces() {
     // no ordering
     ordered_ = false;
 }
-void DF_Helper::clear_all() {
-    // outfile->Printf("\n clearing everything (spaces, integrals)! \n");
 
+void DF_Helper::clear_all() {
+
+    // clear spaces first
     clear_spaces();
 
-    // clear transformations
-    std::string left;
-    std::string right;
+    // invokes destructors, eliminating all files.
+    file_streams_.clear();
 
-    for (auto& kv : transf_) {
-        left = std::get<0>(files_[kv.first]);
-        right = std::get<1>(files_[kv.first]);
-
-        // close streams
-        if (!MO_core_) {
-            if (direct_) fclose(file_streams_[left].fp);
-            fclose(file_streams_[right].fp);
-        }
-
-        // delete stream holders
-        if (!MO_core_) {
-            if (direct_) file_streams_.erase(left);
-            file_streams_.erase(right);
-        }
-
-        // delete file holders, sizes
-        sizes_.erase(std::get<0>(files_[kv.first]));
-        sizes_.erase(std::get<1>(files_[kv.first]));
-        files_.erase(kv.first);
-    }
-
-    // tranposes too
+    // clears all info
+    files_.clear();
+    sizes_.clear();
     tsizes_.clear();
-
-    // what transformations?
-    if (MO_core_) transf_core_.clear();
     transf_.clear();
+    transf_core_.clear();
     transformed_ = false;
 }
+
 std::pair<size_t, size_t> DF_Helper::identify_order() {
     // Identify order of transformations to use strategic intermediates
     std::sort(sorted_spaces_.begin(), sorted_spaces_.end(),

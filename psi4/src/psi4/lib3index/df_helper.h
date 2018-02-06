@@ -361,12 +361,24 @@ class DF_Helper {
     std::vector<size_t> strides_;
 
     // => FILE IO maintenence <=
-    struct stream {
-        FILE* fp;
-        std::string op;
-        bool exists = false;
-    };
-    std::map<std::string, stream> file_streams_;
+    typedef struct StreamStruct {
+        
+        StreamStruct();
+        StreamStruct(std::string filename, std::string op, bool activate=true);
+        ~StreamStruct();
+
+        FILE* get_stream(std::string op);
+        void change_stream(std::string op);
+        void close_stream();
+ 
+        FILE* fp_;
+        std::string op_;
+        bool open_ = false;
+        std::string filename_;   
+         
+    } Stream;
+   
+    std::map<std::string, std::shared_ptr<Stream>> file_streams_;
     FILE* stream_check(std::string filename, std::string op);
 
     // => FILE IO machinery <=
