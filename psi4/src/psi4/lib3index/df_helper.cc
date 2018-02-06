@@ -1640,7 +1640,7 @@ void DF_Helper::transform() {
             size_t begin = Qshell_aggs_[start];
             size_t end = Qshell_aggs_[stop + 1] - 1;
             block_size = end - begin + 1;
-
+            
             // print step info
             // outfile->Printf("      Qshell: (%zu, %zu)", start, stop);
             // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1718,7 +1718,6 @@ void DF_Helper::transform() {
                         size_t bump = (MO_core_ ? begin * wsize * bsize : 0);
                         // (pw)(Q|pb)->(Q|bw)
                         if(bleft){
-                            printf("here\n");
                             #pragma omp parallel for num_threads(nthreads_)
                             for (size_t i = 0; i < block_size; i++){
                                 C_DGEMM('T', 'N', bsize, wsize, nao_, 1.0, &Tp[i * nao_ * bsize],  
@@ -1726,7 +1725,6 @@ void DF_Helper::transform() {
                             }
                         } else {
                         // (pw)(Q|pb)->(Q|wb)
-                            printf("no here\n");
                             #pragma omp parallel for num_threads(nthreads_)
                             for (size_t i = 0; i < block_size; i++){
                                 C_DGEMM('T', 'N', wsize, bsize, nao_, 1.0, Wp, wsize, &Tp[i * nao_ * bsize], 
@@ -1900,7 +1898,6 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
         std::string putf = std::get<0>(files_[order_[ind]]);
         std::string op = "ab";
         
-        printf("%s: %d\n", order_[ind].c_str(), bleft);
         if (bleft) {
             put_tensor(putf, Fp, std::make_pair(begin, end), std::make_pair(0, bsize - 1), 
                 std::make_pair(0, wsize - 1), op);
@@ -2050,10 +2047,15 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                 put_tensor(putf, Fp, std::make_pair(0, wsize - 1), std::make_pair(begin, end),
                            std::make_pair(0, bsize - 1), op);
             } else {
+                // we have to copy over the buffer
                 #pragma omp parallel for num_threads(nthreads_)
                 for (size_t x = 0; x < wsize; x++) {
-                    C_DCOPY(bsize * rblock_size, Fp, 1, &Np[x * lblock_size * bsize + bcount * bsize], 1);
+                    for(size_t y = 0; y < rblock_size; y++) {
+                        C_DCOPY(bsize, &Fp[x * rblock_size * bsize + y * bsize], 
+                            1, &Np[x * lblock_size * bsize + (bcount + y) * bsize], 1);
+                    }
                 }
+            
             }
 
         }
