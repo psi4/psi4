@@ -24,7 +24,7 @@ molecule ethene_ethyne {
 # this molecule will crash test if molecule passing broken
 molecule barrier {
  0 1
- He
+ He  0, 0 0
 }
 
 set {

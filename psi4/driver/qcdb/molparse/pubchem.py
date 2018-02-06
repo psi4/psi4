@@ -57,7 +57,7 @@ import re
 import json
 import xml.etree.ElementTree as ET
 
-from psi4.driver.p4util.exceptions import *
+from ..exceptions import *
 
 
 class PubChemObj(object):

@@ -273,6 +273,8 @@ class CoordEntry {
 
     // Assign the mass of the atom (useful for isotopic substitutions)
     void set_mass(double mass) { mass_ = mass; }
+    // Assign the mass number of the atom
+    void set_A(int A) { A_ = A; }
 };
 
 class CartesianEntry : public CoordEntry {

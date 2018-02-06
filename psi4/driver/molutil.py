@@ -31,7 +31,6 @@ from __future__ import absolute_import
 
 from psi4 import core
 from psi4.driver.p4util import constants, filter_comments
-from psi4.driver.inputparser import process_pubchem_command, pubchemre
 from psi4.driver import qcdb
 
 
@@ -176,9 +175,11 @@ def geometry(geom, name="default"):
 
     """
     core.efp_init()
-    geom = pubchemre.sub(process_pubchem_command, geom)
+    #geom = pubchemre.sub(process_pubchem_command, geom)
     geom = filter_comments(geom)
-    molecule = core.Molecule.create_molecule_from_string(geom)
+    #molecule = core.Molecule.create_molecule_from_string(geom)
+    molrec = qcdb.molparse.from_string(geom)
+    molecule = core.Molecule.from_dict(molrec)
     molecule.set_name(name)
 
     # Attempt to go ahead and construct the molecule

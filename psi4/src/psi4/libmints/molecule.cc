@@ -251,6 +251,7 @@ void Molecule::add_atom(double Z, double x, double y, double z, std::string symb
                         double charge, std::string label, int A) {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
+    temp *= input_units_to_au_;
     if (label == "")
         label = symbol;
 
@@ -280,6 +281,11 @@ double Molecule::mass(int atom) const {
     }
 
     return ret;
+}
+
+void Molecule::set_mass(int atom, double mass) {
+    full_atoms_[atom]->set_mass(mass);
+    full_atoms_[atom]->set_A(-1);
 }
 
 std::string Molecule::symbol(int atom) const { return atoms_[atom]->symbol(); }

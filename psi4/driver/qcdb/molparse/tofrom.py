@@ -7,6 +7,7 @@ from ..exceptions import *
 from .chgmult import validate_and_fill_chgmult
 from .nucleus import reconcile_nucleus
 from .regex import *
+from . import pubchem
 
 try:
     long(1)
@@ -166,33 +167,33 @@ def validate_and_fill_universals(name=None,
                                  fix_com=False,
                                  fix_orientation=False,
                                  fix_symmetry=None):
-        molinit = {}
+    molinit = {}
 
-        if name is not None:
-            molinit['name'] = name
+    if name is not None:
+        molinit['name'] = name
 
-        if units in ['Angstrom', 'Bohr']:
-            molinit['units'] = units
-        else:
-            raise ValidationError('Invalid molecule geometry units: {}'.format(units))
+    if units in ['Angstrom', 'Bohr']:
+        molinit['units'] = units
+    else:
+        raise ValidationError('Invalid molecule geometry units: {}'.format(units))
 
-        if input_units_to_au is not None:
-            molinit['input_units_to_au'] = input_units_to_au
+    if input_units_to_au is not None:
+        molinit['input_units_to_au'] = input_units_to_au
 
-        if fix_com in [True, False]:
-            molinit['fix_com'] = fix_com
-        else:
-            raise ValidationError('Invalid fix_com: {}'.format(fix_com))
+    if fix_com in [True, False]:
+        molinit['fix_com'] = fix_com
+    else:
+        raise ValidationError('Invalid fix_com: {}'.format(fix_com))
 
-        if fix_orientation in [True, False]:
-            molinit['fix_orientation'] = fix_orientation
-        else:
-            raise ValidationError('Invalid fix_orientation: {}'.format(fix_com))
+    if fix_orientation in [True, False]:
+        molinit['fix_orientation'] = fix_orientation
+    else:
+        raise ValidationError('Invalid fix_orientation: {}'.format(fix_com))
 
-        if fix_symmetry is not None:
-            molinit['fix_symmetry'] = fix_symmetry.lower()
+    if fix_symmetry is not None:
+        molinit['fix_symmetry'] = fix_symmetry.lower()
 
-        return molinit
+    return molinit
 
 
 def validate_and_fill_geometry(geom=None, tooclose=0.1):
@@ -429,10 +430,15 @@ def from_string(molstr, dtype='psi4', return_processed=False):
 
         molinit = {}
 
+        # << 1 >>  str-->str -- process pubchem into str for downfunction
+        molstr, processed = _filter_pubchem(molstr)
+        molinit.update(processed)
+
         # << 2 >>  str-->dict[q] -- process units, com, orient, symm
         molstr, processed = _filter_universals(molstr)
         molinit.update(processed)
 
+#        print('POST 3:', molstr, '>>>\n', processed, '>>>')
         #        # << 3 >>  str-->dict[e] -- process efp
         #        mol_str, efp_init = filter_libefp(mol_str, confer=mol_init)
         #        if efp_init:
@@ -472,10 +478,66 @@ def from_string(molstr, dtype='psi4', return_processed=False):
         raise KeyError("Molecule: dtype of %s not recognized.")
 
 
-#def filter_pubchem(mol_str):
-#    pass
 #    pubchemerror = re.compile(r'^\s*PubchemError\s*$', re.IGNORECASE)
 #    pubcheminput = re.compile(r'^\s*PubchemInput\s*$', re.IGNORECASE)
+#        # N.B. Anything starting with PubchemError will be handled correctly by the molecule parser
+#        # in libmints, which will just print the rest of the string and exit gracefully.
+
+def _filter_pubchem(string):
+    pubchemre = re.compile(r'\Apubchem' + r'\s*:\s*' + r'(?P<pubsearch>(\S+))\Z', re.IGNORECASE)
+
+    def process_pubchem(matchobj):
+        pubsearch = matchobj.group('pubsearch')
+
+        if pubsearch.isdigit():
+            # just a number - must be a CID
+            pcobj = pubchem.PubChemObj(int(pubsearch), '', '')
+            try:
+                xyz = pcobj.getMoleculeString()
+            except Exception as e:
+                raise ValidationError(e.message)
+        else:
+            # search pubchem for the provided string
+            try:
+                results = pubchem.getPubChemResults(pubsearch)
+            except Exception as e:
+                raise ValidationError(e.message)
+
+            if not results:
+                # Nothing!
+                raise ValidationError("""PubchemError: No results were found when searching PubChem for {}.""".format(pubsearch))
+            elif len(results) == 1:
+                # There's only 1 result - use it
+                xyz = results[0].getMoleculeString()
+            else:
+                # There are multiple results
+                for result in results:
+                    if result.name().lower() == pubsearch.lower():
+                        # We've found an exact match!
+                        xyz = result.getMoleculeString()
+                else:
+                    # There are multiple results and none exact. Print and exit
+                    msg = "\tPubchemError\n"
+                    msg += "\tMultiple pubchem results were found. Replace\n\n\t\tpubchem:%s\n\n" % (pubsearch)
+                    msg += "\twith the Chemical ID number or exact name from one of the following and re-run.\n\n"
+                    msg += "\t Chemical ID     IUPAC Name\n\n"
+                    for result in results:
+                        msg += "%s" % (result)
+                    raise ValidationErrror(msg)
+
+        # remove PubchemInput first line and assert [A]
+        xyz = xyz.replace('PubchemInput', 'units ang')
+        return xyz
+
+    reconstitute = []
+    processed = {}
+
+    for line in string.split('\n'):
+        line = re.sub(pubchemre, process_pubchem, line.strip())
+        if line:
+            reconstitute.append(line)
+
+    return '\n'.join(reconstitute), processed
 
 
 def _filter_universals(string):
@@ -516,12 +578,21 @@ def _filter_universals(string):
 
     reconstitute = []
     processed = {}
+    com_found = False
+    orient_found = False
+    bohrang_found = False
+    symmetry_found = False
 
     for line in string.split('\n'):
-        line = re.sub(com, process_com, line.strip())
-        line = re.sub(orient, process_orient, line)
-        line = re.sub(bohrang, process_bohrang, line)
-        line = re.sub(symmetry, process_symmetry, line)
+        line = line.strip()
+        if not com_found:
+            line, com_found = re.subn(com, process_com, line)
+        if not orient_found:
+            line, orient_found = re.subn(orient, process_orient, line)
+        if not bohrang_found:
+            line, bohrang_found = re.subn(bohrang, process_bohrang, line)
+        if not symmetry_found:
+            line, symmetry_found = re.subn(symmetry, process_symmetry, line)
         if line:
             reconstitute.append(line)
 
