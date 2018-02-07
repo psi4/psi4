@@ -31,7 +31,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl mkl-include`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
-#    - mpmath (avoidable if gau2grid pre-built; e.g., `conda install mpmath`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -51,7 +50,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint, PCMSolver, pybind11, simint, Libxc
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint, PCMSolver, pybind11, pylibefp, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -82,7 +81,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
-option(ENABLE_libefp "Enables LIBEFP for fragments" OFF)
+option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
@@ -184,6 +183,7 @@ ExternalProject_Add(psi4-core
            libint_external
            pcmsolver_external
            pybind11_external
+           pylibefp_external
            simint_external
            libxc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
@@ -230,6 +230,7 @@ ExternalProject_Add(psi4-core
               -DLibint_DIR=${Libint_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
+              -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}

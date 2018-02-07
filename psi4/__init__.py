@@ -92,7 +92,10 @@ from .metadata import __version__, version_formatter
 from .extras import get_input_directory, addons, test
 
 # Python portions of compiled-in Add-Ons
+# * Note that this is a "battening down the hatches" for the many
+#   rather than letting PYTHONPATH rule for the few.
 import sys
 if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
     sys.path.insert(1, "@PCMSolver_PYMOD@")
-
+if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+    sys.path.insert(1, "@pylibefp_PYMOD@")
