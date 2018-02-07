@@ -55,12 +55,12 @@ def test_molrec(kwargs, label):
     tqdict = qmol.to_dict()
     #qmol.print_out()
 
-    qcdb.compare_molrecs(pdict, tpdict,  4, label + ': from_dict P (ref) vs.   to_dict P')  #TEST
-    qcdb.compare_molrecs(qdict, tqdict,  4, label + ': from_dict Q (ref) vs.   to_dict Q')  #TEST
+    qcdb.compare_molrecs(pdict, tpdict,  4, label + ': from_dict P (ref) vs.   to_dict P', relative_geoms='align')  #TEST
+    qcdb.compare_molrecs(qdict, tqdict,  4, label + ': from_dict Q (ref) vs.   to_dict Q', relative_geoms='align')  #TEST
     qcdb.compare_molrecs(pdict, qdict,   4, label + ': from_dict P (ref) vs. from_dict Q')  #TEST
     qcdb.compare_molrecs(tpdict, tqdict, 4, label + ':   to_dict P (ref) vs.   to_dict Q')  #TEST
-    qcdb.compare_molrecs(pdict, tqdict,  4, label + ': from_dict P (ref) vs.   to_dict Q')  #TEST
-    qcdb.compare_molrecs(tpdict, qdict,  4, label + ':   to_dict P (ref) vs. from_dict Q')  #TEST
+    qcdb.compare_molrecs(pdict, tqdict,  4, label + ': from_dict P (ref) vs.   to_dict Q', relative_geoms='align')  #TEST
+    qcdb.compare_molrecs(tpdict, qdict,  4, label + ':   to_dict P (ref) vs. from_dict Q', relative_geoms='align')  #TEST
     qcdb.compare_values(pmol.nuclear_repulsion_energy(), qmol.nuclear_repulsion_energy(), 6, 'NRE P (ref) vs. Q')  #TEST
 
     return pdict

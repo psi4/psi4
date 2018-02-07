@@ -1117,7 +1117,7 @@ void export_mints(py::module& m) {
     typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
     typedef Vector3 (Molecule::*nuclear_dipole2)() const;
 
-    py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule",
+    py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule", py::dynamic_attr(),
                                                     "Class to store the elements, coordinates, "
                                                     "fragmentation pattern, basis sets, charge, "
                                                     "multiplicity, etc. of a molecule.")
