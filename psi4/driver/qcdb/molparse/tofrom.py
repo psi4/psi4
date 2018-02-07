@@ -25,8 +25,8 @@ def from_arrays(geom=None,
                 name=None,
                 units='Angstrom',
                 input_units_to_au=None,
-                fix_com=False,
-                fix_orientation=False,
+                fix_com=None,
+                fix_orientation=None,
                 fix_symmetry=None,
                 fragment_separators=None,
                 #fragment_types=None,  # keep?
@@ -58,7 +58,7 @@ def from_arrays(geom=None,
         (nat, ) Label extending `elem` symbol, possibly conveying ghosting, isotope, mass, tagging information.
 
     tooclose : float, optional
-        Interatom distance (native `geom` units) nearer than which atoms not allowed.    
+        Interatom distance (native `geom` units) nearer than which atoms not allowed.
     nonphysical : bool, optional
 
     speclabel : bool, optional
@@ -79,6 +79,18 @@ def from_arrays(geom=None,
         heterogeneous objects, (4) some fields are optional (e.g.,
         symmetry) but largely self-describing so units or fix_com must
         be present.
+
+        (5) apart from some mild optional fields, _all_ fields will
+        be present (correlary of "fully validated and defaulted") - no
+        need to check for every key. in some cases like efp, keys will
+        appear in blocks, so pre-handshake there will be a few hint keys
+        and post-handshake they will be joined by full qm-like molrec.
+
+        (6) molrec should be idempotent through this function (equiv to
+        schema validator) but are not idempostent throughout its life. if
+        fields permit, frame may be changed. Future? if fields permit,
+        mol may be symmetrized. Coordinates and angles may change units
+        or range if program returns them in only one form.
 
     name : str, optional
         Label for molecule; should be valid Python identifier.
@@ -372,7 +384,7 @@ def from_string(molstr, dtype='psi4', return_processed=False):
         Molecule dictionary spec. See :py:func:`from_arrays`.
     molinit : dict, optional
         Intermediate "molrec"-like dictionary containing `molstr` info after
-        processing by this function but before the validation and defaulting of
+        parsing by this function but before the validation and defaulting of
         `from_arrays` that returns the proper `molrec`.
         Only provided if `return_processed` is True.
 
@@ -386,96 +398,127 @@ def from_string(molstr, dtype='psi4', return_processed=False):
     ##from psi4.driver.inputparser import process_pubchem_command, pubchemre
     #molecule = init_psi4_molecule_from_any_string(geom, name=name)
 
-    ##    #if not has_efp:
     #    # Figure out how and if we will parse the Molecule adata
     #    mname = kwargs.pop("name", "default")
     #    dtype = kwargs.pop("dtype", "psi4").lower()
-    #    if mol_str is not None:
-    # << 2 >> dict[m] -- seed Psi4 minimal and default fields
+
+    molinit = {}
 
     print('<<< QMMOL', molstr, '>>>')
 
-    # << 1 >> str -- discard comments
+    # << 1 >>  str-->str -- discard comments
     molstr = filter_comments(molstr)
 
     if dtype == 'xyz':
         """Strict XYZ file format
 
-        Specifiable: geom, elem/elez (element identity)
-        Inaccessible: mass, real (vs. ghost), elbl (user label), name, units (assumed [A]), input_units_to_au, fix_com/orientation/symmetry, fragmentation, molecular_charge, molecular_multiplicity
-
+        String Layout
+        -------------
         <number of atoms>
         comment line
         <element_symbol or atomic_number> <x> <y> <z>
         ...
         <element_symbol or atomic_number> <x> <y> <z>
 
+        QM Domain
+        ---------
+        Specifiable: geom, elem/elez (element identity)
+        Inaccessible: mass, real (vs. ghost), elbl (user label), name, units (assumed [A]),
+                      input_units_to_au, fix_com/orientation/symmetry, fragmentation,
+                      molecular_charge, molecular_multiplicity
+
         """
+        # << 2 >>  str-->dict -- process atoms, units
+        molstr, processed = _filter_xyz(molstr, strict=True)
+        molinit.update(processed)
 
     elif dtype == 'xyz+':
         """Enhanced XYZ format
 
-        <number of atoms> [<[bohr|au|ang]>]
+        String Layout
+        -------------
+        <number of atoms> [<bohr|au|ang>]
         [<molecular_charge> <molecular_multiplicity>] comment line
         <psi4_nucleus_spec> <x> <y> <z>
         ...
         <psi4_nucleus_spec> <x> <y> <z>
 
-        Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label), units (defaults [A]), molecular_charge, molecular_multiplicity
+        QM Domain
+        ---------
+        Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label),
+                     units (defaults [A]), molecular_charge, molecular_multiplicity
         Inaccessible: name, input_units_to_au, fix_com/orientation/symmetry, fragmentation
 
         """
+        # << 2 >>  str-->dict -- process atoms, units, chg, mult
+        molstr, processed = _filter_xyz(molstr, strict=False)
+        molinit.update(processed)
 
     elif dtype == 'psi4':
+        """Psi4 molecule {...} format
 
-        molinit = {}
+        QM Domain
+        ---------
+        Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label),
+                     units (defaults [A]), fix_com/orientation/symmetry, fragment_separators,
+                     fragment_charges, fragment_multiplicities, molecular_charge, molecular_multiplicity
+        Inaccessible: name, input_units_to_au
 
-        # << 1 >>  str-->str -- process pubchem into str for downfunction
+        EFP Domain
+        ----------
+        Specifiable: units, fix_com/orientation/symmetry, fragment_files, hint_types, geom_hints
+        Inaccessible: anything atomic or fragment details -- geom, elem/elez (element identity),
+                      mass, real (vs. ghost), elbl (user label), fragment_separators, fragment_charges,
+                      fragment_multiplicities, molecular_charge, molecular_multiplicity
+
+        """
+        # Notes
+        # * *_filter functions must fill non-overlapping fields
+        # * not recc but can add to downstream by appending to str
+
+        # << 2.1 >>  str-->str -- process pubchem into str for downfunction
         molstr, processed = _filter_pubchem(molstr)
         molinit.update(processed)
 
-        # << 2 >>  str-->dict[q] -- process units, com, orient, symm
+        # << 2.2 >>  str-->dict -- process units, com, orient, symm
         molstr, processed = _filter_universals(molstr)
         molinit.update(processed)
 
-#        print('POST 3:', molstr, '>>>\n', processed, '>>>')
-        #        # << 3 >>  str-->dict[e] -- process efp
-        #        mol_str, efp_init = filter_libefp(mol_str, confer=mol_init)
+        # << 2.3 >>  str-->dict -- process efp frags
+        molstr, processed = _filter_libefp(molstr)
+        molinit.update(processed)
+
         #        if efp_init:
         #            print('<<< core.EFP INTO', efp_init, '>>>')
         #            # GOOD! core.efp_init()
         #            # GOOD! efp = core.get_active_efp()
         #            # GOOD! efp.construct_from_pydict(efp_init)
-        #            # << 4 >>  dict[e]-->dict[m] --- tie qm & efp axes
-        #            mol_init['fix_com'] = True
-        #            mol_init['fix_orientation'] = True
-        #            mol_init['fix_symmetry'] = 'c1'
 
-        # << 3 >> str-->dict[q] -- process atoms, chg, mult, frags
+        # << 2.4 >>  str-->dict -- process atoms, chg, mult, frags
         molstr, processed = _filter_mints(molstr)
         molinit.update(processed)
 
         if molstr:
-            print('\n<<< IFNAL:\n', molstr, '\n>>>\n')
             raise ValidationError("""Unprocessable Molecule remanents:\n\t{}""".format(molstr))
-
-        import pprint
-        pprint.pprint(molinit)
-
-        print('\nINTO from_arrays <<<', molinit, '>>>\n')
-        molrec = from_arrays(**molinit, speclabel=True)
-        print('\nMOLREC <<<', molrec, '>>>\n')
-
-        #        return {'molecule': mol_init, 'libefp': efp_init}
-        #        #has_efp, geom = filter_libefp(geom)
-
-        if return_processed:
-            return molrec, molinit
-        else:
-            return molrec
 
     else:
         raise KeyError("Molecule: dtype of %s not recognized.")
+
+    if molstr:
+        raise ValidationError("""Unprocessable Molecule remanents:\n\t{}""".format(molstr))
+
+    print('\nINTO from_input_arrays <<<')
+    pprint.pprint(molinit)
+    print('>>>\n')
+
+    # << 3 >>  dict-->molspec
+    molrec = from_input_arrays(**molinit, speclabel=True)
+    print('\nMOLREC <<<', molrec, '>>>\n')
+
+    if return_processed:
+        return molrec, molinit
+    else:
+        return molrec
 
 
 #    pubchemerror = re.compile(r'^\s*PubchemError\s*$', re.IGNORECASE)
@@ -599,6 +642,55 @@ def _filter_universals(string):
     return '\n'.join(reconstitute), processed
 
 
+def _filter_libefp(string):
+
+    fragment_marker = re.compile(r'^\s*--\s*$', re.MULTILINE)
+    efpxyzabc = re.compile(
+        r'\A' + r'efp' + SEP + r'(?P<efpfile>(\w+))' + SEP +
+        r'(?P<x>' + NUMBER + r')' + SEP + r'(?P<y>' + NUMBER + r')' + SEP + r'(?P<z>' + NUMBER + r')' + SEP +
+        r'(?P<a>' + NUMBER + r')' + SEP + r'(?P<b>' + NUMBER + r')' + SEP + r'(?P<c>' + NUMBER + r')' + ENDL + r'\Z',
+        re.IGNORECASE | re.VERBOSE)
+    efppoints = re.compile(
+        r'\A' + r'efp' + SEP + r'(?P<efpfile>(\w+))' + ENDL +
+        r'[\s,]*' + r'(?P<x1>' + NUMBER + r')' + SEP + r'(?P<y1>' + NUMBER + r')' + SEP + r'(?P<z1>' + NUMBER + r')' + ENDL +
+        r'[\s,]*' + r'(?P<x2>' + NUMBER + r')' + SEP + r'(?P<y2>' + NUMBER + r')' + SEP + r'(?P<z2>' + NUMBER + r')' + ENDL +
+        r'[\s,]*' + r'(?P<x3>' + NUMBER + r')' + SEP + r'(?P<y3>' + NUMBER + r')' + SEP + r'(?P<z3>' + NUMBER + r')' + ENDL + r'\Z',
+        re.IGNORECASE | re.MULTILINE | re.VERBOSE)
+
+    def process_efpxyzabc(matchobj):
+        processed['fragment_files'].append(matchobj.group('efpfile'))
+        processed['hint_types'].append('xyzabc')
+        processed['geom_hints'].append([
+            float(matchobj.group('x')), float(matchobj.group('y')), float(matchobj.group('z')),
+            float(matchobj.group('a')), float(matchobj.group('b')), float(matchobj.group('c'))])
+        return ''
+
+    def process_efppoints(matchobj):
+        processed['fragment_files'].append(matchobj.group('efpfile'))
+        processed['hint_types'].append('points')
+        processed['geom_hints'].append([
+            float(matchobj.group('x1')), float(matchobj.group('y1')), float(matchobj.group('z1')),
+            float(matchobj.group('x2')), float(matchobj.group('y2')), float(matchobj.group('z2')),
+            float(matchobj.group('x3')), float(matchobj.group('y3')), float(matchobj.group('z3'))])
+        return ''
+
+    reconstitute = []
+    processed = {}
+    processed['fragment_files'] = []
+    processed['hint_types'] = []
+    processed['geom_hints'] = []
+
+    # handle `--`-demarcated blocks
+    for frag in re.split(fragment_marker, string):
+        frag = re.sub(efpxyzabc, process_efpxyzabc, frag.strip())
+        frag = re.sub(efppoints, process_efppoints, frag)
+        if frag:
+            reconstitute.append(frag)
+
+    return '\n--\n'.join(reconstitute), processed
+
+
+
 def _filter_mints(string):
     """Handle extracting fragment, atom, and chg/mult lines from `string`.
 
@@ -621,17 +713,13 @@ def _filter_mints(string):
 
     """
     fragment_marker = re.compile(r'^\s*--\s*$', re.MULTILINE)
-    CHG = r'(?P<chg>' + NUMBER + r')'
-    MULT = r'(?P<mult>\d+)'
-    cgmp = re.compile(r'\A' + CHG + SEP + MULT + r'\Z', re.VERBOSE)
-    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<x>' + NUMBER + r')' + 
-                                                                           SEP + r'(?P<y>' + NUMBER + r')' +
-                                                                           SEP + r'(?P<z>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    cgmp = re.compile(r'\A' + CHGMULT + r'\Z', re.VERBOSE)
+    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
     atom_zmat1 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
     atom_zmat2 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat3 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + 
+    atom_zmat3 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' +
                                                                        SEP + r'(?P<Aidx>\d+)' + SEP + r'(?P<Aval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat4 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + 
+    atom_zmat4 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' +
                                                                        SEP + r'(?P<Aidx>\d+)' + SEP + r'(?P<Aval>' + NUMBER + r')' +
                                                                        SEP + r'(?P<Didx>\d+)' + SEP + r'(?P<Dval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
     #variable = re.compile(r'^\s*(\w+)\s*=\s*(-?\d+\.\d+|-?\d+\.|-?\.\d+|-?\d+|tda)\s*$', re.IGNORECASE)
@@ -651,15 +739,11 @@ def _filter_mints(string):
         """
 
         def process_fragment_cgmp(matchobj):
-            print('frcgmp hit', matchobj.groups())
             processed['fragment_charges'].append(float(matchobj.group('chg')))
             processed['fragment_multiplicities'].append(int(matchobj.group('mult')))
             return ''
 
         def process_atom_cartesian(matchobj):
-            #atom_init['qm_type'] = 'qmcart'
-            #atom_init['z'] = float(matchobj.group(10)) * input_units_to_au
-
             processed['elbl'].append(matchobj.group('nucleus'))
             processed['geom'].append(float(matchobj.group('x')))
             processed['geom'].append(float(matchobj.group('y')))
@@ -676,7 +760,6 @@ def _filter_mints(string):
             if not fcgmp_found:
                 line, fcgmp_found = re.subn(cgmp, process_fragment_cgmp, line.strip())
             line = re.sub(atom_cartesian, process_atom_cartesian, line)
-            #line = re.sub(atom_zmat1, process_atom_zmat1, line)
             if line:
                 freconstitute.append(line)
 
@@ -704,4 +787,76 @@ def _filter_mints(string):
         if frag:
             reconstitute.append(frag)
 
-    return '\n-- (guidance)\n'.join(reconstitute), processed
+    return '\n--\n'.join(reconstitute), processed
+
+
+def _filter_xyz(string, strict):
+
+    xyz1strict = re.compile(r'\A' + r'(?P<nat>\d+)' + r'\Z')
+    SIMPLENUCLEUS = r"""((?P<E>[A-Z]{1,3})|(?P<Z>\d{1,3}))"""
+    atom_cartesian_strict = re.compile(r'\A' + r'(?P<nucleus>' + SIMPLENUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
+
+    xyz1 = re.compile(r'\A' + r'(?P<nat>\d+)' +
+                      r'[\s,]*' + r'((?P<ubohr>(bohr|au))|(?P<uang>ang))?' + r'\Z', re.IGNORECASE)
+    xyz2 = re.compile(r'\A' + CHGMULT, re.VERBOSE)
+    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
+
+    def process_bohrang(matchobj):
+        nat = matchobj.group('nat')
+        if matchobj.group('uang'):
+            processed['units'] = 'Angstrom'
+        elif matchobj.group('ubohr'):
+            processed['units'] = 'Bohr'
+        return ''
+
+    def process_system_cgmp(matchobj):
+        processed['molecular_charge'] = float(matchobj.group('chg'))
+        processed['molecular_multiplicity'] = int(matchobj.group('mult'))
+        return ''
+
+    def process_atom_cartesian(matchobj):
+        processed['elbl'].append(matchobj.group('nucleus'))
+        processed['geom'].append(float(matchobj.group('x')))
+        processed['geom'].append(float(matchobj.group('y')))
+        processed['geom'].append(float(matchobj.group('z')))
+        return ''
+
+    nat = 0
+    reconstitute = []
+    processed = {}
+    processed['geom'] = []
+    processed['elbl'] = []
+
+    if strict:
+        for iln, line in enumerate(string.split('\n')):
+            line = line.strip()
+            if iln == 0:
+                line = re.sub(xyz1strict, '', line)
+            elif iln == 1:
+                continue
+            else:
+                line = re.sub(atom_cartesian_strict, process_atom_cartesian, line)
+            if line:
+                reconstitute.append(line)
+    else:
+        for iln, line in enumerate(string.split('\n')):
+            line = line.strip()
+            if iln == 0:
+                line = re.sub(xyz1, process_bohrang, line)
+            elif iln == 1:
+                line = re.sub(xyz2, process_system_cgmp, line)
+            else:
+                line = re.sub(atom_cartesian, process_atom_cartesian, line)
+            if line and iln != 1:
+                reconstitute.append(line)
+
+    if 'units' not in processed:
+        processed['units'] = 'Angstrom'
+
+    #if len(processed['geom']) != nat:
+    #    raise ValidationError
+    processed['fragment_files'] = []  # no EFP  # shouldn't be needed
+    processed['hint_types'] = []  # no EFP  # shouldn't be needed
+    processed['geom_hints'] = []  # no EFP
+
+    return '\n'.join(reconstitute), processed

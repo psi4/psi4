@@ -19,6 +19,9 @@ ans1 = {'geom': [0., 0., 0., 1., 0., 0.],
         'fragment_separators': [],
         'fragment_charges': [None],
         'fragment_multiplicities': [None],
+        'fragment_files': [],
+        'geom_hints': [],
+        'hint_types': [],
        }
 
 fullans1a = {'geom': np.array([ 0.,  0.,  0.,  1.,  0.,  0.]),
@@ -28,11 +31,11 @@ fullans1a = {'geom': np.array([ 0.,  0.,  0.,  1.,  0.,  0.]),
              'mass': np.array([ 15.99491462,   1.00782503]),
              'real': np.array([ True,  True]),
              'elbl': np.array(['', '']),
-             'units': 'Angstrom', 
+             'units': 'Angstrom',
              'fix_com': True,
-             'fix_orientation': False, 
+             'fix_orientation': False,
              'fragment_separators': [],
-             'fragment_charges': [0.0], 
+             'fragment_charges': [0.0],
              'fragment_multiplicities': [2],
              'molecular_charge': 0.0,
              'molecular_multiplicity': 2,
@@ -44,23 +47,23 @@ fullans1c.update({'fragment_charges': [1.],
                   'molecular_multiplicity': 1})
 
 
-def test_psi4_molstr1a():
+def test_psi4_qm_1a():
     subject = subject1
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans1, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans1a, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans1a, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
-def test_psi4_molstr1b():
+def test_psi4_qm_1b():
     subject = '\n' + '\t' + subject1 + '\n\n'
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans1, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans1a, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans1a, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
-def test_psi4_molstr1c():
+def test_psi4_qm_1c():
     subject = '1 1\n  -- \n' + subject1
     ans = copy.deepcopy(ans1)
     ans.update({'molecular_charge': 1.,
@@ -68,10 +71,10 @@ def test_psi4_molstr1c():
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans1c, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans1c, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
-def test_psi4_molstr1d():
+def test_psi4_qm_1d():
     subject = subject1 + '\n1 1'
     ans = copy.deepcopy(ans1)
     ans.update({'fragment_charges': [1.],
@@ -79,10 +82,10 @@ def test_psi4_molstr1d():
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans1c, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans1c, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
-def test_psi4_molstr1e():
+def test_psi4_qm_1e():
     """duplicate com"""
     subject = subject1 + '\n  nocom'
 
@@ -91,8 +94,8 @@ def test_psi4_molstr1e():
 
 
 subject2 = ["""
-6Li 0.0 0.0 0.0
-    units  a.u.
+6Li 0.0 0.0 0.0 
+  units  a.u.
 H_specIAL@2.014101  100 0 0""",
 """@Ne 2 4 6""",
 """h .0,1,2
@@ -106,6 +109,9 @@ ans2 = {'geom': [ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1.,
         'fragment_separators': [2, 3],
         'fragment_charges': [None, None, None],
         'fragment_multiplicities': [None, None, None],
+        'fragment_files': [],
+        'geom_hints': [],
+        'hint_types': [],
         }
 
 fullans2 = {'geom': np.array([ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.]),
@@ -115,14 +121,14 @@ fullans2 = {'geom': np.array([ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1.
             'mass': np.array([ 6.015122794, 2.014101, 19.99244017542, 1.00782503, 4.00260325415]),
             'real': np.array([ True,  True, False, True, False]),
             'elbl': np.array(['', '_special', '', '', '3']),
-            'units': 'Bohr', 
+            'units': 'Bohr',
             'fix_com': False,
-            'fix_orientation': True, 
+            'fix_orientation': True,
             'fragment_separators': [2, 3],
             }
 
 
-def test_psi4_molstr2a():
+def test_psi4_qm_2a():
     subject = '\n--\n'.join(subject2)
     fullans = copy.deepcopy(fullans2)
     fullans.update({'molecular_charge': 0.,
@@ -132,11 +138,11 @@ def test_psi4_molstr2a():
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans2, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
-def test_psi4_molstr2b():
-    subject = copy.deepcopy(subject2)    
+def test_psi4_qm_2b():
+    subject = copy.deepcopy(subject2)
     subject.insert(0, '1 3')
     subject = '\n--\n'.join(subject)
     ans = copy.deepcopy(ans2)
@@ -150,55 +156,55 @@ def test_psi4_molstr2b():
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
-def test_psi4_molstr2c():
+def test_psi4_qm_2c():
     """double overall chg/mult spec"""
-    subject = copy.deepcopy(subject2)    
+    subject = copy.deepcopy(subject2)
     subject.insert(0, '1 3\n1 3')
     subject = '\n--\n'.join(subject)
 
     with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
-def test_psi4_molstr2d():
+def test_psi4_qm_2d():
     """trailing comma"""
-    subject = copy.deepcopy(subject2)    
+    subject = copy.deepcopy(subject2)
     subject.insert(0, 'H 10,10,10,')
     subject = '\n--\n'.join(subject)
 
     with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
-def test_psi4_molstr2e():
-    """empty fragment"""
-    subject = copy.deepcopy(subject2)    
-    subject.insert(2, '\n')
-    subject = '\n--\n'.join(subject)
+#def test_psi4_qm_2e():
+#    """empty fragment"""
+#    subject = copy.deepcopy(subject2)
+#    subject.insert(2, '\n')
+#    subject = '\n--\n'.join(subject)
+#
+##    with pytest.raises(qcdb.ValidationError):
+#    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
-    with pytest.raises(qcdb.ValidationError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
-
-def test_psi4_molstr2f():
+def test_psi4_qm_2f():
     """double frag chgmult"""
-    subject = copy.deepcopy(subject2)    
+    subject = copy.deepcopy(subject2)
     subject[1] += '\n 1 2\n 5 6'
     subject = '\n--\n'.join(subject)
 
     with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
-def test_psi4_molstr2g():
+def test_psi4_qm_2g():
     """illegal chars in nucleus"""
-    subject = copy.deepcopy(subject2)    
+    subject = copy.deepcopy(subject2)
     subject[1] = """@Ne_{CN}_O 2 4 6"""
     subject = '\n--\n'.join(subject)
 
     with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
-def test_psi4_molstr3():
+def test_psi4_qm_3():
     """psi4/psi4#731"""
     subject = """0 1
 Mg 0 0"""
@@ -222,10 +228,13 @@ ans4 = {'geom': [
    2.139400 , -1.256300 ,  0.000100 ,
    2.157700 ,  1.224500 ,  0.000000 ],
         'elbl': ['C', 'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H'],
-        'units': 'Angstrom', 
+        'units': 'Angstrom',
         'fragment_separators': [],
         'fragment_charges': [None],
         'fragment_multiplicities': [None],
+        'fragment_files': [],
+        'geom_hints': [],
+        'hint_types': [],
         }
 
 fullans4 = {'geom': np.array([
@@ -248,9 +257,9 @@ fullans4 = {'geom': np.array([
             'mass': np.array([ 12., 12., 12., 12., 12., 12., 1.00782503,  1.00782503, 1.00782503, 1.00782503, 1.00782503, 1.00782503]),
             'real': np.array([ True, True, True, True, True, True, True, True, True, True, True, True]),
             'elbl': np.array(['', '', '', '', '', '', '', '', '', '', '', '']),
-            'units': 'Angstrom', 
+            'units': 'Angstrom',
             'fix_com': False,
-            'fix_orientation': False, 
+            'fix_orientation': False,
             'fragment_separators': [],
             'molecular_charge': 0.,
             'molecular_multiplicity': 1,
@@ -258,14 +267,15 @@ fullans4 = {'geom': np.array([
             'fragment_multiplicities': [1],
             }
 
-def test_pubchem_molstr4a():
+def test_psi4_pubchem_4a():
     subject = subject4
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans4, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans4, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
-def test_pubchem_molstr4b():
+
+def test_psi4_pubchem_4b():
     """user units potentially contradicting pubchem units"""
     subject = subject4 + '\nunits au'
 
@@ -273,12 +283,490 @@ def test_pubchem_molstr4b():
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 
-def test_pubchem_molstr4a():
+def test_psi4_pubchem_4c():
     subject = """
 pubchem  : 241
 """
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
-    assert compare_molrecs(fullans4, final, 4, sys._getframe().f_code.co_name + ': full')
+    assert compare_molrecs(fullans4, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
+
+subject5 = """
+#efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 1.534222 -0.568147
+efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 7.817407 -0.568147
+--
+efp C6H6 -0.60075437  1.36443336  0.78647823  3.137879 1.557344 -2.568550
+"""
+
+ans5 = {
+    'fragment_files': ['C6H6', 'C6H6'],
+    'hint_types': ['xyzabc', 'xyzabc'],
+    #'geom_hints': [[-0.30448173, -2.24210052, -0.29383131, -0.642499, 1.534222, -0.568147],
+    'geom_hints': [[-0.30448173, -2.24210052, -0.29383131, -0.642499, 7.817407, -0.568147],
+                  [-0.60075437,  1.36443336,  0.78647823,  3.137879, 1.557344, -2.568550]],
+    'geom': [],
+    'elbl': [],
+    'fragment_charges': [None],
+    'fragment_multiplicities': [None],
+    'fragment_separators': [],
+       }
+
+fullans5b = {'efp': {}}
+fullans5b['efp']['hint_types'] = ans5['hint_types']
+fullans5b['efp']['geom_hints'] = ans5['geom_hints']
+fullans5b['efp']['units'] = 'Bohr'
+fullans5b['efp']['fix_com'] =  True
+fullans5b['efp']['fix_orientation'] = True
+fullans5b['efp']['fix_symmetry'] = 'c1'
+fullans5b['efp']['fragment_files'] = ['c6h6', 'c6h6']
+
+
+def test_psi4_efp_5a():
+    subject = subject5
+
+    hintsans = [[(val / psi_bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
+                [(val / psi_bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
+    hintsans[0][4] = 1.534222
+    fullans = copy.deepcopy(fullans5b)
+    fullans['efp']['units'] = 'Angstrom'
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    assert compare_dicts(ans5, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp')
+    #assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+    hintsstd = qcdb.util.standardize_efp_angles_units('Angstrom', final['efp']['geom_hints'])
+    final['efp']['geom_hints'] = hintsstd
+    fullans['efp']['geom_hints'] = hintsans
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp standardized')
+
+def test_psi4_efp_5b():
+    subject = subject5 + '\nunits bohr'
+
+    ans = copy.deepcopy(ans5)
+    ans['units'] = 'Bohr'
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans5b['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp')
+    #assert compare_molrecs(fullans5b['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+
+def test_psi4_efp_5c():
+    """fix_orientation not mol kw"""
+    subject = subject5 + '\nno_com\nfix_orientation\nsymmetry c1'
+
+    with pytest.raises(qcdb.ValidationError):
+        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+
+
+def test_psi4_efp_5d():
+    subject = subject5 + '\nno_com\nno_reorient\nsymmetry c1\nunits a.u.'
+
+    ans = copy.deepcopy(ans5)
+    ans['units'] = 'Bohr'
+    ans['fix_com'] = True
+    ans['fix_orientation'] =  True
+    ans['fix_symmetry'] = 'c1'
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans5b['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final')
+    #assert compare_molrecs(fullans5b['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full')
+
+
+def test_psi4_efp_5e():
+    """symmetry w/efp"""
+    subject = subject5 + 'symmetry cs\nunits a.u.'
+
+    with pytest.raises(qcdb.ValidationError):
+        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+
+
+subject6 = """
+    0 1
+    O1    0         0     0.118720
+    h2   -0.753299, 0.0, -0.474880
+    H3    0.753299, 0.0, -0.474880
+    
+    --
+    efp h2O -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+ --
+efp ammoniA
+     0.98792    1.87681    2.85174
+units au
+     1.68798    1.18856    3.09517
+     1.45873    2.55904    2.27226
+
+"""
+
+ans6 = {'units': 'Bohr',
+        'geom': [0., 0., 0.118720, -0.753299, 0.0, -0.474880, 0.753299, 0.0, -0.474880],
+        'elbl': ['O1', 'h2', 'H3'],
+        'fragment_charges': [0.],
+        'fragment_multiplicities': [1],
+        'fragment_separators': [],
+        'fragment_files': ['h2O', 'ammoniA'],
+        'geom_hints': [[-2.12417561,  1.22597097, -0.95332054, -2.902133, 1.734999, -1.953647],
+                           [0.98792,    1.87681,    2.85174, 1.68798 ,   1.18856  ,  3.09517, 1.45873  ,  2.55904  ,  2.27226]],
+        'hint_types': ['xyzabc', 'points'],
+        }
+
+fullans6 = {'qm': {'geom': np.array([0., 0., 0.118720, -0.753299, 0.0, -0.474880, 0.753299, 0.0, -0.474880]),
+                   'elea': np.array([16, 1, 1]),
+                   'elez': np.array([8, 1, 1]),
+                   'elem': np.array(['O', 'H', 'H']),
+                   'mass': np.array([ 15.99491462,   1.00782503,   1.00782503]),
+                   'real': np.array([True, True, True]),
+                   'elbl': np.array(['1', '2', '3']),
+                   'units': 'Bohr',
+                   'fix_com': True,
+                   'fix_orientation': True,
+                   'fix_symmetry': 'c1',
+                   'fragment_charges': [0.],
+                   'fragment_multiplicities': [1],
+                   'fragment_separators': [],
+                   'molecular_charge': 0.,
+                   'molecular_multiplicity': 1},
+           'efp': {'fragment_files': ['h2o', 'ammonia'],
+                   'geom_hints': [[-2.12417561,  1.22597097, -0.95332054, -2.902133, 1.734999, -1.953647],
+                                  [0.98792,    1.87681,    2.85174, 1.68798 ,   1.18856  ,  3.09517, 1.45873  ,  2.55904  ,  2.27226]],
+                   'hint_types': ['xyzabc', 'points'],
+                   'units': 'Bohr',
+                   'fix_com': True,
+                   'fix_orientation': True,
+                   'fix_symmetry': 'c1',
+        }}
+
+
+def test_psi4_qmefp_6a():
+    subject = subject6
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    assert compare_dicts(ans6, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans6['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+    assert compare_molrecs(fullans6['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+
+def test_psi4_qmefp_6b():
+    subject = subject6.replace('au', 'ang')
+
+    ans = copy.deepcopy(ans6)
+    ans['units'] = 'Angstrom'
+
+    fullans = copy.deepcopy(fullans6)
+    fullans['qm']['units'] = 'Angstrom'
+    fullans['efp']['units'] = 'Angstrom'
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+
+def test_psi4_qmefp_6c():
+    """try to give chgmult to an efp"""
+
+    subject = subject6.replace('    efp h2O', '0 1\n    efp h2O')
+
+    with pytest.raises(qcdb.ValidationError):
+        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+
+subject7 = """\
+5
+   stuffs 
+6Li 0.0 0.0 0.0 
+H_specIAL@2.014101  100 0 0
+@Ne 2 4 6
+h .0,1,2
+Gh(he3) 0 1 3
+"""
+
+ans7 = {'geom': [ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.],
+        'elbl': ['6Li', 'H_specIAL@2.014101', '@Ne', 'h', 'Gh(he3)'],
+        'units': 'Angstrom',
+        'fragment_files': [],  # shouldn't be needed
+        'hint_types': [],  # shouldn't be needed
+        'geom_hints': [],  # shouldn't be needed
+        }
+
+fullans7 = {'geom': np.array([ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.]),
+            'elea': np.array([6,  2, 20, 1, 4]),
+            'elez': np.array([3, 1, 10, 1, 2]),
+            'elem': np.array(['Li', 'H', 'Ne', 'H', 'He']),
+            'mass': np.array([ 6.015122794, 2.014101, 19.99244017542, 1.00782503, 4.00260325415]),
+            'real': np.array([ True,  True, False, True, False]),
+            'elbl': np.array(['', '_special', '', '', '3']),
+            'units': 'Angstrom',
+            'fix_com': False,
+            'fix_orientation': False,
+            'fragment_separators': [],
+            'fragment_charges': [0.],
+            'fragment_multiplicities': [2],
+            'molecular_charge': 0.,
+            'molecular_multiplicity': 2,
+            }
+
+
+def test_xyzp_qm_7a():
+    """XYZ doesn't fit into psi4 string"""
+    subject = subject7
+
+    with pytest.raises(qcdb.ValidationError):
+        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+
+
+def test_xyzp_qm_7b():
+    """XYZ doesn't fit into strict xyz string"""
+    subject = subject7
+
+    with pytest.raises(qcdb.ValidationError):
+        final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz')
+
+
+def test_xyzp_qm_7c():
+    subject = subject7
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz+')
+    assert compare_dicts(ans7, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans7, final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+
+def test_xyzp_qm_7d():
+    subject = subject7.replace('5', '5 au ')
+    subject = subject.replace('stuff', '-1 3 slkdjfl2 32#$^& ')
+
+    ans = copy.deepcopy(ans7)
+    ans['units'] = 'Bohr'
+    ans['molecular_charge'] = -1.
+    ans['molecular_multiplicity'] = 3
+
+    fullans = copy.deepcopy(fullans7)
+    fullans['units'] = 'Bohr'
+    fullans['fragment_charges'] = [-1.]
+    fullans['fragment_multiplicities'] = [3]
+    fullans['molecular_charge'] = -1.
+    fullans['molecular_multiplicity'] = 3
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz+')
+    assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans, final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+subject8 = """\
+3
+   stuffs 
+Li 0.0 0.0 0.0 
+1  100 0 0
+Ne 2 4 6
+h .0,1,2
+ 2 0 1 3
+"""
+
+ans8 = {'geom': [ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.],
+        'elbl': ['Li', '1', 'Ne', 'h', '2'],
+        'units': 'Angstrom',
+        'fragment_files': [],  # shouldn't be needed
+        'hint_types': [],  # shouldn't be needed
+        'geom_hints': [],  # shouldn't be needed
+        }
+
+fullans8 = {'geom': np.array([ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.]),
+            'elea': np.array([7,  1, 20, 1, 4]),
+            'elez': np.array([3, 1, 10, 1, 2]),
+            'elem': np.array(['Li', 'H', 'Ne', 'H', 'He']),
+            'mass': np.array([ 7.016004548, 1.00782503, 19.99244017542, 1.00782503, 4.00260325415]),
+            'real': np.array([ True,  True, True, True, True]),
+            'elbl': np.array(['', '', '', '', '']),
+            'units': 'Angstrom',
+            'fix_com': False,
+            'fix_orientation': False,
+            'fragment_separators': [],
+            'fragment_charges': [0.],
+            'fragment_multiplicities': [2],
+            'molecular_charge': 0.,
+            'molecular_multiplicity': 2,
+            }
+
+
+def test_xyzp_qm_8a():
+    subject = subject8
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz+')
+    assert compare_dicts(ans8, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(fullans8, final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+
+
+
+fullans10qm = {'geom': np.array([0., 0., 0.]),
+               'elea': np.array([12]),
+               'elez': np.array([6]),
+               'elem': np.array(['C']),
+               'mass': np.array([12.]),
+               'real': np.array([True]),
+               'elbl': np.array(['']),
+               'units': 'Angstrom',
+               'fix_com': False,
+               'fix_orientation': False,
+               'fragment_separators': [],
+               'fragment_charges': [0.],
+               'fragment_multiplicities': [1],
+               'molecular_charge': 0.,
+               'molecular_multiplicity': 1}
+fullans10efp = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0., 0., 0., 0., 0., 0.]],
+               'units': 'Angstrom',
+               'fix_com': True,
+               'fix_orientation': True,
+               'fix_symmetry': 'c1'}
+fullans10efpempty = {'fragment_files': [],
+                     'hint_types': [],
+                     'geom_hints': [],
+                     'units': 'Bohr',
+                     'fix_com': True,
+                     'fix_orientation': True}
+
+
+def test_arrays_10a():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': True}
+
+    fullans = {'qm': copy.deepcopy(fullans10qm),
+               'efp': copy.deepcopy(fullans10efp)}
+    fullans['qm']['fix_com'] = True
+    fullans['qm']['fix_orientation'] = True
+    fullans['qm']['fix_symmetry'] = 'c1'
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+
+
+def test_arrays_10b():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': False,
+               'enable_efp': True}
+
+    fullans = {'efp': fullans10efp}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(KeyError):
+        final['qm']
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+
+
+def test_arrays_10c():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': False}
+
+    fullans = {'qm': fullans10qm}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    with pytest.raises(KeyError):
+        final['efo']
+
+
+#       #def test_arrays_10d():
+#       #    subject = {'geom': [0, 0, 0],
+#       #               'elem': ['C'],
+#       #               'enable_qm': True,
+#       #               'enable_efp': True}
+#       #
+#       ##    fullans = {'qm':
+#       ##               'efp':
+#       ##
+#       ##    final = qcdb.molparse.from_input_arrays(**subject)
+#       ##    print('FINAL')
+#       ##    pprint.pprint(final)
+#       ##    print('FULLANS')
+#       ##    pprint.pprint(fullans)
+#       ##    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+#       ##    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+#       #    assert False
+#       #
+#       #def test_arrays_10e():
+#       #    subject = {'geom': [0, 0, 0],
+#       #               'elem': ['C'],
+#       #               'enable_qm': False,
+#       #               'enable_efp': True}
+#       #
+#       ##    with pytest.raises(qcdb.ValidationError):
+#       ##        final = qcdb.molparse.from_input_arrays(**subject)
+#       #    assert False
+
+
+def test_arrays_10f():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': True,
+               'enable_efp': False}
+
+    fullans = {'qm': fullans10qm}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    with pytest.raises(KeyError):
+        final['efp']
+
+#       #def test_arrays_10g():
+#       #    subject = {'fragment_files': ['cl2'],
+#       #               'hint_types': ['xyzabc'],
+#       #               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+#       #               'enable_qm': True,
+#       #               'enable_efp': True}
+#       #
+#       #    #fullans = {'qm':
+#       #    #           'efp':
+#       #
+#       #    #final = qcdb.molparse.from_input_arrays(**subject)
+#       #    #print('FINAL')
+#       #    #pprint.pprint(final)
+#       #    #print('FULLANS')
+#       #    #pprint.pprint(fullans)
+#       #    #assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+#       #    #assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+#       #    assert False
+
+
+def test_arrays_10h():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': False,
+               'enable_efp': True}
+
+    fullans = {'efp': fullans10efp}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(KeyError):
+        final['qm']
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+
+
+#       #def test_arrays_10i():
+#       #    subject = {'fragment_files': ['cl2'],
+#       #               'hint_types': ['xyzabc'],
+#       #               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+#       #               'enable_qm': True,
+#       #               'enable_efp': False}
+#       #
+#       #    #with pytest.raises(qcdb.ValidationError):
+#       #    #    final = qcdb.molparse.from_input_arrays(**subject)
+#       #    assert False
