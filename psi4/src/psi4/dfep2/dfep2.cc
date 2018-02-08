@@ -199,7 +199,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
     // ==> Transform DF integrals <== /
 
     // add spaces
-    dfh_->clear_all();
     dfh_->add_space("i", AO_Cocc_);
     dfh_->add_space("a", AO_Cvir_);
     dfh_->add_space("E", AO_CE);
