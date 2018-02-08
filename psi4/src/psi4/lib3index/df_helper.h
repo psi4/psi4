@@ -245,9 +245,6 @@ class DF_Helper {
     void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
                   std::vector<SharedMatrix> K);
 
-    // FIXME
-    SharedMatrix check_function();
-
    protected:
     // => basis sets <=
     std::shared_ptr<BasisSet> primary_;
@@ -401,6 +398,7 @@ class DF_Helper {
     std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
+    std::string start_filename(std::string start);
     void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op=0);
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);

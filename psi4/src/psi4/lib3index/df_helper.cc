@@ -84,35 +84,25 @@ void DF_Helper::prepare_blocking() {
 }
 
 void DF_Helper::AO_filename_maker(size_t i) {
-    std::string name = PSIOManager::shared_object()->get_default_path();
-    name.append("dfh.AO");
-    name.append(std::to_string(i));
+    
+    std::string name = start_filename("dfh.AO" + std::to_string(i));
     AO_names_.push_back(name);
-    std::string file = name;
-    file.append(".");
-    file.append(std::to_string(getpid()));
-    file.append(".");
-    file.append(primary_->molecule()->name());
-    file.append(".dat");
-    AO_files_[name] = file;
+    AO_files_[name] = name;
+
+}
+
+std::string DF_Helper::start_filename(std::string start){
+    
+    std::string name = PSIOManager::shared_object()->get_default_path();
+    name += start + "." + std::to_string(getpid());
+    name += "." + primary_->molecule()->name() + ".dat";
+    return name;
 }
 
 void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op) {
-    std::string pfile = "dfh.p";
-    pfile.append(name);
-    pfile.append(".");
-    pfile.append(std::to_string(getpid()));
-    pfile.append(".");
-    pfile.append(primary_->molecule()->name());
-    pfile.append(".dat");
-    std::string file = pfile;
-    file.erase(4, 1);
-
-    std::string scratch = PSIOManager::shared_object()->get_default_path();
-    std::string pfilename = scratch;
-    pfilename.append(pfile);
-    std::string filename = scratch;
-    filename.append(file);
+    
+    std::string pfilename = start_filename("dfh.p" + name);
+    std::string  filename = start_filename("dfh"   + name);
 
     std::tuple<std::string, std::string> files(pfilename.c_str(), filename.c_str());
     files_[name] = files;
@@ -875,28 +865,6 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, co
     }
 }
 
-SharedMatrix DF_Helper::check_function(){
-    // test function for new integral machinery, will delete FIXME    
-    // get each thread an eri object
-    size_t rank = 0;
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
-#pragma omp parallel for schedule(static) num_threads(nthreads_) private(rank)
-    for (size_t i = 0; i < nthreads_; i++) {
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-    }
-
-    SharedMatrix M(new Matrix("M", naux_, nao_ * nao_));
-    double* Mp = M->pointer()[0];
-    compute_dense_Qpq_blocking_Q(0, Qshells_ - 1, Mp, eri); 
-    return M;
-
-}
-
 void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     
@@ -912,11 +880,9 @@ void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t st
     ::memset(Mp, 0, sizeof(double) * block_size * nao_ * nao_);
 
     // prepare eri buffers
+    int rank = 0;
     size_t nthread = nthreads_;
     if (eri.size() != nthreads_) nthread = eri.size();
-
-    // TODO ~ should buffers be reallocated like this???? FIXME
-    int rank = 0;
     std::vector<const double*> buffer(nthread);
 #pragma omp parallel private(rank) num_threads(nthread)
     {
@@ -1586,7 +1552,7 @@ void DF_Helper::transform() {
     // prep AO file stream if STORE + !AO_core_
     if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
 
-    // get Q blocking
+    // get Q blocking scheme
     std::vector<std::pair<size_t, size_t>> Qsteps;
     std::pair<size_t, size_t> Qlargest = Qshell_blocks_for_transform(memory_, wtmp, wfinal, Qsteps);
     size_t max_block = std::get<1>(Qlargest);
@@ -1691,7 +1657,7 @@ void DF_Helper::transform() {
                 timer_on("DFH: Total Transform");
                 timer_on("DFH: First Contraction");
                 if (direct_iaQ_) {
-                    // (bq)(Q|pq)->(Q|pb)
+                    // (qb)(Q|pq)->(Q|pb)
                     C_DGEMM('N', 'N', block_size * nao_, bsize, nao_, 1.0, &Mp[bump], nao_, Bp, bsize, 0.0, Tp, bsize);
                 } else {
                     // (bq)(p|Qq)->(p|Qb)
@@ -1711,8 +1677,8 @@ void DF_Helper::transform() {
                    
                     // get worst space 
                     std::tuple<SharedMatrix, size_t> I = (bleft ? spaces_[right] : spaces_[left]);
-                    size_t wsize = std::get<1>(I);
                     double* Wp = std::get<0>(I)->pointer()[0];
+                    size_t wsize = std::get<1>(I);
 
                     // grab in-core pointer
                     if(direct_iaQ_ && MO_core_){
@@ -1745,7 +1711,7 @@ void DF_Helper::transform() {
                         }
                     
                     } else {
-                        // (wp)(p|Qb)->(w|Qb)
+                        // (pw)(p|Qb)->(w|Qb)
                         C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
                     }
@@ -1850,6 +1816,9 @@ void DF_Helper::transform() {
                     double* Lp = kv.second.data();
                     C_DCOPY(a0 * a1 * a2, Lp, 1, Np, 1);
 
+                    // the following differs depending on the form being outputted
+                    // 0 : Qpq -- 1 : pQq -- 2 : pqQ
+
                     if (std::get<2>(transf_[kv.first]) == 2) {
                         C_DGEMM('N', 'N', a0 * a1, a2, a2, 1.0, Np, a2, metp, a2, 0.0, Lp, a2);
                     } else if (std::get<2>(transf_[kv.first]) == 0) {
@@ -1929,8 +1898,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
     // first, the integrals are tranposed to the desired format specified in add_transformation().
     // if MO_core is on, then the LHS buffers are final destinations.
     // else, the buffers are put to disk.
-    
-    // setup 
+
+    // setup ~
     int lblock_size = rblock_size;
     std::string putf, op;
     if(!MO_core_) {
@@ -1949,9 +1918,9 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
             
             // (w|Qb)->(bw|Q)
             #pragma omp parallel for num_threads(nthreads_)
-            for (size_t x = 0; x < rblock_size; x++) {
+            for (size_t z = 0; z < wsize; z++) {
                 for (size_t y = 0; y < bsize; y++) {
-                    for (size_t z = 0; z < wsize; z++) {
+                    for (size_t x = 0; x < rblock_size; x++) {
                         Np[y * wsize * lblock_size + z * lblock_size + (bcount + x)] 
                             = Fp[z * bsize * rblock_size + x * bsize + y];
                     }
@@ -1970,8 +1939,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
             // (w|Qb)->(Q|bw)
             #pragma omp parallel for num_threads(nthreads_)
             for (size_t x = 0; x < rblock_size; x++) {
-                for (size_t y = 0; y < bsize; y++) {
-                    for (size_t z = 0; z < wsize; z++) {
+                for (size_t z = 0; z < wsize; z++) {
+                    for (size_t y = 0; y < bsize; y++) {
                         Np[(bcount + x) * bsize * wsize + y * wsize + z] 
                             = Fp[z * bsize *rblock_size + x * bsize + y];
                     }
@@ -2013,8 +1982,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
             
             // (w|Qb)->(wbQ)
             #pragma omp parallel for num_threads(nthreads_)
-            for (size_t x = 0; x < rblock_size; x++) {
-                for (size_t z = 0; z < wsize; z++) {
+            for (size_t z = 0; z < wsize; z++) {
+                for (size_t x = 0; x < rblock_size; x++) {
                     for (size_t y = 0; y < bsize; y++) {
                         Np[z * lblock_size * bsize + y * lblock_size + (bcount + x)] 
                             = Fp[z * rblock_size * bsize + x * bsize + y];
