@@ -4282,6 +4282,6 @@ def run_efp(name, **kwargs):
 
         torq = efpobj.get_gradient()
         torq = core.Matrix.from_array(np.asarray(torq).reshape(-1, 6))
-        core.set_efp_torque(torq)
+        core.set_array_variable('EFP TORQUE', torq)
 
     return ene['total']

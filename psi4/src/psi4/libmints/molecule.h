@@ -82,12 +82,6 @@ public:
         Ghost    /*!< Include, but with ghost atoms */
     };
 
-    enum FragmentLevel {
-        QMatom  = 1,    /*!< Quantum mechanical */
-        EFPatom = 2,    /*!< Effective fragment potential */
-        ALLatom = 3     /*!< All atom types */
-    };
-
     typedef std::vector<std::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
 
@@ -226,9 +220,6 @@ public:
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
-    /// Returns the list of atoms belonging to a fragment.
-    // Needed for EFP interface
-    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }  // TODO remove?
     /// Set whether to leave the geometry alone upon update_geometry()
     void set_lock_frame(bool tf) { lock_frame_ = tf; }
 

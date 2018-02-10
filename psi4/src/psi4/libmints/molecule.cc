@@ -32,7 +32,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/basisset.h"
@@ -582,11 +581,6 @@ void Molecule::move_to_com() {
 Matrix Molecule::geometry() const {
     int natoms = natom();
 
-// Ugh, supposedly this is going to be overhauled soon. Blame Lori!
-#ifdef USING_libefp
-    if (Process::environment.get_efp()->get_frag_count() > 0) natoms++;
-#endif  // USING_libefp
-
     if (!natoms) {
         throw PSIEXCEPTION(
             "Molecule::geometry(): molecule does not contain any atoms. Try calling `molecule.update_geometry()\n"
@@ -850,8 +844,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     std::vector<std::string> lines;
     lines = split(text, "\\n");
 
-    std::vector<FragmentLevel> fragment_levels;
-
     auto mol = std::make_shared<Molecule>();
 
     mol->molecular_charge_ = 0;
@@ -922,117 +914,11 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
 
     mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
 
-#ifdef USING_libefp
-    if (!Process::environment.get_efp()) throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
-
-    // Collect EFP fragments in forward order
-    size_t efp_nfrag = 0;
-    std::vector<std::string> efp_fnames;
-    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
-        if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
-            efp_fnames.push_back(reMatches[1].str());
-            efp_nfrag++;
-        }
-    }
-
-    // Collect EFP geometries in reverse order and complete initialization of libefp
-    if (efp_nfrag > 0) {
-        enum efp_coord_type { XYZABC, POINTS, ROTMAT };
-        efp_coord_type efp_ctype;
-        double *coords = nullptr;
-        coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
-        double *pcoords = coords;
-        size_t currentFragment = efp_nfrag - 1;
-        std::vector<std::string> splitLine;
-
-        // Force no reorient
-        mol->set_orientation_fixed(true);
-        mol->move_to_com_ = false;
-        mol->symmetry_from_input_ = std::string("c1");
-
-        // Initialize all fragment names and library paths
-        Process::environment.get_efp()->add_fragments(efp_fnames);
-
-        // Initialize all fragment geometry hints
-        for (int lineNumber = lines.size() - 1; lineNumber >= 0; --lineNumber) {
-            if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
-                // Process file name
-                if (efp_fnames[currentFragment] != reMatches[1].str())
-                    throw PSIEXCEPTION("EFP fragment names not in sync (" + efp_fnames[currentFragment] + " vs." +
-                                       reMatches[1].str());
-
-                if ((std::regex_match(lines[lineNumber + 1], reMatches, fragmentMarker_)) ||
-                    ((size_t)lineNumber == lines.size() - 1)) {
-                    // Process xyzabc hint
-                    efp_ctype = XYZABC;
-                    trim_spaces(lines[lineNumber]);
-                    splitLine = split(lines[lineNumber], "[\\t ,]+");
-                    if (splitLine.size() == 8) {
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[3]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[4]);
-                        *pcoords++ = str_to_double(splitLine[5]);
-                        *pcoords++ = str_to_double(splitLine[6]);
-                        *pcoords++ = str_to_double(splitLine[7]);
-                    } else
-                        throw PSIEXCEPTION("Illegal EFP xyzbc specification line : " + lines[lineNumber] +
-                                           ".  efp fragname com_x com_y com_z euler_a euler_b euler_c expected.");
-                } else if ((regex_match(lines[lineNumber + 4], reMatches, fragmentMarker_)) ||
-                           ((size_t)lineNumber == lines.size() - 4)) {
-                    // Process points hint
-                    efp_ctype = POINTS;
-                    trim_spaces(lines[lineNumber + 1]);
-                    splitLine = split(lines[lineNumber + 1], "[\\t ,]+");
-                    if (splitLine.size() == 3) {
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
-                    } else
-                        throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber + 1] +
-                                           " (expected: atom1_x atom1_y atom1_z).");
-                    trim_spaces(lines[lineNumber + 2]);
-                    splitLine = split(lines[lineNumber + 2], "[\\t ,]+");
-                    if (splitLine.size() == 3) {
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
-                    } else
-                        throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber + 2] +
-                                           " (expected: atom2_x atom2_y atom2_z).");
-                    trim_spaces(lines[lineNumber + 3]);
-                    splitLine = split(lines[lineNumber + 3], "[\\t ,]+");
-                    if (splitLine.size() == 3) {
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
-                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
-                    } else
-                        throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber + 3] +
-                                           " (expected: atom3_x atom3_y atom3_z).");
-                    // Nuke fragment geometry lines
-                    lines.erase(lines.begin() + lineNumber + 3);
-                    lines.erase(lines.begin() + lineNumber + 2);
-                    lines.erase(lines.begin() + lineNumber + 1);
-                } else {
-                    throw PSIEXCEPTION("Illegal geometry specification line : " + lines[lineNumber] +
-                                       ".  You should provide either points or xyzabc EFP input");
-                }
-                // Initializing current fragment in libefp with geometry hint
-                Process::environment.get_efp()->set_frag_coordinates(currentFragment, efp_ctype, coords);
-                pcoords = coords;
-                currentFragment--;
-            }
-        }
-        // Finalize efp fragment composition
-        Process::environment.get_efp()->finalize_fragments();
-    }
-#endif  // USING_libefp
-
     if (!lines.size()) throw PSIEXCEPTION("No geometry specified");
 
     // Now go through the rest of the lines looking for fragment markers
     size_t firstAtom = 0;
     size_t atomCount = 0;
-    size_t efpCount = 0;
 
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
@@ -1047,26 +933,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
             //mol->fragment_types_.push_back(Real);
-            if (std::regex_search(lines[lineNumber - 1], reMatches, efpFileMarker_)) {
-#ifdef USING_libefp
-                fragment_levels.push_back(EFPatom);
-                // Overwrite the overall molecule chgmult written before loop
-                // fragment counting when EFP involved is very messed up.
-                //  All EFP fragments are 0 1 anyways, so just skip
-                //if (mol->fragments_.size() == 1) {
-                //    mol->fragment_multiplicities_.pop_back();
-                //    mol->fragment_charges_.pop_back();
-                //    mol->fragment_multiplicities_.push_back(
-                //        Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
-                //    mol->fragment_charges_.push_back(
-                //        int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
-                //}
-#else
-                outfile->Printf("    EFP fragments detected but are not available.\n");
-                throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
-#endif
-            } else
-                fragment_levels.push_back(QMatom);
             firstAtom = atomCount;
 
             // Figure out how to handle the multiplicity
@@ -1083,13 +949,8 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
             }
         } else {
             if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
-#ifdef USING_libefp
-                atomCount += Process::environment.get_efp()->get_frag_atom_count(efpCount);
-                ++efpCount;
-#else
                 outfile->Printf("    EFP fragments detected but are not available.\n");
                 throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
-#endif
             } else
                 ++atomCount;
         }
@@ -1099,17 +960,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
     //mol->fragment_types_.push_back(Real);
-    if (std::regex_search(lines[lines.size() - 1], reMatches, efpFileMarker_)) {
-#ifdef USING_libefp
-        fragment_levels.push_back(EFPatom);
-        //mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
-        //mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
-#else
-        outfile->Printf("    EFP fragments detected but are not available.\n");
-        throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
-#endif
-    } else
-        fragment_levels.push_back(QMatom);
 
     // Clean up the "--", efp, and charge/multiplicity specifiers - they're no longer needed
     for (int lineNumber = lines.size() - 1; lineNumber >= 0; --lineNumber) {
@@ -1130,57 +980,9 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     double zVal, charge;
     int aVal = -1;
     size_t currentFragment = 0;
-    efpCount = 0;
 
     // Store coordinates, atom by atom
     for (int currentAtom = 0; currentAtom < mol->fragments_.back().second;) {
-        if ((currentAtom == mol->fragments_[currentFragment].first) && (fragment_levels[currentFragment] == EFPatom)) {
-// currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
-
-#ifdef USING_libefp
-            size_t efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
-
-            double *frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
-
-            double *frag_atom_mass = Process::environment.get_efp()->get_frag_atom_mass(efpCount);
-
-            std::vector<std::string> frag_atom_label = Process::environment.get_efp()->get_frag_atom_label(efpCount);
-
-            double *frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
-
-            for (size_t at = 0; at < efp_natom; at++) {
-                // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and
-                // mass from psi4 through zVal. May want to reshuffle this.
-                zVal = frag_atom_Z[at];
-                atomLabel = to_upper_copy(frag_atom_label[at]);
-
-                // Check that the atom symbol is valid
-                // NOTE: EFP symbols look like A03O2 but unclear how standard this is
-                if (!std::regex_match(atomLabel, reMatches, efpAtomSymbol_))
-                    throw PSIEXCEPTION("Illegal atom symbol in efp geometry specification: " + atomLabel + " on atom" +
-                                       std::to_string(at) + " in fragment" + std::to_string(efpCount) + "\n");
-
-                // Save the actual atom symbol (A03O2 => O)
-                atomSym = reMatches[1].str();
-
-                // TODO: need to handle dummies
-                // TODO: warn user that zmat mixed with efp uses total (qm + actual efp) atom counts for reference
-
-                // Store as Cartesian entry; libefp works entirely in Bohr
-                std::shared_ptr<CoordValue> xval =
-                    std::make_shared<NumberValue>(frag_atom_coord[3 * at] / mol->input_units_to_au_);
-                std::shared_ptr<CoordValue> yval =
-                    std::make_shared<NumberValue>(frag_atom_coord[3 * at + 1] / mol->input_units_to_au_);
-                std::shared_ptr<CoordValue> zval =
-                    std::make_shared<NumberValue>(frag_atom_coord[3 * at + 2] / mol->input_units_to_au_);
-                mol->full_atoms_.push_back(std::make_shared<CartesianEntry>(
-                    currentAtom + at, zVal, zVal, an2masses[(int)zVal], atomSym, atomLabel, aVal, xval, yval, zval));
-                ++currentAtom;
-            }
-            ++efpCount;
-            ++currentFragment;
-#endif
-        } else {
             // currentAtom belongs to QM fragment so read geometry of atom from line
 
             // Trim leading and trailing whitespace
@@ -1306,7 +1108,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
             ++currentAtom;
             ++line;
             if (currentAtom == mol->fragments_[currentFragment].second) ++currentFragment;
-        }
     }
 
     mol->set_has_zmatrix(has_zmatrix);
@@ -1317,16 +1118,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
 
     if (pubcheminput) mol->symmetrize_to_abelian_group(1.0e-3);
 
-    // Filter out EFP from Molecule
-    for (int i = fragment_levels.size() - 1; i >= 0; --i) {
-        if (fragment_levels[i] == EFPatom) {
-            for (int j = mol->fragments_[i].second - 1; j >= mol->fragments_[i].first; --j)
-                mol->full_atoms_.erase(mol->full_atoms_.begin() + j);
-            mol->fragment_charges_.erase(mol->fragment_charges_.begin() + i);
-            mol->fragment_multiplicities_.erase(mol->fragment_multiplicities_.begin() + i);
-            mol->fragments_.erase(mol->fragments_.begin() + i);
-        }
-    }
     for (size_t i = 0, atom = 0; i < mol->fragments_.size(); ++i) {
         int frlen = mol->fragments_[i].second - mol->fragments_[i].first;
         mol->fragments_[i].first = atom;

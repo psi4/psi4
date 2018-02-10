@@ -61,7 +61,6 @@ except ImportError as err:
 
 from psi4.core import set_output_file, get_variable, set_variable, get_num_threads, set_num_threads
 core.initialize()
-core.efp_init()
 
 if "PSI_SCRATCH" in os.environ.keys():
     envvar_scratch = os.environ["PSI_SCRATCH"]

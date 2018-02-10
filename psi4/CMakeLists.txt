@@ -86,7 +86,7 @@ endif()
 if(${ENABLE_libefp})
     # neither libefp nor pylibefp actually needed c-side; runtime detection would
     #   do just as well. included for completeness and so pylibefp_PYMOD can be
-    #   hard-loaded into PYTHONPATH.
+    #   hard-loaded into PYTHONPATH. also incl for finding efp frag files below.
     find_package(libefp 1.5.0 CONFIG REQUIRED COMPONENTS shallow)
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
