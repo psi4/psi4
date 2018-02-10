@@ -47,10 +47,6 @@
  class Matrix;
  class Vector;
 
- namespace efp {
- class EFP;
- }
-
  class PSI_API Process {
     public:
      class PSI_API Environment {
@@ -61,8 +57,6 @@
 
          std::shared_ptr<Molecule> molecule_;
          SharedMatrix gradient_;
-         std::shared_ptr<efp::EFP> efp_;
-         SharedMatrix efp_torque_;
          std::shared_ptr<Vector> frequencies_;
          std::shared_ptr<PointGroup> parent_symmetry_;
 
@@ -102,16 +96,6 @@
          void set_frequencies(const std::shared_ptr<Vector> f) { frequencies_ = f; }
          /// Get frequencies manually
          std::shared_ptr<Vector> frequencies() const { return frequencies_; }
-
-         /// Set EFP
-         void set_efp(const std::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
-         /// Get EFP
-         std::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
-
-         /// Set EFP gradient manually
-         void set_efp_torque(const SharedMatrix g) { efp_torque_ = g; }
-         /// Get EFP gradient manually
-         SharedMatrix efp_torque() const { return efp_torque_; }
 
          /// Map containing current energies
          std::map<std::string, double> globals;

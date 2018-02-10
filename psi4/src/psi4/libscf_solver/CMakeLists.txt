@@ -8,7 +8,7 @@ set(sources_list uhf.cc
                  rohf.cc
                  stability.cc
 )
-psi4_add_module(lib scf_solver sources_list mints diis efp_solver fock)
+psi4_add_module(lib scf_solver sources_list mints diis fock)
 if(ENABLE_GTFOCK)
     add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()

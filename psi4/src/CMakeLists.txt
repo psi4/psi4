@@ -10,7 +10,6 @@ set(sources_list
         export_benchmarks.cc
         export_blas_lapack.cc
         export_cubeprop.cc
-        export_efp.cc
         export_pcm.cc
         export_fock.cc
         export_functional.cc
