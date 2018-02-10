@@ -1,9 +1,11 @@
 import re
+import pprint
 
 import numpy as np
 
-from ..util import distance_matrix
+from ..util import distance_matrix, update_with_error
 from ..exceptions import *
+from ..physconst import psi_bohr2angstroms
 from .chgmult import validate_and_fill_chgmult
 from .nucleus import reconcile_nucleus
 from .regex import *
@@ -13,6 +15,105 @@ try:
     long(1)
 except NameError:
     long = int
+
+
+def from_input_arrays(enable_qm=True,
+                      enable_efp=True,
+                      missing_enabled_return_qm='error',
+                      missing_enabled_return_efp='error',
+                      # qm
+                      geom=None,
+                      elea=None,
+                      elez=None,
+                      elem=None,
+                      mass=None,
+                      real=None,
+                      elbl=None,
+                      name=None,
+                      units='Angstrom',
+                      input_units_to_au=None,
+                      fix_com=None,
+                      fix_orientation=None,
+                      fix_symmetry=None,
+                      fragment_separators=None,
+                      fragment_charges=None,
+                      fragment_multiplicities=None,
+                      molecular_charge=None,
+                      molecular_multiplicity=None,
+                      # efp
+                      fragment_files=None,
+                      hint_types=None,
+                      geom_hints=None,
+                      # processing details
+                      speclabel=True,
+                      tooclose=0.1,
+                      zero_ghost_fragments=False,
+                      nonphysical=False,
+                      mtol=1.e-3,
+                      verbose=1):
+
+    molinit = {}
+    if enable_qm:
+        molinit['qm'] = {}
+    if enable_efp:
+        molinit['efp'] = {}
+
+    if enable_efp:
+        processed = from_arrays(domain='efp',
+                                missing_enabled_return=missing_enabled_return_efp,
+                                units=units,
+                                input_units_to_au=input_units_to_au,
+                                fix_com=fix_com,
+                                fix_orientation=fix_orientation,
+                                fix_symmetry=fix_symmetry,
+                                fragment_files=fragment_files,
+                                hint_types=hint_types,
+                                geom_hints=geom_hints,
+                                # which other processing details needed?
+                                verbose=verbose)
+        update_with_error(molinit, {'efp': processed})
+        if molinit['efp'] == {}:
+            del molinit['efp']
+
+    efp_present = enable_efp and 'efp' in molinit and bool(len(molinit['efp']['geom_hints']))
+    if efp_present:
+        fix_com = True
+        fix_orientation = True
+        fix_symmetry = 'c1'
+
+    if enable_qm:
+        processed = from_arrays(domain='qm',
+                                missing_enabled_return=missing_enabled_return_qm,
+                                geom=geom,
+                                elea=elea,
+                                elez=elez,
+                                elem=elem,
+                                mass=mass,
+                                real=real,
+                                elbl=elbl,
+                                name=name,
+                                units=units,
+                                input_units_to_au=input_units_to_au,
+                                fix_com=fix_com,
+                                fix_orientation=fix_orientation,
+                                fix_symmetry=fix_symmetry,
+                                fragment_separators=fragment_separators,
+                                fragment_charges=fragment_charges,
+                                fragment_multiplicities=fragment_multiplicities,
+                                molecular_charge=molecular_charge,
+                                molecular_multiplicity=molecular_multiplicity,
+                                # processing details
+                                speclabel=speclabel,
+                                tooclose=tooclose,
+                                zero_ghost_fragments=zero_ghost_fragments,
+                                nonphysical=nonphysical,
+                                mtol=mtol,
+                                verbose=1)
+        update_with_error(molinit, {'qm': processed})
+        if molinit['qm'] == {}:
+            del molinit['qm']
+
+    return molinit
 
 
 def from_arrays(geom=None,
@@ -29,11 +130,17 @@ def from_arrays(geom=None,
                 fix_orientation=None,
                 fix_symmetry=None,
                 fragment_separators=None,
-                #fragment_types=None,  # keep?
                 fragment_charges=None,
                 fragment_multiplicities=None,
                 molecular_charge=None,
                 molecular_multiplicity=None,
+                fragment_files=None,
+                hint_types=None,
+                geom_hints=None,
+
+                domain='qm',
+                missing_enabled_return='error',
+
                 speclabel=True,
                 tooclose=0.1,
                 zero_ghost_fragments=False,
@@ -52,8 +159,6 @@ def from_arrays(geom=None,
         (nat, 3) or (3 * nat, ) ndarray or list o'lists of Cartesian coordinates.
     fragment_separators : array-like of int, optional
         (nfr - 1, ) list of atom indices at which to split `geom` into fragments.
-    #fragment_types : array-like of {'Real', 'Ghost', 'Absent'}, optional
-    #    (nfr, ) list of fragment types. If given, size must be consistent with `fragment_separators`.
     elbl : ndarray of str
         (nat, ) Label extending `elem` symbol, possibly conveying ghosting, isotope, mass, tagging information.
 
@@ -66,6 +171,9 @@ def from_arrays(geom=None,
         ghosting, isotope, mass, tagging information, e.g., `@13C_mine` or
         `He4@4.01`. If `False`, interpret `elbl` as only the user/tagging
         extension to nucleus label, e.g. `_mine` or `4` in the previous examples.
+    missing_enabled_return : {'minimal', 'none', 'error'}
+        What to do when an enabled domain is of zero-length? Respectively, return
+        a fully valid but empty molrec, return empty dictionary, or throw error.
 
 
     Returns
@@ -129,56 +237,112 @@ def from_arrays(geom=None,
     molecular_multiplicity : int
         total multiplicity on system.
 
+    EFP extension (this + units is minimal)
+
+    fragment_files : list of str
+        (nfr, ) lowercased names of efp meat fragment files.
+    hint_types : {'xyzabc', 'points'}
+        (nfr, ) type of fragment orientation hint.
+    geom_hints : list of lists of float
+        (nfr, ) inner lists have length 6 (xyzabc; to orient the center) or
+        9 (points; to orient the first three atoms) of the EFP fragment.
+
     """
+    # <<  domain sorting  >>
+    available_domains = ['qm', 'efp']
+    if domain not in available_domains:
+        raise ValidationError('Topology domain {} not available for processing. Choose among {}'.format(domain, available_domains))
+
+    if domain == 'qm' and geom is None or geom == []:
+        if missing_enabled_return == 'none':
+            return {}
+        elif missing_enabled_return == 'minimal':
+            geom = []
+        else:
+            raise ValidationError("""For domain 'qm', `geom` must be provided.""")
+    if domain == 'efp' and geom_hints is None or geom_hints == []:
+        if missing_enabled_return == 'none':
+            return {}
+        elif missing_enabled_return == 'minimal':
+            geom_hints = []
+            fragment_files = []
+            hint_types = []
+        else:
+            raise ValidationError("""For domain 'efp', `geom_hints` must be provided.""")
+
     molinit = {}
-    molinit.update(validate_and_fill_universals(name=name,
-                                                units=units,
-                                                input_units_to_au=input_units_to_au,
-                                                fix_com=fix_com,
-                                                fix_orientation=fix_orientation,
-                                                fix_symmetry=fix_symmetry))
+    extern = False
 
-    molinit.update(validate_and_fill_geometry(  geom=geom,
-                                                tooclose=tooclose))
-    nat = molinit['geom'].shape[0] // 3
+    processed = validate_and_fill_units(name=name,
+                                        units=units,
+                                        input_units_to_au=input_units_to_au,
+                                        always_return_iutau=False)
+    update_with_error(molinit, processed)
 
-    molinit.update(validate_and_fill_nuclei(    nat,
-                                                elea=elea,
-                                                elez=elez,
-                                                elem=elem,
-                                                mass=mass,
-                                                real=real,
-                                                elbl=elbl,
-                                                speclabel=speclabel,
-                                                nonphysical=nonphysical,
-                                                mtol=mtol,
-                                                verbose=verbose))
+    if domain == 'efp':
+        processed = validate_and_fill_efp(fragment_files=fragment_files,
+                                          hint_types=hint_types,
+                                          geom_hints=geom_hints)
+        update_with_error(molinit, processed)
+        extern = bool(len(molinit['geom_hints']))
 
-    molinit.update(validate_and_fill_fragments( nat,
+    if domain == 'qm' or (domain == 'efp' and geom is not None):
+        processed = validate_and_fill_geometry(geom=geom,
+                                               tooclose=tooclose)
+        update_with_error(molinit, processed)
+        nat = molinit['geom'].shape[0] // 3
+
+        processed = validate_and_fill_nuclei(nat,
+                                             elea=elea,
+                                             elez=elez,
+                                             elem=elem,
+                                             mass=mass,
+                                             real=real,
+                                             elbl=elbl,
+                                             speclabel=speclabel,
+                                             nonphysical=nonphysical,
+                                             mtol=mtol,
+                                             verbose=verbose)
+        update_with_error(molinit, processed)
+
+        processed = validate_and_fill_fragments(nat,
                                                 fragment_separators=fragment_separators,
-                                                #fragment_types=fragment_types,
                                                 fragment_charges=fragment_charges,
-                                                fragment_multiplicities=fragment_multiplicities))
+                                                fragment_multiplicities=fragment_multiplicities)
+        update_with_error(molinit, processed)
 
-    Z_available = molinit['elez'] * molinit['real'] * 1.
-    molinit.update(validate_and_fill_chgmult(   zeff=Z_available,
-                                                fragment_separators=molinit['fragment_separators'],
-                                                molecular_charge=molecular_charge,
-                                                fragment_charges=molinit['fragment_charges'],
-                                                molecular_multiplicity=molecular_multiplicity,
-                                                fragment_multiplicities=molinit['fragment_multiplicities'],
-                                                zero_ghost_fragments=zero_ghost_fragments,
-                                                verbose=verbose))
+        Z_available = molinit['elez'] * molinit['real'] * 1.
+        processed = validate_and_fill_chgmult(zeff=Z_available,
+                                              fragment_separators=molinit['fragment_separators'],
+                                              molecular_charge=molecular_charge,
+                                              fragment_charges=molinit['fragment_charges'],
+                                              molecular_multiplicity=molecular_multiplicity,
+                                              fragment_multiplicities=molinit['fragment_multiplicities'],
+                                              zero_ghost_fragments=zero_ghost_fragments,
+                                              verbose=verbose)
+        del molinit['fragment_charges']  # sometimes safe update is too picky about overwriting v_a_f_fragments values
+        del molinit['fragment_multiplicities']
+        update_with_error(molinit, processed)
+
+    extern = (domain == 'efp')
+
+    processed = validate_and_fill_frame(extern=extern,
+                                        fix_com=fix_com,
+                                        fix_orientation=fix_orientation,
+                                        fix_symmetry=fix_symmetry)
+    update_with_error(molinit, processed)
+
+    print('RETURN FROM from_arrays', domain.upper())
+    pprint.pprint(molinit)
 
     return molinit
 
 
-def validate_and_fill_universals(name=None,
-                                 units='Angstrom',
-                                 input_units_to_au=None,
-                                 fix_com=False,
-                                 fix_orientation=False,
-                                 fix_symmetry=None):
+
+def validate_and_fill_units(name=None,
+                            units='Angstrom',
+                            input_units_to_au=None,
+                            always_return_iutau=False):
     molinit = {}
 
     if name is not None:
@@ -189,23 +353,175 @@ def validate_and_fill_universals(name=None,
     else:
         raise ValidationError('Invalid molecule geometry units: {}'.format(units))
 
-    if input_units_to_au is not None:
-        molinit['input_units_to_au'] = input_units_to_au
+    if molinit['units'] == 'Bohr':
+        iutau = 1.
+    elif molinit['units'] == 'Angstrom':
+        iutau = 1. / psi_bohr2angstroms
 
-    if fix_com in [True, False]:
-        molinit['fix_com'] = fix_com
+    if input_units_to_au is not None:
+        if abs(input_units_to_au - iutau) < 0.05:
+            iutau = input_units_to_au
+        else:
+            raise ValidationError("""No big perturbations to physical constants! {} !~= {}""".format(iutau, input_units_to_au))
+
+    if always_return_iutau or input_units_to_au is not None:
+        molinit['input_units_to_au'] = iutau
+
+    return molinit
+
+
+def validate_and_fill_frame(extern,
+                            fix_com=None,
+                            fix_orientation=None,
+                            fix_symmetry=None):
+
+    if fix_com is True:
+        com = True
+    elif fix_com is False:
+        if extern:
+            raise ValidationError('Invalid fix_com ({}) with extern ({})'.format(fix_com, extern))
+        else:
+            com = False
+    elif fix_com is None:
+        com = extern
     else:
         raise ValidationError('Invalid fix_com: {}'.format(fix_com))
 
-    if fix_orientation in [True, False]:
-        molinit['fix_orientation'] = fix_orientation
+    if fix_orientation is True:
+        orient = True
+    elif fix_orientation is False:
+        if extern:
+            raise ValidationError('Invalid fix_orientation ({}) with extern ({})'.format(fix_orientation, extern))
+        else:
+            orient = False
+    elif fix_orientation is None:
+        orient = extern
     else:
-        raise ValidationError('Invalid fix_orientation: {}'.format(fix_com))
+        raise ValidationError('Invalid fix_orientation: {}'.format(fix_orientation))
 
-    if fix_symmetry is not None:
-        molinit['fix_symmetry'] = fix_symmetry.lower()
+    symm = None
+    if extern:
+        if fix_symmetry is None:
+            symm = 'c1'
+        elif fix_symmetry.lower() == 'c1':
+            symm = 'c1'
+        else:
+            raise ValidationError('Invalid (non-C1) fix_symmetry ({}) with extern ({})'.format(fix_symmetry, extern))
+    else:
+        if fix_symmetry is not None:
+            symm = fix_symmetry.lower()
+
+    molinit = {}
+    molinit['fix_com'] = com
+    molinit['fix_orientation'] = orient
+    if symm:
+        molinit['fix_symmetry'] = symm
 
     return molinit
+
+
+def preserve_validate_and_fill_frame(extern,
+                            fix_com=None,
+                            fix_orientation=None,
+                            fix_symmetry=None):
+
+    if fix_com is True:
+        com = True
+    elif fix_com is False:
+        if extern:
+            raise ValidationError('Invalid fix_com ({}) with extern ({})'.format(fix_com, extern))
+        else:
+            com = False
+    elif fix_com is None:
+        com = extern
+    else:
+        raise ValidationError('Invalid fix_com: {}'.format(fix_com))
+
+    if fix_orientation is True:
+        orient = True
+    elif fix_orientation is False:
+        if extern:
+            raise ValidationError('Invalid fix_orientation ({}) with extern ({})'.format(fix_orientation, extern))
+        else:
+            orient = False
+    elif fix_orientation is None:
+        orient = extern
+    else:
+        raise ValidationError('Invalid fix_orientation: {}'.format(fix_orientation))
+
+    symm = None
+    if extern:
+        if fix_symmetry is None:
+            symm = 'c1'
+        elif fix_symmetry.lower() == 'c1':
+            symm = 'c1'
+        else:
+            raise ValidationError('Invalid (non-C1) fix_symmetry ({}) with extern ({})'.format(fix_symmetry, extern))
+    else:
+        if fix_symmetry is not None:
+            symm = fix_symmetry.lower()
+
+    molinit = {}
+    molinit['fix_com'] = com
+    molinit['fix_orientation'] = orient
+    if symm:
+        molinit['fix_symmetry'] = symm
+
+    return molinit
+
+
+def validate_and_fill_efp(fragment_files=None,
+                          hint_types=None,
+                          geom_hints=None):
+    """
+
+    Parameters
+    ----------
+#    standardize_efp_angles_units : bool, optional
+#        Move abc of xyzabc hints into (-pi, pi] range returned by libefp.
+#        Not needed for input as libefp takes any range as input but helpful for
+#        matching output.
+
+    """
+    if (fragment_files is None or hint_types is None or geom_hints is None or
+        fragment_files == [None] or hint_types == [None] or geom_hints == [None] or
+        not (len(fragment_files) == len(hint_types) == len(geom_hints))):
+
+        raise ValidationError(
+                """Missing or inconsistent length among efp quantities: fragment_files ({}), hint_types ({}), and geom_hints ({})""".
+                format(fragment_files, hint_types, geom_hints))
+
+    # NOTE: imposing case on file
+    try:
+        files = [f.lower() for f in fragment_files]
+    except AttributeError:
+        raise ValidationError("""fragment_files not strings: {}""".format(fragment_files))
+
+    if all(f in ['xyzabc', 'points', 'rotmat'] for f in hint_types):
+        types = hint_types
+    else:
+        raise ValidationError("""hint_types not among 'xyzabc', 'points', 'rotmat': {}""".format(hint_types))
+
+    hints = []
+    hlen = {'xyzabc': 6,
+            'points': 9,
+            'rotmat': 12}
+    for ifr, fr in enumerate(geom_hints):
+        try:
+            hint = [float(f) for f in fr]
+        except ValueError:
+            raise ValidationError("""Un float-able elements in geom_hints[{}]: {}""".format(ifr, fr))
+
+        htype = hint_types[ifr]
+        if len(hint) == hlen[htype]:
+            hints.append(hint)
+        else:
+            raise ValidationError("""EFP hint type {} not {} elements: {}""".format(
+                htype, hlen[htype], hint))
+
+    return {'fragment_files': files,
+            'hint_types': types,
+            'geom_hints': hints}
 
 
 def validate_and_fill_geometry(geom=None, tooclose=0.1):
@@ -277,7 +593,9 @@ def validate_and_fill_nuclei(nat,
         raise ValidationError("""Dimension mismatch ({}) among A ({}), Z ({}), E ({}), mass ({}), real ({}), and elbl({})""".format(
             (nat,), elea.shape, elez.shape, elem.shape, mass.shape, real.shape, elbl.shape))
 
-    A, Z, E, mass, real, label = zip(*[reconcile_nucleus(A=elea[at],
+    if nat:
+        A, Z, E, mass, real, label = zip(*[reconcile_nucleus(A=elea[at],
+    #theans = zip(*[reconcile_nucleus(A=elea[at],
                                                          Z=elez[at],
                                                          E=elem[at],
                                                          mass=mass[at],
@@ -287,6 +605,8 @@ def validate_and_fill_nuclei(nat,
                                                          nonphysical=nonphysical,
                                                          mtol=mtol,
                                                          verbose=verbose) for at in range(nat)])
+    else:
+        A = Z = E = mass = real = label = []
     return {'elea': np.array(A, dtype=np.int),
             'elez': np.array(Z, dtype=np.int),
             'elem': np.array(E),
@@ -323,14 +643,15 @@ def validate_and_fill_fragments(nat,
             raise ValidationError("""fragment_separators ({}) unable to perform trial np.split on geometry.""".format(
                 fragment_separators))
         if any(len(f) == 0 for f in split_geom):
-            raise ValidationError(
-                """fragment_separators ({}) yields zero-length fragment(s) after trial np.split on geometry.""".format(
-                    split_geom))
+            if nat != 0:
+                raise ValidationError(
+                    """fragment_separators ({}) yields zero-length fragment(s) after trial np.split on geometry.""".format(
+                        split_geom))
         if sum(len(f) for f in split_geom) != nat:
             raise ValidationError(
                 """fragment_separators ({}) yields overlapping fragment(s) after trial np.split on geometry, possibly unsorted.""".
                 format(split_geom))
-        frs = fragment_separators  #np.array(fragment_separators)
+        frs = fragment_separators
         nfr = len(split_geom)
 
         if fragment_types is None:
@@ -356,6 +677,11 @@ def validate_and_fill_fragments(nat,
             raise ValidationError(
                 """fragment_multiplicities not among None or positive integer: {}""".format(fragment_multiplicities))
 
+    #if nat == 0:
+    #    return {'fragment_separators': [],
+    #            'fragment_charges': [],
+    #            'fragment_multiplicities': []}
+
     if not (len(frt) == len(frc) == len(frm) == len(frs) + 1):
         raise ValidationError(
             """Dimension mismatch among fragment quantities: sep + 1 ({}), types ({}), chg ({}), and mult({})""".
@@ -366,7 +692,12 @@ def validate_and_fill_fragments(nat,
             'fragment_multiplicities': frm}
 
 
-def from_string(molstr, dtype='psi4', return_processed=False):
+def from_string(molstr, dtype='psi4',
+                return_processed=False,
+                enable_qm=True, 
+                enable_efp=True,
+                missing_enabled_return_qm='none',
+                missing_enabled_return_efp='none'):
     """
 
     Parameters
@@ -377,6 +708,8 @@ def from_string(molstr, dtype='psi4', return_processed=False):
         Molecule format name.
     return_processed : bool, optional
         Additionally return intermediate dictionary.
+    enable_qm : bool, optional
+    enable_efp: bool, optional
 
     Returns
     -------
@@ -449,6 +782,8 @@ def from_string(molstr, dtype='psi4', return_processed=False):
                      units (defaults [A]), molecular_charge, molecular_multiplicity
         Inaccessible: name, input_units_to_au, fix_com/orientation/symmetry, fragmentation
 
+        Note that <number of atoms> is pattern-matched but ignored.
+
         """
         # << 2 >>  str-->dict -- process atoms, units, chg, mult
         molstr, processed = _filter_xyz(molstr, strict=False)
@@ -488,18 +823,9 @@ def from_string(molstr, dtype='psi4', return_processed=False):
         molstr, processed = _filter_libefp(molstr)
         molinit.update(processed)
 
-        #        if efp_init:
-        #            print('<<< core.EFP INTO', efp_init, '>>>')
-        #            # GOOD! core.efp_init()
-        #            # GOOD! efp = core.get_active_efp()
-        #            # GOOD! efp.construct_from_pydict(efp_init)
-
         # << 2.4 >>  str-->dict -- process atoms, chg, mult, frags
         molstr, processed = _filter_mints(molstr)
         molinit.update(processed)
-
-        if molstr:
-            raise ValidationError("""Unprocessable Molecule remanents:\n\t{}""".format(molstr))
 
     else:
         raise KeyError("Molecule: dtype of %s not recognized.")
@@ -512,7 +838,13 @@ def from_string(molstr, dtype='psi4', return_processed=False):
     print('>>>\n')
 
     # << 3 >>  dict-->molspec
-    molrec = from_input_arrays(**molinit, speclabel=True)
+    molrec = from_input_arrays(**molinit,
+                               speclabel=True,
+                               enable_qm=enable_qm, 
+                               enable_efp=enable_efp,
+                               missing_enabled_return_qm=missing_enabled_return_qm,
+                               missing_enabled_return_efp=missing_enabled_return_efp)
+
     print('\nMOLREC <<<', molrec, '>>>\n')
 
     if return_processed:
@@ -791,7 +1123,30 @@ def _filter_mints(string):
 
 
 def _filter_xyz(string, strict):
+    """Handle extracting atom, units, and chg/mult lines from `string`.
 
+    Parameters
+    ----------
+    strict : bool
+        Whether to enforce a strict XYZ file format or to allow units, chg/mult,
+        and add'l atom info.
+
+    Returns
+    -------
+    str, dict
+        Returns first a subset of `string` containing the unmatched contents.
+        These are generally input violations unless handled by a subsequent
+        processing function.
+        Returns second a dictionary with processed extractions. Contains (some
+            optional) the following keys.
+
+            molecular_charge : float, optional (`strict=False` only)
+            molecular_multiplicity : int, optional (`strict=False` only)
+            geom
+            elbl
+            units : {'Angstrom', 'Bohr'} (`Bohr` `strict=False` only)
+
+    """
     xyz1strict = re.compile(r'\A' + r'(?P<nat>\d+)' + r'\Z')
     SIMPLENUCLEUS = r"""((?P<E>[A-Z]{1,3})|(?P<Z>\d{1,3}))"""
     atom_cartesian_strict = re.compile(r'\A' + r'(?P<nucleus>' + SIMPLENUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
@@ -855,8 +1210,8 @@ def _filter_xyz(string, strict):
 
     #if len(processed['geom']) != nat:
     #    raise ValidationError
-    processed['fragment_files'] = []  # no EFP  # shouldn't be needed
-    processed['hint_types'] = []  # no EFP  # shouldn't be needed
+    #processed['fragment_files'] = []  # no EFP  # shouldn't be needed
+    #processed['hint_types'] = []  # no EFP  # shouldn't be needed
     processed['geom_hints'] = []  # no EFP
 
     return '\n'.join(reconstitute), processed

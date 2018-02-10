@@ -1,11 +1,15 @@
 import sys
 import copy
+import pprint
 
 import pytest
 import numpy as np
 
 from utils import *
+from addons import *
+
 import qcdb
+from qcdb.physconst import psi_bohr2angstroms
 
 
 subject1 = """O 0 0   0
@@ -294,8 +298,7 @@ pubchem  : 241
 
 
 subject5 = """
-#efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 1.534222 -0.568147
-efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 7.817407 -0.568147
+efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 7.817407 -0.568147  # second to last equiv to 1.534222
 --
 efp C6H6 -0.60075437  1.36443336  0.78647823  3.137879 1.557344 -2.568550
 """
@@ -303,7 +306,6 @@ efp C6H6 -0.60075437  1.36443336  0.78647823  3.137879 1.557344 -2.568550
 ans5 = {
     'fragment_files': ['C6H6', 'C6H6'],
     'hint_types': ['xyzabc', 'xyzabc'],
-    #'geom_hints': [[-0.30448173, -2.24210052, -0.29383131, -0.642499, 1.534222, -0.568147],
     'geom_hints': [[-0.30448173, -2.24210052, -0.29383131, -0.642499, 7.817407, -0.568147],
                   [-0.60075437,  1.36443336,  0.78647823,  3.137879, 1.557344, -2.568550]],
     'geom': [],
@@ -474,6 +476,42 @@ def test_psi4_qmefp_6c():
     with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
+
+@using_pylibefp
+def test_psi4_qmefp_6d():
+    subject = subject6
+
+    fullans = copy.deepcopy(fullans6)
+    fullans['efp']['geom'] = np.array([-2.22978429,  1.19270015, -0.99721732, -1.85344873,  1.5734809 ,
+        0.69660583, -0.71881655,  1.40649303, -1.90657336,  0.98792   ,
+        1.87681   ,  2.85174   ,  2.31084386,  0.57620385,  3.31175679,
+        1.87761143,  3.16604791,  1.75667803,  0.55253064,  2.78087794,
+        4.47837555])
+    fullans['efp']['elea'] = np.array([16, 1, 1, 14, 1, 1, 1])
+    fullans['efp']['elez'] = np.array([8, 1, 1, 7, 1, 1, 1])
+    fullans['efp']['elem'] = np.array(['O', 'H', 'H', 'N', 'H', 'H', 'H'])
+    fullans['efp']['mass'] = np.array([15.99491462, 1.00782503, 1.00782503, 14.00307400478, 1.00782503, 1.00782503, 1.00782503])
+    fullans['efp']['real'] = np.array([True, True, True, True, True, True, True])
+    fullans['efp']['elbl'] = np.array(['_a01o1', '_a02h2', '_a03h3', '_a01n1', '_a02h2', '_a03h3', '_a04h4'])
+    fullans['efp']['fragment_separators'] = [3]
+    fullans['efp']['fragment_charges'] = [0., 0.]
+    fullans['efp']['fragment_multiplicities'] = [1, 1]
+    fullans['efp']['molecular_charge'] = 0.
+    fullans['efp']['molecular_multiplicity'] = 1
+    fullans['efp']['hint_types'] = ['xyzabc', 'xyzabc']
+    fullans['efp']['geom_hints'][1] = [1.093116487139866, 1.9296501432128303, 2.9104336205167156, -1.1053108079381473, 2.0333070957565544, -1.488586877218809]
+
+    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+
+    import pylibefp
+    efpobj = pylibefp.from_dict(final['efp'])
+    efpfinal = efpobj.to_dict()
+    efpfinal = qcdb.molparse.from_arrays(**efpfinal, speclabel=False, domain='efp')
+
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    assert compare_molrecs(fullans['efp'], efpfinal, 4, sys._getframe().f_code.co_name + ': full efp')
+
+
 subject7 = """\
 5
    stuffs 
@@ -487,8 +525,6 @@ Gh(he3) 0 1 3
 ans7 = {'geom': [ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.],
         'elbl': ['6Li', 'H_specIAL@2.014101', '@Ne', 'h', 'Gh(he3)'],
         'units': 'Angstrom',
-        'fragment_files': [],  # shouldn't be needed
-        'hint_types': [],  # shouldn't be needed
         'geom_hints': [],  # shouldn't be needed
         }
 
@@ -567,8 +603,6 @@ h .0,1,2
 ans8 = {'geom': [ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1., 2., 0., 1., 3.],
         'elbl': ['Li', '1', 'Ne', 'h', '2'],
         'units': 'Angstrom',
-        'fragment_files': [],  # shouldn't be needed
-        'hint_types': [],  # shouldn't be needed
         'geom_hints': [],  # shouldn't be needed
         }
 
@@ -621,12 +655,28 @@ fullans10efp = {'fragment_files': ['cl2'],
                'fix_com': True,
                'fix_orientation': True,
                'fix_symmetry': 'c1'}
-fullans10efpempty = {'fragment_files': [],
-                     'hint_types': [],
-                     'geom_hints': [],
-                     'units': 'Bohr',
-                     'fix_com': True,
-                     'fix_orientation': True}
+blankqm =     {'geom': np.array([]),
+               'elea': np.array([]),
+               'elez': np.array([]),
+               'elem': np.array([]),
+               'mass': np.array([]),
+               'real': np.array([]),
+               'elbl': np.array([]),
+               'units': 'Angstrom',
+               'fix_com': False,
+               'fix_orientation': False,
+               'fragment_separators': [],
+               'fragment_charges': [0.],
+               'fragment_multiplicities': [1],
+               'molecular_charge': 0.,
+               'molecular_multiplicity': 1}
+blankefp =    {'fragment_files': [],
+               'hint_types': [],
+               'geom_hints': [],
+               'units': 'Angstrom',
+               'fix_com': True,
+               'fix_orientation': True,
+               'fix_symmetry': 'c1'}
 
 
 def test_arrays_10a():
@@ -680,39 +730,92 @@ def test_arrays_10c():
     final = qcdb.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     with pytest.raises(KeyError):
-        final['efo']
+        final['efp']
 
 
-#       #def test_arrays_10d():
-#       #    subject = {'geom': [0, 0, 0],
-#       #               'elem': ['C'],
-#       #               'enable_qm': True,
-#       #               'enable_efp': True}
-#       #
-#       ##    fullans = {'qm':
-#       ##               'efp':
-#       ##
-#       ##    final = qcdb.molparse.from_input_arrays(**subject)
-#       ##    print('FINAL')
-#       ##    pprint.pprint(final)
-#       ##    print('FULLANS')
-#       ##    pprint.pprint(fullans)
-#       ##    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
-#       ##    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
-#       #    assert False
-#       #
-#       #def test_arrays_10e():
-#       #    subject = {'geom': [0, 0, 0],
-#       #               'elem': ['C'],
-#       #               'enable_qm': False,
-#       #               'enable_efp': True}
-#       #
-#       ##    with pytest.raises(qcdb.ValidationError):
-#       ##        final = qcdb.molparse.from_input_arrays(**subject)
-#       #    assert False
+def test_arrays_10d():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': True,
+               'enable_efp': True,
+               'missing_enabled_return_efp': 'none'}
+
+    fullans = {'qm': fullans10qm}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    with pytest.raises(KeyError):
+        final['efp']
+
+
+def test_arrays_10e():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': True,
+               'enable_efp': True,
+               'missing_enabled_return_efp': 'minimal'}
+
+    fullans = {'qm': fullans10qm,
+               'efp': blankefp}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
 
 
 def test_arrays_10f():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': True,
+               'enable_efp': True,
+               'missing_enabled_return_efp': 'error'}
+
+    with pytest.raises(qcdb.ValidationError):
+       qcdb.molparse.from_input_arrays(**subject)
+
+
+def test_arrays_10g():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': False,
+               'enable_efp': True,
+               'missing_enabled_return_efp': 'none'}
+
+    fullans = {}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(KeyError):
+        final['qm']
+    with pytest.raises(KeyError):
+        final['efp']
+
+def test_arrays_10h():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': False,
+               'enable_efp': True,
+               'missing_enabled_return_efp': 'minimal'}
+
+    fullans = {'efp': blankefp}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(KeyError):
+        final['qm']
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+
+def test_arrays_10i():
+    subject = {'geom': [0, 0, 0],
+               'elem': ['C'],
+               'enable_qm': False,
+               'enable_efp': True,
+               'missing_enabled_return_efp': 'error'}
+
+    with pytest.raises(qcdb.ValidationError):
+        qcdb.molparse.from_input_arrays(**subject)
+
+
+
+def test_arrays_10j():
     subject = {'geom': [0, 0, 0],
                'elem': ['C'],
                'enable_qm': True,
@@ -725,27 +828,56 @@ def test_arrays_10f():
     with pytest.raises(KeyError):
         final['efp']
 
-#       #def test_arrays_10g():
-#       #    subject = {'fragment_files': ['cl2'],
-#       #               'hint_types': ['xyzabc'],
-#       #               'geom_hints': [[0, 0, 0, 0, 0, 0]],
-#       #               'enable_qm': True,
-#       #               'enable_efp': True}
-#       #
-#       #    #fullans = {'qm':
-#       #    #           'efp':
-#       #
-#       #    #final = qcdb.molparse.from_input_arrays(**subject)
-#       #    #print('FINAL')
-#       #    #pprint.pprint(final)
-#       #    #print('FULLANS')
-#       #    #pprint.pprint(fullans)
-#       #    #assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
-#       #    #assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
-#       #    assert False
+# <<<<<<<<<<<<
+
+def test_arrays_10k():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': True,
+               'missing_enabled_return_qm': 'none'}
+
+    fullans = {'efp': fullans10efp}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(KeyError):
+        final['qm']
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
 
 
-def test_arrays_10h():
+def test_arrays_10l():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': True,
+               'missing_enabled_return_qm': 'minimal'}
+
+    fullans = {'qm': copy.deepcopy(blankqm),
+               'efp': fullans10efp}
+    fullans['qm']['fix_com'] = True
+    fullans['qm']['fix_orientation'] = True
+    fullans['qm']['fix_symmetry'] = 'c1'
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+
+def test_arrays_10m():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': True,
+               'missing_enabled_return_qm': 'error'}
+
+    with pytest.raises(qcdb.ValidationError):
+        qcdb.molparse.from_input_arrays(**subject)
+
+# >>>>>>>>>>>
+
+def test_arrays_10n():
     subject = {'fragment_files': ['cl2'],
                'hint_types': ['xyzabc'],
                'geom_hints': [[0, 0, 0, 0, 0, 0]],
@@ -760,13 +892,84 @@ def test_arrays_10h():
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
 
 
-#       #def test_arrays_10i():
-#       #    subject = {'fragment_files': ['cl2'],
-#       #               'hint_types': ['xyzabc'],
-#       #               'geom_hints': [[0, 0, 0, 0, 0, 0]],
-#       #               'enable_qm': True,
-#       #               'enable_efp': False}
-#       #
-#       #    #with pytest.raises(qcdb.ValidationError):
-#       #    #    final = qcdb.molparse.from_input_arrays(**subject)
-#       #    assert False
+def test_arrays_10o():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': False,
+               'missing_enabled_return_qm': 'none'}
+
+    fullans = {}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(KeyError):
+        final['qm']
+    with pytest.raises(KeyError):
+        final['efp']
+
+def test_arrays_10p():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': False,
+               'missing_enabled_return_qm': 'minimal'}
+
+    fullans = {'qm': blankqm}
+
+    final = qcdb.molparse.from_input_arrays(**subject)
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    with pytest.raises(KeyError):
+        final['efp']
+
+def test_arrays_10q():
+    subject = {'fragment_files': ['cl2'],
+               'hint_types': ['xyzabc'],
+               'geom_hints': [[0, 0, 0, 0, 0, 0]],
+               'enable_qm': True,
+               'enable_efp': False,
+               'missing_enabled_return_qm': 'error'}
+
+    with pytest.raises(qcdb.ValidationError):
+        qcdb.molparse.from_input_arrays(**subject)
+
+def test_strings_10r():
+    subject = ''
+
+    final = qcdb.molparse.from_string(subject, enable_qm=True,
+                                               enable_efp=True,
+                                               missing_enabled_return_qm='none',
+                                               missing_enabled_return_efp='none')
+
+    print('final', final)
+    with pytest.raises(KeyError):
+        final['qm']
+    with pytest.raises(KeyError):
+        final['efp']
+
+def test_strings_10s():
+    subject = ''
+
+    final = qcdb.molparse.from_string(subject, enable_qm=True,
+                                               enable_efp=True,
+                                               missing_enabled_return_qm='minimal',
+                                               missing_enabled_return_efp='minimal')
+
+    fullans = {'qm': blankqm,
+               'efp': blankefp}
+
+    assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
+    assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
+
+
+def test_strings_10t():
+    subject = ''
+
+    with pytest.raises(qcdb.ValidationError):
+        qcdb.molparse.from_string(subject, enable_qm=True,
+                                           enable_efp=True,
+                                           missing_enabled_return_qm='error',
+                                           missing_enabled_return_efp='error')
+
+

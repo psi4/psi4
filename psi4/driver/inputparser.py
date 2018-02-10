@@ -204,7 +204,6 @@ def process_molecule_command(matchobj):
             if not re.match(r'^[^\d\W]\w*\Z', name):
                 raise ValidationError('Molecule name not valid Python identifier: ' + name)
 
-    molecule += 'core.efp_init()\n'  # clear EFP object before Molecule read in
     molecule += spaces
 
     if name != "":

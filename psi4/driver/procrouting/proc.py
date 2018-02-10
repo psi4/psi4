@@ -1252,16 +1252,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         p4util.banner(name.upper())
         core.print_out('\n')
 
-
-    # EFP preparation
-    efp = core.get_active_efp()
-    if efp.nfragments() > 0:
-        core.set_legacy_molecule(scf_molecule)
-        core.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
-        core.efp_set_options()
-        efp.set_qm_atoms()
-        efp.print_out()
-
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
     if banner:
@@ -2157,7 +2147,7 @@ def run_scf_hessian(name, **kwargs):
     for atom in range(natoms):
         masses[atom] = mol.mass(atom)
 
-    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)
+    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)  # TODO kill this off
     mwhess = np.einsum('i,ij,j->ij', m, H, m)
 
     # Are we linear?
@@ -4220,16 +4210,47 @@ def run_efp(name, **kwargs):
     computation (ignore any QM atoms).
 
     """
-    # initialize library
-    efp = core.get_active_efp()
 
-    if efp.nfragments() == 0:
+    efp_molecule = kwargs.get('molecule', core.get_active_molecule())
+    try:
+        efpobj = efp_molecule.EFP
+    except AttributeError:
         raise ValidationError("""Method 'efp' not available without EFP fragments in molecule""")
 
-    # set options
-    core.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
-    core.efp_set_options()
+    # print efp geom in [A]
+    core.print_out(efpobj.banner())
+    core.print_out(efpobj.geometry_summary(units_to_bohr=constants.bohr2angstroms))
 
-    efp.print_out()
-    returnvalue = efp.compute()
-    return returnvalue
+    # set options
+    # * 'chtr', 'ai_exch', 'ai_disp', 'ai_chtr' may be enabled in a future libefp release
+    efpopts = {}
+    for opt in ['elst', 'exch', 'ind', 'disp',
+                   'elst_damping', 'ind_damping', 'disp_damping']:
+        psiopt = 'EFP_' + opt.upper()
+        if core.has_option_changed('EFP', psiopt):
+            efpopts[opt] = core.get_option('EFP', psiopt)
+    efpopts['ai_elst'] = False
+    efpopts['ai_ind'] = False
+    efpobj.set_opts(efpopts, label='psi', append='psi')
+    do_gradient = core.get_option('EFP', 'DERTYPE') == 'FIRST'
+
+    # compute and report
+    efpobj.compute(do_gradient=do_gradient)
+    core.print_out(efpobj.energy_summary(label='psi'))
+
+    ene = efpobj.get_energy(label='psi')
+    core.set_variable('EFP ELST ENERGY', ene['electrostatic'] + ene['charge_penetration'] + ene['electrostatic_point_charges'])
+    core.set_variable('EFP IND ENERGY', ene['polarization'])
+    core.set_variable('EFP DISP ENERGY', ene['dispersion'])
+    core.set_variable('EFP EXCH ENERGY', ene['exchange_repulsion'])
+    core.set_variable('EFP TOTAL ENERGY', ene['total'])
+    core.set_variable('CURRENT ENERGY', ene['total'])
+
+    if do_gradient:
+        core.print_out(efpobj.gradient_summary())
+
+        torq = efpobj.get_gradient()
+        torq = core.Matrix.from_array(np.asarray(torq).reshape(-1, 6))
+        core.set_efp_torque(torq)
+
+    return ene['total']

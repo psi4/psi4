@@ -82,6 +82,7 @@ def molecule_from_arrays(cls,
                          molecular_charge=None,
                          molecular_multiplicity=None,
 
+                         missing_enabled_return='error',
                          tooclose=0.1,
                          zero_ghost_fragments=False,
                          nonphysical=False,
@@ -123,6 +124,8 @@ def molecule_from_arrays(cls,
                                            fragment_multiplicities=fragment_multiplicities,
                                            molecular_charge=molecular_charge,
                                            molecular_multiplicity=molecular_multiplicity,
+                                           domain='qm',
+                                           missing_enabled_return=missing_enabled_return,
                                            tooclose=tooclose,
                                            zero_ghost_fragments=zero_ghost_fragments,
                                            nonphysical=nonphysical,
@@ -174,13 +177,28 @@ def geometry(geom, name="default"):
     the string are filtered.
 
     """
-    core.efp_init()
+    #core.efp_init()
     #geom = pubchemre.sub(process_pubchem_command, geom)
-    geom = filter_comments(geom)
+    #geom = filter_comments(geom)
     #molecule = core.Molecule.create_molecule_from_string(geom)
-    molrec = qcdb.molparse.from_string(geom)
-    molecule = core.Molecule.from_dict(molrec)
+    #molrec = qcdb.molparse.from_string(geom, dtype='psi4')
+    molrec = qcdb.molparse.from_string(geom,
+                                       dtype='psi4',
+                                       enable_qm=True,
+                                       enable_efp=True,
+                                       missing_enabled_return_qm='minimal',
+                                       missing_enabled_return_efp='none')
+
+    print('BEOMETRY MOLREC', molrec, '>>>')
+    molecule = core.Molecule.from_dict(molrec['qm'])
     molecule.set_name(name)
+
+    if 'efp' in molrec:
+        import pylibefp
+        print('pylibefp (found version {})'.format(pylibefp.__version__))
+        efpobj = pylibefp.from_dict(molrec['efp'])
+        # pylibefp.core.efp rides along on molecule
+        molecule.EFP = efpobj
 
     # Attempt to go ahead and construct the molecule
     try:

@@ -524,9 +524,7 @@ def validate_and_fill_chgmult(zeff,
     if verbose >= 1:
         print('\n'.join(brief))
 
-    return {
-        'molecular_charge': float(c_final),
-        'fragment_charges': [float(f) for f in fc_final],
-        'molecular_multiplicity': m_final,
-        'fragment_multiplicities': list(fm_final)
-    }
+    return {'molecular_charge': float(c_final),
+            'fragment_charges': [float(f) for f in fc_final],
+            'molecular_multiplicity': m_final,
+            'fragment_multiplicities': list(fm_final)}
