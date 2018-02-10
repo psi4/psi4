@@ -249,7 +249,7 @@ void SAPT0::print_results() {
             outfile->Printf("    with Alpha = %12.6f \n", exch_scale_alpha_);
         }
         std::string scaled = (scal_it != Xscal.begin() ? "sc." : "   ");
-        std::string coupled = (no_response_ ? "u" : "r")
+        std::string coupled = (no_response_ ? "u" : "r");
         outfile->Printf(
             "  "
             "--------------------------------------------------------------------------------------------------------"

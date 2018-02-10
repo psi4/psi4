@@ -381,10 +381,10 @@ void USAPT0::print_trailer() {
             if (coupled_ind_) {
                 Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,r"];
                 Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,r"];
-            } else {
-                Process::environment.globals["SAPT IND20,U ENERGY"] = energies_["Ind20,u"];
-                Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = energies_["Exch-Ind20,u"];
-            }
+            } // We always compute uncoupled induction in this routine
+            Process::environment.globals["SAPT IND20,U ENERGY"] = energies_["Ind20,u"];
+            Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = energies_["Exch-Ind20,u"];
+            
             Process::environment.globals["SAPT HF TOTAL ENERGY"] = energies_["HF"];
             // Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
 

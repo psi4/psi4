@@ -2360,9 +2360,22 @@ void FISAPT::print_trailer() {
     outfile->Printf("    Han Solo: I *did* say so before.\n");
 
     Process::environment.globals["SAPT ELST ENERGY"] = scalars_["Electrostatics"];
+    Process::environment.globals["SAPT ELST10,R ENERGY"] = scalars_["Elst10,r"];
+
     Process::environment.globals["SAPT EXCH ENERGY"] = scalars_["Exchange"];
+    Process::environment.globals["SAPT EXCH10 ENERGY"] = scalars_["Exch10"];
+    Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = scalars_["Exch10(S^2)"];
+
     Process::environment.globals["SAPT IND ENERGY"] = scalars_["Induction"];
+    Process::environment.globals["SAPT IND20,R ENERGY"] = scalars_["Ind20,r"];
+    Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = scalars_["Exch-Ind20,r"];
+    Process::environment.globals["SAPT IND20,U ENERGY"] = scalars_["Ind20,u"];
+    Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = scalars_["Exch-Ind20,u"];
+
     Process::environment.globals["SAPT DISP ENERGY"] = scalars_["Dispersion"];
+    Process::environment.globals["SAPT DISP20 ENERGY"] = scalars_["Disp20"];
+    Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = scalars_["Exch-Disp20"];
+
     Process::environment.globals["SAPT0 TOTAL ENERGY"] = scalars_["SAPT"];
     Process::environment.globals["SAPT TOTAL ENERGY"] = scalars_["SAPT"];
     Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT TOTAL ENERGY"];
