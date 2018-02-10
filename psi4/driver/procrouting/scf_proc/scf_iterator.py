@@ -1,11 +1,43 @@
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2017 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This file is part of Psi4.
+#
+# Psi4 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# Psi4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with Psi4; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
 """
 The SCF iteration functions
 """
+
+import numpy as np
 
 from psi4.driver import p4util
 from psi4.driver import constants
 from psi4.driver.p4util.exceptions import ConvergenceError, ValidationError
 from psi4 import core
+
+from .efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")
@@ -72,10 +104,23 @@ def scf_initialize(self):
     """Specialized initialization, compute integrals and does everything to prepare for iterations"""
 
     self.iteration_ = 0
+    efp_enabled = hasattr(self.molecule(), 'EFP')
 
     if core.get_option('SCF', "PRINT") > 0:
         core.print_out("  ==> Pre-Iterations <==\n\n")
         self.print_preiterations()
+
+    if efp_enabled:
+        # EFP: Set QM system, options, and callback. Display efp geom in [A]
+        efpobj = self.molecule().EFP
+        core.print_out(efpobj.banner())
+        core.print_out(efpobj.geometry_summary(units_to_bohr=constants.bohr2angstroms))
+
+        efpptc, efpcoords, efpopts = get_qm_atoms_opts(self.molecule())
+        efpobj.set_point_charges(efpptc, efpcoords)
+        efpobj.set_opts(efpopts, label='psi', append='psi')
+
+        efpobj.set_electron_density_field_fn(field_fn)
 
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
@@ -89,16 +134,17 @@ def scf_initialize(self):
         self.form_H()
         core.timer_off("HF: Form core H")
 
-        # #ifdef USING_libefp
-        # // EFP: Add in permanent moment contribution and cache
-        # if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        #     std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
-        #     H_->add(Vefp);
-        #     Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
-        #     Horig_->copy(H_);
-        #     outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
-        # }
-        # #endif
+        if efp_enabled:
+            # EFP: Add in permanent moment contribution and cache
+            core.timer_on("HF: Form Vefp")
+            verbose = core.get_option('SCF', "PRINT")
+            Vefp = modify_Fock_permanent(self.molecule(), mints, verbose=verbose-1)
+            Vefp = core.Matrix.from_array(Vefp)
+            self.H().add(Vefp)
+            Horig = self.H().clone()
+            self.Horig = Horig
+            core.print_out("  QM/EFP: iterating Total Energy including QM/EFP Induction\n")
+            core.timer_off("HF: Form Vefp")
 
         core.timer_on("HF: Form S/X")
         self.form_Shalf()
@@ -113,11 +159,6 @@ def scf_initialize(self):
         self.form_D()
         self.set_energies("Total Energy", self.compute_initial_E())
 
-    # #ifdef USING_libefp
-    # if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-    #     Process::environment.get_efp()->set_qm_atoms();
-    # }
-    # #endif
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
@@ -133,6 +174,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     damping_enabled = _validate_damping()
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
+    efp_enabled = hasattr(self.molecule(), 'EFP')
 
     df = core.get_option('SCF', "SCF_TYPE") == "DF"
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
@@ -156,18 +198,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.save_density_and_energy()
 
-        # #ifdef USING_libefp
-        # Horig = self.H().clone()
-        # self.H().copy(Horig)
-        # self.H().axpy(1.0, Vefp)
-
-        #         # add efp contribution to Fock matrix
-        #         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        #             H_->copy(Horig_)
-        #             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced()
-        #             H_->add(Vefp)
-        #         }
-        # #endif
+        if efp_enabled:
+            # EFP: Add efp contribution to Fock matrix
+            self.H().copy(self.Horig)
+            mints = core.MintsHelper(self.basisset())
+            Vefp = modify_Fock_induced(self.molecule().EFP, mints, verbose=verbose-1)
+            Vefp = core.Matrix.from_array(Vefp)
+            self.H().add(Vefp)
 
         SCFE = 0.0
         self.clear_external_potentials()
@@ -202,14 +239,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Fb().print_out()
 
         SCFE += self.compute_E()
+        global mints
+        global efp_Dt
 
-        # #ifdef USING_libefp
-        #        # add efp contribution to energy
-        #        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        #            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update()
-        #            E_ += efp_wfn_dependent_energy
-        #        }
-        # #endif
+        if efp_enabled:
+            # EFP: Add efp contribution to energy
+            efp_Dt = self.Da().clone()
+            efp_Dt.add(self.Db())
+            efp_wfn_dependent_energy = self.molecule().EFP.get_wavefunction_dependent_energy()
+            SCFE += efp_wfn_dependent_energy
 
         self.set_energies("Total Energy", SCFE)
         Ediff = SCFE - SCFE_old
@@ -390,22 +428,25 @@ def scf_finalize_energy(self):
     # At this point, we are not doing any more SCF cycles
     #   and we can compute and print final quantities.
 
-    # #ifdef USING_libefp
-    #     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-    #         Process::environment.get_efp()->compute()
+    if hasattr(self.molecule(), 'EFP'):
+        efpobj = self.molecule().EFP
 
-    #         double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
-    #                                             Process::environment.globals["EFP IND ENERGY"]
-    #         energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"]
+        efpobj.compute()  # do_gradient=do_gradient)
+        efpene = efpobj.get_energy(label='psi')
+        efp_wfn_independent_energy = efpene['total'] - efpene['ind']
+        self.set_energies("EFP", efpene['total'])
 
-    #         core.print_out("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy)
-    #         core.print_out("    SCF including EFP Induction   %20.12f [Eh]\n", E_)
+        SCFE = self.get_energies("Total Energy")
+        SCFE += efp_wfn_independent_energy
+        self.set_energies("Total Energy", SCFE)
+        core.print_out(efpobj.energy_summary(scfefp=SCFE, label='psi'))
 
-    #         E_ += efp_wfn_independent_energy
-
-    #         core.print_out("    Total SCF including Total EFP %20.12f [Eh]\n", E_)
-    #     }
-    # #endif
+        core.set_variable('EFP ELST ENERGY', efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
+        core.set_variable('EFP IND ENERGY', efpene['polarization'])
+        core.set_variable('EFP DISP ENERGY', efpene['dispersion'])
+        core.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
+        core.set_variable('EFP TOTAL ENERGY', efpene['total'])
+        core.set_variable('CURRENT ENERGY', efpene['total'])
 
     core.print_out("\n  ==> Post-Iterations <==\n\n")
 
@@ -508,9 +549,8 @@ def scf_print_energies(self):
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
-    #if (Process::environment.get_efp()->get_frag_count() > 0) {
-    #    outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
-    #}
+    if hasattr(self.molecule(), 'EFP'):
+        core.print_out("    EFP Energy =                      {:24.16f}\n".format(eefp))
     core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
 
     self.set_variable('NUCLEAR REPULSION ENERGY', enuc)
@@ -527,7 +567,6 @@ def scf_print_energies(self):
         self.set_variable('DISPERSION CORRECTION ENERGY', ed)
 
     self.set_variable('SCF ITERATIONS', self.iteration_)
-    self.set_variable('SCF N ITERS', self.iteration_)
 
 
 core.HF.initialize = scf_initialize
@@ -688,3 +727,47 @@ def _validate_soscf():
             raise ValidationError('SCF SOSCF_CONV ({}) must be achievable'.format(conv))
 
     return enabled
+
+
+def field_fn(xyz):
+    """Callback function for PylibEFP to compute electric field from electrons
+    in ab initio part for libefp polarization calculation.
+
+    Parameters
+    ----------
+    xyz : list
+        (3 * npt, ) flat array of points at which to compute electric field
+
+    Returns
+    -------
+    list
+        (3 * npt, ) flat array of electric field at points in `xyz`.
+
+    Notes
+    -----
+    Function signature defined by libefp, so function uses number of
+    basis functions and integrals factory `mints` and total density
+    matrix `efp_Dt` from global namespace.
+
+    """
+    points = np.array(xyz).reshape(-1, 3)
+    npt = len(points)
+
+    # Cartesian basis one-electron EFP perturbation
+    nbf = mints.basisset().nbf()
+    field_ints = np.zeros((3, nbf, nbf))
+
+    # Electric field at points
+    field = np.zeros((npt, 3))
+
+    for ipt in range(npt):
+        # get electric field integrals from Psi4
+        p4_field_ints = mints.electric_field(origin=points[ipt])
+
+        field[ipt] = [np.vdot(efp_Dt, np.asarray(p4_field_ints[0])),  # Ex
+                      np.vdot(efp_Dt, np.asarray(p4_field_ints[1])),  # Ey
+                      np.vdot(efp_Dt, np.asarray(p4_field_ints[2]))]  # Ez
+
+    field = np.reshape(field, 3 * npt)
+
+    return field
