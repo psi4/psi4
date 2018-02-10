@@ -68,7 +68,7 @@ efp h2o
 set efp_disp no
 set efp_exch no
 set efp_elst_damping screen
-set efp_pol_damping off
+set efp_ind_damping off
 set efp dertype first
 
 energy('efp')
