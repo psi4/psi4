@@ -320,6 +320,28 @@ def build_sogga11_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 
+def build_n12_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('N12')
+    sup.set_description('   N12 Exchange-Correlation Functional\n')
+    sup.set_citation('    R. Peverati and D. G. Truhlar, J. Chem. Theory Comput. 8, 2310-2319, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_N12', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_N12', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 gga_superfunc_list = {
     "b86bpbe": build_b86bpbe_superfunctional,
     "blyp": build_blyp_superfunctional,
@@ -332,4 +354,5 @@ gga_superfunc_list = {
     "bop": build_bop_superfunctional,
     "mpwpw": build_mpwpw_superfunctional,
     "sogga11": build_sogga11_superfunctional,
+    "n12": build_n12_superfunctional,    
 }
