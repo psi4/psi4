@@ -345,7 +345,7 @@ def build_n12_sx_superfunctional(name, npoints, deriv, restricted):
     sup.add_x_functional(core.LibXCFunctional('XC_HYB_GGA_X_N12_SX', restricted))
     sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_N12_SX', restricted))
     sup.set_x_alpha(0.25)
-    sup.set_x_beta(0.00)
+    sup.set_x_beta(-0.25)
     sup.set_x_omega(0.11)
     
 
@@ -372,13 +372,14 @@ def build_mn12_sx_superfunctional(name, npoints, deriv, restricted):
     sup.add_x_functional(core.LibXCFunctional('XC_HYB_MGGA_X_MN12_SX', restricted))
     sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_MN12_SX', restricted))
     sup.set_x_alpha(0.25)
-    sup.set_x_beta(0.00)
+    sup.set_x_beta(-0.25)
     sup.set_x_omega(0.11)
     
 
     # Call this last
     sup.allocate()
     return (sup, False)    
+
 
 def build_mn15_superfunctional(name, npoints, deriv, restricted):
 
