@@ -33,6 +33,8 @@
 #include <memory>
 #include <string>
 
+#include "psi4/libpsi4util/PsiOutStream.h"
+
 namespace psi {
 class Wavefunction;
 class Matrix;
@@ -54,10 +56,8 @@ void fcidump_tei_helper(int nirrep, bool restricted, std::map<std::string, int> 
 namespace detail {
 using OrbitalIndexing = std::function<int(const int)>;
 
-void write_tei_to_disk(FILE* intdump, int nirrep, dpdbuf4& K, double ints_tolerance, OrbitalIndexing indx1,
-                       OrbitalIndexing indx2);
-void write_oei_prop_to_disk(FILE* intdump, std::shared_ptr<Wavefunction> wfn, std::shared_ptr<Matrix> prop_ints,
-                            double ints_tolerance, OrbitalIndexing indx, double* frz_contrib);
+void write_tei_to_disk(std::shared_ptr<PsiOutStream> intdump, int nirrep, dpdbuf4& K, double ints_tolerance,
+                       OrbitalIndexing indx1, OrbitalIndexing indx2);
 }  // End namespace detail
 }  // End namespace fcidump
 }  // End namespace psi

@@ -70,62 +70,62 @@ void export_trans(py::module& m) {
         .def("aIndex", &MOSpace::aIndex, "Get the alpha orbital indexing array")
         .def("bIndex", &MOSpace::bIndex, "Get the beta orbital indexing array");
 
-    py::class_<IntegralTransform, std::shared_ptr<IntegralTransform>> integralTransform(
+    py::class_<IntegralTransform, std::shared_ptr<IntegralTransform>> int_trans_bind(
         m, "IntegralTransform", "IntegralTransform transforms one- and two-electron integrals within general spaces",
         py::dynamic_attr());
 
-    py::enum_<IntegralTransform::HalfTrans>(integralTransform, "HalfTrans")
+    py::enum_<IntegralTransform::HalfTrans>(int_trans_bind, "HalfTrans")
         .value("MakeAndKeep", IntegralTransform::HalfTrans::MakeAndKeep)
         .value("ReadAndKeep", IntegralTransform::HalfTrans::ReadAndKeep)
         .value("MakeAndNuke", IntegralTransform::HalfTrans::MakeAndNuke)
         .value("ReadAndNuke", IntegralTransform::HalfTrans::ReadAndNuke);
-    py::enum_<IntegralTransform::TransformationType>(integralTransform, "TransformationType")
+    py::enum_<IntegralTransform::TransformationType>(int_trans_bind, "TransformationType")
         .value("Restricted", IntegralTransform::TransformationType::Restricted)
         .value("Unrestricted", IntegralTransform::TransformationType::Unrestricted)
         .value("SemiCanonical", IntegralTransform::TransformationType::SemiCanonical);
-    py::enum_<IntegralTransform::MOOrdering>(integralTransform, "MOOrdering")
+    py::enum_<IntegralTransform::MOOrdering>(int_trans_bind, "MOOrdering")
         .value("QTOrder", IntegralTransform::MOOrdering::QTOrder)
         .value("PitzerOrder", IntegralTransform::MOOrdering::PitzerOrder);
-    py::enum_<IntegralTransform::OutputType>(integralTransform, "OutputType")
+    py::enum_<IntegralTransform::OutputType>(int_trans_bind, "OutputType")
         .value("DPDOnly", IntegralTransform::OutputType::DPDOnly)
         .value("IWLOnly", IntegralTransform::OutputType::IWLOnly)
         .value("IWLAndDPD", IntegralTransform::OutputType::IWLAndDPD);
-    py::enum_<IntegralTransform::FrozenOrbitals>(integralTransform, "FrozenOrbitals")
+    py::enum_<IntegralTransform::FrozenOrbitals>(int_trans_bind, "FrozenOrbitals")
         .value("None", IntegralTransform::FrozenOrbitals::None)
         .value("OccOnly", IntegralTransform::FrozenOrbitals::OccOnly)
         .value("VirOnly", IntegralTransform::FrozenOrbitals::VirOnly)
         .value("OccAndVir", IntegralTransform::FrozenOrbitals::OccAndVir);
-    py::enum_<IntegralTransform::SpinType>(integralTransform, "SpinType")
+    py::enum_<IntegralTransform::SpinType>(int_trans_bind, "SpinType")
         .value("Alpha", IntegralTransform::SpinType::Alpha)
         .value("Beta", IntegralTransform::SpinType::Beta);
 
-    integralTransform.def(py::init<std::shared_ptr<Wavefunction>, std::vector<std::shared_ptr<MOSpace>>,
-                                   IntegralTransform::TransformationType, IntegralTransform::OutputType,
-                                   IntegralTransform::MOOrdering, IntegralTransform::FrozenOrbitals, bool>(),
-                          py::arg("wfn"), py::arg("spaces"),
-                          py::arg("transformationType") = IntegralTransform::TransformationType::Restricted,
-                          py::arg("outputType") = IntegralTransform::OutputType::DPDOnly,
-                          py::arg("moOrdering") = IntegralTransform::MOOrdering::QTOrder,
-                          py::arg("FrozenOrbitals") = IntegralTransform::FrozenOrbitals::OccAndVir,
-                          py::arg("initialize") = true);
+    int_trans_bind.def(py::init<std::shared_ptr<Wavefunction>, std::vector<std::shared_ptr<MOSpace>>,
+                                IntegralTransform::TransformationType, IntegralTransform::OutputType,
+                                IntegralTransform::MOOrdering, IntegralTransform::FrozenOrbitals, bool>(),
+                       py::arg("wfn"), py::arg("spaces"),
+                       py::arg("transformationType") = IntegralTransform::TransformationType::Restricted,
+                       py::arg("outputType") = IntegralTransform::OutputType::DPDOnly,
+                       py::arg("moOrdering") = IntegralTransform::MOOrdering::QTOrder,
+                       py::arg("FrozenOrbitals") = IntegralTransform::FrozenOrbitals::OccAndVir,
+                       py::arg("initialize") = true);
 
-    integralTransform.def(
-        py::init<std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, std::shared_ptr<Matrix>,
-                 std::shared_ptr<Matrix>, std::vector<std::shared_ptr<MOSpace>>, IntegralTransform::TransformationType,
-                 IntegralTransform::OutputType, IntegralTransform::MOOrdering, IntegralTransform::FrozenOrbitals,
-                 bool>(),
-        py::arg("H"), py::arg("c"), py::arg("i"), py::arg("a"), py::arg("v"), py::arg("spaces"),
-        py::arg("transformationType") = IntegralTransform::TransformationType::Restricted,
-        py::arg("outputType") = IntegralTransform::OutputType::DPDOnly,
-        py::arg("moOrdering") = IntegralTransform::MOOrdering::QTOrder,
-        py::arg("FrozenOrbitals") = IntegralTransform::FrozenOrbitals::OccAndVir, py::arg("initialize") = true);
+    int_trans_bind.def(py::init<std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, std::shared_ptr<Matrix>,
+                                std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, std::vector<std::shared_ptr<MOSpace>>,
+                                IntegralTransform::TransformationType, IntegralTransform::OutputType,
+                                IntegralTransform::MOOrdering, IntegralTransform::FrozenOrbitals, bool>(),
+                       py::arg("H"), py::arg("c"), py::arg("i"), py::arg("a"), py::arg("v"), py::arg("spaces"),
+                       py::arg("transformationType") = IntegralTransform::TransformationType::Restricted,
+                       py::arg("outputType") = IntegralTransform::OutputType::DPDOnly,
+                       py::arg("moOrdering") = IntegralTransform::MOOrdering::QTOrder,
+                       py::arg("FrozenOrbitals") = IntegralTransform::FrozenOrbitals::OccAndVir,
+                       py::arg("initialize") = true);
 
     typedef int (IntegralTransform::*DPD_ID_1)(const std::string&);
     typedef int (IntegralTransform::*DPD_ID_2)(const char);
     typedef int (IntegralTransform::*DPD_ID_3)(const std::shared_ptr<MOSpace>, const std::shared_ptr<MOSpace>,
                                                IntegralTransform::SpinType, bool);
 
-    integralTransform.def("initialize", &IntegralTransform::initialize, "Initialize an IntegralTransform")
+    int_trans_bind.def("initialize", &IntegralTransform::initialize, "Initialize an IntegralTransform")
         .def("presort_so_tei", &IntegralTransform::presort_so_tei, "docstring")
         .def("generate_oei", &IntegralTransform::generate_oei, "docstring")
         .def("update_orbitals", &IntegralTransform::update_orbitals, "docstring")
@@ -149,7 +149,7 @@ void export_trans(py::module& m) {
         .def("DPD_ID", DPD_ID_3(&IntegralTransform::DPD_ID), "docstring", py::arg("s1"), py::arg("s2"), py::arg("spin"),
              py::arg("pack"));
 
-    integralTransform.def("set_so_tei_file", &IntegralTransform::set_so_tei_file)
+    int_trans_bind.def("set_so_tei_file", &IntegralTransform::set_so_tei_file)
         .def("set_write_dpd_so_tpdm", &IntegralTransform::set_write_dpd_so_tpdm)
         .def("set_print", &IntegralTransform::set_print)
         .def("set_orbitals", &IntegralTransform::set_orbitals)

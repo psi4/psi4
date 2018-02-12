@@ -106,10 +106,10 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
     # Get an IntegralTransform object
     check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), wfn)
     spaces = [core.MOSpace.all()]
-    transType = core.IntegralTransform.TransformationType.Restricted
+    trans_type = core.IntegralTransform.TransformationType.Restricted
     if not wfn.same_a_b_orbs():
-        transType = core.IntegralTransform.TransformationType.Unrestricted
-    ints = core.IntegralTransform(wfn, spaces, transType)
+        trans_type = core.IntegralTransform.TransformationType.Unrestricted
+    ints = core.IntegralTransform(wfn, spaces, trans_type)
     ints.transform_tei(core.MOSpace.all(), core.MOSpace.all(), core.MOSpace.all(), core.MOSpace.all())
     core.print_out('Integral transformation complete!\n')
 
@@ -146,8 +146,7 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(),
-                                  mo_idx)
+                eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), mo_idx)
                 intdump.write(eigs_dump)
         else:
             PSIF_MO_A_FZC = 'MO-basis Alpha Frozen-Core Oper'
@@ -180,10 +179,8 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                alpha_eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(),
-                                  alpha_mo_idx)
-                beta_eigs_dump = write_eigenvalues(wfn.epsilon_b().get_block(mo_slice).to_array(),
-                                  beta_mo_idx)
+                alpha_eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), alpha_mo_idx)
+                beta_eigs_dump = write_eigenvalues(wfn.epsilon_b().get_block(mo_slice).to_array(), beta_mo_idx)
                 intdump.write(alpha_eigs_dump + beta_eigs_dump)
         # Dipole integrals
         #core.print_out('Writing dipole moment OEI in FCIDUMP format to ' + fname + '\n')
