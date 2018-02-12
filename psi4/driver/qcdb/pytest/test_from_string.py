@@ -93,7 +93,7 @@ def test_psi4_qm_1e():
     """duplicate com"""
     subject = subject1 + '\n  nocom'
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 
@@ -169,7 +169,7 @@ def test_psi4_qm_2c():
     subject.insert(0, '1 3\n1 3')
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_2d():
@@ -178,7 +178,7 @@ def test_psi4_qm_2d():
     subject.insert(0, 'H 10,10,10,')
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 #def test_psi4_qm_2e():
@@ -187,8 +187,8 @@ def test_psi4_qm_2d():
 #    subject.insert(2, '\n')
 #    subject = '\n--\n'.join(subject)
 #
-##    with pytest.raises(qcdb.ValidationError):
-#    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+#    with pytest.raises(qcdb.MoleculeFormatError):
+#        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_2f():
     """double frag chgmult"""
@@ -196,7 +196,7 @@ def test_psi4_qm_2f():
     subject[1] += '\n 1 2\n 5 6'
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_2g():
@@ -205,7 +205,7 @@ def test_psi4_qm_2g():
     subject[1] = """@Ne_{CN}_O 2 4 6"""
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_3():
@@ -213,7 +213,7 @@ def test_psi4_qm_3():
     subject = """0 1
 Mg 0 0"""
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 subject4 = """pubchem:benzene"""
@@ -283,7 +283,7 @@ def test_psi4_pubchem_4b():
     """user units potentially contradicting pubchem units"""
     subject = subject4 + '\nunits au'
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 
@@ -337,7 +337,6 @@ def test_psi4_efp_5a():
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans5, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp')
-    #assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
 
     hintsstd = qcdb.util.standardize_efp_angles_units('Angstrom', final['efp']['geom_hints'])
     final['efp']['geom_hints'] = hintsstd
@@ -353,14 +352,13 @@ def test_psi4_efp_5b():
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans5b['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp')
-    #assert compare_molrecs(fullans5b['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
 
 
 def test_psi4_efp_5c():
     """fix_orientation not mol kw"""
     subject = subject5 + '\nno_com\nfix_orientation\nsymmetry c1'
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 
@@ -376,7 +374,6 @@ def test_psi4_efp_5d():
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans5b['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final')
-    #assert compare_molrecs(fullans5b['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
 def test_psi4_efp_5e():
@@ -473,7 +470,7 @@ def test_psi4_qmefp_6c():
 
     subject = subject6.replace('    efp h2O', '0 1\n    efp h2O')
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 
@@ -550,7 +547,7 @@ def test_xyzp_qm_7a():
     """XYZ doesn't fit into psi4 string"""
     subject = subject7
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 
@@ -558,7 +555,7 @@ def test_xyzp_qm_7b():
     """XYZ doesn't fit into strict xyz string"""
     subject = subject7
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz')
 
 

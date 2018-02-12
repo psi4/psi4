@@ -44,6 +44,9 @@ def from_input_arrays(enable_qm=True,
                       fragment_files=None,
                       hint_types=None,
                       geom_hints=None,
+                      # qm-vz
+                      geom_unsettled=None,
+                      variables=None,
                       # processing details
                       speclabel=True,
                       tooclose=0.1,
@@ -82,7 +85,8 @@ def from_input_arrays(enable_qm=True,
         fix_symmetry = 'c1'
 
     if enable_qm:
-        processed = from_arrays(domain='qm',
+        dm = 'qmvz' if geom_unsettled else 'qm'
+        processed = from_arrays(domain=dm,
                                 missing_enabled_return=missing_enabled_return_qm,
                                 geom=geom,
                                 elea=elea,
@@ -102,6 +106,8 @@ def from_input_arrays(enable_qm=True,
                                 fragment_multiplicities=fragment_multiplicities,
                                 molecular_charge=molecular_charge,
                                 molecular_multiplicity=molecular_multiplicity,
+                                geom_unsettled=geom_unsettled,
+                                variables=variables,
                                 # processing details
                                 speclabel=speclabel,
                                 tooclose=tooclose,
@@ -137,6 +143,8 @@ def from_arrays(geom=None,
                 fragment_files=None,
                 hint_types=None,
                 geom_hints=None,
+                geom_unsettled=None,
+                variables=None,
 
                 domain='qm',
                 missing_enabled_return='error',
@@ -247,9 +255,17 @@ def from_arrays(geom=None,
         (nfr, ) inner lists have length 6 (xyzabc; to orient the center) or
         9 (points; to orient the first three atoms) of the EFP fragment.
 
+    QMVZ extension (geom_unsettled replaces geom)
+
+    geom_unsettled : list of lists of str
+        (nat, ) all-string Cartesian and/or zmat anchor and value contents
+        mixing anchors, values, and variables.
+    variables : list of pairs
+        (nvar, 2) pairs of variables (str) and values (float). May be incomplete.
+
     """
     # <<  domain sorting  >>
-    available_domains = ['qm', 'efp']
+    available_domains = ['qm', 'efp', 'qmvz']
     if domain not in available_domains:
         raise ValidationError('Topology domain {} not available for processing. Choose among {}'.format(domain, available_domains))
 
@@ -286,11 +302,18 @@ def from_arrays(geom=None,
         update_with_error(molinit, processed)
         extern = bool(len(molinit['geom_hints']))
 
-    if domain == 'qm' or (domain == 'efp' and geom is not None):
-        processed = validate_and_fill_geometry(geom=geom,
-                                               tooclose=tooclose)
-        update_with_error(molinit, processed)
-        nat = molinit['geom'].shape[0] // 3
+    if domain == 'qm' or (domain == 'efp' and geom is not None) or domain == 'qmvz':
+        if domain == 'qmvz':
+            processed = validate_and_fill_unsettled_geometry(geom_unsettled=geom_unsettled,
+                                                             variables=variables)
+            update_with_error(molinit, processed)
+            nat = len(molinit['geom_unsettled'])
+
+        else:
+            processed = validate_and_fill_geometry(geom=geom,
+                                                   tooclose=tooclose)
+            update_with_error(molinit, processed)
+            nat = molinit['geom'].shape[0] // 3
 
         processed = validate_and_fill_nuclei(nat,
                                              elea=elea,
@@ -332,8 +355,9 @@ def from_arrays(geom=None,
                                         fix_symmetry=fix_symmetry)
     update_with_error(molinit, processed)
 
-    print('RETURN FROM from_arrays', domain.upper())
-    pprint.pprint(molinit)
+    if verbose >= 2:
+        print('RETURN FROM qcdb.molparse.from_arrays(domain={})'.format(domain.upper()))
+        pprint.pprint(molinit)
 
     return molinit
 
@@ -595,7 +619,6 @@ def validate_and_fill_nuclei(nat,
 
     if nat:
         A, Z, E, mass, real, label = zip(*[reconcile_nucleus(A=elea[at],
-    #theans = zip(*[reconcile_nucleus(A=elea[at],
                                                          Z=elez[at],
                                                          E=elem[at],
                                                          mass=mass[at],
@@ -677,11 +700,6 @@ def validate_and_fill_fragments(nat,
             raise ValidationError(
                 """fragment_multiplicities not among None or positive integer: {}""".format(fragment_multiplicities))
 
-    #if nat == 0:
-    #    return {'fragment_separators': [],
-    #            'fragment_charges': [],
-    #            'fragment_multiplicities': []}
-
     if not (len(frt) == len(frc) == len(frm) == len(frs) + 1):
         raise ValidationError(
             """Dimension mismatch among fragment quantities: sep + 1 ({}), types ({}), chg ({}), and mult({})""".
@@ -692,24 +710,61 @@ def validate_and_fill_fragments(nat,
             'fragment_multiplicities': frm}
 
 
-def from_string(molstr, dtype='psi4',
+def validate_and_fill_unsettled_geometry(geom_unsettled,
+                                         variables):
+    lgeom = [len(g) for g in geom_unsettled]
+
+    if any(l == 3 for l in lgeom) and not all((l in [3, 6]) for l in lgeom):
+        raise ValidationError(
+            """Mixing Cartesian and Zmat formats must occur in just that order once absolute frame established.""")
+
+    for il in range(len(lgeom) - 1):
+        if (lgeom[il+1] < lgeom[il]) and (lgeom[il+1] != 3):
+            raise ValidationError(
+                """This is not how a Zmat works - aim for lower triangular: {} < {}""".format(lgeom[il+1], lgeom[il]))
+
+    if not all(len(v) == 2 for v in variables):
+        raise ValidationError(
+            """Variables should come in pairs: {}""".format(variables))
+
+    vvars = [[str(v[0]), float(v[1])] for v in variables]
+
+    return {'geom_unsettled': geom_unsettled,
+            'variables': vvars}
+
+
+def from_string(molstr,
+                dtype='psi4',
                 return_processed=False,
-                enable_qm=True, 
+                enable_qm=True,
                 enable_efp=True,
                 missing_enabled_return_qm='none',
-                missing_enabled_return_efp='none'):
-    """
+                missing_enabled_return_efp='none',
+                verbose=1):
+    """Construct a molecule dictionary from any recognized string format.
 
     Parameters
     ----------
     molstr : str
         Multiline string specification of molecule in a recognized format.
-    dtype : {'xyz', 'xyz+', 'psi4'}, optional
-        Molecule format name.
+    dtype : {'xyz', 'xyz+', 'psi4', 'psi4+'}, optional
+        Molecule format name; see below for details.
     return_processed : bool, optional
         Additionally return intermediate dictionary.
     enable_qm : bool, optional
+        Consider quantum mechanical domain in processing the string constants
+        into the returned molrec.
     enable_efp: bool, optional
+        Consider effective fragment potential domain the processing the string
+        contents into the returned molrec. Only relevant if `dtype` supports EFP.
+    missing_enabled_return_qm : {'minimal', 'none', 'error'}
+        If `enable_qm=True`, what to do if it has no atoms/fragments?
+        Respectively, return a fully valid but empty molrec, return empty
+        dictionary, or throw error.
+    missing_enabled_return_efp : {'minimal', 'none', 'error'}
+        If `enable_efp=True`, what to do if it has no atoms/fragments?
+        Respectively, return a fully valid but empty molrec, return empty
+        dictionary, or throw error.
 
     Returns
     -------
@@ -723,90 +778,102 @@ def from_string(molstr, dtype='psi4',
 
     Raises
     ------
-    ValidationError
-        After processing of `molstr`, only an empty string should remain. Anything left is a syntax error.
+    MoleculeFormatError
+        After processing of `molstr`, only an empty string should remain.
+        Anything left is a syntax error.
+
+    Notes
+    -----
+        xyz - Strict XYZ format
+        -----------------------
+
+            String Layout
+            -------------
+            <number of atoms>
+            comment line
+            <element_symbol or atomic_number> <x> <y> <z>
+            ...
+            <element_symbol or atomic_number> <x> <y> <z>
+
+            QM Domain
+            ---------
+            Specifiable: geom, elem/elez (element identity)
+            Inaccessible: mass, real (vs. ghost), elbl (user label), name, units (assumed [A]),
+                          input_units_to_au, fix_com/orientation/symmetry, fragmentation,
+                          molecular_charge, molecular_multiplicity
+
+            Notes
+            -----
+            <number of atoms> is pattern-matched but ignored.
+
+        xyz+ - Enhanced XYZ format
+        --------------------------
+
+            String Layout
+            -------------
+            <number of atoms> [<bohr|au|ang>]
+            [<molecular_charge> <molecular_multiplicity>] comment line
+            <psi4_nucleus_spec> <x> <y> <z>
+            ...
+            <psi4_nucleus_spec> <x> <y> <z>
+
+            QM Domain
+            ---------
+            Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label),
+                         units (defaults [A]), molecular_charge, molecular_multiplicity
+            Inaccessible: name, input_units_to_au, fix_com/orientation/symmetry, fragmentation
+
+            Notes
+            -----
+            <number of atoms> is pattern-matched but ignored.
+
+        psi4 - Psi4 molecule {...} format
+        ---------------------------------
+
+            QM Domain
+            ---------
+            Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label),
+                         units (defaults [A]), fix_com/orientation/symmetry, fragment_separators,
+                         fragment_charges, fragment_multiplicities, molecular_charge, molecular_multiplicity
+            Inaccessible: name, input_units_to_au
+
+            EFP Domain
+            ----------
+            Specifiable: units, fix_com/orientation/symmetry, fragment_files, hint_types, geom_hints
+            Inaccessible: anything atomic or fragment details -- geom, elem/elez (element identity),
+                          mass, real (vs. ghost), elbl (user label), fragment_separators, fragment_charges,
+                          fragment_multiplicities, molecular_charge, molecular_multiplicity
+
+        psi4+ - Psi4 non-Cartesian molecule {...} format
+        ------------------------------------------------
+        Like `dtype=psi4` (although combination with EFP not tested) except
+        that instead of pure-Cartesian geometry, allow variables, zmatrix,
+        and un-fully-specified geometries. *Not* MolSSI standard, but we're
+        not dropping zmat yet.
 
     """
-    ##"""Module with utility functions that act on molecule objects."""
-    ##from psi4.driver.inputparser import process_pubchem_command, pubchemre
-    #molecule = init_psi4_molecule_from_any_string(geom, name=name)
-
-    #    # Figure out how and if we will parse the Molecule adata
-    #    mname = kwargs.pop("name", "default")
-    #    dtype = kwargs.pop("dtype", "psi4").lower()
-
     molinit = {}
 
-    print('<<< QMMOL', molstr, '>>>')
+    if verbose >= 2:
+        print('<<< FROM_STRING', molstr, '>>>')
 
     # << 1 >>  str-->str -- discard comments
     molstr = filter_comments(molstr)
 
     if dtype == 'xyz':
-        """Strict XYZ file format
 
-        String Layout
-        -------------
-        <number of atoms>
-        comment line
-        <element_symbol or atomic_number> <x> <y> <z>
-        ...
-        <element_symbol or atomic_number> <x> <y> <z>
-
-        QM Domain
-        ---------
-        Specifiable: geom, elem/elez (element identity)
-        Inaccessible: mass, real (vs. ghost), elbl (user label), name, units (assumed [A]),
-                      input_units_to_au, fix_com/orientation/symmetry, fragmentation,
-                      molecular_charge, molecular_multiplicity
-
-        """
         # << 2 >>  str-->dict -- process atoms, units
         molstr, processed = _filter_xyz(molstr, strict=True)
         molinit.update(processed)
 
     elif dtype == 'xyz+':
-        """Enhanced XYZ format
 
-        String Layout
-        -------------
-        <number of atoms> [<bohr|au|ang>]
-        [<molecular_charge> <molecular_multiplicity>] comment line
-        <psi4_nucleus_spec> <x> <y> <z>
-        ...
-        <psi4_nucleus_spec> <x> <y> <z>
-
-        QM Domain
-        ---------
-        Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label),
-                     units (defaults [A]), molecular_charge, molecular_multiplicity
-        Inaccessible: name, input_units_to_au, fix_com/orientation/symmetry, fragmentation
-
-        Note that <number of atoms> is pattern-matched but ignored.
-
-        """
         # << 2 >>  str-->dict -- process atoms, units, chg, mult
         molstr, processed = _filter_xyz(molstr, strict=False)
         molinit.update(processed)
 
-    elif dtype == 'psi4':
-        """Psi4 molecule {...} format
+    elif dtype in ['psi4', 'psi4+']:
 
-        QM Domain
-        ---------
-        Specifiable: geom, elem/elez (element identity), mass, real (vs. ghost), elbl (user label),
-                     units (defaults [A]), fix_com/orientation/symmetry, fragment_separators,
-                     fragment_charges, fragment_multiplicities, molecular_charge, molecular_multiplicity
-        Inaccessible: name, input_units_to_au
-
-        EFP Domain
-        ----------
-        Specifiable: units, fix_com/orientation/symmetry, fragment_files, hint_types, geom_hints
-        Inaccessible: anything atomic or fragment details -- geom, elem/elez (element identity),
-                      mass, real (vs. ghost), elbl (user label), fragment_separators, fragment_charges,
-                      fragment_multiplicities, molecular_charge, molecular_multiplicity
-
-        """
         # Notes
         # * *_filter functions must fill non-overlapping fields
         # * not recc but can add to downstream by appending to str
@@ -824,28 +891,30 @@ def from_string(molstr, dtype='psi4',
         molinit.update(processed)
 
         # << 2.4 >>  str-->dict -- process atoms, chg, mult, frags
-        molstr, processed = _filter_mints(molstr)
+        molstr, processed = _filter_mints(molstr, unsettled=(dtype=='psi4+'))
         molinit.update(processed)
 
     else:
         raise KeyError("Molecule: dtype of %s not recognized.")
 
     if molstr:
-        raise ValidationError("""Unprocessable Molecule remanents:\n\t{}""".format(molstr))
+        raise MoleculeFormatError("""Unprocessable Molecule remanents:\n{}""".format(molstr))
 
-    print('\nINTO from_input_arrays <<<')
-    pprint.pprint(molinit)
-    print('>>>\n')
+    if verbose >= 2:
+        print('\nFROM_STRING INTO FROM_INPUT_ARRAYS <<<')
+        pprint.pprint(molinit)
+        print('>>>\n')
 
     # << 3 >>  dict-->molspec
     molrec = from_input_arrays(**molinit,
                                speclabel=True,
-                               enable_qm=enable_qm, 
+                               enable_qm=enable_qm,
                                enable_efp=enable_efp,
                                missing_enabled_return_qm=missing_enabled_return_qm,
                                missing_enabled_return_efp=missing_enabled_return_efp)
 
-    print('\nMOLREC <<<', molrec, '>>>\n')
+    if verbose >= 2:
+        print('\nMOLREC <<<', molrec, '>>>\n')
 
     if return_processed:
         return molrec, molinit
@@ -853,12 +922,19 @@ def from_string(molstr, dtype='psi4',
         return molrec
 
 
+# TODO maybe molrec needs a "fix_loose" flag to signal the reciever can symmetrize
 #    pubchemerror = re.compile(r'^\s*PubchemError\s*$', re.IGNORECASE)
 #    pubcheminput = re.compile(r'^\s*PubchemInput\s*$', re.IGNORECASE)
 #        # N.B. Anything starting with PubchemError will be handled correctly by the molecule parser
 #        # in libmints, which will just print the rest of the string and exit gracefully.
 
 def _filter_pubchem(string):
+    """Find any "pubchem:" lines in `string`, make call to the pubchem database
+    and return the XYZ results back to `string`.
+
+    Author: @andysim
+
+    """
     pubchemre = re.compile(r'\Apubchem' + r'\s*:\s*' + r'(?P<pubsearch>(\S+))\Z', re.IGNORECASE)
 
     def process_pubchem(matchobj):
@@ -923,7 +999,7 @@ def _filter_universals(string):
     fix_com
     fix_orientation
     fix_symmetry
-#    input_units_to_au (not settable)
+    #input_units_to_au (not settable)
     units
 
     """
@@ -1023,7 +1099,7 @@ def _filter_libefp(string):
 
 
 
-def _filter_mints(string):
+def _filter_mints(string, unsettled=False):
     """Handle extracting fragment, atom, and chg/mult lines from `string`.
 
     Returns
@@ -1043,18 +1119,36 @@ def _filter_mints(string):
             fragment_charges
             fragment_multiplicities
 
+    unsettled : bool, optional
+        Whether to allow variable entries and zmat structure, accumulating into
+        geom_unsettled, rather than pure numerical Cartesian entries,
+        accumulating into geom.
+
     """
     fragment_marker = re.compile(r'^\s*--\s*$', re.MULTILINE)
     cgmp = re.compile(r'\A' + CHGMULT + r'\Z', re.VERBOSE)
+
+    VAR = r'(-?[a-z][a-z0-9_]*)'  # slight cheat to allow neg in `variable`
+    NUCLABEL = r'([A-Z]{1,3}((_\w+)|(\d+))?)'
+    ANCHORTO = r'((\d+)|' + NUCLABEL + r')'
+    ANCHORVAL = r'(' + NUMBER + r'|' + VAR + ')'
+
     atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat1 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat2 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat3 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' +
-                                                                       SEP + r'(?P<Aidx>\d+)' + SEP + r'(?P<Aval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat4 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + r'(?P<Ridx>\d+)' + SEP + r'(?P<Rval>' + NUMBER + r')' +
-                                                                       SEP + r'(?P<Aidx>\d+)' + SEP + r'(?P<Aval>' + NUMBER + r')' +
-                                                                       SEP + r'(?P<Didx>\d+)' + SEP + r'(?P<Dval>' + NUMBER + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    #variable = re.compile(r'^\s*(\w+)\s*=\s*(-?\d+\.\d+|-?\d+\.|-?\.\d+|-?\d+|tda)\s*$', re.IGNORECASE)
+    atom_vcart = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
+                            r'(?P<Xval>' + ANCHORVAL + r')' + SEP +
+                            r'(?P<Yval>' + ANCHORVAL + r')' + SEP +
+                            r'(?P<Zval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat1 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' +                               r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat2 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
+                            r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat3 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
+                            r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + SEP +
+                            r'(?P<Aidx>' + ANCHORTO + r')' + SEP + r'(?P<Aval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_zmat4 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
+                            r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + SEP +
+                            r'(?P<Aidx>' + ANCHORTO + r')' + SEP + r'(?P<Aval>' + ANCHORVAL + r')' + SEP +
+                            r'(?P<Didx>' + ANCHORTO + r')' + SEP + r'(?P<Dval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+    variable = re.compile(r'\A' + r'(?P<varname>' + VAR + r')' + r'\s*=\s*' + r'(?P<varvalue>((tda)|(' + NUMBER + r')))' + r'\Z', re.IGNORECASE | re.VERBOSE)
 
 
     def process_system_cgmp(matchobj):
@@ -1082,6 +1176,30 @@ def _filter_mints(string):
             processed['geom'].append(float(matchobj.group('z')))
             return ''
 
+        def process_atom_unsettled(matchobj):
+            processed['elbl'].append(matchobj.group('nucleus'))
+            geo = []
+            if 'Xval' in matchobj.groupdict():
+                geo.append(matchobj.group('Xval'))
+                geo.append(matchobj.group('Yval'))
+                geo.append(matchobj.group('Zval'))
+            if 'Rval' in matchobj.groupdict():
+                geo.append(matchobj.group('Ridx'))
+                geo.append(matchobj.group('Rval'))
+            if 'Aval' in matchobj.groupdict():
+                geo.append(matchobj.group('Aidx'))
+                geo.append(matchobj.group('Aval'))
+            if 'Dval' in matchobj.groupdict():
+                geo.append(matchobj.group('Didx'))
+                geo.append(matchobj.group('Dval'))
+            processed['geom_unsettled'].append(geo)
+            return ''
+
+        def process_variable(matchobj):
+            processed['variables'].append((matchobj.group('varname'),
+                                           matchobj.group('varvalue')))
+            return ''
+
         freconstitute = []
         start_atom = len(processed["elbl"])
         if start_atom > 0:
@@ -1089,9 +1207,18 @@ def _filter_mints(string):
 
         fcgmp_found = False
         for iln, line in enumerate(fstring.split('\n')):
+            line = line.strip()
             if not fcgmp_found:
-                line, fcgmp_found = re.subn(cgmp, process_fragment_cgmp, line.strip())
-            line = re.sub(atom_cartesian, process_atom_cartesian, line)
+                line, fcgmp_found = re.subn(cgmp, process_fragment_cgmp, line)
+            if unsettled:
+                line = re.sub(atom_vcart, process_atom_unsettled, line)
+                line = re.sub(atom_zmat1, process_atom_unsettled, line)
+                line = re.sub(atom_zmat2, process_atom_unsettled, line)
+                line = re.sub(atom_zmat3, process_atom_unsettled, line)
+                line = re.sub(atom_zmat4, process_atom_unsettled, line)
+                line = re.sub(variable, process_variable, line)
+            else:
+                line = re.sub(atom_cartesian, process_atom_cartesian, line)
             if line:
                 freconstitute.append(line)
 
@@ -1103,11 +1230,15 @@ def _filter_mints(string):
 
     reconstitute = []
     processed = {}
-    processed['geom'] = []
     processed['elbl'] = []
     processed['fragment_separators'] = []
     processed['fragment_charges'] = []
     processed['fragment_multiplicities'] = []
+    if unsettled:
+        processed['geom_unsettled'] = []
+        processed['variables'] = []
+    else:
+        processed['geom'] = []
 
     # handle `--`-demarcated blocks
     for ifr, frag in enumerate(re.split(fragment_marker, string)):
@@ -1210,8 +1341,6 @@ def _filter_xyz(string, strict):
 
     #if len(processed['geom']) != nat:
     #    raise ValidationError
-    #processed['fragment_files'] = []  # no EFP  # shouldn't be needed
-    #processed['hint_types'] = []  # no EFP  # shouldn't be needed
     processed['geom_hints'] = []  # no EFP
 
     return '\n'.join(reconstitute), processed

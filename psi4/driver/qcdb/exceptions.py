@@ -140,3 +140,10 @@ class TestComparisonError(QcdbException):
         QcdbException.__init__(self, msg)
         self.msg = msg
         print('\nQcdbException: %s\n\n' % msg)
+
+
+class MoleculeFormatError(QcdbException):
+    """Error called when a Molecule.from_string contains unparsable lines."""
+    def __init__(self, msg):
+        QcdbException.__init__(self, msg)
+        self.msg = msg
