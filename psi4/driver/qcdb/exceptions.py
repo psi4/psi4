@@ -158,5 +158,3 @@ class FeatureDeprecated(QcdbException):
         QcdbException.__init__(self, msg)
         self.msg = msg
         print('\nFeature deprecated: {}\n\n'.format(msg))
-
-

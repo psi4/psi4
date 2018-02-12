@@ -213,7 +213,7 @@ def test_psi4_qm_3():
     subject = """0 1
 Mg 0 0"""
 
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcdb.MoleculeFormatError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 subject4 = """pubchem:benzene"""
