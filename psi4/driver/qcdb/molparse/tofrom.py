@@ -444,69 +444,10 @@ def validate_and_fill_frame(extern,
     return molinit
 
 
-def preserve_validate_and_fill_frame(extern,
-                            fix_com=None,
-                            fix_orientation=None,
-                            fix_symmetry=None):
-
-    if fix_com is True:
-        com = True
-    elif fix_com is False:
-        if extern:
-            raise ValidationError('Invalid fix_com ({}) with extern ({})'.format(fix_com, extern))
-        else:
-            com = False
-    elif fix_com is None:
-        com = extern
-    else:
-        raise ValidationError('Invalid fix_com: {}'.format(fix_com))
-
-    if fix_orientation is True:
-        orient = True
-    elif fix_orientation is False:
-        if extern:
-            raise ValidationError('Invalid fix_orientation ({}) with extern ({})'.format(fix_orientation, extern))
-        else:
-            orient = False
-    elif fix_orientation is None:
-        orient = extern
-    else:
-        raise ValidationError('Invalid fix_orientation: {}'.format(fix_orientation))
-
-    symm = None
-    if extern:
-        if fix_symmetry is None:
-            symm = 'c1'
-        elif fix_symmetry.lower() == 'c1':
-            symm = 'c1'
-        else:
-            raise ValidationError('Invalid (non-C1) fix_symmetry ({}) with extern ({})'.format(fix_symmetry, extern))
-    else:
-        if fix_symmetry is not None:
-            symm = fix_symmetry.lower()
-
-    molinit = {}
-    molinit['fix_com'] = com
-    molinit['fix_orientation'] = orient
-    if symm:
-        molinit['fix_symmetry'] = symm
-
-    return molinit
-
-
 def validate_and_fill_efp(fragment_files=None,
                           hint_types=None,
                           geom_hints=None):
-    """
 
-    Parameters
-    ----------
-#    standardize_efp_angles_units : bool, optional
-#        Move abc of xyzabc hints into (-pi, pi] range returned by libefp.
-#        Not needed for input as libefp takes any range as input but helpful for
-#        matching output.
-
-    """
     if (fragment_files is None or hint_types is None or geom_hints is None or
         fragment_files == [None] or hint_types == [None] or geom_hints == [None] or
         not (len(fragment_files) == len(hint_types) == len(geom_hints))):

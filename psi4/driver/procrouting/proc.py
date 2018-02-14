@@ -2137,39 +2137,6 @@ def run_scf_hessian(name, **kwargs):
 
     ref_wfn.set_hessian(H)
 
-    # Temporary freq code.  To be replaced with proper frequency analysis later...
-    import numpy as np
-
-    mol = ref_wfn.molecule()
-    natoms = mol.natom()
-    masses = np.zeros(natoms)
-
-    for atom in range(natoms):
-        masses[atom] = mol.mass(atom)
-
-    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)  # TODO kill this off
-    mwhess = np.einsum('i,ij,j->ij', m, H, m)
-
-    # Are we linear?
-    if mol.get_full_point_group() in [ "C_inf_v", "D_inf_h" ]:
-        nexternal = 5
-    else:
-        nexternal = 6
-
-    fcscale = constants.hartree2J / (constants.bohr2m * constants.bohr2m * constants.amu2kg);
-    fc = fcscale * np.linalg.eigvalsh(mwhess)
-    # Sort by magnitude of the force constants, to project out rot/vib
-    ordering = np.argsort(np.abs(fc))
-    projected = fc[ordering][nexternal:]
-    freqs = np.sqrt(np.abs(projected))
-    freqs *= 1.0 / (2.0 * np.pi * constants.c * 100.0)
-    freqs[projected < 0] *= -1
-    freqs.sort()
-
-    freqvec = core.Vector.from_array(freqs)
-    ref_wfn.set_frequencies(freqvec)
-    # End of temporary freq hack.  Remove me later!
-
     # Write Hessian out.  This probably needs a more permanent home, too.
     # This is a drop-in replacement for the code that lives in findif
     if core.get_option('FINDIF', 'HESSIAN_WRITE'):

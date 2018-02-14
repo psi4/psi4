@@ -420,29 +420,8 @@ void Wavefunction::common_init() {
     }
     nelectron -= molecule_->molecular_charge();
 
-    // If the user told us the multiplicity, read it from the input
-    int multiplicity;
-    if (molecule_->multiplicity_specified()) {
-        multiplicity = molecule_->multiplicity();
-    } else {
-        if (nelectron % 2) {
-            multiplicity = 2;
-            molecule_->set_multiplicity(2);
-            // There are an odd number of electrons
-            outfile->Printf(
-                "    There are an odd number of electrons - assuming doublet.\n"
-                "    Specify the multiplicity in the molecule input block.\n\n");
-        } else {
-            multiplicity = 1;
-            molecule_->set_multiplicity(1);
-            // There are an even number of electrons
-            outfile->Printf(
-                "    There are an even number of electrons - assuming singlet.\n"
-                "    Specify the multiplicity in the molecule input block.\n\n");
-        }
-    }
-
     // Make sure that the multiplicity is reasonable
+    int multiplicity = molecule_->multiplicity();
     if (multiplicity - 1 > nelectron) {
         char *str = new char[100];
         sprintf(str,
