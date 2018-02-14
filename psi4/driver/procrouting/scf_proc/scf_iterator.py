@@ -201,6 +201,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
             self.H().copy(self.Horig)
+            global mints
             mints = core.MintsHelper(self.basisset())
             Vefp = modify_Fock_induced(self.molecule().EFP, mints, verbose=verbose-1)
             Vefp = core.Matrix.from_array(Vefp)
@@ -239,10 +240,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Fb().print_out()
 
         SCFE += self.compute_E()
-        global mints
-        global efp_Dt
-
         if efp_enabled:
+            global efp_Dt
+
             # EFP: Add efp contribution to energy
             efp_Dt = self.Da().clone()
             efp_Dt.add(self.Db())
