@@ -1216,10 +1216,12 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
+
     @staticmethod
     def _raw_to_dict(self, force_c1=False, force_au=False):
         """Serializes instance into Molecule dictionary."""
 
+        self.update_geometry()
         molrec = {}
 
         if self.name() not in ['', 'default']:
@@ -1313,38 +1315,60 @@ class Molecule(LibmintsMolecule):
         return validated_molrec
 
     @classmethod
-    def from_dict(cls, molrec):
+    def from_dict(cls, molrec, verbose=1):
+    
+        mol = cls()
+        mol._internal_from_dict(molrec=molrec, verbose=verbose)
+        return mol
+
+
+    def _internal_from_dict(self, molrec, verbose=1):
         """Constructs instance from fully validated and defaulted dictionary `molrec`."""
 
         # Compromises for qcdb.Molecule
         # * molecular_charge is int, not float
         # * fragment_charges are int, not float
 
-        mol = cls()
-        mol.lock_frame = False
+        self.lock_frame = False
 
         if 'name' in molrec:
-            mol.set_name(molrec['name'])
+            self.set_name(molrec['name'])
 
-        mol.set_units(molrec['units'])
+        self.set_units(molrec['units'])
         if 'input_units_to_au' in molrec:
-            mol.set_input_units_to_au(molrec['input_units_to_au'])
+            self.set_input_units_to_au(molrec['input_units_to_au'])
 
-        mol.fix_com(molrec['fix_com'])
-        mol.fix_orientation(molrec['fix_orientation'])
+        self.fix_com(molrec['fix_com'])
+        self.fix_orientation(molrec['fix_orientation'])
         if 'fix_symmetry' in molrec:
-            mol.reset_point_group(molrec['fix_symmetry'])
+            self.reset_point_group(molrec['fix_symmetry'])
 
-        geom = molrec['geom'].reshape((-1, 3))
-        nat = geom.shape[0]
-        for iat in range(nat):
-            x, y, z = geom[iat]
-            label = molrec['elem'][iat] + molrec['elbl'][iat]
-            Z = molrec['elez'][iat] * int(molrec['real'][iat])
-            mol.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
-                         Z, label, molrec['elea'][iat])
-            # TODO charge and 2nd elez site
-            # TODO real back to type Ghost?
+        if 'geom_unsettled' in molrec:
+            nat = len(molrec['geom_unsettled'])
+            unsettled = True
+
+            for iat in range(nat):
+                entry = molrec['geom_unsettled'][iat]
+                label = molrec['elem'][iat] + molrec['elbl'][iat]
+                Z = molrec['elez'][iat] * int(molrec['real'][iat])
+                self.add_unsettled_atom(Z, entry, molrec['elem'][iat], molrec['mass'][iat],
+                                       Z, label, molrec['elea'][iat])
+            for var in molrec['variables']:
+                self.set_geometry_variable(var[0], var[1])
+
+        else:
+            geom = molrec['geom'].reshape((-1, 3))
+            nat = geom.shape[0]
+            unsettled = False
+
+            for iat in range(nat):
+                x, y, z = geom[iat]
+                label = molrec['elem'][iat] + molrec['elbl'][iat]
+                Z = molrec['elez'][iat] * int(molrec['real'][iat])
+                self.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
+                             Z, label, molrec['elea'][iat])
+                # TODO charge and 2nd elez site
+                # TODO real back to type Ghost?
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
         fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
@@ -1352,16 +1376,20 @@ class Molecule(LibmintsMolecule):
         fragment_separators = np.append(fragment_separators, nat)
         fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
 
-        mol.set_fragment_pattern(fragments,
+        self.set_fragment_pattern(fragments,
                                  ['Real'] * len(fragments),
                                  [int(f) for f in molrec['fragment_charges']],
                                  molrec['fragment_multiplicities'])
 
-        mol.set_molecular_charge(int(molrec['molecular_charge']))
-        mol.set_multiplicity(molrec['molecular_multiplicity'])
+        self.set_molecular_charge(int(molrec['molecular_charge']))
+        self.set_multiplicity(molrec['molecular_multiplicity'])
 
-        mol.update_geometry()
-        return mol
+        ## hack to prevent update_geometry termination upon no atoms
+        #if nat == 0:
+        #    self.set_lock_frame(True)
+
+        if not unsettled:
+            self.update_geometry()
 
     @staticmethod
     def _raw_BFS(self,

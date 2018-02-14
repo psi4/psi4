@@ -270,15 +270,14 @@ void Molecule::add_atom(double Z, double x, double y, double z, std::string symb
 
 void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std::string symbol, double mass,
                                   double charge, std::string label, int A) {
-    bool has_cart = false;
-    bool has_zmat = false;
+    lock_frame_ = false;
     int numEntries = anchor.size();
     int currentAtom = full_atoms_.size();
     int rTo, aTo, dTo;
 
     if (numEntries == 3) {
         // This is a Cartesian entry
-        has_cart = true;
+        set_has_cartesian(true);
         std::shared_ptr<CoordValue> xval(get_coord_value(anchor[0]));
         std::shared_ptr<CoordValue> yval(get_coord_value(anchor[1]));
         std::shared_ptr<CoordValue> zval(get_coord_value(anchor[2]));
@@ -286,12 +285,12 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
                                                                     xval, yval, zval));
     } else if (numEntries == 0) {
         // This is the first line of a Z-Matrix
-        has_zmat = true;
+        set_has_zmatrix(true);
         full_atoms_.push_back(
             std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A));
     } else if (numEntries == 2) {
         // This is the second line of a Z-Matrix
-        has_zmat = true;
+        set_has_zmatrix(true);
         rTo = get_anchor_atom(anchor[0], "");
         if (rTo >= currentAtom)
             throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
@@ -304,7 +303,7 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
 
     } else if (numEntries == 4) {
         // This is the third line of a Z-Matrix
-        has_zmat = true;
+        set_has_zmatrix(true);
         rTo = get_anchor_atom(anchor[0], "");
         if (rTo >= currentAtom)
             throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
@@ -323,7 +322,7 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
                                                              full_atoms_[aTo], aval));
     } else if (numEntries == 6) {
         // This is line 4 onwards of a Z-Matrix
-        has_zmat = true;
+        set_has_zmatrix(true);
         rTo = get_anchor_atom(anchor[0], "");
         if (rTo >= currentAtom)
             throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
@@ -351,9 +350,6 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
     } else {
         throw PSIEXCEPTION("Illegal geometry specification (neither Cartesian nor Z-Matrix)");
     }
-
-    set_has_zmatrix(has_zmat);
-    set_has_cartesian(has_cart);
 }
 
 
@@ -378,6 +374,7 @@ double Molecule::mass(int atom) const {
 }
 
 void Molecule::set_mass(int atom, double mass) {
+    lock_frame_ = false;
     full_atoms_[atom]->set_mass(mass);
     full_atoms_[atom]->set_A(-1);
 }
@@ -1152,6 +1149,8 @@ std::string Molecule::create_psi4_string_from_molecule() const {
             sprintf(buffer, "    no_reorient\n");
             ss << buffer;
         }
+        sprintf(buffer, "    %d %d\n    --\n", molecular_charge_, multiplicity_);
+        ss << buffer;
 
         // append atoms and coordentries and fragment separators with charge and multiplicity
         int Pfr = 0;
