@@ -26,13 +26,3 @@ ENDL = r"""[\t ,]*$"""
 
 CHGMULT = r"""(?P<chg>""" + NUMBER + r')' + SEP + r"""(?P<mult>\d+)"""
 CARTXYZ = r'(?P<x>' + NUMBER + r')' + SEP + r'(?P<y>' + NUMBER + r')' + SEP + r'(?P<z>' + NUMBER + r')'
-
-
-def filter_comments(string):
-    """Remove from `string` any Python-style comments ('#' to end of line)."""
-
-    comment = re.compile(r'(^|[^\\])#.*')
-    string = re.sub(comment, '', string)
-    return string
-
-
