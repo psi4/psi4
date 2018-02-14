@@ -83,7 +83,7 @@ class LibmintsMolecule(object):
     FullPointGroupList = ["ATOM", "C_inf_v", "D_inf_h", "C1", "Cs", "Ci", \
         "Cn", "Cnv", "Cnh", "Sn", "Dn", "Dnd", "Dnh", "Td", "Oh", "Ih"]
 
-    def __init__(self, psi4molstr=None):
+    def __init__(self):
         """Initialize Molecule object from string in psi4 format"""
 
         # <<< Basic Molecule Information >>>
@@ -162,9 +162,6 @@ class LibmintsMolecule(object):
         self.equiv = 0
         # Atom to unique atom mapping array (length natom)
         self.PYatom_to_unique = 0
-
-        if psi4molstr:
-            self.create_molecule_from_string(psi4molstr)
 
     # <<< Simple Methods for Basic Molecule Information >>>
 

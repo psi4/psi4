@@ -241,13 +241,15 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 
         for (size_t iat=0; iat<nat; ++iat) {
             std::string symbol = elem[iat];
+            std::string label = elbl[iat];
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
             mol->add_unsettled_atom(elez[iat] * real[iat],
                                     geom_unsettled[iat],
                                     symbol,
                                     mass[iat],
                                     elez[iat] * real[iat],
-                                    symbol + elbl[iat],
+                                    symbol + label,
                                     elea[iat]);
         }
 
@@ -262,13 +264,15 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 
         for (size_t iat=0; iat<nat; ++iat) {
             std::string symbol = elem[iat];
+            std::string label = elbl[iat];
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
             mol->add_atom(elez[iat] * real[iat],
                           geom[3*iat], geom[3*iat+1], geom[3*iat+2],
                           symbol,
                           mass[iat],
                           elez[iat] * real[iat],
-                          symbol + elbl[iat],
+                          symbol + label,
                           elea[iat]);
         }
     }

@@ -714,6 +714,10 @@ def validate_and_fill_unsettled_geometry(geom_unsettled,
                                          variables):
     lgeom = [len(g) for g in geom_unsettled]
 
+    if lgeom[0] not in [0, 3]:
+        raise ValidationError(
+            """First line must be Cartesian or single atom.""")
+
     if any(l == 3 for l in lgeom) and not all((l in [3, 6]) for l in lgeom):
         raise ValidationError(
             """Mixing Cartesian and Zmat formats must occur in just that order once absolute frame established.""")
@@ -734,7 +738,11 @@ def validate_and_fill_unsettled_geometry(geom_unsettled,
 
 
 def from_string(molstr,
-                dtype='psi4',
+                dtype=None,
+                name=None,
+                fix_com=None,
+                fix_orientation=None,
+                fix_symmetry=None,
                 return_processed=False,
                 enable_qm=True,
                 enable_efp=True,
@@ -765,6 +773,11 @@ def from_string(molstr,
         If `enable_efp=True`, what to do if it has no atoms/fragments?
         Respectively, return a fully valid but empty molrec, return empty
         dictionary, or throw error.
+    name
+    fix_com
+    fix_orientation
+    fix_symmetry
+        Very limitied number of fields where arguments can trump `molstr`. Provided for convenience, since the alternative would be collect the resulting molrec (discarding the Mol if called from class), editing it, then remakeing the Mol.
 
     Returns
     -------
@@ -852,27 +865,27 @@ def from_string(molstr,
         not dropping zmat yet.
 
     """
-    molinit = {}
-
     if verbose >= 2:
-        print('<<< FROM_STRING', molstr, '>>>')
+        print('<<< FROM_STRING\n', molstr, '\n>>>')
 
     # << 1 >>  str-->str -- discard comments
     molstr = filter_comments(molstr)
 
-    if dtype == 'xyz':
+    def parse_as_xyz_ish(molstr, strict):
+        molinit = {}
 
-        # << 2 >>  str-->dict -- process atoms, units
-        molstr, processed = _filter_xyz(molstr, strict=True)
+        # << 2 >>  str-->dict -- process atoms, units[, chg, mult]
+        molstr, processed = _filter_xyz(molstr, strict=strict)
         molinit.update(processed)
 
-    elif dtype == 'xyz+':
+        if molstr:
+            raise MoleculeFormatError("""Unprocessable Molecule remanents under {}:\n{}""".format(dtype, molstr))
 
-        # << 2 >>  str-->dict -- process atoms, units, chg, mult
-        molstr, processed = _filter_xyz(molstr, strict=False)
-        molinit.update(processed)
+        return molstr, molinit
 
-    elif dtype in ['psi4', 'psi4+']:
+
+    def parse_as_psi4_ish(molstr, unsettled):
+        molinit = {}
 
         # Notes
         # * *_filter functions must fill non-overlapping fields
@@ -891,21 +904,56 @@ def from_string(molstr,
         molinit.update(processed)
 
         # << 2.4 >>  str-->dict -- process atoms, chg, mult, frags
-        molstr, processed = _filter_mints(molstr, unsettled=(dtype=='psi4+'))
+        molstr, processed = _filter_mints(molstr, unsettled=unsettled)
         molinit.update(processed)
 
+        if molstr:
+            raise MoleculeFormatError("""Unprocessable Molecule remanents under {}:\n{}""".format(dtype, molstr))
+
+        return molstr, molinit
+
+
+    if dtype == 'xyz':
+        molstr, molinit = parse_as_xyz_ish(molstr, strict=True)
+
+    elif dtype == 'xyz+':
+        molstr, molinit = parse_as_xyz_ish(molstr, strict=False)
+
+    elif dtype == 'psi4':
+        molstr, molinit = parse_as_psi4_ish(molstr, unsettled=False)
+
+    elif dtype == 'psi4+':
+        molstr, molinit = parse_as_psi4_ish(molstr, unsettled=True)
+
+    elif dtype is None:
+        try:
+            molstr, molinit = parse_as_psi4_ish(molstr, unsettled=False)
+        except MoleculeFormatError as err:
+            try:
+                molstr, molinit = parse_as_xyz_ish(molstr, strict=False)
+            except MoleculeFormatError as err:
+                try:
+                    molstr, molinit = parse_as_xyz_ish(molstr, strict=True)
+                except MoleculeFormatError as err:
+                    try:
+                        molstr, molinit = parse_as_psi4_ish(molstr, unsettled=True)
+                    except MoleculeFormatError as err:
+                        raise MoleculeFormatError(
+                            """Unprocessable Molecule remanents under [psi4, xyz+, xyz, psi4+]:\n{}""".format(molstr))
     else:
         raise KeyError("Molecule: dtype of %s not recognized.")
 
-    if molstr:
-        raise MoleculeFormatError("""Unprocessable Molecule remanents:\n{}""".format(molstr))
 
+    # << 3 >>  args-->dict -- process name, com, orient, symm from arguments
+    processed = _filter_kwargs(name, fix_com, fix_orientation, fix_symmetry)
+    molinit.update(processed)
+    
     if verbose >= 2:
-        print('\nFROM_STRING INTO FROM_INPUT_ARRAYS <<<')
+        print('\nFROM_STRING --> FROM_INPUT_ARRAYS <<<')
         pprint.pprint(molinit)
         print('>>>\n')
 
-    # << 3 >>  dict-->molspec
+    # << 4 >>  dict-->molspec
     molrec = from_input_arrays(**molinit,
                                speclabel=True,
                                enable_qm=enable_qm,
@@ -914,7 +962,7 @@ def from_string(molstr,
                                missing_enabled_return_efp=missing_enabled_return_efp)
 
     if verbose >= 2:
-        print('\nMOLREC <<<', molrec, '>>>\n')
+        print('\nFROM_STRING MOLREC <<<', molrec, '>>>\n')
 
     if return_processed:
         return molrec, molinit
@@ -990,6 +1038,18 @@ def _filter_pubchem(string):
 
     return '\n'.join(reconstitute), processed
 
+def _filter_kwargs(name, fix_com, fix_orientation, fix_symmetry):
+    processed = {}
+    if name is not None:
+        processed['name'] = name
+    if fix_com is not None:
+        processed['fix_com'] = fix_com
+    if fix_orientation is not None:
+        processed['fix_orientation'] = fix_orientation
+    if fix_symmetry is not None:
+        processed[' fix_symmetry'] =  fix_symmetry
+
+    return processed
 
 def _filter_universals(string):
     """Process multiline `string` for fix_ and unit markers,
@@ -1057,13 +1117,13 @@ def _filter_libefp(string):
         r'\A' + r'efp' + SEP + r'(?P<efpfile>(\w+))' + SEP +
         r'(?P<x>' + NUMBER + r')' + SEP + r'(?P<y>' + NUMBER + r')' + SEP + r'(?P<z>' + NUMBER + r')' + SEP +
         r'(?P<a>' + NUMBER + r')' + SEP + r'(?P<b>' + NUMBER + r')' + SEP + r'(?P<c>' + NUMBER + r')' + ENDL + r'\Z',
-        re.IGNORECASE | re.VERBOSE)
+        re.IGNORECASE | re.VERBOSE)  # yapf: disable
     efppoints = re.compile(
         r'\A' + r'efp' + SEP + r'(?P<efpfile>(\w+))' + ENDL +
         r'[\s,]*' + r'(?P<x1>' + NUMBER + r')' + SEP + r'(?P<y1>' + NUMBER + r')' + SEP + r'(?P<z1>' + NUMBER + r')' + ENDL +
         r'[\s,]*' + r'(?P<x2>' + NUMBER + r')' + SEP + r'(?P<y2>' + NUMBER + r')' + SEP + r'(?P<z2>' + NUMBER + r')' + ENDL +
         r'[\s,]*' + r'(?P<x3>' + NUMBER + r')' + SEP + r'(?P<y3>' + NUMBER + r')' + SEP + r'(?P<z3>' + NUMBER + r')' + ENDL + r'\Z',
-        re.IGNORECASE | re.MULTILINE | re.VERBOSE)
+        re.IGNORECASE | re.MULTILINE | re.VERBOSE)  # yapf: disable
 
     def process_efpxyzabc(matchobj):
         processed['fragment_files'].append(matchobj.group('efpfile'))
@@ -1133,22 +1193,29 @@ def _filter_mints(string, unsettled=False):
     ANCHORTO = r'((\d+)|' + NUCLABEL + r')'
     ANCHORVAL = r'(' + NUMBER + r'|' + VAR + ')'
 
-    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', 
+                                re.IGNORECASE | re.VERBOSE)
     atom_vcart = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
                             r'(?P<Xval>' + ANCHORVAL + r')' + SEP +
                             r'(?P<Yval>' + ANCHORVAL + r')' + SEP +
-                            r'(?P<Zval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    atom_zmat1 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' +                               r'\Z', re.IGNORECASE | re.VERBOSE)
+                            r'(?P<Zval>' + ANCHORVAL + r')' + r'\Z', 
+                            re.IGNORECASE | re.VERBOSE)  # yapf: disable
+    atom_zmat1 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' +                               
+                            r'\Z', re.IGNORECASE | re.VERBOSE)
     atom_zmat2 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
-                            r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+                            r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + r'\Z', 
+                            re.IGNORECASE | re.VERBOSE)  # yapf: disable
     atom_zmat3 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
                             r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + SEP +
-                            r'(?P<Aidx>' + ANCHORTO + r')' + SEP + r'(?P<Aval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
+                            r'(?P<Aidx>' + ANCHORTO + r')' + SEP + r'(?P<Aval>' + ANCHORVAL + r')' + r'\Z', 
+                            re.IGNORECASE | re.VERBOSE)  # yapf: disable
     atom_zmat4 = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP +
                             r'(?P<Ridx>' + ANCHORTO + r')' + SEP + r'(?P<Rval>' + ANCHORVAL + r')' + SEP +
                             r'(?P<Aidx>' + ANCHORTO + r')' + SEP + r'(?P<Aval>' + ANCHORVAL + r')' + SEP +
-                            r'(?P<Didx>' + ANCHORTO + r')' + SEP + r'(?P<Dval>' + ANCHORVAL + r')' + r'\Z', re.IGNORECASE | re.VERBOSE)
-    variable = re.compile(r'\A' + r'(?P<varname>' + VAR + r')' + r'\s*=\s*' + r'(?P<varvalue>((tda)|(' + NUMBER + r')))' + r'\Z', re.IGNORECASE | re.VERBOSE)
+                            r'(?P<Didx>' + ANCHORTO + r')' + SEP + r'(?P<Dval>' + ANCHORVAL + r')' + r'\Z', 
+                            re.IGNORECASE | re.VERBOSE)  # yapf: disable
+    variable = re.compile(r'\A' + r'(?P<varname>' + VAR + r')' + r'\s*=\s*' + r'(?P<varvalue>((tda)|(' + NUMBER + r')))' + r'\Z', 
+                          re.IGNORECASE | re.VERBOSE)
 
 
     def process_system_cgmp(matchobj):
@@ -1280,12 +1347,14 @@ def _filter_xyz(string, strict):
     """
     xyz1strict = re.compile(r'\A' + r'(?P<nat>\d+)' + r'\Z')
     SIMPLENUCLEUS = r"""((?P<E>[A-Z]{1,3})|(?P<Z>\d{1,3}))"""
-    atom_cartesian_strict = re.compile(r'\A' + r'(?P<nucleus>' + SIMPLENUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_cartesian_strict = re.compile(r'\A' + r'(?P<nucleus>' + SIMPLENUCLEUS + r')' + SEP + CARTXYZ + r'\Z', 
+                                       re.IGNORECASE | re.VERBOSE)
 
     xyz1 = re.compile(r'\A' + r'(?P<nat>\d+)' +
                       r'[\s,]*' + r'((?P<ubohr>(bohr|au))|(?P<uang>ang))?' + r'\Z', re.IGNORECASE)
     xyz2 = re.compile(r'\A' + CHGMULT, re.VERBOSE)
-    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', re.IGNORECASE | re.VERBOSE)
+    atom_cartesian = re.compile(r'\A' + r'(?P<nucleus>' + NUCLEUS + r')' + SEP + CARTXYZ + r'\Z', 
+                                re.IGNORECASE | re.VERBOSE)
 
     def process_bohrang(matchobj):
         nat = matchobj.group('nat')

@@ -30,6 +30,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 import os
+import sys
 import hashlib
 import collections
 
@@ -39,6 +40,9 @@ from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
 from . import molparse
 from .bfs import BFS
+
+if sys.version_info >= (3,0):
+    basestring = str
 
 
 class Molecule(LibmintsMolecule):
@@ -51,13 +55,100 @@ class Molecule(LibmintsMolecule):
     `psi4.core.Molecule` itself.
 
     """
+    def __init__(self,
+                 molinit=None,
+                 dtype=None,
 
-    def __init__(self, psi4molstr=None):
+                 geom=None,
+                 elea=None,
+                 elez=None,
+                 elem=None,
+                 mass=None,
+                 real=None,
+                 elbl=None,
+
+                 name=None,
+                 units='Angstrom',
+                 input_units_to_au=None,
+                 fix_com=None,
+                 fix_orientation=None,
+                 fix_symmetry=None,
+
+                 fragment_separators=None,
+                 fragment_charges=None,
+                 fragment_multiplicities=None,
+
+                 molecular_charge=None,
+                 molecular_multiplicity=None,
+
+                 enable_qm=True,
+                 enable_efp=True,
+                 missing_enabled_return_qm='none',
+                 missing_enabled_return_efp='none',
+
+                 missing_enabled_return='error',
+                 tooclose=0.1,
+                 zero_ghost_fragments=False,
+                 nonphysical=False,
+                 mtol=1.e-3,
+                 verbose=1):
         """Initialize Molecule object from LibmintsMolecule"""
-        super(Molecule, self).__init__(psi4molstr=psi4molstr)
+        super(Molecule, self).__init__()
+
+        if molinit is not None or geom is not None:
+            if isinstance(molinit, dict):
+                molrec = molinit
+
+            elif isinstance(molinit, basestring):
+                compound_molrec = molparse.from_string(
+                    molstr=molinit,
+                    dtype=dtype,
+                    name=name,
+                    fix_com=fix_com,
+                    fix_orientation=fix_orientation,
+                    fix_symmetry=fix_symmetry,
+                    return_processed=False,
+                    enable_qm=enable_qm,
+                    enable_efp=enable_efp,
+                    missing_enabled_return_qm=missing_enabled_return_qm,
+                    missing_enabled_return_efp=missing_enabled_return_efp,
+                    verbose=verbose)
+                molrec = compound_molrec['qm']
+
+            elif molinit is None and geom is not None:
+                molrec = molparse.from_arrays(
+                    geom=geom,
+                    elea=elea,
+                    elez=elez,
+                    elem=elem,
+                    mass=mass,
+                    real=real,
+                    elbl=elbl,
+                    name=name,
+                    units=units,
+                    input_units_to_au=input_units_to_au,
+                    fix_com=fix_com,
+                    fix_orientation=fix_orientation,
+                    fix_symmetry=fix_symmetry,
+                    fragment_separators=fragment_separators,
+                    fragment_charges=fragment_charges,
+                    fragment_multiplicities=fragment_multiplicities,
+                    molecular_charge=molecular_charge,
+                    molecular_multiplicity=molecular_multiplicity,
+                    domain='qm',
+                    missing_enabled_return=missing_enabled_return,
+                    tooclose=tooclose,
+                    zero_ghost_fragments=zero_ghost_fragments,
+                    nonphysical=nonphysical,
+                    mtol=mtol,
+                    verbose=verbose)
+
+            # ok, got the molrec dictionary; now build the thing
+            self._internal_from_dict(molrec, verbose=verbose)
 
         # The comment line
         self.tagline = ""
+
 
     def __str__(self):
         text = """  ==> qcdb Molecule %s <==\n\n""" % (self.name())
@@ -1137,9 +1228,39 @@ class Molecule(LibmintsMolecule):
 
         return geom, mass, elem, elez, uniq
 
-    @classmethod
-    def from_arrays(cls,
-                    geom=None,
+    @staticmethod
+    def from_string(molstr,
+                    dtype=None,
+                    name=None,
+                    fix_com=None,
+                    fix_orientation=None,
+                    fix_symmetry=None,
+                    return_dict=False,
+                    enable_qm=True,
+                    enable_efp=True,
+                    missing_enabled_return_qm='none',
+                    missing_enabled_return_efp='none',
+                    verbose=1):
+        molrec = molparse.from_string(molstr=molstr,
+                                      dtype=dtype,
+                                      name=name,
+                                      fix_com=fix_com,
+                                      fix_orientation=fix_orientation,
+                                      fix_symmetry=fix_symmetry,
+                                      return_processed=False,
+                                      enable_qm=enable_qm,
+                                      enable_efp=enable_efp,
+                                      missing_enabled_return_qm=missing_enabled_return_qm,
+                                      missing_enabled_return_efp=missing_enabled_return_efp,
+                                      verbose=verbose)
+        if return_dict:
+            return Molecule.from_dict(molrec['qm']), molrec
+        else:
+            return Molecule.from_dict(molrec['qm'])
+
+
+    @staticmethod
+    def from_arrays(geom=None,
 
                     elea=None,
                     elez=None,
