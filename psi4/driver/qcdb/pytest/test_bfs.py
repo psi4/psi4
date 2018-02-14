@@ -64,7 +64,7 @@ def test_Molecule_BFS():
       [17],
       [18]]  # yapf: disable
 
-    qmol = qcdb.Molecule.init_with_xyz(iceIh, no_com=True, no_reorient=True, contentsNotFilename=True)
+    qmol = qcdb.Molecule.from_string(iceIh, dtype='xyz')
     frag, arrs, bmols, bmol = qmol.BFS(
         seed_atoms=[[3, 16], [21]], return_arrays=True, return_molecule=True, return_molecules=True)
 

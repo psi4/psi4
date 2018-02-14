@@ -970,3 +970,81 @@ def test_strings_10t():
                                            missing_enabled_return_efp='error')
 
 
+
+
+def assess_mol_11(mol, label):
+    dmol = mol.to_dict()
+    assert compare_molrecs(fullans1a, dmol, 4, label, relative_geoms='align')
+    assert compare_integers(2, mol.natom(), label)
+
+def test_qmol_11a():
+    asdf = qcdb.Molecule(fullans1a)
+    assess_mol_11(asdf, '[1] qcdb.Molecule(dict)')
+
+def test_qmol_11b():
+    asdf = qcdb.Molecule(geom=[ 0.,  0.,  0.,  1.,  0.,  0.], elez=[8, 1], fix_com=True)
+    assess_mol_11(asdf, '[2] qcdb.Molecule(geom, elez)')
+    
+def test_qmol_11c():
+    asdf = qcdb.Molecule("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4')
+    assess_mol_11(asdf, '[3] qcdb.Molecule(str, dtype="psi4")')
+    
+def test_qmol_11d():
+    asdf = qcdb.Molecule("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4+')
+    assess_mol_11(asdf, '[4] qcdb.Molecule(str, dtype="psi4+")')
+    
+def test_qmol_11e():
+    asdf = qcdb.Molecule("""2\n\nO 0 0 0 \n1 1 0 0 """, dtype='xyz', fix_com=True)
+    assess_mol_11(asdf, '[5] qcdb.Molecule(str, dtype="xyz")')
+    
+def test_qmol_11f():
+    asdf = qcdb.Molecule.from_dict(fullans1a)
+    assess_mol_11(asdf, '[6] qcdb.Molecule.from_dict(dict)')
+    
+def test_qmol_11g():
+    asdf = qcdb.Molecule.from_arrays(geom=[ 0.,  0.,  0.,  1.,  0.,  0.], elez=[8, 1], fix_com=True)
+    assess_mol_11(asdf, '[7] qcdb.Molecule.from_arrays(geom, elez)')
+    
+def test_qmol_11h():
+    asdf = qcdb.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4')
+    assess_mol_11(asdf, '[8] qcdb.Molecule.from_string(str, dtype="psi4")')
+    
+def test_qmol_11i():
+    asdf = qcdb.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4+')
+    assess_mol_11(asdf, '[9] qcdb.Molecule.from_string(str, dtype="psi4+")')
+    
+def test_qmol_11j():
+    asdf = qcdb.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, dtype='xyz', fix_com=True)
+    assess_mol_11(asdf, '[10] qcdb.Molecule.from_string(str, dtype="xyz")')
+
+
+@using_psi4_molrec
+def test_pmol_11k():
+    import psi4
+    asdf = psi4.core.Molecule.from_dict(fullans1a)
+    assess_mol_11(asdf, '[16] psi4.core.Molecule.from_dict(dict)')
+    
+@using_psi4_molrec
+def test_pmol_11l():
+    import psi4
+    asdf = psi4.core.Molecule.from_arrays(geom=[ 0.,  0.,  0.,  1.,  0.,  0.], elez=[8, 1], fix_com=True)
+    assess_mol_11(asdf, '[17] psi4.core.Molecule.from_arrays(geom, elez)')
+    
+@using_psi4_molrec
+def test_pmol_11m():
+    import psi4
+    asdf = psi4.core.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4')
+    assess_mol_11(asdf, '[18] psi4.core.Molecule.from_string(str, dtype="psi4")')
+    
+@using_psi4_molrec
+def test_pmol_11n():
+    import psi4
+    asdf = psi4.core.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4+')
+    assess_mol_11(asdf, '[19] psi4.core.Molecule.from_string(str, dtype="psi4+")')
+    
+@using_psi4_molrec
+def test_pmol_11o():
+    import psi4
+    asdf = psi4.core.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, dtype='xyz', fix_com=True)
+    assess_mol_11(asdf, '[20] psi4.core.Molecule.from_string(str, dtype="xyz")')
+
