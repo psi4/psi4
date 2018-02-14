@@ -1,3 +1,4 @@
+import re
 import sys
 import math
 
@@ -83,4 +84,11 @@ def standardize_efp_angles_units(units, geom_hints):
             hints.append(points)
 
     return hints
+
+def filter_comments(string):
+    """Remove from `string` any Python-style comments ('#' to end of line)."""
+
+    comment = re.compile(r'(^|[^\\])#.*')
+    string = re.sub(comment, '', string)
+    return string
 

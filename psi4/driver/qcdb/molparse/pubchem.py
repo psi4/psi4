@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 
-from __future__ import print_function,absolute_import
+from __future__ import print_function, absolute_import
 """Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
    to obtain a molecule string that can be passed to Molecule. ::
 
@@ -61,7 +61,6 @@ from ..exceptions import *
 
 
 class PubChemObj(object):
-
     def __init__(self, cid, mf, iupac):
         self.url = 'http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi'
         self.cid = cid
@@ -76,6 +75,7 @@ class PubChemObj(object):
     def getSDF(self):
         """Function to return the SDF (structure-data file) of the PubChem object."""
         if (len(self.dataSDF) == 0):
+
             def extract_xml_keyval(xml, key):
                 """ A useful helper function for parsing a single key from XML. """
                 try:
@@ -93,11 +93,11 @@ class PubChemObj(object):
                     raise ValidationError("""PubChem: too many matches found %d""" % (len(matches)))
 
             url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/%d/SDF?record_type=3d' % self.cid
-            req = Request(url, headers={'Accept' : 'chemical/x-mdl-sdfile'})
+            req = Request(url, headers={'Accept': 'chemical/x-mdl-sdfile'})
             try:
                 self.dataSDF = urlopen(req).read().decode('utf-8')
             except URLError as e:
-                msg = "Unable to open\n\n%s\n\ndue to the error\n\n%s\n\n" %(url, e)
+                msg = "Unable to open\n\n%s\n\ndue to the error\n\n%s\n\n" % (url, e)
                 msg += "It is possible that 3D information does not exist for this molecule in the PubChem database\n"
                 print(msg)
                 raise ValidationError(msg)
@@ -127,7 +127,7 @@ class PubChemObj(object):
 
         if self.natom == 0:
             raise ValidationError("PubChem: Cannot find the number of atoms.  3D data doesn't appear\n" +
-                            "to be available for %s.\n" % self.iupac)
+                                  "to be available for %s.\n" % self.iupac)
 
         lines = re.split('\n', sdfText)
 
@@ -186,7 +186,8 @@ def getPubChemResults(name):
 
     """
     print("\tSearching PubChem database for %s" % (name))
-    url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/%s/property/IUPACName,MolecularFormula/JSON' % quote(name)
+    url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/%s/property/IUPACName,MolecularFormula/JSON' % quote(
+        name)
     try:
         response = urlopen(url)
     except URLError as e:
@@ -199,7 +200,7 @@ def getPubChemResults(name):
         pubobj = PubChemObj(d['CID'], d['IUPACName'], d['IUPACName'])
         results.append(pubobj)
 
-    print("\tFound %d result%s" % (len(results), "" if len(results)==1 else "s"))
+    print("\tFound %d result%s" % (len(results), "" if len(results) == 1 else "s"))
     return results
 
 
