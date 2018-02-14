@@ -1222,7 +1222,7 @@ class LibmintsMolecule(object):
                 text += "    no_reorient\n"
             if force_c1:
                 text += "    symmetry c1\n"
-            #text += "    {} {}\n    --\n".format(self.molecular_charge(), self.multiplicity())  # uncomment after py-side mol parsing
+            text += "    {} {}\n    --\n".format(self.molecular_charge(), self.multiplicity())
 
             # append atoms and coordentries and fragment separators with charge and multiplicity
             Pfr = 0

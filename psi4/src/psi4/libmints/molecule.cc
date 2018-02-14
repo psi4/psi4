@@ -1149,8 +1149,8 @@ std::string Molecule::create_psi4_string_from_molecule() const {
             sprintf(buffer, "    no_reorient\n");
             ss << buffer;
         }
-        //sprintf(buffer, "    %d %d\n    --\n", molecular_charge_, multiplicity_);  // uncomment after py-side mol parsing
-        //ss << buffer;  // uncomment after py-side mol parsing
+        sprintf(buffer, "    %d %d\n    --\n", molecular_charge_, multiplicity_);
+        ss << buffer;
 
         // append atoms and coordentries and fragment separators with charge and multiplicity
         int Pfr = 0;
