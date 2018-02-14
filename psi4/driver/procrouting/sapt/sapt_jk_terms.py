@@ -250,7 +250,7 @@ def exchange(cache, jk, do_print=True):
     return {"Exch10(S^2)": Exch_s2, "Exch10": Exch10}
 
 
-def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True):
+def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True, Sinf=False):
     """
     Compute Ind20 and Exch-Ind20 quantities from a SAPT cache and JK object.
     """
@@ -389,6 +389,140 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
             core.print_out(print_sapt_var(name, ret[name], short=True))
             core.print_out("\n")
 
+    # Exch-Ind without S^2
+    if Sinf:
+        nocc_A = cache["Cocc_A"].shape[1]
+        nocc_B = cache["Cocc_B"].shape[1]
+        SAB = core.Matrix.triplet(
+            cache["Cocc_A"], cache["S"], cache["Cocc_B"], True, False, False)
+        num_occ = nocc_A + nocc_B
+
+        Sab = core.Matrix(num_occ, num_occ)
+        Sab.np[:nocc_A, nocc_A:] = SAB.np
+        Sab.np[nocc_A:, :nocc_A] = SAB.np.T
+        Sab.np[np.diag_indices_from(Sab.np)] += 1
+        Sab.power(-1.0, 1.e-14)
+
+        Tmo_AA = core.Matrix.from_array(Sab.np[:nocc_A, :nocc_A])
+        Tmo_BB = core.Matrix.from_array(Sab.np[nocc_A:, nocc_A:])
+        Tmo_AB = core.Matrix.from_array(Sab.np[:nocc_A, nocc_A:])
+
+        T_A = np.dot(cache["Cocc_A"], Tmo_AA).dot(cache["Cocc_A"].np.T)
+        T_B = np.dot(cache["Cocc_B"], Tmo_BB).dot(cache["Cocc_B"].np.T)
+        T_AB = np.dot(cache["Cocc_A"], Tmo_AB).dot(cache["Cocc_B"].np.T)
+
+        T_A = core.Matrix.from_array(T_A)
+        T_B = core.Matrix.from_array(T_B)
+        T_AB = core.Matrix.from_array(T_AB)
+
+        sT_A = np.dot(cache["Cvir_A"], unc_x_B_MOA.transpose()).dot(Tmo_AA).dot(cache["Cocc_A"].np.T)
+        sT_B = np.dot(cache["Cvir_B"], unc_x_A_MOB.transpose()).dot(Tmo_BB).dot(cache["Cocc_B"].np.T)
+        sT_AB = np.dot(cache["Cvir_A"], unc_x_B_MOA.transpose()).dot(Tmo_AB).dot(cache["Cocc_B"].np.T)
+        sT_BA = np.dot(cache["Cvir_B"], unc_x_A_MOB.transpose()).dot(Tmo_AB.np.T).dot(cache["Cocc_A"].np.T)
+
+        sT_A = core.Matrix.from_array(sT_A)
+        sT_B = core.Matrix.from_array(sT_B)
+        sT_AB = core.Matrix.from_array(sT_AB)
+        sT_BA = core.Matrix.from_array(sT_BA)
+        
+        jk.C_clear()
+    
+        jk.C_left_add(core.Matrix.chain_dot(cache["Cocc_A"], Tmo_AA))
+        jk.C_right_add(cache["Cocc_A"])
+    
+        jk.C_left_add(core.Matrix.chain_dot(cache["Cocc_B"], Tmo_BB))
+        jk.C_right_add(cache["Cocc_B"])
+    
+        jk.C_left_add(core.Matrix.chain_dot(cache["Cocc_A"], Tmo_AB))
+        jk.C_right_add(cache["Cocc_B"])
+    
+        jk.compute()
+    
+        J_AA, J_BB, J_AB = jk.J()
+        K_AA, K_BB, K_AB = jk.K()
+
+        # A <- B
+        EX_AA = V_B.clone()
+        EX_AA.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_B, trans=[False, True, False]))
+        EX_AA.axpy(-1.00, core.Matrix.chain_dot(S, T_B, V_B))
+        EX_AA.axpy(2.00, J_AB)
+        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB, trans=[False, True, False]))
+        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AB))
+        EX_AA.axpy(2.00, J_BB)
+        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_BB, trans=[False, True, False]))
+        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_BB))
+        EX_AA.axpy(-1.00, K_AB.transpose())
+        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB, trans=[False, True, True]))
+        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AB, trans=[False, False, True]))
+        EX_AA.axpy(-1.00, K_BB)
+        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_BB, trans=[False, True, False]))
+        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_BB))
+
+        EX_AB = V_A.clone()
+        EX_AB.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_A, trans=[False, True, False]))
+        EX_AB.axpy(-1.00, core.Matrix.chain_dot(S, T_B, V_A))
+        EX_AB.axpy(2.00, J_AA)
+        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AA, trans=[False, True, False]))
+        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AA))
+        EX_AB.axpy(2.00, J_AB)
+        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB, trans=[False, True, False]))
+        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AB))
+        EX_AB.axpy(-1.00, K_AA)
+        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AA, trans=[False, True, False]))
+        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AA))
+        EX_AB.axpy(-1.00, K_AB)
+        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB, trans=[False, True, False]))
+        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AB))
+
+        # B <- A
+        EX_BB = V_A.clone()
+        EX_BB.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_A))
+        EX_BB.axpy(-1.00, core.Matrix.chain_dot(S, T_A, V_A))
+        EX_BB.axpy(2.00, J_AB)
+        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB))
+        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AB))
+        EX_BB.axpy(2.00, J_AA)
+        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AA))
+        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AA))
+        EX_BB.axpy(-1.00, K_AB)
+        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB))
+        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AB))
+        EX_BB.axpy(-1.00, K_AA)
+        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AA))
+        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AA))
+
+        EX_BA = V_B.clone()
+        EX_BA.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_B))
+        EX_BA.axpy(-1.00, core.Matrix.chain_dot(S, T_A, V_B))
+        EX_BA.axpy(2.00, J_BB)
+        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_BB))
+        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_BB))
+        EX_BA.axpy(2.00, J_AB)
+        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB))
+        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AB))
+        EX_BA.axpy(-1.00, K_BB)
+        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_BB))
+        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_BB))
+        EX_BA.axpy(-1.00, K_AB.transpose())
+        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB, trans=[False, False, True]))
+        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AB, trans=[False, False, True]))
+        
+        unc_ind_ab_total = 2.0 * (sT_A.vector_dot(EX_AA) + sT_AB.vector_dot(EX_AB))
+        unc_ind_ba_total = 2.0 * (sT_B.vector_dot(EX_BB) + sT_BA.vector_dot(EX_BA))
+        unc_indexch_ab_inf = unc_ind_ab_total - unc_ind_ab
+        unc_indexch_ba_inf = unc_ind_ba_total - unc_ind_ba
+        
+        ret["Exch-Ind20,u (A<-B) (Sinf)"] = unc_indexch_ab_inf
+        ret["Exch-Ind20,u (A->B) (Sinf)"] = unc_indexch_ba_inf
+        ret["Exch-Ind20,u (Sinf)"] = unc_indexch_ba_inf + unc_indexch_ab_inf
+
+        if do_print:
+            for name in plist[3:]:
+                name = name + ' (Sinf)'
+
+                core.print_out(print_sapt_var(name, ret[name], short=True))
+                core.print_out("\n")
+
     # Do coupled
     if do_response:
         core.print_out("\n   => Coupled Induction <= \n\n")
@@ -416,6 +550,34 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
                 # core.set_variable(name, ret[name])
                 core.print_out(print_sapt_var(name, ret[name], short=True))
                 core.print_out("\n")
+
+        # Exch-Ind without S^2
+        if Sinf:
+            cT_A = np.dot(cache["Cvir_A"], x_B_MOA.transpose()).dot(Tmo_AA).dot(cache["Cocc_A"].np.T)
+            cT_B = np.dot(cache["Cvir_B"], x_A_MOB.transpose()).dot(Tmo_BB).dot(cache["Cocc_B"].np.T)
+            cT_AB = np.dot(cache["Cvir_A"], x_B_MOA.transpose()).dot(Tmo_AB).dot(cache["Cocc_B"].np.T)
+            cT_BA = np.dot(cache["Cvir_B"], x_A_MOB.transpose()).dot(Tmo_AB.np.T).dot(cache["Cocc_A"].np.T)
+
+            cT_A = core.Matrix.from_array(cT_A)
+            cT_B = core.Matrix.from_array(cT_B)
+            cT_AB = core.Matrix.from_array(cT_AB)
+            cT_BA = core.Matrix.from_array(cT_BA)
+
+            ind_ab_total = 2.0 * (cT_A.vector_dot(EX_AA) + cT_AB.vector_dot(EX_AB))
+            ind_ba_total = 2.0 * (cT_B.vector_dot(EX_BB) + cT_BA.vector_dot(EX_BA))
+            indexch_ab_inf = ind_ab_total - ind_ab
+            indexch_ba_inf = ind_ba_total - ind_ba
+        
+            ret["Exch-Ind20,r (A<-B) (Sinf)"] = indexch_ab_inf
+            ret["Exch-Ind20,r (A->B) (Sinf)"] = indexch_ba_inf
+            ret["Exch-Ind20,r (Sinf)"] = indexch_ba_inf + indexch_ab_inf
+
+            if do_print:
+                for name in plist[3:]:
+                    name = name.replace(",u", ",r") + ' (Sinf)'
+
+                    core.print_out(print_sapt_var(name, ret[name], short=True))
+                    core.print_out("\n")
 
     return ret
 
