@@ -168,9 +168,11 @@ void export_wavefunction(py::module& m) {
         .def("get_array", &Wavefunction::get_array, "Sets the requested internal array.")
         .def("set_array", &Wavefunction::set_array, "Returns the requested internal array.")
         .def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.")
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
+#ifdef USING_PCMSolver
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
-        .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object");
+        .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
+#endif
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
