@@ -147,3 +147,16 @@ class MoleculeFormatError(QcdbException):
     def __init__(self, msg):
         QcdbException.__init__(self, msg)
         self.msg = msg
+
+
+class FeatureDeprecated(QcdbException):
+    """Error called for functions removed but still defined.
+    Should suggest a replacement.
+
+    """
+    def __init__(self, msg):
+        QcdbException.__init__(self, msg)
+        self.msg = msg
+        print('\nFeature deprecated: {}\n\n'.format(msg))
+
+

@@ -533,7 +533,7 @@ def database(name, db_name, **kwargs):
         if db_mode == 'continuous':
             exec(banners)
 
-            molecule = core.Molecule.create_molecule_from_string(GEOS[rgt].create_psi4_string_from_molecule())
+            molecule = core.Molecule.from_dict(GEOS[rgt].to_dict())
             molecule.set_name(rgt)
             molecule.update_geometry()
 

@@ -71,8 +71,10 @@ def pybuild_basis(mol,
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
-                                          key, resolved_target, fitrole, other, return_atomlist=return_atomlist)
+    bs, basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
+                                              key, resolved_target, fitrole, other,
+                                              return_dict=True,
+                                              return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []

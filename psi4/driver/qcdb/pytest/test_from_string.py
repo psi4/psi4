@@ -213,7 +213,7 @@ def test_psi4_qm_3():
     subject = """0 1
 Mg 0 0"""
 
-    with pytest.raises(qcdb.MoleculeFormatError):
+    with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
 subject4 = """pubchem:benzene"""
@@ -388,6 +388,7 @@ subject6 = """
     0 1
     O1    0         0     0.118720
     h2   -0.753299, 0.0, -0.474880
+
     H3    0.753299, 0.0, -0.474880
     
     --
@@ -397,6 +398,7 @@ efp ammoniA
      0.98792    1.87681    2.85174
 units au
      1.68798    1.18856    3.09517
+
      1.45873    2.55904    2.27226
 
 """
@@ -548,7 +550,7 @@ def test_xyzp_qm_7a():
     subject = subject7
 
     with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+        final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='psi4')
 
 
 def test_xyzp_qm_7b():
@@ -1006,15 +1008,15 @@ def test_qmol_11g():
     assess_mol_11(asdf, '[7] qcdb.Molecule.from_arrays(geom, elez)')
     
 def test_qmol_11h():
-    asdf = qcdb.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4')
+    asdf = qcdb.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""")
     assess_mol_11(asdf, '[8] qcdb.Molecule.from_string(str, dtype="psi4")')
     
 def test_qmol_11i():
-    asdf = qcdb.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4+')
+    asdf = qcdb.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""")
     assess_mol_11(asdf, '[9] qcdb.Molecule.from_string(str, dtype="psi4+")')
     
 def test_qmol_11j():
-    asdf = qcdb.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, dtype='xyz', fix_com=True)
+    asdf = qcdb.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, fix_com=True)
     assess_mol_11(asdf, '[10] qcdb.Molecule.from_string(str, dtype="xyz")')
 
 
@@ -1033,18 +1035,18 @@ def test_pmol_11l():
 @using_psi4_molrec
 def test_pmol_11m():
     import psi4
-    asdf = psi4.core.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4')
+    asdf = psi4.core.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""")
     assess_mol_11(asdf, '[18] psi4.core.Molecule.from_string(str, dtype="psi4")')
     
 @using_psi4_molrec
 def test_pmol_11n():
     import psi4
-    asdf = psi4.core.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""", dtype='psi4+')
+    asdf = psi4.core.Molecule.from_string("""nocom\n8 0 0 0\n1 1 0 0""")
     assess_mol_11(asdf, '[19] psi4.core.Molecule.from_string(str, dtype="psi4+")')
     
 @using_psi4_molrec
 def test_pmol_11o():
     import psi4
-    asdf = psi4.core.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, dtype='xyz', fix_com=True)
+    asdf = psi4.core.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, fix_com=True)
     assess_mol_11(asdf, '[20] psi4.core.Molecule.from_string(str, dtype="xyz")')
 
