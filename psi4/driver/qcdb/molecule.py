@@ -191,101 +191,7 @@ class Molecule(LibmintsMolecule):
         >>> H2O = qcdb.Molecule.init_with_xyz('h2o.xyz')
 
         """
-        instance = cls()
-        instance.lock_frame = False
-        instance.PYmove_to_com = not no_com
-        instance.PYfix_orientation = no_reorient
-
-        if contentsNotFilename:
-            text = xyzfilename.splitlines()
-        else:
-            try:
-                infile = open(xyzfilename, 'r')
-            except IOError:
-                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" %
-                                      (xyzfilename))
-            if os.stat(xyzfilename).st_size == 0:
-                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' is blank.""" % (xyzfilename))
-            text = infile.readlines()
-
-        xyz1 = re.compile(r"^\s*(\d+)\s*(bohr|au)?\s*$", re.IGNORECASE)
-        xyz2 = re.compile(r'^\s*(-?\d+)\s+(\d+)\s+(.*)\s*$')
-        NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
-        xyzN = re.compile(r'(?:\s*)([A-Z](?:[a-z])?)(?:\s+)' +
-            NUMBER + '(?:\s+)' + NUMBER + '(?:\s+)' + NUMBER + '(?:\s*)', re.IGNORECASE)
-        xyzC = re.compile(r'(?:\s*)(\d+\.?\d*)(?:\s+)' +
-            NUMBER + '(?:\s+)' + NUMBER + '(?:\s+)' + NUMBER + '(?:\s*)', re.IGNORECASE)
-
-        # Try to match the first line
-        if xyz1.match(text[0]):
-            fileNatom = int(xyz1.match(text[0]).group(1))
-            if xyz1.match(text[0]).group(2) == None:
-                fileUnits = 'Angstrom'
-            else:
-                fileUnits = 'Bohr'
-        else:
-            raise ValidationError("Molecule::init_with_xyz: Malformed first line\n%s" % (text[0]))
-
-        # Try to match the second line
-        if xyz2.match(text[1]):
-            instance.set_molecular_charge(int(xyz2.match(text[1]).group(1)))
-            instance.set_multiplicity(int(xyz2.match(text[1]).group(2)))
-            instance.tagline = xyz2.match(text[1]).group(3).strip()
-        else:
-            instance.tagline = text[1].strip()
-
-        # Next line begins the useful information.
-        for i in range(fileNatom):
-            try:
-                if xyzN.match(text[2 + i]):
-
-                    fileAtom = xyzN.match(text[2 + i]).group(1).upper()
-                    fileX = float(xyzN.match(text[2 + i]).group(2))
-                    fileY = float(xyzN.match(text[2 + i]).group(3))
-                    fileZ = float(xyzN.match(text[2 + i]).group(4))
-
-                    # Check that the atom symbol is valid
-                    if not fileAtom in el2z:
-                        raise ValidationError('Illegal atom symbol in geometry specification: %s' % (fileAtom))
-
-                    # Add it to the molecule.
-                    instance.add_atom(el2z[fileAtom], fileX, fileY, fileZ, fileAtom, el2mass[fileAtom], el2z[fileAtom])
-
-                elif xyzC.match(text[2 + i]):
-
-                    fileAtom = int(float(xyzC.match(text[2 + i]).group(1)))
-                    fileX = float(xyzC.match(text[2 + i]).group(2))
-                    fileY = float(xyzC.match(text[2 + i]).group(3))
-                    fileZ = float(xyzC.match(text[2 + i]).group(4))
-
-                    # Check that the atomic number is valid
-                    if not fileAtom in z2el:
-                        raise ValidationError('Illegal atom symbol in geometry specification: %d' % (fileAtom))
-
-                    # Add it to the molecule.
-                    instance.add_atom(fileAtom, fileX, fileY, fileZ, z2el[fileAtom], z2mass[fileAtom], fileAtom)
-
-                else:
-                    raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d.\n%s:%s" %
-                                          (i + 3, xyzfilename, text[i + 2]))
-            except IndexError:
-                raise ValidationError("Molecule::init_with_xyz: Expected atom in file at line %d.\n%s" % (i + 3,
-                                                                                                          text[i + 2]))
-
-        # We need to make 1 fragment with all atoms
-        instance.fragments.append([0, fileNatom - 1])
-        instance.fragment_types.append('Real')
-        instance.fragment_charges.append(instance.molecular_charge())
-        instance.fragment_multiplicities.append(instance.multiplicity())
-        # Set the units properly
-        instance.PYunits = fileUnits
-        if fileUnits == 'Bohr':
-            instance.PYinput_units_to_au = 1.0
-        elif fileUnits == 'Angstrom':
-            instance.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
-
-        instance.update_geometry()
-        return instance
+        raise FeatureDeprecated("""qcdb.Molecule.init_with_xyz. Replace with: qcdb.Molecule.from_string(..., dtype='xyz+')""")
 
     @classmethod
     def init_with_mol2(cls, xyzfilename, no_com=False, no_reorient=False, contentsNotFilename=False):
@@ -461,41 +367,6 @@ class Molecule(LibmintsMolecule):
         nparr = np.array(geo)
         return nparr if npobj else np.array_repr(nparr)
 
-#    def save_string_for_psi4(self):
-#        """Returns a string of Molecule formatted for psi4.
-#        Includes fragments and reorienting, if specified.
-#
-#        >>> print H2OH2O.save_string_for_psi4()
-#        6
-#        0 1
-#        O         -1.55100700      -0.11452000       0.00000000
-#        H         -1.93425900       0.76250300       0.00000000
-#        H         -0.59967700       0.04071200       0.00000000
-#        --
-#        0 1
-#        @X         0.00000000       0.00000000       0.00000000
-#        O          1.35062500       0.11146900       0.00000000
-#        H          1.68039800      -0.37374100      -0.75856100
-#        H          1.68039800      -0.37374100       0.75856100
-#        units Angstrom
-#
-#        """
-#        Nfr = 0
-#        text = ""
-#        for fr in range(self.nfragments()):
-#            if self.fragment_types[fr] == 'Absent':
-#                continue
-#            if Nfr != 0:
-#                text += """--\n"""
-#            Nfr += 1
-#            text += """%d %d\n""" % (self.fragment_charges[fr], self.fragment_multiplicities[fr])
-#            for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
-#                geom = self.full_atoms[at].compute()
-#                text += """%-3s  %16.8f %16.8f %16.8f\n""" % \
-#                    (("" if self.fZ(at) else "@") + self.full_atoms[at].symbol(), \
-#                    geom[0], geom[1], geom[2])
-#        text += """units %s\n""" % (self.units().lower())
-#        return text
 
     def format_molecule_for_psi4(self):
         """Returns string of molecule definition block."""
