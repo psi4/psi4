@@ -327,6 +327,60 @@ def build_scan0_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 
+def build_n12_sx_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('N12-SX')
+    sup.set_description('   N12-SX Hybrid Screened Exchange-Correlation Functional\n')
+    sup.set_citation('    R. Peverati, D. G. Truhlar, Phys. Chem. Chem. Phys 14, 16187, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_HYB_GGA_X_N12_SX', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_N12_SX', restricted))
+    sup.set_x_alpha(0.25)
+    sup.set_x_beta(-0.25)
+    sup.set_x_omega(0.11)
+    
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_mn12_sx_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MN12-SX')
+    sup.set_description('   MN12-SX Meta-GGA Hybrid Screened Exchange-Correlation Functional\n')
+    sup.set_citation('    R. Peverati, D. G. Truhlar, Phys. Chem. Chem. Phys 14, 16187, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_HYB_MGGA_X_MN12_SX', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_MN12_SX', restricted))
+    sup.set_x_alpha(0.25)
+    sup.set_x_beta(-0.25)
+    sup.set_x_omega(0.11)
+    
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)    
+
+
 def build_mn15_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -425,6 +479,8 @@ hyb_superfunc_list = {
     "hf3c": build_hf3c_superfunctional,
     #    "scan0": build_scan0_superfunctional, # XC_MGGA_C_SCAN not present in LibXC 3.0.0
     "sogga11-x": build_sogga11_x_superfunctional,
+    "n12-sx": build_n12_sx_superfunctional,
+    "mn12-sx": build_mn12_sx_superfunctional,
     "mn15": build_mn15_superfunctional,
     "pw6b95": build_pw6b95_superfunctional,
 }

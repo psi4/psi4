@@ -297,6 +297,30 @@ def build_ft97_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 
+def build_sogga_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SOGGA')
+    sup.set_description('   SOGGA Exchange + PBE Correlation Functional\n')
+    sup.set_citation('    Y. Zhao, and D. G. Truhlar, J. Chem. Phys. 128, 184109, 2008\n' +
+                     '    J. Perdew, K. Burke, M. Ernzerhof, Phys. Rev. Lett. 77, 3865-3868, 1996\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_SOGGA', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+    
+
 def build_sogga11_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -320,6 +344,28 @@ def build_sogga11_superfunctional(name, npoints, deriv, restricted):
     return (sup, False)
 
 
+def build_n12_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('N12')
+    sup.set_description('   N12 Exchange-Correlation Functional\n')
+    sup.set_citation('    R. Peverati and D. G. Truhlar, J. Chem. Theory Comput. 8, 2310-2319, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_N12', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_N12', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 gga_superfunc_list = {
     "b86bpbe": build_b86bpbe_superfunctional,
     "blyp": build_blyp_superfunctional,
@@ -331,5 +377,7 @@ gga_superfunc_list = {
     "ft97": build_ft97_superfunctional,
     "bop": build_bop_superfunctional,
     "mpwpw": build_mpwpw_superfunctional,
+    "sogga": build_sogga_superfunctional,
     "sogga11": build_sogga11_superfunctional,
+    "n12": build_n12_superfunctional,    
 }
