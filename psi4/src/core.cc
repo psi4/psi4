@@ -1086,8 +1086,10 @@ PYBIND11_MODULE(core, core) {
     // OEProp/GridProp
     export_oeprop(core);
 
+#ifdef USING_PCMSolver
     // PCM
     export_pcm(core);
+#endif
 
     // CubeProperties
     export_cubeprop(core);
