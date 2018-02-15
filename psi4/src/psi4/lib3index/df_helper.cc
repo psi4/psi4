@@ -877,7 +877,7 @@ void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t st
     size_t block_size = end - begin + 1;
 
     // stripe the buffer
-    ::memset(Mp, 0, sizeof(double) * block_size * nao_ * nao_);
+    std::fill (Mp, Mp + block_size * nao_ * nao_, 0);
 
     // prepare eri buffers
     int rank = 0;
@@ -1200,7 +1200,31 @@ std::string DF_Helper::compute_metric(double pow) {
     }
     return return_metfile(pow);
 }
-void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t tots) {
+
+void DF_Helper::metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, 
+    size_t blocking_index, size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump) {
+
+    for (size_t i = 0, count = 1; i < blocking_index; i++, count++) {
+        if (total_mem < count * block_sizes || i == blocking_index - 1) {
+            if (count == 1 && i != blocking_index - 1) {
+                std::stringstream error;
+                error << "DF_Helper:contract_metric: not enough memory, ";
+                error << "needs at least " << ((count * block_sizes) * memory_factor + memory_bump) / 1e9 * 8. << "GB";
+                throw PSIEXCEPTION(error.str().c_str());
+            }
+            if (i == blocking_index - 1) {
+                steps.push_back(std::make_pair(i - count + 1, i));
+            } else {    
+                steps.push_back(std::make_pair(i - count + 1, i - 1));
+                i--;
+            }
+            count = 0;
+        }
+    }
+
+}
+
+void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
     
     std::string getf = std::get<0>(files_[file]);
     std::string putf = std::get<1>(files_[file]);
@@ -1208,33 +1232,11 @@ void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, 
     size_t Q = std::get<0>(sizes_[getf]);
     size_t l = std::get<1>(sizes_[getf]);
     size_t r = std::get<2>(sizes_[getf]);
-    size_t count = 0;
-    size_t maxim = 0;
 
     std::string op = "wb";
-
-    // determine blocking, block through l
     std::vector<std::pair<size_t, size_t>> steps;
-    for (size_t i = 0; i < l; i++) {
-        count++;
-        if (tots < count * Q * r || i == l - 1) {
-            if (count == 1 && i != l - 1) {
-                std::stringstream error;
-                error << "DF_Helper:contract_metric: not enough memory.";
-                throw PSIEXCEPTION(error.str().c_str());
-            }
-            if (tots < count * Q * r) {
-                maxim = (maxim < count ? count - 1 : maxim);
-                steps.push_back(std::make_pair(i - count + 1, i - 1));
-                i--;
-            } else {
-                maxim = (maxim < count ? count : maxim);
-                steps.push_back(std::make_pair(i - count + 1, i));
-            }
-            count = 0;
-        }
-    }
-    
+    metric_contraction_blocking(steps, l, Q * r, total_mem, 2, naux_ * naux_);
+
     for (size_t i = 0; i < steps.size(); i++) {
         size_t begin = std::get<0>(steps[i]);
         size_t end = std::get<1>(steps[i]);
@@ -1249,42 +1251,23 @@ void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, 
     
 }
 
-void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t tots) {
+void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
+    
     std::string getf = std::get<0>(files_[file]);
     std::string putf = std::get<1>(files_[file]);
-
     size_t a0 = std::get<0>(sizes_[getf]);
     size_t a1 = std::get<1>(sizes_[getf]);
     size_t a2 = std::get<2>(sizes_[getf]);
-    size_t count = 0;
-    size_t maxim = 0;
 
     std::string op = "wb";
+    std::vector<std::pair<size_t, size_t>> steps;
 
     // contract in steps
     if (std::get<2>(transf_[file])) {
+    
         // determine blocking
         // both pqQ and pQq formats block through p, which is index 0
-        std::vector<std::pair<size_t, size_t>> steps;
-        for (size_t i = 0; i < a0; i++) {
-            count++;
-            if (tots < count * a1 * a2 || i == a0 - 1) {
-                if (count == 1 && i != a0 - 1) {
-                    std::stringstream error;
-                    error << "DF_Helper:contract_metric: not enough memory.";
-                    throw PSIEXCEPTION(error.str().c_str());
-                }
-                if (tots < count * a1 * a2) {
-                    maxim = (maxim < count ? count - 1 : maxim);
-                    steps.push_back(std::make_pair(i - count + 1, i - 1));
-                    i--;
-                } else {
-                    maxim = (maxim < count ? count : maxim);
-                    steps.push_back(std::make_pair(i - count + 1, i));
-                }
-                count = 0;
-            }
-        }
+        metric_contraction_blocking(steps, a0, a1 * a2, total_mem, 2, naux_ * naux_);
         
         // grab val, the inner contractions are different depending on the form
         size_t val = std::get<2>(transf_[file]);
@@ -1310,28 +1293,10 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
         }
 
     } else {
+
         // determine blocking
         // the Qpq format blocks through p, which is index 1
-        std::vector<std::pair<size_t, size_t>> steps;
-        for (size_t i = 0; i < a1; i++) {
-            count++;
-            if (tots < count * a0 * a2 || i == a1 - 1) {
-                if (count == 1 && i != a1 - 1) {
-                    std::stringstream error;
-                    error << "DF_Helper:contract_metric: not enough memory.";
-                    throw PSIEXCEPTION(error.str().c_str());
-                }
-                if (tots < count * a0 * a2) {
-                    maxim = (maxim < count ? count - 1 : maxim);
-                    steps.push_back(std::make_pair(i - count + 1, i - 1));
-                    i--;
-                } else {
-                    maxim = (maxim < count ? count : maxim);
-                    steps.push_back(std::make_pair(i - count + 1, i));
-                }
-                count = 0;
-            }
-        }
+        metric_contraction_blocking(steps, a1, a0 * a2, total_mem, 2, naux_ * naux_);
 
         for (size_t i = 0; i < steps.size(); i++) {
             size_t begin = std::get<0>(steps[i]);
@@ -1356,6 +1321,7 @@ void DF_Helper::contract_metric_AO_core(double* Qpq, double* metp) {
         C_DGEMM('N', 'N', naux_, mi, naux_, 1.0, metp, naux_, &Qpq[skips], mi, 0.0, &Ppq_[skips], mi);
     }
 }
+
 void DF_Helper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end) {
     // loop and contract
     size_t startind = symm_agg_sizes_[begin] * naux_;

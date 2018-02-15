@@ -320,6 +320,8 @@ class DF_Helper {
                                                          std::vector<std::pair<size_t, size_t>>& b);
     std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                           std::vector<std::pair<size_t, size_t>>& b);
+    void metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, 
+        size_t blocking_index, size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump); 
 
     // => Schwarz Screening <=
     std::vector<size_t> schwarz_fun_mask_;
