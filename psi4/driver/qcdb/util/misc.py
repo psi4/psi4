@@ -6,7 +6,7 @@ import numpy as np
 
 from ..physconst import psi_bohr2angstroms
 
-if sys.version_info >= (3,0):
+if sys.version_info >= (3, 0):
     basestring = str
 
 
@@ -21,6 +21,7 @@ def distance_matrix(a, b):
         for j in range(b.shape[0]):
             distm[i, j] = np.linalg.norm(a[i] - b[j])
     return distm
+
 
 def update_with_error(a, b, path=None):
     """Merges `b` into `a` like dict.update; however, raises KeyError if values of a
@@ -44,7 +45,7 @@ def update_with_error(a, b, path=None):
                   isinstance(b[key], (list, tuple)) and
                   not isinstance(b[key], basestring) and
                   len(a[key]) == len(b[key]) and
-                  all((av is None or av == bv) for av, bv in zip(a[key], b[key]))):
+                  all((av is None or av == bv) for av, bv in zip(a[key], b[key]))):  # yapf: disable
                 a[key] = b[key]
             else:
                 raise KeyError('Conflict at {}: {} vs. {}'.format('.'.join(path + [str(key)]), a[key], b[key]))
@@ -59,6 +60,7 @@ def standardize_efp_angles_units(units, geom_hints):
     (-pi, pi]. The latter is handy since this is how libefp returns hints
 
     """
+
     def radrge(radang):
         """Adjust `radang` by 2pi into (-pi, pi] range."""
         if radang > math.pi:
@@ -85,6 +87,7 @@ def standardize_efp_angles_units(units, geom_hints):
 
     return hints
 
+
 def filter_comments(string):
     """Remove from `string` any Python-style comments ('#' to end of line)."""
 
@@ -92,3 +95,16 @@ def filter_comments(string):
     string = re.sub(comment, '', string)
     return string
 
+
+def unnp(dicary):
+    """Return `dicary` with any ndarray values replaced by lists."""
+
+    ndicary = {}
+    for k, v in dicary.items():
+        try:
+            v.shape
+        except AttributeError:
+            ndicary[k] = v
+        else:
+            ndicary[k] = v.tolist()
+    return ndicary

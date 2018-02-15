@@ -38,6 +38,7 @@ import numpy as np
 
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
+from .util import unnp
 from . import molparse
 from .bfs import BFS
 
@@ -1344,7 +1345,7 @@ class Molecule(LibmintsMolecule):
 
 
     @staticmethod
-    def _raw_to_dict(self, force_c1=False, force_au=False):
+    def _raw_to_dict(self, force_c1=False, force_au=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
         self.update_geometry()
@@ -1438,6 +1439,9 @@ class Molecule(LibmintsMolecule):
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
 
+        if not np_out:
+            validated_molrec = unnp(validated_molrec)
+
         return validated_molrec
 
     @classmethod
@@ -1478,7 +1482,7 @@ class Molecule(LibmintsMolecule):
                 self.set_geometry_variable(var[0], var[1])
 
         else:
-            geom = molrec['geom'].reshape((-1, 3))
+            geom = np.array(molrec['geom']).reshape((-1, 3))
             nat = geom.shape[0]
             unsettled = False
 
