@@ -10,13 +10,14 @@ set(sources_list
         export_benchmarks.cc
         export_blas_lapack.cc
         export_cubeprop.cc
-        export_efp.cc
+        export_pcm.cc
         export_fock.cc
         export_functional.cc
         export_mints.cc
         export_misc.cc
         export_oeprop.cc
         export_plugins.cc
+        export_diis.cc
         export_psio.cc
         export_wavefunction.cc
         export_options.cc
@@ -35,6 +36,9 @@ if(TARGET dkh::dkh)
 endif()
 if(TARGET libefp::efp)
     target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:libefp::efp,INTERFACE_COMPILE_DEFINITIONS>)
+endif()
+if(TARGET PCMSolver::pcm)
+    target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:PCMSolver::pcm,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:Libxc::xc,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(core PRIVATE ${psi4_binmodules})

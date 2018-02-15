@@ -30,57 +30,57 @@
 #define PCM_H
 #ifdef USING_PCMSolver
 
-#include <vector>
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/pragma.h"
-#include "psi4/libmints/potentialint.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/libmints/dimension.h"
+#include "psi4/libmints/typedefs.h"
 
 #include <PCMSolver/pcmsolver.h>
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace psi {
 class BasisSet;
 class Options;
-using SharedMatrix=std::shared_ptr<Matrix>;
+class PCMPotentialInt;
 
-class PCM {
-  public:
-    enum CalcType {Total, NucAndEle, EleOnly};
-    PCM() {};
-    PCM(Options &options, std::shared_ptr<PSIO> psio, int nirrep, std::shared_ptr<BasisSet> basisset);
-    ~PCM();
-    double compute_E(SharedMatrix &D, CalcType type = NucAndEle);//Total); this should be the default (once an advanced option is available)
-    SharedMatrix compute_V();
-    SharedMatrix compute_V_electronic(); // This is needed by the CC code (and maybe the LR-SCF code)
+class PCM final {
+   public:
+    enum class CalcType : int { Total, NucAndEle, EleOnly };
+    PCM() = default;
+    PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared_ptr<BasisSet> basisset);
+    PCM(const PCM *);
+    ~PCM() {}
+    /*! \brief Compute polarization energy and Fock matrix contribution
+     *  \param[in] D density matrix
+     *  \param[in] type how to treat MEP and ASC
+     */
+    std::pair<double, SharedMatrix> compute_PCM_terms(const SharedMatrix &D, CalcType type = CalcType::Total) const;
 
-  protected:
+   private:
     /// The number of tesserae in PCMSolver.
     int ntess_;
     /// The number of irreducible tesserae in PCMSolver.
     int ntessirr_;
-    /// A matrix to hold the charges and {x,y,z} coordinates of the tesserae
+    Dimension tesspi_;
+    /// Charges and {x,y,z} coordinates of the cavity points
     SharedMatrix tess_Zxyz_;
-    /// A scratch array to hold the electronic potential values at the tesserae
-    double * tess_pot_e_;
-    /// A scratch array to hold the nuclear potential values at the tesserae (unchanging)
-    double * tess_pot_n_;
-    /// A scratch array to hold the total potential values at the tesserae
-    double * tess_pot_;
-    /// A scratch array to hold the electronic charges at the tesserae
-    double * tess_charges_e_;
-    /// A scratch array to hold the nuclear charges at the tesserae
-    double * tess_charges_n_;
-    /// A scratch array to hold the charges at the tesserae
-    double * tess_charges_;
+    /// Nucler MEP at cavity points
+    SharedVector MEP_n_;
+    /// Computes electronic MEP at cavity points
+    SharedVector compute_electronic_MEP(const SharedMatrix &D) const;
     /// Calculate energy using total charges and potentials
-    double compute_E_total(SharedMatrix &D);
+    double compute_E_total(const SharedVector &MEP_e) const;
     /// Calculate energy separating between charges and potentials
-    double compute_E_separate(SharedMatrix &D);
+    double compute_E_separate(const SharedVector &MEP_e) const;
     /// Calculate electronic polarization energy (U_ee) only (for CC step)
-    double compute_E_electronic(SharedMatrix &D);
+    double compute_E_electronic(const SharedVector &MEP_e) const;
+    /*! \brief Compute PCM potential
+     *  \param[in] ASC the apparent surface charge to contract with
+     *  charge-attraction integrals
+     */
+    SharedMatrix compute_V(const SharedVector &ASC) const;
 
     /// Current basis set (for puream and nao/nso info)
     std::shared_ptr<BasisSet> basisset_;
@@ -90,20 +90,28 @@ class PCM {
     SharedMatrix my_aotoso_;
 
     /// Factory for the electrostatic integrals
-    PCMPotentialInt* potential_int_;
+    PCMPotentialInt *potential_int_;
 
     /// Handle to stuff provided by PCMSolver
-    pcmsolver_context_t * context_;
+    std::shared_ptr<pcmsolver_context_t> context_;
+
+    /// Filename for the PCM input file as parsed by PCMSolver
+    std::string pcmsolver_parsed_fname_;
 
     /// print level
     int pcm_print_;
-
 };
 
-typedef std::shared_ptr<PCM> SharedPCM;
+namespace detail {
+std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_ptr<Molecule>);
 
-void host_writer(const char * message);
+PCMInput pcmsolver_input();
 
-} // psi
+void host_writer(const char *);
+
+std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver_parsed_fname,
+                                                    const std::shared_ptr<Molecule> &molecule);
+}  // detail
+}  // psi
 #endif
 #endif

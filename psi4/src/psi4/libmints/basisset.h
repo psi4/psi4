@@ -63,7 +63,7 @@ class IntegralFactory;
     from the checkpoint file storing the information in an internal Molecule class
     which can be accessed using molecule().
 */
-class BasisSet
+class PSI_API BasisSet
 {
 protected:
     friend class BasisSetParser;

@@ -37,7 +37,7 @@
 
 namespace psi{ namespace @plugin@ {
 
-extern "C"
+extern "C" PSI_API
 int read_options(std::string name, Options& options)
 {
     if (name == "@PLUGIN@"|| options.read_globals()) {
@@ -48,7 +48,7 @@ int read_options(std::string name, Options& options)
     return true;
 }
 
-extern "C"
+extern "C" PSI_API
 SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 {
     int print = options.get_int("PRINT");

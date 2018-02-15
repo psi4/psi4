@@ -44,7 +44,7 @@ endif()
 
 #  <<  Pybind11 & Python  >>
 set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
-find_package(pybind11 2.0.0 EXACT CONFIG REQUIRED)
+find_package(pybind11 2.2.1 EXACT CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
@@ -82,10 +82,18 @@ else()
 endif()
 
 if(${ENABLE_libefp})
+    # neither libefp nor pylibefp actually needed c-side; runtime detection would
+    #   do just as well. included for completeness and so pylibefp_PYMOD can be
+    #   hard-loaded into PYTHONPATH. also incl for finding efp frag files below.
     find_package(libefp 1.4.2 CONFIG REQUIRED COMPONENTS shallow)
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
+
+    find_package(pylibefp 0.1 CONFIG REQUIRED)
+    get_property(_loc TARGET pylibefp::core PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using pylibefp${ColourReset}: ${_loc} (version ${pylibefp_VERSION})")
 else()
     message(STATUS "Disabled libefp")
 endif()

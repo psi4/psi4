@@ -40,6 +40,7 @@
 #include "psi4/libmints/cdsalclist.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/petitelist.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/physconst.h"
 
 #include "psi4/pybind11.h"
@@ -47,17 +48,17 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
-                       const py::list &grad_list, int freq_irrep_only)
-{
+SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
+                       const py::list &grad_list, int freq_irrep_only ) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
     int print_lvl = options.get_int("PRINT");
 
     int Natom = mol->natom();
-    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
+    bool t_project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
+    bool r_project = t_project && options.get_bool("FD_PROJECT");
 
-    CdSalcList salc_list(mol, 0xFF, project, project);
+    CdSalcList salc_list(mol, 0xFF, t_project, r_project);
     int Nirrep = salc_list.nirrep();
 
     // *** Build vectors that list indices of salcs for each irrep
@@ -264,8 +265,6 @@ SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
     std::vector<std::string> irrep_lbls = mol->irrep_labels();
     double **H_irr[8];
 
-    std::vector < VIBRATION * > modes;
-
     for (int h = 0; h < Nirrep; ++h) {
 
         if (salcs_pi[h].size() == 0) continue;
@@ -359,32 +358,11 @@ SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
             eivout(normal_irr, evals, 3 * Natom, dim, "outfile");
         }
 
-        for (int i = 0; i < salcs_pi[h].size(); ++i) {
-            double *v = init_array(3 * Natom);
-            for (int x = 0; x < 3 * Natom; ++x)
-                v[x] = normal_irr[x][i];
-            VIBRATION *vib = new VIBRATION(h, evals[i], v);
-            modes.push_back(vib);
-        }
-
         free(evals);
         free_block(evects);
         free_block(normal_irr);
     }
 
-    // This print function also saves frequencies in wavefunction.
-    if (print_lvl){
-        print_vibrations(mol, modes);
-    }
-
-    // Optionally, save normal modes to file.
-    if (options.get_bool("NORMAL_MODES_WRITE")) {
-        save_normal_modes(mol, modes);
-    }
-
-    for (int i = 0; i < modes.size(); ++i)
-        delete modes[i];
-    modes.clear();
 
     // Build complete hessian for transformation to cartesians
     double **H = block_matrix(Nsalc_all, Nsalc_all);
@@ -401,24 +379,29 @@ SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
 
     // Transform Hessian into cartesian coordinates
     if (print_lvl >= 3) {
-        outfile->Printf("\n\tFull force constant matrix in mass-weighted SALCS.\n");
+        outfile->Printf("\n\tForce constant matrix for all computed irreps in mass-weighted SALCS.\n");
         mat_print(H, Nsalc_all, Nsalc_all, "outfile");
     }
 
     // Build Bu^-1/2 matrix for the whole Hessian
-    SharedMatrix B_shared = salc_list.matrix();
-    double **B = B_shared->pointer();
+    //SharedMatrix B_shared = salc_list.matrix();
+    //double **B = B_shared->pointer();
 
     // double **Hx = block_matrix(3*Natom, 3*Natom);
     auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
     double **Hx = mat_Hx->pointer();
 
     // Hx = Bt H B
-    for (int i = 0; i < Nsalc_all; ++i)
-        for (int j = 0; j < Nsalc_all; ++j)
-            for (int x1 = 0; x1 < 3 * Natom; ++x1)
-                for (int x2 = 0; x2 <= x1; ++x2)
-                    Hx[x1][x2] += B[i][x1] * H[i][j] * B[j][x2];
+    for (int h = 0; h < Nirrep; ++h) {
+        SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
+        double **B_irr = B_irr_shared->pointer();
+        int start = salc_irr_start[h];
+        for (int i = 0; i < salcs_pi[h].size(); ++i)
+            for (int j = 0; j < salcs_pi[h].size(); ++j)
+                for (int x1 = 0; x1 < 3 * Natom; ++x1)
+                    for (int x2 = 0; x2 <= x1; ++x2)
+                        Hx[x1][x2] += B_irr[i][x1] * H[start + i][start + j] * B_irr[j][x2];
+    }
 
     for (int x1 = 0; x1 < 3 * Natom; ++x1)
         for (int x2 = 0; x2 < x1; ++x2)

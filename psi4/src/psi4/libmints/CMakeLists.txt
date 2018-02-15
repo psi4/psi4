@@ -64,22 +64,22 @@ set(sources_list local.cc
                  cdsalclist.cc
                  erd_eri.cc
                  angularmomentum.cc
-		 bessel.cc
-		 gaussquad.cc
-		 ecpint.cc
+                 bessel.cc
+                 gaussquad.cc
+                 ecpint.cc
 )
 if(TARGET simint::simint)
     list(APPEND sources_list siminteri.cc)
     add_definitions("-DUSING_simint")
 endif()
-psi4_add_module(lib mints sources_list iwl options psi4util trans efp_solver)
+psi4_add_module(lib mints sources_list iwl options psi4util trans)
 
 target_link_libraries(mints PRIVATE Libint::libint)
 if(TARGET dkh::dkh)
     target_link_libraries(mints PRIVATE dkh::dkh)
 endif()
-if(TARGET libefp::efp)
-    target_link_libraries(mints PRIVATE libefp::efp)
+if(TARGET PCMSolver::pcm)
+    target_link_libraries(mints PRIVATE psipcm PCMSolver::pcm)
 endif()
 if(TARGET erd::erd)
     target_link_libraries(mints PRIVATE erd::erd)

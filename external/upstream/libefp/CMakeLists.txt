@@ -15,7 +15,7 @@ if(${ENABLE_libefp})
         ExternalProject_Add(libefp_external
             DEPENDS lapack_external
             GIT_REPOSITORY https://github.com/ilyak/libefp
-            GIT_TAG 1.4.2
+            GIT_TAG 1c686aa
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -30,6 +30,7 @@ if(${ENABLE_libefp})
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
+                       -DINSTALL_DEVEL_HEADERS=ON
                        -DFRAGLIB_UNDERSCORE_L=OFF
                        -DFRAGLIB_DEEP=OFF
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK

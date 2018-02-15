@@ -129,7 +129,6 @@ SharedMatrix RHF::Da() const { return D_; }
 
 void RHF::save_density_and_energy() {
     Dold_->copy(D_);  // Save previous density
-    Eold_ = E_;       // Save previous energy
 }
 
 void forPermutation(int depth, std::vector<int>& array, std::vector<int>& indices, int curDepth,
@@ -212,18 +211,17 @@ void RHF::form_G() {
     }
 }
 
-void RHF::compute_orbital_gradient(bool save_fock) {
+double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
     SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
-    Drms_ = gradient->rms();
 
     if (save_fock) {
         if (initialized_diis_manager_ == false) {
             if (scf_type_ == "DIRECT") {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
                                                               DIISManager::LargestError, DIISManager::InCore);
             } else {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
+                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
                                                               DIISManager::LargestError, DIISManager::OnDisk);
             }
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
@@ -232,24 +230,17 @@ void RHF::compute_orbital_gradient(bool save_fock) {
         }
         diis_manager_->add_entry(2, gradient.get(), Fa_.get());
     }
+    return gradient->rms();
 }
 
 bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
 
-bool RHF::test_convergency() {
-    // energy difference
-    double ediff = E_ - Eold_;
-
-    // Drms was computed earlier
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_) {
-        return true;
-    } else
-        return false;
-}
-
 void RHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(G_);
+    for (const auto& Vext : external_potentials_) {
+        Fa_->add(Vext);
+    }
 
     if (debug_) {
         Fa_->print();
@@ -289,9 +280,9 @@ void RHF::form_D() {
     }
 }
 
-void RHF::damp_update() {
-    D_->scale(1.0 - damping_percentage_);
-    D_->axpy(damping_percentage_, Dold_);
+void RHF::damping_update(double damping_percentage) {
+    D_->scale(1.0 - damping_percentage);
+    D_->axpy(damping_percentage, Dold_);
 }
 
 double RHF::compute_initial_E() {
@@ -792,7 +783,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     return ret_vec;
 }
 
-int RHF::soscf_update() {
+int RHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     int fock_builds;
     time_t start, stop;
     start = time(nullptr);
@@ -814,7 +805,7 @@ int RHF::soscf_update() {
         return 0;
     }
 
-    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv_, soscf_max_iter_, soscf_print_ ? 2 : 0);
+    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv, soscf_max_iter, soscf_print ? 2 : 0);
 
     // => Rotate orbitals <= //
     rotate_orbitals(Ca_, ret_x[0]);
@@ -938,8 +929,7 @@ bool RHF::stability_analysis() {
     return false;
 }
 
-std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
-{
+std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<RHF>(wfn, functional_, wfn->options(), wfn->psio());
     // now just have to copy the matrices that RHF initializes
@@ -951,7 +941,7 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
     if (Da_) {
         hf_wfn->Da_ = Da_subset("AO");
         hf_wfn->Db_ = hf_wfn->Da_;
-        hf_wfn->D_  = hf_wfn->Da_;
+        hf_wfn->D_ = hf_wfn->Da_;
     }
     if (Fa_) {
         hf_wfn->Fa_ = Fa_subset("AO");
@@ -968,6 +958,5 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis)
 
     return hf_wfn;
 }
-
 }
 }

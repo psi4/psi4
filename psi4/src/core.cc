@@ -36,7 +36,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libplugin/plugin.h"
@@ -72,7 +71,7 @@ using namespace psi;
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
 void export_cubeprop(py::module&);
-void export_efp(py::module&);
+void export_pcm(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
 void export_mints(py::module&);
@@ -80,6 +79,7 @@ void export_misc(py::module&);
 void export_oeprop(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
+void export_diis(py::module&);
 void export_wavefunction(py::module&);
 void export_options(py::module&);
 
@@ -152,9 +152,6 @@ PsiReturnType psimrcc(SharedWavefunction, Options&);
 namespace sapt {
 PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&);
 }
-namespace thermo {
-PsiReturnType thermo(SharedWavefunction, SharedVector, Options&);
-}
 
 #ifdef USING_CheMPS2
 namespace dmrg {
@@ -170,14 +167,14 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const py::dict
 // Finite difference functions
 namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule>, Options&);
-std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep = -1);
-std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep = -1);
+std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep);
+std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep);
 std::vector<SharedMatrix> atomic_displacements(std::shared_ptr<Molecule>, Options&);
 
 SharedMatrix fd_1_0(std::shared_ptr<Molecule>, Options&, const py::list&);
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep = -1);
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep = -1);
-SharedMatrix displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
+void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
 }
 
 // CC functions
@@ -203,14 +200,6 @@ void scatter(std::shared_ptr<Molecule> molecule, Options&, double step, std::vec
 }
 namespace cceom {
 PsiReturnType cceom(SharedWavefunction, Options&);
-}
-
-// No idea what to do with these yet
-namespace efp {
-PsiReturnType efp_init(Options&);
-}
-namespace efp {
-PsiReturnType efp_set_options();
 }
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
@@ -352,9 +341,9 @@ SharedMatrix py_psi_fd_freq_1(std::shared_ptr<Molecule> mol, const py::list& gra
     return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
 }
 
-SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
+void py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
                                   const double disp_size) {
-    return findif::displace_atom(geom, atom, coord, sign, disp_size);
+    findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
 SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn) {
@@ -520,11 +509,6 @@ SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn) {
     return adc_wfn;
 }
 
-double py_psi_thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs) {
-    py_psi_prepare_options_for_module("THERMO");
-    thermo::thermo(ref_wfn, vib_freqs, Process::environment.options);
-    return 0.0;
-}
 
 char const* py_psi_version() {
 #ifdef PSI_VERSION
@@ -908,40 +892,6 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
-std::shared_ptr<psi::efp::EFP> py_psi_efp_init() {
-    py_psi_prepare_options_for_module("EFP");
-    if (psi::efp::efp_init(Process::environment.options) == Success) {
-        return Process::environment.get_efp();
-    } else
-        throw PSIEXCEPTION("Unable to initialize EFP library.");
-}
-
-std::shared_ptr<psi::efp::EFP> py_psi_get_active_efp() { return Process::environment.get_efp(); }
-
-#ifdef USING_libefp
-void py_psi_efp_set_options() {
-    py_psi_prepare_options_for_module("EFP");
-    Process::environment.get_efp()->set_options();
-}
-
-void py_psi_set_efp_torque(SharedMatrix torq) {
-    if (Process::environment.get_efp()->get_frag_count() > 0) {
-        Process::environment.get_efp()->set_torque(torq);
-    } else {
-        Process::environment.set_efp_torque(torq);
-    }
-}
-
-SharedMatrix py_psi_get_efp_torque() {
-    if (Process::environment.get_efp()->get_frag_count() > 0) {
-        std::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
-        return efp->torque();
-    } else {
-        return Process::environment.efp_torque();
-    }
-}
-#endif
-
 void py_psi_set_frequencies(std::shared_ptr<Vector> freq) { Process::environment.set_frequencies(freq); }
 
 std::shared_ptr<Vector> py_psi_get_frequencies() { return Process::environment.frequencies(); }
@@ -1085,8 +1035,8 @@ void psi4_python_module_finalize() {
     psi_file_prefix = nullptr;
 }
 
-PYBIND11_PLUGIN(core) {
-    py::module core("core", "C++ Innards of Psi4: Open-Source Quantum Chemistry");
+PYBIND11_MODULE(core, core) {
+    core.doc() = "C++ Innards of Psi4: Open-Source Quantum Chemistry";
     //    py::module core("core", R"pbdoc(
     //
     //        Psi4: An Open-Source Ab Initio Electronic Structure Package
@@ -1131,8 +1081,10 @@ PYBIND11_PLUGIN(core) {
     // OEProp/GridProp
     export_oeprop(core);
 
-    // EFP
-    export_efp(core);
+#ifdef USING_PCMSolver
+    // PCM
+    export_pcm(core);
+#endif
 
     // CubeProperties
     export_cubeprop(core);
@@ -1154,15 +1106,6 @@ PYBIND11_PLUGIN(core) {
              "Returns the most recently computed gradient, as a N by 3 :py:class:`~psi4.core.Matrix` object.");
     core.def("set_gradient", py_psi_set_gradient,
              "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
-    core.def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
-    core.def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
-#ifdef USING_libefp
-    core.def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
-    core.def("get_efp_torque", py_psi_get_efp_torque,
-             "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
-    core.def("set_efp_torque", py_psi_set_efp_torque,
-             "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
-#endif
     core.def("get_frequencies", py_psi_get_frequencies,
              "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
@@ -1333,7 +1276,6 @@ PYBIND11_PLUGIN(core) {
     core.def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
     core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
-    core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
@@ -1350,6 +1292,7 @@ PYBIND11_PLUGIN(core) {
 
     // Define library classes
     export_psio(core);
+    export_diis(core);
     export_mints(core);
     export_functional(core);
     export_misc(core);
@@ -1363,6 +1306,4 @@ PYBIND11_PLUGIN(core) {
 
     // py::class_<Process>(core, "Process").
     //        def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
-
-    return core.ptr();
 }

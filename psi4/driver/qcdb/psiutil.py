@@ -32,11 +32,16 @@ or some better way. Apologies to the coders.
 """
 from __future__ import absolute_import
 from __future__ import print_function
-import sys
-import math
-import re
 import os
-import string
+import re
+import sys
+import copy
+import math
+import pprint
+import collections
+
+import numpy as np
+
 from .vecutil import *
 
 
@@ -49,56 +54,65 @@ def _success(label):
     sys.stdout.flush()
 
 
-def compare_values(expected, computed, digits, label, exitonfail=True):
+def compare_values(expected, computed, digits, label, passnone=False, verbose=1):
     """Function to compare two values. Prints :py:func:`util.success`
     when value *computed* matches value *expected* to number of *digits*
-    (or to *digits* itself when *digits* > 1 e.g. digits=0.04). Performs
-    a system exit on failure unless *exitonfail* False, in which case
-    returns error message. Used in input files in the test suite.
+    (or to *digits* itself when *digits* > 1 e.g. digits=0.04).
+    Used in input files in the test suite.
+
+    Raises
+    ------
+    TestComparisonError
+        If `computed` differs from `expected` by more than `digits`.
 
     """
-    thresh = 10 ** -digits if digits > 1 else digits
+    if passnone:
+        if expected is None and computed is None:
+            _success(label)
+            return
+
+    if digits > 1:
+        thresh = 10 ** -digits
+        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." % (label, digits+1, computed, digits+1, expected, digits))
+    else:
+        thresh = digits
+        message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
     if abs(expected - computed) > thresh:
-        print("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
-        if exitonfail:
-            sys.exit(1)
-        else:
-            return
+        raise TestComparisonError(message)
     if math.isnan(computed):
-        print("\t%s: computed value (%f) does not match (%f)\n" % (label, computed, expected))
-        print("\tprobably because the computed value is nan.")
-        if exitonfail:
-            sys.exit(1)
-        else:
-            return
-    _success(label)
+        message += "\tprobably because the computed value is nan."
+        raise TestComparisonError(message)
+    if verbose >= 1:
+        _success(label)
 
 
-def compare_integers(expected, computed, label):
+def compare_integers(expected, computed, label, verbose=1):
     """Function to compare two integers. Prints :py:func:`util.success`
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
     if (expected != computed):
-        print("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
-        sys.exit(1)
-    _success(label)
+        message = "\t{}: computed value ({}) does not match ({}).".format(label, computed, expected)
+        raise TestComparisonError(message)
+    if verbose >= 1:
+        _success(label)
 
 
-def compare_strings(expected, computed, label):
+def compare_strings(expected, computed, label, verbose=1):
     """Function to compare two strings. Prints :py:func:`util.success`
     when string *computed* exactly matches string *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
     if(expected != computed):
-        print("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
-        sys.exit(1)
-    _success(label)
+        message = "\t%s: computed value (%s) does not match (%s)." % (label, computed, expected)
+        raise TestComparisonError(message)
+    if verbose >= 1:
+        _success(label)
 
 
-def compare_matrices(expected, computed, digits, label):
+def compare_matrices(expected, computed, digits, label, verbose=1):
     """Function to compare two matrices. Prints :py:func:`util.success`
     when elements of matrix *computed* match elements of matrix *expected* to
     number of *digits*. Performs a system exit on failure to match symmetry
@@ -120,8 +134,140 @@ def compare_matrices(expected, computed, digits, label):
         show(computed)
         print('\n')
         show(expected)
-        sys.exit(1)
-    _success(label)
+        raise TestComparisonError('compare_matrices failed')
+    if verbose >= 1:
+        _success(label)
+
+
+def compare_dicts(expected, computed, tol, label, forgive=None, verbose=1):
+    """Compares dictionaries `computed` to `expected` using DeepDiff Float
+    comparisons made to `tol` significant decimal places. Note that a clean
+    DeepDiff returns {}, which evaluates to False, hence the compare_integers.
+    Keys in `forgive` may change between `expected` and `computed` without
+    triggering failure.
+
+    """
+    try:
+        import deepdiff
+    except ImportError:
+        raise ImportError("""Install deepdiff. `conda install deepdiff` or `pip install deepdiff`""")
+
+    if forgive is None:
+        forgive = []
+    forgiven = collections.defaultdict(dict)
+
+    ans = deepdiff.DeepDiff(expected, computed, significant_digits=tol, verbose_level=2)
+
+    for category in list(ans):
+        for key in list(ans[category]):
+            for fg in forgive:
+                fgsig = "root['" + fg + "']"
+                if key.startswith(fgsig):
+                    forgiven[category][key] = ans[category].pop(key)
+        if not ans[category]:
+            del ans[category]
+
+    clean = not bool(ans)
+    if not clean:
+        pprint.pprint(ans)
+    if verbose >= 2:
+        pprint.pprint(forgiven)
+    return compare_integers(True, clean, label, verbose=verbose)
+
+
+def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, relative_geoms='exact'):
+    """Function to compare Molecule dictionaries. Prints
+    :py:func:`util.success` when elements of `computed` match elements of
+    `expected` to `tol` number of digits (for float arrays).
+
+    """
+    from .align import B787
+
+    thresh = 10 ** -tol if tol >= 1 else tol
+
+    # Need to manipulate the dictionaries a bit, so hold values
+    xptd = copy.deepcopy(expected)
+    cptd = copy.deepcopy(computed)
+
+    def massage_dicts(dicary):
+        # deepdiff can't cope with np.int type
+        #   https://github.com/seperman/deepdiff/issues/97
+        if 'elez' in dicary:
+            dicary['elez'] = [int(z) for z in dicary['elez']]
+        if 'elea' in dicary:
+            dicary['elea'] = [int(a) for a in dicary['elea']]
+        # deepdiff w/py27 complains about unicode type and val errors
+        if 'elem' in dicary:
+            dicary['elem'] = [str(e) for e in dicary['elem']]
+        if 'elbl' in dicary:
+            dicary['elbl'] = [str(l) for l in dicary['elbl']]
+        if 'fix_symmetry' in dicary:
+            dicary['fix_symmetry'] = str(dicary['fix_symmetry'])
+        if 'units' in dicary:
+            dicary['units'] = str(dicary['units'])
+        if 'fragment_files' in dicary:
+            dicary['fragment_files'] = [str(f) for f in dicary['fragment_files']]
+        # and about int vs long errors
+        if 'molecular_multiplicity' in dicary:
+            dicary['molecular_multiplicity'] = int(dicary['molecular_multiplicity'])
+        if 'fragment_multiplicities' in dicary:
+            dicary['fragment_multiplicities'] = [(m if m is None else int(m)) for m in dicary['fragment_multiplicities']]
+        if 'fragment_separators' in dicary:
+            dicary['fragment_separators'] = [(s if s is None else int(s)) for s in dicary['fragment_separators']]
+        return dicary
+
+    xptd = massage_dicts(xptd)
+    cptd = massage_dicts(cptd)
+
+    if relative_geoms == 'exact':
+        pass
+    elif relative_geoms == 'align':
+        # can't just expect geometries to match, so we'll align them, check that
+        #   they overlap and that the translation/rotation arrays jibe with
+        #   fix_com/orientation, then attach the oriented geom to computed before the
+        #   recursive dict comparison.
+        cgeom = np.array(cptd['geom']).reshape((-1, 3))
+        rgeom = np.array(xptd['geom']).reshape((-1, 3))
+        rmsd, mill = B787(rgeom=rgeom,
+                          cgeom=cgeom,
+                          runiq=None,
+                          cuniq=None,
+                          atoms_map=True,
+                          mols_align=True,
+                          run_mirror=False,
+                          verbose=0)
+        if cptd['fix_com']:
+            compare_integers(1, np.allclose(np.zeros((3)), mill.shift, atol=thresh), 'null shift', verbose=verbose)
+        if cptd['fix_orientation']:
+            compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
+        ageom = mill.align_coordinates(cgeom)
+        cptd['geom'] = ageom.reshape((-1))
+
+    compare_dicts(xptd, cptd, tol, label, forgive=forgive, verbose=verbose)
+
+
+def compare_arrays(expected, computed, digits, label, verbose=1):
+    """Function to compare two numpy arrays. Prints :py:func:`util.success`
+    when elements of vector *computed* match elements of vector *expected* to
+    number of *digits*. Performs a system exit on failure to match symmetry
+    structure, dimension, or element values. Used in input files in the test suite.
+
+    """
+    try:
+        shape1 = expected.shape
+        shape2 = computed.shape
+    except:
+        raise TestComparisonError("Input objects do not have a shape attribute.")
+
+    if shape1 != shape2:
+        TestComparisonError("Input shapes do not match.")
+
+    tol = 10 ** (-digits)
+    if not np.allclose(expected, computed, atol=tol):
+        message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
+        raise TestComparisonError(message)
+    if verbose >= 1:
+        _success(label)
 
 
 def query_yes_no(question, default=True):
@@ -249,8 +395,8 @@ def import_ignorecase(module):
     return modobj
 
 def findfile_ignorecase(fil, pre='', post=''):
-    """Function to locate a file *pre* + *fil* + *post* in any possible 
-    lettercase permutation of *fil*. Returns *pre* + *fil* + *post* if 
+    """Function to locate a file *pre* + *fil* + *post* in any possible
+    lettercase permutation of *fil*. Returns *pre* + *fil* + *post* if
     available, None if not.
 
     """

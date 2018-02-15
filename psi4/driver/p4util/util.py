@@ -28,11 +28,13 @@
 
 """Module with utility functions for use in input files."""
 from __future__ import division
+import os
 import re
 import sys
-import os
 import math
+
 import numpy as np
+
 from .exceptions import *
 
 
@@ -124,26 +126,24 @@ def set_memory(inputval, execute=True):
     >>> psi4.get_memory()
     Out[2]: 30000000000L
 
-    :good examples:
+    >>> # Good examples
+    >>> psi4.set_memory(800000000)        # 800000000
+    >>> psi4.set_memory(2004088624.9)     # 2004088624
+    >>> psi4.set_memory(1.0e9)            # 1000000000
+    >>> psi4.set_memory('600 mb')         # 600000000
+    >>> psi4.set_memory('600.0 MiB')      # 629145600
+    >>> psi4.set_memory('.6 Gb')          # 600000000
+    >>> psi4.set_memory(' 100000000kB ')  # 100000000000
+    >>> psi4.set_memory('2 eb')           # 2000000000000000000
 
-    800000000         # 800000000
-    2004088624.9      # 2004088624
-    1.0e9             # 1000000000
-    '600 mb'          # 600000000
-    '600.0 MiB'       # 629145600
-    '.6 Gb'           # 600000000
-    ' 100000000kB '   # 100000000000
-    '2 eb'            # 2000000000000000000
-
-    :bad examples:
-
-    {}         # odd type
-    ''         # no info
-    "8 dimms"  # unacceptable units
-    "1e5 gb"   # string w/ exponent
-    "5e5"      # string w/o units
-    2000       # mem too small
-    -5e5       # negative (and too small)
+    >>> # Bad examples
+    >>> psi4.set_memory({})         # odd type
+    >>> psi4.set_memory('')         # no info
+    >>> psi4.set_memory("8 dimms")  # unacceptable units
+    >>> psi4.set_memory("1e5 gb")   # string w/ exponent
+    >>> psi4.set_memory("5e5")      # string w/o units
+    >>> psi4.set_memory(2000)       # mem too small
+    >>> psi4.set_memory(-5e5)       # negative (and too small)
 
     """
     # Handle memory given in bytes directly (int or float)
@@ -216,7 +216,8 @@ def compare_values(expected, computed, digits, label, exitonfail=True):
     """
     if digits > 1:
         thresh = 10 ** -digits
-        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." % (label, digits+1, computed, digits+1, expected, digits))
+        message = """\t{}: computed value ({:.{digits1}f}) does not match ({:.{digits1}f}) to {digits} digits.""".format(
+                  label, computed, expected, digits1=int(digits)+1, digits=digits)
     else:
         thresh = digits
         message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))

@@ -38,6 +38,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/cdsalclist.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/physconst.h"
 
 #include "psi4/pybind11.h"
@@ -61,15 +62,15 @@ int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, in
         int irrep, int ii, int jj, int disp_i, int disp_j);
 
 SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
-                       const py::list &python_energies, int freq_irrep_only)
-{
+                       const py::list &python_energies, int freq_irrep_only) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
     int print_lvl = options.get_int("PRINT");
 
     int Natom = mol->natom();
-    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
-    CdSalcList salc_list(mol, 0xFF, project, project);
+    bool t_project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
+    bool r_project = t_project && options.get_bool("FD_PROJECT");
+    CdSalcList salc_list(mol, 0xFF, t_project, r_project);
     int Nirrep = salc_list.nirrep();
 
     // build vectors that list indices of salcs for each irrep
@@ -155,8 +156,6 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
 
     std::vector<std::string> irrep_lbls = mol->irrep_labels();
     double **H_irr[8]; // hessian by irrep block
-
-    std::vector < VIBRATION * > modes;
 
     for (int h = 0; h < Nirrep; ++h) {
 
@@ -261,32 +260,11 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
             eivout(normal_irr, evals, 3 * Natom, dim, "outfile");
         }
 
-        for (int i = 0; i < salcs_pi[h].size(); ++i) {
-            double *v = init_array(3 * Natom);
-            for (int x = 0; x < 3 * Natom; ++x)
-                v[x] = normal_irr[x][i];
-            VIBRATION *vib = new VIBRATION(h, evals[i], v);
-            modes.push_back(vib);
-        }
-
         free(evals);
         free_block(evects);
         free_block(normal_irr);
     }
 
-    // This print function also saves frequencies in wavefunction.
-    if (print_lvl) {
-        print_vibrations(mol, modes);
-    }
-
-    // Optionally, save normal modes to file.
-    if (options.get_bool("NORMAL_MODES_WRITE")) {
-        save_normal_modes(mol, modes);
-    }
-
-    for (int i = 0; i < modes.size(); ++i)
-        delete modes[i];
-    modes.clear();
 
     // Build complete hessian for transformation to cartesians
     double **H = block_matrix(Nsalc_all, Nsalc_all);

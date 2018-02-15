@@ -26,10 +26,10 @@
 # @END LICENSE
 #
 
+import numpy as np
+
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
-
-import numpy as np
 
 dipole = {
     'name': 'Dipole polarizabilities',

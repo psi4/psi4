@@ -33,9 +33,11 @@
 #include <cstdio>
 #include <vector>
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
-class Dimension {
+class PSI_API Dimension {
    private:
     std::string name_;
     std::vector<int> blocks_;

@@ -33,10 +33,10 @@ response(), and frequency() function. *name* can be assumed lowercase by here.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import shutil
 import os
+import shutil
 import subprocess
-import re
+
 import numpy as np
 
 from psi4 import extras
@@ -45,6 +45,7 @@ from psi4.driver import qcdb
 from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
+# never import driver, wrappers, or aliases into this file
 
 from .roa import *
 from . import proc_util
@@ -53,7 +54,6 @@ from . import dft_funcs
 from . import mcscf
 from . import response
 
-# never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
 # consult http://psicode.org/psi4manual/master/proc_py.html
@@ -1150,7 +1150,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             # Figure out the fitting basis set
             if castdf is True:
                 core.set_global_option('DF_BASIS_SCF', '')
-            elif isinstance(castdf, (unicode, str)):
+            elif isinstance(castdf, str):
                 core.set_global_option('DF_BASIS_SCF', castdf)
             else:
                 raise ValidationError("Unexpected castdf option (%s)." % castdf)
@@ -1222,7 +1222,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
-        if "_disp_functor" in dir(ref_wfn):
+        if hasattr(ref_wfn, "_disp_functor"):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
@@ -1251,16 +1251,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
         p4util.banner(name.upper())
         core.print_out('\n')
-
-
-    # EFP preparation
-    efp = core.get_active_efp()
-    if efp.nfragments() > 0:
-        core.set_legacy_molecule(scf_molecule)
-        core.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
-        core.efp_set_options()
-        efp.set_qm_atoms()
-        efp.print_out()
 
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
@@ -1311,7 +1301,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         old_ref = str(data["reference"]).replace("KS", "").replace("HF", "")
         new_ref = core.get_option('SCF', 'REFERENCE').replace("KS", "").replace("HF", "")
         if old_ref != new_ref:
-            scf_wfn.reset_occ(True)
+            scf_wfn.reset_occ_ = True
 
 
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
@@ -1344,9 +1334,18 @@ def scf_helper(name, post_scf=True, **kwargs):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
-    if "_disp_functor" in dir(scf_wfn):
+    if hasattr(scf_wfn, "_disp_functor"):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
         scf_wfn.set_variable("-D Energy", disp_energy)
+
+    # PCM preparation
+    if core.get_option('SCF', 'PCM'):
+        pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
+        pcm_print_level = core.get_option('SCF', "PRINT")
+        scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
+        core.print_out("""  PCM does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        use_c1 = True
 
     e_scf = scf_wfn.compute_energy()
     core.set_variable("SCF TOTAL ENERGY", e_scf)
@@ -2137,39 +2136,6 @@ def run_scf_hessian(name, **kwargs):
     H = core.scfhess(ref_wfn)
 
     ref_wfn.set_hessian(H)
-
-    # Temporary freq code.  To be replaced with proper frequency analysis later...
-    import numpy as np
-
-    mol = ref_wfn.molecule()
-    natoms = mol.natom()
-    masses = np.zeros(natoms)
-
-    for atom in range(natoms):
-        masses[atom] = mol.mass(atom)
-
-    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)
-    mwhess = np.einsum('i,ij,j->ij', m, H, m)
-
-    # Are we linear?
-    if mol.get_full_point_group() in [ "C_inf_v", "D_inf_h" ]:
-        nexternal = 5
-    else:
-        nexternal = 6
-
-    fcscale = constants.hartree2J / (constants.bohr2m * constants.bohr2m * constants.amu2kg);
-    fc = fcscale * np.linalg.eigvalsh(mwhess)
-    # Sort by magnitude of the force constants, to project out rot/vib
-    ordering = np.argsort(np.abs(fc))
-    projected = fc[ordering][nexternal:]
-    freqs = np.sqrt(np.abs(projected))
-    freqs *= 1.0 / (2.0 * np.pi * constants.c * 100.0)
-    freqs[projected < 0] *= -1
-    freqs.sort()
-
-    freqvec = core.Vector.from_array(freqs)
-    ref_wfn.set_frequencies(freqvec)
-    # End of temporary freq hack.  Remove me later!
 
     # Write Hessian out.  This probably needs a more permanent home, too.
     # This is a drop-in replacement for the code that lives in findif
@@ -4211,16 +4177,47 @@ def run_efp(name, **kwargs):
     computation (ignore any QM atoms).
 
     """
-    # initialize library
-    efp = core.get_active_efp()
 
-    if efp.nfragments() == 0:
+    efp_molecule = kwargs.get('molecule', core.get_active_molecule())
+    try:
+        efpobj = efp_molecule.EFP
+    except AttributeError:
         raise ValidationError("""Method 'efp' not available without EFP fragments in molecule""")
 
-    # set options
-    core.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
-    core.efp_set_options()
+    # print efp geom in [A]
+    core.print_out(efpobj.banner())
+    core.print_out(efpobj.geometry_summary(units_to_bohr=constants.bohr2angstroms))
 
-    efp.print_out()
-    returnvalue = efp.compute()
-    return returnvalue
+    # set options
+    # * 'chtr', 'ai_exch', 'ai_disp', 'ai_chtr' may be enabled in a future libefp release
+    efpopts = {}
+    for opt in ['elst', 'exch', 'ind', 'disp',
+                   'elst_damping', 'ind_damping', 'disp_damping']:
+        psiopt = 'EFP_' + opt.upper()
+        if core.has_option_changed('EFP', psiopt):
+            efpopts[opt] = core.get_option('EFP', psiopt)
+    efpopts['ai_elst'] = False
+    efpopts['ai_ind'] = False
+    efpobj.set_opts(efpopts, label='psi', append='psi')
+    do_gradient = core.get_option('EFP', 'DERTYPE') == 'FIRST'
+
+    # compute and report
+    efpobj.compute(do_gradient=do_gradient)
+    core.print_out(efpobj.energy_summary(label='psi'))
+
+    ene = efpobj.get_energy(label='psi')
+    core.set_variable('EFP ELST ENERGY', ene['electrostatic'] + ene['charge_penetration'] + ene['electrostatic_point_charges'])
+    core.set_variable('EFP IND ENERGY', ene['polarization'])
+    core.set_variable('EFP DISP ENERGY', ene['dispersion'])
+    core.set_variable('EFP EXCH ENERGY', ene['exchange_repulsion'])
+    core.set_variable('EFP TOTAL ENERGY', ene['total'])
+    core.set_variable('CURRENT ENERGY', ene['total'])
+
+    if do_gradient:
+        core.print_out(efpobj.gradient_summary())
+
+        torq = efpobj.get_gradient()
+        torq = core.Matrix.from_array(np.asarray(torq).reshape(-1, 6))
+        core.set_array_variable('EFP TORQUE', torq)
+
+    return ene['total']

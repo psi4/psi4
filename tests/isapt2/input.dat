@@ -4,10 +4,12 @@ memory 1 GB
 
 molecule mol {
 0 1
+--
+0 2
 O          0.39987        2.94222       -0.26535
 H          0.05893        2.05436       -0.50962
 --
-0 1
+0 2
 O          0.48122        0.30277       -0.77763
 H          0.26106       -0.50005       -1.28451
 --
@@ -31,6 +33,11 @@ symmetry c1
 no_reorient
 no_com
 }
+
+# See note at isapt1. We have fragments whose neutral multiplcity
+#   is doublet. Since we want overall multiplicity singlet, which is a
+#   low-spin sum, need to fully specify tot & frag multiplicity. This is
+#   exactly the same system as in isapt1.
 
 # => Standard Options <= #
 

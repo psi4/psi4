@@ -32,8 +32,10 @@ from __future__ import division
 import os
 import re
 import sys
+
 from .exceptions import *
 from .libmintsgshell import *
+
 if sys.version_info >= (3,0):
     basestring = str
 

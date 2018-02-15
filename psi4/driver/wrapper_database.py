@@ -33,13 +33,12 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import re
 import os
+import re
 import math
-import warnings
 import pickle
-import copy
 import collections
+
 from psi4.driver import constants
 from psi4.driver.driver import *
 # never import aliases into this file
@@ -534,7 +533,7 @@ def database(name, db_name, **kwargs):
         if db_mode == 'continuous':
             exec(banners)
 
-            molecule = core.Molecule.create_molecule_from_string(GEOS[rgt].create_psi4_string_from_molecule())
+            molecule = core.Molecule.from_dict(GEOS[rgt].to_dict())
             molecule.set_name(rgt)
             molecule.update_geometry()
 

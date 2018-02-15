@@ -246,42 +246,43 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     #   d3mbj:   s6 a1 s8 a2 alpha6=None version=6
 
     dashlvleff = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
+    dashformatter = """{:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:6}\n"""
 
     if dashlvleff.lower() == 'd2p4':
-        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-            (dashcoeff['s6'],
+        returnstring = dashformatter.format(
+             dashcoeff['s6'],
              1.1, 0.0, 0.0, 20.0, 2)
     elif dashlvleff.lower() == 'd2gr':
-        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-            (dashcoeff['s6'],
+        returnstring = dashformatter.format(
+             dashcoeff['s6'],
              1.1, 0.0, 0.0,
              dashcoeff['alpha6'],
              2)
     elif dashlvleff.lower() == 'd3zero':
-        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-            (dashcoeff['s6'],
+        returnstring = dashformatter.format(
+             dashcoeff['s6'],
              dashcoeff['sr6'],
              dashcoeff['s8'],
              1.0,
              dashcoeff['alpha6'],
              3)
     elif dashlvleff.lower() == 'd3bj':
-        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-            (dashcoeff['s6'],
+        returnstring = dashformatter.format(
+             dashcoeff['s6'],
              dashcoeff['a1'],
              dashcoeff['s8'],
              dashcoeff['a2'],
              0.0, 4)
     elif dashlvleff.lower() == 'd3mzero':
-        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-            (dashcoeff['s6'],
+        returnstring = dashformatter.format(
+             dashcoeff['s6'],
              dashcoeff['sr6'],
              dashcoeff['s8'],
              dashcoeff['beta'],
              14.0, 5)
     elif dashlvleff.lower() == 'd3mbj':
-        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-            (dashcoeff['s6'],
+        returnstring = dashformatter.format(
+             dashcoeff['s6'],
              dashcoeff['a1'],
              dashcoeff['s8'],
              dashcoeff['a2'],

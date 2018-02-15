@@ -74,7 +74,7 @@ class TwoBodySOIntFunctor {
 };
 #endif
 
-class TwoBodySOInt {
+class PSI_API TwoBodySOInt {
    protected:
     std::vector<std::shared_ptr<TwoBodyAOInt> > tb_;
     std::shared_ptr<IntegralFactory> integral_;

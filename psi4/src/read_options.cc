@@ -53,9 +53,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   // dodoc == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
 
-  /*- Units used in geometry specification -*/
-  options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
-
   /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
@@ -151,15 +148,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   MOLDEN output file, the Hessian file, the internal coordinate file,
   etc. Use the add_str_i function to make this string case sensitive. -*/
   options.add_str_i("WRITER_FILE_LABEL", "");
-
-  /*- PCM boolean for pcmsolver module -*/
-  options.add_bool("PCM", false);
-  /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
-  options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
-  /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
-  options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
-  /*- PCM-CCSD algorithm type. -*/
-  options.add_str("PCM_CC_TYPE", "PTE", "PTE");
   /*- The density fitting basis to use in coupled cluster computations. -*/
   options.add_str("DF_BASIS_CC", "");
   /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
@@ -241,7 +229,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
 
+  /*- PCM boolean for pcmsolver module -*/
+  options.add_bool("PCM", false);
+  if (name == "PCM" || options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs polarizable continuum model (PCM) computations. -*/
 
+    /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
+    options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
+    /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
+    options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
+    /*- PCM-CCSD algorithm type. -*/
+    options.add_str("PCM_CC_TYPE", "PTE", "PTE");
+  }
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
@@ -1315,7 +1314,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SOSCF_MIN_ITER", 1);
     /*- Maximum number of second-order microiterations to perform. -*/
     options.add_int("SOSCF_MAX_ITER", 5);
-    /*- Second order convergence threshold. -*/
+    /*- Second order convergence threshold. Cease microiterating at this value. -*/
     options.add_double("SOSCF_CONV", 5.0E-3);
     /*- Do we print the SOSCF microiterations?. -*/
     options.add_bool("SOSCF_PRINT", false);
@@ -2553,6 +2552,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       determined by |globals__writer_file_label| (if set), or else by the name
       of the output file plus the name of the current molecule. -*/
       options.add_bool("NORMAL_MODES_WRITE", false);
+      /*- Do discount rotational degrees of freedom in a finite difference
+      frequency calculation. Turned off at non-stationary geometries and
+      in the presence of external perturbations. -*/
+      options.add_bool("FD_PROJECT", true);
   }
   if (name == "OCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
@@ -4414,7 +4417,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Do include exchange repulsion energy term in EFP computation? -*/
         options.add_bool("EFP_EXCH", true);
         /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("EFP_POL", true);
+        options.add_bool("EFP_IND", true);
         /*- Do include dispersion energy term in EFP computation? -*/
         options.add_bool("EFP_DISP", true);
         /*- Fragment-fragment electrostatic damping type. ``SCREEN``
@@ -4423,7 +4426,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
         /*- Fragment-fragment polarization damping type. ``TT`` is a
         damping formula like Tang and Toennies. -*/
-        options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
+        options.add_str("EFP_IND_DAMPING", "TT", "TT OFF");
         /*- Fragment-fragment dispersion damping type. ``TT`` is a damping
         formula by Tang and Toennies. ``OVERLAP`` is overlap-based
         dispersion damping. -*/
@@ -4431,7 +4434,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Do include electrostatics energy term in QM/EFP computation? -*/
         options.add_bool("QMEFP_ELST", true);
         /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("QMEFP_POL", true);
+        options.add_bool("QMEFP_IND", true);
         /*- Do EFP gradient? !expert -*/
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
         /*- Do turn on QM/EFP terms? !expert -*/

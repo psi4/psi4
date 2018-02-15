@@ -74,6 +74,7 @@ class Vector;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
+class PCM;
 class PSIO;
 class OrbitalSpace;
 class ExternalPotential;
@@ -82,7 +83,7 @@ class ExternalPotential;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class Wavefunction : public std::enable_shared_from_this<Wavefunction>
+class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction>
 {
 protected:
     /// Name of the wavefunction
@@ -207,7 +208,7 @@ protected:
     /// gradient, if available, as natom_ x 3 SharedMatrix
     SharedMatrix gradient_;
 
-    /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix
+    /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix (NOT mass-weighted!)
     SharedMatrix hessian_;
 
     /// Helpers for C/D/epsilon transformers
@@ -218,14 +219,20 @@ protected:
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi,
                                                     const std::string& subset) const;
 
+    /// Should nuclear electrostatic potentials be available, they will be here
+    std::shared_ptr<std::vector<double>> esp_at_nuclei_;
+    
+    /// Should molecular orbital extents be available, they will be here
+    std::vector<SharedVector> mo_extents_;
+    
     /// If atomic point charges are available they will be here
     std::shared_ptr<std::vector<double>> atomic_point_charges_;
-
+    
+    /// Should natural orbital occupations be available, they will be here
+    std::vector<std::vector< std::tuple<double, int, int> >> no_occupations_;
+    
     /// If frequencies are available, they will be here:
     SharedVector frequencies_;
-
-    /// If normal modes are available, they will be here:
-    SharedVector normalmodes_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
@@ -237,6 +244,10 @@ protected:
     // Collection of variables
     std::map<std::string, double> variables_;
     std::map<std::string, SharedMatrix> arrays_;
+
+    // Polarizable continuum model
+    bool PCM_enabled_;
+    std::shared_ptr<PCM> PCM_;
 
 private:
     // Wavefunction() {}
@@ -514,15 +525,15 @@ public:
 
 
     /**
-    * Transform a matrix M into the desired basis 
+    * Transform a matrix M into the desired basis
     * @param M matrix in the SO basis to transform
     * @param C matrix in the SO basis to use for transforms to MO basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO, CartAO
     * @return the matrix M in the desired basis
     **/
-    SharedMatrix matrix_subset_helper(SharedMatrix M, 
-        SharedMatrix C, const std::string &basis, 
+    SharedMatrix matrix_subset_helper(SharedMatrix M,
+        SharedMatrix C, const std::string &basis,
         const std::string matrix_basename) const;
 
     /**
@@ -568,6 +579,32 @@ public:
     /// Set the Hessian for the wavefunction
     void set_hessian(SharedMatrix& hess);
 
+    /// Returns electrostatic potentials at nuclei
+    std::shared_ptr<std::vector<double>> esp_at_nuclei()const{
+        return esp_at_nuclei_;
+    }
+    
+    /// Returns electrostatic potentials at nuclei in Vector form for python output
+    std::shared_ptr<Vector> get_esp_at_nuclei() const;
+    
+    /// Sets the electrostatic potentials at nuclei
+    void set_esp_at_nuclei(const std::shared_ptr<std::vector<double>>& nesps){
+        esp_at_nuclei_=nesps;
+    }
+    
+    /// Returns Molecular orbital extents
+    std::vector<SharedVector> mo_extents()const{
+        return mo_extents_;
+    }
+    
+    /// Returns Molecular orbital extents in Vector form for python output.
+    std::vector<SharedVector> get_mo_extents() const;
+    
+    /// Sets molecular orbital extents
+    void set_mo_extents(const std::vector<SharedVector> mo_es){
+        mo_extents_ = mo_es;
+    }
+    
     /// Returns the atomic point charges
     std::shared_ptr<std::vector<double>> atomic_point_charges()const{
        return atomic_point_charges_;
@@ -579,17 +616,25 @@ public:
     void set_atomic_point_charges(const std::shared_ptr<std::vector<double>>& apcs){
        atomic_point_charges_=apcs;
     }
+    
+    /// Returns NO occupations
+    std::vector<std::vector< std::tuple<double, int, int> >> no_occupations()const{
+        return no_occupations_;
+    }
+    
+    /// Returns the NO occupations in vector form for python output
+    std::vector<std::vector< std::tuple<double, int, int> >> get_no_occupations() const;
+    
+    /// Sets the NO occupations
+    void set_no_occupations(const std::vector<std::vector< std::tuple<double, int, int> >> no_ocs){
+        no_occupations_=no_ocs;
+    }
 
     /// Returns the frequencies
     SharedVector frequencies() const;
     /// Set the frequencies for the wavefunction
-    void set_frequencies(SharedVector& freqs);
-
-    /// Returns the normalmodes
-    SharedVector normalmodes() const;
-    /// Set the normalmodes for the wavefunction
-    void set_normalmodes(SharedVector& norms);
-
+    void set_frequencies(std::shared_ptr<Vector>& freqs);
+    
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }
 
@@ -617,6 +662,12 @@ public:
     SharedMatrix get_array(const std::string key);
     void set_array(const std::string key, SharedMatrix value) { arrays_[key] = value; }
     std::map<std::string, SharedMatrix> arrays(void) { return arrays_; }
+
+    /// Set PCM object
+    void set_PCM(const std::shared_ptr<PCM> & pcm);
+    /// Get PCM object
+    std::shared_ptr<PCM> get_PCM() const;
+    bool PCM_enabled() const { return PCM_enabled_; }
 };
 
 }
