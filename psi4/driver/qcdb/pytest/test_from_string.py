@@ -275,7 +275,7 @@ def test_psi4_pubchem_4a():
     subject = subject4
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
-    assert compare_dicts(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans4, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
@@ -293,7 +293,7 @@ pubchem  : 241
 """
 
     final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
-    assert compare_dicts(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
+    assert compare_molrecs(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans4, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
 
@@ -1048,3 +1048,13 @@ def test_pmol_11o():
     asdf = psi4.core.Molecule.from_string("""2\n\nO 0 0 0 \n1 1 0 0 """, fix_com=True)
     assess_mol_11(asdf, '[20] psi4.core.Molecule.from_string(str, dtype="xyz")')
 
+def test_qmol_12():
+    asdf = qcdb.Molecule(geom=[ 0.,  0.,  0.,  1.,  0.,  0.], elez=[8, 1], fix_com=True)
+    assess_mol_11(asdf, 'qcdb.Molecule(geom, elez)')
+
+    import json
+    smol = json.dumps(asdf.to_dict(np_out=False))
+    dmol = json.loads(smol)
+
+    asdf2 = qcdb.Molecule(dmol)
+    assess_mol_11(asdf, 'qcdb.Molecule(jsondict)')

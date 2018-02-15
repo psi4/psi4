@@ -205,11 +205,15 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
             dicary['fix_symmetry'] = str(dicary['fix_symmetry'])
         if 'units' in dicary:
             dicary['units'] = str(dicary['units'])
+        if 'fragment_files' in dicary:
+            dicary['fragment_files'] = [str(f) for f in dicary['fragment_files']]
         # and about int vs long errors
         if 'molecular_multiplicity' in dicary:
             dicary['molecular_multiplicity'] = int(dicary['molecular_multiplicity'])
         if 'fragment_multiplicities' in dicary:
             dicary['fragment_multiplicities'] = [(m if m is None else int(m)) for m in dicary['fragment_multiplicities']]
+        if 'fragment_separators' in dicary:
+            dicary['fragment_separators'] = [(s if s is None else int(s)) for s in dicary['fragment_separators']]
         return dicary
 
     xptd = massage_dicts(xptd)
@@ -222,8 +226,9 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
         #   they overlap and that the translation/rotation arrays jibe with
         #   fix_com/orientation, then attach the oriented geom to computed before the
         #   recursive dict comparison.
-        cgeom = cptd['geom'].reshape((-1, 3))
-        rmsd, mill = B787(rgeom=xptd['geom'].reshape((-1, 3)),
+        cgeom = np.array(cptd['geom']).reshape((-1, 3))
+        rgeom = np.array(xptd['geom']).reshape((-1, 3))
+        rmsd, mill = B787(rgeom=rgeom,
                           cgeom=cgeom,
                           runiq=None,
                           cuniq=None,

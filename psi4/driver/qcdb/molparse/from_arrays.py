@@ -2,7 +2,7 @@ import pprint
 
 import numpy as np
 
-from ..util import distance_matrix, update_with_error
+from ..util import distance_matrix, update_with_error, unnp
 from ..exceptions import *
 from ..physconst import psi_bohr2angstroms
 from .chgmult import validate_and_fill_chgmult
@@ -148,6 +148,7 @@ def from_arrays(geom=None,
 
                 domain='qm',
                 missing_enabled_return='error',
+                np_out=True,
 
                 speclabel=True,
                 tooclose=0.1,
@@ -182,7 +183,9 @@ def from_arrays(geom=None,
     missing_enabled_return : {'minimal', 'none', 'error'}
         What to do when an enabled domain is of zero-length? Respectively, return
         a fully valid but empty molrec, return empty dictionary, or throw error.
-
+    np_out : bool, optional
+        When `True`, fields geom, elea, elez, elem, mass, real, elbl will be ndarray.
+        Use `False` to get a json-able version.
 
     Returns
     -------
@@ -367,6 +370,9 @@ def from_arrays(geom=None,
     if verbose >= 2:
         print('RETURN FROM qcdb.molparse.from_arrays(domain={})'.format(domain.upper()))
         pprint.pprint(molinit)
+
+    if not np_out:
+        molinit = unnp(molinit)
 
     return molinit
 
