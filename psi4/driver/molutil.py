@@ -302,7 +302,6 @@ def geometry(geom, name="default"):
                                        enable_qm=True,
                                        missing_enabled_return_qm='minimal',
                                        enable_efp=True,
-                                       verbose=2,
                                        missing_enabled_return_efp='none')
 
     molecule = core.Molecule.from_dict(molrec['qm'])
