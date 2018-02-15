@@ -1970,11 +1970,8 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
             #pragma omp parallel for num_threads(nthreads_)
             for (size_t x = 0; x < rblock_size; x++) {
                 for (size_t z = 0; z < wsize; z++) {
-                    #pragma omp simd
-                    for (size_t y = 0; y < bsize; y++) {
-                        Np[(bcount + x) * wsize * bsize + z * bsize + y] 
-                            = Fp[z * rblock_size * bsize + x * bsize + y];
-                    }
+                    C_DCOPY(bsize, &Fp[z * rblock_size * bsize + x * bsize], 
+                        1, &Np[(bcount + x) * wsize * bsize + z * bsize], 1);
                 }
             }
             timer_off("DFH: (w|Qb)->(bw|Q)");
