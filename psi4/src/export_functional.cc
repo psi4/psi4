@@ -144,7 +144,8 @@ void export_functional(py::module &m) {
         .def(py::init<std::string, bool>())
         .def("get_mix_data", &LibXCFunctional::get_mix_data, "docstring")
         .def("set_tweak", &LibXCFunctional::set_tweak, "docstring")
-        .def("set_omega", &LibXCFunctional::set_omega, "docstring");
+        .def("set_omega", &LibXCFunctional::set_omega, "docstring")
+        .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
 
     py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")
         .def_static("build",

@@ -179,6 +179,34 @@ void LibXCFunctional::set_omega(double omega) {
         throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");
     }
 }
+std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& functional)
+{
+    std::map<std::string, double> params;
+
+    if (functional == "XC_HYB_CAM_COEF") {
+        double omega, alpha, beta;
+        xc_hyb_cam_coef(xc_functional_.get(), &omega, &alpha, &beta);
+        params["OMEGA"] = omega;
+        params["ALPHA"] = alpha;
+        params["BETA"] = beta;
+    }
+    else if (functional == "XC_NLC_COEF") {
+        double nlc_b, nlc_c;
+        xc_nlc_coef(xc_functional_.get(), &nlc_b, &nlc_c);
+        params["NLC_B"] = nlc_b;
+        params["NLC_C"] = nlc_c;
+    }
+    else if (functional == "XC_HYB_EXX_COEF") {
+        double mixing = xc_hyb_exx_coef(xc_functional_.get());
+        params["MIXING"] = mixing;
+    }
+    else {
+        outfile->Printf("LibXCFunctional: query_libxc unknown function to query parameters for: %s\n.", functional.c_str());
+        throw PSIEXCEPTION("LibXCFunctional: query_libxc unknown functional.");
+    }
+
+    return params;
+}
 void LibXCFunctional::set_tweak(std::vector<double> values) {
     bool failed = true;
     size_t vsize = values.size();
