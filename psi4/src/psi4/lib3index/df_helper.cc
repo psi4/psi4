@@ -149,6 +149,14 @@ void DF_Helper::initialize() {
     direct_iaQ_ = (!method_.compare("DIRECT_iaQ") ? true : false);
     direct_ = (!method_.compare("DIRECT") ? true : false);
 
+    // did we get enough memory for at least the metric?
+    if(naux_ * naux_ > memory_) {
+        std::stringstream error;
+        error << "DF_Helper: The Coulomb metric requires at least " << naux_ * naux_ * 8 / 1e9 
+              << "GB.  We need that plus some more, but we only got " << memory_ * 8 / 1e9 << "GB.";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+
     // if metric power is not zero, prepare it
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
 
@@ -1212,11 +1220,12 @@ void DF_Helper::metric_contraction_blocking(std::vector<std::pair<size_t, size_t
                 error << "needs at least " << ((count * block_sizes) * memory_factor + memory_bump) / 1e9 * 8. << "GB";
                 throw PSIEXCEPTION(error.str().c_str());
             }
-            if (i == blocking_index - 1) {
-                steps.push_back(std::make_pair(i - count + 1, i));
-            } else {    
+            if (total_mem < count * block_sizes) {    
                 steps.push_back(std::make_pair(i - count + 1, i - 1));
                 i--;
+            }
+            else {
+                steps.push_back(std::make_pair(i - count + 1, i));
             }
             count = 0;
         }
@@ -1275,7 +1284,7 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
             size_t begin = std::get<0>(steps[i]);
             size_t end = std::get<1>(steps[i]);
             size_t bs = end - begin + 1;
- 
+            
             get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
             timer_on("DFH: Total Workflow");
             
@@ -1413,13 +1422,12 @@ void DF_Helper::clear_spaces() {
 
 void DF_Helper::clear_all() {
 
-    // clear spaces first
-    clear_spaces();
 
     // invokes destructors, eliminating all files.
     file_streams_.clear();
 
     // clears all info
+    clear_spaces();
     files_.clear();
     sizes_.clear();
     tsizes_.clear();
@@ -1699,7 +1707,7 @@ void DF_Helper::transform() {
     // outfile->Printf("\n     ==> DF_Helper:--End Transformations (disk)<==\n\n");
 
     // transformations complete, time for metric contractions
-    
+     
     if(direct_iaQ_ || direct_) {
             
         // prepare metric 
@@ -1753,8 +1761,9 @@ void DF_Helper::transform() {
         } else if (direct_) {
 
             if(!MO_core_){
-             
-               // total size allowed, in doubles
+            
+                // total size allowed, in doubles. 
+                // note that memory - naux2 cannot be negative (handled in init)
                 size_t total_mem =
                     (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
 
@@ -1767,7 +1776,7 @@ void DF_Helper::transform() {
 
                 for (std::vector<std::string>::iterator itr = order_.begin(); itr != order_.end(); itr++)
                     contract_metric(*itr, metp, Mp, Fp, total_mem);
-                
+               
             } else {
         
                 std::vector<double> N;
