@@ -172,7 +172,7 @@ before_script:
     -DENABLE_libefp=ON
     -DENABLE_erd=OFF
     -DENABLE_gdma=ON
-    -DENABLE_PCMSolver=OFF
+    -DENABLE_PCMSolver=ON
     -DENABLE_simint=ON
     -DENABLE_snsmp2=OFF
     -DENABLE_v2rdm_casscf=OFF
