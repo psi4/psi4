@@ -210,15 +210,12 @@ def geometry(geom, name="default"):
     the string are filtered.
 
     """
-    parsing_args = {'molstr': geom,
-                    'enable_qm': True,
-                    'missing_enabled_return_qm': 'minimal',
-                    'enable_efp': True,
-                    'missing_enabled_return_efp':'none'}
-    try:
-        molrec = qcdb.molparse.from_string(**parsing_args, dtype='psi4')
-    except qcdb.MoleculeFormatError as err:
-        molrec = qcdb.molparse.from_string(**parsing_args, dtype='psi4+')
+    molrec = qcdb.molparse.from_string(geom,
+                                       enable_qm=True,
+                                       missing_enabled_return_qm='minimal',
+                                       enable_efp=True,
+                                       verbose=2,
+                                       missing_enabled_return_efp='none')
 
     molecule = core.Molecule.from_dict(molrec['qm'])
     molecule.set_name(name)

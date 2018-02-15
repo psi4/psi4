@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 import pprint
 
@@ -142,7 +143,7 @@ def from_string(molstr,
         print('<<< FROM_STRING\n', molstr, '\n>>>')
 
     # << 1 >>  str-->str -- discard comments
-    molstr = filter_comments(molstr)
+    molstr = filter_comments(molstr.strip())
 
     def parse_as_xyz_ish(molstr, strict):
         molinit = {}
@@ -199,15 +200,19 @@ def from_string(molstr,
     elif dtype is None:
         try:
             molstr, molinit = parse_as_psi4_ish(molstr, unsettled=False)
+            dtype = 'psi4'
         except MoleculeFormatError as err:
             try:
                 molstr, molinit = parse_as_xyz_ish(molstr, strict=False)
+                dtype = 'xyz+'
             except MoleculeFormatError as err:
                 try:
                     molstr, molinit = parse_as_xyz_ish(molstr, strict=True)
+                    dtype = 'xyz'
                 except MoleculeFormatError as err:
                     try:
                         molstr, molinit = parse_as_psi4_ish(molstr, unsettled=True)
+                        dtype = 'psi4+'
                     except MoleculeFormatError as err:
                         raise MoleculeFormatError(
                             """Unprocessable Molecule remanents under [psi4, xyz+, xyz, psi4+]:\n{}""".format(molstr))
@@ -219,18 +224,18 @@ def from_string(molstr,
     molinit.update(processed)
 
     if verbose >= 2:
-        print('\nFROM_STRING --> FROM_INPUT_ARRAYS <<<')
+        print('\nFROM_STRING (', dtype, ') --> FROM_INPUT_ARRAYS <<<')
         pprint.pprint(molinit)
         print('>>>\n')
 
     # << 4 >>  dict-->molspec
     molrec = from_input_arrays(
-        **molinit,
         speclabel=True,
         enable_qm=enable_qm,
         enable_efp=enable_efp,
         missing_enabled_return_qm=missing_enabled_return_qm,
-        missing_enabled_return_efp=missing_enabled_return_efp)
+        missing_enabled_return_efp=missing_enabled_return_efp,
+        **molinit)
 
     if verbose >= 2:
         print('\nFROM_STRING MOLREC <<<', molrec, '>>>\n')
