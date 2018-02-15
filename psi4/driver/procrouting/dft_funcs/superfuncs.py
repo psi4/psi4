@@ -40,6 +40,7 @@ from . import gga_superfuncs
 from . import hyb_superfuncs
 from . import mgga_superfuncs
 from . import double_hyb_superfuncs
+from . import dict_builder
 
 ## ==> SuperFunctionals <== ##
 
@@ -56,6 +57,12 @@ superfunctional_list = []
 superfunctional_noxc_names = ["hf"]
 for key in superfunctionals.keys():
     sup = superfunctionals[key](key, 1, 1, True)[0]
+    superfunctional_list.append(sup)
+    if not sup.needs_xc():
+        superfunctional_noxc_names.append(sup.name().lower())
+
+for key in dict_builder.dict_functionals.keys():
+    sup = dict_builder.build_superfunctional_from_dictionary(key, 1, 1, True)[0]
     superfunctional_list.append(sup)
     if not sup.needs_xc():
         superfunctional_noxc_names.append(sup.name().lower())
@@ -173,12 +180,19 @@ def build_superfunctional(name, restricted):
         base_name = base_name.replace('wpbe', 'lcwpbe')
         sup = (func, (base_name, dashparam))
 
+
+    # Check for dict-based functionals
+    elif name.upper() in dict_builder.dict_functionals.keys():
+        sup = dict_builder.build_superfunctional_from_dictionary(name.upper(), npoints, deriv, restricted)
+
     else:
+        print(dict_functionals.keys())
         raise ValidationError("SCF: Functional (%s) not found!" % name)
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
 
+    
     # Lock and unlock the functional
     sup[0].set_lock(False)
 
