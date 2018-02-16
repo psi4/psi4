@@ -1596,6 +1596,8 @@ void DF_Helper::transform() {
             // print step info
             // outfile->Printf("      Qshell: (%zu, %zu)", start, stop);
             // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
+            //printf("      Qshell: (%zu, %zu)", start, stop);
+            //printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
             // get AO chunk according to directives
             if (AO_core_) {
@@ -1683,7 +1685,6 @@ void DF_Helper::transform() {
                                     bsize, 0.0, &Fp[bump + i * wsize * bsize], bsize);
                             }
                         }
-                    
                     } else {
                         // (pw)(p|Qb)->(w|Qb)
                         C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
@@ -1694,11 +1695,13 @@ void DF_Helper::transform() {
                     timer_off("DFH: Total Workflow");
                    
                     // put the transformations away
+                    timer_on("DFH: MO to disk");
                     if (direct_iaQ_) {
                         put_transformations_Qpq(naux, begin, end, wsize, bsize, Fp, count + k, bleft);
                     } else {
                         put_transformations_pQq(naux, begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k, bleft);
                     }
+                    timer_off("DFH: MO to disk");
                 }
             }
         }
@@ -1708,8 +1711,9 @@ void DF_Helper::transform() {
 
     // transformations complete, time for metric contractions
      
+    timer_on("DFH: Direct Contractions");
     if(direct_iaQ_ || direct_) {
-            
+        
         // prepare metric 
         double* metp;
         std::vector<double> metric;
@@ -1809,6 +1813,7 @@ void DF_Helper::transform() {
             }
         }
     }
+    timer_off("DFH: Direct Contractions");
     timer_off("DFH: transform()");
     transformed_ = true;
 }
@@ -1885,7 +1890,6 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
         lblock_size = naux;
     }
 
-    timer_on("DFH: (w|Qb)->(bw|Q)");
     if (bleft) {
 
         // result is in pqQ format
@@ -1901,9 +1905,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                     }
                 }
             }
-            timer_off("DFH: (w|Qb)->(bw|Q)");
             if(!MO_core_){
-                timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1),
                            std::make_pair(begin, end), op);
             }
@@ -1921,9 +1923,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                     }
                 }
             }
-            timer_off("DFH: (w|Qb)->(bw|Q)");
             if(!MO_core_){
-                timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, bsize - 1),
                            std::make_pair(0, wsize - 1), op);
             }
@@ -1941,9 +1941,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                     }
                 }
             }
-            timer_off("DFH: (w|Qb)->(bw|Q)");
             if(!MO_core_){
-                timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(begin, end),
                            std::make_pair(0, wsize - 1), op);
             }
@@ -1965,9 +1963,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                     }
                 }
             }
-            timer_off("DFH: (w|Qb)->(bw|Q)");
             if(!MO_core_){
-                timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(0, wsize - 1), std::make_pair(0, bsize - 1),
                            std::make_pair(begin, end), op);
             }
@@ -1983,9 +1979,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
                         1, &Np[(bcount + x) * wsize * bsize + z * bsize], 1);
                 }
             }
-            timer_off("DFH: (w|Qb)->(bw|Q)");
             if(!MO_core_){
-                timer_on("DFH: MO to disk");
                 put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, wsize - 1),
                            std::make_pair(0, bsize - 1), op);
             }
@@ -1994,9 +1988,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
         } else {
             
             // (w|Qb)
-            timer_off("DFH: (w|Qb)->(bw|Q)");
             if(!MO_core_){
-                timer_on("DFH: MO to disk");
                 put_tensor(putf, Fp, std::make_pair(0, wsize - 1), std::make_pair(begin, end),
                            std::make_pair(0, bsize - 1), op);
             } else {
@@ -2014,8 +2006,6 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
         }
     
     }
-    if(!MO_core_)
-        timer_off("DFH: MO to disk");
 }
 
 // Fill using a pointer, be cautious of bounds!!
