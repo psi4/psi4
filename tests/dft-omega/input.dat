@@ -25,10 +25,10 @@ set basis cc-pvdz
 set e_convergence 8
 
 E = energy('wb97')
-compare_values(wb97_04, E, 6, 'wB97 [omega=def=0.4]')  #TEST
+compare_values(wb97_04, E, 6, 'wB97 [omega=default=0.4]')  #TEST
 
 E = energy('wb97x')
-compare_values(wb97x_03, E, 6, 'wB97x [omega=def=0.3]')  #TEST
+compare_values(wb97x_03, E, 6, 'wB97x [omega=default=0.3]')  #TEST
 
 set dft_omega 2.0
 
