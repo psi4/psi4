@@ -2978,7 +2978,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       coupled-pair computation.  -*/
       options.add_bool("CEPA_NO_SINGLES",false);
   }
-
   if (name == "THERMO"|| options.read_globals()) {
       /*- Temperature in Kelvin for thermodynamic analysis. Note that 273.15
       is the value for IUPAC STP. -*/
