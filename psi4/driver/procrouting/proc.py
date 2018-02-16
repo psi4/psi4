@@ -704,6 +704,85 @@ def select_fnoccsd(name, **kwargs):
     else:
         return func(name, **kwargs)
 
+def run_gpu_dfcc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a GPU-accelerated DF-CCSD(T) computation.
+
+    >>> energy('df-ccsd(t)')
+
+    """
+
+    lowername = name.lower()
+    kwargs = p4util.kwargs_lower(kwargs)
+#kwarg = kwargs_lower(kwargs)
+    # stash user options
+    optstash = p4util.OptionsState(
+         ['GPU_DFCC','COMPUTE_TRIPLES'],
+         ['GPU_DFCC','DFCC'],
+         ['GPU_DFCC','NAT_ORBS'],
+         ['SCF','DF_INTS_IO'],
+         ['SCF','SCF_TYPE'])
+
+    core.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    core.set_local_option('GPU_DFCC','DFCC', True)
+
+    # throw an exception for open-shells
+    if (core.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
+
+    # override symmetry: TODO!!! until this is fixed, you must include "symmetry c1" in the molecule group
+    #molecule = psi4.get_active_molecule()
+    #user_pg = molecule.schoenflies_symbol()
+    #molecule.reset_point_group('c1')
+    #molecule.fix_orientation(1)
+    #molecule.update_geometry()
+    #if user_pg != 'c1':
+    #    psi4.print_out('\n')
+    #    psi4.print_out('    <<< WARNING!!! >>>\n')
+    #    psi4.print_out('\n')
+    #    psi4.print_out('    plugin gpu_dfcc does not make use of molecular symmetry,\n')
+    #    psi4.print_out('    further calculations in C1 point group.\n')
+    #    psi4.print_out('\n')
+
+    # triples?
+    if (lowername == 'gpu-df-ccsd'):
+        core.set_local_option('GPU_DFCC','COMPUTE_TRIPLES', False)
+    if (lowername == 'gpu-df-ccsd(t)'):
+        core.set_local_option('GPU_DFCC','COMPUTE_TRIPLES', True)
+
+    # set scf-type to df unless the user wants something else
+    if core.has_option_changed('SCF','SCF_TYPE') == False:
+       core.set_local_option('SCF','SCF_TYPE', 'DF')
+
+    # pick a df basis if the user didn't pick one
+    if core.get_option('GPU_DFCC','DF_BASIS_CC') == '':
+       basis   = core.get_global_option('BASIS')
+       dfbasis = corresponding_rifit(basis)
+       core.set_local_option('GPU_DFCC','DF_BASIS_CC',dfbasis)
+
+    # psi4 run sequence 
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    else:
+        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+            raise ValidationError("""  GPU-DFCC does not make use of molecular symmetry: """
+                                  """  reference wavefunction must be C1.\n""")
+
+
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", core.get_global_option("BASIS"))
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    gpu_dfcc_wfn = core.gpu_dfcc(ref_wfn)
+        #returnvalue = core.plugin('gpu_dfcc.so',ref_wfn)
+
+    # restore options
+    optstash.restore()
+
+    return gpu_dfcc_wfn
+
 
 def select_ccsd(name, **kwargs):
     """Function selecting the algorithm for a CCSD energy call
