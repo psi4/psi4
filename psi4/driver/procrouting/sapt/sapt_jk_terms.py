@@ -437,83 +437,83 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
         K_AA_inf, K_BB_inf, K_AB_inf = jk.K()
 
         # A <- B
-        EX_AA = V_B.clone()
-        EX_AA.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_B, trans=[False, True, False]))
-        EX_AA.axpy(-1.00, core.Matrix.chain_dot(S, T_B, V_B))
-        EX_AA.axpy(2.00, J_AB_inf)
-        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf, trans=[False, True, False]))
-        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AB_inf))
-        EX_AA.axpy(2.00, J_BB_inf)
-        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_BB_inf, trans=[False, True, False]))
-        EX_AA.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_BB_inf))
-        EX_AA.axpy(-1.00, K_AB_inf.transpose())
-        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf, trans=[False, True, True]))
-        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AB_inf, trans=[False, False, True]))
-        EX_AA.axpy(-1.00, K_BB_inf)
-        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_BB_inf, trans=[False, True, False]))
-        EX_AA.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_BB_inf))
+        EX_AA_inf = V_B.clone()
+        EX_AA_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_B, trans=[False, True, False]))
+        EX_AA_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_B, V_B))
+        EX_AA_inf.axpy(2.00, J_AB_inf)
+        EX_AA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf, trans=[False, True, False]))
+        EX_AA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AB_inf))
+        EX_AA_inf.axpy(2.00, J_BB_inf)
+        EX_AA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_BB_inf, trans=[False, True, False]))
+        EX_AA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_BB_inf))
+        EX_AA_inf.axpy(-1.00, K_AB_inf.transpose())
+        EX_AA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf, trans=[False, True, True]))
+        EX_AA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AB_inf, trans=[False, False, True]))
+        EX_AA_inf.axpy(-1.00, K_BB_inf)
+        EX_AA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_BB_inf, trans=[False, True, False]))
+        EX_AA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_BB_inf))
 
-        EX_AB = V_A.clone()
-        EX_AB.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_A, trans=[False, True, False]))
-        EX_AB.axpy(-1.00, core.Matrix.chain_dot(S, T_B, V_A))
-        EX_AB.axpy(2.00, J_AA_inf)
-        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AA_inf, trans=[False, True, False]))
-        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AA_inf))
-        EX_AB.axpy(2.00, J_AB_inf)
-        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf, trans=[False, True, False]))
-        EX_AB.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AB_inf))
-        EX_AB.axpy(-1.00, K_AA_inf)
-        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AA_inf, trans=[False, True, False]))
-        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AA_inf))
-        EX_AB.axpy(-1.00, K_AB_inf)
-        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf, trans=[False, True, False]))
-        EX_AB.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AB_inf))
+        EX_AB_inf = V_A.clone()
+        EX_AB_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_A, trans=[False, True, False]))
+        EX_AB_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_B, V_A))
+        EX_AB_inf.axpy(2.00, J_AA_inf)
+        EX_AB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AA_inf, trans=[False, True, False]))
+        EX_AB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AA_inf))
+        EX_AB_inf.axpy(2.00, J_AB_inf)
+        EX_AB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf, trans=[False, True, False]))
+        EX_AB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_B, J_AB_inf))
+        EX_AB_inf.axpy(-1.00, K_AA_inf)
+        EX_AB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AA_inf, trans=[False, True, False]))
+        EX_AB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AA_inf))
+        EX_AB_inf.axpy(-1.00, K_AB_inf)
+        EX_AB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf, trans=[False, True, False]))
+        EX_AB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_B, K_AB_inf))
 
         # B <- A
-        EX_BB = V_A.clone()
-        EX_BB.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_A))
-        EX_BB.axpy(-1.00, core.Matrix.chain_dot(S, T_A, V_A))
-        EX_BB.axpy(2.00, J_AB_inf)
-        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf))
-        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AB_inf))
-        EX_BB.axpy(2.00, J_AA_inf)
-        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AA_inf))
-        EX_BB.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AA_inf))
-        EX_BB.axpy(-1.00, K_AB_inf)
-        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf))
-        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AB_inf))
-        EX_BB.axpy(-1.00, K_AA_inf)
-        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AA_inf))
-        EX_BB.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AA_inf))
+        EX_BB_inf = V_A.clone()
+        EX_BB_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_A))
+        EX_BB_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_A, V_A))
+        EX_BB_inf.axpy(2.00, J_AB_inf)
+        EX_BB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf))
+        EX_BB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AB_inf))
+        EX_BB_inf.axpy(2.00, J_AA_inf)
+        EX_BB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AA_inf))
+        EX_BB_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AA_inf))
+        EX_BB_inf.axpy(-1.00, K_AB_inf)
+        EX_BB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf))
+        EX_BB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AB_inf))
+        EX_BB_inf.axpy(-1.00, K_AA_inf)
+        EX_BB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AA_inf))
+        EX_BB_inf.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AA_inf))
 
-        EX_BA = V_B.clone()
-        EX_BA.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_B))
-        EX_BA.axpy(-1.00, core.Matrix.chain_dot(S, T_A, V_B))
-        EX_BA.axpy(2.00, J_BB_inf)
-        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_BB_inf))
-        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_BB_inf))
-        EX_BA.axpy(2.00, J_AB_inf)
-        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf))
-        EX_BA.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AB_inf))
-        EX_BA.axpy(-1.00, K_BB_inf)
-        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_BB_inf))
-        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_BB_inf))
-        EX_BA.axpy(-1.00, K_AB_inf.transpose())
-        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf, trans=[False, False, True]))
-        EX_BA.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AB_inf, trans=[False, False, True]))
+        EX_BA_inf = V_B.clone()
+        EX_BA_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_AB, V_B))
+        EX_BA_inf.axpy(-1.00, core.Matrix.chain_dot(S, T_A, V_B))
+        EX_BA_inf.axpy(2.00, J_BB_inf)
+        EX_BA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_BB_inf))
+        EX_BA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_BB_inf))
+        EX_BA_inf.axpy(2.00, J_AB_inf)
+        EX_BA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_AB, J_AB_inf))
+        EX_BA_inf.axpy(-2.00, core.Matrix.chain_dot(S, T_A, J_AB_inf))
+        EX_BA_inf.axpy(-1.00, K_BB_inf)
+        EX_BA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_BB_inf))
+        EX_BA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_BB_inf))
+        EX_BA_inf.axpy(-1.00, K_AB_inf.transpose())
+        EX_BA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_AB, K_AB_inf, trans=[False, False, True]))
+        EX_BA_inf.axpy(1.00, core.Matrix.chain_dot(S, T_A, K_AB_inf, trans=[False, False, True]))
         
-        unc_ind_ab_total = 2.0 * (sT_A.vector_dot(EX_AA) + sT_AB.vector_dot(EX_AB))
-        unc_ind_ba_total = 2.0 * (sT_B.vector_dot(EX_BB) + sT_BA.vector_dot(EX_BA))
+        unc_ind_ab_total = 2.0 * (sT_A.vector_dot(EX_AA_inf) + sT_AB.vector_dot(EX_AB_inf))
+        unc_ind_ba_total = 2.0 * (sT_B.vector_dot(EX_BB_inf) + sT_BA.vector_dot(EX_BA_inf))
         unc_indexch_ab_inf = unc_ind_ab_total - unc_ind_ab
         unc_indexch_ba_inf = unc_ind_ba_total - unc_ind_ba
         
-        ret["Exch-Ind20,u (A<-B) (Sinf)"] = unc_indexch_ab_inf
-        ret["Exch-Ind20,u (A->B) (Sinf)"] = unc_indexch_ba_inf
-        ret["Exch-Ind20,u (Sinf)"] = unc_indexch_ba_inf + unc_indexch_ab_inf
+        ret["Exch-Ind20,u (A<-B) (S^inf)"] = unc_indexch_ab_inf
+        ret["Exch-Ind20,u (A->B) (S^inf)"] = unc_indexch_ba_inf
+        ret["Exch-Ind20,u (S^inf)"] = unc_indexch_ba_inf + unc_indexch_ab_inf
 
         if do_print:
             for name in plist[3:]:
-                name = name + ' (Sinf)'
+                name = name + ' (S^inf)'
 
                 core.print_out(print_sapt_var(name, ret[name], short=True))
                 core.print_out("\n")
@@ -557,18 +557,18 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
             cT_BA = core.Matrix.chain_dot(cache["Cvir_B"], x_A_MOB, Tmo_AB, cache["Cocc_A"], 
                 trans=[False, True, True, True])
 
-            ind_ab_total = 2.0 * (cT_A.vector_dot(EX_AA) + cT_AB.vector_dot(EX_AB))
-            ind_ba_total = 2.0 * (cT_B.vector_dot(EX_BB) + cT_BA.vector_dot(EX_BA))
+            ind_ab_total = 2.0 * (cT_A.vector_dot(EX_AA_inf) + cT_AB.vector_dot(EX_AB_inf))
+            ind_ba_total = 2.0 * (cT_B.vector_dot(EX_BB_inf) + cT_BA.vector_dot(EX_BA_inf))
             indexch_ab_inf = ind_ab_total - ind_ab
             indexch_ba_inf = ind_ba_total - ind_ba
         
-            ret["Exch-Ind20,r (A<-B) (Sinf)"] = indexch_ab_inf
-            ret["Exch-Ind20,r (A->B) (Sinf)"] = indexch_ba_inf
-            ret["Exch-Ind20,r (Sinf)"] = indexch_ba_inf + indexch_ab_inf
+            ret["Exch-Ind20,r (A<-B) (S^inf)"] = indexch_ab_inf
+            ret["Exch-Ind20,r (A->B) (S^inf)"] = indexch_ba_inf
+            ret["Exch-Ind20,r (S^inf)"] = indexch_ba_inf + indexch_ab_inf
 
             if do_print:
                 for name in plist[3:]:
-                    name = name.replace(",u", ",r") + ' (Sinf)'
+                    name = name.replace(",u", ",r") + ' (S^inf)'
 
                     core.print_out(print_sapt_var(name, ret[name], short=True))
                     core.print_out("\n")
