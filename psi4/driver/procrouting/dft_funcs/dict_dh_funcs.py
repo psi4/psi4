@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 """
-List of XC functionals
+List of double-hybrid functionals
 """
 
 
