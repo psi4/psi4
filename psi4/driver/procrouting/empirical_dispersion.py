@@ -51,7 +51,11 @@ class EmpericalDispersion(object):
         else:
             self.dtype = dtype.upper() # Dispersion type
 
-        if dtype.replace('-', '') in dftd3.dashcoeff.keys():
+        custom_citation = False
+        if alias == "custom" and "dashparams" in kwargs.keys():
+            self.dash_params = kwargs.pop("dashparams")
+            custom_citation = kwargs.pop("citation")
+        elif dtype.replace('-', '') in dftd3.dashcoeff.keys():
             self.dash_params = dftd3.dash_server(alias, dtype.replace('-', ''))
         else:
             self.dash_params = {'s6': 1.0}
@@ -112,7 +116,6 @@ class EmpericalDispersion(object):
             raise Exception("The following DFTD3 parameters were not understood for %s dispersion type: %s" %
                             (dtype, ', '.join(kwargs.keys())))
 
-
         if self.dtype == "-D1":
             self.description = "    Grimme's -D1 Dispersion Correction"
             self.citation = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473"
@@ -165,8 +168,12 @@ class EmpericalDispersion(object):
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2011:1456"
 
+
         else:
             raise Exception("Emperical Dispersion type %s not understood." % self.dtype)
+
+        if custom_citation:
+            self.citation += "\n" + custom_citation
 
     def print_out(self, level=1):
 

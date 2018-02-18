@@ -148,6 +148,10 @@ def build_superfunctional(name, restricted):
     elif name.upper() in superfunctionals.keys():
         sup = superfunctionals[name.upper()](name, npoints, deriv, restricted)
 
+    # Check for dict-based functionals
+    elif name.upper() in dict_builder.dict_functionals.keys():
+        sup = dict_builder.build_superfunctional_from_dictionary(name.upper(), npoints, deriv, restricted)
+
     # Check if we are dispersion
     elif any(name.lower().endswith(al) for al in dftd3.full_dash_keys):
 
@@ -180,13 +184,7 @@ def build_superfunctional(name, restricted):
         base_name = base_name.replace('wpbe', 'lcwpbe')
         sup = (func, (base_name, dashparam))
 
-
-    # Check for dict-based functionals
-    elif name.upper() in dict_builder.dict_functionals.keys():
-        sup = dict_builder.build_superfunctional_from_dictionary(name.upper(), npoints, deriv, restricted)
-
     else:
-        print(dict_functionals.keys())
         raise ValidationError("SCF: Functional (%s) not found!" % name)
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
@@ -219,7 +217,7 @@ def build_superfunctional(name, restricted):
     # Check SCF_TYPE
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
-            "SCF: SCF_TYPE (%s) not supported for range-seperated functionals." % core.get_option("SCF", "SCF_TYPE"))
+            "SCF: SCF_TYPE (%s) not supported for range-separated functionals." % core.get_option("SCF", "SCF_TYPE"))
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')

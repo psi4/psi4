@@ -26,15 +26,25 @@
 # @END LICENSE
 #
 """
-List of XC functionals
+List of LDA functionals
 """
 
-pbe0 = {
-    "name": "PBE0",
-    "xc_functionals": {"HYB_GGA_XC_PBEH": {}},
+import copy
+
+
+svwn = {
+    "name": "SVWN",
+    "x_functionals": {"LDA_X": {}},
+    "c_functionals": {"LDA_C_VWN_RPA": {}},
+    "citation": '    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n',
+    "description": '    SVWN3 (RPA) LSDA Functional\n',
 }
 
 functional_list = {
-#    "TEST-PBE0": pbe0,
-#    "TEST-PBEH": pbe0,
+    "TEST-SVWN": svwn,
+    "TEST-TETER93": {"name": "TETER93", "xc_functionals": {"LDA_XC_TETER93": {}}},
+    "TEST-ZLP":     {"name": "ZLP",     "xc_functionals": {"LDA_XC_ZLP":     {}}},
+    "TEST-KSDT":    {"name": "TETER93", "xc_functionals": {"LDA_XC_KSDT":    {}}},
 }
+    
+
