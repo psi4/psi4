@@ -1398,7 +1398,7 @@ void DF_Helper::add_transformation(std::string name, std::string key1, std::stri
     } else if(!order.compare("pqQ")) {
         op = 2;
     } else {
-        throw PSIEXCEPTION("Matt doesnt do exceptions.");
+        throw PSIEXCEPTION("DF_Hepler:add_transformation: incorrect integral format, use 'Qpq', 'pQq', or 'pqQ'");
     }
     transf_[name] = std::make_tuple(key1, key2, op);
     
@@ -1418,10 +1418,10 @@ void DF_Helper::clear_spaces() {
 
     // no ordering
     ordered_ = false;
+    transformed_ = false;
 }
 
 void DF_Helper::clear_all() {
-
 
     // invokes destructors, eliminating all files.
     file_streams_.clear();
@@ -1433,7 +1433,6 @@ void DF_Helper::clear_all() {
     tsizes_.clear();
     transf_.clear();
     transf_core_.clear();
-    transformed_ = false;
 }
 
 std::pair<size_t, size_t> DF_Helper::identify_order() {
@@ -1596,8 +1595,6 @@ void DF_Helper::transform() {
             // print step info
             // outfile->Printf("      Qshell: (%zu, %zu)", start, stop);
             // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
-            //printf("      Qshell: (%zu, %zu)", start, stop);
-            //printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
             // get AO chunk according to directives
             if (AO_core_) {
