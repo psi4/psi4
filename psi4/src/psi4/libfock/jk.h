@@ -938,5 +938,55 @@ class CDJK : public DFJK {
     /// Destructor
     virtual ~CDJK();
 };
+
+/**
+ * Class symm_JK
+ *
+ * JK implementation using sieved, threaded
+ * density-fitted technology
+ * under slightly different paradigm than DFJK
+ * wraps lib3index/DF_Helper class
+ */
+class symm_JK : public JK {
+
+   protected:
+    // => DF-Specific stuff <= //
+
+    /// This class wraps a DF_Helper object
+    std::shared_ptr<DF_Helper> dfh_;
+
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// Number of threads for DF integrals
+    int nthreads_;
+    /// Condition cutoff in fitting metric, defaults to 1.0E-12
+    double condition_ = 1.0E-12;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return true; }
+    /// Setup integrals, files, etc
+    virtual void preiterations();
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations();
+
+    /// Common initialization
+    void common_init();
+
+   public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     * @param auxiliary auxiliary basis set for this system.
+     */
+    symm_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+
+    /// Destructor
+    virtual ~symm_JK();
+};
 }
 #endif
