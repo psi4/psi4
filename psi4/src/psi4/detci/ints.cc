@@ -154,7 +154,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
     // ==> Init DF object <== /
     dfh_ = std::make_shared<DF_Helper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
     dfh_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
-    dfh_->set_method("DIRECT_iaQ");
+    dfh_->set_method("STORE");
     dfh_->set_nthreads(num_threads_);
     dfh_->initialize();
 
