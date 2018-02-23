@@ -118,6 +118,13 @@ class PSI_API DF_Helper {
     bool get_hold_met() { return hold_met_; }
 
     /// 
+    /// Sets the fitting metric condition
+    /// @param condition: tolerrence for metric^pow 
+    ///
+    void set_fitting_condition(double condition) { condition_ = condition; }
+    bool get_fitting_condition() { return condition_; }
+
+    /// 
     /// Enahnces memory usage if all Cleft = Cright in JK builds
     /// @param hint TRUE if all Cleft = Cright
     /// Only use if equality is ALWAYS true. Redundant computations
@@ -264,7 +271,6 @@ class PSI_API DF_Helper {
     bool MO_core_ = 0;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
-    double tolerance_ = 0.0;
     double condition_ = 1e-12;
     double mpower_ = -0.5;
     bool hold_met_ = false;
@@ -415,7 +421,7 @@ class PSI_API DF_Helper {
 
     // => JK <=
     void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
-                    std::vector<SharedMatrix> K);
+                    std::vector<SharedMatrix> K, std::vector<SharedMatrix> D);
     void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
     void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);

@@ -59,24 +59,40 @@ symm_JK::symm_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 }
 
 symm_JK::~symm_JK() {}
+
 void symm_JK::common_init() {
-    nthreads_ = 1;
-#ifdef _OPENMP
-    nthreads_ = Process::environment.get_n_threads();
-#endif
+    
     dfh_ = std::make_shared<DF_Helper>(primary_, auxiliary_);
-    dfh_->set_schwarz_cutoff(memory_);
-    dfh_->set_memory(memory_);
-    dfh_->set_method("STORE");
-    dfh_->set_metric_condition(condition_);
-    dfh_->set_nthreads(nthreads_);
 
 }
 
-symm_JK::initialize() {
-    dfh_->initialize();
-}
 void symm_JK::preiterations() {
+   
+    // Initialize calls your derived class's preiterations member
+    // knobs are set and state variables assigned
+    
+    // use previously set state variables to dfh instance 
+    dfh_->set_nthreads(omp_nthread_);
+    dfh_->set_schwarz_cutoff(cutoff_);
+    dfh_->set_method("STORE");
+    dfh_->set_fitting_condition(condition_);
+    dfh_->set_memory(memory_ - memory_overhead());
+   
+ 
+    // the question of whether  
+    dfh_->initialize();
+    
+    if (is_core_)
+        initialize_JK_core();
+    else
+        initialize_JK_disk();
+
+    if (do_wK_) {
+        if (is_core_)
+            initialize_wK_core();
+        else
+            initialize_wK_disk();
+    }
 
 }
 void symm_JK::compute_JK() {

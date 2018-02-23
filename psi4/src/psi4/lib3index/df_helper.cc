@@ -260,16 +260,16 @@ void DF_Helper::prepare_sparsity() {
             }
         }
     }
-    tolerance_ = cutoff_ * cutoff_ / max_val;
+    double tolerance = cutoff_ * cutoff_ / max_val;
 
     //#pragma omp parallel for simd num_threads(nthreads_) schedule(static)
-    for (size_t i = 0; i < pshells_ * pshells_; i++) schwarz_shell_mask_[i] = (shell_prints[i] < tolerance_ ? 0 : 1);
+    for (size_t i = 0; i < pshells_ * pshells_; i++) schwarz_shell_mask_[i] = (shell_prints[i] < tolerance ? 0 : 1);
 
     //#pragma omp parallel for private(count) num_threads(nthreads_)
     for (size_t i = 0, count = 0; i < nao_; i++) {
         count = 0;
         for (size_t j = 0; j < nao_; j++) {
-            if (fun_prints[i * nao_ + j] >= tolerance_) {
+            if (fun_prints[i * nao_ + j] >= tolerance) {
                 count++;
                 schwarz_fun_mask_[i * nao_ + j] = count;
             } else
@@ -1109,11 +1109,11 @@ void DF_Helper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     }
 }
 void DF_Helper::prepare_metric_core() {
-    timer_on("DFH: metric contrsuction");
+    timer_on("DFH: metric contsruction");
     auto Jinv = std::make_shared<FittingMetric>(aux_, true);
     Jinv->form_fitting_metric();
     metrics_[1.0] = Jinv->get_metric();
-    timer_off("DFH: metric contrsuction");
+    timer_off("DFH: metric contsruction");
 }
 double* DF_Helper::metric_prep_core(double pow) {
     bool on = false;
@@ -2682,37 +2682,12 @@ std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name)
 }
 void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
                          std::vector<SharedMatrix> K) {
-    timer_on("DFH: build_JK()");
+    timer_on("DFH: compute_JK()");
     compute_JK(Cleft, Cright, J, K);
-    timer_off("DFH: build_JK()");
+    timer_off("DFH: compute_JK()");
 }
-void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+void DF_Helper::prepare_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> J, std::vector<SharedMatrix> K) {
-    // outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds <==\n\n");
-    // outfile->Printf("\n     ==> Using the %s directive with AO_CORE = %d <==\n\n", method_.c_str(), AO_core_);
-
-    // size checks
-    if (Cleft.size() != Cright.size()) {
-        std::stringstream error;
-        error << "DF_Helper:compute_D - Cleft size (" << Cleft.size() << ") is not equal to Cright size ("
-              << Cright.size() << ")";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
-    if (Cleft.size() != J.size()) {
-        std::stringstream error;
-        error << "DF_Helper:compute_D - Cleft size (" << Cleft.size() << ") is not equal to J size (" << J.size()
-              << ")";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
-    if (Cleft.size() != K.size()) {
-        std::stringstream error;
-        error << "DF_Helper:compute_D - Cleft size (" << Cleft.size() << ") is not equal to K size (" << K.size()
-              << ")";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
-
-    size_t naux = naux_;
-    size_t nao = nao_;
 
     // determine largest buffers needed
     std::vector<std::pair<size_t, size_t>> Qsteps;
@@ -2721,34 +2696,6 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     size_t totsb = std::get<1>(info);
     size_t wcleft = std::get<2>(info);
     size_t wcright = std::get<3>(info);
-
-    // prep stream, blocking
-    if (!direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
-
-    int rank = 0;
-    std::vector<std::vector<double>> C_buffers(nthreads_);
-    std::vector<double*> C_bufsp;
-    C_bufsp.reserve(nthreads_);
-
-    // prepare eri buffers
-    size_t nthread = nthreads_;
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
-
-    // manual cache alignment..(poor std vectors..) (assumes cache size is 64bytes)
-    size_t rem = nao * nao;
-    size_t align_size = (rem % 8 ? rem + (8 - rem % 8) : rem);
-
-#pragma omp parallel for private(rank) num_threads(nthreads_) schedule(static)
-    for (size_t i = 0; i < nthreads_; i++) {
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-        std::vector<double> Cp(align_size);
-        C_buffers[rank] = Cp;
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-    }
 
     // declare bufs
     std::vector<double> M;   // AOs
@@ -2761,19 +2708,59 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     T1.reserve(nao * align_size);
     if (JK_hint_) align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
     T2.reserve(nao * align_size);
-
-    double* T1p = T1.data();
-    double* T2p = T2.data();
-    double* Mp;
-
+    
     if (!AO_core_) {
         M.reserve(tots);
         Mp = M.data();
     } else
         Mp = Ppq_.data();
 
-    std::vector<SharedMatrix> D;
-    compute_D(D, Cleft, Cright);
+}
+
+void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+                           std::vector<SharedMatrix> J, std::vector<SharedMatrix> K,
+                           std::vector<SharedMatrix> D) {
+
+    // outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds <==\n\n");
+    // outfile->Printf("\n     ==> Using the %s directive with AO_CORE = %d <==\n\n", method_.c_str(), AO_core_);
+
+    // size checks for C matrices occur in jk.cc
+    // computing D occurs inside of jk.cc
+
+    // setup ~
+    size_t naux = naux_;
+    size_t nao = nao_;
+    size_t nao2 = nao * nao
+    int rank = 0;
+
+    // prep AO file stream
+    if (!direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
+
+    // prepare sparse C matrix buffers
+    std::vector<std::vector<double>> C_buffers(nthreads_);
+    std::vector<double*> C_bufsp;
+    C_bufsp.reserve(nthreads_);
+
+    // prepare eri buffers
+    size_t nthread = nthreads_;
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
+
+#pragma omp parallel for private(rank) num_threads(nthreads_) schedule(static)
+    for (size_t i = 0; i < nthreads_; i++) {
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        std::vector<double> Cp(nao2);
+        C_buffers[rank] = Cp;
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    }
+
+    // get pointers to AO and tmp buffers
+    double* T1p = T1.data();
+    double* T2p = T2.data();
+    double* Mp;
 
     // transform in steps (blocks of Q)
     for (size_t j = 0, bcount = 0; j < Qsteps.size(); j++) {

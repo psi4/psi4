@@ -967,6 +967,7 @@ class symm_JK : public JK {
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return true; }
     /// Setup integrals, files, etc
+    /// calls initialize(), JK_blocking
     virtual void preiterations();
     /// Compute J/K for current C/D
     virtual void compute_JK();
