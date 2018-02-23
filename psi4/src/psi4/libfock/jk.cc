@@ -75,20 +75,38 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DF") {
-        DFJK* jk = new DFJK(primary, auxiliary);
+        
+        if(options.get_str("DF_SCF_TYPE") == "DFJK") {
+            DFJK* jk = new DFJK(primary, auxiliary);
+            
+            if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+            if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
+            if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+            if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+            if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+            if (options["DF_FITTING_CONDITION"].has_changed())
+                jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+            if (options["DF_INTS_NUM_THREADS"].has_changed())
+                jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-        if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
-        if (options["DF_FITTING_CONDITION"].has_changed())
-            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
-        if (options["DF_INTS_NUM_THREADS"].has_changed())
-            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+            return std::shared_ptr<JK>(jk);
+        
+        } else if (options.get_str("DF_SCF_TYPE") == "SYMM_JK") {
+            symm_JK* jk = new symm_JK(primary, auxiliary);
 
-        return std::shared_ptr<JK>(jk);
+            if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+            if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
+            if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+            if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+            //if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+            if (options["DF_FITTING_CONDITION"].has_changed())
+                jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+            if (options["DF_INTS_NUM_THREADS"].has_changed())
+                jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
+            return std::shared_ptr<JK>(jk);
+
+        }
     } else if (jk_type == "PK") {
         PKJK* jk = new PKJK(primary, options);
 

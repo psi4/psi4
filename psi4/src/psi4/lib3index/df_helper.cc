@@ -557,18 +557,12 @@ std::pair<size_t, size_t> DF_Helper::Qshell_blocks_for_transform(const size_t me
     // returns pair(largest buffer size, largest block size)
     return std::make_pair(largest, block_size);
 }
-std::tuple<size_t, size_t, size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
-    std::vector<std::pair<size_t, size_t>>& b, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright) {
-    // if wcleft != wcright something went wrong
-    size_t wcleft = 0, wcright = 0;
-    for (size_t i = 0; i < Cleft.size(); i++) {
-        wcleft = (Cleft[i]->colspi()[0] > wcleft ? Cleft[i]->colspi()[0] : wcleft);
-        wcright = (Cright[i]->colspi()[0] > wcright ? Cright[i]->colspi()[0] : wcright);
-    }
+std::tuple<size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
+    std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc) {
 
     // K tmps
-    size_t T1 = nao_ * wcleft;
-    size_t T2 = (JK_hint_ ? nao_ * nao_ : nao_ * wcright);
+    size_t T1 = nao_ * max_nocc;
+    size_t T2 = (JK_hint_ ? nao_ * nao_ : nao_ * max_nocc);
 
     // C_buffers
     size_t T3 = nthreads_ * nao_ * nao_;
@@ -607,8 +601,8 @@ std::tuple<size_t, size_t, size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build
             tmpbs = 0;
         }
     }
-    // returns tuple(largest buffer size, largest block size, wcleft, wcright)
-    return std::make_tuple(largest, block_size, wcleft, wcright);
+    // returns tuple(largest AO buffer size, largest Q block size)
+    return std::make_tuple(largest, block_size);
 }
 
 FILE* DF_Helper::stream_check(std::string filename, std::string op) {
@@ -2680,46 +2674,20 @@ std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name)
     }
     return sizes_[std::get<1>(files_[name])];
 }
-void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
-                         std::vector<SharedMatrix> K) {
+void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+              std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
+              std::vector<SharedMatrix> K, size_t max_nocc,
+              bool do_J, bool do_K, bool do_wK) { 
+
     timer_on("DFH: compute_JK()");
-    compute_JK(Cleft, Cright, J, K);
+    compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK);
     timer_off("DFH: compute_JK()");
-}
-void DF_Helper::prepare_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
-                           std::vector<SharedMatrix> J, std::vector<SharedMatrix> K) {
-
-    // determine largest buffers needed
-    std::vector<std::pair<size_t, size_t>> Qsteps;
-    std::tuple<size_t, size_t, size_t, size_t> info = Qshell_blocks_for_JK_build(Qsteps, Cleft, Cright);
-    size_t tots = std::get<0>(info);
-    size_t totsb = std::get<1>(info);
-    size_t wcleft = std::get<2>(info);
-    size_t wcright = std::get<3>(info);
-
-    // declare bufs
-    std::vector<double> M;   // AOs
-    std::vector<double> T1;  // Tmps
-    std::vector<double> T2;
-
-    // cache alignment (is this over-zealous?)
-    rem = totsb * wcleft;
-    align_size = (rem % 8 ? rem + (8 - rem % 8) : rem);
-    T1.reserve(nao * align_size);
-    if (JK_hint_) align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
-    T2.reserve(nao * align_size);
-    
-    if (!AO_core_) {
-        M.reserve(tots);
-        Mp = M.data();
-    } else
-        Mp = Ppq_.data();
-
 }
 
 void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
-                           std::vector<SharedMatrix> J, std::vector<SharedMatrix> K,
-                           std::vector<SharedMatrix> D) {
+                           std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
+                           std::vector<SharedMatrix> K, size_t max_nocc,
+                           bool do_J, bool do_K, bool do_wK) { 
 
     // outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds <==\n\n");
     // outfile->Printf("\n     ==> Using the %s directive with AO_CORE = %d <==\n\n", method_.c_str(), AO_core_);
@@ -2727,16 +2695,21 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     // size checks for C matrices occur in jk.cc
     // computing D occurs inside of jk.cc
 
-    // setup ~
     size_t naux = naux_;
     size_t nao = nao_;
-    size_t nao2 = nao * nao
-    int rank = 0;
 
-    // prep AO file stream
+    // determine buffer sizes and blocking scheme
+    // would love to move this to initialize(), but
+    // we would need to know max_nocc_ beforehand
+    std::vector<std::pair<size_t, size_t>> Qsteps;
+    std::tuple<size_t, size_t> info = Qshell_blocks_for_JK_build(Qsteps, max_nocc);
+    size_t tots = std::get<0>(info);
+    size_t totsb = std::get<1>(info);
+
+    // prep stream, blocking
     if (!direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
 
-    // prepare sparse C matrix buffers
+    int rank = 0;
     std::vector<std::vector<double>> C_buffers(nthreads_);
     std::vector<double*> C_bufsp;
     C_bufsp.reserve(nthreads_);
@@ -2747,20 +2720,41 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
 
+    // manual cache alignment..(poor std vectors..) (assumes cache size is 64bytes)
+    size_t rem = nao * nao;
+    size_t align_size = (rem % 8 ? rem + (8 - rem % 8) : rem);
+
 #pragma omp parallel for private(rank) num_threads(nthreads_) schedule(static)
     for (size_t i = 0; i < nthreads_; i++) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        std::vector<double> Cp(nao2);
+        std::vector<double> Cp(align_size);
         C_buffers[rank] = Cp;
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
-    // get pointers to AO and tmp buffers
+    // declare bufs
+    std::vector<double> M;   // AOs
+    std::vector<double> T1;  // Tmps
+    std::vector<double> T2;
+
+    // cache alignment (is this over-zealous?)
+    rem = totsb * max_nocc;
+    align_size = (rem % 8 ? rem + (8 - rem % 8) : rem);
+    T1.reserve(nao * align_size);
+    if (JK_hint_) align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
+    T2.reserve(nao * align_size);
+
     double* T1p = T1.data();
     double* T2p = T2.data();
     double* Mp;
+
+    if (!AO_core_) {
+        M.reserve(tots);
+        Mp = M.data();
+    } else
+        Mp = Ppq_.data();
 
     // transform in steps (blocks of Q)
     for (size_t j = 0, bcount = 0; j < Qsteps.size(); j++) {
@@ -2782,14 +2776,18 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
         } else if (!AO_core_)
             grab_AO(start, stop, Mp);
         timer_off("DFH: Grabbing AOs");
-
-        timer_on("DFH: compute_J");
-        compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
-        timer_off("DFH: compute_J");
-
-        timer_on("DFH: compute_K");
-        compute_K(Cleft, Cright, K, T1p, T2p, Mp, bcount, block_size, C_buffers, J, D);
-        timer_off("DFH: compute_K");
+      
+        if(do_J) { 
+            timer_on("DFH: compute_J");
+            compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+            timer_off("DFH: compute_J");
+        }
+        
+        if(do_K) {
+            timer_on("DFH: compute_K");
+            compute_K(Cleft, Cright, K, T1p, T2p, Mp, bcount, block_size, C_buffers, J, D);
+            timer_off("DFH: compute_K");
+        }
 
         bcount += block_size;
     }

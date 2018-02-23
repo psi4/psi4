@@ -139,8 +139,7 @@ void export_fock(py::module &m) {
     typedef SharedMatrix (DF_Helper::*tensor_access3)(
         std::string, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>);
 
-    py::class_<DF_Helper, std::shared_ptr<DF_Helper>>(m, "DF_Helper",
-                                                                            "docstring")
+    py::class_<DF_Helper, std::shared_ptr<DF_Helper>>(m, "DF_Helper", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
         .def("set_memory", &DF_Helper::set_memory)
         .def("get_memory", &DF_Helper::get_memory)
@@ -168,9 +167,7 @@ void export_fock(py::module &m) {
         .def("get_tensor_size", &DF_Helper::get_tensor_size)
         .def("get_tensor_shape", &DF_Helper::get_tensor_shape)
         .def("get_tensor", take_string(&DF_Helper::get_tensor))
-        .def("get_tensor", tensor_access3(&DF_Helper::get_tensor))
-        .def("set_JK_hint", &DF_Helper::set_JK_hint)
-        .def("build_JK", &DF_Helper::build_JK);
+        .def("get_tensor", tensor_access3(&DF_Helper::get_tensor));
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

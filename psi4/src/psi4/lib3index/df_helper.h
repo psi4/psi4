@@ -249,8 +249,10 @@ class PSI_API DF_Helper {
     size_t get_naux() { return naux_; }
 
     /// builds J/K
-    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
-                  std::vector<SharedMatrix> K);
+    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+                           std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
+                           std::vector<SharedMatrix> K, size_t max_nocc,
+                           bool do_J, bool do_K, bool do_wK); 
 
    protected:
     // => basis sets <=
@@ -420,8 +422,10 @@ class PSI_API DF_Helper {
     void transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order);
 
     // => JK <=
-    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
-                    std::vector<SharedMatrix> K, std::vector<SharedMatrix> D);
+    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+                           std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
+                           std::vector<SharedMatrix> K, size_t max_nocc, 
+                           bool do_J, bool do_K, bool do_wK); 
     void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
     void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
@@ -431,9 +435,8 @@ class PSI_API DF_Helper {
                    double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
                    std::vector<std::vector<double>> C_buffers, std::vector<SharedMatrix> D,
                    std::vector<SharedMatrix> J);
-    std::tuple<size_t, size_t, size_t, size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b,
-                                                                          std::vector<SharedMatrix> Cleft,
-                                                                          std::vector<SharedMatrix> Cright);
+    std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(
+        std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc); 
 
 };  // End DF Helper class
 }  // psi4 namespace

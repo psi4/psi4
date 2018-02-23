@@ -46,6 +46,7 @@ class ERISieve;
 class TwoBodyAOInt;
 class Options;
 class PSIO;
+class DF_Helper;
 
 namespace pk {
 class PKManager;
@@ -958,12 +959,13 @@ class symm_JK : public JK {
     /// Auxiliary basis set
     std::shared_ptr<BasisSet> auxiliary_;
     /// Number of threads for DF integrals
-    int nthreads_;
+    int df_ints_num_threads_;
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_ = 1.0E-12;
 
     // => Required Algorithm-Specific Methods <= //
 
+    int max_nocc() const;
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return true; }
     /// Setup integrals, files, etc
@@ -977,7 +979,8 @@ class symm_JK : public JK {
     /// Common initialization
     void common_init();
 
-   public:
+
+  public:
     // => Constructors < = //
 
     /**
@@ -988,6 +991,33 @@ class symm_JK : public JK {
 
     /// Destructor
     virtual ~symm_JK();
+    
+    
+    // => Knobs <= //
+
+    /**
+     * Minimum relative eigenvalue to retain in fitting inverse
+     * All eigenvectors with \epsilon_i < condition * \epsilon_max
+     * will be discarded
+     * @param condition minimum relative eigenvalue allowed,
+     *        defaults to 1.0E-12
+     */
+    void set_condition(double condition) { condition_ = condition; }
+    
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
+    
+    
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
 };
 }
 #endif

@@ -39,6 +39,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/dftensor.h"
+#include "psi4/lib3index/df_helper.h"
 
 #include "jk.h"
 
@@ -70,7 +71,7 @@ void symm_JK::preiterations() {
    
     // Initialize calls your derived class's preiterations member
     // knobs are set and state variables assigned
-    
+
     // use previously set state variables to dfh instance 
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);
@@ -78,25 +79,33 @@ void symm_JK::preiterations() {
     dfh_->set_fitting_condition(condition_);
     dfh_->set_memory(memory_ - memory_overhead());
    
- 
-    // the question of whether  
-    dfh_->initialize();
-    
-    if (is_core_)
-        initialize_JK_core();
-    else
-        initialize_JK_disk();
+    // we need to prepare the AOs here, and that's it.
+    // DF_Helper takes care of all the housekeeping
 
-    if (do_wK_) {
-        if (is_core_)
-            initialize_wK_core();
-        else
-            initialize_wK_disk();
+    // TODO add wK integrals.
+    if (!do_wK_) {
+        dfh_->initialize();
+    } else {
+           ; // initialize_wK()  
     }
 
 }
 void symm_JK::compute_JK() {
+
+    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, 
+                   max_nocc(), do_J_, do_K_, do_wK_);
+
 }
 void symm_JK::postiterations() {
+}
+void symm_JK::print_header() const {
+    dfh_->print_header();
+}
+int symm_JK::max_nocc() const {
+    int max_nocc = 0;
+    for (size_t N = 0; N < C_left_ao_.size(); N++) {
+        max_nocc = (C_left_ao_[N]->colspi()[0] > max_nocc ? C_left_ao_[N]->colspi()[0] : max_nocc);
+    }
+    return max_nocc;
 }
 }

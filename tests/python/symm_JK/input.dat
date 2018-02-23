@@ -12,6 +12,13 @@ memory = 50000
 primary = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ")
 aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ-jkfit")
 
+# Set a few options
+psi4.set_options({"BASIS": basis,
+                    "SCF_TYPE": "SYMM_JK",
+                    "GUESS": "SAD",
+                    "E_CONVERGENCE": 1.e-8,
+                    "SCHWARZ_CUTOFF": 1e-12})
+
 nbf = primary.nbf()
 naux = aux.nbf()
 
