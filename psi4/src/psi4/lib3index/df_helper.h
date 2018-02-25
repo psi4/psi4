@@ -132,6 +132,20 @@ class PSI_API DF_Helper {
     ///
     void set_JK_hint(bool hint) { JK_hint_ = hint; }
     size_t get_JK_hint() { return JK_hint_; }
+    
+    /// 
+    /// Lets me know whether to compute those other type of integrals
+    /// @param do_wK boolean indicating to compute other integrals
+    ///
+    void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
+    size_t get_do_wK() { return do_wK_; }
+    
+    /// 
+    /// sets the parameter for the other type of integrals
+    /// @param omega double indicating parameter for other type
+    ///
+    void set_omega(double omega) { omega_ = omega; }
+    size_t get_omega() { return omega_; }
 
     /// Initialize the object
     void initialize();
@@ -224,7 +238,7 @@ class PSI_API DF_Helper {
     /// Write to a 3-index disk tensor from a buffer 
     /// Can be a transformation if you want to overwrite one.
     /// @param name name of tensor - used to be accessed later
-    /// @param M SharedMatrix with contents to write to disk tensor
+    /// @param b buffer to write to disk tensor
     /// No bound checking on buffer is performed, use caution!
     ///
     void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
@@ -269,8 +283,8 @@ class PSI_API DF_Helper {
     bool direct_;
     bool direct_iaQ_;
     bool symm_compute_;
-    bool AO_core_ = 1;
-    bool MO_core_ = 0;
+    bool AO_core_ = true;
+    bool MO_core_ = false;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
     double condition_ = 1e-12;
@@ -280,11 +294,12 @@ class PSI_API DF_Helper {
     bool built_ = false;
     bool transformed_ = false;
     std::pair<size_t, size_t> info_;
-    bool ordered_ = 0;
-    std::pair<size_t, size_t> identify_order();
-    void print_order();
+    bool ordered_ = false;
+    bool do_wK_ = false;
+    double omega_;
 
     // => in-core machinery <=
+    void AO_core(); 
     std::vector<double> Ppq_;
     std::map<double, SharedMatrix> metrics_;
 
@@ -319,6 +334,7 @@ class PSI_API DF_Helper {
     // => shell info and blocking <=
     size_t pshells_;
     size_t Qshells_;
+    double Qshell_max_;
     std::vector<size_t> pshell_aggs_;
     std::vector<size_t> Qshell_aggs_;
     void prepare_blocking();
@@ -358,6 +374,8 @@ class PSI_API DF_Helper {
     std::map<std::string, std::vector<double>> transf_core_;
 
     // => transformation machinery <=
+    std::pair<size_t, size_t> identify_order();
+    void print_order();
     void put_transformations_Qpq(int naux, int begin, int end,  
         int wsize, int bsize, double* Fp, int ind, bool bleft);
     void put_transformations_pQq(int naux, int begin, int end, int block_size, int bcount, 

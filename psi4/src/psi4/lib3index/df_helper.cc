@@ -75,9 +75,14 @@ void DF_Helper::prepare_blocking() {
     pshell_aggs_.reserve(pshells_ + 1);
 
     // Aux shell blocking
+    Qshell_max_ = 0;
     Qshell_aggs_[0] = 0;
-    for (size_t i = 0; i < Qshells_; i++) Qshell_aggs_[i + 1] = Qshell_aggs_[i] + aux_->shell(i).nfunction();
-
+    for (size_t i = 0, shell_size; i < Qshells_; i++) {
+        shell_size = aux_->shell(i).nfunction();
+        Qshell_aggs_[i + 1] = Qshell_aggs_[i] + shell_size;
+        Qshell_max_ = (shell_size > Qshell_max_ ? shell_size : Qshell_max_);
+    }
+    
     // AO shell blocking
     pshell_aggs_[0] = 0;
     for (size_t i = 0; i < pshells_; i++) pshell_aggs_[i + 1] = pshell_aggs_[i] + primary_->shell(i).nfunction();
@@ -165,26 +170,53 @@ void DF_Helper::initialize() {
     prepare_sparsity();
     timer_off("DFH: sparsity prep");
 
-    // shut off AO core if necessary
-    if (memory_ * 0.8 < big_skips_[nao_]) {
-        AO_core_ = false;
-        outfile->Printf("\n    ==> DF_Helper memory announcement <==\n");
-        std::stringstream ann;
-        ann << "        Turning off in-core AOs.  DF_Helper needs at least (";
-        ann << big_skips_[nao_] / 0.9 * 8 / 1e9 << "GB), but it only got (" << memory_ * 8 / 1e9 << "GB)\n";
-        outfile->Printf(ann.str().c_str());
-    }
-    
+    // figure out AO_core
+    AO_core();   
+ 
     // prepare AOs for STORE method
-    if (AO_core_)
+    if (AO_core_) {
         prepare_AO_core();
-    else if (!direct_ && !direct_iaQ_)
+        if (do_wK_) { 
+            ; // TODO prepare_AO_wK_core();
+        }
+    } else if (!direct_ && !direct_iaQ_) {
         prepare_AO();
+        if (do_wK_) {
+            ; // TODO prepare_AO_wK();
+        }
+    }
 
     built_ = true;
     timer_off("DFH: initialize()");
 }
+void DF_Helper::AO_core() {
 
+    // shut off AO core if necessary
+    size_t memory = memory_;
+
+    // total size of sparse AOs
+    size_t required = ( do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+
+    // C_buffers (conservative estimate since I do not have max_nocc TODO)
+    required += nthreads_ * nao_ * nao_; 
+
+    // Tmp buffers (again, I do not have max_nocc TODO)
+    required += 2 * nao_ * nao_ * Qshell_max_;
+
+    // a fraction of memory to use, do we want it as an option?
+    double fraction_of_memory = 0.8;
+
+    if (memory * fraction_of_memory < required) {
+        AO_core_ = false;
+        outfile->Printf("\n    ==> DF_Helper memory announcement <==\n");
+        std::stringstream ann;
+        ann << "        Turning off in-core AOs.  DF_Helper needs at least (";
+        ann << required / fraction_of_memory * 8 / 1e9 << "GB), but it only got (" << 
+            memory_ * 8 / 1e9 << "GB)\n";
+        outfile->Printf(ann.str().c_str());
+    }
+
+}
 void DF_Helper::print_header() {
     outfile->Printf("\n    ==> DF_Helper <==\n");
     outfile->Printf("      nao           = %zu\n", nao_);
@@ -386,6 +418,7 @@ void DF_Helper::prepare_AO() {
         count += size;
     }
 }
+
 void DF_Helper::prepare_AO_core() {
 
     // get each thread an eri object
@@ -2679,11 +2712,18 @@ void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
               std::vector<SharedMatrix> K, size_t max_nocc,
               bool do_J, bool do_K, bool do_wK) { 
 
-    timer_on("DFH: compute_JK()");
-    compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK);
-    timer_off("DFH: compute_JK()");
-}
+    if(do_J || do_K) {
+        timer_on("DFH: compute_JK()");
+        compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK);
+        timer_off("DFH: compute_JK()");
+    }
+    else {
+        timer_on("DFH: compute_wK()");
+        ; // TODO compute_wK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK);
+        timer_off("DFH: compute_wK()");
+    }
 
+}
 void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
                            std::vector<SharedMatrix> K, size_t max_nocc,
@@ -2773,13 +2813,14 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
         timer_on("DFH: Grabbing AOs");
         if (direct_) {
             compute_sparse_pQq_blocking_Q(start, stop, Mp, eri);
-        } else if (!AO_core_)
+        } else if (!AO_core_) {
             grab_AO(start, stop, Mp);
+        }
         timer_off("DFH: Grabbing AOs");
       
         if(do_J) { 
             timer_on("DFH: compute_J");
-            compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+            compute_J(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
             timer_off("DFH: compute_J");
         }
         

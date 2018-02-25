@@ -1201,7 +1201,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE CD GTFOCK");
     /*- What algorithm to use for the DF. -*/
-    options.add_str("DF_SCF_TYPE", "DFJK", "DFJK SYMM_JK");
+    options.add_str("DF_SCF_TYPE", "SYMM_JK", "DFJK SYMM_JK");
     /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
     options.add_int("PK_MAX_BUCKETS", 500);
     /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/

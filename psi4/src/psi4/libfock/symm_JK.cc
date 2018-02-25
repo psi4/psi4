@@ -78,7 +78,9 @@ void symm_JK::preiterations() {
     dfh_->set_method("STORE");
     dfh_->set_fitting_condition(condition_);
     dfh_->set_memory(memory_ - memory_overhead());
-   
+    dfh_->set_do_wK(do_wK_);
+    dfh_->set_omega(omega_);  
+ 
     // we need to prepare the AOs here, and that's it.
     // DF_Helper takes care of all the housekeeping
 
