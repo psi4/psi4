@@ -601,11 +601,11 @@ std::pair<size_t, size_t> DF_Helper::Qshell_blocks_for_transform(const size_t me
     return std::make_pair(largest, block_size);
 }
 std::tuple<size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
-    std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc) {
+    std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc, bool lr_symmetric) {
 
     // K tmps
     size_t T1 = nao_ * max_nocc;
-    size_t T2 = (JK_hint_ ? nao_ * nao_ : nao_ * max_nocc);
+    size_t T2 = (lr_symmetric ? nao_ * nao_ : nao_ * max_nocc);
 
     // C_buffers
     size_t T3 = nthreads_ * nao_ * nao_;
@@ -621,7 +621,7 @@ std::tuple<size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
         tmpbs += end - begin + 1;
 
         size_t constraint = total + T1 * tmpbs + T3;
-        constraint += (JK_hint_ ? T2 : T2 * tmpbs);
+        constraint += (lr_symmetric ? T2 : T2 * tmpbs);
         if (constraint > memory_ || i == Qshells_ - 1) {
             if (count == 1 && i != Qshells_ - 1) {
                 std::stringstream error;
@@ -2728,7 +2728,7 @@ std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name)
 void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
               std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
               std::vector<SharedMatrix> K, size_t max_nocc,
-              bool do_J, bool do_K, bool do_wK) { 
+              bool do_J, bool do_K, bool do_wK, bool lr_symmetric) { 
     
     if(debug_) {
         outfile->Printf("Entering DF_Helper::build_JK\n");
@@ -2736,7 +2736,7 @@ void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
 
     if(do_J || do_K) {
         timer_on("DFH: compute_JK()");
-        compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK);
+        compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK, lr_symmetric);
         timer_off("DFH: compute_JK()");
     }
     else {
@@ -2752,7 +2752,7 @@ void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
 void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
                            std::vector<SharedMatrix> K, size_t max_nocc,
-                           bool do_J, bool do_K, bool do_wK) { 
+                           bool do_J, bool do_K, bool do_wK, bool lr_symmetric) { 
 
     // outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds <==\n\n");
     // outfile->Printf("\n     ==> Using the %s directive with AO_CORE = %d <==\n\n", method_.c_str(), AO_core_);
@@ -2767,7 +2767,7 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     // would love to move this to initialize(), but
     // we would need to know max_nocc_ beforehand
     std::vector<std::pair<size_t, size_t>> Qsteps;
-    std::tuple<size_t, size_t> info = Qshell_blocks_for_JK_build(Qsteps, max_nocc);
+    std::tuple<size_t, size_t> info = Qshell_blocks_for_JK_build(Qsteps, max_nocc, lr_symmetric);
     size_t tots = std::get<0>(info);
     size_t totsb = std::get<1>(info);
 
@@ -2808,7 +2808,7 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     rem = (!max_nocc ? totsb * 1 : totsb * max_nocc);
     align_size =  (rem % 8 ? rem + (8 - rem % 8) : rem);
     T1.reserve(nao * align_size);
-    if (JK_hint_) align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
+    if (lr_symmetric) align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
     T2.reserve(nao * align_size);
     double* T1p = T1.data();
     double* T2p = T2.data();
@@ -2844,13 +2844,17 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
         
         if(do_J) { 
             timer_on("DFH: compute_J");
-            compute_J(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+            if(lr_symmetric) {
+                compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+            } else {
+                compute_J(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+            }
             timer_off("DFH: compute_J");
         }
         
         if(do_K) {
             timer_on("DFH: compute_K");
-            compute_K(Cleft, Cright, K, T1p, T2p, Mp, bcount, block_size, C_buffers, J, D);
+            compute_K(Cleft, Cright, K, T1p, T2p, Mp, bcount, block_size, C_buffers, lr_symmetric);
             timer_off("DFH: compute_K");
         }
 
@@ -3018,21 +3022,22 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
 }
 void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                           std::vector<SharedMatrix> K, double* Tp, double* T2p, double* Mp, size_t bcount,
-                          size_t block_size, std::vector<std::vector<double>> C_buffers, std::vector<SharedMatrix> J,
-                          std::vector<SharedMatrix> D) {
+                          size_t block_size, std::vector<std::vector<double>> C_buffers, bool lr_symmetric) {
     size_t nao = nao_;
     size_t naux = naux_;
     int rank = 0;
 
     for (size_t i = 0; i < K.size(); i++) {
         // grab orbital spaces
-        double* Clp = Cleft[i]->pointer()[0];
-        double* Crp = Cright[i]->pointer()[0];
         size_t cleft = Cleft[i]->colspi()[0];
         size_t cright = Cright[i]->colspi()[0];
+        
+        if(!cleft) { continue; }
+        
+        double* Clp = Cleft[i]->pointer()[0];
+        double* Crp = Cright[i]->pointer()[0];
         double* Kp = K[i]->pointer()[0];
     
-        if(!cleft) { continue; }
 
         // cache alignment (is this over-zealous?)
         size_t rem = block_size * cleft;
@@ -3058,7 +3063,7 @@ void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
             C_DGEMM('N', 'N', block_size, cleft, sp_size, 1.0, &Mp[jump], sp_size, &C_buffers[rank][0], cleft, 0.0,
                     &Tp[k * align_size], cleft);
         }
-        if (!JK_hint_ && (Cleft[i] != Cright[i])) {
+        if (!lr_symmetric && (Cleft[i] != Cright[i])) {
 #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
             for (size_t k = 0; k < nao_; k++) {
                 size_t sp_size = small_skips_[k];

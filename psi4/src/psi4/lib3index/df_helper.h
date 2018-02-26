@@ -123,15 +123,6 @@ class PSI_API DF_Helper {
     ///
     void set_fitting_condition(double condition) { condition_ = condition; }
     bool get_fitting_condition() { return condition_; }
-
-    /// 
-    /// Enahnces memory usage if all Cleft = Cright in JK builds
-    /// @param hint TRUE if all Cleft = Cright
-    /// Only use if equality is ALWAYS true. Redundant computations
-    /// are always avoided
-    ///
-    void set_JK_hint(bool hint) { JK_hint_ = hint; }
-    size_t get_JK_hint() { return JK_hint_; }
     
     /// 
     /// Lets me know whether to compute those other type of integrals
@@ -266,7 +257,7 @@ class PSI_API DF_Helper {
     void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
                            std::vector<SharedMatrix> K, size_t max_nocc,
-                           bool do_J, bool do_K, bool do_wK); 
+                           bool do_J, bool do_K, bool do_wK, bool lr_symmetric); 
 
    protected:
     // => basis sets <=
@@ -290,7 +281,6 @@ class PSI_API DF_Helper {
     double condition_ = 1e-12;
     double mpower_ = -0.5;
     bool hold_met_ = false;
-    bool JK_hint_ = false;
     bool built_ = false;
     bool transformed_ = false;
     std::pair<size_t, size_t> info_;
@@ -444,7 +434,7 @@ class PSI_API DF_Helper {
     void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
                            std::vector<SharedMatrix> K, size_t max_nocc, 
-                           bool do_J, bool do_K, bool do_wK); 
+                           bool do_J, bool do_K, bool do_wK, bool lr_symmetric); 
     void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
     void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
@@ -452,10 +442,9 @@ class PSI_API DF_Helper {
                         std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
     void compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
                    double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
-                   std::vector<std::vector<double>> C_buffers, std::vector<SharedMatrix> D,
-                   std::vector<SharedMatrix> J);
+                   std::vector<std::vector<double>> C_buffers, bool lr_symmetric);
     std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(
-        std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc); 
+        std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc, bool lr_symmetric); 
 
 };  // End DF Helper class
 }  // psi4 namespace

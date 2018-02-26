@@ -93,9 +93,9 @@ void symm_JK::preiterations() {
 
 }
 void symm_JK::compute_JK() {
-
+    
     dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, 
-                   max_nocc(), do_J_, do_K_, do_wK_);
+                   max_nocc(), do_J_, do_K_, do_wK_, lr_symmetric_);
 
 }
 void symm_JK::postiterations() {
