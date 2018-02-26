@@ -98,9 +98,11 @@ void DF_Helper::AO_filename_maker(size_t i) {
 
 std::string DF_Helper::start_filename(std::string start){
     
+    #include <cstdlib>
     std::string name = PSIOManager::shared_object()->get_default_path();
     name += start + "." + std::to_string(getpid());
-    name += "." + primary_->molecule()->name() + ".dat";
+    name += "." + primary_->molecule()->name() + ".";
+    name += std::to_string(rand()) + "." +  ".dat";
     return name;
 }
 
@@ -141,8 +143,12 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
 
 void DF_Helper::initialize() {
     
-    timer_on("DFH: initialize()");
+    if(debug_) {
+        outfile->Printf("Entering DF_Helper::initialize\n");
+    }
     
+    timer_on("DFH: initialize()");
+
     // have the algorithm specified before init
     if (method_.compare("DIRECT") && method_.compare("STORE") && method_.compare("DIRECT_iaQ")) {
         std::stringstream error;
@@ -188,6 +194,10 @@ void DF_Helper::initialize() {
 
     built_ = true;
     timer_off("DFH: initialize()");
+    
+    if(debug_) {
+        outfile->Printf("Exiting DF_Helper::initialize\n");
+    }
 }
 void DF_Helper::AO_core() {
 
@@ -1519,6 +1529,10 @@ void DF_Helper::print_order() {
 
 
 void DF_Helper::transform() {
+    
+    if(debug_) {
+        outfile->Printf("Entering DF_Helper::transform\n");
+    }
 
     timer_on("DFH: transform()");
     // outfile->Printf("\n     ==> DF_Helper:--Begin Transformations <==\n\n");
@@ -1827,6 +1841,10 @@ void DF_Helper::transform() {
     timer_off("DFH: Direct Contractions");
     timer_off("DFH: transform()");
     transformed_ = true;
+    
+    if(debug_) {
+        outfile->Printf("Exiting DF_Helper::transform\n");
+    }
 }
 
 void DF_Helper::first_transform_pQq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
@@ -2711,6 +2729,10 @@ void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
               std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
               std::vector<SharedMatrix> K, size_t max_nocc,
               bool do_J, bool do_K, bool do_wK) { 
+    
+    if(debug_) {
+        outfile->Printf("Entering DF_Helper::build_JK\n");
+    }
 
     if(do_J || do_K) {
         timer_on("DFH: compute_JK()");
@@ -2723,6 +2745,9 @@ void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
         timer_off("DFH: compute_wK()");
     }
 
+    if(debug_) {
+        outfile->Printf("Exiting DF_Helper::build_JK\n");
+    }
 }
 void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
@@ -2780,12 +2805,11 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     std::vector<double> T2;
 
     // cache alignment (is this over-zealous?)
-    rem = totsb * max_nocc;
-    align_size = (rem % 8 ? rem + (8 - rem % 8) : rem);
+    rem = (!max_nocc ? totsb * 1 : totsb * max_nocc);
+    align_size =  (rem % 8 ? rem + (8 - rem % 8) : rem);
     T1.reserve(nao * align_size);
     if (JK_hint_) align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
     T2.reserve(nao * align_size);
-
     double* T1p = T1.data();
     double* T2p = T2.data();
     double* Mp;
@@ -2817,7 +2841,7 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
             grab_AO(start, stop, Mp);
         }
         timer_off("DFH: Grabbing AOs");
-      
+        
         if(do_J) { 
             timer_on("DFH: compute_J");
             compute_J(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
@@ -2942,20 +2966,19 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
         double* Jp = J[i]->pointer()[0];
 
         // cache alignment
-        size_t align_size = (naux % 8 ? naux + 8 - naux % 8 : naux);
+        size_t align_size = naux;
 
         // initialize Tmp (pQ)
-#pragma omp parallel for simd num_threads(nthreads_)
-        for (size_t k = 0; k < nthreads_ * align_size; k++) T1p[k] = 0.0;
+        std::fill(T1p, T1p + nthreads_ * align_size, 0);
 
-#pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
+        #pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
             size_t sp_size = small_skips_[k];
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
 
-#ifdef _OPENMP
+        #ifdef _OPENMP
             rank = omp_get_thread_num();
-#endif
+        #endif
 
             for (size_t m = 0, sp_count = -1; m < nao; m++) {
                 if (schwarz_fun_mask_[k * nao + m]) {
@@ -2976,7 +2999,7 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
         align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
 
         // complete pruned J
-#pragma omp parallel for schedule(guided) num_threads(nthreads_)
+        #pragma omp parallel for schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
             size_t sp_size = small_skips_[k];
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
@@ -3008,6 +3031,8 @@ void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         size_t cleft = Cleft[i]->colspi()[0];
         size_t cright = Cright[i]->colspi()[0];
         double* Kp = K[i]->pointer()[0];
+    
+        if(!cleft) { continue; }
 
         // cache alignment (is this over-zealous?)
         size_t rem = block_size * cleft;

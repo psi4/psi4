@@ -297,6 +297,7 @@ class PSI_API DF_Helper {
     bool ordered_ = false;
     bool do_wK_ = false;
     double omega_;
+    bool debug_ = false;
 
     // => in-core machinery <=
     void AO_core(); 
