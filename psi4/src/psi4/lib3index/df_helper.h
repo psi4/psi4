@@ -309,9 +309,7 @@ class PSI_API DF_Helper {
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
     // first integral transforms
-    void first_transform_Qpq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
-        double* Mp, double* Tp, double* Bp);
-    void first_transform_pQq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
+    void first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size,  
         double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers);
     
 
