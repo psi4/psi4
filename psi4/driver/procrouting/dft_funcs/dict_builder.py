@@ -46,6 +46,7 @@ dict_functionals.update(dict_mgga_funcs.functional_list)
 dict_functionals.update(dict_hyb_funcs.functional_list)
 dict_functionals.update(dict_dh_funcs.functional_list)
 
+
 def check_consistency(func_dictionary, func_name):
     """
     This checks the consistency of the definitions of exchange and correlation components
@@ -67,7 +68,8 @@ def check_consistency(func_dictionary, func_name):
     use_libxc = 0
     if "x_functionals" in func_dictionary.keys():
         for item in func_dictionary["x_functionals"]:
-            if "use_libxc" in func_dictionary["x_functionals"].keys() and func_dictionary["x_functionals"][item]["use_libxc"]:
+            if "use_libxc" in func_dictionary["x_functionals"].keys(
+            ) and func_dictionary["x_functionals"][item]["use_libxc"]:
                 use_libxc += 1
     # 2a) only 1 component in x_functionals can have "use_libxc": True to prevent libxc conflicts
     if use_libxc > 1:
@@ -76,10 +78,14 @@ def check_consistency(func_dictionary, func_name):
     elif use_libxc == 1 and "x_hf" in func_dictionary.keys():
         raise ValidationError("SCF: Inconsistent definition of exchange in functional %s." % (name))
     # 2c) ensure requested libxc params are for a functional that is included in "x_functionals"
-    elif "x_hf" in func_dictionary.keys() and "use_libxc" in func_dictionary["x_hf"] and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"].keys():
-        raise ValidationError("SCF: Libxc parameters requested for an exchange functional not defined as a component of functional %s." % (name))
-        
-    
+    elif "x_hf" in func_dictionary.keys(
+    ) and "use_libxc" in func_dictionary["x_hf"] and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"].keys(
+    ):
+        raise ValidationError(
+            "SCF: Libxc parameters requested for an exchange functional not defined as a component of functional %s." %
+            (name))
+
+
 def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
     check_consistency(dict_functionals[name], name)
     if "xc_functionals" in dict_functionals[name].keys():
@@ -134,7 +140,7 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                 sup.set_x_omega(x_params["omega"])
         else:
             sup.set_x_alpha(x_HF["ALPHA"] + x_HF["BETA"])
-            sup.set_x_beta(x_HF["ALPHA"]-x_HF["BETA"])
+            sup.set_x_beta(x_HF["ALPHA"] - x_HF["BETA"])
             sup.set_x_omega(x_HF["OMEGA"])
         if "c_functionals" in dict_functionals[name].keys():
             c_funcs = dict_functionals[name]["c_functionals"]
@@ -167,24 +173,24 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         citation = "\n".join(citation)
         sup.set_citation(citation)
         sup.set_description(descr)
-    
+
     if "citation" in dict_functionals[name].keys():
         sup.set_citation(dict_functionals[name]["citation"])
     if "description" in dict_functionals[name].keys():
         sup.set_description(dict_functionals[name]["description"])
-    
+
     dispersion = False
     if "dispersion" in dict_functionals[name].keys():
         d_params = dict_functionals[name]["dispersion"]
-        if d_params["type"].lower() in ["d","d2","d2p4"]:
+        if d_params["type"].lower() in ["d", "d2", "d2p4"]:
             d_params["type"] = "d2p4"
-        elif d_params["type"].lower() in ["d3","d3(0)","d3zero"]:
+        elif d_params["type"].lower() in ["d3", "d3(0)", "d3zero"]:
             d_params["type"] = "d3zero"
-        elif d_params["type"].lower() in ["d3bj","d3(bj)"]:
+        elif d_params["type"].lower() in ["d3bj", "d3(bj)"]:
             d_params["type"] = "d3bj"
-        elif d_params["type"].lower() in ["d3m","d3m(0)","d3m0","d3mzero"]:
+        elif d_params["type"].lower() in ["d3m", "d3m(0)", "d3m0", "d3mzero"]:
             d_params["type"] = "d3mzero"
-        elif d_params["type"].lower() in ["d3mbj","d3m(bj)"]:
+        elif d_params["type"].lower() in ["d3mbj", "d3m(bj)"]:
             d_params["type"] = "d3mbj"
         elif d_params["type"].lower() in ["chg", "das2009", "das2010"]:
             pass
@@ -193,8 +199,7 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         if "citation" not in d_params.keys():
             d_params["citation"] = False
         dispersion = ("custom", d_params["type"], d_params["params"], d_params["citation"])
-        
-    
+
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
     sup.set_name(name.upper())

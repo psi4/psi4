@@ -33,33 +33,79 @@ funcs = []
 
 funcs.append({
     "name": "B2PLYP",
-    "x_functionals": {"GGA_X_B88": {"alpha": 0.47}},
-    "x_hf": {"alpha": 0.53},
-    "c_functionals": {"GGA_C_LYP": {"alpha": 0.73}},
-    "c_mp2": {"alpha": 0.27},
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.47
+        }
+    },
+    "x_hf": {
+        "alpha": 0.53
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.73
+        }
+    },
+    "c_mp2": {
+        "alpha": 0.27
+    },
     "citation": '    S. Grimme, J. Chem. Phys., 124, 034108, 2006\n',
     "description": '    B2PLYP Double Hybrid Exchange-Correlation Functional\n',
 })
 
 funcs.append({
     "name": "DSD-BLYP",
-    "x_functionals": {"GGA_X_B88": {"alpha": 0.25}},
-    "x_hf": {"alpha": 0.75},
-    "c_functionals": {"GGA_C_LYP": {"alpha": 0.53}},
-    "c_mp2": {"alpha": 1.0, "os": 0.46, "ss": 0.60},
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.25
+        }
+    },
+    "x_hf": {
+        "alpha": 0.75
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.53
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.46,
+        "ss": 0.60
+    },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-BLYP SCS Double Hybrid XC Functional\n',
 })
 
 funcs.append({
     "name": "DSD-BLYP-D2",
-    "x_functionals": {"GGA_X_B88": {"alpha": 0.29}},
-    "x_hf": {"alpha": 0.71},
-    "c_functionals": {"GGA_C_LYP": {"alpha": 0.55}},
-    "c_mp2": {"alpha": 1.0, "os": 0.46, "ss": 0.43},
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.29
+        }
+    },
+    "x_hf": {
+        "alpha": 0.71
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.55
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.46,
+        "ss": 0.43
+    },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
-    "dispersion": {"type": "d2", "params": {"s6": 0.35}, "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"},
+    "dispersion": {
+        "type": "d2",
+        "params": {
+            "s6": 0.35
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+    },
 })
 
 funcs.append({
@@ -70,16 +116,28 @@ funcs.append({
     "c_mp2": {"alpha": 1.0, "os": 0.46, "ss": 0.37},
     "citation": '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
     "description": '    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n' + \
-                   '    (full-core parameterization) \n'  
+                   '    (full-core parameterization) \n'
 })
 
 funcs.append({
     "name": "PBE0-2",
     "alias": ["PBE02"],
-    "x_functionals": {"GGA_X_PBE": {"alpha": 0.206299}},
-    "x_hf": {"alpha": 0.793701},
-    "c_functionals": {"GGA_C_PBE": {"alpha": 0.5}},
-    "c_mp2": {"alpha": 0.5},
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.206299
+        }
+    },
+    "x_hf": {
+        "alpha": 0.793701
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.5
+        }
+    },
+    "c_mp2": {
+        "alpha": 0.5
+    },
     "citation": '    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n',
     "description": '    PBE0-2 Double Hybrid Exchange-Correlation Functional\n',
 })
@@ -87,10 +145,22 @@ funcs.append({
 funcs.append({
     "name": "PBE0-DH",
     "alias": ["PBE0DH"],
-    "x_functionals": {"GGA_X_PBE": {"alpha": 0.5}},
-    "x_hf": {"alpha": 0.5},
-    "c_functionals": {"GGA_C_PBE": {"alpha": 0.875}},
-    "c_mp2": {"alpha": 0.125},
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.5
+        }
+    },
+    "x_hf": {
+        "alpha": 0.5
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.875
+        }
+    },
+    "c_mp2": {
+        "alpha": 0.125
+    },
     "citation": '    E. Bremond, C. Adamo, J. Chem. Phys., 135, 024106, 2011\n',
     "description": '    PBE0-DH Double Hybrid Exchange-Correlation Functional\n',
 })
@@ -98,78 +168,202 @@ funcs.append({
 funcs.append({
     "name": "DSD-PBEP86",
     "alias": ["DSDPBEP86"],
-    "x_functionals": {"GGA_X_PBE": {"alpha": 0.28}}, 
-    "x_hf": {"alpha": 0.72},
-    "c_functionals": {"GGA_C_P86": {"alpha": 0.44}},
-    "c_mp2": {"alpha": 1.0, "os": 0.51, "ss": 0.36},
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.28
+        }
+    },
+    "x_hf": {
+        "alpha": 0.72
+    },
+    "c_functionals": {
+        "GGA_C_P86": {
+            "alpha": 0.44
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.51,
+        "ss": 0.36
+    },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEP86 SCS Double Hybrid XC Functional\n',
 })
 
 funcs.append({
     "name": "DSD-PBEP86-D2",
-    "x_functionals": {"GGA_X_PBE": {"alpha": 0.32}},
-    "x_hf": {"alpha": 0.68},
-    "c_functionals": {"GGA_C_P86": {"alpha": 0.45}},
-    "c_mp2": {"alpha": 1.0, "os": 0.51, "ss": 0.23},
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.32
+        }
+    },
+    "x_hf": {
+        "alpha": 0.68
+    },
+    "c_functionals": {
+        "GGA_C_P86": {
+            "alpha": 0.45
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.51,
+        "ss": 0.23
+    },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
-    "dispersion": {"type": "d2", "params": {"s6": 0.29}, "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"},
+    "dispersion": {
+        "type": "d2",
+        "params": {
+            "s6": 0.29
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+    },
 })
 
 funcs.append({
     "name": "DSD-PBEPBE",
     "alias": ["DSDPBEPBE"],
-    "x_functionals": {"GGA_X_PBE": {"alpha": 0.28}},
-    "x_hf": {"alpha": 0.72},
-    "c_functionals": {"GGA_C_PBE": {"alpha": 0.48}},
-    "c_mp2": {"alpha": 1.0, "os": 0.54, "ss": 0.31},
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.28
+        }
+    },
+    "x_hf": {
+        "alpha": 0.72
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.48
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.54,
+        "ss": 0.31
+    },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEPBE SCS Double Hybrid XC Functional\n',
 })
 
 funcs.append({
     "name": "DSD-PBEPBE-D2",
-    "x_functionals": {"GGA_X_PBE": {"alpha": 0.34}},
-    "x_hf": {"alpha": 0.66},
-    "c_functionals": {"GGA_C_PBE": {"alpha": 0.51}},
-    "c_mp2": {"alpha": 1.0, "os": 0.53, "ss": 0.12},
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.34
+        }
+    },
+    "x_hf": {
+        "alpha": 0.66
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.51
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.53,
+        "ss": 0.12
+    },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
-    "dispersion": {"type": "d2", "params": {"s6": 0.42}, "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"},
+    "dispersion": {
+        "type": "d2",
+        "params": {
+            "s6": 0.42
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+    },
 })
 
 funcs.append({
     "name": "DSD-BP86-D2",
-    "x_functionals": {"GGA_X_B88": {"alpha": 0.33}},
-    "x_hf": {"alpha": 0.66},
-    "c_functionals": {"GGA_C_P86": {"alpha": 0.49}},
-    "c_mp2": {"alpha": 1.0, "os": 0.49, "ss": 0.24},
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.33
+        }
+    },
+    "x_hf": {
+        "alpha": 0.66
+    },
+    "c_functionals": {
+        "GGA_C_P86": {
+            "alpha": 0.49
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.49,
+        "ss": 0.24
+    },
     "citation": '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
     "description": '    DSD-BP86 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
-    "dispersion": {"type": "d2", "params": {"s6": 0.41}, "citation": "    S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011\n"},
+    "dispersion": {
+        "type": "d2",
+        "params": {
+            "s6": 0.41
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011\n"
+    },
 })
 
 funcs.append({
     "name": "DSD-SVWN-D2",
-    "x_functionals": {"LDA_X": {"alpha": 0.29}},
-    "x_hf": {"alpha": 0.71},
-    "c_functionals": {"LDA_C_VWN": {"alpha": 0.34}},
-    "c_mp2": {"alpha": 1.0, "os": 0.58, "ss": 0.11},
+    "x_functionals": {
+        "LDA_X": {
+            "alpha": 0.29
+        }
+    },
+    "x_hf": {
+        "alpha": 0.71
+    },
+    "c_functionals": {
+        "LDA_C_VWN": {
+            "alpha": 0.34
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.58,
+        "ss": 0.11
+    },
     "citation": '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
     "description": '    DSD-SVWN5 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
-    "dispersion": {"type": "d2", "params": {"s6": 0.28}, "citation": "    S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011\n"},
+    "dispersion": {
+        "type": "d2",
+        "params": {
+            "s6": 0.28
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011\n"
+    },
 })
 
 funcs.append({
-    "name": "B2GPPLYP",
-    "x_functionals": {"GGA_X_B88": {"alpha": 0.35}},
-    "x_hf": {"alpha": 0.65},
-    "c_functionals": {"GGA_C_LYP": {"alpha": 0.64}},
-    "c_mp2": {"alpha": 0.36},
-    "citation": '    A. Karton, A. Tarnopolsky, J.-F. Lamere, G. C. Schatz, J.M. L. Martin, J.Phys. Chem. A, 112, 12868-12886,2008   \n',
-    "description": '    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n',
+    "name":
+    "B2GPPLYP",
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.35
+        }
+    },
+    "x_hf": {
+        "alpha": 0.65
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.64
+        }
+    },
+    "c_mp2": {
+        "alpha": 0.36
+    },
+    "citation":
+    '    A. Karton, A. Tarnopolsky, J.-F. Lamere, G. C. Schatz, J.M. L. Martin, J.Phys. Chem. A, 112, 12868-12886,2008   \n',
+    "description":
+    '    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n',
 })
+
 
 def get_pwpb95_tweaks():
     beta = 5.0 * (36.0 * 3.141592653589793)**(-5.0 / 3.0)
@@ -184,24 +378,57 @@ def get_pwpb95_tweaks():
     c_pw6 = bt / (X_FACTOR_C * X2S * X2S)
     d_pw6 = -(bt - beta) / (X_FACTOR_C * X2S * X2S)
     f_pw6 = 1.0e-6 / (X_FACTOR_C * X2S**expo_pw6)
-    return([a_pw6, b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
+    return ([a_pw6, b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
+
 
 funcs.append({
     "name": "PWPB95",
-    "x_functionals": {"GGA_X_PW91": {"tweak": get_pwpb95_tweaks(), "alpha": 0.50}},
-    "x_hf": {"alpha": 0.50},
-    "c_functionals": {"MGGA_C_BC95": {"tweak": [0.03241, 0.00250], "alpha": 0.731}},
-    "c_mp2": {"alpha": 1.0, "ss": 0.0, "os": 0.269},
+    "x_functionals": {
+        "GGA_X_PW91": {
+            "tweak": get_pwpb95_tweaks(),
+            "alpha": 0.50
+        }
+    },
+    "x_hf": {
+        "alpha": 0.50
+    },
+    "c_functionals": {
+        "MGGA_C_BC95": {
+            "tweak": [0.03241, 0.00250],
+            "alpha": 0.731
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "ss": 0.0,
+        "os": 0.269
+    },
     "citation": '    L. Goerigk, S.Grimme, J.Chem. Theory Compt. 7, 291-309, 2011 \n',
     "description": '    PWPB95 SOS Double Hybrid XC Functional\n',
 })
 
 funcs.append({
     "name": "PTPSS",
-    "x_functionals": {"MGGA_X_TPSS": {"tweak": [0.15, 0.88491, 0.047, 0.872, 0.16952], "alpha": 0.50}},
-    "x_hf": {"alpha": 0.50},
-    "c_functionals": {"MGGA_C_TPSS": {"tweak": [0.06080, 6.3, 0.53, 0.87, 0.50, 2.26], "alpha": 0.625}},
-    "c_mp2": {"alpha": 1.0, "ss": 0.0, "os": 0.375},
+    "x_functionals": {
+        "MGGA_X_TPSS": {
+            "tweak": [0.15, 0.88491, 0.047, 0.872, 0.16952],
+            "alpha": 0.50
+        }
+    },
+    "x_hf": {
+        "alpha": 0.50
+    },
+    "c_functionals": {
+        "MGGA_C_TPSS": {
+            "tweak": [0.06080, 6.3, 0.53, 0.87, 0.50, 2.26],
+            "alpha": 0.625
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "ss": 0.0,
+        "os": 0.375
+    },
     "citation": '    L. Goerigk, S.Grimme, J. Chem. Theory Comput., 7, 291-309, 2011 \n',
     "description": '    PTPSS SOS Double Hybrid XC Functional\n',
 })
@@ -213,4 +440,3 @@ for functional in funcs:
         for a in alias:
             functional_list["TEST-" + a] = functional
     functional_list["TEST-" + functional["name"].upper()] = functional
-
