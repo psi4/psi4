@@ -463,7 +463,7 @@ def nbody_gufunc(func, method_string, **kwargs):
             np_final_ptype = ptype_body_dict[max_nbody].copy()
             np_final_ptype -= ptype_body_dict[1]
 
-            ret_ptype = core.Matrix.from_array(np_final_ptype)
+        ret_ptype = core.Matrix.from_array(np_final_ptype)
     else:
         ret_ptype = ret_energy
 
