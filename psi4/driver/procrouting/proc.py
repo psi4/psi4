@@ -3427,9 +3427,19 @@ def run_sapt(name, **kwargs):
     from psi4.driver.qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
-    for term in ['ELST', 'EXCH', 'IND', 'DISP', 'TOTAL']:
+
+    # Make sure we got induction, otherwise replace it with uncoupled induction
+    which_ind = 'IND'
+    target_ind = 'IND'
+    if not core.has_variable(' '.join([name.upper(), which_ind, 'ENERGY'])):
+      which_ind='IND,U'
+    
+    for term in ['ELST', 'EXCH', 'DISP', 'TOTAL']:
         core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
             core.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
+    # Special induction case
+    core.set_variable(' '.join(['SAPT', target_ind, 'ENERGY']),
+        core.get_variable(' '.join([name.upper(), which_ind, 'ENERGY'])))
     core.set_variable('CURRENT ENERGY', core.get_variable('SAPT TOTAL ENERGY'))
 
     return dimer_wfn

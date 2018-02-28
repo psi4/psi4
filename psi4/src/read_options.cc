@@ -830,11 +830,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     $E@@{ind,resp}^{(20)}$ term. -*/
     options.add_double("D_CONVERGENCE",1e-8);
 
-    /*- Don't solve the CPHF equations? Evaluate $E@@{ind}^{(20)}$ and
-    $E@@{exch-ind}^{(20)}$ instead of their response-including counterparts.
-    Only turn on this option if the induction energy is not going to be
-    used. -*/
-    options.add_bool("NO_RESPONSE",false);
+    /*- Solve the CPHF equations to compute coupled induction and 
+        exchange-induction. These are not available for ROHF, and 
+        the option is automatically false in this case. In all other cases,
+        coupled induction is strongly recommended. Only turn it off if the 
+        induction energy is not going to be used.
+        !expert -*/
+    options.add_bool("COUPLED_INDUCTION",true);
 
     /*- Do use asynchronous disk I/O in the solution of the CPHF equations?
     Use may speed up the computation slightly at the cost of spawning an
@@ -916,14 +918,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
-    /*- Whether or not to compute coupled induction, applies only to
-        the open-shell SAPT0 code. Coupled induction is not available for
-        ROHF, and the option is automatically false in this case.
-        Note that when coupled induction is turned off, the Psi variables
-        SAPT IND20,R ENERGY and SAPT EXCH-IND20,R ENERGY actually contain
-        the **uncoupled** induction! A corresponding warning is issued in the
-        output file. !expert -*/
-    options.add_bool("COUPLED_INDUCTION",true);
     /*- Proportion of memory available for the DF-MP2 three-index integral
         buffers used to evaluate dispersion. !expert -*/
     options.add_double("SAPT_MEM_FACTOR", 0.9);
