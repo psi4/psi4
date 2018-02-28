@@ -444,6 +444,9 @@ class PSI_API DF_Helper {
     std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(
         std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc, bool lr_symmetric); 
 
+    // => misc <=
+    void fill(double* b, size_t count, double value);
+
 };  // End DF Helper class
 }  // psi4 namespace
 #endif

@@ -211,7 +211,7 @@ void DF_Helper::AO_core() {
     required += nthreads_ * nao_ * nao_; 
 
     // Tmp buffers (again, I do not have max_nocc TODO)
-    required += 2 * nao_ * nao_ * Qshell_max_;
+    required += 3 * nao_ * nao_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
     double fraction_of_memory = 0.8;
@@ -918,7 +918,7 @@ void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t st
     size_t block_size = end - begin + 1;
 
     // stripe the buffer
-    std::fill (Mp, Mp + block_size * nao_ * nao_, 0);
+    fill(Mp, block_size * nao_ * nao_, 0.0);
 
     // prepare eri buffers
     int rank = 0;
@@ -2887,8 +2887,7 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
         double* Jp = J[i]->pointer()[0];
 
         // initialize Tmp (pQ)
-#pragma omp parallel for simd num_threads(nthreads_)
-        for (size_t k = 0; k < nthreads_ * naux; k++) T1p[k] = 0.0;
+        fill(T1p, nthreads_ * naux, 0.0);
 
 #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
@@ -2941,6 +2940,12 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
         for (size_t k = 0; k < nao; k++) Jp[k * nao + k] += T2p[k * nao];
     }
 }
+void DF_Helper::fill(double* b, size_t count, double value) {
+    #pragma omp parallel for simd num_threads(nthreads_) schedule(static)
+    for (size_t i = 0; i < count; i++){
+        b[i] = value;           
+    }
+}
 void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
                           double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size) {
     size_t nao = nao_;
@@ -2953,7 +2958,7 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
         double* Jp = J[i]->pointer()[0];
 
         // initialize Tmp (pQ)
-        std::fill(T1p, T1p + nthreads_ * naux, 0);
+        fill(T1p, nthreads_ * naux, 0.0);
 
         #pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
