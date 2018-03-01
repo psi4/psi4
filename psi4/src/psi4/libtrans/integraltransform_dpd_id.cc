@@ -49,38 +49,35 @@ using namespace psi;
  *              - else assume no packing (for in-core handling)
  * @return the DPD number to use for disk storage
  */
-int
-IntegralTransform::DPD_ID(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                            SpinType spin, bool pack)
-{
-
+int IntegralTransform::DPD_ID(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2, SpinType spin,
+                              bool pack) {
     std::string label = "[";
-    if(s1->label() != MOSPACE_NIL && spin == Alpha){
+    if (s1->label() != MOSPACE_NIL && spin == SpinType::Alpha) {
         label += toupper(s1->label());
-    }else{
+    } else {
         label += tolower(s1->label());
     }
 
-    if(pack && s1->label() == s2->label()){
+    if (pack && s1->label() == s2->label()) {
         label += ">=";
-    }else{
+    } else {
         label += ",";
     }
 
-    if(s2->label() != MOSPACE_NIL && spin == Alpha){
+    if (s2->label() != MOSPACE_NIL && spin == SpinType::Alpha) {
         label += toupper(s2->label());
-    }else{
+    } else {
         label += tolower(s2->label());
     }
 
-    if(pack && s1->label() == s2->label()){
+    if (pack && s1->label() == s2->label()) {
         label += "]+";
-    }else{
+    } else {
         label += "]";
     }
-    if(print_>5)
-        outfile->Printf( "s1: %c s2: %c %s, label = %s, id = %d\n",
-                 s1->label(), s2->label(), pack ? "packed" : "unpacked", label.c_str(), DPD_ID(label));
+    if (print_ > 5)
+        outfile->Printf("s1: %c s2: %c %s, label = %s, id = %d\n", s1->label(), s2->label(),
+                        pack ? "packed" : "unpacked", label.c_str(), DPD_ID(label));
     return DPD_ID(label);
 }
 
@@ -90,18 +87,15 @@ IntegralTransform::DPD_ID(const std::shared_ptr<MOSpace> s1, const std::shared_p
  * @param c - the label of the MO space
  * @returns the number associated with the MO space in the transformation object's DPD instance
  */
-int
-IntegralTransform::DPD_ID(const char c)
-{
-    for(int i = 0; i < spacesUsed_.size(); ++i){
-        if(spacesUsed_[i] == c) return(i);
+int IntegralTransform::DPD_ID(const char c) {
+    for (int i = 0; i < spacesUsed_.size(); ++i) {
+        if (spacesUsed_[i] == c) return (i);
     }
     std::string str("MOSpace ");
     str += c;
     str += " is not known to this transformation object";
     throw SanityCheckError(str, __FILE__, __LINE__);
 }
-
 
 /**
  * Computes the DPD number that gives the most packing for a given pair of spaces
@@ -120,36 +114,28 @@ IntegralTransform::DPD_ID(const char c)
  *              The tensor is antisymmetric w.r.t. permutation of these indices.
  *  [a,b]     - One index belongs to space 'a', the other to 'b'.  No packing is possible.
  */
-int
-IntegralTransform::DPD_ID(const std::string &str)
-{
-    if(dpdLookup_.count(str)==0){
+int IntegralTransform::DPD_ID(const std::string &str) {
+    if (dpdLookup_.count(str) == 0) {
         std::string s = "Pair ";
-        s+= str;
-        s+= " has not been created.  Check the spaces passed into the IntegralTransform constructor";
+        s += str;
+        s += " has not been created.  Check the spaces passed into the IntegralTransform constructor";
         throw SanityCheckError(s, __FILE__, __LINE__);
     }
     return dpdLookup_[str];
 }
 
-
 /**
  * Just a wrapper to the string version, provided for those const-safe role models out there
  */
-int
-IntegralTransform::DPD_ID(const char *str)
-{
+int IntegralTransform::DPD_ID(const char *str) {
     std::string s(str);
     return DPD_ID(s);
 }
 
-
 /**
  * Just a wrapper to the string version.
  */
-int
-IntegralTransform::DPD_ID(char *str)
-{
+int IntegralTransform::DPD_ID(char *str) {
     std::string s(str);
     return DPD_ID(s);
 }

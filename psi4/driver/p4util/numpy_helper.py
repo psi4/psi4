@@ -212,7 +212,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 def _to_array(matrix, copy=True, dense=False):
     """
     Converts a Psi4 Matrix or Vector to a numpy array. Either copies the data or simply
-    consturcts a view.
+    constructs a view.
 
     Parameters
     ----------

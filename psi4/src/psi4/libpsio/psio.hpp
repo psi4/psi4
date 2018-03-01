@@ -93,7 +93,7 @@ public:
             */
     void set_specific_path(int fileno, const std::string& path);
     /**
-            * Set the the specific file number to be retained
+            * Set the specific file number to be retained
             * \param fileno PSI4 file number
             * \param retain keep or not? (Allows override)
             */

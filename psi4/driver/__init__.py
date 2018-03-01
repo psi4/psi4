@@ -31,6 +31,7 @@ from . import dependency_check
 from psi4.driver.molutil import *
 from psi4.driver.inputparser import process_input
 from psi4.driver.p4util.util import *
+from psi4.driver.p4util.fcidump import *
 from psi4.driver.p4util.text import *
 from psi4.driver.qmmm import QMMM
 from psi4.driver.plugin import *

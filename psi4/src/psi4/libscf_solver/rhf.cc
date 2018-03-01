@@ -834,8 +834,8 @@ bool RHF::stability_analysis() {
         std::vector<std::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
-        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
-                               IntegralTransform::QTOrder, IntegralTransform::None);
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
+                               IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);

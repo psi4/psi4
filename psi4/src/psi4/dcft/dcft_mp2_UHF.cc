@@ -58,7 +58,7 @@ DCFTSolver::mp2_guess()
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::Unrestricted);
+    _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::TransformationType::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());

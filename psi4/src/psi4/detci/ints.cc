@@ -104,9 +104,9 @@ void CIWavefunction::transform_ci_integrals() {
     auto act_space = std::make_shared<MOSpace>('X', orbitals, indices);
     spaces.push_back(act_space);
 
-    IntegralTransform* ints = new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
-                                                    IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
-                                                    IntegralTransform::OccAndVir, true);
+    IntegralTransform* ints = new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
+                                                    IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
+                                                    IntegralTransform::FrozenOrbitals::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
@@ -356,9 +356,9 @@ void CIWavefunction::setup_mcscf_ints() {
     spaces.push_back(act_space_);
 
     // Now the occ space is active, the vir space is our rot space (FZC to FZV)
-    IntegralTransform* ints = new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
-                                                    IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
-                                                    IntegralTransform::OccAndVir, true);
+    IntegralTransform* ints = new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
+                                                    IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
+                                                    IntegralTransform::FrozenOrbitals::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
