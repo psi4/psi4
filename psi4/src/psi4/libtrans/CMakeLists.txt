@@ -12,5 +12,6 @@ set(sources_list integraltransform_moinfo.cc
                  integraltransform_dpd_id.cc
                  mospace.cc
                  integraltransform_tei.cc
+                 fcidump_helper.cc
 )
 psi4_add_module(lib trans sources_list qt)

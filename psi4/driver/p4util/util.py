@@ -25,9 +25,9 @@
 #
 # @END LICENSE
 #
-
 """Module with utility functions for use in input files."""
 from __future__ import division
+#from __future__ import absolute_import
 import re
 import sys
 import os
@@ -91,10 +91,9 @@ def cubeprop(wfn, **kwargs):
     """
     # By default compute the orbitals
     if not core.has_global_option_changed('CUBEPROP_TASKS'):
-        core.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
+        core.set_global_option('CUBEPROP_TASKS', ['ORBITALS'])
 
-    if ((core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and
-        ('ESP' in core.get_global_option('CUBEPROP_TASKS'))):
+    if ((core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and ('ESP' in core.get_global_option('CUBEPROP_TASKS'))):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with electrostatic potential, so stopping.')
 
     cp = core.CubeProperties(wfn)
@@ -182,12 +181,14 @@ def set_memory(inputval, execute=True):
     # Check minimum memory requirement
     min_mem_allowed = 262144000
     if memory_amount < min_mem_allowed:
-        raise ValidationError("""set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 250 MiB (263 MB). Please, sir, I want some more.""".format(
-                memory_amount / 1024 ** 2, memory_amount / 1000 ** 2))
+        raise ValidationError(
+            """set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 250 MiB (263 MB). Please, sir, I want some more.""".format(
+                memory_amount / 1024**2, memory_amount / 1000**2))
 
     if execute:
         core.set_memory_bytes(memory_amount)
     return memory_amount
+
 
 def get_memory():
     """Function to return the total memory allocation."""
@@ -215,8 +216,9 @@ def compare_values(expected, computed, digits, label, exitonfail=True):
 
     """
     if digits > 1:
-        thresh = 10 ** -digits
-        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." % (label, digits+1, computed, digits+1, expected, digits))
+        thresh = 10** -digits
+        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." %
+                   (label, digits + 1, computed, digits + 1, expected, digits))
     else:
         thresh = digits
         message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
@@ -252,7 +254,7 @@ def compare_strings(expected, computed, label):
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
-    if(expected != computed):
+    if (expected != computed):
         message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
         raise TestComparisonError(message)
     success(label)
@@ -267,31 +269,36 @@ def compare_matrices(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        message = ("\t%s has %d irreps, but %s has %d\n." %
+                   (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
         raise TestComparisonError(message)
     if (expected.symmetry() != computed.symmetry()):
-        message = ("\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
+        message = ("\t%s has %d symmetry, but %s has %d\n." %
+                   (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
         raise TestComparisonError(message)
     nirreps = expected.nirrep()
     symmetry = expected.symmetry()
     for irrep in range(nirreps):
-        if(expected.rows(irrep) != computed.rows(irrep)):
-            message = ("\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
+        if (expected.rows(irrep) != computed.rows(irrep)):
+            message = ("\t%s has %d rows in irrep %d, but %s has %d\n." %
+                       (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
             raise TestComparisonError(message)
-        if(expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
-            message = ("\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
+        if (expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
+            message = ("\t%s has %d columns in irrep, but %s has %d\n." %
+                       (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
             raise TestComparisonError(message)
         rows = expected.rows(irrep)
         cols = expected.cols(irrep ^ symmetry)
         failed = 0
         for row in range(rows):
             for col in range(cols):
-                if(abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10 ** (-digits)):
-                    print("\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col), computed.get(irrep, row, col)))
+                if (abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10**(-digits)):
+                    print("\t%s: computed value (%s) does not match (%s)." %
+                          (label, expected.get(irrep, row, col), computed.get(irrep, row, col)))
                     failed = 1
                     break
 
-        if(failed):
+        if (failed):
             print("Check your output file for reporting of the matrices.")
             core.print_out("The Failed Test Matrices\n")
             core.print_out("Computed Matrix (2nd matrix passed in)\n")
@@ -311,26 +318,29 @@ def compare_vectors(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        message = ("\t%s has %d irreps, but %s has %d\n." %
+                   (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
         raise TestComparisonError(message)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
-        if(expected.dim(irrep) != computed.dim(irrep)):
-            message = ("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep)))
+        if (expected.dim(irrep) != computed.dim(irrep)):
+            message = ("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." %
+                       (expected.dim(irrep), irrep, computed.dim(irrep)))
             raise TestComparisonError(message)
         dim = expected.dim(irrep)
         failed = 0
         for entry in range(dim):
-            if(abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10 ** (-digits)):
+            if (abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10**(-digits)):
                 failed = 1
                 break
 
-        if(failed):
+        if (failed):
             core.print_out("The computed vector\n")
             computed.print_out()
             core.print_out("The reference vector\n")
             expected.print_out()
-            message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
+            message = ("\t%s: computed value (%s) does not match (%s)." %
+                       (label, computed.get(irrep, entry), expected.get(irrep, entry)))
             raise TestComparisonError(message)
     success(label)
     return True
@@ -353,7 +363,7 @@ def compare_arrays(expected, computed, digits, label):
     if shape1 != shape2:
         TestComparisonError("Input shapes do not match.")
 
-    tol = 10 ** (-digits)
+    tol = 10**(-digits)
     if not np.allclose(expected, computed, atol=tol):
         message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
         raise TestComparisonError(message)
@@ -368,8 +378,8 @@ def compare_cubes(expected, computed, label):
 
     """
     # Grab grid points. Skip the first nine lines and the last one
-    evec = np.genfromtxt(expected,skip_header=9,skip_footer=1)
-    cvec = np.genfromtxt(computed,skip_header=9,skip_footer=1)
+    evec = np.genfromtxt(expected, skip_header=9, skip_footer=1)
+    cvec = np.genfromtxt(computed, skip_header=9, skip_footer=1)
     if evec.size == cvec.size:
         if not np.allclose(cvec, evec, rtol=5e-05, atol=1e-10):
             message = ("\t%s: computed cube file does not match expected cube file." % label)
@@ -379,7 +389,6 @@ def compare_cubes(expected, computed, label):
         raise TestComparisonError(message)
     success(label)
     return True
-
 
 # Uncomment and use if compare_arrays above is inadequate
 #def compare_lists(expected, computed, digits, label):
@@ -410,8 +419,7 @@ def compare_cubes(expected, computed, label):
 #    success(label)
 
 
-def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
-
+def copy_file_to_scratch(filename, prefix, namespace, unit, move=False):
     """Function to move file into scratch with correct naming
     convention.
 
@@ -441,9 +449,9 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     pid = str(os.getpid())
     scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
-    cp = '/bin/cp';
+    cp = '/bin/cp'
     if move:
-        cp = '/bin/mv';
+        cp = '/bin/mv'
 
     unit = str(unit)
 
@@ -462,8 +470,8 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     os.system(command)
     #print command
 
-def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
 
+def copy_file_from_scratch(filename, prefix, namespace, unit, move=False):
     """Function to move file out of scratch with correct naming
     convention.
 
@@ -493,9 +501,9 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     pid = str(os.getpid())
     scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
-    cp = '/bin/cp';
+    cp = '/bin/cp'
     if move:
-        cp = '/bin/mv';
+        cp = '/bin/mv'
 
     unit = str(unit)
 
@@ -540,7 +548,8 @@ def csx2endict():
     dictionary.
 
     """
-    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState', 'singleDeterminant']
+    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState',
+                   'singleDeterminant']
     blockmidfix = ['energies', 'energy']
     prefix = 'cs:'
 

@@ -1126,8 +1126,8 @@ bool ROHF::stability_analysis()
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
 #define ID(x) ints.DPD_ID(x)
-        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
-                               IntegralTransform::QTOrder, IntegralTransform::None);
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
+                               IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);

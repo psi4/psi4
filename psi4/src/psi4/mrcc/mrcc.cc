@@ -650,7 +650,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     // Use libtrans to initialize DPD
     std::vector <std::shared_ptr<MOSpace>> spaces;
     spaces.push_back(MOSpace::all);
-    IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
+    IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::TransformationType::Restricted : IntegralTransform::TransformationType::Unrestricted);
 
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
@@ -787,7 +787,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     }
 
     // Create integral transformation object
-    IntegralTransform ints(wave, spaces, closedshell ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
+    IntegralTransform ints(wave, spaces, closedshell ? IntegralTransform::TransformationType::Restricted : IntegralTransform::TransformationType::Unrestricted);
 
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);

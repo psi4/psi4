@@ -58,8 +58,8 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
         std::vector<std::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::all);
         std::shared_ptr<IntegralTransform> ints =
-            std::make_shared<IntegralTransform>(wfn, spaces, IntegralTransform::Restricted, IntegralTransform::IWLOnly,
-                                                IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
+            std::make_shared<IntegralTransform>(wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::IWLOnly,
+                                                IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::OccAndVir, false);
         ints->set_dpd_id(0);
         ints->set_keep_iwl_so_ints(true);
         ints->set_keep_dpd_so_ints(true);

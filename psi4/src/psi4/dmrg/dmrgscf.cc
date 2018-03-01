@@ -668,7 +668,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     spaces.push_back( MOSpace::all );
     // CheMPS2 requires RHF or ROHF orbitals.
     std::shared_ptr<IntegralTransform> ints;
-    ints = std::shared_ptr<IntegralTransform>( new IntegralTransform( wfn, spaces, IntegralTransform::Restricted ) );
+    ints = std::shared_ptr<IntegralTransform>( new IntegralTransform( wfn, spaces, IntegralTransform::TransformationType::Restricted ) );
     ints->set_keep_iwl_so_ints( true );
     ints->set_keep_dpd_so_ints( true );
     //ints->set_print(6);

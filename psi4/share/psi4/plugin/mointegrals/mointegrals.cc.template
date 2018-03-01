@@ -77,7 +77,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     // LibTrans object, check out the plugin_mp2 example in the test suite.
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
-    IntegralTransform ints(ref_wfn, spaces, IntegralTransform::Restricted);
+    IntegralTransform ints(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted);
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
