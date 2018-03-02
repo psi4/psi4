@@ -77,9 +77,7 @@ qchem_data = {                              #TEST
      'M05-2X':  -0.015140837600000623,      #TEST
         'M11':  -0.015210644100008608,      #TEST
       'B1LYP':   -0.01442269369998428,      #TEST
-   'wB97X-D3':  -0.014866630699998495,      #TEST
        'EDF2':  -0.015517714200015575,      #TEST
-      'B97-D':   -0.01404225510000856,      #TEST
       'B3P86':  -0.014204538500010244,      #TEST
         'PBE':  -0.015458037099989497,      #TEST
       'B97-2':  -0.013202621199994269,      #TEST
@@ -123,6 +121,12 @@ qchem_data = {                              #TEST
 #       'GAM':   -0.01491073450002034,      #TEST
 }                                           #TEST
 
+# Current version of Psi4 does not match Q-Chem for these tests
+excluded_qchem = {                          #TEST
+      'B97-D':   -0.01404225510000856,      #TEST
+   'wB97X-D3':  -0.014866630699998495,      #TEST
+}                                           #TEST
+
 # The following data is from an older 
 # version of Psi4 (~April 2017, SHA: 53e752c)  
 old_psi4_data = {                           #TEST 
@@ -130,7 +134,6 @@ old_psi4_data = {                           #TEST
       'BLYP': -0.014294874492634335,        #TEST
     'B97-D3': -0.014455902448531788,        #TEST
     'B3LYP5': -0.014494768950584103,        #TEST
-     'wB97X': -0.01638428793378921,         #TEST
        'PBE': -0.015457134998626998,        #TEST
     'M05-2X': -0.015145056492713138,        #TEST
    'wB97X-D': -0.014613361929264101,        #TEST
@@ -140,7 +143,6 @@ old_psi4_data = {                           #TEST
       'PBE0': -0.014958205517643819,        #TEST
      'B97-1': -0.014676434498966273,        #TEST
       'PW91': -0.01602902561316455,         #TEST
-     'B97-D': -0.014041140231540794,        #TEST
        'M05': -0.015654414236166758,        #TEST
      'B3LYP': -0.014529738435527406,        #TEST
    'HCTH407': -0.013575929357500627,        #TEST
@@ -148,6 +150,14 @@ old_psi4_data = {                           #TEST
      'SOGGA': -0.01806810274382542,         #TEST
      'B97-2': -0.013201680603032173,        #TEST
 }                                           #TEST
+
+# Current version of Psi4 does not match pre-LibXC Psi4
+# (~April 2017, SHA: 53e752c)
+excluded_old_psi4 = {                       #TEST
+     'B97-D': -0.014041140231540794,        #TEST
+     'wB97X': -0.01638428793378921,         #TEST
+}                                           #TEST
+
 
 for func in qchem_data.keys():                                                                        #TEST
     psi4_ie = energy(func, molecule=h2o_dimer, bsse_type='nocp')                                      #TEST
