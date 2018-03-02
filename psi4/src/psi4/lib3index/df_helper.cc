@@ -230,7 +230,7 @@ void DF_Helper::prepare_sparsity() {
     double val, max_val = 0.0;
     size_t MU, NU, mu, nu, omu, onu, nummu, numnu, index;
 #pragma omp parallel for private(MU, NU, mu, nu, omu, onu, nummu, numnu, index, val, \
-                                 rank) num_threads(nthreads_) if (nao_ > 1000) schedule(guided)
+        rank) num_threads(nthreads_) if (nao_ > 1000) schedule(guided) reduction(max:max_val)
     for (MU = 0; MU < pshells_; ++MU) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -279,28 +279,15 @@ void DF_Helper::prepare_sparsity() {
     }
 
     // build indexing skips
-    if(direct_iaQ_){
-        // building big skips based on 
-        big_skips_[0] = 0;
-        size_t coltots = 0;
-        for (size_t j = 0; j < nao_; j++) {
-            size_t cols = small_skips_[j];
-            size_t size = cols * naux_;
-            coltots += cols;
-            big_skips_[j + 1] = size + big_skips_[j];
-        }
-        small_skips_[nao_] = coltots;
-    } else {
-        big_skips_[0] = 0;
-        size_t coltots = 0;
-        for (size_t j = 0; j < nao_; j++) {
-            size_t cols = small_skips_[j];
-            size_t size = cols * naux_;
-            coltots += cols;
-            big_skips_[j + 1] = size + big_skips_[j];
-        }
-        small_skips_[nao_] = coltots;
+    big_skips_[0] = 0;
+    size_t coltots = 0;
+    for (size_t j = 0; j < nao_; j++) {
+        size_t cols = small_skips_[j];
+        size_t size = cols * naux_;
+        coltots += cols;
+        big_skips_[j + 1] = size + big_skips_[j];
     }
+    small_skips_[nao_] = coltots;
 
     // symmetric indexing skips
     symm_skips_.reserve(nao_);
