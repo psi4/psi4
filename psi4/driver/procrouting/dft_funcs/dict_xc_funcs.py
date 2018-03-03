@@ -36,7 +36,7 @@ funcs = []
 funcs.append({"name": "TETER93"        , "xc_functionals": {"LDA_XC_TETER93"            : {}}})
 funcs.append({"name": "ZLP"            , "xc_functionals": {"LDA_XC_ZLP"                : {}}})
 funcs.append({"name": "KSDT"           , "xc_functionals": {"LDA_XC_KSDT"               : {}}})
-funcs.append({"name": "OPBE-D"         , "xc_functionals": {"GGA_XC_OPBE_D"             : {}}, "dispersion": {"type": "d3zero", "params": {'s6': 1.0, 's8': 1.494, 'sr6': 1.128, 'sr8': 1.0, 'alpha6': 14.0}}, "alias": ["OPBE-D3", "OPBE-D3(0)", "OPBE-D3ZERO"]})
+funcs.append({"name": "OPBE-D"         , "xc_functionals": {"GGA_XC_OPBE_D"             : {}}, "dispersion": {"type": "d3zero", "params": {'s6': 1.0,  's8': 2.055, 'sr6': 0.837, 'sr8': 1.0, 'alpha6': 14.0}}, "alias": ["OPBE-D3", "OPBE-D3(0)", "OPBE-D3ZERO"]})
 #funcs.append({"name": "OPWLYP-D"       , "xc_functionals": {"GGA_XC_OPWLYP_D"           : {}}}, # no dispersion
 #funcs.append({"name": "OBLYP-D"        , "xc_functionals": {"GGA_XC_OBLYP_D"            : {}}}, # no dispersion
 funcs.append({"name": "HCTH/407P"      , "xc_functionals": {"GGA_XC_HCTH_407P"          : {}}, "alias": ["HCTH407P"]})
@@ -71,8 +71,8 @@ funcs.append({"name": "B3LYP"          , "xc_functionals": {"HYB_GGA_XC_B3LYP"  
 funcs.append({"name": "B3P86"          , "xc_functionals": {"HYB_GGA_XC_B3P86"          : {}}})
 funcs.append({"name": "O3LYP"          , "xc_functionals": {"HYB_GGA_XC_O3LYP"          : {}}})
 funcs.append({"name": "mPW1K"          , "xc_functionals": {"HYB_GGA_XC_mPW1K"          : {}}})
-funcs.append({"name": "PBEh"           , "xc_functionals": {"HYB_GGA_XC_PBEH"           : {}}, "alias": ["PBE0"], })
-funcs.append({"name": "B97"            , "xc_functionals": {"HYB_GGA_XC_B97"            : {}}})
+funcs.append({"name": "PBE0"           , "xc_functionals": {"HYB_GGA_XC_PBEH"           : {}}, "alias": ["PBEH"]})
+funcs.append({"name": "B97"            , "xc_functionals": {"HYB_GGA_XC_B97"            : {}}, "alias": ["B97-0"]})
 funcs.append({"name": "B97-1"          , "xc_functionals": {"HYB_GGA_XC_B97_1"          : {}}})
 funcs.append({"name": "B97-2"          , "xc_functionals": {"HYB_GGA_XC_B97_2"          : {}}})
 funcs.append({"name": "X3LYP"          , "xc_functionals": {"HYB_GGA_XC_X3LYP"          : {}}})
@@ -99,7 +99,7 @@ funcs.append({"name": "HJS-B97X"       , "xc_functionals": {"HYB_GGA_XC_HJS_B97X
 funcs.append({"name": "CAM-B3LYP"      , "xc_functionals": {"HYB_GGA_XC_CAM_B3LYP"      : {}}})
 funcs.append({"name": "TUNED-CAM-B3LYP", "xc_functionals": {"HYB_GGA_XC_TUNED_CAM_B3LYP": {}}})
 funcs.append({"name": "BHandH"         , "xc_functionals": {"HYB_GGA_XC_BHANDH"         : {}}})
-funcs.append({"name": "BHandHLYP"      , "xc_functionals": {"HYB_GGA_XC_BHANDHLYP"      : {}}})
+funcs.append({"name": "BHandHLYP"      , "xc_functionals": {"HYB_GGA_XC_BHANDHLYP"      : {}}, "alias": ["BHHLYP"]})
 funcs.append({"name": "MB3LYP-RC04"    , "xc_functionals": {"HYB_GGA_XC_MB3LYP_RC04"    : {}}})
 funcs.append({"name": "mPWLYP1M"       , "xc_functionals": {"HYB_GGA_XC_MPWLYP1M"       : {}}})
 funcs.append({"name": "revB3LYP"       , "xc_functionals": {"HYB_GGA_XC_REVB3LYP"       : {}}})
@@ -122,7 +122,7 @@ funcs.append({"name": "EDF2"           , "xc_functionals": {"HYB_GGA_XC_EDF2"   
 funcs.append({"name": "CAP0"           , "xc_functionals": {"HYB_GGA_XC_CAP0"           : {}}})
 funcs.append({"name": "M05"            , "xc_functionals": {"HYB_MGGA_XC_M05"           : {}}})
 funcs.append({"name": "M05-2X"         , "xc_functionals": {"HYB_MGGA_XC_M05_2X"        : {}}, "alias": ["M052X"]})
-funcs.append({"name": "B88B95"         , "xc_functionals": {"HYB_MGGA_XC_B88B95"        : {}}})
+funcs.append({"name": "B88B95"         , "xc_functionals": {"HYB_MGGA_XC_B88B95"        : {}}, "alias": ["B1B95"]})
 funcs.append({"name": "B86B95"         , "xc_functionals": {"HYB_MGGA_XC_B86B95"        : {}}})
 funcs.append({"name": "PW86B95"        , "xc_functionals": {"HYB_MGGA_XC_PW86B95"       : {}}})
 funcs.append({"name": "BB1K"           , "xc_functionals": {"HYB_MGGA_XC_BB1K"          : {}}})
@@ -148,8 +148,4 @@ funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"    
 
 functional_list = {}
 for functional in funcs:
-    if "alias" in functional.keys():
-        alias = functional.pop("alias")
-        for a in alias:
-            functional_list["TEST-" + a] = functional
-    functional_list["TEST-" + functional["name"].upper()] = functional
+    functional_list[functional["name"].upper()] = functional

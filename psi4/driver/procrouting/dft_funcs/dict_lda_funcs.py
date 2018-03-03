@@ -47,8 +47,4 @@ funcs.append({
 
 functional_list = {}
 for functional in funcs:
-    if "alias" in functional.keys():
-        alias = functional.pop("alias")
-        for a in alias:
-            functional_list["TEST-" + a] = functional
-    functional_list["TEST-" + functional["name"].upper()] = functional
+    functional_list[functional["name"].upper()] = functional

@@ -199,10 +199,48 @@ funcs.append({
     "description": '   SOGGA11 Exchange-Correlation Functional\n',
 })
 
+funcs.append({
+    "name": "B97-D2GR", 
+    "xc_functionals": {
+        "GGA_XC_B97_D": {}
+    },
+    "dispersion": {"type": "d2gr", "params": {'s6': 1.25, 'alpha6': 20.0}}
+})
+
+funcs.append({
+    "name": "B97-D3", 
+    "alias": ["B97-D3ZERO"],
+    "xc_functionals": {
+        "GGA_XC_B97_D": {}
+    },
+    "dispersion": {"type": "d3", "params": {'s6': 1.0,  's8': 0.909, 'sr6': 0.892, 'sr8': 1.0, 'alpha6': 14.0}}
+})
+
+funcs.append({
+    "name": "B97-D3BJ", 
+    "xc_functionals": {
+        "GGA_XC_B97_D": {}
+    },
+    "dispersion": {"type": "d3bj", "params": {'s6': 1.000, 's8':  2.2609, 'a1':  0.5545, 'a2': 3.2297}}
+})
+
+funcs.append({
+    "name": "B97-D3M", 
+    "alias": ["B97-D3MZERO"],
+    "xc_functionals": {
+        "GGA_XC_B97_D": {}
+    },
+    "dispersion": {"type": "d3mzero", "params": {'s6': 1.000, 's8':  1.020078, 'sr6': 1.151808, 'beta': 0.035964}}
+})
+
+funcs.append({
+    "name": "B97-D3MBJ", 
+    "xc_functionals": {
+        "GGA_XC_B97_D": {}
+    },
+    "dispersion": {"type": "d3mbj", "params": {'s6': 1.000, 's8': 1.206988, 'a1': 0.240184, 'a2': 3.864426}}
+})
+
 functional_list = {}
 for functional in funcs:
-    if "alias" in functional.keys():
-        alias = functional.pop("alias")
-        for a in alias:
-            functional_list["TEST-" + a] = functional
-    functional_list["TEST-" + functional["name"].upper()] = functional
+    functional_list[functional["name"].upper()] = functional

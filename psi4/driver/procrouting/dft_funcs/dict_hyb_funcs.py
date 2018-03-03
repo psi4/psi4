@@ -59,8 +59,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name":
-    "wPBE0",
+    "name": "wPBE0",
     "alias": ["LC-WPBE0"],
     "description":
     '    PBE0 SR-XC Functional (HJS Model)\n',
@@ -83,9 +82,8 @@ funcs.append({
 })
 
 funcs.append({
-    "name":
-    "wPBE",
-    "alias": ["LC-WPBE"],
+    "name": "wPBE",
+    "alias": ["LC-WPBE", "LCWPBE"],
     "description":
     '    PBE SR-XC Functional (HJS Model)\n',
     "citation":
@@ -107,6 +105,7 @@ funcs.append({
 
 funcs.append({
     "name": "wB97X-D3",
+    "alias": ["WB97X-D3ZERO"],
     "description": '    Parameterized Hybrid LRC B97 GGA XC Functional with Dispersion\n',
     "citation": '    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008\n',
     "x_functionals": {
@@ -157,7 +156,7 @@ funcs.append({
 
 funcs.append({
     "name": "HF-3C",
-    "alias": ["HF3C"],
+    "alias": ["HF3C", "HF3C-D3BJ"],
     "description": '    Hartree Fock as Roothaan prescribed plus 3C\n',
     "citation": '    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n',
     "x_hf": {
@@ -177,7 +176,7 @@ funcs.append({
 
 funcs.append({
     "name": "PBEH-3C",
-    "alias": ["PBEH3C"],
+    "alias": ["PBEH3C", "PBEH3C-D3BJ"],
     "description": '    PBEH-3C Hybrid GGA Exchange-Correlation Functional plus 3C\n',
     "citation": '    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n',
     "x_functionals": {
@@ -344,8 +343,4 @@ funcs.append({
 
 functional_list = {}
 for functional in funcs:
-    if "alias" in functional.keys():
-        alias = functional.pop("alias")
-        for a in alias:
-            functional_list["TEST-" + a] = functional
-    functional_list["TEST-" + functional["name"].upper()] = functional
+    functional_list[functional["name"].upper()] = functional
