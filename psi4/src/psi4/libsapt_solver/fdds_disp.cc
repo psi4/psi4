@@ -155,7 +155,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     // Build DF_Helper
     dfh_ = std::make_shared<DF_Helper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
-    dfh_->set_method("STORE");
+    dfh_->set_method("DIRECT_iaQ");
     dfh_->set_nthreads(nthread);
     dfh_->set_metric_pow(0.0);
     dfh_->initialize();

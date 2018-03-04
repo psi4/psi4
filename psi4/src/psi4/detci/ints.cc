@@ -276,7 +276,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     }
 
     // => Compute DF ints <= //
-    dfh_->clear_all();
+    dfh_->clear_spaces();
 
     dfh_->add_space("R", AO_R);
     dfh_->add_space("a", AO_a);

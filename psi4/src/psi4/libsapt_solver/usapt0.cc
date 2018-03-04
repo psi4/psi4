@@ -1963,7 +1963,7 @@ void USAPT0::mp2_terms() {
 
     auto dfh(std::make_shared<DF_Helper>(primary_, mp2fit_));
     dfh->set_memory(memory_ - Cs[0]->nrow() * ncol);
-    dfh->set_method("DIRECT");
+    dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
     dfh->initialize();
 

@@ -826,61 +826,52 @@ void DFSOMCSCF::transform(bool approx_only) {
     SharedMatrix Cact = matrices_["Cact"];
     SharedMatrix Cvir = matrices_["Cvir"];
 
+    int nao = nao_;
+    int nact = nact_;
     int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
     int aoc_rowdim = nrot + Cact->ncol();
-    auto AO_C = std::make_shared<Matrix>("AO_C", nao_, aoc_rowdim);
 
-    double** AO_Cp = AO_C->pointer();
+    auto AO_R = std::make_shared<Matrix>("AO_R", nao, nrot);
+    auto AO_a = std::make_shared<Matrix>("AO_a", nao, aoc_rowdim - nrot);
+    
+    double** rp = AO_R->pointer();
+    double** ap = AO_a->pointer();
+    
     for (int h = 0, offset = 0, offset_act = 0; h < nirrep_; h++) {
         int hnso = nsopi_[h];
         if (hnso == 0) continue;
         double** Up = matrices_["AOTOSO"]->pointer(h);
-
+    
         int noccpih = Cocc->colspi()[h];
         int nactpih = Cact->colspi()[h];
         int nvirpih = Cvir->colspi()[h];
         // occupied
         if (noccpih) {
             double** CSOp = Cocc->pointer(h);
-            C_DGEMM('N', 'N', nao_, noccpih, hnso, 1.0, Up[0], hnso, CSOp[0], noccpih, 0.0, &AO_Cp[0][offset],
-                    aoc_rowdim);
+            C_DGEMM('N', 'N', nao, noccpih, hnso, 1.0, Up[0], hnso, CSOp[0], noccpih, 0.0, &rp[0][offset], nrot);
             offset += noccpih;
         }
         // active
         if (nactpih) {
             double** CSOp = Cact->pointer(h);
-            C_DGEMM('N', 'N', nao_, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &AO_Cp[0][offset],
-                    aoc_rowdim);
+            C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &rp[0][offset], nrot);
             offset += nactpih;
-
-            C_DGEMM('N', 'N', nao_, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0,
-                    &AO_Cp[0][offset_act + nrot], aoc_rowdim);
+    
+            C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &ap[0][offset_act],
+                    aoc_rowdim - nrot);
             offset_act += nactpih;
         }
         // virtual
         if (nvirpih) {
             double** CSOp = Cvir->pointer(h);
-            C_DGEMM('N', 'N', nao_, nvirpih, hnso, 1.0, Up[0], hnso, CSOp[0], nvirpih, 0.0, &AO_Cp[0][offset],
-                    aoc_rowdim);
+            C_DGEMM('N', 'N', nao, nvirpih, hnso, 1.0, Up[0], hnso, CSOp[0], nvirpih, 0.0, &rp[0][offset], nrot);
             offset += nvirpih;
         }
     }
-
-    // => Compute DF ints <= //
-    dfh_->clear_all();
-
-    // not ideal FIXME
-    auto AO_R = std::make_shared<Matrix>("AO_R", nao_, nrot);
-    auto AO_a = std::make_shared<Matrix>("AO_a", nao_, aoc_rowdim - nrot);
-
-    double** rp = AO_R->pointer();
-    double** ap = AO_a->pointer();
-
-    for (size_t i = 0; i < nao_; i++) {
-        C_DCOPY(nrot, &AO_Cp[i][0], 1, &rp[i][0], 1);
-        C_DCOPY((aoc_rowdim - nrot), &AO_Cp[i][nrot], 1, &ap[i][0], 1);
-    }
-
+   
+    // safety check
+    dfh_->clear_spaces();
+ 
     dfh_->add_space("R", AO_R);
     dfh_->add_space("a", AO_a);
 

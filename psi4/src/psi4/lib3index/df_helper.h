@@ -53,9 +53,10 @@ class DF_Helper {
 
     /// 
     /// Specify workflow for transforming and contracting integrals
-    /// @param method (STORE or DIRECT) to indicate workflow
-    /// DIRECT: pre-transform integrals before metric contraction 
+    /// @param method (STORE or DIRECT or DIRECT_iaQ) to indicate workflow
     /// STORE: contract and save AO integrals before transforming 
+    /// DIRECT: pre-transform integrals before metric contraction 
+    /// DIRECT_iaQ: special workflow when using integrals of the iaQ form
     /// (defaults to STORE)
     ///
     void set_method(std::string method) { method_ = method; }
@@ -257,6 +258,8 @@ class DF_Helper {
     // => internal holders <=
     std::string method_ = "STORE";
     bool direct_;
+    bool direct_iaQ_;
+    bool symm_compute_;
     bool AO_core_ = 1;
     bool MO_core_ = 0;
     size_t nthreads_ = 1;
@@ -266,7 +269,7 @@ class DF_Helper {
     double mpower_ = -0.5;
     bool hold_met_ = false;
     bool JK_hint_ = false;
-    bool built = false;
+    bool built_ = false;
     bool transformed_ = false;
     std::pair<size_t, size_t> info_;
     bool ordered_ = 0;
@@ -280,14 +283,23 @@ class DF_Helper {
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
-    void compute_AO_Q(const size_t start, const size_t stop, double* Mp,
+    void compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p(const size_t start, const size_t stop, double* Mp,
+    void compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p_symm(const size_t start, const size_t stop, double* Mp,
+    void compute_sparse_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
+                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                            std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
+
+    // first integral transforms
+    void first_transform_Qpq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
+        double* Mp, double* Tp, double* Bp);
+    void first_transform_pQq(int nao, int naux, int bsize, int bcount, int block_size, int rank, 
+        double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers);
+    
 
     // => index vectors for screened AOs <=
     std::vector<size_t> small_skips_;
@@ -308,6 +320,8 @@ class DF_Helper {
                                                          std::vector<std::pair<size_t, size_t>>& b);
     std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                           std::vector<std::pair<size_t, size_t>>& b);
+    void metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, 
+        size_t blocking_index, size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump); 
 
     // => Schwarz Screening <=
     std::vector<size_t> schwarz_fun_mask_;
@@ -324,6 +338,7 @@ class DF_Helper {
     std::string compute_metric(double pow);
 
     // => metric operations <=
+    void contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t tots);
     void contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t tots);
     void contract_metric_core(std::string file);
     void contract_metric_AO(double* Mp);
@@ -335,19 +350,34 @@ class DF_Helper {
     std::map<std::string, std::vector<double>> transf_core_;
 
     // => transformation machinery <=
-    void transform_core();
-    void transform_disk();
+    void put_transformations_Qpq(int naux, int begin, int end,  
+        int wsize, int bsize, double* Fp, int ind, bool bleft);
+    void put_transformations_pQq(int naux, int begin, int end, int block_size, int bcount, 
+        int wsize, int bsize, double* Np, double* Fp, int ind, bool bleft);
     std::vector<std::pair<std::string, size_t>> sorted_spaces_;
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
     std::vector<size_t> strides_;
 
     // => FILE IO maintenence <=
-    struct stream {
-        FILE* fp;
-        std::string op;
-    };
-    std::map<std::string, stream> file_status_;
+    typedef struct StreamStruct {
+        
+        StreamStruct();
+        StreamStruct(std::string filename, std::string op, bool activate=true);
+        ~StreamStruct();
+
+        FILE* get_stream(std::string op);
+        void change_stream(std::string op);
+        void close_stream();
+ 
+        FILE* fp_;
+        std::string op_;
+        bool open_ = false;
+        std::string filename_;   
+         
+    } Stream;
+   
+    std::map<std::string, std::shared_ptr<Stream>> file_streams_;
     FILE* stream_check(std::string filename, std::string op);
 
     // => FILE IO machinery <=
@@ -370,7 +400,8 @@ class DF_Helper {
     std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
+    std::string start_filename(std::string start);
+    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op=0);
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
     void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,

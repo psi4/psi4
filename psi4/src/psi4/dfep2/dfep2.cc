@@ -91,7 +91,7 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
 
     // ==> Init DF object <== /
     dfh_ = std::make_shared<DF_Helper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
-    dfh_->set_method("DIRECT");
+    dfh_->set_method("DIRECT_iaQ");
     dfh_->set_memory(memory_doubles_);
     dfh_->set_nthreads(num_threads_);
     dfh_->initialize();
@@ -198,8 +198,10 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
 
     // ==> Transform DF integrals <== /
 
+    // safety check
+    dfh_->clear_spaces();
+    
     // add spaces
-    dfh_->clear_all();
     dfh_->add_space("i", AO_Cocc_);
     dfh_->add_space("a", AO_Cvir_);
     dfh_->add_space("E", AO_CE);
