@@ -436,25 +436,32 @@ def energy(name, **kwargs):
     # before actual, clean restarts are put in there
     # Restartfile is always converted to a single-element list if
     # it contains a single string
+    # DGAS Note: This is hacked together at this point and should be revamped.
     if 'restart_file' in kwargs:
         restartfile = kwargs['restart_file']  # Option still available for procedure-specific action
-        if restartfile != list(restartfile):
-            restartfile = [restartfile]
+        if not isinstance(restartfile, (list, tuple)):
+            restartfile = (restartfile, )
         # Rename the files to be read to be consistent with psi4's file system
         for item in restartfile:
             name_split = re.split(r'\.', item)
-            filenum = name_split[len(name_split) - 1]
-            try:
-                filenum = int(filenum)
-            except ValueError:
-                filenum = 32  # Default file number is the checkpoint one
-            psioh = core.IOManager.shared_object()
-            psio = core.IO.shared_object()
-            filepath = psioh.get_file_path(filenum)
-            namespace = psio.get_default_namespace()
-            pid = str(os.getpid())
-            prefix = 'psi'
-            targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
+            if "npz" in item:
+                fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(molecule.name())))[1]
+                psi_scratch = core.IOManager.shared_object().get_default_path()
+                file_num = item.split('.')[-2]
+                targetfile = os.path.join(psi_scratch, fname + "." + file_num + ".npz")
+            else:
+                filenum = name_split[-1]
+                try:
+                    filenum = int(filenum)
+                except ValueError:
+                    filenum = 32  # Default file number is the checkpoint one
+                psioh = core.IOManager.shared_object()
+                psio = core.IO.shared_object()
+                filepath = psioh.get_file_path(filenum)
+                namespace = psio.get_default_namespace()
+                pid = str(os.getpid())
+                prefix = 'psi'
+                targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
             shutil.copy(item, targetfile)
 
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
