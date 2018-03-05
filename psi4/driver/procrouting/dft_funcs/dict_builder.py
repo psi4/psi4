@@ -89,7 +89,7 @@ for functional_name in dict_functionals.keys():
                 func["name"] = func["name"] + "-" + dispersion_type
                 func["dispersion"] = dict()
                 if "citation" in dashcoeff[dispersion_type][dispersion_functional].keys():
-                    func["dispersion"]["citation"] = dashcoeff[dispersion_type][dispersion_functional]["citation"]
+                    func["dispersion"]["citation"] = dashcoeff[dispersion_type][dispersion_functional].pop("citation")
                 func["dispersion"]["type"] = dispersion_type
                 func["dispersion"]["params"] = dashcoeff[dispersion_type][dispersion_functional]
                 for alias in functional_aliases:

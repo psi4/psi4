@@ -1017,8 +1017,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        if type(disp_type) == type(dict()):
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion("custom", 
+        if isinstance(disp_type, dict):
+            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(), 
                 disp_type["type"], dashparams=disp_type["params"], citation=disp_type["citation"])
         else:
             wfn._disp_functor = empirical_dispersion.EmpericalDispersion(

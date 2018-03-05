@@ -37,6 +37,12 @@ from psi4.driver import p4util
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
+        # Cleave out base functional from alias:
+        for dash in ["-D", "-D2", "-D2P4", "-D2GR", "-D3", "-D3ZERO",
+                     "-D3BJ", "-D3M", "-D3MZERO", "-D3MBJ"]:
+            if dash == alias.upper()[-len(dash):]:
+                alias = alias[:-len(dash)]
+                
         self.alias = alias.upper() # Functional Alias
 
         # Figure out dispersion type
@@ -52,9 +58,11 @@ class EmpericalDispersion(object):
             self.dtype = dtype.upper() # Dispersion type
 
         custom_citation = False
-        if alias == "custom" and "dashparams" in kwargs.keys():
-            self.dash_params = kwargs.pop("dashparams")
+        if "citation" in kwargs.keys():
             custom_citation = kwargs.pop("citation")
+        
+        if "dashparams" in kwargs.keys():
+            self.dash_params = kwargs.pop("dashparams")
         elif dtype.replace('-', '') in dftd3.dashcoeff.keys():
             self.dash_params = dftd3.dash_server(alias, dtype.replace('-', ''))
         else:
@@ -173,7 +181,7 @@ class EmpericalDispersion(object):
             raise Exception("Emperical Dispersion type %s not understood." % self.dtype)
 
         if custom_citation:
-            self.citation += "\n" + custom_citation
+            self.citation += "\n    Parametrisation from: \n" + custom_citation
 
     def print_out(self, level=1):
 

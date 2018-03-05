@@ -36,9 +36,9 @@ funcs = []
 funcs.append({"name": "TETER93"        , "xc_functionals": {"LDA_XC_TETER93"            : {}}})
 funcs.append({"name": "ZLP"            , "xc_functionals": {"LDA_XC_ZLP"                : {}}})
 funcs.append({"name": "KSDT"           , "xc_functionals": {"LDA_XC_KSDT"               : {}}})
-funcs.append({"name": "OPBE-D"         , "xc_functionals": {"GGA_XC_OPBE_D"             : {}}, "dispersion": {"type": "d3zero", "params": {'s6': 1.0,  's8': 2.055, 'sr6': 0.837, 'sr8': 1.0, 'alpha6': 14.0}}, "alias": ["OPBE-D3", "OPBE-D3(0)", "OPBE-D3ZERO"]})
-#funcs.append({"name": "OPWLYP-D"       , "xc_functionals": {"GGA_XC_OPWLYP_D"           : {}}}, # no dispersion
-#funcs.append({"name": "OBLYP-D"        , "xc_functionals": {"GGA_XC_OBLYP_D"            : {}}}, # no dispersion
+funcs.append({"name": "OPBE-D"         , "xc_functionals": {"GGA_XC_OPBE_D"             : {}}, "dispersion": {"type": "d2gr", "params": {'s6': 1.0,  'alpha6': 20.0, 'rs6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010'}})
+funcs.append({"name": "OPWLYP-D"       , "xc_functionals": {"GGA_XC_OPWLYP_D"           : {}}, "dispersion": {"type": "d2gr", "params": {'s6': 1.0,  'alpha6': 20.0, 'rs6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010'}})
+funcs.append({"name": "OBLYP-D"        , "xc_functionals": {"GGA_XC_OBLYP_D"            : {}}, "dispersion": {"type": "d2gr", "params": {'s6': 1.0,  'alpha6': 20.0, 'rs6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010'}})
 funcs.append({"name": "HCTH/407P"      , "xc_functionals": {"GGA_XC_HCTH_407P"          : {}}, "alias": ["HCTH407P"]})
 funcs.append({"name": "HCTH/P76"       , "xc_functionals": {"GGA_XC_HCTH_P76"           : {}}, "alias": ["HCTHP76"]})
 funcs.append({"name": "HCTH/P14"       , "xc_functionals": {"GGA_XC_HCTH_P14"           : {}}, "alias": ["HCTHP14"]})
@@ -142,7 +142,7 @@ funcs.append({"name": "M08-SO"         , "xc_functionals": {"HYB_MGGA_XC_M08_SO"
 funcs.append({"name": "M11"            , "xc_functionals": {"HYB_MGGA_XC_M11"           : {}}})
 funcs.append({"name": "wB97M-V"        , "xc_functionals": {"HYB_MGGA_XC_WB97M_V"       : {}}, "alias": ["WB97MV"]})
 funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"               : {}}})
-funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"           : {}}, "dispersion": {"type": "d3zero", "params": {'s6': 1.0,  's8': 1.494, 'sr6': 1.128, 'sr8': 1.0, 'alpha6': 14.0}}, "alias": ["OTPSS-D3", "OTPSS-D3(0)", "OTPSS-D3ZERO"]})
+funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"           : {}}, "dispersion": {"type": "d2gr", "params": {'s6': 1.0,  'alpha6': 20.0, 'rs6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010'}})
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})
 
