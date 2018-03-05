@@ -34,6 +34,20 @@ from psi4.driver.qcdb import interface_dftd3 as dftd3
 from psi4.driver.qcdb import interface_gcp as gcp
 from psi4.driver import p4util
 
+def get_default_dashparams(dtype):
+    if dtype in ['d2p4', 'd2gr']:
+        return({"s6": 1.0, "sr6": 1.1, "alpha6": 20.0})
+    elif dtype == 'd3zero':
+        return({"s6": 1.0, "sr6": 1.0, "s8": 0.0, "sr8": 1.0, "alpha6": 14.0})
+    elif dtype == 'd3bj':
+        return({"s6": 1.0, "a1": 0.0, "s8": 1.0, "a2": 1.0})
+    elif dtype == 'd3mzero':
+        return({"s6": 1.0, "sr6": 1.0, "s8": 1.0, "beta": 1.0, "alpha6": 14.0})
+    elif dtype == 'd3mbj':
+        return({"s6": 1.0, "a1": 1.0, "s8": 1.0, "a2": 1.0})
+    else:
+        return({"s6": 1.0})
+
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
@@ -44,27 +58,28 @@ class EmpericalDispersion(object):
                 alias = alias[:-len(dash)]
                 
         self.alias = alias.upper() # Functional Alias
-
+        
         # Figure out dispersion type
         if dtype[0] != "-":
             dtype = "-" + dtype
-
-
-        tuple_params = kwargs.pop('tuple_params', None)
 
         if dtype.lower() in dftd3.dash_alias.keys():
             self.dtype = dftd3.dash_alias[dtype.lower()].upper()
         else:
             self.dtype = dtype.upper() # Dispersion type
-
+        
+        tuple_params = kwargs.pop('tuple_params', None)
+        
         custom_citation = False
         if "citation" in kwargs.keys():
             custom_citation = kwargs.pop("citation")
         
+        
+        self.dash_params = get_default_dashparams(dtype)
         if "dashparams" in kwargs.keys():
-            self.dash_params = kwargs.pop("dashparams")
+            self.dash_params.update(kwargs.pop("dashparams"))
         elif dtype.replace('-', '') in dftd3.dashcoeff.keys():
-            self.dash_params = dftd3.dash_server(alias, dtype.replace('-', ''))
+            self.dash_params.update(dftd3.dash_server(alias, dtype.replace('-', '')))
         else:
             self.dash_params = {'s6': 1.0}
 

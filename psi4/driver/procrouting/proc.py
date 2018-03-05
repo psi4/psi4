@@ -1019,7 +1019,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
     if disp_type:
         if isinstance(disp_type, dict):
             wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(), 
-                disp_type["type"], dashparams=disp_type["params"], citation=disp_type["citation"])
+                disp_type["type"], dashparams=disp_type["params"], citation=disp_type["citation"], tuple_params=modified_disp_params)
         else:
             wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
                 disp_type[0], disp_type[1], tuple_params=modified_disp_params)

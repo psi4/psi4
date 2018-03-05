@@ -69,6 +69,7 @@ dashcoeff = {
 
     },
     'd2gr': {
+<<<<<<< HEAD
         'blyp'             : {'s6': 1.2,  'alpha6': 20.0, 'rs6': 1.1},
         'bp86'             : {'s6': 1.05, 'alpha6': 20.0, 'rs6': 1.1},
         'b97-d'            : {'s6': 1.25, 'alpha6': 20.0, 'rs6': 1.1},
@@ -179,7 +180,7 @@ dashcoeff = {
         'revpbe0'     : {'s6': 1.0,  's8': 0.792, 'sr6': 0.949, 'alpha6': 14.0},
         'revpbe38'    : {'s6': 1.0,  's8': 0.862, 'sr6': 1.021, 'alpha6': 14.0},
     # unreferenced
-        'hf' : {'s6': 1.0, 's8': 1.746, 'sr6': 1.158, 'alpha6': 14.0},
+        'hf'          : {'s6': 1.0,  's8': 1.746, 'sr6': 1.158, 'sr8': 1.0, 'alpha6': 14.0},
     },
     'd3bj': {
     # S. Grimme, S. Ehrlich, L. Goerigk, J. Comput. Chem. 7, 3297-3305, 2011
@@ -348,7 +349,7 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     elif dashlvleff.lower() == 'd2gr':
         returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
             (dashcoeff['s6'],
-             dashcoeff['rs6'], 0.0, 0.0,
+             dashcoeff['sr6'], 0.0, 0.0,
              dashcoeff['alpha6'],
              2)
     elif dashlvleff.lower() == 'd3zero':
