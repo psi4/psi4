@@ -34,7 +34,7 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
     Converts the incoming value as hartree to a correctly formatted Psi print format.
     """
 
-    vals = (name, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kcalmol)
+    vals = (name, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kJmol)
     if short:
         return start_spacer + "%-20s % 15.8f [mEh]" % vals[:2]
     else:
