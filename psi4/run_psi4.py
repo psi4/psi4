@@ -242,14 +242,17 @@ if args["verbose"]:
     psi4.core.print_out('-' * 75)
 
 # Handle Messy
+_clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
 if args["messy"]:
 
     if sys.version_info >= (3, 0):
-        atexit.unregister(psi4.core.clean)
+        for func in _clean_functions:
+            atexit.unregister(func)
     else:
         for handler in atexit._exithandlers:
-            if handler[0] == psi4.core.clean:
-                atexit._exithandlers.remove(handler)
+            for func in _clean_functions:
+                if handler[0] == func: 
+                    atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
 atexit.register(psi4.extras.exit_printing)
