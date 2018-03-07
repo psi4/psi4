@@ -191,6 +191,40 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "DSD-PBEP86-D3BJ",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.31
+        }
+    },
+    "x_hf": {
+        "alpha": 0.69
+    },
+    "c_functionals": {
+        "GGA_C_P86": {
+            "alpha": 0.44
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.52,
+        "ss": 0.22
+    },
+    "dispersion": {
+        "type": "d3bj",
+        "params": {
+            "s6": 0.48,
+            "a2": 5.6,
+            "a1": 0.0,
+            "s8": 0.0
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEP86-D3BJ Dispersion-corrected SCS Double Hybrid XC Functional\n',
+})
+
+funcs.append({
     "name": "DSD-PBEP86-D2",
     "x_functionals": {
         "GGA_X_PBE": {
@@ -340,8 +374,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name":
-    "B2GPPLYP",
+    "name": "B2GPPLYP",
     "x_functionals": {
         "GGA_X_B88": {
             "alpha": 0.35
