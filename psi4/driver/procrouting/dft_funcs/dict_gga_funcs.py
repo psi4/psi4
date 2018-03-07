@@ -103,7 +103,7 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "citation": '    B. Hammer, L. B. Hansen, and J. K. Nørskov, Phys. Rev. B, 59, 7413, 1999\n',
+    "citation": '    B. Hammer, L. B. Hansen, and J. K. Norskov, Phys. Rev. B, 59, 7413, 1999\n',
     "description": '    RPBE GGA Exchange-Correlation Functional\n',
 })
 
