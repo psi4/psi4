@@ -34,8 +34,7 @@ import copy
 funcs = []
 
 funcs.append({
-    "name":
-    "BLYP",
+    "name": "BLYP",
     "x_functionals": {
         "GGA_X_B88": {}
     },
@@ -145,8 +144,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name":
-    "BP86",
+    "name": "BP86",
     "x_functionals": {
         "GGA_X_B88": {}
     },
@@ -172,8 +170,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name":
-    "SOGGA",
+    "name": "SOGGA",
     "x_functionals": {
         "GGA_X_SOGGA": {}
     },

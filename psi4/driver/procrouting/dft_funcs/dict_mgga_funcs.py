@@ -125,8 +125,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name":
-    "TPSS",
+    "name": "TPSS",
     "description":
     '    TPSS Meta-GGA XC Functional\n',
     "citation":
