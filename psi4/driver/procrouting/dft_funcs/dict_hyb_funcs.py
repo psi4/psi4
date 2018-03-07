@@ -106,11 +106,14 @@ funcs.append({
 funcs.append({
     "name": "wB97X-D3",
     "alias": ["WB97X-D3ZERO"],
-    "description": '    Parameterized Hybrid LRC B97 GGA XC Functional with Dispersion\n',
-    "citation": '    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008\n',
+    "description": '    Parameterized Hybrid LRC B97 GGA XC Functional with D3-Dispersion\n',
+    "citation": '    Y.-S. Lin, G.-D. Li, S.-P. Mao, J.-D. Chai, J. Chem. Theory Comput., 9, 263-272, 2013\n',
     "x_functionals": {
         "HYB_GGA_XC_WB97X": {
-            "omega": 0.25
+            "omega": 0.25,
+            #"tweaks": [0.804272, 0.698900, 0.508940, -3.744903, 10.060790,
+            #           1.000000, 2.433266, -15.446008, 17.644390, -8.879494,
+            #           1.000000, -4.868902, 21.295726, -36.020866, 19.177018]
         }
     },
     "x_hf": {
@@ -248,6 +251,115 @@ funcs.append({
     },
 })
 
+funcs.append({
+    "name": "N12-SX",
+    "alias": ["N12SX"],
+    "description": '   N12-SX Hybrid nonseparable GGA Exchange-Correlation Functional\n',
+    "citation": '    R. Peverati, D.G. Truhlar, Phys. Chem. Chem. Phys. 14, 16187, 2012\n',
+    "x_functionals": {
+        "HYB_GGA_X_N12_SX": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "GGA_C_N12_SX": {}
+    },
+})
+
+funcs.append({
+    "name": "PBE50",
+    "description": '   PBE50 Hybrid GGA Exchange-Correlation Functional\n',
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.5
+        }
+    },
+    "x_hf": {
+        "alpha": 0.5
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {}
+    },
+})
+
+funcs.append({
+    "name": "revPBE0",
+    "description": '   revPBE0 Hybrid GGA Exchange-Correlation Functional\n',
+    "x_functionals": {
+        "GGA_X_PBE_R": {
+            "alpha": 0.75
+        }
+    },
+    "x_hf": {
+        "alpha": 0.25
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {}
+    },
+})
+
+funcs.append({
+    "name": "mPW1LYP",
+    "description": '   mPW1LYP Hybrid GGA Exchange-Correlation Functional\n',
+    "x_functionals": {
+        "GGA_X_MPW91": {
+            "alpha": 0.75
+        }
+    },
+    "x_hf": {
+        "alpha": 0.25
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {}
+    },
+})
+
+funcs.append({
+    "name": "mPW1PBE",
+    "description": '   mPW1PBE Hybrid GGA Exchange-Correlation Functional\n',
+    "x_functionals": {
+        "GGA_X_MPW91": {
+            "alpha": 0.75
+        }
+    },
+    "x_hf": {
+        "alpha": 0.25
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {}
+    },
+})
+
+
+funcs.append({
+    "name": "MGGA_MS2h",
+    "alias": ["MGGA-MS2H", "MS2H"],
+    "description": '   MGGA_MS2h Hybrid Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, R. Haunschild, B. Xiao, I.W. Bulik, G.E. Scuseria, J.P. Perdew, J. Chem. Phys. 138, 044113, 2013\n',
+    "x_functionals": {
+        "HYB_MGGA_X_MS2H": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "GGA_C_REGTPSS": {}
+    },
+})
+
+funcs.append({
+    "name": "MGGA_MVSh",
+    "alias": ["MGGA-MVSH", "MVSH"],
+    "description": '   MGGA_MV2h Hybrid Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinsky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
+    "x_functionals": {
+        "HYB_MGGA_X_MVSH": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "GGA_C_REGTPSS": {}
+    },
+})
 
 def get_pw6b95_tweaks():
     beta = 0.0018903811666999256  # 5.0*(36.0*math.pi)**(-5.0/3.0)

@@ -120,6 +120,18 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "N12",
+    "x_functionals": {
+        "GGA_X_N12": {}
+    },
+    "c_functionals": {
+        "GGA_C_N12": {}
+    },
+    "citation": '    R. Peverati, D.G. Truhlar, J. Chem. Theory Comput. 8, 2310, 2012\n',
+    "description": '    N12 nonseparable GGA Exchange-Correlation Functional\n',
+})
+
+funcs.append({
     "name": "PW91",
     "x_functionals": {
         "GGA_X_PW91": {}
@@ -236,6 +248,33 @@ funcs.append({
         "GGA_XC_B97_D": {}
     },
     "dispersion": {"type": "d3mbj", "params": {'s6': 1.000, 's8': 1.206988, 'a1': 0.240184, 'a2': 3.864426}}
+})
+
+funcs.append({
+    "name": "GAM",
+    "x_functionals": {
+        "GGA_X_GAM": {}
+    },
+    "c_functionals": {
+        "GGA_C_GAM": {}
+    },
+    "citation": '    H.S. Yu, W. Zhang, P. Verma, X. He, D.G. Truhlar, Phys. Chem. Chem. Phys. 17, 12146, 2015\n',
+    "description": '   GAM GGA Minessota Exchange-Correlation Functional\n',
+})
+
+funcs.append({
+    "name": "OP-PBE",
+    "alias": ["OPPBE","PBEOP"],
+    "x_functionals": {
+        "GGA_X_PBE": {}
+    },
+    "c_functionals": {
+        "GGA_C_OP_PBE": {}
+    },
+    "citation":
+    '    T. Tsuneda, T. Suzumura, K. Hirao, J. Chem. Phys. 110, 10664, 1999\n    T. Tsuneda, T. Suzumura, K. Hirao, J. Chem. Phys. 111, 5656, 1999\n',
+    "description":
+    '    BP86 GGA Exchange-Correlation Functional\n',
 })
 
 functional_list = {}

@@ -83,41 +83,41 @@ qchem_data = {                              #TEST
     'B97-1':     0.4551136999999983,        #TEST
  'wB97X-D3':    0.45707443810000825,        #TEST
     'O3LYP':     0.4543928605000076,        #TEST
-# The following functionals are not included 
-# in Psi4 at the moment. 
-#      'BMK':    0.45867548619999354,       #TEST
-#'MGGA_MS2h':     0.4467710457999914,       #TEST
-#     'SCAN':    0.45171816110000407,       #TEST
-#      'GAM':     0.4509109773999995,       #TEST
+'MGGA_MS2h':     0.4467710457999914,        #TEST
+      'GAM':     0.4509109773999995,        #TEST
+    'SOGGA':      0.451387498999992,        #TEST
+'MGGA_MVSh':     0.4606380902999945,        #TEST
+     'PKZB':     0.4468952399000017,        #TEST
+  'SOGGA11':     0.4529071592999969,        #TEST
+   'revPBE':       0.45274020250001,        #TEST
+    'PBEOP':     0.4515908965999955,        #TEST
+   'MN12-L':      0.454156009299993,        #TEST
+   'N12-SX':    0.45222956309999063,        #TEST
+ 'MGGA_MVS':    0.46469785510001316,        #TEST
+  'revPBE0':     0.4512137933000133,        #TEST
+    'M06-L':    0.45687100319999274,        #TEST
+ 'MPW1PW91':    0.45442922100001226,        #TEST
+  'MPW1PBE':    0.45364065569999923,        #TEST
+   'MN15-L':     0.4579459769999943,        #TEST
+'SOGGA11-X':     0.4601258852000001,        #TEST
+  'MN12-SX':    0.46181516600000805,        #TEST
+  'MPW1LYP':    0.45030728680001175,        #TEST
+    'PBE50':    0.45096528610000064,        #TEST
+      'N12':     0.4479283791999933,        #TEST
+     'VSXC':    0.45478941460000044,        #TEST
+## The following functionals are not included 
+## in Psi4 at the moment. 
+#      'BMK':    0.45867548619999354,       #TEST # not in LibXC 3.0.0
+#     'SCAN':    0.45171816110000407,       #TEST # not in LibXC 3.0.0
 #   't-HCTH':     0.4623451142999926,       #TEST
-#    'SOGGA':      0.451387498999992,       #TEST
 #   'B3TLAP':    0.44737643580000963,       #TEST
-#'MGGA_MVSh':     0.4606380902999945,       #TEST
-#     'PKZB':     0.4468952399000017,       #TEST
 #   'PBEsol':    0.45566370699999936,       #TEST
-#  'SOGGA11':     0.4529071592999969,       #TEST
-#    'SCAN0':     0.4496859364999892,       #TEST
-#   'revPBE':       0.45274020250001,       #TEST
-#    'PBEOP':     0.4515908965999955,       #TEST
-#   'MN12-L':      0.454156009299993,       #TEST
-#   'N12-SX':    0.45222956309999063,       #TEST
+#    'SCAN0':     0.4496859364999892,       #TEST # not in LibXC 3.0.0
 #  'LRC-BOP':     0.4595497115000029,       #TEST
-# 'MGGA_MVS':    0.46469785510001316,       #TEST
-#  'revPBE0':     0.4512137933000133,       #TEST
-#    'M06-L':    0.45687100319999274,       #TEST
 #  't-HCTHh':    0.46015443139999945,       #TEST
-# 'MPW1PW91':    0.45442922100001226,       #TEST
 #   'wM05-D':     0.4560790902000065,       #TEST
-#     'VSXC':    0.45478941460000044,       #TEST
 #  'BP86VWN':     0.4588991900999986,       #TEST
 #  'wM06-D3':    0.45634592669999563,       #TEST
-#  'MPW1PBE':    0.45364065569999923,       #TEST
-#   'MN15-L':     0.4579459769999943,       #TEST
-#'SOGGA11-X':     0.4601258852000001,       #TEST
-#  'MN12-SX':    0.46181516600000805,       #TEST
-#  'MPW1LYP':    0.45030728680001175,       #TEST
-#    'PBE50':    0.45096528610000064,       #TEST
-#      'N12':     0.4479283791999933,       #TEST
 }                                           #TEST
 
 # Current version of Psi4 does not match Q-Chem for these tests
@@ -166,7 +166,7 @@ old_psi4_data = {                     #TEST
 
 # Current version of Psi4 does not match pre-LibXC Psi4
 # (~April 2017, SHA: 53e752c)
-expected_fail_old_psi4 = ['wB97X']    #TEST
+expected_fail_old_psi4 = ['wB97X', 'SOGGA']    #TEST
 
 for func in qchem_data.keys():                                                                                 #TEST
     set reference uks                                                                                          #TEST

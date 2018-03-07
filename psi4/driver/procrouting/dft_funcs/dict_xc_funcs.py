@@ -82,7 +82,7 @@ funcs.append({"name": "B97-3"          , "xc_functionals": {"HYB_GGA_XC_B97_3"  
 funcs.append({"name": "mPW3PW"         , "xc_functionals": {"HYB_GGA_XC_MPW3PW"         : {}}})
 funcs.append({"name": "B1LYP"          , "xc_functionals": {"HYB_GGA_XC_B1LYP"          : {}}})
 funcs.append({"name": "B1PW91"         , "xc_functionals": {"HYB_GGA_XC_B1PW91"         : {}}})
-funcs.append({"name": "mPW1PW"         , "xc_functionals": {"HYB_GGA_XC_mPW1PW"         : {}}})
+funcs.append({"name": "mPW1PW"         , "xc_functionals": {"HYB_GGA_XC_mPW1PW"         : {}}, "alias": ["MPW1PW91"]})
 funcs.append({"name": "mPW3LYP"        , "xc_functionals": {"HYB_GGA_XC_MPW3LYP"        : {}}})
 funcs.append({"name": "SB98-1a"        , "xc_functionals": {"HYB_GGA_XC_SB98_1a"        : {}}})
 funcs.append({"name": "SB98-1b"        , "xc_functionals": {"HYB_GGA_XC_SB98_1b"        : {}}})

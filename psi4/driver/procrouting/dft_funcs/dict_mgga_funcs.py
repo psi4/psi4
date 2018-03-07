@@ -125,6 +125,19 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "mGGA_MVS",
+    "alias": ["MGGA-MVS"],
+    "description": '    MGGA_MVS Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinszky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
+    "x_functionals": {
+        "MGGA_X_MVS": {}
+    },
+    "c_functionals": {
+        "GGA_C_REGTPSS": {}
+    },
+})
+
+funcs.append({
     "name": "TPSS",
     "description":
     '    TPSS Meta-GGA XC Functional\n',
@@ -147,6 +160,30 @@ funcs.append({
     },
     "c_functionals": {
         "MGGA_C_REVTPSS": {}
+    },
+})
+
+funcs.append({
+    "name": "PKZB",
+    "description": '    PKZB Meta-GGA XC Functional\n',
+    "citation": '   J.P. Perdew, S. Kurth, A. Zupan, P. Blaha, Phys. Rev. Lett. 82, 2544, 1999\n',
+    "x_functionals": {
+        "MGGA_X_PKZB": {}
+    },
+    "c_functionals": {
+        "MGGA_C_PKZB": {}
+    },
+})
+
+funcs.append({
+    "name": "VSXC",
+    "description": '    VSXC Meta-GGA XC Functional\n',
+    "citation": '    T.V. Voorhis, G.E. Scuseria, J. Chem. Phys. 109, 400, 1998\n',
+    "x_functionals": {
+        "MGGA_X_GVT4": {}
+    },
+    "c_functionals": {
+        "MGGA_C_VSXC": {}
     },
 })
 
