@@ -1368,6 +1368,9 @@ void Matrix::gemm(const char &transa, const char &transb, const std::vector<int>
         throw PSIEXCEPTION("Matrix::Advanced GEMM: Number of irreps do not equal.");
 
     for (int h = 0; h < nirrep_; ++h) {
+
+        if (!k[h] || !m[h] || !n[h]) continue;
+
         int offa, offb, offc;
 
         offa = offset_a.size() == 0 ? 0 : offset_a[h];
