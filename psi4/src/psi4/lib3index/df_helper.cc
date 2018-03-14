@@ -288,7 +288,7 @@ void DF_Helper::prepare_sparsity() {
                     if (omu >= onu) {
                         index = mu * (numnu * nummu * numnu + numnu) + nu * (nummu * numnu + 1);
                         val = fabs(buffer[rank][index]);
-                        max_val = (max_val < val ? val : max_val);
+                        max_val = std::max(val, max_val);
                         if (shell_max_vals[MU * pshells_ + NU] <= val) {
                             shell_max_vals[MU * pshells_ + NU] = val;
                             shell_max_vals[NU * pshells_ + MU] = val;
