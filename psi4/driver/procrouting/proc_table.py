@@ -123,7 +123,6 @@ procedures = {
             'psimrcc_scf'   : proc.run_psimrcc_scf,
             'qcisd'         : proc.run_fnocc,
             'qcisd(t)'      : proc.run_fnocc,
-	    'gpu-df-ccsd'   : proc.run_gpu_dfcc,
             'mp4'           : proc.select_mp4,
             'mp4(sdq)'      : proc.run_fnocc,
             'fno-ccsd'      : proc.select_fnoccsd,
