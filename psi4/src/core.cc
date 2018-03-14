@@ -124,9 +124,6 @@ SharedWavefunction libfock(SharedWavefunction, Options&);
 namespace fnocc {
 SharedWavefunction fnocc(SharedWavefunction, Options&);
 }
-namespace gpu_dfcc {
-SharedWavefunction gpu_dfcc(SharedWavefunction, Options&);
-}
 namespace occwave {
 SharedWavefunction occwave(SharedWavefunction, Options&);
 }
@@ -400,11 +397,6 @@ double py_psi_cctriples(SharedWavefunction ref_wfn) {
 SharedWavefunction py_psi_fnocc(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("FNOCC");
     return fnocc::fnocc(ref_wfn, Process::environment.options);
-}
-
-SharedWavefunction py_psi_gpu_dfcc(SharedWavefunction ref_wfn){
-    py_psi_prepare_options_for_module("GPU_DFCC");
-    return gpu_dfcc::gpu_dfcc(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn) {
