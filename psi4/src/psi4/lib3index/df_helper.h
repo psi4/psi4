@@ -316,9 +316,9 @@ class PSI_API DF_Helper {
     // => index vectors for screened AOs <=
     std::vector<size_t> small_skips_;
     std::vector<size_t> big_skips_;
-    std::vector<size_t> symm_skips_;
-    std::vector<size_t> symm_sizes_;
-    std::vector<size_t> symm_agg_sizes_;
+    std::vector<size_t> symm_ignored_columns_;
+    std::vector<size_t> symm_small_skips_;
+    std::vector<size_t> symm_big_skips_;
 
     // => shell info and blocking <=
     size_t pshells_;
