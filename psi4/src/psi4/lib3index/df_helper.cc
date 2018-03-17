@@ -254,7 +254,7 @@ void DF_Helper::prepare_sparsity() {
     big_skips_.reserve(nao_ + 1);
 
     // prepare eri buffers
-    size_t nthreads = nthreads_;  // for now
+    size_t nthreads = (nthreads_ == 1 ? 1 : 2);  // for now
     auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
     std::vector<const double*> buffer(nthreads);
@@ -272,7 +272,7 @@ void DF_Helper::prepare_sparsity() {
     double val, max_val = 0.0;
     size_t MU, NU, mu, nu, omu, onu, nummu, numnu, index;
 #pragma omp parallel for private(MU, NU, mu, nu, omu, onu, nummu, numnu, index, val, \
-        rank) num_threads(nthreads_) if (nao_ > 1000) schedule(guided) reduction(max:max_val)
+        rank) num_threads(nthreads) if (nao_ > 1000) schedule(guided) reduction(max:max_val)
     for (MU = 0; MU < pshells_; ++MU) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -2809,12 +2809,8 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     std::vector<double*> C_bufsp;
     C_bufsp.reserve(nthreads_);
 
-    // prepare eri buffers
+    // prepare C buffers
     size_t nthread = nthreads_;
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
-
 #pragma omp parallel for firstprivate(rank) num_threads(nthreads_) schedule(static)
     for (size_t i = 0; i < nthreads_; i++) {
 #ifdef _OPENMP
@@ -2822,7 +2818,6 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
 #endif
         std::vector<double> Cp(nao * nao);
         C_buffers[rank] = Cp;
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
     // declare bufs
@@ -2863,9 +2858,7 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
 
         // get AO chunk according to directive
         timer_on("DFH: Grabbing AOs");
-        if (direct_) {
-            compute_sparse_pQq_blocking_Q(start, stop, Mp, eri);
-        } else if (!AO_core_) {
+        if (!AO_core_) {
             grab_AO(start, stop, Mp);
         }
         timer_off("DFH: Grabbing AOs");
