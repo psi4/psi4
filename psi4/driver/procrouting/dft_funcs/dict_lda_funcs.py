@@ -41,9 +41,11 @@ funcs.append({
     "c_functionals": {
         "LDA_C_VWN_RPA": {}
     },
-    "citation": '    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n',
-    "description": '    SVWN3 (RPA) LSDA Functional\n',
-})
+    "citation": 
+    '    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n',
+    "description": 
+    '    SVWN3 (RPA) LSDA Functional\n',
+})# yapf: disable
 
 functional_list = {}
 for functional in funcs:

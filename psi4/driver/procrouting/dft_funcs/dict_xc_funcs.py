@@ -33,6 +33,7 @@ import copy
 
 funcs = []
 
+# yapf: disable
 funcs.append({"name": "TETER93"        , "xc_functionals": {"LDA_XC_TETER93"            : {}}})
 funcs.append({"name": "ZLP"            , "xc_functionals": {"LDA_XC_ZLP"                : {}}})
 funcs.append({"name": "KSDT"           , "xc_functionals": {"LDA_XC_KSDT"               : {}}})
@@ -145,6 +146,7 @@ funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"       
 funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"           : {}}, "dispersion": {"type": "d2gr", "params": {'s6': 1.0,  'alpha6': 20.0, 'rs6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010'}})
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})
+# yapf: enable
 
 functional_list = {}
 for functional in funcs:

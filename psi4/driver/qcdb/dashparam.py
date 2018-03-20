@@ -46,11 +46,12 @@ dash_alias = {
 }
 
 dash_alias_reverse = {v: k for k, v in dash_alias.items()}
-
-# The dashcoeff dict below defines the -D parameters for all of psi4. 'd2p4' are
-#   taken from already defined functionals in psi4. The remainder of the parameters are
+# The dashcoeff dict below defines the -D parameters for most of the DFT methods. 'd2p4' are
+#   taken from already defined functionals in psi4. Other parameters taken from the
+#   references indicated in the "citation" parameter. The remainder of the parameters are
 #   from http://toc.uni-muenster.de/DFTD3/ on September 25, 2012, with the dict keys
 #   translated from Turbomole to Psi4 functional names.
+#   Note: most DSD-functionals have their dispersion correction defined in dict_dh_funcs.py
 dashcoeff = {
     'd2p4': {
         'b97-d'       : {'s6': 1.25},
@@ -61,9 +62,6 @@ dashcoeff = {
         'pbe'         : {'s6': 0.75},
         'revpbe'      : {'s6': 1.25, "citation": '    S. Grimme, J. Antony, S. Ehrlich, H. Krieg, J. Chem. Phys 132, 154104, 2010\n'},
         'tpss0'       : {'s6': 0.86, "citation": '    S. Grimme, J. Antony, S. Ehrlich, H. Krieg, J. Chem. Phys 132, 154104, 2010\n'},
-        # 'dsd-blyp'    : {'s6': 0.35},
-        # 'dsd-pbep86'  : {'s6': 0.29},
-        # 'dsd-pbepbe'  : {'s6': 0.42},
         'b2plyp'      : {'s6': 0.55},
         'pbe0'        : {'s6': 0.60},
 
@@ -97,6 +95,7 @@ dashcoeff = {
         'tpss'        : {'s6': 1.0,  's8': 1.105,  'sr6': 1.166 , 'sr8': 1.000, 'alpha6': 14.0},
         'pbe'         : {'s6': 1.0,  's8': 0.722,  'sr6': 1.217 , 'sr8': 1.000, 'alpha6': 14.0},
         'bp86'        : {'s6': 1.0,  's8': 1.683,  'sr6': 1.139 , 'sr8': 1.000, 'alpha6': 14.0},
+    # Later references
         'rpw86pbe'    : {'s6': 1.0,  's8': 0.901,  'sr6': 1.224 , 'sr8': 1.000, 'alpha6': 14.0, "citation": '    S. Grimme, S. Ehrlich, L. Goerigk, J. Comput. Chem. 32, 1456-1465, 2011\n'},
         'b2plyp'      : {'s6': 0.64, 's8': 1.022,  'sr6': 1.427 , 'sr8': 1.000, 'alpha6': 14.0, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory Comput. 7, 291-309, 2011\n'},
         'b2gpplyp'    : {'s6': 0.56, 's8': 0.760,  'sr6': 1.586 , 'sr8': 1.000, 'alpha6': 14.0, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory Comput. 7, 291-309, 2011\n'},
@@ -196,6 +195,7 @@ dashcoeff = {
         'tpss0'       : {'s6': 1.000, 's8':  1.2576, 'a1':  0.3768, 'a2': 4.5865},
         # 'b2plyp'      : {'s6': 0.500, 's8':  1.0860, 'a1':  0.3451, 'a2': 4.7735}, # superseded by a value below.
         'hf'          : {'s6': 1.000, 's8':  0.9171, 'a1':  0.3385, 'a2': 2.8830},
+    # Later references
         'bpbe'        : {'s6': 1.000, 's8':  4.0728, 'a1':  0.4567, 'a2': 4.3908, "citation": '    L. Goerigk, S. Grimme, Phys. Chem. Chem. Phys. 13, 6670-6688, 2011\n'},
         'opbe'        : {'s6': 1.000, 's8':  3.3816, 'a1':  0.5512, 'a2': 2.9444, "citation": '    L. Goerigk, S. Grimme, Phys. Chem. Chem. Phys. 13, 6670-6688, 2011\n'},
         'olyp'        : {'s6': 1.000, 's8':  2.6205, 'a1':  0.5299, 'a2': 2.8065, "citation": '    L. Goerigk, S. Grimme, Phys. Chem. Chem. Phys. 13, 6670-6688, 2011\n'},
@@ -211,12 +211,6 @@ dashcoeff = {
         'b2gpplyp'    : {'s6': 0.560, 's8':  0.2597, 'a1':  0.0000, 'a2': 6.3332, "citation": '    L. Goerigk, S. Grimme, Phys. Chem. Chem. Phys. 13, 6670-6688, 2011\n'},
         'pwpb95'      : {'s6': 0.820, 's8':  0.2904, 'a1':  0.0000, 'a2': 7.3141, "citation": '    L. Goerigk, S. Grimme, Phys. Chem. Chem. Phys. 13, 6670-6688, 2011\n'},
         'dsd-blyp'    : {'s6': 0.500, 's8':  0.2130, 'a1':  0.0000, 'a2': 6.0519, "citation": '    L. Goerigk, S. Grimme, Phys. Chem. Chem. Phys. 13, 6670-6688, 2011\n'},
-    # S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011
-        # 'dsd-pbep86'  : {'s6': 0.418, 's8':  0.0000, 'a1':  0.0000, 'a2': 5.6500}, # requires X = 0.30, C = 0.43, SS = 0.25, OS = 0.53
-    # S. Kozuch, J.M.L. Martin, J. Comput. Chem. 34, 2327-2344, 2013
-        # 'dsd-blyp'    : {'s6': 0.570, 's8':  0.0000, 'a1':  0.0000, 'a2': 5.4000}, # requires X = 0.29, C = 0.54, SS = 0.40, OS = 0.47
-        # 'dsd-pbep86'  : {'s6': 0.480, 's8':  0.0000, 'a1':  0.0000, 'a2': 5.6000}, # requires X = 0.31, C = 0.44, SS = 0.22, OS = 0.52
-        # 'dsd-pbeb95'  : {'s6': 0.610, 's8':  0.0000, 'a1':  0.0000, 'a2': 6.2000}, # requires X = 0.34, C = 0.55, SS = 0.09, OS = 0.46
         'hse06'       : {'s6': 1.000, 's8':  2.3100, 'a1':  0.3830, 'a2': 5.6850, "citation": '    J. Moellmann, S. Grimme, J. Chem. Phys. C 118, 7615-7621, 2014\n'},
         'pw91'        : {'s6': 1.000, 's8':  1.9598, 'a1':  0.6319, 'a2': 4.5718, "citation": '    J.R. Reimers et al., Proc. Natl. Acad. Sci. USA 112, E6101-E6110, 2015\n'},
         'm11-l'       : {'s6': 1.000, 's8':  0.4446, 'a1':  0.0000, 'a2': 7.2496, "citation": '    L. Goerigk, J. Phys. Chem. Lett. 6, 3891-3896, 2015\n'},
@@ -270,7 +264,7 @@ dashcoeff = {
         'hcth120'     : {'s6': 1.000, 's8':  1.0821, 'a1':  0.3563, 'a2': 4.3359},
         'revpbe0'     : {'s6': 1.000, 's8':  1.7588, 'a1':  0.4679, 'a2': 3.7619},
         'revpbe38'    : {'s6': 1.000, 's8':  1.4760, 'a1':  0.4309, 'a2': 3.9446},
-    # unreferenced
+        # unreferenced
         # special HF/DFT with eBSSE correction
         'hf/mixed'    : {'s6': 1.000, 's8':  3.9027, 'a1':  0.5607, 'a2': 4.5622},
         'hf/sv'       : {'s6': 1.000, 's8':  2.1849, 'a1':  0.4249, 'a2': 4.2783},
@@ -304,7 +298,8 @@ dashcoeff = {
         'pbe0'        : {'s6': 1.000, 's8': 0.528823, 'a1': 0.007912, 'a2': 6.162326},
         'lcwpbe'      : {'s6': 1.000, 's8': 0.906564, 'a1': 0.563761, 'a2': 3.593680},
     },
-}
+} # yapf: disable
+
 
 # Full list of all possible endings
 full_dash_keys = list(dashcoeff) + [x.replace('-', '') for x in list(dash_alias)]

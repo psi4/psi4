@@ -49,6 +49,7 @@ dict_functionals.update(dict_mgga_funcs.functional_list)
 dict_functionals.update(dict_hyb_funcs.functional_list)
 dict_functionals.update(dict_dh_funcs.functional_list)
 
+
 def get_functional_aliases(functional_dict):
     if "alias" in functional_dict.keys():
         aliases = [each.upper() for each in functional_dict["alias"]]
@@ -56,6 +57,7 @@ def get_functional_aliases(functional_dict):
     else:
         aliases = [functional_dict["name"].upper()]
     return aliases
+
 
 # alias table for dispersion
 dispersion_names = {}
@@ -79,7 +81,7 @@ for functional_name in dict_functionals.keys():
     # if the functional is already dispersion corrected, skip to next
     if "dispersion" in dict_functionals[functional_name].keys():
         continue
-    # loop through dispersion types in dashparams incl aliases 
+    # loop through dispersion types in dashparams incl aliases
     # and build dispersion corrected version incl aliases
     for dispersion_name in dispersion_names.keys():
         dispersion_type = dispersion_names[dispersion_name]
@@ -96,46 +98,56 @@ for functional_name in dict_functionals.keys():
                     alias = alias + "-" + dispersion_name.upper()
                     functionals[alias] = func
 
+
 def check_consistency(func_dictionary, func_name):
     """
     This checks the consistency of the definitions of exchange and correlation components
     of the functional, including detecting duplicate requests for LibXC params, inconsistent
     requests for HF exchange and missing correlation.
     """
+
     # 1a) sanity checks definition of xc_functionals
     if "xc_functionals" in func_dictionary.keys():
         if "x_functionals" in func_dictionary.keys() or "x_hf" in func_dictionary.keys():
             raise ValidationError("SCF: Duplicate specification of exchange (XC + X) in functional %s." % (name))
         elif "c_functionals" in func_dictionary.keys() or "c_mp2" in func_dictionary.keys():
             raise ValidationError("SCF: Duplicate specification of correlation (XC + C) in functional %s." % (name))
+
     # 1b) require at least an empty exchange functional entry or X_HF
     elif "x_functionals" not in func_dictionary.keys() and "x_hf" not in func_dictionary.keys():
         raise ValidationError("SCF: No exchange specified in functional %s." % (name))
+
     # 1c) require at least an empty correlation functional entry or C_MP2
     elif "c_functionals" not in func_dictionary.keys() and "c_mp2" not in func_dictionary.keys():
         raise ValidationError("SCF: No correlation specified in functional %s." % (name))
     use_libxc = 0
     if "x_functionals" in func_dictionary.keys():
         for item in func_dictionary["x_functionals"]:
-            if "use_libxc" in func_dictionary["x_functionals"].keys(
-            ) and func_dictionary["x_functionals"][item]["use_libxc"]:
+            if "use_libxc" in func_dictionary["x_functionals"].keys() and \
+            func_dictionary["x_functionals"][item]["use_libxc"]:
                 use_libxc += 1
+
     # 2a) only 1 component in x_functionals can have "use_libxc": True to prevent libxc conflicts
     if use_libxc > 1:
         raise ValidationError("SCF: Duplicate request for libxc exchange parameters in functional %s." % (name))
+
     # 2b) if "use_libxc" is defined in x_functionals, there shouldn't be "x_hf"
     elif use_libxc == 1 and "x_hf" in func_dictionary.keys():
         raise ValidationError("SCF: Inconsistent definition of exchange in functional %s." % (name))
+
     # 2c) ensure requested libxc params are for a functional that is included in "x_functionals"
-    elif "x_hf" in func_dictionary.keys(
-    ) and "use_libxc" in func_dictionary["x_hf"] and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"].keys(
-    ):
+    elif "x_hf" in func_dictionary.keys() \
+    and "use_libxc" in func_dictionary["x_hf"] \
+    and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"].keys():
         raise ValidationError(
-            "SCF: Libxc parameters requested for an exchange functional not defined as a component of functional %s." %
-            (name))
+            "SCF: Libxc parameters requested for an exchange functional not defined as a component of %s." % (name))
 
 
 def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
+    """
+    This returns a (core.SuperFunctional, dispersion) tuple based on the requested name.
+    The npoints, deriv and restricted parameters are also respected.
+    """
     check_consistency(functionals[name], name)
     if "xc_functionals" in functionals[name].keys():
         for xc_key in functionals[name]["xc_functionals"].keys():
