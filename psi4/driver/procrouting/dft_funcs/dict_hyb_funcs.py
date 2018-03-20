@@ -135,7 +135,7 @@ funcs.append({
             'sr8': 1.094,
             'alpha6': 14.0
         }
-    }
+    },
     "description":
     '    This functional is currently broken - wB97X needs enabled tweaks.\n',
     "citation":
