@@ -114,6 +114,40 @@ funcs.append({
 })# yapf: disable
 
 funcs.append({
+    "name": "DSD-BLYP-D3BJ",
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.29
+        }
+    },
+    "x_hf": {
+        "alpha": 0.71
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.54
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.47,
+        "ss": 0.40,
+    },
+    "dispersion": {
+        "type": "d3bj",
+        "params": {
+            "s6": 0.57,
+            "a2": 5.4,
+            "a1": 0.0,
+            "s8": 0.0
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-BLYP-D3BJ Dispersion-corrected SCS Double Hybrid XC Functional\n',
+})
+
+funcs.append({
     "name": "CORE-DSD-BLYP",
     "x_functionals": {
         "GGA_X_B88": {
@@ -344,6 +378,40 @@ funcs.append({
 })# yapf: disable
 
 funcs.append({
+    "name": "DSD-PBEPBE-D3BJ",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.32
+        }
+    },
+    "x_hf": {
+        "alpha": 0.68
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.49
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.55,
+        "ss": 0.13
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "dispersion": {
+        "type": "d3bj",
+        "params": {
+            "s6": 0.78,
+            "a2": 6.1,
+            "a1": 0.0,
+            "s8": 0.0
+        },
+        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+    },
+})
+
+funcs.append({
     "name": "DSD-BP86-D2",
     "x_functionals": {
         "GGA_X_B88": {
@@ -351,7 +419,7 @@ funcs.append({
         }
     },
     "x_hf": {
-        "alpha": 0.66
+        "alpha": 0.67
     },
     "c_functionals": {
         "GGA_C_P86": {
@@ -362,17 +430,17 @@ funcs.append({
         "os": 0.49,
         "ss": 0.24
     },
-    "citation":
-    '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
-    "description":
+    "citation": 
+    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": 
     '    DSD-BP86 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.41
         },
-        "citation":
-        '    S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011\n'
+        "citation": 
+        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
 })# yapf: disable
 
@@ -395,17 +463,17 @@ funcs.append({
         "os": 0.58,
         "ss": 0.11
     },
-    "citation":
-    '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
-    "description":
+    "citation": 
+    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": 
     '    DSD-SVWN5 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.28
         },
-        "citation":
-        '    S. Kozuch, J.M.L. Martin, Phys. Chem. Chem. Phys. 13, 20104-20107, 2011\n'
+        "citation": 
+        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     },
 })# yapf: disable
 
