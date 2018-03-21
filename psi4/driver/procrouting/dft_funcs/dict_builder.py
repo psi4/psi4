@@ -26,7 +26,54 @@
 # @END LICENSE
 #
 """
-Builder function
+Superfunctional builder function & handlers.
+The new definition of functionals is based on a dictionary with the following structure
+dict = {
+           "name":  "",       name of the functional - matched against name.upper() in method lookup
+           
+          "alias":  [""],     alternative names for the method in lookup functions, capitalised
+          
+       "citation":  "",       citation of the method in the standard indented format, printed in output
+       
+    "description":  "",       description of the method, printed in output
+    
+ "xc_functionals":  {         definition of a full XC functional from LibXC
+      "XC_METHOD_NAME": {}      must match a LibXC method, see dict_xc_funcs.py for examples
+     },                         if present, the x/c_functionals and x_hf/c_mp2 parameters are not read!
+      
+  "x_functionals":  {          definition of X contributions
+       "X_METHOD_NAME":  {       must match a LibXC method  
+                 "alpha": 1.0,   coefficient for (global) GGA exchange, by default 1.0
+                 "omega": 0.0,   range-separation parameter
+             "use_libxc": False  whether "x_hf" parameters should be set from LibXC values for this method
+                 "tweak": [],    tweak the underlying functional
+     },
+      
+           "x_hf":  {          definition of HF exchange for hybrid functionals
+               "alpha": 0.0,             coefficient for (global) HF exchange, by default none
+                "beta": 0.0,             coefficient for long range HF exchange
+               "omega": 0.0,             range separation parameters
+           "use_libxc": "X_METHOD_NAME"  reads the above 3 values from specified X functional
+     },
+           
+  "c_functionals":  {          definition of C contributions
+       "C_METHOD_NAME":  {       must match a LibXC method  
+                 "alpha": 1.0,   coefficient for (global) GGA correlation, by default 1.0
+                 "tweak": [],    tweak the underlying functional
+    },   
+   
+          "c_mp2":  {          definition of MP2 correlation double hybrid functionals
+               "alpha": 0.0,     coefficient for MP2 correlation, by default none
+                  "ss": 0.0,     coefficient for same spin correlation in SCS methods, forces alpha = 1.0
+                  "os": 0.0,     coefficient for opposite spin correlation in SCS methods, forces alpha = 1.0
+    },
+          
+     "dispersion":  {          definition of dispersion corrections
+               "type": "",       dispersion type - "d2", "d3zero", "d3bj" etc., see empirical_dispersion.py
+             "params": {},       parameters for the dispersion correction
+           "citation": "",       special reference for the dispersion correction, appended to output
+    },
+}
 """
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
@@ -75,14 +122,16 @@ dispersion_names["d3m"] = "d3mzero"
 functionals = {}
 for functional_name in dict_functionals.keys():
     functional_aliases = get_functional_aliases(dict_functionals[functional_name])
-    # first process aliases of parent functional
+    
+    # first create copies for aliases of parent functional
     for alias in functional_aliases:
         functionals[alias] = dict_functionals[functional_name]
-    # if the functional is already dispersion corrected, skip to next
+        
+    # if the parent functional is already dispersion corrected, skip to next
     if "dispersion" in dict_functionals[functional_name].keys():
         continue
-    # loop through dispersion types in dashparams incl aliases
-    # and build dispersion corrected version incl aliases
+    # else loop through dispersion types in dashparams (also considering aliases)
+    # and build dispersion corrected version (applies also for aliases)
     for dispersion_name in dispersion_names.keys():
         dispersion_type = dispersion_names[dispersion_name]
         for dispersion_functional in dashcoeff[dispersion_type].keys():
@@ -90,10 +139,15 @@ for functional_name in dict_functionals.keys():
                 func = copy.deepcopy(dict_functionals[functional_name])
                 func["name"] = func["name"] + "-" + dispersion_type
                 func["dispersion"] = dict()
+                
+                # we need to pop the citation as the EmpiricalDispersion class only expects dashparams
                 if "citation" in dashcoeff[dispersion_type][dispersion_functional].keys():
                     func["dispersion"]["citation"] = dashcoeff[dispersion_type][dispersion_functional].pop("citation")
                 func["dispersion"]["type"] = dispersion_type
                 func["dispersion"]["params"] = dashcoeff[dispersion_type][dispersion_functional]
+                
+                # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
+                # all point to the same method (M06-2X-D3ZERO)
                 for alias in functional_aliases:
                     alias = alias + "-" + dispersion_name.upper()
                     functionals[alias] = func
@@ -120,6 +174,8 @@ def check_consistency(func_dictionary, func_name):
     # 1c) require at least an empty correlation functional entry or C_MP2
     elif "c_functionals" not in func_dictionary.keys() and "c_mp2" not in func_dictionary.keys():
         raise ValidationError("SCF: No correlation specified in functional %s." % (name))
+    
+    # 2) use_libxc handling:
     use_libxc = 0
     if "x_functionals" in func_dictionary.keys():
         for item in func_dictionary["x_functionals"]:
@@ -131,11 +187,11 @@ def check_consistency(func_dictionary, func_name):
     if use_libxc > 1:
         raise ValidationError("SCF: Duplicate request for libxc exchange parameters in functional %s." % (name))
 
-    # 2b) if "use_libxc" is defined in x_functionals, there shouldn't be "x_hf"
+    # 2b) if "use_libxc" is defined in x_functionals, there shouldn't be an "x_hf" key
     elif use_libxc == 1 and "x_hf" in func_dictionary.keys():
         raise ValidationError("SCF: Inconsistent definition of exchange in functional %s." % (name))
 
-    # 2c) ensure requested libxc params are for a functional that is included in "x_functionals"
+    # 2c) ensure libxc params requested in "x_hf" are for a functional that is included in "x_functionals"
     elif "x_hf" in func_dictionary.keys() \
     and "use_libxc" in func_dictionary["x_hf"] \
     and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"].keys():
@@ -148,7 +204,11 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
     This returns a (core.SuperFunctional, dispersion) tuple based on the requested name.
     The npoints, deriv and restricted parameters are also respected.
     """
+    
+    # Sanity check first, raises ValidationError if something is wrong
     check_consistency(functionals[name], name)
+    
+    # Either process the "xc_functionals" special case
     if "xc_functionals" in functionals[name].keys():
         for xc_key in functionals[name]["xc_functionals"].keys():
             xc_name = "XC_" + xc_key
@@ -161,17 +221,26 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                 descr += "GGA "
         descr += "Exchange-Correlation Functional\n"
         sup.set_description(descr)
+    
+    # or combine X and C contributions into a blank SuperFunctional
     else:
         sup = core.SuperFunctional.blank()
         descr = []
         citation = []
+        
+        # Exchange processing - first the GGA part:
+        # LibXC uses capital labels for the CAM coefficients
         x_HF = {"ALPHA": 0.0, "OMEGA": 0.0, "BETA": 0.0}
         if "x_functionals" in functionals[name].keys():
             x_funcs = functionals[name]["x_functionals"]
             for x_key in x_funcs.keys():
+                
+                # Lookup the functional in LibXC
                 x_name = "XC_" + x_key
                 x_func = core.LibXCFunctional(x_name, restricted)
                 x_params = x_funcs[x_key]
+                
+                # If we're told to use libxc parameters for x_hf from this GGA, do so
                 if "use_libxc" in x_params and x_params["use_libxc"]:
                     x_HF = x_func.query_libxc("XC_HYB_CAM_COEF")
                     x_func.set_alpha(1.0)
@@ -182,12 +251,20 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                 if "omega" in x_params.keys():
                     x_func.set_omega(x_params["omega"])
                 sup.add_x_functional(x_func)
+                
+                # This ensures there is at least some citation for the method
                 if x_func.citation() not in citation:
                     citation.append(x_func.citation())
                 if x_func.description() not in descr:
                     descr.append(x_func.description())
+        
+        # Exchange processing - HF part:
+        # x_HF contains zeroes or "use_libxc" params from a GGA above
         if "x_hf" in functionals[name].keys():
             x_params = functionals[name]["x_hf"]
+            
+            # if "use_libxc" specified here, fetch parameters. 
+            # Duplicate definition of "use_libxc" caught in check_consistency.
             if "use_libxc" in x_params.keys():
                 x_name = "XC_" + x_params["use_libxc"]
                 x_HF = core.LibXCFunctional(x_name, restricted).query_libxc("XC_HYB_CAM_COEF")
@@ -199,10 +276,16 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                 sup.set_x_beta(x_params["beta"])
             if "omega" in x_params.keys():
                 sup.set_x_omega(x_params["omega"])
+        
+        # LibXC uses different nomenclature: 
+        # we need to shuffle the long and short range contributions around
+        # by default, all 3 are 0.0 - different values are set only if "use_libxc" is specified
         else:
             sup.set_x_alpha(x_HF["ALPHA"] + x_HF["BETA"])
             sup.set_x_beta(x_HF["ALPHA"] - x_HF["BETA"])
             sup.set_x_omega(x_HF["OMEGA"])
+
+        # Correlation processing - GGA part, generally same as above.
         if "c_functionals" in functionals[name].keys():
             c_funcs = functionals[name]["c_functionals"]
             for c_key in c_funcs.keys():
@@ -220,26 +303,36 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                     citation.append(c_func.citation())
                 if c_func.description() not in descr:
                     descr.append(c_func.description())
+        
+        # Correlation processing - MP2 part
         if "c_mp2" in functionals[name].keys():
             c_params = functionals[name]["c_mp2"]
             if "alpha" in c_params.keys():
                 sup.set_c_alpha(c_params["alpha"])
             else:
                 sup.set_c_alpha(0.0)
+            
+            # The value of alpha is locked to 1.0 C++-side when SCS is detected
             if "ss" in c_params:
                 sup.set_c_ss_alpha(c_params["ss"])
+                sup.set_c_alpha(1.0)
             if "os" in c_params:
                 sup.set_c_os_alpha(c_params["os"])
+                sup.set_c_alpha(1.0)
+        
+        # Merge descriptions and citations from above components obtained from LibXC as a fallback.
         descr = "\n".join(descr)
         citation = "\n".join(citation)
         sup.set_citation(citation)
         sup.set_description(descr)
-
+    
+    # Here, the above joining is usually overwritten by the proper reference.
     if "citation" in functionals[name].keys():
         sup.set_citation(functionals[name]["citation"])
     if "description" in functionals[name].keys():
         sup.set_description(functionals[name]["description"])
-
+    
+    # Dispersion handling for tuple assembly
     dispersion = False
     if "dispersion" in functionals[name].keys():
         d_params = functionals[name]["dispersion"]
