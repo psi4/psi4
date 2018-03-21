@@ -81,7 +81,6 @@ qchem_data = {                              #TEST
      'EDF2':     0.4571615420000086,        #TEST
     'B97-2':    0.45620779479999385,        #TEST
     'B97-1':     0.4551136999999983,        #TEST
- 'wB97X-D3':    0.45707443810000825,        #TEST
     'O3LYP':     0.4543928605000076,        #TEST
 'MGGA_MS2h':     0.4467710457999914,        #TEST
       'GAM':     0.4509109773999995,        #TEST
@@ -107,6 +106,7 @@ qchem_data = {                              #TEST
      'VSXC':    0.45478941460000044,        #TEST
 ## The following functionals are not included 
 ## in Psi4 at the moment. 
+# 'wB97X-D3':    0.45707443810000825,       #TEST # needs Tweaks
 #      'BMK':    0.45867548619999354,       #TEST # not in LibXC 3.0.0
 #     'SCAN':    0.45171816110000407,       #TEST # not in LibXC 3.0.0
 #   't-HCTH':     0.4623451142999926,       #TEST
@@ -121,7 +121,7 @@ qchem_data = {                              #TEST
 }                                           #TEST
 
 # Current version of Psi4 does not match Q-Chem for these tests
-expected_fail_qchem = ['wB97X-D3', 'O3LYP'] #TEST
+expected_fail_qchem = ['O3LYP']             #TEST
 
 # These tests fail to converge with the current version of Psi4
 excluded_qchem_convergence_probs = {

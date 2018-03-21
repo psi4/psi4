@@ -109,38 +109,38 @@ funcs.append({
     '    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n',   
 })# yapf: disable
 
-funcs.append({
-    "name": "wB97X-D3",
-    "alias": ["WB97X-D3ZERO"],
-    "x_functionals": {
-        "HYB_GGA_XC_WB97X": {
-            "omega": 0.25,
-            #"tweaks": [0.804272, 0.698900, 0.508940, -3.744903, 10.060790,
-            #           1.000000, 2.433266, -15.446008, 17.644390, -8.879494,
-            #           1.000000, -4.868902, 21.295726, -36.020866, 19.177018]
-        }
-    },
-    "x_hf": {
-        "alpha": 0.195728,
-        "beta": 1.0,
-        "omega": 0.25
-    },
-    "c_functionals": {},
-    "dispersion": {
-        "type": "d3zero",
-        "params": {
-            's6': 1.0,
-            's8': 1.000,
-            'sr6': 1.281,
-            'sr8': 1.094,
-            'alpha6': 14.0
-        }
-    },
-    "description":
-    '    This functional is currently broken - wB97X needs enabled tweaks.\n',
-    "citation":
-    '    Y.-S. Lin, G.-D. Li, S.-P. Mao, J.-D. Chai, J. Chem. Theory Comput., 9, 263-272, 2013\n',
-})# yapf: disable
+# funcs.append({
+#     "name": "wB97X-D3",
+#     "alias": ["WB97X-D3ZERO"],
+#     "x_functionals": {
+#         "HYB_GGA_XC_WB97X": {
+#             "omega": 0.25,
+#             "tweaks": [0.804272, 0.698900, 0.508940, -3.744903, 10.060790,
+#                        1.000000, 2.433266, -15.446008, 17.644390, -8.879494,
+#                        1.000000, -4.868902, 21.295726, -36.020866, 19.177018]
+#         }
+#     },
+#     "x_hf": {
+#         "alpha": 0.195728,
+#         "beta": 1.0,
+#         "omega": 0.25
+#     },
+#     "c_functionals": {},
+#     "dispersion": {
+#         "type": "d3zero",
+#         "params": {
+#             's6': 1.0,
+#             's8': 1.000,
+#             'sr6': 1.281,
+#             'sr8': 1.094,
+#             'alpha6': 14.0
+#         }
+#     },
+#     "description":
+#     '    This functional is currently broken - wB97X needs enabled tweaks.\n',
+#     "citation":
+#     '    Y.-S. Lin, G.-D. Li, S.-P. Mao, J.-D. Chai, J. Chem. Theory Comput., 9, 263-272, 2013\n',
+# })# yapf: disable
 
 funcs.append({
     "name": "HF",
