@@ -78,6 +78,7 @@ dict = {
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.qcdb.dashparam import dashcoeff
+from psi4.driver.procrouting.empirical_dispersion import get_dispersion_aliases
 
 import copy
 
@@ -107,17 +108,7 @@ def get_functional_aliases(functional_dict):
 
 
 # alias table for dispersion
-dispersion_names = {}
-dispersion_names["d2p4"] = "d2p4"
-dispersion_names["d2gr"] = "d2gr"
-dispersion_names["d3zero"] = "d3zero"
-dispersion_names["d3bj"] = "d3bj"
-dispersion_names["d3mzero"] = "d3mzero"
-dispersion_names["d3mbj"] = "d3mbj"
-dispersion_names["d"] = "d2p4"
-dispersion_names["d2"] = "d2p4"
-dispersion_names["d3"] = "d3zero"
-dispersion_names["d3m"] = "d3mzero"
+dispersion_names = get_dispersion_aliases()
 
 functionals = {}
 for functional_name in dict_functionals.keys():

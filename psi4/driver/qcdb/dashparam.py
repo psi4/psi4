@@ -35,17 +35,13 @@ try:
 except ImportError:
     from .exceptions import *
 
+from psi4.driver.procrouting.empirical_dispersion import get_dispersion_aliases
+
 ## ==> Dispersion Aliases and Parameters <== ##
 
 # This defines the -D aliases for all of psi4
-dash_alias = {
-    '-d': '-d2p4',  # means -D aliases to a -D2 level dispersion correction, as opposed to -D3
-    '-d2': '-d2p4',  # means -D2 uses psi4's internal -D2 correction, as opposed to calling dftd3
-    '-d3': '-d3zero',  # means -D3 uses the original zero-damping fn, as opposed to bj-damping
-    '-d3m': '-d3mzero',  # means -D3 uses the 3-param zero-damping fn, refit for short-range
-}
+dash_alias = get_dispersion_aliases()
 
-dash_alias_reverse = {v: k for k, v in dash_alias.items()}
 # The dashcoeff dict below defines the -D parameters for most of the DFT methods. 'd2p4' are
 #   taken from already defined functionals in psi4. Other parameters taken from the
 #   references indicated in the "citation" parameter. The remainder of the parameters are
@@ -302,7 +298,7 @@ dashcoeff = {
 
 
 # Full list of all possible endings
-full_dash_keys = list(dashcoeff) + [x.replace('-', '') for x in list(dash_alias)]
+# full_dash_keys = list(dashcoeff) + list(dash_alias)
 
 
 def dash_server(func, dashlvl):
@@ -310,7 +306,7 @@ def dash_server(func, dashlvl):
 
     # Validate input arguments
     dashlvl = dashlvl.lower()
-    dashlvleff = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
+    dashlvleff = dash_alias[dashlvl][1:] if (dashlvl) in dash_alias.keys() else dashlvl
 
     if dashlvleff not in dashcoeff.keys():
         raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl,

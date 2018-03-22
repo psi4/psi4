@@ -35,6 +35,7 @@ from psi4.driver import p4util
 
 
 def get_default_dashparams(dtype):
+    # returns a dictionary containing default dispersion parameters for a given method
     if dtype in ['d2p4', 'd2gr']:
         return ({"s6": 1.0, "sr6": 1.1, "alpha6": 20.0})
     elif dtype == 'd3zero':
@@ -48,40 +49,61 @@ def get_default_dashparams(dtype):
     else:
         return ({"s6": 1.0})
 
+def get_dispersion_aliases():
+    # returns a dictionary consisting of "dispersion_name": "dispersion_type" entries
+    # where "dispersion_type" is a valid dtype identifier in lowercase
+    dispersion_names = {}
+    dispersion_names["d2p4"] = "d2p4"
+    dispersion_names["d2gr"] = "d2gr"
+    dispersion_names["d3zero"] = "d3zero"
+    dispersion_names["d3bj"] = "d3bj"
+    dispersion_names["d3mzero"] = "d3mzero"
+    dispersion_names["d3mbj"] = "d3mbj"
+    dispersion_names["d"] = "d2p4"
+    dispersion_names["d2"] = "d2p4"
+    dispersion_names["d3"] = "d3zero"
+    dispersion_names["d3m"] = "d3mzero"
+    return(dispersion_names)
+
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
-        # Cleave out base functional from alias:
-        for dash in ["-D", "-D2", "-D2P4", "-D2GR", "-D3", "-D3ZERO", "-D3BJ", "-D3M", "-D3MZERO", "-D3MBJ"]:
+        
+        # 1) Functional name processing:
+        # 1a) Cleave out base functional from alias:
+        for dash in ["-" + name.upper() for name in get_dispersion_aliases()]:
             if dash == alias.upper()[-len(dash):]:
                 alias = alias[:-len(dash)]
+        
+        # 1b) Alias must be uppercase
+        self.alias = alias.upper()
+        
+        # 2) Figure out dispersion type:
+        # 2a) Strip "-" from dtype
+        if dtype[0] == "-":
+            dtype = dtype[1:]       
 
-        self.alias = alias.upper()  # Functional Alias
-
-        # Figure out dispersion type
-        if dtype[0] != "-":
-            dtype = "-" + dtype
-
-        if dtype.lower() in dftd3.dash_alias.keys():
-            self.dtype = dftd3.dash_alias[dtype.lower()].upper()
+        # 2b) Un-alias and capitalise dtype for printing
+        if dtype.lower() in get_dispersion_aliases().keys():
+            self.dtype = get_dispersion_aliases()[dtype.lower()].upper()
         else:
-            self.dtype = dtype.upper()  # Dispersion type
+            self.dtype = dtype.upper()
 
-        tuple_params = kwargs.pop('tuple_params', None)
-
-        custom_citation = False
-        if "citation" in kwargs.keys():
-            custom_citation = kwargs.pop("citation")
-
+        # 3) Get dispersion parameters:
+        # 3a) Set defaults
         self.dash_params = get_default_dashparams(dtype)
+        
+        # 3b) Load passed variables from dictionary or from functional type
+        tuple_params = kwargs.pop('tuple_params', None)
         if "dashparams" in kwargs.keys():
             self.dash_params.update(kwargs.pop("dashparams"))
-        elif dtype.replace('-', '') in dftd3.dashcoeff.keys():
-            self.dash_params.update(dftd3.dash_server(alias, dtype.replace('-', '')))
+        elif dtype in dftd3.dashcoeff.keys():
+            self.dash_params.update(dftd3.dash_server(alias, dtype)))
         else:
             self.dash_params = {'s6': 1.0}
-
-        # Build coefficients
+        
+        # 4) Dispersion class build process:
+        # 4a) Build coefficients for dftd3
         if self.dtype in ["-D2GR", "-D3ZERO", "-D3BJ", "-D3MZERO", "-D3MBJ"]:
             self.dtype = self.dtype.replace('-D2GR', '-D2')
             self.disp_type = 'gr'
@@ -111,8 +133,9 @@ class EmpericalDispersion(object):
 
                 if len(tuple_params) > 4:
                     raise Exception("Too many parameter in input tuple param.")
-
-        else:  # Only other case at the moment
+        
+        # 4b) Build coefficients for psi4
+        else:  
             self.dtype = self.dtype.replace('-D2P4', '-D2')
             self.disp_type = 'p4'
             if tuple_params is not None:
@@ -120,13 +143,13 @@ class EmpericalDispersion(object):
                 for k, v in zip(['s6', 'p1', 'p2', 'p3'], tuple_params):
                     self.dash_params[k] = v
 
-        # Build the C++ dispersion class
+        # 4c) Build the C++ dispersion class for psi4
         if self.disp_type == 'p4':
             self.disp = core.Dispersion.build(self.dtype, **self.dash_params)
         else:
             self.disp = None
 
-        # Set user input
+        # 5) Override parameters from user input
         for k, v in kwargs.keys():
             if k in self.dash_params.keys():
                 self.dash_params[k] = kwargs.pop(k)
@@ -135,6 +158,8 @@ class EmpericalDispersion(object):
             raise Exception("The following DFTD3 parameters were not understood for %s dispersion type: %s" %
                             (dtype, ', '.join(kwargs.keys())))
 
+        # 6) Process citations
+        # 6a) Set default citations for method
         if self.dtype == "-D1":
             self.description = "    Grimme's -D1 Dispersion Correction"
             self.citation = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473"
@@ -189,8 +214,10 @@ class EmpericalDispersion(object):
 
         else:
             raise Exception("Emperical Dispersion type %s not understood." % self.dtype)
-
-        if custom_citation:
+        
+        # 6b) add custom citations if available
+        if "citation" in kwargs.keys():
+            custom_citation = kwargs.pop("citation")
             self.citation += "\n    Parametrisation from: \n" + custom_citation
 
     def print_out(self, level=1):
