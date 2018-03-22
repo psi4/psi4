@@ -37,7 +37,6 @@ from psi4.driver import p4util
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
-
         # 1) Functional name processing:
         # 1a) Cleave out base functional from alias:
         for dash in ["-" + name.upper() for name in get_dispersion_aliases()]:
@@ -124,7 +123,7 @@ class EmpericalDispersion(object):
             custom_citation = kwargs.pop("citation")
         else:
             custom_citation = False
-    
+
         # 5b) process other kwargs
         for k, v in kwargs.keys():
             if k in self.dash_params.keys():

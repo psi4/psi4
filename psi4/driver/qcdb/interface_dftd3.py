@@ -96,7 +96,8 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
     if dashlvl is not None:
         dashlvl = dashlvl.lower()
-        dashlvl = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
+        dashlvl = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases().keys() \
+                                                    else dashlvl
         if dashlvl not in dashcoeff.keys():
             raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
     else:

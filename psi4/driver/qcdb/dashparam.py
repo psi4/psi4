@@ -36,8 +36,6 @@ except ImportError:
     from .exceptions import *
 
 
-#print(empirical_dispersion.get_dispersion_aliases())
-
 ## ==> Dispersion Aliases and Parameters <== ##
 
 # This defines the -D aliases for all of psi4
@@ -322,8 +320,9 @@ def dash_server(func, dashlvl):
     """ Returns the dictionary of keys for default empirical parameters"""
     # Validate input arguments
     dashlvl = dashlvl.lower()
-    dashlvleff = dash_alias[dashlvl][1:] if (dashlvl) in dash_alias.keys() else dashlvl
-
+    dashlvleff = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases().keys() \
+                                                   else dashlvl
+    
     if dashlvleff not in dashcoeff.keys():
         raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl,
                                                                                                  dashcoeff.keys()))
@@ -346,7 +345,8 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     #   d3mzero: s6 sr6 s8 beta alpha6=14.0 version=5
     #   d3mbj:   s6 a1 s8 a2 alpha6=None version=6
 
-    dashlvleff = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
+    dashlvleff = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases().keys() \
+                                                   else dashlvl
 
     if dashlvleff.lower() == 'd2p4':
         returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
@@ -396,8 +396,10 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
 
 def get_default_dashparams(dtype):
     # returns a dictionary containing default dispersion parameters for a given method
-    if dtype in ['d2p4', 'd2gr']:
-        return ({"s6": 1.0, "sr6": 1.1, "alpha6": 20.0})
+    if dtype == 'd2p4':
+        return ({"s6": 1.0})
+    elif dtype == 'd2gr':
+        return ({"s6": 1.0, "sr6": 1.1, "s8": 0.0, "alpha6": 20.0})
     elif dtype == 'd3zero':
         return ({"s6": 1.0, "sr6": 1.0, "s8": 0.0, "sr8": 1.0, "alpha6": 14.0})
     elif dtype == 'd3bj':
