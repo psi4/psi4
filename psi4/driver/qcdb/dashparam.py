@@ -35,11 +35,28 @@ try:
 except ImportError:
     from .exceptions import *
 
-from psi4.driver.procrouting.empirical_dispersion import get_dispersion_aliases
+
+#print(empirical_dispersion.get_dispersion_aliases())
 
 ## ==> Dispersion Aliases and Parameters <== ##
 
 # This defines the -D aliases for all of psi4
+def get_dispersion_aliases():
+    # returns a dictionary consisting of "dispersion_name": "dispersion_type" entries
+    # where "dispersion_type" is a valid dtype identifier in lowercase
+    dispersion_names = {}
+    dispersion_names["d2p4"] = "d2p4"
+    dispersion_names["d2gr"] = "d2gr"
+    dispersion_names["d3zero"] = "d3zero"
+    dispersion_names["d3bj"] = "d3bj"
+    dispersion_names["d3mzero"] = "d3mzero"
+    dispersion_names["d3mbj"] = "d3mbj"
+    dispersion_names["d"] = "d2p4"
+    dispersion_names["d2"] = "d2p4"
+    dispersion_names["d3"] = "d3zero"
+    dispersion_names["d3m"] = "d3mzero"
+    return(dispersion_names)
+
 dash_alias = get_dispersion_aliases()
 
 # The dashcoeff dict below defines the -D parameters for most of the DFT methods. 'd2p4' are
@@ -303,7 +320,6 @@ dashcoeff = {
 
 def dash_server(func, dashlvl):
     """ Returns the dictionary of keys for default empirical parameters"""
-
     # Validate input arguments
     dashlvl = dashlvl.lower()
     dashlvleff = dash_alias[dashlvl][1:] if (dashlvl) in dash_alias.keys() else dashlvl
@@ -376,3 +392,19 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
                                                                                                  dashcoeff.keys()))
 
     return returnstring
+
+
+def get_default_dashparams(dtype):
+    # returns a dictionary containing default dispersion parameters for a given method
+    if dtype in ['d2p4', 'd2gr']:
+        return ({"s6": 1.0, "sr6": 1.1, "alpha6": 20.0})
+    elif dtype == 'd3zero':
+        return ({"s6": 1.0, "sr6": 1.0, "s8": 0.0, "sr8": 1.0, "alpha6": 14.0})
+    elif dtype == 'd3bj':
+        return ({"s6": 1.0, "a1": 0.0, "s8": 1.0, "a2": 1.0})
+    elif dtype == 'd3mzero':
+        return ({"s6": 1.0, "sr6": 1.0, "s8": 1.0, "beta": 1.0, "alpha6": 14.0})
+    elif dtype == 'd3mbj':
+        return ({"s6": 1.0, "a1": 1.0, "s8": 1.0, "a2": 1.0})
+    else:
+        return ({"s6": 1.0})

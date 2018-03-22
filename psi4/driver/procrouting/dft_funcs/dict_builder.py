@@ -77,8 +77,8 @@ dict = {
 """
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.qcdb.dashparam import dashcoeff
 from psi4.driver.procrouting.empirical_dispersion import get_dispersion_aliases
+from psi4.driver.qcdb.dashparam import dashcoeff
 
 import copy
 
