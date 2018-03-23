@@ -468,7 +468,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         ret_ptype = ret_energy
 
     # Build and set a wavefunction
-    wfn = core.Wavefunction.build(molecule, 'sto-3g')
+    wfn = core.Wavefunction.build(molecule, 'def2-svp')
     wfn.nbody_energy = energies_dict
     wfn.nbody_ptype = ptype_dict
     wfn.nbody_body_energy = energy_body_dict
