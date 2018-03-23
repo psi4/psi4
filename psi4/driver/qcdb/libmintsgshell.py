@@ -169,7 +169,7 @@ class ShellInfo(object):
         # ERD normalized contraction coefficients (of length nprimitives_)
         self.PYerd_coef = []
         # Original (un-normalized) contraction coefficients (of length nprimitives)
-        self.PYoriginal_coef = [c[n] if c[n] > 1E-10 else c[n] + 1E-10 for n in range(len(c))]
+        self.PYoriginal_coef = [c[n] for n in range(len(c))]
         # Atom number this shell goes to. Needed when indexing integral derivatives.
         self.nc = nc
         # Atomic center number in the Molecule
@@ -186,7 +186,10 @@ class ShellInfo(object):
         # Compute the normalization constants
         if pt == 'Unnormalized':
             self.normalize_shell()
-            self.erd_normalize_shell()
+            if isinstance(self.rpowers, list) and sum([s if s != None else 0 for s in self.rpowers]) != 0:
+                pass
+            else:
+                self.erd_normalize_shell()
         else:
             self.PYerd_coef = [0.0] * self.nprimitive() 
 
