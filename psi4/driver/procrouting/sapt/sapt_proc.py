@@ -40,7 +40,7 @@ from .sapt_util import print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms
 
 # Only export the run_ scripts
-__all__ = ['run_sapt_dft']
+__all__ = ['run_sapt_dft', 'sapt_dft']
 
 
 def run_sapt_dft(name, **kwargs):
@@ -227,11 +227,11 @@ def run_sapt_dft(name, **kwargs):
     return dimer_wfn
 
 
-def sapt_dft_header(sapt_dft_functional="user",
-                    mon_a_shift="user",
-                    mon_b_shift="user",
-                    do_delta_hf="user",
-                    jk_alg="user"):
+def sapt_dft_header(sapt_dft_functional="unknown",
+                    mon_a_shift=None,
+                    mon_b_shift=None,
+                    do_delta_hf="N/A",
+                    jk_alg="N/A"):
     # Print out the title and some information
     core.print_out("\n")
     core.print_out("         ---------------------------------------------------------\n")
@@ -243,22 +243,47 @@ def sapt_dft_header(sapt_dft_functional="user",
 
     core.print_out("  ==> Algorithm <==\n\n")
     core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
-    if mon_a_shift == "user":
-        core.print_out("   Monomer A GRAC Shift    %12s\n" % mon_a_shift)
-    else:
+    if mon_a_shift:
         core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
-    if mon_b_shift == "user":
-        core.print_out("   Monomer B GRAC Shift    %12s\n" % mon_b_shift)
-    else:
+    if mon_b_shift:
         core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
     core.print_out("   Delta HF                %12s\n" % do_delta_hf)
     core.print_out("   JK Algorithm            %12s\n" % jk_alg)
 
 
 def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True):
+    """
 
+    Example
+    -------
+
+    # Prepare the fragments
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
+
+    # Run the first monomer
+    set DFT_GRAC_SHIFT 0.203293
+    wfnA, energyA = energy("PBE0", monomer=monomerA, return_wfn=True)
+
+    # Run the second monomer
+    set DFT_GRAC_SHIFT 0.138264
+    wfnB, energyB = energy("PBE0", monomer=monomerB, return_wfn=True)
+
+    # Build the dimer wavefunction
+    wfnD =
+
+    driver.procrouting.sapt.sapt_dft(
+    """
+
+    # Handle the input options
     if print_header:
         sapt_dft_header()
+
+    if sapt_jk is None:
+        sapt_jk = core.JK.build(dimer_wfn.basisset())
+        sapt_jk.initialize()
+
+    if data is None:
+        data = {}
 
     # Build cache and JK
     sapt_jk.set_do_J(True)
