@@ -226,6 +226,9 @@ public:
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
 
+    /// The JK object (or null if it has been deleted)
+    void set_jk(std::shared_ptr<JK> jk) { jk_ = jk; }
+
     /// The DFT Functional object (or null if it has been deleted)
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
 
