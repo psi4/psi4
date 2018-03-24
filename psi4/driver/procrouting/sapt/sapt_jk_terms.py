@@ -250,7 +250,7 @@ def exchange(cache, jk, do_print=True):
     return {"Exch10(S^2)": Exch_s2, "Exch10": Exch10}
 
 
-def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True, Sinf=False):
+def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True, Sinf=False, sapt_jk_B=None):
     """
     Compute Ind20 and Exch-Ind20 quantities from a SAPT cache and JK object.
     """
@@ -523,7 +523,7 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
         core.print_out("\n   => Coupled Induction <= \n\n")
 
         x_B_MOA, x_A_MOB = _sapt_cpscf_solve(
-            cache, jk, w_B_MOA, w_A_MOB, 20, 1.e-6)
+            cache, jk, w_B_MOA, w_A_MOB, 20, 1.e-6, sapt_jk_B=sapt_jk_B)
 
         ind_ab = 2.0 * x_B_MOA.vector_dot(w_B_MOA)
         ind_ba = 2.0 * x_A_MOB.vector_dot(w_A_MOB)
@@ -576,13 +576,16 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     return ret
 
 
-def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv):
+def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv, sapt_jk_B=None):
     """
     Solve the SAPT CPHF (or CPKS) equations.
     """
 
     cache["wfn_A"].set_jk(jk)
-    cache["wfn_B"].set_jk(jk)
+    if sapt_jk_B:
+        cache["wfn_B"].set_jk(sapt_jk_B)
+    else:
+        cache["wfn_B"].set_jk(jk)
 
     # Make a preconditioner function
     P_A = core.Matrix(cache["eps_occ_A"].shape[0], cache["eps_vir_A"].shape[0])

@@ -254,7 +254,7 @@ def sapt_dft_header(sapt_dft_functional="unknown",
     core.print_out("   JK Algorithm            %12s\n" % jk_alg)
 
 
-def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True, cleanup_jk=True):
+def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, print_header=True, cleanup_jk=True):
     """
     The primary SAPT(DFT) algorithm to compute the interaction energy once the wavefunctions have been built.
 
@@ -293,16 +293,32 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True
         sapt_dft_header()
 
     if sapt_jk is None:
+
+        core.print_out("\n   => Building SAPT JK object <= \n\n")
         sapt_jk = core.JK.build(dimer_wfn.basisset())
+        sapt_jk.set_do_J(True)
+        sapt_jk.set_do_K(True)
+        if wfn_A.functional().is_x_lrc():
+            sapt_jk.set_do_wK(True);
+            sapt_jk.set_omega(wfn_A.functional().x_omega());
         sapt_jk.initialize()
+        sapt_jk.print_header()
+
+        if wfn_B.functional().is_x_lrc() and (wfn_A.functional().x_omega() != wfn_B.functional().x_omega()):
+            core.print_out("   => Monomer B: Building SAPT JK object <= \n\n")
+            core.print_out("      Reason: MonomerA Omega != MonomerB Omega\n\n")
+            sapt_jk_B = core.JK.build(dimer_wfn.basisset())
+            sapt_jk_B.set_do_J(True)
+            sapt_jk_B.set_do_K(True)
+            sapt_jk_B.set_do_wK(True);
+            sapt_jk_B.set_omega(wfn_B.functional().x_omega());
+            sapt_jk_B.initialize()
+            sapt_jk_B.print_header()
+    else:
+        sapt_jk.set_do_K(True)
 
     if data is None:
         data = {}
-
-    # Build cache and JK
-    sapt_jk.set_do_J(True)
-    sapt_jk.set_do_K(True)
-    sapt_jk.set_do_wK(False)
 
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
 
@@ -319,6 +335,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True
         cache,
         sapt_jk,
         True,
+        sapt_jk_B=sapt_jk_B,
         maxiter=core.get_option("SAPT", "MAXITER"),
         conv=core.get_option("SAPT", "D_CONVERGENCE"),
         Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
