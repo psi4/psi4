@@ -482,6 +482,11 @@ def _chain_dot(*args, **kwargs):
 
     return ret
 
+def _irrep_access(self, *args, **kwargs):
+    """
+    Warns user when iterating/accessing an irreped object.
+    """
+    raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple irreps. Please use .np or .nph explicitly.")
 
 # Matrix attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
@@ -496,6 +501,8 @@ core.Matrix.np_read = classmethod(_np_read)
 core.Matrix.to_serial = _to_serial
 core.Matrix.from_serial = classmethod(_from_serial)
 core.Matrix.chain_dot = _chain_dot
+core.Matrix.__iter__ = _irrep_access
+core.Matrix.__getitem__ = _irrep_access
 
 # Vector attributes
 core.Vector.from_array = classmethod(array_to_matrix)
@@ -509,6 +516,8 @@ core.Vector.np_write = _np_write
 core.Vector.np_read = classmethod(_np_read)
 core.Vector.to_serial = _to_serial
 core.Vector.from_serial = classmethod(_from_serial)
+core.Vector.__iter__ = _irrep_access
+core.Vector.__getitem__ = _irrep_access
 
 ### CIVector properties
 
