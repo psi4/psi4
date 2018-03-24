@@ -44,9 +44,7 @@ __all__ = ['run_sapt_dft']
 
 
 def run_sapt_dft(name, **kwargs):
-    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'],
-                                   ['SCF', 'REFERENCE'],
-                                   ['SCF', 'DFT_GRAC_SHIFT'],
+    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_GRAC_SHIFT'],
                                    ['SCF', 'SAVE_JK'])
 
     core.tstart()
@@ -103,7 +101,6 @@ def run_sapt_dft(name, **kwargs):
     if (core.get_option('SCF', 'REFERENCE') != 'RHF'):
         raise ValidationError('SAPT(DFT) currently only supports restricted references.')
 
-
     core.IO.set_default_namespace('dimer')
     data = {}
 
@@ -120,20 +117,17 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option('DF_INTS_IO', 'SAVE')
 
         hf_data = {}
-        hf_wfn_dimer = scf_helper(
-            "SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
+        hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.get_variable("CURRENT ENERGY")
 
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'dimer', 'monomerA')
-        hf_wfn_A = scf_helper(
-            "SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
+        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
         hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
 
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
-        hf_wfn_B = scf_helper(
-            "SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
+        hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
         hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
 
         # Move it back to monomer A
@@ -195,7 +189,8 @@ def run_sapt_dft(name, **kwargs):
 
     # Save the JK object
     core.IO.set_default_namespace('monomerA')
-    wfn_A = scf_helper(sapt_dft_functional, post_scf=False, molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
+    wfn_A = scf_helper(
+        sapt_dft_functional, post_scf=False, molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
     data["DFT MONOMERA"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
@@ -208,11 +203,35 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option("DFT_GRAC_SHIFT", mon_b_shift)
 
     core.IO.set_default_namespace('monomerB')
-    wfn_B = scf_helper(sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
+    wfn_B = scf_helper(
+        sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
     data["DFT MONOMERB"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
+    # Write out header
+    scf_alg = core.get_option("SCF", "SCF_TYPE")
+    sapt_dft_header(sapt_dft_functional, mon_a_shift, mon_b_shift, bool(do_delta_hf), scf_alg)
+
+    # Call SAPT(DFT)
+    sapt_jk = wfn_B.jk()
+    sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=sapt_jk, data=data, print_header=False)
+    sapt_jk.finalize()
+
+    # Copy data back into globals
+    for k, v in data.items():
+        core.set_variable(k, v)
+
+    core.tstop()
+
+    return dimer_wfn
+
+
+def sapt_dft_header(sapt_dft_functional="user",
+                    mon_a_shift="user",
+                    mon_b_shift="user",
+                    do_delta_hf="user",
+                    jk_alg="user"):
     # Print out the title and some information
     core.print_out("\n")
     core.print_out("         ---------------------------------------------------------\n")
@@ -224,13 +243,24 @@ def run_sapt_dft(name, **kwargs):
 
     core.print_out("  ==> Algorithm <==\n\n")
     core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
-    core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
-    core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
-    core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
-    core.print_out("   JK Algorithm            %12s\n" % core.get_option("SCF", "SCF_TYPE"))
+    if mon_a_shift == "user":
+        core.print_out("   Monomer A GRAC Shift    %12s\n" % mon_a_shift)
+    else:
+        core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
+    if mon_b_shift == "user":
+        core.print_out("   Monomer B GRAC Shift    %12s\n" % mon_b_shift)
+    else:
+        core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
+    core.print_out("   Delta HF                %12s\n" % do_delta_hf)
+    core.print_out("   JK Algorithm            %12s\n" % jk_alg)
+
+
+def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True):
+
+    if print_header:
+        sapt_dft_header()
 
     # Build cache and JK
-    sapt_jk = wfn_B.jk()
     sapt_jk.set_do_J(True)
     sapt_jk.set_do_K(True)
     sapt_jk.set_do_wK(False)
@@ -258,9 +288,8 @@ def run_sapt_dft(name, **kwargs):
     # Dispersion
     primary_basis = wfn_A.basisset()
     core.print_out("\n")
-    aux_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_MP2",
-                                    core.get_option("DFMP2", "DF_BASIS_MP2"), "RIFIT",
-                                    core.get_global_option('BASIS'))
+    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_MP2",
+                                    core.get_option("DFMP2", "DF_BASIS_MP2"), "RIFIT", core.get_global_option('BASIS'))
     fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
     data.update(fdds_disp)
 
@@ -275,10 +304,4 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("\n")
     core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
-    # Copy data back into globals
-    for k, v in data.items():
-        core.set_variable(k, v)
-
-    core.tstop()
-
-    return dimer_wfn
+    return data
