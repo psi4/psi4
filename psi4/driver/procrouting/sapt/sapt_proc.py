@@ -104,7 +104,6 @@ def run_sapt_dft(name, **kwargs):
     core.IO.set_default_namespace('dimer')
     data = {}
 
-    core.set_global_option("SAVE_JK", True)
     if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
         # core.set_global_option('DF_INTS_IO', 'LOAD')
         core.set_global_option('DF_INTS_IO', 'SAVE')
@@ -125,10 +124,13 @@ def run_sapt_dft(name, **kwargs):
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
         hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
 
+
+        core.set_global_option("SAVE_JK", True)
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
         hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
+        core.set_global_option("SAVE_JK", False)
 
         # Move it back to monomer A
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
@@ -171,6 +173,7 @@ def run_sapt_dft(name, **kwargs):
         core.print_out(print_sapt_hf_summary(hf_data, "SAPT(HF)", delta_hf=dhf_value))
 
         data["Delta HF Correction"] = core.get_variable("SAPT(DFT) Delta HF")
+        sapt_jk.finalize()
 
     if hf_wfn_dimer is None:
         dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
@@ -202,6 +205,7 @@ def run_sapt_dft(name, **kwargs):
     if mon_b_shift:
         core.set_global_option("DFT_GRAC_SHIFT", mon_b_shift)
 
+    core.set_global_option("SAVE_JK", True)
     core.IO.set_default_namespace('monomerB')
     wfn_B = scf_helper(
         sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
@@ -216,7 +220,6 @@ def run_sapt_dft(name, **kwargs):
     # Call SAPT(DFT)
     sapt_jk = wfn_B.jk()
     sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=sapt_jk, data=data, print_header=False)
-    sapt_jk.finalize()
 
     # Copy data back into globals
     for k, v in data.items():
@@ -251,27 +254,38 @@ def sapt_dft_header(sapt_dft_functional="unknown",
     core.print_out("   JK Algorithm            %12s\n" % jk_alg)
 
 
-def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True):
+def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True, cleanup_jk=True):
     """
+    The primary SAPT(DFT) algorithm to compute the interaction energy once the wavefunctions have been built.
 
     Example
     -------
 
+    dimer = psi4.geometry('''
+      Ne
+      --
+      Ar 1 6.5
+      units bohr
+    ''')
+
+    psi4.set_options({"BASIS": "aug-cc-pVDZ"})
+
     # Prepare the fragments
-    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
+    sapt_dimer, monomerA, monomerB = psi4.proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
 
     # Run the first monomer
     set DFT_GRAC_SHIFT 0.203293
-    wfnA, energyA = energy("PBE0", monomer=monomerA, return_wfn=True)
+    wfnA, energyA = psi4.energy("PBE0", monomer=monomerA, return_wfn=True)
 
     # Run the second monomer
     set DFT_GRAC_SHIFT 0.138264
-    wfnB, energyB = energy("PBE0", monomer=monomerB, return_wfn=True)
+    wfnB, energyB = psi4.energy("PBE0", monomer=monomerB, return_wfn=True)
 
     # Build the dimer wavefunction
-    wfnD =
+    wfnD = psi4.core.Wavefunction.build(sapt_dimer)
 
-    driver.procrouting.sapt.sapt_dft(
+    # Compute SAPT(DFT) from the provided wavefunctions
+    data = psi4.procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
     """
 
     # Handle the input options
@@ -309,6 +323,10 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, data=None, print_header=True
         conv=core.get_option("SAPT", "D_CONVERGENCE"),
         Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
     data.update(ind)
+
+    # Blow away JK object before doing MP2 for memory considerations
+    if cleanup_jk:
+        sapt_jk.finalize()
 
     # Dispersion
     primary_basis = wfn_A.basisset()
