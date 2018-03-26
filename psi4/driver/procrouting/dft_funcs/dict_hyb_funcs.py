@@ -33,8 +33,6 @@ import copy
 
 funcs = []
 
-
-
 funcs.append({
     "name": "B5050LYP",
     "x_functionals": {
@@ -56,11 +54,9 @@ funcs.append({
             "alpha": 0.81
         }
     },
-    "description": 
-    '    B5050LYP Hyb-GGA Exchange-Correlation Functional\n',
-    "citation": 
-    '    Y. Shao et. al., J. Chem. Phys., 188, 4807-4818, 2003\n',
-})# yapf: disable
+    "description": '    B5050LYP Hyb-GGA Exchange-Correlation Functional\n',
+    "citation": '    Y. Shao et. al., J. Chem. Phys., 188, 4807-4818, 2003\n',
+})
 
 funcs.append({
     "name": "wPBE0",
@@ -84,7 +80,7 @@ funcs.append({
     "citation":
     '    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n' + \
     '    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n',
-})# yapf: disable
+})
 
 funcs.append({
     "name": "wPBE",
@@ -106,8 +102,8 @@ funcs.append({
     '    PBE SR-XC Functional (HJS Model)\n',
     "citation":
     '    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n' + \
-    '    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n',   
-})# yapf: disable
+    '    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n',
+})
 
 # funcs.append({
 #     "name": "wB97X-D3",
@@ -140,7 +136,7 @@ funcs.append({
 #     '    This functional is currently broken - wB97X needs enabled tweaks.\n',
 #     "citation":
 #     '    Y.-S. Lin, G.-D. Li, S.-P. Mao, J.-D. Chai, J. Chem. Theory Comput., 9, 263-272, 2013\n',
-# })# yapf: disable
+# })
 
 funcs.append({
     "name": "HF",
@@ -149,7 +145,7 @@ funcs.append({
         "alpha": 1.0
     },
     "c_functionals": {},
-})# yapf: disable
+})
 
 funcs.append({
     "name": "HF+D",
@@ -163,7 +159,7 @@ funcs.append({
             "s6": 1.0
         }
     }
-})# yapf: disable
+})
 
 funcs.append({
     "name": "HF-3c",
@@ -181,11 +177,9 @@ funcs.append({
             'a2': 2.9149
         }
     },
-    "description": 
-    '    Hartree Fock based 3C composite method with minimal basis set, gCP and D3(BJ)\n',
-    "citation":
-    '    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n',
-})# yapf: disable
+    "description": '    Hartree Fock based 3C composite method with minimal basis set, gCP and D3(BJ)\n',
+    "citation": '    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n',
+})
 
 funcs.append({
     "name": "PBEh-3c",
@@ -213,11 +207,9 @@ funcs.append({
             'a2': 4.5000
         }
     },
-    "description": 
-    '    PBE Hybrid based 3C composite method with a small basis set, gCP and D3(BJ)\n',
-    "citation": 
-    '    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n',
-})# yapf: disable
+    "description": '    PBE Hybrid based 3C composite method with a small basis set, gCP and D3(BJ)\n',
+    "citation": '    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n',
+})
 
 funcs.append({
     "name": "SOGGA11-X",
@@ -230,11 +222,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_SOGGA11_X": {}
     },
-    "description": 
-    '   SOGGA11-X Hybrid Exchange-Correlation Functional\n',
-    "citation": 
-    '    R. Peverati and D. G. Truhlar, J. Chem. Phys. 135, 191102, 2011\n',
-})# yapf: disable
+    "description": '   SOGGA11-X Hybrid Exchange-Correlation Functional\n',
+    "citation": '    R. Peverati and D. G. Truhlar, J. Chem. Phys. 135, 191102, 2011\n',
+})
 
 funcs.append({
     "name": "MN12-SX",
@@ -247,11 +237,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_MN12_SX": {}
     },
-    "description": 
-    '   MN12-SX Meta-GGA Hybrid Screened Exchange-Correlation Functional\n',
-    "citation": 
-    '    R. Peverati, D. G. Truhlar, Phys. Chem. Chem. Phys 14, 16187, 2012\n',
-})# yapf: disable
+    "description": '   MN12-SX Meta-GGA Hybrid Screened Exchange-Correlation Functional\n',
+    "citation": '    R. Peverati, D. G. Truhlar, Phys. Chem. Chem. Phys 14, 16187, 2012\n',
+})
 
 funcs.append({
     "name": "MN15",
@@ -263,11 +251,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_MN15": {}
     },
-    "description": 
-    '   MN15 Hybrid Meta-GGA Exchange-Correlation Functional\n',
-    "citation": 
-    '    H. S. Yu, X. He, S. L. Li, and D. G. Truhlar, Chem. Sci. 7, 5032-5051, 2016\n',
-})# yapf: disable
+    "description": '   MN15 Hybrid Meta-GGA Exchange-Correlation Functional\n',
+    "citation": '    H. S. Yu, X. He, S. L. Li, and D. G. Truhlar, Chem. Sci. 7, 5032-5051, 2016\n',
+})
 
 funcs.append({
     "name": "N12-SX",
@@ -280,11 +266,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_N12_SX": {}
     },
-    "description": 
-    '   N12-SX Hybrid nonseparable GGA Exchange-Correlation Functional\n',
-    "citation": 
-    '    R. Peverati, D.G. Truhlar, Phys. Chem. Chem. Phys. 14, 16187, 2012\n',
-})# yapf: disable
+    "description": '   N12-SX Hybrid nonseparable GGA Exchange-Correlation Functional\n',
+    "citation": '    R. Peverati, D.G. Truhlar, Phys. Chem. Chem. Phys. 14, 16187, 2012\n',
+})
 
 funcs.append({
     "name": "PBE50",
@@ -299,12 +283,11 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "description": 
-    '   PBE50 Hybrid GGA Exchange-Correlation Functional\n',
-})# yapf: disable
+    "description": '   PBE50 Hybrid GGA Exchange-Correlation Functional\n',
+})
 
 funcs.append({
-    "name": "revPBE0", 
+    "name": "revPBE0",
     "x_functionals": {
         "GGA_X_PBE_R": {
             "alpha": 0.75
@@ -316,9 +299,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "description":
-    '   revPBE0 Hybrid GGA Exchange-Correlation Functional\n',
-})# yapf: disable
+    "description": '   revPBE0 Hybrid GGA Exchange-Correlation Functional\n',
+})
 
 funcs.append({
     "name": "mPW1LYP",
@@ -333,9 +315,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_LYP": {}
     },
-    "description": 
-    '   mPW1LYP Hybrid GGA Exchange-Correlation Functional\n',
-})# yapf: disable
+    "description": '   mPW1LYP Hybrid GGA Exchange-Correlation Functional\n',
+})
 
 funcs.append({
     "name": "mPW1PBE",
@@ -350,9 +331,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "description": 
-    '   mPW1PBE Hybrid GGA Exchange-Correlation Functional\n',
-})# yapf: disable
+    "description": '   mPW1PBE Hybrid GGA Exchange-Correlation Functional\n',
+})
 
 funcs.append({
     "name": "MGGA_MS2h",
@@ -365,11 +345,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_REGTPSS": {}
     },
-    "description":
-    '   MGGA_MS2h Hybrid Meta-GGA XC Functional\n',
-    "citation":
-    '    J. Sun, R. Haunschild, B. Xiao, I.W. Bulik, G.E. Scuseria, J.P. Perdew, J. Chem. Phys. 138, 044113, 2013\n',
-})# yapf: disable
+    "description": '   MGGA_MS2h Hybrid Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, et al., J. Chem. Phys. 138, 044113, 2013\n',
+})
 
 funcs.append({
     "name": "MGGA_MVSh",
@@ -382,11 +360,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_REGTPSS": {}
     },
-    "description": 
-    '   MGGA_MV2h Hybrid Meta-GGA XC Functional\n',
-    "citation": 
-    '    J. Sun, J.P. Perdew, A. Ruzsinsky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
-})# yapf: disable
+    "description": '   MGGA_MV2h Hybrid Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinsky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
+})
 
 
 def get_pw6b95_tweaks():
@@ -421,11 +397,9 @@ funcs.append({
             "tweak": [0.03668, 0.00262]
         }
     },
-    "description": 
-    '    PW6B95 Hybrid Meta-GGA XC Functional\n',
-    "citation": 
-    '  Y. Zhao and D. Truhlar, J. Phys. Chem. A., 109,5656-5667, 2005\n',
-})# yapf: disable
+    "description": '    PW6B95 Hybrid Meta-GGA XC Functional\n',
+    "citation": '  Y. Zhao and D. Truhlar, J. Phys. Chem. A., 109,5656-5667, 2005\n',
+})
 
 funcs.append({
     "name": "dlDF",
@@ -437,11 +411,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_DLDF": {}
     },
-    "description": 
-    '    Dispersionless Hybrid Meta-GGA XC Functional\n',
-    "citation": 
-    '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
-})# yapf: disable
+    "description": '    Dispersionless Hybrid Meta-GGA XC Functional\n',
+    "citation": '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
+})
 
 funcs.append({
     "name": "dlDF+D09",
@@ -460,11 +432,9 @@ funcs.append({
             "s6": 1.0
         }
     },
-    "description": 
-    '    Dispersionless Hybrid Meta-GGA XC Functional\n',
-    "citation": 
-    '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
-})# yapf: disable
+    "description": '    Dispersionless Hybrid Meta-GGA XC Functional\n',
+    "citation": '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
+})
 
 funcs.append({
     "name": "dlDF+D10",
@@ -483,11 +453,9 @@ funcs.append({
             "s6": 1.0
         }
     },
-    "description": 
-    '    Dispersionless Hybrid Meta-GGA XC Functional\n',
-    "citation": 
-    '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
-})# yapf: disable
+    "description": '    Dispersionless Hybrid Meta-GGA XC Functional\n',
+    "citation": '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
+})
 
 functional_list = {}
 for functional in funcs:

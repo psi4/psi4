@@ -33,8 +33,6 @@ import copy
 
 funcs = []
 
-# yapf: disable
-
 funcs.append({
     "name": "BLYP",
     "x_functionals": {
@@ -44,7 +42,8 @@ funcs.append({
         "GGA_C_LYP": {}
     },
     "citation":
-    '    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n',
+    '    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n' + \
+    '    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n',
     "description":
     '    BLYP GGA Exchange-Correlation Functional\n',
 })
@@ -57,10 +56,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_OP_B88": {}
     },
-    "citation": 
-    '    T. Tsuneda et. al., J. Chem. Phys. 110, 10664-10678, 1999\n',
-    "description": 
-    '    BOP GGA Exchange-Correlation Functional\n',
+    "citation": '    T. Tsuneda et. al., J. Chem. Phys. 110, 10664-10678, 1999\n',
+    "description": '    BOP GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -71,10 +68,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "citation": 
-    '    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n',
-    "description": 
-    '    B86BPBE GGA Exchange-Correlation Functional\n',
+    "citation": '    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n',
+    "description": '    B86BPBE GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -85,10 +80,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "citation": 
-    '    J. P. Perdew and W. Yue, Phys. Rev. B 33:8800(R), 1986.\n',
-    "description": 
-    '    PW86PBE GGA Exchange-Correlation Functional\n',
+    "citation": '    J. P. Perdew and W. Yue, Phys. Rev. B 33:8800(R), 1986.\n',
+    "description": '    PW86PBE GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -99,10 +92,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "citation": 
-    '    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n',
-    "description": 
-    '    PBE GGA Exchange-Correlation Functional\n',
+    "citation": '    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n',
+    "description": '    PBE GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -113,10 +104,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "citation": 
-    '    B. Hammer, L. B. Hansen, and J. K. Norskov, Phys. Rev. B, 59, 7413, 1999\n',
-    "description": 
-    '    RPBE GGA Exchange-Correlation Functional\n',
+    "citation": '    B. Hammer, L. B. Hansen, and J. K. Norskov, Phys. Rev. B, 59, 7413, 1999\n',
+    "description": '    RPBE GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -127,10 +116,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_PBE": {}
     },
-    "citation": 
-    '    Y. Zhang and W. Yang, Phys. Rev. Lett. 80, 890, 1998\n',
-    "description": 
-    '    revPBE GGA Exchange-Correlation Functional\n',
+    "citation": '    Y. Zhang and W. Yang, Phys. Rev. Lett. 80, 890, 1998\n',
+    "description": '    revPBE GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -141,10 +128,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_N12": {}
     },
-    "citation": 
-    '    R. Peverati, D.G. Truhlar, J. Chem. Theory Comput. 8, 2310, 2012\n',
-    "description": 
-    '    N12 nonseparable GGA Exchange-Correlation Functional\n',
+    "citation": '    R. Peverati, D.G. Truhlar, J. Chem. Theory Comput. 8, 2310, 2012\n',
+    "description": '    N12 nonseparable GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -155,10 +140,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_Pw91": {}
     },
-    "citation": 
-    '    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992\n',
-    "description": 
-    '    PW91 GGA Exchange-Correlation Functional\n',
+    "citation": '    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992\n',
+    "description": '    PW91 GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -169,14 +152,13 @@ funcs.append({
     "c_functionals": {
         "GGA_C_Pw91": {}
     },
-    "citation": 
-    '    C. Adamo, V. Barone, J. Chem. Phys., 108, 664, 1998\n',
-    "description": 
-    '    mPWPW GGA Exchange-Correlation Functional\n',
+    "citation": '    C. Adamo, V. Barone, J. Chem. Phys., 108, 664, 1998\n',
+    "description": '    mPWPW GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
-    "name": "BP86",
+    "name":
+    "BP86",
     "x_functionals": {
         "GGA_X_B88": {}
     },
@@ -184,7 +166,8 @@ funcs.append({
         "GGA_C_P86": {}
     },
     "citation":
-    '   A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n   J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
+    '   A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' + \
+    '   J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',
 })
@@ -197,10 +180,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_FT97": {}
     },
-    "citation": 
-    '    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997\n',
-    "description": 
-    '   FT97 GGA Exchange-Correlation Functional\n',
+    "citation": '    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997\n',
+    "description": '   FT97 GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -319,10 +300,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_GAM": {}
     },
-    "citation":
-    '    H.S. Yu, W. Zhang, P. Verma, X. He, D.G. Truhlar, Phys. Chem. Chem. Phys. 17, 12146, 2015\n',
-    "description":
-    '   GAM GGA Minessota Exchange-Correlation Functional\n',
+    "citation": '    H.S. Yu, et al., Phys. Chem. Chem. Phys. 17, 12146, 2015\n',
+    "description": '   GAM GGA Minessota Exchange-Correlation Functional\n',
 })
 
 funcs.append({
@@ -340,8 +319,6 @@ funcs.append({
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',
 })
-
-# yapf: enable
 
 functional_list = {}
 for functional in funcs:

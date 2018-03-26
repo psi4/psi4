@@ -49,11 +49,9 @@ funcs.append({
     "c_mp2": {
         "alpha": 0.27
     },
-    "citation":
-    '    S. Grimme, J. Chem. Phys., 124, 034108, 2006\n',
-    "description":
-    '    B2PLYP Double Hybrid Exchange-Correlation Functional\n',
-})# yapf: disable
+    "citation": '    S. Grimme, J. Chem. Phys., 124, 034108, 2006\n',
+    "description": '    B2PLYP Double Hybrid Exchange-Correlation Functional\n',
+})
 
 funcs.append({
     "name": "DSD-BLYP",
@@ -74,11 +72,9 @@ funcs.append({
         "os": 0.46,
         "ss": 0.60
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-BLYP SCS Double Hybrid XC Functional\n',
-})# yapf: disable
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-BLYP SCS Double Hybrid XC Functional (not dispersion corrected)\n',
+})
 
 funcs.append({
     "name": "DSD-BLYP-D2",
@@ -99,19 +95,16 @@ funcs.append({
         "os": 0.46,
         "ss": 0.43
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-BLYP-D2 Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.35
         },
-        "citation":
-        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
-})# yapf: disable
+})
 
 funcs.append({
     "name": "DSD-BLYP-D3BJ",
@@ -166,12 +159,9 @@ funcs.append({
         "os": 0.46,
         "ss": 0.37
     },
-    "citation":
-    '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
-    "description":
-    '    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n' + \
-    '    (full-core parameterization) \n'
-})# yapf: disable
+    "citation": '    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n',
+    "description": '    DSD-BLYP SCS Double Hybrid XC Functional (full-core param.)\n'
+})
 
 funcs.append({
     "name": "PBE0-2",
@@ -192,11 +182,9 @@ funcs.append({
     "c_mp2": {
         "alpha": 0.5
     },
-    "citation":
-    '    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n',
-    "description":
-    '    PBE0-2 Double Hybrid Exchange-Correlation Functional\n',
-})# yapf: disable
+    "citation": '    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n',
+    "description": '    PBE0-2 Double Hybrid Exchange-Correlation Functional\n',
+})
 
 funcs.append({
     "name": "PBE0-DH",
@@ -217,11 +205,9 @@ funcs.append({
     "c_mp2": {
         "alpha": 0.125
     },
-    "citation":
-    '    E. Bremond, C. Adamo, J. Chem. Phys., 135, 024106, 2011\n',
-    "description":
-    '    PBE0-DH Double Hybrid Exchange-Correlation Functional\n',
-})# yapf: disable
+    "citation": '    E. Bremond, C. Adamo, J. Chem. Phys., 135, 024106, 2011\n',
+    "description": '    PBE0-DH Double Hybrid Exchange-Correlation Functional\n',
+})
 
 funcs.append({
     "name": "DSD-PBEP86",
@@ -243,11 +229,9 @@ funcs.append({
         "os": 0.51,
         "ss": 0.36
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-PBEP86 SCS Double Hybrid XC Functional\n',
-})# yapf: disable
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEP86 SCS Double Hybrid XC Functional (not dispersion corrected)\n',
+})
 
 funcs.append({
     "name": "DSD-PBEP86-D3BJ",
@@ -276,14 +260,11 @@ funcs.append({
             "a1": 0.0,
             "s8": 0.0
         },
-        "citation":
-        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-PBEP86-D3BJ Dispersion-corrected SCS Double Hybrid XC Functional\n',
-})# yapf: disable
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEP86-D3BJ Dispersion-corrected SCS Double Hybrid XC Functional\n',
+})
 
 funcs.append({
     "name": "DSD-PBEP86-D2",
@@ -304,19 +285,16 @@ funcs.append({
         "os": 0.51,
         "ss": 0.23
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEP86-D2 Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.29
         },
-        "citation":
-        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
-})# yapf: disable
+})
 
 funcs.append({
     "name": "DSD-PBEPBE",
@@ -338,11 +316,9 @@ funcs.append({
         "os": 0.54,
         "ss": 0.31
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-PBEPBE SCS Double Hybrid XC Functional\n',
-})# yapf: disable
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEPBE SCS Double Hybrid XC Functional (not dispersion corrected)\n',
+})
 
 funcs.append({
     "name": "DSD-PBEPBE-D2",
@@ -363,19 +339,16 @@ funcs.append({
         "os": 0.53,
         "ss": 0.12
     },
-    "citation":
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description":
-    '    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEPBE-D2 Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.42
         },
-        "citation":
-        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
-})# yapf: disable
+})
 
 funcs.append({
     "name": "DSD-PBEPBE-D3BJ",
@@ -398,7 +371,7 @@ funcs.append({
         "ss": 0.13
     },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": '    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "description": '    DSD-PBEPBE-D3BJ Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "d3bj",
         "params": {
@@ -407,7 +380,7 @@ funcs.append({
             "a1": 0.0,
             "s8": 0.0
         },
-        "citation": "    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n"
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
 })
 
@@ -430,19 +403,16 @@ funcs.append({
         "os": 0.49,
         "ss": 0.24
     },
-    "citation": 
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": 
-    '    DSD-BP86 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-BP86-D2 Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.41
         },
-        "citation": 
-        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
-})# yapf: disable
+})
 
 funcs.append({
     "name": "DSD-SVWN-D2",
@@ -463,19 +433,16 @@ funcs.append({
         "os": 0.58,
         "ss": 0.11
     },
-    "citation": 
-    '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": 
-    '    DSD-SVWN5 Dispersion-corrected SCS Double Hybrid XC Functional (-D2 parameters)\n',
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-SVWN5-D2 Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "d2",
         "params": {
             "s6": 0.28
         },
-        "citation": 
-        '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     },
-})# yapf: disable
+})
 
 funcs.append({
     "name": "B2GPPLYP",
@@ -495,11 +462,9 @@ funcs.append({
     "c_mp2": {
         "alpha": 0.36
     },
-    "citation":
-    '    A. Karton, A. Tarnopolsky, J.-F. Lamere, G. C. Schatz, J.M. L. Martin, J.Phys. Chem. A, 112, 12868-12886,2008   \n',
-    "description":
-    '    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n',
-})# yapf: disable
+    "citation": '    A. Karton, et al., J.Phys. Chem. A, 112, 12868-12886, 2008\n',
+    "description": '    B2GPPLYP Double Hybrid Exchange-Correlation Functional\n',
+})
 
 
 def get_pwpb95_tweaks():
@@ -539,11 +504,9 @@ funcs.append({
         "ss": 0.0,
         "os": 0.269
     },
-    "citation":
-    '    L. Goerigk, S.Grimme, J.Chem. Theory Compt. 7, 291-309, 2011 \n',
-    "description":
-    '    PWPB95 SOS Double Hybrid XC Functional\n',
-})# yapf: disable
+    "citation": '    L. Goerigk, S.Grimme, J.Chem. Theory Compt. 7, 291-309, 2011 \n',
+    "description": '    PWPB95 SOS Double Hybrid XC Functional\n',
+})
 
 funcs.append({
     "name": "PTPSS",
@@ -566,11 +529,9 @@ funcs.append({
         "ss": 0.0,
         "os": 0.375
     },
-    "citation":
-    '    L. Goerigk, S.Grimme, J. Chem. Theory Comput., 7, 291-309, 2011 \n',
-    "description":
-    '    PTPSS SOS Double Hybrid XC Functional\n',
-})# yapf: disable
+    "citation": '    L. Goerigk, S.Grimme, J. Chem. Theory Comput., 7, 291-309, 2011 \n',
+    "description": '    PTPSS SOS Double Hybrid XC Functional\n',
+})
 
 functional_list = {}
 for functional in funcs:

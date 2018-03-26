@@ -42,11 +42,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_M06_L": {}
     },
-    "description": 
-    '    M06-L Meta-GGA XC Functional\n',
-    "citation": 
-    '    Y. Zhao and D. G. Truhlar, J. Chem. Phys. 125, 194101, 2006\n',
-})# yapf: disable
+    "description": '    M06-L Meta-GGA XC Functional\n',
+    "citation": '    Y. Zhao and D. G. Truhlar, J. Chem. Phys. 125, 194101, 2006\n',
+})
 
 funcs.append({
     "name": "M11-L",
@@ -57,11 +55,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_M11_L": {}
     },
-    "description": 
-    '    M11-L Meta-GGA XC Functional\n',
-    "citation": 
-    '    R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett. 3, 117-124, 2012\n',
-})# yapf: disable
+    "description": '    M11-L Meta-GGA XC Functional\n',
+    "citation": '    R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett. 3, 117-124, 2012\n',
+})
 
 funcs.append({
     "name": "MN12-L",
@@ -72,11 +68,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_MN12_L": {}
     },
-    "description": 
-    '    MN12-L Meta-GGA XC Functional\n',
-    "citation": 
-    '    R. Peverati and D. G. Truhlar, Phys. Chem. Chem. Phys. 14, 13171-13174, 2012\n',
-})# yapf: disable
+    "description": '    MN12-L Meta-GGA XC Functional\n',
+    "citation": '    R. Peverati and D. G. Truhlar, Phys. Chem. Chem. Phys. 14, 13171-13174, 2012\n',
+})
 
 funcs.append({
     "name": "MN15-L",
@@ -87,11 +81,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_MN15_L": {}
     },
-    "description": 
-    '    MN15-L Meta-GGA XC Functional\n',
-    "citation": 
-    '    H. S. Yu, X. He, and D. G. Truhlar, J. Chem. Theory Comput. 12, 1280-1293, 2016\n',
-})# yapf: disable
+    "description": '    MN15-L Meta-GGA XC Functional\n',
+    "citation": '    H. S. Yu, X. He, and D. G. Truhlar, J. Chem. Theory Comput. 12, 1280-1293, 2016\n',
+})
 
 funcs.append({
     "name": "mGGA_MS0",
@@ -102,11 +94,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_REGTPSS": {}
     },
-    "description": 
-    '    MGGA_MS0 Meta-GGA XC Functional\n',
-    "citation": 
-    '    J. Sun et. al., J. Chem. Phys. 137, 051101, 2012\n',
-})# yapf: disable
+    "description": '    MGGA_MS0 Meta-GGA XC Functional\n',
+    "citation": '    J. Sun et. al., J. Chem. Phys. 137, 051101, 2012\n',
+})
 
 funcs.append({
     "name": "mGGA_MS1",
@@ -117,11 +107,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_REGTPSS": {}
     },
-    "description": 
-    '    MGGA_MS1 Meta-GGA XC Functional\n',
-    "citation": 
-    '    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n',
-})# yapf: disable
+    "description": '    MGGA_MS1 Meta-GGA XC Functional\n',
+    "citation": '    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n',
+})
 
 funcs.append({
     "name": "mGGA_MS2",
@@ -132,11 +120,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_REGTPSS": {}
     },
-    "description": 
-    '    MGGA_MS2 Meta-GGA XC Functional\n',
-    "citation": 
-    '    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n',
-})# yapf: disable
+    "description": '    MGGA_MS2 Meta-GGA XC Functional\n',
+    "citation": '    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n',
+})
 
 funcs.append({
     "name": "mGGA_MVS",
@@ -147,11 +133,9 @@ funcs.append({
     "c_functionals": {
         "GGA_C_REGTPSS": {}
     },
-    "description": 
-    '    MGGA_MVS Meta-GGA XC Functional\n',
-    "citation": 
-    '    J. Sun, J.P. Perdew, A. Ruzsinszky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
-})# yapf: disable
+    "description": '    MGGA_MVS Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinszky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
+})
 
 funcs.append({
     "name": "TPSS",
@@ -161,11 +145,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_TPSS": {}
     },
-    "description":
-    '    TPSS Meta-GGA XC Functional\n',
-    "citation":
-    '   J. Tao, J. P. Perdew, V. N. Staroverov, G. E. Scuseria, Phys. Rev. Lett., 91, 146401, 2003\n',
-})# yapf: disable
+    "description": '    TPSS Meta-GGA XC Functional\n',
+    "citation": '   J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003\n',
+})
 
 funcs.append({
     "name": "revTPSS",
@@ -175,11 +157,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_REVTPSS": {}
     },
-    "description": 
-    '    revised TPSS Meta-GGA XC Functional\n',
-    "citation": 
-    '   J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011\n',
-})# yapf: disable
+    "description": '    revised TPSS Meta-GGA XC Functional\n',
+    "citation": '   J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011\n',
+})
 
 funcs.append({
     "name": "PKZB",
@@ -189,11 +169,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_PKZB": {}
     },
-    "description": 
-    '    PKZB Meta-GGA XC Functional\n',
-    "citation": 
-    '   J.P. Perdew, S. Kurth, A. Zupan, P. Blaha, Phys. Rev. Lett. 82, 2544, 1999\n',
-})# yapf: disable
+    "description": '    PKZB Meta-GGA XC Functional\n',
+    "citation": '   J.P. Perdew, S. Kurth, A. Zupan, P. Blaha, Phys. Rev. Lett. 82, 2544, 1999\n',
+})
 
 funcs.append({
     "name": "VSXC",
@@ -203,11 +181,9 @@ funcs.append({
     "c_functionals": {
         "MGGA_C_VSXC": {}
     },
-    "description": 
-    '    VSXC Meta-GGA XC Functional\n',
-    "citation": 
-    '    T.V. Voorhis, G.E. Scuseria, J. Chem. Phys. 109, 400, 1998\n',
-})# yapf: disable
+    "description": '    VSXC Meta-GGA XC Functional\n',
+    "citation": '    T.V. Voorhis, G.E. Scuseria, J. Chem. Phys. 109, 400, 1998\n',
+})
 
 functional_list = {}
 for functional in funcs:

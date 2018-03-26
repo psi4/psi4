@@ -320,8 +320,7 @@ def dash_server(func, dashlvl):
     """ Returns the dictionary of keys for default empirical parameters"""
     # Validate input arguments
     dashlvl = dashlvl.lower()
-    dashlvleff = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases().keys() \
-                                                   else dashlvl
+    dashlvleff = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases() else dashlvl
     
     if dashlvleff not in dashcoeff.keys():
         raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl,
@@ -345,8 +344,7 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     #   d3mzero: s6 sr6 s8 beta alpha6=14.0 version=5
     #   d3mbj:   s6 a1 s8 a2 alpha6=None version=6
 
-    dashlvleff = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases().keys() \
-                                                   else dashlvl
+    dashlvleff = get_dispersion_aliases()[dashlvl] if dashlvl in get_dispersion_aliases() else dashlvl
 
     if dashlvleff.lower() == 'd2p4':
         returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \

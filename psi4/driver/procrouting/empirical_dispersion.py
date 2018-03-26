@@ -52,7 +52,7 @@ class EmpericalDispersion(object):
             dtype = dtype[1:]
 
         # 2b) Un-alias and capitalise dtype for printing
-        if dtype.lower() in get_dispersion_aliases().keys():
+        if dtype.lower() in get_dispersion_aliases():
             self.dtype = "-" + get_dispersion_aliases()[dtype.lower()].upper()
         else:
             self.dtype = "-" + dtype.upper()
@@ -63,9 +63,9 @@ class EmpericalDispersion(object):
 
         # 3b) Load passed variables from dictionary or from functional type
         tuple_params = kwargs.pop('tuple_params', None)
-        if "dashparams" in kwargs.keys():
+        if "dashparams" in kwargs:
             self.dash_params.update(kwargs.pop("dashparams"))
-        elif dtype in dftd3.dashcoeff.keys():
+        elif dtype in dftd3.dashcoeff:
             self.dash_params.update(dftd3.dash_server(alias, dtype))
         else:
             self.dash_params = {'s6': 1.0}
@@ -119,7 +119,7 @@ class EmpericalDispersion(object):
 
         # 5) Override parameters from user input
         # 5a) pop citation if present
-        if "citation" in kwargs.keys():
+        if "citation" in kwargs:
             custom_citation = kwargs.pop("citation")
         else:
             custom_citation = False
