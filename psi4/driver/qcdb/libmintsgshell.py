@@ -182,14 +182,10 @@ class ShellInfo(object):
         self.PYnfunction = INT_NFUNC(self.puream, self.l)
         # These are the radial factors for ECPs.  They are not defined for regular shells.
         self.rpowers = rpowers
-
         # Compute the normalization constants
         if pt == 'Unnormalized':
             self.normalize_shell()
-            if isinstance(self.rpowers, list) and sum([s if s != None else 0 for s in self.rpowers]) != 0:
-                pass
-            else:
-                self.erd_normalize_shell()
+            self.erd_normalize_shell()
         else:
             self.PYerd_coef = [0.0] * self.nprimitive() 
 

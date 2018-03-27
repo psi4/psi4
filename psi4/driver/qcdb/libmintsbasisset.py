@@ -146,6 +146,12 @@ class BasisSet(object):
             isinstance(args[1], Molecule) and \
             isinstance(args[2], OrderedDict):
             self.constructor_role_mol_shellmap(*args)
+        elif len(args) == 4 and \
+            isinstance(args[0], basestring) and \
+            isinstance(args[1], Molecule) and \
+            isinstance(args[2], OrderedDict) and \
+            args[3] == True:
+            self.constructor_role_mol_shellmap(*args)
         else:
             raise ValidationError('BasisSet::constructor: Inappropriate configuration of constructor arguments')
 
@@ -220,7 +226,7 @@ class BasisSet(object):
         self.shells.append(ShellInfo(0, self.uoriginal_coefficients,
             self.uexponents, 'Cartesian', 0, self.xyz, 0))
 
-    def constructor_role_mol_shellmap(self, role, mol, shell_map):
+    def constructor_role_mol_shellmap(self, role, mol, shell_map, is_ecp = False):
         """The most commonly used constructor. Extracts basis set name for *role*
         from each atom of *mol*, looks up basis and role entries in the
         *shell_map* dictionary, retrieves the ShellInfo objects and returns
@@ -346,7 +352,8 @@ class BasisSet(object):
                     self.uoriginal_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    n, xyz_ptr, bf_count, pt='Unnormalized', rpowers=rpowers[tst:tsp])
+                    n, xyz_ptr, bf_count, pt='Normalised' if is_ecp else 'Unnormalized',
+                    rpowers=rpowers[tst:tsp])
                 for thisbf in range(thisshell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
                     self.function_center[bf_count] = n
@@ -873,7 +880,7 @@ class BasisSet(object):
         for atom in ecp_atom_basis_ncore:
             ncore += ecp_atom_basis_ncore[atom]
         if ncore and key == 'BASIS':
-            ecpbasisset = BasisSet(key, mol, ecp_atom_basis_shell)
+            ecpbasisset = BasisSet(key, mol, ecp_atom_basis_shell, True)
             ecpbasisset.ecp_coreinfo = ecp_atom_basis_ncore
 
         # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
