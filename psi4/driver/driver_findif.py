@@ -83,7 +83,7 @@ def geom_generator(mol, freq_irrep_only, mode):
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
     t_project = not core.get_global_option("EXTERN") and not core.get_global_option("PERTURB_H")
     # core.get_local_option returns an int, but CdSalcList expect a bool... Re-cast as bool.
-    r_project = t_project and bool(core.get_local_option("FINDIF", "FD_PROJECT"))
+    r_project = t_project and bool(core.get_option("FINDIF", "FD_PROJECT"))
     salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
 
     # Convention: A capital N at the start of variable means "number of"
@@ -198,9 +198,9 @@ def geom_generator(mol, freq_irrep_only, mode):
     return disp_geoms
 
 
-# The gradient only depends on totally symmetric irreps, so the user shouldn't specify irreps further.
 def fd_geoms_1_0(molecule):
-    """Generate geometries for gradient by finite difference of energies."""
+    """Generate geometries for gradient by finite difference of energies.
+       Only symmetric displacements are necessary, so user specification of symmetry is disabled."""
     return geom_generator(molecule, -1, "1_0")
 
 
