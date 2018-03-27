@@ -352,7 +352,7 @@ class BasisSet(object):
                     self.uoriginal_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    n, xyz_ptr, bf_count, pt='Normalised' if is_ecp else 'Unnormalized',
+                    n, xyz_ptr, bf_count, pt='Normalized' if is_ecp else 'Unnormalized',
                     rpowers=rpowers[tst:tsp])
                 for thisbf in range(thisshell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
