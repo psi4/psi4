@@ -150,7 +150,7 @@ class BasisSet(object):
             isinstance(args[0], basestring) and \
             isinstance(args[1], Molecule) and \
             isinstance(args[2], OrderedDict) and \
-            args[3] == True:
+            isinstance(args[3], bool):
             self.constructor_role_mol_shellmap(*args)
         else:
             raise ValidationError('BasisSet::constructor: Inappropriate configuration of constructor arguments')
