@@ -199,7 +199,8 @@ class Gaussian94BasisSetParser(object):
                                         1: 1,   'p': 1,   'P': 1,
                                         2: 2,   'd': 2,   'D': 2,
                                         3: 3,   'f': 3,   'F': 3,
-                                        4: 4,   'g': 4,   'G': 4}
+                                        4: 4,   'g': 4,   'G': 4,
+                                        5: 5,   'h': 5,   'H': 5}
                         # This is an ECP spec like "KR-ECP    3     28"
                         matchobj = atom_ecp.match(line)
                         sl = line.split()
