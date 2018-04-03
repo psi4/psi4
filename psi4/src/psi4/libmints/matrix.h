@@ -41,6 +41,7 @@
 namespace psi {
 
 struct dpdfile2;
+struct dpdbuf4;
 
 class PSIO;
 class Vector;
@@ -161,6 +162,14 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param inFile dpdfile2 object to replicate (must already be initialized).
      */
     Matrix(dpdfile2* inFile);
+
+    /**
+     * Contructs a Matrix from a dpdbuf4
+     *
+     * @param inBuf dpdbuf4 object to replicate (must already be initialized).
+     */
+    Matrix(dpdbuf4 *inBuf);
+
 
     /**
      * Constructor using Dimension objects to define order and dimensionality.
@@ -1051,6 +1060,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
 
     /// Writes this to the dpdfile2 given
     void write_to_dpdfile2(dpdfile2* outFile);
+
+    /// Writes this to the dpdbuf4 given
+    void write_to_dpdbuf4(dpdbuf4 *outBuf);
 
     /// @{
     /// Checks matrix equality.

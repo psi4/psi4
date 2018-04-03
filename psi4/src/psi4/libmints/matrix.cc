@@ -238,6 +238,29 @@ Matrix::Matrix(dpdfile2 *inFile)
     global_dpd_->file2_mat_close(inFile);
 }
 
+Matrix::Matrix(dpdbuf4 *inBuf)
+    : name_("None"), rowspi_(inBuf->params->nirreps), colspi_(inBuf->params->nirreps)
+{
+    matrix_ = NULL;
+    symmetry_ = 0; //inBuf->my_irrep;
+    nirrep_ = inBuf->params->nirreps;
+    for (int i=0; i<nirrep_; ++i) {
+        rowspi_[i] = inBuf->params->rowtot[i];
+        colspi_[i] = inBuf->params->coltot[i];
+    }
+    alloc();
+    for (int i=0; i<nirrep_; ++i) {
+        global_dpd_->buf4_mat_irrep_init(inBuf, i);
+        global_dpd_->buf4_mat_irrep_rd(inBuf, i);
+        for(int row = 0; row < rowspi_[i]; ++row){
+            for(int col = 0; col < colspi_[i]; ++col){
+                matrix_[i][row][col] = inBuf->matrix[i][row][col];
+            }
+        }
+        global_dpd_->buf4_mat_irrep_close(inBuf, i);
+    }
+}
+
 Matrix::~Matrix() { release(); }
 
 /// allocate a block matrix -- analogous to libciomr's block_matrix
@@ -2831,6 +2854,41 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
 
     global_dpd_->file2_mat_wrt(outFile);
     global_dpd_->file2_mat_close(outFile);
+}
+
+void Matrix::write_to_dpdbuf4(dpdbuf4 *outBuf)
+{
+    if(outBuf->params->nirreps != nirrep_) {
+        char *str = new char[100];
+        sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdbuf4 has %d.",
+                nirrep_, outBuf->params->nirreps);
+        throw SanityCheckError(str, __FILE__, __LINE__);
+    }
+
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(outBuf, h);
+
+        if(outBuf->params->rowtot[h] != rowspi_[h]){
+            char *str = new char[100];
+            sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdbuf4 has %d.",
+                    h, rowspi_[h], outBuf->params->rowtot[h]);
+            throw SanityCheckError(str, __FILE__, __LINE__);
+        }
+        if(outBuf->params->coltot[h] != colspi_[h]){
+            char *str = new char[100];
+            sprintf(str, "Column count mismatch for irrep %d.  Matrix class has %d columns, but dpdbuf4 has %d.",
+                    h, colspi_[h], outBuf->params->coltot[h]);
+            throw SanityCheckError(str, __FILE__, __LINE__);
+        }
+
+        for(int row = 0; row < rowspi_[h]; ++row){
+            for(int col = 0; col < colspi_[h]; ++col){
+                outBuf->matrix[h][row][col] = matrix_[h][row][col];
+            }
+        }
+        global_dpd_->buf4_mat_irrep_wrt(outBuf, h);
+        global_dpd_->buf4_mat_irrep_close(outBuf, h);
+    }
 }
 
 void Matrix::save(const std::string &filename, bool append, bool saveLowerTriangle, bool saveSubBlocks) {
