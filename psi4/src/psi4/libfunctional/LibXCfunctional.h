@@ -32,6 +32,8 @@
 #include "psi4/libfunctional/functional.h"
 #include "psi4/libmints/typedefs.h"
 
+#include <map>
+
 struct xc_func_type;
 
 namespace psi {
@@ -81,6 +83,8 @@ public:
     void set_tweak(std::vector<double> values);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
+    // Make queries to libxc
+    std::map<std::string, double> query_libxc(const std::string& functional);
 
     // Only used to pass information up the chain
     double global_exchange() { return global_exch_; }

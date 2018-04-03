@@ -25,38 +25,53 @@
 #
 # @END LICENSE
 #
-
 """
 Module to provide lightweight definitions of emperical dispersion terms.
 """
 from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 from psi4.driver.qcdb import interface_gcp as gcp
+from psi4.driver.qcdb.dashparam import get_dispersion_aliases
+from psi4.driver.qcdb.dashparam import get_default_dashparams
 from psi4.driver import p4util
-
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
-        self.alias = alias.upper() # Functional Alias
+        # 1) Functional name processing:
+        # 1a) Cleave out base functional from alias:
+        for dash in ["-" + name.upper() for name in get_dispersion_aliases()]:
+            if dash == alias.upper()[-len(dash):]:
+                alias = alias[:-len(dash)]
 
-        # Figure out dispersion type
-        if dtype[0] != "-":
-            dtype = "-" + dtype
+        # 1b) Alias must be uppercase
+        self.alias = alias.upper()
 
+        # 2) Figure out dispersion type:
+        # 2a) Strip "-" from dtype
+        if dtype[0] == "-":
+            dtype = dtype[1:]
 
-        tuple_params = kwargs.pop('tuple_params', None)
-
-        if dtype.lower() in dftd3.dash_alias.keys():
-            self.dtype = dftd3.dash_alias[dtype.lower()].upper()
+        # 2b) Un-alias and capitalise dtype for printing
+        if dtype.lower() in get_dispersion_aliases():
+            self.dtype = "-" + get_dispersion_aliases()[dtype.lower()].upper()
         else:
-            self.dtype = dtype.upper() # Dispersion type
+            self.dtype = "-" + dtype.upper()
 
-        if dtype.replace('-', '') in dftd3.dashcoeff.keys():
-            self.dash_params = dftd3.dash_server(alias, dtype.replace('-', ''))
+        # 3) Get dispersion parameters:
+        # 3a) Set defaults
+        self.dash_params = get_default_dashparams(dtype)
+
+        # 3b) Load passed variables from dictionary or from functional type
+        tuple_params = kwargs.pop('tuple_params', None)
+        if "dashparams" in kwargs:
+            self.dash_params.update(kwargs.pop("dashparams"))
+        elif dtype in dftd3.dashcoeff:
+            self.dash_params.update(dftd3.dash_server(alias, dtype))
         else:
             self.dash_params = {'s6': 1.0}
 
-        # Build coefficients
+        # 4) Dispersion class build process:
+        # 4a) Build coefficients for dftd3
         if self.dtype in ["-D2GR", "-D3ZERO", "-D3BJ", "-D3MZERO", "-D3MBJ"]:
             self.dtype = self.dtype.replace('-D2GR', '-D2')
             self.disp_type = 'gr'
@@ -87,7 +102,8 @@ class EmpericalDispersion(object):
                 if len(tuple_params) > 4:
                     raise Exception("Too many parameter in input tuple param.")
 
-        else: # Only other case at the moment
+        # 4b) Build coefficients for psi4
+        else:
             self.dtype = self.dtype.replace('-D2P4', '-D2')
             self.disp_type = 'p4'
             if tuple_params is not None:
@@ -95,15 +111,20 @@ class EmpericalDispersion(object):
                 for k, v in zip(['s6', 'p1', 'p2', 'p3'], tuple_params):
                     self.dash_params[k] = v
 
-
-        # Build the C++ dispersion class
+        # 4c) Build the C++ dispersion class for psi4
         if self.disp_type == 'p4':
             self.disp = core.Dispersion.build(self.dtype, **self.dash_params)
         else:
             self.disp = None
 
+        # 5) Override parameters from user input
+        # 5a) pop citation if present
+        if "citation" in kwargs:
+            custom_citation = kwargs.pop("citation")
+        else:
+            custom_citation = False
 
-        # Set user input
+        # 5b) process other kwargs
         for k, v in kwargs.keys():
             if k in self.dash_params.keys():
                 self.dash_params[k] = kwargs.pop(k)
@@ -112,7 +133,8 @@ class EmpericalDispersion(object):
             raise Exception("The following DFTD3 parameters were not understood for %s dispersion type: %s" %
                             (dtype, ', '.join(kwargs.keys())))
 
-
+        # 6) Process citations
+        # 6a) Set default citations for method
         if self.dtype == "-D1":
             self.description = "    Grimme's -D1 Dispersion Correction"
             self.citation = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473"
@@ -155,18 +177,22 @@ class EmpericalDispersion(object):
 
         elif self.dtype == "-D3MZERO":
             self.description = "    Grimme's -D3 (zero-damping, short-range refitted) Dispersion Correction"
-            self.citation  = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n"
+            self.citation = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n"
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2010:154104"
 
         elif self.dtype == "-D3MBJ":
             self.description = "    Grimme's -D3 (BJ-damping, short-range refitted) Dispersion Correction"
-            self.citation  = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456\n"
+            self.citation = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456\n"
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2011:1456"
 
         else:
             raise Exception("Emperical Dispersion type %s not understood." % self.dtype)
+
+        # 6b) add custom citations if available
+        if custom_citation:
+            self.citation += "\n    Parametrisation from: \n" + custom_citation
 
     def print_out(self, level=1):
 
@@ -175,45 +201,61 @@ class EmpericalDispersion(object):
 
         core.print_out(self.citation + "\n\n")
 
-        core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"]);
+        core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"])
         if "s8" in self.dash_params.keys():
-            core.print_out("        S8 = %14.6E\n" % self.dash_params["s8"]);
+            core.print_out("        S8 = %14.6E\n" % self.dash_params["s8"])
 
         for k, v in self.dash_params.items():
             if k in ["s6", "s8"]: continue
 
-            core.print_out("    %6s = %14.6E\n" % (k.upper(), v));
+            core.print_out("    %6s = %14.6E\n" % (k.upper(), v))
 
         # Psi auto sets this with no change of deviation
         if (self.disp_type == 'p4') and (self.dtype == "-D2"):
             core.print_out("    %6s = %14.6E\n" % ("A6", 20.0))
 
-        core.print_out("\n");
+        core.print_out("\n")
 
     def compute_energy(self, molecule):
         if self.disp_type == 'gr':
             if self.alias in ['HF3C', 'PBEH3C']:
-                dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
-                                             dashparam=self.dash_params, verbose=False, dertype=0)
+                dashd_part = dftd3.run_dftd3(
+                    molecule,
+                    dashlvl=self.dtype.lower().replace('-', ''),
+                    dashparam=self.dash_params,
+                    verbose=False,
+                    dertype=0)
                 gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=0)
                 return dashd_part + gcp_part
             else:
-                return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
-                                       dashparam=self.dash_params, verbose=False, dertype=0)
+                return dftd3.run_dftd3(
+                    molecule,
+                    dashlvl=self.dtype.lower().replace('-', ''),
+                    dashparam=self.dash_params,
+                    verbose=False,
+                    dertype=0)
         else:
             return self.disp.compute_energy(molecule)
 
     def compute_gradient(self, molecule):
         if self.disp_type == 'gr':
             if self.alias in ['HF3C', 'PBEH3C']:
-                dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
-                                             dashparam=self.dash_params, verbose=False, dertype=1)
+                dashd_part = dftd3.run_dftd3(
+                    molecule,
+                    dashlvl=self.dtype.lower().replace('-', ''),
+                    dashparam=self.dash_params,
+                    verbose=False,
+                    dertype=1)
                 gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=1)
                 dashd_part.add(gcp_part)
                 return dashd_part
             else:
-                return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
-                                       dashparam=self.dash_params, verbose=False, dertype=1)
+                return dftd3.run_dftd3(
+                    molecule,
+                    dashlvl=self.dtype.lower().replace('-', ''),
+                    dashparam=self.dash_params,
+                    verbose=False,
+                    dertype=1)
         else:
             return self.disp.compute_gradient(molecule)
 
@@ -247,5 +289,3 @@ class EmpericalDispersion(object):
         # H.print_out()
         optstash.restore()
         return H
-
-

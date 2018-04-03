@@ -35,78 +35,19 @@ import math
 from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 from psi4.driver.p4util.exceptions import *
-from . import libxc_xc_funcs
-from . import gga_superfuncs
-from . import hyb_superfuncs
-from . import mgga_superfuncs
-from . import double_hyb_superfuncs
+from . import dict_builder
 
 ## ==> SuperFunctionals <== ##
 
 superfunctionals = {}
-superfunctionals.update(libxc_xc_funcs.libxc_xc_functional_list)
-superfunctionals.update(gga_superfuncs.gga_superfunc_list)
-superfunctionals.update(hyb_superfuncs.hyb_superfunc_list)
-superfunctionals.update(mgga_superfuncs.mgga_superfunc_list)
-superfunctionals.update(double_hyb_superfuncs.double_hyb_superfunc_list)
-
-## ==> SuperFunctional List <== ##
 
 superfunctional_list = []
 superfunctional_noxc_names = ["hf"]
-for key in superfunctionals.keys():
-    sup = superfunctionals[key](key, 1, 1, True)[0]
+for key in dict_builder.functionals.keys():
+    sup = dict_builder.build_superfunctional_from_dictionary(key, 1, 1, True)[0]
     superfunctional_list.append(sup)
     if not sup.needs_xc():
         superfunctional_noxc_names.append(sup.name().lower())
-
-## ==> Dispersion SuperFunctional List <== ##
-
-p4_funcs = set([x for x in list(superfunctionals)])
-p4_funcs -= set(['b97-d'])
-for dashlvl, dashparam_dict in dftd3.dashcoeff.items():
-    func_list = (set(dashparam_dict) & p4_funcs)
-    for func in func_list:
-        sup = superfunctionals[func](func, 1, 1, True)[0]
-        sup.set_name(sup.name() + '-' + dashlvl.upper())
-        superfunctional_list.append(sup)
-
-        if dashlvl == 'd2p4':
-            # -D2 overide
-            sup = superfunctionals[func](func, 1, 1, True)[0]
-            sup.set_name(sup.name() + '-D2')
-            superfunctional_list.append(sup)
-
-            # -D overide
-            sup = superfunctionals[func](func, 1, 1, True)[0]
-            sup.set_name(sup.name() + '-D')
-            superfunctional_list.append(sup)
-
-        if dashlvl == 'd3zero':
-            sup = superfunctionals[func](func, 1, 1, True)[0]
-            sup.set_name(sup.name() + '-D3')
-            superfunctional_list.append(sup)
-
-        if dashlvl == 'd3mzero':
-            sup = superfunctionals[func](func, 1, 1, True)[0]
-            sup.set_name(sup.name() + '-D3M')
-            superfunctional_list.append(sup)
-
-# # B97D is an odd one
-for dashlvl in dftd3.full_dash_keys:
-    if dashlvl == 'd2p4': continue
-
-    sup = superfunctionals['b97-d']('b97-d', 1, 1, True)[0]
-    sup.set_name('B97-' + dashlvl.upper())
-    superfunctional_list.append(sup)
-
-# wPBE, grr need a new scheme
-for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
-    sup = superfunctionals['wpbe']('wpbe', 1, 1, True)[0]
-    sup.set_name(sup.name() + '-' + dashlvl.upper())
-    superfunctional_list.append(sup)
-
-## ==> SuperFunctional Builder <== ##
 
 
 def build_superfunctional(name, restricted):
@@ -134,51 +75,16 @@ def build_superfunctional(name, restricted):
         sup[0].set_deriv(deriv)
         sup[0].allocate()
 
-    # Normal string based data
-    elif name.lower() in superfunctionals.keys():
-        sup = superfunctionals[name.lower()](name, npoints, deriv, restricted)
-
-    elif name.upper() in superfunctionals.keys():
-        sup = superfunctionals[name.upper()](name, npoints, deriv, restricted)
-
-    # Check if we are dispersion
-    elif any(name.lower().endswith(al) for al in dftd3.full_dash_keys):
-
-        # Odd hack for b97-d
-        if 'b97-d' in name:
-            name = name.replace('b97', 'b97-d')
-
-        dashparam = [x for x in dftd3.full_dash_keys if name.endswith(x)]
-        if len(dashparam) > 1:
-            raise Exception("Dashparam %s is ambiguous.")
-        else:
-            dashparam = dashparam[0]
-
-        base_name = name.replace('-' + dashparam, '')
-
-        if dashparam in ['d2', 'd']:
-            dashparam = 'd2p4'
-
-        if dashparam == 'd3':
-            dashparam = 'd3zero'
-
-        if dashparam == 'd3m':
-            dashparam = 'd3mzero'
-
-        if base_name not in superfunctionals.keys():
-            raise ValidationError("SCF: Functional (%s) with base (%s) not found!" % (name, base_name))
-
-        func = superfunctionals[base_name](base_name, npoints, deriv, restricted)[0]
-
-        base_name = base_name.replace('wpbe', 'lcwpbe')
-        sup = (func, (base_name, dashparam))
-
+    # Check for dict-based functionals
+    elif name.upper() in dict_builder.functionals.keys():
+        sup = dict_builder.build_superfunctional_from_dictionary(name.upper(), npoints, deriv, restricted)
     else:
         raise ValidationError("SCF: Functional (%s) not found!" % name)
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
 
+    
     # Lock and unlock the functional
     sup[0].set_lock(False)
 
@@ -205,7 +111,7 @@ def build_superfunctional(name, restricted):
     # Check SCF_TYPE
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
-            "SCF: SCF_TYPE (%s) not supported for range-seperated functionals." % core.get_option("SCF", "SCF_TYPE"))
+            "SCF: SCF_TYPE (%s) not supported for range-separated functionals." % core.get_option("SCF", "SCF_TYPE"))
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
