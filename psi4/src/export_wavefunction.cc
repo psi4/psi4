@@ -90,6 +90,9 @@ void export_wavefunction(py::module& m) {
         .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
         .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
         .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
+        .def("S", &Wavefunction::S, "Returns the overlap matrix.")
+        .def("set_Ca", &Wavefunction::set_Ca, "Sets the Alpha Orbitals")
+        .def("set_Cb", &Wavefunction::set_Cb, "Sets the Beta Orbitals.")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,

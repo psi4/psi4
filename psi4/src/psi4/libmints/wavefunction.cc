@@ -643,6 +643,25 @@ void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
     }
 }
 
+void Wavefunction::set_Ca(SharedMatrix& Ca_new) {
+    if (Ca_)
+        Ca_ = Ca_new;
+    else if (reference_wavefunction_)
+        reference_wavefunction_->Ca_ = Ca_new;
+    else
+        throw PSIEXCEPTION("Wavefunction::set_Ca: Unable to set MO coefficients.");
+}
+
+void Wavefunction::set_Cb(SharedMatrix& Cb_new) {
+    if (Cb_)
+        Cb_ = Cb_new;
+    else if (reference_wavefunction_)
+        reference_wavefunction_->Cb_ = Cb_new;
+    else
+        throw PSIEXCEPTION("Wavefunction::set_Cb: Unable to set MO coefficients.");
+}
+
+
 SharedMatrix Wavefunction::Ca() const {
     if (!Ca_) {
         if (!reference_wavefunction_)

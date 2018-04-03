@@ -406,6 +406,11 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the core Hamiltonian matrix
     SharedMatrix H() const { return H_; }
 
+    /// Sets the alpha electrons MO coefficients
+    void set_Ca(SharedMatrix& Ca_new);
+    /// Sets the beta electrons MO coefficients
+    void set_Cb(SharedMatrix& Cb_new);
+
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
