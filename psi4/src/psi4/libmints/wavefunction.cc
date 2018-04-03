@@ -435,7 +435,7 @@ void Wavefunction::common_init() {
     // Make sure that the multiplicity is reasonable
     int multiplicity = molecule_->multiplicity();
     if (multiplicity - 1 > nelectron) {
-        char *str = new char[100];
+        char *str = new char[200];
         sprintf(str,
                 "There are not enough electrons for multiplicity = %d.\n"
                 "Please check your input",
@@ -444,7 +444,7 @@ void Wavefunction::common_init() {
         delete[] str;
     }
     if (multiplicity % 2 == nelectron % 2) {
-        char *str = new char[100];
+        char *str = new char[200];
         sprintf(str,
                 "A multiplicity of %d with %d electrons is impossible.\n"
                 "Please check your input",
