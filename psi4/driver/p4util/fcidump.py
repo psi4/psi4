@@ -133,9 +133,9 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
             moH.load(core.IO.shared_object(), constants.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
-            MO_FZC = moH.get_block(mo_slice, mo_slice).to_array()
+            MO_FZC = moH.get_block(mo_slice, mo_slice)
             offset = 0
-            for h, block in enumerate(MO_FZC):
+            for h, block in enumerate(MO_FZC.nph):
                 il = np.tril_indices(block.shape[0])
                 for index, x in np.ndenumerate(block[il]):
                     row = mo_idx(il[0][index] + offset)
@@ -153,9 +153,9 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
             moH_A.load(core.IO.shared_object(), constants.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
-            MO_FZC_A = moH_A.get_block(mo_slice, mo_slice).to_array()
+            MO_FZC_A = moH_A.get_block(mo_slice, mo_slice)
             offset = 0
-            for h, block in enumerate(MO_FZC_A):
+            for h, block in enumerate(MO_FZC_A.nph):
                 il = np.tril_indices(block.shape[0])
                 for index, x in np.ndenumerate(block[il]):
                     row = alpha_mo_idx(il[0][index] + offset)
@@ -166,9 +166,9 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
             moH_B.load(core.IO.shared_object(), constants.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
-            MO_FZC_B = moH_B.get_block(mo_slice, mo_slice).to_array()
+            MO_FZC_B = moH_B.get_block(mo_slice, mo_slice)
             offset = 0
-            for h, block in enumerate(MO_FZC_B):
+            for h, block in enumerate(MO_FZC_B.nph):
                 il = np.tril_indices(block.shape[0])
                 for index, x in np.ndenumerate(block[il]):
                     row = beta_mo_idx(il[0][index] + offset)
@@ -215,6 +215,10 @@ def compare_fcidumps(expected, computed, label):
     """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
+
+    :param expected: reference FCIDUMP file
+    :param computed: computed FCIDUMP file
+    :param label: string labelling the test
     """
     # Grab expected header and integrals
     with open(expected) as ref_dump:
