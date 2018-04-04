@@ -49,6 +49,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/matrix.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -57,14 +58,7 @@
 
 namespace psi { namespace cclambda {
 
-void init_io(void);
-void title(void);
-void get_moinfo(std::shared_ptr<Wavefunction> wfn);
-void get_params(Options& options);
-void cleanup(void);
-void init_amps(struct L_Params L_params);
 double pseudoenergy(struct L_Params L_params);
-void exit_io(void);
 void G_build(int L_irr);
 void L1_build(struct L_Params L_params);
 void L2_build(struct L_Params L_params);
@@ -72,14 +66,6 @@ void sort_amps(int L_irr);
 void Lsave(int L_irr);
 void Lnorm(struct L_Params L_params);
 void Lmag(void);
-void update(void);
-int converged(int L_irr);
-void diis(int iter, int L_irr);
-int **cacheprep_rhf(int level, int *cachefiles);
-int **cacheprep_uhf(int level, int *cachefiles);
-void cachedone_rhf(int **cachelist);
-void cachedone_uhf(int **cachelist);
-void denom(struct L_Params);
 void overlap(int L_irr);
 void overlap_LAMPS(struct L_Params L_params);
 void Lsave_index(struct L_Params L_params);
@@ -91,7 +77,6 @@ void c_clean(dpdfile2 *LIA, dpdfile2 *Lia, dpdbuf4 *LIJAB, dpdbuf4 *Lijab, dpdbu
 void L_clean(struct L_Params pL_params);
 void zeta_norm(struct L_Params pL_params);
 void spinad_amps(void);
-void status(const char *, std::string);
 void hbar_extra(void);
 void ortho_Rs(struct L_Params *pL_params, int current_L);
 
@@ -104,9 +89,6 @@ void cc3_t3z(void);
 void cc3_t3x(void);
 void cc3_l3l2(void);
 void cc3_l3l1(void);
-
-void local_init(void);
-void local_done(void);
 
 }} //namespace psi::cclambda
 
@@ -140,7 +122,8 @@ double CCLambdaWavefunction::compute_energy()
     energy_ = 0.0;
     int done=0, i, root_L_irr;
     int **cachelist, *cachefiles;
-    dpdfile2 L1;
+    dpdfile2 l1;
+    dpdbuf4 l2;
 
     init_io();
     title();
@@ -298,6 +281,17 @@ double CCLambdaWavefunction::compute_energy()
           }
           Lsave_index(pL_params[i]); /* save Ls with indices in LAMPS */
           Lamp_write(pL_params[i]); /* write out largest  Ls */
+          //TODO maybe also for all params.nstates
+          global_dpd_->file2_init(&l1, PSIF_CC_LAMBDA, pL_params[0].irrep, 0, 1, "LIA");
+          SharedMatrix new_l1 = SharedMatrix(new Matrix(&l1));
+          set_L1(new_l1);
+          global_dpd_->file2_close(&l1);
+
+          global_dpd_->buf4_init(&l2, PSIF_CC_LAMBDA, pL_params[0].irrep, 0, 5, 0, 5, 0, "LIjAb");
+          SharedMatrix new_l2 = SharedMatrix(new Matrix(&l2));
+          set_L2(new_l2);
+          global_dpd_->buf4_close(&l2);
+
       /* sort_amps(); to be done by later functions */
           outfile->Printf( "\n\tIterations converged.\n");
 
@@ -356,7 +350,7 @@ double CCLambdaWavefunction::compute_energy()
 }
 
 // must be fixed with options later for excited states
-void init_io(void)
+void CCLambdaWavefunction::init_io(void)
 {
   int i, num_unparsed;
   char *lbl, *argv_unparsed[100];
@@ -381,7 +375,7 @@ void init_io(void)
   for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
-void title(void)
+void CCLambdaWavefunction::title(void)
 {
   outfile->Printf( "\n");
   outfile->Printf( "\t\t\t**************************\n");
@@ -390,7 +384,7 @@ void title(void)
   outfile->Printf( "\n");
 }
 
-void exit_io(void)
+void CCLambdaWavefunction::exit_io(void)
 {
   int i;
 
@@ -597,6 +591,22 @@ void zeta_norm(struct L_Params L_params) {
   }
   outfile->Printf("Norm of Zeta: %20.15lf\n", sqrt(tval) );
   return;
+}
+
+SharedMatrix CCLambdaWavefunction::L1() const {
+    return L1_;
+}
+
+SharedMatrix CCLambdaWavefunction::L2() const {
+    return L2_;
+}
+
+void CCLambdaWavefunction::set_L1(SharedMatrix& L1_new) {
+    L1_ = L1_new;
+}
+
+void CCLambdaWavefunction::set_L2(SharedMatrix& L2_new) {
+    L2_ = L2_new;
 }
 
 }} // namespace psi::cclambda

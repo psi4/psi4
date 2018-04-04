@@ -32,6 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
+#include "psi4/cclambda/cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -39,7 +40,7 @@
 
 namespace psi { namespace cclambda {
 
-void sort_amps(int L_irr)
+void CCLambdaWavefunction::sort_amps(int L_irr)
 {
   dpdbuf4 L2;
 

@@ -200,6 +200,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix T1_;
     /// T2 amplitudes
     SharedMatrix T2_;
+    /// L1 amplitudes
+    SharedMatrix L1_;
+    /// L2 amplitudes
+    SharedMatrix L2_;
 
     /// Alpha orbital eneriges
     SharedVector epsilon_a_;
@@ -419,6 +423,11 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     virtual void set_T1(SharedMatrix& T1_new) { throw PSIEXCEPTION("There are no T1 amplitudes for this wavefunction."); };
     /// Sets the T2 amplitudes
     virtual void set_T2(SharedMatrix& T2_new) { throw PSIEXCEPTION("There are no T2 amplitudes for this wavefunction."); };
+    /// Sets the L1 amplitudes
+    virtual void set_L1(SharedMatrix& L1_new) { throw PSIEXCEPTION("There are no L1 amplitudes for this wavefunction."); };
+    /// Sets the L2 amplitudes
+    virtual void set_L2(SharedMatrix& L2_new) { throw PSIEXCEPTION("There are no L2 amplitudes for this wavefunction."); };
+
 
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
@@ -432,6 +441,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     virtual SharedMatrix T1() const { throw PSIEXCEPTION("There are no T1 amplitudes for this wavefunction."); };
     /// Returns the T2 amplitudes;
     virtual SharedMatrix T2() const { throw PSIEXCEPTION("There are no T2 amplitudes for this wavefunction."); };
+    /// Returns the L1 amplitudes.
+    virtual SharedMatrix L1() const { throw PSIEXCEPTION("There are no L1 amplitudes for this wavefunction."); };
+    /// Returns the L2 amplitudes;
+    virtual SharedMatrix L2() const { throw PSIEXCEPTION("There are no L2 amplitudes for this wavefunction."); };
     /// Returns the alpha orbital energies
     SharedVector epsilon_a() const;
     /// Returns the beta orbital energies

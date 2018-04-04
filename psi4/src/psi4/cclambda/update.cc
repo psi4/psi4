@@ -33,12 +33,13 @@
 #include <cstdio>
 #include "MOInfo.h"
 #include "Params.h"
+#include "psi4/cclambda/cclambda.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace cclambda {
 
-void update(void)
+void CCLambdaWavefunction::update(void)
 {
   outfile->Printf("\t%4d      %20.15f    %4.3e\n",moinfo.iter,moinfo.lcc,
 	  moinfo.conv);
