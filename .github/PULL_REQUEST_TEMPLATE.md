@@ -11,5 +11,10 @@ Notable points that this PR has either accomplished or will accomplish.
 ## Questions
 - [ ] Question1
 
+## Checklist
+- [ ] Tests added for any new features
+- [ ] [All or relevant fraction of full tests run](http://psicode.org/psi4manual/master/build_planning.html#how-to-run-a-subset-of-tests)
+
 ## Status
-- [ ] Ready to go
+- [ ] Ready for review
+- [ ] Ready for merge
