@@ -95,8 +95,6 @@ double CCEnergyWavefunction::compute_energy()
     double **geom, *zvals, value;
     FILE *efile;
     int **cachelist, *cachefiles;
-    dpdfile2 t1;
-    dpdbuf4 t2;
     double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab, tval;
 
     moinfo_.iter=0;

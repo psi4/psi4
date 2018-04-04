@@ -34,6 +34,7 @@
 #include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/cclambda/cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -41,7 +42,7 @@
 
 namespace psi { namespace cclambda {
 
-int converged(int L_irr)
+int CCLambdaWavefunction::converged(int L_irr)
 {
   int row,col,h,nirreps;
   double rms=0.0;

@@ -33,6 +33,7 @@
 #include <cstdio>
 #include <cstring>
 #include "psi4/libdpd/dpd.h"
+#include "psi4/cclambda/cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -44,7 +45,7 @@ void denom_rhf(struct L_Params);
 void denom_rohf(struct L_Params);
 void denom_uhf(struct L_Params);
 
-void denom(struct L_Params L_params) {
+void CCLambdaWavefunction::denom(struct L_Params L_params) {
   if(params.ref == 0) denom_rhf(L_params);
   else if(params.ref == 1) denom_rohf(L_params);
   else if(params.ref == 2) denom_uhf(L_params);
