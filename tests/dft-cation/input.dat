@@ -1,3 +1,5 @@
+#! functionals ionization energies vs. other programs
+
 molecule h2o {
 0 1
 O  -1.551007  -0.114520   0.000000
@@ -59,7 +61,7 @@ qchem_data = {                              #TEST
     'B97-3':     0.4573836831000051,        #TEST
     'B97-D':     0.4562801577000073,        #TEST
      'BB1K':     0.4523318653999979,        #TEST
-   'B97-D3':     0.4562801576999931,        #TEST
+   #'B97-D3':     0.4562801576999931,        #TEST  # moved to dftd3/
    'M06-2X':    0.45840746970000623,        #TEST
      'dlDF':    0.46205070889999433,        #TEST
      'BP86':     0.4599766011999975,        #TEST
@@ -143,7 +145,7 @@ excluded_qchem_not_uks_friendly = {
 old_psi4_data = {                     #TEST 
      'BP86': 0.45997666061779796,     #TEST
      'BLYP': 0.4520631769723451,      #TEST  
-   'B97-D3': 0.4562813415641358,      #TEST
+   #'B97-D3': 0.4562813415641358,      #TEST  moved to dftd3/
    'B3LYP5': 0.4535570976370309,      #TEST
       'PBE': 0.45520846640530976,     #TEST
    'M05-2X': 0.4583328495011756,      #TEST

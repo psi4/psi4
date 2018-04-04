@@ -1,4 +1,4 @@
-# DFT (hybrids) test of implementations in: hybrid_superfuncs.py
+#! DFT (hybrids) test of implementations in: hybrid_superfuncs.py
 
 ##ORCA v.4.0.1, cc-pVDZ, RI-MP2, no FC, GRID7
 # PW6B95
@@ -17,6 +17,7 @@
 #          "wpbe0"    : build_wpbe0_superfunctional,
 #          "b5050lyp" : build_b5050lyp_superfunctional,
 
+# more tests in tests/gcp/
 
 molecule ne {
   0 1
@@ -44,12 +45,6 @@ clean()
 #edft = energy('wb97x-d3zero') # b97 params not in libxc v3
 #compare_values(-128.887347888283, edft, 4, 'Ne: WB97X-D3(0)')   
 #clean()
-edft = energy('hf3c/minix')
-compare_values(-127.718790886397, edft, 4, 'Ne: HF3c')   
-clean()
-edft = energy('pbeh3c/def2-mSVP')
-compare_values(-128.695398806080, edft, 4, 'Ne: PBEh3c')   
-clean()
 edft = energy('sogga11-x')
 compare_values(-128.876075275, edft, 5, 'Ne: SOGGA11-X')   
 clean()
