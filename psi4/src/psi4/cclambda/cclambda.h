@@ -30,6 +30,7 @@
 #define CCLAMBDA_H
 
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/ccenergy/ccwave.h"
 
 namespace psi {
 class Wavefunction;
@@ -38,7 +39,7 @@ class Options;
 
 namespace psi { namespace cclambda {
 
-class CCLambdaWavefunction : public Wavefunction
+class CCLambdaWavefunction : public psi::ccenergy::CCEnergyWavefunction
 {
 public:
     CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);

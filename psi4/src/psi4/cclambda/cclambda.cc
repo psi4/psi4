@@ -119,9 +119,8 @@ namespace psi { namespace cclambda {
 
 CCLambdaWavefunction::CCLambdaWavefunction(std::shared_ptr<Wavefunction>
 reference_wavefunction, Options &options)
-    : Wavefunction(options)
+    : CCEnergyWavefunction(reference_wavefunction, options)
 {
-    set_reference_wavefunction(reference_wavefunction);
     psio_ = _default_psio_lib_;
     init();
 }
