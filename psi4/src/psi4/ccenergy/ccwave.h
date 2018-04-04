@@ -52,6 +52,11 @@ public:
 
     double compute_energy();
 
+    virtual SharedMatrix T1() const;
+    virtual SharedMatrix T2() const;
+    virtual void set_T1(SharedMatrix& T1_new);
+    virtual void set_T2(SharedMatrix& T2_new);
+
 private:
 
     /* setup, info and teardown */

@@ -196,6 +196,11 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Beta Fock matrix
     SharedMatrix Fb_;
 
+    /// T1 amplitudes
+    SharedMatrix T1_;
+    /// T2 amplitudes
+    SharedMatrix T2_;
+
     /// Alpha orbital eneriges
     SharedVector epsilon_a_;
     /// Beta orbital energies
@@ -410,6 +415,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     void set_Ca(SharedMatrix& Ca_new);
     /// Sets the beta electrons MO coefficients
     void set_Cb(SharedMatrix& Cb_new);
+    /// Sets the T1 amplitudes
+    virtual void set_T1(SharedMatrix& T1_new) { throw PSIEXCEPTION("There are no T1 amplitudes for this wavefunction."); };
+    /// Sets the T2 amplitudes
+    virtual void set_T2(SharedMatrix& T2_new) { throw PSIEXCEPTION("There are no T2 amplitudes for this wavefunction."); };
 
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
@@ -419,6 +428,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix Fa() const;
     /// Returns the (SO basis) beta Fock matrix
     SharedMatrix Fb() const;
+    /// Returns the T1 amplitudes.
+    virtual SharedMatrix T1() const { throw PSIEXCEPTION("There are no T1 amplitudes for this wavefunction."); };
+    /// Returns the T2 amplitudes;
+    virtual SharedMatrix T2() const { throw PSIEXCEPTION("There are no T2 amplitudes for this wavefunction."); };
     /// Returns the alpha orbital energies
     SharedVector epsilon_a() const;
     /// Returns the beta orbital energies

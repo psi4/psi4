@@ -145,6 +145,8 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     Db_ = other->Db_;
     Fa_ = other->Fa_;
     Fb_ = other->Fb_;
+    T1_ = other->T1_;
+    T2_ = other->T2_;
     epsilon_a_ = other->epsilon_a_;
     epsilon_b_ = other->epsilon_b_;
 
@@ -225,6 +227,8 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->Db_) Db_ = other->Db_->clone();
     if (other->Fa_) Fa_ = other->Fa_->clone();
     if (other->Fb_) Fb_ = other->Fb_->clone();
+    if (other->T1_) T1_ = other->T1_->clone();
+    if (other->T2_) T2_ = other->T2_->clone();
     if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
     if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
 

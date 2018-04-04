@@ -43,6 +43,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -328,6 +329,17 @@ double CCEnergyWavefunction::compute_energy()
 
             outfile->Printf( "\n");
             amp_write();
+
+			// Get T amplitudes
+            global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+            SharedMatrix new_t1 = SharedMatrix(new Matrix(&t1));
+            set_T1(new_t1);
+            global_dpd_->file2_close(&t1);
+            global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+            SharedMatrix new_t2 = SharedMatrix(new Matrix(&t2));
+            set_T2(new_t2);
+            global_dpd_->buf4_close(&t2);
+
             if (params_.analyze != 0) analyze();
             break;
         }
@@ -649,6 +661,22 @@ void CCEnergyWavefunction::one_step(void) {
         }
     }
     return;
+}
+
+SharedMatrix CCEnergyWavefunction::T1() const {
+    return T1_;
+}
+
+SharedMatrix CCEnergyWavefunction::T2() const {
+    return T2_;
+}
+
+void CCEnergyWavefunction::set_T1(SharedMatrix& T1_new) {
+    T1_ = T1_new;
+}
+
+void CCEnergyWavefunction::set_T2(SharedMatrix& T2_new) {
+    T2_ = T2_new;
 }
 
 }} // namespace psi::ccenergy
