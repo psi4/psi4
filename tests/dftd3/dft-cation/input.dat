@@ -25,13 +25,16 @@ set {
    d_convergence 9 
 }
 
-qchem_data = {                              #TEST
-   'B97-D3':     0.4562801576999931,        #TEST
+qchem_data = {                                    #TEST
+         'B97-D3':     0.4562801576999931,        #TEST
+'DSD-PBEPBE-D3BJ':             0.44608512,        #TEST
+'DSD-PBEP86-D3BJ':             0.44599836,        #TEST
+'DSD-PBEB95-D3BJ':             0.44615418,        #TEST
 ## The following functionals are not included 
 ## in Psi4 at the moment. 
-# 'wB97X-D3':    0.45707443810000825,       #TEST # needs Tweaks
-#  'wM06-D3':    0.45634592669999563,       #TEST
-}                                           #TEST
+#      'wB97X-D3':    0.45707443810000825,       #TEST # needs Tweaks
+#       'wM06-D3':    0.45634592669999563,       #TEST
+}                                                #TEST
 
 # Current version of Psi4 does not match Q-Chem for these tests
 expected_fail_qchem = []             #TEST

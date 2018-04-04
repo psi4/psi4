@@ -122,7 +122,6 @@ funcs.append({
         }
     },
     "c_mp2": {
-        "alpha": 1.0,
         "os": 0.47,
         "ss": 0.40,
     },
@@ -366,7 +365,6 @@ funcs.append({
         }
     },
     "c_mp2": {
-        "alpha": 1.0,
         "os": 0.55,
         "ss": 0.13
     },
@@ -531,6 +529,92 @@ funcs.append({
     },
     "citation": '    L. Goerigk, S.Grimme, J. Chem. Theory Comput., 7, 291-309, 2011 \n',
     "description": '    PTPSS SOS Double Hybrid XC Functional\n',
+})
+
+funcs.append({
+    "name": "DSD-PBEB95",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.31
+        }
+    },
+    "x_hf": {
+        "alpha": 0.69
+    },
+    "c_functionals": {
+      "MGGA_C_BC95": {
+            "alpha": 0.54
+        }
+    },
+    "c_mp2": {
+        "os": 0.48,
+        "ss": 0.22
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEB95 SCS Double Hybrid Meta-GGA XC Functional (not dispersion corrected)\n',
+})
+
+funcs.append({
+    "name": "DSD-PBEB95-D2",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.35
+        }
+    },
+    "x_hf": {
+        "alpha": 0.65
+    },
+    "c_functionals": {
+      "MGGA_C_BC95": {
+            "alpha": 0.55
+        }
+    },
+    "c_mp2": {
+        "os": 0.46,
+        "ss": 0.08
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEB95-D2 Dispersion-corrected SCS Double Hybrid Meta-GGA XC Functional\n',
+    "dispersion": {
+        "type": "d2",
+        "params": {
+            "s6": 0.32
+        },
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    },
+})
+
+funcs.append({
+    "name": "DSD-PBEB95-D3BJ",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.34
+        }
+    },
+    "x_hf": {
+        "alpha": 0.66
+    },
+    "c_functionals": {
+      "MGGA_C_BC95": {
+            "alpha": 0.55
+        }
+    },
+    "c_mp2": {
+        "os": 0.46,
+        "ss": 0.09
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEB95-D3BJ Dispersion-corrected SCS Double Hybrid Meta-GGA XC Functional\n',
+    "dispersion": {
+        "type": "d3bj",
+        "params": {
+            "s6": 0.61,
+            "a2": 6.2,
+            "a1": 0.0,
+            "s8": 0.0
+        },
+        "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
+    },
 })
 
 functional_list = {}
