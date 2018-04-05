@@ -655,7 +655,7 @@ def gradient(name, **kwargs):
 
         # Obtain list of displacements
         # print("about to generate displacements")
-        displacements = driver_findif.fd_geoms_1_0(moleculeclone)
+        displacements = driver_findif.geoms_grad_from_energy(moleculeclone)
         # print(displacements)
         ndisp = len(displacements)
         # print("generated displacments")
@@ -761,7 +761,7 @@ def gradient(name, **kwargs):
 
         # Compute the gradient; last item in 'energies' is undisplaced
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = core.fd_1_0(molecule, energies)
+        G = driver_findif.comp_grad_from_energy(molecule, energies)
         G.print_out()
         wfn.set_gradient(G)
 
