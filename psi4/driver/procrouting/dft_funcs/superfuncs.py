@@ -99,6 +99,25 @@ def build_superfunctional(name, restricted):
     if core.has_option_changed("SCF", "DFT_ALPHA_C"):
         sup[0].set_c_alpha(core.get_option("SCF", "DFT_ALPHA_C"))
 
+    # change options for VV10 correlation
+    # custom procedures using name 'scf' without any quadrature grid like HF will fail and are not detected
+    if (core.has_option_changed("SCF", "DFT_VV10_B") and core.has_option_changed("SCF", "DFT_VV10_C")):
+        if(name.lower()=='hf'):
+           raise ValidationError("SCF: HF with -NL not implemented")
+        vv10_b = core.get_option("SCF", "DFT_VV10_B")
+        vv10_c = core.get_option("SCF", "DFT_VV10_C")
+        sup[0].set_vv10_b(vv10_b)
+        sup[0].set_vv10_c(vv10_c)
+    elif core.has_option_changed("SCF", "DFT_VV10_B"):
+        if(name.lower()=='hf'):
+           raise ValidationError("SCF: HF with -NL not implemented")
+        vv10_b = core.get_option("SCF", "DFT_VV10_B")
+        sup[0].set_vv10_b(vv10_b)
+        if (abs(sup[0].vv10_c() - 0.0) <= 1e-8):
+            core.print_out("SCF: VV10_C not specified. Using default (C=0.0093)!")
+            sup[0].set_vv10_c(0.0093)
+
+
     # Check SCF_TYPE
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(

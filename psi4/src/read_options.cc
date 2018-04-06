@@ -1487,6 +1487,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DFT_VV10_RADIAL_POINTS", 50);
     /*- Rho cutoff for VV10 NL integration. !expert -*/
     options.add_double("DFT_VV10_RHO_CUTOFF", 1.e-8);
+    /*- Define VV10 parameter b -*/
+    options.add_double("DFT_VV10_B", 0.0);
+    /*- Define VV10 parameter C -*/
+    options.add_double("DFT_VV10_C", 0.0);
     /*- The convergence on the orbital localization procedure -*/
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
