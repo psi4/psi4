@@ -102,6 +102,21 @@ class EmpericalDispersion(object):
                 if len(tuple_params) > 4:
                     raise Exception("Too many parameter in input tuple param.")
 
+        # DFT-NL dispersion
+        elif self.dtype in ["-NL"]:
+             self.disp_type = 'nl'
+
+             # consume custom tuples
+             if (tuple_params is not None):
+                self.tuple_params = None
+                self.dash_params['b'] = tuple_params[0]
+
+                if len(tuple_params) > 1:
+                        self.dash_params["c"] = tuple_params[1]
+                if len(tuple_params) > 2:
+                    raise Exception("Too many parameter in input tuple param.")
+
+
         # 4b) Build coefficients for psi4
         else:
             self.dtype = self.dtype.replace('-d2p4', '-d2')
@@ -187,12 +202,26 @@ class EmpericalDispersion(object):
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2011:1456"
 
+        elif self.dtype == "-NL":
+            self.description = "    Grimme's -NL (DFT plus  VV10 correlation) "
+            self.citation = "    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 \n"
+            self.bibtex = "Grimme:2011:3866"
+
         else:
-            raise Exception("Emperical Dispersion type %s not understood." % self.dtype)
+            raise Exception("Empirical Dispersion type %s not understood." % self.dtype)
 
         # 6b) add custom citations if available
         if custom_citation:
             self.citation += "\n    Parametrisation from: \n" + custom_citation
+
+    def excludelist(self):
+        """
+         exclude list used to avoid explicit compute_energy/gradient/hessian calls in proc.py
+        """
+        if self.disp_type=='nl':
+           return True
+        else: 
+           return False
 
     def print_out(self, level=1):
 
@@ -200,6 +229,9 @@ class EmpericalDispersion(object):
         core.print_out(self.description + "\n")
 
         core.print_out(self.citation + "\n\n")
+       
+        if self.disp_type=='nl':
+           return
 
         core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"])
         if "s8" in self.dash_params.keys():
