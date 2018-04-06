@@ -353,7 +353,7 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
              1.1, 0.0, 0.0, 20.0, 2)
     elif dashlvleff.lower() == 'd2gr':
         returnstring = dashformatter.format(
-            (dashcoeff['s6'],
+             dashcoeff['s6'],
              dashcoeff['sr6'],
              0.0, 0.0,
              dashcoeff['alpha6'],

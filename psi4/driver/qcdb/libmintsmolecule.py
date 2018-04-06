@@ -1218,7 +1218,8 @@ class LibmintsMolecule(object):
 
         if label == '':
             label = symbol
-        if self.atom_at_position([x, y, z]) == -1:
+        #if self.atom_at_position([x, y, z]) == -1:
+        if True:
             # Dummies go to full_atoms, ghosts need to go to both.
             self.full_atoms.append(CartesianEntry(self.nallatom(), Z, charge, mass, symbol, label, A,
                 NumberValue(x), NumberValue(y), NumberValue(z)))

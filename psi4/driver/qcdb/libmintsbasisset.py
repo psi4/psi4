@@ -145,7 +145,7 @@ class BasisSet(object):
         elif len(args) == 4 and \
             isinstance(args[0], basestring) and \
             isinstance(args[1], Molecule) and \
-            isinstance(args[2], OrderedDict) and \
+            isinstance(args[2], collections.OrderedDict) and \
             isinstance(args[3], bool):
             self.constructor_role_mol_shellmap(*args)
         else:
