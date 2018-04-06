@@ -102,19 +102,20 @@ class EmpericalDispersion(object):
                 if len(tuple_params) > 4:
                     raise Exception("Too many parameter in input tuple param.")
 
-        # DFT-NL dispersion
+        # DFT-NL dispersion. 
         elif self.dtype in ["-NL"]:
              self.disp_type = 'nl'
 
-             # consume custom tuples
-             if (tuple_params is not None):
-                self.tuple_params = None
-                self.dash_params['b'] = tuple_params[0]
-
-                if len(tuple_params) > 1:
-                        self.dash_params["c"] = tuple_params[1]
-                if len(tuple_params) > 2:
-                    raise Exception("Too many parameter in input tuple param.")
+             # since the functional is done and closed. This does not do anything.
+             #if (tuple_params is not None):
+             #   self.tuple_params = None
+             #   self.dash_params['b'] = tuple_params[0]
+             #
+             #  if len(tuple_params) > 1:
+             #     self.dash_params["c"] = tuple_params[1]
+             #
+             #  if len(tuple_params) > 2:
+             #     raise Exception("Too many parameter in input NL tuple param.")
 
 
         # 4b) Build coefficients for psi4
@@ -145,7 +146,7 @@ class EmpericalDispersion(object):
                 self.dash_params[k] = kwargs.pop(k)
 
         if len(kwargs):
-            raise Exception("The following DFTD3 parameters were not understood for %s dispersion type: %s" %
+            raise Exception("The following DFTD3 or NL parameters were not understood for %s dispersion type: %s" %
                             (dtype, ', '.join(kwargs.keys())))
 
         # 6) Process citations

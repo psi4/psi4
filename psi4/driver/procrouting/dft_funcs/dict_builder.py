@@ -348,6 +348,32 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
            sup.set_vv10_c(d_params["params"]["c"])
         dispersion = d_params
 
+    # custom options for NL dispersion
+    # wants to be where the functional is build
+    if (core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS")):
+       nl_tuple = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
+       sup.set_vv10_b(nl_tuple[0])
+       if len(nl_tuple) > 1:
+          sup.set_vv10_c(nl_tuple[1])
+       if len(nl_tuple) > 2:
+          raise ValidationError("too many entries in DFT_DISPERSION_PARAMETERS for DFT-NL")
+    if (core.has_option_changed("SCF", "DFT_VV10_B") and core.has_option_changed("SCF", "DFT_VV10_C")):
+       if(name.lower()=='scf'):
+          raise ValidationError("SCF: HF with -NL not implemented")
+       vv10_b = core.get_option("SCF", "DFT_VV10_B")
+       vv10_c = core.get_option("SCF", "DFT_VV10_C")
+       sup.set_vv10_b(vv10_b)
+       sup.set_vv10_c(vv10_c)
+    elif core.has_option_changed("SCF", "DFT_VV10_B"):
+       if(name.lower()=='scf'):
+          raise ValidationError("SCF: HF with -NL not implemented")
+       vv10_b = core.get_option("SCF", "DFT_VV10_B")
+       sup.set_vv10_b(vv10_b)
+       if (abs(sup.vv10_c() - 0.0) <= 1e-8):
+           core.print_out("SCF: VV10_C not specified. Using default (C=0.0093)!")
+           sup.set_vv10_c(0.0093)
+
+
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
     sup.set_name(func_dictionary["name"].lower())
