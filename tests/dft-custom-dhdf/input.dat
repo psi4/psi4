@@ -134,7 +134,7 @@ clean()
 
 # =========== former dft-dsd ==========
 #! DSD-PBEP86 S22 Ammonia test
-molecule water2 {
+molecule ammonia {
 0 1
 N  -1.578718  -0.046611   0.000000
 H  -2.158621   0.136396  -0.809565
@@ -147,7 +147,7 @@ H   2.158621  -0.136396  -0.809565
 H   0.849471  -0.658193   0.000000
 H   2.158621  -0.136396   0.809565
 }
-activate(water2)
+activate(ammonia)
 
 set basis aug-cc-pvdz
 set reference rks
@@ -157,8 +157,9 @@ set scf_type df
 set freeze_core false
 
 e_dhdft = energy('DSD-PBEP86', bsse_type="nocp")
-compare_values(-3.2076, e_dhdft * 627.509, 2, "DSD-PBEP86: Ammonia")  #TEST
+compare_values(-3.3187, e_dhdft * 627.509, 2, "DSD-PBEP86: Ammonia")  #TEST
 
+# -112.915920926815 - -56.455316131791 - -56.455316053013 = -0.005288742011  #TEST
 
 
 # Additional tests
