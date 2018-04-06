@@ -17,6 +17,7 @@ set DFT_VV10_RADIAL_POINTS 20
 set E_CONVERGENCE 1.e-12
 set D_CONVERGENCE 1.e-10
 
+
 scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
 for k, v in bench.items():                        # TEST
@@ -27,3 +28,12 @@ scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
 for k, v in bench.items():                        # TEST
     compare_values(v, psi4.get_variable(k), 9, k) # TEST
+    
+set reference rks
+scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
+0.0238582087067217
+compare_values(0.0238582087067217,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL custom b ') # TEST
+
+set DFT_VV10_B  4.0
+scf_e, scf_wfn = energy("BLYP", return_wfn=True)
+compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + custom VV10 ENERGY') # TEST
