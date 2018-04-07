@@ -34,6 +34,7 @@ from psi4.driver.qcdb import interface_gcp as gcp
 from psi4.driver.qcdb.dashparam import get_dispersion_aliases
 from psi4.driver.qcdb.dashparam import get_default_dashparams
 from psi4.driver import p4util
+import numpy as np
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
@@ -106,17 +107,6 @@ class EmpericalDispersion(object):
         elif self.dtype in ["-NL"]:
              self.disp_type = 'nl'
 
-             # since the functional is done and closed. This does not do anything.
-             #if (tuple_params is not None):
-             #   self.tuple_params = None
-             #   self.dash_params['b'] = tuple_params[0]
-             #
-             #  if len(tuple_params) > 1:
-             #     self.dash_params["c"] = tuple_params[1]
-             #
-             #  if len(tuple_params) > 2:
-             #     raise Exception("Too many parameter in input NL tuple param.")
-
 
         # 4b) Build coefficients for psi4
         else:
@@ -146,7 +136,7 @@ class EmpericalDispersion(object):
                 self.dash_params[k] = kwargs.pop(k)
 
         if len(kwargs):
-            raise Exception("The following DFTD3 or NL parameters were not understood for %s dispersion type: %s" %
+            raise Exception("The following parameters in empirical_dispersion.py were not understood for %s dispersion type: %s" %
                             (dtype, ', '.join(kwargs.keys())))
 
         # 6) Process citations
@@ -215,15 +205,6 @@ class EmpericalDispersion(object):
         if custom_citation:
             self.citation += "\n    Parametrisation from: \n" + custom_citation
 
-    def excludelist(self):
-        """
-         exclude list used to avoid explicit compute_energy/gradient/hessian calls in proc.py
-        """
-        if self.disp_type=='nl':
-           return True
-        else: 
-           return False
-
     def print_out(self, level=1):
 
         core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype)
@@ -267,6 +248,8 @@ class EmpericalDispersion(object):
                     dashparam=self.dash_params,
                     verbose=False,
                     dertype=0)
+        elif self.disp_type == 'nl':
+             return 0
         else:
             return self.disp.compute_energy(molecule)
 
@@ -289,6 +272,10 @@ class EmpericalDispersion(object):
                     dashparam=self.dash_params,
                     verbose=False,
                     dertype=1)
+        elif self.disp_type in 'nl':
+             ZeroMat = np.zeros((molecule.natom(),3))
+             ZeroGrad= core.Matrix.from_array(ZeroMat)
+             return ZeroGrad
         else:
             return self.disp.compute_gradient(molecule)
 
@@ -296,6 +283,12 @@ class EmpericalDispersion(object):
         """
         #magic (if magic was easy)
         """
+
+        if self.disp_type in 'nl':
+             nat3=3*molecule.natom()
+             ZeroMat = np.zeros((nat3,nat3))
+             ZeroHess= core.Matrix.from_array(ZeroMat)
+             return ZeroHess
 
         optstash = p4util.OptionsState(['PRINT'])
         core.set_global_option('PRINT', 0)
