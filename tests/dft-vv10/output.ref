@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.2a1.dev970 
+                               Psi4 1.2a1.dev976 
 
-                         Git: Rev {dft-nl} 1ddc794 dirty
+                         Git: Rev {dft-nl} 443b2d8 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -18,12 +18,12 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 06 April 2018 03:07PM
+    Psi4 started on: Saturday, 07 April 2018 11:11AM
 
-    Process ID:   8330
+    Process ID:  13988
     PSIDATADIR: /usr/qc/psi4.dev/share/psi4
     Memory:     500.0 MiB
-    Threads:    2
+    Threads:    1
     
   ==> Input File <==
 
@@ -56,6 +56,7 @@ for k, v in bench.items():                        # TEST
 
 scf_e, scf_wfn = energy("BLYP-NL", return_wfn=True)
 compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL dashtest') # TEST
+scf_nl=psi4.get_variable('TOTAL SCF ENERGY')
 
 set dft_dispersion_parameters [5.0]
 scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
@@ -65,10 +66,16 @@ compare_values(0.0238582087067217,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLY
 set DFT_VV10_B  4.0
 scf_e, scf_wfn = energy("BLYP", return_wfn=True)
 compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + custom VV10 ENERGY') # TEST
+
+set DFT_VV10_POSTSCF true
+scf_e, scf_wfn = energy("BLYP-NL", return_wfn=True)
+compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL postscf') # TEST
+post_nl=psi4.get_variable('TOTAL SCF ENERGY')
+compare_values(scf_nl,post_nl,6,'BLYP-NL postscf2') # TEST
 --------------------------------------------------------------------------
 
 *** tstart() called on simien
-*** at Fri Apr  6 15:07:11 2018
+*** at Sat Apr  7 11:11:46 2018
 
    => Loading Basis Set <=
 
@@ -83,7 +90,7 @@ compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + 
             by Justin Turney, Rob Parrish, Andy Simmonett
                              and Daniel Smith
                               RKS Reference
-                        2 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -205,8 +212,8 @@ compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + 
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    OpenMP threads:              2
-    Integrals threads:           2
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
@@ -232,13 +239,13 @@ compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + 
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.81845100888132   -5.81845e+00   4.97264e-03 
-   @DF-RKS iter   1:    -5.81995325099754   -1.50224e-03   4.89611e-04 
-   @DF-RKS iter   2:    -5.81995736507169   -4.11407e-06   1.98771e-04 DIIS
-   @DF-RKS iter   3:    -5.81995809207186   -7.27000e-07   1.29139e-05 DIIS
-   @DF-RKS iter   4:    -5.81995809452889   -2.45703e-09   1.04859e-08 DIIS
-   @DF-RKS iter   5:    -5.81995809452889   -3.55271e-15   1.21655e-09 DIIS
-   @DF-RKS iter   6:    -5.81995809452889    8.88178e-16   4.73942e-11 DIIS
+   @DF-RKS iter   0:    -5.81845100888131   -5.81845e+00   4.66154e-03 
+   @DF-RKS iter   1:    -5.81995325099754   -1.50224e-03   4.26151e-04 
+   @DF-RKS iter   2:    -5.81995736507169   -4.11407e-06   1.50825e-04 DIIS
+   @DF-RKS iter   3:    -5.81995809207186   -7.27000e-07   9.13153e-06 DIIS
+   @DF-RKS iter   4:    -5.81995809452888   -2.45703e-09   8.46387e-09 DIIS
+   @DF-RKS iter   5:    -5.81995809452889   -4.44089e-15   1.14044e-09 DIIS
+   @DF-RKS iter   6:    -5.81995809452889   -5.32907e-15   4.12514e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -269,12 +276,12 @@ compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.8000083423393178
-    Two-Electron Energy =                   4.5930767488099224
-    DFT Exchange-Correlation Energy =      -2.1610005616974957
+    One-Electron Energy =                  -8.8000083423393232
+    Two-Electron Energy =                   4.5930767488099296
+    DFT Exchange-Correlation Energy =      -2.1610005616975028
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0187968521080026
-    Total Energy =                         -5.8199580945288885
+    Total Energy =                         -5.8199580945288938
 
 
 
@@ -295,21 +302,21 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on simien at Fri Apr  6 15:07:12 2018
+*** tstop() called on simien at Sat Apr  7 11:11:47 2018
 Module time:
-	user time   =       1.22 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.22 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	DFT VV10 ENERGY...................................................PASSED
 	DFT XC ENERGY.....................................................PASSED
 	CURRENT ENERGY....................................................PASSED
 
 *** tstart() called on simien
-*** at Fri Apr  6 15:07:12 2018
+*** at Sat Apr  7 11:11:47 2018
 
    => Loading Basis Set <=
 
@@ -324,7 +331,7 @@ Total time:
             by Justin Turney, Rob Parrish, Andy Simmonett
                              and Daniel Smith
                               RKS Reference
-                        2 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -454,8 +461,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    OpenMP threads:              2
-    Integrals threads:           2
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
@@ -481,13 +488,13 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.76659528067618   -5.76660e+00   6.69939e-03 
-   @DF-RKS iter   1:    -5.76863051510804   -2.03523e-03   1.30734e-03 
-   @DF-RKS iter   2:    -5.76865442104860   -2.39059e-05   6.06842e-04 DIIS
-   @DF-RKS iter   3:    -5.76866030480161   -5.88375e-06   5.81755e-06 DIIS
-   @DF-RKS iter   4:    -5.76866030532114   -5.19530e-10   2.43866e-08 DIIS
-   @DF-RKS iter   5:    -5.76866030532115   -6.21725e-15   6.57538e-10 DIIS
-   @DF-RKS iter   6:    -5.76866030532115   -2.66454e-15   8.94505e-12 DIIS
+   @DF-RKS iter   0:    -5.76659528067618   -5.76660e+00   5.08341e-03 
+   @DF-RKS iter   1:    -5.76863051510804   -2.03523e-03   9.91993e-04 
+   @DF-RKS iter   2:    -5.76865442104860   -2.39059e-05   4.29102e-04 DIIS
+   @DF-RKS iter   3:    -5.76866030480161   -5.88375e-06   4.11363e-06 DIIS
+   @DF-RKS iter   4:    -5.76866030532114   -5.19525e-10   1.85042e-08 DIIS
+   @DF-RKS iter   5:    -5.76866030532115   -1.15463e-14   5.30742e-10 DIIS
+   @DF-RKS iter   6:    -5.76866030532115   -8.88178e-16   6.32512e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -518,15 +525,14 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7921415374883320
-    Two-Electron Energy =                   4.5786826871901232
-    DFT Exchange-Correlation Energy =      -2.1172310142772117
+    One-Electron Energy =                  -8.7921415374883303
+    Two-Electron Energy =                   4.5786826871901223
+    DFT Exchange-Correlation Energy =      -2.1172310142772108
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0328523506642702
-    PCM Polarization Energy =               0.0000000000000000
-    Total Energy =                         -5.7686603053211511
+    Total Energy =                         -5.7686603053211494
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -545,19 +551,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on simien at Fri Apr  6 15:07:13 2018
+*** tstop() called on simien at Sat Apr  7 11:11:48 2018
 Module time:
-	user time   =       1.13 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.36 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.23 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 	BLYP-NL dashtest..................................................PASSED
 
 *** tstart() called on simien
-*** at Fri Apr  6 15:07:13 2018
+*** at Sat Apr  7 11:11:48 2018
 
    => Loading Basis Set <=
 
@@ -572,7 +578,7 @@ Total time:
             by Justin Turney, Rob Parrish, Andy Simmonett
                              and Daniel Smith
                               RKS Reference
-                        2 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -702,8 +708,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    OpenMP threads:              2
-    Integrals threads:           2
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
@@ -729,13 +735,13 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.77559359830675   -5.77559e+00   7.20257e-03 
-   @DF-RKS iter   1:    -5.77762611464431   -2.03252e-03   1.28140e-03 
-   @DF-RKS iter   2:    -5.77764909390124   -2.29793e-05   5.54801e-04 DIIS
-   @DF-RKS iter   3:    -5.77765475745573   -5.66355e-06   5.23650e-06 DIIS
-   @DF-RKS iter   4:    -5.77765475794104   -4.85318e-10   2.18257e-08 DIIS
-   @DF-RKS iter   5:    -5.77765475794105   -7.10543e-15   7.36045e-10 DIIS
-   @DF-RKS iter   6:    -5.77765475794105    8.88178e-16   7.26373e-12 DIIS
+   @DF-RKS iter   0:    -5.77559359830675   -5.77559e+00   5.09299e-03 
+   @DF-RKS iter   1:    -5.77762611464431   -2.03252e-03   9.72313e-04 
+   @DF-RKS iter   2:    -5.77764909390123   -2.29793e-05   4.20976e-04 DIIS
+   @DF-RKS iter   3:    -5.77765475745573   -5.66355e-06   3.97339e-06 DIIS
+   @DF-RKS iter   4:    -5.77765475794104   -4.85311e-10   1.86131e-08 DIIS
+   @DF-RKS iter   5:    -5.77765475794105   -1.50990e-14   5.20463e-10 DIIS
+   @DF-RKS iter   6:    -5.77765475794105    7.99361e-15   6.19459e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -749,7 +755,7 @@ Total time:
     Virtual:                                                              
 
        2Ag     0.066154     2B1u    0.110918     3Ag     0.343264  
-       1B2u    0.352498     1B3u    0.352498     1B3g    0.355141  
+       1B3u    0.352498     1B2u    0.352498     1B3g    0.355141  
        1B2g    0.355141     3B1u    0.375002     4Ag     1.354577  
        4B1u    1.391560     5Ag     2.607811     2B2u    2.614834  
        2B3u    2.614834     2B3g    2.616618     2B2g    2.616618  
@@ -766,12 +772,12 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7923958174323218
-    Two-Electron Energy =                   4.5791820431957948
-    DFT Exchange-Correlation Energy =      -2.1174764010012446
+    One-Electron Energy =                  -8.7923958174323271
+    Two-Electron Energy =                   4.5791820431958037
+    DFT Exchange-Correlation Energy =      -2.1174764010012428
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0238582087067217
-    Total Energy =                         -5.7776547579410504
+    Total Energy =                         -5.7776547579410451
 
 
 
@@ -792,19 +798,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on simien at Fri Apr  6 15:07:13 2018
+*** tstop() called on simien at Sat Apr  7 11:11:49 2018
 Module time:
-	user time   =       1.16 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.53 seconds =       0.06 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       3.25 seconds =       0.05 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 	BLYP-NL custom b .................................................PASSED
 
 *** tstart() called on simien
-*** at Fri Apr  6 15:07:13 2018
+*** at Sat Apr  7 11:11:49 2018
 
    => Loading Basis Set <=
 
@@ -819,7 +825,7 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
             by Justin Turney, Rob Parrish, Andy Simmonett
                              and Daniel Smith
                               RKS Reference
-                        2 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -943,8 +949,8 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    OpenMP threads:              2
-    Integrals threads:           2
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
@@ -970,13 +976,13 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.76659528067618   -5.76660e+00   6.98061e-03 
-   @DF-RKS iter   1:    -5.76863051510804   -2.03523e-03   1.20136e-03 
-   @DF-RKS iter   2:    -5.76865442104860   -2.39059e-05   5.03167e-04 DIIS
-   @DF-RKS iter   3:    -5.76866030480162   -5.88375e-06   5.42132e-06 DIIS
-   @DF-RKS iter   4:    -5.76866030532114   -5.19527e-10   2.29250e-08 DIIS
-   @DF-RKS iter   5:    -5.76866030532115   -9.76996e-15   6.99461e-10 DIIS
-   @DF-RKS iter   6:    -5.76866030532115   -8.88178e-16   7.41676e-12 DIIS
+   @DF-RKS iter   0:    -5.76659528067618   -5.76660e+00   5.08341e-03 
+   @DF-RKS iter   1:    -5.76863051510804   -2.03523e-03   9.91993e-04 
+   @DF-RKS iter   2:    -5.76865442104860   -2.39059e-05   4.29102e-04 DIIS
+   @DF-RKS iter   3:    -5.76866030480161   -5.88375e-06   4.11363e-06 DIIS
+   @DF-RKS iter   4:    -5.76866030532114   -5.19525e-10   1.85042e-08 DIIS
+   @DF-RKS iter   5:    -5.76866030532115   -1.15463e-14   5.30742e-10 DIIS
+   @DF-RKS iter   6:    -5.76866030532115   -8.88178e-16   6.32512e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -1007,12 +1013,12 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7921415374883374
-    Two-Electron Energy =                   4.5786826871901276
-    DFT Exchange-Correlation Energy =      -2.1172310142772126
+    One-Electron Energy =                  -8.7921415374883303
+    Two-Electron Energy =                   4.5786826871901223
+    DFT Exchange-Correlation Energy =      -2.1172310142772108
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0328523506642702
-    Total Energy =                         -5.7686603053211529
+    Total Energy =                         -5.7686603053211494
 
 
 
@@ -1033,15 +1039,265 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on simien at Fri Apr  6 15:07:14 2018
+*** tstop() called on simien at Sat Apr  7 11:11:50 2018
 Module time:
-	user time   =       1.12 seconds =       0.02 minutes
+	user time   =       1.00 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.66 seconds =       0.08 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       4.25 seconds =       0.07 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 	BLYP + custom VV10 ENERGY.........................................PASSED
+
+*** tstart() called on simien
+*** at Sat Apr  7 11:11:50 2018
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.dev/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
+          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
+  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
+  Nuclear repulsion =    0.529177208590000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 10
+    Number of basis function: 18
+    Number of Cartesian functions: 18
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => Composite Functional: BLYP-NL <= 
+
+    BLYP GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000     XC_GGA_X_B88
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_LYP
+
+   => VV10 Non-Local Parameters <=
+
+    VV10 B              =     4.0000E+00
+    VV10 C              =     9.3000E-03
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             75
+    Spherical Points    =            302
+    Total Points        =          45300
+    Total Blocks        =            418
+    Max Points          =            251
+    Max Functions       =             18
+
+   => -NL: Empirical Dispersion <=
+
+    Grimme's -NL (DFT plus  VV10 correlation) 
+    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 
+
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.dev/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         5       5       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        2       2       0       0       0       0
+     B3g        2       2       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        5       5       0       0       0       0
+     B2u        2       2       0       0       0       0
+     B3u        2       2       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 46
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:    -5.79946701401163   -5.79947e+00   5.09802e-03 
+   @DF-RKS iter   1:    -5.80148640702211   -2.01939e-03   9.39222e-04 
+   @DF-RKS iter   2:    -5.80150787282042   -2.14658e-05   4.07065e-04 DIIS
+   @DF-RKS iter   3:    -5.80151316857890   -5.29576e-06   3.73723e-06 DIIS
+   @DF-RKS iter   4:    -5.80151316900894   -4.30040e-10   1.93456e-08 DIIS
+   @DF-RKS iter   5:    -5.80151316900895   -1.24345e-14   5.02251e-10 DIIS
+   @DF-RKS iter   6:    -5.80151316900895    1.77636e-15   6.04372e-12 DIIS
+  ==> calculating VV10 correction on post-scf density <==
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.583599     1B1u   -0.583142  
+
+    Virtual:                                                              
+
+       2Ag     0.060873     2B1u    0.105528     3Ag     0.338093  
+       1B2u    0.347313     1B3u    0.347313     1B3g    0.349955  
+       1B2g    0.349955     3B1u    0.369831     4Ag     1.349146  
+       4B1u    1.386091     5Ag     2.602267     2B2u    2.609289  
+       2B3u    2.609289     2B3g    2.611073     2B2g    2.611073  
+       5B1u    2.625534  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:    -5.76865979261560
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.5291772085899999
+    One-Electron Energy =                  -8.7928445147714598
+    Two-Electron Energy =                   4.5800423706621398
+    DFT Exchange-Correlation Energy =      -2.1178882334785185
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0328533763822404
+    Total Energy =                         -5.7686597926155994
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on simien at Sat Apr  7 11:11:51 2018
+Module time:
+	user time   =       0.90 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       5.15 seconds =       0.09 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+	BLYP-NL postscf...................................................PASSED
+	BLYP-NL postscf2..................................................PASSED
 
 *** Psi4 exiting successfully. Buy a developer a beer!

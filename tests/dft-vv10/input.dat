@@ -28,6 +28,7 @@ scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
 for k, v in bench.items():                        # TEST
     compare_values(v, psi4.get_variable(k), 9, k) # TEST
+scf_nl=psi4.get_variable('TOTAL SCF ENERGY')
     
 set reference rks
 scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
@@ -37,3 +38,9 @@ compare_values(0.0238582087067217,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLY
 set DFT_VV10_B  4.0
 scf_e, scf_wfn = energy("BLYP", return_wfn=True)
 compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + custom VV10 ENERGY') # TEST
+
+set DFT_VV10_POSTSCF true
+scf_e, scf_wfn = energy("BLYP-NL", return_wfn=True)
+compare_values(0.032852665973,psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL postscf') # TEST
+post_nl=psi4.get_variable('TOTAL SCF ENERGY')
+compare_values(scf_nl,post_nl,6,'BLYP-NL postscf2') # TEST
