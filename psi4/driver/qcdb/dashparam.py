@@ -311,23 +311,25 @@ dashcoeff = {
         'lcwpbe'      : {'s6': 1.000, 's8': 0.906564, 'a1': 0.563761, 'a2': 3.593680},
     },
     'nl': { # TODO: citations
-        'blyp'        : {'b': 4.000, 'c': 0.0093}, #http://pubs.acs.org/doi/full/10.1021/acs.jctc.5b01066
-        'revpbe'      : {'b': 3.700, 'c': 0.0093}, # and below
-        'b3lyp'       : {'b': 4.800, 'c': 0.0093},
-        'b3pw91'      : {'b': 4.500, 'c': 0.0093},
-        'revpbe0'     : {'b': 4.300, 'c': 0.0093},
-        'bp86'        : {'b': 4.400, 'c': 0.0093},
-        'pbe0'        : {'b': 6.900, 'c': 0.0093},
-        'pbe'         : {'b': 6.400, 'c': 0.0093},
-        'tpss0'       : {'b': 5.500, 'c': 0.0093},
-        'tpss'        : {'b': 5.000, 'c': 0.0093},
-        'dsd-pbepbe'  : {'b': 9.600, 'c': 0.0093},
+        'blyp'        : {'b':  4.000, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, 
+        'hf'          : {'b':  3.900, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, # not implemented
+        'revpbe'      : {'b':  3.700, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, 
+        'revpbe38'    : {'b':  4.700, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, 
+        'b3lyp'       : {'b':  4.800, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
+        'b3pw91'      : {'b':  4.500, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
+        'revpbe0'     : {'b':  4.300, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
+        'bp86'        : {'b':  4.400, 'c': 0.0093}, # taken from orca
+        'pbe0'        : {'b':  6.900, 'c': 0.0093}, # taken from orca
+        'pbe'         : {'b':  6.400, 'c': 0.0093}, # taken from orca
+        'tpss0'       : {'b':  5.500, 'c': 0.0093, 'citation' : ' W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
+        'tpss'        : {'b':  5.000, 'c': 0.0093, 'citation' : ' W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'}
+        #'dsd-pbepbe'  : {'b':  9.600, 'c': 0.0093},
         'dsd-pbeb95'  : {'b': 12.500, 'c': 0.0093},
-        'dsd-pbep86'  : {'b': 12.800, 'c': 0.0093},
-        'b2gpplyp'    : {'b': 9.900, 'c': 0.0093},
-        'b2plyp'      : {'b': 7.800, 'c': 0.0093}, # 10.1021/acs.jctc.5b00002
-        'dsd-blyp'    : {'b': 12.000, 'c': 0.0093}, #https://pubs.acs.org/doi/10.1021/ct500642x
-        'pwpb95'      : {'b': 11.100, 'c': 0.0093}, #https://pubs.acs.org/doi/10.1021/ct500642x
+        #'dsd-pbep86'  : {'b': 12.800, 'c': 0.0093},
+        'b2gpplyp'    : {'b':  9.900, 'c': 0.0093},
+        'b2plyp'      : {'b':  7.800, 'c': 0.0093, 'citation': '    J. Calbo, E. Orti, J. C. Sancho-Garcia, J. Arago, J. Chem. Theory Comput. 11, 932-939, 1015 \n'}, 
+        'dsd-blyp'    : {'b': 12.000, 'c': 0.0093, 'citation': '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
+        'pwpb95'      : {'b': 11.100, 'c': 0.0093, 'citation': '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
     },
 
 } # yapf: disable

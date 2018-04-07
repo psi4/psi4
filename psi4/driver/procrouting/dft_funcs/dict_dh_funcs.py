@@ -266,6 +266,40 @@ funcs.append({
 })
 
 funcs.append({
+# note: Using the D3BJ form for NL, which is sensible but not explicitly mentioned in the paper
+    "name": "DSD-PBEP86-NL",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.31
+        }
+    },
+    "x_hf": {
+        "alpha": 0.69
+    },
+    "c_functionals": {
+        "GGA_C_P86": {
+            "alpha": 0.44
+        }
+    },
+    "c_mp2": {
+        "os": 0.52,
+        "ss": 0.22
+    },
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 12.8,
+            "c": 0.0093,
+        },
+        "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEP86-NL (D3BJ functional parameters) Dispersion-corrected SCS Double Hybrid XC Functional\n',
+})
+
+
+
+funcs.append({
     "name": "DSD-PBEP86-D2",
     "x_functionals": {
         "GGA_X_PBE": {
@@ -381,6 +415,40 @@ funcs.append({
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
 })
+
+
+funcs.append({
+    "name": "DSD-PBEPBE-NL",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.32
+        }
+    },
+    "x_hf": {
+        "alpha": 0.68
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.49
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.55,
+        "ss": 0.13
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEPBE-NL (D3BJ functional parameters) Dispersion-corrected SCS Double Hybrid XC Functional\n',
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 9.6,
+            "c": 0.0093,
+        },
+        "citation": ' M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
+    },
+})
+
 
 funcs.append({
     "name": "DSD-BP86-D2",
@@ -620,3 +688,8 @@ funcs.append({
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
+
+        'dsd-pbepbe'  : {'b':  9.600, 'c': 0.0093}, 
+        'dsd-pbeb95'  : {'b': 12.500, 'c': 0.0093},
+        'dsd-pbep86'  : {'b': 12.800, 'c': 0.0093},
+        'b2gpplyp'    : {'b':  9.900, 'c': 0.0093},
