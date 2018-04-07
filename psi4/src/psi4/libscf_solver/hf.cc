@@ -494,8 +494,9 @@ double HF::finalize_E()
     functional_->set_do_vv10(true);
     functional_->set_lock(true);
     outfile->Printf( "  ==> calculating VV10 correction on post-scf density <==\n\n");
+    E_=0.0;
     form_V();
-    compute_E();
+    E_+=compute_E();
     }
 
     // Perform wavefunction stability analysis before doing
