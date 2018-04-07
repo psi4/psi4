@@ -224,6 +224,7 @@ tags as are created with the `GitHub interface
 
     >>> git fetch <remote> 'refs/tags/*:refs/tags/*'
 
+
 .. _`faq:psi4version`:
 
 What Psi4 version is running
@@ -279,4 +280,21 @@ What Psi4 version is running
     '1.1rc2.dev17 {condadoc} c852257 1.0.0.999 dirty  1.0 <-- 1.1rc2.dev17+c852257'
     >>> psi4.version_formatter("""{{{branch}}} {versionlong}""")
     '{condadoc} 1.1rc2.dev17+c852257'
+
+
+.. _`faq:grepascii`:
+
+How to locate non-ascii characters in the codebase
+--------------------------------------------------
+
+Neither the Python interpreter nor Sphinx like non-ASCII characters one
+bit, though the errors may be intermittant. Output files are usually ok,
+so Jerome can live, for now. To aid in tracking down offenders, here's
+the ``vi`` and ``grep`` search strings. In the docs, you want to use
+the substitutions in :source:`doc/sphinxman/source/abbr_accents.rst`
+instead of the actual characters. ::
+
+    :/[^\x00-\x7F]
+
+    grep -r --color='auto' -P -n "[^\x00-\x7F]" psi4/
 
