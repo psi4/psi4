@@ -318,9 +318,9 @@ dashcoeff = {
         'b3lyp'       : {'b':  4.800, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
         'b3pw91'      : {'b':  4.500, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
         'revpbe0'     : {'b':  4.300, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
-        'bp86'        : {'b':  4.400, 'c': 0.0093}, # taken from orca
-        'pbe0'        : {'b':  6.900, 'c': 0.0093}, # taken from orca
-        'pbe'         : {'b':  6.400, 'c': 0.0093}, # taken from orca
+        'bp86'        : {'b':  4.400, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
+        'pbe0'        : {'b':  6.900, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
+        'pbe'         : {'b':  6.400, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
         'tpss0'       : {'b':  5.500, 'c': 0.0093, 'citation' : ' W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
         'tpss'        : {'b':  5.000, 'c': 0.0093, 'citation' : ' W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
         #'dsd-pbeb95'  : {'b': 12.500, 'c': 0.0093},
