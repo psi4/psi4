@@ -104,6 +104,14 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
     return dertype
 
+
+def _is_cbs_method(methodname):
+    if ("+" in methodname) or ("[" in methodname) or (methodname.count("/") > 1):
+        return True
+    else:
+        return False
+    
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -414,9 +422,15 @@ def energy(name, **kwargs):
     if kwargs.get('bsse_type', None) is not None:
         return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
 
+    old_global_basis = None
     # Bounce to CBS if "method/basis" name
     if "/" in lowername:
-        return driver_cbs._cbs_gufunc(energy, name, ptype='energy', **kwargs)
+        if _is_cbs_method(lowername):
+            return driver_cbs._cbs_gufunc(energy, name, ptype='energy', **kwargs)
+        else:
+            old_global_basis = core.get_global_option("BASIS")
+            lowername, new_basis = lowername.split('/')
+            core.set_global_option('BASIS', new_basis)
 
     # Commit to procedures['energy'] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
@@ -470,6 +484,11 @@ def energy(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
+    
+    # Reset old global basis if needed
+    if not old_global_basis is None:
+        core.set_global_option("BASIS", old_global_basis)
+    
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
@@ -508,7 +527,8 @@ def gradient(name, **kwargs):
     # Bounce to CP if bsse kwarg (someday)
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
-
+    
+    old_global_basis = None
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
@@ -517,7 +537,14 @@ def gradient(name, **kwargs):
             # Bounce to name if name is non-CBS function
             gradient_type = 'custom_function'
     elif '/' in name:
-        gradient_type = 'cbs_gufunc'
+        if _is_cbs_method(name):
+            gradient_type = 'cbs_gufunc'
+        else:
+            old_global_basis = core.get_global_option("BASIS")
+            old_name = name
+            name, new_basis = name.split('/')
+            core.set_global_option('BASIS', new_basis)
+            gradient_type = 'conventional'
     else:
         gradient_type = 'conventional'
 
@@ -613,6 +640,11 @@ def gradient(name, **kwargs):
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
         optstash.restore()
+        
+        # Reset old global basis if needed
+        if not old_global_basis is None:
+            core.set_global_option("BASIS", old_global_basis)
+        
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
@@ -745,6 +777,10 @@ def gradient(name, **kwargs):
 
         optstash.restore()
 
+        # Reset old global basis if needed
+        if not old_global_basis is None:
+            core.set_global_option("BASIS", old_global_basis)
+
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
@@ -822,6 +858,15 @@ def properties(*args, **kwargs):
     lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
+    
+    old_global_basis = None
+    if "/" in lowername:
+        if _is_cbs_method(lowername):
+            raise ValidationError("Properties: Cannot extrapolate or delta correct properties yet.")
+        else:
+            old_global_basis = core.get_global_option("BASIS")
+            lowername, new_basis = lowername.split('/')
+            core.set_global_option('BASIS', new_basis)
 
     properties = kwargs.get('properties', ['dipole', 'quadrupole'])
 
@@ -834,6 +879,10 @@ def properties(*args, **kwargs):
     wfn = procedures['properties'][lowername](lowername, **kwargs)
 
     optstash.restore()
+
+    # Reset old global basis if needed
+    if not old_global_basis is None:
+        core.set_global_option("BASIS", old_global_basis)
 
     if return_wfn:
         return (core.get_variable('CURRENT ENERGY'), wfn)
@@ -1226,9 +1275,15 @@ def hessian(name, **kwargs):
 
     lowername = name.lower()
 
+    old_global_basis = None
     # Check if this is a CBS extrapolation
     if "/" in lowername:
-        return driver_cbs._cbs_gufunc('hessian', lowername, **kwargs)
+        if _is_cbs_method(lowername):
+            return driver_cbs._cbs_gufunc('hessian', lowername, **kwargs)
+        else:
+            old_global_basis = core.get_global_option("BASIS")
+            lowername, new_basis = lowername.split('/')
+            core.set_global_option('BASIS', new_basis)
 
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -1430,7 +1485,11 @@ def hessian(name, **kwargs):
         core.set_parent_symmetry('')
         optstash.restore()
         optstash_conv.restore()
-
+        
+        # Reset old global basis if needed
+        if not old_global_basis is None:
+            core.set_global_option("BASIS", old_global_basis)
+     
         if return_wfn:
             return (wfn.hessian(), wfn)
         else:
@@ -1566,6 +1625,10 @@ def hessian(name, **kwargs):
         optstash.restore()
         optstash_conv.restore()
 
+        # Reset old global basis if needed
+        if not old_global_basis is None:
+            core.set_global_option("BASIS", old_global_basis)
+
         if return_wfn:
             return (wfn.hessian(), wfn)
         else:
@@ -1672,7 +1735,7 @@ def frequency(name, **kwargs):
 
     old_global_basis = None
     if "/" in lowername:
-        if ("+" in lowername) or ("[" in lowername) or (lowername.count('/') > 1):
+        if _is_cbs_method(lowername):
             raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
         else:
             old_global_basis = core.get_global_option("BASIS")
