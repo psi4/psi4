@@ -1224,7 +1224,6 @@ def scf_helper(name, post_scf=True, **kwargs):
 
         # Compute dftd3
         if "_disp_functor" in dir(ref_wfn):
-        #if "_disp_functor" in dir(ref_wfn) and not ref_wfn._disp_functor.excludelist:
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
@@ -1347,7 +1346,6 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Compute dftd3
     if "_disp_functor" in dir(scf_wfn): 
-    #if "_disp_functor" in dir(scf_wfn) and not scf_wfn._disp_functor.excludelist:
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
         scf_wfn.set_variable("-D Energy", disp_energy)
 
@@ -2066,7 +2064,6 @@ def run_scf_gradient(name, **kwargs):
         ref_wfn.semicanonicalize()
 
     if "_disp_functor" in dir(ref_wfn): 
-    #if "_disp_functor" in dir(ref_wfn) and not ref_wfn._disp_functor.excludelist:
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
         ref_wfn.set_array("-D Gradient", disp_grad)
 
@@ -2134,7 +2131,7 @@ def run_scf_hessian(name, **kwargs):
     if badref or badint:
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
-    if "_disp_functor" in dir(ref_wfn) and not ref_wfn._disp_functor.excludelist:
+    if "_disp_functor" in dir(ref_wfn): 
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
         ref_wfn.set_array("-D Hessian", disp_hess)
 
