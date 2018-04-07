@@ -143,6 +143,8 @@ void HF::common_init()
     else
         name_ = "SCF";
 
+
+
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
     input_docc_ = false;
@@ -328,6 +330,13 @@ void HF::common_init()
         potential_ = nullptr;
     }
 
+    // post-scf vv10 correlation
+    if(options_.get_bool("DFT_VV10_POSTSCF")) {
+    functional_->set_lock(false);
+    functional_->set_do_vv10(false);
+    functional_->set_lock(true);
+    }
+
     // -D is zero by default
     variables_["-D Energy"] = 0.0;
     energies_["-D"] = 0.0;
@@ -478,6 +487,17 @@ double HF::compute_energy()
 
 double HF::finalize_E()
 {
+
+    // post-scf vv10 correlation
+    if(options_.get_bool("DFT_VV10_POSTSCF")) {
+    functional_->set_lock(false);
+    functional_->set_do_vv10(true);
+    functional_->set_lock(true);
+    outfile->Printf( "  ==> calculating VV10 correction on post-scf density <==\n\n");
+    form_V();
+    compute_E();
+    }
+
     // Perform wavefunction stability analysis before doing
     // anything on a wavefunction that may not be truly converged.
     if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
