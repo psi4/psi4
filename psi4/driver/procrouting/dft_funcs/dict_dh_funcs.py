@@ -445,7 +445,7 @@ funcs.append({
             "b": 9.6,
             "c": 0.0093,
         },
-        "citation": ' M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
+        "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
     },
 })
 
@@ -689,7 +689,3 @@ functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
 
-        'dsd-pbepbe'  : {'b':  9.600, 'c': 0.0093}, 
-        'dsd-pbeb95'  : {'b': 12.500, 'c': 0.0093},
-        'dsd-pbep86'  : {'b': 12.800, 'c': 0.0093},
-        'b2gpplyp'    : {'b':  9.900, 'c': 0.0093},
