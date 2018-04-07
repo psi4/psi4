@@ -28,6 +28,7 @@
 
 import datetime
 import os
+import socket
 
 from . import core
 from .metadata import __version__, version_formatter
@@ -47,6 +48,7 @@ def print_header():
     git_info = version_formatter("""{{{branch}}} {githash} {clean}""")
     datadir = core.get_datadir()
     memory = sizeof_fmt(core.get_memory())
+    hostname = socket.gethostname()
     threads = str(core.get_num_threads())
 
     header = """
@@ -71,9 +73,10 @@ def print_header():
 
     Psi4 started on: %s
 
-    Process ID: %6d
+    Process ID: %d
+    Host:       %s
     PSIDATADIR: %s
     Memory:     %s
     Threads:    %s
-    """ % (driver_info, git_info, time_string, pid, datadir, memory, threads)
+    """ % (driver_info, git_info, time_string, pid, hostname, datadir, memory, threads)
     core.print_out(header)

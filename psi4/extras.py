@@ -28,6 +28,7 @@
 
 import os
 import atexit
+import datetime
 import subprocess
 
 from . import core
@@ -46,6 +47,8 @@ atexit.register(clean_numpy_files)
 
 # Exit printing
 def exit_printing():
+    time_string = datetime.datetime.now().strftime('%A, %d %B %Y %I:%M%p')
+    core.print_out( "\n    Psi4 stopped on: %s\n" % time_string)
     if _success_flag_:
         core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
     else:
