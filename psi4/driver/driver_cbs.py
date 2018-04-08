@@ -33,6 +33,7 @@ import re
 import math
 import sys
 import numpy as np
+import copy
 
 from psi4 import core
 
@@ -1543,12 +1544,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     Text based wrapper of the CBS function.
     """
 
-    # Catch kwarg issues
+    # Catch kwarg issues for all methods
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
-    user_dertype = kwargs.pop('dertype', None)
-    cbs_verbose = kwargs.pop('cbs_verbose', False)
     ptype = kwargs.pop('ptype', None)
 
     # Make sure the molecule the user provided is the active one
@@ -1575,7 +1574,6 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         # Save some global variables so we can reset them later
         optstash = p4util.OptionsState(['BASIS'])
         core.set_global_option('BASIS', basis)
-
         ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
         core.clean()
 
@@ -1591,6 +1589,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         raise ValidationError("Properties: Cannot extrapolate or delta correct properties yet.")
     elif ptype == "frequency":
         raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
+
+    # Catch kwarg issues for CBS methods only
+    user_dertype = kwargs.pop('dertype', None)
+    cbs_verbose = kwargs.pop('cbs_verbose', False)
 
     # If we are not a single call, let CBS wrapper handle it!
     cbs_kwargs = {}
