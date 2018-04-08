@@ -103,7 +103,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             % (method_name, str(dertype), alternatives))
 
     return dertype
-    
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -471,7 +471,6 @@ def energy(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
-    
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
@@ -510,7 +509,7 @@ def gradient(name, **kwargs):
     # Bounce to CP if bsse kwarg (someday)
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
-    
+
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
@@ -615,7 +614,6 @@ def gradient(name, **kwargs):
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
         optstash.restore()
-        
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
@@ -824,10 +822,10 @@ def properties(*args, **kwargs):
     lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
-    
+
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
-        
+
     return_wfn = kwargs.pop('return_wfn', False)
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
 
@@ -1435,7 +1433,7 @@ def hessian(name, **kwargs):
         core.set_parent_symmetry('')
         optstash.restore()
         optstash_conv.restore()
-     
+
         if return_wfn:
             return (wfn.hessian(), wfn)
         else:
@@ -1676,7 +1674,6 @@ def frequency(name, **kwargs):
     lowername = name.lower()
 
     if "/" in lowername:
-        print(frequency.__name__, name)
         return driver_cbs._cbs_gufunc(frequency, name, ptype='frequency', **kwargs)
 
     if kwargs.get('bsse_type', None) is not None:

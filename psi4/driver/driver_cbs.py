@@ -891,7 +891,7 @@ def cbs(func, label, **kwargs):
 
     # Establish method for reference energy
     if do_corl and cbs_corl_wfn.startswith('c4-'):
-        default_scf = 'c4-hf' 
+        default_scf = 'c4-hf'
     else:
         default_scf = 'hf'
     cbs_scf_wfn = kwargs.pop('scf_wfn', default_scf).lower()
@@ -1575,6 +1575,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         # Save some global variables so we can reset them later
         optstash = p4util.OptionsState(['BASIS'])
         core.set_global_option('BASIS', basis)
+
         ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
         core.clean()
 
@@ -1584,13 +1585,13 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
             return (ptype_value, wfn)
         else:
             return ptype_value
-    
+
     # Drop out for props and freqs
     elif ptype == "properties":
         raise ValidationError("Properties: Cannot extrapolate or delta correct properties yet.")
     elif ptype == "frequency":
         raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
-        
+
     # If we are not a single call, let CBS wrapper handle it!
     cbs_kwargs = {}
     cbs_kwargs['ptype'] = ptype
