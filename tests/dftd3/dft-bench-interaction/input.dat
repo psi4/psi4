@@ -1,0 +1,61 @@
+#! functionals + DFTD3 interaction energies vs. other programs
+
+molecule h2o_dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+no_reorient
+}
+
+set {
+   basis 6-31G
+   dft_radial_points 200
+   dft_spherical_points 590                
+   guess sad
+   e_convergence 9 
+   d_convergence 9 
+}
+
+qchem_data = {                              #TEST
+     'B97-D3':  -0.014457017899999869,      #TEST
+   'wB97X-D3':  -0.014866630699998495,      #TEST
+}                                           #TEST
+
+# Current version of Psi4 does not match Q-Chem for these tests
+expected_fail_qchem = ['wB97X-D3'] #TEST
+
+# The following data is from an older 
+# version of Psi4 (~April 2017, SHA: 53e752c)  
+old_psi4_data = {                           #TEST 
+    'B97-D3': -0.014455902448531788,        #TEST
+}                                           #TEST
+
+# Current version of Psi4 does not match pre-LibXC Psi4
+# (~April 2017, SHA: 53e752c)
+expected_fail_old_psi4 = [] #TEST
+
+
+for func in qchem_data.keys():                                                                                 #TEST
+    psi4_ie = energy(func, molecule=h2o_dimer, bsse_type='nocp')                                               #TEST
+                                                                                                               #TEST 
+    qchem_ie = qchem_data[func]                                                                                #TEST
+                                                                                                               #TEST 
+    if func in expected_fail_qchem:                                                                            #TEST
+        compare_values(qchem_ie, psi4_ie, 4, func + ': Psi4 vs. Q-Chem', exitonfail = False)                   #TEST
+    else:                                                                                                      #TEST
+        compare_values(qchem_ie, psi4_ie, 4, func + ': Psi4 vs. Q-Chem')                                       #TEST
+                                                                                                               #TEST
+    if func not in old_psi4_data:                                                                              #TEST
+        continue                                                                                               #TEST    
+                                                                                                               #TEST      
+    old_psi4_ie = old_psi4_data[func]                                                                          #TEST
+    if func in expected_fail_old_psi4:                                                                         #TEST
+        compare_values(old_psi4_ie, psi4_ie, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)', exitonfail = False)  #TEST
+    else:                                                                                                      #TEST
+        compare_values(old_psi4_ie, psi4_ie, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)')                      #TEST

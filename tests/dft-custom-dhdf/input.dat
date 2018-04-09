@@ -1,13 +1,13 @@
 # PTPSS and PWPB95 tests from Goerigk/Grimme 
 # ptpss reference values from SI (turbomole reference grid) :
 #PTPSS
-#ESCF −128.809366 −76.312440
-#ESOS−PT2 −0.086404 −0.091847
-#Etot −128.895770 −76.404287 
+#ESCF -128.809366 -76.312440
+#ESOS-PT2 -0.086404 -0.091847
+#Etot -128.895770 -76.404287
 #PWPB95
-#ESCF −128.858167 −76.345725 
-#ESOS−PT2 −0.062530 −0.066777 
-#Etot −128.920697 −76.412502
+#ESCF -128.858167 -76.345725
+#ESOS-PT2 -0.062530 -0.066777
+#Etot -128.920697 -76.412502
 
 # DSD-BLYP from ORCA v.4.0.1, cc-pVTZ, RI-MP2, FC, GRID7
 # PBE0-DH  from ORCA v.4.0.1, cc-pVTZ, RI-MP2, FC, GRID7
@@ -82,9 +82,14 @@ set freeze_core true
 edhdf = energy('dsd-blyp')
 e_dft=get_variable('SCF TOTAL ENERGY')
 e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
-compare_values(-128.75560404, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
-compare_values(-0.126886573, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
-compare_values(-128.882490613961, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+# new fctl definition, ref in ref_outputs/orca_rev_dsdblyp.out 
+compare_values(-128.74250101, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+compare_values(-0.140004832412, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+compare_values(-128.882505842412, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+# some old definition, ref in ref_outputs/orca_dsdblyp.ref
+#compare_values(-128.75560404, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+#compare_values(-0.126886573, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+#compare_values(-128.882490613961, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
 clean()
 
 edhdf = energy('pbe0-dh')
@@ -128,8 +133,8 @@ clean()
 
 
 # =========== former dft-dsd ==========
-#! DSD-PBE86 S22 Ammonia test
-molecule water2 {
+#! DSD-PBEP86 S22 Ammonia test
+molecule ammonia {
 0 1
 N  -1.578718  -0.046611   0.000000
 H  -2.158621   0.136396  -0.809565
@@ -142,7 +147,7 @@ H   2.158621  -0.136396  -0.809565
 H   0.849471  -0.658193   0.000000
 H   2.158621  -0.136396   0.809565
 }
-activate(water2)
+activate(ammonia)
 
 set basis aug-cc-pvdz
 set reference rks
@@ -152,8 +157,9 @@ set scf_type df
 set freeze_core false
 
 e_dhdft = energy('DSD-PBEP86', bsse_type="nocp")
-compare_values(e_dhdft * 627.509,  -3.2076, 2, "DSD-PBE-PBE86: Ammonia")  #TEST
+compare_values(-3.3187, e_dhdft * 627.509, 2, "DSD-PBEP86: Ammonia")  #TEST
 
+# -112.915920926815 - -56.455316131791 - -56.455316053013 = -0.005288742011  #TEST
 
 
 # Additional tests

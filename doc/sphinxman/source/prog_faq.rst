@@ -72,6 +72,7 @@ Workflow
 #. :ref:`faq:githubworkflow`
 #. :ref:`faq:vigitmerge`
 #. :ref:`faq:gdblldb`
+#. :ref:`faq:grepascii`
 
 Miscellaneous
 -------------

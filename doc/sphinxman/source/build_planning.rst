@@ -1350,6 +1350,7 @@ and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 * Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``
 * Run about a third of the tests in 10--20 minutes, the so-called *quicktests*: ``ctest -L quick``
+* Run the same subset of tests that TravisCI checks (not the full test suite): ``ctest -L quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``ctest -L smoke``
 * Run tests matching by name: ``ctest -R testname``
 * Run tests excluding those by name: ``ctest -E testname``

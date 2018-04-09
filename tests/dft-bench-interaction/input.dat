@@ -1,3 +1,5 @@
+#! functionals + DFTD3 interaction energies vs. other programs
+
 molecule h2o_dimer {
 0 1
 O  -1.551007  -0.114520   0.000000
@@ -24,7 +26,7 @@ qchem_data = {                              #TEST
      'M08-SO':  -0.015457831899993835,      #TEST
        'EDF1':   -0.01126603059999809,      #TEST
     'MPW1B95':  -0.014382823700003655,      #TEST
-     'B97-D3':  -0.014457017899999869,      #TEST
+     #'B97-D3':  -0.014457017899999869,      #TEST  # moved to dftd3/
      'PW6B95':  -0.014544493599998987,      #TEST
       'wB97X':  -0.015628902399981826,      #TEST
      'B3LYP5':  -0.014495724699997936,      #TEST
@@ -85,7 +87,7 @@ qchem_data = {                              #TEST
    'LRC-wPBE':  -0.014715257600002474,      #TEST
       'TPSSh':  -0.014080877399976544,      #TEST
       'B97-D':   -0.01404225510000856,      #TEST
-   'wB97X-D3':  -0.014866630699998495,      #TEST
+   #'wB97X-D3':  -0.014866630699998495,      #TEST  # moved to dftd3/
 # The following functionals are not included 
 # in Psi4 at the moment. 
 #      'VSXC':  -0.013831423100000961,      #TEST
@@ -131,7 +133,7 @@ expected_fail_qchem = ['B97-D', 'wB97X-D3'] #TEST
 old_psi4_data = {                           #TEST 
       'BP86': -0.013889878815405154,        #TEST
       'BLYP': -0.014294874492634335,        #TEST
-    'B97-D3': -0.014455902448531788,        #TEST
+    #'B97-D3': -0.014455902448531788,        #TEST  # moved to dftd3/
     'B3LYP5': -0.014494768950584103,        #TEST
        'PBE': -0.015457134998626998,        #TEST
     'M05-2X': -0.015145056492713138,        #TEST
