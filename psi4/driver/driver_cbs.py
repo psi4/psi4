@@ -33,7 +33,6 @@ import re
 import math
 import sys
 import numpy as np
-import copy
 
 from psi4 import core
 
