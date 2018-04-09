@@ -1513,7 +1513,7 @@ def _cbs_wrapper_methods(**kwargs):
 
 
 def _parse_cbs_gufunc_string(method_name):
-    method_name_list = re.split( """\+(?![^\[\]]*\]|[^\(\)]*\))""", method_name)
+    method_name_list = re.split( """\+(?=\s*[Dd]:)""", method_name)
     if len(method_name_list) > 2:
         raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
 
