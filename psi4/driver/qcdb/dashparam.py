@@ -326,7 +326,6 @@ dashcoeff = {
         #'dsd-pbeb95'  : {'b': 12.500, 'c': 0.0093},
         'b2gpplyp'    : {'b':  9.900, 'c': 0.0093},
         'b2plyp'      : {'b':  7.800, 'c': 0.0093, 'citation': '    J. Calbo, E. Orti, J. C. Sancho-Garcia, J. Arago, J. Chem. Theory Comput. 11, 932-939, 1015 \n'}, 
-        'dsd-blyp'    : {'b': 12.000, 'c': 0.0093, 'citation': '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
         'pwpb95'      : {'b': 11.100, 'c': 0.0093, 'citation': '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
     },
 

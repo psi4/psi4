@@ -140,6 +140,44 @@ funcs.append({
 })
 
 funcs.append({
+# note by H.Kruse: Uses the full-core parameters in the Yu paper. But my and L. Georigk's experience shows that it hardly matters.
+# Use FC is recommended by S. Grimme.
+# May this madness never end.
+    "name": "DSD-BLYP-NL",
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.29
+        }
+    },
+    "x_hf": {
+        "alpha": 0.71
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.54
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.47,
+        "ss": 0.40,
+    },
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 12.00,
+            "c": 0.0093,
+        },
+        "citation": "    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014\n" 
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-BLYP-NL (D3BJ,FC functional parameters) Dispersion-corrected SCS Double Hybrid XC Functional\n',
+})
+
+
+
+
+funcs.append({
     "name": "CORE-DSD-BLYP",
     "x_functionals": {
         "GGA_X_B88": {
