@@ -27,7 +27,6 @@
 #
 
 from __future__ import absolute_import
-import math
 
 import numpy as np
 
@@ -135,23 +134,23 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     core.print_out("Cubic Force Constant     %14.7f MDYNE/A**2\n" % d3)
     core.print_out("Quartic Force Constant   %14.7f MDYNE/A**3\n" % d4)
 
-    hbar = constants.h / (2.0 * math.pi)
+    hbar = constants.h / (2.0 * np.pi)
     mu = ((m1*m2)/(m1+m2))*constants.amu2kg
-    we = 5.3088375e-11 * math.sqrt(d2/mu)
+    we = 5.3088375e-11 * np.sqrt(d2/mu)
     wexe = (1.2415491e-6)*(we/d2)**2 * ((5.0*d3*d3)/(3.0*d2)-d4)
 
     # Rotational constant: Be
     I = ((m1*m2)/(m1+m2)) * constants.amu2kg * (re * angstrom_to_meter)**2
-    B = constants.h / (8.0 * math.pi**2 * constants.c * I)
+    B = constants.h / (8.0 * np.pi**2 * constants.c * I)
 
     # alpha_e and quartic centrifugal distortion constant
-    ae = -(6.0 * B**2 / we) * ((1.05052209e-3*we*d3)/(math.sqrt(B * d2**3))+1.0)
+    ae = -(6.0 * B**2 / we) * ((1.05052209e-3*we*d3)/(np.sqrt(B * d2**3))+1.0)
     de = 4.0*B**3 / we**2
 
     # B0 and r0 (plus re check using Be)
     B0 = B - ae / 2.0
-    r0 = math.sqrt(constants.h / (8.0 * math.pi**2 * mu * constants.c * B0))
-    recheck = math.sqrt(constants.h / (8.0 * math.pi**2 * mu * constants.c * B))
+    r0 = np.sqrt(constants.h / (8.0 * np.pi**2 * mu * constants.c * B0))
+    recheck = np.sqrt(constants.h / (8.0 * np.pi**2 * mu * constants.c * B))
     r0 /= angstrom_to_meter;
     recheck /= angstrom_to_meter;
 
@@ -213,8 +212,8 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
 
         # Generate the fitted PES
         xpts = np.linspace(minR, maxR, 1000)
-        xrel = xpts-re
-        xpows = xrel[:,np.newaxis] ** range(5)
+        xrel = xpts - re
+        xpows = xrel[:, None] ** range(5)
         fit2 = np.einsum('xd,d', xpows[:,0:3], dvals[0:3])
         fit4 = np.einsum('xd,d', xpows, dvals)
 

@@ -42,8 +42,13 @@ from .bfs import BFS
 
 
 class Molecule(LibmintsMolecule):
-    """Class to store python extensions to the MoleculeLibmints class.
-    Multiple classes allows separation of libmints and extension methods.
+    """Class to store the elements, coordinates, fragmentation pattern,
+    charge, multiplicity of a molecule. Largely replicates psi4's libmints
+    Molecule class, developed by Justin M. Turney and Andy M. Simmonett
+    with incremental improvements by other psi4 developers. Major
+
+    This class extends `qcdb.LibmintsMolecule` and occasionally
+    `psi4.core.Molecule` itself.
 
     """
 
@@ -1256,7 +1261,7 @@ class Molecule(LibmintsMolecule):
 
         fragments = [x[:] for x in self.get_fragments()]
         fragment_charges = [float(f) for f in self.get_fragment_charges()]
-        fragment_multiplicities = self.get_fragment_multiplicities()
+        fragment_multiplicities = [m for m in self.get_fragment_multiplicities()]
 
         # do trimming not performed in Molecule class b/c fragment_* member data never directly exposed
         for ifr, fr in reversed(list(enumerate(self.get_fragment_types()))):

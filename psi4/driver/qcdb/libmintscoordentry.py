@@ -47,6 +47,8 @@ class CoordValue(object):
     may be defined in terms of other variables through this mechanism, greatly
     simplifying Z-matrix specification, for example.
 
+    This class and its subclasses are used by `qcdb.Molecule` but not by users directly.
+
     """
 
     def __init__(self, fixed=False, computed=False):
@@ -168,6 +170,8 @@ class VariableValue(CoordValue):
 class CoordEntry(object):
     """Class to store all the attributes associated with an atom, not the
     larger Molecule. Specialized into CartesianEntry and ZMatrixEntry.
+
+    This class and its subclasses are used by `qcdb.Molecule` but not by users directly.
 
     """
 

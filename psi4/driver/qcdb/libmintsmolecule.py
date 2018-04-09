@@ -56,10 +56,11 @@ class LibmintsMolecule(object):
     """Class to store the elements, coordinates, fragmentation pattern,
     charge, multiplicity of a molecule. Largely replicates psi4's libmints
     Molecule class, developed by Justin M. Turney and Andy M. Simmonett
-    with incremental improvements by other psi4 developers. Major
-    differences from the C++ class are: no basisset handling, no symmetry,
-    no pubchem, no efp, no discarding dummies. This class translated so
-    that databases can function independently of psi4.
+    with incremental improvements by other psi4 developers.
+
+    Roughly, this class mirrors `psi4.core.Molecule`; however, it's never
+    used directly and instead serves as a base class for `qcdb.Molecule`
+    in alongside-file molecule.py.
 
     >>> H2OH2O = qcdb.Molecule(\"\"\"
         0 1
@@ -215,8 +216,10 @@ class LibmintsMolecule(object):
         >>> H2OH2O.set_molecular_charge(-2)
 
         """
+        if not float(charge).is_integer():
+            raise ValidationError('System charge must be integer: {}'.format(charge))
         self.PYcharge_specified = True
-        self.PYmolecular_charge = charge
+        self.PYmolecular_charge = int(charge)
 
     def charge_specified(self):
         """Whether the charge was given by the user
@@ -241,8 +244,10 @@ class LibmintsMolecule(object):
         >>> H2OH2O.set_multiplicity(3)
 
         """
+        if not float(mult).is_integer() or float(mult) < 0.0:
+            raise ValidationError('System multiplicity must be positive integer: {}'.format(mult))
         self.PYmultiplicity_specified = True
-        self.PYmultiplicity = mult
+        self.PYmultiplicity = int(mult)
 
     def multiplicity_specified(self):
         """Whether the multiplicity was given by the user
@@ -263,8 +268,20 @@ class LibmintsMolecule(object):
         return self.PYunits
 
     def set_units(self, units):
-        """Sets the geometry units
+        """Sets the geometry units (constructor use).
 
+        Parameters
+        ----------
+        units : {'Angstrom', 'Bohr'}
+            Units of input geometry.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        # [1]
         >>> H2OH2O.set_units('Angstrom')
 
         """
@@ -374,7 +391,23 @@ class LibmintsMolecule(object):
         return z2mass[int(self.atoms[atom].Z())]
 
     def set_mass(self, atom, mass):
-        """Set the mass of a particular atom (good for isotopic substitutions)"""
+        """Set the mass of a particular atom (good for isotopic substitutions).
+
+        Parameters
+        ----------
+        atom : int
+            0-indexed, dummy-inclusive atom index to set.
+        mass : float
+            Non-negative mass in [u] for `atom`.
+
+        Returns
+        -------
+        None
+
+        """
+        mass = float(mass)
+        if mass < 0.0:
+            raise ValidationError('Mass must be positive: {}'.format(mass))
         self.full_atoms[atom].set_mass(mass)
 
     def symbol(self, atom):
@@ -614,19 +647,47 @@ class LibmintsMolecule(object):
         return subset
 
     def get_fragments(self):
-        """The list of atom ranges defining each fragment from parent molecule"""
+        """The list of atom ranges defining each fragment from parent molecule.
+
+        Returns
+        -------
+        list of lists
+            (nfr, 2) actual member data, for constructor use only.
+
+        """
         return self.fragments
 
     def get_fragment_types(self):
-        """A list describing how to handle each fragment"""
+        """A list describing how to handle each fragment.
+
+        Returns
+        -------
+        list
+            (nfr, ) actual member data, for constructor use only.
+
+        """
         return self.fragment_types
 
     def get_fragment_charges(self):
-        """The charge of each fragment"""
+        """The charge of each fragment.
+
+        Returns
+        -------
+        list
+            (nfr, ) actual member data, for constructor use only.
+
+        """
         return self.fragment_charges
 
     def get_fragment_multiplicities(self):
-        """The multiplicity of each fragment"""
+        """The multiplicity of each fragment.
+
+        Returns
+        -------
+        list
+            (nfr, ) actual member data, for constructor use only.
+
+        """
         return self.fragment_multiplicities
 
     # <<< Methods for Construction >>>
