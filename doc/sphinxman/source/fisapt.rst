@@ -255,6 +255,13 @@ from system 1.
 I-SAPT: A Representative Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. caution:: As of April 2018, you can't specify molecule fragments
+   with an unphysical multiplicity like the singlet OH fragments in
+   the molecule below, especially as (again in the example below) the
+   overall molecule needs to be a singlet, which |PSIfour| doesn't at
+   present let be set independently. For situations like this, use the
+   temporary input pattern in :srcsample:`isapt1` .
+
 Below, we show an example of using I-SAPT0/jun-cc-pVDZ to analyze the
 interaction between the two phenol groups in a 2,4-pentanediol molecule.
 This example is
