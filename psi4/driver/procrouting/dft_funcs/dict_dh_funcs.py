@@ -723,6 +723,38 @@ funcs.append({
     },
 })
 
+funcs.append({
+    "name": "DSD-PBEB95-NL",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.34
+        }
+    },
+    "x_hf": {
+        "alpha": 0.66
+    },
+    "c_functionals": {
+      "MGGA_C_BC95": {
+            "alpha": 0.55
+        }
+    },
+    "c_mp2": {
+        "os": 0.46,
+        "ss": 0.09
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEB95-NL (D3BJ functional parameters) Dispersion-corrected SCS Double Hybrid Meta-GGA XC Functional\n',
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 12.50,
+            "c": 0.0093,
+        },
+        "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
+    },
+})
+
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional

@@ -321,12 +321,11 @@ dashcoeff = {
         'bp86'        : {'b':  4.400, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
         'pbe0'        : {'b':  6.900, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
         'pbe'         : {'b':  6.400, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
-        'tpss0'       : {'b':  5.500, 'c': 0.0093, 'citation' : ' W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
-        'tpss'        : {'b':  5.000, 'c': 0.0093, 'citation' : ' W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
-        #'dsd-pbeb95'  : {'b': 12.500, 'c': 0.0093},
-        'b2gpplyp'    : {'b':  9.900, 'c': 0.0093},
-        'b2plyp'      : {'b':  7.800, 'c': 0.0093, 'citation': '    J. Calbo, E. Orti, J. C. Sancho-Garcia, J. Arago, J. Chem. Theory Comput. 11, 932-939, 1015 \n'}, 
-        'pwpb95'      : {'b': 11.100, 'c': 0.0093, 'citation': '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
+        'tpss0'       : {'b':  5.500, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
+        'tpss'        : {'b':  5.000, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
+        'b2gpplyp'    : {'b':  9.900, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'},
+        'b2plyp'      : {'b':  7.800, 'c': 0.0093, 'citation' : '    J. Calbo, E. Orti, J. C. Sancho-Garcia, J. Arago, J. Chem. Theory Comput. 11, 932-939, 1015 \n'}, 
+        'pwpb95'      : {'b': 11.100, 'c': 0.0093, 'citation' : '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
     },
 
 } # yapf: disable
