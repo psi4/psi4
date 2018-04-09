@@ -1584,10 +1584,8 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
             return ptype_value
 
     # Drop out for props and freqs
-    elif ptype == "properties":
-        raise ValidationError("Properties: Cannot extrapolate or delta correct properties yet.")
-    elif ptype == "frequency":
-        raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
+    if ptype in ["properties", "frequency"]:
+        raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
 
     # Catch kwarg issues for CBS methods only
     user_dertype = kwargs.pop('dertype', None)
