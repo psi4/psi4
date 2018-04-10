@@ -508,7 +508,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Ca2p = Ca_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        C_DCOPY(na, Cap[ml], 1, Ca2p[mg], 1);
+        C_DCOPY(na, Cap[mg], 1, Ca2p[ml], 1);
     }
 
     int nb = Cb_AO_->colspi()[0];
@@ -516,7 +516,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Cb2p = Cb_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        C_DCOPY(na, Cbp[ml], 1, Cb2p[mg], 1);
+        C_DCOPY(na, Cbp[mg], 1, Cb2p[ml], 1);
     }
 
     // => Build orbitals <= //
