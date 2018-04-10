@@ -41,8 +41,8 @@ namespace psi {
 
 class PSIO;
 class PSIOManager;
-extern std::shared_ptr<PSIO> _default_psio_lib_;
-extern std::shared_ptr<PSIOManager> _default_psio_manager_;
+extern PSI_API std::shared_ptr<PSIO> _default_psio_lib_;
+extern PSI_API std::shared_ptr<PSIOManager> _default_psio_manager_;
 
 /**
     PSIOManager is a class designed to be used as a static object to track all
@@ -51,7 +51,7 @@ extern std::shared_ptr<PSIOManager> _default_psio_manager_;
     This will allow PSICLEAN to be trivially executed.
     Now supports a .psirc and interactive file placement
    */
-class PSIOManager {
+class PSI_API PSIOManager {
 private:
     /// Default path for unspec'd file numbers. Defaults to /tmp/
     std::string default_path_;
@@ -192,7 +192,7 @@ public:
    etc.
 
    */
-class PSIO {
+class PSI_API PSIO {
 public:
     PSIO();
     ~PSIO();

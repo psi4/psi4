@@ -56,7 +56,7 @@ typedef std::vector<std::shared_ptr<MOSpace> > SpaceVec;
    within general spaces
  */
 
-class IntegralTransform {
+class PSI_API IntegralTransform {
     // TODO check usage of restricted, to make sure that it's correct everywhere
    public:
     /**

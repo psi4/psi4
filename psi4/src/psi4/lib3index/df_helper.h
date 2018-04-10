@@ -46,7 +46,7 @@ class Matrix;
 class ERISieve;
 class TwoBodyAOInt;
 
-class DF_Helper {
+class PSI_API DF_Helper {
    public:
     DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
     ~DF_Helper();
