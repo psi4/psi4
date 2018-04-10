@@ -891,7 +891,7 @@ def cbs(func, label, **kwargs):
 
     # Establish method for reference energy
     if do_corl and cbs_corl_wfn.startswith('c4-'):
-        default_scf = 'c4-hf' 
+        default_scf = 'c4-hf'
     else:
         default_scf = 'hf'
     cbs_scf_wfn = kwargs.pop('scf_wfn', default_scf).lower()
@@ -1513,7 +1513,7 @@ def _cbs_wrapper_methods(**kwargs):
 
 
 def _parse_cbs_gufunc_string(method_name):
-    method_name_list = re.split( """\+(?![^\[\]]*\]|[^\(\)]*\))""", method_name)
+    method_name_list = re.split( """\+(?=\s*[Dd]:)""", method_name)
     if len(method_name_list) > 2:
         raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
 
@@ -1543,12 +1543,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     Text based wrapper of the CBS function.
     """
 
-    # Catch kwarg issues
+    # Catch kwarg issues for all methods
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
-    user_dertype = kwargs.pop('dertype', None)
-    cbs_verbose = kwargs.pop('cbs_verbose', False)
     ptype = kwargs.pop('ptype', None)
 
     # Make sure the molecule the user provided is the active one
@@ -1575,7 +1573,6 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         # Save some global variables so we can reset them later
         optstash = p4util.OptionsState(['BASIS'])
         core.set_global_option('BASIS', basis)
-
         ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
         core.clean()
 
@@ -1585,6 +1582,14 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
             return (ptype_value, wfn)
         else:
             return ptype_value
+
+    # Drop out for props and freqs
+    if ptype in ["properties", "frequency"]:
+        raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
+
+    # Catch kwarg issues for CBS methods only
+    user_dertype = kwargs.pop('dertype', None)
+    cbs_verbose = kwargs.pop('cbs_verbose', False)
 
     # If we are not a single call, let CBS wrapper handle it!
     cbs_kwargs = {}

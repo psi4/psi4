@@ -104,6 +104,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
     return dertype
 
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -811,7 +812,6 @@ def properties(*args, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
@@ -823,13 +823,16 @@ def properties(*args, **kwargs):
     if level:
         kwargs['level'] = level
 
-    properties = kwargs.get('properties', ['dipole', 'quadrupole'])
+    if "/" in lowername:
+        return driver_cbs._cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
+
+    return_wfn = kwargs.pop('return_wfn', False)
+    props = kwargs.get('properties', ['dipole', 'quadrupole'])
 
     if len(args) > 1:
-        properties += args[1:]
+        props += args[1:]
 
-    kwargs['properties'] = p4util.drop_duplicates(properties)
-
+    kwargs['properties'] = p4util.drop_duplicates(props)
     optstash = driver_util._set_convergence_criterion('properties', lowername, 6, 10, 6, 10, 8)
     wfn = procedures['properties'][lowername](lowername, **kwargs)
 
@@ -1670,14 +1673,8 @@ def frequency(name, **kwargs):
 
     lowername = name.lower()
 
-    old_global_basis = None
     if "/" in lowername:
-        if ("+" in lowername) or ("[" in lowername) or (lowername.count('/') > 1):
-            raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
-        else:
-            old_global_basis = core.get_global_option("BASIS")
-            lowername, new_basis = lowername.split('/')
-            core.set_global_option('BASIS', new_basis)
+        return driver_cbs._cbs_gufunc(frequency, name, ptype='frequency', **kwargs)
 
     if kwargs.get('bsse_type', None) is not None:
         raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
@@ -1705,10 +1702,6 @@ def frequency(name, **kwargs):
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
-
-    # Reset old global basis if needed
-    if not old_global_basis is None:
-        core.set_global_option("BASIS", old_global_basis)
 
     if return_wfn:
         return (core.get_variable('CURRENT ENERGY'), wfn)

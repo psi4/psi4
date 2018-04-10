@@ -1,0 +1,500 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 09 April 2018 08:44PM
+
+    Process ID:  31005
+    PSIDATADIR: /home/pk/Build/psi4/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Electrostatic potential and electric field evaluated on a grid around water.
+
+molecule h2o {
+ noreorient
+ nocom
+    O            0.250254404867     0.126248114412     0.000000000000
+    H            0.428893090449     1.055731838795     0.000000000000
+    H            1.104987458381    -0.280303532167     0.000000000000
+}
+
+set basis cc-pvdz
+
+# Make a regular grid to evaluate properties on
+with open('grid.dat', 'w') as fp:
+    for x in range(3):
+        xval = (x-1.0)*2.0
+        for y in range(3):
+            yval = (y-1.0)*2.0
+            fp.write("%16.10f%16.10f%16.10f\n" % (xval, yval, 1.0))
+
+set basis cc-pvdz
+
+E, wfn = prop('scf', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+Vvals = wfn.oeprop.Vvals()
+Exvals = wfn.oeprop.Exvals()
+Eyvals = wfn.oeprop.Eyvals()
+Ezvals = wfn.oeprop.Ezvals()
+
+Vref = [  -0.01864332, -0.02983653, -0.00571316, -0.01714680,                #TEST
+          -0.07221349, 0.02825424, 0.01292946, 0.03954310, 0.02488373 ]      #TEST
+Exref = [  0.00320099, 0.01125093, -0.00150000, -0.00790054,                 #TEST
+          -0.04636844, -0.01542558, -0.00144356, 0.00721353, 0.00567028 ]    #TEST
+Eyref = [  0.00458295, -0.00299119, -0.00466856, 0.00834508,                 #TEST
+          -0.02348328, 0.00535201, -0.00717122, 0.00662765, 0.00395976 ]     #TEST
+Ezref = [ -0.00217704, -0.00553756, 0.00008846, -0.00179950,                 #TEST
+           0.06515550, 0.02411333, 0.00517909, 0.02914557, 0.00742069 ]      #TEST
+for i in range(9):                                                           #TEST
+    compare_values(Vvals[i], Vref[i], 6, "V at grid point %d" % i)           #TEST
+    compare_values(Exvals[i], Exref[i], 6, "Ex at grid point %d" % i)        #TEST
+    compare_values(Eyvals[i], Eyref[i], 6, "Ey at grid point %d" % i)        #TEST
+    compare_values(Ezvals[i], Ezref[i], 6, "Ez at grid point %d" % i)        #TEST
+
+set basis cc-pvtz
+
+E, wfn = prop('scf/cc-pvdz', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+Vvals_2 = wfn.oeprop.Vvals()
+
+for i in range(9):                                                                               #TEST
+    compare_values(Vvals_2[i], Vvals[i], 8, "SCF vs SCF/cc-pvdz: V at grid point %d" % i)        #TEST
+
+
+--------------------------------------------------------------------------
+
+*** tstart() called on dream
+*** at Mon Apr  9 20:44:32 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.250254404867     0.126248114412     0.000000000000    15.994914619560
+           H          0.428893090449     1.055731838795     0.000000000000     1.007825032070
+           H          1.104987458381    -0.280303532167     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     14.92065  B =      6.14065  C =      4.35028 [cm^-1]
+  Rotational constants: A = 447309.88071  B = 184092.02548  C = 130418.01292 [MHz]
+  Nuclear repulsion =    9.298870938535497
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis function: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.3431849932E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -75.90435997063679   -7.59044e+01   9.02171e-02 
+   @DF-RHF iter   1:   -76.00408078285146   -9.97208e-02   1.29406e-02 
+   @DF-RHF iter   2:   -76.02209539237106   -1.80146e-02   6.22776e-03 DIIS
+   @DF-RHF iter   3:   -76.02691506020840   -4.81967e-03   7.80100e-04 DIIS
+   @DF-RHF iter   4:   -76.02702598901361   -1.10929e-04   1.41643e-04 DIIS
+   @DF-RHF iter   5:   -76.02703229379711   -6.30478e-06   2.58509e-05 DIIS
+   @DF-RHF iter   6:   -76.02703258903752   -2.95240e-07   5.83855e-06 DIIS
+   @DF-RHF iter   7:   -76.02703260569237   -1.66549e-08   7.10630e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.548502     2Ap    -1.342211     3Ap    -0.705209  
+       4Ap    -0.568471     1App   -0.493922  
+
+    Virtual:                                                              
+
+       5Ap     0.187371     6Ap     0.257786     7Ap     0.797357  
+       8Ap     0.864462     9Ap     1.162836     2App    1.200460  
+      10Ap     1.252761    11Ap     1.443781     3App    1.479396  
+       4App    1.677723    12Ap     1.865442    13Ap     1.947308  
+      14Ap     2.478867    15Ap     2.518032     5App    3.295663  
+       6App    3.350277    16Ap     3.525285    17Ap     3.878800  
+      18Ap     4.159859  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -76.02703260569237
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.2988709385354973
+    One-Electron Energy =                -123.3351787047974000
+    Two-Electron Energy =                  38.0092751605695298
+    Total Energy =                        -76.0270326056923693
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+
+ Field computed on the grid and written to grid_field.dat
+
+ Electrostatic potential computed on the grid and written to grid_esp.dat
+
+*** tstop() called on dream at Mon Apr  9 20:44:33 2018
+Module time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	V at grid point 0.................................................PASSED
+	Ex at grid point 0................................................PASSED
+	Ey at grid point 0................................................PASSED
+	Ez at grid point 0................................................PASSED
+	V at grid point 1.................................................PASSED
+	Ex at grid point 1................................................PASSED
+	Ey at grid point 1................................................PASSED
+	Ez at grid point 1................................................PASSED
+	V at grid point 2.................................................PASSED
+	Ex at grid point 2................................................PASSED
+	Ey at grid point 2................................................PASSED
+	Ez at grid point 2................................................PASSED
+	V at grid point 3.................................................PASSED
+	Ex at grid point 3................................................PASSED
+	Ey at grid point 3................................................PASSED
+	Ez at grid point 3................................................PASSED
+	V at grid point 4.................................................PASSED
+	Ex at grid point 4................................................PASSED
+	Ey at grid point 4................................................PASSED
+	Ez at grid point 4................................................PASSED
+	V at grid point 5.................................................PASSED
+	Ex at grid point 5................................................PASSED
+	Ey at grid point 5................................................PASSED
+	Ez at grid point 5................................................PASSED
+	V at grid point 6.................................................PASSED
+	Ex at grid point 6................................................PASSED
+	Ey at grid point 6................................................PASSED
+	Ez at grid point 6................................................PASSED
+	V at grid point 7.................................................PASSED
+	Ex at grid point 7................................................PASSED
+	Ey at grid point 7................................................PASSED
+	Ez at grid point 7................................................PASSED
+	V at grid point 8.................................................PASSED
+	Ex at grid point 8................................................PASSED
+	Ey at grid point 8................................................PASSED
+	Ez at grid point 8................................................PASSED
+
+*** tstart() called on dream
+*** at Mon Apr  9 20:44:33 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.250254404867     0.126248114412     0.000000000000    15.994914619560
+           H          0.428893090449     1.055731838795     0.000000000000     1.007825032070
+           H          1.104987458381    -0.280303532167     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     14.92065  B =      6.14065  C =      4.35028 [cm^-1]
+  Rotational constants: A = 447309.88071  B = 184092.02548  C = 130418.01292 [MHz]
+  Nuclear repulsion =    9.298870938535497
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /home/pk/Build/psi4/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis function: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.3431849932E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -75.90435997063679   -7.59044e+01   9.02171e-02 
+   @DF-RHF iter   1:   -76.00408078285146   -9.97208e-02   1.29406e-02 
+   @DF-RHF iter   2:   -76.02209539237106   -1.80146e-02   6.22776e-03 DIIS
+   @DF-RHF iter   3:   -76.02691506020840   -4.81967e-03   7.80100e-04 DIIS
+   @DF-RHF iter   4:   -76.02702598901361   -1.10929e-04   1.41643e-04 DIIS
+   @DF-RHF iter   5:   -76.02703229379711   -6.30478e-06   2.58509e-05 DIIS
+   @DF-RHF iter   6:   -76.02703258903752   -2.95240e-07   5.83855e-06 DIIS
+   @DF-RHF iter   7:   -76.02703260569237   -1.66549e-08   7.10630e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.548502     2Ap    -1.342211     3Ap    -0.705209  
+       4Ap    -0.568471     1App   -0.493922  
+
+    Virtual:                                                              
+
+       5Ap     0.187371     6Ap     0.257786     7Ap     0.797357  
+       8Ap     0.864462     9Ap     1.162836     2App    1.200460  
+      10Ap     1.252761    11Ap     1.443781     3App    1.479396  
+       4App    1.677723    12Ap     1.865442    13Ap     1.947308  
+      14Ap     2.478867    15Ap     2.518032     5App    3.295663  
+       6App    3.350277    16Ap     3.525285    17Ap     3.878800  
+      18Ap     4.159859  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -76.02703260569237
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.2988709385354973
+    One-Electron Energy =                -123.3351787047974000
+    Two-Electron Energy =                  38.0092751605695298
+    Total Energy =                        -76.0270326056923693
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+
+ Field computed on the grid and written to grid_field.dat
+
+ Electrostatic potential computed on the grid and written to grid_esp.dat
+
+*** tstop() called on dream at Mon Apr  9 20:44:33 2018
+Module time:
+	user time   =       0.30 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	SCF vs SCF/cc-pvdz: V at grid point 0.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 1.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 2.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 3.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 4.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 5.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 6.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 7.............................PASSED
+	SCF vs SCF/cc-pvdz: V at grid point 8.............................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!
