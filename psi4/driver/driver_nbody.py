@@ -304,12 +304,16 @@ def nbody_gufunc(func, method_string, **kwargs):
             energies_dict[pair] = core.get_variable("CURRENT ENERGY")
             core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
                                                                 (str(pair[0]), str(pair[1]), energies_dict[pair]))
-
             # Flip this off for now, needs more testing
             #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
             #    core.set_global_option('DF_INTS_IO', 'LOAD')
 
             core.clean()
+
+    # Set vairables for N-Body intermediates
+    for pair in energies_dict.keys():
+        core.set_variable("N-BODY (%s)@(%s) TOTAL ENERGY" %
+                          (', '.join([str(i) for i in pair[0]]), ', '.join([str(i) for i in pair[1]])), energies_dict[pair])
 
     # Final dictionaries
     cp_energy_by_level   = {n: 0.0 for n in nbody_range}
