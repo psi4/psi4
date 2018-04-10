@@ -250,7 +250,7 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** Ca2p = C_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        C_DCOPY(na, Cap[ml], 1, Ca2p[mg], 1);
+        C_DCOPY(na, Cap[mg], 1, Ca2p[ml], 1);
     }
 
     // => Build orbitals <= //
