@@ -602,6 +602,19 @@ PSI Variables by Alpha
    .. math:: E_{NN} = \sum_{i, j<i}^{N_{atom}}\frac{Z_i Z_j}{|\mathbf{R}_i - \mathbf{R}_j|}
       :label: ENN
 
+.. psivar:: NBODY (i, j, ..., k)@(a, b, ..., c) TOTAL ENERGY
+
+   The total energy [Eh] of a component of the requested N-Body energy.
+   The first parenthetical list over *i*, *j*, ..., *k* enumerates 
+   molecular fragments included in the computation in 1-indexed, 
+   input-file order, while the second enumerates list over *a*, *b*, 
+   ..., *c* enumerates which fragments contribute basis functions to the
+   computation.  For example, ``(1, 2)@(1, 2, 3, 4)`` indicates that the
+   fragments 1 and 2 are explicitly included in the energy computation,
+   with basis functions from each of fragments 1, 2, 3, & 4 included in 
+   the basis set.  Therefore, the basis functions from fragments 3 and 4
+   are included as ghost functions within the energy computation.
+
 .. psivar:: OCEPA(0) TOTAL ENERGY
    OCEPA(0) CORRELATION ENERGY
 

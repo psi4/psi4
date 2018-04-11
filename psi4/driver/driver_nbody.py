@@ -316,7 +316,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), 
                                                       ', '.join([str(i) for i in pair[1]]))
         core.set_variable(var_key, energies_dict[pair])
-        # Redundantly add var to energies_dict for wavefunction attachment
+        # Save variable for wavefunction binding
         intermediates_dict[var_key] = energies_dict[pair]
 
     # Final dictionaries
@@ -453,7 +453,6 @@ def nbody_gufunc(func, method_string, **kwargs):
             core.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
             nbody_vars[var_key] = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
 
-    # TODO: Ensure that dicts populated above are setting wfn vars appropriately
     if return_method == 'cp':
         ptype_body_dict = cp_ptype_body_dict
         energy_body_dict = cp_energy_body_dict
@@ -485,17 +484,13 @@ def nbody_gufunc(func, method_string, **kwargs):
     else:
         ret_ptype = ret_energy
 
-    # Build and set variables a wavefunction
+    # Build wfn and bind variables
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
     dicts = [intermediates_dict, energies_dict, ptype_dict, energy_body_dict, ptype_body_dict, nbody_vars]
     for d in dicts:
         if d is not None:
             for var in d.keys():
                 wfn.set_variable(str(var), d[var])
-    #wfn.nbody_energy = energies_dict
-    #wfn.nbody_ptype = ptype_dict
-    #wfn.nbody_body_energy = energy_body_dict
-    #wfn.nbody_body_ptype = ptype_body_dict
 
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)
