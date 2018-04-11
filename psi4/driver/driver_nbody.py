@@ -310,10 +310,14 @@ def nbody_gufunc(func, method_string, **kwargs):
 
             core.clean()
 
-    # Set vairables for N-Body intermediates
+    # Set variables for N-Body intermediates, add to dict for wavefunction attachment
+    intermediates_dict = {}
     for pair in energies_dict.keys():
-        core.set_variable("N-BODY (%s)@(%s) TOTAL ENERGY" %
-                          (', '.join([str(i) for i in pair[0]]), ', '.join([str(i) for i in pair[1]])), energies_dict[pair])
+        var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), 
+                                                      ', '.join([str(i) for i in pair[1]]))
+        core.set_variable(var_key, energies_dict[pair])
+        # Redundantly add var to energies_dict for wavefunction attachment
+        intermediates_dict[var_key] = energies_dict[pair]
 
     # Final dictionaries
     cp_energy_by_level   = {n: 0.0 for n in nbody_range}
@@ -346,6 +350,7 @@ def nbody_gufunc(func, method_string, **kwargs):
 
 
     # Sum up all of the levels
+    nbody_vars = {}
     for n in nbody_range:
 
         # Energy
@@ -394,10 +399,13 @@ def nbody_gufunc(func, method_string, **kwargs):
         cp_interaction_energy = cp_energy_body_dict[max_nbody] - cp_energy_body_dict[1]
         core.set_variable('Counterpoise Corrected Total Energy', cp_energy_body_dict[max_nbody])
         core.set_variable('Counterpoise Corrected Interaction Energy', cp_interaction_energy)
+        nbody_vars['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[max_nbody]
+        nbody_vars['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
 
         for n in nbody_range[1:]:
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             core.set_variable(var_key, cp_energy_body_dict[n] - cp_energy_body_dict[1])
+            nbody_vars[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
     # Compute nocp energy and ptype
     if do_nocp:
@@ -422,10 +430,13 @@ def nbody_gufunc(func, method_string, **kwargs):
         nocp_interaction_energy = nocp_energy_body_dict[max_nbody] - nocp_energy_body_dict[1]
         core.set_variable('Non-Counterpoise Corrected Total Energy', nocp_energy_body_dict[max_nbody])
         core.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_interaction_energy)
+        nbody_vars['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[max_nbody]
+        nbody_vars['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
 
         for n in nbody_range[1:]:
             var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             core.set_variable(var_key, nocp_energy_body_dict[n] - nocp_energy_body_dict[1])
+            nbody_vars[var_key] = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
 
 
     # Compute vmfc energy and ptype
@@ -434,11 +445,15 @@ def nbody_gufunc(func, method_string, **kwargs):
         vmfc_interaction_energy = vmfc_energy_body_dict[max_nbody] - vmfc_energy_body_dict[1]
         core.set_variable('Valiron-Mayer Function Couterpoise Total Energy', vmfc_energy_body_dict[max_nbody])
         core.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_interaction_energy)
+        nbody_vars['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[max_nbody]
+        nbody_vars['Valiron-Mayer Function Couterpoise Interaction Energy'] = vmfc_interaction_energy
 
         for n in nbody_range[1:]:
             var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
             core.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
+            nbody_vars[var_key] = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
 
+    # TODO: Ensure that dicts populated above are setting wfn vars appropriately
     if return_method == 'cp':
         ptype_body_dict = cp_ptype_body_dict
         energy_body_dict = cp_energy_body_dict
@@ -450,7 +465,6 @@ def nbody_gufunc(func, method_string, **kwargs):
         energy_body_dict = vmfc_energy_body_dict
     else:
         raise ValidationError("N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
-
 
     # Figure out and build return types
     if return_total_data:
@@ -471,12 +485,17 @@ def nbody_gufunc(func, method_string, **kwargs):
     else:
         ret_ptype = ret_energy
 
-    # Build and set a wavefunction
+    # Build and set variables a wavefunction
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
-    wfn.nbody_energy = energies_dict
-    wfn.nbody_ptype = ptype_dict
-    wfn.nbody_body_energy = energy_body_dict
-    wfn.nbody_body_ptype = ptype_body_dict
+    dicts = [intermediates_dict, energies_dict, ptype_dict, energy_body_dict, ptype_body_dict, nbody_vars]
+    for d in dicts:
+        if d is not None:
+            for var in d.keys():
+                wfn.set_variable(str(var), d[var])
+    #wfn.nbody_energy = energies_dict
+    #wfn.nbody_ptype = ptype_dict
+    #wfn.nbody_body_energy = energy_body_dict
+    #wfn.nbody_body_ptype = ptype_body_dict
 
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)
