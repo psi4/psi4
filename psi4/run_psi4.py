@@ -200,6 +200,7 @@ psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
 psi4.core.set_memory_bytes(524288000, True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
+psi4.extras.register_start_time()
 
 # Prepare scratch for inputparser
 if args["scratch"] is not None:
