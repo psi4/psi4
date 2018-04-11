@@ -113,7 +113,7 @@ void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag)
 ** Revised 6/26/96 by CDS for new format
 ** \ingroup IWL
 */
-void iwl_buf_init(struct iwlbuf *Buf, int itape, double cutoff,
+void PSI_API iwl_buf_init(struct iwlbuf *Buf, int itape, double cutoff,
       int oldfile, int readflag)
 {
 

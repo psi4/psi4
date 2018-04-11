@@ -60,7 +60,7 @@ double user_stop, sys_stop;
 **
 ** \ingroup CIOMR
 */
-void tstart()
+void PSI_API tstart()
 {
   int error;
   char *name;

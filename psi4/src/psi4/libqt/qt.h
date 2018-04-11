@@ -116,7 +116,7 @@ void C_DCOPY(size_t length, double *x, int inc_x,
              double *y, int inc_y);
 void C_DAXPY(size_t length, double a, double *x, int inc_x,
              double *y, int inc_y);
-double C_DDOT(size_t n, double *X, int inc_x, double *Y, int inc_y);
+PSI_API double C_DDOT(size_t n, double *X, int inc_x, double *Y, int inc_y);
 double C_DNRM2(size_t n, double *X, int inc_x);
 double C_DASUM(size_t n, double *X, int inc_x);
 size_t C_IDAMAX(size_t n, double *X, int inc_x);

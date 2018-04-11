@@ -524,7 +524,7 @@ public:
  */
 extern dpd_gbl dpd_main;
 extern PSI_API DPD* global_dpd_;
-extern int dpd_default;
+extern PSI_API int dpd_default;
 extern DPD* dpd_list[2];
 extern PSI_API int dpd_set_default(int dpd_num);
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
