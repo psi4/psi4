@@ -1334,7 +1334,11 @@ def hessian(name, **kwargs):
             dertype = 1
 
     # At stationary point?
-    G0 = gradient(lowername, molecule=molecule, **kwargs)
+    if 'ref_gradient' in kwargs:
+        core.print_out("""hessian() using ref_gradient to assess stationary point.\n""")
+        G0 = kwargs['ref_gradient']
+    else:
+        G0 = gradient(lowername, molecule=molecule, **kwargs)
     translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
     core.print_out('\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'.
                    format(G0.rms(), '' if translations_projection_sound else 'not ',
@@ -1724,6 +1728,10 @@ def frequency(name, **kwargs):
     >>> set t 273.15
     >>> set p 100000
     >>> thermo(wfn, wfn.frequencies())
+
+    >>> # [4] Opt+Freq, skipping the gradient recalc at the start of the Hessian
+    >>> e, wfn = optimize('hf', return_wfn=True)
+    >>> frequencies('hf', ref_gradient=wfn.gradient())
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
