@@ -531,7 +531,7 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
             int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
             int num_subspaces, std::vector<int*> &spaceArrays);
 extern int dpd_close(int dpd_num);
-extern long int dpd_memfree(void);
+extern long int PSI_API dpd_memfree(void);
 extern void dpd_memset(long int memory);
 
 

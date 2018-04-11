@@ -351,7 +351,7 @@ bool Data::is_array() const { return ptr_->is_array(); }
 
 size_t Data::size() const { return ptr_->size(); }
 
-bool PSI_API Data::has_changed() const { return ptr_->has_changed(); }
+bool Data::has_changed() const { return ptr_->has_changed(); }
 
 void Data::changed() { ptr_->changed(); }
 

@@ -15658,7 +15658,7 @@ int C_DSYEV(char jobz, char uplo, int n, double* a, int lda, double* w, double* 
 *
 *     .. Parameters ..
 **/
-int C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork, int* iwork, int liwork)
+int PSI_API C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork, int* iwork, int liwork)
 {
     int info;
     ::F_DSYEVD(&jobz, &uplo, &n, a, &lda, w, work, &lwork, iwork, &liwork, &info);

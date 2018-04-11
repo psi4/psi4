@@ -100,7 +100,7 @@ void PSI_API tstart()
 **
 ** \ingroup CIOMR
 */
-void tstop()
+void PSI_API tstop()
 {
   int error;
   time_t total_time;

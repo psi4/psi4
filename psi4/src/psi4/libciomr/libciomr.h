@@ -39,6 +39,9 @@
 
 #include <cstdio>
 #include <string>
+
+#include "psi4/pragma.h"
+
 namespace psi {
 
 int psi_start(FILE** infile, FILE** outfile, char** psi_file_prefix, int argc, char *argv[], int overwrite_output);
