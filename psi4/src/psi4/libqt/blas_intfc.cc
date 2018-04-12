@@ -54,6 +54,7 @@
 #include <limits.h>
 #include <cmath>
 
+#include "psi4/psi4-dec.h"
 #include "psi4/libqt/blas_intfc_mangle.h"
 
 extern "C" {
@@ -124,7 +125,7 @@ void C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
  *
  * \ingroup QT
  */
-void C_DAXPY(size_t length, double a, double *x, int inc_x,
+void PSI_API C_DAXPY(size_t length, double a, double *x, int inc_x,
              double *y, int inc_y)
 {
     int big_blocks = (int)(length / INT_MAX);
@@ -227,7 +228,7 @@ void C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y,
  * \ingroup QT
  */
 
-double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
+double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
 {
     if(length == 0) return 0.0;
 

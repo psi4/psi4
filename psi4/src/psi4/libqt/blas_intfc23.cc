@@ -36,6 +36,8 @@
 */
 
 #include <stdexcept>
+
+#include "psi4/psi4-dec.h"
 #include "psi4/libqt/blas_intfc23_mangle.h"
 #include "psi4/libqt/qt.h"
 
@@ -416,7 +418,7 @@ void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double
 *
 *     .. Parameters ..
 **/
-void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy)
+void PSI_API C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy)
 {
     if(m == 0 || n == 0) return;
     if (trans == 'N' || trans == 'n') trans = 'T';
@@ -498,7 +500,7 @@ void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double*
 *
 *     .. Parameters ..
 **/
-void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda)
+void PSI_API C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda)
 {
     if(m == 0 || n == 0) return;
     ::F_DGER(&n, &m, &alpha, y, &incy, x, &incx, a, &lda);

@@ -244,7 +244,7 @@ class IStringDataType : public DataType {
     virtual void assign(std::string s);
 };
 
-class Data {
+class PSI_API Data {
     std::shared_ptr<DataType> ptr_;
 
    public:
@@ -257,7 +257,7 @@ class Data {
     double to_double() const;
 
     bool is_array() const;
-    size_t size() const;
+    size_t PSI_API size() const;
 
     bool has_changed() const;
 
@@ -296,7 +296,7 @@ class Data {
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class ArrayType : public DataType {
+class PSI_API ArrayType : public DataType {
     std::vector<Data> array_;
 
    public:

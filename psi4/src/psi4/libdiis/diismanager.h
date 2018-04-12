@@ -29,10 +29,12 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 
-#include "psi4/libdiis/diisentry.h"
-#include "psi4/libmints/matrix.h"
 #include <vector>
 #include <map>
+
+#include "psi4/psi4-dec.h"
+#include "psi4/libdiis/diisentry.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi{
 
@@ -42,7 +44,7 @@ class PSIO;
    @brief The DIISManager class handles DIIS extrapolations.
  */
 
-class DIISManager{
+class PSI_API DIISManager{
     public:
         /**
          * @brief How the quantities are to be stored;

@@ -50,7 +50,6 @@
 
 #include <typeinfo>
 #include "psi4/pybind11.h"
-
 #include "psi4/psi4-dec.h"
 
 namespace psi {
@@ -351,7 +350,7 @@ bool Data::is_array() const { return ptr_->is_array(); }
 
 size_t Data::size() const { return ptr_->size(); }
 
-bool Data::has_changed() const { return ptr_->has_changed(); }
+bool PSI_API Data::has_changed() const { return ptr_->has_changed(); }
 
 void Data::changed() { ptr_->changed(); }
 
