@@ -55,6 +55,7 @@
 #include <cmath>
 
 #include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 #include "psi4/libqt/blas_intfc_mangle.h"
 
 extern "C" {
@@ -99,7 +100,7 @@ namespace psi {
  *
  * @ingroup QT
  */
-void C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
+void PSI_API C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
 {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
@@ -125,7 +126,7 @@ void C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
  *
  * \ingroup QT
  */
-PSI_API void C_DAXPY(size_t length, double a, double *x, int inc_x,
+void PSI_API C_DAXPY(size_t length, double a, double *x, int inc_x,
              double *y, int inc_y)
 {
     int big_blocks = (int)(length / INT_MAX);
@@ -151,7 +152,7 @@ PSI_API void C_DAXPY(size_t length, double a, double *x, int inc_x,
  *
  * \ingroup QT
  */
-void C_DCOPY(size_t length, double *x, int inc_x,
+void PSI_API C_DCOPY(size_t length, double *x, int inc_x,
              double *y, int inc_y)
 {
     int big_blocks = (int)(length / INT_MAX);
@@ -175,7 +176,7 @@ void C_DCOPY(size_t length, double *x, int inc_x,
  *
  * \ingroup QT
  */
-void C_DSCAL(size_t length, double alpha, double *vec, int inc)
+void PSI_API C_DSCAL(size_t length, double alpha, double *vec, int inc)
 {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
@@ -199,7 +200,7 @@ void C_DSCAL(size_t length, double alpha, double *vec, int inc)
  *
  * \ingroup QT
  */
-void C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y,
+void PSI_API C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y,
             double costheta, double sintheta)
 {
     int big_blocks = (int)(length / INT_MAX);
@@ -228,7 +229,7 @@ void C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y,
  * \ingroup QT
  */
 
-PSI_API double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
+double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
 {
     if(length == 0) return 0.0;
 
@@ -258,7 +259,7 @@ PSI_API double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
  * \ingroup QT
  */
 
-double C_DNRM2(size_t length, double *x, int inc_x)
+double PSI_API C_DNRM2(size_t length, double *x, int inc_x)
 {
     if(length == 0) return 0.0;
 
@@ -287,7 +288,7 @@ double C_DNRM2(size_t length, double *x, int inc_x)
  * \ingroup QT
  */
 
-double C_DASUM(size_t length, double *x, int inc_x)
+double PSI_API C_DASUM(size_t length, double *x, int inc_x)
 {
     if(length == 0) return 0.0;
 

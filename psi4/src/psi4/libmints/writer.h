@@ -73,7 +73,7 @@ class FCHKWriter {
     void write(const std::string &filename);
 };
 
-class MoldenWriter {
+class PSI_API MoldenWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
 
    public:

@@ -72,7 +72,7 @@ class OptionsException : public PsiException {
     OptionsException(const std::string& message) : PSIEXCEPTION("Options Exception: " + message) {}
 };
 
-class Data;
+class PSI_API Data;
 class DataType {
     bool changed_;
 

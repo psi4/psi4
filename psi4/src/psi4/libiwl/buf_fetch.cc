@@ -57,7 +57,7 @@ void IWL::fetch()
 ** David Sherrill, 26 June 1996
 ** \ingroup IWL
 */
-void iwl_buf_fetch(struct iwlbuf *Buf)
+void PSI_API iwl_buf_fetch(struct iwlbuf *Buf)
 {
   psio_read(Buf->itap, IWL_KEY_BUF, (char *) &(Buf->lastbuf), sizeof(int),
 	    Buf->bufpos, &Buf->bufpos);

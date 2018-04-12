@@ -134,7 +134,7 @@ public:
 /**
 * Exception for sanity checks being performed, e.g. checking alignment of matrix multiplication.
 */
-class SanityCheckError : public PsiException
+class PSI_API SanityCheckError : public PsiException
 {
 
 public:

@@ -35,7 +35,7 @@
 
 namespace psi {
 
-    class IWL {
+    class PSI_API IWL {
         int itap_;                   /* tape number for input file */
         psio_address bufpos_;        /* current page/offset */
         int ints_per_buf_;           /* integrals per buffer */
