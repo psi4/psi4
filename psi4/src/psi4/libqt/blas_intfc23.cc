@@ -318,7 +318,7 @@ void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, 
 *
 *     .. External Functions ..
 **/
-void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc)
+PSI_API void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc)
 {
     if(m == 0 || n == 0 || k == 0) return;
     ::F_DGEMM(&transb, &transa, &n, &m, &k, &alpha, b, &ldb, a, &lda, &beta, c, &ldc);
