@@ -257,7 +257,7 @@ class PSI_API Data {
     double to_double() const;
 
     bool is_array() const;
-    size_t PSI_API size() const;
+    size_t size() const;
 
     bool has_changed() const;
 
