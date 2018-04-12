@@ -125,7 +125,7 @@ void C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
  *
  * \ingroup QT
  */
-void PSI_API C_DAXPY(size_t length, double a, double *x, int inc_x,
+PSI_API void C_DAXPY(size_t length, double a, double *x, int inc_x,
              double *y, int inc_y)
 {
     int big_blocks = (int)(length / INT_MAX);
@@ -228,7 +228,7 @@ void C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y,
  * \ingroup QT
  */
 
-double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
+PSI_API double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
 {
     if(length == 0) return 0.0;
 

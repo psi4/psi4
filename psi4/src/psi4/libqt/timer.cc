@@ -1057,7 +1057,7 @@ void stop_skip_timers() {
 **
 ** \ingroup QT
 */
-void PSI_API timer_on(const std::string& key) {
+PSI_API void timer_on(const std::string& key) {
     omp_set_lock(&lock_timer);
     extern bool skip_timers;
     if (skip_timers) {
@@ -1093,7 +1093,7 @@ void PSI_API timer_on(const std::string& key) {
 **
 ** \ingroup QT
 */
-void PSI_API timer_off(const std::string& key) {
+PSI_API void timer_off(const std::string& key) {
     omp_set_lock(&lock_timer);
     extern bool skip_timers;
     if (skip_timers) {
