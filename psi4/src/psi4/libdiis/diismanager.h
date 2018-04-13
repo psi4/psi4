@@ -32,7 +32,7 @@
 #include <vector>
 #include <map>
 
-#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 #include "psi4/libdiis/diisentry.h"
 #include "psi4/libmints/matrix.h"
 

@@ -37,7 +37,7 @@
 
 #include <stdexcept>
 
-#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 #include "psi4/libqt/blas_intfc23_mangle.h"
 #include "psi4/libqt/qt.h"
 

@@ -54,7 +54,6 @@
 #include <limits.h>
 #include <cmath>
 
-#include "psi4/psi4-dec.h"
 #include "psi4/pragma.h"
 #include "psi4/libqt/blas_intfc_mangle.h"
 

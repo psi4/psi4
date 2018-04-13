@@ -29,7 +29,7 @@
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
 
-#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 #include "psi4/libmints/typedefs.h"
 
 namespace psi {

@@ -32,7 +32,7 @@
 #include <vector>
 #include "typedefs.h"
 
-#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
 

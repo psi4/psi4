@@ -29,7 +29,7 @@
 #ifndef _psi_src_lib_libpsi4util_libpsi4util_h_
 #define _psi_src_lib_libpsi4util_libpsi4util_h_
 
-#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 
 #include <string>
 #include <vector>

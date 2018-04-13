@@ -32,7 +32,7 @@
 #include <vector>
 #include <memory>
 
-#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 
 namespace psi {
 class Options;
