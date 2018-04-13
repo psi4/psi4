@@ -59,26 +59,29 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     the qcdb.BasisSet object for *molecule* or for H2 if None. Allows
     out-of-order zeta specification (e.g., [qtd]) and numeral for number
     (e.g., [23]) but not skipped zetas (e.g., [dq]) or zetas outside [2,
-    8] or non-Dunning sets or non-findable .gbs sets.
+    8] or non-Dunning or non-Ahlrichs sets or non-findable .gbs sets.
 
     """
     BSET = []
     ZSET = []
-    legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*)\[(?P<zeta>[dtq2345678,]*)\](?P<post>.*z)$', re.IGNORECASE)
+    legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*|def2-)\[(?P<zeta>[dtq2345678,s]*)\](?P<post>.*z.*)$', re.IGNORECASE)
 
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
         # filter out commas and be forgiving of e.g., t5q or 3q
-        bn_gz = basisname.group('zeta')
+        bn_gz = basisname.group('zeta').replace("s","d")
         zetas = [z for z in zeta_values if (z in bn_gz or str(zeta_values.index(z) + 2) in bn_gz)]
         for b in zetas:
             if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
-                    raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, b))
-            BSET.append(basisname.group('pre') + b + basisname.group('post'))
+                raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, zeta_val2sym[zeta_sym2val[b] - 1]))
+            if basisname.group('pre') == "def2-" and b == "d":
+                BSET.append(basisname.group('pre') + "s" + basisname.group('post')[1:])
+            else:
+                BSET.append(basisname.group('pre') + b + basisname.group('post'))
             ZSET.append(zeta_values.index(b) + 2)
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
         raise ValidationError("""Basis series '%s' invalid. Specify a basis series matching"""
-                              """ '*cc-*[dtq2345678,]*z'.""" % (basisstring))
+                              """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*'""" % (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -109,8 +112,8 @@ def _contract_bracketed_basis(basisarray):
         zetaindx = [i for i in range(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
         ZSET = [bas[zetaindx] for bas in basisarray]
 
-        pre = basisarray[0][:zetaindx]
-        post = basisarray[0][zetaindx + 1:]
+        pre = basisarray[1][:zetaindx]
+        post = basisarray[1][zetaindx + 1:]
         basisstring = pre + '[' + ''.join(ZSET) + ']' + post
         return basisstring
 
