@@ -28,33 +28,33 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-
+from __future__ import division
 import os
-#import re
-#import math
-#import copy
-#from periodictable import *
-#from physconst import *
-#from vecutil import *
-#from exceptions import *
-#from coordentry import *
-import subprocess
-import socket
-import shutil
-import random
-from collections import defaultdict
+import hashlib
+import collections
+
+import numpy as np
+
 from .libmintsmolecule import *
+from .psiutil import compare_values, compare_integers, compare_molrecs
+from . import molparse
+from .bfs import BFS
 
 
 class Molecule(LibmintsMolecule):
-    """Class to store python extensions to the MoleculeLibmints class.
-    Multiple classes allows separation of libmints and extension methods.
+    """Class to store the elements, coordinates, fragmentation pattern,
+    charge, multiplicity of a molecule. Largely replicates psi4's libmints
+    Molecule class, developed by Justin M. Turney and Andy M. Simmonett
+    with incremental improvements by other psi4 developers. Major
+
+    This class extends `qcdb.LibmintsMolecule` and occasionally
+    `psi4.core.Molecule` itself.
 
     """
 
     def __init__(self, psi4molstr=None):
         """Initialize Molecule object from LibmintsMolecule"""
-        LibmintsMolecule.__init__(self, psi4molstr)
+        super(Molecule, self).__init__(psi4molstr=psi4molstr)
 
         # The comment line
         self.tagline = ""
@@ -65,13 +65,25 @@ class Molecule(LibmintsMolecule):
         text += self.create_psi4_string_from_molecule()
         return text
 
-#    def __getstate__(self):
-#        print 'im being pickled'
-#        return self.__dict__
+    def __setattr__(self, name, value):
+        """Function to overload setting attributes to allow geometry
+        variable assigment as if member data.
 
-#    def __setstate__(self, d):
-#        print 'im being unpickled with these values', d
-#        self.__dict__ = d
+        """
+        if 'all_variables' in self.__dict__:
+            if name.upper() in self.__dict__['all_variables']:
+                self.set_variable(name, value)
+        super(Molecule, self).__setattr__(name, value)
+
+    def __getattr__(self, name):
+        """Function to overload accessing attribute contents to allow
+        retrival of geometry variable values as if member data.
+
+        """
+        if 'all_variables' in self.__dict__ and name.upper() in self.__dict__['all_variables']:
+            return self.get_variable(name)
+        else:
+            raise AttributeError
 
     @classmethod
     def init_with_xyz(cls, xyzfilename, no_com=False, no_reorient=False, contentsNotFilename=False):
@@ -98,7 +110,8 @@ class Molecule(LibmintsMolecule):
             try:
                 infile = open(xyzfilename, 'r')
             except IOError:
-                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" % (xyzfilename))
+                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" %
+                                      (xyzfilename))
             if os.stat(xyzfilename).st_size == 0:
                 raise ValidationError("""Molecule::init_with_xyz: given filename '%s' is blank.""" % (xyzfilename))
             text = infile.readlines()
@@ -161,9 +174,11 @@ class Molecule(LibmintsMolecule):
                     instance.add_atom(fileAtom, fileX, fileY, fileZ, z2el[fileAtom], z2mass[fileAtom], fileAtom)
 
                 else:
-                    raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d." % (i + 3))
+                    raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d.\n%s:%s" %
+                                          (i + 3, xyzfilename, text[i + 2]))
             except IndexError:
-                raise ValidationError("Molecule::init_with_xyz: Expected atom in file at line %d.\n%s" % (i + 3, text[i + 2]))
+                raise ValidationError("Molecule::init_with_xyz: Expected atom in file at line %d.\n%s" % (i + 3,
+                                                                                                          text[i + 2]))
 
         # We need to make 1 fragment with all atoms
         instance.fragments.append([0, fileNatom - 1])
@@ -173,9 +188,9 @@ class Molecule(LibmintsMolecule):
         # Set the units properly
         instance.PYunits = fileUnits
         if fileUnits == 'Bohr':
-            instance.input_units_to_au = 1.0
+            instance.PYinput_units_to_au = 1.0
         elif fileUnits == 'Angstrom':
-            instance.input_units_to_au = 1.0 / psi_bohr2angstroms
+            instance.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
 
         instance.update_geometry()
         return instance
@@ -207,7 +222,8 @@ class Molecule(LibmintsMolecule):
             try:
                 infile = open(xyzfilename, 'r')
             except IOError:
-                raise ValidationError("""Molecule::init_with_mol2: given filename '%s' does not exist.""" % (xyzfilename))
+                raise ValidationError("""Molecule::init_with_mol2: given filename '%s' does not exist.""" %
+                                      (xyzfilename))
             if os.stat(xyzfilename).st_size == 0:
                 raise ValidationError("""Molecule::init_with_mol2: given filename '%s' is blank.""" % (xyzfilename))
             text = infile.readlines()
@@ -270,8 +286,10 @@ class Molecule(LibmintsMolecule):
 
                 else:
                     raise ValidationError("Molecule::init_with_mol2: Malformed atom information line %d." % (i + 5))
+
             except IndexError:
-                raise ValidationError("Molecule::init_with_mol2: Expected atom in file at line %d.\n%s" % (i + 5, text[i + 4]))
+                raise ValidationError("Molecule::init_with_mol2: Expected atom in file at line %d.\n%s" %
+                                      (i + 5, text[i + 4]))
 
         # We need to make 1 fragment with all atoms
         instance.fragments.append([0, fileNatom - 1])
@@ -281,9 +299,9 @@ class Molecule(LibmintsMolecule):
         # Set the units properly
         instance.PYunits = fileUnits
         if fileUnits == 'Bohr':
-            instance.input_units_to_au = 1.0
+            instance.PYinput_units_to_au = 1.0
         elif fileUnits == 'Angstrom':
-            instance.input_units_to_au = 1.0 / psi_bohr2angstroms
+            instance.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
 
         instance.update_geometry()
         return instance
@@ -339,7 +357,6 @@ class Molecule(LibmintsMolecule):
         NumPy array.
 
         """
-        import numpy as np
         factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
         self.update_geometry()
 
@@ -421,7 +438,7 @@ class Molecule(LibmintsMolecule):
         text += '$end\n\n'
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         #options['QCHEM'['QCHEM_CHARGE']['value'] = self.molecular_charge()
         #options['QCHEM'['QCHEM_MULTIPLICITY']['value'] = self.multiplicity()
         options['QCHEM']['QCHEM_INPUT_BOHR']['value'] = False
@@ -533,7 +550,7 @@ class Molecule(LibmintsMolecule):
         text += '\n'
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = 'ANGSTROM'
@@ -568,7 +585,7 @@ class Molecule(LibmintsMolecule):
                     cr += 1
         text += '\n'
 
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         options['CFOUR']['CFOUR_BASIS']['value'] = 'SPECIAL'
         options['CFOUR']['CFOUR_SPHERICAL']['value'] = puream
 
@@ -584,7 +601,7 @@ class Molecule(LibmintsMolecule):
         """
         Format the molecule into an orca xyz format
         """
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         self.update_geometry()
         factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
 
@@ -614,9 +631,9 @@ class Molecule(LibmintsMolecule):
         return text, options
 
     def format_molecule_for_qchem(self, mixedbas=True):
-        """Returns geometry section of input file formatted for Q-Chem. 
-        For ghost atoms, prints **Gh** as elemental symbol, with expectation 
-        that element identity will be established in mixed basis section. 
+        """Returns geometry section of input file formatted for Q-Chem.
+        For ghost atoms, prints **Gh** as elemental symbol, with expectation
+        that element identity will be established in mixed basis section.
         For ghost atoms when *mixedbas* is False, prints @ plus element symbol.
 
         candidate modeled after psi4_xyz so that absent fragments observed force xyz
@@ -635,7 +652,7 @@ class Molecule(LibmintsMolecule):
                     continue
                 # any fragment marker here <<<
                 if self.nactive_fragments() > 1:
-                    # this only distiguishes Real frags so Real/Ghost don't get 
+                    # this only distinguishes Real frags so Real/Ghost don't get
                     #   fragmentation. may need to change
                     text += """--\n"""
                                          # >>>
@@ -652,12 +669,12 @@ class Molecule(LibmintsMolecule):
                     else:
                         if self.fZ(at):
                             # label for real live atom <<<
-                            text += """{:>3s} """.format(self.symbol(at))
+                            text += """{:>3s} """.format(self.fsymbol(at))
                                                      # >>>
                         else:
                             # label for ghost atom <<<
                             text += """{:>3s} """.format(
-                                'Gh' if mixedbas else ('@' + self.symbol(at)))                
+                                'Gh' if mixedbas else ('@' + self.fsymbol(at)))
                                                  # >>>
                         [x, y, z] = self.full_atoms[at].compute()
                         # Cartesian coordinates <<<
@@ -669,7 +686,7 @@ class Molecule(LibmintsMolecule):
                                                 # >>>
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         #options['QCHEM'['QCHEM_CHARGE']['value'] = self.molecular_charge()
         #options['QCHEM'['QCHEM_MULTIPLICITY']['value'] = self.multiplicity()
         options['QCHEM']['QCHEM_INPUT_BOHR']['value'] = False
@@ -739,7 +756,7 @@ class Molecule(LibmintsMolecule):
             text += "\n"
 
         # prepare molecule keywords to be set as c-side keywords
-        options = defaultdict(lambda: defaultdict(dict))
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = self.units()
@@ -770,125 +787,6 @@ class Molecule(LibmintsMolecule):
 
     #    if symm   print M2OUT "nosym\nnoorient\n";
     #    print DIOUT "angstrom\ngeometry={\n";
-
-    def auto_fragments(self):
-        """Detects fragments in an unfragmented molecule using BFS
-        algorithm. Returns a new Molecule in Cartesian, fixed-geom
-        (no variable values), no dummy-atom format. Any non-default
-        charge and multiplicity assigned to first fragment.
-
-        """
-        if self.nfragments() != 1:
-            print("""Molecule already fragmented so no further action by auto_fragments().""")
-            return self
-
-        flist = self.BFS()
-
-        # form new molecule through a string since self may contain
-        #   dummies or zmatrix specs that mayn't be valid with atom shuffling
-        new_geom = '\n'
-
-        if self.PYcharge_specified or self.PYmultiplicity_specified:
-            new_geom = """\n   %d %d\n""" % (self.molecular_charge(), self.multiplicity())
-
-        for fr in range(len(flist)):
-            new_geom += "" if fr == 0 else "   --\n"
-            for at in flist[fr]:
-                geom = self.atoms[at].compute()
-                new_geom += """%-4s """ % (("" if self.Z(at) else "@") + self.symbol(at))
-                for j in range(3):
-                    new_geom += """  %17.12f""" % (geom[j])
-                new_geom += "\n"
-        new_geom += "   units %s\n" % (self.units())
-        if not self.PYmove_to_com:
-            new_geom += "   no_com\n"
-        if self.orientation_fixed():
-            new_geom += "   no_reorient\n"
-
-        subset = Molecule(new_geom)
-        subset.update_geometry()
-        return subset
-
-    def BFS(self):
-        """Perform a breadth-first search (BFS) on the real atoms
-        in molecule, returning an array of atom indices of fragments.
-        Relies upon van der Waals radii and so faulty for close
-        (esp. hydrogen-bonded) fragments. Original code from
-        Michael S. Marshall.
-
-        """
-        vdW_diameter = {
-            #'H':  1.001 / 1.5,  # JMol
-            'HE': 1.012 / 1.5,  # JMol
-            'LI': 0.825 / 1.5,  # JMol
-            'BE': 1.408 / 1.5,  # JMol
-            #'B':  1.485 / 1.5,  # JMol
-            #'C':  1.452 / 1.5,  # JMol
-            #'N':  1.397 / 1.5,  # JMol
-            #'O':  1.342 / 1.5,  # JMol
-            #'F':  1.287 / 1.5,  # JMol
-            'NE': 1.243 / 1.5,  # JMol
-            'NA': 1.144 / 1.5,  # JMol
-            'MG': 1.364 / 1.5,  # JMol
-            'AL': 1.639 / 1.5,  # JMol
-            #'SI': 1.716 / 1.5,  # JMol
-            #'P':  1.705 / 1.5,  # JMol
-            #'S':  1.683 / 1.5,  # JMol
-            #'CL': 1.639 / 1.5,  # JMol
-            'AR': 1.595 / 1.5,  # JMol
-
-            'H': 1.06 / 1.5,  # Bondi JPC 68 441 (1964)
-            'B': 1.65 / 1.5,  # Bondi JPC 68 441 (1964)
-            'C': 1.53 / 1.5,  # Bondi JPC 68 441 (1964)
-            'N': 1.46 / 1.5,  # Bondi JPC 68 441 (1964)
-            'O': 1.42 / 1.5,  # Bondi JPC 68 441 (1964)
-            'F': 1.40 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SI': 1.93 / 1.5,  # Bondi JPC 68 441 (1964)
-            'P': 1.86 / 1.5,  # Bondi JPC 68 441 (1964)
-            'S': 1.80 / 1.5,  # Bondi JPC 68 441 (1964)
-            'CL': 1.75 / 1.5,  # Bondi JPC 68 441 (1964)
-            'GE': 1.98 / 1.5,  # Bondi JPC 68 441 (1964)
-            'AS': 1.94 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SE': 1.90 / 1.5,  # Bondi JPC 68 441 (1964)
-            'BR': 1.87 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SN': 2.16 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SB': 2.12 / 1.5,  # Bondi JPC 68 441 (1964)
-            'TE': 2.08 / 1.5,  # Bondi JPC 68 441 (1964)
-            'I': 2.04 / 1.5,  # Bondi JPC 68 441 (1964)
-            'XE': 2.05 / 1.5}  # Bondi JPC 68 441 (1964)
-
-        Queue = []
-        White = range(self.natom())  # untouched
-        Black = []  # touched and all edges discovered
-        Fragment = []  # stores fragments
-
-        start = 0  # starts with the first atom in the list
-        Queue.append(start)
-        White.remove(start)
-
-        # Simply start with the first atom, do a BFS when done, go to any
-        #   untouched atom and start again iterate until all atoms belong
-        #   to a fragment group
-        while len(White) > 0 or len(Queue) > 0:  # Iterates to the next fragment
-            Fragment.append([])
-
-            while len(Queue) > 0:                # BFS within a fragment
-                for u in Queue:                  # find all (still white) nearest neighbors to vertex u
-                    for i in White:
-                        dist = distance(self.xyz(i), self.xyz(u)) * psi_bohr2angstroms
-                        if dist < vdW_diameter[self.symbol(u)] + vdW_diameter[self.symbol(i)]:
-                            Queue.append(i)      # if you find you, put in the queue
-                            White.remove(i)      # and remove it from the untouched list
-                Queue.remove(u)                  # remove focus from Queue
-                Black.append(u)
-                Fragment[-1].append(int(u))      # add to group (0-indexed)
-                Fragment[-1].sort()              # preserve original atom ordering
-
-            if len(White) != 0:                  # can't move White -> Queue if no more exist
-                Queue.append(White[0])
-                White.remove(White[0])
-
-        return Fragment
 
     def inertia_tensor(self, masswt=True, zero=ZERO):
         """Compute inertia tensor.
@@ -1005,7 +903,8 @@ class Molecule(LibmintsMolecule):
                 -1.0 * (evecs[0][midx] * cent[0] + evecs[1][midx] * cent[1] + evecs[2][midx] * cent[2])]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])
-            dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] + evecs[2][midx] * evecs[2][midx])
+            dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] +
+                              evecs[2][midx] * evecs[2][midx])
             hessplane = [evecs[0][midx] / dtemp, evecs[1][midx] / dtemp, evecs[2][midx] / dtemp, xplane[3] / dtemp]
             hessplane2 = [xplane[0] / dtemp, xplane[1] / dtemp, xplane[2] / dtemp, xplane[3] / dtemp]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0] H\n' % \
@@ -1132,6 +1031,675 @@ class Molecule(LibmintsMolecule):
         coc = scale(self.center_of_charge(), -1.0)
         self.translate(coc)
 
+    def rotational_symmetry_number(self):
+        """Number of unique orientations of the rigid molecule that only interchange identical atoms.
+
+        Notes
+        -----
+        Source http://cccbdb.nist.gov/thermo.asp (search "symmetry number")
+
+        """
+        pg = self.get_full_point_group()
+        pg = self.full_point_group_with_n()
+        if pg in ['ATOM', 'C1', 'Ci', 'Cs', 'C_inf_v']:
+            sigma = 1
+        elif pg == 'D_inf_h':
+            sigma = 2
+        elif pg in ['T', 'Td']:
+            sigma = 12
+        elif pg == 'Oh':
+            sigma = 24
+        elif pg == 'Ih':
+            sigma = 60
+        elif pg in ['Cn', 'Cnv', 'Cnh']:
+            sigma = self.full_pg_n()
+        elif pg in ['Dn', 'Dnd', 'Dnh']:
+            sigma = 2 * self.full_pg_n()
+        elif pg == 'Sn':
+            sigma = self.full_pg_n() / 2
+        else:
+            raise ValidationError("Can't ID full symmetry group: " + pg)
+
+        return sigma
+
+    def axis_representation(self, zero=1e-8):
+        """Molecule vs. laboratory frame representation (e.g., IR or IIIL).
+
+        Parameters
+        ----------
+        zero : float, optional
+            Screen for inertial tensor elements
+
+        Returns
+        -------
+        str
+            Representation code IR, IIR, IIIR, IL, IIL, IIIL. When
+            molecule not in inertial frame, string is prefixed by "~".
+
+        Notes
+        -----
+        Not carefully handling degenerate inertial elements.
+
+        """
+        it = self.inertia_tensor(zero=zero)
+        Iidx = np.argsort(np.diagonal(it))
+        if np.array_equal(Iidx, np.asarray([1, 2, 0])):
+            ar = 'IR'
+        elif np.array_equal(Iidx, np.asarray([2, 0, 1])):
+            ar = 'IIR'
+        elif np.array_equal(Iidx, np.asarray([0, 1, 2])):
+            ar = 'IIIR'
+        elif np.array_equal(Iidx, np.asarray([2, 1, 0])):
+            ar = 'IL'
+        elif np.array_equal(Iidx, np.asarray([0, 2, 1])):
+            ar = 'IIL'
+        elif np.array_equal(Iidx, np.asarray([1, 0, 2])):
+            ar = 'IIIL'
+
+        # if inertial tensor has non-zero off-diagonals, this whole classification is iffy
+        if np.count_nonzero(it - np.diag(np.diagonal(it))):
+            ar = '~' + ar
+
+        return ar
+
+    @staticmethod
+    def _raw_to_arrays(self):
+        """Exports coordinate info into NumPy arrays.
+
+        Returns
+        -------
+        geom, mass, elem, elez, uniq : ndarray, ndarray, ndarray, ndarray, ndarray
+            (nat, 3) geometry [a0].
+            (nat,) mass [u].
+            (nat,) element symbol.
+            (nat,) atomic number.
+            (nat,) hash of element symbol and mass.
+            Note that coordinate, orientation, and element information is
+            preserved but fragmentation, chgmult, and dummy/ghost is lost.
+
+        Usage
+        -----
+        geom, mass, elem, elez, uniq = molinstance.to_arrays()
+
+        """
+        self.update_geometry()
+        if isinstance(self, Molecule):
+            # normal qcdb.Molecule
+            geom = self.geometry(np_out=True)
+        else:
+            # psi4.core.Molecule
+            geom = np.array(self.geometry())
+        mass = np.asarray([self.mass(at) for at in range(self.natom())])
+        elem = np.asarray([self.symbol(at) for at in range(self.natom())])
+        elez = np.asarray([self.Z(at) for at in range(self.natom())])
+        uniq = np.asarray(
+            [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
+
+        return geom, mass, elem, elez, uniq
+
+    @classmethod
+    def from_arrays(cls,
+                    geom=None,
+
+                    elea=None,
+                    elez=None,
+                    elem=None,
+                    mass=None,
+                    real=None,
+                    elbl=None,
+
+                    name=None,
+                    units='Angstrom',
+                    input_units_to_au=None,
+                    fix_com=False,
+                    fix_orientation=False,
+                    fix_symmetry=None,
+
+                    fragment_separators=None,
+                    #fragment_types=None,
+                    fragment_charges=None,
+                    fragment_multiplicities=None,
+
+                    molecular_charge=None,
+                    molecular_multiplicity=None,
+
+                    zero_ghost_fragments=False,
+                    nonphysical=False,
+                    mtol=1.e-3,
+                    verbose=1,
+
+                    return_dict=False):
+        """Construct Molecule from unvalidated arrays and variables.
+
+        Light wrapper around :py:func:`~qcdb.molparse.from_arrays`
+        that is a full-featured constructor to dictionary representa-
+        tion of Molecule. This follows one step further to return
+        Molecule instance.
+
+        Parameters
+        ----------
+        See :py:func:`~qcdb.molparse.from_arrays`.
+        return_dict : bool, optional
+            Additionally return Molecule dictionary intermediate.
+
+        Returns
+        -------
+        mol : :py:class:`~qcdb.Molecule`
+        molrec : dict, optional
+            Dictionary representation of instance.
+            Only provided if `return_dict` is True.
+
+        """
+        molrec = molparse.from_arrays(geom=geom,
+                                      elea=elea,
+                                      elez=elez,
+                                      elem=elem,
+                                      mass=mass,
+                                      real=real,
+                                      elbl=elbl,
+                                      name=name,
+                                      units=units,
+                                      input_units_to_au=input_units_to_au,
+                                      fix_com=fix_com,
+                                      fix_orientation=fix_orientation,
+                                      fix_symmetry=fix_symmetry,
+                                      fragment_separators=fragment_separators,
+                                      #fragment_types=fragment_types,
+                                      fragment_charges=fragment_charges,
+                                      fragment_multiplicities=fragment_multiplicities,
+                                      molecular_charge=molecular_charge,
+                                      molecular_multiplicity=molecular_multiplicity,
+                                      zero_ghost_fragments=zero_ghost_fragments,
+                                      nonphysical=nonphysical,
+                                      mtol=mtol,
+                                      verbose=verbose)
+        if return_dict:
+            return Molecule.from_dict(molrec), molrec
+        else:
+            return Molecule.from_dict(molrec)
+
+    @staticmethod
+    def _raw_to_dict(self, force_c1=False, force_au=False):
+        """Serializes instance into Molecule dictionary."""
+
+        molrec = {}
+
+        if self.name() not in ['', 'default']:
+            molrec['name'] = self.name()
+
+        if force_au:
+            molrec['units'] = 'Bohr'
+        else:
+            units = self.units()
+            molrec['units'] = units
+            if units == 'Angstrom' and abs(self.input_units_to_au() * psi_bohr2angstroms - 1.) > 1.e-6:
+                molrec['input_units_to_au'] = self.input_units_to_au()
+
+        molrec['fix_com'] = self.com_fixed()
+        molrec['fix_orientation'] = self.orientation_fixed()
+        if force_c1:
+            molrec['fix_symmetry'] = 'c1'
+        elif self.symmetry_from_input():
+            molrec['fix_symmetry'] = self.symmetry_from_input()
+
+        # if self.has_zmatrix:
+        #     moldict['zmat'] = self.zmat
+        # TODO zmat, geometry_variables
+
+        nat = self.natom()
+        geom = np.array(self.geometry())
+        if not force_au:
+            geom /= self.input_units_to_au()
+        molrec['geom'] = geom.reshape((-1))
+
+        molrec['elea'] = np.array([self.mass_number(at) for at in range(nat)])
+        molrec['elez'] = np.array([el2z[self.symbol(at).upper()] for at in range(nat)])
+        molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
+        molrec['mass'] = np.array([self.mass(at) for at in range(nat)])
+        molrec['real'] = np.array([bool(self.Z(at)) for at in range(nat)])
+        molrec['elbl'] = np.array([self.label(at)[len(self.symbol(at)):].lower() for at in range(nat)])
+
+        fragments = [x[:] for x in self.get_fragments()]
+        fragment_charges = [float(f) for f in self.get_fragment_charges()]
+        fragment_multiplicities = [m for m in self.get_fragment_multiplicities()]
+
+        # do trimming not performed in Molecule class b/c fragment_* member data never directly exposed
+        for ifr, fr in reversed(list(enumerate(self.get_fragment_types()))):
+            if fr == 'Ghost':
+                fragment_charges[ifr] = 0.
+                fragment_multiplicities[ifr] = 1
+            elif fr == 'Absent':
+                del fragment_charges[ifr]
+                del fragment_multiplicities[ifr]
+                # readjust atom indices for subsequent fragments
+                renum = fragments[ifr][0]
+                for iffr, ffr in enumerate(fragments):
+                    if iffr <= ifr:
+                        continue
+                    lenfr = ffr[1] - ffr[0]
+                    fragments[iffr] = [renum, renum + lenfr]
+                    renum += lenfr
+                del fragments[ifr]
+
+        molrec['fragment_separators'] = [int(f[0]) for f in fragments[1:]]  # np.int --> int
+        molrec['fragment_charges'] = fragment_charges
+        molrec['fragment_multiplicities'] = fragment_multiplicities
+
+        molrec['molecular_charge'] = float(self.molecular_charge())
+        molrec['molecular_multiplicity'] = self.multiplicity()
+
+        # * mass number (elea) untouched by qcdb.Molecule/psi4.core.Molecule and
+        #   likely to be array of -1s, so let from_arrays fill in the values and
+        #   (1) don't complain about the difference and
+        #   (2) return the from_arrays filled-in values
+        # * from.arrays is expecting speclabel "Co_userlbl" for elbl, but we're
+        #   sending "_userlbl", hence speclabel=False
+        forgive = ['elea']
+
+        # * from_arrays and comparison lines below are quite unnecessary to
+        #   to_dict, but is included as a check. in practice, only fills in mass
+        #   numbers and heals user chgmult.
+        try:
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
+        except ValidationError as err:
+            # * this can legitimately happen if total chg or mult has been set
+            #   independently b/c fragment chg/mult not reset. so try again.
+            print('Have you been meddling with chgmult?')
+            molrec['fragment_charges'] = [None] * len(fragments)
+            molrec['fragment_multiplicities'] = [None] * len(fragments)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
+            forgive.append('fragment_charges')
+            forgive.append('fragment_multiplicities')
+        compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
+
+        return validated_molrec
+
+    @classmethod
+    def from_dict(cls, molrec):
+        """Constructs instance from fully validated and defaulted dictionary `molrec`."""
+
+        # Compromises for qcdb.Molecule
+        # * molecular_charge is int, not float
+        # * fragment_charges are int, not float
+
+        mol = cls()
+        mol.lock_frame = False
+
+        if 'name' in molrec:
+            mol.set_name(molrec['name'])
+
+        mol.set_units(molrec['units'])
+        if 'input_units_to_au' in molrec:
+            mol.set_input_units_to_au(molrec['input_units_to_au'])
+
+        mol.fix_com(molrec['fix_com'])
+        mol.fix_orientation(molrec['fix_orientation'])
+        if 'fix_symmetry' in molrec:
+            mol.reset_point_group(molrec['fix_symmetry'])
+
+        geom = molrec['geom'].reshape((-1, 3))
+        nat = geom.shape[0]
+        for iat in range(nat):
+            x, y, z = geom[iat]
+            label = molrec['elem'][iat] + molrec['elbl'][iat]
+            Z = molrec['elez'][iat] * int(molrec['real'][iat])
+            mol.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
+                         Z, label, molrec['elea'][iat])
+            # TODO charge and 2nd elez site
+            # TODO real back to type Ghost?
+
+        # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
+        fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
+        fragment_separators = np.insert(fragment_separators, 0, 0)
+        fragment_separators = np.append(fragment_separators, nat)
+        fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
+
+        mol.set_fragment_pattern(fragments,
+                                 ['Real'] * len(fragments),
+                                 [int(f) for f in molrec['fragment_charges']],
+                                 molrec['fragment_multiplicities'])
+
+        mol.set_molecular_charge(int(molrec['molecular_charge']))
+        mol.set_multiplicity(molrec['molecular_multiplicity'])
+
+        mol.update_geometry()
+        return mol
+
+    @staticmethod
+    def _raw_BFS(self,
+            seed_atoms=None,
+            bond_threshold=1.20,
+            return_arrays=False,
+            return_molecules=False,
+            return_molecule=False):
+        """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
+
+        Parameters
+        ----------
+        self : qcdb.Molecule or psi4.core.Molecule
+        seed_atoms : list, optional
+            List of lists of atoms (0-indexed) belonging to independent fragments.
+            Useful to prompt algorithm or to define intramolecular fragments through
+            border atoms. Example: `[[1, 0], [2]]`
+        bond_threshold : float, optional
+            Factor beyond average of covalent radii to determine bond cutoff.
+        return_arrays : bool, optional
+            If `True`, also return fragments as list of arrays.
+        return_molecules : bool, optional
+            If True, also return fragments as list of Molecules.
+        return_molecule : bool, optional
+            If True, also return one big Molecule with fragmentation encoded.
+
+        Returns
+        -------
+        bfs_map : list of lists
+            Array of atom indices (0-indexed) of detected fragments.
+        bfs_arrays : tuple of lists of ndarray, optional
+            geom, mass, elem info per-fragment.
+            Only provided if `return_arrays` is True.
+        bfs_molecules : list of qcdb.Molecule or psi4.core.Molecule, optional
+            List of molecules, each built from one fragment. Center and
+            orientation of fragments is fixed so orientation info from `self` is
+            not lost. Loses chgmult and ghost/dummy info from `self` and contains
+            default chgmult.
+            Only provided if `return_molecules` is True.
+            Returned are of same type as `self`.
+        bfs_molecule : qcdb.Molecule or psi4.core.Molecule, optional
+            Single molecule with same number of real atoms as `self` with atoms
+            reordered into adjacent fragments and fragment markers inserted.
+            Loses ghost/dummy info from `self`; keeps total charge but not total mult.
+            Only provided if `return_molecule` is True.
+            Returned is of same type as `self`.
+
+        Notes
+        -----
+        Relies upon van der Waals radii and so faulty for close (especially
+            hydrogen-bonded) fragments. See `seed_atoms`.
+        Any existing fragmentation info/chgmult encoded in `self` is lost.
+
+        Authors
+        -------
+        Original code from Michael S. Marshall, linear-scaling algorithm from
+        Trent M. Parker, revamped by Lori A. Burns
+
+        """
+        self.update_geometry()
+        if self.natom() != self.nallatom():
+            raise ValidationError("""BFS not adapted for dummy atoms""")
+        cgeom, cmass, celem, celez, cuniq = self.to_arrays()
+        frag_pattern = BFS(cgeom, celez, seed_atoms=seed_atoms, bond_threshold=bond_threshold)
+        outputs = [frag_pattern]
+
+        frlen = [len(fr) for fr in frag_pattern]
+        vsplt = np.cumsum(frlen)
+        assert vsplt[-1] == self.natom(), """BFS dropped atoms"""
+
+        fgeoms = [cgeom[fr] for fr in frag_pattern]
+        fmasss = [cmass[fr] for fr in frag_pattern]
+        felems = [celem[fr] for fr in frag_pattern]
+        felezs = [celez[fr] for fr in frag_pattern]
+        fgeom = np.vstack(fgeoms)
+        fmass = np.concatenate(fmasss, axis=0)
+        felem = np.concatenate(felems, axis=0)
+        felez = np.concatenate(felezs, axis=0)
+
+        if return_arrays:
+            outputs.append((fgeoms, fmasss, felems))
+
+        if return_molecules:
+            molrecs = [molparse.from_arrays(geom=cgeom[fr],
+                                            mass=cmass[fr],
+                                            elem=celem[fr],
+                                            elez=celez[fr],
+                                            units='Bohr',
+                                            fix_com=True,
+                                            fix_orientation=True) for fr in frag_pattern]
+            if isinstance(self, Molecule):
+                ret_mols = [Molecule.from_dict(molrec) for molrec in molrecs]
+            else:
+                from psi4 import core
+                ret_mols = [core.Molecule.from_dict(molrec) for molrec in molrecs]
+            outputs.append(ret_mols)
+
+        if return_molecule:
+            molrec = molparse.from_arrays(geom=fgeom,
+                                          mass=fmass,
+                                          elem=felem,
+                                          elez=felez,
+                                          units='Bohr',
+                                          molecular_charge=self.molecular_charge(),
+                                          # molecular_multiplicity may not be conservable upon fragmentation
+                                          #   potentially could do two passes and try to preserve it
+                                          fix_com=self.com_fixed(),
+                                          fix_orientation=self.orientation_fixed(),
+                                          fix_symmetry=(None if self.symmetry_from_input() == '' else self.symmetry_from_input()),
+                                          fragment_separators=vsplt[:-1])
+            if isinstance(self, Molecule):
+                ret_mol = Molecule.from_dict(molrec)
+            else:
+                from psi4 import core
+                ret_mol = core.Molecule.from_dict(molrec)
+
+            outputs.append(ret_mol)
+
+        outputs = tuple(outputs)
+        return (frag_pattern, ) + outputs[1:]
+
+    @staticmethod
+    def _raw_B787(concern_mol,
+             ref_mol,
+             do_plot=False,
+             verbose=1,
+             atoms_map=False,
+             run_resorting=False,
+             mols_align=False,
+             run_to_completion=False,
+             uno_cutoff=1.e-3,
+             run_mirror=False):
+        """Finds shift, rotation, and atom reordering of `concern_mol` that best
+        aligns with `ref_mol`.
+
+        Wraps :py:func:`qcdb.align.B787` for :py:class:`qcdb.Molecule` or
+        :py:class:`psi4.core.Molecule`. Employs the Kabsch, Hungarian, and
+        Uno algorithms to exhaustively locate the best alignment for
+        non-oriented, non-ordered structures.
+
+        Parameters
+        ----------
+        concern_mol : qcdb.Molecule or psi4.core.Molecule
+            Molecule of concern, to be shifted, rotated, and reordered into
+            best coincidence with `ref_mol`.
+        ref_mol : qcdb.Molecule or psi4.core.Molecule
+            Molecule to match.
+        atoms_map : bool, optional
+            Whether atom1 of `ref_mol` corresponds to atom1 of `concern_mol`, etc.
+            If true, specifying `True` can save much time.
+        mols_align : bool, optional
+            Whether `ref_mol` and `concern_mol` have identical geometries by eye
+            (barring orientation or atom mapping) and expected final RMSD = 0.
+            If `True`, procedure is truncated when RMSD condition met, saving time.
+        do_plot : bool, optional
+            Pops up a mpl plot showing before, after, and ref geometries.
+        run_to_completion : bool, optional
+            Run reorderings to completion (past RMSD = 0) even if unnecessary because
+            `mols_align=True`. Used to test worst-case timings.
+        run_resorting : bool, optional
+            Run the resorting machinery even if unnecessary because `atoms_map=True`.
+        uno_cutoff : float, optional
+            TODO
+        run_mirror : bool, optional
+            Run alternate geometries potentially allowing best match to `ref_mol`
+            from mirror image of `concern_mol`. Only run if system confirmed to
+            be nonsuperimposable upon mirror reflection.
+
+        Returns
+        -------
+        float, tuple, qcdb.Molecule or psi4.core.Molecule
+            First item is RMSD [A] between `ref_mol` and the optimally aligned
+            geometry computed.
+            Second item is a AlignmentMill namedtuple with fields
+            (shift, rotation, atommap, mirror) that prescribe the transformation
+            from `concern_mol` and the optimally aligned geometry.
+            Third item is a crude charge-, multiplicity-, fragment-less Molecule
+            at optimally aligned (and atom-ordered) geometry. Return type
+            determined by `concern_mol` type.
+
+        """
+        from .align import B787
+
+        rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
+        cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
+
+        rmsd, solution = B787(
+            cgeom=cgeom,
+            rgeom=rgeom,
+            cuniq=cuniq,
+            runiq=runiq,
+            do_plot=do_plot,
+            verbose=verbose,
+            atoms_map=atoms_map,
+            run_resorting=run_resorting,
+            mols_align=mols_align,
+            run_to_completion=run_to_completion,
+            run_mirror=run_mirror,
+            uno_cutoff=uno_cutoff)
+
+        ageom, amass, aelem, aelez, auniq = solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
+        adict = molparse.from_arrays(
+            geom=ageom,
+            mass=amass,
+            elem=aelem,
+            elez=aelez,
+            units='Bohr',
+            molecular_charge=concern_mol.molecular_charge(),
+            molecular_multiplicity=concern_mol.multiplicity(),
+            fix_com=True,
+            fix_orientation=True)
+        if isinstance(concern_mol, Molecule):
+            amol = Molecule.from_dict(adict)
+        else:
+            from psi4 import core
+            amol = core.Molecule.from_dict(adict)
+
+        compare_values(concern_mol.nuclear_repulsion_energy(),
+                       amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE uncorrupted',
+                       verbose=verbose-1)
+        if mols_align:
+            compare_values(ref_mol.nuclear_repulsion_energy(),
+                           amol.nuclear_repulsion_energy(), 4, 'Q: concern_mol-->returned_mol NRE matches ref_mol',
+                           verbose=verbose-1)
+            compare_integers(True,
+                             np.allclose(ref_mol.geometry(), amol.geometry(), atol=4),
+                             'Q: concern_mol-->returned_mol geometry matches ref_mol',
+                             verbose=verbose-1)
+
+        return rmsd, solution, amol
+
+    @staticmethod
+    def _raw_scramble(ref_mol,
+                 do_shift=True,
+                 do_rotate=True,
+                 do_resort=True,
+                 deflection=1.0,
+                 do_mirror=False,
+                 do_plot=False,
+                 run_to_completion=False,
+                 run_resorting=False,
+                 verbose=1):
+        """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
+        checking that the aligner returns the opposite transformation.
+
+        Parameters
+        ----------
+        ref_mol : qcdb.Molecule or psi4.core.Molecule
+            Molecule to perturb.
+        do_shift : bool or array-like, optional
+            Whether to generate a random atom shift on interval [-3, 3) in each
+            dimension (`True`) or leave at current origin. To shift by a specified
+            vector, supply a 3-element list.
+        do_rotate : bool or array-like, optional
+            Whether to generate a random 3D rotation according to algorithm of Arvo.
+            To rotate by a specified matrix, supply a 9-element list of lists.
+        do_resort : bool or array-like, optional
+            Whether to shuffle atoms (`True`) or leave 1st atom 1st, etc. (`False`).
+            To specify shuffle, supply a nat-element list of indices.
+        deflection : float, optional
+            If `do_rotate`, how random a rotation: 0.0 is no change, 0.1 is small
+            perturbation, 1.0 is completely random.
+        do_mirror : bool, optional
+            Whether to construct the mirror image structure by inverting y-axis.
+        do_plot : bool, optional
+            Pops up a mpl plot showing before, after, and ref geometries.
+        run_to_completion : bool, optional
+            By construction, scrambled systems are fully alignable (final RMSD=0).
+            Even so, `True` turns off the mechanism to stop when RMSD reaches zero
+            and instead proceed to worst possible time.
+        run_resorting : bool, optional
+            Even if atoms not shuffled, test the resorting machinery.
+        verbose : int, optional
+            Print level.
+
+        Returns
+        -------
+        None
+
+        """
+        from .align import compute_scramble
+
+        rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
+        nat = rgeom.shape[0]
+
+        perturbation = compute_scramble(
+            rgeom.shape[0],
+            do_shift=do_shift,
+            do_rotate=do_rotate,
+            deflection=deflection,
+            do_resort=do_resort,
+            do_mirror=do_mirror)
+        cgeom, cmass, celem, celez, cuniq = perturbation.align_system(rgeom, rmass, relem, relez, runiq, reverse=True)
+        cmol = Molecule.from_arrays(
+            geom=cgeom,
+            mass=cmass,
+            elem=celem,
+            elez=celez,
+            units='Bohr',
+            molecular_charge=ref_mol.molecular_charge(),
+            molecular_multiplicity=ref_mol.multiplicity(),
+            fix_com=True,
+            fix_orientation=True)
+
+        rmsd = np.linalg.norm(cgeom - rgeom) * psi_bohr2angstroms / np.sqrt(nat)
+        if verbose >= 1:
+            print('Start RMSD = {:8.4f} [A]'.format(rmsd))
+
+        rmsd, solution, amol = cmol.B787(
+            ref_mol,
+            do_plot=do_plot,
+            atoms_map=(not do_resort),
+            run_resorting=run_resorting,
+            mols_align=True,
+            run_to_completion=run_to_completion,
+            run_mirror=do_mirror,
+            verbose=verbose)
+
+        compare_integers(True, np.allclose(solution.shift, perturbation.shift, atol=6), 'shifts equiv', verbose=verbose-1)
+        if not do_resort:
+            compare_integers(True, np.allclose(solution.rotation.T, perturbation.rotation), 'rotations transpose', verbose=verbose-1)
+        if solution.mirror:
+            compare_integers(True, do_mirror, 'mirror allowed', verbose=verbose-1)
+
+    def set_fragment_pattern(self, frl, frt, frc, frm):
+        """Set fragment member data through public method analogous to psi4.core.Molecule"""
+
+        if not (len(frl) == len(frt) == len(frc) == len(frm)):
+            raise ValidationError("""Molecule::set_fragment_pattern: fragment arguments not of same length.""")
+
+        self.fragments = frl
+        self.fragment_types = frt
+        self.fragment_charges = frc
+        self.fragment_multiplicities = frm
+
+
 # Attach methods to qcdb.Molecule class
 from .interface_dftd3 import run_dftd3 as _dftd3_qcdb_yo
 Molecule.run_dftd3 = _dftd3_qcdb_yo
@@ -1141,3 +1709,9 @@ from .parker import bond_profile as _parker_bondprofile_yo
 Molecule.bond_profile = _parker_bondprofile_yo
 from .interface_gcp import run_gcp as _gcp_qcdb_yo
 Molecule.run_gcp = _gcp_qcdb_yo
+
+Molecule.to_arrays = Molecule._raw_to_arrays
+Molecule.to_dict = Molecule._raw_to_dict
+Molecule.BFS = Molecule._raw_BFS
+Molecule.B787 = Molecule._raw_B787
+Molecule.scramble = Molecule._raw_scramble

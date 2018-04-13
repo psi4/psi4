@@ -33,10 +33,6 @@ Defines functions for retrieving data computed at displaced geometries.
 """
 from __future__ import absolute_import
 from __future__ import print_function
-import collections
-import shelve
-import copy
-import os
 
 from psi4.driver import p4util
 from psi4.driver.constants import *

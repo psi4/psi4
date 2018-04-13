@@ -29,15 +29,15 @@
 Runs a JSON input psi file.
 """
 
+import os
+import copy
+import uuid
+
+import psi4
 from psi4.driver import driver
 from psi4.driver import molutil
 from psi4 import core
-import psi4
 
-import json
-import uuid
-import copy
-import os
 
 methods_dict = {
     'energy': driver.energy,

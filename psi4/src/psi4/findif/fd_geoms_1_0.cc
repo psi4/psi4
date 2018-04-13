@@ -63,8 +63,9 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     int Natom = mol->natom();
 
     // Get SALCS from libmints
-    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
-    CdSalcList cdsalc(mol, 0x1, project, project);
+    bool t_project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
+    bool r_project = t_project && options.get_bool("FD_PROJECT");
+    CdSalcList cdsalc(mol, 0x1, t_project, r_project);
 
     int Nsalc = cdsalc.ncd();
 
@@ -81,6 +82,7 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
         outfile->Printf("\tNumber of atoms is %d.\n", Natom);
         outfile->Printf("\tNumber of symmetric SALC's is %d.\n", Nsalc);
         outfile->Printf("\tNumber of displacements (including reference) is %d.\n", Ndisp);
+        outfile->Printf("\tTranslations projected? %d. Rotations projected? %d.\n", t_project, r_project);
     }
 
     if (options.get_int("PRINT") > 1)

@@ -28,18 +28,13 @@
 
 from __future__ import absolute_import
 
-# Gn theory.
-
-import re
-import os
-import math
-import warnings
 from psi4 import core
 from psi4.driver import driver
 from psi4.driver import p4util
 from psi4.driver import constants
-#from driver import *
 # never import aliases into this file
+
+# Gn theory.
 
 def run_gaussian_2(name, **kwargs):
 

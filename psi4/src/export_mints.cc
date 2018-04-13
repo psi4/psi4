@@ -191,6 +191,105 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     return basisset;
 }
 
+bool _has_key(const py::dict &data, const std::string &key) {
+    for (auto item : data) {
+        if (std::string(py::str(item.first)) == key)
+            return true;
+    }
+    return false;
+}
+
+std::shared_ptr<Molecule> from_dict(py::dict molrec) {
+    // Compromises for psi4.core.Molecule
+    // * molecular_charge is int, not float
+    // * fragment_charges are int, not float
+    // * elez are float, not int, b/c Psi4 Z is approx. elez * real
+
+    std::shared_ptr <Molecule> mol(new Molecule);
+    //mol->set_lock_frame() = false;
+
+    if (_has_key(molrec, "name"))
+        mol->set_name(molrec["name"].cast<std::string>());
+
+    if (molrec["units"].cast<std::string>() == "Angstrom")
+        mol->set_units(Molecule::Angstrom);
+    else if (molrec["units"].cast<std::string>() == "Bohr")
+        mol->set_units(Molecule::Bohr);
+    else
+        throw PSIEXCEPTION("Invalid geometry units to construct Molecule.");
+    if (_has_key(molrec, "input_units_to_au"))
+        mol->set_input_units_to_au(molrec["input_units_to_au"].cast<double>());
+
+    mol->set_com_fixed(molrec["fix_com"].cast<bool>());
+    mol->set_orientation_fixed(molrec["fix_orientation"].cast<bool>());
+    if (_has_key(molrec, "fix_symmetry"))
+        mol->reset_point_group(molrec["fix_symmetry"].cast<std::string>());
+
+    std::vector <double> geom = molrec["geom"].cast<std::vector <double>>();
+    std::vector <int> elea = molrec["elea"].cast<std::vector<int>>();
+    std::vector <double> elez = molrec["elez"].cast<std::vector <double>>();
+    std::vector <std::string> elem = molrec["elem"].cast<std::vector <std::string>>();
+    std::vector <double> mass = molrec["mass"].cast<std::vector <double>>();
+    std::vector <int> real = molrec["real"].cast<std::vector <int>>();
+    std::vector <std::string> elbl= molrec["elbl"].cast<std::vector <std::string>>();
+    size_t nat = geom.size() / 3;
+
+    for (size_t iat=0; iat<nat; ++iat) {
+        std::string symbol = elem[iat];
+        std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+        mol->add_atom(elez[iat] * real[iat],
+                      geom[3*iat], geom[3*iat+1], geom[3*iat+2],
+                      symbol,
+                      mass[iat],
+                      elez[iat] * real[iat],
+                      symbol + elbl[iat],
+                      elea[iat]);
+    }
+
+    ////    mol->set_has_zmatrix(false);  // TODO
+    ////    moldict['zmat'] = self.zmat
+    ////    moldict['reinterpret_coordentries'] = self.PYreinterpret_coordentries
+    ////    moldict['lock_frame'] = self.lock_frame
+    ////    mol->set_reinterpret_coordentry(false);
+
+    std::vector<Molecule::FragmentType> fragment_types;
+    std::vector<int> fragment_separators;
+    fragment_separators = molrec["fragment_separators"].cast<std::vector <int>>();
+    std::vector <std::pair <int, int>> fragments;
+    fragment_separators.insert(fragment_separators.begin(), 0);
+    fragment_separators.push_back(nat);
+    for (size_t i=1; i<fragment_separators.size(); ++i) {
+        fragments.push_back(std::make_pair (fragment_separators[i-1], fragment_separators[i]));
+        fragment_types.push_back(Molecule::Real);
+    }
+
+    //for (auto item : molrec["fragment_types"]) {
+    //    if (item.cast<std::string>() == "Real")
+    //        fragment_types.push_back(Molecule::Real);
+    //    else if (item.cast<std::string>() == "Ghost")
+    //        fragment_types.push_back(Molecule::Ghost);
+    //    else if (item.cast<std::string>() == "Absent")
+    //        fragment_types.push_back(Molecule::Absent);
+    //    else
+    //        throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
+    //}
+
+    std::vector<int> fragment_charges;
+    for (auto item : molrec["fragment_charges"])
+        fragment_charges.push_back(static_cast<int>(item.cast<double>()));
+
+    mol->set_fragment_pattern(fragments,
+                              fragment_types,
+                              fragment_charges,
+                              molrec["fragment_multiplicities"].cast<std::vector <int>>());
+
+    mol->set_molecular_charge(static_cast<int>(molrec["molecular_charge"].cast<double>()));
+    mol->set_multiplicity(molrec["molecular_multiplicity"].cast<int>());
+
+    mol->update_geometry();
+    return mol;
+}
+
 void export_mints(py::module& m) {
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
     // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
@@ -333,8 +432,16 @@ void export_mints(py::module& m) {
         .value("Bohr", Molecule::Bohr)
         .export_values();
 
-    typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
-    typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&, diagonalize_order);
+    py::enum_<Molecule::FragmentType>(m, "FragmentType", "Fragment activation status")
+        .value("Absent", Molecule::Absent)  // Neglect completely
+        .value("Real", Molecule::Real)  // Include, as normal
+        .value("Ghost", Molecule::Ghost)  // Include, but with ghost atoms
+        .export_values();
+
+    typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&,
+                                            const SharedMatrix&, double);
+    typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&,
+                                               diagonalize_order);
     typedef void (Matrix::*matrix_one)(const SharedMatrix&);
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
@@ -1027,6 +1134,9 @@ void export_mints(py::module& m) {
         .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame")
         .def("fix_com", &Molecule::set_com_fixed,
              "Whether to fix the Cartesian position, or to translate to the C.O.M.")
+        .def("orientation_fixed", &Molecule::orientation_fixed, "Get whether or not orientation is fixed")
+        .def("com_fixed", &Molecule::com_fixed, "Get whether or not COM is fixed")
+        .def("symmetry_from_input", &Molecule::symmetry_from_input, "Returns the symmetry specified in the input")
         .def("add_atom", &Molecule::add_atom,
              "Adds to Molecule arg1 an atom with atomic number arg2, Cartesian coordinates in Bohr "
              "(arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and "
@@ -1047,22 +1157,25 @@ void export_mints(py::module& m) {
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
         .def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of atom")
+        .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy, "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")
         .def("z", &Molecule::z, "z position of atom")
-        .def("fZ", &Molecule::Z, py::return_value_policy::copy,
+        .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
              "Nuclear charge of atom arg1 (0-indexed including dummies)")
-        .def("fx", &Molecule::x, "x position of atom arg1 (0-indexed including dummies in Bohr)")
-        .def("fy", &Molecule::y, "y position of atom arg1 (0-indexed including dummies in Bohr)")
-        .def("fz", &Molecule::z, "z position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fx", &Molecule::fx, "x position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fy", &Molecule::fy, "y position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fz", &Molecule::fz, "z position of atom arg1 (0-indexed including dummies in Bohr)")
         .def("center_of_mass", &Molecule::center_of_mass,
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg2")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Gets mass of atom arg2")
-        .def("set_mass", &Molecule::set_mass, "Gets mass of atom arg2")
-        .def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)")
-        .def("label", &Molecule::label, "Gets the original label of the atom as given in the input file (C2, H4)")
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed)", py::arg("atom"))
+        .def("set_mass", &Molecule::set_mass, "Sets mass of *atom* (0-indexed) to *mass*", py::arg("atom"), py::arg("mass"))
+        .def("symbol", &Molecule::symbol,
+             "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)")
+        .def("label", &Molecule::label,
+             "Gets the original label of the atom as given in the input file (C2, H4)")
         .def("charge", &Molecule::charge, "Gets charge of atom")
         .def("molecular_charge", &Molecule::molecular_charge, "Gets the molecular charge")
         .def("extract_subsets", &Molecule::py_extract_subsets_1,
@@ -1084,7 +1197,23 @@ void export_mints(py::module& m) {
         .def("set_active_fragment", &Molecule::set_active_fragment, "Sets the specified fragment arg2 to be Real")
         .def("set_ghost_fragments", &Molecule::set_ghost_fragments,
              "Sets the specified list arg2 of fragments to be Ghost")
-        .def("set_ghost_fragment", &Molecule::set_ghost_fragment, "Sets the specified fragment arg2 to be Ghost")
+        .def("set_ghost_fragment", &Molecule::set_ghost_fragment,
+             "Sets the specified fragment arg2 to be Ghost")
+        .def("get_fragments", &Molecule::get_fragments,
+              "Returns list of pairs of atom ranges defining each fragment from parent molecule"
+              "(fragments[frag_ind] = <Afirst,Alast+1>)")
+        .def("get_fragment_types",
+            [](Molecule& mol) {
+                const std::string FragmentTypeList [] = {"Absent", "Real", "Ghost"};
+                std::vector<std::string> srt;
+                for (auto item : mol.get_fragment_types())
+                    srt.push_back(FragmentTypeList[item]);
+                return srt; },
+             "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
+        .def("get_fragment_charges", &Molecule::get_fragment_charges,
+             "Gets the charge of each fragment")
+        .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
+             "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Tests to see if an atom is at the position arg2 with a given tolerance arg3")
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
@@ -1093,7 +1222,9 @@ void export_mints(py::module& m) {
              "Prints the molecule in Cartesians in Angstroms to output file")
         .def("print_cluster", &Molecule::print_cluster,
              "Prints the molecule in Cartesians in input units adding fragment separators")
-        .def("rotational_constants", &Molecule::rotational_constants, "Prints the rotational constants of the molecule")
+        .def("rotational_constants",
+                [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
+             "Prints the rotational constants of the molecule")
         .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
              py::arg("dipole_field") = std::vector<double>(3, 0.0), "Computes nuclear repulsion energy")
         .def("find_point_group", &Molecule::find_point_group,
@@ -1110,8 +1241,11 @@ void export_mints(py::module& m) {
         .def("symmetrize", &Molecule::symmetrize_to_abelian_group,
              "Finds the highest point Abelian point group within the specified tolerance, and "
              "forces the geometry to have that symmetry.")
-        .def_static("create_molecule_from_string", &Molecule::create_molecule_from_string,
-                    "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
+        .def("inertia_tensor", &Molecule::inertia_tensor,
+             "Returns intertial tensor")
+        .def_static(
+             "create_molecule_from_string", &Molecule::create_molecule_from_string,
+             "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg2 is in the list, returns true if it is, and returns false if "
              "not")
@@ -1137,9 +1271,26 @@ void export_mints(py::module& m) {
         .def("print_out_of_planes", &Molecule::print_out_of_planes,
              "Print the out-of-plane angle geometrical parameters to output file")
         .def("irrep_labels", &Molecule::irrep_labels, "Returns Irreducible Representation symmetry labels")
-        .def_property("units", py::cpp_function(&Molecule::units), py::cpp_function(&Molecule::set_units),
-                      "Units (Angstrom or Bohr) used to define the geometry")
+        .def("units",
+            [](Molecule& mol) {
+                const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
+                std::string srt = GeometryUnitsList[mol.units()];
+                return srt; },
+            "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
+        .def("set_units", &Molecule::set_units, "Sets units (Angstrom or Bohr) used to define the geometry")
+        .def("input_units_to_au", &Molecule::input_units_to_au, "Returns unit conversion to [a0] for geometry")
+        .def("set_input_units_to_au", &Molecule::set_input_units_to_au, "Sets unit conversion to [a0] for geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
+        .def_static("from_dict", from_dict,
+                    "Returns a new Molecule constructed from python dictionary. In progress: name and capabilities should not be relied upon")
+        .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
+            "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
+        .def("rotor_type",
+            [](Molecule& mol) {
+                const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP", "RT_LINEAR", "RT_ATOM"};
+                std::string srt = RotorTypeList[mol.rotor_type()];
+                return srt; },
+            "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
         .def("geometry", &Molecule::geometry,
              "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
         .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,

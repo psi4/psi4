@@ -153,9 +153,6 @@ PsiReturnType psimrcc(SharedWavefunction, Options&);
 namespace sapt {
 PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&);
 }
-namespace thermo {
-PsiReturnType thermo(SharedWavefunction, SharedVector, Options&);
-}
 
 #ifdef USING_CheMPS2
 namespace dmrg {
@@ -171,14 +168,14 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const py::dict
 // Finite difference functions
 namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule>, Options&);
-std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep = -1);
-std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep = -1);
+std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep);
+std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep);
 std::vector<SharedMatrix> atomic_displacements(std::shared_ptr<Molecule>, Options&);
 
 SharedMatrix fd_1_0(std::shared_ptr<Molecule>, Options&, const py::list&);
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep = -1);
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep = -1);
-SharedMatrix displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
+void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
 }
 
 // CC functions
@@ -353,9 +350,9 @@ SharedMatrix py_psi_fd_freq_1(std::shared_ptr<Molecule> mol, const py::list& gra
     return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
 }
 
-SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
+void py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
                                   const double disp_size) {
-    return findif::displace_atom(geom, atom, coord, sign, disp_size);
+    findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
 SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn) {
@@ -521,11 +518,6 @@ SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn) {
     return adc_wfn;
 }
 
-double py_psi_thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs) {
-    py_psi_prepare_options_for_module("THERMO");
-    thermo::thermo(ref_wfn, vib_freqs, Process::environment.options);
-    return 0.0;
-}
 
 char const* py_psi_version() {
 #ifdef PSI_VERSION
@@ -1334,7 +1326,6 @@ PYBIND11_MODULE(core, core) {
     core.def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
     core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
-    core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {

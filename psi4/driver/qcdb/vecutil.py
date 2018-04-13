@@ -25,16 +25,20 @@
 #
 # @END LICENSE
 #
-
 r"""File for accessory procedures in the chem module.
 Credit for the libmints vector3 class to Justin M. Turney and
 incremental improvements by other psi4 developers.
 
+Vectors that use these functions are overwhelmingly of length 3, so
+pure python instead of NumPy is the right choice efficiency-wise.
+
 """
 from __future__ import absolute_import
 from __future__ import print_function
-import math
+from __future__ import division
 import copy
+import math
+
 from .exceptions import *
 
 ZERO = 1.0E-14
@@ -75,12 +79,12 @@ def naivemult(v, u):
 def normalize(v):
     """Compute normalized vector *v*."""
     vmag = norm(v)
-    return [v[i] / vmag  for i in range(len(v))]
+    return [v[i] / vmag for i in range(len(v))]
 
 
 def distance(v, u):
     """Compute the distance between points defined by vectors *v* and *u*."""
-    return norm(sub(v, u))
+    return math.sqrt(sum(((v[i] - u[i]) * (v[i] - u[i]) for i in range(len(v)))))
 
 
 def cross(v, u):
@@ -89,7 +93,7 @@ def cross(v, u):
         raise ValidationError('cross() only defined for vectors of length 3\n')
     return [v[1] * u[2] - v[2] * u[1],
             v[2] * u[0] - v[0] * u[2],
-            v[0] * u[1] - v[1] * u[0]]
+            v[0] * u[1] - v[1] * u[0]]  # yapf: disable
 
 
 def rotate(v, theta, axis):

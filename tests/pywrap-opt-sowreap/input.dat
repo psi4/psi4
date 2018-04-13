@@ -1,6 +1,6 @@
 #! Finite difference optimization, run in sow/reap mode.
 
-print 'This file will not work outside a cmake test environment.'
+print('This file will not work outside a cmake test environment.')
 
 molecule h2s {
 O

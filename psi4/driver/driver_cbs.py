@@ -30,17 +30,16 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 import re
-import math
 import sys
+import math
+
 import numpy as np
 
 from psi4 import core
-
 from psi4.driver import qcdb
 from psi4.driver import p4util
 from psi4.driver import driver_util
 from psi4.driver import constants
-
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
 

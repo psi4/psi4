@@ -31,9 +31,7 @@ a QM calculation.
 
 """
 from __future__ import absolute_import
-import re
-import os
-import math
+
 from psi4.driver import *
 
 

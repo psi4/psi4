@@ -162,10 +162,8 @@ protected:
     std::map<std::string, double> geometry_variables_;
     /// A list describing how to handle each fragment
     std::vector<FragmentType> fragment_types_;
-//****AVC****//
-// moved fragments_ to public
-// moved fragment_levels_ to public
-//****AVC****//
+    /// The list of atom ranges defining each fragment from parent molecule
+    std::vector<std::pair<int, int> > fragments_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
     /// Reinterpret the coord entries or not
@@ -179,10 +177,6 @@ protected:
     bool cart_;
 
 public:
-//****AVC****//
-    /// The list of atom ranges defining each fragment from parent molecule
-    std::vector<std::pair<int, int> > fragments_;
-//****AVC****//
 
     Molecule();
     /// Copy constructor.
@@ -198,12 +192,6 @@ public:
     /// Operators
     /// Assignment operator.
     Molecule& operator=(const Molecule& other);
-    /// Addition
-    Molecule operator+(const Molecule& other);
-    /// Subtraction
-    Molecule operator-(const Molecule& other);
-    /// Plus equals
-    void operator+=(const Molecule& other);
     /// @}
 
 
@@ -219,13 +207,14 @@ public:
      * \param x cartesian coordinate
      * \param y cartesian coordinate
      * \param z cartesian coordinate
-     * \param symb atomic symbol to use
+     * \param sym atomic symbol to use
      * \param mass mass to use if non standard
      * \param charge charge to use if non standard
-     * \param lineno line number when taken from a string
+     * \param lbl extended atomic symbol
+     * \param A mass number
      */
-    void add_atom(int Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
-                  double charge = 0.0);
+    void add_atom(double Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
+                  double charge = 0.0, std::string lbl = "", int A = -1);
 
     /// Whether the multiplicity was given by the user
     bool multiplicity_specified() const { return multiplicity_specified_; }
@@ -286,6 +275,8 @@ public:
     std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
+    /// Returns mass number of atom
+    int mass_number(int atom) const;
     /// Returns the true atomic number of an atom
     int true_atomic_number(int atom) const;
     int ftrue_atomic_number(int atom) const;
@@ -295,6 +286,8 @@ public:
     std::string flabel(int atom) const;
     /// Returns charge of atom
     double fcharge(int atom) const;
+    /// Returns mass number of atom
+    int fmass_number(int atom) const;
     /// Returns the CoordEntry for an atom
     const std::shared_ptr<CoordEntry>& atom_entry(int atom) const;
 
@@ -611,13 +604,18 @@ public:
 
     /// The list of atom ranges defining each fragment from parent molecule (fragments[frag_ind] =
     /// <Afirst,Alast+1>)
-    const std::vector<std::pair<int, int> >& fragments() const { return fragments_; }
+    const std::vector<std::pair<int, int> >& get_fragments() const { return fragments_; }
     /// A list describing how to handle each fragment
-    const std::vector<FragmentType>& fragment_types() const { return fragment_types_; }
+    const std::vector<FragmentType>& get_fragment_types() const { return fragment_types_; }
     /// The charge of each fragment
-    const std::vector<int>& fragment_charges() const { return fragment_charges_; }
+    const std::vector<int>& get_fragment_charges() const { return fragment_charges_; }
     /// The multiplicity of each fragment
-    const std::vector<int>& fragment_multiplicities() const { return fragment_multiplicities_; }
+    const std::vector<int>& get_fragment_multiplicities() const { return fragment_multiplicities_; }
+    /// Sets the fragmentation information directly
+    void set_fragment_pattern(const std::vector<std::pair<int, int>>,
+                              const std::vector<FragmentType>,
+                              const std::vector<int>,
+                              const std::vector<int>);
 
     /// Sets whether this molecule contains at least one cartesian entry
     void set_has_cartesian(bool tf) { cart_ = tf; }
@@ -641,23 +639,30 @@ public:
         molecular_charge_ = charge;
     }
     /// Gets the molecular charge
-    int molecular_charge() const;
+    int molecular_charge() const { return molecular_charge_; }
     /// Sets the multiplicity (defined as 2Ms + 1)
     void set_multiplicity(int mult) {
         multiplicity_specified_ = true;
         multiplicity_ = mult;
     }
     /// Get the multiplicity (defined as 2Ms + 1)
-    int multiplicity() const;
+    int multiplicity() const { return multiplicity_; }
+
     /// Sets the geometry units
-    void set_units(GeometryUnits units) { units_ = units; }
+    void set_units(GeometryUnits units);
     /// Gets the geometry units
     GeometryUnits units() const { return units_; }
-
+    /// Sets the geometry unit conversion.
+    /// May be used to override internal a2b physconst. Call _after_ units set.
+    void set_input_units_to_au(double conv);
+    /// Gets the geometry unit conversion
+    double input_units_to_au() const { return input_units_to_au_; }
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
     /// Fix the orientation at its current frame
     void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix; }
+    /// Get whether or not COM is fixed
+    bool com_fixed() const { return !move_to_com_; }
     /// Fix the center of mass at its current frame
     void set_com_fixed(bool fix = true) { move_to_com_ = !fix; }
     /// Returns the Schoenflies symbol
@@ -670,6 +675,9 @@ public:
     std::string full_point_group_with_n() const { return FullPointGroupList[full_pg_]; }
     /// Return n in Cnv, etc.; If there is no n (e.g. Td) it's the highest-order rotation axis.
     int full_pg_n() { return full_pg_n_; }
+    /// Number of unique orientations of the rigid molecule that only interchange identical atoms.
+    ///    Source: http://cccbdb.nist.gov/thermo.asp (search "symmetry number")
+    int rotational_symmetry_number() const;
 
     /**
      * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
