@@ -53,14 +53,12 @@ except ImportError:
     from urllib.request import urlopen, Request
     from urllib.parse import quote
     from urllib.error import URLError
-import xml.etree.ElementTree as ET
-import json
-import time
-import gzip
 import re
-import sys
-import os
+import json
+import xml.etree.ElementTree as ET
+
 from psi4.driver.p4util.exceptions import *
+
 
 class PubChemObj(object):
 

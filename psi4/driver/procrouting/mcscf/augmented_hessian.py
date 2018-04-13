@@ -26,8 +26,9 @@
 # @END LICENSE
 #
 
-import numpy as np
 import os
+
+import numpy as np
 
 from psi4 import core
 from psi4.driver import p4util

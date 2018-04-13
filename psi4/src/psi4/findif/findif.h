@@ -37,6 +37,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/pybind11.h"
+#include "psi4/libmints/vector.h"
 
 namespace psi {
 class Molecule;
@@ -59,33 +60,6 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
 SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
                       const py::list& E_list, int irrep=-1);
 
-// class to accumulate and print vibrations
-class VIBRATION {
-  int irrep;       // irrep
-  double km;    // force constant
-  double *lx;   // normal mode in mass-weighted cartesians
-  double cm;    // harmonic frequency in wavenumbers
-
-  public:
-    friend PsiReturnType fd_freq_0(Options &options, const py::list& energies, int irrep);
-    friend PsiReturnType fd_freq_1(Options &options, const py::list& gradients, int irrep);
-    friend bool ascending(const VIBRATION *, const VIBRATION *);
-    friend void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes);
-
-    double get_km() {return km;}
-    double get_cm() {return cm;}
-    double get_lx(int i) {return lx[i];}
-
-    VIBRATION(int irrep_in, double km_in, double *lx_in) { irrep = irrep_in; km = km_in; lx = lx_in; }
-    ~VIBRATION() { free(lx); }
-};
-
-// function to print vibrations
-void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes);
-
-// to order vibrations
-bool ascending(const VIBRATION *vib1, const VIBRATION *vib2);
-
 // for displacing along a salc
 void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size);
@@ -99,11 +73,6 @@ void mass_weight_columns_plus_one_half(SharedMatrix B);
 // displace an atomic coordinate
 void displace_atom(SharedMatrix geom, const int atom, const int coord,
                    const int sign, const double disp_size);
-
-// save gemetry and normal modes to files
-void save_normal_modes(std::shared_ptr<Molecule> mol,
-                       std::vector<VIBRATION *> modes);
-
 
 template <class T>
 inline std::string to_string (const T& t)

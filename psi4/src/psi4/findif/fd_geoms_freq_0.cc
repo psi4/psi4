@@ -80,8 +80,9 @@ std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Optio
 
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
-  bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
-  CdSalcList salc_list(mol, 0xFF, project, project);
+  bool t_project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
+  bool r_project = t_project && options.get_bool("FD_PROJECT");
+  CdSalcList salc_list(mol, 0xFF, t_project, r_project);
 
   int Natom = mol->natom();
   int Nirrep = salc_list.nirrep();
@@ -89,11 +90,11 @@ std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Optio
 
   if (print_lvl) {
     outfile->Printf("\tNumber of atoms is %d.\n", Natom);
-
     outfile->Printf("\tNumber of irreps is %d.\n", Nirrep);
-
     outfile->Printf("\tNumber of SALCS is %d.\n", Nsalc_all);
+    outfile->Printf("\tTranslations projected? %d. Rotations projected? %d.\n", t_project, r_project);
   }
+
 
   if (freq_irrep_only >= Nirrep || freq_irrep_only < -1)
     throw PsiException("FINDIF: Irrep value not in valid range.",__FILE__,__LINE__);

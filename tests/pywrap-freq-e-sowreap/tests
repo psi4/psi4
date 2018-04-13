@@ -7,7 +7,7 @@ ref_zpve = 0.024378893351  #TEST
 ref_eq_nre = 8.90648922437  #TEST
 ref_eq_e = -74.9659011923  #TEST
 
-fd_freqs = get_frequencies()  #TEST
+fd_freqs = retwfn.frequencies()  #TEST
 compare_vectors(anal_freqs, fd_freqs, 1, 'Frequencies')  #TEST
 compare_values(ref_zpve, get_variable('ZPVE'), 4, 'ZPVE')  #TEST
 compare_values(ref_eq_e, get_variable('current energy'), 6, 'SP energy')  #TEST

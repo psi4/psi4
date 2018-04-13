@@ -34,19 +34,18 @@ properties, and vibrational frequency calculations.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import sys
-import re
-import math
 import os
+import re
+import sys
 import shutil
 
-# Import driver helpers
+import numpy as np
+
 from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
 from psi4.driver import p4util
-# from psi4.driver.inputparser import parse_options_block
-
+from psi4.driver import qcdb
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 # never import wrappers or aliases into this file
@@ -103,6 +102,26 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             % (method_name, str(dertype), alternatives))
 
     return dertype
+
+
+def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
+    """Polls options and probes `gradient` to return whether current method
+    and system expected to be invariant to translations and rotations of
+    the coordinate system.
+
+    """
+    stationary_point = gradient.rms() < stationary_criterion  # 1.e-2 pulled out of a hat
+
+    efp = core.get_active_efp()
+    efp_present = efp.nfragments() > 0
+
+    translations_projection_sound = (not core.get_option('SCF', 'EXTERN') and
+                                     not core.get_option('SCF', 'PERTURB_H') and
+                                     not efp_present)
+    rotations_projection_sound = (translations_projection_sound and 
+                                  stationary_point)
+
+    return translations_projection_sound, rotations_projection_sound
 
 
 def energy(name, **kwargs):
@@ -880,6 +899,12 @@ def optimize(name, **kwargs):
         Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
+    :type return_history: :ref:`boolean <op_py_boolean>`
+    :param return_history: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return dictionary of lists of geometries,
+        energies, and gradients at each step in the optimization.
+
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
@@ -1008,6 +1033,13 @@ def optimize(name, **kwargs):
 
     return_wfn = kwargs.pop('return_wfn', False)
 
+    return_history = kwargs.pop('return_history', False)
+    if return_history:
+        # Add wfn once the deep copy issues are worked out
+        step_energies      = []
+        step_gradients     = []
+        step_coordinates   = []
+
     # For CBS wrapper, need to set retention on INTCO file
     if custom_gradient or ('/' in lowername):
         core.IOManager.shared_object().set_specific_retention(1, True)
@@ -1040,7 +1072,7 @@ def optimize(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
 
-    # If we are feezing cartesian, do not orient or COM
+    # If we are freezing cartesian, do not orient or COM
     if core.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
         molecule.fix_orientation(True)
         molecule.fix_com(True)
@@ -1076,6 +1108,13 @@ def optimize(name, **kwargs):
         # above, used to be getting energy as last of energy list from gradient()
         # thisenergy below should ultimately be testing on wfn.energy()
 
+        # Record optimization steps
+        # Add wavefunctions later
+        if return_history:
+            step_energies.append(thisenergy)
+            step_coordinates.append(moleculeclone.geometry())
+            step_gradients.append(G.clone())
+
         # S/R: Quit after getting new displacements or if forming gradient fails
         if opt_mode == 'sow':
             return (0.0, None)
@@ -1090,7 +1129,6 @@ def optimize(name, **kwargs):
             core.IOManager.shared_object().set_specific_path(1, './')
             if 'opt_datafile' in kwargs:
                 restartfile = kwargs.pop('opt_datafile')
-                #if core.me() == 0:  TODO ask Ryan
                 shutil.copy(restartfile, p4util.get_psifile(1))
 
         # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
@@ -1151,8 +1189,18 @@ def optimize(name, **kwargs):
 
             optstash.restore()
 
-            if return_wfn:
+            if return_history:
+                history = { 'energy'        : step_energies ,
+                            'gradient'      : step_gradients ,
+                            'coordinates'   : step_coordinates,
+                          }
+
+            if return_wfn and return_history:
+                return (thisenergy, wfn, history)
+            elif return_wfn and not return_history:
                 return (thisenergy, wfn)
+            elif return_history and not return_wfn:
+                return (thisenergy, history)
             else:
                 return thisenergy
 
@@ -1243,6 +1291,7 @@ def hessian(name, **kwargs):
 
     optstash = p4util.OptionsState(
         ['FINDIF', 'HESSIAN_WRITE'],
+        ['FINDIF', 'FD_PROJECT'],
         )
 
     # Allow specification of methods to arbitrary order
@@ -1284,12 +1333,26 @@ def hessian(name, **kwargs):
             core.print_out("""hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
             dertype = 1
 
+    # At stationary point?
+    if 'ref_gradient' in kwargs:
+        core.print_out("""hessian() using ref_gradient to assess stationary point.\n""")
+        G0 = kwargs['ref_gradient']
+    else:
+        G0 = gradient(lowername, molecule=molecule, **kwargs)
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
+    core.print_out('\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'.
+                   format(G0.rms(), '' if translations_projection_sound else 'not ',
+                   '' if rotations_projection_sound else 'not '))
+    if not core.has_option_changed('FINDIF', 'FD_PROJECT'):
+        core.set_local_option('FINDIF', 'FD_PROJECT', rotations_projection_sound)
+
     # Does an analytic procedure exist for the requested method?
     if dertype == 2:
         core.print_out("""hessian() will perform analytic frequency computation.\n""")
 
         # We have the desired method. Do it.
         wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
+        wfn.set_gradient(G0)
         optstash.restore()
         optstash_conv.restore()
 
@@ -1312,7 +1375,7 @@ def hessian(name, **kwargs):
         moleculeclone.reinterpret_coordentry(False)
         moleculeclone.fix_orientation(True)
 
-        # Record undisplaced symmetry for projection of diplaced point groups
+        # Record undisplaced symmetry for projection of displaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
@@ -1425,6 +1488,7 @@ def hessian(name, **kwargs):
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
         H = core.fd_freq_1(molecule, gradients, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(H)
+        wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
@@ -1560,6 +1624,7 @@ def hessian(name, **kwargs):
         # Assemble Hessian from energies
         H = core.fd_freq_0(molecule, energies, irrep)
         wfn.set_hessian(H)
+        wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
@@ -1664,6 +1729,10 @@ def frequency(name, **kwargs):
     >>> set p 100000
     >>> thermo(wfn, wfn.frequencies())
 
+    >>> # [4] Opt+Freq, skipping the gradient recalc at the start of the Hessian
+    >>> e, wfn = optimize('hf', return_wfn=True)
+    >>> frequencies('hf', ref_gradient=wfn.gradient())
+
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
@@ -1697,8 +1766,16 @@ def frequency(name, **kwargs):
     if freq_mode == 'sow':
         return 0.0
 
-    wfn.frequencies().print_out()
-    core.thermo(wfn, wfn.frequencies())
+    # Project final frequencies?
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(wfn.gradient())
+    project_trans = kwargs.get('project_trans', translations_projection_sound)
+    project_rot = kwargs.get('project_rot', rotations_projection_sound)
+
+    irrep = kwargs.get('irrep', None)
+    vibinfo = vibanal_wfn(wfn, irrep=irrep, project_trans=project_trans, project_rot=project_rot)
+    vibonly = qcdb.vib.filter_nonvib(vibinfo)
+    wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
+    wfn.frequency_analysis = vibinfo
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
@@ -1707,6 +1784,72 @@ def frequency(name, **kwargs):
         return (core.get_variable('CURRENT ENERGY'), wfn)
     else:
         return core.get_variable('CURRENT ENERGY')
+
+
+def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
+    # TODO should go back to private
+
+    if hess is None:
+        nmwhess = np.asarray(wfn.hessian())
+    else:
+        nmwhess = hess
+
+    mol = wfn.molecule()
+    geom = np.asarray(mol.geometry())
+    symbols = [mol.symbol(at) for at in range(mol.natom())]
+
+    if molecule is not None:
+        molecule.update_geometry()
+        if mol.natom() != molecule.natom():
+            raise ValidationError('Impostor molecule trying to be analyzed! natom {} != {}'.format(mol.natom(), molecule.natom()))
+        if abs(mol.nuclear_repulsion_energy() - molecule.nuclear_repulsion_energy()) > 1.e-6:
+            raise ValidationError('Impostor molecule trying to be analyzed! NRE {} != {}'.format(mol.nuclear_repulsion_energy(), molecule.nuclear_repulsion_energy()))
+        if not np.allclose(np.asarray(mol.geometry()), np.asarray(molecule.geometry()), atol=1.e-6):
+            core.print_out('Warning: geometry center/orientation mismatch. Normal modes may not be in expected coordinate system.')
+        #    raise ValidationError('Impostor molecule trying to be analyzed! geometry\n{}\n   !=\n{}'.format(
+        #        np.asarray(mol.geometry()), np.asarray(molecule.geometry())))
+        mol = molecule
+            
+    m = np.asarray([mol.mass(at) for at in range(mol.natom())])
+    irrep_labels = mol.irrep_labels()
+
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels,
+                                                  project_trans=project_trans, project_rot=project_rot)
+
+    core.print_out(vibtext)
+    core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
+
+    if core.has_option_changed('THERMO', 'ROTATIONAL_SYMMETRY_NUMBER'):
+        rsn = core.get_option('THERMO', 'ROTATIONAL_SYMMETRY_NUMBER')
+    else:
+        rsn = mol.rotational_symmetry_number()
+
+    if irrep is None:
+        therminfo, thermtext = qcdb.vib.thermo(vibinfo,
+                                      T=core.get_option("THERMO", "T"),  # 298.15
+                                      P=core.get_option("THERMO", "P"),  # 101325.
+                                      multiplicity=mol.multiplicity(),
+                                      molecular_mass=np.sum(m),
+                                      sigma=rsn,
+                                      rotor_type=mol.rotor_type(),
+                                      rot_const=np.asarray(mol.rotational_constants()),
+                                      E0=core.get_variable('CURRENT ENERGY'))  # someday, wfn.energy()
+
+        core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
+        core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
+        core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
+        core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
+
+        core.set_variable("ZERO K ENTHALPHY", therminfo['ZPE_tot'].data)
+        core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
+        core.set_variable("ENTHALPY", therminfo['H_tot'].data)
+        core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
+
+        core.print_out(thermtext)
+    else:
+        core.print_out('  Thermochemical analysis skipped for partial frequency calculation.\n')
+
+    return vibinfo
 
 
 def gdma(wfn, datafile=""):

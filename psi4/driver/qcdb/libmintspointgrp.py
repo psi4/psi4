@@ -28,9 +28,12 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import division
+import sys
+
 from .exceptions import *
 from .vecutil import *
-import sys
+
 if sys.version_info >= (3,0):
     basestring = str
 
@@ -799,7 +802,7 @@ class IrreducibleRepresentation(object):
             #print 'need to be int', dr, dc
             i = x2
             x1 = dr
-            x2 = dc
+            x2 = int(dc)
 
         return self.rep[i][x1][x2]
 

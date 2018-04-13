@@ -61,7 +61,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   fci-coverage 
                   #fcidump
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient
-                  fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2
+                  fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
                   fnocc3 fnocc4 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
                   mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
@@ -82,7 +82,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1 pywrap-db2
                   pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o
-                  rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6
+                  rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   sapt7 sapt8 scf-bz2 scf-ecp scf-guess-read1 scf-upcast-custom-basis scf-guess-read2 scf-bs scf1 scf-occ
                   scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare dft-custom dft-reference
@@ -91,6 +91,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   dft-bench-ionization dft-bench-interaction
+                  pywrap-bfs pywrap-align pywrap-align-chiral mints12
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

@@ -32,8 +32,9 @@ import os
 import ast
 import sys
 import pickle
-import collections
 import inspect
+import collections
+
 from .exceptions import *
 from . import p4regex
 

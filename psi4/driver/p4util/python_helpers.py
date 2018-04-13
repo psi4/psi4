@@ -32,9 +32,9 @@ import sys
 import uuid
 import numpy as np
 
-from . import optproc
-from psi4.driver import qcdb
 from psi4 import core
+from psi4.driver import qcdb
+from . import optproc
 
 ## Python basis helps
 
@@ -71,16 +71,15 @@ def pybuild_basis(mol,
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    basisdict = qcdb.BasisSet.pyconstruct(
-        mol.create_psi4_string_from_molecule(), key, resolved_target, fitrole, other, return_atomlist=return_atomlist)
+    basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
+                                          key, resolved_target, fitrole, other, return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []
         for atbs in basisdict:
-            atommol = core.Molecule.create_molecule_from_string(atbs['molecule'])
+            atommol = core.Molecule.from_dict(atbs['molecule'])
             lmbs = core.BasisSet.construct_from_pydict(atommol, atbs, puream)
             atom_basis_list.append(lmbs)
-            #lmbs.print_detail_out()
         return atom_basis_list
     if ((sys.version_info < (3, 0) and isinstance(resolved_target, basestring))
             or (sys.version_info >= (3, 0) and isinstance(resolved_target, str))):
@@ -129,11 +128,11 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
     ----------
     orbital_basis : :py:class:`~psi4.core.BasisSet`
         Orbital basis to use in the JK object.
-    aux : :py:class:`~psi4.core.BasisSet`
+    aux : :py:class:`~psi4.core.BasisSet`, optional
         Optional auxiliary basis set for density-fitted tensors. Defaults
         to the DF_BASIS_SCF if set, otherwise the correspond JKFIT basis
-        to the passed in orbital_basis.
-    type : str
+        to the passed in `orbital_basis`.
+    jk_type : str, optional
         Type of JK object to build (DF, Direct, PK, etc). Defaults to the
         current global SCF_TYPE option.
 

@@ -49,6 +49,8 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <typeinfo>
+
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -1213,15 +1215,44 @@ void Wavefunction::set_hessian(SharedMatrix &hess) { hessian_ = hess; }
 
 SharedVector Wavefunction::frequencies() const { return frequencies_; }
 
-SharedVector Wavefunction::normalmodes() const { return normalmodes_; }
-
-void Wavefunction::set_frequencies(SharedVector &freqs) { frequencies_ = freqs; }
-
-void Wavefunction::set_normalmodes(SharedVector &norms) { normalmodes_ = norms; }
+void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs) {
+    frequencies_ = freqs;
+}
 
 void Wavefunction::save() const {}
 
-SharedVector Wavefunction::get_atomic_point_charges() const {
+std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const
+{
+    std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
+    
+    int n = molecule_->natom();
+    std::shared_ptr<Vector> v_vector(new Vector(n));
+    for (int i = 0; i < n; ++i)
+        v_vector->set(i, (*v)[i]);
+    return v_vector;
+}
+
+std::vector<SharedVector> Wavefunction::get_mo_extents() const
+{
+    std::vector<SharedVector> m = mo_extents();
+    
+    int n = nmo_;
+    std::vector<SharedVector> mo_vectors;
+    mo_vectors.push_back(SharedVector(new Vector("<x^2>" , basisset_->nbf())));
+    mo_vectors.push_back(SharedVector(new Vector("<y^2>" , basisset_->nbf())));
+    mo_vectors.push_back(SharedVector(new Vector("<z^2>" , basisset_->nbf())));
+    mo_vectors.push_back(SharedVector(new Vector("<r^2>" , basisset_->nbf())));
+    for (int i = 0; i<n; i++) {
+        mo_vectors[0]->set(0,i,m[0]->get(0,i));
+        mo_vectors[1]->set(0,i,m[1]->get(0,i));
+        mo_vectors[2]->set(0,i,m[2]->get(0,i));
+        mo_vectors[3]->set(0,i,m[3]->get(0,i));
+    }
+    
+    return mo_vectors;
+}
+
+std::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     std::shared_ptr<std::vector<double>> q = atomic_point_charges();
 
     int n = molecule_->natom();
@@ -1231,7 +1262,26 @@ SharedVector Wavefunction::get_atomic_point_charges() const {
     }
     return q_vector;
 }
-double Wavefunction::get_variable(std::string label) {
+
+std::vector<std::vector< std::tuple<double, int, int> >> Wavefunction::get_no_occupations() const
+{
+    
+    std::vector<std::vector< std::tuple<double, int, int> >> nos = no_occupations();
+    int nfsym = nos.size();
+    std::vector<std::vector< std::tuple<double, int, int> >> no_occs;
+    if (nfsym == 3) {
+        no_occs.push_back(nos[0]);
+        no_occs.push_back(nos[1]);
+        no_occs.push_back(nos[2]);
+    } else {
+        no_occs.push_back(nos[0]);
+    }
+    
+    return no_occs;
+}
+
+double Wavefunction::get_variable(std::string label)
+{
     std::string uc_label = label;
 
     if (variables_.count(uc_label) == 0) {

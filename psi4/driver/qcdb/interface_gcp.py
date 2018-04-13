@@ -27,12 +27,14 @@
 #
 
 """Module with functions that interface with Grimme's GCP code."""
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import re
 import uuid
 import socket
 import subprocess
+
 try:
     from psi4.driver.p4util.exceptions import *
     from psi4 import core
