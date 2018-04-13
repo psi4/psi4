@@ -200,6 +200,7 @@ void export_wavefunction(py::module& m) {
         .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Shame Potential Matrix.")
         .def("Vb", &scf::HF::Vb, "Returns the Alpha Kohn-Shame Potential Matrix.")
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
+        .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
         .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("initialize", &scf::HF::initialize, "Initializes the Wavefunction.")
@@ -221,12 +222,12 @@ void export_wavefunction(py::module& m) {
         .def("moFeff", &scf::ROHF::moFeff, "docstring")
         .def("moFa", &scf::ROHF::moFa, "docstring")
         .def("moFb", &scf::ROHF::moFb, "docstring")
-        .def("c1_deep_copy", &scf::ROHF::c1_deep_copy, 
+        .def("c1_deep_copy", &scf::ROHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *basis*", py::arg("basis"));
 
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
-        .def("c1_deep_copy", &scf::UHF::c1_deep_copy, 
+        .def("c1_deep_copy", &scf::UHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed BasisSet *basis*", py::arg("basis"));
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
