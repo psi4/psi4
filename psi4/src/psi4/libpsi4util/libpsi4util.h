@@ -29,6 +29,8 @@
 #ifndef _psi_src_lib_libpsi4util_libpsi4util_h_
 #define _psi_src_lib_libpsi4util_libpsi4util_h_
 
+#include "psi4/pragma.h"
+
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -94,7 +96,7 @@ std::vector<std::string> split(const std::string &input, const std::string &rege
  */
 size_t edit_distance(const std::string &s1, const std::string &s2);
 
-class Timer {
+class PSI_API Timer {
    public:
     Timer();
     double get();

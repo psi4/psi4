@@ -29,6 +29,7 @@
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
 
+#include "psi4/pragma.h"
 #include "psi4/libmints/typedefs.h"
 
 namespace psi {
@@ -91,7 +92,7 @@ public:
     virtual void compute_row(int row, double* target);
 };
 
-class CholeskyERI : public Cholesky {
+class PSI_API CholeskyERI : public Cholesky {
 
 protected:
     double schwarz_;

@@ -29,6 +29,8 @@
 #include"blas.h"
 #include<stdlib.h>
 
+#include "psi4/pragma.h"
+
 namespace psi { namespace fnocc{
 
 // position in a symmetric packed matrix
@@ -49,7 +51,7 @@ void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,intege
 /**
  * fortran-ordered dgemm
  */
-void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
+void PSI_API F_DGEMM(char transa,char transb, integer m, integer n, integer k,
             doublereal alpha,doublereal*A,integer lda,doublereal*B,integer ldb,
             doublereal beta,doublereal*C,integer ldc){
     DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);

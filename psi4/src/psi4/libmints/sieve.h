@@ -34,6 +34,7 @@
 #include <vector>
 #include <memory>
 //#include <utility>
+#include "psi4/pragma.h"
 #include "psi4/libmints/vector3.h"
 
 namespace psi {
@@ -91,7 +92,7 @@ class BasisSet;
  *
  *
  */
-class ERISieve {
+class PSI_API ERISieve {
 
 protected:
 

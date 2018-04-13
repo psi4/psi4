@@ -75,7 +75,7 @@ namespace psi {
 ** \ingroup CIOMR
 */
 
-double ** block_matrix(size_t n, size_t m, bool memlock)
+double ** PSI_API block_matrix(size_t n, size_t m, bool memlock)
 {
     double **A=nullptr;
     double *B=nullptr;
@@ -150,7 +150,7 @@ double ** block_matrix(size_t n, size_t m, bool memlock)
 **
 ** \ingroup CIOMR
 */
-void free_block(double **array)
+void PSI_API free_block(double **array)
 {
     if(array == nullptr) return;
     delete [] array[0];

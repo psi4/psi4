@@ -66,7 +66,7 @@ void IWL::close()
 ** Close a Integrals With Labels Buffer
 ** \ingroup IWL
 */
-void iwl_buf_close(struct iwlbuf *Buf, int keep)
+void PSI_API iwl_buf_close(struct iwlbuf *Buf, int keep)
 {
 
    psio_close(Buf->itap, keep ? 1 : 0);

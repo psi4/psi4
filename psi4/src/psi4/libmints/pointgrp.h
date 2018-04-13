@@ -377,7 +377,7 @@ SymRep::trace() const
 // //////////////////////////////////////////////////////////////////
 
 
-class CharacterTable;
+class PSI_API CharacterTable;
 
 /** The IrreducibleRepresentation class provides information associated
     with a particular irreducible representation of a point group.  This
@@ -591,7 +591,7 @@ public:
  symmetry operations, so if you want to use a point group with a nonzero
  origin, first translate all your coordinates to the origin and then set
  the origin to zero.  */
-class PointGroup
+class PSI_API PointGroup
 {
 private:
     std::string symb;

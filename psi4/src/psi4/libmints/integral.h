@@ -310,7 +310,7 @@ public:
     int end_of_PK() const { return current.end_of_PK; }
 };
 
-class SO_PQ_Iterator
+class PSI_API SO_PQ_Iterator
 {
 private:
     struct PQ_Pair {
@@ -337,7 +337,7 @@ public:
     int q() const { return current.Q; }
 };
 
-class SO_RS_Iterator
+class PSI_API SO_RS_Iterator
 {
 private:
     struct RS_Pair {

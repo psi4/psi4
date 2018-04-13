@@ -32,6 +32,7 @@
 #include <vector>
 #include "typedefs.h"
 
+#include "psi4/pragma.h"
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
 
@@ -44,7 +45,7 @@ class Molecule;
  *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class DipoleInt : public OneBodyAOInt
+class PSI_API DipoleInt : public OneBodyAOInt
 {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
