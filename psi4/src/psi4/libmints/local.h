@@ -32,6 +32,8 @@
 #include <vector>
 #include <memory>
 
+#include "psi4/pragma.h"
+
 namespace psi {
 class Options;
 
@@ -39,7 +41,7 @@ class Matrix;
 
 class BasisSet;
 
-class Localizer
+class PSI_API Localizer
 {
 protected:
 

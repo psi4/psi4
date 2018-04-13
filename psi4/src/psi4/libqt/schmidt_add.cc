@@ -34,6 +34,8 @@
 
 #include <cstdio>
 #include <cmath>
+
+#include "psi4/pragma.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 
@@ -59,7 +61,7 @@ namespace psi {
 ** Returns: 1 if a vector is added to A, 0 otherwise
 ** \ingroup QT
 */
-int schmidt_add(double **A, int rows, int cols, double *v)
+PSI_API int schmidt_add(double **A, int rows, int cols, double *v)
 {
    double dotval, normval ;
    int i, I ;

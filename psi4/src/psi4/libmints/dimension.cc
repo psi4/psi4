@@ -105,9 +105,9 @@ Dimension& Dimension::operator-=(const Dimension& b) {
     return *this;
 }
 
-bool operator==(const Dimension& a, const Dimension& b) { return (a.blocks_ == b.blocks_); }
+PSI_API bool operator==(const Dimension& a, const Dimension& b) { return (a.blocks_ == b.blocks_); }
 
-bool operator!=(const Dimension& a, const Dimension& b) { return !operator==(a, b); }
+PSI_API bool operator!=(const Dimension& a, const Dimension& b) { return !operator==(a, b); }
 
 PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
     Dimension result = a;

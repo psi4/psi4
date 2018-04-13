@@ -99,7 +99,7 @@ namespace psi {
  *
  * @ingroup QT
  */
-void PSI_API PSI_API C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
+void PSI_API C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y)
 {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
