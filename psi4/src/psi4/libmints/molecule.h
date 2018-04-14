@@ -263,7 +263,7 @@ public:
     double mass(int atom) const;
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
-    void set_mass(int atom, double mass) { full_atoms_[atom]->set_mass(mass); }
+    void set_mass(int atom, double mass);
     /// Set the nuclear charge of an atom (primarily used in ECP calculations).
     void set_nuclear_charge(int atom, double newZ);
 

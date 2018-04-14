@@ -409,6 +409,7 @@ class LibmintsMolecule(object):
         if mass < 0.0:
             raise ValidationError('Mass must be positive: {}'.format(mass))
         self.full_atoms[atom].set_mass(mass)
+        self.full_atoms[atom].set_A(-1)
 
     def symbol(self, atom):
         """Returns the cleaned up label of the atom (C2 => C, H4 = H) (0-indexed)
