@@ -217,16 +217,18 @@ public:
                   double charge = 0.0, std::string lbl = "", int A = -1);
 
     /// Whether the multiplicity was given by the user
-    bool multiplicity_specified() const { return multiplicity_specified_; }
+    bool multiplicity_specified() const { return multiplicity_specified_; }  // TODO remove
     /// Whether the charge was given by the user
-    bool charge_specified() const { return charge_specified_; }
+    bool charge_specified() const { return charge_specified_; }  // TODO remove
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
     /// Returns the list of atoms belonging to a fragment.
     // Needed for EFP interface
-    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }
+    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }  // TODO remove?
+    /// Set whether to leave the geometry alone upon update_geometry()
+    void set_lock_frame(bool tf) { lock_frame_ = tf; }
 
     /// Get molecule name
     const std::string name() const {return name_; }

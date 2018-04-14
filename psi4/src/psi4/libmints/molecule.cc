@@ -1373,8 +1373,7 @@ void Molecule::reinterpret_coordentries() {
 }
 
 void Molecule::update_geometry() {
-    if (fragments_.size() == 0) outfile->Printf("Warning: There are no quantum mechanical atoms in this molecule.\n");
-    //    throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
+    if (full_atoms_.size() == 0) outfile->Printf("Warning: There are no quantum mechanical atoms in this molecule.\n");
 
     // Idempotence condition
     if (lock_frame_) return;
@@ -2840,7 +2839,7 @@ int Molecule::get_anchor_atom(const std::string &str, const std::string &line) {
 }
 
 void Molecule::set_variable(const std::string &str, double val) {
-    // This is a weird thing if were not z-matrix
+    // This is a weird thing if we're not z-matrix
     if (cart_ && (move_to_com_ || !fix_orientation_)) {
         outfile->Printf(
             "\nMolecule: Setting a variable updates the molecular geometry, for\n"

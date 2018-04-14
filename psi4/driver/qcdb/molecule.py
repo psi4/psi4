@@ -1162,6 +1162,7 @@ class Molecule(LibmintsMolecule):
                     molecular_charge=None,
                     molecular_multiplicity=None,
 
+                    missing_enabled_return='error',
                     tooclose=0.1,
                     zero_ghost_fragments=False,
                     nonphysical=False,
@@ -1208,6 +1209,8 @@ class Molecule(LibmintsMolecule):
                                       fragment_multiplicities=fragment_multiplicities,
                                       molecular_charge=molecular_charge,
                                       molecular_multiplicity=molecular_multiplicity,
+                                      domain='qm',
+                                      missing_enabled_return=missing_enabled_return,
                                       tooclose=tooclose,
                                       zero_ghost_fragments=zero_ghost_fragments,
                                       nonphysical=nonphysical,
@@ -1300,14 +1303,14 @@ class Molecule(LibmintsMolecule):
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
         try:
-            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
         except ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
             print('Have you been meddling with chgmult?')
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
-            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)

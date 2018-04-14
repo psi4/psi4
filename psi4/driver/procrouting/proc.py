@@ -2149,7 +2149,7 @@ def run_scf_hessian(name, **kwargs):
     for atom in range(natoms):
         masses[atom] = mol.mass(atom)
 
-    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)
+    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)  # TODO kill this off
     mwhess = np.einsum('i,ij,j->ij', m, H, m)
 
     # Are we linear?

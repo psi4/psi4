@@ -206,7 +206,7 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     // * elez are float, not int, b/c Psi4 Z is approx. elez * real
 
     std::shared_ptr <Molecule> mol(new Molecule);
-    //mol->set_lock_frame() = false;
+    mol->set_lock_frame(false);
 
     if (_has_key(molrec, "name"))
         mol->set_name(molrec["name"].cast<std::string>());
@@ -285,6 +285,10 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 
     mol->set_molecular_charge(static_cast<int>(molrec["molecular_charge"].cast<double>()));
     mol->set_multiplicity(molrec["molecular_multiplicity"].cast<int>());
+
+    // hack to prevent update_geometry termination upon no atoms
+    if (nat == 0)
+        mol->set_lock_frame(true);
 
     mol->update_geometry();
     return mol;
