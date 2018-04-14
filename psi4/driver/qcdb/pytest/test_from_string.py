@@ -506,7 +506,7 @@ def test_psi4_qmefp_6d():
     import pylibefp
     efpobj = pylibefp.from_dict(final['efp'])
     efpfinal = efpobj.to_dict()
-    efpfinal = qcdb.molparse.from_arrays(**efpfinal, speclabel=False, domain='efp')
+    efpfinal = qcdb.molparse.from_arrays(speclabel=False, domain='efp', **efpfinal)
 
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     assert compare_molrecs(fullans['efp'], efpfinal, 4, sys._getframe().f_code.co_name + ': full efp')
