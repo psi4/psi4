@@ -126,7 +126,7 @@ foreach my $Dir(readdir TESTS){
     my $TestOnlyNoSample = 0;
     while(<INPUT>){
         # If this line isn't associated with testing, put it in the sample
-        print SAMPLE unless /\#TEST/;
+        print SAMPLE unless /\#\s*TEST/;
         print TEST;
         # Now we only want to grab the comments.  Move on if this is not a comment.
         next unless s/\#\!//;
