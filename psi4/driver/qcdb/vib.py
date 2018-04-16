@@ -225,7 +225,6 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
         for at in range(nat):
             text += ('   ' + """{:20.10f}""" * 3 + '\n').format(*(vibinfo['x'].data[:, vib].reshape(nat, 3)[at].real))
 
-
 #     text += """\n[INT]\n"""
 #     for vib in active:
 #         text += """1.0\n"""
@@ -777,6 +776,14 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     """
     sm = collections.defaultdict(float)
 
+    # conditions
+    therminfo = {}
+    therminfo['E0'] = QCAspect('E0', 'Eh', E0, '')
+    therminfo['B'] = QCAspect('rotational constants', 'cm^-1', rot_const, '')
+    therminfo['sigma'] = QCAspect('external symmetry number', '', sigma, '')
+    therminfo['T'] = QCAspect('temperature', 'K', T, '')
+    therminfo['P'] = QCAspect('pressure', 'Pa', P, '')
+
     # electronic
     q_elec = multiplicity
     sm[('S', 'elec')] = math.log(q_elec)
@@ -861,23 +868,23 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
             sm[(piece, 'corr')] += sm[(piece, term)]
         sm[(piece, 'tot')] = E0 + sm[(piece, 'corr')]
 
-    # package results for export
-    therminfo = {}
-    for entry in sm:
-        if entry[0] in ['S', 'Cv', 'Cp']:
-            unit = '[mEh/K]'
-        elif entry[0] in ['ZPE', 'E', 'H', 'G']:
-            unit = '[Eh]'
-        therminfo['_'.join(entry)] = VibrationAspect('XXX', unit, sm[entry], '')
-
-    # display
     terms = collections.OrderedDict()
     terms['elec'] = '  Electronic'
     terms['trans'] = '  Translational'
     terms['rot'] = '  Rotational'
     terms['vib'] = '  Vibrational'
     terms['tot'] = 'Total'
+    terms['corr'] = 'Correction'
 
+    # package results for export
+    for entry in sm:
+        if entry[0] in ['S', 'Cv', 'Cp']:
+            unit = 'mEh/K'
+        elif entry[0] in ['ZPE', 'E', 'H', 'G']:
+            unit = 'Eh'
+        therminfo['_'.join(entry)] = QCAspect(terms[entry[1]].strip().lower() + ' ' + entry[0], unit, sm[entry], '')
+
+    # display
     format_S_Cv_Cp = """\n  {:19} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
     format_ZPE_E_H_G = """\n  {:19} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
     uconv = np.asarray([psi_hartree2kcalmol, psi_hartree2kJmol, 1.])

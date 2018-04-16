@@ -54,6 +54,8 @@ compare_integers(1, qcdb.compare_vibinfos(ref_b2_vibonly, b2_vibonly, 2, 'B2 ana
 
 # Compute all frequencies with 5-point formula.
 set findif { points 5 }
+set hessian_write on
+set normal_modes_write on
 
 scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
 

@@ -432,25 +432,25 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
         mat_print(Hx, 3 * Natom, 3 * Natom, "outfile");
     }
 
-    // Print a hessian file
-    if (options.get_bool("HESSIAN_WRITE")) {
-        std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
-        //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-        printer->Printf("%5d", Natom);
-        printer->Printf("%5d\n", 6 * Natom);
-
-        int cnt = -1;
-        for (int i = 0; i < 3 * Natom; ++i) {
-            for (int j = 0; j < 3 * Natom; ++j) {
-                printer->Printf("%20.10lf", Hx[i][j]);
-                if (++cnt == 2) {
-                    printer->Printf("\n");
-                    cnt = -1;
-                }
-            }
-        }
-    }
+//    // Print a hessian file
+//    if (options.get_bool("HESSIAN_WRITE")) {
+//        std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
+//        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
+//        //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+//        printer->Printf("%5d", Natom);
+//        printer->Printf("%5d\n", 6 * Natom);
+//
+//        int cnt = -1;
+//        for (int i = 0; i < 3 * Natom; ++i) {
+//            for (int j = 0; j < 3 * Natom; ++j) {
+//                printer->Printf("%20.10lf", Hx[i][j]);
+//                if (++cnt == 2) {
+//                    printer->Printf("\n");
+//                    cnt = -1;
+//                }
+//            }
+//        }
+//    }
 //  free_block(Hx);
 
     if (print_lvl) {

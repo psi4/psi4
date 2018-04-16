@@ -2136,18 +2136,7 @@ def run_scf_hessian(name, **kwargs):
         ref_wfn.set_array("-D Hessian", disp_hess)
 
     H = core.scfhess(ref_wfn)
-
     ref_wfn.set_hessian(H)
-
-    # Write Hessian out.  This probably needs a more permanent home, too.
-    # This is a drop-in replacement for the code that lives in findif
-    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
-        molname = ref_wfn.molecule().name()
-        prefix = core.get_writer_file_prefix(molname)
-        with open(prefix+".hess", 'w') as fp:
-            fp.write("%5d%5d\n" % (natoms, 6*natoms))
-            for row in np.reshape(H, (-1, 3)):
-                fp.write("%20.10f%20.10f%20.10f\n" % tuple(row))
 
     optstash.restore()
     return ref_wfn
