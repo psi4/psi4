@@ -147,7 +147,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
 
 
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
-    r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
+    r"""Extrapolation scheme using exponential form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
 
@@ -163,13 +163,13 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
     beta_mult = math.exp(-1 * alpha * zHI)
 
     if isinstance(valueLO, float):
-        beta = (valueHI - valueLO) / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
-        value = valueHI - beta * math.exp(-1 * alpha * zHI)
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
@@ -196,7 +196,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
             valueLO.print_out()
@@ -214,6 +214,144 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
     else:
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
+
+def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=3.4):
+    r"""Extrapolation scheme using power form for reference energies with two adjacent zeta-level bases.
+    Used by :py:func:`~psi4.cbs`.
+    Truhlar, Chem. Phys. Lett. 294 (1998) 45-48.
+
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError("scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)"
+                              % (type(valueLO), type(valueHI)))
+
+    beta_division = 1 / (zHI ** (-1 * alpha) - zLO ** (-1 * alpha))
+    beta_mult = zHI ** (-1 * alpha)
+
+    if isinstance(valueLO, float):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
+
+        if verbose:
+            # Output string with extrapolation parameters
+            cbsscheme = ''
+            cbsscheme += """\n   ==> Helgaker 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
+            cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
+
+            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            cbsscheme += """   @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (18 - len(name_str))
+            cbsscheme += """% 16.12f\n\n""" % value
+            core.print_out(cbsscheme)
+
+        return value
+
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        beta = valueHI.clone()
+        beta.name = 'Truhlar SCF (%s, %s) beta' % (zLO, zHI)
+        beta.subtract(valueLO)
+        beta.scale(beta_division)
+        beta.scale(beta_mult)
+
+        value = valueHI.clone()
+        value.subtract(beta)
+        value.name = 'Truhlar SCF (%s, %s) data' % (zLO, zHI)
+
+        if verbose > 2:
+            core.print_out("""\n   ==> Truhlar 2-point power from SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""   LO-zeta (%s)""" % str(zLO))
+            core.print_out("""   LO-zeta Data""")
+            valueLO.print_out()
+            core.print_out("""   HI-zeta (%s)""" % str(zHI))
+            core.print_out("""   HI-zeta Data""")
+            valueHI.print_out()
+            core.print_out("""   Extrapolated Data:\n""")
+            value.print_out()
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
+            core.print_out("""   Beta Data:\n""")
+            beta.print_out()
+
+        return value
+
+    else:
+        raise ValidationError("scf_xtpl_truhlar_2: datatype is not recognized '%s'." % type(valueLO))
+
+
+def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=6.3):
+    r"""Extrapolation scheme using root-power form for reference energies with two adjacent zeta-level bases.
+    Used by :py:func:`~psi4.cbs`.
+    Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333.
+
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError("scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)"
+                              % (type(valueLO), type(valueHI)))
+
+    beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
+    beta_mult = math.exp(-1 * alpha * math.sqrt(zHI))
+
+    if isinstance(valueLO, float):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
+
+        if verbose:
+            # Output string with extrapolation parameters
+            cbsscheme = ''
+            cbsscheme += """\n   ==> Karton 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
+            cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
+
+            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            cbsscheme += """   @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (18 - len(name_str))
+            cbsscheme += """% 16.12f\n\n""" % value
+            core.print_out(cbsscheme)
+
+        return value
+
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        beta = valueHI.clone()
+        beta.name = 'Karton SCF (%s, %s) beta' % (zLO, zHI)
+        beta.subtract(valueLO)
+        beta.scale(beta_division)
+        beta.scale(beta_mult)
+
+        value = valueHI.clone()
+        value.subtract(beta)
+        value.name = 'Karton SCF (%s, %s) data' % (zLO, zHI)
+
+        if verbose > 2:
+            core.print_out("""\n   ==> Karton 2-point power from SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""   LO-zeta (%s)""" % str(zLO))
+            core.print_out("""   LO-zeta Data""")
+            valueLO.print_out()
+            core.print_out("""   HI-zeta (%s)""" % str(zHI))
+            core.print_out("""   HI-zeta Data""")
+            valueHI.print_out()
+            core.print_out("""   Extrapolated Data:\n""")
+            value.print_out()
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
+            core.print_out("""   Beta Data:\n""")
+            beta.print_out()
+
+        return value
+
+    else:
+        raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
+        
 
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
