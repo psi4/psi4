@@ -1,0 +1,36 @@
+molecule hf {
+H
+F 1 0.917
+}
+
+refs = {
+    "SCF TOTAL ENERGY": -100.01941126902254,            #TEST
+    "CCSD CORRELATION ENERGY": -0.20681520372339715,    #TEST
+    "CCSD TOTAL ENERGY": -100.226226472746,             #TEST
+    "CCSD(T) CORRELATION ENERGY": -0.20873570442990053, #TEST
+    "(T) CORRECTION ENERGY": -0.0019205007065033618,    #TEST
+    "CCSD(T) TOTAL ENERGY": -100.22814697345251         #TEST
+}
+
+
+
+def do_check(module):
+    set_options( {'basis':'cc-pvdz', 'cc_type':'conv', 'qc_module':module, 'freeze_core':'true', 'e_convergence': 10,
+    'd_convergence': 8})
+    ret_e = energy('ccsd(t)', molecule = hf)
+    print_d = {}
+    for var_name, ref_val in refs.items():
+        compare_values(ref_val, get_variable(var_name), 7, "{} [{}]".format(module, var_name))
+    compare_values(refs['CCSD(T) TOTAL ENERGY'], ret_e, 7, "{} [{}]".format(module, 'return value'))
+    clean_variables()
+    clean()
+
+
+# compare ccsd/ccsd(t) variables across FNOCC/CCENERGY
+
+# CCENERGY
+do_check('CCENERGY')
+
+# FNOCC
+do_check('FNOCC')
+
