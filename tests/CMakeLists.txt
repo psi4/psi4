@@ -91,7 +91,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   dft-bench-ionization dft-bench-interaction
-                  pywrap-bfs pywrap-align pywrap-align-chiral mints12
+                  pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

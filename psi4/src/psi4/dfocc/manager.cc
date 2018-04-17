@@ -1196,6 +1196,7 @@ void DFOCC::ccsd_t_manager() {
     Process::environment.globals["CURRENT ENERGY"] = Eccsd_t;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_t - Escf;
+    Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = Eccsd_t - Escf;
     Process::environment.globals["CCSD(T) TOTAL ENERGY"] = Eccsd_t;
     Process::environment.globals["(T) CORRECTION ENERGY"] = E_t;
 
