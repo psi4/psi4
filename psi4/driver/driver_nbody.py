@@ -340,9 +340,9 @@ def nbody_gufunc(func, method_string, **kwargs):
         nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
         vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
     else:
-        cp_ptype_by_level, cp_ptype_body_dict = None, None
-        nocp_ptype_by_level, nocp_ptype_body_dict = None, None
-        vmfc_ptype_body_dict = None
+        cp_ptype_by_level, cp_ptype_body_dict = {}, {}
+        nocp_ptype_by_level, nocp_ptype_body_dict = {}, {}
+        vmfc_ptype_body_dict = {}
 
 
     # Sum up all of the levels
@@ -475,10 +475,9 @@ def nbody_gufunc(func, method_string, **kwargs):
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
     dicts = [intermediates_dict, energies_dict, ptype_dict, energy_body_dict, ptype_body_dict, nbody_dict]
     for d in dicts:
-        if d is not None:
-            for var in d.keys():
-                wfn.set_variable(str(var), d[var])
-                core.set_variable(str(var), d[var])
+        for var, value in d.items():
+            wfn.set_variable(str(var), value)
+            core.set_variable(str(var), value)
 
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)
