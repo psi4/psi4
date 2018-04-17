@@ -718,9 +718,7 @@ def select_ccsd(name, **kwargs):
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module == 'DETCI':
-                func = run_detci
-            elif module == 'FNOCC':
+            if module == 'FNOCC':
                 func = run_fnocc
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
@@ -740,9 +738,7 @@ def select_ccsd(name, **kwargs):
                 func = run_ccenergy
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module == 'DETCI':
-                func = run_detci
-            elif module in ['', 'CCENERGY']:
+            if module in ['', 'CCENERGY']:
                 func = run_ccenergy
 
     if func is None:
@@ -1018,8 +1014,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
 
     if disp_type:
         if isinstance(disp_type, dict):
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(), 
-                disp_type["type"], dashparams=disp_type["params"], 
+            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(),
+                disp_type["type"], dashparams=disp_type["params"],
                 citation=disp_type["citation"], tuple_params=modified_disp_params)
         else:
             wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
@@ -1429,7 +1425,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         c1_molecule.update_geometry()
         c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'))
         tmp = scf_wfn.c1_deep_copy(c1_basis)
-        c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF", 
+        c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF",
                                          core.get_global_option("DF_BASIS_SCF"),
                                          "JKFIT", core.get_global_option('BASIS'))
         tmp.set_basisset("DF_BASIS_SCF", c1_jkbasis)
@@ -3438,7 +3434,7 @@ def run_sapt(name, **kwargs):
     target_ind = 'IND'
     if not core.has_variable(' '.join([name.upper(), which_ind, 'ENERGY'])):
       which_ind='IND,U'
-    
+
     for term in ['ELST', 'EXCH', 'DISP', 'TOTAL']:
         core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
             core.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
