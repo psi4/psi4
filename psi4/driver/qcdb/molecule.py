@@ -1332,11 +1332,6 @@ class Molecule(LibmintsMolecule):
         if 'input_units_to_au' in molrec:
             mol.set_input_units_to_au(molrec['input_units_to_au'])
 
-        mol.fix_com(molrec['fix_com'])
-        mol.fix_orientation(molrec['fix_orientation'])
-        if 'fix_symmetry' in molrec:
-            mol.reset_point_group(molrec['fix_symmetry'])
-
         geom = molrec['geom'].reshape((-1, 3))
         nat = geom.shape[0]
         for iat in range(nat):
@@ -1361,6 +1356,11 @@ class Molecule(LibmintsMolecule):
 
         mol.set_molecular_charge(int(molrec['molecular_charge']))
         mol.set_multiplicity(molrec['molecular_multiplicity'])
+
+        mol.fix_com(molrec['fix_com'])
+        mol.fix_orientation(molrec['fix_orientation'])
+        if 'fix_symmetry' in molrec:
+            mol.reset_point_group(molrec['fix_symmetry'])
 
         mol.update_geometry()
         return mol
