@@ -99,7 +99,7 @@ else()
     message(STATUS "Disabled erd")
 endif()
 
-find_package(gau2grid 0.1 CONFIG REQUIRED)
+find_package(gau2grid 1.0 CONFIG REQUIRED)
 get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
