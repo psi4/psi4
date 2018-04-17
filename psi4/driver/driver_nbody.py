@@ -288,6 +288,7 @@ def nbody_gufunc(func, method_string, **kwargs):
     # Now compute the energies
     energies_dict = {}
     ptype_dict = {}
+    intermediates_dict = {}
     for n in compute_list.keys():
         core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         total = len(compute_list[n])
@@ -297,11 +298,14 @@ def nbody_gufunc(func, method_string, **kwargs):
             ghost = list(set(pair[1]) - set(pair[0]))
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
+            # Save energies info
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
             energies_dict[pair] = core.get_variable("CURRENT ENERGY")
+            var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), 
+                                                          ', '.join([str(i) for i in pair[1]]))
+            intermediates_dict[var_key] = core.get_variable("CURRENT ENERGY")
             core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
                                                                 (str(pair[0]), str(pair[1]), energies_dict[pair]))
-
             # Flip this off for now, needs more testing
             #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
             #    core.set_global_option('DF_INTS_IO', 'LOAD')
@@ -333,12 +337,13 @@ def nbody_gufunc(func, method_string, **kwargs):
         nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
         vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
     else:
-        cp_ptype_by_level, cp_ptype_body_dict = None, None
-        nocp_ptype_by_level, nocp_ptype_body_dict = None, None
-        vmfc_ptype_body_dict = None
+        cp_ptype_by_level, cp_ptype_body_dict = {}, {}
+        nocp_ptype_by_level, nocp_ptype_body_dict = {}, {}
+        vmfc_ptype_body_dict = {}
 
 
     # Sum up all of the levels
+    nbody_dict = {}
     for n in nbody_range:
 
         # Energy
@@ -385,12 +390,12 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
         cp_interaction_energy = cp_energy_body_dict[max_nbody] - cp_energy_body_dict[1]
-        core.set_variable('Counterpoise Corrected Total Energy', cp_energy_body_dict[max_nbody])
-        core.set_variable('Counterpoise Corrected Interaction Energy', cp_interaction_energy)
+        nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[max_nbody]
+        nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
 
         for n in nbody_range[1:]:
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            core.set_variable(var_key, cp_energy_body_dict[n] - cp_energy_body_dict[1])
+            nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
     # Compute nocp energy and ptype
     if do_nocp:
@@ -413,24 +418,24 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
         nocp_interaction_energy = nocp_energy_body_dict[max_nbody] - nocp_energy_body_dict[1]
-        core.set_variable('Non-Counterpoise Corrected Total Energy', nocp_energy_body_dict[max_nbody])
-        core.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_interaction_energy)
+        nbody_dict['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[max_nbody]
+        nbody_dict['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
 
         for n in nbody_range[1:]:
             var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            core.set_variable(var_key, nocp_energy_body_dict[n] - nocp_energy_body_dict[1])
+            nbody_dict[var_key] = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
 
 
     # Compute vmfc energy and ptype
     if do_vmfc:
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         vmfc_interaction_energy = vmfc_energy_body_dict[max_nbody] - vmfc_energy_body_dict[1]
-        core.set_variable('Valiron-Mayer Function Couterpoise Total Energy', vmfc_energy_body_dict[max_nbody])
-        core.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_interaction_energy)
+        nbody_dict['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[max_nbody]
+        nbody_dict['Valiron-Mayer Function Couterpoise Interaction Energy'] = vmfc_interaction_energy
 
         for n in nbody_range[1:]:
             var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            core.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
+            nbody_dict[var_key] = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
 
     if return_method == 'cp':
         ptype_body_dict = cp_ptype_body_dict
@@ -443,7 +448,6 @@ def nbody_gufunc(func, method_string, **kwargs):
         energy_body_dict = vmfc_energy_body_dict
     else:
         raise ValidationError("N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
-
 
     # Figure out and build return types
     if return_total_data:
@@ -464,12 +468,13 @@ def nbody_gufunc(func, method_string, **kwargs):
     else:
         ret_ptype = ret_energy
 
-    # Build and set a wavefunction
+    # Build wfn and bind variables
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
-    wfn.nbody_energy = energies_dict
-    wfn.nbody_ptype = ptype_dict
-    wfn.nbody_body_energy = energy_body_dict
-    wfn.nbody_body_ptype = ptype_body_dict
+    dicts = [intermediates_dict, energies_dict, ptype_dict, energy_body_dict, ptype_body_dict, nbody_dict]
+    for d in dicts:
+        for var, value in d.items():
+            wfn.set_variable(str(var), value)
+            core.set_variable(str(var), value)
 
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)
@@ -477,6 +482,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         wfn.set_hessian(ret_ptype)
 
     core.set_variable("CURRENT ENERGY", ret_energy)
+    wfn.set_variable("CURRENT ENERGY", ret_energy)
 
     if return_wfn:
         return (ret_ptype, wfn)
