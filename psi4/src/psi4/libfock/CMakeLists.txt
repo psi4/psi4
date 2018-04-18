@@ -15,7 +15,7 @@ set(sources_list apps.cc
                  soscf.cc
                  PK_workers.cc
                  PKmanagers.cc
-                 symm_JK.cc
+                 symm_DFJK.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
 

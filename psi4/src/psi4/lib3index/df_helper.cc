@@ -183,12 +183,18 @@ void DF_Helper::initialize() {
     if (AO_core_) {
         prepare_AO_core();
         if (do_wK_) { 
-            ; // TODO prepare_AO_wK_core();
+            std::stringstream error;
+            error << "DF_Helper: not equipped to do wK";
+            throw PSIEXCEPTION(error.str().c_str());
+            // TODO prepare_AO_wK_core();
         }
     } else if (!direct_ && !direct_iaQ_) {
         prepare_AO();
         if (do_wK_) {
-            ; // TODO prepare_AO_wK();
+            std::stringstream error;
+            error << "DF_Helper: not equipped to do wK"; 
+            throw PSIEXCEPTION(error.str().c_str());
+            // TODO prepare_AO_wK();
         }
     }
 
