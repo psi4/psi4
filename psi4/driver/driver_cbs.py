@@ -1019,6 +1019,7 @@ def cbs(func, label, **kwargs):
     ptype = kwargs.pop('ptype')
     scf_alpha = kwargs.pop('scf_alpha', False)
     corl_alpha = kwargs.pop('corl_alpha', False)
+    delta_alpha = kwargs.pop('delta_alpha', False)
     
     # Establish function to call (only energy makes sense for cbs)
     if ptype not in ['energy', 'gradient', 'hessian']:
@@ -1504,6 +1505,8 @@ def cbs(func, label, **kwargs):
         
     for stage in GRAND_NEED:
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
+        if stage['d_stage'] == 'delta' and delta_alpha:
+            hiloargs['corl_alpha'] = delta_alpha
         stage['d_energy'] = stage['d_scheme'](**hiloargs)
         finalenergy += stage['d_energy'] * stage['d_coef']
 
