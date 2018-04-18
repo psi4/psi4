@@ -45,18 +45,26 @@ def clean_numpy_files():
 
 atexit.register(clean_numpy_files)
 
-# Exit printing
-start_time = []
-def register_start_time():
-    start_time.append(datetime.datetime.now())
+def exit_printing(start_time=None):
+    """Prints the exit time and status.
 
-def exit_printing():
+    Parameters
+    ----------
+    start_time : datetime.datetime, optional
+        starting time from which the elapsed time is computed.
+ 
+    Returns
+    -------
+    None
+ 
+    """
     end_time = datetime.datetime.now()
-    run_time = end_time - start_time[0]
-    run_time = str(run_time).split('.')
-    run_time = run_time[0] + '.' + run_time[1][:2]
     core.print_out( "\n    Psi4 stopped on: {}".format(end_time.strftime('%A, %d %B %Y %I:%M%p')))
-    core.print_out( "\n    Psi4 wall time for execution: {}\n".format(run_time))
+    if start_time is not None:
+        run_time = end_time - start_time
+        run_time = str(run_time).split('.')
+        run_time = run_time[0] + '.' + run_time[1][:2]
+        core.print_out( "\n    Psi4 wall time for execution: {}\n".format(run_time))
     if _success_flag_:
         core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
     else:
