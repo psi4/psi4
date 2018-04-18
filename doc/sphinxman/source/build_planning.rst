@@ -194,7 +194,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * NumPy (needed at runtime *and* buildtime) http://www.numpy.org/
 
-* mpmath (needed at buildtime) http://mpmath.org/
+* mpmath (only needed if you build gau2grid to angular momentum >16) http://mpmath.org/
 
 * System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
 
