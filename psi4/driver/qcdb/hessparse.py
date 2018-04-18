@@ -20,10 +20,16 @@ def load_hessian(shess, dtype):
     return nhess
 
 
-def to_string(hess, handle, dtype):
+def to_string(hess, handle, dtype='psi4'):
 
     nat = hess.shape[0] // 3
     assert hess.shape == (3 * nat, 3 * nat)
 
-    header = '{:5}{:5}'.format(nat, 6 * nat)
-    np.savetxt(handle, hess.reshape((-1, 3)), fmt='%20.10f', delimiter='', newline='\n', header=header, comments='')
+    if dtype in ['fcmfinal', 'cfour', 'psi4', 'intder']:
+        second_number = (6 * nat) if dtype == 'intder' else (3 * nat)
+        header = '{:5}{:5}'.format(nat, second_number)
+
+        np.savetxt(handle, hess.reshape((-1, 3)), fmt='%20.10f', delimiter='', newline='\n', header=header, comments='')
+
+        # Bounty! a Psi4 mug or similar gear to anyone who trace the `6 * nat` above to a pre-PSI/CCQC source.
+        #   See discussion starting https://github.com/psi4/psi4/pull/953#issuecomment-381447849

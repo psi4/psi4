@@ -7,7 +7,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "17.0.0")
-        message(FATAL_ERROR "ICPC version must be at least 2017.0.0 to work with pybind11 2.2.2!")  # v1.2
+        message(FATAL_ERROR "ICPC version must be at least 2017.0.0 to work with pybind11 2.1!")  # v1.2
         #message(FATAL_ERROR "ICPC version must be at least 2016.0.2 to work with pybind11 2.0.0!")  # v1.1
     endif()
 

@@ -1347,7 +1347,7 @@ void OEProp::compute_quadrupole(bool transition)
 
     // Print multipole components
     double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
-    outfile->Printf( "  %sQuadrupole Moment: [D Å]\n", (transition ? "Transition " : ""));
+    outfile->Printf( "  %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
     outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
     outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
@@ -1355,7 +1355,7 @@ void OEProp::compute_quadrupole(bool transition)
     outfile->Printf( "\n");
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    outfile->Printf( "  Traceless %sQuadrupole Moment: [D Å]\n", (transition ? "Transition " : ""));
+    outfile->Printf( "  Traceless %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
     outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
     outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
