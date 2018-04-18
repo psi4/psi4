@@ -32,6 +32,7 @@ import atexit
 import sys
 import os
 import json
+import datetime
 import argparse
 from argparse import RawTextHelpFormatter
 
@@ -200,6 +201,7 @@ psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
 psi4.core.set_memory_bytes(524288000, True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
+start_time = datetime.datetime.now()
 
 # Prepare scratch for inputparser
 if args["scratch"] is not None:
@@ -214,7 +216,7 @@ if args["json"]:
         json_data = json.load(f)
 
     psi4.extras._success_flag_ = True
-    psi4.extras.exit_printing()
+    psi4.extras.exit_printing(start_time)
     psi4.json_wrapper.run_json(json_data)
 
     with open(args["input"], 'w') as f:
@@ -255,7 +257,7 @@ if args["messy"]:
                     atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
-atexit.register(psi4.extras.exit_printing)
+atexit.register(psi4.extras.exit_printing, start_time)
 
 # Run the program!
 try:

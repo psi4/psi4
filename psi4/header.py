@@ -54,9 +54,9 @@ def print_header():
     header = """
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 %s
+                               Psi4 {}
 
-                         Git: Rev %s
+                         Git: Rev {}
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -71,12 +71,12 @@ def print_header():
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: %s
+    Psi4 started on: {}
 
-    Process ID: %d
-    Host:       %s
-    PSIDATADIR: %s
-    Memory:     %s
-    Threads:    %s
-    """ % (driver_info, git_info, time_string, pid, hostname, datadir, memory, threads)
+    Process ID: {}
+    Host:       {}
+    PSIDATADIR: {}
+    Memory:     {}
+    Threads:    {}
+    """.format(driver_info, git_info, time_string, pid, hostname, datadir, memory, threads)
     core.print_out(header)
