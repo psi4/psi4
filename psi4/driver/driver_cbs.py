@@ -68,12 +68,14 @@ def _expand_bracketed_basis(basisstring, molecule=None):
 
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
-        # filter out commas and be forgiving of e.g., t5q or 3q
+        # handle def2-svp* basis sets as double-zeta
         bn_gz = basisname.group('zeta').replace("s","d")
+        # filter out commas and be forgiving of e.g., t5q or 3q
         zetas = [z for z in zeta_values if (z in bn_gz or str(zeta_values.index(z) + 2) in bn_gz)]
         for b in zetas:
             if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
                 raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, zeta_val2sym[zeta_sym2val[b] - 1]))
+            # reassemble def2-svp* properly instead of def2-dzvp*
             if basisname.group('pre') == "def2-" and b == "d":
                 BSET.append(basisname.group('pre') + "s" + basisname.group('post')[1:])
             else:
@@ -248,7 +250,7 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, *
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Truhlar 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
@@ -373,7 +375,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
 
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0
     """
 
     if (type(valueLO) != type(valueMD)) or (type(valueMD) != type(valueHI)):
@@ -978,6 +980,25 @@ def cbs(func, label, **kwargs):
         to the correlation energy.
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``delta5_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+
+    :type scf_alpha: float
+    
+        Overrides the default \alpha parameter used in two-parameter SCF extrapolation procedures.
+        Has no effect on :py:func:`~xtpl_highest_1` and :py:func:`~scf_xtpl_helgaker_3`.
+
+    :type corl_alpha: float
+    :param corl_alpha: |dl| ``3.0`` |dr|
+
+        Overrides the default \alpha parameter used in :py:func:`corl_xtpl_helgaker_2` correlation 
+        extrapolation. The supplied \alpha is then applied to all following correlation extrapolations.
+
+    :type delta_alpha: float
+    :param delta_alpha: |dl| ``corl_alpha`` |dr|
+
+        Overrides the default \alpha or :py:func:`~corl_alpha` parameter used in 
+        :py:func:`corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
+        delta correction is performed using smaller basis sets for which a different \alpha might
+        be more appropriate.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
