@@ -1617,7 +1617,7 @@ def cbs(func, label, **kwargs):
     core.set_variable('CBS NUMBER', Njobs)
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    basis = core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
+    basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(molecule, basis)
 
     optstash.restore()
