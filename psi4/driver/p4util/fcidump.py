@@ -27,17 +27,22 @@
 #
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
 from __future__ import division
-import numpy as np
+
+import mmap
+import re
 from datetime import datetime
-from difflib import unified_diff
-from uuid import uuid4
-from .exceptions import *
+
+import numpy as np
+from deepdiff import DeepDiff
+
 from psi4.driver import constants
 from psi4.driver.p4util.util import compare_arrays
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
+from .exceptions import *
 
-def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
+
+def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
     Additional one-electron integrals, including orbital energies, can also be saved.
     This latter format can be used with the HANDE QMC code but is not standard.
@@ -49,7 +54,6 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
     :param fname: name of the integrals file, defaults to INTDUMP
-    :param write_footer: whether to write a timestamp in the file footer, defaults to False.
     :param oe_ints: list of additional one-electron integrals to save to file.
     So far only EIGENVALUES is a valid option.
 
@@ -59,9 +63,9 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
     >>> E, wfn = energy('scf', return_wfn=True)
     >>> fcidump(wfn)
 
-    >>> # [2] Save orbital energies, one- and two-electron integrals. Print timestamp in footer.
+    >>> # [2] Save orbital energies, one- and two-electron integrals.
     >>> E, wfn = energy('scf', return_wfn=True)
-    >>> fcidump(wfn, oe_ints=['EIGENVALUES'], write_footer=True)
+    >>> fcidump(wfn, oe_ints=['EIGENVALUES'])
 
     """
     # Get some options
@@ -191,11 +195,6 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
         e_fzc = ints.get_frozen_core_energy()
         e_nuc = molecule.nuclear_repulsion_energy(wfn.get_dipole_field_strength())
         intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
-        if write_footer:
-            time_string = datetime.now().strftime('%A, %d %B %Y %I:%M%p')
-            footer = 'Generated on {} using Psi4 {}\n'.format(time_string, core.version())
-            footer += 'UUID {}\n'.format(uuid4())
-            intdump.write(footer)
     core.print_out('Done generating {} with integrals in FCIDUMP format.\n'.format(fname))
 
 
@@ -211,6 +210,22 @@ def write_eigenvalues(eigs, mo_idx):
     return eigs_dump
 
 
+def readin_fcidump(fname):
+    """Function to read in a FCIDUMP file.
+
+    :returns: a tuple with the header and the data in the FCIDUMP file
+
+    :param fname: FCIDUMP file name
+    """
+    with open(fname, 'r+') as f:
+        data = mmap.mmap(f.fileno(), 0)
+        # Get the string in between &FCI and &END.
+        header_string = re.match(b'(?:&FCI((?:.*?\r?\n?)*)&END)', data).group(1)
+    header = _parse_fcidump_header(header_string.decode('utf-8'))
+    integrals = _parse_fcidump_integrals(fname)
+    return header, integrals
+
+
 def compare_fcidumps(expected, computed, label):
     """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
     when value *computed* matches value *expected*.
@@ -221,20 +236,58 @@ def compare_fcidumps(expected, computed, label):
     :param label: string labelling the test
     """
     # Grab expected header and integrals
-    with open(expected) as ref_dump:
-        ref_header = [next(ref_dump) for x in range(7)]
-    ref_intdump = np.loadtxt(expected, skiprows=7)
-    # Grab computed header and integrals
-    with open(computed) as dump:
-        header = [next(dump) for x in range(7)]
-    intdump = np.loadtxt(computed, skiprows=7)
+    ref_header, ref_intdump = readin_fcidump(expected)
+    header, intdump = readin_fcidump(computed)
 
     # Compare headers
-    header_diff = list(unified_diff(ref_header, header, fromfile=expected, tofile=computed))
+    header_diff = DeepDiff(ref_header, header, ignore_order=True)
     if header_diff:
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
-        for l in header_diff:
-            message += l
-        raise TestComparisonError(message)
+        raise TestComparisonError(header_diff)
     # Compare integrals
     compare_arrays(ref_intdump, intdump, 10, label)
+
+
+def _parse_fcidump_header(header_string):
+    """Parse FCIDUMP preamble, using regexes.
+
+    :returns: a dictionary with the contents of the header
+
+    :param fname: the multiline header string
+    """
+    # Set up a dictionary of regexes for the stuff we want.
+    # The value in the (key, value) pair is a tuple.
+    # The first element is the regex, the second is a function to process the result of the match.
+    # yapf: disable
+    parser = {
+        # Get NORB, transform to integer
+          'norb' : ('(?:NORB=(\d+))', int)
+        # Get NELEC, transform to integer
+        , 'nelec' : ('(?:NELEC=(\d+))', int)
+        # Get MS2, transform to integer
+        , 'ms2' : ('(?:MS2=(\d+))', int)
+        # Get ISYM, if present, transform to integer
+        , 'isym' : ('(?:ISYM=(\d+))?', (lambda x: int(x) if x is not None else 1))
+        # Get ORBSYM, transform to list of integers
+        , 'orbsym' : ('(?:ORBSYM=(\d.+))', (lambda x: [int(y.strip()) for y in x.rstrip(',').split(',')]))
+        # Get UHF, transform to True or False
+        , 'uhf' : ('(?:UHF=((?:.TRUE.|.FALSE.)))', (lambda x: True if x.lower() == '.true.' else False))
+    }
+    # yapf: enable
+    # Generate preamble dictionary.
+    # The keys are shared with the parser dictionary, the values result
+    # from searching, case-insensitively, with the corresponding regex (v[0])
+    # and applying the processing function (v[1]) on the result.
+    preamble = {k: v[1](re.search(v[0], header_string, re.I).group(1)) for k, v in parser.items()}
+    return preamble
+
+
+def _parse_fcidump_integrals(fname):
+    """Parse FCIDUMP integrals, using a regex.
+
+    :returns: an array with the integrals and their indices as floats, i.e. the body of the FCIDUMP
+
+    :param fname: FCIDUMP file name
+    """
+    regex = r'(-?[0-9]+\.?[0-9]*(?:[Ee][+-]?[0-9]+)?)\s*(\d+)\s*(\d+)\s*(\d+)\s*(\d+)'
+    return np.fromregex(fname, regex, dtype=float)
