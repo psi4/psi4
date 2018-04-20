@@ -574,7 +574,7 @@ class BasisSet(object):
 #TRIAL#            return bsdict
 
     @staticmethod
-    def pyconstruct(mol, key, target, fitrole='ORBITAL', other=None, return_atomlist=False):
+    def pyconstruct(mol, key, target, fitrole='ORBITAL', other=None, return_atomlist=False, return_dict=False, verbose=1):
         """Builds a BasisSet object for *mol* (either a qcdb.Molecule or
         a string that can be instantiated into one) from basis set
         specifications passed in as python functions or as a string that
@@ -593,6 +593,35 @@ class BasisSet(object):
         ``pyconstruct(smol, "DF_BASIS_MP2", basisspec_psi4_yo_ccpvdzri, 'RIFIT', basisspec_psi4_yo_631pg_d_p_)``
         ``pyconstruct(mol, "DF_BASIS_MP2", "", "RIFIT", "6-31+G(d,p)")``
 
+        Parameters
+        ----------
+        mol : :py:class:`qcdb.Molecule` or dict or str
+            If not a :py:class:`qcdb.Molecule`, something that can be converted into one.
+            If the latter, the basisset dict is returned rather than the BasisSet object.
+            If you've got a psi4.core.Molecule, pass `qcdb.Molecule(psimol.to_dict())`.
+        key : {'BASIS', 'DF_BASIS_SCF', 'DF_BASIS_MP2', 'DF_BASIS_CC'}
+            Label (effectively Psi4 keyword) to append the basis on the molecule.
+        target : str or function
+            Defines the basis set to be constructed. Can be a string (naming a
+            basis file) or a function (multiple files, shells).
+            Required for `fitrole='ORBITAL'`. For auxiliary bases to be built
+            entirely from orbital default, can be empty string.
+        fitrole : {'ORBITAL', 'JKFIT', 'RIFIT'}
+        other : 
+            Only used when building fitting bases. Like `target` only supplies
+            the definitions for the orbital basis.
+        return_atomlist : bool, optional
+            Build one-atom basis sets (for SAD) rather than one whole-Mol basis set
+        return_dict : bool, optional
+            Additionally return the dictionary representation of built BasisSet
+
+        Returns
+        -------
+        bas : :py:class:`qcdb.BasisSet`
+            Built BasisSet object for `mol`.
+        dbas : dict, optional
+            Only returned if `return_dict=True`. Suitable for feeding to libmints.
+            
         """
         orbonly = True if (fitrole == 'ORBITAL' and other is None) else False
         if orbonly:
@@ -602,19 +631,12 @@ class BasisSet(object):
             orb = other
             aux = target
 
-        #print('BasisSet::pyconstructP', 'key =', key, 'aux =', aux, 'fitrole =', fitrole, 'orb =', orb, 'orbonly =', orbonly) #, mol)
+        if verbose >= 2:
+            print('BasisSet::pyconstructP', 'key =', key, 'aux =', aux, 'fitrole =', fitrole, 'orb =', orb, 'orbonly =', orbonly) #, mol)
 
         # Create (if necessary) and update qcdb.Molecule
-        if isinstance(mol, basestring):
+        if not isinstance(mol, Molecule):
             mol = Molecule(mol)
-            returnBasisSet = False
-        elif isinstance(mol, Molecule):
-            returnBasisSet = True
-        elif isinstance(mol, dict):
-            mol = Molecule.from_dict(mol)
-            returnBasisSet = False
-        else:
-            raise ValidationError("""Argument mol must be psi4string or qcdb.Molecule""")
         mol.update_geometry()
 
         # Apply requested basis set(s) to the molecule
@@ -657,7 +679,8 @@ class BasisSet(object):
                                           'BASIS' if fitrole == 'ORBITAL' else fitrole,
                                           None if fitrole == 'ORBITAL' else fitrole,
                                           basstrings['BASIS'] if fitrole == 'ORBITAL' else basstrings[fitrole],
-                                          return_atomlist=return_atomlist)
+                                          return_atomlist=return_atomlist,
+                                          verbose=verbose)
 
         text = """   => Loading Basis Set <=\n\n"""
         text += """    Name: %s\n""" % (callby.upper())
@@ -666,9 +689,7 @@ class BasisSet(object):
         text += msg
 
         if return_atomlist:
-            if returnBasisSet:
-                return bs
-            else:
+            if return_dict:
                 atom_basis_list = []
                 for atbs in bs:
                     bsdict = {}
@@ -682,12 +703,11 @@ class BasisSet(object):
                         bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
                     bsdict['molecule'] = atbs.molecule.to_dict(force_c1=True)
                     atom_basis_list.append(bsdict)
-                return atom_basis_list
+                return bs, atom_basis_list
+            else:  
+                return bs
 
-        if returnBasisSet:
-            #print(text)
-            return bs
-        else:
+        if return_dict:
             bsdict = {}
             bsdict['message'] = text
             bsdict['key'] = key
@@ -697,10 +717,12 @@ class BasisSet(object):
             bsdict['shell_map'] = bs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
             if ecp:
                 bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
-            return bsdict
+            return bs, bsdict
+        else:
+            return bs
 
     @classmethod
-    def construct(cls, parser, mol, key, deffit=None, basstrings=None, return_atomlist=False):
+    def construct(cls, parser, mol, key, deffit=None, basstrings=None, return_atomlist=False, verbose=1):
         """Returns a new BasisSet object configured from the *mol*
         Molecule object for *key* (generally a Psi4 keyword: BASIS,
         DF_BASIS_SCF, etc.). Fails utterly if a basis has not been set for
@@ -709,6 +731,16 @@ class BasisSet(object):
         from the :py:class:`~BasisFamily`. This function is significantly
         re-worked from its libmints analog.
 
+        Parameters
+        ----------
+        mol : qcdb.Molecule
+            A molecule object for which every atom has had a basisset set for `key`
+
+        basstrings : dict, optional
+            Additional source for basis data. Keys are regularized basis names and values are gbs strings.
+        return_atomlist
+            Return list of one-atom BasisSet-s, rather than single whole-mol BasisSet.
+    
         """
         # Update geometry in molecule, if there is a problem an exception is thrown.
         mol.update_geometry()
@@ -797,6 +829,12 @@ class BasisSet(object):
                 seek['entry'] = [symbol] if symbol == label else [label, symbol]
                 seek['path'] = basisPath
                 seek['strings'] = '' if basstrings is None else list(basstrings.keys())
+
+            if verbose >= 2:
+                print("""  Shell Entries: %s""" % (seek['entry']))
+                print("""  Basis Sets: %s""" % (seek['basis']))
+                print("""  File Path: %s""" % (', '.join(map(str, seek['path'].split(':')))))
+                print("""  Input Blocks: %s\n""" % (', '.join(seek['strings'])))
 
             # Search through paths, bases, entries
             for bas in seek['basis']:

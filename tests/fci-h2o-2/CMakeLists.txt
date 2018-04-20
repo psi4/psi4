@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(fci-h2o-2 "psi;fci")
+add_regression_test(fci-h2o-2 "psi;fci;cart")

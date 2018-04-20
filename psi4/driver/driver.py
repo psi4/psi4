@@ -37,6 +37,7 @@ from __future__ import absolute_import
 import os
 import re
 import sys
+import json
 import shutil
 
 import numpy as np
@@ -1358,6 +1359,7 @@ def hessian(name, **kwargs):
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
         core.set_variable('CURRENT ENERGY', wfn.energy())
+        _hessian_write(wfn)
 
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1498,6 +1500,8 @@ def hessian(name, **kwargs):
         optstash.restore()
         optstash_conv.restore()
 
+        _hessian_write(wfn)
+
         if return_wfn:
             return (wfn.hessian(), wfn)
         else:
@@ -1633,6 +1637,8 @@ def hessian(name, **kwargs):
         core.set_parent_symmetry('')
         optstash.restore()
         optstash_conv.restore()
+
+        _hessian_write(wfn)
 
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1787,7 +1793,6 @@ def frequency(name, **kwargs):
 
 
 def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
-    # TODO should go back to private
 
     if hess is None:
         nmwhess = np.asarray(wfn.hessian())
@@ -1797,6 +1802,9 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     mol = wfn.molecule()
     geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]
+
+    vibrec = {'molecule': mol.to_dict(np_out=False),
+              'hessian': nmwhess.tolist()}
 
     if molecule is not None:
         molecule.update_geometry()
@@ -1815,6 +1823,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
 
     vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels,
                                                   project_trans=project_trans, project_rot=project_rot)
+    vibrec.update({k: qca.to_dict() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)
     core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
@@ -1826,14 +1835,15 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
 
     if irrep is None:
         therminfo, thermtext = qcdb.vib.thermo(vibinfo,
-                                      T=core.get_option("THERMO", "T"),  # 298.15
-                                      P=core.get_option("THERMO", "P"),  # 101325.
+                                      T=core.get_option("THERMO", "T"),  # 298.15 [K]
+                                      P=core.get_option("THERMO", "P"),  # 101325. [Pa]
                                       multiplicity=mol.multiplicity(),
                                       molecular_mass=np.sum(m),
                                       sigma=rsn,
                                       rotor_type=mol.rotor_type(),
                                       rot_const=np.asarray(mol.rotational_constants()),
                                       E0=core.get_variable('CURRENT ENERGY'))  # someday, wfn.energy()
+        vibrec.update({k: qca.to_dict() for k, qca in therminfo.items()})
 
         core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
         core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
@@ -1849,7 +1859,24 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     else:
         core.print_out('  Thermochemical analysis skipped for partial frequency calculation.\n')
 
+    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
+        filename = core.get_writer_file_prefix(mol.name()) + ".vibrec"
+        with open(filename, 'w') as handle:
+            json.dump(vibrec, handle, sort_keys=True, indent=4)
+
+    if core.get_option('FINDIF', 'NORMAL_MODES_WRITE'):
+        filename = core.get_writer_file_prefix(mol.name()) + ".molden_normal_modes"
+        with open(filename, 'w') as handle:
+            handle.write(qcdb.vib.print_molden_vibs(vibinfo, symbols, geom, standalone=True))
+
     return vibinfo
+
+
+def _hessian_write(wfn):
+        if core.get_option('FINDIF', 'HESSIAN_WRITE'):
+            filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
+            with open(filename, 'w') as handle:
+                qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='fcmfinal')
 
 
 def gdma(wfn, datafile=""):

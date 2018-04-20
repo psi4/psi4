@@ -206,7 +206,7 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     // * elez are float, not int, b/c Psi4 Z is approx. elez * real
 
     std::shared_ptr <Molecule> mol(new Molecule);
-    //mol->set_lock_frame() = false;
+    mol->set_lock_frame(false);
 
     if (_has_key(molrec, "name"))
         mol->set_name(molrec["name"].cast<std::string>());
@@ -225,32 +225,57 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     if (_has_key(molrec, "fix_symmetry"))
         mol->reset_point_group(molrec["fix_symmetry"].cast<std::string>());
 
-    std::vector <double> geom = molrec["geom"].cast<std::vector <double>>();
     std::vector <int> elea = molrec["elea"].cast<std::vector<int>>();
     std::vector <double> elez = molrec["elez"].cast<std::vector <double>>();
     std::vector <std::string> elem = molrec["elem"].cast<std::vector <std::string>>();
     std::vector <double> mass = molrec["mass"].cast<std::vector <double>>();
     std::vector <int> real = molrec["real"].cast<std::vector <int>>();
-    std::vector <std::string> elbl= molrec["elbl"].cast<std::vector <std::string>>();
-    size_t nat = geom.size() / 3;
+    std::vector <std::string> elbl = molrec["elbl"].cast<std::vector <std::string>>();
 
-    for (size_t iat=0; iat<nat; ++iat) {
-        std::string symbol = elem[iat];
-        std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-        mol->add_atom(elez[iat] * real[iat],
-                      geom[3*iat], geom[3*iat+1], geom[3*iat+2],
-                      symbol,
-                      mass[iat],
-                      elez[iat] * real[iat],
-                      symbol + elbl[iat],
-                      elea[iat]);
+    size_t nat;
+    bool unsettled;
+    if (_has_key(molrec, "geom_unsettled")) {
+        std::vector <std::vector <std::string>> geom_unsettled = molrec["geom_unsettled"].cast<std::vector <std::vector <std::string>>>();
+        nat = geom_unsettled.size();
+        unsettled = true;
+
+        for (size_t iat=0; iat<nat; ++iat) {
+            std::string symbol = elem.at(iat);
+            std::string label = elbl.at(iat);
+            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            mol->add_unsettled_atom(elez.at(iat) * real.at(iat),
+                                    geom_unsettled.at(iat),
+                                    symbol,
+                                    mass.at(iat),
+                                    elez.at(iat) * real.at(iat),
+                                    symbol + label,
+                                    elea.at(iat));
+        }
+
+        std::vector <std::pair <std::string, double>> variables = molrec["variables"].cast<std::vector <std::pair <std::string, double>>>();
+        for (size_t iv=0; iv < variables.size(); ++iv)
+            mol->set_geometry_variable(variables[iv].first, variables[iv].second);
+
+    } else {
+        std::vector <double> geom = molrec["geom"].cast<std::vector <double>>();
+        nat = geom.size() / 3;
+        unsettled = false;
+
+        for (size_t iat=0; iat<nat; ++iat) {
+            std::string symbol = elem.at(iat);
+            std::string label = elbl.at(iat);
+            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            mol->add_atom(elez.at(iat) * real.at(iat),
+                          geom.at(3*iat), geom.at(3*iat+1), geom.at(3*iat+2),
+                          symbol,
+                          mass.at(iat),
+                          elez.at(iat) * real.at(iat),
+                          symbol + label,
+                          elea.at(iat));
+        }
     }
-
-    ////    mol->set_has_zmatrix(false);  // TODO
-    ////    moldict['zmat'] = self.zmat
-    ////    moldict['reinterpret_coordentries'] = self.PYreinterpret_coordentries
-    ////    moldict['lock_frame'] = self.lock_frame
-    ////    mol->set_reinterpret_coordentry(false);
 
     std::vector<Molecule::FragmentType> fragment_types;
     std::vector<int> fragment_separators;
@@ -286,7 +311,12 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     mol->set_molecular_charge(static_cast<int>(molrec["molecular_charge"].cast<double>()));
     mol->set_multiplicity(molrec["molecular_multiplicity"].cast<int>());
 
-    mol->update_geometry();
+    // hack to prevent update_geometry termination upon no atoms
+    if (nat == 0)
+        mol->set_lock_frame(true);
+
+    if (!unsettled)
+        mol->update_geometry();
     return mol;
 }
 
@@ -1117,7 +1147,7 @@ void export_mints(py::module& m) {
     typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
     typedef Vector3 (Molecule::*nuclear_dipole2)() const;
 
-    py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule",
+    py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule", py::dynamic_attr(),
                                                     "Class to store the elements, coordinates, "
                                                     "fragmentation pattern, basis sets, charge, "
                                                     "multiplicity, etc. of a molecule.")

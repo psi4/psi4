@@ -150,7 +150,7 @@ def compare_dicts(expected, computed, tol, label, forgive=None, verbose=1):
     try:
         import deepdiff
     except ImportError:
-        raise ImportError("""Install deepdiff. `conda install deepdiff` or `pip install deepdiff`""")
+        raise ImportError("""Install deepdiff. `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
 
     if forgive is None:
         forgive = []
@@ -175,7 +175,7 @@ def compare_dicts(expected, computed, tol, label, forgive=None, verbose=1):
     return compare_integers(True, clean, label, verbose=verbose)
 
 
-def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1):
+def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, relative_geoms='exact'):
     """Function to compare Molecule dictionaries. Prints
     :py:func:`util.success` when elements of `computed` match elements of
     `expected` to `tol` number of digits (for float arrays).
@@ -189,106 +189,61 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1):
     xptd = copy.deepcopy(expected)
     cptd = copy.deepcopy(computed)
 
-    # deepdiff can't cope with np.int type
-    #   https://github.com/seperman/deepdiff/issues/97
-    xptd['elez'] = [int(z) for z in xptd['elez']]
-    cptd['elez'] = [int(z) for z in cptd['elez']]
-    xptd['elea'] = [int(a) for a in xptd['elea']]
-    cptd['elea'] = [int(a) for a in cptd['elea']]
-    # deepdiff w/py27 complains about unicode type and val errors
-    xptd['elem'] = [str(e) for e in xptd['elem']]
-    cptd['elem'] = [str(e) for e in cptd['elem']]
-    xptd['elbl'] = [str(l) for l in xptd['elbl']]
-    cptd['elbl'] = [str(l) for l in cptd['elbl']]
-    if 'fix_symmetry' in xptd:
-        xptd['fix_symmetry'] = str(xptd['fix_symmetry'])
-    if 'fix_symmetry' in cptd:
-        cptd['fix_symmetry'] = str(cptd['fix_symmetry'])
-    xptd['units'] = str(xptd['units'])
-    cptd['units'] = str(cptd['units'])
-    # and about int vs long errors
-    xptd['molecular_multiplicity'] = int(xptd['molecular_multiplicity'])
-    cptd['molecular_multiplicity'] = int(cptd['molecular_multiplicity'])
-    xptd['fragment_multiplicities'] = [(m if m is None else int(m)) for m in xptd['fragment_multiplicities']]
-    cptd['fragment_multiplicities'] = [(m if m is None else int(m)) for m in cptd['fragment_multiplicities']]
+    def massage_dicts(dicary):
+        # deepdiff can't cope with np.int type
+        #   https://github.com/seperman/deepdiff/issues/97
+        if 'elez' in dicary:
+            dicary['elez'] = [int(z) for z in dicary['elez']]
+        if 'elea' in dicary:
+            dicary['elea'] = [int(a) for a in dicary['elea']]
+        # deepdiff w/py27 complains about unicode type and val errors
+        if 'elem' in dicary:
+            dicary['elem'] = [str(e) for e in dicary['elem']]
+        if 'elbl' in dicary:
+            dicary['elbl'] = [str(l) for l in dicary['elbl']]
+        if 'fix_symmetry' in dicary:
+            dicary['fix_symmetry'] = str(dicary['fix_symmetry'])
+        if 'units' in dicary:
+            dicary['units'] = str(dicary['units'])
+        if 'fragment_files' in dicary:
+            dicary['fragment_files'] = [str(f) for f in dicary['fragment_files']]
+        # and about int vs long errors
+        if 'molecular_multiplicity' in dicary:
+            dicary['molecular_multiplicity'] = int(dicary['molecular_multiplicity'])
+        if 'fragment_multiplicities' in dicary:
+            dicary['fragment_multiplicities'] = [(m if m is None else int(m)) for m in dicary['fragment_multiplicities']]
+        if 'fragment_separators' in dicary:
+            dicary['fragment_separators'] = [(s if s is None else int(s)) for s in dicary['fragment_separators']]
+        return dicary
 
-    # can't just expect geometries to match, so we'll align them, check that
-    #   they overlap and that the translation/rotation arrays jibe with
-    #   fix_com/orientation, then attach the oriented geom to computed before the
-    #   recursive dict comparison.
-    cgeom = cptd['geom'].reshape((-1, 3))
-    rmsd, mill = B787(rgeom=xptd['geom'].reshape((-1, 3)),
-                      cgeom=cgeom,
-                      runiq=None,
-                      cuniq=None,
-                      atoms_map=True,
-                      mols_align=True,
-                      run_mirror=False,
-                      verbose=0)
-    if cptd['fix_com']:
-        compare_integers(1, np.allclose(np.zeros((3)), mill.shift, atol=thresh), 'null shift', verbose=verbose)
-    if cptd['fix_orientation']:
-        compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
-    ageom = mill.align_coordinates(cgeom)
-    cptd['geom'] = ageom.reshape((-1))
+    xptd = massage_dicts(xptd)
+    cptd = massage_dicts(cptd)
+
+    if relative_geoms == 'exact':
+        pass
+    elif relative_geoms == 'align':
+        # can't just expect geometries to match, so we'll align them, check that
+        #   they overlap and that the translation/rotation arrays jibe with
+        #   fix_com/orientation, then attach the oriented geom to computed before the
+        #   recursive dict comparison.
+        cgeom = np.array(cptd['geom']).reshape((-1, 3))
+        rgeom = np.array(xptd['geom']).reshape((-1, 3))
+        rmsd, mill = B787(rgeom=rgeom,
+                          cgeom=cgeom,
+                          runiq=None,
+                          cuniq=None,
+                          atoms_map=True,
+                          mols_align=True,
+                          run_mirror=False,
+                          verbose=0)
+        if cptd['fix_com']:
+            compare_integers(1, np.allclose(np.zeros((3)), mill.shift, atol=thresh), 'null shift', verbose=verbose)
+        if cptd['fix_orientation']:
+            compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
+        ageom = mill.align_coordinates(cgeom)
+        cptd['geom'] = ageom.reshape((-1))
 
     compare_dicts(xptd, cptd, tol, label, forgive=forgive, verbose=verbose)
-
-
-def compare_molrecs_simple(expected, computed, tol, label, forgive=None, verbose=1):
-    """Function to compare Molecule dictionaries. Prints
-    :py:func:`util.success` when elements of `computed` match elements of
-    `expected` to `tol` number of digits (for float arrays).
-
-    """
-    from .align import B787
-
-    thresh = 10 ** -tol if tol >= 1 else tol
-
-    # Need to manipulate the dictionaries a bit, so hold values
-    hold_e_geom = np.copy(expected['geom'])
-    hold_e_elez = np.copy(expected['elez'])
-    hold_e_elea = np.copy(expected['elea'])
-    hold_c_geom = np.copy(computed['geom'])
-    hold_c_elez = np.copy(computed['elez'])
-    hold_c_elea = np.copy(computed['elea'])
-
-    # deepdiff can't cope with np.int type
-    #   https://github.com/seperman/deepdiff/issues/97
-    expected['elez'] = [int(z) for z in expected['elez']]
-    computed['elez'] = [int(z) for z in computed['elez']]
-    expected['elea'] = [int(a) for a in expected['elea']]
-    computed['elea'] = [int(a) for a in computed['elea']]
-
-    # can't just expect geometries to match, so we'll align them, check that
-    #   they overlap and that the translation/rotation arrays jibe with
-    #   fix_com/orientation, then attach the oriented geom to computed before the
-    #   recursive dict comparison.
-    cgeom = computed['geom'].reshape((-1, 3))
-    rmsd, mill = B787(rgeom=expected['geom'].reshape((-1, 3)),
-                      cgeom=cgeom,
-                      runiq=None,
-                      cuniq=None,
-                      atoms_map=True,
-                      mols_align=True,
-                      run_mirror=False,
-                      verbose=0)
-    if computed['fix_com']:
-        compare_integers(1, np.allclose(np.zeros((3)), mill.shift, atol=thresh), 'null shift', verbose=verbose)
-    if computed['fix_orientation']:
-        compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
-    ageom = mill.align_coordinates(cgeom)
-    computed['geom'] = ageom.reshape((-1))
-
-    compare_dicts(expected, computed, tol, label, forgive=forgive, verbose=verbose)
-
-    # Replace values so function is const
-    expected['geom'] = hold_e_geom
-    expected['elez'] = hold_e_elez
-    expected['elea'] = hold_e_elea
-    computed['geom'] = hold_c_geom
-    computed['elez'] = hold_c_elez
-    computed['elea'] = hold_c_elea
 
 
 def compare_arrays(expected, computed, digits, label, verbose=1):

@@ -215,18 +215,22 @@ public:
      */
     void add_atom(double Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
                   double charge = 0.0, std::string lbl = "", int A = -1);
+    void add_unsettled_atom(double Z, std::vector<std::string> anchor, std::string sym = "", double mass = 0.0,
+                            double charge = 0.0, std::string lbl = "", int A = -1);
 
     /// Whether the multiplicity was given by the user
-    bool multiplicity_specified() const { return multiplicity_specified_; }
+    bool multiplicity_specified() const { return multiplicity_specified_; }  // TODO remove
     /// Whether the charge was given by the user
-    bool charge_specified() const { return charge_specified_; }
+    bool charge_specified() const { return charge_specified_; }  // TODO remove
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
     /// Returns the list of atoms belonging to a fragment.
     // Needed for EFP interface
-    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }
+    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }  // TODO remove?
+    /// Set whether to leave the geometry alone upon update_geometry()
+    void set_lock_frame(bool tf) { lock_frame_ = tf; }
 
     /// Get molecule name
     const std::string name() const {return name_; }
@@ -263,7 +267,7 @@ public:
     double mass(int atom) const;
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
-    void set_mass(int atom, double mass) { full_atoms_[atom]->set_mass(mass); }
+    void set_mass(int atom, double mass);
     /// Set the nuclear charge of an atom (primarily used in ECP calculations).
     void set_nuclear_charge(int atom, double newZ);
 
@@ -626,6 +630,8 @@ public:
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
     /// Also calls update_geometry()
     void set_variable(const std::string& str, double val);
+    /// Plain assigns the vlue val to the variable labeled string in the list of geometry variables.
+    void set_geometry_variable(const std::string &str, double val) { geometry_variables_[str] = val; }
     /// Checks to see if the variable str is in the list, sets it to val and returns
     /// true if it is, and returns false if not.
     double get_variable(const std::string& str);

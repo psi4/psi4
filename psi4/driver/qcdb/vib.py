@@ -1,3 +1,31 @@
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2017 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This file is part of Psi4.
+#
+# Psi4 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# Psi4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with Psi4; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
@@ -11,19 +39,18 @@ from .physconst import *
 from .psiutil import *
 from .util import *
 from .libmintsmolecule import compute_atom_map
+from .datastructures import QCAspect
 
 try:
     from itertools import izip_longest as zip_longest  # py2
 except ImportError:
     from itertools import zip_longest  # py3
 
-VibrationAspect = collections.namedtuple('VibrationAspect', 'lbl unit data comment')
-
 LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 
 
 def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, required=None):
-    """Compare two dictionaries of VibrationAspect objects. All items in
+    """Compare two dictionaries of vibration QCAspect objects. All items in
     `expected` must be present in `computed` and agree to `tol` (outright
     (<1) or decimal places (>=1)). At minimum, both must contain items in
     `required` ('omega' recc. for vibs).  Failed items in `forgive` will
@@ -151,7 +178,7 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
 
     Parameters
     ----------
-    vibinfo : dict of VibrationAspect
+    vibinfo : dict of vibration QCAspect
         Holds results of vibrational analysis.
     atom_symbol : array-like of str
         (nat,) element symbols for geometry of vibrational analysis.
@@ -197,7 +224,6 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
         text += """vibration {}\n""".format(idx + 1)
         for at in range(nat):
             text += ('   ' + """{:20.10f}""" * 3 + '\n').format(*(vibinfo['x'].data[:, vib].reshape(nat, 3)[at].real))
-
 
 #     text += """\n[INT]\n"""
 #     for vib in active:
@@ -297,7 +323,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
     Returns
     -------
     dict, text
-        Returns dictionary of VibrationAspect objects (fields: lbl unit data comment).
+        Returns dictionary of vibration QCAspect objects (fields: lbl units data comment).
         Also returns text suitable for printing.
 
     .. _`table:vibaspectinfo`:
@@ -434,15 +460,15 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
     force_constant_au = force_constant_au[idx]
     qL = qL[:, idx]
     qL = _phase_cols_to_max_element(qL)
-    vibinfo['q'] = VibrationAspect('normal mode', '[a0 u^1/2]', qL, 'normalized mass-weighted')
+    vibinfo['q'] = QCAspect('normal mode', 'a0 u^1/2', qL, 'normalized mass-weighted')
 
     # frequency, LAB II.17
     frequency_cm_1 = np.lib.scimath.sqrt(force_constant_au) * uconv_cm_1
-    vibinfo['omega'] = VibrationAspect('frequency', '[cm^-1]', frequency_cm_1, '')
+    vibinfo['omega'] = QCAspect('frequency', 'cm^-1', frequency_cm_1, '')
 
     # degeneracies
     ufreq, uinv, ucts = np.unique(np.around(frequency_cm_1, 2), return_inverse=True, return_counts=True)
-    vibinfo['degeneracy'] = VibrationAspect('degeneracy', '', ucts[uinv], '')
+    vibinfo['degeneracy'] = QCAspect('degeneracy', '', ucts[uinv], '')
 
     # look among the symmetry subspaces h for one to which the normco
     #   of vib does *not* add an extra dof to the vector space
@@ -468,8 +494,8 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
                 if np.linalg.norm(vib) < 1.e-3:
                     active[-1] = '-'
 
-    vibinfo['TRV'] = VibrationAspect('translation/rotation/vibration', '', active, '')
-    vibinfo['gamma'] = VibrationAspect('irreducible representation', '', irrep_classification, '')
+    vibinfo['TRV'] = QCAspect('translation/rotation/vibration', '', active, '')
+    vibinfo['gamma'] = QCAspect('irreducible representation', '', irrep_classification, '')
 
     lowfreq = np.where(np.real(frequency_cm_1) < 100.0)[0]
     lowfreq = np.append(lowfreq, np.arange(nrt_expected))  # catch at least nrt modes
@@ -491,21 +517,21 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
 
     # normco & reduced mass, LAB II.14 & II.15
     wL = np.einsum('i,ij->ij', sqrtmmminv, qL)
-    vibinfo['w'] = VibrationAspect('normal mode', '[a0]', wL, 'un-mass-weighted')
+    vibinfo['w'] = QCAspect('normal mode', 'a0', wL, 'un-mass-weighted')
 
     reduced_mass_u = np.divide(1.0, np.linalg.norm(wL, axis=0)**2)
-    vibinfo['mu'] = VibrationAspect('reduced mass', '[u]', reduced_mass_u, '')
+    vibinfo['mu'] = QCAspect('reduced mass', 'u', reduced_mass_u, '')
 
     xL = np.sqrt(reduced_mass_u) * wL
-    vibinfo['x'] = VibrationAspect('normal mode', '[a0]', xL, 'normalized un-mass-weighted')
+    vibinfo['x'] = QCAspect('normal mode', 'a0', xL, 'normalized un-mass-weighted')
 
     # force constants, LAB II.16 (real compensates for earlier sqrt)
     uconv_mdyne_a = (0.1 * (2 * np.pi * psi_c)**2) / psi_na
     force_constant_mdyne_a = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_mdyne_a
-    vibinfo['k'] = VibrationAspect('force constant', '[mDyne/A]', force_constant_mdyne_a, '')
+    vibinfo['k'] = QCAspect('force constant', 'mDyne/A', force_constant_mdyne_a, '')
 
     force_constant_cm_1_bb = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_S * uconv_S
-    VibrationAspect('force constant', '[cm^-1/a0^2]', force_constant_cm_1_bb, "Hooke's Law")
+    QCAspect('force constant', 'cm^-1/a0^2', force_constant_cm_1_bb, "Hooke's Law")
 
     # turning points, LAB II.20 (real & zero since turning point silly for imag modes)
     nu = 0
@@ -514,23 +540,27 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
     with np.errstate(divide='ignore'):
         turning_point_bohr_u = turning_point_rnc / (np.sqrt(frequency_cm_1.real) * uconv_S)
     turning_point_bohr_u[turning_point_bohr_u == np.inf] = 0.
-    vibinfo['Qtp0'] = VibrationAspect('Turning point v=0', '[a0 u^1/2]', turning_point_bohr_u, '')
+    vibinfo['Qtp0'] = QCAspect('Turning point v=0', 'a0 u^1/2', turning_point_bohr_u, '')
 
     with np.errstate(divide='ignore'):
         turning_point_bohr = turning_point_rnc / (np.sqrt(frequency_cm_1.real * reduced_mass_u) * uconv_S)
     turning_point_bohr[turning_point_bohr == np.inf] = 0.
-    vibinfo['Xtp0'] = VibrationAspect('Turning point v=0', '[a0]', turning_point_bohr, '')
+    vibinfo['Xtp0'] = QCAspect('Turning point v=0', 'a0', turning_point_bohr, '')
 
     rms_deviation_bohr_u = turning_point_bohr_u / np.sqrt(2.0)
-    vibinfo['DQ0'] = VibrationAspect('RMS deviation v=0', '[a0 u^1/2]', rms_deviation_bohr_u, '')
+    vibinfo['DQ0'] = QCAspect('RMS deviation v=0', 'a0 u^1/2', rms_deviation_bohr_u, '')
 
     # characteristic vibrational temperature, RAK thermo & https://en.wikipedia.org/wiki/Vibrational_temperature
     #   (imag freq zeroed)
     uconv_K = 100 * psi_h * psi_c / psi_kb
     vib_temperature_K = frequency_cm_1.real * uconv_K
-    vibinfo['theta_vib'] = VibrationAspect('char temp', '[K]', vib_temperature_K, '')
+    vibinfo['theta_vib'] = QCAspect('char temp', 'K', vib_temperature_K, '')
 
     return vibinfo, '\n'.join(text)
+
+
+def _br(string):
+    return '[' + string + ']'
 
 
 def _format_omega(omega, decimals):
@@ -552,7 +582,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
 
     Parameters
     ----------
-    vibinfo : dict of VibrationAspect
+    vibinfo : dict of vibration QCAspect
         Results of a Hessian solution.
     atom_lbl : list of str, optional
         Atomic symbols for printing. If None, integers used.
@@ -639,7 +669,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         text += '\n'
 
         text += """{:{presp}}{:{prewidth}}""".format(
-            '', 'Reduced mass ' + vibinfo['mu'].unit, prewidth=prewidth, presp=presp)
+            '', 'Reduced mass ' + _br(vibinfo['mu'].units), prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
@@ -648,7 +678,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         text += '\n'
 
         text += """{:{presp}}{:{prewidth}}""".format(
-            '', 'Force const ' + vibinfo['k'].unit, prewidth=prewidth, presp=presp)
+            '', 'Force const ' + _br(vibinfo['k'].units), prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
@@ -657,7 +687,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         text += '\n'
 
         text += """{:{presp}}{:{prewidth}}""".format(
-            '', 'Turning point v=0 ' + vibinfo['Xtp0'].unit, prewidth=prewidth, presp=presp)
+            '', 'Turning point v=0 ' + _br(vibinfo['Xtp0'].units), prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
@@ -666,7 +696,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         text += '\n'
 
         text += """{:{presp}}{:{prewidth}}""".format(
-            '', 'RMS dev v=0 ' + vibinfo['DQ0'].unit, prewidth=prewidth, presp=presp)
+            '', 'RMS dev v=0 ' + _br(vibinfo['DQ0'].units), prewidth=prewidth, presp=presp)
         for vib in row:
             if vib is None:
                 break
@@ -676,7 +706,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
 
         if 'theta_vib' in vibinfo:
             text += """{:{presp}}{:{prewidth}}""".format(
-                '', 'Char temp ' + vibinfo['theta_vib'].unit, prewidth=prewidth, presp=presp)
+                '', 'Char temp ' + _br(vibinfo['theta_vib'].units), prewidth=prewidth, presp=presp)
             for vib in row:
                 if vib is None:
                     break
@@ -739,12 +769,20 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
     Returns
     -------
-    dict of VibrationAspect, str
-        First is every thermochemistry component in atomic units.
+    dict of QCAspect, str
+        First is every thermochemistry component in atomic units along with input conditions.
         Second is formatted presentation of analysis.
 
     """
     sm = collections.defaultdict(float)
+
+    # conditions
+    therminfo = {}
+    therminfo['E0'] = QCAspect('E0', 'Eh', E0, '')
+    therminfo['B'] = QCAspect('rotational constants', 'cm^-1', rot_const, '')
+    therminfo['sigma'] = QCAspect('external symmetry number', '', sigma, '')
+    therminfo['T'] = QCAspect('temperature', 'K', T, '')
+    therminfo['P'] = QCAspect('pressure', 'Pa', P, '')
 
     # electronic
     q_elec = multiplicity
@@ -830,23 +868,23 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
             sm[(piece, 'corr')] += sm[(piece, term)]
         sm[(piece, 'tot')] = E0 + sm[(piece, 'corr')]
 
-    # package results for export
-    therminfo = {}
-    for entry in sm:
-        if entry[0] in ['S', 'Cv', 'Cp']:
-            unit = '[mEh/K]'
-        elif entry[0] in ['ZPE', 'E', 'H', 'G']:
-            unit = '[Eh]'
-        therminfo['_'.join(entry)] = VibrationAspect('XXX', unit, sm[entry], '')
-
-    # display
     terms = collections.OrderedDict()
     terms['elec'] = '  Electronic'
     terms['trans'] = '  Translational'
     terms['rot'] = '  Rotational'
     terms['vib'] = '  Vibrational'
     terms['tot'] = 'Total'
+    terms['corr'] = 'Correction'
 
+    # package results for export
+    for entry in sm:
+        if entry[0] in ['S', 'Cv', 'Cp']:
+            unit = 'mEh/K'
+        elif entry[0] in ['ZPE', 'E', 'H', 'G']:
+            unit = 'Eh'
+        therminfo['_'.join(entry)] = QCAspect(terms[entry[1]].strip().lower() + ' ' + entry[0], unit, sm[entry], '')
+
+    # display
     format_S_Cv_Cp = """\n  {:19} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
     format_ZPE_E_H_G = """\n  {:19} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
     uconv = np.asarray([psi_hartree2kcalmol, psi_hartree2kJmol, 1.])
@@ -911,11 +949,11 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
 
 def filter_nonvib(vibinfo, remove=None):
-    """From a dictionary of VibrationAspect, remove normal coordinates.
+    """From a dictionary of vibration QCAspect, remove normal coordinates.
 
     Parameters
     ----------
-    vibinfo : dict of VibrationAspect
+    vibinfo : dict of vibration QCAspect
         Results of Hessian analysis.
     remove : list of int, optional
 	    0-indexed indices of normal modes to remove from `vibinfo`. If
@@ -924,7 +962,7 @@ def filter_nonvib(vibinfo, remove=None):
 
     Returns
     -------
-    dict of VibrationAspect
+    dict of vibration QCAspect
         Copy of input `vibinfo` with the specified modes removed from all
         dictionary entries.
 
@@ -944,7 +982,7 @@ def filter_nonvib(vibinfo, remove=None):
             axis = 1
         else:
             axis = 0
-        work[asp] = VibrationAspect(oasp.lbl, oasp.unit, np.delete(oasp.data, remove, axis=axis), oasp.comment)
+        work[asp] = QCAspect(oasp.lbl, oasp.units, np.delete(oasp.data, remove, axis=axis), oasp.comment)
 
     return work
 

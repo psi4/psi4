@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(ocepa-freq1 "psi;ocepa")
+add_regression_test(ocepa-freq1 "psi;ocepa;cart")

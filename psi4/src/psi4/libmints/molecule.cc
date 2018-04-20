@@ -250,7 +250,9 @@ void Molecule::clear() {
 void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass,
                         double charge, std::string label, int A) {
     lock_frame_ = false;
+    set_has_cartesian(true);
     Vector3 temp(x, y, z);
+    temp *= input_units_to_au_;
     if (label == "")
         label = symbol;
 
@@ -267,6 +269,96 @@ void Molecule::add_atom(double Z, double x, double y, double z, std::string symb
     }
 }
 
+void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std::string symbol, double mass,
+                                  double charge, std::string label, int A) {
+    lock_frame_ = false;
+    int numEntries = anchor.size();
+    int currentAtom = full_atoms_.size();
+    int rTo, aTo, dTo;
+
+    if (numEntries == 3) {
+        // This is a Cartesian entry
+        set_has_cartesian(true);
+        std::shared_ptr<CoordValue> xval(get_coord_value(anchor[0]));
+        std::shared_ptr<CoordValue> yval(get_coord_value(anchor[1]));
+        std::shared_ptr<CoordValue> zval(get_coord_value(anchor[2]));
+        full_atoms_.push_back(std::make_shared<CartesianEntry>(currentAtom, Z, charge, mass, symbol, label, A,
+                                                                    xval, yval, zval));
+    } else if (numEntries == 0) {
+        // This is the first line of a Z-Matrix
+        set_has_zmatrix(true);
+        full_atoms_.push_back(
+            std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A));
+    } else if (numEntries == 2) {
+        // This is the second line of a Z-Matrix
+        set_has_zmatrix(true);
+        rTo = get_anchor_atom(anchor[0], "");
+        if (rTo >= currentAtom)
+            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
+        std::shared_ptr<CoordValue> rval(get_coord_value(anchor[1]));
+
+        if (full_atoms_[rTo]->symbol() == "X") rval->set_fixed(true);
+
+        full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A,
+                                                             full_atoms_[rTo], rval));
+
+    } else if (numEntries == 4) {
+        // This is the third line of a Z-Matrix
+        set_has_zmatrix(true);
+        rTo = get_anchor_atom(anchor[0], "");
+        if (rTo >= currentAtom)
+            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
+        aTo = get_anchor_atom(anchor[2], "");
+        if (aTo >= currentAtom)
+            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[2]);
+        if (aTo == rTo) throw PSIEXCEPTION("Atom used multiple times on line");
+        std::shared_ptr<CoordValue> rval(get_coord_value(anchor[1]));
+        std::shared_ptr<CoordValue> aval(get_coord_value(anchor[3]));
+
+        if (full_atoms_[rTo]->symbol() == "X") rval->set_fixed(true);
+        if (full_atoms_[aTo]->symbol() == "X") aval->set_fixed(true);
+
+        full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A,
+                                                             full_atoms_[rTo], rval,
+                                                             full_atoms_[aTo], aval));
+    } else if (numEntries == 6) {
+        // This is line 4 onwards of a Z-Matrix
+        set_has_zmatrix(true);
+        rTo = get_anchor_atom(anchor[0], "");
+        if (rTo >= currentAtom)
+            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
+        aTo = get_anchor_atom(anchor[2], "");
+        if (aTo >= currentAtom)
+            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[2]);
+        dTo = get_anchor_atom(anchor[4], "");
+        if (dTo >= currentAtom)
+            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[4]);
+        if (aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
+            throw PSIEXCEPTION("Atom used multiple times on line");
+
+        std::shared_ptr<CoordValue> rval(get_coord_value(anchor[1]));
+        std::shared_ptr<CoordValue> aval(get_coord_value(anchor[3]));
+        std::shared_ptr<CoordValue> dval(get_coord_value(anchor[5]));
+
+        if (full_atoms_[rTo]->symbol() == "X") rval->set_fixed(true);
+        if (full_atoms_[aTo]->symbol() == "X") aval->set_fixed(true);
+        if (full_atoms_[dTo]->symbol() == "X") dval->set_fixed(true);
+
+        full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A,
+                                                             full_atoms_[rTo], rval,
+                                                             full_atoms_[aTo], aval,
+                                                             full_atoms_[dTo], dval));
+    } else {
+        throw PSIEXCEPTION("Illegal geometry specification (neither Cartesian nor Z-Matrix)");
+    }
+}
+
+
+
+
+
+
+
 double Molecule::mass(int atom) const {
     double ret = 0.0;
     if (atoms_[atom]->mass() != 0.0)
@@ -280,6 +372,12 @@ double Molecule::mass(int atom) const {
     }
 
     return ret;
+}
+
+void Molecule::set_mass(int atom, double mass) {
+    lock_frame_ = false;
+    full_atoms_[atom]->set_mass(mass);
+    full_atoms_[atom]->set_A(-1);
 }
 
 std::string Molecule::symbol(int atom) const { return atoms_[atom]->symbol(); }
@@ -755,17 +853,6 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     std::vector<FragmentLevel> fragment_levels;
 
     auto mol = std::make_shared<Molecule>();
-    std::string units = Process::environment.options.get_str("UNITS");
-
-    if (iequals(units, std::string("ANG")) || iequals(units, std::string("ANGSTROM")) ||
-        iequals(units, std::string("ANGSTROMS"))) {
-        mol->set_units(Angstrom);
-    } else if (iequals(units, std::string("BOHR")) || iequals(units, std::string("AU")) ||
-               iequals(units, std::string("A.U."))) {
-        mol->set_units(Bohr);
-    } else {
-        throw PSIEXCEPTION("Unit " + units + " is not recognized");
-    }
 
     mol->molecular_charge_ = 0;
     mol->multiplicity_ = 1;
@@ -1271,6 +1358,8 @@ std::string Molecule::create_psi4_string_from_molecule() const {
             sprintf(buffer, "    no_reorient\n");
             ss << buffer;
         }
+        //sprintf(buffer, "    %d %d\n    --\n", molecular_charge_, multiplicity_);  // uncomment after py-side mol parsing
+        //ss << buffer;  // uncomment after py-side mol parsing
 
         // append atoms and coordentries and fragment separators with charge and multiplicity
         int Pfr = 0;
@@ -1378,8 +1467,7 @@ void Molecule::reinterpret_coordentries() {
 }
 
 void Molecule::update_geometry() {
-    if (fragments_.size() == 0) outfile->Printf("Warning: There are no quantum mechanical atoms in this molecule.\n");
-    //    throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
+    if (full_atoms_.size() == 0) outfile->Printf("Warning: There are no quantum mechanical atoms in this molecule.\n");
 
     // Idempotence condition
     if (lock_frame_) return;
@@ -2845,7 +2933,7 @@ int Molecule::get_anchor_atom(const std::string &str, const std::string &line) {
 }
 
 void Molecule::set_variable(const std::string &str, double val) {
-    // This is a weird thing if were not z-matrix
+    // This is a weird thing if we're not z-matrix
     if (cart_ && (move_to_com_ || !fix_orientation_)) {
         outfile->Printf(
             "\nMolecule: Setting a variable updates the molecular geometry, for\n"

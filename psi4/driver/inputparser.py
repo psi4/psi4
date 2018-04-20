@@ -41,7 +41,7 @@ import sys
 import uuid
 
 from psi4 import core
-from psi4.driver import pubchem
+from psi4.driver.qcdb.molparse import pubchem
 from psi4.driver.p4util.util import set_memory
 from psi4.driver.p4util.exceptions import *
 

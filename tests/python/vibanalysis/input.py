@@ -184,17 +184,17 @@ c4_eth_fcm = """
 ref_eth_vibonly = {
 
     # freq from cfour after proj
-    'omega': qcdb.vib.VibrationAspect('', '', np.asarray([885.4386, 1073.4306, 1080.4104, 1135.9390, 1328.7166,  1467.8428, 1565.5328, 1831.6445, 3287.3173, 3312.1889, 3371.7974, 3399.4232]), ''), 
-    'gamma': qcdb.vib.VibrationAspect('', '', ['B2u', 'B1u', 'B2g', 'Au', 'B1g', 'Ag', 'B3u', 'Ag', 'B3u', 'Ag', 'B1g', 'B2u'], ''),
+    'omega': qcdb.vib.QCAspect('', '', np.asarray([885.4386, 1073.4306, 1080.4104, 1135.9390, 1328.7166,  1467.8428, 1565.5328, 1831.6445, 3287.3173, 3312.1889, 3371.7974, 3399.4232]), ''),
+    'gamma': qcdb.vib.QCAspect('', '', ['B2u', 'B1u', 'B2g', 'Au', 'B1g', 'Ag', 'B3u', 'Ag', 'B3u', 'Ag', 'B1g', 'B2u'], ''),
 
     # from vibsuite after cfour
-    'mu': qcdb.vib.VibrationAspect('', '', np.asarray([1.0423,  1.1607,  1.5200,  1.0078,  1.5276,  1.2029,  1.1122,  3.2209,  1.0475,  1.0799,  1.1150,  1.1182]), ''),
-    'k': qcdb.vib.VibrationAspect('', '', np.asarray([0.4814, 0.7880, 1.0454, 0.7662, 1.5890, 1.5270, 1.6060, 6.3666, 6.6695, 6.9800, 7.4688, 7.6133]), ''),
-    'Qtp0': qcdb.vib.VibrationAspect('', '', np.asarray([0.3687, 0.3349, 0.3338, 0.3256, 0.3010, 0.2864, 0.2773, 0.2564, 0.1914, 0.1907, 0.1890, 0.1882]), ''),
-    'DQ0': qcdb.vib.VibrationAspect('', '', np.asarray([0.2607, 0.2368, 0.2360, 0.2302, 0.2128, 0.2025, 0.1961, 0.1813, 0.1353, 0.1348, 0.1336, 0.1331]), ''),
+    'mu': qcdb.vib.QCAspect('', '', np.asarray([1.0423,  1.1607,  1.5200,  1.0078,  1.5276,  1.2029,  1.1122,  3.2209,  1.0475,  1.0799,  1.1150,  1.1182]), ''),
+    'k': qcdb.vib.QCAspect('', '', np.asarray([0.4814, 0.7880, 1.0454, 0.7662, 1.5890, 1.5270, 1.6060, 6.3666, 6.6695, 6.9800, 7.4688, 7.6133]), ''),
+    'Qtp0': qcdb.vib.QCAspect('', '', np.asarray([0.3687, 0.3349, 0.3338, 0.3256, 0.3010, 0.2864, 0.2773, 0.2564, 0.1914, 0.1907, 0.1890, 0.1882]), ''),
+    'DQ0': qcdb.vib.QCAspect('', '', np.asarray([0.2607, 0.2368, 0.2360, 0.2302, 0.2128, 0.2025, 0.1961, 0.1813, 0.1353, 0.1348, 0.1336, 0.1331]), ''),
 
     # q from vibsuite after cfour
-    'q': qcdb.vib.VibrationAspect('', '', np.asarray(
+    'q': qcdb.vib.QCAspect('', '', np.asarray(
            [[  0.00000000E+00, -1.34306554E-01,  0.00000000E+00,  0.00000000E+00, -1.34306554E-01,  0.00000000E+00, -4.32765855E-01,  2.31720930E-01,  0.00000000E+00,  4.32765855E-01,  2.31720930E-01,  0.00000000E+00,  4.32765855E-01,  2.31720930E-01,  0.00000000E+00, -4.32765855E-01,  2.31720930E-01,  0.00000000E+00],
             [  0.00000000E+00,  0.00000000E+00, -2.68155030E-01,  0.00000000E+00,  0.00000000E+00, -2.68155030E-01,  0.00000000E+00,  0.00000000E+00,  4.62651532E-01,  0.00000000E+00,  0.00000000E+00,  4.62651532E-01,  0.00000000E+00,  0.00000000E+00,  4.62651532E-01,  0.00000000E+00,  0.00000000E+00,  4.62651532E-01],
             [  0.00000000E+00,  0.00000000E+00, -4.28876240E-01,  0.00000000E+00,  0.00000000E+00,  4.28876240E-01,  0.00000000E+00,  0.00000000E+00,  3.97533125E-01,  0.00000000E+00,  0.00000000E+00,  3.97533125E-01,  0.00000000E+00,  0.00000000E+00, -3.97533125E-01,  0.00000000E+00,  0.00000000E+00, -3.97533125E-01],
@@ -284,18 +284,18 @@ c4_nh3_fcm = """
 ref_nh3_vibonly = {
 
     # freq from cfour after proj
-    'omega': qcdb.vib.VibrationAspect('', '', np.asarray([760.3060, 1763.7937, 1763.7937, 3639.0750, 3817.6146, 3817.6146]), ''), 
-    'degeneracy': qcdb.vib.VibrationAspect('', '', np.asarray([1, 2, 2, 1, 2, 2]), ''),
-    'gamma': qcdb.vib.VibrationAspect('', '', ['A1', 'E', 'E', 'A1', 'E', 'E'], ''),
+    'omega': qcdb.vib.QCAspect('', '', np.asarray([760.3060, 1763.7937, 1763.7937, 3639.0750, 3817.6146, 3817.6146]), ''),
+    'degeneracy': qcdb.vib.QCAspect('', '', np.asarray([1, 2, 2, 1, 2, 2]), ''),
+    'gamma': qcdb.vib.QCAspect('', '', ['A1', 'E', 'E', 'A1', 'E', 'E'], ''),
 
     # from vibsuite after cfour
-    'mu': qcdb.vib.VibrationAspect('', '', np.asarray([1.1920,  1.0762,  1.0762,  1.0183,  1.0976,  1.0976]), ''),
-    'k': qcdb.vib.VibrationAspect('', '', np.asarray([0.4060,  1.9725,  1.9725,  7.9450,  9.4251,  9.4251] ), ''),
-    'Qtp0': qcdb.vib.VibrationAspect('', '', np.asarray([0.3979,  0.2613,  0.2613,  0.1819,  0.1776,  0.1776]), ''),
-    'DQ0': qcdb.vib.VibrationAspect('', '', np.asarray([0.2814, 0.1847, 0.1847, 0.1286, 0.1256, 0.1256]), ''),
+    'mu': qcdb.vib.QCAspect('', '', np.asarray([1.1920,  1.0762,  1.0762,  1.0183,  1.0976,  1.0976]), ''),
+    'k': qcdb.vib.QCAspect('', '', np.asarray([0.4060,  1.9725,  1.9725,  7.9450,  9.4251,  9.4251] ), ''),
+    'Qtp0': qcdb.vib.QCAspect('', '', np.asarray([0.3979,  0.2613,  0.2613,  0.1819,  0.1776,  0.1776]), ''),
+    'DQ0': qcdb.vib.QCAspect('', '', np.asarray([0.2814, 0.1847, 0.1847, 0.1286, 0.1256, 0.1256]), ''),
 
     # q from vibsuite after cfour
-    'q': qcdb.vib.VibrationAspect('', '', np.asarray(
+    'q': qcdb.vib.QCAspect('', '', np.asarray(
         [[ -4.08080346E-01, -7.62936600E-12,  0.00000000E+00,  5.07041545E-01,  7.19936610E-02, -1.24696679E-01,  5.07041545E-01, -1.43987322E-01,  0.00000000E+00,  5.07041545E-01,  7.19936610E-02,  1.24696679E-01],
         [  -4.97572587E-12, -2.61585766E-01,  5.32441764E-08, -9.28006642E-02,  5.41620888E-01,  3.75161405E-01,  1.85601263E-01, -1.08177689E-01, -1.54331130E-07, -9.28005987E-02,  5.41621041E-01, -3.75161449E-01],
         [   0.00000000E+00, -5.32441763E-08, -2.61585766E-01,  1.60735389E-01,  3.75161537E-01,  1.08421938E-01,  3.77779972E-08, -2.20189043E-08,  7.58220516E-01, -1.60735427E-01, -3.75161317E-01,  1.08421786E-01],
@@ -380,11 +380,11 @@ c4_hooh_fcm = """
 ref_hooh_vibonly = {
 
     # freq from cfour after proj
-    'omega': qcdb.vib.VibrationAspect('', '', np.asarray([278.6136j, 1128.8155, 1364.3495, 1698.2924, 4140.0257, 4146.4749]), ''), 
-    'gamma': qcdb.vib.VibrationAspect('', '', ['A', 'A', 'B', 'A', 'A', 'B'], ''),
+    'omega': qcdb.vib.QCAspect('', '', np.asarray([278.6136j, 1128.8155, 1364.3495, 1698.2924, 4140.0257, 4146.4749]), ''),
+    'gamma': qcdb.vib.QCAspect('', '', ['A', 'A', 'B', 'A', 'A', 'B'], ''),
 
     # q from vibsuite after cfour
-    'q': qcdb.vib.VibrationAspect('', '', np.asarray(
+    'q': qcdb.vib.QCAspect('', '', np.asarray(
             [[  7.39506085E-08, -2.30708287E-06,  6.85830054E-01,  2.87191142E-07,  8.13343225E-07, -1.72154397E-01, -2.87191142E-07, -8.13343225E-07, -1.72154397E-01, -7.39506085E-08,  2.30708287E-06,  6.85830054E-01],
              [ -4.79362074E-02,  3.05642567E-02,  4.55759137E-07, -7.01350959E-01, -6.98196096E-02, -1.14402889E-07,  7.01350959E-01,  6.98196096E-02, -1.14402889E-07,  4.79362074E-02, -3.05642567E-02,  4.55759137E-07],
              [  6.56843220E-01,  1.97281139E-01,  4.29128663E-07, -1.64878235E-01, -4.95207454E-02, -8.89584240E-07, -1.64878235E-01, -4.95207454E-02,  8.89584240E-07,  6.56843220E-01,  1.97281139E-01, -4.29128663E-07],
@@ -496,12 +496,12 @@ c4_ch4_fcm = """
 ref_ch4_vibonly = {
 
     # freq from cfour after proj
-    'omega': qcdb.vib.VibrationAspect('', '', np.asarray([1433.2785, 1433.2785, 1433.2785, 1647.8698, 1647.8698, 3164.8164, 3285.6166, 3285.6166, 3285.6166]), ''),
-    'gamma': qcdb.vib.VibrationAspect('', '', ['T2', 'T2', 'T2', 'E', 'E', 'A1', 'T2', 'T2', 'T2'], ''),
+    'omega': qcdb.vib.QCAspect('', '', np.asarray([1433.2785, 1433.2785, 1433.2785, 1647.8698, 1647.8698, 3164.8164, 3285.6166, 3285.6166, 3285.6166]), ''),
+    'gamma': qcdb.vib.QCAspect('', '', ['T2', 'T2', 'T2', 'E', 'E', 'A1', 'T2', 'T2', 'T2'], ''),
 
     # vibsuite seems to have contamination for evec from 1,2 degen, so
     #    from NORMCO (q; pre-proj) from cfour
-    'q': qcdb.vib.VibrationAspect('', '', np.asarray(
+    'q': qcdb.vib.QCAspect('', '', np.asarray(
             [[     -0.0000000000,        0.0000000000,        0.3971847614,
                     0.0000000000,       -0.3052259977,       -0.3426341440,
                     0.0000000000,        0.3052259977,       -0.3426341440,
@@ -604,17 +604,17 @@ c4_co2_fcm = """
 ref_co2_vibonly = {
 
     # freq from cfour after proj
-    'omega': qcdb.vib.VibrationAspect('', '', np.asarray([761.1526, 761.1526, 1513.3122, 2580.1495]), ''), 
-    'gamma': qcdb.vib.VibrationAspect('', '', ['PIu', 'PIu', 'SGg+', 'SGu-'], ''),
+    'omega': qcdb.vib.QCAspect('', '', np.asarray([761.1526, 761.1526, 1513.3122, 2580.1495]), ''),
+    'gamma': qcdb.vib.QCAspect('', '', ['PIu', 'PIu', 'SGg+', 'SGu-'], ''),
 
     # from vibsuite after cfour
-    'mu': qcdb.vib.VibrationAspect('', '', np.asarray([ 12.8774,   12.8774,   15.9949,   12.8774]), ''),
-    'k': qcdb.vib.VibrationAspect('', '', np.asarray([ 4.3956, 4.3956, 21.5819, 50.5088]), ''),
-    'Qtp0': qcdb.vib.VibrationAspect('', '', np.asarray([ 0.3977,    0.3977,    0.2821,    0.2160]), ''),
-    'DQ0': qcdb.vib.VibrationAspect('', '', np.asarray([ 0.2812, 0.2812, 0.1994, 0.1527]), ''),
+    'mu': qcdb.vib.QCAspect('', '', np.asarray([ 12.8774,   12.8774,   15.9949,   12.8774]), ''),
+    'k': qcdb.vib.QCAspect('', '', np.asarray([ 4.3956, 4.3956, 21.5819, 50.5088]), ''),
+    'Qtp0': qcdb.vib.QCAspect('', '', np.asarray([ 0.3977,    0.3977,    0.2821,    0.2160]), ''),
+    'DQ0': qcdb.vib.QCAspect('', '', np.asarray([ 0.2812, 0.2812, 0.1994, 0.1527]), ''),
 
     # q from vibsuite after cfour
-    'q': qcdb.vib.VibrationAspect('', '', np.asarray(
+    'q': qcdb.vib.QCAspect('', '', np.asarray(
             [[ 8.52765895E-01,  0.00000000E+00,  0.00000000E+00, -3.69317160E-01,  0.00000000E+00,  0.00000000E+00, -3.69317160E-01,  0.00000000E+00,  0.00000000E+00],
              [ 0.00000000E+00,  8.52765895E-01,  0.00000000E+00,  0.00000000E+00, -3.69317160E-01,  0.00000000E+00,  0.00000000E+00, -3.69317160E-01,  0.00000000E+00],
              [ 0.00000000E+00,  0.00000000E+00,  0.00000000E+00,  0.00000000E+00,  0.00000000E+00, -7.07106781E-01,  0.00000000E+00,  0.00000000E+00,  7.07106781E-01],
@@ -697,17 +697,17 @@ c4_form_fcm = """
 ref_form_vibonly = {
 
     # freq from cfour after proj
-    'omega': qcdb.vib.VibrationAspect('', '', np.asarray([1325.3286, 1359.7579, 1637.4774, 2013.4255, 3108.9786, 3183.3975]), ''),
-    'gamma': qcdb.vib.VibrationAspect('', '', ['B1', 'B2', 'A1', 'A1', 'A1', 'B2'], ''),
+    'omega': qcdb.vib.QCAspect('', '', np.asarray([1325.3286, 1359.7579, 1637.4774, 2013.4255, 3108.9786, 3183.3975]), ''),
+    'gamma': qcdb.vib.QCAspect('', '', ['B1', 'B2', 'A1', 'A1', 'A1', 'B2'], ''),
 
     # from vibsuite after cfour
-    'mu': qcdb.vib.VibrationAspect('', '', np.asarray([1.3722, 1.3499, 1.0901, 7.8589, 1.0499, 1.1203]), ''),
-    'k': qcdb.vib.VibrationAspect('', '', np.asarray([1.4201, 1.4706, 1.7222, 18.7708, 5.9790, 6.6892]), ''),
-    'Qtp0': qcdb.vib.VibrationAspect('', '', np.asarray([0.3014, 0.2976, 0.2711, 0.2445, 0.1968, 0.1945]), ''),
-    'DQ0': qcdb.vib.VibrationAspect('', '', np.asarray([0.2131, 0.2104, 0.1917, 0.1729, 0.1391, 0.1375]), ''),
+    'mu': qcdb.vib.QCAspect('', '', np.asarray([1.3722, 1.3499, 1.0901, 7.8589, 1.0499, 1.1203]), ''),
+    'k': qcdb.vib.QCAspect('', '', np.asarray([1.4201, 1.4706, 1.7222, 18.7708, 5.9790, 6.6892]), ''),
+    'Qtp0': qcdb.vib.QCAspect('', '', np.asarray([0.3014, 0.2976, 0.2711, 0.2445, 0.1968, 0.1945]), ''),
+    'DQ0': qcdb.vib.QCAspect('', '', np.asarray([0.2131, 0.2104, 0.1917, 0.1729, 0.1391, 0.1375]), ''),
 
     # q from vibsuite after cfour
-    'q': qcdb.vib.VibrationAspect('', '', np.asarray(
+    'q': qcdb.vib.QCAspect('', '', np.asarray(
         [[ -5.17011996E-01,  0.00000000E+00,  0.00000000E+00,  1.48564403E-01,  0.00000000E+00,  0.00000000E+00,  5.96081880E-01,  0.00000000E+00,  0.00000000E+00,  5.96081880E-01,  0.00000000E+00,  0.00000000E+00],
          [  0.00000000E+00,  4.45428632E-01,  0.00000000E+00,  0.00000000E+00, -2.76578605E-01,  0.00000000E+00,  0.00000000E+00, -2.17586159E-01,  5.61431267E-01,  0.00000000E+00, -2.17586159E-01, -5.61431267E-01],
          [  0.00000000E+00,  0.00000000E+00, -1.22436444E-02,  0.00000000E+00,  0.00000000E+00, -2.83617137E-01,  0.00000000E+00, -3.40935268E-01,  5.86062155E-01,  0.00000000E+00,  3.40935268E-01,  5.86062155E-01],
@@ -870,53 +870,53 @@ print(text)
 
 
 ch4_hf_321g_thermoinfo = {
-    'S_elec' :   qcdb.vib.VibrationAspect('', '', 0.00000000, ''),
-    'S_trans' :  qcdb.vib.VibrationAspect('', '', 0.05459886, ''),
-    'S_rot' :    qcdb.vib.VibrationAspect('', '', 0.01606470, ''),
-    'S_vib' :    qcdb.vib.VibrationAspect('', '', 0.00006509, ''),
-    'S_tot' :    qcdb.vib.VibrationAspect('', '', 0.07072865, ''),
-    
-    'Cv_elec' :  qcdb.vib.VibrationAspect('', '', 0.00000000, ''),
-    'Cv_trans' : qcdb.vib.VibrationAspect('', '', 0.00475022, ''),
-    'Cv_rot' :   qcdb.vib.VibrationAspect('', '', 0.00475022, ''),
-    'Cv_vib' :   qcdb.vib.VibrationAspect('', '', 0.00043482, ''),
-    'Cv_tot' :   qcdb.vib.VibrationAspect('', '', 0.00993526, ''),
-    
-    'Cp_elec' :  qcdb.vib.VibrationAspect('', '', 0.00000000, ''),
-    'Cp_trans' : qcdb.vib.VibrationAspect('', '', 0.00791704, ''),
-    'Cp_rot' :   qcdb.vib.VibrationAspect('', '', 0.00475022, ''),
-    'Cp_vib' :   qcdb.vib.VibrationAspect('', '', 0.00043482, ''),
-    'Cp_tot' :   qcdb.vib.VibrationAspect('', '', 0.01310208, ''),
-    
-#     'E0'      :   VibrationAspect('', '', -39.97687755, ''),
-    
-    'ZPE_elec' :  qcdb.vib.VibrationAspect('', '',   0.00000000, ''),
-    'ZPE_trans' : qcdb.vib.VibrationAspect('', '',   0.00000000, ''),
-    'ZPE_rot' :   qcdb.vib.VibrationAspect('', '',   0.00000000, ''),
-    'ZPE_vib' :   qcdb.vib.VibrationAspect('', '',   0.04799572, ''),
-    'ZPE_corr' :  qcdb.vib.VibrationAspect('', '',   0.04799572, ''),
-    'ZPE_tot' :   qcdb.vib.VibrationAspect('', '', -39.92888184, ''),
-    
-    'E_elec'  :   qcdb.vib.VibrationAspect('', '',   0.00000000, ''),
-    'E_trans' :   qcdb.vib.VibrationAspect('', '',   0.00141628, ''),
-    'E_rot'   :   qcdb.vib.VibrationAspect('', '',   0.00141628, ''),
-    'E_vib'   :   qcdb.vib.VibrationAspect('', '',   0.04801283, ''),
-    'E_corr'  :   qcdb.vib.VibrationAspect('', '',   0.05084539, ''),
-    'E_tot'   :   qcdb.vib.VibrationAspect('', '', -39.92603216, ''),
-    
-    'H_elec'  :   qcdb.vib.VibrationAspect('', '',   0.00000000, ''),
-    'H_trans' :   qcdb.vib.VibrationAspect('', '',   0.00236046, ''),
-    'H_rot'   :   qcdb.vib.VibrationAspect('', '',   0.00141628, ''),
-    'H_vib'   :   qcdb.vib.VibrationAspect('', '',   0.04801283, ''),
-    'H_corr'  :   qcdb.vib.VibrationAspect('', '',   0.05178958, ''),
-    'H_tot'   :   qcdb.vib.VibrationAspect('', '', -39.92508798, ''),
-    
-    'G_elec'  :   qcdb.vib.VibrationAspect('', '',  -0.00000000, ''),
-    'G_trans' :   qcdb.vib.VibrationAspect('', '',  -0.01391819, ''),
-    'G_rot'   :   qcdb.vib.VibrationAspect('', '',  -0.00337341, ''),
-    'G_vib'   :   qcdb.vib.VibrationAspect('', '',   0.04799343, ''),
-    'G_corr'  :   qcdb.vib.VibrationAspect('', '',   0.03070183, ''),
-    'G_tot'   :   qcdb.vib.VibrationAspect('', '', -39.94617572, ''),
+    'S_elec' :   qcdb.vib.QCAspect('', '', 0.00000000, ''),
+    'S_trans' :  qcdb.vib.QCAspect('', '', 0.05459886, ''),
+    'S_rot' :    qcdb.vib.QCAspect('', '', 0.01606470, ''),
+    'S_vib' :    qcdb.vib.QCAspect('', '', 0.00006509, ''),
+    'S_tot' :    qcdb.vib.QCAspect('', '', 0.07072865, ''),
+
+    'Cv_elec' :  qcdb.vib.QCAspect('', '', 0.00000000, ''),
+    'Cv_trans' : qcdb.vib.QCAspect('', '', 0.00475022, ''),
+    'Cv_rot' :   qcdb.vib.QCAspect('', '', 0.00475022, ''),
+    'Cv_vib' :   qcdb.vib.QCAspect('', '', 0.00043482, ''),
+    'Cv_tot' :   qcdb.vib.QCAspect('', '', 0.00993526, ''),
+
+    'Cp_elec' :  qcdb.vib.QCAspect('', '', 0.00000000, ''),
+    'Cp_trans' : qcdb.vib.QCAspect('', '', 0.00791704, ''),
+    'Cp_rot' :   qcdb.vib.QCAspect('', '', 0.00475022, ''),
+    'Cp_vib' :   qcdb.vib.QCAspect('', '', 0.00043482, ''),
+    'Cp_tot' :   qcdb.vib.QCAspect('', '', 0.01310208, ''),
+
+    'E0'     :   qcdb.vib.QCAspect('', '', -39.97687755, ''),
+
+    'ZPE_elec' :  qcdb.vib.QCAspect('', '',   0.00000000, ''),
+    'ZPE_trans' : qcdb.vib.QCAspect('', '',   0.00000000, ''),
+    'ZPE_rot' :   qcdb.vib.QCAspect('', '',   0.00000000, ''),
+    'ZPE_vib' :   qcdb.vib.QCAspect('', '',   0.04799572, ''),
+    'ZPE_corr' :  qcdb.vib.QCAspect('', '',   0.04799572, ''),
+    'ZPE_tot' :   qcdb.vib.QCAspect('', '', -39.92888184, ''),
+
+    'E_elec'  :   qcdb.vib.QCAspect('', '',   0.00000000, ''),
+    'E_trans' :   qcdb.vib.QCAspect('', '',   0.00141628, ''),
+    'E_rot'   :   qcdb.vib.QCAspect('', '',   0.00141628, ''),
+    'E_vib'   :   qcdb.vib.QCAspect('', '',   0.04801283, ''),
+    'E_corr'  :   qcdb.vib.QCAspect('', '',   0.05084539, ''),
+    'E_tot'   :   qcdb.vib.QCAspect('', '', -39.92603216, ''),
+
+    'H_elec'  :   qcdb.vib.QCAspect('', '',   0.00000000, ''),
+    'H_trans' :   qcdb.vib.QCAspect('', '',   0.00236046, ''),
+    'H_rot'   :   qcdb.vib.QCAspect('', '',   0.00141628, ''),
+    'H_vib'   :   qcdb.vib.QCAspect('', '',   0.04801283, ''),
+    'H_corr'  :   qcdb.vib.QCAspect('', '',   0.05178958, ''),
+    'H_tot'   :   qcdb.vib.QCAspect('', '', -39.92508798, ''),
+
+    'G_elec'  :   qcdb.vib.QCAspect('', '',  -0.00000000, ''),
+    'G_trans' :   qcdb.vib.QCAspect('', '',  -0.01391819, ''),
+    'G_rot'   :   qcdb.vib.QCAspect('', '',  -0.00337341, ''),
+    'G_vib'   :   qcdb.vib.QCAspect('', '',   0.04799343, ''),
+    'G_corr'  :   qcdb.vib.QCAspect('', '',   0.03070183, ''),
+    'G_tot'   :   qcdb.vib.QCAspect('', '', -39.94617572, ''),
 }
 
 qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega'])

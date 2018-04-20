@@ -60,6 +60,38 @@ def molecule_get_attr(self, name):
 
 
 @classmethod
+def molecule_from_string(cls,
+                         molstr,
+                         dtype=None,
+                         name=None,
+                         fix_com=None,
+                         fix_orientation=None,
+                         fix_symmetry=None,
+                         return_dict=False,
+                         enable_qm=True,
+                         enable_efp=True,
+                         missing_enabled_return_qm='none',
+                         missing_enabled_return_efp='none',
+                         verbose=1):
+    molrec = qcdb.molparse.from_string(molstr=molstr,
+                                       dtype=dtype,
+                                       name=name,
+                                       fix_com=fix_com,
+                                       fix_orientation=fix_orientation,
+                                       fix_symmetry=fix_symmetry,
+                                       return_processed=False,
+                                       enable_qm=enable_qm,
+                                       enable_efp=enable_efp,
+                                       missing_enabled_return_qm=missing_enabled_return_qm,
+                                       missing_enabled_return_efp=missing_enabled_return_efp,
+                                       verbose=verbose)
+    if return_dict:
+        return core.Molecule.from_dict(molrec['qm']), molrec
+    else:
+        return core.Molecule.from_dict(molrec['qm'])
+
+
+@classmethod
 def molecule_from_arrays(cls,
                          geom=None,
                          elea=None,
@@ -72,18 +104,19 @@ def molecule_from_arrays(cls,
                          name=None,
                          units='Angstrom',
                          input_units_to_au=None,
-                         fix_com=False,
-                         fix_orientation=False,
+                         fix_com=None,
+                         fix_orientation=None,
                          fix_symmetry=None,
 
                          fragment_separators=None,
-                         #fragment_types=None,
                          fragment_charges=None,
                          fragment_multiplicities=None,
 
                          molecular_charge=None,
                          molecular_multiplicity=None,
 
+                         missing_enabled_return='error',
+                         tooclose=0.1,
                          zero_ghost_fragments=False,
                          nonphysical=False,
                          mtol=1.e-3,
@@ -120,11 +153,13 @@ def molecule_from_arrays(cls,
                                            fix_orientation=fix_orientation,
                                            fix_symmetry=fix_symmetry,
                                            fragment_separators=fragment_separators,
-                                           #fragment_types=fragment_types,
                                            fragment_charges=fragment_charges,
                                            fragment_multiplicities=fragment_multiplicities,
                                            molecular_charge=molecular_charge,
                                            molecular_multiplicity=molecular_multiplicity,
+                                           domain='qm',
+                                           missing_enabled_return=missing_enabled_return,
+                                           tooclose=tooclose,
                                            zero_ghost_fragments=zero_ghost_fragments,
                                            nonphysical=nonphysical,
                                            mtol=mtol,
@@ -154,6 +189,7 @@ def dynamic_variable_bind(cls):
     cls.B787 = qcdb.Molecule._raw_B787
     cls.scramble = qcdb.Molecule._raw_scramble
     cls.from_arrays = molecule_from_arrays
+    cls.from_string = molecule_from_string
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance

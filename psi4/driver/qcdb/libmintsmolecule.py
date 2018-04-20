@@ -83,7 +83,7 @@ class LibmintsMolecule(object):
     FullPointGroupList = ["ATOM", "C_inf_v", "D_inf_h", "C1", "Cs", "Ci", \
         "Cn", "Cnv", "Cnh", "Sn", "Dn", "Dnd", "Dnh", "Td", "Oh", "Ih"]
 
-    def __init__(self, psi4molstr=None):
+    def __init__(self):
         """Initialize Molecule object from string in psi4 format"""
 
         # <<< Basic Molecule Information >>>
@@ -104,6 +104,8 @@ class LibmintsMolecule(object):
         self.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
         # Whether this molecule has at least one zmatrix entry
         self.zmat = False  # TODO None?
+        # Whether this molecule has at least one Cartesian entry
+        self.cart = False  # TODO None?
 
         # <<< Coordinates >>>
 
@@ -160,9 +162,6 @@ class LibmintsMolecule(object):
         self.equiv = 0
         # Atom to unique atom mapping array (length natom)
         self.PYatom_to_unique = 0
-
-        if psi4molstr:
-            self.create_molecule_from_string(psi4molstr)
 
     # <<< Simple Methods for Basic Molecule Information >>>
 
@@ -323,6 +322,23 @@ class LibmintsMolecule(object):
         """
         self.zmat = tf
 
+    def has_cartesian(self):
+        """Gets the presence of any Cartesian entry
+
+        >>> print H2OH2O.has_cartesian()
+        False
+
+        """
+        return self.cart
+
+    def set_has_cartesian(self, tf):
+        """Sets the presence of any Cartesian entry
+
+        >>> H2OH2O.set_has_cartesian(True)
+
+        """
+        self.cart = tf
+
     # <<< Simple Methods for Coordinates >>>
 
     def Z(self, atom):
@@ -408,7 +424,9 @@ class LibmintsMolecule(object):
         mass = float(mass)
         if mass < 0.0:
             raise ValidationError('Mass must be positive: {}'.format(mass))
+        self.lock_frame = False
         self.full_atoms[atom].set_mass(mass)
+        self.full_atoms[atom].set_A(-1)
 
     def symbol(self, atom):
         """Returns the cleaned up label of the atom (C2 => C, H4 = H) (0-indexed)
@@ -1204,6 +1222,7 @@ class LibmintsMolecule(object):
                 text += "    no_reorient\n"
             if force_c1:
                 text += "    symmetry c1\n"
+            #text += "    {} {}\n    --\n".format(self.molecular_charge(), self.multiplicity())  # uncomment after py-side mol parsing
 
             # append atoms and coordentries and fragment separators with charge and multiplicity
             Pfr = 0
@@ -1276,6 +1295,7 @@ class LibmintsMolecule(object):
 
         """
         self.lock_frame = False
+        self.set_has_cartesian(True)
 
         if label == '':
             label = symbol
@@ -1289,6 +1309,104 @@ class LibmintsMolecule(object):
         else:
             raise ValidationError("Molecule::add_atom: Adding atom on top of an existing atom.")
 
+    def add_unsettled_atom(self, Z, anchor, symbol, mass=0.0, charge=0.0, label='', A=-1):
+        self.lock_frame = False
+        numEntries = len(anchor)
+        currentAtom = len(self.full_atoms)
+
+        # handle cartesians
+        if numEntries == 3:
+            self.set_has_cartesian(True)
+            xval = self.get_coord_value(anchor[0])
+            yval = self.get_coord_value(anchor[1])
+            zval = self.get_coord_value(anchor[2])
+            self.full_atoms.append(CartesianEntry(currentAtom, Z, charge,
+                mass, symbol, label, A,
+                xval, yval, zval))
+        
+        # handle first line of Zmat
+        elif numEntries == 0:
+            self.set_has_zmatrix(True)
+            self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
+                mass, symbol, label, A))
+        
+        # handle second line of Zmat
+        elif numEntries == 2:
+            self.set_has_zmatrix(True)
+        
+            rTo = self.get_anchor_atom(anchor[0], '')
+            if rTo >= currentAtom:
+                raise ValidationError("Error finding defined anchor atom {}".format(anchor[0]))
+            rval = self.get_coord_value(anchor[1])
+        
+            if self.full_atoms[rTo].symbol() == 'X':
+                rval.set_fixed(True)
+        
+            self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
+                mass, symbol, label, A,
+                self.full_atoms[rTo], rval))
+        
+        # handle third line of Zmat
+        elif numEntries == 4:
+            self.set_has_zmatrix(True)
+        
+            rTo = self.get_anchor_atom(anchor[0], '')
+            if rTo >= currentAtom:
+                raise ValidationError("Error finding defined anchor atom {}".format(anchor[0]))
+            aTo = self.get_anchor_atom(anchor[2], '')
+            if aTo >= currentAtom:
+                raise ValidationError("Error finding defined anchor atom {}".format(anchor[2]))
+            if aTo == rTo:
+                raise ValidationError("Error: atom used multiple times")
+            rval = self.get_coord_value(anchor[1])
+            aval = self.get_coord_value(anchor[3])
+        
+            if self.full_atoms[rTo].symbol() == 'X':
+                rval.set_fixed(True)
+            if self.full_atoms[aTo].symbol() == 'X':
+                aval.set_fixed(True)
+        
+            self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
+                mass, symbol, label, A,
+                self.full_atoms[rTo], rval,
+                self.full_atoms[aTo], aval))
+        
+        # handle fourth line of Zmat
+        elif numEntries == 6:
+            self.set_has_zmatrix(True)
+        
+            rTo = self.get_anchor_atom(anchor[0], '')
+            if rTo >= currentAtom:
+                raise ValidationError("Error finding defined anchor atom {}".format(anchor[0]))
+            aTo = self.get_anchor_atom(anchor[2], '')
+            if aTo >= currentAtom:
+                raise ValidationError("Error finding defined anchor atom {}".format(anchor[2]))
+            dTo = self.get_anchor_atom(anchor[4], '')
+            if dTo >= currentAtom:
+                raise ValidationError("Error finding defined anchor atom {}".format(anchor[4]))
+            if aTo == rTo or rTo == dTo or aTo == dTo:  # for you star wars fans
+                raise ValidationError("Error: atom used multiple times")
+        
+            rval = self.get_coord_value(anchor[1])
+            aval = self.get_coord_value(anchor[3])
+            dval = self.get_coord_value(anchor[5])
+        
+            if self.full_atoms[rTo].symbol() == 'X':
+                rval.set_fixed(True)
+            if self.full_atoms[aTo].symbol() == 'X':
+                aval.set_fixed(True)
+            if self.full_atoms[dTo].symbol() == 'X':
+                dval.set_fixed(True)
+        
+            self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
+                mass, symbol, label, A,
+                self.full_atoms[rTo], rval,
+                self.full_atoms[aTo], aval,
+                self.full_atoms[dTo], dval))
+        
+        else:
+            raise ValidationError('Illegal geometry specification (neither Cartesian nor Z-Matrix)')
+        
     def atom_entry(self, atom):
         """Returns the CoordEntry for an atom."""
         return self.atoms[atom]
@@ -1353,6 +1471,11 @@ class LibmintsMolecule(object):
             # Update geometry might have added some atoms, delete them to be safe.
             self.atoms = []
         # TODO outfile
+
+    def set_geometry_variable(self, vstr, val):
+        """Plain assigns the vlue val to the variable labeled string in the list of geometry variables."""
+
+        self.geometry_variables[vstr.upper()] = val
 
     def get_anchor_atom(self, vstr, line):
         """Attempts to interpret a string *vstr* as an atom specifier in
@@ -1669,8 +1792,8 @@ class LibmintsMolecule(object):
         2
 
         """
-        if self.nfragments() == 0:
-            raise ValidationError("Molecule::update_geometry: There are no fragments in this molecule.")
+        if self.nallatom() == 0:
+            print("Warning: There are no quantum mechanical atoms in this molecule.")
 
         # Idempotence condition
         if self.lock_frame:
@@ -3082,10 +3205,10 @@ class LibmintsMolecule(object):
             tmp = self.equiv[i][jmaxzero]
             self.equiv[i][jmaxzero] = self.equiv[i][0]
             self.equiv[i][0] = tmp
-        #print 'nunique', self.PYnunique
-        #print 'nequiv', self.nequiv
-        #print 'atom_to_unique', self.PYatom_to_unique
-        #print 'equiv', self.equiv
+        #print('nunique', self.PYnunique)
+        #print('nequiv', self.nequiv)
+        #print('atom_to_unique', self.PYatom_to_unique)
+        #print('equiv', self.equiv)
 
     def sym_label(self):
         """Returns the symmetry label"""

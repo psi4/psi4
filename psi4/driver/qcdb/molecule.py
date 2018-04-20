@@ -30,6 +30,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 import os
+import sys
 import hashlib
 import collections
 
@@ -37,8 +38,12 @@ import numpy as np
 
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
+from .util import unnp
 from . import molparse
 from .bfs import BFS
+
+if sys.version_info >= (3,0):
+    basestring = str
 
 
 class Molecule(LibmintsMolecule):
@@ -51,13 +56,100 @@ class Molecule(LibmintsMolecule):
     `psi4.core.Molecule` itself.
 
     """
+    def __init__(self,
+                 molinit=None,
+                 dtype=None,
 
-    def __init__(self, psi4molstr=None):
+                 geom=None,
+                 elea=None,
+                 elez=None,
+                 elem=None,
+                 mass=None,
+                 real=None,
+                 elbl=None,
+
+                 name=None,
+                 units='Angstrom',
+                 input_units_to_au=None,
+                 fix_com=None,
+                 fix_orientation=None,
+                 fix_symmetry=None,
+
+                 fragment_separators=None,
+                 fragment_charges=None,
+                 fragment_multiplicities=None,
+
+                 molecular_charge=None,
+                 molecular_multiplicity=None,
+
+                 enable_qm=True,
+                 enable_efp=True,
+                 missing_enabled_return_qm='none',
+                 missing_enabled_return_efp='none',
+
+                 missing_enabled_return='error',
+                 tooclose=0.1,
+                 zero_ghost_fragments=False,
+                 nonphysical=False,
+                 mtol=1.e-3,
+                 verbose=1):
         """Initialize Molecule object from LibmintsMolecule"""
-        super(Molecule, self).__init__(psi4molstr=psi4molstr)
+        super(Molecule, self).__init__()
+
+        if molinit is not None or geom is not None:
+            if isinstance(molinit, dict):
+                molrec = molinit
+
+            elif isinstance(molinit, basestring):
+                compound_molrec = molparse.from_string(
+                    molstr=molinit,
+                    dtype=dtype,
+                    name=name,
+                    fix_com=fix_com,
+                    fix_orientation=fix_orientation,
+                    fix_symmetry=fix_symmetry,
+                    return_processed=False,
+                    enable_qm=enable_qm,
+                    enable_efp=enable_efp,
+                    missing_enabled_return_qm=missing_enabled_return_qm,
+                    missing_enabled_return_efp=missing_enabled_return_efp,
+                    verbose=verbose)
+                molrec = compound_molrec['qm']
+
+            elif molinit is None and geom is not None:
+                molrec = molparse.from_arrays(
+                    geom=geom,
+                    elea=elea,
+                    elez=elez,
+                    elem=elem,
+                    mass=mass,
+                    real=real,
+                    elbl=elbl,
+                    name=name,
+                    units=units,
+                    input_units_to_au=input_units_to_au,
+                    fix_com=fix_com,
+                    fix_orientation=fix_orientation,
+                    fix_symmetry=fix_symmetry,
+                    fragment_separators=fragment_separators,
+                    fragment_charges=fragment_charges,
+                    fragment_multiplicities=fragment_multiplicities,
+                    molecular_charge=molecular_charge,
+                    molecular_multiplicity=molecular_multiplicity,
+                    domain='qm',
+                    missing_enabled_return=missing_enabled_return,
+                    tooclose=tooclose,
+                    zero_ghost_fragments=zero_ghost_fragments,
+                    nonphysical=nonphysical,
+                    mtol=mtol,
+                    verbose=verbose)
+
+            # ok, got the molrec dictionary; now build the thing
+            self._internal_from_dict(molrec, verbose=verbose)
 
         # The comment line
         self.tagline = ""
+
 
     def __str__(self):
         text = """  ==> qcdb Molecule %s <==\n\n""" % (self.name())
@@ -1137,9 +1229,39 @@ class Molecule(LibmintsMolecule):
 
         return geom, mass, elem, elez, uniq
 
-    @classmethod
-    def from_arrays(cls,
-                    geom=None,
+    @staticmethod
+    def from_string(molstr,
+                    dtype=None,
+                    name=None,
+                    fix_com=None,
+                    fix_orientation=None,
+                    fix_symmetry=None,
+                    return_dict=False,
+                    enable_qm=True,
+                    enable_efp=True,
+                    missing_enabled_return_qm='none',
+                    missing_enabled_return_efp='none',
+                    verbose=1):
+        molrec = molparse.from_string(molstr=molstr,
+                                      dtype=dtype,
+                                      name=name,
+                                      fix_com=fix_com,
+                                      fix_orientation=fix_orientation,
+                                      fix_symmetry=fix_symmetry,
+                                      return_processed=False,
+                                      enable_qm=enable_qm,
+                                      enable_efp=enable_efp,
+                                      missing_enabled_return_qm=missing_enabled_return_qm,
+                                      missing_enabled_return_efp=missing_enabled_return_efp,
+                                      verbose=verbose)
+        if return_dict:
+            return Molecule.from_dict(molrec['qm']), molrec
+        else:
+            return Molecule.from_dict(molrec['qm'])
+
+
+    @staticmethod
+    def from_arrays(geom=None,
 
                     elea=None,
                     elez=None,
@@ -1156,13 +1278,14 @@ class Molecule(LibmintsMolecule):
                     fix_symmetry=None,
 
                     fragment_separators=None,
-                    #fragment_types=None,
                     fragment_charges=None,
                     fragment_multiplicities=None,
 
                     molecular_charge=None,
                     molecular_multiplicity=None,
 
+                    missing_enabled_return='error',
+                    tooclose=0.1,
                     zero_ghost_fragments=False,
                     nonphysical=False,
                     mtol=1.e-3,
@@ -1204,11 +1327,13 @@ class Molecule(LibmintsMolecule):
                                       fix_orientation=fix_orientation,
                                       fix_symmetry=fix_symmetry,
                                       fragment_separators=fragment_separators,
-                                      #fragment_types=fragment_types,
                                       fragment_charges=fragment_charges,
                                       fragment_multiplicities=fragment_multiplicities,
                                       molecular_charge=molecular_charge,
                                       molecular_multiplicity=molecular_multiplicity,
+                                      domain='qm',
+                                      missing_enabled_return=missing_enabled_return,
+                                      tooclose=tooclose,
                                       zero_ghost_fragments=zero_ghost_fragments,
                                       nonphysical=nonphysical,
                                       mtol=mtol,
@@ -1218,10 +1343,12 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
+
     @staticmethod
-    def _raw_to_dict(self, force_c1=False, force_au=False):
+    def _raw_to_dict(self, force_c1=False, force_au=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
+        self.update_geometry()
         molrec = {}
 
         if self.name() not in ['', 'default']:
@@ -1300,48 +1427,73 @@ class Molecule(LibmintsMolecule):
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
         try:
-            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
         except ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
             print('Have you been meddling with chgmult?')
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
-            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, **molrec)
+            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
 
+        if not np_out:
+            validated_molrec = unnp(validated_molrec)
+
         return validated_molrec
 
     @classmethod
-    def from_dict(cls, molrec):
+    def from_dict(cls, molrec, verbose=1):
+    
+        mol = cls()
+        mol._internal_from_dict(molrec=molrec, verbose=verbose)
+        return mol
+
+
+    def _internal_from_dict(self, molrec, verbose=1):
         """Constructs instance from fully validated and defaulted dictionary `molrec`."""
 
         # Compromises for qcdb.Molecule
         # * molecular_charge is int, not float
         # * fragment_charges are int, not float
 
-        mol = cls()
-        mol.lock_frame = False
+        self.lock_frame = False
 
         if 'name' in molrec:
-            mol.set_name(molrec['name'])
+            self.set_name(molrec['name'])
 
-        mol.set_units(molrec['units'])
+        self.set_units(molrec['units'])
         if 'input_units_to_au' in molrec:
-            mol.set_input_units_to_au(molrec['input_units_to_au'])
+            self.set_input_units_to_au(molrec['input_units_to_au'])
 
-        geom = molrec['geom'].reshape((-1, 3))
-        nat = geom.shape[0]
-        for iat in range(nat):
-            x, y, z = geom[iat]
-            label = molrec['elem'][iat] + molrec['elbl'][iat]
-            Z = molrec['elez'][iat] * int(molrec['real'][iat])
-            mol.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
-                         Z, label, molrec['elea'][iat])
-            # TODO charge and 2nd elez site
-            # TODO real back to type Ghost?
+        if 'geom_unsettled' in molrec:
+            nat = len(molrec['geom_unsettled'])
+            unsettled = True
+
+            for iat in range(nat):
+                entry = molrec['geom_unsettled'][iat]
+                label = molrec['elem'][iat] + molrec['elbl'][iat]
+                Z = molrec['elez'][iat] * int(molrec['real'][iat])
+                self.add_unsettled_atom(Z, entry, molrec['elem'][iat], molrec['mass'][iat],
+                                       Z, label, molrec['elea'][iat])
+            for var in molrec['variables']:
+                self.set_geometry_variable(var[0], var[1])
+
+        else:
+            geom = np.array(molrec['geom']).reshape((-1, 3))
+            nat = geom.shape[0]
+            unsettled = False
+
+            for iat in range(nat):
+                x, y, z = geom[iat]
+                label = molrec['elem'][iat] + molrec['elbl'][iat]
+                Z = molrec['elez'][iat] * int(molrec['real'][iat])
+                self.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
+                             Z, label, molrec['elea'][iat])
+                # TODO charge and 2nd elez site
+                # TODO real back to type Ghost?
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
         fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
@@ -1349,21 +1501,25 @@ class Molecule(LibmintsMolecule):
         fragment_separators = np.append(fragment_separators, nat)
         fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
 
-        mol.set_fragment_pattern(fragments,
+        self.set_fragment_pattern(fragments,
                                  ['Real'] * len(fragments),
                                  [int(f) for f in molrec['fragment_charges']],
                                  molrec['fragment_multiplicities'])
 
-        mol.set_molecular_charge(int(molrec['molecular_charge']))
-        mol.set_multiplicity(molrec['molecular_multiplicity'])
+        self.set_molecular_charge(int(molrec['molecular_charge']))
+        self.set_multiplicity(molrec['molecular_multiplicity'])
 
-        mol.fix_com(molrec['fix_com'])
-        mol.fix_orientation(molrec['fix_orientation'])
+        self.fix_com(molrec['fix_com'])
+        self.fix_orientation(molrec['fix_orientation'])
         if 'fix_symmetry' in molrec:
-            mol.reset_point_group(molrec['fix_symmetry'])
+            self.reset_point_group(molrec['fix_symmetry'])
 
-        mol.update_geometry()
-        return mol
+        ## hack to prevent update_geometry termination upon no atoms
+        #if nat == 0:
+        #    self.set_lock_frame(True)
+
+        if not unsettled:
+            self.update_geometry()
 
     @staticmethod
     def _raw_BFS(self,
