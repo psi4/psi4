@@ -134,12 +134,8 @@ void CIWavefunction::setup_dfmcscf_ints() {
 
     /// Build JK object
     size_t effective_memory = Process::environment.get_memory() * 0.8 / sizeof(double);
-    if (options_.get_str("SCF_TYPE") == "DF") {
-        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, effective_memory);
-    } else {
-        jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
-    }
-    
+    jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, effective_memory);
+
     jk_->set_do_J(true);
     jk_->set_do_K(true);
     jk_->set_memory(effective_memory);
@@ -370,11 +366,7 @@ void CIWavefunction::setup_mcscf_ints() {
     ints_->set_print(0);
 
     // Conventional JK build
-    if (options_.get_str("SCF_TYPE") == "DF") {
-        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
-    } else {
-        jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
-    }
+    jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->set_do_J(true);
     jk_->set_do_K(true);
     jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
@@ -395,10 +387,8 @@ void CIWavefunction::setup_mcscf_ints_ao() {
 #else
         throw PSIEXCEPTION("GTFock was not compiled in this version");
 #endif
-    } else if (scf_type == "DF") {
+    } else if (scf_type == "DF" or scf_type == "CD" or scf_type == "PK" or scf_type == "DIRECT" or scf_type == "OUT_OF_CORE") {
         jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
-    } else if (scf_type == "CD" or scf_type == "PK" or scf_type == "DIRECT" or scf_type == "OUT_OF_CORE") {
-        jk_ = JK::build_JK(this->basisset(), BasisSet::zero_ao_basis_set(), options_);
     } else {
         outfile->Printf("\n Please select GTFock, DF, CD or PK for use with MCSCF_TYPE AO");
         throw PSIEXCEPTION("AO_CASSCF does not work with your SCF_TYPE");
@@ -529,7 +519,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
         Cl.push_back(std::get<2>(D_vec[d]));
         Cr.push_back(std::get<3>(D_vec[d]));
     }
-    
+
     jk_->set_do_K(false);
     /// Step 2:  Compute the Coulomb build using these density
     timer_on("CIWave: AO MCSCF Integral Transformation Fock build");
