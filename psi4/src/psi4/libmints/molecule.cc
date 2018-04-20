@@ -2876,10 +2876,6 @@ int Molecule::ftrue_atomic_number(int atom) const {
 }
 
 void Molecule::set_basis_all_atoms(const std::string &name, const std::string &type) {
-    std::string uc = to_upper_copy(name);
-    // These aren't really basis set specifications, just return.
-    if (uc == "SPECIAL" || uc == "GENERAL" || uc == "CUSTOM") return;
-
     for (std::shared_ptr<CoordEntry> atom : full_atoms_) {
         atom->set_basisset(name, type);
     }
