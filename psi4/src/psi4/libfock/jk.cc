@@ -74,39 +74,36 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "DF") {
+    } else if (jk_type == "DISK_DF") {
+        DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
         
-        if(options.get_str("DF_SCF_TYPE") == "DFJK") {
-            DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
-            
-            if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-            if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-            if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-            if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-            if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
-            if (options["DF_FITTING_CONDITION"].has_changed())
-                jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
-            if (options["DF_INTS_NUM_THREADS"].has_changed())
-                jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        if (options["DF_FITTING_CONDITION"].has_changed())
+            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-            return std::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
         
-        } else if (options.get_str("DF_SCF_TYPE") == "SYMM_JK") {
-            MemDFJK* jk = new MemDFJK(primary, auxiliary);
+    } else if (jk_type == "MEM_DF") {
+        MemDFJK* jk = new MemDFJK(primary, auxiliary);
 
-            if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-            if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-            if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-            if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-            //if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
-            if (options["DF_FITTING_CONDITION"].has_changed())
-                jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
-            if (options["DF_INTS_NUM_THREADS"].has_changed())
-                jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+        //if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        if (options["DF_FITTING_CONDITION"].has_changed())
+            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-            return std::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
-        }
     } else if (jk_type == "PK") {
         PKJK* jk = new PKJK(primary, options);
 
@@ -144,7 +141,45 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options) {
+    // if SCF_TYPE == DF, you are using the wrong constructor and get an error next constructor in
     return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
+}
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                                 Options& options, bool do_wK, size_t doubles) {
+
+    std::string jk_type = options.get_str("SCF_TYPE");
+    if (do_wK and jk_type == "MEM_DF") { // throw instead of auto fallback?
+        std::stringstream error;
+        error << "Cannot do SCF_TYPE == 'MEM_DF' and do_wK (yet), please set SCF_TYPE = 'DISK_DF' ";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    
+    if (jk_type == "DF") {
+
+        // logic for MemDFJK vs DiskDFJK
+        if (do_wK) {
+            return build_JK(primary, auxiliary, options, "DISK_DF");
+        } else {
+
+            // conservative estimate for size of 3-center AOs
+            size_t nbf = primary->nbf();
+            size_t naux = auxiliary->nbf();
+            size_t required = naux * nbf * nbf; // + nthreads_ * nbf * nbf TODO
+            
+            if (required > doubles) {
+                return build_JK(primary, auxiliary, options, "DISK_DF");
+            } else {
+                return build_JK(primary, auxiliary, options, "MEM_DF");
+            }
+        }
+
+    } else { // otherwise it has already been set
+        return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
+    }
+
+    // I am not passing wK and doubles to the next constructor FIXME??
+    // instead, I will let the already existing sets do their job
+    // this requires do_wK and doubles to be passed here and set
 }
 SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");

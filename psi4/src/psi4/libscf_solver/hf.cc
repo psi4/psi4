@@ -428,6 +428,7 @@ void HF::integrals()
 
     // Build the JK from options, symmetric type
     // try {
+    size_t effective_memory = (size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L));
     if(options_.get_str("SCF_TYPE") == "GTFOCK") {
       #ifdef HAVE_JK_FACTORY
         //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
@@ -443,7 +444,7 @@ void HF::integrals()
       #endif
     } else {
         if (options_.get_str("SCF_TYPE") == "DF"){
-            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
+            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_, false, effective_memory);
         } else {
             jk_ = JK::build_JK(get_basisset("ORBITAL"), BasisSet::zero_ao_basis_set(), options_);
 
@@ -453,7 +454,7 @@ void HF::integrals()
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
-    jk_->set_memory((size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
+    jk_->set_memory(effective_memory);
 
     // DFT sometimes needs custom stuff
     // K matrices

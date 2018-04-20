@@ -429,8 +429,6 @@ void USAPT0::fock_terms() {
 
     // => JK Object <= //
 
-    std::shared_ptr<JK> jk = JK::build_JK(primary_, jkfit_, options_);
-
     // TODO: Recompute exactly how much memory is needed
     int naA = Cocca_A_->ncol();
     int nbA = Coccb_A_->ncol();
@@ -447,8 +445,11 @@ void USAPT0::fock_terms() {
     if (jk_memory < 0L) {
         throw PSIEXCEPTION("Too little static memory for USAPT::fock_terms");
     }
-    jk->set_memory((size_t)jk_memory);
+    
+    std::shared_ptr<JK> jk = JK::build_JK(primary_, jkfit_, options_, false, (size_t)jk_memory);
 
+    jk->set_memory((size_t)jk_memory);
+    
     // ==> Generalized Fock Source Terms [Elst/Exch] <== //
 
     // => Steric Interaction Density Terms (T) <= //

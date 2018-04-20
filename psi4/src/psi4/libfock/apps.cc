@@ -129,12 +129,12 @@ void RBase::preiterations()
             jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
             outfile->Printf("    Reusing JK object from SCF.\n\n");
         } else {
+            size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             if (options_.get_str("SCF_TYPE") == "DF"){
-                jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
+                jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, effective_memory);
             } else {
                 jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
             }
-            size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();
         }
