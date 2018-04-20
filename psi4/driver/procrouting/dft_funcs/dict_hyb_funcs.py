@@ -460,10 +460,11 @@ funcs.append({
 funcs.append({
     "name": "M05",
     "x_functionals": {
-        "HYB_MGGA_X_M05": {}
+        "HYB_MGGA_X_M05" : {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 0.28
     },
     "c_functionals": {
         "MGGA_C_M05": {}
@@ -477,10 +478,11 @@ funcs.append({
     "name": "M05-2X",
     "alias": ["M052X"],
     "x_functionals": {
-        "HYB_MGGA_X_M05_2X": {}
+        "HYB_MGGA_X_M05_2X": {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 0.56
     },
     "c_functionals": {
         "MGGA_C_M05_2X": {}
@@ -492,10 +494,11 @@ funcs.append({
 funcs.append({
     "name": "M06",
     "x_functionals": {
-        "HYB_MGGA_X_M06": {}
+        "HYB_MGGA_X_M06": {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 0.27
     },
     "c_functionals": {
         "MGGA_C_M06": {}
@@ -509,10 +512,11 @@ funcs.append({
     "name": "M06-2X",
     "alias": ["M062X"],
     "x_functionals": {
-        "HYB_MGGA_X_M06_2X": {}
+        "HYB_MGGA_X_M06_2X": {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 0.54
     },
     "c_functionals": {
         "MGGA_C_M06_2X": {}
@@ -526,10 +530,11 @@ funcs.append({
     "name": "M06-HF",
     "alias": ["M06HF"],
     "x_functionals": {
-        "HYB_MGGA_X_M06_HF": {}
+        "HYB_MGGA_X_M06_HF": {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 1.00
     },
     "c_functionals": {
         "MGGA_C_M06_HF": {}
@@ -543,10 +548,11 @@ funcs.append({
     "name": "M08-HX",
     "alias": ["M08HX"],
     "x_functionals": {
-        "HYB_MGGA_X_M08_HX": {}
+        "HYB_MGGA_X_M08_HX": {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 0.5223
     },
     "c_functionals": {
         "MGGA_C_M08_HX": {}
@@ -560,10 +566,11 @@ funcs.append({
     "name": "M08-SO",
     "alias": ["M08SO"],
     "x_functionals": {
-        "HYB_MGGA_X_M08_SO": {}
+        "HYB_MGGA_X_M08_SO": {
+            "use_libxc": True
+        }
     },
     "x_hf": {
-        "alpha": 0.5679
     },
     "c_functionals": {
         "MGGA_C_M08_SO": {}
