@@ -50,7 +50,7 @@ DCFTSolver::compute_energy()
 {
     double total_energy = 0.0;
 
-    if (options_.get_str("SCF_TYPE") == "DF" || options_.get_str("SCF_TYPE") == "CD" || options_.get_str("SCF_TYPE") == "DIRECT"){
+    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || options_.get_str("SCF_TYPE") == "CD" || options_.get_str("SCF_TYPE") == "DIRECT"){
         if (!options_["DCFT_TYPE"].has_changed())
             options_.set_global_str("DCFT_TYPE", "DF");
         else if (options_.get_str("DCFT_TYPE") == "CONV")

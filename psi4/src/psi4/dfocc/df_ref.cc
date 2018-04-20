@@ -98,7 +98,7 @@ void DFOCC::df_ref() {
     long int ntri_cd = function_pairs.size();
 
     // read integrals from disk if they were generated in the SCF
-    if (options_.get_str("SCF_TYPE") == "DF") {
+    if (options_.get_str("SCF_TYPE") == "DISK_DF") {
         outfile->Printf("\tReading DF integrals from disk ...\n");
         std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
         std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
@@ -130,7 +130,7 @@ void DFOCC::df_ref() {
             timer_off("Form J");
         }  // end if (dertype == "FIRST")
 
-    }  // end if ( options_.get_str("SCF_TYPE") == "DF" )
+    }  // end if ( options_.get_str("SCF_TYPE") == "DISK_DF" )
 
     // read integrals from disk if they were generated in the SCF
     else if (options_.get_str("SCF_TYPE") == "CD") {

@@ -441,7 +441,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         }
         next_Gpi = PSIO_ZERO;
 
-        if(options_.get_str("SCF_TYPE") == "DF"){
+        if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos){
             /*
              *  The DF algorithm
              */

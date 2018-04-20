@@ -181,7 +181,7 @@ void OCCWave::common_init()
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
         // SCF TYPE
-        if (options_.get_str("SCF_TYPE") == "DF" || options_.get_str("SCF_TYPE") == "CD") {
+        if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || options_.get_str("SCF_TYPE") == "CD") {
             if (dertype != "NONE") {
                 throw PSIEXCEPTION("Analytic gradients are NOT available for SCF_TYPE=DF/CD !");
             }

@@ -247,6 +247,7 @@ SharedMatrix SADGuess::form_D_AO() {
     for (int A = 0; A < nunique; A++) {
         int index = atomic_indices[A];
         if (print_ > 1) outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:", A, index);
+
         if (options_.get_str("SAD_SCF_TYPE") == "DF") {
             get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], nelec[index], nhigh[index],
                                    atomic_D[A]);
@@ -447,8 +448,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     // Need a very special auxiliary basis here
     if (options_.get_str("SAD_SCF_TYPE") == "DF") {
-        DiskDFJK* dfjk = new DiskDFJK(bas, fit);
-        dfjk->set_unit(PSIF_SAD);
+        MemDFJK* dfjk = new MemDFJK(bas, fit);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(dfjk);
