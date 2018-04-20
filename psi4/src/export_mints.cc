@@ -240,17 +240,17 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         unsettled = true;
 
         for (size_t iat=0; iat<nat; ++iat) {
-            std::string symbol = elem[iat];
-            std::string label = elbl[iat];
+            std::string symbol = elem.at(iat);
+            std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_unsettled_atom(elez[iat] * real[iat],
-                                    geom_unsettled[iat],
+            mol->add_unsettled_atom(elez.at(iat) * real.at(iat),
+                                    geom_unsettled.at(iat),
                                     symbol,
-                                    mass[iat],
-                                    elez[iat] * real[iat],
+                                    mass.at(iat),
+                                    elez.at(iat) * real.at(iat),
                                     symbol + label,
-                                    elea[iat]);
+                                    elea.at(iat));
         }
 
         std::vector <std::pair <std::string, double>> variables = molrec["variables"].cast<std::vector <std::pair <std::string, double>>>();
@@ -263,17 +263,17 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         unsettled = false;
 
         for (size_t iat=0; iat<nat; ++iat) {
-            std::string symbol = elem[iat];
-            std::string label = elbl[iat];
+            std::string symbol = elem.at(iat);
+            std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_atom(elez[iat] * real[iat],
-                          geom[3*iat], geom[3*iat+1], geom[3*iat+2],
+            mol->add_atom(elez.at(iat) * real.at(iat),
+                          geom.at(3*iat), geom.at(3*iat+1), geom.at(3*iat+2),
                           symbol,
-                          mass[iat],
-                          elez[iat] * real[iat],
+                          mass.at(iat),
+                          elez.at(iat) * real.at(iat),
                           symbol + label,
-                          elea[iat]);
+                          elea.at(iat));
         }
     }
 
