@@ -39,7 +39,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/dftensor.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #include "jk.h"
 
@@ -63,7 +63,7 @@ MemDFJK::~MemDFJK() {}
 
 void MemDFJK::common_init() {
     
-    dfh_ = std::make_shared<DF_Helper>(primary_, auxiliary_);
+    dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
 
 }
 
@@ -82,7 +82,7 @@ void MemDFJK::preiterations() {
     dfh_->set_omega(omega_);  
  
     // we need to prepare the AOs here, and that's it.
-    // DF_Helper takes care of all the housekeeping
+    // DFHelper takes care of all the housekeeping
 
     // TODO add wK integrals.
     if (!do_wK_) {

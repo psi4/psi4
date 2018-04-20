@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef three_index_df_helper
-#define three_index_df_helper
+#ifndef three_index_dfhelper
+#define three_index_dfhelper
 
 #include "psi4/psi4-dec.h"
 #include <psi4/libmints/typedefs.h>
@@ -46,10 +46,10 @@ class Matrix;
 class ERISieve;
 class TwoBodyAOInt;
 
-class PSI_API DF_Helper {
+class PSI_API DFHelper {
    public:
-    DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
-    ~DF_Helper();
+    DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
+    ~DFHelper();
 
     /// 
     /// Specify workflow for transforming and contracting integrals
@@ -63,7 +63,7 @@ class PSI_API DF_Helper {
     std::string get_method() { return method_; }
 
     /// 
-    /// Tells DF_Helper how many threads to spawn in parallel regions
+    /// Tells DFHelper how many threads to spawn in parallel regions
     /// @param nthreads specifies number of threads to use
     /// oversubcription is possible
     ///
@@ -71,7 +71,7 @@ class PSI_API DF_Helper {
     size_t get_nthreads() { return nthreads_; }
 
     /// 
-    /// Indicates the memory (in doubles) DF_Helper gets to control
+    /// Indicates the memory (in doubles) DFHelper gets to control
     /// @doubles specifies number of doubles given for memory 
     /// defaults to 256,000,000 (2.04GB)
     ///
@@ -84,8 +84,8 @@ class PSI_API DF_Helper {
     /// 
     /// Sets the AO integrals to in-core. (Defaults to TRUE)
     /// @param core True to indicate in-core
-    /// DF_Helper will keep track of this memory.
-    /// NOTE: DF_Helper will automatically revert to on-disk if the 
+    /// DFHelper will keep track of this memory.
+    /// NOTE: DFHelper will automatically revert to on-disk if the 
     /// sizes of the AO integrals is greater than 90% of the memory 
     /// it controlls.
     ///
@@ -95,7 +95,7 @@ class PSI_API DF_Helper {
     /// 
     /// Sets the MO integrals to in-core. (Defaults to FALSE)
     /// @param core True to indicate in-core
-    /// DF_Helper will not keep track of this memory. 
+    /// DFHelper will not keep track of this memory. 
     /// If a seg fault occurs, the MOs were bigger than you thought! 
     ///
     void set_MO_core(bool core) { MO_core_ = core; }

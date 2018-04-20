@@ -36,7 +36,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 using namespace psi;
 using namespace std;
@@ -1926,7 +1926,7 @@ void USAPT0::mp2_terms() {
 
     // => Memory <= //
 
-    // => Integrals from DF_Helper <= //
+    // => Integrals from DFHelper <= //
 
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Caocca_A_);
@@ -1961,7 +1961,7 @@ void USAPT0::mp2_terms() {
         ncol += (size_t)mat->ncol();
     }
 
-    auto dfh(std::make_shared<DF_Helper>(primary_, mp2fit_));
+    auto dfh(std::make_shared<DFHelper>(primary_, mp2fit_));
     dfh->set_memory(memory_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);

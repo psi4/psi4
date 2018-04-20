@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "df_helper.h"
+#include "dfhelper.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/liboptions/liboptions.h"
@@ -53,7 +53,7 @@
 
 namespace psi {
 
-DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
+DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
     primary_ = primary;
     aux_ = aux;
     nao_ = primary_->nbf();
@@ -61,13 +61,13 @@ DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
     prepare_blocking();
 }
 
-DF_Helper::~DF_Helper() {
+DFHelper::~DFHelper() {
     
     clear_all();
 
 }
 
-void DF_Helper::prepare_blocking() {
+void DFHelper::prepare_blocking() {
     Qshells_ = aux_->nshell();
     pshells_ = primary_->nshell();
 
@@ -88,7 +88,7 @@ void DF_Helper::prepare_blocking() {
     for (size_t i = 0; i < pshells_; i++) pshell_aggs_[i + 1] = pshell_aggs_[i] + primary_->shell(i).nfunction();
 }
 
-void DF_Helper::AO_filename_maker(size_t i) {
+void DFHelper::AO_filename_maker(size_t i) {
     
     std::string name = start_filename("dfh.AO" + std::to_string(i));
     AO_names_.push_back(name);
@@ -96,7 +96,7 @@ void DF_Helper::AO_filename_maker(size_t i) {
 
 }
 
-std::string DF_Helper::start_filename(std::string start){
+std::string DFHelper::start_filename(std::string start){
     
     #include <cstdlib>
     std::string name = PSIOManager::shared_object()->get_default_path();
@@ -106,7 +106,7 @@ std::string DF_Helper::start_filename(std::string start){
     return name;
 }
 
-void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op) {
+void DFHelper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op) {
     
     std::string pfilename = start_filename("dfh.p" + name);
     std::string  filename = start_filename("dfh"   + name);
@@ -141,10 +141,10 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
 
 }
 
-void DF_Helper::initialize() {
+void DFHelper::initialize() {
     
     if(debug_) {
-        outfile->Printf("Entering DF_Helper::initialize\n");
+        outfile->Printf("Entering DFHelper::initialize\n");
     }
     
     timer_on("DFH: initialize()");
@@ -152,7 +152,7 @@ void DF_Helper::initialize() {
     // have the algorithm specified before init
     if (method_.compare("DIRECT") && method_.compare("STORE") && method_.compare("DIRECT_iaQ")) {
         std::stringstream error;
-        error << "DF_Helper:initialize: specified method (" << method_ << ") is incorrect";
+        error << "DFHelper:initialize: specified method (" << method_ << ") is incorrect";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -163,7 +163,7 @@ void DF_Helper::initialize() {
     // did we get enough memory for at least the metric?
     if(naux_ * naux_ > memory_) {
         std::stringstream error;
-        error << "DF_Helper: The Coulomb metric requires at least " << naux_ * naux_ * 8 / 1e9 
+        error << "DFHelper: The Coulomb metric requires at least " << naux_ * naux_ * 8 / 1e9 
               << "GB.  We need that plus some more, but we only got " << memory_ * 8 / 1e9 << "GB.";
         throw PSIEXCEPTION(error.str().c_str());
     }
@@ -184,7 +184,7 @@ void DF_Helper::initialize() {
         prepare_AO_core();
         if (do_wK_) { 
             std::stringstream error;
-            error << "DF_Helper: not equipped to do wK";
+            error << "DFHelper: not equipped to do wK";
             throw PSIEXCEPTION(error.str().c_str());
             // TODO prepare_AO_wK_core();
         }
@@ -192,7 +192,7 @@ void DF_Helper::initialize() {
         prepare_AO();
         if (do_wK_) {
             std::stringstream error;
-            error << "DF_Helper: not equipped to do wK"; 
+            error << "DFHelper: not equipped to do wK"; 
             throw PSIEXCEPTION(error.str().c_str());
             // TODO prepare_AO_wK();
         }
@@ -202,10 +202,10 @@ void DF_Helper::initialize() {
     timer_off("DFH: initialize()");
     
     if(debug_) {
-        outfile->Printf("Exiting DF_Helper::initialize\n");
+        outfile->Printf("Exiting DFHelper::initialize\n");
     }
 }
-void DF_Helper::AO_core() {
+void DFHelper::AO_core() {
 
     // total size of sparse AOs
     size_t required = ( do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
@@ -221,17 +221,17 @@ void DF_Helper::AO_core() {
 
     if (memory_ * fraction_of_memory < required) {
         AO_core_ = false;
-        outfile->Printf("\n    ==> DF_Helper memory announcement <==\n");
+        outfile->Printf("\n    ==> DFHelper memory announcement <==\n");
         std::stringstream ann;
-        ann << "        Turning off in-core AOs.  DF_Helper needs at least (";
+        ann << "        Turning off in-core AOs.  DFHelper needs at least (";
         ann << required / fraction_of_memory * 8 / 1e9 << "GB), but it only got (" << 
             memory_ * 8 / 1e9 << "GB)\n";
         outfile->Printf(ann.str().c_str());
     }
 
 }
-void DF_Helper::print_header() {
-    outfile->Printf("\n    ==> DF_Helper <==\n");
+void DFHelper::print_header() {
+    outfile->Printf("\n    ==> DFHelper <==\n");
     outfile->Printf("      nao           = %zu\n", nao_);
     outfile->Printf("      naux          = %zu\n", naux_);
     outfile->Printf("      Scwarz cutoff = %E\n", cutoff_);
@@ -247,7 +247,7 @@ void DF_Helper::print_header() {
     outfile->Printf("\n\n");
 }
 
-void DF_Helper::prepare_sparsity() {
+void DFHelper::prepare_sparsity() {
     // prep info vectors
     std::vector<double> shell_max_vals(pshells_ * pshells_, 0.0);
     std::vector<double> fun_max_vals(nao_ * nao_, 0.0);
@@ -364,7 +364,7 @@ void DF_Helper::prepare_sparsity() {
     }
 }
 
-void DF_Helper::prepare_AO() {
+void DFHelper::prepare_AO() {
 
     // prepare eris
     size_t rank = 0;
@@ -444,7 +444,7 @@ void DF_Helper::prepare_AO() {
     }
 }
 
-void DF_Helper::prepare_AO_core() {
+void DFHelper::prepare_AO_core() {
 
     // get each thread an eri object
     size_t rank = 0;
@@ -519,7 +519,7 @@ void DF_Helper::prepare_AO_core() {
     }
     // outfile->Printf("\n    ==> End AO Blocked Construction <==");
 }
-std::pair<size_t, size_t> DF_Helper::pshell_blocks_for_AO_build(const size_t mem, size_t symm,
+std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem, size_t symm,
                                                                 std::vector<std::pair<size_t, size_t>>& b) {
     size_t full_3index = (symm ? big_skips_[nao_] : 0);
     size_t constraint, end, begin, current, block_size, tmpbs, total, count, largest;
@@ -550,7 +550,7 @@ std::pair<size_t, size_t> DF_Helper::pshell_blocks_for_AO_build(const size_t mem
         if (constraint > mem || i == pshells_ - 1) {
             if (count == 1 && i != pshells_ - 1) {
                 std::stringstream error;
-                error << "DF_Helper: not enough memory for (p shell) AO blocking!"
+                error << "DFHelper: not enough memory for (p shell) AO blocking!"
                       << " required memory: " << constraint * 8 / 1e9 << "GB.";
                 throw PSIEXCEPTION(error.str().c_str());
             }
@@ -573,7 +573,7 @@ std::pair<size_t, size_t> DF_Helper::pshell_blocks_for_AO_build(const size_t mem
     // returns pair(largest buffer size, largest block size)
     return std::make_pair(largest, block_size);
 }
-std::pair<size_t, size_t> DF_Helper::Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
+std::pair<size_t, size_t> DFHelper::Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                                  std::vector<std::pair<size_t, size_t>>& b) {
     size_t extra = (hold_met_ ? naux_ * naux_ : 0);
     size_t end, begin, current, block_size, tmpbs, total, count, largest;
@@ -600,7 +600,7 @@ std::pair<size_t, size_t> DF_Helper::Qshell_blocks_for_transform(const size_t me
         if (constraint > mem || i == Qshells_ - 1) {
             if (count == 1 && i != Qshells_ - 1) {
                 std::stringstream error;
-                error << "DF_Helper: not enough memory for transformation blocking!";
+                error << "DFHelper: not enough memory for transformation blocking!";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (constraint > mem) {
@@ -622,7 +622,7 @@ std::pair<size_t, size_t> DF_Helper::Qshell_blocks_for_transform(const size_t me
     // returns pair(largest buffer size, largest block size)
     return std::make_pair(largest, block_size);
 }
-std::tuple<size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
+std::tuple<size_t, size_t> DFHelper::Qshell_blocks_for_JK_build(
     std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc, bool lr_symmetric) {
 
     // strategy here:
@@ -657,7 +657,7 @@ std::tuple<size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
         if (constraint > memory_ || i == Qshells_ - 1) {
             if (count == 1 && i != Qshells_ - 1) {
                 std::stringstream error;
-                error << "DF_Helper: not enough memory for JK blocking!";
+                error << "DFHelper: not enough memory for JK blocking!";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (constraint > memory_) {
@@ -679,7 +679,7 @@ std::tuple<size_t, size_t> DF_Helper::Qshell_blocks_for_JK_build(
     return std::make_tuple(largest, block_size);
 }
 
-FILE* DF_Helper::stream_check(std::string filename, std::string op) {
+FILE* DFHelper::stream_check(std::string filename, std::string op) {
     
     if (file_streams_.count(filename) == 0) {
         file_streams_[filename] = std::make_shared<Stream>(filename, op);
@@ -688,7 +688,7 @@ FILE* DF_Helper::stream_check(std::string filename, std::string op) {
     return file_streams_[filename]->get_stream(op);
 }
 
-DF_Helper::StreamStruct::StreamStruct(std::string filename, std::string op, bool activate){
+DFHelper::StreamStruct::StreamStruct(std::string filename, std::string op, bool activate){
 
     op_ = op;
     filename_ = filename;
@@ -699,18 +699,18 @@ DF_Helper::StreamStruct::StreamStruct(std::string filename, std::string op, bool
 
 }
 
-DF_Helper::StreamStruct::StreamStruct(){
+DFHelper::StreamStruct::StreamStruct(){
     
 }
 
-DF_Helper::StreamStruct::~StreamStruct(){
+DFHelper::StreamStruct::~StreamStruct(){
     
     fflush(fp_);
     fclose(fp_);
     std::remove(filename_.c_str());
 }
 
-FILE* DF_Helper::StreamStruct::get_stream(std::string op){
+FILE* DFHelper::StreamStruct::get_stream(std::string op){
    
     if (op.compare(op_)) {
         change_stream(op); 
@@ -724,7 +724,7 @@ FILE* DF_Helper::StreamStruct::get_stream(std::string op){
     return fp_;
 }
         
-void DF_Helper::StreamStruct::change_stream(std::string op){
+void DFHelper::StreamStruct::change_stream(std::string op){
 
     if(open_) {
         close_stream();
@@ -734,14 +734,14 @@ void DF_Helper::StreamStruct::change_stream(std::string op){
 
 }
     
-void DF_Helper::StreamStruct::close_stream(){
+void DFHelper::StreamStruct::close_stream(){
         
     fflush(fp_);
     fclose(fp_);
 
 }    
 
-void DF_Helper::put_tensor(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
+void DFHelper::put_tensor(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                            std::pair<size_t, size_t> i2, std::string op) {
     // collapse to 2D, assume file has form (i1 | i2 i3)
     size_t A2 = std::get<2>(sizes_[file]);
@@ -769,7 +769,7 @@ void DF_Helper::put_tensor(std::string file, double* b, std::pair<size_t, size_t
         }
     }
 }
-void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1, const size_t stop1, const size_t start2,
+void DFHelper::put_tensor(std::string file, double* Mp, const size_t start1, const size_t stop1, const size_t start2,
                            const size_t stop2, std::string op) {
     size_t a0 = stop1 - start1 + 1;
     size_t a1 = stop2 - start2 + 1;
@@ -788,7 +788,7 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1, co
         size_t s = fwrite(&Mp[0], sizeof(double), a0 * a1, fp);
         if (!s) {
             std::stringstream error;
-            error << "DF_Helper:put_tensor: write error";
+            error << "DFHelper:put_tensor: write error";
             throw PSIEXCEPTION(error.str().c_str());
         }
     } else {
@@ -797,7 +797,7 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1, co
             size_t s = fwrite(&Mp[i * a1], sizeof(double), a1, fp);
             if (!s) {
                 std::stringstream error;
-                error << "DF_Helper:put_tensor: write error";
+                error << "DFHelper:put_tensor: write error";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             // advance stream
@@ -807,12 +807,12 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1, co
         size_t s = fwrite(&Mp[(a0 - 1) * a1], sizeof(double), a1, fp);
         if (!s) {
             std::stringstream error;
-            error << "DF_Helper:put_tensor: write error";
+            error << "DFHelper:put_tensor: write error";
             throw PSIEXCEPTION(error.str().c_str());
         }
     }
 }
-void DF_Helper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op) {
+void DFHelper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op) {
     // begin stream
     FILE* fp = stream_check(file, op);
 
@@ -823,11 +823,11 @@ void DF_Helper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t 
     size_t s = fwrite(&Mp[0], sizeof(double), size, fp);
     if (!s) {
         std::stringstream error;
-        error << "DF_Helper:put_tensor_AO: write error";
+        error << "DFHelper:put_tensor_AO: write error";
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
-void DF_Helper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t start) {
+void DFHelper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t start) {
     // begin stream
     FILE* fp = stream_check(file, "rb");
 
@@ -838,11 +838,11 @@ void DF_Helper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t 
     size_t s = fread(&Mp[0], sizeof(double), size, fp);
     if (!s) {
         std::stringstream error;
-        error << "DF_Helper:get_tensor_AO: read error";
+        error << "DFHelper:get_tensor_AO: read error";
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
-void DF_Helper::get_tensor_(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
+void DFHelper::get_tensor_(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                             std::pair<size_t, size_t> i2) {
     // has this integral been transposed?
     std::tuple<size_t, size_t, size_t> sizes;
@@ -874,7 +874,7 @@ void DF_Helper::get_tensor_(std::string file, double* b, std::pair<size_t, size_
         }
     }
 }
-void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
+void DFHelper::get_tensor_(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
                             const size_t stop2) {
     size_t a0 = stop1 - start1 + 1;
     size_t a1 = stop2 - start2 + 1;
@@ -898,7 +898,7 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, co
         size_t s = fread(&b[0], sizeof(double), a0 * a1, fp);
         if (!s) {
             std::stringstream error;
-            error << "DF_Helper:get_tensor: read error";
+            error << "DFHelper:get_tensor: read error";
             throw PSIEXCEPTION(error.str().c_str());
         }
     } else {
@@ -907,14 +907,14 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, co
             size_t s = fread(&b[i * a1], sizeof(double), a1, fp);
             if (!s) {
                 std::stringstream error;
-                error << "DF_Helper:get_tensor: read error";
+                error << "DFHelper:get_tensor: read error";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             // advance stream
             s = fseek(fp, st * sizeof(double), SEEK_CUR);
             if (s) {
                 std::stringstream error;
-                error << "DF_Helper:get_tensor: read error";
+                error << "DFHelper:get_tensor: read error";
                 throw PSIEXCEPTION(error.str().c_str());
             }
         }
@@ -922,13 +922,13 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1, co
         size_t s = fread(&b[(a0 - 1) * a1], sizeof(double), a1, fp);
         if (!s) {
             std::stringstream error;
-            error << "DF_Helper:get_tensor: read error";
+            error << "DFHelper:get_tensor: read error";
             throw PSIEXCEPTION(error.str().c_str());
         }
     }
 }
 
-void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+void DFHelper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     
     // Here, we compute dense AO integrals in the Qpq memory layout.
@@ -991,7 +991,7 @@ void DF_Helper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t st
     }
 }
 
-void DF_Helper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
+void DFHelper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = Qshell_aggs_[start];
     size_t end = Qshell_aggs_[stop + 1] - 1;
@@ -1046,7 +1046,7 @@ void DF_Helper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t s
         }
     }
 }
-void DF_Helper::compute_sparse_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
+void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
@@ -1104,7 +1104,7 @@ void DF_Helper::compute_sparse_pQq_blocking_p(const size_t start, const size_t s
         }
     }
 }
-void DF_Helper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
+void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                                   std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
@@ -1162,7 +1162,7 @@ void DF_Helper::compute_sparse_pQq_blocking_p_symm(const size_t start, const siz
         }
     }
 }
-void DF_Helper::grab_AO(const size_t start, const size_t stop, double* Mp) {
+void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     size_t begin = Qshell_aggs_[start];
     size_t end = Qshell_aggs_[stop + 1] - 1;
     size_t block_size = end - begin + 1;
@@ -1176,14 +1176,14 @@ void DF_Helper::grab_AO(const size_t start, const size_t stop, double* Mp) {
         sta += size;
     }
 }
-void DF_Helper::prepare_metric_core() {
+void DFHelper::prepare_metric_core() {
     timer_on("DFH: metric contsruction");
     auto Jinv = std::make_shared<FittingMetric>(aux_, true);
     Jinv->form_fitting_metric();
     metrics_[1.0] = Jinv->get_metric();
     timer_off("DFH: metric contsruction");
 }
-double* DF_Helper::metric_prep_core(double pow) {
+double* DFHelper::metric_prep_core(double pow) {
     bool on = false;
     double power;
     for (auto& kv : metrics_) {
@@ -1203,7 +1203,7 @@ double* DF_Helper::metric_prep_core(double pow) {
     }
     return metrics_[power]->pointer()[0];
 }
-void DF_Helper::prepare_metric() {
+void DFHelper::prepare_metric() {
     
     // construct metric
     auto Jinv = std::make_shared<FittingMetric>(aux_, true);
@@ -1222,7 +1222,7 @@ void DF_Helper::prepare_metric() {
     std::string putf = std::get<0>(files_[filename]);
     put_tensor(putf, Mp, 0, naux_ - 1, 0, naux_ - 1, "wb");
 }
-std::string DF_Helper::return_metfile(double pow) {
+std::string DFHelper::return_metfile(double pow) {
     bool on = 0;
     std::string key;
     for (size_t i = 0; i < metric_keys_.size() && !on; i++) {
@@ -1236,7 +1236,7 @@ std::string DF_Helper::return_metfile(double pow) {
     if (!on) key = compute_metric(pow);
     return key;
 }
-std::string DF_Helper::compute_metric(double pow) {
+std::string DFHelper::compute_metric(double pow) {
     // ensure J
     if (std::fabs(pow - 1.0) < 1e-13)
         prepare_metric();
@@ -1264,14 +1264,14 @@ std::string DF_Helper::compute_metric(double pow) {
     return return_metfile(pow);
 }
 
-void DF_Helper::metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, 
+void DFHelper::metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, 
     size_t blocking_index, size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump) {
 
     for (size_t i = 0, count = 1; i < blocking_index; i++, count++) {
         if (total_mem < count * block_sizes || i == blocking_index - 1) {
             if (count == 1 && i != blocking_index - 1) {
                 std::stringstream error;
-                error << "DF_Helper:contract_metric: not enough memory, ";
+                error << "DFHelper:contract_metric: not enough memory, ";
                 error << "needs at least " << ((count * block_sizes) * memory_factor + memory_bump) / 1e9 * 8. << "GB";
                 throw PSIEXCEPTION(error.str().c_str());
             }
@@ -1288,7 +1288,7 @@ void DF_Helper::metric_contraction_blocking(std::vector<std::pair<size_t, size_t
 
 }
 
-void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
+void DFHelper::contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
     
     std::string getf = std::get<0>(files_[file]);
     std::string putf = std::get<1>(files_[file]);
@@ -1315,7 +1315,7 @@ void DF_Helper::contract_metric_Qpq(std::string file, double* metp, double* Mp, 
     
 }
 
-void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
+void DFHelper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
     
     std::string getf = std::get<0>(files_[file]);
     std::string putf = std::get<1>(files_[file]);
@@ -1376,7 +1376,7 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
     }
 }
 
-void DF_Helper::contract_metric_AO_core(double* Qpq, double* metp) {
+void DFHelper::contract_metric_AO_core(double* Qpq, double* metp) {
 // loop and contract
 #pragma omp parallel for num_threads(nthreads_) schedule(guided)
     for (size_t j = 0; j < nao_; j++) {
@@ -1386,7 +1386,7 @@ void DF_Helper::contract_metric_AO_core(double* Qpq, double* metp) {
     }
 }
 
-void DF_Helper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end) {
+void DFHelper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end) {
     // loop and contract
     size_t startind = symm_big_skips_[begin];
 #pragma omp parallel for num_threads(nthreads_) schedule(guided)
@@ -1413,35 +1413,35 @@ void DF_Helper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t b
         }
     }
 }
-void DF_Helper::add_space(std::string key, SharedMatrix M) {
+void DFHelper::add_space(std::string key, SharedMatrix M) {
     size_t a0 = M->rowspi()[0];
     size_t a1 = M->colspi()[0];
 
     if (!built_) {
-        throw PSIEXCEPTION("DF_Helper:add_space: call initialize() before adding spaces!");
+        throw PSIEXCEPTION("DFHelper:add_space: call initialize() before adding spaces!");
     } else if (a0 != nao_) {
         std::stringstream error;
-        error << "DF_Helper:add_space: illegal space (" << key << "), primary axis is not nao";
+        error << "DFHelper:add_space: illegal space (" << key << "), primary axis is not nao";
         throw PSIEXCEPTION(error.str().c_str());
     } else if (spaces_.find(key) != spaces_.end()) {
         if (a1 != std::get<1>(spaces_[key])) {
             std::stringstream error;
-            error << "DF_Helper:add_space: illegal space (" << key << "), new space has incorrect dimension!";
+            error << "DFHelper:add_space: illegal space (" << key << "), new space has incorrect dimension!";
             throw PSIEXCEPTION(error.str().c_str());
         }
     }
     sorted_spaces_.push_back(std::make_pair(key, a1));
     spaces_[key] = std::make_tuple(M, a1);
 }
-void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2, std::string order) {
+void DFHelper::add_transformation(std::string name, std::string key1, std::string key2, std::string order) {
     
     if (spaces_.find(key1) == spaces_.end()) {
         std::stringstream error;
-        error << "DF_Helper:add_transformation: first space (" << key1 << "), is not in space list!";
+        error << "DFHelper:add_transformation: first space (" << key1 << "), is not in space list!";
         throw PSIEXCEPTION(error.str().c_str());
     } else if (spaces_.find(key2) == spaces_.end()) {
         std::stringstream error;
-        error << "DF_Helper:add_transformation: second space (" << key2 << "), is not in space list!";
+        error << "DFHelper:add_transformation: second space (" << key2 << "), is not in space list!";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -1462,7 +1462,7 @@ void DF_Helper::add_transformation(std::string name, std::string key1, std::stri
     filename_maker(name, naux_, a1, a2, op);
 
 }
-void DF_Helper::clear_spaces() {
+void DFHelper::clear_spaces() {
     
     // clear spaces
     spaces_.clear();
@@ -1476,7 +1476,7 @@ void DF_Helper::clear_spaces() {
     transformed_ = false;
 }
 
-void DF_Helper::clear_all() {
+void DFHelper::clear_all() {
 
     // invokes destructors, eliminating all files.
     file_streams_.clear();
@@ -1490,7 +1490,7 @@ void DF_Helper::clear_all() {
     transf_core_.clear();
 }
 
-std::pair<size_t, size_t> DF_Helper::identify_order() {
+std::pair<size_t, size_t> DFHelper::identify_order() {
     // Identify order of transformations to use strategic intermediates
     std::sort(sorted_spaces_.begin(), sorted_spaces_.end(),
               [](const std::pair<std::string, size_t>& left, const std::pair<std::string, size_t>& right) {
@@ -1537,10 +1537,10 @@ std::pair<size_t, size_t> DF_Helper::identify_order() {
     ordered_ = true;
     return std::make_pair(largest, maximum);
 }
-void DF_Helper::print_order() {
+void DFHelper::print_order() {
     size_t o = order_.size();
     size_t b = bspace_.size();
-    outfile->Printf("\n     ==> DF_Helper:--Begin Transformations Information <==\n\n");
+    outfile->Printf("\n     ==> DFHelper:--Begin Transformations Information <==\n\n");
     outfile->Printf("   Transformation order:\n");
     for (size_t i = 0; i < o; i++) {
         outfile->Printf("         %s: (%s, %s)\n", order_[i].c_str(), std::get<0>(transf_[order_[i]]).c_str(),
@@ -1555,18 +1555,18 @@ void DF_Helper::print_order() {
         outfile->Printf("%zu", strides_[i]);
         if (i < b - 1) outfile->Printf(", ");
     }
-    outfile->Printf("\n\n     ==> DF_Helper:--End Transformations Information <==\n\n");
+    outfile->Printf("\n\n     ==> DFHelper:--End Transformations Information <==\n\n");
 }
 
 
-void DF_Helper::transform() {
+void DFHelper::transform() {
     
     if(debug_) {
-        outfile->Printf("Entering DF_Helper::transform\n");
+        outfile->Printf("Entering DFHelper::transform\n");
     }
 
     timer_on("DFH: transform()");
-    // outfile->Printf("\n     ==> DF_Helper:--Begin Transformations <==\n\n");
+    // outfile->Printf("\n     ==> DFHelper:--Begin Transformations <==\n\n");
 
     size_t nthreads = nthreads_;
     size_t naux = naux_;
@@ -1763,7 +1763,7 @@ void DF_Helper::transform() {
         }
     } // buffers destroyed with std housekeeping
 
-    // outfile->Printf("\n     ==> DF_Helper:--End Transformations (disk)<==\n\n");
+    // outfile->Printf("\n     ==> DFHelper:--End Transformations (disk)<==\n\n");
 
     // transformations complete, time for metric contractions
      
@@ -1874,11 +1874,11 @@ void DF_Helper::transform() {
     transformed_ = true;
     
     if(debug_) {
-        outfile->Printf("Exiting DF_Helper::transform\n");
+        outfile->Printf("Exiting DFHelper::transform\n");
     }
 }
 
-void DF_Helper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size,  
+void DFHelper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size,  
     double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers){
     
     size_t rank = 0;
@@ -1907,7 +1907,7 @@ void DF_Helper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_
     }
 } 
 
-void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,  
+void DFHelper::put_transformations_Qpq(int naux, int begin, int end,  
     int wsize, int bsize, double* Fp, int ind, bool bleft){
     
     // incoming transformed integrals to this function are in a Qpq format. 
@@ -1932,7 +1932,7 @@ void DF_Helper::put_transformations_Qpq(int naux, int begin, int end,
 
 }
 
-void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock_size, int bcount, 
+void DFHelper::put_transformations_pQq(int naux, int begin, int end, int rblock_size, int bcount, 
     int wsize, int bsize, double* Np, double* Fp, int ind, bool bleft){
     
     // incoming transformed integrals to this function are in a pQq format. 
@@ -2070,7 +2070,7 @@ void DF_Helper::put_transformations_pQq(int naux, int begin, int end, int rblock
 }
 
 // Fill using a pointer, be cautious of bounds!!
-void DF_Helper::fill_tensor(std::string name, double* b) {
+void DFHelper::fill_tensor(std::string name, double* b) {
     check_file_key(name);
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
@@ -2078,7 +2078,7 @@ void DF_Helper::fill_tensor(std::string name, double* b) {
 
     fill_tensor(name, b, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1) {
+void DFHelper::fill_tensor(std::string name, double* b, std::vector<size_t> a1) {
     check_file_key(name);
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
@@ -2086,7 +2086,7 @@ void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1)
 
     fill_tensor(name, b, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2) {
+void DFHelper::fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2) {
     check_file_key(name);
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
@@ -2094,21 +2094,21 @@ void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1,
 
     fill_tensor(name, b, a1, a2, {0, std::get<2>(sizes)});
 }
-void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
+void DFHelper::fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
                             std::vector<size_t> a3) {
     if (a1.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 0 tensor indexing vector has " << a1.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 0 tensor indexing vector has " << a1.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
     if (a2.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 1 tensor indexing vector has " << a2.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 1 tensor indexing vector has " << a2.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
     if (a3.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 2 tensor indexing vector has " << a3.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 2 tensor indexing vector has " << a3.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -2124,28 +2124,28 @@ void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1,
 }
 
 // Fill using a pre-allocated SharedMatrix
-void DF_Helper::fill_tensor(std::string name, SharedMatrix M) {
+void DFHelper::fill_tensor(std::string name, SharedMatrix M) {
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     fill_tensor(name, M, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1) {
+void DFHelper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1) {
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     
     fill_tensor(name, M, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {
+void DFHelper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     fill_tensor(name, M, a1, a2, {0, std::get<2>(sizes)});
 }
-void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> t0, std::vector<size_t> t1,
+void DFHelper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> t0, std::vector<size_t> t1,
                             std::vector<size_t> t2) {
     std::string filename = std::get<1>(files_[name]);
     // has this integral been transposed?
@@ -2154,17 +2154,17 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t
 
     if (t0.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 0 tensor indexing vector has " << t0.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 0 tensor indexing vector has " << t0.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
     if (t1.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 1 tensor indexing vector has " << t1.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 1 tensor indexing vector has " << t1.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
     if (t2.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 2 tensor indexing vector has " << t2.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 2 tensor indexing vector has " << t2.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -2211,28 +2211,28 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t
 }
 
 // Return a SharedMatrix
-SharedMatrix DF_Helper::get_tensor(std::string name) {
+SharedMatrix DFHelper::get_tensor(std::string name) {
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     return get_tensor(name, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> a1) {
+SharedMatrix DFHelper::get_tensor(std::string name, std::vector<size_t> a1) {
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     return get_tensor(name, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> a1, std::vector<size_t> a2) {
+SharedMatrix DFHelper::get_tensor(std::string name, std::vector<size_t> a1, std::vector<size_t> a2) {
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     return get_tensor(name, a1, a2, {0, std::get<2>(sizes)});
 }
-SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> t0, std::vector<size_t> t1,
+SharedMatrix DFHelper::get_tensor(std::string name, std::vector<size_t> t0, std::vector<size_t> t1,
                                    std::vector<size_t> t2) {
     // has this integral been transposed?
     std::string filename = std::get<1>(files_[name]);
@@ -2241,17 +2241,17 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> t0, std
 
     if (t0.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 0 tensor indexing vector has " << t0.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 0 tensor indexing vector has " << t0.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
     if (t1.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 1 tensor indexing vector has " << t1.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 1 tensor indexing vector has " << t1.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
     if (t2.size() != 2) {
         std::stringstream error;
-        error << "DF_Helper:fill_tensor:  axis 2 tensor indexing vector has " << t2.size() << " elements!";
+        error << "DFHelper:fill_tensor:  axis 2 tensor indexing vector has " << t2.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -2300,10 +2300,10 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> t0, std
 }
 
 // Add a disk tensor
-void DF_Helper::add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions) {
+void DFHelper::add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions) {
     if (files_.count(key)) {
         std::stringstream error;
-        error << "DF_Helper:add_disk_tensor:  tensor already exists: (" << key << "!";
+        error << "DFHelper:add_disk_tensor:  tensor already exists: (" << key << "!";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -2311,28 +2311,28 @@ void DF_Helper::add_disk_tensor(std::string key, std::tuple<size_t, size_t, size
 }
 
 // Write to a disk tensor from Sharedmatrix
-void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M) {
+void DFHelper::write_disk_tensor(std::string key, SharedMatrix M) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, M, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a1) {
+void DFHelper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a1) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, M, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {
+void DFHelper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, M, a1, a2, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a0, std::vector<size_t> a1,
+void DFHelper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a0, std::vector<size_t> a1,
                                   std::vector<size_t> a2) {
     // being pythonic ;)
     std::pair<size_t, size_t> i0 = std::make_pair(a0[0], a0[1] - 1);
@@ -2350,28 +2350,28 @@ void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<s
 }
 
 // Write to a disk tensor from pointer, be careful!
-void DF_Helper::write_disk_tensor(std::string key, double* b) {
+void DFHelper::write_disk_tensor(std::string key, double* b) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, b, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0) {
+void DFHelper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, b, a0, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, std::vector<size_t> a1) {
+void DFHelper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, std::vector<size_t> a1) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, b, a0, a1, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, std::vector<size_t> a1,
+void DFHelper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, std::vector<size_t> a1,
                                   std::vector<size_t> a2) {
     // being pythonic ;)
     std::pair<size_t, size_t> i0 = std::make_pair(a0[0], a0[1] - 1);
@@ -2387,14 +2387,14 @@ void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t
     put_tensor(std::get<1>(files_[key]), b, i0, i1, i2, op);
 }
 
-void DF_Helper::check_file_key(std::string name) {
+void DFHelper::check_file_key(std::string name) {
     if (files_.find(name) == files_.end()) {
         std::stringstream error;
-        error << "DF_Helper:get_tensor OR write_tensor: " << name << " not found.";
+        error << "DFHelper:get_tensor OR write_tensor: " << name << " not found.";
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
-void DF_Helper::check_matrix_size(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
+void DFHelper::check_matrix_size(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
                                   std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2) {
     size_t A0 = std::get<1>(t0) - std::get<0>(t0) + 1;
     size_t A1 = (std::get<1>(t1) - std::get<0>(t1) + 1) * (std::get<1>(t2) - std::get<0>(t2) + 1);
@@ -2404,14 +2404,14 @@ void DF_Helper::check_matrix_size(std::string name, SharedMatrix M, std::pair<si
 
     if (A0 * A1 > a0 * a1) {
         std::stringstream error;
-        error << "DF_Helper:get_tensor: your matrix contridicts your tuple sizes when obtaining the (" << name
+        error << "DFHelper:get_tensor: your matrix contridicts your tuple sizes when obtaining the (" << name
               << ") integral.  ";
         error << "you gave me a matrix of size: (" << a0 << "," << a1 << "), but tuple sizes give:(" << A0 << "," << A1
               << ")";
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
-void DF_Helper::check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
+void DFHelper::check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
                                  std::pair<size_t, size_t> t2) {
     size_t sta0 = std::get<0>(t0);
     size_t sto0 = std::get<1>(t0);
@@ -2465,16 +2465,16 @@ void DF_Helper::check_file_tuple(std::string name, std::pair<size_t, size_t> t0,
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
-void DF_Helper::transpose(std::string name, std::tuple<size_t, size_t, size_t> order) {
+void DFHelper::transpose(std::string name, std::tuple<size_t, size_t, size_t> order) {
     if (!files_.count(name)) {
         std::stringstream error;
-        error << "DF_Helper::transpose(): cannot transpose input (" << name << "), name doe not exist!";
+        error << "DFHelper::transpose(): cannot transpose input (" << name << "), name doe not exist!";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
     (MO_core_ ? transpose_core(name, order) : transpose_disk(name, order));
 }
-void DF_Helper::transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order) {
+void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order) {
     size_t a0 = std::get<0>(order);
     size_t a1 = std::get<1>(order);
     size_t a2 = std::get<2>(order);
@@ -2573,7 +2573,7 @@ void DF_Helper::transpose_core(std::string name, std::tuple<size_t, size_t, size
     // keep tsizes_ separate and do not ovwrt sizes_ in case of STORE directive
     tsizes_[filename] = sizes;
 }
-void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order) {
+void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order) {
     size_t a0 = std::get<0>(order);
     size_t a1 = std::get<1>(order);
     size_t a2 = std::get<2>(order);
@@ -2592,7 +2592,7 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
         if ((current * 2 > memory_) || (i == M0 - 1)) {  // 
             if (count == 1 && i != M0 - 1) {
                 std::stringstream error;
-                error << "DF_Helper:transpose_disk: not enough memory.";
+                error << "DFHelper:transpose_disk: not enough memory.";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (i == M0 - 1)
@@ -2732,38 +2732,38 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     files_.erase(new_file);
     tsizes_[filename] = sizes;
 }
-size_t DF_Helper::get_space_size(std::string name) {
+size_t DFHelper::get_space_size(std::string name) {
     if (spaces_.find(name) == spaces_.end()) {
         std::stringstream error;
-        error << "DF_Helper:get_space_size: " << name << " not found.";
+        error << "DFHelper:get_space_size: " << name << " not found.";
         throw PSIEXCEPTION(error.str().c_str());
     }
     return std::get<1>(spaces_[name]);
 }
-size_t DF_Helper::get_tensor_size(std::string name) {
+size_t DFHelper::get_tensor_size(std::string name) {
     if (transf_.find(name) == transf_.end()) {
         std::stringstream error;
-        error << "DF_Helper:get_tensor_size: " << name << " not found.";
+        error << "DFHelper:get_tensor_size: " << name << " not found.";
         throw PSIEXCEPTION(error.str().c_str());
     }
     std::tuple<size_t, size_t, size_t> s = sizes_[std::get<1>(files_[name])];
     return std::get<0>(s) * std::get<1>(s) * std::get<2>(s);
 }
-std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name) {
+std::tuple<size_t, size_t, size_t> DFHelper::get_tensor_shape(std::string name) {
     if (transf_.find(name) == transf_.end()) {
         std::stringstream error;
-        error << "DF_Helper:get_tensor_size: " << name << " not found.";
+        error << "DFHelper:get_tensor_size: " << name << " not found.";
         throw PSIEXCEPTION(error.str().c_str());
     }
     return sizes_[std::get<1>(files_[name])];
 }
-void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
               std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
               std::vector<SharedMatrix> K, size_t max_nocc,
               bool do_J, bool do_K, bool do_wK, bool lr_symmetric) { 
     
     if(debug_) {
-        outfile->Printf("Entering DF_Helper::build_JK\n");
+        outfile->Printf("Entering DFHelper::build_JK\n");
     }
 
     if(do_J || do_K) {
@@ -2778,15 +2778,15 @@ void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
     }
 
     if(debug_) {
-        outfile->Printf("Exiting DF_Helper::build_JK\n");
+        outfile->Printf("Exiting DFHelper::build_JK\n");
     }
 }
-void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, 
                            std::vector<SharedMatrix> K, size_t max_nocc,
                            bool do_J, bool do_K, bool do_wK, bool lr_symmetric) { 
 
-    // outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds <==\n\n");
+    // outfile->Printf("\n     ==> DFHelper:--Begin J/K builds <==\n\n");
     // outfile->Printf("\n     ==> Using the %s directive with AO_CORE = %d <==\n\n", method_.c_str(), AO_core_);
 
     // size checks for C matrices occur in jk.cc
@@ -2887,9 +2887,9 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
 
         bcount += block_size;
     }
-    // outfile->Printf("\n     ==> DF_Helper:--End J/K Builds (disk)<==\n\n");
+    // outfile->Printf("\n     ==> DFHelper:--End J/K Builds (disk)<==\n\n");
 }
-void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
+void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
                                double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount,
                                size_t block_size) {
     size_t nao = nao_;
@@ -2955,13 +2955,13 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
         for (size_t k = 0; k < nao; k++) Jp[k * nao + k] += T2p[k * nao];
     }
 }
-void DF_Helper::fill(double* b, size_t count, double value) {
+void DFHelper::fill(double* b, size_t count, double value) {
     #pragma omp parallel for simd num_threads(nthreads_) schedule(static)
     for (size_t i = 0; i < count; i++){
         b[i] = value;           
     }
 }
-void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
+void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
                           double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size) {
     size_t nao = nao_;
     size_t naux = naux_;
@@ -3017,7 +3017,7 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
         }
     }
 }
-void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
+void DFHelper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                           std::vector<SharedMatrix> K, double* T1p, double* T2p, double* Mp, size_t bcount,
                           size_t block_size, std::vector<std::vector<double>> C_buffers, bool lr_symmetric) {
     size_t nao = nao_;

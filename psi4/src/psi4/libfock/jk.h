@@ -46,7 +46,7 @@ class ERISieve;
 class TwoBodyAOInt;
 class Options;
 class PSIO;
-class DF_Helper;
+class DFHelper;
 
 namespace pk {
 class PKManager;
@@ -946,15 +946,15 @@ class CDJK : public DFJK {
  * JK implementation using sieved, threaded
  * density-fitted technology
  * under slightly different paradigm than DFJK
- * wraps lib3index/DF_Helper class
+ * wraps lib3index/DFHelper class
  */
 class MemDFJK : public JK {
 
    protected:
     // => DF-Specific stuff <= //
 
-    /// This class wraps a DF_Helper object
-    std::shared_ptr<DF_Helper> dfh_;
+    /// This class wraps a DFHelper object
+    std::shared_ptr<DFHelper> dfh_;
 
     /// Auxiliary basis set
     std::shared_ptr<BasisSet> auxiliary_;

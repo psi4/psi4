@@ -65,7 +65,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ciwave.h"
@@ -152,7 +152,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
 
     /// Build DF object
     // ==> Init DF object <== /
-    dfh_ = std::make_shared<DF_Helper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
+    dfh_ = std::make_shared<DFHelper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
     dfh_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     dfh_->set_method("STORE");
     dfh_->set_nthreads(num_threads_);
