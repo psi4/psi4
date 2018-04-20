@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-project(psi4-core LANGUAGES C CXX VERSION 1.1)
+project(psi4-core
+        LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
 #   for CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES to be populated so
 #   static Fortran add-ons can be linked
@@ -155,14 +156,19 @@ include_directories(src)
 add_subdirectory(src)
 
 # <<<  Version  >>>
+# * computes version from metadata.py and git info
+# * calls cmake to run write_basic_package_version_file
 
 add_custom_target(update_version ALL
                   COMMAND ${PYTHON_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
+                                                            --cmakeout ${CMAKE_CURRENT_BINARY_DIR}/metadata.cmake
+                  COMMAND cmake -DWTO="${CMAKE_CURRENT_BINARY_DIR}/${CMAKECONFIG_INSTALL_DIR}"
+                                -DPN="psi4"
+                                -P ${CMAKE_CURRENT_BINARY_DIR}/metadata.cmake
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   COMMENT "Generating version info")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
-    # TODO absorb some version info into CM variables, write to package, adj psi4ConfigVersion to sort dev
 
 # <<<  Install  >>>
 
@@ -279,10 +285,6 @@ configure_package_config_file(
         psi4Config.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
         INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
-        VERSION ${psi4_VERSION}
-        COMPATIBILITY SameMajorVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
