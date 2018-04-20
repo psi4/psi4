@@ -28,15 +28,13 @@ C_vectors  = [[spaces[names[left]], spaces[names[right]]] for left, right in spa
 # now construct DFJK and symm_JK objects
 
 # DFJK
-psi4.set_options({"SCF_TYPE" : "DF",
-                  "DF_SCF_TYPE" : "DFJK"})
+psi4.set_options({"SCF_TYPE" : "DISK_DF"})
 DFJK = JK.build_JK(primary, aux)
 DFJK.initialize()
 DFJK.print_header()
 
 # symm_JK
-psi4.set_options({"SCF_TYPE" : "DF",
-                  "DF_SCF_TYPE" : "SYMM_JK"})
+psi4.set_options({"SCF_TYPE" : "MEM_DF"})
 SYMM_JK = JK.build_JK(primary, aux)
 SYMM_JK.initialize()
 SYMM_JK.print_header()

@@ -62,41 +62,50 @@ MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 MemDFJK::~MemDFJK() {}
 
 void MemDFJK::common_init() {
-    
+
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
 
 }
 
 void MemDFJK::preiterations() {
-   
+
     // Initialize calls your derived class's preiterations member
     // knobs are set and state variables assigned
 
-    // use previously set state variables to dfh instance 
+    // use previously set state variables to dfh instance
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);
     dfh_->set_method("STORE");
     dfh_->set_fitting_condition(condition_);
     dfh_->set_memory(memory_ - memory_overhead());
     dfh_->set_do_wK(do_wK_);
-    dfh_->set_omega(omega_);  
- 
+    dfh_->set_omega(omega_);
+
     // we need to prepare the AOs here, and that's it.
     // DFHelper takes care of all the housekeeping
 
-    // TODO add wK integrals.
     if (!do_wK_) {
         dfh_->initialize();
     } else {
-           ; // initialize_wK()  
+        // TODO add wK integrals.
+        // DFHelper class will throw
+       ; // initialize_wK()
     }
 
 }
 void MemDFJK::compute_JK() {
-    
-    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, 
+
+    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_,
                    max_nocc(), do_J_, do_K_, do_wK_, lr_symmetric_);
 
+}
+void set_do_wK(bool do_wK){
+    if (do_wK){
+        std::stringstream message;
+        message << "MemDFJK cannot compute wK integrals. Please use DiskDFJK." << std::endl;
+        message << "  If you are not a developer or using Psi4NumPy please report this issue at github.com/psi4/psi4." << std::endl;
+        throw PSIEXCEPTION(message.str());
+    }
 }
 void MemDFJK::postiterations() {
 }

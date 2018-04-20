@@ -59,6 +59,15 @@ JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
+
+    // Throw small DF warning
+    if (jk_type == "DF") {
+        outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
+        outfile->Printf("           Please use the build_JK(primary, auxiliary, options, do_wK, memory)\n");
+        outfile->Printf("           constructor as DiskDFJK non-optimal performance.\n\n");
+        jk_type = "DISK_DF";
+    }
+
     if (jk_type == "CD") {
         CDJK* jk = new CDJK(primary, options.get_double("CHOLESKY_TOLERANCE"));
 
@@ -136,7 +145,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return std::shared_ptr<JK>(jk);
 
     } else {
-        throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
+        std::stringstream message;
+        message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
+        throw PSIEXCEPTION(message.str());
     }
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
