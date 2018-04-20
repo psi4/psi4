@@ -457,6 +457,143 @@ funcs.append({
     "citation": '    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n',
 })
 
+funcs.append({
+    "name": "M05",
+    "x_functionals": {
+        "HYB_MGGA_X_M05": {}
+    },
+    "x_hf": {
+        "alpha": 0.28
+    },
+    "c_functionals": {
+        "MGGA_C_M05": {}
+    },
+    "description": '    M05 Meta-GGA XC Functional\n',
+    "citation": '    Y. Zhao and N. E. Schultz and D. G. Truhlar, J. Chem. Phys. 123, 161103, 2005\n',
+    "doi": '10.1063/1.2126975',
+})
+
+funcs.append({
+    "name": "M05-2X",
+    "alias": ["M052X"],
+    "x_functionals": {
+        "HYB_MGGA_X_M05_2X": {}
+    },
+    "x_hf": {
+        "alpha": 0.56
+    },
+    "c_functionals": {
+        "MGGA_C_M05_2X": {}
+    },
+    "description": '    Heavily Parameterized Hybrid M05-2X Meta-GGA XC Functional\n',
+    "citation": '    Zhao et. al., J. Chem. Theory Comput., 2, 364, 2006\n',
+})
+
+funcs.append({
+    "name": "M06",
+    "x_functionals": {
+        "HYB_MGGA_X_M06": {}
+    },
+    "x_hf": {
+        "alpha": 0.27
+    },
+    "c_functionals": {
+        "MGGA_C_M06": {}
+    },
+    "description": '    M06 Meta-GGA XC Functional\n',
+    "citation": '    Y. Zhao and D. G. Truhlar,  Theor. Chem. Acc., 120, 215, 2008\n',
+    "doi": '10.1007/s00214-007-0310-x',
+})
+
+funcs.append({
+    "name": "M06-2X",
+    "alias": ["M062X"],
+    "x_functionals": {
+        "HYB_MGGA_X_M06_2X": {}
+    },
+    "x_hf": {
+        "alpha": 0.54
+    },
+    "c_functionals": {
+        "MGGA_C_M06_2X": {}
+    },
+    "description": '    Hybrid M06-2X Meta-GGA XC Functional\n',
+    "citation": '    Y. Zhao and D. G. Truhlar,  Theor. Chem. Acc., 120, 215, 2008\n',
+    "doi": '10.1007/s00214-007-0310-x',
+})
+
+funcs.append({
+    "name": "M06-HF",
+    "alias": ["M06HF"],
+    "x_functionals": {
+        "HYB_MGGA_X_M06_HF": {}
+    },
+    "x_hf": {
+        "alpha": 1.00
+    },
+    "c_functionals": {
+        "MGGA_C_M06_HF": {}
+    },
+    "description": '    Minnesota M06-HF Hybrid XC Functional\n',
+    "citation": '    Y. Zhao and D. G. Truhlar, J. Phys. Chem. A, 110, 13126, 2006\n',
+    "doi": '10.1021/jp066479k',
+})
+
+funcs.append({
+    "name": "M08-HX",
+    "alias": ["M08HX"],
+    "x_functionals": {
+        "HYB_MGGA_X_M08_HX": {}
+    },
+    "x_hf": {
+        "alpha": 0.5223
+    },
+    "c_functionals": {
+        "MGGA_C_M08_HX": {}
+    },
+    "description": '    Minnesota M08-HX Hybrid XC Functional\n',
+    "citation": '    Y. Zhao and D. G. Truhlar, J. Chem. Theory Comput., 4, 1849, 2008\n',
+    "doi": '10.1021/ct800246v',
+})
+
+funcs.append({
+    "name": "M08-SO",
+    "alias": ["M08SO"],
+    "x_functionals": {
+        "HYB_MGGA_X_M08_SO": {}
+    },
+    "x_hf": {
+        "alpha": 0.5679
+    },
+    "c_functionals": {
+        "MGGA_C_M08_SO": {}
+    },
+    "description": '    Minnesota M08-SO Hybrid XC Functional\n',
+    "citation": '    Y. Zhao and D. G. Truhlar, J. Chem. Theory Comput., 4, 1849, 2008\n',
+    "doi": '10.1021/ct800246v',
+})
+
+funcs.append({
+    "name": "M11",
+    "x_functionals": {
+        "HYB_MGGA_X_M11": {
+            "alpha": 1.0 - 0.428,
+            "omega": 0.25
+        }
+    },
+    "x_hf": {
+        "alpha": 0.428,
+        "beta": 1.0,
+        "omega": 0.25
+    },
+    "c_functionals": {
+        "MGGA_C_M11": {}
+    },
+    "description": '    M11 Meta-GGA XC Functional\n',
+    "citation": 'R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett., 2, 2810, 2011\n',
+    "cite": '10.1021/jz201170d',
+})
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].upper()] = functional

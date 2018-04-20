@@ -182,6 +182,8 @@ void LibXCFunctional::set_omega(double omega) {
         xc_functional_->cam_omega = omega;
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_D") {
         xc_functional_->cam_omega = omega;
+    } else if (xc_func_name_ == "XC_HYB_MGGA_X_M11") {
+        xc_functional_->cam_omega = omega;
     } else {
         outfile->Printf("LibXCfunctional: set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
         throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");
