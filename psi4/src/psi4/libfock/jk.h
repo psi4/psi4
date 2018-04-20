@@ -71,7 +71,7 @@ class PKManager;
  *
  * This class is abstract, specific instances must be obtained
  * by constructing an object corresponding to the desired
- * algorithm's subclass of JK, e.g., DFJK or DirectJK.
+ * algorithm's subclass of JK, e.g., DiskDFJK or DirectJK.
  *
  * This class is available for symmetric or nonsymmetric C
  * (this refers to C^left = C^right or not). Symmetric or
@@ -351,7 +351,7 @@ class PSI_API JK {
     virtual ~JK();
 
     /**
-    * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
+    * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
     * using knobs in options.
     * Nmat and sym are options for GTFock
     * sym means that all density matrices will be symmetric
@@ -749,12 +749,12 @@ class GTFockJK : public JK {
 };
 
 /**
- * Class DFJK
+ * Class DiskDFJK
  *
  * JK implementation using sieved, threaded
  * density-fitted technology
  */
-class PSI_API DFJK : public JK {
+class PSI_API DiskDFJK : public JK {
    protected:
     // => DF-Specific stuff <= //
 
@@ -846,10 +846,10 @@ class PSI_API DFJK : public JK {
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+    DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
-    virtual ~DFJK();
+    virtual ~DiskDFJK();
 
     /**
      * Method to provide (ia|ia) integrals for
@@ -899,7 +899,7 @@ class PSI_API DFJK : public JK {
  * JK implementation using
  * cholesky decomposition technology
  */
-class CDJK : public DFJK {
+class CDJK : public DiskDFJK {
    protected:
     // the number of cholesky vectors
     long int ncholesky_;
@@ -945,7 +945,7 @@ class CDJK : public DFJK {
  *
  * JK implementation using sieved, threaded
  * density-fitted technology
- * under slightly different paradigm than DFJK
+ * under slightly different paradigm than DiskDFJK
  * wraps lib3index/DFHelper class
  */
 class MemDFJK : public JK {

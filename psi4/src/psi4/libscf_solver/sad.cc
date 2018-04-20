@@ -447,7 +447,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     // Need a very special auxiliary basis here
     if (options_.get_str("SAD_SCF_TYPE") == "DF") {
-        DFJK* dfjk = new DFJK(bas, fit);
+        DiskDFJK* dfjk = new DiskDFJK(bas, fit);
         dfjk->set_unit(PSIF_SAD);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
@@ -620,7 +620,7 @@ void HF::compute_SAD_guess() {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
     }
     if ((options_.get_str("SAD_SCF_TYPE") == "DF") && sad_fitting_basissets_.empty()) {
-        throw PSIEXCEPTION("  SCF guess was set to SAD with DFJK, but sad_fitting_basissets_ was empty!\n\n");
+        throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");
     }
 
     auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, nalpha_, nbeta_, options_);

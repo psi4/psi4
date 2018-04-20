@@ -9,7 +9,7 @@ set(sources_list apps.cc
                  DiskJK.cc
                  PKJK.cc
                  DirectJK.cc
-                 DFJK.cc
+                 DiskDFJK.cc
                  CDJK.cc
                  GTFockJK.cc
                  soscf.cc

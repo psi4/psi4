@@ -2800,7 +2800,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     // we would need to know max_nocc_ beforehand
     // two major advantages would arise from moving this
     // 1. we could predict the blocks used, write them to different files, and improve IO, otherwise
-    // the strided disk reads for the AOs will result in a definite loss to DFJK in the disk-bound realm
+    // the strided disk reads for the AOs will result in a definite loss to DiskDFJK in the disk-bound realm
     // 2. we could allocate the buffers only once, instead of every time compute_JK() is called
     std::vector<std::pair<size_t, size_t>> Qsteps;
     std::tuple<size_t, size_t> info = Qshell_blocks_for_JK_build(Qsteps, max_nocc, lr_symmetric);
