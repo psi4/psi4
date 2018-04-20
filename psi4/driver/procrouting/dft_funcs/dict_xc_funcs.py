@@ -138,6 +138,7 @@ funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"       
 funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"           : {}}, "dispersion": {"type": "d2gr", "params": {'s6': 1.0,  'alpha6': 20.0, 'rs6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010'}})
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})
+funcs.append({"name": "B5050LYP"       , "xc_functionals": {"HYB_GGA_XC_B5050LYP"       : {}}})
 # yapf: enable
 
 functional_list = {}

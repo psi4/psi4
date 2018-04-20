@@ -34,31 +34,6 @@ import copy
 funcs = []
 
 funcs.append({
-    "name": "B5050LYP",
-    "x_functionals": {
-        "LDA_X": {
-            "alpha": 0.08
-        },
-        "GGA_X_B88": {
-            "alpha": 0.42
-        }
-    },
-    "x_hf": {
-        "alpha": 0.50
-    },
-    "c_functionals": {
-        "LDA_C_VWN": {
-            "alpha": 0.19
-        },
-        "GGA_C_LYP": {
-            "alpha": 0.81
-        }
-    },
-    "description": '    B5050LYP Hyb-GGA Exchange-Correlation Functional\n',
-    "citation": '    Y. Shao et. al., J. Chem. Phys., 188, 4807-4818, 2003\n',
-})
-
-funcs.append({
     "name": "wPBE0",
     "alias": ["LC-WPBE0"],
     "x_functionals": {
@@ -398,7 +373,7 @@ funcs.append({
         }
     },
     "description": '    PW6B95 Hybrid Meta-GGA XC Functional\n',
-    "citation": '  Y. Zhao and D. Truhlar, J. Phys. Chem. A., 109,5656-5667, 2005\n',
+    "citation": '    Y. Zhao and D. Truhlar, J. Phys. Chem. A., 109,5656-5667, 2005\n',
 })
 
 funcs.append({
@@ -464,8 +439,6 @@ funcs.append({
             "use_libxc": True
         }
     },
-    "x_hf": {
-    },
     "c_functionals": {
         "MGGA_C_M05": {}
     },
@@ -482,8 +455,6 @@ funcs.append({
             "use_libxc": True
         }
     },
-    "x_hf": {
-    },
     "c_functionals": {
         "MGGA_C_M05_2X": {}
     },
@@ -497,8 +468,6 @@ funcs.append({
         "HYB_MGGA_X_M06": {
             "use_libxc": True
         }
-    },
-    "x_hf": {
     },
     "c_functionals": {
         "MGGA_C_M06": {}
@@ -516,8 +485,6 @@ funcs.append({
             "use_libxc": True
         }
     },
-    "x_hf": {
-    },
     "c_functionals": {
         "MGGA_C_M06_2X": {}
     },
@@ -533,8 +500,6 @@ funcs.append({
         "HYB_MGGA_X_M06_HF": {
             "use_libxc": True
         }
-    },
-    "x_hf": {
     },
     "c_functionals": {
         "MGGA_C_M06_HF": {}
@@ -552,8 +517,6 @@ funcs.append({
             "use_libxc": True
         }
     },
-    "x_hf": {
-    },
     "c_functionals": {
         "MGGA_C_M08_HX": {}
     },
@@ -570,8 +533,6 @@ funcs.append({
             "use_libxc": True
         }
     },
-    "x_hf": {
-    },
     "c_functionals": {
         "MGGA_C_M08_SO": {}
     },
@@ -587,15 +548,12 @@ funcs.append({
             "use_libxc": True
         }
     },
-    "x_hf": {
-        "use_libxc": "HYB_MGGA_X_M11"
-    },
     "c_functionals": {
         "MGGA_C_M11": {}
     },
     "description": '    M11 Meta-GGA XC Functional\n',
-    "citation": 'R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett., 2, 2810, 2011\n',
-    "cite": '10.1021/jz201170d',
+    "citation": '    R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett., 2, 2810, 2011\n',
+    "doi": '10.1021/jz201170d',
 })
 
 functional_list = {}

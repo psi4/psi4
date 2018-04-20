@@ -144,7 +144,7 @@ for functional_name in dict_functionals:
                     functionals[alias] = func
 
 
-def check_consistency(func_dictionary, func_name):
+def check_consistency(func_dictionary, name):
     """
     This checks the consistency of the definitions of exchange and correlation components
     of the functional, including detecting duplicate requests for LibXC params, inconsistent
@@ -170,7 +170,7 @@ def check_consistency(func_dictionary, func_name):
     use_libxc = 0
     if "x_functionals" in func_dictionary:
         for item in func_dictionary["x_functionals"]:
-            if "use_libxc" in func_dictionary["x_functionals"] and \
+            if "use_libxc" in func_dictionary["x_functionals"][item] and \
             func_dictionary["x_functionals"][item]["use_libxc"]:
                 use_libxc += 1
 
