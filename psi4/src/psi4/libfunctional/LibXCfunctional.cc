@@ -197,8 +197,8 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
         double omega, alpha, beta;
         xc_hyb_cam_coef(xc_functional_.get(), &omega, &alpha, &beta);
         params["OMEGA"] = omega;
-        params["ALPHA"] = alpha;
-        params["BETA"] = beta;
+        params["ALPHA"] = alpha + beta;
+        params["BETA"] = std::abs(beta);
     }
     else if (functional == "XC_NLC_COEF") {
         double nlc_b, nlc_c;

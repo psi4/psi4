@@ -106,6 +106,7 @@ qchem_data = {                              #TEST
     'PBE50':    0.45096528610000064,        #TEST
       'N12':     0.4479283791999933,        #TEST
      'VSXC':    0.45478941460000044,        #TEST
+'CAM-B3LYP':     0.4568003603999955,        #TEST
 ## The following functionals are not included 
 ## in Psi4 at the moment. 
 # 'wB97X-D3':    0.45707443810000825,       #TEST # needs Tweaks
@@ -127,7 +128,6 @@ expected_fail_qchem = ['O3LYP']             #TEST
 
 # These tests fail to converge with the current version of Psi4
 excluded_qchem_convergence_probs = {
-'CAM-B3LYP':     0.4568003603999955,        #TEST
 }
 
 # These tests are expected to fail with the current version of Psi4

@@ -30,44 +30,44 @@ Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
 dict = {
            "name":  "",       name of the functional - matched against name.upper() in method lookup
-           
+
           "alias":  [""],     alternative names for the method in lookup functions, capitalised
-          
+
        "citation":  "",       citation of the method in the standard indented format, printed in output
-       
+
     "description":  "",       description of the method, printed in output
-    
+
  "xc_functionals":  {         definition of a full XC functional from LibXC
       "XC_METHOD_NAME": {}      must match a LibXC method, see dict_xc_funcs.py for examples
      },                         if present, the x/c_functionals and x_hf/c_mp2 parameters are not read!
-      
+
   "x_functionals":  {          definition of X contributions
-       "X_METHOD_NAME":  {       must match a LibXC method  
+       "X_METHOD_NAME":  {       must match a LibXC method
                  "alpha": 1.0,   coefficient for (global) GGA exchange, by default 1.0
                  "omega": 0.0,   range-separation parameter
              "use_libxc": False  whether "x_hf" parameters should be set from LibXC values for this method
                  "tweak": [],    tweak the underlying functional
      },
-      
+
            "x_hf":  {          definition of HF exchange for hybrid functionals
                "alpha": 0.0,             coefficient for (global) HF exchange, by default none
                 "beta": 0.0,             coefficient for long range HF exchange
                "omega": 0.0,             range separation parameters
            "use_libxc": "X_METHOD_NAME"  reads the above 3 values from specified X functional
      },
-           
+
   "c_functionals":  {          definition of C contributions
-       "C_METHOD_NAME":  {       must match a LibXC method  
+       "C_METHOD_NAME":  {       must match a LibXC method
                  "alpha": 1.0,   coefficient for (global) GGA correlation, by default 1.0
                  "tweak": [],    tweak the underlying functional
-    },   
-   
+    },
+
           "c_mp2":  {          definition of MP2 correlation double hybrid functionals
                "alpha": 0.0,     coefficient for MP2 correlation, by default none
                   "ss": 0.0,     coefficient for same spin correlation in SCS methods, forces alpha = 1.0
                   "os": 0.0,     coefficient for opposite spin correlation in SCS methods, forces alpha = 1.0
     },
-          
+
      "dispersion":  {          definition of dispersion corrections
                "type": "",       dispersion type - "d2", "d3zero", "d3bj" etc., see empirical_dispersion.py
              "params": {},       parameters for the dispersion correction
@@ -235,6 +235,7 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                     x_HF.update(x_func.query_libxc("XC_HYB_CAM_COEF"))
                     x_HF["used"] = True
                     x_func.set_alpha(1.0)
+
                 if "tweak" in x_params:
                     x_func.set_tweak(x_params["tweak"])
                 if "alpha" in x_params:
@@ -260,6 +261,7 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                 x_name = "XC_" + x_params["use_libxc"]
                 x_HF.update(core.LibXCFunctional(x_name, restricted).query_libxc("XC_HYB_CAM_COEF"))
                 x_HF["used"] = True
+
             if "alpha" in x_params:
                 sup.set_x_alpha(x_params["alpha"])
             else:
@@ -274,8 +276,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         # we need to shuffle the long and short range contributions around
         # by default, all 3 are 0.0 - different values are set only if "use_libxc" is specified
         if x_HF["used"]:
-            sup.set_x_alpha(x_HF["ALPHA"] + x_HF["BETA"])
-            sup.set_x_beta(x_HF["ALPHA"] - x_HF["BETA"])
+            sup.set_x_alpha(x_HF["ALPHA"])
+            sup.set_x_beta(x_HF["BETA"])
             sup.set_x_omega(x_HF["OMEGA"])
 
         # Correlation processing - GGA part, generally same as above.

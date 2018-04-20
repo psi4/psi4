@@ -584,14 +584,11 @@ funcs.append({
     "name": "M11",
     "x_functionals": {
         "HYB_MGGA_X_M11": {
-            "alpha": 1.0 - 0.428,
-            "omega": 0.25
+            "use_libxc": True
         }
     },
     "x_hf": {
-        "alpha": 0.428,
-        "beta": 1.0,
-        "omega": 0.25
+        "use_libxc": "HYB_MGGA_X_M11"
     },
     "c_functionals": {
         "MGGA_C_M11": {}
