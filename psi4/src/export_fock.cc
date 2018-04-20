@@ -32,7 +32,7 @@
 #include "psi4/libfock/soscf.h"
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
@@ -135,39 +135,39 @@ void export_fock(py::module &m) {
     py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
 
     // DF Helper
-    typedef SharedMatrix (DF_Helper::*take_string)(std::string);
-    typedef SharedMatrix (DF_Helper::*tensor_access3)(
+    typedef SharedMatrix (DFHelper::*take_string)(std::string);
+    typedef SharedMatrix (DFHelper::*tensor_access3)(
         std::string, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>);
 
-    py::class_<DF_Helper, std::shared_ptr<DF_Helper>>(m, "DF_Helper", "docstring")
+    py::class_<DFHelper, std::shared_ptr<DFHelper>>(m, "DFHelper", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
-        .def("set_memory", &DF_Helper::set_memory)
-        .def("get_memory", &DF_Helper::get_memory)
-        .def("set_method", &DF_Helper::set_method)
-        .def("get_method", &DF_Helper::get_method)
-        .def("get_AO_size", &DF_Helper::get_AO_size)
-        .def("set_nthreads", &DF_Helper::set_nthreads)
-        .def("hold_met", &DF_Helper::hold_met)
-        .def("set_schwarz_cutoff", &DF_Helper::set_schwarz_cutoff)
-        .def("get_schwarz_cutoff", &DF_Helper::get_schwarz_cutoff)
-        .def("set_AO_core", &DF_Helper::set_AO_core)
-        .def("get_AO_core", &DF_Helper::get_AO_core)
-        .def("set_MO_core", &DF_Helper::set_MO_core)
-        .def("get_MO_core", &DF_Helper::get_MO_core)
-        .def("add_space", &DF_Helper::add_space)
-        .def("initialize", &DF_Helper::initialize)
-        .def("print_header", &DF_Helper::print_header)
-        .def("add_transformation", &DF_Helper::add_transformation, py::arg("name"),
+        .def("set_memory", &DFHelper::set_memory)
+        .def("get_memory", &DFHelper::get_memory)
+        .def("set_method", &DFHelper::set_method)
+        .def("get_method", &DFHelper::get_method)
+        .def("get_AO_size", &DFHelper::get_AO_size)
+        .def("set_nthreads", &DFHelper::set_nthreads)
+        .def("hold_met", &DFHelper::hold_met)
+        .def("set_schwarz_cutoff", &DFHelper::set_schwarz_cutoff)
+        .def("get_schwarz_cutoff", &DFHelper::get_schwarz_cutoff)
+        .def("set_AO_core", &DFHelper::set_AO_core)
+        .def("get_AO_core", &DFHelper::get_AO_core)
+        .def("set_MO_core", &DFHelper::set_MO_core)
+        .def("get_MO_core", &DFHelper::get_MO_core)
+        .def("add_space", &DFHelper::add_space)
+        .def("initialize", &DFHelper::initialize)
+        .def("print_header", &DFHelper::print_header)
+        .def("add_transformation", &DFHelper::add_transformation, py::arg("name"),
              py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
-        .def("transform", &DF_Helper::transform)
-        .def("clear_spaces", &DF_Helper::clear_spaces)
-        .def("clear_all", &DF_Helper::clear_all)
-        .def("transpose", &DF_Helper::transpose)
-        .def("get_space_size", &DF_Helper::get_space_size)
-        .def("get_tensor_size", &DF_Helper::get_tensor_size)
-        .def("get_tensor_shape", &DF_Helper::get_tensor_shape)
-        .def("get_tensor", take_string(&DF_Helper::get_tensor))
-        .def("get_tensor", tensor_access3(&DF_Helper::get_tensor));
+        .def("transform", &DFHelper::transform)
+        .def("clear_spaces", &DFHelper::clear_spaces)
+        .def("clear_all", &DFHelper::clear_all)
+        .def("transpose", &DFHelper::transpose)
+        .def("get_space_size", &DFHelper::get_space_size)
+        .def("get_tensor_size", &DFHelper::get_tensor_size)
+        .def("get_tensor_shape", &DFHelper::get_tensor_shape)
+        .def("get_tensor", take_string(&DFHelper::get_tensor))
+        .def("get_tensor", tensor_access3(&DFHelper::get_tensor));
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
