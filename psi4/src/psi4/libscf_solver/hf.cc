@@ -310,7 +310,10 @@ void HF::common_init()
 
     frac_enabled_ = (options_.get_int("FRAC_START") != 0);
     frac_performed_ = false;
-    print_header();
+
+    if (print_) {
+      print_header();
+    }
 
     // DFT stuff
     if (functional_->needs_xc()){
@@ -323,7 +326,9 @@ void HF::common_init()
         }
 
         // Print the KS-specific stuff
-        potential_->print_header();
+        if (print_) {
+            potential_->print_header();
+        }
     } else {
         potential_ = nullptr;
     }

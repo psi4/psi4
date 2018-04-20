@@ -1414,21 +1414,26 @@ def scf_helper(name, post_scf=True, **kwargs):
     if (not use_c1) or (scf_molecule.schoenflies_symbol() == 'c1'):
         return scf_wfn
     else:
+        # C1 copy quietly
+        c1_optstash = p4util.OptionsState(['PRINT'])
+        core.set_global_option("PRINT", 0)
+
         # If we force c1 copy the active molecule
         scf_molecule.update_geometry()
-        core.print_out("""  A requested method does not make use of molecular symmetry: """
+        core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n""")
         c1_molecule = scf_molecule.clone()
         c1_molecule.reset_point_group('c1')
         c1_molecule.fix_orientation(True)
         c1_molecule.fix_com(True)
         c1_molecule.update_geometry()
-        c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'))
+        c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'), quiet=True)
         tmp = scf_wfn.c1_deep_copy(c1_basis)
         c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF",
                                          core.get_global_option("DF_BASIS_SCF"),
-                                         "JKFIT", core.get_global_option('BASIS'))
+                                         "JKFIT", core.get_global_option('BASIS'), quiet=True)
         tmp.set_basisset("DF_BASIS_SCF", c1_jkbasis)
+        c1_optstash.restore()
         return tmp
 
 
@@ -1585,7 +1590,9 @@ def run_dfocc(name, **kwargs):
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
+
     if not core.get_local_option("DFOCC", "CHOLESKY"):
+        core.print_out("  Constructing Basis Sets for DFOCC..\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                            core.get_option("SCF", "DF_BASIS_SCF"),
                                            "JKFIT", core.get_global_option('BASIS'),
@@ -1600,6 +1607,7 @@ def run_dfocc(name, **kwargs):
 
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
+
     dfocc_wfn = core.dfocc(ref_wfn)
 
     optstash.restore()
