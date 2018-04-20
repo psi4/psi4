@@ -228,7 +228,7 @@ How to use conda to compile Psi4 faster and easier
 
     # Linux or Mac or Windows
     # substitute x.x by 2.7|3.5|3.6 for alternate python versions
-    >>> conda create -n p4dev python=x.x psi4-dev -c psi4
+    >>> conda create -n p4dev python=x.x psi4-dev numpy -c psi4
 
 Same for Linux/Mac/Windows. Substitute desired python version: 2.7, 3.5, 3.6. Fine
 to choose your own env name. Activate environment, ``source activate
@@ -237,8 +237,9 @@ It gives you a basic cmake command covering python, sphinx, link-time qc
 addons, and run-time qc addons. There's a help menu -h that gives more
 info. There's other options that will also pre-configure compilers. For
 example, at GaTech ``psi4-path-advisor --intel`` works. On Macs with
-XCode, ``psi4-path-advisor --clang`` works. Just read the help. For DGAS,
-there's a ``--disable-addons``, but I don't encourage it. It gives you a fully
+XCode, ``psi4-path-advisor --clang`` works. Just read the help. For users
+who want a quicker build, there's a ``--disable-addons``, but it is generally not
+encouraged. It gives you a fully
 functional cmake command, but those are just setting up CMake cache
 |w---w| like the plugins you can always add your own CMake variables to
 the command.
