@@ -941,14 +941,14 @@ class CDJK : public DFJK {
 };
 
 /**
- * Class symm_DFJK
+ * Class MemDFJK
  *
  * JK implementation using sieved, threaded
  * density-fitted technology
  * under slightly different paradigm than DFJK
  * wraps lib3index/DF_Helper class
  */
-class symm_DFJK : public JK {
+class MemDFJK : public JK {
 
    protected:
     // => DF-Specific stuff <= //
@@ -987,10 +987,10 @@ class symm_DFJK : public JK {
      * @param primary primary basis set for this system.
      * @param auxiliary auxiliary basis set for this system.
      */
-    symm_DFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+    MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
-    virtual ~symm_DFJK();
+    virtual ~MemDFJK();
     
     
     // => Knobs <= //

@@ -54,20 +54,20 @@ using namespace psi;
 
 namespace psi {
 
-symm_DFJK::symm_DFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
+MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
     : JK(primary), auxiliary_(auxiliary) {
     common_init();
 }
 
-symm_DFJK::~symm_DFJK() {}
+MemDFJK::~MemDFJK() {}
 
-void symm_DFJK::common_init() {
+void MemDFJK::common_init() {
     
     dfh_ = std::make_shared<DF_Helper>(primary_, auxiliary_);
 
 }
 
-void symm_DFJK::preiterations() {
+void MemDFJK::preiterations() {
    
     // Initialize calls your derived class's preiterations member
     // knobs are set and state variables assigned
@@ -92,18 +92,18 @@ void symm_DFJK::preiterations() {
     }
 
 }
-void symm_DFJK::compute_JK() {
+void MemDFJK::compute_JK() {
     
     dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, 
                    max_nocc(), do_J_, do_K_, do_wK_, lr_symmetric_);
 
 }
-void symm_DFJK::postiterations() {
+void MemDFJK::postiterations() {
 }
-void symm_DFJK::print_header() const {
+void MemDFJK::print_header() const {
     dfh_->print_header();
 }
-int symm_DFJK::max_nocc() const {
+int MemDFJK::max_nocc() const {
     int max_nocc = 0;
     for (size_t N = 0; N < C_left_ao_.size(); N++) {
         max_nocc = (C_left_ao_[N]->colspi()[0] > max_nocc ? C_left_ao_[N]->colspi()[0] : max_nocc);
