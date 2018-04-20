@@ -449,7 +449,7 @@ void HF::integrals()
       #endif
     } else {
         if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos){
-            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_, false, effective_memory);
+            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_, functional_->is_x_lrc(), effective_memory);
         } else {
             jk_ = JK::build_JK(get_basisset("ORBITAL"), BasisSet::zero_ao_basis_set(), options_);
 

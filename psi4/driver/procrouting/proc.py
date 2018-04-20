@@ -1030,6 +1030,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
                                         "JKFIT", core.get_global_option('BASIS'),
                                         puream=wfn.basisset().has_puream())
         wfn.set_basisset("DF_BASIS_SCF", aux_basis)
+    else:
+        wfn.set_basisset("DF_BASIS_SCF", core.BasisSet.zero_ao_basis_set())
 
     # Set the relativistic basis sets
     if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
@@ -1421,7 +1423,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         # If we force c1 copy the active molecule
         scf_molecule.update_geometry()
         core.print_out("""\n  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
+                           """further calculations in C1 point group.\n\n""")
         c1_molecule = scf_molecule.clone()
         c1_molecule.reset_point_group('c1')
         c1_molecule.fix_orientation(True)
@@ -1517,12 +1519,15 @@ def run_dfocc(name, **kwargs):
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             # Alter default algorithm
             if not core.has_option_changed('SCF', 'SCF_TYPE'):
-                core.set_global_option('SCF_TYPE', 'DiskDF')
+                core.set_global_option('SCF_TYPE', 'DISK_DF')
                 core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
             elif core.get_global_option('SCF_TYPE') == "DF":
                 core.set_global_option('SCF_TYPE', 'DISK_DF')
                 core.print_out("""    DFOCC requires DiskDF JK type.\n""")
+            else:
+                if core.get_global_option('SCF_TYPE') != "DISK_DF":
+                    raise ValidationError("  DFOCC requires SCF_TYPE = DISK_DF")
 
         elif type_val == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
@@ -1535,32 +1540,35 @@ def run_dfocc(name, **kwargs):
         else:
             raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
 
+        return type_val
+
+
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-        set_cholesky_from('MP2_TYPE')
+        type_val = set_cholesky_from('MP2_TYPE')
     elif name in ['mp2.5', 'omp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        set_cholesky_from('MP_TYPE')
+        type_val = set_cholesky_from('MP_TYPE')
     elif name in ['mp3', 'omp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        set_cholesky_from('MP_TYPE')
+        type_val = set_cholesky_from('MP_TYPE')
     elif name in ['lccd', 'olccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        set_cholesky_from('CC_TYPE')
+        type_val = set_cholesky_from('CC_TYPE')
 
     elif name == 'ccd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-        set_cholesky_from('CC_TYPE')
+        type_val = set_cholesky_from('CC_TYPE')
     elif name == 'ccsd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        set_cholesky_from('CC_TYPE')
+        type_val = set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(t)':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-        set_cholesky_from('CC_TYPE')
+        type_val = set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(at)':
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
-        set_cholesky_from('CC_TYPE')
+        type_val = set_cholesky_from('CC_TYPE')
     elif name == 'dfocc':
         pass
     else:
@@ -1577,11 +1585,6 @@ def run_dfocc(name, **kwargs):
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
-    scf_type = core.get_global_option('SCF_TYPE')
-
-    if ("DF" in scf_type) and ("DISK" not in scf_type):
-        raise ValidationError("  DFOCC requires SCF_TYPE = DISK_DF")
-
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -1592,7 +1595,7 @@ def run_dfocc(name, **kwargs):
                                   """reference wavefunction must be C1.\n""")
 
     if not core.get_local_option("DFOCC", "CHOLESKY"):
-        core.print_out("  Constructing Basis Sets for DFOCC..\n")
+        core.print_out("  Constructing Basis Sets for DFOCC...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                            core.get_option("SCF", "DF_BASIS_SCF"),
                                            "JKFIT", core.get_global_option('BASIS'),
@@ -1630,10 +1633,13 @@ def run_dfocc_gradient(name, **kwargs):
 
     # Alter default algorithm
     if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+        core.set_global_option('SCF_TYPE', 'DISK_DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DISK_DF.\n""")
 
-    if core.get_option('SCF', 'SCF_TYPE') != 'DF':
+    if core.get_option('SCF', 'SCF_TYPE') == 'DF':
+        core.set_global_option('SCF_TYPE', 'DISK_DF')
+
+    if core.get_option('SCF', 'SCF_TYPE') != 'DISK_DF':
         raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
 
     if name in ['mp2', 'omp2']:
@@ -1675,6 +1681,7 @@ def run_dfocc_gradient(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
+    core.print_out("  Constructing Basis Sets for DFOCC...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                     core.get_option("SCF", "DF_BASIS_SCF"),
                                     "JKFIT", core.get_global_option('BASIS'),
@@ -1713,10 +1720,13 @@ def run_dfocc_property(name, **kwargs):
 
     # Alter default algorithm
     if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+        core.set_global_option('SCF_TYPE', 'DISK_DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DISK_DF.\n""")
 
-    if core.get_option('SCF', 'SCF_TYPE') != 'DF':
+    if core.get_option('SCF', 'SCF_TYPE') == 'DF':
+        core.set_global_option('SCF_TYPE', 'DISK_DF')
+
+    if core.get_option('SCF', 'SCF_TYPE') != 'DISK_DF':
         raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
 
     if name in ['mp2']:
@@ -1738,6 +1748,7 @@ def run_dfocc_property(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
+    core.print_out("  Constructing Basis Sets for DFOCC...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                     core.get_option("SCF", "DF_BASIS_SCF"),
                                     "JKFIT", core.get_global_option('BASIS'),
