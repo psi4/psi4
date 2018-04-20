@@ -1,4 +1,4 @@
-find_package(Libxc CONFIG QUIET)
+find_package(Libxc 4.0 CONFIG QUIET)
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
@@ -12,11 +12,8 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable Libxc could not be located, ${Magenta}Building Libxc${ColourReset} instead.")
     ExternalProject_Add(libxc_external
-        #DOWNLOAD_COMMAND ""
-        #SOURCE_DIR "/home/psilocaluser/gits/libxc"
-        GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
-        GIT_TAG 55e6a #master until master stable wrt xc_funcs.h
-        #GIT_TAG v3.0.0  # TODO tag when stable
+        GIT_REPOSITORY https://github.com/loriab/libxc
+        GIT_TAG libxc4retweaked  # v4.0 (0387b1d1) + !62
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
