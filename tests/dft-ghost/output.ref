@@ -1,0 +1,306 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2a1.dev1122 
+
+                         Git: Rev {bumps} 74d1b81 
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 20 April 2018 09:24AM
+
+    Process ID: 42500
+    Host:       Daniels-MacBook-Pro.local
+    PSIDATADIR: /Users/daniel/Gits/psi4xc/objdir/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DFT Functional Test for Range-Seperated Hybrids and Ghost atoms
+
+molecule water {
+@O     -0.031788188689    -0.057762343755    -2.500000000000
+@H     -0.415040188689     0.819260656245    -2.500000000000
+@H      0.919541811311     0.097469656245    -2.500000000000
+O         -0.031788188689    -0.057762343755     2.500000000000
+H         -0.415040188689     0.819260656245     2.500000000000
+H          0.919541811311     0.097469656245     2.500000000000
+}
+
+cam_energy = energy('cam-b3lyp/def2-svp')
+
+compare_values(-76.3298204862400667, cam_energy, 7, "Ghost CAM-B3LYP Energy") #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Fri Apr 20 09:24:05 2018
+
+   => Loading Basis Set <=
+
+    Name: DEF2-SVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   130 file /Users/daniel/Gits/psi4xc/objdir/stage/usr/local/psi4/share/psi4/basis/def2-svp.gbs 
+    atoms 2-3, 5-6 entry H          line    15 file /Users/daniel/Gits/psi4xc/objdir/stage/usr/local/psi4/share/psi4/basis/def2-svp.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O(Gh)     -0.031788188689    -0.057762343755    -2.500000000000    15.994914619560
+           H(Gh)     -0.415040188689     0.819260656245    -2.500000000000     1.007825032070
+           H(Gh)      0.919541811311     0.097469656245    -2.500000000000     1.007825032070
+           O         -0.031788188689    -0.057762343755     2.500000000000    15.994914619560
+           H         -0.415040188689     0.819260656245     2.500000000000     1.007825032070
+           H          0.919541811311     0.097469656245     2.500000000000     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      4.73177  B =      0.07447  C =      0.07412 [cm^-1]
+  Rotational constants: A = 141854.86137  B =   2232.49128  C =   2221.91198 [MHz]
+  Nuclear repulsion =    9.163830145965932
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: DEF2-SVP
+    Blend: DEF2-SVP
+    Number of shells: 24
+    Number of basis function: 48
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: CAM-B3LYP <= 
+
+    CAM-B3LYP Hyb-GGA Exchange-Correlation Functional
+
+    T. Yanai, D. P. Tew, and N. C. Handy, Chem. Phys. Lett. 393, 51 (2004)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.3500         Becke 88 [omega = 0.3300]
+    0.4600   Short-range recipe for exchange GGA functionals [omega = 0.3300]
+
+   => Exact (HF) Exchange <=
+
+    0.4600            HF,LR [omega = 0.3300]
+    0.1900               HF 
+
+   => Correlation Functionals <=
+
+    0.1900   Vosko, Wilk & Nusair (VWN5)
+    0.8100   Lee, Yang & Parr
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             75
+    Spherical Points    =            302
+    Total Points        =         133562
+    Total Blocks        =           1120
+    Max Points          =            256
+    Max Functions       =             47
+
+   => Loading Basis Set <=
+
+    Name: (DEF2-SVP AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 4     entry O          line   323 file /Users/daniel/Gits/psi4xc/objdir/stage/usr/local/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    23 file /Users/daniel/Gits/psi4xc/objdir/stage/usr/local/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         48      48       0       0       0       0
+   -------------------------------------------------------
+    Total      48      48       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                 Yes
+    Omega:               3.300E-01
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (DEF2-SVP AUX)
+    Blend: DEF2-SVP-JKFIT
+    Number of shells: 74
+    Number of basis function: 226
+    Number of Cartesian functions: 266
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 3.7596539881E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:   -76.34551603776337   -7.63455e+01   3.27098e-02 
+   @DF-RKS iter   1:   -76.26379374999082    8.17223e-02   8.60555e-03 
+   @DF-RKS iter   2:   -76.25888358106643    4.91017e-03   9.38959e-03 DIIS
+   @DF-RKS iter   3:   -76.32971394574010   -7.08304e-02   3.35334e-04 DIIS
+   @DF-RKS iter   4:   -76.32981480362454   -1.00858e-04   6.84828e-05 DIIS
+   @DF-RKS iter   5:   -76.32982032672332   -5.52310e-06   1.01681e-05 DIIS
+   @DF-RKS iter   6:   -76.32982048179552   -1.55072e-07   1.28148e-06 DIIS
+   @DF-RKS iter   7:   -76.32982048626398   -4.46846e-09   3.52476e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -19.190215     2A     -1.059547     3A     -0.583604  
+       4A     -0.434190     5A     -0.361370  
+
+    Virtual:                                                              
+
+       6A      0.092986     7A      0.133227     8A      0.172990  
+       9A      0.245359    10A      0.519819    11A      0.627691  
+      12A      0.678584    13A      0.688933    14A      0.735977  
+      15A      0.857156    16A      0.984979    17A      0.989869  
+      18A      1.070515    19A      1.157537    20A      1.415775  
+      21A      1.479175    22A      1.620881    23A      1.673727  
+      24A      1.766720    25A      1.857944    26A      2.020118  
+      27A      2.100638    28A      2.257294    29A      2.270180  
+      30A      2.289275    31A      2.334293    32A      2.490927  
+      33A      2.716144    34A      3.013205    35A      3.037916  
+      36A      3.086717    37A      3.267582    38A      3.576919  
+      39A      3.897302    40A      4.498054    41A      4.582173  
+      42A      4.724401    43A      4.855917    44A      4.997908  
+      45A      5.271562    46A      6.467781    47A      7.106326  
+      48A     34.674237  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:   -76.32982048626398
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1638301459659317
+    One-Electron Energy =                -123.0602893180330710
+    Two-Electron Energy =                  44.3949967888684540
+    DFT Exchange-Correlation Energy =      -6.8283581030653027
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -76.3298204862639835
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.4728      Y:     0.8591      Z:    47.2432
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0916      Y:    -0.1623      Z:   -47.2431
+
+  Dipole Moment: (a.u.)
+     X:     0.3812      Y:     0.6968      Z:     0.0001     Total:     0.7943
+
+  Dipole Moment: (Debye)
+     X:     0.9688      Y:     1.7712      Z:     0.0003     Total:     2.0188
+
+
+*** tstop() called on Daniels-MacBook-Pro.local at Fri Apr 20 09:24:08 2018
+Module time:
+	user time   =       2.63 seconds =       0.04 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       2.63 seconds =       0.04 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+	Ghost CAM-B3LYP Energy............................................PASSED
+
+    Psi4 stopped on: Friday, 20 April 2018 09:24AM
+    Psi4 wall time for execution: 0:00:02.72
+
+*** Psi4 exiting successfully. Buy a developer a beer!
