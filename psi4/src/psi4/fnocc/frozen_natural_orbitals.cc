@@ -529,7 +529,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 
     // read integrals that were written to disk in the scf
     long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
-    if (options_.get_str("SCF_TYPE") == "DF") {
+    if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos) {
         std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
         std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
 
