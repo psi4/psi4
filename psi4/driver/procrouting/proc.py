@@ -1023,7 +1023,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         wfn._disp_functor.print_out()
 
     # Set the DF basis sets
-    if (core.get_option("SCF", "SCF_TYPE") == "DF") or \
+    if ("DF" in core.get_option("SCF", "SCF_TYPE")) or \
        (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_option("SCF", "SCF_TYPE") == "DIRECT")):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
@@ -1047,7 +1047,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
                                              return_atomlist=True)
         wfn.set_sad_basissets(sad_basis_list)
 
-        if (core.get_option("SCF", "SAD_SCF_TYPE") == "DF"):
+        if ("DF" in core.get_option("SCF", "SAD_SCF_TYPE")):
             sad_fitting_list = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SAD",
                                                    core.get_option("SCF", "DF_BASIS_SAD"),
                                                    puream=wfn.basisset().has_puream(),
@@ -1324,7 +1324,7 @@ def scf_helper(name, post_scf=True, **kwargs):
                                              return_atomlist=True)
         scf_wfn.set_sad_basissets(sad_basis_list)
 
-        if (core.get_option("SCF", "SAD_SCF_TYPE") == "DF"):
+        if ("DF" in core.get_option("SCF", "SAD_SCF_TYPE")):
             sad_fitting_list = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_SAD",
                                                    core.get_option("SCF", "DF_BASIS_SAD"),
                                                    puream=scf_wfn.basisset().has_puream(),
@@ -1512,8 +1512,13 @@ def run_dfocc(name, **kwargs):
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             # Alter default algorithm
             if not core.has_option_changed('SCF', 'SCF_TYPE'):
-                core.set_global_option('SCF_TYPE', 'DF')
+                core.set_global_option('SCF_TYPE', 'DiskDF')
                 core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+            elif core.get_global_option('SCF_TYPE') == "DF":
+                core.set_global_option('SCF_TYPE', 'DISK_DF')
+                core.print_out("""    DFOCC requires DiskDF JK type.\n""")
+
         elif type_val == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
             # Alter default algorithm
@@ -1566,6 +1571,11 @@ def run_dfocc(name, **kwargs):
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+
+    scf_type = core.get_global_option('SCF_TYPE')
+
+    if ("DF" in scf_type) and ("DISK" not in scf_type):
+        raise ValidationError("  DFOCC requires SCF_TYPE = DISK_DF")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)

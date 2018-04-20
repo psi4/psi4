@@ -76,7 +76,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "DISK_DF") {
         DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
-        
+
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -88,7 +88,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
         return std::shared_ptr<JK>(jk);
-        
+
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
 
@@ -153,7 +153,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         error << "Cannot do SCF_TYPE == 'MEM_DF' and do_wK (yet), please set SCF_TYPE = 'DISK_DF' ";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    
+
     if (jk_type == "DF") {
 
         // logic for MemDFJK vs DiskDFJK
@@ -165,7 +165,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             size_t nbf = primary->nbf();
             size_t naux = auxiliary->nbf();
             size_t required = naux * nbf * nbf; // + nthreads_ * nbf * nbf TODO
-            
+
             if (required > doubles) {
                 return build_JK(primary, auxiliary, options, "DISK_DF");
             } else {
