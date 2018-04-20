@@ -110,7 +110,24 @@ void set_do_wK(bool do_wK){
 void MemDFJK::postiterations() {
 }
 void MemDFJK::print_header() const {
-    dfh_->print_header();
+    // dfh_->print_header();
+    if (print_) {
+        outfile->Printf("  ==> MeMDFJK: Density-Fitted J/K Matrices <==\n\n");
+
+        outfile->Printf("    J tasked:           %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:           %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:          %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
+        outfile->Printf("    OpenMP threads:     %11d\n", omp_nthread_);
+        outfile->Printf("    Memory (MB):        %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Algorithm:          %11s\n", (dfh_->get_AO_core() ? "Core" : "Disk"));
+        outfile->Printf("    Schwarz Cutoff:     %11.0E\n", cutoff_);
+        outfile->Printf("    Mask sparsity (%%):  %11.4f\n", 100. * dfh_->ao_sparsity());
+        outfile->Printf("    Fitting Condition:  %11.0E\n\n", condition_);
+
+        outfile->Printf("   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level("outfile", print_);
+    }
 }
 int MemDFJK::max_nocc() const {
     int max_nocc = 0;

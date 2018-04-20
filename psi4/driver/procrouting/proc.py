@@ -1454,6 +1454,7 @@ def run_dcft(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     if (core.get_global_option("DCFT_TYPE") == "DF"):
+        core.print_out("  Constructing Basis Sets for DCFT...\n\n")
         aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
                                         core.get_global_option("DF_BASIS_DCFT"),
                                         "RIFIT", core.get_global_option("BASIS"))
@@ -3392,6 +3393,7 @@ def run_sapt(name, **kwargs):
         core.print_out('  Coupled induction not available for ROHF.\n')
         core.print_out('  Proceeding with uncoupled induction only.\n')
 
+    core.print_out("  Constructing Basis Sets for SAPT...\n\n")
     aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
                                     core.get_global_option("DF_BASIS_SAPT"),
                                     "RIFIT", core.get_global_option("BASIS"))
@@ -3619,6 +3621,7 @@ def run_fisapt(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
 
+    core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),
@@ -3985,6 +3988,7 @@ def run_fnocc(name, **kwargs):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
     else:
+        core.print_out("  Constructing Basis Sets for FNOCC...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
                                             "JKFIT", core.get_global_option('BASIS'),
@@ -4087,6 +4091,7 @@ def run_cepa(name, **kwargs):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
     else:
+        core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
                                             "JKFIT", core.get_global_option('BASIS'),
@@ -4170,6 +4175,7 @@ def run_detcas(name, **kwargs):
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DF')
 
+        core.print_out("  Constructing Basis Sets for MCSCF...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
                                             "JKFIT", core.get_global_option('BASIS'),
