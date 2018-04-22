@@ -1893,10 +1893,6 @@ class LibmintsMolecule(object):
 
     def set_basis_all_atoms(self, name, role="BASIS"):
         """Assigns basis *name* to all atoms."""
-        uc = name.upper()
-        if uc in ['SPECIAL', 'GENERAL', 'CUSTOM']:
-            # These aren't really basis set specifications, just return.
-            return
         for atom in self.full_atoms:
             atom.set_basisset(name, role)
 
