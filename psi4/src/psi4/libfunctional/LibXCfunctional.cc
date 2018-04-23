@@ -102,7 +102,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
 
             global_exch_ = alpha + beta;
-            lr_exch_ = std::abs(beta);
+            lr_exch_ = -1.0 * beta;
 
         } else {
             global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
@@ -198,7 +198,7 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
         xc_hyb_cam_coef(xc_functional_.get(), &omega, &alpha, &beta);
         params["OMEGA"] = omega;
         params["ALPHA"] = alpha + beta;
-        params["BETA"] = std::abs(beta);
+        params["BETA"] = -1.0 * beta;
     }
     else if (functional == "XC_NLC_COEF") {
         double nlc_b, nlc_c;
