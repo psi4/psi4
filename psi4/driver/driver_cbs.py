@@ -1024,7 +1024,7 @@ def cbs(func, label, **kwargs):
 
     :type delta_alpha: float
 
-        Overrides the default \alpha parameter used in the listed 
+        Overrides the default \alpha parameter used in the listed
         :py:func:`corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
         delta correction is performed using smaller basis sets for which a different \alpha might
         be more appropriate.
@@ -1282,6 +1282,8 @@ def cbs(func, label, **kwargs):
     if do_corl:
         if len(BSTC) == 2:
             cbs_corl_scheme = corl_xtpl_helgaker_2
+        elif len(BSTC) > 2:
+            raise ValidationError("""Cannot extrapolate correlation with %d basis sets. Use highest 2.""" % (len(BSTC)))
         else:
             cbs_corl_scheme = xtpl_highest_1
         if 'corl_scheme' in kwargs:
