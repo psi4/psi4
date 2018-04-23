@@ -1282,6 +1282,8 @@ def cbs(func, label, **kwargs):
     if do_corl:
         if len(BSTC) == 2:
             cbs_corl_scheme = corl_xtpl_helgaker_2
+        elif len(BSTC) > 2:
+            raise ValidationError("""Cannot extrapolate correlation with %d basis sets. Use highest 2.""" % (len(BSTC)))
         else:
             cbs_corl_scheme = xtpl_highest_1
         if 'corl_scheme' in kwargs:
@@ -1785,7 +1787,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     # Split into components
     method_list, basis_list = _parse_cbs_gufunc_string(total_method_name)
-
+    print(method_list, basis_list)
     # Single energy call?
     single_call = len(method_list) == 1
     single_call &= '[' not in basis_list[0]
