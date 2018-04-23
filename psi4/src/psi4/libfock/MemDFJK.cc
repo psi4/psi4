@@ -112,7 +112,7 @@ void MemDFJK::postiterations() {
 void MemDFJK::print_header() const {
     // dfh_->print_header();
     if (print_) {
-        outfile->Printf("  ==> MeMDFJK: Density-Fitted J/K Matrices <==\n\n");
+        outfile->Printf("  ==> MemDFJK: Density-Fitted J/K Matrices <==\n\n");
 
         outfile->Printf("    J tasked:           %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:           %11s\n", (do_K_ ? "Yes" : "No"));
