@@ -123,7 +123,6 @@ def build_nbody_compute_list(bsse_type_list, max_nbody, max_frag):
     vmfc_level_list = {x:set() for x in nbody_range} # Need to sum something slightly different
 
     # Build up compute sets
-#    if do_cp:
     if 'cp' in bsse_type_list:
         # Everything is in dimer basis
         basis_tuple = tuple(fragment_range)
@@ -131,14 +130,12 @@ def build_nbody_compute_list(bsse_type_list, max_nbody, max_frag):
             for x in itertools.combinations(fragment_range, nbody):
                 cp_compute_list[nbody].add( (x, basis_tuple) )
 
-#    if do_nocp:
     if 'nocp' in bsse_type_list:
         # Everything in monomer basis
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
                 nocp_compute_list[nbody].add( (x, x) )
 
-#    if do_vmfc:
     if 'vmfc' in bsse_type_list:
         # Like a CP for all combinations of pairs or greater
         for nbody in nbody_range:
@@ -158,9 +155,9 @@ def build_nbody_compute_list(bsse_type_list, max_nbody, max_frag):
         compute_list[n] |= vmfc_compute_list[n]
         core.print_out("        Number of %d-body computations:     %d\n" % (n, len(compute_list[n])))
 
-    #compute_dict = {'all': compute_list, 'cp': cp_compute_list, 'nocp': nocp_compute_list, 'vmfc': vmfc_compute_list}
-
-    return compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list
+    compute_dict = {'all': compute_list, 'cp': cp_compute_list, 'nocp': nocp_compute_list, 
+                    'vmfc_compute': vmfc_compute_list, 'vmfc_levels': vmfc_level_list}
+    return compute_dict
 
 def compute_nbody_components(func, method_string, molecule, compute_list, **kwargs):
     """
@@ -197,19 +194,20 @@ def compute_nbody_components(func, method_string, molecule, compute_list, **kwar
 
     return energies_dict, ptype_dict, intermediates_dict
 
-def assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_dict, energies_dict, pytpe_dict, compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list, **kwargs):
+def assemble_nbody_components(ptype, bsse_type_list, max_nbody, max_frag, fragment_size_dict, energies_dict, pytpe_dict, compute_dict, **kwargs):
     """
     """
     ### ==> Parse some kwargs <==
     kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
     return_total_data = kwargs.pop('return_total_data', False)
 
-    nbody_range = range(0, max_nbody + 1)
+    nbody_range = range(1, max_nbody + 1)
 
-#    cp_compute_list = compute_dict['cp']
-#    nocp_compute_list = compute_dict['nocp']
-#    vmfc_compute_list = compute_dict['vmfc']
+    compute_list = compute_dict['all']
+    cp_compute_list = compute_dict['cp']
+    nocp_compute_list = compute_dict['nocp']
+    vmfc_compute_list = compute_dict['vmfc_compute']
+    vmfc_level_list = compute_dict['vmfc_levels']
 
     # Build slice dicts
     start = 0
@@ -278,7 +276,6 @@ def assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_di
                                       vmfc_ptype_by_level[n], vmfc=True)
 
     # Compute cp energy and ptype
-#    if do_cp:
     if 'cp' in bsse_type_list:
         for n in nbody_range:
             if n == max_frag:
@@ -307,7 +304,6 @@ def assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_di
             nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
     # Compute nocp energy and ptype
-#    if do_nocp:
     if 'nocp' in bsse_type_list:
         for n in nbody_range:
             if n == max_frag:
@@ -337,7 +333,6 @@ def assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_di
 
 
     # Compute vmfc energy and ptype
-#    if do_vmfc:
     if 'vmfc' in bsse_type_list:
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         vmfc_interaction_energy = vmfc_energy_body_dict[max_nbody] - vmfc_energy_body_dict[1]
@@ -369,7 +364,7 @@ def assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_di
         ret_energy = energy_body_dict[max_nbody]
         ret_energy -= energy_body_dict[1]
 
-    return ret_energy, energy_body_dict, ptype_body_dict
+    return ret_energy, nbody_dict, energy_body_dict, ptype_body_dict
 
 def nbody_gufunc(func, method_string, **kwargs):
     """
@@ -429,18 +424,13 @@ def nbody_gufunc(func, method_string, **kwargs):
     ### ==> Parse some kwargs <==
     kwargs = p4util.kwargs_lower(kwargs)
     ptype = kwargs.pop('ptype', None)
+    return_wfn = kwargs.pop('return_wfn', False)
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
     core.clean_variables()
 
     if ptype not in ['energy', 'gradient', 'hessian']:
         raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % ptype)
-
-    # Figure out BSSE types
-#    do_cp = False
-#    do_nocp = False
-#    do_vmfc = False
-#    return_method = False
 
     # Parse bsse_type, raise exception if not provided or unrecognized
     bsse_type_list = kwargs.pop('bsse_type')
@@ -454,29 +444,12 @@ def nbody_gufunc(func, method_string, **kwargs):
         if btype.lower() not in ['cp', 'nocp', 'vmfc']:
             raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
 
-#    for num, btype in enumerate(bsse_type_list):
-#        if btype.lower() == 'cp':
-#            do_cp = True
-#            if (num == 0): return_method = 'cp'
-#        elif btype.lower() == 'nocp':
-#            do_nocp = True
-#            if (num == 0): return_method = 'nocp'
-#        elif btype.lower() == 'vmfc':
-#            do_vmfc = True
-#            if (num == 0): return_method = 'vmfc'
-#        else:
-#            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
-
     max_nbody = kwargs.get('max_nbody', -1)
     max_frag = molecule.nfragments()
     if max_nbody == -1:
         max_nbody = molecule.nfragments()
     else:
         max_nbody = min(max_nbody, max_frag)
-#
-#    # What levels do we need?
-#    nbody_range = range(1, max_nbody + 1)
-#    fragment_range = range(1, max_frag + 1)
 
     # Flip this off for now, needs more testing
     # If we are doing CP lets save them integrals
@@ -489,7 +462,6 @@ def nbody_gufunc(func, method_string, **kwargs):
     #    psioh = core.IOManager.shared_object()
     #    psioh.set_specific_retention(97, True)
 
-
     bsse_str = bsse_type_list[0]
     if len(bsse_type_list) >1:
         bsse_str =  str(bsse_type_list)
@@ -498,19 +470,17 @@ def nbody_gufunc(func, method_string, **kwargs):
     core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
 
     # Get compute list
-    compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list = build_nbody_compute_list(bsse_type_list, max_nbody, max_frag)
-
-#    compute_dict = build_nbody_compute_list(bsse_type_list, max_nbody, max_frag)
+    compute_dict = build_nbody_compute_list(bsse_type_list, max_nbody, max_frag)
 
     # Build size and slices dictionaries
     fragment_size_dict = {frag: molecule.extract_subsets(frag).natom() for
                                            frag in range(1, max_frag+1)}
 
     # Compute N-Body components
-    e_dict, ptype_dict, int_dict = compute_nbody_components(func, method_string, molecule, compute_list, **kwargs)
+    e_dict, ptype_dict, int_dict = compute_nbody_components(func, method_string, molecule, compute_dict['all'], **kwargs)
 
     # Assemble N-Body quantities
-    ret_E, energy_body_dict, ptype_body_dict  = assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_dict, e_dict, ptype_dict, compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list, **kwargs)
+    ret_energy, nbody_dict, energy_body_dict, ptype_body_dict  = assemble_nbody_components(ptype, bsse_type_list, max_nbody, max_frag, fragment_size_dict, e_dict, ptype_dict, compute_dict, **kwargs)
 
     # Figure out returns
     if ptype != 'energy':
