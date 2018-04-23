@@ -144,7 +144,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 for index, x in np.ndenumerate(block[il]):
                     row = mo_idx(il[0][index] + offset)
                     col = mo_idx(il[1][index] + offset)
-                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                    if (abs(x) > ints_tolerance):
+                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -164,7 +165,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 for index, x in np.ndenumerate(block[il]):
                     row = alpha_mo_idx(il[0][index] + offset)
                     col = alpha_mo_idx(il[1][index] + offset)
-                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                    if (abs(x) > ints_tolerance):
+                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             PSIF_MO_B_FZC = 'MO-basis Beta Frozen-Core Oper'
             moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
@@ -177,7 +179,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 for index, x in np.ndenumerate(block[il]):
                     row = beta_mo_idx(il[0][index] + offset)
                     col = beta_mo_idx(il[1][index] + offset)
-                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                    if (abs(x) > ints_tolerance):
+                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
