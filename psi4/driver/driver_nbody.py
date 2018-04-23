@@ -110,129 +110,12 @@ def _print_nbody_energy(energy_body_dict, header):
             previous_e = energy_body_dict[n]
         core.print_out("\n")
 
-def nbody_gufunc(func, method_string, **kwargs):
+def build_nbody_compute_list(bsse_type_list, max_nbody, max_frag):
     """
-    Computes the nbody interaction energy, gradient, or Hessian depending on input.
-    This is a generalized univeral function for computing interaction quantities.
-
-    :returns: *return type of func* |w--w| The interaction data.
-
-    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
-
-    :type func: function
-    :param func: ``energy`` || etc.
-
-        Python function that accepts method_string and a molecule. Returns a
-        energy, gradient, or Hessian as requested.
-
-    :type method_string: string
-    :param method_string: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
-
-        First argument, lowercase and usually unlabeled. Indicates the computational
-        method to be passed to func.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    :type return_wfn: :ref:`boolean <op_py_boolean>`
-    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
-
-        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
-        calculation result as the second element of a tuple.
-
-    :type bsse_type: string or list
-    :param bsse_type: ``'cp'`` || ``['nocp', 'vmfc']`` || |dl| ``None`` |dr| || etc.
-
-        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this
-        list is returned by this function. By default, this function is not called.
-
-    :type max_nbody: int
-    :param max_nbody: ``3`` || etc.
-
-        Maximum n-body to compute, cannot exceed the number of fragments in the moleucle.
-
-    :type ptype: string
-    :param ptype: ``'energy'`` || ``'gradient'`` || ``'hessian'``
-
-        Type of the procedure passed in.
-
-    :type return_total_data: :ref:`boolean <op_py_boolean>`
-    :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
-
-        If True returns the total data (energy/gradient/etc) of the system,
-        otherwise returns interaction data.
     """
-
-    ### ==> Parse some kwargs <==
-    kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    ptype = kwargs.pop('ptype', None)
-    return_total_data = kwargs.pop('return_total_data', False)
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-    core.clean_variables()
-
-    if ptype not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % ptype)
-
-    # Figure out BSSE types
-    do_cp = False
-    do_nocp = False
-    do_vmfc = False
-    return_method = False
-
-    # Must be passed bsse_type
-    bsse_type_list = kwargs.pop('bsse_type')
-    if bsse_type_list is None:
-        raise ValidationError("N-Body GUFunc: Must pass a bsse_type")
-    if not isinstance(bsse_type_list, list):
-        bsse_type_list = [bsse_type_list]
-
-    for num, btype in enumerate(bsse_type_list):
-        if btype.lower() == 'cp':
-            do_cp = True
-            if (num == 0): return_method = 'cp'
-        elif btype.lower() == 'nocp':
-            do_nocp = True
-            if (num == 0): return_method = 'nocp'
-        elif btype.lower() == 'vmfc':
-            do_vmfc = True
-            if (num == 0): return_method = 'vmfc'
-        else:
-            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
-
-    max_nbody = kwargs.get('max_nbody', -1)
-    max_frag = molecule.nfragments()
-    if max_nbody == -1:
-        max_nbody = molecule.nfragments()
-    else:
-        max_nbody = min(max_nbody, max_frag)
-
     # What levels do we need?
     nbody_range = range(1, max_nbody + 1)
     fragment_range = range(1, max_frag + 1)
-
-    # Flip this off for now, needs more testing
-    # If we are doing CP lets save them integrals
-    #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-    #    # Set to save RI integrals for repeated full-basis computations
-    #    ri_ints_io = core.get_global_option('DF_INTS_IO')
-
-    #    # inquire if above at all applies to dfmp2 or just scf
-    #    core.set_global_option('DF_INTS_IO', 'SAVE')
-    #    psioh = core.IOManager.shared_object()
-    #    psioh.set_specific_retention(97, True)
-
-
-    bsse_str = bsse_type_list[0]
-    if len(bsse_type_list) >1:
-        bsse_str =  str(bsse_type_list)
-    core.print_out("\n\n")
-    core.print_out("   ===> N-Body Interaction Abacus <===\n")
-    core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
-
 
     cp_compute_list = {x:set() for x in nbody_range}
     nocp_compute_list = {x:set() for x in nbody_range}
@@ -240,20 +123,23 @@ def nbody_gufunc(func, method_string, **kwargs):
     vmfc_level_list = {x:set() for x in nbody_range} # Need to sum something slightly different
 
     # Build up compute sets
-    if do_cp:
+#    if do_cp:
+    if 'cp' in bsse_type_list:
         # Everything is in dimer basis
         basis_tuple = tuple(fragment_range)
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
                 cp_compute_list[nbody].add( (x, basis_tuple) )
 
-    if do_nocp:
+#    if do_nocp:
+    if 'nocp' in bsse_type_list:
         # Everything in monomer basis
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
                 nocp_compute_list[nbody].add( (x, x) )
 
-    if do_vmfc:
+#    if do_vmfc:
+    if 'vmfc' in bsse_type_list:
         # Like a CP for all combinations of pairs or greater
         for nbody in nbody_range:
             for cp_combos in itertools.combinations(fragment_range, nbody):
@@ -272,18 +158,15 @@ def nbody_gufunc(func, method_string, **kwargs):
         compute_list[n] |= vmfc_compute_list[n]
         core.print_out("        Number of %d-body computations:     %d\n" % (n, len(compute_list[n])))
 
+    #compute_dict = {'all': compute_list, 'cp': cp_compute_list, 'nocp': nocp_compute_list, 'vmfc': vmfc_compute_list}
 
-    # Build size and slices dictionaries
-    fragment_size_dict = {frag: molecule.extract_subsets(frag).natom() for
-                                           frag in range(1, max_frag+1)}
+    return compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list
 
-    start = 0
-    fragment_slice_dict = {}
-    for k, v in fragment_size_dict.items():
-        fragment_slice_dict[k] = slice(start, start + v)
-        start += v
-
-    molecule_total_atoms = sum(fragment_size_dict.values())
+def compute_nbody_components(func, method_string, molecule, compute_list, **kwargs):
+    """
+    """
+    ### ==> Parse some kwargs <==
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Now compute the energies
     energies_dict = {}
@@ -311,6 +194,31 @@ def nbody_gufunc(func, method_string, **kwargs):
             #    core.set_global_option('DF_INTS_IO', 'LOAD')
 
             core.clean()
+
+    return energies_dict, ptype_dict, intermediates_dict
+
+def assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_dict, energies_dict, pytpe_dict, compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list, **kwargs):
+    """
+    """
+    ### ==> Parse some kwargs <==
+    kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
+    return_total_data = kwargs.pop('return_total_data', False)
+
+    nbody_range = range(0, max_nbody + 1)
+
+#    cp_compute_list = compute_dict['cp']
+#    nocp_compute_list = compute_dict['nocp']
+#    vmfc_compute_list = compute_dict['vmfc']
+
+    # Build slice dicts
+    start = 0
+    fragment_slice_dict = {}
+    for k, v in fragment_size_dict.items():
+        fragment_slice_dict[k] = slice(start, start + v)
+        start += v
+
+    molecule_total_atoms = sum(fragment_size_dict.values())
 
     # Final dictionaries
     cp_energy_by_level   = {n: 0.0 for n in nbody_range}
@@ -370,7 +278,8 @@ def nbody_gufunc(func, method_string, **kwargs):
                                       vmfc_ptype_by_level[n], vmfc=True)
 
     # Compute cp energy and ptype
-    if do_cp:
+#    if do_cp:
+    if 'cp' in bsse_type_list:
         for n in nbody_range:
             if n == max_frag:
                 cp_energy_body_dict[n] = cp_energy_by_level[n]
@@ -398,7 +307,8 @@ def nbody_gufunc(func, method_string, **kwargs):
             nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
     # Compute nocp energy and ptype
-    if do_nocp:
+#    if do_nocp:
+    if 'nocp' in bsse_type_list:
         for n in nbody_range:
             if n == max_frag:
                 nocp_energy_body_dict[n] = nocp_energy_by_level[n]
@@ -427,7 +337,8 @@ def nbody_gufunc(func, method_string, **kwargs):
 
 
     # Compute vmfc energy and ptype
-    if do_vmfc:
+#    if do_vmfc:
+    if 'vmfc' in bsse_type_list:
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         vmfc_interaction_energy = vmfc_energy_body_dict[max_nbody] - vmfc_energy_body_dict[1]
         nbody_dict['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[max_nbody]
@@ -436,6 +347,9 @@ def nbody_gufunc(func, method_string, **kwargs):
         for n in nbody_range[1:]:
             var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
+
+    # Figure out and build return types
+    return_method = bsse_type_list[0]
 
     if return_method == 'cp':
         ptype_body_dict = cp_ptype_body_dict
@@ -449,14 +363,156 @@ def nbody_gufunc(func, method_string, **kwargs):
     else:
         raise ValidationError("N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
 
-    # Figure out and build return types
     if return_total_data:
         ret_energy = energy_body_dict[max_nbody]
     else:
         ret_energy = energy_body_dict[max_nbody]
         ret_energy -= energy_body_dict[1]
 
+    return ret_energy, energy_body_dict, ptype_body_dict
 
+def nbody_gufunc(func, method_string, **kwargs):
+    """
+    Computes the nbody interaction energy, gradient, or Hessian depending on input.
+    This is a generalized univeral function for computing interaction quantities.
+
+    :returns: *return type of func* |w--w| The interaction data.
+
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
+
+    :type func: function
+    :param func: ``energy`` || etc.
+
+        Python function that accepts method_string and a molecule. Returns a
+        energy, gradient, or Hessian as requested.
+
+    :type method_string: string
+    :param method_string: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
+
+        First argument, lowercase and usually unlabeled. Indicates the computational
+        method to be passed to func.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
+        calculation result as the second element of a tuple.
+
+    :type bsse_type: string or list
+    :param bsse_type: ``'cp'`` || ``['nocp', 'vmfc']`` || |dl| ``None`` |dr| || etc.
+
+        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this
+        list is returned by this function. By default, this function is not called.
+
+    :type max_nbody: int
+    :param max_nbody: ``3`` || etc.
+
+        Maximum n-body to compute, cannot exceed the number of fragments in the moleucle.
+
+    :type ptype: string
+    :param ptype: ``'energy'`` || ``'gradient'`` || ``'hessian'``
+
+        Type of the procedure passed in.
+
+    :type return_total_data: :ref:`boolean <op_py_boolean>`
+    :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
+
+        If True returns the total data (energy/gradient/etc) of the system,
+        otherwise returns interaction data.
+    """
+
+    ### ==> Parse some kwargs <==
+    kwargs = p4util.kwargs_lower(kwargs)
+    ptype = kwargs.pop('ptype', None)
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
+    core.clean_variables()
+
+    if ptype not in ['energy', 'gradient', 'hessian']:
+        raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % ptype)
+
+    # Figure out BSSE types
+#    do_cp = False
+#    do_nocp = False
+#    do_vmfc = False
+#    return_method = False
+
+    # Parse bsse_type, raise exception if not provided or unrecognized
+    bsse_type_list = kwargs.pop('bsse_type')
+    if bsse_type_list is None:
+        raise ValidationError("N-Body GUFunc: Must pass a bsse_type")
+    if not isinstance(bsse_type_list, list):
+        bsse_type_list = [bsse_type_list]
+
+    for num, btype in enumerate(bsse_type_list):
+        bsse_type_list[num] = btype.lower()
+        if btype.lower() not in ['cp', 'nocp', 'vmfc']:
+            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
+
+#    for num, btype in enumerate(bsse_type_list):
+#        if btype.lower() == 'cp':
+#            do_cp = True
+#            if (num == 0): return_method = 'cp'
+#        elif btype.lower() == 'nocp':
+#            do_nocp = True
+#            if (num == 0): return_method = 'nocp'
+#        elif btype.lower() == 'vmfc':
+#            do_vmfc = True
+#            if (num == 0): return_method = 'vmfc'
+#        else:
+#            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
+
+    max_nbody = kwargs.get('max_nbody', -1)
+    max_frag = molecule.nfragments()
+    if max_nbody == -1:
+        max_nbody = molecule.nfragments()
+    else:
+        max_nbody = min(max_nbody, max_frag)
+#
+#    # What levels do we need?
+#    nbody_range = range(1, max_nbody + 1)
+#    fragment_range = range(1, max_frag + 1)
+
+    # Flip this off for now, needs more testing
+    # If we are doing CP lets save them integrals
+    #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
+    #    # Set to save RI integrals for repeated full-basis computations
+    #    ri_ints_io = core.get_global_option('DF_INTS_IO')
+
+    #    # inquire if above at all applies to dfmp2 or just scf
+    #    core.set_global_option('DF_INTS_IO', 'SAVE')
+    #    psioh = core.IOManager.shared_object()
+    #    psioh.set_specific_retention(97, True)
+
+
+    bsse_str = bsse_type_list[0]
+    if len(bsse_type_list) >1:
+        bsse_str =  str(bsse_type_list)
+    core.print_out("\n\n")
+    core.print_out("   ===> N-Body Interaction Abacus <===\n")
+    core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
+
+    # Get compute list
+    compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list = build_nbody_compute_list(bsse_type_list, max_nbody, max_frag)
+
+#    compute_dict = build_nbody_compute_list(bsse_type_list, max_nbody, max_frag)
+
+    # Build size and slices dictionaries
+    fragment_size_dict = {frag: molecule.extract_subsets(frag).natom() for
+                                           frag in range(1, max_frag+1)}
+
+    # Compute N-Body components
+    e_dict, ptype_dict, int_dict = compute_nbody_components(func, method_string, molecule, compute_list, **kwargs)
+
+    # Assemble N-Body quantities
+    ret_E, energy_body_dict, ptype_body_dict  = assemble_nbody_components(ptype, bsse_type_list, max_nbody, fragment_size_dict, e_dict, ptype_dict, compute_list, cp_compute_list, nocp_compute_list, vmfc_compute_list, **kwargs)
+
+    # Figure out returns
     if ptype != 'energy':
         if return_total_data:
             np_final_ptype = ptype_body_dict[max_nbody].copy()
@@ -470,7 +526,7 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     # Build wfn and bind variables
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
-    dicts = [intermediates_dict, energies_dict, ptype_dict, energy_body_dict, ptype_body_dict, nbody_dict]
+    dicts = [int_dict, e_dict, ptype_dict, energy_body_dict, ptype_body_dict, nbody_dict]
     for d in dicts:
         for var, value in d.items():
             wfn.set_variable(str(var), value)
@@ -488,5 +544,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         return (ret_ptype, wfn)
     else:
         return ret_ptype
+
+
 
 
