@@ -98,6 +98,10 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         if (rangesep) {
             lrc_ = true;
 
+            // SR      = LibXC_ALPHA + LibXC_BETA = psi4.set_x_alpha
+            // LR      = LibXC_ALPHA              = psi4.set_x_alpha + psi4.set_x_beta
+            // LR - SR =             - LibXC_BETA =                    psi4.set_x_beta
+
             double alpha, beta;
             xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
 

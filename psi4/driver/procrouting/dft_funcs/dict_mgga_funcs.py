@@ -124,18 +124,18 @@ funcs.append({
     "citation": '    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n',
 })
 
-funcs.append({
-    "name": "mGGA_MVS",
-    "alias": ["MGGA-MVS"],
-    "x_functionals": {
-        "MGGA_X_MVS": {}
-    },
-    "c_functionals": {
-        "GGA_C_REGTPSS": {}
-    },
-    "description": '    MGGA_MVS Meta-GGA XC Functional\n',
-    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinszky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
-})
+#funcs.append({
+#    "name": "mGGA_MVS",
+#    "alias": ["MGGA-MVS"],
+#    "x_functionals": {
+#        "MGGA_X_MVS": {}
+#    },
+#    "c_functionals": {
+#        "GGA_C_REGTPSS": {}
+#    },
+#    "description": '    MGGA_MVS Meta-GGA XC Functional\n',
+#    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinszky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
+#})
 
 funcs.append({
     "name": "TPSS",
