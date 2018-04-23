@@ -168,7 +168,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     if (jk_type == "DF") {
 
         // logic for MemDFJK vs DiskDFJK
-        if (do_wK) {
+        if (do_wK || options["DF_INTS_IO"].has_changed()) {
             return build_JK(primary, auxiliary, options, "DISK_DF");
         } else {
 
