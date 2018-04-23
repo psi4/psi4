@@ -70,7 +70,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     """
     # Get some options
     reference = core.get_option('SCF', 'REFERENCE')
-    ints_tolerance = core.get_option('SCF', 'INTS_TOLERANCE')
+    ints_tolerance = core.get_global_option('INTS_TOLERANCE')
     # Some sanity checks
     if reference not in ['RHF', 'UHF']:
         raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
