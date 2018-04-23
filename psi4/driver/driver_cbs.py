@@ -148,7 +148,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
         return valueHI
 
 
-def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, **kwargs):
+def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
@@ -160,10 +160,8 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
     if type(valueLO) != type(valueHI):
         raise ValidationError("scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
-    
-    if "scf_alpha" in kwargs:
-        alpha = kwargs["scf_alpha"]
-    else:
+
+    if alpha is None:
         alpha = 1.63
 
     beta_division = 1 / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
@@ -222,7 +220,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, **kwargs):
+def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using power form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Truhlar, Chem. Phys. Lett. 294 (1998) 45-48.
@@ -234,10 +232,8 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, *
     if type(valueLO) != type(valueHI):
         raise ValidationError("scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
-    
-    if "scf_alpha" in kwargs:
-        alpha = kwargs["scf_alpha"]
-    else:
+
+    if alpha is None:
         alpha = 3.40
 
     beta_division = 1 / (zHI ** (-1 * alpha) - zLO ** (-1 * alpha))
@@ -296,7 +292,7 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, *
         raise ValidationError("scf_xtpl_truhlar_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, **kwargs):
+def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using root-power form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333.
@@ -308,10 +304,8 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, **
     if type(valueLO) != type(valueHI):
         raise ValidationError("scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
-                                  
-    if "scf_alpha" in kwargs:
-        alpha = kwargs["scf_alpha"]
-    else:
+
+    if alpha is None:
         alpha = 6.30
 
     beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
@@ -368,9 +362,9 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, **
 
     else:
         raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
-        
 
-def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, **kwargs):
+
+def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
@@ -436,7 +430,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 
 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, **kwargs):
+def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252.
@@ -448,9 +442,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
         raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
 
-    if "corl_alpha" in kwargs:
-        alpha = kwargs["corl_alpha"]
-    else:
+    if alpha is None:
         alpha = 3.0
 
     if isinstance(valueLO, float):
@@ -507,7 +499,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
             valueHI.print_out()
             core.print_out("""   Extrapolated Data:\n""")
             value.print_out()
-            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % alpha)            
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % alpha)
             core.print_out("""   Beta Data:\n""")
             beta.print_out()
 
@@ -934,12 +926,27 @@ def cbs(func, label, **kwargs):
         present in ``scf_basis``, :py:func:`~scf_xtpl_helgaker_2` if two valid basis
         sets present in ``scf_basis``, and :py:func:`~xtpl_highest_1` otherwise.
 
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * scf_xtpl_helgaker_3
+           * scf_xtpl_helgaker_2
+           * scf_xtpl_truhlar_2
+           * scf_xtpl_karton_2
+
     :type corl_scheme: function
     :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``corl_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * corl_xtpl_helgaker_2
 
     :type delta_scheme: function
     :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
@@ -949,6 +956,12 @@ def cbs(func, label, **kwargs):
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``delta_basis`` and :py:func:`~xtpl_highest_1` otherwise.
 
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * corl_xtpl_helgaker_2
+
     :type delta2_scheme: function
     :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
@@ -956,6 +969,12 @@ def cbs(func, label, **kwargs):
         to the correlation energy.
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``delta2_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * corl_xtpl_helgaker_2
 
     :type delta3_scheme: function
     :param delta3_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
@@ -982,23 +1001,38 @@ def cbs(func, label, **kwargs):
         present in ``delta5_basis`` and :py:func:`~xtpl_highest_1` otherwise.
 
     :type scf_alpha: float
-    
-        Overrides the default \alpha parameter used in two-parameter SCF extrapolation procedures.
-        Has no effect on :py:func:`~xtpl_highest_1` and :py:func:`~scf_xtpl_helgaker_3`.
+
+        Overrides the default \alpha parameter used in the listed SCF extrapolation procedures.
+        Has no effect on others, including :py:func:`~xtpl_highest_1` and :py:func:`~scf_xtpl_helgaker_3`.
+
+        .. hlist::
+           :columns: 1
+
+           * :py:func:`scf_xtpl_helgaker_2`
+           * :py:func:`scf_xtpl_truhlar_2`
+           * :py:func:`scf_xtpl_karton_2`
 
     :type corl_alpha: float
-    :param corl_alpha: |dl| ``3.0`` |dr|
 
-        Overrides the default \alpha parameter used in :py:func:`corl_xtpl_helgaker_2` correlation 
-        extrapolation. The supplied \alpha is then applied to all following correlation extrapolations.
+        Overrides the default \alpha parameter used in the listed :py:func:`corl_xtpl_helgaker_2` correlation
+        extrapolation to the corl stage. The supplied \alpha does not impact delta or any further stages.
+
+        .. hlist::
+           :columns: 1
+
+           * :py:func:`corl_xtpl_helgaker_2`
 
     :type delta_alpha: float
-    :param delta_alpha: |dl| ``corl_alpha`` |dr|
 
-        Overrides the default \alpha or :py:func:`~corl_alpha` parameter used in 
+        Overrides the default \alpha parameter used in the listed 
         :py:func:`corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
         delta correction is performed using smaller basis sets for which a different \alpha might
         be more appropriate.
+
+        .. hlist::
+           :columns: 1
+
+           * :py:func:`corl_xtpl_helgaker_2`
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -1038,10 +1072,13 @@ def cbs(func, label, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
-    scf_alpha = kwargs.pop('scf_alpha', False)
-    corl_alpha = kwargs.pop('corl_alpha', False)
-    delta_alpha = kwargs.pop('delta_alpha', False)
-    
+    cbs_alpha = {
+        'scf': kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None)),
+        'corl': kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None)),
+        'delta': kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None)),
+        'delta2': kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None)),
+    }
+
     # Establish function to call (only energy makes sense for cbs)
     if ptype not in ['energy', 'gradient', 'hessian']:
         raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling function '%s' instead of 'energy'.""" % ptype)
@@ -1518,16 +1555,11 @@ def cbs(func, label, **kwargs):
     finalenergy = 0.0
     finalgradient = core.Matrix(natom, 3)
     finalhessian = core.Matrix(3 * natom, 3 * natom)
-    hiloargs = dict()
-    if scf_alpha:
-        hiloargs["scf_alpha"] = scf_alpha
-    if corl_alpha:
-        hiloargs["corl_alpha"] = corl_alpha
-        
+
     for stage in GRAND_NEED:
+        hiloargs = {'alpha': cbs_alpha[stage['d_stage']]}
+
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
-        if stage['d_stage'] == 'delta' and delta_alpha:
-            hiloargs['corl_alpha'] = delta_alpha
         stage['d_energy'] = stage['d_scheme'](**hiloargs)
         finalenergy += stage['d_energy'] * stage['d_coef']
 
