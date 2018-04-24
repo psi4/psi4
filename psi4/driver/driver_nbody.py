@@ -454,7 +454,17 @@ def assemble_nbody_components(metadata, component_results):
                    BSSE treatment.
             ``'kwargs'``: dict
                    Arbitrary keyword arguments.
+    component_results : dict of str: dict
+        Dictionary containing computed N-body components.
 
+        Required ``'key': value`` pairs:
+        ``'energies'``: dict of set: float64
+               Dictionary containing all energy components required for given N-body procedure.
+        ``'ptype'``: dict of set: float64 or dict of set: psi4.Matrix
+               Dictionary of returned quantities from calls of function `func` during N-body computations
+        ``'intermediates'``: dict of str: float64
+               Dictionary of psivars for intermediate N-body computations to be set at the end of the
+               N-body procedure.
     Returns
     -------
     results : dict of str
