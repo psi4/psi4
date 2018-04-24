@@ -50,8 +50,36 @@ methods_dict = {
 
 
 def run_json(json_data):
+
+    return run_json_original_v1_1(json_data)
+
+def run_json_qc_schema(json_data):
+    """
+    An implementation of the QC JSON Schema (molssi-qc-schema.readthedocs.io/en/latest/index.html#) implementation in Psi4.
+
+
+    Parameters
+    ----------
+    json_data : JSON
+        Please see molssi-qc-schema.readthedocs.io/en/latest/spec_components.html for further details.
+
+    Notes
+    -----
+    !Warning! This function is experimental and likely to change in the future.
+    Please report any suggestions or uses of this function on github.com/MolSSI/QC_JSON_Schema.
+
+    Examples
+    --------
+
+    """
+
+
+def run_json_original_v1_1(json_data):
     """
     Runs and updates the input JSON data.
+
+    This was a trial specification introduced in Psi4 v1.1. This will be deprecated in Psi4 v1.3 in favour of the QC JSON format
+    found here: http://molssi-qc-schema.readthedocs.io/en/latest/index.html#
 
     Parameters
     ----------
@@ -154,6 +182,7 @@ def run_json(json_data):
     json_data["raw_output"] = "Output storing was not requested."
     json_data["success"] = False
     json_data["raw_output"] = None
+    json_data["warning"] = "Warning! This format will be deprecated in Psi4 v1.3. Please switch the standard QC JSON format."
 
     # Add the provenance data
     prov = {}
@@ -185,7 +214,7 @@ def run_json(json_data):
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
     if return_output:
-        outfile = str(uuid.uuid4()) + ".json_out"
+        outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
         core.set_output_file(outfile, False)
         json_data["raw_output"] = "Not yet run."
 
@@ -234,5 +263,6 @@ def run_json(json_data):
         with open(outfile, 'r') as f:
             json_data["raw_output"] = f.read()
         os.unlink(outfile)
+
 
     return json_data

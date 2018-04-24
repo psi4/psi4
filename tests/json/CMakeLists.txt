@@ -1,2 +1,2 @@
-add_subdirectory(energy)
-add_subdirectory(gradient)
+add_subdirectory(v11_energy)
+add_subdirectory(v11_gradient)
