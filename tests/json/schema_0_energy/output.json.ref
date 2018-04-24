@@ -1,0 +1,87 @@
+{
+  "schema_name": "QC_JSON",
+  "schema_version": 0,
+  "molecule": {
+    "geometry": [
+      0.0,
+      0.0,
+      -0.1294769411935893,
+      0.0,
+      -1.494187339479985,
+      1.0274465079245698,
+      0.0,
+      1.494187339479985,
+      1.0274465079245698
+    ],
+    "symbols": [
+      "O",
+      "H",
+      "H"
+    ]
+  },
+  "driver": "energy",
+  "model": {
+    "method": "MP2",
+    "basis": "cc-pVDZ"
+  },
+  "keywords": {
+    "scf_type": "df"
+  },
+  "raw_output": null,
+  "success": true,
+  "provenance": {
+    "creator": "QM Program",
+    "version": "1.1",
+    "routine": "psi4.json.run_json"
+  },
+  "return_result": -76.2283141021049,
+  "psi4:properties": {
+    "CURRENT CORRELATION ENERGY": -0.2069167161016298,
+    "CURRENT DIPOLE X": 0.0,
+    "CURRENT DIPOLE Y": 0.0,
+    "CURRENT DIPOLE Z": 2.0958208656507504,
+    "CURRENT ENERGY": -76.2283141021049,
+    "CURRENT REFERENCE ENERGY": -76.02139738600327,
+    "HF TOTAL ENERGY": -76.02139738600329,
+    "MP2 CORRELATION ENERGY": -0.2069167161016298,
+    "MP2 OPPOSITE-SPIN CORRELATION ENERGY": -0.1548891107732647,
+    "MP2 SAME-SPIN CORRELATION ENERGY": -0.052027605328364895,
+    "MP2 SINGLES ENERGY": -1.9660206953496186e-16,
+    "MP2 TOTAL ENERGY": -76.2283141021049,
+    "NUCLEAR REPULSION ENERGY": 8.80146206062943,
+    "ONE-ELECTRON ENERGY": -122.44529682743081,
+    "SCF DIPOLE X": 0.0,
+    "SCF DIPOLE Y": 0.0,
+    "SCF DIPOLE Z": 2.0958208656507504,
+    "SCF ITERATION ENERGY": -76.02139738600327,
+    "SCF ITERATIONS": 10.0,
+    "SCF N ITERS": 10.0,
+    "SCF TOTAL ENERGY": -76.02139738600327,
+    "SCS-MP2 CORRELATION ENERGY": -0.2032094680373728,
+    "SCS-MP2 TOTAL ENERGY": -76.22460685404064,
+    "TWO-ELECTRON ENERGY": 37.6224373807981
+  },
+  "properties": {
+    "calcinfo_nbasis": 24,
+    "calcinfo_nmo": 24,
+    "calcinfo_nalpha": 5,
+    "calcinfo_nbeta": 5,
+    "calcinfo_natom": 3,
+    "scf_one_electron_energy": -122.44529682743081,
+    "scf_two_electron_energy": 37.6224373807981,
+    "nuclear_repulsion_energy": 8.80146206062943,
+    "scf_dipole_moment": [
+      0.0,
+      0.0,
+      2.0958208656507504
+    ],
+    "scf_iterations": 10,
+    "scf_total_energy": -76.02139738600327,
+    "mp2_same_spin_correlation_energy": -0.052027605328364895,
+    "mp2_opposite_spin_correlation_energy": -0.1548891107732647,
+    "mp2_singles_energy": 0.0,
+    "mp2_doubles_energy": -0.2069167161016298,
+    "mp2_total_correlation_energy": -0.2069167161016298,
+    "mp2_total_energy": -76.2283141021049
+  }
+}

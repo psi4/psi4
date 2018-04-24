@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(json-gradient "psi;quicktests;smoketests;json;cart")
+add_regression_test(json-v11_gradient "psi;json;cart")
