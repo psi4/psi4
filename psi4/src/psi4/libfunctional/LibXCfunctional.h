@@ -36,13 +36,13 @@
 
 struct xc_func_type;
 
-namespace psi {
-
 /**
  * LibXC functional wrapper
  **/
+namespace psi {
 
 class LibXCFunctional : public Functional {
+// Wrapper to the LibXC library
 
 private:
     std::string xc_func_name_;
