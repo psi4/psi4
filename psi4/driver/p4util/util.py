@@ -354,6 +354,8 @@ def compare_arrays(expected, computed, digits, label):
     """
 
     try:
+        expected = np.asarray(expected)
+        computed = np.asarray(computed)
         shape1 = expected.shape
         shape2 = computed.shape
     except:

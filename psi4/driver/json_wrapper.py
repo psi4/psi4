@@ -38,7 +38,6 @@ from psi4.driver import driver
 from psi4.driver import molutil
 from psi4 import core
 
-
 methods_dict = {
     'energy': driver.energy,
     'gradient': driver.gradient,
@@ -51,7 +50,44 @@ methods_dict = {
 
 def run_json(json_data):
 
-    return run_json_original_v1_1(json_data)
+    # Set scratch
+    if "scratch_location" in json_data:
+        psi4_io = core.IOManager.shared_object()
+        psi4_io.set_default_path(json_data["scratch_location"])
+
+    # Set memory
+    if "memory" in json_data:
+        psi4.set_memory(json_data["memory"])
+
+    # Do we return the output?
+    return_output = json_data.pop("return_output", False)
+    if return_output:
+        outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
+        core.set_output_file(outfile, False)
+        json_data["raw_output"] = "Not yet run."
+
+    # Set a few flags
+    json_data["raw_output"] = None
+    json_data["success"] = False
+
+    # Attempt to run the computer
+    try:
+        if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
+            run_json_qc_schema(json_data)
+        else:
+            run_json_original_v1_1(json_data)
+
+    except Exception as error:
+        json_data["error"] = repr(error)
+        json_data["success"] = False
+
+    if return_output:
+        with open(outfile, 'r') as f:
+            json_data["raw_output"] = f.read()
+        os.unlink(outfile)
+
+    return json_data
+
 
 def run_json_qc_schema(json_data):
     """
@@ -72,6 +108,64 @@ def run_json_qc_schema(json_data):
     --------
 
     """
+
+    # This is currently a forced override
+    json_data["schema_version"] = 0
+
+    json_data["provenance"] = {"creator": "QM Program", "version": psi4.__version__, "routine": "psi4.json.run_json"}
+
+    # QCDB, help Lori!
+    mol = core.Molecule.from_arrays(geom=json_data["molecule"]["geometry"], elem=json_data["molecule"]["symbols"], units="Bohr")
+
+    method = json_data["model"]["method"] + "/" + json_data["model"]["basis"]
+    val, wfn = methods_dict[json_data["driver"]](method, return_wfn=True, molecule=mol)
+
+
+    if json_data["driver"] == "energy":
+        json_data["return_result"] = val
+    elif json_data["driver"] in ["gradient", "hessian"]:
+        json_data["return_result"] = val.np.ravel().tolist()
+    else:
+        raise KeyError("Did not understand key %s")
+
+    # Pull out a standard set of SCF properties
+    psi_props = psi4.core.get_variables()
+    json_data["psi4:properties"] = psi_props
+
+    props = {
+        "calcinfo_nbasis": wfn.nso(),
+        "calcinfo_nmo": wfn.nmo(),
+        "calcinfo_nalpha": wfn.nalpha(),
+        "calcinfo_nbeta": wfn.nbeta(),
+        "calcinfo_natom": mol.geometry().shape[0],
+        "scf_one_electron_energy": psi_props["ONE-ELECTRON ENERGY"],
+        "scf_two_electron_energy": psi_props["TWO-ELECTRON ENERGY"],
+        "nuclear_repulsion_energy": psi_props["NUCLEAR REPULSION ENERGY"],
+        "scf_dipole_moment": [psi_props[x] for x in ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]],
+        "scf_iterations": int(psi_props["SCF ITERATIONS"]),
+        "scf_total_energy": psi_props["SCF TOTAL ENERGY"],
+    }
+
+    # Pull out optional SCF keywords
+    other_scf = [("DFT VV10 ENERGY", "scf_vv10_energy"), ("DFT XC ENERGY", "scf_xc_energy"),
+                 ("DISPERSION CORRECTION ENERGY", "scf_dispersion_correction_energy")]
+    for pkey, skey in other_scf:
+        if (pkey in psi_props) and (psi_props[pkey] != 0):
+            props[skey] = psi_props[pkey]
+
+    # Write out MP2 keywords
+    if "MP2 CORRELATION ENERGY" in psi_props:
+        props["mp2_same_spin_correlation_energy"] = psi_props["MP2 SAME-SPIN CORRELATION ENERGY"]
+        props["mp2_opposite_spin_correlation_energy"] = psi_props["MP2 OPPOSITE-SPIN CORRELATION ENERGY"]
+        props["mp2_singles_energy"] = 0.0
+        props["mp2_doubles_energy"] = psi_props["MP2 CORRELATION ENERGY"]
+        props["mp2_total_correlation_energy"] = psi_props["MP2 CORRELATION ENERGY"]
+        props["mp2_total_energy"] = psi_props["MP2 TOTAL ENERGY"]
+
+    json_data["properties"] = props
+    json_data["success"] = True
+
+    return json_data
 
 
 def run_json_original_v1_1(json_data):
@@ -179,10 +273,10 @@ def run_json_original_v1_1(json_data):
 
     # Set a few variables
     json_data["error"] = ""
-    json_data["raw_output"] = "Output storing was not requested."
     json_data["success"] = False
     json_data["raw_output"] = None
-    json_data["warning"] = "Warning! This format will be deprecated in Psi4 v1.3. Please switch the standard QC JSON format."
+    json_data[
+        "warning"] = "Warning! This format will be deprecated in Psi4 v1.3. Please switch the standard QC JSON format."
 
     # Add the provenance data
     prov = {}
@@ -202,67 +296,40 @@ def run_json_original_v1_1(json_data):
         json_data["error"] = "Driver parameters '%s' not recognized" % str(json_data["driver"])
         return json_data
 
-    # Set scratch
-    if "scratch_location" in list(json_data):
-        psi4_io = core.IOManager.shared_object()
-        psi4_io.set_default_path(json_data["scratch_location"])
+    # Set options
+    if "options" in json_data.keys() and (json_data["options"] is not None):
+        for k, v in json_data["options"].items():
+            core.set_global_option(k, v)
 
-    # Set memory
-    if "memory" in list(json_data):
-        psi4.set_memory(json_data["memory"])
+    # Rework args
+    args = json_data["method"]
+    if not isinstance(args, (list, tuple)):
+        args = [args]
 
-    # Do we return the output?
-    return_output = json_data.pop("return_output", False)
-    if return_output:
-        outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
-        core.set_output_file(outfile, False)
-        json_data["raw_output"] = "Not yet run."
+    # Deep copy kwargs
+    if "kwargs" in list(json_data):
+        kwargs = copy.deepcopy(json_data["kwargs"])
+    else:
+        kwargs = {}
 
-    try:
-        # Set options
-        if "options" in json_data.keys() and (json_data["options"] is not None):
-            for k, v in json_data["options"].items():
-                core.set_global_option(k, v)
+    kwargs["molecule"] = molutil.geometry(json_data["molecule"])
 
-        # Rework args
-        args = json_data["method"]
-        if not isinstance(args, (list, tuple)):
-            args = [args]
+    # Full driver call
+    kwargs["return_wfn"] = True
 
-        # Deep copy kwargs
-        if "kwargs" in list(json_data):
-            kwargs = copy.deepcopy(json_data["kwargs"])
-        else:
-            kwargs = {}
+    if json_data["driver"] not in methods_dict:
+        raise KeyError("Driver type '%s' not recognized." % str(json_data["driver"]))
 
-        kwargs["molecule"] = molutil.geometry(json_data["molecule"])
+    val, wfn = methods_dict[json_data["driver"]](*args, **kwargs)
 
-        # Full driver call
-        kwargs["return_wfn"] = True
+    if isinstance(val, (float, int)):
+        json_data["return_value"] = val
+    elif isinstance(val, (core.Matrix, core.Vector)):
+        json_data["return_value"] = val.to_serial()
+    else:
+        raise TypeError("Unrecognized return value of type %s\n" % type(val))
 
-        if json_data["driver"] not in methods_dict:
-            raise KeyError("Driver type '%s' not recognized." % str(json_data["driver"]))
-
-        val, wfn = methods_dict[json_data["driver"]](*args, **kwargs)
-
-        if isinstance(val, (float, int)):
-            json_data["return_value"] = val
-        elif isinstance(val, (core.Matrix, core.Vector)):
-            json_data["return_value"] = val.to_serial()
-        else:
-            raise TypeError("Unrecognized return value of type %s\n" % type(val))
-
-        json_data["variables"] = core.get_variables()
-        json_data["success"] = True
-
-    except Exception as error:
-        json_data["error"] += repr(error)
-        json_data["success"] = False
-
-    if return_output:
-        with open(outfile, 'r') as f:
-            json_data["raw_output"] = f.read()
-        os.unlink(outfile)
-
+    json_data["variables"] = core.get_variables()
+    json_data["success"] = True
 
     return json_data
