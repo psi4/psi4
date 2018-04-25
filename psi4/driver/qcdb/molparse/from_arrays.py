@@ -555,33 +555,33 @@ def validate_and_fill_nuclei(
     """Check the nuclear identity arrays for consistency and fill in knowable values."""
 
     if elea is None:
-        elea = np.full((nat, ), None)
+        elea = np.asarray([None] * nat)
     else:
         # -1 equivalent to None
         elea = np.array([(None if at == -1 else at) for at in elea])
 
     if elez is None:
-        elez = np.full((nat, ), None)
+        elez = np.asarray([None] * nat)
     else:
         elez = np.array(elez)
 
     if elem is None:
-        elem = np.full((nat, ), None)
+        elem = np.asarray([None] * nat)
     else:
         elem = np.array(elem)
 
     if mass is None:
-        mass = np.full((nat, ), None)
+        mass = np.asarray([None] * nat)
     else:
         mass = np.array(mass)
 
     if real is None:
-        real = np.full((nat, ), None)
+        real = np.asarray([None] * nat)
     else:
         real = np.array(real)
 
     if elbl is None:
-        elbl = np.full((nat, ), None)
+        elbl = np.asarray([None] * nat)
     else:
         elbl = np.array(elbl)
 
