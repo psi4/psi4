@@ -2795,9 +2795,6 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 
     size_t naux = naux_;
     size_t nao = nao_;
-    if (max_nocc > nao){
-        throw PSIEXCEPTION("DFH: max_nocc > nao, cannot not yet handle these cases.");
-    }
 
     // determine buffer sizes and blocking scheme
     // would love to move this to initialize(), but
@@ -2824,7 +2821,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        std::vector<double> Cp(nao * nao);
+        std::vector<double> Cp(nao * max_nocc);
         C_buffers[rank] = Cp;
     }
 
