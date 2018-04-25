@@ -360,8 +360,11 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
 
 
 double Molecule::mass(int atom) const {
+    bool zero_ghost = true;
     double ret = 0.0;
-    if (atoms_[atom]->mass() != 0.0)
+    if (zero_ghost && (atoms_[atom]->Z() == 0.0))
+        ret = 0.0;
+    else if (atoms_[atom]->mass() != 0.0)
         ret = atoms_[atom]->mass();
     else {
         if (std::fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
