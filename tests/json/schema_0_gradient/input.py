@@ -66,6 +66,3 @@ psi4.compare_arrays(expected_return_result, json_data["return_result"], 6, "Retu
 
 for k in expected_properties.keys():
     psi4.compare_values(expected_properties[k], json_data["properties"][k], 6, k.upper())   #TEST
-
-with open("output.json", "w") as ofile:                                                     #TEST
-    json.dump(json_data, ofile, indent=2)                                                   #TEST

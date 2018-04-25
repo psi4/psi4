@@ -55,14 +55,14 @@ expected_properties = {
 
 psi4.json_wrapper.run_json(json_data)
 
+with open("output.json", "w") as ofile:                                                     #TEST
+    json.dump(json_data, ofile, indent=2)                                                   #TEST
+
 psi4.compare_integers(True, json_data["success"], "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_data["return_result"], 6, "Return Value")  #TEST
 
 for k in expected_properties.keys():
     psi4.compare_values(expected_properties[k], json_data["properties"][k], 6, k.upper())   #TEST
-
-with open("output.json", "w") as ofile:                                                     #TEST
-    json.dump(json_data, ofile, indent=2)                                                   #TEST
 
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634

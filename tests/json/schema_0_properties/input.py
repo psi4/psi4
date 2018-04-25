@@ -108,6 +108,9 @@ expected_properties = {
 
 psi4.json_wrapper.run_json(json_data)
 
+with open("output.json", "w") as ofile:                                                     #TEST
+    json.dump(json_data, ofile, indent=2)                                                   #TEST
+
 psi4.compare_integers(True, json_data["success"], "JSON Success")                           #TEST
 for k in expected_return_result.keys():                                                     #TEST
     psi4.compare_arrays(expected_return_result[k], json_data["return_result"][k], 6, "Result: " + k.upper())  #TEST
@@ -115,6 +118,4 @@ for k in expected_return_result.keys():                                         
 for k in expected_properties.keys():
     psi4.compare_values(expected_properties[k], json_data["properties"][k], 6, k.upper())   #TEST
 
-with open("output.json", "w") as ofile:                                                     #TEST
-    json.dump(json_data, ofile, indent=2)                                                   #TEST
 

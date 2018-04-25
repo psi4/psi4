@@ -52,6 +52,11 @@ can_do_properties_ = {
     "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
+def _clean_psi_environ(do_clean):
+    if do_clean:
+        psi4.core.clean_variables()
+        psi4.core.clean_options()
+        core.clean()
 
 def run_json(json_data, clean=True):
 
@@ -76,16 +81,15 @@ def run_json(json_data, clean=True):
     json_data["success"] = False
 
     # Attempt to run the computer
-    run_json_qc_schema(json_data, clean)
-    # try:
-    #     if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
-    #         run_json_qc_schema(json_data, clean)
-    #     else:
-    #         run_json_original_v1_1(json_data, clean)
+    try:
+        if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
+            run_json_qc_schema(json_data, clean)
+        else:
+            run_json_original_v1_1(json_data, clean)
 
-    # except Exception as error:
-    #     json_data["error"] = repr(error)
-    #     json_data["success"] = False
+    except Exception as error:
+        json_data["error"] = repr(error)
+        json_data["success"] = False
 
     if return_output:
         with open(outfile, 'r') as f:
@@ -115,6 +119,9 @@ def run_json_qc_schema(json_data, clean):
 
     """
 
+    # Clean a few things
+    _clean_psi_environ(clean)
+
     # This is currently a forced override
     json_data["schema_version"] = "v0.1"
 
@@ -125,7 +132,6 @@ def run_json_qc_schema(json_data, clean):
     # print(json.dumps(json_data, indent=2))
 
     # Set options
-    optstash = p4util.OptionsState([x.upper() for x in json_data["keywords"]])
     for k, v in json_data["keywords"].items():
         core.set_global_option(k, v)
 
@@ -211,12 +217,10 @@ def run_json_qc_schema(json_data, clean):
 
     json_data["properties"] = props
     json_data["success"] = True
-    print(json.dumps(json_data, indent=2))
+    # print(json.dumps(json_data, indent=2))
 
     # Reset state
-    optstash.restore()
-    if clean:
-        core.clean()
+    _clean_psi_environ(clean)
 
     return json_data
 
@@ -324,6 +328,9 @@ def run_json_original_v1_1(json_data, clean):
     }
     """
 
+    # Clean a few things
+    _clean_psi_environ(clean)
+
     # Set a few variables
     json_data["error"] = ""
     json_data["success"] = False
@@ -385,7 +392,7 @@ def run_json_original_v1_1(json_data, clean):
     json_data["variables"] = core.get_variables()
     json_data["success"] = True
 
-    if clean:
-        core.clean()
+    # Reset state
+    _clean_psi_environ(clean)
 
     return json_data
