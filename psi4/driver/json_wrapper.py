@@ -110,12 +110,13 @@ def run_json_qc_schema(json_data):
     """
 
     # This is currently a forced override
-    json_data["schema_version"] = 0
+    json_data["schema_version"] = "v0.1"
 
     json_data["provenance"] = {"creator": "QM Program", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
     # QCDB, help Lori!
-    mol = core.Molecule.from_arrays(geom=json_data["molecule"]["geometry"], elem=json_data["molecule"]["symbols"], units="Bohr")
+    #mol = core.Molecule.from_arrays(geom=json_data["molecule"]["geometry"], elem=json_data["molecule"]["symbols"], units="Bohr")
+    mol = core.Molecule.from_schema(json_data)
 
     method = json_data["model"]["method"] + "/" + json_data["model"]["basis"]
     val, wfn = methods_dict[json_data["driver"]](method, return_wfn=True, molecule=mol)

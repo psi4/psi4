@@ -1357,6 +1357,125 @@ class Molecule(LibmintsMolecule):
         return smol
 
     @staticmethod
+    def from_schema(molschema, return_dict=False, verbose=1):
+        """Construct Molecule from non-Psi4 schema.
+
+        Light wrapper around :py:func:`~qcdb.Molecule.from_arrays`.
+
+        Parameters
+        ----------
+        molschema : dict
+            Dictionary form of Molecule following known schema.
+        return_dict : bool, optional
+            Additionally return Molecule dictionary intermediate.
+        verbose : int, optional
+            Amount of printing.
+
+        Returns
+        -------
+        mol : :py:class:`~qcdb.Molecule`
+        molrec : dict, optional
+            Dictionary representation of instance.
+            Only provided if `return_dict` is True.
+
+        """
+
+        if ((molschema.get('schema_name', '') == 'QC_JSON') and
+            (molschema.get('schema_version', '') == 'v0.1')):
+            # Lost Fields
+            # -----------
+            # * 'comment'
+            # * 'provenance'
+            ms = molschema['molecule']
+
+            if 'fragments' in ms:
+                sgeom = np.array(ms['geometry']).reshape(-1, 3)
+                nat = sgeom.shape[0]
+                frag_pattern = np.array(ms['fragments'])
+                if not np.array_equal(np.concatenate(frag_pattern), np.arange(nat)):
+                    print("""Warning: Psi4 is reordering atoms to accommodate non-contiguous fragments""")
+
+                vsplt = np.cumsum([len(fr) for fr in frag_pattern])
+                assert vsplt[-1] == self.natom(), """dropped atoms!"""
+                fragment_separators=vsplt[:-1]
+
+                geom = np.vstack([sgeom[fr] for fr in frag_pattern])
+                elem = np.concatenate([ms['symbols'][fr] for fr in frag_pattern], axis=0)
+
+                if 'masses' in ms:
+                    mass = np.concatenate([ms['masses'][fr] for fr in frag_pattern], axis=0)
+                else:
+                    mass = None
+
+                if 'real' in ms:
+                    real = np.concatenate([ms['real'][fr] for fr in frag_pattern], axis=0)
+                else:
+                    real = None
+
+                if 'fragment_charges' in ms:
+                    fragment_charges = np.concatenate([ms['fragment_charges'][fr] for fr in frag_pattern], axis=0)
+                else:
+                    fragment_charges = None
+
+                if 'fragment_multiplicities' in ms:
+                    fragment_multiplicities = np.concatenate([ms['fragment_multiplicities'][fr] for fr in frag_pattern], axis=0)
+                else:
+                    fragment_multiplicities = None
+
+            else:
+                geom = ms['geometry']
+                elem = ms['symbols']
+                mass = ms.get('masses', None)
+                real = ms.get('real', None)
+                fragment_separators = None
+                fragment_charges = ms.get('fragment_charges', None)
+                fragment_multiplicities = ms.get('fragment_multiplicities', None)
+
+            molrec = molparse.from_arrays(geom=geom,
+                                          elea=None,
+                                          elez=None,
+                                          elem=elem,
+                                          mass=mass,
+                                          real=real,
+                                          elbl=None,
+                                          name=ms.get('name', None),
+                                          units='Bohr',
+                                          input_units_to_au=None,
+                                          fix_com=ms.get('fix_com', None),
+                                          fix_orientation=ms.get('fix_orientation', None),
+                                          fix_symmetry=None,
+                                          fragment_separators=fragment_separators,
+                                          fragment_charges=fragment_charges,
+                                          fragment_multiplicities=fragment_multiplicities,
+                                          molecular_charge=ms.get('molecular_charge', None),
+                                          molecular_multiplicity=ms.get('molecular_multiplicity', None),
+                                          domain='qm',
+                                          #missing_enabled_return=missing_enabled_return,
+                                          #tooclose=tooclose,
+                                          #zero_ghost_fragments=zero_ghost_fragments,
+                                          #nonphysical=nonphysical,
+                                          #mtol=mtol,
+                                          verbose=verbose)
+
+        else:
+            raise ValidationError("""Schema not recognized""")
+
+        if return_dict:
+            return Molecule.from_dict(molrec), molrec
+        else:
+            return Molecule.from_dict(molrec)
+
+    def _raw_to_schema(self, dtype, units='Angstrom', return_type='json'):
+        """Serializes instance into JSON or YAML according to schema `dtype`."""
+
+        molrec = self.to_dict(np_out=True)
+        jymol = molparse.to_schema(molrec,
+                                   dtype=dtype,
+                                   units=units,
+                                   return_type=return_type)
+        return jymol
+
+    @staticmethod
     def _raw_to_dict(self, force_c1=False, force_units=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
@@ -1886,3 +2005,4 @@ Molecule.BFS = Molecule._raw_BFS
 Molecule.B787 = Molecule._raw_B787
 Molecule.scramble = Molecule._raw_scramble
 Molecule.to_string = Molecule._raw_to_string
+Molecule.to_schema = Molecule._raw_to_schema
