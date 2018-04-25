@@ -29,7 +29,8 @@ json_data = {
     "method": "MP2",
     "basis": "cc-pVDZ"
   },
-  "keywords": {"scf_type": "df"}
+  "keywords": {"scf_type": "df",
+               "mp2_type": "df"}
 }
 
 # Write expected output
@@ -62,3 +63,35 @@ for k in expected_properties.keys():
 
 with open("output.json", "w") as ofile:                                                     #TEST
     json.dump(json_data, ofile, indent=2)                                                   #TEST
+
+# Expected output with exact MP2
+expected_return_result = -76.2283674281634
+expected_properties = {
+  "calcinfo_nbasis": 24,
+  "calcinfo_nmo": 24,
+  "calcinfo_nalpha": 5,
+  "calcinfo_nbeta": 5,
+  "calcinfo_natom": 3,
+  "scf_one_electron_energy": -122.44534537436829,
+  "scf_two_electron_energy": 37.62246494646352,
+  "nuclear_repulsion_energy": 8.80146206062943,
+  "scf_total_energy": -76.02141836727533,
+  "mp2_same_spin_correlation_energy": -0.051980792907589016,
+  "mp2_opposite_spin_correlation_energy": -0.1549682679804691,
+  "mp2_singles_energy": 0.0,
+  "mp2_doubles_energy": -0.2069490608880642,
+  "mp2_total_correlation_energy": -0.2069490608880642,
+  "mp2_total_energy": -76.2283674281634
+}
+
+# Switch run to exact MP2
+json_data["keywords"]["scf_type"] = "pk"
+json_data["keywords"]["mp2_type"] = "conv"
+psi4.json_wrapper.run_json(json_data)
+
+psi4.compare_integers(True, json_data["success"], "JSON Success")                           #TEST
+psi4.compare_values(expected_return_result, json_data["return_result"], 6, "Return Value")  #TEST
+
+for k in expected_properties.keys():
+    psi4.compare_values(expected_properties[k], json_data["properties"][k], 6, k.upper())   #TEST
+

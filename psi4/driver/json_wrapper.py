@@ -36,6 +36,7 @@ import uuid
 import psi4
 from psi4.driver import driver
 from psi4.driver import molutil
+from psi4.driver import p4util
 from psi4 import core
 
 methods_dict = {
@@ -48,7 +49,7 @@ methods_dict = {
 }
 
 
-def run_json(json_data):
+def run_json(json_data, clean=True):
 
     # Set scratch
     if "scratch_location" in json_data:
@@ -71,11 +72,12 @@ def run_json(json_data):
     json_data["success"] = False
 
     # Attempt to run the computer
+    run_json_qc_schema(json_data, clean)
     try:
         if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
-            run_json_qc_schema(json_data)
+            run_json_qc_schema(json_data, clean)
         else:
-            run_json_original_v1_1(json_data)
+            run_json_original_v1_1(json_data, clean)
 
     except Exception as error:
         json_data["error"] = repr(error)
@@ -89,7 +91,7 @@ def run_json(json_data):
     return json_data
 
 
-def run_json_qc_schema(json_data):
+def run_json_qc_schema(json_data, clean):
     """
     An implementation of the QC JSON Schema (molssi-qc-schema.readthedocs.io/en/latest/index.html#) implementation in Psi4.
 
@@ -112,11 +114,15 @@ def run_json_qc_schema(json_data):
     # This is currently a forced override
     json_data["schema_version"] = "v0.1"
 
-    json_data["provenance"] = {"creator": "QM Program", "version": psi4.__version__, "routine": "psi4.json.run_json"}
+    json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
-    # QCDB, help Lori!
-    #mol = core.Molecule.from_arrays(geom=json_data["molecule"]["geometry"], elem=json_data["molecule"]["symbols"], units="Bohr")
+    # Build molecule
     mol = core.Molecule.from_schema(json_data)
+
+    # Set options
+    optstash = p4util.OptionsState([x.upper() for x in json_data["keywords"]])
+    for k, v in json_data["keywords"].items():
+        core.set_global_option(k, v)
 
     method = json_data["model"]["method"] + "/" + json_data["model"]["basis"]
     val, wfn = methods_dict[json_data["driver"]](method, return_wfn=True, molecule=mol)
@@ -166,10 +172,15 @@ def run_json_qc_schema(json_data):
     json_data["properties"] = props
     json_data["success"] = True
 
+    # Reset state
+    optstash.restore()
+    if clean:
+        core.clean()
+
     return json_data
 
 
-def run_json_original_v1_1(json_data):
+def run_json_original_v1_1(json_data, clean):
     """
     Runs and updates the input JSON data.
 
@@ -332,5 +343,8 @@ def run_json_original_v1_1(json_data):
 
     json_data["variables"] = core.get_variables()
     json_data["success"] = True
+
+    if clean:
+        core.clean()
 
     return json_data
