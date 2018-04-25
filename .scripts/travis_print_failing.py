@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import re
 import sys
-
+import json
+import os
 
 badtests = []
 testfail = re.compile(r'^\s*(?P<num>\d+) - (?P<name>\w+(?:-\w+)*) \(Failed\)\s*$')
@@ -22,14 +23,29 @@ for line in ctestout[1:]:
         sys.stdout.write("""\n\n%s failed. Here is the output:\n""" % (bad))
 
         badoutfile = bad
-        for oddity in ['pcmsolver', 'cfour', 'libefp', 'chemps2', 'dftd3', 'mrcc', 'psi4numpy', 'python',
-                       'cookbook', 'dkh', 'erd', 'gcp', 'gdma', 'simint', 'snsmp2', 'v2rdm_casscf']:
+        for oddity in [
+                'pcmsolver', 'cfour', 'libefp', 'chemps2', 'dftd3', 'mrcc', 'psi4numpy', 'python', 'json', 'cookbook',
+                'dkh', 'erd', 'gcp', 'gdma', 'simint', 'snsmp2', 'v2rdm_casscf'
+        ]:
             if bad.startswith(oddity):
                 badoutfile = oddity + '/' + bad
-        badoutfile = 'tests/' + badoutfile + '/output.dat'
+        if "json" in badoutfile:
+            badoutfile = 'tests/' + badoutfile + '/output.json'
+            if os.path.exists(badoutfile):
+                with open(badoutfile, 'r') as ofile:
+                    data = json.load(ofile)
+                sys.stdout.write(json.dumps(data, indent=2))
+                sys.stdout.write("\n")
+            else:
+                sys.stdout.write("No JSON output file found\n")
+        else:
+            badoutfile = 'tests/' + badoutfile + '/output.dat'
 
-        with open(badoutfile, 'r') as ofile:
-            sys.stdout.write(ofile.read())
+            if os.path.exists(badoutfile):
+                with open(badoutfile, 'r') as ofile:
+                    sys.stdout.write(ofile.read())
+            else:
+                sys.stdout.write("No output file found\n")
 
 # <<<  return ctest error code  >>>
 sys.exit(ctest_exit_status)
