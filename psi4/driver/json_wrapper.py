@@ -134,12 +134,16 @@ def run_json_qc_schema(json_data, clean):
     core.set_global_option("BASIS", json_data["model"]["basis"])
     kwargs = {"return_wfn": True, "molecule": mol}
 
-    if (json_data["driver"] == "properties") and ("properties" in json_data["model"]):
-        kwargs["properties"] = [x.lower() for x in json_data["model"]["properties"]]
+    # Handle special properties case
+    if json_data["driver"] == "properties":
+        if "properties" in json_data["model"]:
+            kwargs["properties"] = [x.lower() for x in json_data["model"]["properties"]]
 
-        extra = set(kwargs["properties"]) - can_do_properties_
-        if len(extra):
-            raise KeyError("Did not understand property key %s." % kwargs["properties"])
+            extra = set(kwargs["properties"]) - can_do_properties_
+            if len(extra):
+                raise KeyError("Did not understand property key %s." % kwargs["properties"])
+        else:
+            kwargs["properties"] = list(can_do_properties_)
 
 
     # Actual driver run
