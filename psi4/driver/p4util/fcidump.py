@@ -33,8 +33,8 @@ import re
 from datetime import datetime
 
 import numpy as np
-from deepdiff import DeepDiff
 
+from deepdiff import DeepDiff
 from psi4.driver import constants
 from psi4.driver.p4util.util import compare_arrays
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
@@ -49,7 +49,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
 
     :returns: None
 
-    :raises: ValidationError when SCF wavefunction is neither RHF nor UHF
+    :raises: ValidationError when SCF wavefunction is not RHF
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
@@ -72,7 +72,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     reference = core.get_option('SCF', 'REFERENCE')
     ints_tolerance = core.get_global_option('INTS_TOLERANCE')
     # Some sanity checks
-    if reference not in ['RHF', 'UHF']:
+    if reference not in ['RHF']: #, 'UHF']:
         raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
     if oe_ints is None:
         oe_ints = []
