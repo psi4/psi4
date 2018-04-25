@@ -127,11 +127,11 @@ def run_json_qc_schema(json_data):
     elif json_data["driver"] in ["gradient", "hessian"]:
         json_data["return_result"] = val.np.ravel().tolist()
     else:
-        raise KeyError("Did not understand key %s")
+        raise KeyError("Did not understand Driver key %s." % json_data["driver"])
 
     # Pull out a standard set of SCF properties
     psi_props = psi4.core.get_variables()
-    json_data["psi4:properties"] = psi_props
+    json_data["psi4:qcvars"] = psi_props
 
     props = {
         "calcinfo_nbasis": wfn.nso(),
