@@ -29,6 +29,7 @@
 #ifndef LIBFOCK_DFT_H
 #define LIBFOCK_DFT_H
 #include "psi4/libmints/typedefs.h"
+#include "psi4/pragma.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -50,7 +51,7 @@ class BlockOPoints;
  * K-matrix-vector products
  **/
 
-class VBase {
+class PSI_API VBase {
 
 protected:
     /// Debug flag

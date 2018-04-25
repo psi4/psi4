@@ -30,6 +30,7 @@
 #define libfock_points_H
 
 #include "psi4/libmints/typedefs.h"
+#include "psi4/pragma.h"
 
 #include <cstdio>
 #include <map>
@@ -44,7 +45,7 @@ class Vector;
 class BlockOPoints;
 
 
-class BasisFunctions {
+class PSI_API BasisFunctions {
 
 protected:
     /// Basis set for this BasisFunctions
