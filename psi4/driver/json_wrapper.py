@@ -49,8 +49,7 @@ methods_dict_ = {
     'frequency': driver.frequency,
 }
 can_do_properties_ = {
-    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices",
-    "mayer_indices"
+    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
 
@@ -159,14 +158,17 @@ def run_json_qc_schema(json_data, clean):
         ret = {}
         mtd = json_data["model"]["method"].upper()
         if "dipole" in kwargs["properties"]:
-            ret["dipole_moment"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
+            ret["dipole"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
         if "quadrupole" in kwargs["properties"]:
-            ret["quadrupole_moment"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
+            ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
         if "mulliken_charges" in kwargs["properties"]:
-
-
-    # "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices",
-    # "mayer_indices"
+            ret["mulliken_charges"] = wfn.get_array("MULLIKEN_CHARGES").np.ravel().tolist()
+        if "lowdin_charges" in kwargs["properties"]:
+            ret["lowdin_charges"] = wfn.get_array("LOWDIN_CHARGES").np.ravel().tolist()
+        if "wiberg_lowdin_indices" in kwargs["properties"]:
+            ret["wiberg_lowdin_indices"] = wfn.get_array("WIBERG_LOWDIN_INDICES").np.ravel().tolist()
+        if "mayer_indices" in kwargs["properties"]:
+            ret["mayer_indices"] = wfn.get_array("MAYER_INDICES").np.ravel().tolist()
 
         json_data["return_result"] = ret
     else:
