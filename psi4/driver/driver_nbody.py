@@ -218,10 +218,6 @@ def nbody_gufunc(func, method_string, **kwargs):
     core.print_out("   ===> N-Body Interaction Abacus <===\n")
     core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
 
-    # Build size and slices dictionaries
-    metadata['fragment_size_dict'] = {frag: metadata['molecule'].extract_subsets(frag).natom() for
-                                           frag in range(1, metadata['max_frag']+1)}
-
     # Get compute list
     metadata = build_nbody_compute_list(metadata)
 
@@ -307,42 +303,47 @@ def build_nbody_compute_list(metadata):
                 Set containing list of levels required for VMFC procedure
     """
     # What levels do we need?
-    metadata['nbody_range'] = range(1, metadata['max_nbody'] + 1)
-    metadata['fragment_range'] = range(1, metadata['max_frag'] + 1)
+    nbody_range = range(1, metadata['max_nbody'] + 1)
+    fragment_range = range(1, metadata['max_frag'] + 1)
 
-    cp_compute_list = {x:set() for x in metadata['nbody_range']}
-    nocp_compute_list = {x:set() for x in metadata['nbody_range']}
-    vmfc_compute_list = {x:set() for x in metadata['nbody_range']}
-    vmfc_level_list = {x:set() for x in metadata['nbody_range']} # Need to sum something slightly different
+    cp_compute_list = {x:set() for x in nbody_range}
+    nocp_compute_list = {x:set() for x in nbody_range}
+    vmfc_compute_list = {x:set() for x in nbody_range}
+    vmfc_level_list = {x:set() for x in nbody_range} # Need to sum something slightly different
+
+    # Verify proper passing of bsse_type_list
+    if len({'cp', 'nocp', 'vmfc'} - set(metadata['bsse_type_list'])) == 3:
+        raise ValidationError("""Unrecognized N-body 'bsse_type_list' metadata: %s.
+Array-like of accepted BSSE types 'cp', 'nocp', and/or 'vmfc' is required.""" % str(metadata['bsse_type_list']))
 
     # Build up compute sets
     if 'cp' in metadata['bsse_type_list']:
         # Everything is in dimer basis
-        basis_tuple = tuple(metadata['fragment_range'])
-        for nbody in metadata['nbody_range']:
-            for x in itertools.combinations(metadata['fragment_range'], nbody):
+        basis_tuple = tuple(fragment_range)
+        for nbody in nbody_range:
+            for x in itertools.combinations(fragment_range, nbody):
                 cp_compute_list[nbody].add( (x, basis_tuple) )
 
     if 'nocp' in metadata['bsse_type_list']:
         # Everything in monomer basis
-        for nbody in metadata['nbody_range']:
-            for x in itertools.combinations(metadata['fragment_range'], nbody):
+        for nbody in nbody_range:
+            for x in itertools.combinations(fragment_range, nbody):
                 nocp_compute_list[nbody].add( (x, x) )
 
     if 'vmfc' in metadata['bsse_type_list']:
         # Like a CP for all combinations of pairs or greater
-        for nbody in metadata['nbody_range']:
-            for cp_combos in itertools.combinations(metadata['fragment_range'], nbody):
+        for nbody in nbody_range:
+            for cp_combos in itertools.combinations(fragment_range, nbody):
                 basis_tuple = tuple(cp_combos)
-                for interior_nbody in metadata['nbody_range']:
+                for interior_nbody in nbody_range:
                     for x in itertools.combinations(cp_combos, interior_nbody):
                         combo_tuple = (x, basis_tuple)
                         vmfc_compute_list[interior_nbody].add( combo_tuple )
                         vmfc_level_list[len(basis_tuple)].add( combo_tuple )
 
     # Build a comprehensive compute_range
-    compute_list = {x:set() for x in metadata['nbody_range']}
-    for n in metadata['nbody_range']:
+    compute_list = {x:set() for x in nbody_range}
+    for n in nbody_range:
         compute_list[n] |= cp_compute_list[n]
         compute_list[n] |= nocp_compute_list[n]
         compute_list[n] |= vmfc_compute_list[n]
@@ -443,8 +444,6 @@ def assemble_nbody_components(metadata, component_results):
                    Default: `max_nbody` = `max_frag`
             ``'max_frag'``: int
                    Number of distinct fragments comprising full molecular supersystem.
-            ``'fragment_size_dict'``: dict of int: int
-                   Dictionary containing the number of atoms in each numbered fragment in the supersystem
             ``'energies_dict'``: dict of set: float64
                    Dictionary containing all energy components required for given N-body procedure.
             ``'ptype_dict'``: dict of set: float64 or dict of set: psi4.Matrix
@@ -487,8 +486,7 @@ def assemble_nbody_components(metadata, component_results):
     # Unpack metadata
     kwargs = metadata['kwargs']
 
-    if 'nbody_range' not in metadata.keys():
-        metadata['nbody_range'] = range(1, metadata['max_nbody'] + 1)
+    nbody_range = range(1, metadata['max_nbody'] + 1)
 
     # Unpack compute list metadata
     compute_list = metadata['compute_dict']['all']
@@ -497,22 +495,24 @@ def assemble_nbody_components(metadata, component_results):
     vmfc_compute_list = metadata['compute_dict']['vmfc_compute']
     vmfc_level_list = metadata['compute_dict']['vmfc_levels']
 
-    # Build slice dicts
+    # Build size and slices dictionaries
+    fragment_size_dict = {frag: metadata['molecule'].extract_subsets(frag).natom() for
+                                           frag in range(1, metadata['max_frag']+1)}
     start = 0
     fragment_slice_dict = {}
-    for k, v in metadata['fragment_size_dict'].items():
+    for k, v in fragment_size_dict.items():
         fragment_slice_dict[k] = slice(start, start + v)
         start += v
 
-    molecule_total_atoms = sum(metadata['fragment_size_dict'].values())
+    molecule_total_atoms = sum(fragment_size_dict.values())
 
     # Final dictionaries
-    cp_energy_by_level   = {n: 0.0 for n in metadata['nbody_range']}
-    nocp_energy_by_level = {n: 0.0 for n in metadata['nbody_range']}
+    cp_energy_by_level   = {n: 0.0 for n in nbody_range}
+    nocp_energy_by_level = {n: 0.0 for n in nbody_range}
 
-    cp_energy_body_dict =   {n: 0.0 for n in metadata['nbody_range']}
-    nocp_energy_body_dict = {n: 0.0 for n in metadata['nbody_range']}
-    vmfc_energy_body_dict = {n: 0.0 for n in metadata['nbody_range']}
+    cp_energy_body_dict =   {n: 0.0 for n in nbody_range}
+    nocp_energy_body_dict = {n: 0.0 for n in nbody_range}
+    vmfc_energy_body_dict = {n: 0.0 for n in nbody_range}
 
     # Build out ptype dictionaries if needed
     if metadata['ptype'] != 'energy':
@@ -523,13 +523,13 @@ def assemble_nbody_components(metadata, component_results):
         else:
             raise KeyError("N-Body: ptype '%s' not recognized" % ptype)
 
-        cp_ptype_by_level   =  {n: np.zeros(arr_shape) for n in metadata['nbody_range']}
-        nocp_ptype_by_level =  {n: np.zeros(arr_shape) for n in metadata['nbody_range']}
-        vmfc_ptype_by_level = {n: np.zeros(arr_shape) for n in metadata['nbody_range']}
+        cp_ptype_by_level   =  {n: np.zeros(arr_shape) for n in nbody_range}
+        nocp_ptype_by_level =  {n: np.zeros(arr_shape) for n in nbody_range}
+        vmfc_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
 
-        cp_ptype_body_dict   = {n: np.zeros(arr_shape) for n in metadata['nbody_range']}
-        nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in metadata['nbody_range']}
-        vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in metadata['nbody_range']}
+        cp_ptype_body_dict   = {n: np.zeros(arr_shape) for n in nbody_range}
+        nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
+        vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
     else:
         cp_ptype_by_level, cp_ptype_body_dict = {}, {}
         nocp_ptype_by_level, nocp_ptype_body_dict = {}, {}
@@ -538,7 +538,7 @@ def assemble_nbody_components(metadata, component_results):
 
     # Sum up all of the levels
     nbody_dict = {}
-    for n in metadata['nbody_range']:
+    for n in nbody_range:
 
         # Energy
         cp_energy_by_level[n]   = sum(component_results['energies'][v] for v in cp_compute_list[n])
@@ -555,20 +555,18 @@ def assemble_nbody_components(metadata, component_results):
         if metadata['ptype'] != 'energy':
             _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
                                       cp_compute_list[n], fragment_slice_dict, 
-                                      metadata['fragment_size_dict'],
-                                      cp_ptype_by_level[n])
+                                      fragment_size_dict, cp_ptype_by_level[n])
             _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
                                       nocp_compute_list[n], fragment_slice_dict, 
-                                      metadata['fragment_size_dict'],
-                                      nocp_ptype_by_level[n])
+                                      fragment_size_dict, nocp_ptype_by_level[n])
             _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
                                       vmfc_level_list[n], fragment_slice_dict, 
-                                      metadata['fragment_size_dict'],
-                                      vmfc_ptype_by_level[n], vmfc=True)
+                                      fragment_size_dict, mfc_ptype_by_level[n],
+                                      vmfc=True)
 
     # Compute cp energy and ptype
     if 'cp' in metadata['bsse_type_list']:
-        for n in metadata['nbody_range']:
+        for n in nbody_range:
             if n == metadata['max_frag']:
                 cp_energy_body_dict[n] = cp_energy_by_level[n]
                 if metadata['ptype'] != 'energy':
@@ -590,13 +588,13 @@ def assemble_nbody_components(metadata, component_results):
         nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
 
-        for n in metadata['nbody_range'][1:]:
+        for n in nbody_range[1:]:
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
     # Compute nocp energy and ptype
     if 'nocp' in metadata['bsse_type_list']:
-        for n in metadata['nbody_range']:
+        for n in nbody_range:
             if n == metadata['max_frag']:
                 nocp_energy_body_dict[n] = nocp_energy_by_level[n]
                 if metadata['ptype'] != 'energy':
@@ -618,7 +616,7 @@ def assemble_nbody_components(metadata, component_results):
         nbody_dict['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
 
-        for n in metadata['nbody_range'][1:]:
+        for n in nbody_range[1:]:
             var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
 
@@ -630,7 +628,7 @@ def assemble_nbody_components(metadata, component_results):
         nbody_dict['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Valiron-Mayer Function Couterpoise Interaction Energy'] = vmfc_interaction_energy
 
-        for n in metadata['nbody_range'][1:]:
+        for n in nbody_range[1:]:
             var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
 
