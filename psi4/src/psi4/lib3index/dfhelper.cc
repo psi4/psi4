@@ -2821,7 +2821,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        std::vector<double> Cp(nao * max_nocc);
+        std::vector<double> Cp(nao * std::max(max_nocc, nao));
         C_buffers[rank] = Cp;
     }
 
@@ -2931,7 +2931,7 @@ void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMat
             // (Qm)(m) -> (Q)
             C_DGEMV('N', block_size, mi, 1.0, &Mp[jump + skip], si, &D_buffers[rank][0], 1, 1.0,
                     &T1p[rank * naux], 1);
-        }
+      }
 
         // reduce
         for (size_t k = 1; k < nthreads_; k++) {
@@ -2947,7 +2947,7 @@ void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMat
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux);
             C_DGEMV('T', block_size, mi, 1.0, &Mp[jump + skip], si, T1p, 1, 0.0, &T2p[k * nao], 1);
         }
-
+         
         // unpack from sparse to dense
         for (size_t k = 0; k < nao; k++) {
             for (size_t m = k + 1, count = 0; m < nao; m++) {  // assumes diagonal exists to avoid if  FIXME
