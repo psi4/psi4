@@ -312,9 +312,10 @@ def build_nbody_compute_list(metadata):
     vmfc_level_list = {x:set() for x in nbody_range} # Need to sum something slightly different
 
     # Verify proper passing of bsse_type_list
-    if len({'cp', 'nocp', 'vmfc'} - set(metadata['bsse_type_list'])) == 3:
-        raise ValidationError("""Unrecognized N-body 'bsse_type_list' metadata: %s.
-Array-like of accepted BSSE types 'cp', 'nocp', and/or 'vmfc' is required.""" % str(metadata['bsse_type_list']))
+    bsse_type_remainder = set(metadata['bsse_type_list']) - {'cp', 'nocp', 'vmfc'}
+    if bsse_type_remainder:
+        raise ValidationError("""Unrecognized BSSE type(s): %s
+Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bsse_type_remainder))
 
     # Build up compute sets
     if 'cp' in metadata['bsse_type_list']:
