@@ -704,6 +704,7 @@ def select_fnoccsd(name, **kwargs):
     else:
         return func(name, **kwargs)
 
+
 def select_ccsd(name, **kwargs):
     """Function selecting the algorithm for a CCSD energy call
     and directing to specified or best-performance default modules.
