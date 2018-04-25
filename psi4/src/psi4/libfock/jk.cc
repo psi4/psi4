@@ -565,7 +565,7 @@ void JK::compute() {
             throw PSIEXCEPTION("JK: C_left/C_right MO zip index size mismatch!");
         }
 
-        // Figure out if w eneed to convert or not
+        // Figure out if we need to convert or not
         if ((AO2USO_->nirrep() == 1) && (C_left_[i]->nirrep() == 1)) {
             // Everything in C1, nothing to do
             input_symmetry_cast_map_.push_back(false);

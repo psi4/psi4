@@ -75,17 +75,18 @@ void DFHelper::prepare_blocking() {
     pshell_aggs_.reserve(pshells_ + 1);
 
     // Aux shell blocking
-    Qshell_max_ = 0;
+    Qshell_max_ = aux_->max_function_per_shell();
     Qshell_aggs_[0] = 0;
     for (size_t i = 0, shell_size; i < Qshells_; i++) {
         shell_size = aux_->shell(i).nfunction();
         Qshell_aggs_[i + 1] = Qshell_aggs_[i] + shell_size;
-        Qshell_max_ = (shell_size > Qshell_max_ ? shell_size : Qshell_max_);
     }
 
     // AO shell blocking
     pshell_aggs_[0] = 0;
-    for (size_t i = 0; i < pshells_; i++) pshell_aggs_[i + 1] = pshell_aggs_[i] + primary_->shell(i).nfunction();
+    for (size_t i = 0; i < pshells_; i++){
+        pshell_aggs_[i + 1] = pshell_aggs_[i] + primary_->shell(i).nfunction();
+    }
 }
 
 void DFHelper::AO_filename_maker(size_t i) {
@@ -2794,6 +2795,9 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 
     size_t naux = naux_;
     size_t nao = nao_;
+    if (max_nocc > nao){
+        throw PSIEXCEPTION("DFH: max_nocc > nao, cannot not yet handle these cases.");
+    }
 
     // determine buffer sizes and blocking scheme
     // would love to move this to initialize(), but
@@ -2812,8 +2816,6 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 
     int rank = 0;
     std::vector<std::vector<double>> C_buffers(nthreads_);
-    std::vector<double*> C_bufsp;
-    C_bufsp.reserve(nthreads_);
 
     // prepare C buffers
     size_t nthread = nthreads_;

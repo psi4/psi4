@@ -84,12 +84,13 @@ void MemDFJK::preiterations() {
     // we need to prepare the AOs here, and that's it.
     // DFHelper takes care of all the housekeeping
 
-    if (!do_wK_) {
-        dfh_->initialize();
-    } else {
+    if (do_wK_) {
         // TODO add wK integrals.
         // DFHelper class will throw
-       ; // initialize_wK()
+        // initialize_wK()
+        throw PSIEXCEPTION("MemDFJK does not yet support wK builds.");
+    } else {
+        dfh_->initialize();
     }
 
 }
