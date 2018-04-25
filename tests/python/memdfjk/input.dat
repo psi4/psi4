@@ -18,7 +18,7 @@ naux = aux.nbf()
 
 # construct spaces
 names = ['C1', 'C2', 'C3', 'C4', 'C5']
-sizes = [16, 16, 20, 20, 24]
+sizes = [16, 16, 20, 20, 30]
 spaces = {names[ind]: psi4.core.Matrix.from_array(np.random.rand(nbf, size)) for ind, size in enumerate(sizes)}
 space_pairs = [[0, 0], [0, 1], [1, 1], [2, 2], [3, 2], [3, 3], [4, 4]]
 
