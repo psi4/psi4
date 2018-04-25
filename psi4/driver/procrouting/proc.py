@@ -2501,6 +2501,9 @@ def run_scf_property(name, **kwargs):
         else:
             unknown_property.append(prop)
 
+    if "DIPOLE" not in oe_properties:
+        oe_properties.append("DIPOLE")
+
     # Throw if we dont know what something is
     if len(unknown_property):
         complete_options = oeprop_list_vals + response_list_vals
@@ -2530,6 +2533,10 @@ def run_scf_property(name, **kwargs):
         oe.add(prop.upper())
     oe.compute()
     scf_wfn.oeprop = oe
+
+    # Always must set SCF dipole
+    for cart in ["X", "Y", "Z"]:
+        core.set_variable("SCF DIPOLE " + cart, core.get_variable(name + " DIPOLE " + cart))
 
     # Run Linear Respsonse
     if len(linear_response):

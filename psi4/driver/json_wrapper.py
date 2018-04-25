@@ -32,6 +32,7 @@ Runs a JSON input psi file.
 import os
 import copy
 import uuid
+import json
 
 import psi4
 from psi4.driver import driver
@@ -39,13 +40,17 @@ from psi4.driver import molutil
 from psi4.driver import p4util
 from psi4 import core
 
-methods_dict = {
+methods_dict_ = {
     'energy': driver.energy,
     'gradient': driver.gradient,
-    'property': driver.properties,
+    'properties': driver.properties,
     'optimize': driver.optimize,
     'hessian': driver.hessian,
     'frequency': driver.frequency,
+}
+can_do_properties_ = {
+    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices",
+    "mayer_indices"
 }
 
 
@@ -73,15 +78,15 @@ def run_json(json_data, clean=True):
 
     # Attempt to run the computer
     run_json_qc_schema(json_data, clean)
-    try:
-        if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
-            run_json_qc_schema(json_data, clean)
-        else:
-            run_json_original_v1_1(json_data, clean)
+    # try:
+    #     if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
+    #         run_json_qc_schema(json_data, clean)
+    #     else:
+    #         run_json_original_v1_1(json_data, clean)
 
-    except Exception as error:
-        json_data["error"] = repr(error)
-        json_data["success"] = False
+    # except Exception as error:
+    #     json_data["error"] = repr(error)
+    #     json_data["success"] = False
 
     if return_output:
         with open(outfile, 'r') as f:
@@ -118,26 +123,55 @@ def run_json_qc_schema(json_data, clean):
 
     # Build molecule
     mol = core.Molecule.from_schema(json_data)
+    # print(json.dumps(json_data, indent=2))
 
     # Set options
     optstash = p4util.OptionsState([x.upper() for x in json_data["keywords"]])
     for k, v in json_data["keywords"].items():
         core.set_global_option(k, v)
 
-    method = json_data["model"]["method"] + "/" + json_data["model"]["basis"]
-    val, wfn = methods_dict[json_data["driver"]](method, return_wfn=True, molecule=mol)
+    # Setup the computation
+    method = json_data["model"]["method"]
+    core.set_global_option("BASIS", json_data["model"]["basis"])
+    kwargs = {"return_wfn": True, "molecule": mol}
+
+    if (json_data["driver"] == "properties") and ("properties" in json_data["model"]):
+        kwargs["properties"] = [x.lower() for x in json_data["model"]["properties"]]
+
+        extra = set(kwargs["properties"]) - can_do_properties_
+        if len(extra):
+            raise KeyError("Did not understand property key %s." % kwargs["properties"])
 
 
-    if json_data["driver"] == "energy":
-        json_data["return_result"] = val
-    elif json_data["driver"] in ["gradient", "hessian"]:
-        json_data["return_result"] = val.np.ravel().tolist()
-    else:
-        raise KeyError("Did not understand Driver key %s." % json_data["driver"])
+    # Actual driver run
+    val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
 
     # Pull out a standard set of SCF properties
     psi_props = psi4.core.get_variables()
     json_data["psi4:qcvars"] = psi_props
+
+    # Handle the return result
+    if json_data["driver"] == "energy":
+        json_data["return_result"] = val
+    elif json_data["driver"] in ["gradient", "hessian"]:
+        json_data["return_result"] = val.np.ravel().tolist()
+    elif json_data["driver"] == "properties":
+        ret = {}
+        mtd = json_data["model"]["method"].upper()
+        if "dipole" in kwargs["properties"]:
+            ret["dipole_moment"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
+        if "quadrupole" in kwargs["properties"]:
+            ret["quadrupole_moment"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
+        if "mulliken_charges" in kwargs["properties"]:
+
+
+    # "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices",
+    # "mayer_indices"
+
+        json_data["return_result"] = ret
+    else:
+        raise KeyError("Did not understand Driver key %s." % json_data["driver"])
+
 
     props = {
         "calcinfo_nbasis": wfn.nso(),
@@ -171,6 +205,7 @@ def run_json_qc_schema(json_data, clean):
 
     json_data["properties"] = props
     json_data["success"] = True
+    print(json.dumps(json_data, indent=2))
 
     # Reset state
     optstash.restore()
@@ -304,7 +339,7 @@ def run_json_original_v1_1(json_data, clean):
             return json_data
 
     # Check driver call
-    if json_data["driver"] not in list(methods_dict):
+    if json_data["driver"] not in list(methods_dict_):
         json_data["error"] = "Driver parameters '%s' not recognized" % str(json_data["driver"])
         return json_data
 
@@ -329,10 +364,10 @@ def run_json_original_v1_1(json_data, clean):
     # Full driver call
     kwargs["return_wfn"] = True
 
-    if json_data["driver"] not in methods_dict:
+    if json_data["driver"] not in methods_dict_:
         raise KeyError("Driver type '%s' not recognized." % str(json_data["driver"]))
 
-    val, wfn = methods_dict[json_data["driver"]](*args, **kwargs)
+    val, wfn = methods_dict_[json_data["driver"]](*args, **kwargs)
 
     if isinstance(val, (float, int)):
         json_data["return_value"] = val
