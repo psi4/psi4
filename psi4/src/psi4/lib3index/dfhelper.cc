@@ -1879,7 +1879,7 @@ void DFHelper::transform() {
 }
 
 void DFHelper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size,
-    double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers){
+    double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>>& C_buffers){
 
     size_t rank = 0;
 
@@ -2836,13 +2836,13 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     Ktmp_size = std::max(Ktmp_size * nao, nthreads_ * naux); // max necessary
     T1.reserve(Ktmp_size);
 
-    // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the 
+    // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the
     // second tmp in the K build, as well as the completed, pruned J build.
     if (lr_symmetric) {
         Ktmp_size = nao; // size for pruned J build0
     } else {
         Ktmp_size = std::max(nao, Ktmp_size); // max necessary
-    }   
+    }
 
     T2.reserve(nao * Ktmp_size);
     double* T1p = T1.data();
@@ -2896,8 +2896,9 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     // outfile->Printf("\n     ==> DFHelper:--End J/K Builds (disk)<==\n\n");
 }
 void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
-                               double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount,
+                               double* T2p, std::vector<std::vector<double>>& D_buffers, size_t bcount,
                                size_t block_size) {
+
     size_t nao = nao_;
     size_t naux = naux_;
     int rank = 0;
@@ -2968,7 +2969,7 @@ void DFHelper::fill(double* b, size_t count, double value) {
     }
 }
 void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
-                          double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size) {
+                          double* T2p, std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size) {
     size_t nao = nao_;
     size_t naux = naux_;
     int rank = 0;
@@ -3000,7 +3001,7 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
             C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, &D_buffers[rank][0], 1, 1.0,
                     &T1p[rank * naux], 1);
         }
-        
+
         // reduce
         for (size_t k = 1; k < nthreads_; k++) {
             for (size_t l = 0; l < naux; l++) T1p[l] += T1p[k * naux + l];
@@ -3013,7 +3014,7 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
             C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, T1p, 1, 0.0, &T2p[k * nao], 1);
         }
-        
+
         // unpack from sparse to dense
         for (size_t k = 0; k < nao; k++) {
             for (size_t m = 0, count = -1; m < nao; m++) {
@@ -3027,7 +3028,7 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
 }
 void DFHelper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                           std::vector<SharedMatrix> K, double* T1p, double* T2p, double* Mp, size_t bcount,
-                          size_t block_size, std::vector<std::vector<double>> C_buffers, bool lr_symmetric) {
+                          size_t block_size, std::vector<std::vector<double>>& C_buffers, bool lr_symmetric) {
     size_t nao = nao_;
     size_t naux = naux_;
 

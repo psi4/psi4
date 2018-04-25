@@ -313,7 +313,7 @@ class PSI_API DFHelper {
 
     // first integral transforms
     void first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size,
-        double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>> C_buffers);
+        double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>>& C_buffers);
 
 
     // => index vectors for screened AOs <=
@@ -436,14 +436,14 @@ class PSI_API DFHelper {
                            std::vector<SharedMatrix> D, std::vector<SharedMatrix> J,
                            std::vector<SharedMatrix> K, size_t max_nocc,
                            bool do_J, bool do_K, bool do_wK, bool lr_symmetric);
-    void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
+    void compute_D(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
     void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
-                   std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
+                   std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
     void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
-                        std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
+                        std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
     void compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
                    double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
-                   std::vector<std::vector<double>> C_buffers, bool lr_symmetric);
+                   std::vector<std::vector<double>>& C_buffers, bool lr_symmetric);
     std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(
         std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc, bool lr_symmetric);
 
