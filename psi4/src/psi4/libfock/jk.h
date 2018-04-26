@@ -568,7 +568,7 @@ class DiskJK : public JK {
  * JK implementation using disk-based
  * integral technology
  */
-class PKJK : public JK {
+class PSI_API PKJK : public JK {
     /// The PSIO instance to use for I/O
     std::shared_ptr<PSIO> psio_;
 
@@ -753,7 +753,7 @@ class GTFockJK : public JK {
  * JK implementation using sieved, threaded
  * density-fitted technology
  */
-class DFJK : public JK {
+class PSI_API DFJK : public JK {
    protected:
     // => DF-Specific stuff <= //
 
