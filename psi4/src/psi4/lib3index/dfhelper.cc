@@ -1401,7 +1401,11 @@ void DFHelper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t be
     }
     // copy upper-to-lower
     double* Ppq = Ppq_.data();
-#pragma omp parallel for num_threads(nthreads_) schedule(static, nao_ / nthreads_)
+    int static_blocks = nao_ / nthreads_;
+    if (static_blocks < 1){
+        static_blocks = 1;
+    }
+#pragma omp parallel for num_threads(nthreads_) schedule(static, static_blocks)
     for (size_t omu = begin; omu <= end; omu++) {
         for (size_t Q = 0; Q < naux_; Q++) {
             for (size_t onu = omu + 1; onu < nao_; onu++) {
@@ -2947,7 +2951,7 @@ void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMat
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux);
             C_DGEMV('T', block_size, mi, 1.0, &Mp[jump + skip], si, T1p, 1, 0.0, &T2p[k * nao], 1);
         }
-         
+
         // unpack from sparse to dense
         for (size_t k = 0; k < nao; k++) {
             for (size_t m = k + 1, count = 0; m < nao; m++) {  // assumes diagonal exists to avoid if  FIXME
