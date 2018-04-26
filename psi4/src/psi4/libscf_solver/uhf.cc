@@ -392,6 +392,7 @@ double UHF::compute_E()
     Etotal += 0.5 * coulomb_E;
     Etotal += 0.5 * exchange_E;
     Etotal += XC_E;
+    Etotal += VV10_E;
     Etotal += dashD_E;
 
     return Etotal;

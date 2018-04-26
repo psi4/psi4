@@ -107,6 +107,11 @@ qchem_data = {                              #TEST
       'N12':     0.4479283791999933,        #TEST
      'VSXC':    0.45478941460000044,        #TEST
 'CAM-B3LYP':     0.4568003603999955,        #TEST
+     'VV10':    0.45513665939999726,        #TEST
+   'B97M-V':     0.4561660761999917,        #TEST
+  'LC-VV10':    0.45568725450000613,        #TEST
+  'wB97M-V':     0.4544676075000069,        #TEST
+  'wB97X-V':     0.4553026020000033,        #TEST
 ## The following functionals are not included 
 ## in Psi4 at the moment. 
 # 'wB97X-D3':    0.45707443810000825,       #TEST # needs Tweaks
@@ -133,11 +138,6 @@ excluded_qchem_convergence_probs = {
 # These tests are expected to fail with the current version of Psi4
 # due to lack of UKS support 
 excluded_qchem_not_uks_friendly = {
-   'B97M-V':     0.4561660761999917,        #TEST
-     'VV10':    0.45513665939999726,        #TEST
-  'LC-VV10':    0.45568725450000613,        #TEST
-  'wB97M-V':     0.4544676075000069,        #TEST
-  'wB97X-V':     0.4553026020000033,        #TEST
 }
 
 # The following data is from an older 
