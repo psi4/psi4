@@ -2468,18 +2468,17 @@ SharedMatrix UV::compute_gradient() {
 
             double** Ds[2];
             Ds[0] = Dap;
-            Ds[1] = Dap;
+            Ds[1] = Dbp;
 
             double* v_tau_s[2];
             v_tau_s[0] = v_tau_a;
             v_tau_s[1] = v_tau_b;
 
             for (int s = 0; s < 2; s++) {
-                //                double** Dp = Ds[s];
                 double* v_tau = v_tau_s[s];
                 for (int i = 0; i < 3; i++) {
                     double*** phi_j = phi_ij[i];
-                    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], max_functions, Dap[0], max_functions,
+                    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], max_functions, Ds[s][0], max_functions,
                             0.0, Uap[0], max_functions);
                     for (int P = 0; P < npoints; P++) {
                         std::fill(Tap[P], Tap[P] + nlocal, 0.0);
