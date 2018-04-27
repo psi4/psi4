@@ -151,7 +151,8 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
+    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+    DOI: 10.1016/S0009-2614(99)00179-7
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
 
@@ -223,7 +224,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using power form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Truhlar, Chem. Phys. Lett. 294 (1998) 45-48.
+    Truhlar, Chem. Phys. Lett. 294 (1998) 45-48, DOI: 10.1016/S0009-2614(98)00866-5
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4
 
@@ -295,7 +296,7 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
 def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using root-power form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333.
+    Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333, DOI: 10.1007/s00214-005-0028-6
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3
 
@@ -367,7 +368,8 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
+    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+    DOI: 10.1016/S0009-2614(99)00179-7
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0
     """
@@ -433,7 +435,8 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252.
+    Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252,
+    DOI: 10.1016/S0009-2614(99)00179-7
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}
 

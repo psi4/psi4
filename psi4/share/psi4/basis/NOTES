@@ -2,6 +2,17 @@
 *******************************************************************************
 
 
+Friday, April 27, 2018 -- PK
+
+[39] The Jansen basis sets added in [33] are polarisation consistent, as
+opposed to correlation consistent. Appropriate "conversion" for extrapolation
+purposes between the two is pcseg-[1,2,3,4] = [2,3,4,5]-zeta, as described in
+Kupka, T and Lim, C, J. Phys. Chem. A 111 (2007) 1927-1932, DOI: 10.1021/jp065008v
+
+*******************************************************************************
+*******************************************************************************
+
+
 Tuesday, August 22, 2017 -- LAB
 
 [38] Someone added Ga-Kr to 6-31G* on EMSL, but in usual fashion,
