@@ -162,7 +162,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Optio
     Ndisp_all += Ndisp_pi[h];
 
   if (print_lvl) {
-    outfile->Printf("\tNumber of geometries (including reference) is %d.\n", Ndisp_all);
+    outfile->Printf("\tNumber of geometries (including reference) is %d.\n", Ndisp_all + 1);
     outfile->Printf("\tNumber of displacements per irrep:\n");
     for (int h=0; h<Nirrep; ++h)
       outfile->Printf("\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
