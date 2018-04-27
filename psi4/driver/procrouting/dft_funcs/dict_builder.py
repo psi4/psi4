@@ -126,7 +126,7 @@ for functional_name in dict_functionals:
     for dispersion_name in dispersion_names:
         dispersion_type = dispersion_names[dispersion_name]
         for dispersion_functional in dashcoeff[dispersion_type]:
-            if dispersion_functional.upper() in functional_aliases:
+            if dispersion_functional.lower() in functional_aliases:
                 func = copy.deepcopy(dict_functionals[functional_name])
                 func["name"] = func["name"] + "-" + dispersion_type
                 func["dispersion"] = dict()
