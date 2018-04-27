@@ -144,13 +144,14 @@ for functional_name in dict_functionals:
                     functionals[alias] = func
 
 
-def check_consistency(func_dictionary, name):
+def check_consistency(func_dictionary):
     """
     This checks the consistency of the definitions of exchange and correlation components
     of the functional, including detecting duplicate requests for LibXC params, inconsistent
     requests for HF exchange and missing correlation.
     """
-
+    
+    name = func_dictionary["name"]
     # 1a) sanity checks definition of xc_functionals
     if "xc_functionals" in func_dictionary:
         if "x_functionals" in func_dictionary or "x_hf" in func_dictionary:
@@ -189,21 +190,21 @@ def check_consistency(func_dictionary, name):
             "SCF: Libxc parameters requested for an exchange functional not defined as a component of %s." % (name))
 
 
-def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
+def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):
     """
     This returns a (core.SuperFunctional, dispersion) tuple based on the requested name.
     The npoints, deriv and restricted parameters are also respected.
     """
 
     # Sanity check first, raises ValidationError if something is wrong
-    check_consistency(functionals[name], name)
+    check_consistency(func_dictionary)
 
     # Either process the "xc_functionals" special case
-    if "xc_functionals" in functionals[name]:
-        for xc_key in functionals[name]["xc_functionals"]:
+    if "xc_functionals" in func_dictionary:
+        for xc_key in func_dictionary["xc_functionals"]:
             xc_name = "XC_" + xc_key
         sup = core.SuperFunctional.XC_build(xc_name, restricted)
-        descr = "    " + name.upper() + " "
+        descr = "    " + func_dictionary["name"] + " "
         if sup.is_gga():
             if sup.x_alpha() > 0:
                 descr += "Hyb-GGA "
@@ -221,8 +222,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         # Exchange processing - first the GGA part:
         # LibXC uses capital labels for the CAM coefficients, by default we're not using LibXC parms
         x_HF = {"ALPHA": 0.0, "OMEGA": 0.0, "BETA": 0.0, "used": False}
-        if "x_functionals" in functionals[name]:
-            x_funcs = functionals[name]["x_functionals"]
+        if "x_functionals" in func_dictionary:
+            x_funcs = func_dictionary["x_functionals"]
             for x_key in x_funcs:
 
                 # Lookup the functional in LibXC
@@ -252,8 +253,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
 
         # Exchange processing - HF part:
         # x_HF contains zeroes or "use_libxc" params from a GGA above
-        if "x_hf" in functionals[name]:
-            x_params = functionals[name]["x_hf"]
+        if "x_hf" in func_dictionary:
+            x_params = func_dictionary["x_hf"]
 
             # if "use_libxc" specified here, fetch parameters and set flag
             # Duplicate definition of "use_libxc" caught in check_consistency.
@@ -281,12 +282,12 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
             sup.set_x_omega(x_HF["OMEGA"])
 
         # Correlation processing - GGA part, generally same as above.
-        if "c_functionals" in functionals[name]:
-            c_funcs = functionals[name]["c_functionals"]
+        if "c_functionals" in func_dictionary:
+            c_funcs = func_dictionary["c_functionals"]
             for c_key in c_funcs:
                 c_name = "XC_" + c_key
                 c_func = core.LibXCFunctional(c_name, restricted)
-                c_params = functionals[name]["c_functionals"][c_key]
+                c_params = func_dictionary["c_functionals"][c_key]
                 if "tweak" in c_params:
                     c_func.set_tweak(c_params["tweak"])
                 if "alpha" in c_params:
@@ -300,8 +301,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                     descr.append(c_func.description())
 
         # Correlation processing - MP2 part
-        if "c_mp2" in functionals[name]:
-            c_params = functionals[name]["c_mp2"]
+        if "c_mp2" in func_dictionary:
+            c_params = func_dictionary["c_mp2"]
             if "alpha" in c_params:
                 sup.set_c_alpha(c_params["alpha"])
             else:
@@ -322,21 +323,21 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         sup.set_description(descr)
 
     # Here, the above joining is usually overwritten by the proper reference.
-    if "citation" in functionals[name]:
-        sup.set_citation(functionals[name]["citation"])
-    if "description" in functionals[name]:
-        sup.set_description(functionals[name]["description"])
+    if "citation" in func_dictionary:
+        sup.set_citation(func_dictionary["citation"])
+    if "description" in func_dictionary:
+        sup.set_description(func_dictionary["description"])
 
     # Dispersion handling for tuple assembly
     dispersion = False
-    if "dispersion" in functionals[name]:
-        d_params = functionals[name]["dispersion"]
+    if "dispersion" in func_dictionary:
+        d_params = func_dictionary["dispersion"]
         if "citation" not in d_params:
             d_params["citation"] = False
         dispersion = d_params
 
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
-    sup.set_name(name.upper())
+    sup.set_name(func_dictionary["name"].upper())
     sup.allocate()
     return (sup, dispersion)

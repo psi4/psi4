@@ -43,8 +43,8 @@ superfunctionals = {}
 
 superfunctional_list = []
 superfunctional_noxc_names = ["hf"]
-for key in dict_builder.functionals.keys():
-    sup = dict_builder.build_superfunctional_from_dictionary(key, 1, 1, True)[0]
+for key in dict_builder.functionals:
+    sup = dict_builder.build_superfunctional_from_dictionary(dict_builder.functionals[key], 1, 1, True)[0]
     superfunctional_list.append(sup)
     if not sup.needs_xc():
         superfunctional_noxc_names.append(sup.name().lower())
@@ -74,10 +74,14 @@ def build_superfunctional(name, restricted):
         sup[0].set_max_points(npoints)
         sup[0].set_deriv(deriv)
         sup[0].allocate()
-
-    # Check for dict-based functionals
-    elif name.upper() in dict_builder.functionals.keys():
-        sup = dict_builder.build_superfunctional_from_dictionary(name.upper(), npoints, deriv, restricted)
+    
+    # Check for supplied dict_func functionals
+    elif isinstance(name, dict):
+        sup = dict_builder.build_superfunctional_from_dictionary(name, npoints, deriv, restricted)
+    # Check for pre-defined dict-based functionals
+    elif name.upper() in dict_builder.functionals:
+        sup = dict_builder.build_superfunctional_from_dictionary(dict_builder.functionals[name.upper()], 
+                                                                 npoints, deriv, restricted)
     else:
         raise ValidationError("SCF: Functional (%s) not found!" % name)
 
