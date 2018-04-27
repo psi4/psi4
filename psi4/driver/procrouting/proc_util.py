@@ -34,7 +34,8 @@ import numpy as np
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
-from . import dft_funcs
+from psi4.driver.procrouting.dft_funcs import functionals
+from psi4.driver.procrouting.dft_funcs import build_superfunctional_from_dictionary
 
 def scf_set_reference_local(name, is_dft=False):
     """
@@ -52,8 +53,7 @@ def scf_set_reference_local(name, is_dft=False):
     # Alter reference name if needed
     user_ref = core.get_option('SCF', 'REFERENCE')
     
-    sup = dft_funcs.dict_builder.build_superfunctional_from_dictionary(
-                                  dft_funcs.dict_builder.functionals[name], 1, 1, True)[0]
+    sup = build_superfunctional_from_dictionary(functionals[name], 1, 1, True)[0]
     if sup.needs_xc() or is_dft:
         if (user_ref == 'RHF'):
             core.set_local_option('SCF', 'REFERENCE', 'RKS')

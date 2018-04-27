@@ -27,3 +27,4 @@
 #
 
 from .superfuncs import *
+from .dict_builder import *

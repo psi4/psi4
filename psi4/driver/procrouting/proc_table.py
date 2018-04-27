@@ -35,6 +35,10 @@ from __future__ import absolute_import
 from . import sapt
 from . import proc
 from . import interface_cfour
+
+from psi4.driver.procrouting.dft_funcs import functionals
+from psi4.driver.procrouting.dft_funcs import build_superfunctional_from_dictionary
+
 # never import wrappers or aliases into this file
 
 # Procedure lookup tables
@@ -205,9 +209,8 @@ energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
 energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
 
 # Integrate DFT with driver routines
-for key in proc.dft_funcs.dict_builder.functionals:
-      ssuper = proc.dft_funcs.dict_builder.build_superfunctional_from_dictionary(
-                              proc.dft_funcs.dict_builder.functionals[key], 1, 1, True)[0]
+for key in functionals:
+      ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
                               
       procedures['energy'][key] = proc.run_scf
 

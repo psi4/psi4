@@ -1,12 +1,13 @@
 #! This test is used to construct the documentation;
 #! it is not suitable for emulation by users. !nosample
 
-from psi4.driver.procrouting.dft_funcs.superfuncs import superfunctional_list
+from psi4.driver.procrouting.dft_funcs import functionals
+from psi4.driver.procrouting.dft_funcs import build_superfunctional_from_dictionary
 
 funcdict = {}
 
-for sfunc in superfunctional_list:
-    
+for key in functionals:
+    sfunc = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
     sfname = sfunc.name()
 
     #if sfunc.dispersion():
