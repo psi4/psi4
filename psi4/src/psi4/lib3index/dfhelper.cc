@@ -632,11 +632,11 @@ std::tuple<size_t, size_t> DFHelper::Qshell_blocks_for_JK_build(
     // 2. T3 is always used, includes C_buffers
 
     // K tmps
-    size_t T1 = nao_ * max_nocc;
+    size_t T1 = nao_ * max_nocc; 
     size_t T2 = (lr_symmetric ? nao_ * nao_ : nao_ * max_nocc);
 
     // C_buffers
-    size_t T3 = nthreads_ * nao_ * nao_;
+    size_t T3 = std::max(nthreads_ * nao_ * nao_, nthreads_ * nao_ * max_nocc);
 
     // total AO buffer size is max if core alg is used, otherwise init to 0
     size_t total_AO_buffer = (AO_core_ ? big_skips_[nao_] : 0);
@@ -653,8 +653,10 @@ std::tuple<size_t, size_t> DFHelper::Qshell_blocks_for_JK_build(
         total_AO_buffer += (AO_core_ ? 0 : current);
         tmpbs += end - begin + 1;
 
+        // compute total memory used by aggregate block
         size_t constraint = total_AO_buffer + T1 * tmpbs + T3;
         constraint += (lr_symmetric ? T2 : T2 * tmpbs);
+
         if (constraint > memory_ || i == Qshells_ - 1) {
             if (count == 1 && i != Qshells_ - 1) {
                 std::stringstream error;
@@ -1401,11 +1403,7 @@ void DFHelper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t be
     }
     // copy upper-to-lower
     double* Ppq = Ppq_.data();
-    int static_blocks = nao_ / nthreads_;
-    if (static_blocks < 1){
-        static_blocks = 1;
-    }
-#pragma omp parallel for num_threads(nthreads_) schedule(static, static_blocks)
+#pragma omp parallel for num_threads(nthreads_) schedule(static)
     for (size_t omu = begin; omu <= end; omu++) {
         for (size_t Q = 0; Q < naux_; Q++) {
             for (size_t onu = omu + 1; onu < nao_; onu++) {
@@ -2842,12 +2840,12 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the
     // second tmp in the K build, as well as the completed, pruned J build.
     if (lr_symmetric) {
-        Ktmp_size = nao; // size for pruned J build0
+        Ktmp_size = nao * nao; // size for pruned J build
     } else {
-        Ktmp_size = std::max(nao, Ktmp_size); // max necessary
+        Ktmp_size = std::max(nao * nao, Ktmp_size); // max necessary
     }
 
-    T2.reserve(nao * Ktmp_size);
+    T2.reserve(Ktmp_size);
     double* T1p = T1.data();
     double* T2p = T2.data();
     double* Mp;
