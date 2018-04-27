@@ -29,9 +29,9 @@
 Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
 dict = {
-           "name":  "",       name of the functional - matched against name.upper() in method lookup
+           "name":  "",       name of the functional - matched against name.lower() in method lookup
 
-          "alias":  [""],     alternative names for the method in lookup functions, capitalised
+          "alias":  [""],     alternative names for the method in lookup functions, processed with .lower()
 
        "citation":  "",       citation of the method in the standard indented format, printed in output
 
