@@ -27,3 +27,15 @@ for k, v in test_dict.items():
         continue
     ret = energy(k)
     compare_values(v, ret, 5, "RKS 0 1  %15s Energy" % k)
+
+pbe = {
+    "name": "PBE",
+    "x_functionals": { "GGA_X_PBE": {} },
+    "c_functionals": { "GGA_C_PBE": {} },
+}
+
+ret = energy("scf", dft_functional="PBE")
+compare_values(test_dict["PBE"], ret, 5, "RKS 0 1              PBE Energy, dft_functional='PBE'")  #TEST
+
+ret = energy("scf", dft_functional=pbe)
+compare_values(test_dict["PBE"], ret, 5, "RKS 0 1              PBE Energy, dft_functional=dict()") #TEST
