@@ -21,3 +21,9 @@ scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
 for k, v in bench.items():                        # TEST
     compare_values(v, psi4.get_variable(k), 9, k) # TEST
+
+set reference uks
+scf_e, scf_wfn = energy("VV10", return_wfn=True)
+
+for k, v in bench.items():                        # TEST
+    compare_values(v, psi4.get_variable(k), 9, k) # TEST
