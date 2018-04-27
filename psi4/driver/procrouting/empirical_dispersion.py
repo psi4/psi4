@@ -43,8 +43,8 @@ class EmpericalDispersion(object):
             if dash == alias.upper()[-len(dash):]:
                 alias = alias[:-len(dash)]
 
-        # 1b) Alias must be uppercase
-        self.alias = alias.upper()
+        # 1b) Alias must be lowercase
+        self.alias = alias.lower()
 
         # 2) Figure out dispersion type:
         # 2a) Strip "-" from dtype
@@ -218,7 +218,7 @@ class EmpericalDispersion(object):
 
     def compute_energy(self, molecule):
         if self.disp_type == 'gr':
-            if self.alias in ['HF3C', 'PBEH3C']:
+            if self.alias in ['hf3c', 'pbeh3c']:
                 dashd_part = dftd3.run_dftd3(
                     molecule,
                     dashlvl=self.dtype.lower().replace('-', ''),
@@ -239,7 +239,7 @@ class EmpericalDispersion(object):
 
     def compute_gradient(self, molecule):
         if self.disp_type == 'gr':
-            if self.alias in ['HF3C', 'PBEH3C']:
+            if self.alias in ['hf3c', 'pbeh3c']:
                 dashd_part = dftd3.run_dftd3(
                     molecule,
                     dashlvl=self.dtype.lower().replace('-', ''),

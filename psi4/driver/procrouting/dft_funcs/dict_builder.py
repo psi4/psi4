@@ -100,10 +100,10 @@ dict_functionals.update(dict_dh_funcs.functional_list)
 
 def get_functional_aliases(functional_dict):
     if "alias" in functional_dict:
-        aliases = [each.upper() for each in functional_dict["alias"]]
-        aliases.append(functional_dict["name"].upper())
+        aliases = [each.lower() for each in functional_dict["alias"]]
+        aliases.append(functional_dict["name"].lower())
     else:
-        aliases = [functional_dict["name"].upper()]
+        aliases = [functional_dict["name"].lower()]
     return aliases
 
 
@@ -140,7 +140,7 @@ for functional_name in dict_functionals:
                 # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
                 # all point to the same method (M06-2X-D3ZERO)
                 for alias in functional_aliases:
-                    alias = alias + "-" + dispersion_name.upper()
+                    alias = alias + "-" + dispersion_name.lower()
                     functionals[alias] = func
 
 
@@ -150,8 +150,11 @@ def check_consistency(func_dictionary):
     of the functional, including detecting duplicate requests for LibXC params, inconsistent
     requests for HF exchange and missing correlation.
     """
-    
-    name = func_dictionary["name"]
+    # 0) make sure method name is set:
+    if "name" not in func_dictionary:
+        raise ValidationError("SCF: No method name was specified in functional dictionary.")
+    else:
+        name = func_dictionary["name"]
     # 1a) sanity checks definition of xc_functionals
     if "xc_functionals" in func_dictionary:
         if "x_functionals" in func_dictionary or "x_hf" in func_dictionary:
@@ -338,6 +341,6 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
 
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
-    sup.set_name(func_dictionary["name"].upper())
+    sup.set_name(func_dictionary["name"].lower())
     sup.allocate()
     return (sup, dispersion)

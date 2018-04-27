@@ -143,4 +143,4 @@ funcs.append({"name": "B5050LYP"       , "xc_functionals": {"HYB_GGA_XC_B5050LYP
 
 functional_list = {}
 for functional in funcs:
-    functional_list[functional["name"].upper()] = functional
+    functional_list[functional["name"].lower()] = functional

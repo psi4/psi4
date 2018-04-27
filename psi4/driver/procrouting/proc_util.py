@@ -51,7 +51,10 @@ def scf_set_reference_local(name, is_dft=False):
 
     # Alter reference name if needed
     user_ref = core.get_option('SCF', 'REFERENCE')
-    if (name not in dft_funcs.superfunctional_noxc_names) or (is_dft):
+    
+    sup = dft_funcs.dict_builder.build_superfunctional_from_dictionary(
+                                  dft_funcs.dict_builder.functionals[name], 1, 1, True)[0]
+    if sup.needs_xc() or is_dft:
         if (user_ref == 'RHF'):
             core.set_local_option('SCF', 'REFERENCE', 'RKS')
         elif (user_ref == 'UHF'):
