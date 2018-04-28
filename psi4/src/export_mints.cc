@@ -1250,7 +1250,8 @@ void export_mints(py::module& m) {
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg0")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed)", py::arg("atom"))
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return zero mass",
+             py::arg("atom"), py::arg("zero_ghost") = false)
         .def("set_mass", &Molecule::set_mass,
              "Sets mass of *atom* (0-indexed) to *mass* (good for isotopic substitutions)",
              py::arg("atom"), py::arg("mass"))
