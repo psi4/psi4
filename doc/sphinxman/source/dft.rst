@@ -367,7 +367,7 @@ with a ``dft_functional`` argument::
 Another alternative is providing a specially crafted `dict`-ionary to the ``dft_functional``
 argument::
 
-    custom_functional = { ... }
+    custom_functional = { "name": "my_unique_name", ... }
     energy('scf', dft_functional = custom_functional)
 
 For further details about this so called `dict_func` syntax, see 

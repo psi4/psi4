@@ -148,13 +148,18 @@ def check_consistency(func_dictionary):
     """
     This checks the consistency of the definitions of exchange and correlation components
     of the functional, including detecting duplicate requests for LibXC params, inconsistent
-    requests for HF exchange and missing correlation.
+    requests for HF exchange and missing correlation. It also makes sure that names of methods
+    passed in using dft_functional={} syntax have a non-implemented name.
     """
-    # 0) make sure method name is set:
+    # 0a) make sure method name is set:
     if "name" not in func_dictionary:
         raise ValidationError("SCF: No method name was specified in functional dictionary.")
     else:
         name = func_dictionary["name"]
+    # 0b) make sure provided name is unique:
+        if (name.lower() in functionals.keys()) and (func_dictionary not in functionals.values()):
+            raise ValidationError("SCF: Provided name for a custom dft_functional matches an already defined one: %s." % (name))
+
     # 1a) sanity checks definition of xc_functionals
     if "xc_functionals" in func_dictionary:
         if "x_functionals" in func_dictionary or "x_hf" in func_dictionary:
