@@ -100,13 +100,13 @@ def build_superfunctional(name, restricted):
         sup[0].set_c_alpha(core.get_option("SCF", "DFT_ALPHA_C"))
 
     # customization of existing VV10 dispersion:
-    if (core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS") and sup[0].vv10_b() > 0.0):
-       nl_tuple = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
+    if (core.has_option_changed("SCF", "NL_DISPERSION_PARAMETERS") and sup[0].vv10_b() > 0.0):
+       nl_tuple = core.get_option("SCF", "NL_DISPERSION_PARAMETERS")
        sup[0].set_vv10_b(nl_tuple[0])
        if len(nl_tuple) > 1:
           sup[0].set_vv10_c(nl_tuple[1])
        if len(nl_tuple) > 2:
-          raise ValidationError("too many entries in DFT_DISPERSION_PARAMETERS for DFT-NL")
+          raise ValidationError("too many entries in NL_DISPERSION_PARAMETERS for DFT-NL")
     # add VV10 correlation to any functional or modify existing
     # custom procedures using name 'scf' without any quadrature grid like HF will fail and are not detected
     if (core.has_option_changed("SCF", "DFT_VV10_B") and core.has_option_changed("SCF", "DFT_VV10_C")):
@@ -125,6 +125,9 @@ def build_superfunctional(name, restricted):
             core.print_out("SCF: VV10_C not specified. Using default (C=0.0093)!")
             sup[0].set_vv10_c(0.0093)
 
+    if (core.has_option_changed("SCF", "NL_DISPERSION_PARAMETERS") and core.has_option_changed("SCF", "DFT_VV10_B")):
+        raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
+    
 
     # Check SCF_TYPE
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):

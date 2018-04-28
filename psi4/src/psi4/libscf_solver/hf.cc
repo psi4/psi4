@@ -331,10 +331,10 @@ void HF::common_init()
     }
 
     // post-scf vv10 correlation
-    if(options_.get_bool("DFT_VV10_POSTSCF")) {
-    functional_->set_lock(false);
-    functional_->set_do_vv10(false);
-    functional_->set_lock(true);
+    if (options_.get_bool("DFT_VV10_POSTSCF")) {
+        functional_->set_lock(false);
+        functional_->set_do_vv10(false);
+        functional_->set_lock(true);
     }
 
     // -D is zero by default
@@ -489,14 +489,14 @@ double HF::finalize_E()
 {
 
     // post-scf vv10 correlation
-    if(options_.get_bool("DFT_VV10_POSTSCF")) {
-    functional_->set_lock(false);
-    functional_->set_do_vv10(true);
-    functional_->set_lock(true);
-    outfile->Printf( "  ==> calculating VV10 correction on post-scf density <==\n\n");
-    E_=0.0;
-    form_V();
-    E_+=compute_E();
+    if (options_.get_bool("DFT_VV10_POSTSCF")) {
+        functional_->set_lock(false);
+        functional_->set_do_vv10(true);
+        functional_->set_lock(true);
+        outfile->Printf( "  ==> calculating VV10 correction on post-scf density <==\n\n");
+        E_=0.0;
+        form_V();
+        E_+=compute_E();
     }
 
     // Perform wavefunction stability analysis before doing

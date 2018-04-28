@@ -34,7 +34,7 @@ from psi4.driver.qcdb import interface_gcp as gcp
 from psi4.driver.qcdb.dashparam import get_dispersion_aliases
 from psi4.driver.qcdb.dashparam import get_default_dashparams
 from psi4.driver import p4util
-import numpy as np
+#import numpy as np
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
@@ -248,8 +248,6 @@ class EmpericalDispersion(object):
                     dashparam=self.dash_params,
                     verbose=False,
                     dertype=0)
-        elif self.disp_type == 'nl':
-             return 0
         else:
             return self.disp.compute_energy(molecule)
 
@@ -272,10 +270,6 @@ class EmpericalDispersion(object):
                     dashparam=self.dash_params,
                     verbose=False,
                     dertype=1)
-        elif self.disp_type in 'nl':
-             ZeroMat = np.zeros((molecule.natom(),3))
-             ZeroGrad= core.Matrix.from_array(ZeroMat)
-             return ZeroGrad
         else:
             return self.disp.compute_gradient(molecule)
 
@@ -283,12 +277,6 @@ class EmpericalDispersion(object):
         """
         #magic (if magic was easy)
         """
-
-        if self.disp_type in 'nl':
-             nat3=3*molecule.natom()
-             ZeroMat = np.zeros((nat3,nat3))
-             ZeroHess= core.Matrix.from_array(ZeroMat)
-             return ZeroHess
 
         optstash = p4util.OptionsState(['PRINT'])
         core.set_global_option('PRINT', 0)

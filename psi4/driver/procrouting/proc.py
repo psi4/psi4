@@ -1021,6 +1021,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
             wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
                 disp_type[0], disp_type[1], tuple_params=modified_disp_params)
         wfn._disp_functor.print_out()
+        if (disp_type["type"] == 'nl'):
+             del wfn._disp_functor 
 
     # Set the DF basis sets
     if (core.get_option("SCF", "SCF_TYPE") == "DF") or \

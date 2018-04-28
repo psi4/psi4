@@ -324,7 +324,6 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                 sup.set_c_os_alpha(c_params["os"])
                 sup.set_c_alpha(1.0)
 
-
         # Merge descriptions and citations from above components obtained from LibXC as a fallback.
         descr = "\n".join(descr)
         citation = "\n".join(citation)
@@ -342,10 +341,10 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     if "dispersion" in func_dictionary:
         d_params = func_dictionary["dispersion"]
         if "citation" not in d_params:
-           d_params["citation"] = False
-        if d_params["type"]=='nl':
-           sup.set_vv10_b(d_params["params"]["b"])
-           sup.set_vv10_c(d_params["params"]["c"])
+            d_params["citation"] = False
+        if d_params["type"] == 'nl':
+            sup.set_vv10_b(d_params["params"]["b"])
+            sup.set_vv10_c(d_params["params"]["c"])
         dispersion = d_params
 
     sup.set_max_points(npoints)

@@ -1481,6 +1481,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Dispersion Corrections <table:dashd>` for the order in which
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
+    /*- Parameters defining the -NL/-V dispersion correction. First b, then C -*/
+    options.add("NL_DISPERSION_PARAMETERS", new ArrayType());
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number) for VV10 NL integration. -*/
     options.add_int("DFT_VV10_SPHERICAL_POINTS", 146);
     /*- Number of radial points for VV10 NL integration. -*/
