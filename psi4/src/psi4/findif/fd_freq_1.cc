@@ -253,7 +253,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         double **disp = gradients[i]->pointer();
         for (int a = 0; a < Natom; ++a)
             for (int xyz = 0; xyz < 3; ++xyz)
-                disp[a][xyz] /= sqrt(mol->mass(a));
+                disp[a][xyz] /= sqrt(mol->mass(a, false));
     }
 
     if (print_lvl >= 3) {
@@ -347,7 +347,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         for (int i = 0; i < dim; ++i)
             for (int a = 0; a < Natom; ++a)
                 for (int xyz = 0; xyz < 3; ++xyz)
-                    B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a));
+                    B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a, false));
 
         double **normal_irr = block_matrix(3 * Natom, dim);
         C_DGEMM('t', 'n', 3 * Natom, dim, dim, 1.0, B_irr[0], 3 * Natom, evects[0],
@@ -417,7 +417,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     // Un-mass-weight Hessian
     for (int x1 = 0; x1 < 3 * Natom; ++x1)
         for (int x2 = 0; x2 < 3 * Natom; ++x2)
-            Hx[x1][x2] *= sqrt(mol->mass(x1 / 3)) * sqrt(mol->mass(x2 / 3));
+            Hx[x1][x2] *= sqrt(mol->mass((x1 / 3), false)) * sqrt(mol->mass((x2 / 3), false));
 
     if (print_lvl >= 3) {
         outfile->Printf("\n\tForce Constants in cartesian coordinates.\n");

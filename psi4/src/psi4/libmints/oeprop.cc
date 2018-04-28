@@ -780,7 +780,7 @@ void OEProp::common_init()
             std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
             if(str == "COM"){
                 for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->mass(atom);
+                    property[atom] = mol->mass(atom, false);
             }else if(str == "NUCLEAR_CHARGE"){
                 for(int atom = 0; atom < natoms; ++atom)
                     property[atom] = mol->charge(atom);

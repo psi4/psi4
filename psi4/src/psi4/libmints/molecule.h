@@ -264,7 +264,7 @@ public:
     /// Returns x, y, or z component of 'atom'
     double xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
-    double mass(int atom) const;
+    double mass(int atom, bool zero_ghost) const;
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
     void set_mass(int atom, double mass);

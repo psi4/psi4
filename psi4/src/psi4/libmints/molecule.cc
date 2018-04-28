@@ -359,8 +359,7 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
 
 
 
-double Molecule::mass(int atom) const {
-    bool zero_ghost = true;
+double Molecule::mass(int atom, bool zero_ghost) const {
     double ret = 0.0;
     if (zero_ghost && (atoms_[atom]->Z() == 0.0))
         ret = 0.0;
@@ -427,7 +426,7 @@ Vector3 Molecule::center_of_mass() const {
     total_m = 0.0;
 
     for (int i = 0; i < natom(); ++i) {
-        double m = mass(i);
+        double m = mass(i, false);
         ret += m * xyz(i);
         total_m += m;
     }
@@ -1694,7 +1693,7 @@ void Molecule::print() const {
             Vector3 geom = atoms_[i]->compute();
             outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
-            outfile->Printf("  %17.12f", mass(i));
+            outfile->Printf("  %17.12f", mass(i, false));
             outfile->Printf("\n");
         }
         if (Process::environment.options.get_int("PRINT") > 2) {
@@ -1943,14 +1942,14 @@ Matrix *Molecule::inertia_tensor() const {
 
     for (i = 0; i < natom(); i++) {
         // I(alpha, alpha)
-        temp(0, 0) += mass(i) * (y(i) * y(i) + z(i) * z(i));
-        temp(1, 1) += mass(i) * (x(i) * x(i) + z(i) * z(i));
-        temp(2, 2) += mass(i) * (x(i) * x(i) + y(i) * y(i));
+        temp(0, 0) += mass(i, false) * (y(i) * y(i) + z(i) * z(i));
+        temp(1, 1) += mass(i, false) * (x(i) * x(i) + z(i) * z(i));
+        temp(2, 2) += mass(i, false) * (x(i) * x(i) + y(i) * y(i));
 
         // I(alpha, beta)
-        temp(0, 1) -= mass(i) * x(i) * y(i);
-        temp(0, 2) -= mass(i) * x(i) * z(i);
-        temp(1, 2) -= mass(i) * y(i) * z(i);
+        temp(0, 1) -= mass(i, false) * x(i) * y(i);
+        temp(0, 2) -= mass(i, false) * x(i) * z(i);
+        temp(1, 2) -= mass(i, false) * y(i) * z(i);
     }
 
     //    mirror
@@ -2768,7 +2767,7 @@ void Molecule::form_symmetry_information(double tol) {
             for (int j = 0; j < nunique_; ++j) {
                 int unique = equiv_[j][0];
                 Vector3 aj(xyz(unique));
-                if (np.distance(aj) < tol && Z(unique) == Z(i) && std::fabs(mass(unique) - mass(i)) < tol) {
+                if (np.distance(aj) < tol && Z(unique) == Z(i) && std::fabs(mass(unique, false) - mass(i, false)) < tol) {
                     i_is_unique = 0;
                     i_equiv = j;
                     break;

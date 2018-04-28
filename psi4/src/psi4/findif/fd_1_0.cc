@@ -141,7 +141,7 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::l
 
     for (int a = 0; a < Natom; ++a)
         for (int xyz = 0; xyz < 3; ++xyz)
-            gradient_matrix.set(a, xyz, g_cart[3 * a + xyz] * sqrt(mol->mass(a)));
+            gradient_matrix.set(a, xyz, g_cart[3 * a + xyz] * sqrt(mol->mass(a,false)));
 
     free(g_cart);
 

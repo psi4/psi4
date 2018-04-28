@@ -249,7 +249,7 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
         for (int i = 0; i < dim; ++i)
             for (int a = 0; a < Natom; ++a)
                 for (int xyz = 0; xyz < 3; ++xyz)
-                    B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a));
+                    B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a,false));
 
         double **normal_irr = block_matrix(3 * Natom, dim);
         C_DGEMM('t', 'n', 3 * Natom, dim, dim, 1.0, B_irr[0], 3 * Natom, evects[0],
@@ -294,7 +294,7 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     //for (int i=0; i<dim; ++i)
     //for (int a=0; a<Natom; ++a)
     //for (int xyz=0; xyz<3; ++xyz)
-    //B[i][3*a+xyz] *= sqrt(mol->mass(a));
+    //B[i][3*a+xyz] *= sqrt(mol->mass(a, false));
 
 //  double **Hx = block_matrix(3*Natom, 3*Natom);
     auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
@@ -355,7 +355,7 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     //for (int i=0; salcs_pi[0].size(); ++i)
       //for (int a=0; a<Natom; ++a)
         //for (int xyz=0; xyz<3; ++xyz)
-          //B_sym[i][3*a+xyz] *= sqrt(mol->mass(a));
+          //B_sym[i][3*a+xyz] *= sqrt(mol->mass(a, false));
     // Gradient in ordinary cartesians g_q B -> g_cart
     //double *g_cart = init_array(3*Natom);
     //C_DGEMM('n', 'n', 1, 3*Natom, salcs_pi[0].size(), 1.0, g_q, salcs_pi[0].size(),
@@ -372,33 +372,33 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     for (int atom_a=0; atom_a<Natom; ++atom_a) {
       for (int xyz_a=0; xyz_a<3; ++xyz_a) {
 
-        ref_geom[atom_a][xyz_a] += DX / sqrt(mol->mass(atom_a));
+        ref_geom[atom_a][xyz_a] += DX / sqrt(mol->mass(atom_a, false));
         mol->set_geometry(ref_geom);
         CdSalcList B_p_list(mol, fact, 0x1, true, true);
         SharedMatrix B_p = B_p_list.matrix();
         //mass_weight_columns_plus_one_half(B_p);
-        // We can multiply columns by sqrt(mol->mass(atom_b), but if we also divide
+        // We can multiply columns by sqrt(mol->mass(atom_b, false), but if we also divide
         // by it in the finite-difference formula it cancels anyway.
 
-        ref_geom[atom_a][xyz_a] += DX / sqrt(mol->mass(atom_a));
+        ref_geom[atom_a][xyz_a] += DX / sqrt(mol->mass(atom_a, false));
         mol->set_geometry(ref_geom);
         CdSalcList B_p2_list(mol, fact, 0x1, true, true);
         SharedMatrix B_p2 = B_p2_list.matrix();
         //mass_weight_columns_plus_one_half(B_p2);
 
-        ref_geom[atom_a][xyz_a] -= 3.0*DX / sqrt(mol->mass(atom_a));
+        ref_geom[atom_a][xyz_a] -= 3.0*DX / sqrt(mol->mass(atom_a, false));
         mol->set_geometry(ref_geom);
         CdSalcList B_m_list(mol, fact, 0x1, true, true);
         SharedMatrix B_m = B_m_list.matrix();
         //mass_weight_columns_plus_one_half(B_m);
 
-        ref_geom[atom_a][xyz_a] -= 1.0*DX / sqrt(mol->mass(atom_a));
+        ref_geom[atom_a][xyz_a] -= 1.0*DX / sqrt(mol->mass(atom_a, false));
         mol->set_geometry(ref_geom);
         CdSalcList B_m2_list(mol, fact, 0x1, true, true);
         SharedMatrix B_m2 = B_m2_list.matrix();
         //mass_weight_columns_plus_one_half(B_m2);
 
-        ref_geom[atom_a][xyz_a] += 2.0*DX / sqrt(mol->mass(atom_a)); // restore to orig
+        ref_geom[atom_a][xyz_a] += 2.0*DX / sqrt(mol->mass(atom_a, false)); // restore to orig
 
         for (int atom_b=0; atom_b<Natom; ++atom_b)
           for (int xyz_b=0; xyz_b<3; ++xyz_b) {
@@ -406,7 +406,7 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
             for (int i=0; i<salcs_pi[0].size(); ++i) {
                 dq2dx2 = (B_m2->get(i,3*atom_b+xyz_b) - 8.0*B_m->get(i,3*atom_b+xyz_b)
                       +8.0*B_p->get(i,3*atom_b+xyz_b) -    B_p2->get(i,3*atom_b+xyz_b)) /
-                     (12.0*DX); // * sqrt(mol->mass(atom_b));
+                     (12.0*DX); // * sqrt(mol->mass(atom_b, false));
 
                 Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] += g_q[i] * dq2dx2;
             }
@@ -425,7 +425,7 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     // Un-mass-weight Hessian
     for (int x1 = 0; x1 < 3 * Natom; ++x1)
         for (int x2 = 0; x2 < 3 * Natom; ++x2)
-            Hx[x1][x2] *= sqrt(mol->mass(x1 / 3)) * sqrt(mol->mass(x2 / 3));
+            Hx[x1][x2] *= sqrt(mol->mass((x1 / 3), false)) * sqrt(mol->mass((x2 / 3), false));
 
     if (print_lvl >= 3) {
         outfile->Printf("\n\tForce Constants in cartesian coordinates.\n");

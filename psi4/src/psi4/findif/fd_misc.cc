@@ -64,7 +64,7 @@ void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSal
     int xyz        = salclist[salc_i].component(c).xyz;
     double coef    = salclist[salc_i].component(c).coef;
 
-    geom->add(0, a, xyz, disp_factor * disp_size * coef / sqrt(mol->mass(a)));
+    geom->add(0, a, xyz, disp_factor * disp_size * coef / sqrt(mol->mass(a, false)));
   }
 
   return;
@@ -87,7 +87,7 @@ void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSal
     xyz  = salclist[salc_i].component(c).xyz;
     coef = salclist[salc_i].component(c).coef;
 
-    geom->add(0, a, xyz, disp_factor_i * disp_size * coef / sqrt(mol->mass(a)));
+    geom->add(0, a, xyz, disp_factor_i * disp_size * coef / sqrt(mol->mass(a, false)));
   }
 
   for (int c=0; c<salclist[salc_j].ncomponent(); ++c) {
@@ -95,7 +95,7 @@ void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSal
     xyz  = salclist[salc_j].component(c).xyz;
     coef = salclist[salc_j].component(c).coef;
 
-    geom->add(0, a, xyz, disp_factor_j * disp_size * coef / sqrt(mol->mass(a)));
+    geom->add(0, a, xyz, disp_factor_j * disp_size * coef / sqrt(mol->mass(a, false)));
   }
 
   return;
@@ -106,7 +106,7 @@ void mass_weight_columns_plus_one_half(std::shared_ptr<Molecule> mol, SharedMatr
   double u;
 
   for (int col=0; col<B->ncol(); ++col) {
-    u = sqrt(mol->mass(col/3));
+    u = sqrt(mol->mass((col/3), false));
     for (int row=0; row<B->nrow(); ++row)
       B->set(row, col, B->get(row,col) * u);
   }
