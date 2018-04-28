@@ -1873,10 +1873,10 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
 
 
 def _hessian_write(wfn):
-        if core.get_option('FINDIF', 'HESSIAN_WRITE'):
-            filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
-            with open(filename, 'w') as handle:
-                qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='fcmfinal')
+    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
+        with open(filename, 'wb') as handle:
+            qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
 
 
 def gdma(wfn, datafile=""):
