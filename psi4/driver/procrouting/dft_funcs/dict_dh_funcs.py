@@ -171,7 +171,7 @@ funcs.append({
         "citation": "    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014\n" 
     },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": '    DSD-BLYP-NL (D3BJ,FC functional parameters) Dispersion-corrected SCS Double Hybrid XC Functional\n',
+    "description": '    DSD-BLYP-NL (D3BJ,FC parameters) VV10 SCS Double Hybrid XC Functional\n',
 })
 
 
@@ -332,7 +332,7 @@ funcs.append({
         "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'
     },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": '    DSD-PBEP86-NL (D3BJ functional parameters) Dispersion-corrected SCS Double Hybrid XC Functional\n',
+    "description": '    DSD-PBEP86-NL (D3BJ parameters) VV10 SCS Double Hybrid XC Functional\n',
 })
 
 
@@ -476,7 +476,7 @@ funcs.append({
         "ss": 0.13
     },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": '    DSD-PBEPBE-NL (D3BJ functional parameters) Dispersion-corrected SCS Double Hybrid XC Functional\n',
+    "description": '    DSD-PBEPBE-NL (D3BJ parameters) VV10 SCS Double Hybrid XC Functional\n',
     "dispersion": {
         "type": "nl",
         "params": {
@@ -743,7 +743,7 @@ funcs.append({
         "ss": 0.09
     },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
-    "description": '    DSD-PBEB95-NL (D3BJ functional parameters) Dispersion-corrected SCS Double Hybrid Meta-GGA XC Functional\n',
+    "description": '    DSD-PBEB95-NL (D3BJ parameters) VV10 SCS Double Hybrid Meta-GGA XC Functional\n',
     "dispersion": {
         "type": "nl",
         "params": {
