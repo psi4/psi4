@@ -29,7 +29,7 @@ for k, v in test_dict.items():
     compare_values(v, ret, 5, "RKS 0 1  %15s Energy" % k)
 
 pbe = {
-    "name": "PBE",
+    "name": "PBE-TEST",
     "x_functionals": { "GGA_X_PBE": {} },
     "c_functionals": { "GGA_C_PBE": {} },
 }
