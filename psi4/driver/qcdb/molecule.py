@@ -1357,7 +1357,7 @@ class Molecule(LibmintsMolecule):
         return smol
 
     @staticmethod
-    def _raw_to_dict(self, force_c1=False, force_au=False, np_out=True):
+    def _raw_to_dict(self, force_c1=False, force_units=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
         self.update_geometry()
@@ -1366,8 +1366,10 @@ class Molecule(LibmintsMolecule):
         if self.name() not in ['', 'default']:
             molrec['name'] = self.name()
 
-        if force_au:
+        if force_units == 'Bohr':
             molrec['units'] = 'Bohr'
+        elif force_units == 'Angstrom':
+            molrec['units'] = 'Angstrom'
         else:
             units = self.units()
             molrec['units'] = units
@@ -1386,9 +1388,9 @@ class Molecule(LibmintsMolecule):
         # TODO zmat, geometry_variables
 
         nat = self.natom()
-        geom = np.array(self.geometry())
-        if not force_au:
-            geom /= self.input_units_to_au()
+        geom = np.array(self.geometry())  # [a0]
+        if molrec['units'] == 'Angstrom':
+            geom *= psi_bohr2angstroms #self.input_units_to_au()
         molrec['geom'] = geom.reshape((-1))
 
         molrec['elea'] = np.array([self.mass_number(at) for at in range(nat)])

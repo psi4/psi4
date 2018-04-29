@@ -121,8 +121,6 @@ class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atom
         return algrad
 
     def align_hessian(self, hess):
-        # UNTESTED
-
         blocked_hess = qcdb.util.blockwise_expand(hess, (3, 3), False)
         alhess = np.zeros_like(blocked_hess)
 
@@ -552,8 +550,10 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
     if algo == 'hunguno':
         ccdistmat = distance_matrix(cgeom, cgeom)
         rrdistmat = distance_matrix(rgeom, rgeom)
-        ccnremat = np.reciprocal(ccdistmat)
-        rrnremat = np.reciprocal(rrdistmat)
+        # TODO investigate soundness
+        with np.errstate(divide='ignore'):
+            ccnremat = np.reciprocal(ccdistmat)
+            rrnremat = np.reciprocal(rrdistmat)
         ccnremat[ccnremat == np.inf] = 0.
         rrnremat[rrnremat == np.inf] = 0.
         algofn = filter_hungarian_uno
@@ -753,6 +753,4 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
         assert (rand_rot3d.shape == (3, 3))
 
     perturbation = AlignmentMill(rand_shift, rand_rot3d, rand_elord, do_mirror)
-    print(perturbation)
-
     return perturbation

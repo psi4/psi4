@@ -164,8 +164,9 @@ def from_string(molstr,
         Like `dtype=psi4` (although combination with EFP not tested) except
         that instead of pure-Cartesian geometry, allow variables, zmatrix,
         and un-fully-specified geometries. *Not* MolSSI standard, but we're
-        not dropping zmatrix yet. Note that internal coordinates defined through
-        a zmatrix have no bearing on geometry optimization internals or constraints.
+        not dropping zmatrix yet. Note that in Psi4 internal coordinates
+        defined through a zmatrix have no bearing on geometry
+        optimization internals or constraints.
 
     """
     if verbose >= 2:
