@@ -672,9 +672,11 @@ for something like::
 Dispersion Corrections
 ~~~~~~~~~~~~~~~~~~~~~~
 
-:ref:`Dispersion corrections are discussed here. <sec:dftd3>`
+:ref:`DFT-D dispersion corrections are discussed here. <sec:dftd3>`
 
 :ref:`HF-3c and PBEh-3c dispersion and BSSE corrections are discussed here. <sec:gcp>`
+
+:ref:`DFT-NL dispersion corrections are discussed here. <sec:dftnl>`
 
 Recommendations
 ~~~~~~~~~~~~~~~
