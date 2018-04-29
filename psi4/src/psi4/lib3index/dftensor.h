@@ -30,6 +30,7 @@
 #define three_index_df_H
 
 #include "psi4/libmints/typedefs.h"
+#include "psi4/pragma.h"
 
 #include <string>
 
@@ -117,7 +118,7 @@ public:
     void form_cholesky_factor();
 };
 
-class DFTensor {
+class PSI_API DFTensor {
 
 protected:
 
