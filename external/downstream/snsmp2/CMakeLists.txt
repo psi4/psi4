@@ -9,6 +9,10 @@ if(${ENABLE_snsmp2})
         add_library(snsmp2_external INTERFACE)  # dummy
 
     else()
+        if(${CMAKE_INSIST_FIND_PACKAGE_snsmp2})
+            message(FATAL_ERROR "Suitable snsmp2_casscf could not be externally located as user insists")
+        endif()
+
         include(ExternalProject)
         message(STATUS "Suitable snsmp2 could not be located, ${Magenta}Building snsmp2${ColourReset} instead.")
 
