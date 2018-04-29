@@ -190,6 +190,7 @@ def dynamic_variable_bind(cls):
     cls.scramble = qcdb.Molecule._raw_scramble
     cls.from_arrays = molecule_from_arrays
     cls.from_string = molecule_from_string
+    cls.to_string = qcdb.Molecule._raw_to_string
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance

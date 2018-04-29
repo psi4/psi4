@@ -1343,6 +1343,18 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
+    def _raw_to_string(self, dtype, units='Angstrom', atom_format=None, ghost_format=None, width=17, prec=12):
+        """Format a string representation of QM molecule."""
+
+        molrec = self.to_dict(np_out=True)
+        smol = molparse.to_string(molrec,
+                                  dtype=dtype,
+                                  units=units,
+                                  atom_format=atom_format,
+                                  ghost_format=ghost_format,
+                                  width=width,
+                                  prec=prec)
+        return smol
 
     @staticmethod
     def _raw_to_dict(self, force_c1=False, force_au=False, np_out=True):
@@ -1871,3 +1883,4 @@ Molecule.to_dict = Molecule._raw_to_dict
 Molecule.BFS = Molecule._raw_BFS
 Molecule.B787 = Molecule._raw_B787
 Molecule.scramble = Molecule._raw_scramble
+Molecule.to_string = Molecule._raw_to_string
