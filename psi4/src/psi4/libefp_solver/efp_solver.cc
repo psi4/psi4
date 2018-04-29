@@ -357,7 +357,7 @@ void EFP::set_options() {
     memset(&opts, 0, sizeof(struct efp_opts));
 
     elst_enabled_ = options_.get_bool("EFP_ELST");
-    pol_enabled_ = options_.get_bool("EFP_POL");
+    pol_enabled_ = options_.get_bool("EFP_IND");
     disp_enabled_ = options_.get_bool("EFP_DISP");
     exch_enabled_ = options_.get_bool("EFP_EXCH");
 
@@ -368,8 +368,8 @@ void EFP::set_options() {
     // opts.terms |= EFP_TERM_CHTR;    // may be enabled in a future libefp release
 
     do_qm_ = options_.get_bool("QMEFP");
-    qm_elst_enabled_ = do_qm_ && options_.get_bool("QMEFP_ELST");
-    qm_pol_enabled_ = do_qm_ && options_.get_bool("QMEFP_POL");
+    qm_elst_enabled_ = do_qm_ && options_.get_bool("EFP_AI_ELST");
+    qm_pol_enabled_ = do_qm_ && options_.get_bool("EFP_AI_IND");
 
     if (qm_elst_enabled_) opts.terms |= EFP_TERM_AI_ELEC;
     if (qm_pol_enabled_) opts.terms |= EFP_TERM_AI_POL;
@@ -379,7 +379,7 @@ void EFP::set_options() {
 
     elst_damping_ = options_.get_str("EFP_ELST_DAMPING");
     disp_damping_ = options_.get_str("EFP_DISP_DAMPING");
-    pol_damping_ = options_.get_str("EFP_POL_DAMPING");
+    pol_damping_ = options_.get_str("EFP_IND_DAMPING");
 
     if (elst_damping_ == "SCREEN")
         opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
