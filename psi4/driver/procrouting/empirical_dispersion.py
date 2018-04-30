@@ -104,7 +104,7 @@ class EmpericalDispersion(object):
                     raise Exception("Too many parameter in input tuple param.")
 
         # DFT-NL dispersion. 
-        elif self.dtype in ["-NL"]:
+        elif self.dtype in ["-nl"]:
              self.disp_type = 'nl'
 
 
@@ -193,7 +193,7 @@ class EmpericalDispersion(object):
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2011:1456"
 
-        elif self.dtype == "-NL":
+        elif self.dtype == "-nl":
             self.description = "    Grimme's -NL (DFT plus  VV10 correlation) "
             self.citation = "    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 \n"
             self.bibtex = "Grimme:2011:3866"
