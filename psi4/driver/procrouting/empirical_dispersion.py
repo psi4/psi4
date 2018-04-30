@@ -207,7 +207,7 @@ class EmpericalDispersion(object):
 
     def print_out(self, level=1):
 
-        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype)
+        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype.upper())
         core.print_out(self.description + "\n")
 
         core.print_out(self.citation + "\n\n")

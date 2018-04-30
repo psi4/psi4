@@ -133,7 +133,7 @@ def build_superfunctional(name, restricted):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
 
     sup[0].set_lock(True)
-
+    
     return sup
 
 
