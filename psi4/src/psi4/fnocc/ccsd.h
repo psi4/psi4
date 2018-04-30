@@ -37,7 +37,7 @@
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-long int Position(long int i,long int j);
+PSI_API long int Position(long int i,long int j);
 
 namespace psi{ namespace fnocc{
 
@@ -216,7 +216,7 @@ class CoupledCluster: public Wavefunction{
 };
 
 // DF CC class
-class DFCoupledCluster : public CoupledCluster{
+class PSI_API DFCoupledCluster : public CoupledCluster{
 
   public:
     DFCoupledCluster(SharedWavefunction ref_wfn, Options&options);

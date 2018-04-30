@@ -51,7 +51,7 @@ class FrozenNO : public Wavefunction {
     void common_init();
 };
 
-class DFFrozenNO : public FrozenNO {
+class PSI_API DFFrozenNO : public FrozenNO {
   public:
     DFFrozenNO(std::shared_ptr<Wavefunction>wfn,Options&options);
     ~DFFrozenNO();

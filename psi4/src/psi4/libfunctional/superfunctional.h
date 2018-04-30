@@ -30,6 +30,7 @@
 #define SUPERFUNCTIONAL_H
 
 #include "psi4/libmints/typedefs.h"
+#include "psi4/pragma.h"
 #include <map>
 #include <vector>
 #include <cstdlib>
@@ -219,9 +220,9 @@ public:
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
     bool needs_vv10() const {return needs_vv10_; };
     bool needs_grac() const {return needs_grac_; };
-    bool is_unpolarized() const;
-    bool is_meta() const;
-    bool is_gga() const;
+    bool PSI_API is_unpolarized() const;
+    bool PSI_API is_meta() const;
+    bool PSI_API is_gga() const;
     bool is_x_lrc() const { return x_omega_ != 0.0; }
     bool is_c_lrc() const { return c_omega_ != 0.0; }
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
