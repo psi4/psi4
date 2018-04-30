@@ -29,9 +29,9 @@
 Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
 dict = {
-           "name":  "",       name of the functional - matched against name.upper() in method lookup
+           "name":  "",       name of the functional - matched against name.lower() in method lookup
 
-          "alias":  [""],     alternative names for the method in lookup functions, capitalised
+          "alias":  [""],     alternative names for the method in lookup functions, processed with .lower()
 
        "citation":  "",       citation of the method in the standard indented format, printed in output
 
@@ -100,10 +100,10 @@ dict_functionals.update(dict_dh_funcs.functional_list)
 
 def get_functional_aliases(functional_dict):
     if "alias" in functional_dict:
-        aliases = [each.upper() for each in functional_dict["alias"]]
-        aliases.append(functional_dict["name"].upper())
+        aliases = [each.lower() for each in functional_dict["alias"]]
+        aliases.append(functional_dict["name"].lower())
     else:
-        aliases = [functional_dict["name"].upper()]
+        aliases = [functional_dict["name"].lower()]
     return aliases
 
 
@@ -126,7 +126,7 @@ for functional_name in dict_functionals:
     for dispersion_name in dispersion_names:
         dispersion_type = dispersion_names[dispersion_name]
         for dispersion_functional in dashcoeff[dispersion_type]:
-            if dispersion_functional.upper() in functional_aliases:
+            if dispersion_functional.lower() in functional_aliases:
                 func = copy.deepcopy(dict_functionals[functional_name])
                 func["name"] = func["name"] + "-" + dispersion_type
                 func["dispersion"] = dict()
@@ -140,16 +140,25 @@ for functional_name in dict_functionals:
                 # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
                 # all point to the same method (M06-2X-D3ZERO)
                 for alias in functional_aliases:
-                    alias = alias + "-" + dispersion_name.upper()
+                    alias = alias + "-" + dispersion_name.lower()
                     functionals[alias] = func
 
 
-def check_consistency(func_dictionary, name):
+def check_consistency(func_dictionary):
     """
     This checks the consistency of the definitions of exchange and correlation components
     of the functional, including detecting duplicate requests for LibXC params, inconsistent
-    requests for HF exchange and missing correlation.
+    requests for HF exchange and missing correlation. It also makes sure that names of methods
+    passed in using dft_functional={} syntax have a non-implemented name.
     """
+    # 0a) make sure method name is set:
+    if "name" not in func_dictionary:
+        raise ValidationError("SCF: No method name was specified in functional dictionary.")
+    else:
+        name = func_dictionary["name"]
+    # 0b) make sure provided name is unique:
+        if (name.lower() in functionals.keys()) and (func_dictionary not in functionals.values()):
+            raise ValidationError("SCF: Provided name for a custom dft_functional matches an already defined one: %s." % (name))
 
     # 1a) sanity checks definition of xc_functionals
     if "xc_functionals" in func_dictionary:
@@ -189,21 +198,21 @@ def check_consistency(func_dictionary, name):
             "SCF: Libxc parameters requested for an exchange functional not defined as a component of %s." % (name))
 
 
-def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
+def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):
     """
     This returns a (core.SuperFunctional, dispersion) tuple based on the requested name.
     The npoints, deriv and restricted parameters are also respected.
     """
 
     # Sanity check first, raises ValidationError if something is wrong
-    check_consistency(functionals[name], name)
+    check_consistency(func_dictionary)
 
     # Either process the "xc_functionals" special case
-    if "xc_functionals" in functionals[name]:
-        for xc_key in functionals[name]["xc_functionals"]:
+    if "xc_functionals" in func_dictionary:
+        for xc_key in func_dictionary["xc_functionals"]:
             xc_name = "XC_" + xc_key
         sup = core.SuperFunctional.XC_build(xc_name, restricted)
-        descr = "    " + name.upper() + " "
+        descr = "    " + func_dictionary["name"] + " "
         if sup.is_gga():
             if sup.x_alpha() > 0:
                 descr += "Hyb-GGA "
@@ -221,8 +230,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         # Exchange processing - first the GGA part:
         # LibXC uses capital labels for the CAM coefficients, by default we're not using LibXC parms
         x_HF = {"ALPHA": 0.0, "OMEGA": 0.0, "BETA": 0.0, "used": False}
-        if "x_functionals" in functionals[name]:
-            x_funcs = functionals[name]["x_functionals"]
+        if "x_functionals" in func_dictionary:
+            x_funcs = func_dictionary["x_functionals"]
             for x_key in x_funcs:
 
                 # Lookup the functional in LibXC
@@ -252,8 +261,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
 
         # Exchange processing - HF part:
         # x_HF contains zeroes or "use_libxc" params from a GGA above
-        if "x_hf" in functionals[name]:
-            x_params = functionals[name]["x_hf"]
+        if "x_hf" in func_dictionary:
+            x_params = func_dictionary["x_hf"]
 
             # if "use_libxc" specified here, fetch parameters and set flag
             # Duplicate definition of "use_libxc" caught in check_consistency.
@@ -281,12 +290,12 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
             sup.set_x_omega(x_HF["OMEGA"])
 
         # Correlation processing - GGA part, generally same as above.
-        if "c_functionals" in functionals[name]:
-            c_funcs = functionals[name]["c_functionals"]
+        if "c_functionals" in func_dictionary:
+            c_funcs = func_dictionary["c_functionals"]
             for c_key in c_funcs:
                 c_name = "XC_" + c_key
                 c_func = core.LibXCFunctional(c_name, restricted)
-                c_params = functionals[name]["c_functionals"][c_key]
+                c_params = func_dictionary["c_functionals"][c_key]
                 if "tweak" in c_params:
                     c_func.set_tweak(c_params["tweak"])
                 if "alpha" in c_params:
@@ -300,8 +309,8 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
                     descr.append(c_func.description())
 
         # Correlation processing - MP2 part
-        if "c_mp2" in functionals[name]:
-            c_params = functionals[name]["c_mp2"]
+        if "c_mp2" in func_dictionary:
+            c_params = func_dictionary["c_mp2"]
             if "alpha" in c_params:
                 sup.set_c_alpha(c_params["alpha"])
             else:
@@ -322,21 +331,21 @@ def build_superfunctional_from_dictionary(name, npoints, deriv, restricted):
         sup.set_description(descr)
 
     # Here, the above joining is usually overwritten by the proper reference.
-    if "citation" in functionals[name]:
-        sup.set_citation(functionals[name]["citation"])
-    if "description" in functionals[name]:
-        sup.set_description(functionals[name]["description"])
+    if "citation" in func_dictionary:
+        sup.set_citation(func_dictionary["citation"])
+    if "description" in func_dictionary:
+        sup.set_description(func_dictionary["description"])
 
     # Dispersion handling for tuple assembly
     dispersion = False
-    if "dispersion" in functionals[name]:
-        d_params = functionals[name]["dispersion"]
+    if "dispersion" in func_dictionary:
+        d_params = func_dictionary["dispersion"]
         if "citation" not in d_params:
             d_params["citation"] = False
         dispersion = d_params
 
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
-    sup.set_name(name.upper())
+    sup.set_name(func_dictionary["name"].lower())
     sup.allocate()
     return (sup, dispersion)

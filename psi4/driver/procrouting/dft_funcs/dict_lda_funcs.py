@@ -47,4 +47,4 @@ funcs.append({
 
 functional_list = {}
 for functional in funcs:
-    functional_list[functional["name"].upper()] = functional
+    functional_list[functional["name"].lower()] = functional

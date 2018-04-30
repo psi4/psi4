@@ -39,12 +39,12 @@ class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
         # 1) Functional name processing:
         # 1a) Cleave out base functional from alias:
-        for dash in ["-" + name.upper() for name in get_dispersion_aliases()]:
-            if dash == alias.upper()[-len(dash):]:
+        for dash in ["-" + name.lower() for name in get_dispersion_aliases()]:
+            if dash == alias.lower()[-len(dash):]:
                 alias = alias[:-len(dash)]
 
-        # 1b) Alias must be uppercase
-        self.alias = alias.upper()
+        # 1b) Alias must be lowercase
+        self.alias = alias.lower()
 
         # 2) Figure out dispersion type:
         # 2a) Strip "-" from dtype
@@ -53,9 +53,9 @@ class EmpericalDispersion(object):
 
         # 2b) Un-alias and capitalise dtype for printing
         if dtype.lower() in get_dispersion_aliases():
-            self.dtype = "-" + get_dispersion_aliases()[dtype.lower()].upper()
+            self.dtype = "-" + get_dispersion_aliases()[dtype.lower()]
         else:
-            self.dtype = "-" + dtype.upper()
+            self.dtype = "-" + dtype.lower()
 
         # 3) Get dispersion parameters:
         # 3a) Set defaults
@@ -72,8 +72,8 @@ class EmpericalDispersion(object):
 
         # 4) Dispersion class build process:
         # 4a) Build coefficients for dftd3
-        if self.dtype in ["-D2GR", "-D3ZERO", "-D3BJ", "-D3MZERO", "-D3MBJ"]:
-            self.dtype = self.dtype.replace('-D2GR', '-D2')
+        if self.dtype in ["-d2gr", "-d3zero", "-d3bj", "-d3mzero", "-d3mbj"]:
+            self.dtype = self.dtype.replace('-d2gr', '-d2')
             self.disp_type = 'gr'
 
             # Odd tuple syntax favored by psi
@@ -82,21 +82,21 @@ class EmpericalDispersion(object):
                 self.dash_params['s6'] = tuple_params[0]
 
                 if len(tuple_params) > 1:
-                    if "D2" in self.dtype:
+                    if "d2" in self.dtype:
                         self.dash_params["alpha6"] = tuple_params[1]
-                    elif ("ZERO" in self.dtype) or ("BJ" in self.dtype):
+                    elif ("zero" in self.dtype) or ("bj" in self.dtype):
                         self.dash_params["s8"] = tuple_params[1]
 
                 if len(tuple_params) > 2:
-                    if "ZERO" in self.dtype:
+                    if "zero" in self.dtype:
                         self.dash_params["sr6"] = tuple_params[2]
-                    elif "BJ" in self.dtype:
+                    elif "bj" in self.dtype:
                         self.dash_params["a1"] = tuple_params[2]
 
                 if len(tuple_params) > 3:
-                    if "ZERO" in self.dtype:
+                    if "zero" in self.dtype:
                         self.dash_params["alpha6"] = tuple_params[3]
-                    elif "BJ" in self.dtype:
+                    elif "bj" in self.dtype:
                         self.dash_params["a2"] = tuple_params[3]
 
                 if len(tuple_params) > 4:
@@ -104,7 +104,7 @@ class EmpericalDispersion(object):
 
         # 4b) Build coefficients for psi4
         else:
-            self.dtype = self.dtype.replace('-D2P4', '-D2')
+            self.dtype = self.dtype.replace('-d2p4', '-d2')
             self.disp_type = 'p4'
             if tuple_params is not None:
                 self.dash_params = {}
@@ -135,53 +135,53 @@ class EmpericalDispersion(object):
 
         # 6) Process citations
         # 6a) Set default citations for method
-        if self.dtype == "-D1":
+        if self.dtype == "-d1":
             self.description = "    Grimme's -D1 Dispersion Correction"
             self.citation = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473"
             self.bibtex = "Grimme:2004:1463"
 
-        elif self.dtype == "-D2":
+        elif self.dtype == "-d2":
             self.description = "    Grimme's -D2 Dispersion Correction"
             self.citation = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799"
             self.bibtex = "Grimme:2006:1787"
 
-        elif self.dtype == "-CHG":
+        elif self.dtype == "-chg":
             self.description = "    Chai and Head-Gordon Dispersion Correction"
             self.citation = "    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620"
             self.bibtex = "Chai:2010:6615"
 
-        elif self.dtype == "-DAS2009":
+        elif self.dtype == "-das2009":
             self.description = "    Podeszwa and Szalewicz Dispersion Correction"
             self.citation = "    Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201"
             self.bibtex = "Pernal:2009:263201"
 
-        elif self.dtype == "-DAS2010":
+        elif self.dtype == "-das2010":
             self.description = "    Podeszwa and Szalewicz Dispersion Correction"
             self.citation = "    Podeszwa, R.; Pernal, K.; Patkowski, K.; Szalewicz, K. (2010), J. Phys. Chem. Lett., 1: 550"
             self.bibtex = "Podeszwa:2010:550"
 
-        elif self.dtype == "-D2GR":
+        elif self.dtype == "-d2gr":
             self.description = "    Grimme's -D2 Dispersion Correction"
             self.citation = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799"
             self.bibtex = "Grimme:2006:1787"
 
-        elif self.dtype == "-D3ZERO":
+        elif self.dtype == "-d3zero":
             self.description = "    Grimme's -D3 (zero-damping) Dispersion Correction"
             self.citation = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104"
             self.bibtex = "Grimme:2010:154104"
 
-        elif self.dtype == "-D3BJ":
+        elif self.dtype == "-d3bj":
             self.description = "    Grimme's -D3 (BJ-damping) Dispersion Correction"
             self.citation = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456"
             self.bibtex = "Grimme:2011:1456"
 
-        elif self.dtype == "-D3MZERO":
+        elif self.dtype == "-d3mzero":
             self.description = "    Grimme's -D3 (zero-damping, short-range refitted) Dispersion Correction"
             self.citation = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n"
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2010:154104"
 
-        elif self.dtype == "-D3MBJ":
+        elif self.dtype == "-d3mbj":
             self.description = "    Grimme's -D3 (BJ-damping, short-range refitted) Dispersion Correction"
             self.citation = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456\n"
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
@@ -218,7 +218,7 @@ class EmpericalDispersion(object):
 
     def compute_energy(self, molecule):
         if self.disp_type == 'gr':
-            if self.alias in ['HF3C', 'PBEH3C']:
+            if self.alias in ['hf3c', 'pbeh3c']:
                 dashd_part = dftd3.run_dftd3(
                     molecule,
                     dashlvl=self.dtype.lower().replace('-', ''),
@@ -239,7 +239,7 @@ class EmpericalDispersion(object):
 
     def compute_gradient(self, molecule):
         if self.disp_type == 'gr':
-            if self.alias in ['HF3C', 'PBEH3C']:
+            if self.alias in ['hf3c', 'pbeh3c']:
                 dashd_part = dftd3.run_dftd3(
                     molecule,
                     dashlvl=self.dtype.lower().replace('-', ''),

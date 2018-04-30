@@ -359,10 +359,19 @@ Note that if you are running an unrestricted computation, you should set the
     set reference uks
     energy('b3lyp')
 
-The functional may also be manually specified by calling ``energy`` with a ``dft_functional``
-argument::
+The functional may also be manually specified by calling ``energy`` (or any other keyword) 
+with a ``dft_functional`` argument::
 
     energy('scf', dft_functional = 'b3lyp') 
+
+Another alternative is providing a specially crafted `dict`-ionary to the ``dft_functional``
+argument::
+
+    custom_functional = { "name": "my_unique_name", ... }
+    energy('scf', dft_functional = custom_functional)
+
+For further details about this so called `dict_func` syntax, see 
+:ref: Advanced Functional Use and Manipulation.
 
 For hybrid functionals, the fraction of exact exchange is controlled by the
 |scf__dft_alpha| option. For the LRC functionals, the fraction of long-range
@@ -777,27 +786,33 @@ Furthermore, new DFT functionals can be created from scratch from within the inp
     reference rks
     }
     
-    def build_pbe0_superfunctional(name, npoints, deriv, restricted):
-    
-        # Build a empty superfunctional
-        sup = core.SuperFunctional.blank()
-    
-        # Name the functional and provide a description
-        sup.set_name('PBE0')
-        sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
-    
-        # Set the correlation functional
-        sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
-    
-        # Set exchange functional (75% PBE exchange)
-        pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
-        pbe_x.set_alpha(0.75)
-        sup.add_x_functional(pbe_x)
-    
-        # Add 25% exact exchange
-        sup.set_x_alpha(0.25)
-    
-        return sup
-    
-    func_call = energy('SCF', dft_functional=build_pbe0_superfunctional)
+    pbe0 = {
+        "name": "my_PBE0",
+        "x_functionals": {"GGA_X_PBE": {"alpha": 0.75}},
+        "x_hf": {"alpha": 0.25},
+        "c_functionals": {"GGA_C_PBE": {}}
+    }
 
+    func_call = energy('SCF', dft_functional=pbe0)
+    
+    # as PBE0 is a pre-defined functional, the call above is equivalent to both below:
+    func_call = energy('SCF', dft_functional="PBE0")
+    func_call = energy('PBE0')
+
+Supported keywords include:
+
+ - `name`: string, name of the functional, for custom defined functionals used for printing only.
+ - `xc_functionals`: dict, definition of a complete (X + C) functional based in LibXC name
+ - `x_functionals`: dict, definition of exchange functionals using LibXC names
+ - `c_functionals`: dict, definition of correlation functionals using LibXC names
+ - `x_hf`: dict, parameters dealing with exact (HF) exchange settings for hybrid DFT
+ - `c_mp2`: dict, parameters dealing with MP2 correlation for double hybrid DFT
+ - `dispersion`: dict, definition of dispersion corrections
+ - `citation`: string, citation for the method, for printing purposes
+ - `description`: string, description of the method, for printing purposes
+
+The full interface is defined in :ref:driver/procrouting/dft_funcs/dict_builder.py, all standard
+functionals provided in Psi4 are implemented in the `dict_*_funcs.py` files in the same folder.
+ 
+ 
+ 

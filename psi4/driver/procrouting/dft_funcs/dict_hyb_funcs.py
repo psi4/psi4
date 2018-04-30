@@ -137,8 +137,8 @@ funcs.append({
 })
 
 funcs.append({
-    "name": "HF-3c",
-    "alias": ["HF3C"],
+    "name": "HF3c",
+    "alias": ["HF-3C"],
     "x_hf": {
         "alpha": 1.0
     },
@@ -157,8 +157,8 @@ funcs.append({
 })
 
 funcs.append({
-    "name": "PBEh-3c",
-    "alias": ["PBEH3C"],
+    "name": "PBEh3c",
+    "alias": ["PBEH-3C"],
     "x_functionals": {
         "GGA_X_PBE": {
             "tweak": [1.0245, 0.12345679],
@@ -558,4 +558,4 @@ funcs.append({
 
 functional_list = {}
 for functional in funcs:
-    functional_list[functional["name"].upper()] = functional
+    functional_list[functional["name"].lower()] = functional
