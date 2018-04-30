@@ -238,15 +238,14 @@ endif()
 
 # <<<  Export Config  >>>
 
-if((DEFINED ENV{CONDA_BUILD}) AND ((UNIX AND NOT APPLE) OR
-                                   ((APPLE) AND (CMAKE_CXX_COMPILER_ID MATCHES GNU))))
+if((DEFINED ENV{CONDA_BUILD}) AND (UNIX AND NOT APPLE))
     # installed-alongside GCC compilers compatible with the Intel compilers used in
-    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-core/build.sh
-    set(cache_CMAKE_C_COMPILER       "/opt/anaconda1anaconda2anaconda3/bin/gcc")
+    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/build.sh
+    set(cache_CMAKE_C_COMPILER       "\${GCC}")
     set(cache_CMAKE_C_FLAGS          " -march=native -fopenmp")
-    set(cache_CMAKE_CXX_COMPILER     "/opt/anaconda1anaconda2anaconda3/bin/g++")
+    set(cache_CMAKE_CXX_COMPILER     "\${GXX}")
     set(cache_CMAKE_CXX_FLAGS        " -march=native -fopenmp")
-    set(cache_CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran")
+    set(cache_CMAKE_Fortran_COMPILER "\${GFORTRAN}")
     set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
 elseif((DEFINED ENV{CONDA_BUILD}) AND (APPLE) AND (CMAKE_CXX_COMPILER_ID MATCHES AppleClang))
     # for stdlib compatibility, must be consistent with Darwin section of
