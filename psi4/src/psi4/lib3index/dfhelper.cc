@@ -56,6 +56,14 @@ namespace psi {
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
     primary_ = primary;
     aux_ = aux;
+    
+    // cannot do cartesian auxiliary atm
+    if (!aux->has_puream()) {
+        std::stringstream error;
+        error << "DFHelper (MemDFJK): cannot do cartesian auxiliary functions";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+
     nao_ = primary_->nbf();
     naux_ = aux_->nbf();
     prepare_blocking();
