@@ -295,7 +295,7 @@ public:
     /// Set the number of electrons associated with the given atom label, for an ECP basis set.
     void set_n_ecp_core(const std::string &label, int n) { ncore_[std::string(label)] = n; }
 
-    /// Number of frozen core for molecule given freezing state, accounting for any ECP present
+    /// Number of frozen core for molecule given freezing state, less any ECP present
     int n_frozen_core(const std::string& depth = "", SharedMolecule mol=nullptr);
 
     /** @{

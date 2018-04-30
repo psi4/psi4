@@ -189,7 +189,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // have one valence electron in this scheme.
         for (int A = 0; A < mymol->natom(); A++) {
             double Z   = mymol->Z(A);
-            // Add ECPs to the number of electrons
+            // Add ECPs to Z, the number of electrons less ECP-treated electrons
             double ECP = n_ecp_core(mymol->label(A));
             if (Z + ECP > 2) nfzc += 1;
             if (Z + ECP > 10) nfzc += 4;
