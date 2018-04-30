@@ -46,6 +46,12 @@ Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`
 section is also relevant here.
 
+.. note:: After May 2017 (anytime after the v1.1 release), |PSIfour|
+   switched from hand- (+Matlab) coded functionals to Libxc. Thus
+   many DFT results will be slightly different. Functionals more than
+   slightly different are B97-D, wB97X (note, *not* wB97X-D), SOGGA,
+   DFDL, and M05.
+
 Theory
 ~~~~~~
 

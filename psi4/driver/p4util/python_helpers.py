@@ -91,6 +91,8 @@ def pybuild_basis(mol,
 
     if not quiet:
         core.print_out(basisdict['message'])
+        if 'ECP' in basisdict['message']:
+            core.print_out('    !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!\n\n')
 
     if basisdict['key'] is None:
         basisdict['key'] = 'BASIS'
