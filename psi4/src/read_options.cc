@@ -4419,8 +4419,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_bool("EFP_ELST", true);
         /*- Do include exchange repulsion energy term in EFP computation? -*/
         options.add_bool("EFP_EXCH", true);
-        /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("EFP_POL", true);
+        /*- Do include polarization energy term in EFP computation? (EFP_POL c. v1.1) -*/
+        options.add_bool("EFP_IND", true);
         /*- Do include dispersion energy term in EFP computation? -*/
         options.add_bool("EFP_DISP", true);
         /*- Fragment-fragment electrostatic damping type. ``SCREEN``
@@ -4428,16 +4428,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         ``OVERLAP`` is damping that computes charge penetration energy. -*/
         options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
         /*- Fragment-fragment polarization damping type. ``TT`` is a
-        damping formula like Tang and Toennies. -*/
-        options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
+        damping formula like Tang and Toennies. (EFP_POL_DAMPING c. v1.1) -*/
+        options.add_str("EFP_IND_DAMPING", "TT", "TT OFF");
         /*- Fragment-fragment dispersion damping type. ``TT`` is a damping
         formula by Tang and Toennies. ``OVERLAP`` is overlap-based
         dispersion damping. -*/
         options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
-        /*- Do include electrostatics energy term in QM/EFP computation? -*/
-        options.add_bool("QMEFP_ELST", true);
-        /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("QMEFP_POL", true);
+        /*- Do include electrostatics energy term in QM/EFP computation? (QMEFP_ELST c. v1.1) -*/
+        options.add_bool("EFP_QM_ELST", true);
+        /*- Do include polarization energy term in QM/EFP computation? (QMEFP_POL c. v1.1) -*/
+        options.add_bool("EFP_QM_IND", true);
         /*- Do EFP gradient? !expert -*/
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
         /*- Do turn on QM/EFP terms? !expert -*/

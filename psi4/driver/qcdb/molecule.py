@@ -1343,9 +1343,21 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
+    def _raw_to_string(self, dtype, units='Angstrom', atom_format=None, ghost_format=None, width=17, prec=12):
+        """Format a string representation of QM molecule."""
+
+        molrec = self.to_dict(np_out=True)
+        smol = molparse.to_string(molrec,
+                                  dtype=dtype,
+                                  units=units,
+                                  atom_format=atom_format,
+                                  ghost_format=ghost_format,
+                                  width=width,
+                                  prec=prec)
+        return smol
 
     @staticmethod
-    def _raw_to_dict(self, force_c1=False, force_au=False, np_out=True):
+    def _raw_to_dict(self, force_c1=False, force_units=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
         self.update_geometry()
@@ -1354,8 +1366,10 @@ class Molecule(LibmintsMolecule):
         if self.name() not in ['', 'default']:
             molrec['name'] = self.name()
 
-        if force_au:
+        if force_units == 'Bohr':
             molrec['units'] = 'Bohr'
+        elif force_units == 'Angstrom':
+            molrec['units'] = 'Angstrom'
         else:
             units = self.units()
             molrec['units'] = units
@@ -1374,9 +1388,9 @@ class Molecule(LibmintsMolecule):
         # TODO zmat, geometry_variables
 
         nat = self.natom()
-        geom = np.array(self.geometry())
-        if not force_au:
-            geom /= self.input_units_to_au()
+        geom = np.array(self.geometry())  # [a0]
+        if molrec['units'] == 'Angstrom':
+            geom *= psi_bohr2angstroms #self.input_units_to_au()
         molrec['geom'] = geom.reshape((-1))
 
         molrec['elea'] = np.array([self.mass_number(at) for at in range(nat)])
@@ -1871,3 +1885,4 @@ Molecule.to_dict = Molecule._raw_to_dict
 Molecule.BFS = Molecule._raw_BFS
 Molecule.B787 = Molecule._raw_B787
 Molecule.scramble = Molecule._raw_scramble
+Molecule.to_string = Molecule._raw_to_string
