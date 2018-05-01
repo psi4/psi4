@@ -59,26 +59,43 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     the qcdb.BasisSet object for *molecule* or for H2 if None. Allows
     out-of-order zeta specification (e.g., [qtd]) and numeral for number
     (e.g., [23]) but not skipped zetas (e.g., [dq]) or zetas outside [2,
-    8] or non-Dunning sets or non-findable .gbs sets.
+    8] or non-Dunning or non-Ahlrichs or non-Jensen sets or 
+    non-findable .gbs sets.
 
     """
     BSET = []
     ZSET = []
-    legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*)\[(?P<zeta>[dtq2345678,]*)\](?P<post>.*z)$', re.IGNORECASE)
-
+    legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
+    pc_basis = re.compile(r'.*pcs+eg-$', re.IGNORECASE)
+    def2_basis = re.compile(r'def2-', re.IGNORECASE)
+    
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
+        # handle def2-svp* basis sets as double-zeta
+        if def2_basis.match(basisname.group('pre')):
+            bn_gz = basisname.group('zeta').replace("s","d")
+        # handle pc-n basis set polarisation -> zeta conversion
+        elif pc_basis.match(basisname.group('pre')):
+            bn_gz = basisname.group('zeta').replace("4","5").replace("3","4").replace("2","3").replace("1","2")
+        else:
+            bn_gz = basisname.group('zeta')
         # filter out commas and be forgiving of e.g., t5q or 3q
-        bn_gz = basisname.group('zeta')
         zetas = [z for z in zeta_values if (z in bn_gz or str(zeta_values.index(z) + 2) in bn_gz)]
         for b in zetas:
             if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
-                    raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, b))
-            BSET.append(basisname.group('pre') + b + basisname.group('post'))
+                raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, zeta_val2sym[zeta_sym2val[b] - 1]))
+            # reassemble def2-svp* properly instead of def2-dzvp*
+            if def2_basis.match(basisname.group('pre')) and b == "d":
+                BSET.append(basisname.group('pre') + "s" + basisname.group('post')[1:])
+            # reassemble pc-n basis sets properly
+            elif pc_basis.match(basisname.group('pre')):
+                BSET.append(basisname.group('pre') + "{0:d}".format(zeta_sym2val[b] - 1))
+            else:
+                BSET.append(basisname.group('pre') + b + basisname.group('post'))
             ZSET.append(zeta_values.index(b) + 2)
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
         raise ValidationError("""Basis series '%s' invalid. Specify a basis series matching"""
-                              """ '*cc-*[dtq2345678,]*z'.""" % (basisstring))
+                              """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]'""" % (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -109,13 +126,13 @@ def _contract_bracketed_basis(basisarray):
         zetaindx = [i for i in range(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
         ZSET = [bas[zetaindx] for bas in basisarray]
 
-        pre = basisarray[0][:zetaindx]
-        post = basisarray[0][zetaindx + 1:]
+        pre = basisarray[1][:zetaindx]
+        post = basisarray[1][zetaindx + 1:]
         basisstring = pre + '[' + ''.join(ZSET) + ']' + post
         return basisstring
 
 
-def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
+def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
 
@@ -143,10 +160,11 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
         return valueHI
 
 
-def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
-    r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
+def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Extrapolation scheme using exponential form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
+    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+    DOI: 10.1016/S0009-2614(99)00179-7
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
 
@@ -156,17 +174,20 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         raise ValidationError("scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
 
+    if alpha is None:
+        alpha = 1.63
+
     beta_division = 1 / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
     beta_mult = math.exp(-1 * alpha * zHI)
 
     if isinstance(valueLO, float):
-        beta = (valueHI - valueLO) / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
-        value = valueHI - beta * math.exp(-1 * alpha * zHI)
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
@@ -193,7 +214,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
             valueLO.print_out()
@@ -212,12 +233,157 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True):
+def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Extrapolation scheme using power form for reference energies with two adjacent zeta-level bases.
+    Used by :py:func:`~psi4.cbs`.
+    Truhlar, Chem. Phys. Lett. 294 (1998) 45-48, DOI: 10.1016/S0009-2614(98)00866-5
+
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError("scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)"
+                              % (type(valueLO), type(valueHI)))
+
+    if alpha is None:
+        alpha = 3.40
+
+    beta_division = 1 / (zHI ** (-1 * alpha) - zLO ** (-1 * alpha))
+    beta_mult = zHI ** (-1 * alpha)
+
+    if isinstance(valueLO, float):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
+
+        if verbose:
+            # Output string with extrapolation parameters
+            cbsscheme = ''
+            cbsscheme += """\n   ==> Truhlar 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
+            cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
+
+            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            cbsscheme += """   @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (18 - len(name_str))
+            cbsscheme += """% 16.12f\n\n""" % value
+            core.print_out(cbsscheme)
+
+        return value
+
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        beta = valueHI.clone()
+        beta.name = 'Truhlar SCF (%s, %s) beta' % (zLO, zHI)
+        beta.subtract(valueLO)
+        beta.scale(beta_division)
+        beta.scale(beta_mult)
+
+        value = valueHI.clone()
+        value.subtract(beta)
+        value.name = 'Truhlar SCF (%s, %s) data' % (zLO, zHI)
+
+        if verbose > 2:
+            core.print_out("""\n   ==> Truhlar 2-point power from SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""   LO-zeta (%s)""" % str(zLO))
+            core.print_out("""   LO-zeta Data""")
+            valueLO.print_out()
+            core.print_out("""   HI-zeta (%s)""" % str(zHI))
+            core.print_out("""   HI-zeta Data""")
+            valueHI.print_out()
+            core.print_out("""   Extrapolated Data:\n""")
+            value.print_out()
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
+            core.print_out("""   Beta Data:\n""")
+            beta.print_out()
+
+        return value
+
+    else:
+        raise ValidationError("scf_xtpl_truhlar_2: datatype is not recognized '%s'." % type(valueLO))
+
+
+def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Extrapolation scheme using root-power form for reference energies with two adjacent zeta-level bases.
+    Used by :py:func:`~psi4.cbs`.
+    Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333, DOI: 10.1007/s00214-005-0028-6
+
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError("scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)"
+                              % (type(valueLO), type(valueHI)))
+
+    if alpha is None:
+        alpha = 6.30
+
+    beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
+    beta_mult = math.exp(-1 * alpha * math.sqrt(zHI))
+
+    if isinstance(valueLO, float):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
+
+        if verbose:
+            # Output string with extrapolation parameters
+            cbsscheme = ''
+            cbsscheme += """\n   ==> Karton 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
+            cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
+
+            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            cbsscheme += """   @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (18 - len(name_str))
+            cbsscheme += """% 16.12f\n\n""" % value
+            core.print_out(cbsscheme)
+
+        return value
+
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        beta = valueHI.clone()
+        beta.name = 'Karton SCF (%s, %s) beta' % (zLO, zHI)
+        beta.subtract(valueLO)
+        beta.scale(beta_division)
+        beta.scale(beta_mult)
+
+        value = valueHI.clone()
+        value.subtract(beta)
+        value.name = 'Karton SCF (%s, %s) data' % (zLO, zHI)
+
+        if verbose > 2:
+            core.print_out("""\n   ==> Karton 2-point power from SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""   LO-zeta (%s)""" % str(zLO))
+            core.print_out("""   LO-zeta Data""")
+            valueLO.print_out()
+            core.print_out("""   HI-zeta (%s)""" % str(zHI))
+            core.print_out("""   HI-zeta Data""")
+            valueHI.print_out()
+            core.print_out("""   Extrapolated Data:\n""")
+            value.print_out()
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
+            core.print_out("""   Beta Data:\n""")
+            beta.print_out()
+
+        return value
+
+    else:
+        raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
+
+
+def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
+    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+    DOI: 10.1016/S0009-2614(99)00179-7
 
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0
     """
 
     if (type(valueLO) != type(valueMD)) or (type(valueMD) != type(valueHI)):
@@ -278,21 +444,25 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 
 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
+def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252.
+    Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252,
+    DOI: 10.1016/S0009-2614(99)00179-7
 
-    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}
+    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}
 
     """
     if type(valueLO) != type(valueHI):
         raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
 
+    if alpha is None:
+        alpha = 3.0
+
     if isinstance(valueLO, float):
-        value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
-        beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
+        value = (valueHI * zHI ** alpha - valueLO * zLO ** alpha) / (zHI ** alpha - zLO ** alpha)
+        beta = (valueHI - valueLO) / (zHI ** (-alpha) - zLO ** (-alpha))
 
 #        final = valueSCF + value
         final = value
@@ -302,7 +472,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
 #            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.12f\n""" % (str(zHI), valueSCF)
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
-#            cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n""" % beta
+            cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % alpha
             cbsscheme += """   Extrapolated Energy:              % 16.12f\n\n""" % value
             #cbsscheme += """   LO-zeta (%s) Correlation Energy:   % 16.12f\n""" % (str(zLO), valueLO)
             #cbsscheme += """   HI-zeta (%s) Correlation Energy:   % 16.12f\n""" % (str(zHI), valueHI)
@@ -322,17 +492,17 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
 
         beta = valueHI.clone()
         beta.subtract(valueLO)
-        beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))
+        beta.scale(1 / (zHI ** (-alpha) - zLO ** (-alpha)))
         beta.name = 'Helgaker Corl (%s, %s) beta' % (zLO, zHI)
 
         value = valueHI.clone()
-        value.scale(zHI ** 3)
+        value.scale(zHI ** alpha)
 
         tmp = valueLO.clone()
-        tmp.scale(zLO ** 3)
+        tmp.scale(zLO ** alpha)
         value.subtract(tmp)
 
-        value.scale(1 / (zHI ** 3 - zLO ** 3))
+        value.scale(1 / (zHI ** alpha - zLO ** alpha))
         value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
@@ -344,6 +514,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
             valueHI.print_out()
             core.print_out("""   Extrapolated Data:\n""")
             value.print_out()
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % alpha)
             core.print_out("""   Beta Data:\n""")
             beta.print_out()
 
@@ -770,12 +941,27 @@ def cbs(func, label, **kwargs):
         present in ``scf_basis``, :py:func:`~scf_xtpl_helgaker_2` if two valid basis
         sets present in ``scf_basis``, and :py:func:`~xtpl_highest_1` otherwise.
 
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * scf_xtpl_helgaker_3
+           * scf_xtpl_helgaker_2
+           * scf_xtpl_truhlar_2
+           * scf_xtpl_karton_2
+
     :type corl_scheme: function
     :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``corl_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * corl_xtpl_helgaker_2
 
     :type delta_scheme: function
     :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
@@ -785,6 +971,12 @@ def cbs(func, label, **kwargs):
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``delta_basis`` and :py:func:`~xtpl_highest_1` otherwise.
 
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * corl_xtpl_helgaker_2
+
     :type delta2_scheme: function
     :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
@@ -792,6 +984,12 @@ def cbs(func, label, **kwargs):
         to the correlation energy.
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``delta2_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+
+        .. hlist::
+           :columns: 1
+
+           * xtpl_highest_1
+           * corl_xtpl_helgaker_2
 
     :type delta3_scheme: function
     :param delta3_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
@@ -816,6 +1014,40 @@ def cbs(func, label, **kwargs):
         to the correlation energy.
         Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
         present in ``delta5_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+
+    :type scf_alpha: float
+
+        Overrides the default \alpha parameter used in the listed SCF extrapolation procedures.
+        Has no effect on others, including :py:func:`~xtpl_highest_1` and :py:func:`~scf_xtpl_helgaker_3`.
+
+        .. hlist::
+           :columns: 1
+
+           * :py:func:`scf_xtpl_helgaker_2`
+           * :py:func:`scf_xtpl_truhlar_2`
+           * :py:func:`scf_xtpl_karton_2`
+
+    :type corl_alpha: float
+
+        Overrides the default \alpha parameter used in the listed :py:func:`corl_xtpl_helgaker_2` correlation
+        extrapolation to the corl stage. The supplied \alpha does not impact delta or any further stages.
+
+        .. hlist::
+           :columns: 1
+
+           * :py:func:`corl_xtpl_helgaker_2`
+
+    :type delta_alpha: float
+
+        Overrides the default \alpha parameter used in the listed
+        :py:func:`corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
+        delta correction is performed using smaller basis sets for which a different \alpha might
+        be more appropriate.
+
+        .. hlist::
+           :columns: 1
+
+           * :py:func:`corl_xtpl_helgaker_2`
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -855,6 +1087,12 @@ def cbs(func, label, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
+    cbs_alpha = {
+        'scf': kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None)),
+        'corl': kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None)),
+        'delta': kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None)),
+        'delta2': kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None)),
+    }
 
     # Establish function to call (only energy makes sense for cbs)
     if ptype not in ['energy', 'gradient', 'hessian']:
@@ -1059,6 +1297,8 @@ def cbs(func, label, **kwargs):
     if do_corl:
         if len(BSTC) == 2:
             cbs_corl_scheme = corl_xtpl_helgaker_2
+        elif len(BSTC) > 2:
+            raise ValidationError("""Cannot extrapolate correlation with %d basis sets. Use highest 2.""" % (len(BSTC)))
         else:
             cbs_corl_scheme = xtpl_highest_1
         if 'corl_scheme' in kwargs:
@@ -1332,20 +1572,23 @@ def cbs(func, label, **kwargs):
     finalenergy = 0.0
     finalgradient = core.Matrix(natom, 3)
     finalhessian = core.Matrix(3 * natom, 3 * natom)
+
     for stage in GRAND_NEED:
-        hiloargs = _contract_scheme_orders(stage['d_need'], 'f_energy')
+        hiloargs = {'alpha': cbs_alpha[stage['d_stage']]}
+
+        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
         stage['d_energy'] = stage['d_scheme'](**hiloargs)
         finalenergy += stage['d_energy'] * stage['d_coef']
 
         if ptype == 'gradient':
-            hiloargs = _contract_scheme_orders(stage['d_need'], 'f_gradient')
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
             stage['d_gradient'] = stage['d_scheme'](**hiloargs)
             work = stage['d_gradient'].clone()
             work.scale(stage['d_coef'])
             finalgradient.add(work)
 
         elif ptype == 'hessian':
-            hiloargs = _contract_scheme_orders(stage['d_need'], 'f_hessian')
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
             stage['d_hessian'] = stage['d_scheme'](**hiloargs)
             work = stage['d_hessian'].clone()
             work.scale(stage['d_coef'])
@@ -1423,7 +1666,7 @@ def cbs(func, label, **kwargs):
     core.set_variable('CBS NUMBER', Njobs)
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    basis = core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
+    basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(molecule, basis)
 
     optstash.restore()
