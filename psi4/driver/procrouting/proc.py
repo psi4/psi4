@@ -1052,7 +1052,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         if ("DF" in core.get_option("SCF", "SAD_SCF_TYPE")):
             sad_fitting_list = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SAD",
                                                    core.get_option("SCF", "DF_BASIS_SAD"),
-                                                   puream=wfn.basisset().has_puream(),
+                                                   puream=True,
                                                    return_atomlist=True)
             wfn.set_sad_fitting_basissets(sad_fitting_list)
 
