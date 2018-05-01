@@ -408,6 +408,27 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       }
     }
 
+    // For psivar scraper
+
+    // Process::environment.globals["CC ROOT 0 DIPOLE X"] = Process::environment.globals["CC DIPOLE X"];
+    // Process::environment.globals["CC ROOT 0 DIPOLE Y"] = Process::environment.globals["CC DIPOLE Y"];
+    // Process::environment.globals["CC ROOT 0 DIPOLE Z"] = Process::environment.globals["CC DIPOLE Z"];
+    // Process::environment.globals["CC ROOT 0 QUADRUPOLE XX"] = Process::environment.globals["CC QUADRUPOLE XX"];
+    // Process::environment.globals["CC ROOT 0 QUADRUPOLE XY"] = Process::environment.globals["CC QUADRUPOLE XY"];
+    // Process::environment.globals["CC ROOT 0 QUADRUPOLE XZ"] = Process::environment.globals["CC QUADRUPOLE XZ"];
+    // Process::environment.globals["CC ROOT 0 QUADRUPOLE YY"] = Process::environment.globals["CC QUADRUPOLE YY"];
+    // Process::environment.globals["CC ROOT 0 QUADRUPOLE YZ"] = Process::environment.globals["CC QUADRUPOLE YZ"];
+    // Process::environment.globals["CC ROOT 0 QUADRUPOLE ZZ"] = Process::environment.globals["CC QUADRUPOLE ZZ"];
+    // Process::environment.globals["CC ROOT n DIPOLE X"]
+    // Process::environment.globals["CC ROOT n DIPOLE Y"]
+    // Process::environment.globals["CC ROOT n DIPOLE Z"]
+    // Process::environment.globals["CC ROOT n QUADRUPOLE XX"]
+    // Process::environment.globals["CC ROOT n QUADRUPOLE XY"]
+    // Process::environment.globals["CC ROOT n QUADRUPOLE XZ"]
+    // Process::environment.globals["CC ROOT n QUADRUPOLE YY"]
+    // Process::environment.globals["CC ROOT n QUADRUPOLE YZ"]
+    // Process::environment.globals["CC ROOT n QUADRUPOLE ZZ"]
+
     free_block(moinfo.opdm);
 
     psio_close(PSIF_CC_TMP,0);   psio_open(PSIF_CC_TMP,PSIO_OPEN_NEW);
