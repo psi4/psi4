@@ -268,7 +268,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
         x_Gijab();
       }
     }
- 
+
     sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
     if (!params.onepdm) {
       if(!params.aobasis && params.debug_) energy(rho_params[i]);
@@ -383,72 +383,29 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       }
       mo_offset += nmo;
     }
-    /*Call OEProp for each root opdm */
-    auto oe = std::make_shared<OEProp>(ref_wfn);
+
+    /* Transform Da/b to so basis and set in wfn */
     if(ref_wfn->same_a_b_dens()){
       Pa->scale(0.5);
-      oe->set_Da_mo(Pa);
-      Pb = Pa;
-    }else{
-      oe->set_Da_mo(Pa);
-      oe->set_Db_mo(Pb);
-    }
-    oe->add("DIPOLE");
-    oe->add("QUADRUPOLE");
-    oe->add("MULLIKEN_CHARGES");
-    oe->add("NO_OCCUPATIONS");
-    std::string cc_prop_label("CC");
-    if( i == 0 ){ // ground state
-      oe->set_title(cc_prop_label);
-      oe->compute();
-      //set OPDM in ref_wfn for GS only
-      SharedMatrix cc_Da = oe->Da_so();
-      SharedMatrix ref_Da = ref_wfn->Da();
-      ref_Da->copy(cc_Da);
-      if(params.nstates > 1){
-        Process::environment.globals["CC ROOT 0 DIPOLE X"] = Process::environment.globals["CC DIPOLE X"];
-        Process::environment.globals["CC ROOT 0 DIPOLE Y"] = Process::environment.globals["CC DIPOLE Y"];
-        Process::environment.globals["CC ROOT 0 DIPOLE Z"] = Process::environment.globals["CC DIPOLE Z"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE XX"] = Process::environment.globals["CC QUADRUPOLE XX"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE XY"] = Process::environment.globals["CC QUADRUPOLE XY"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE XZ"] = Process::environment.globals["CC QUADRUPOLE XZ"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE YY"] = Process::environment.globals["CC QUADRUPOLE YY"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE YZ"] = Process::environment.globals["CC QUADRUPOLE YZ"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE ZZ"] = Process::environment.globals["CC QUADRUPOLE ZZ"];
-      }
-
-      //Get the NOs/occupation numbers
-      std::pair<SharedMatrix, SharedVector> NOa_pair = oe->Na_mo();
-      std::pair<SharedMatrix, SharedVector> NOb_pair = NOa_pair;
-      if (!ref_wfn->same_a_b_dens()) {
-        SharedMatrix cc_Db = oe->Db_so();
-        SharedMatrix ref_Db = ref_wfn->Db();
-        ref_Db->copy(cc_Db);
-        // if alpha/beta are distinct get the beta NO info
-        NOb_pair  = oe->Nb_mo();
-      }
-      // write molden files for NOs?
-      if(params.write_nos){
-        MoldenWriter nowriter(ref_wfn);
-        std::string mol_name = ref_wfn->molecule()->name();
-        SharedMatrix NO_Ca = Matrix::doublet(Ca, NOa_pair.first, false, false);
-        SharedMatrix NO_Cb = Matrix::doublet(Cb, NOb_pair.first, false, false);
-        nowriter.write(mol_name + "NO.molden", NO_Ca, NO_Cb, NOa_pair.second, NOb_pair.second,
-                       NOa_pair.second, NOb_pair.second, options.get_bool("MOLDEN_WITH_VIRTUAL"));
+      auto Pa_so = Matrix::triplet(ref_wfn->Ca(),Pa,ref_wfn->Ca(),false,false,true);
+      if(i == 0){
+        auto ref_Da_so = ref_wfn->Da();
+        ref_Da_so->copy(Pa_so);
+      }else{
+        ref_wfn->set_array("CC ROOT "+std::to_string(i)+" Da", Pa_so);
       }
     }else{
-      // this should set psivars correctly for root Properties
-      oe->set_title(cc_prop_label + " ROOT " + std::to_string(i));
-      oe->compute();
-      /*- Process::environment.globals["CC ROOT n DIPOLE X"] -*/
-      /*- Process::environment.globals["CC ROOT n DIPOLE Y"] -*/
-      /*- Process::environment.globals["CC ROOT n DIPOLE Z"] -*/
-      /*- Process::environment.globals["CC ROOT n QUADRUPOLE XX"] -*/
-      /*- Process::environment.globals["CC ROOT n QUADRUPOLE XY"] -*/
-      /*- Process::environment.globals["CC ROOT n QUADRUPOLE XZ"] -*/
-      /*- Process::environment.globals["CC ROOT n QUADRUPOLE YY"] -*/
-      /*- Process::environment.globals["CC ROOT n QUADRUPOLE YZ"] -*/
-      /*- Process::environment.globals["CC ROOT n QUADRUPOLE ZZ"] -*/
+      auto Pa_so = Matrix::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false,true);
+      auto Pb_so = Matrix::triplet(ref_wfn->Cb(), Pb, ref_wfn->Cb(), false, false, true);
+      if(i == 0){
+        auto ref_Da_so = ref_wfn->Da();
+        auto ref_Db_so = ref_wfn->Db();
+        ref_Da_so->copy(Pa_so);
+        ref_Db_so->copy(Pb_so);
+      }else{
+        ref_wfn->set_array("CC ROOT "+ std::to_string(i) +" Da", Pa_so);
+        ref_wfn->set_array("CC ROOT "+ std::to_string(i) +" Db", Pb_so);
+      }
     }
 
     free_block(moinfo.opdm);
