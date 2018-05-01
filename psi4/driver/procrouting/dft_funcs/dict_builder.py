@@ -349,7 +349,6 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
 
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
-#    sup.set_name(func_dictionary["name"].lower())
     sup.set_name(func_dictionary["name"].upper())
     sup.allocate()
     return (sup, dispersion)
