@@ -361,7 +361,7 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
 
 double Molecule::mass(int atom, bool zero_ghost) const {
     double ret = 0.0;
-    if (zero_ghost && (atoms_[atom]->Z() == true))
+    if (zero_ghost && (atoms_[atom]->Z() == 0.0))
         ret = 0.0;
     else if (atoms_[atom]->mass() != 0.0)
         ret = atoms_[atom]->mass();
