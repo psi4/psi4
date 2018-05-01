@@ -1481,12 +1481,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Dispersion Corrections <table:dashd>` for the order in which
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
+    /*- Parameters defining the -NL/-V dispersion correction. First b, then C -*/
+    options.add("NL_DISPERSION_PARAMETERS", new ArrayType());
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number) for VV10 NL integration. -*/
     options.add_int("DFT_VV10_SPHERICAL_POINTS", 146);
     /*- Number of radial points for VV10 NL integration. -*/
     options.add_int("DFT_VV10_RADIAL_POINTS", 50);
     /*- Rho cutoff for VV10 NL integration. !expert -*/
     options.add_double("DFT_VV10_RHO_CUTOFF", 1.e-8);
+    /*- Define VV10 parameter b -*/
+    options.add_double("DFT_VV10_B", 0.0);
+    /*- Define VV10 parameter C -*/
+    options.add_double("DFT_VV10_C", 0.0);
+    /*- post-scf VV10 correction -*/
+    options.add_bool("DFT_VV10_POSTSCF", false);
     /*- The convergence on the orbital localization procedure -*/
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/

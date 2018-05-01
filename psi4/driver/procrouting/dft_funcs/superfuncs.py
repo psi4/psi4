@@ -75,7 +75,6 @@ def build_superfunctional(name, restricted):
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
 
-    
     # Lock and unlock the functional
     sup[0].set_lock(False)
 
@@ -99,6 +98,32 @@ def build_superfunctional(name, restricted):
     if core.has_option_changed("SCF", "DFT_ALPHA_C"):
         sup[0].set_c_alpha(core.get_option("SCF", "DFT_ALPHA_C"))
 
+    # add VV10 correlation to any functional or modify existing
+    # custom procedures using name 'scf' without any quadrature grid like HF will fail and are not detected
+    if (core.has_option_changed("SCF", "NL_DISPERSION_PARAMETERS") and sup[0].vv10_b() > 0.0):
+        if (name.lower() == 'hf'):
+            raise ValidationError("SCF: HF with -NL not implemented")
+        nl_tuple = core.get_option("SCF", "NL_DISPERSION_PARAMETERS")
+        sup[0].set_vv10_b(nl_tuple[0])
+        if len(nl_tuple) > 1:
+            sup[0].set_vv10_c(nl_tuple[1])
+        if len(nl_tuple) > 2:
+            raise ValidationError("too many entries in NL_DISPERSION_PARAMETERS for DFT-NL")
+    elif core.has_option_changed("SCF", "DFT_VV10_B"):
+        if (name.lower() == 'hf'):
+            raise ValidationError("SCF: HF with -NL not implemented")
+        vv10_b = core.get_option("SCF", "DFT_VV10_B")
+        sup[0].set_vv10_b(vv10_b)
+        if core.has_option_changed("SCF", "DFT_VV10_C"):
+            vv10_c = core.get_option("SCF", "DFT_VV10_C")
+            sup[0].set_vv10_c(vv10_c)
+        if (abs(sup[0].vv10_c() - 0.0) <= 1e-8):
+            core.print_out("SCF: VV10_C not specified. Using default (C=0.0093)!")
+            sup[0].set_vv10_c(0.0093)
+
+    if (core.has_option_changed("SCF", "NL_DISPERSION_PARAMETERS") and core.has_option_changed("SCF", "DFT_VV10_B")):
+        raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
+
     # Check SCF_TYPE
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
@@ -108,7 +133,7 @@ def build_superfunctional(name, restricted):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
 
     sup[0].set_lock(True)
-
+    
     return sup
 
 
