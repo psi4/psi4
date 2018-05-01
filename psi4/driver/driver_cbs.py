@@ -305,7 +305,7 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
         raise ValidationError("scf_xtpl_truhlar_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=6.30):
     r"""Extrapolation scheme using root-power form for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333, DOI: 10.1007/s00214-005-0028-6
@@ -317,9 +317,6 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
     if type(valueLO) != type(valueHI):
         raise ValidationError("scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
-
-    if alpha is None:
-        alpha = 6.30
 
     beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
     beta_mult = math.exp(-1 * alpha * math.sqrt(zHI))
@@ -377,7 +374,7 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
         raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=3.0):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
@@ -444,21 +441,19 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 
 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=3.0):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252,
     DOI: 10.1016/S0009-2614(99)00179-7
 
-    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}
+    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}, \alpha = 3.0
 
     """
     if type(valueLO) != type(valueHI):
         raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
 
-    if alpha is None:
-        alpha = 3.0
 
     if isinstance(valueLO, float):
         value = (valueHI * zHI ** alpha - valueLO * zLO ** alpha) / (zHI ** alpha - zLO ** alpha)
