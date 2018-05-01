@@ -871,8 +871,8 @@ def select_ccsd_t__gradient(name, **kwargs):
     func = None
     if reference in ['RHF']:
         if mtd_type == 'CONV':
-             if module in ['', 'CCENERGY']:
-                  func = run_ccenergy_gradient
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_gradient
@@ -1460,7 +1460,7 @@ def run_dcft(name, **kwargs):
         dcft_wfn = core.dcft(ref_wfn)
 
     else:
-    # Ensure IWL files have been written for non DF-DCFT
+        # Ensure IWL files have been written for non DF-DCFT
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
         dcft_wfn = core.dcft(ref_wfn)
 
@@ -2514,16 +2514,13 @@ def run_cc_property(name, **kwargs):
     all CC property calculations.
 
     """
-    optstash = p4util.OptionsState(
-        ['WFN'],
-        ['DERTYPE'],
-        ['ONEPDM'],
-        ['PROPERTY'],
-        ['CCLAMBDA', 'R_CONVERGENCE'],
-        ['CCEOM', 'R_CONVERGENCE'],
-        ['CCEOM', 'E_CONVERGENCE'])
+    optstash = p4util.OptionsState(['WFN'], ['DERTYPE'], ['ONEPDM'], ['PROPERTY'], ['CCLAMBDA', 'R_CONVERGENCE'],
+                                   ['CCEOM', 'R_CONVERGENCE'], ['CCEOM', 'E_CONVERGENCE'])
 
-    oneel_properties = ['dipole', 'quadrupole']
+    oneel_properties = [
+        'dipole', 'quadrupole', 'mulliken_charges', 'lowdin_charges', 'mayer_indices', 'wiberg_lowdin_indices',
+        'no_occupations'
+    ]
     twoel_properties = []
     response_properties = ['polarizability', 'rotation', 'roa', 'roa_tensor']
     excited_properties = ['oscillator_strength', 'rotational_strength']
@@ -2550,6 +2547,12 @@ def run_cc_property(name, **kwargs):
                 invalid.append(prop)
     else:
         raise ValidationError("""The "properties" keyword is required with the property() function.""")
+
+    # People are used to requesting dipole/quadrupole and getting dipole,quadrupole,mulliken_charges and NO_occupations
+    if ('dipole' in one) or ('quadrupole' in one):
+        for extra_1e in ['dipole', 'quadrupole', 'mulliken_charges', 'no_occupations']:
+            if extra_1e not in one:
+                one.append(extra_1e)
 
     n_one = len(one)
     n_two = len(two)
@@ -2621,12 +2624,44 @@ def run_cc_property(name, **kwargs):
         core.set_global_option('DERTYPE', 'NONE')
         core.set_global_option('ONEPDM', 'TRUE')
         # Tight convergence unnecessary for transition properties
-        core.set_local_option('CCLAMBDA','R_CONVERGENCE',1e-4)
-        core.set_local_option('CCEOM','R_CONVERGENCE',1e-4)
-        core.set_local_option('CCEOM','E_CONVERGENCE',1e-5)
+        core.set_local_option('CCLAMBDA', 'R_CONVERGENCE', 1e-4)
+        core.set_local_option('CCEOM', 'R_CONVERGENCE', 1e-4)
+        core.set_local_option('CCEOM', 'E_CONVERGENCE', 1e-5)
         core.cceom(ccwfn)
         core.cclambda(ccwfn)
         core.ccdensity(ccwfn)
+
+    if n_one > 0:
+        # call oe prop for GS density
+        oe = core.OEProp(ccwfn)
+        oe.set_title("CC")
+        for oe_name in one:
+            oe.add(oe_name.upper())
+        oe.compute()
+        # call oe prop for ES
+        if name.startswith('eom'):
+            # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ...
+            if 'dipole' in one:
+                core.set_variable("CC ROOT 0 DIPOLE X", core.get_variable("CC DIPOLE X"))
+                core.set_variable("CC ROOT 0 DIPOLE Y", core.get_variable("CC DIPOLE Y"))
+                core.set_variable("CC ROOT 0 DIPOLE Z", core.get_variable("CC DIPOLE Z"))
+            if 'quadrupole' in one:
+                core.set_variable("CC ROOT 0 QUADRUPOLE XX", core.get_variable("CC QUADRUPOLE XX"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE XY", core.get_variable("CC QUADRUPOLE XY"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE XZ", core.get_variable("CC QUADRUPOLE XZ"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE YY", core.get_variable("CC QUADRUPOLE YY"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.get_variable("CC QUADRUPOLE YZ"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.get_variable("CC QUADRUPOLE ZZ"))
+
+            n_root = sum(core.get_global_option("ROOTS_PER_IRREP"))
+            for rn in range(n_root):
+                oe.set_title("CC ROOT {}".format(rn + 1))
+                Da = ccwfn.get_array("CC ROOT {} Da".format(rn + 1))
+                oe.set_Da_so(Da)
+                if core.get_global_option("REFERENCE") == "UHF":
+                    Db = ccwfn.get_array("CC ROOT {} Db".format(rn + 1))
+                    oe.set_Db_so(Db)
+                oe.compute()
 
     core.set_global_option('WFN', 'SCF')
     core.revoke_global_option_changed('WFN')
@@ -3389,7 +3424,7 @@ def run_sapt(name, **kwargs):
     which_ind = 'IND'
     target_ind = 'IND'
     if not core.has_variable(' '.join([name.upper(), which_ind, 'ENERGY'])):
-      which_ind='IND,U'
+        which_ind='IND,U'
 
     for term in ['ELST', 'EXCH', 'DISP', 'TOTAL']:
         core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
