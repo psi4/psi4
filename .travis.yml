@@ -141,7 +141,7 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp gau2grid dftd3 gcp snsmp2 scipy deepdiff -c psi4/label/dev -c psi4
+- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp gau2grid dftd3 gcp snsmp2 scipy networkx deepdiff -c psi4/label/dev -c psi4
 - source activate p4env
 - conda list
 before_script:
@@ -179,6 +179,7 @@ script:
 - ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
+- ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 --test
 
 # safelist
 branches:
