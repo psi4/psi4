@@ -368,8 +368,8 @@ void EFP::set_options() {
     // opts.terms |= EFP_TERM_CHTR;    // may be enabled in a future libefp release
 
     do_qm_ = options_.get_bool("QMEFP");
-    qm_elst_enabled_ = do_qm_ && options_.get_bool("EFP_AI_ELST");
-    qm_pol_enabled_ = do_qm_ && options_.get_bool("EFP_AI_IND");
+    qm_elst_enabled_ = do_qm_ && options_.get_bool("EFP_QM_ELST");
+    qm_pol_enabled_ = do_qm_ && options_.get_bool("EFP_QM_IND");
 
     if (qm_elst_enabled_) opts.terms |= EFP_TERM_AI_ELEC;
     if (qm_pol_enabled_) opts.terms |= EFP_TERM_AI_POL;

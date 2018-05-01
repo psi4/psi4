@@ -4435,9 +4435,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         dispersion damping. -*/
         options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
         /*- Do include electrostatics energy term in QM/EFP computation? (QMEFP_ELST c. v1.1) -*/
-        options.add_bool("EFP_AI_ELST", true);
-        /*- Do include polarization energy term in EFP computation? (QMEFP_POL c. v1.1) -*/
-        options.add_bool("EFP_AI_IND", true);
+        options.add_bool("EFP_QM_ELST", true);
+        /*- Do include polarization energy term in QM/EFP computation? (QMEFP_POL c. v1.1) -*/
+        options.add_bool("EFP_QM_IND", true);
         /*- Do EFP gradient? !expert -*/
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
         /*- Do turn on QM/EFP terms? !expert -*/
