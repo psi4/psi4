@@ -2550,7 +2550,7 @@ def run_cc_property(name, **kwargs):
 
     # People are used to requesting dipole/quadrupole and getting dipole,quadrupole,mulliken_charges and NO_occupations
     if ('dipole' in one) or ('quadrupole' in one):
-        one = list(set(one.extend(['dipole', 'quadrupole', 'mulliken_charges', 'no_occupations'])))
+        one = list(set(one + ['dipole', 'quadrupole', 'mulliken_charges', 'no_occupations']))
 
     n_one = len(one)
     n_two = len(two)
