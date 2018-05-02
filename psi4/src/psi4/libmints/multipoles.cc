@@ -74,7 +74,7 @@ SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, i
                 int ly = ii - lz;
                 for(int atom = 0; atom < mol->natom(); ++atom) {
                     Vector3 geom = mol->xyz(atom) - origin;
-                    ret[address] += mol->Z(atom)*pow(geom[0], lx)*pow(geom[1], ly)*pow(geom[2], lz);
+                    ret[address] += mol->Z(atom, true)*pow(geom[0], lx)*pow(geom[1], ly)*pow(geom[2], lz);
                 }
                 ++address;
             }

@@ -199,12 +199,12 @@ void USAPT0::print_header() const {
 
     int nA = 0;
     for (int A = 0; A < monomer_A_->natom(); A++) {
-        if (monomer_A_->Z(A) != 0.0) nA++;
+        if (monomer_A_->Z(A, true) != 0.0) nA++;
     }
 
     int nB = 0;
     for (int B = 0; B < monomer_B_->natom(); B++) {
-        if (monomer_B_->Z(B) != 0.0) nB++;
+        if (monomer_B_->Z(B, true) != 0.0) nB++;
     }
 
     outfile->Printf("    ------------------\n");

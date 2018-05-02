@@ -125,7 +125,7 @@ void IBOLocalizer2::build_iaos()
     true_iaos_.clear();
     iaos_to_atoms_.clear();
     for (int A = 0; A < mol->natom(); A++) {
-        if (!use_ghosts_ && mol->Z(A) == 0.0) continue;
+        if (!use_ghosts_ && mol->Z(A, true) == 0.0) continue;
         int Atrue = true_atoms_.size();
         int nPshells = minao_->nshell_on_center(A);
         int sPshells = minao_->shell_on_center(A, 0);
@@ -591,7 +591,7 @@ void IBOLocalizer2::print_charges(double scale)
     double Qtot = 0.0;
     for (int A = 0; A < natom; A++) {
         int Afull = true_atoms_[A];
-        double Z = mol->Z(Afull);
+        double Z = mol->Z(Afull, true);
         double Q = -scale * Np[A];
         outfile->Printf("    %4d %3s %11.3E %11.3E %11.3E\n",
             Afull+1, mol->symbol(Afull).c_str(), Z, Q, Z + Q);

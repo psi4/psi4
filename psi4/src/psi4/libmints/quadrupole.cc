@@ -64,12 +64,12 @@ SharedVector QuadrupoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, 
 
     for (int i=0; i<mol->natom(); ++i) {
         Vector3 geom = mol->xyz(i) - origin;
-        ret[0] += mol->Z(i) * geom[0] * geom[0]; // xx
-        ret[1] += mol->Z(i) * geom[0] * geom[1]; // xy
-        ret[2] += mol->Z(i) * geom[0] * geom[2]; // xz
-        ret[3] += mol->Z(i) * geom[1] * geom[1]; // yy
-        ret[4] += mol->Z(i) * geom[1] * geom[2]; // yz
-        ret[5] += mol->Z(i) * geom[2] * geom[2]; // zz
+        ret[0] += mol->Z(i, true) * geom[0] * geom[0]; // xx
+        ret[1] += mol->Z(i, true) * geom[0] * geom[1]; // xy
+        ret[2] += mol->Z(i, true) * geom[0] * geom[2]; // xz
+        ret[3] += mol->Z(i, true) * geom[1] * geom[1]; // yy
+        ret[4] += mol->Z(i, true) * geom[1] * geom[2]; // yz
+        ret[5] += mol->Z(i, true) * geom[2] * geom[2]; // zz
     }
 
     return sret;

@@ -2215,7 +2215,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
 
                 for(int atom = 0; atom < natom; atom++){
 
-                   double Z = molecule_->Z(atom);
+                   double Z = molecule_->Z(atom, true);
                    Vint->set_origin(molecule_->xyz(atom));
 
                    std::pair <int, int> target_atoms(atom1, atom2);  

@@ -428,7 +428,7 @@ SharedMatrix SCFGrad::compute_hessian()
                     int Cy = 3 * atom + 1;
                     int Cz = 3 * atom + 2;
 
-                    double Z = molecule_->Z(atom);
+                    double Z = molecule_->Z(atom, true);
                     Vint->set_origin(molecule_->xyz(atom));
 
                     Vint->compute_shell_deriv2(P,Q);

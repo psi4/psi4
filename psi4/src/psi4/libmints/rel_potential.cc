@@ -66,7 +66,7 @@ RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, std::share
     double **Zxyzp = Zxyz_->pointer();
 
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {
-        Zxyzp[A][0] = (double) bs1_->molecule()->Z(A);
+        Zxyzp[A][0] = (double) bs1_->molecule()->Z(A, true);
         Zxyzp[A][1] = bs1_->molecule()->x(A);
         Zxyzp[A][2] = bs1_->molecule()->y(A);
         Zxyzp[A][3] = bs1_->molecule()->z(A);

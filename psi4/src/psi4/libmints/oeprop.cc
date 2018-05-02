@@ -1082,7 +1082,7 @@ void OEProp::compute_esp_over_grid()
             Vector3 dR = origin - mol->xyz(i);
             double r = dR.norm();
             if(r > 1.0E-8)
-                Vnuc += mol->Z(i)/r;
+                Vnuc += mol->Z(i, true)/r;
         }
         Vvals_.push_back(Velec+Vnuc);
         fprintf(gridout, "%16.10f\n", Velec+Vnuc);
@@ -1177,7 +1177,7 @@ void OEProp::compute_esp_at_nuclei()
         for(int atom2 = 0; atom2 < natoms; ++atom2){
             if(atom1 == atom2)
                 continue;
-            nuc += mol->Z(atom2) / dist[0][atom1][atom2];
+            nuc += mol->Z(atom2, true) / dist[0][atom1][atom2];
         }
         outfile->Printf( "  %3d %2s           %16.12f\n",
                 atom1+1, mol->label(atom1).c_str(), nuc+elec);
@@ -1601,11 +1601,11 @@ void OEProp::compute_mulliken_charges()
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
-        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        double Qt = mol->Z(A, true) - (Qa[A] + Qb[A]);
         (*apcs)[A]=Qt;
         outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
             Qa[A], Qb[A], Qs, Qt);
-        nuc += (double) mol->Z(A);
+        nuc += (double) mol->Z(A, true);
    }
 
     outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
@@ -1695,11 +1695,11 @@ void OEProp::compute_lowdin_charges()
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
-        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        double Qt = mol->Z(A, true) - (Qa[A] + Qb[A]);
         (*apcs)[A]=Qt;
         outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
             Qa[A], Qb[A], Qs, Qt);
-        nuc += (double) mol->Z(A);
+        nuc += (double) mol->Z(A, true);
     }
 
     outfile->Printf( "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \

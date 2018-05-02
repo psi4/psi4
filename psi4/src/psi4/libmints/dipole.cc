@@ -74,9 +74,9 @@ SharedVector DipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, cons
 
     for(int i=0; i<mol->natom(); ++i) {
         Vector3 geom = mol->xyz(i) - origin;
-        ret[0] += mol->Z(i) * geom[0];
-        ret[1] += mol->Z(i) * geom[1];
-        ret[2] += mol->Z(i) * geom[2];
+        ret[0] += mol->Z(i, true) * geom[0];
+        ret[1] += mol->Z(i, true) * geom[1];
+        ret[2] += mol->Z(i, true) * geom[2];
     }
 
     return sret;

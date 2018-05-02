@@ -212,7 +212,7 @@ SharedVector ElectrostaticInt::nuclear_contribution(std::shared_ptr<Molecule> mo
                 double z = kgeom[2] - igeom[2];
                 double r2 = x*x+y*y+z*z;
                 double r = std::sqrt(r2);
-                ret[k]  += mol->Z(i)/r;
+                ret[k]  += mol->Z(i, true)/r;
             }
         }
     }

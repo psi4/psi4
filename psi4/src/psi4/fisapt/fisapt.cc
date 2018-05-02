@@ -333,13 +333,13 @@ void FISAPT::partition() {
     double* ZCp = vectors_["ZC"]->pointer();
 
     for (int ind = 0; ind < indA.size(); ind++) {
-        ZAp[indA[ind]] = mol->Z(indA[ind]);
+        ZAp[indA[ind]] = mol->Z(indA[ind], true);
     }
     for (int ind = 0; ind < indB.size(); ind++) {
-        ZBp[indB[ind]] = mol->Z(indB[ind]);
+        ZBp[indB[ind]] = mol->Z(indB[ind], true);
     }
     for (int ind = 0; ind < indC.size(); ind++) {
-        ZCp[indC[ind]] = mol->Z(indC[ind]);
+        ZCp[indC[ind]] = mol->Z(indC[ind], true);
     }
 
     // => Local Orbital Targets <= //
@@ -2449,9 +2449,9 @@ void FISAPT::plot() {
     std::vector<double> w_C(mol->natom());
 
     for (int A = 0; A < mol->natom(); A++) {
-        w_A[A] = (ZAp[A]) / mol->Z(A);
-        w_B[A] = (ZBp[A]) / mol->Z(A);
-        w_C[A] = (ZCp[A]) / mol->Z(A);
+        w_A[A] = (ZAp[A]) / mol->Z(A, true);
+        w_B[A] = (ZBp[A]) / mol->Z(A, true);
+        w_C[A] = (ZCp[A]) / mol->Z(A, true);
     }
 
     D_A->scale(2.0);

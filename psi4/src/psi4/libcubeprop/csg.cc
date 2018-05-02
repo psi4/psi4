@@ -286,7 +286,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const 
 
     // Atoms of molecule (Z, Q?, x, y, z)
     for (int A = 0; A < mol_->natom(); A++) {
-        fprintf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int)mol_->Z(A), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
+        fprintf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int)mol_->Z(A, true), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
     }
 
     // Data, striped (x, y, z)
@@ -478,7 +478,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
     // => Nuclear Part <= //
 
     for (int A = 0; A < mol_->natom(); A++) {
-        double Z = mol_->Z(A) * (nuc_weights.size() ? nuc_weights[A] : 1.0);
+        double Z = mol_->Z(A, true) * (nuc_weights.size() ? nuc_weights[A] : 1.0);
         double x = mol_->x(A);
         double y = mol_->y(A);
         double z = mol_->z(A);

@@ -188,7 +188,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // will still have 3d electrons active.  Alkali earth atoms will
         // have one valence electron in this scheme.
         for (int A = 0; A < mymol->natom(); A++) {
-            double Z   = mymol->Z(A);
+            double Z   = mymol->Z(A, true);
             // Add ECPs to Z, the number of electrons less ECP-treated electrons
             double ECP = n_ecp_core(mymol->label(A));
             if (Z + ECP > 2) nfzc += 1;

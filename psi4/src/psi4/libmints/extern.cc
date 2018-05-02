@@ -211,7 +211,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         double xc = mol->x(cen);
         double yc = mol->y(cen);
         double zc = mol->z(cen);
-        double cencharge = mol->Z(cen);
+        double cencharge = mol->Z(cen, true);
         for (int ext = 0; ext < nextc; ++ext) {
             double charge = cencharge * Zxyzp[ext][0];
             double x = Zxyzp[ext][1] - xc;
@@ -340,7 +340,7 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
         double xA = mol->x(A);
         double yA = mol->y(A);
         double zA = mol->z(A);
-        double ZA = mol->Z(A);
+        double ZA = mol->Z(A, true);
 
         for (size_t B = 0; B < charges_.size(); B++) {
 
@@ -364,7 +364,7 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
         auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", mol->natom(), 4);
         double **Zxyzp = Zxyz->pointer();
         for (int A = 0; A < mol->natom(); A++) {
-            Zxyzp[A][0] = mol->Z(A);
+            Zxyzp[A][0] = mol->Z(A, true);
             Zxyzp[A][1] = mol->x(A);
             Zxyzp[A][2] = mol->y(A);
             Zxyzp[A][3] = mol->z(A);

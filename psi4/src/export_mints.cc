@@ -1187,7 +1187,7 @@ void export_mints(py::module& m) {
         .def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
-        .def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of atom")
+        .def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of *atom* (0-indexed)", py::arg("atom"), py::arg("zero_ghost") = true)
         .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy, "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")

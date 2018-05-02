@@ -83,9 +83,9 @@ Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, std::share
         if(r < 1.0E-8)
             continue;
 
-        Ex += mol->Z(i) * x / (r*r2);
-        Ey += mol->Z(i) * y / (r*r2);
-        Ez += mol->Z(i) * z / (r*r2);
+        Ex += mol->Z(i, true) * x / (r*r2);
+        Ey += mol->Z(i, true) * y / (r*r2);
+        Ez += mol->Z(i, true) * z / (r*r2);
     }
 
     Vector3 result(Ex, Ey, Ez);
