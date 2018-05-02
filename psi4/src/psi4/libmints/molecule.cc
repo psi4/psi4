@@ -2213,7 +2213,20 @@ Vector3 Molecule::fxyz(int atom) const { return input_units_to_au_ * full_atoms_
 
 double Molecule::xyz(int atom, int _xyz) const { return input_units_to_au_ * atoms_[atom]->compute()[_xyz]; }
 
-const double &Molecule::Z(int atom) const { return atoms_[atom]->Z(); }
+const double &Molecule::Z(int atom) const {
+    Element_to_Z z_list = Element_to_Z();
+    bool zero_ghost = false;
+    if (zero_ghost) {
+        return atoms_[atom]->Z();
+    }
+    else if (atoms_[atom]->Z() == 0.0) {
+        static const double val = z_list[atoms_[atom]->symbol()];
+        return val;
+    }
+    else {
+        return atoms_[atom]->Z();
+    }
+}
 
 double Molecule::fZ(int atom) const { return full_atoms_[atom]->Z(); }
 
