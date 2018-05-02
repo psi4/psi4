@@ -430,8 +430,8 @@ void EFP::set_qm_atoms() {
     double *xyz_p = xyz->pointer();
 
     for (int A = 0; A < natom; A++) {
-        if (molecule_->Z(A) == 0.0) continue;
-        q_p[A] = molecule_->Z(A);
+        if (molecule_->Z(A, true) == 0.0) continue;
+        q_p[A] = molecule_->Z(A, true);
         xyz_p[3 * A] = molecule_->x(A);
         xyz_p[3 * A + 1] = molecule_->y(A);
         xyz_p[3 * A + 2] = molecule_->z(A);
