@@ -35,7 +35,7 @@
 namespace psi {
 
 class BasisSet;
-class DF_Helper;
+class DFHelper;
 
 namespace sapt {
 
@@ -56,8 +56,8 @@ protected:
     // Auxiliary overlap matrix
     SharedMatrix aux_overlap_;
 
-    // DF_Helper object
-    std::shared_ptr<DF_Helper> dfh_;
+    // DFHelper object
+    std::shared_ptr<DFHelper> dfh_;
 
     // Cache map
     std::map<std::string, SharedMatrix> matrix_cache_;

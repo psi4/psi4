@@ -89,7 +89,7 @@ void PKJK::print_header() const
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
-        outfile->Printf( "    OpenMP threads:    %11d\n", nthreads_);
+        outfile->Printf( "    OpenMP threads:    %11d\n\n", nthreads_);
     }
 }
 

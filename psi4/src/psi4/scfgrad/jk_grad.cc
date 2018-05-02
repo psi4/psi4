@@ -64,7 +64,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet
 {
     Options& options = Process::environment.options;
 
-    if (options.get_str("SCF_TYPE") == "DF") {
+    if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
 
         DFJKGrad* jk = new DFJKGrad(deriv,primary,auxiliary);
 

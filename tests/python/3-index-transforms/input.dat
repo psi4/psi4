@@ -17,7 +17,7 @@ aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVTZ-jkfit")
 # setup ~
 nbf = primary.nbf()
 naux = aux.nbf()
-mem = 100000
+mem = 200000
 mem_bump = naux * naux
 ntransforms = 6
 
@@ -78,7 +78,7 @@ for method in methods:
                 for hold_met in [False, True]:
                             
                     # get object
-                    dfh = psi4.core.DF_Helper(primary, aux)
+                    dfh = psi4.core.DFHelper(primary, aux)
                     
                     # set test options
                     dfh.set_method(method)

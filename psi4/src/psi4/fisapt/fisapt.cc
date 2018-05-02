@@ -44,7 +44,7 @@
 #include "psi4/libcubeprop/csg.h"
 #include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -648,7 +648,7 @@ void FISAPT::coulomb() {
 
     // => Global JK Object <= //
 
-    jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_);
+    jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, doubles_);
     jk_->set_memory(doubles_);
 
     // => Build J and K for embedding <= //
@@ -2046,8 +2046,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
         ncol += (size_t)mat->ncol();
     }
 
-    // => Get integrals from DF_Helper <= //
-    auto dfh(std::make_shared<DF_Helper>(primary_, auxiliary));
+    // => Get integrals from DFHelper <= //
+    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
@@ -2647,8 +2647,8 @@ void FISAPT::felst() {
     nT = Process::environment.get_n_threads();
 #endif
 
-    // => Get integrals from DF_Helper <= //
-    auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    // => Get integrals from DFHelper <= //
+    auto dfh(std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
@@ -2803,8 +2803,8 @@ void FISAPT::fexch() {
     size_t max_MO = 0;
     for (auto& mat : Cs) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
-    // => Get integrals from DF_Helper <= //
-    auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    // => Get integrals from DFHelper <= //
+    auto dfh(std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
@@ -2987,14 +2987,14 @@ void FISAPT::find() {
     std::shared_ptr<Vector> eps_vir_A = vectors_["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir_B = vectors_["eps_vir0B"];
 
-    // => DF_Helper = DF + disk tensors <= //
+    // => DFHelper = DF + disk tensors <= //
 
     int nT = 1;
 #ifdef _OPENMP
     nT = Process::environment.get_n_threads();
 #endif
 
-    auto dfh(std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh(std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
@@ -3040,7 +3040,7 @@ void FISAPT::find() {
         dfh->write_disk_tensor("WBar", Var, {B, B + 1});
     }
 
-    // ==> DF_Helper Setup (JKFIT Type, in Full Basis) <== //
+    // ==> DFHelper Setup (JKFIT Type, in Full Basis) <== //
 
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Cocc_A);
@@ -3361,7 +3361,6 @@ void FISAPT::find() {
 
         // => JK Object <= //
 
-        std::shared_ptr<JK> jk = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_);
 
         // TODO: Account for 2-index overhead in memory
         int nso = primary_->nbf();
@@ -3372,6 +3371,9 @@ void FISAPT::find() {
         if (jk_memory < 0L) {
             throw PSIEXCEPTION("Too little static memory for FISAPT::induction");
         }
+        
+        std::shared_ptr<JK> jk = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, (size_t)jk_memory);
+        
         jk->set_memory((size_t)jk_memory);
         jk->set_do_J(true);
         jk->set_do_K(true);
@@ -3779,7 +3781,7 @@ void FISAPT::fdisp() {
     VRas.reset();
     VSbr.reset();
 
-    // => Integrals from DF_Helper <= //
+    // => Integrals from DFHelper <= //
 
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Caocc_A);
@@ -3801,7 +3803,7 @@ void FISAPT::fdisp() {
         ncol += (size_t)mat->ncol();
     }
 
-    auto dfh(std::make_shared<DF_Helper>(primary_, auxiliary));
+    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);

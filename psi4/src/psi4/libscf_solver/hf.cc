@@ -96,6 +96,7 @@ void HF::common_init()
     attempt_number_ = 1;
     ref_C_ = false;
     reset_occ_ = false;
+    is_dfjk_ = false;
 
     max_attempts_ = options_.get_int("MAX_ATTEMPTS");
 
@@ -312,7 +313,10 @@ void HF::common_init()
 
     frac_enabled_ = (options_.get_int("FRAC_START") != 0);
     frac_performed_ = false;
-    print_header();
+
+    if (print_) {
+      print_header();
+    }
 
     // DFT stuff
     if (functional_->needs_xc()){
@@ -325,7 +329,9 @@ void HF::common_init()
         }
 
         // Print the KS-specific stuff
-        potential_->print_header();
+        if (print_) {
+            potential_->print_header();
+        }
     } else {
         potential_ = nullptr;
     }
@@ -437,6 +443,7 @@ void HF::integrals()
 
     // Build the JK from options, symmetric type
     // try {
+    size_t effective_memory = (size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L));
     if(options_.get_str("SCF_TYPE") == "GTFOCK") {
       #ifdef HAVE_JK_FACTORY
         //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
@@ -451,18 +458,17 @@ void HF::integrals()
         throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
       #endif
     } else {
-        if (options_.get_str("SCF_TYPE") == "DF"){
-            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
-        } else {
-            jk_ = JK::build_JK(get_basisset("ORBITAL"), BasisSet::zero_ao_basis_set(), options_);
+        jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_, functional_->is_x_lrc(), effective_memory);
+    }
 
-        }
+    if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos){
+       is_dfjk_ = true;
     }
 
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
-    jk_->set_memory((size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
+    jk_->set_memory(effective_memory);
 
     // DFT sometimes needs custom stuff
     // K matrices
@@ -576,9 +582,7 @@ double HF::finalize_E()
             outfile->Printf( "  Energy did not converge, but proceeding anyway.\n\n");
         }
 
-        bool df = (options_.get_str("SCF_TYPE") == "DF");
-
-        outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
+        outfile->Printf( "  @%s%s Final Energy: %20.14f", is_dfjk_ ? "DF-" : "", reference.c_str(), E_);
         if (perturb_h_) {
             outfile->Printf( " with %f %f %f perturbation", dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]);
         }
@@ -1602,10 +1606,8 @@ void HF::iterations()
     MOM_performed_ = false;
     diis_performed_ = false;
 
-    bool df = (options_.get_str("SCF_TYPE") == "DF");
-
     outfile->Printf( "  ==> Iterations <==\n\n");
-    outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
+    outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", is_dfjk_ ? "   " : "");
 
 
     // SCF iterations
@@ -1797,10 +1799,7 @@ void HF::iterations()
 
         converged_ = test_convergency();
 
-        df = (options_.get_str("SCF_TYPE") == "DF");
-
-
-        outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
+        outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", is_dfjk_ ? "DF-" : "",
                           reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
 
 
@@ -1812,12 +1811,13 @@ void HF::iterations()
 
         // If a DF Guess environment, reset the JK object, and keep running
         if (converged_ && options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT")) {
-            outfile->Printf( "\n  DF guess converged.\n\n"); // Be cool dude.
+            outfile->Printf("\n  DF guess converged.\n\n");  // Be cool dude.
             converged_ = false;
-            if(initialized_diis_manager_)
+            if (initialized_diis_manager_) {
                 diis_manager_->reset_subspace();
+            }
             scf_type_ = old_scf_type_;
-            options_.set_str("SCF","SCF_TYPE",old_scf_type_);
+            options_.set_str("SCF", "SCF_TYPE", old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
         }

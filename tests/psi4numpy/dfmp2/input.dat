@@ -40,7 +40,7 @@ aux = BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
 
 # Build and transform a OV basis
 print("Initializing DF_Helper object.")
-dfobj = DF_Helper(wfn.basisset(), aux)
+dfobj = DFHelper(wfn.basisset(), aux)
 dfobj.set_method("DIRECT")
 dfobj.initialize()
 

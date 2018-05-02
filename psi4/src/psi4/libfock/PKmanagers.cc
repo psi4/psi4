@@ -294,6 +294,7 @@ void PKManager::compute_integrals(bool wK) {
         outfile->Printf("  %7.2f percent of shell quartets recomputed by reordering.\n",
                         (nshqu - nsh_u) / float(nsh_u) * 100);
     }
+    outfile->Printf("\n");
 }
 
 void PKManager::compute_integrals_wK() {

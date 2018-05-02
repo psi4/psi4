@@ -46,6 +46,7 @@ class ERISieve;
 class TwoBodyAOInt;
 class Options;
 class PSIO;
+class DFHelper;
 
 namespace pk {
 class PKManager;
@@ -70,7 +71,7 @@ class PKManager;
  *
  * This class is abstract, specific instances must be obtained
  * by constructing an object corresponding to the desired
- * algorithm's subclass of JK, e.g., DFJK or DirectJK.
+ * algorithm's subclass of JK, e.g., DiskDFJK or DirectJK.
  *
  * This class is available for symmetric or nonsymmetric C
  * (this refers to C^left = C^right or not). Symmetric or
@@ -350,7 +351,7 @@ class PSI_API JK {
     virtual ~JK();
 
     /**
-    * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
+    * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
     * using knobs in options.
     * Nmat and sym are options for GTFock
     * sym means that all density matrices will be symmetric
@@ -360,6 +361,8 @@ class PSI_API JK {
                                         Options& options);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options, std::string jk_type);
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                                 Options& options, bool do_wK, size_t doubles);
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
@@ -748,12 +751,12 @@ class GTFockJK : public JK {
 };
 
 /**
- * Class DFJK
+ * Class DiskDFJK
  *
  * JK implementation using sieved, threaded
  * density-fitted technology
  */
-class PSI_API DFJK : public JK {
+class PSI_API DiskDFJK : public JK {
    protected:
     // => DF-Specific stuff <= //
 
@@ -845,10 +848,10 @@ class PSI_API DFJK : public JK {
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+    DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
-    virtual ~DFJK();
+    virtual ~DiskDFJK();
 
     /**
      * Method to provide (ia|ia) integrals for
@@ -898,7 +901,7 @@ class PSI_API DFJK : public JK {
  * JK implementation using
  * cholesky decomposition technology
  */
-class CDJK : public DFJK {
+class CDJK : public DiskDFJK {
    protected:
     // the number of cholesky vectors
     long int ncholesky_;
@@ -937,6 +940,86 @@ class CDJK : public DFJK {
 
     /// Destructor
     virtual ~CDJK();
+};
+
+/**
+ * Class MemDFJK
+ *
+ * JK implementation using sieved, threaded
+ * density-fitted technology
+ * under slightly different paradigm than DiskDFJK
+ * wraps lib3index/DFHelper class
+ */
+class MemDFJK : public JK {
+
+   protected:
+    // => DF-Specific stuff <= //
+
+    /// This class wraps a DFHelper object
+    std::shared_ptr<DFHelper> dfh_;
+
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// Number of threads for DF integrals
+    int df_ints_num_threads_;
+    /// Condition cutoff in fitting metric, defaults to 1.0E-12
+    double condition_ = 1.0E-12;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    int max_nocc() const;
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return true; }
+    /// Setup integrals, files, etc
+    /// calls initialize(), JK_blocking
+    virtual void preiterations();
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations();
+
+    /// Common initialization
+    void common_init();
+
+
+  public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     * @param auxiliary auxiliary basis set for this system.
+     */
+    MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+
+    /// Destructor
+    virtual ~MemDFJK();
+    
+    
+    // => Knobs <= //
+
+    /**
+     * Minimum relative eigenvalue to retain in fitting inverse
+     * All eigenvectors with \epsilon_i < condition * \epsilon_max
+     * will be discarded
+     * @param condition minimum relative eigenvalue allowed,
+     *        defaults to 1.0E-12
+     */
+    void set_condition(double condition) { condition_ = condition; }
+    
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
+    
+    
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
 };
 }
 #endif

@@ -1,5 +1,5 @@
 set(sources_list dftensor.cc
-                 df_helper.cc
+                 dfhelper.cc
                  denominator.cc
                  fittingmetric.cc
                  cholesky.cc

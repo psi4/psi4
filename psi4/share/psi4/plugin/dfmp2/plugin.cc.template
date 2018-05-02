@@ -40,7 +40,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/molecule.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -107,7 +107,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     // => Setup DF Integrals <= //
 
-    auto dfh (std::make_shared<DF_Helper>(primary, auxiliary));
+    auto dfh (std::make_shared<DFHelper>(primary, auxiliary));
     dfh->set_memory(memory / 8L);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nthreads);
