@@ -13,7 +13,7 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
     ----------
     molrec : dict
         Psi4 json Molecule spec.
-    dtype : {'psi4', 'v0.1'}
+    dtype : {'psi4', '0'}
         Molecule schema format.
     units : {'Angstrom', 'Bohr'}
         Units in which to write string. There is not an option to write in
@@ -54,7 +54,7 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
         qcschema['units'] = units
         qcschema['name'] = name
 
-    elif dtype == 'v0.1':
+    elif dtype == '0':
         if units != 'Bohr':
             raise ValidationError("""QC_JSON_Schema {} allows only 'Bohr' coordinates, not {}.""".format(dtype, units))
 
