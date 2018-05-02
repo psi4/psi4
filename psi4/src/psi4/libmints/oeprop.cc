@@ -1010,7 +1010,7 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
         for (int i = 0; i < natom; i++) {
             Vector3 dR = origin - mol->xyz(i);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(i, true) / r;
         }
         Vvals_.push_back(Velec + Vnuc);
         fprintf(gridout, "%16.10f\n", Velec + Vnuc);
@@ -1160,9 +1160,16 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
         }
         double elec = Dtot->vector_dot(ints);
         double nuc = 0.0;
+<<<<<<< HEAD
         for (int atom2 = 0; atom2 < natoms; ++atom2) {
             if (atom1 == atom2) continue;
             nuc += mol->Z(atom2) / dist[0][atom1][atom2];
+=======
+        for(int atom2 = 0; atom2 < natoms; ++atom2){
+            if(atom1 == atom2)
+                continue;
+            nuc += mol->Z(atom2, true) / dist[0][atom1][atom2];
+>>>>>>> 059d073f7... Adds bool zero_ghost to Z, change all C-side calls to true (expected behavior), optional py-side default is true
         }
         if (print_output) {
             outfile->Printf("  %3d %2s           %16.12f\n", atom1 + 1, mol->label(atom1).c_str(), nuc + elec);
@@ -1646,6 +1653,7 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
+<<<<<<< HEAD
         double Qs = (*Qa)[A] - (*Qb)[A];
         double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A] = Qt;
@@ -1655,6 +1663,19 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
         }
         nuc += (double)mol->Z(A);
     }
+=======
+        double Qs = Qa[A] - Qb[A];
+        double Qt = mol->Z(A, true) - (Qa[A] + Qb[A]);
+        (*apcs)[A]=Qt;
+        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+            Qa[A], Qb[A], Qs, Qt);
+        nuc += (double) mol->Z(A, true);
+   }
+
+    outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+        suma, sumb, nuc - suma - sumb);
+    wfn_->set_atomic_point_charges(apcs);
+>>>>>>> 059d073f7... Adds bool zero_ghost to Z, change all C-side calls to true (expected behavior), optional py-side default is true
 
     if (print_output) {
         outfile->Printf("\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,
@@ -1747,6 +1768,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
+<<<<<<< HEAD
         double Qs = (*Qa)[A] - (*Qb)[A];
         double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A] = Qt;
@@ -1755,6 +1777,14 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
                             (*Qb)[A], Qs, Qt);
         }
         nuc += (double)mol->Z(A);
+=======
+        double Qs = Qa[A] - Qb[A];
+        double Qt = mol->Z(A, true) - (Qa[A] + Qb[A]);
+        (*apcs)[A]=Qt;
+        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+            Qa[A], Qb[A], Qs, Qt);
+        nuc += (double) mol->Z(A, true);
+>>>>>>> 059d073f7... Adds bool zero_ghost to Z, change all C-side calls to true (expected behavior), optional py-side default is true
     }
     if (print_output) {
         outfile->Printf("\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,

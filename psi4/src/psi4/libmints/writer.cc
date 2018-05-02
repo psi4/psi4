@@ -67,7 +67,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     for (atom = 0; atom < mol.natom(); ++atom) {
         Vector3 coord = mol.xyz(atom);
         printer->Printf("%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n", mol.symbol(atom).c_str(), atom + 1,
-                        static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
+                        static_cast<int>(mol.Z(atom, true)), coord[0], coord[1], coord[2]);
     }
 
     // Dump the basis set using code adapted from psi2molden
@@ -343,7 +343,7 @@ void FCHKWriter::write(const std::string &filename) {
     std::vector<double> atomic_weights;
     double to_bohr = mol->units() == Molecule::Angstrom ? 1.0 / pc_bohr2angstroms : 1.0;
     for (int atom = 0; atom < natoms; ++atom) {
-        double Z = mol->Z(atom);
+        double Z = mol->Z(atom, true);
         auto intZ = static_cast<int>(Z);
         double mass = an2masses[intZ];
         auto intmass = static_cast<int>(mass);
@@ -630,7 +630,7 @@ void NBOWriter::write(const std::string &filename) {
     printer->Printf(" GENNBO expects one comment line here. So, here's a comment line.\n");
     for (int i = 0; i < mol.natom(); i++) {
         // the second mol.Z() should be modified when pseudopotentials are implemented
-        printer->Printf("%2d  %2d  %20.12f %20.12f %20.12f\n", static_cast<int>(mol.Z(i)), static_cast<int>(mol.Z(i)),
+        printer->Printf("%2d  %2d  %20.12f %20.12f %20.12f\n", static_cast<int>(mol.Z(i, true)), static_cast<int>(mol.Z(i, true)),
                         mol.x(i) * pc_bohr2angstroms, mol.y(i) * pc_bohr2angstroms, mol.z(i) * pc_bohr2angstroms);
     }
     printer->Printf(" $END\n");

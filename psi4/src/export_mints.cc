@@ -1231,7 +1231,8 @@ void export_mints(py::module& m) {
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
         .def("Z", &Molecule::Z, py::return_value_policy::copy,
-             "Nuclear charge of atom arg0 (0-indexed without dummies)")
+             "Nuclear charge of atom arg0 (0-indexed without dummies), by default ghost atoms return zero nuclear charge",
+             py::arg("atom"), py::arg("zero_ghost") = true)
         .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy, "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("y", &Molecule::y, "y position [Bohr] of atom arg0 (0-indexed without dummies)")
@@ -1250,7 +1251,7 @@ void export_mints(py::module& m) {
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg0")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return zero mass",
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return non-zero mass",
              py::arg("atom"), py::arg("zero_ghost") = false)
         .def("set_mass", &Molecule::set_mass,
              "Sets mass of *atom* (0-indexed) to *mass* (good for isotopic substitutions)",

@@ -511,7 +511,7 @@ void Wavefunction::common_init() {
     // Determine the number of electrons in the system
     int nelectron = 0;
     for (int i = 0; i < molecule_->natom(); ++i) {
-        nelectron += (int)molecule_->Z(i);
+        nelectron += (int)molecule_->Z(i, true);
     }
     nelectron -= molecule_->molecular_charge();
 
