@@ -1,0 +1,13 @@
+BASIS
+STO-3G
+Water
+Distance in Aangstroms
+Atomtypes=2 Nosymmetry Angstrom
+Charge=8.0 Atoms=1
+O      0.054279931494     0.041811401678     0.000000000000
+Charge=1.0 Atoms=2
+H1     0.054279931494    -0.956252935397     0.000000000000
+H2    -0.915741834279     0.292675648982     0.000000000000
+
+
+

@@ -84,7 +84,7 @@ Installation
 
 * If using |PSIfour| built from source and you want PCMSolver built from
   from source also,
-  enable it as a feature with :makevar:`ENABLE_CheMPS2`,
+  enable it as a feature with :makevar:`ENABLE_PCMSolver`,
   and let the build system fetch and build it and activate dependent code.
 
 .. index:: PCM; Using PCM
@@ -102,9 +102,17 @@ The latter forces the separate handling of nuclear and electronic electrostatic 
 polarization charges. It is mainly useful for debugging.
 
 .. note:: At present PCM can only be used for energy calculations with SCF
-          wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_
+          wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_.
+          All ERI algorithms (``PK``, ``OUT_OF_CORE``, ``DIRECT``, ``DF``, ``CD``) are supported.
 
 .. warning:: The PCMSolver library **cannot** exploit molecular point group symmetry.
+
+.. warning:: ROHF with PCM is known **not to work**. See `issue #999 on GitHub <https://github.com/psi4/psi4/issues/999>`_.
+             For the adventurous, a fix is available in `pull request #953 on GitHub <https://github.com/psi4/psi4/pull/953>`_
+
+.. warning:: Analytic gradients and Hessians **are not** available with PCM. You will need
+             to add the ``dertype='energy'`` to ``optimize`` to correctly perform a geometry
+             optimization using finite differences. See :srcsample:`pcmsolver/opt-fd` for a sample input.
 
 The PCM model and molecular cavity are specified in a ``pcm`` section that has
 to be explicitly typed in by the user. This additional section follows a syntax
@@ -150,6 +158,7 @@ A typical input for a Hartree--Fock calculation with PCM would look like the fol
 More examples can be found in the directories with PCM tests
 :srcsample:`pcmsolver/ccsd-pte`,
 :srcsample:`pcmsolver/scf`,
+:srcsample:`pcmsolver/opt-fd`,
 :srcsample:`pcmsolver/dft`, and
 :srcsample:`pcmsolver/dipole`.
 
