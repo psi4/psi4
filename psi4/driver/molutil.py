@@ -29,6 +29,8 @@
 """Module with utility functions that act on molecule objects."""
 from __future__ import absolute_import
 
+import numpy as np
+
 from psi4 import core
 from psi4.driver.p4util import constants, filter_comments
 from psi4.driver.inputparser import process_pubchem_command, pubchemre
@@ -203,13 +205,26 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
             # * 'provenance'
             ms = molschema['molecule']
 
-            # TODO not handling fragments yet (needs refactoring py-side)
-            molrec = qcdb.molparse.from_arrays(geom=ms['geometry'],
+            if 'fragments' in ms:
+                frag_pattern = ms['fragments']
+            else:
+                frag_pattern = [np.arange(len(ms['symbols']))]
+
+            dcontig = qcdb.Molecule.contiguize_from_fragment_pattern(frag_pattern,
+                                                                     geom=ms['geometry'],
+                                                                     elea=None,
+                                                                     elez=None,
+                                                                     elem=ms['symbols'],
+                                                                     mass=ms.get('masses', None),
+                                                                     real=ms.get('real', None),
+                                                                     elbl=None)
+
+            molrec = qcdb.molparse.from_arrays(geom=dcontig['geom'],
                                                elea=None,
                                                elez=None,
-                                               elem=ms['symbols'],
-                                               mass=ms.get('masses', None),
-                                               real=ms.get('real', None),
+                                               elem=dcontig['elem'],
+                                               mass=dcontig['mass'],
+                                               real=dcontig['real'],
                                                elbl=None,
                                                name=ms.get('name', None),
                                                units='Bohr',
@@ -217,7 +232,7 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
                                                fix_com=ms.get('fix_com', None),
                                                fix_orientation=ms.get('fix_orientation', None),
                                                fix_symmetry=None,
-                                               fragment_separators=None,
+                                               fragment_separators=dcontig['fragment_separators'],
                                                fragment_charges=ms.get('fragment_charges', None),
                                                fragment_multiplicities=ms.get('fragment_multiplicities', None),
                                                molecular_charge=ms.get('molecular_charge', None),
