@@ -1050,11 +1050,15 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         wfn.set_sad_basissets(sad_basis_list)
 
         if ("DF" in core.get_option("SCF", "SAD_SCF_TYPE")):
+            # We need to force this to spherical regardless of any user or other demands.
+            optstash = p4util.OptionsState(['PUREAM'])
+            core.set_global_option('PUREAM', True)
             sad_fitting_list = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SAD",
                                                    core.get_option("SCF", "DF_BASIS_SAD"),
                                                    puream=True,
                                                    return_atomlist=True)
             wfn.set_sad_fitting_basissets(sad_fitting_list)
+            optstash.restore()
 
     # Deal with the EXTERN issues
     if hasattr(core, "EXTERN"):
