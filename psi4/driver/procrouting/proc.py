@@ -2514,16 +2514,19 @@ def run_cc_property(name, **kwargs):
     all CC property calculations.
 
     """
-    optstash = p4util.OptionsState(['WFN'], ['DERTYPE'], ['ONEPDM'], ['PROPERTY'], ['CCLAMBDA', 'R_CONVERGENCE'],
-                                   ['CCEOM', 'R_CONVERGENCE'], ['CCEOM', 'E_CONVERGENCE'])
+    optstash = p4util.OptionsState(
+            ['WFN'],
+            ['DERTYPE'],
+            ['ONEPDM'],
+            ['PROPERTY'],
+            ['CCLAMBDA', 'R_CONVERGENCE'],
+            ['CCEOM', 'R_CONVERGENCE'],
+            ['CCEOM', 'E_CONVERGENCE']) # yapf:disable
 
-    oneel_properties = [
-        'dipole', 'quadrupole', 'mulliken_charges', 'lowdin_charges', 'mayer_indices', 'wiberg_lowdin_indices',
-        'no_occupations'
-    ]
+    oneel_properties = core.OEProp.valid_methods
     twoel_properties = []
-    response_properties = ['polarizability', 'rotation', 'roa', 'roa_tensor']
-    excited_properties = ['oscillator_strength', 'rotational_strength']
+    response_properties = ['POLARIZABILITY', 'ROTATION', 'ROA', 'ROA_TENSOR']
+    excited_properties = ['OSCILLATOR_STRENGTH', 'ROTATIONAL_STRENGTH']
 
     one = []
     two = []
@@ -2535,6 +2538,8 @@ def run_cc_property(name, **kwargs):
         properties = kwargs['properties']
 
         for prop in properties:
+
+            prop = prop.upper()
             if prop in oneel_properties:
                 one.append(prop)
             elif prop in twoel_properties:
@@ -2549,8 +2554,8 @@ def run_cc_property(name, **kwargs):
         raise ValidationError("""The "properties" keyword is required with the property() function.""")
 
     # People are used to requesting dipole/quadrupole and getting dipole,quadrupole,mulliken_charges and NO_occupations
-    if ('dipole' in one) or ('quadrupole' in one):
-        one = list(set(one + ['dipole', 'quadrupole', 'mulliken_charges', 'no_occupations']))
+    if ('DIPOLE' in one) or ('QUADRUPOLE' in one):
+        one = list(set(one + ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS']))
 
     n_one = len(one)
     n_two = len(two)
@@ -2636,9 +2641,9 @@ def run_cc_property(name, **kwargs):
         for oe_name in one:
             oe.add(oe_name.upper())
         oe.compute()
-        # call oe prop for ES
+        # call oe prop for each ES density
         if name.startswith('eom'):
-            # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ...
+            # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ... if we are doing multiple roots
             if 'dipole' in one:
                 core.set_variable("CC ROOT 0 DIPOLE X", core.get_variable("CC DIPOLE X"))
                 core.set_variable("CC ROOT 0 DIPOLE Y", core.get_variable("CC DIPOLE Y"))
