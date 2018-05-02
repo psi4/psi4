@@ -56,13 +56,6 @@ namespace psi {
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
     primary_ = primary;
     aux_ = aux;
-    
-    // cannot do cartesian auxiliary atm
-    if (!aux->has_puream()) {
-        std::stringstream error;
-        error << "DFHelper (MemDFJK): cannot do cartesian auxiliary functions";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
 
     nao_ = primary_->nbf();
     naux_ = aux_->nbf();
@@ -86,8 +79,7 @@ void DFHelper::prepare_blocking() {
     Qshell_max_ = aux_->max_function_per_shell();
     Qshell_aggs_[0] = 0;
     for (size_t i = 0, shell_size; i < Qshells_; i++) {
-        shell_size = aux_->shell(i).nfunction();
-        Qshell_aggs_[i + 1] = Qshell_aggs_[i] + shell_size;
+        Qshell_aggs_[i + 1] = Qshell_aggs_[i] + aux_->shell(i).nfunction();
     }
 
     // AO shell blocking
@@ -640,7 +632,7 @@ std::tuple<size_t, size_t> DFHelper::Qshell_blocks_for_JK_build(
     // 2. T3 is always used, includes C_buffers
 
     // K tmps
-    size_t T1 = nao_ * max_nocc; 
+    size_t T1 = nao_ * max_nocc;
     size_t T2 = (lr_symmetric ? nao_ * nao_ : nao_ * max_nocc);
 
     // C_buffers
