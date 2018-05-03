@@ -123,7 +123,7 @@ def run_json_qc_schema(json_data, clean):
     _clean_psi_environ(clean)
 
     # This is currently a forced override
-    json_data["schema_version"] = "0"
+    json_data["schema_version"] = 0
 
     json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 

@@ -1434,7 +1434,7 @@ class Molecule(LibmintsMolecule):
         """
 
         if ((molschema.get('schema_name', '') == 'QC_JSON') and
-            (molschema.get('schema_version', '') == '0')):
+            (molschema.get('schema_version', '') == 0)):
             # Lost Fields
             # -----------
             # * 'comment'
