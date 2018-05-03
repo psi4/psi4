@@ -141,8 +141,10 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp gau2grid dftd3 gcp snsmp2 scipy networkx deepdiff pytest -c psi4/label/dev -c psi4
+- conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/agg -c psi4
 - source activate p4env
+- conda update pcmsolver libxc -c psi4/label/agg -c psi4
+#- conda install psi4-rt -c psi4/label/agg -c psi4
 - conda list
 before_script:
 - python -V
@@ -155,6 +157,9 @@ before_script:
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
+    # can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver)
+    #   b/c their c++ symbols don't mix with the different Travis compilers. for other
+    #   reasons, pkgs are being compiled less statically, sad for CI.
 - >
     cmake -Bbuild -H.
     -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
@@ -165,12 +170,12 @@ before_script:
     -DENABLE_CheMPS2=OFF
     -DENABLE_dkh=ON
     -DENABLE_libefp=ON
-    -DENABLE_erd=ON
+    -DENABLE_erd=OFF
     -DENABLE_gdma=ON
     -DENABLE_PCMSolver=OFF
-    -DENABLE_simint=ON
-    -DENABLE_v2rdm_casscf=OFF
-    -DENABLE_snsmp2=ON
+    -DENABLE_simint=OFF
+    -DENABLE_snsmp2=OFF
+    -DENABLE_v2rdm_casscf=ON
     -DENABLE_PLUGIN_TESTING=ON
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
 - cd build

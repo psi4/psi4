@@ -27,6 +27,7 @@
 #
 
 """Import plugins eligible to be accessible in input files if detected."""
+import sys
 
 try:
     import v2rdm_casscf
@@ -41,7 +42,12 @@ except ImportError:
 try:
     import snsmp2
 except ImportError as e:
-    if 'scipy' in e.msg:
+    if sys.version_info >= (3, 0):
+        errmsg = e.msg
+    else:
+        errmsg = e.message
+
+    if 'scipy' in errmsg:
         raise ImportError("""Psi4 plugin 'snsmp2' available, but scipy missing. Try `conda install scipy` or `pip install scipy`.""")
     else:
         pass
