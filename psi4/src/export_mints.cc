@@ -1367,7 +1367,8 @@ void export_mints(py::module& m) {
         .def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy,
              "Return the si'th Gaussian shell on center", py::arg("center"), py::arg("si"))
         .def("n_frozen_core", &BasisSet::n_frozen_core,
-             "Returns the number of frozen core electrons, accounting for the presence of any ECPs.")
+             "Returns the number of orbital (non-ECP) frozen core electrons. For a given molecule and "
+             "|globals__freeze_core|, `(n_ecp_core()/2 + n_frozen_core()) = constant`.")
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core),
              "Returns the total number of core electrons associated with all ECPs in this basis.")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core),
