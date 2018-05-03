@@ -1693,7 +1693,7 @@ void Molecule::print() const {
             Vector3 geom = atoms_[i]->compute();
             outfile->Printf("      %3s%-7s ", Z(i, true) ? "" : "Gh(", (symbol(i) + (Z(i, true) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
-            outfile->Printf("  %17.12f", mass(i, false));
+            outfile->Printf("  %17.12f", mass(i, true));
             outfile->Printf("\n");
         }
         if (Process::environment.options.get_int("PRINT") > 2) {
@@ -1942,14 +1942,14 @@ Matrix *Molecule::inertia_tensor() const {
 
     for (i = 0; i < natom(); i++) {
         // I(alpha, alpha)
-        temp(0, 0) += mass(i, false) * (y(i) * y(i) + z(i) * z(i));
-        temp(1, 1) += mass(i, false) * (x(i) * x(i) + z(i) * z(i));
-        temp(2, 2) += mass(i, false) * (x(i) * x(i) + y(i) * y(i));
+        temp(0, 0) += mass(i, true) * (y(i) * y(i) + z(i) * z(i));
+        temp(1, 1) += mass(i, true) * (x(i) * x(i) + z(i) * z(i));
+        temp(2, 2) += mass(i, true) * (x(i) * x(i) + y(i) * y(i));
 
         // I(alpha, beta)
-        temp(0, 1) -= mass(i, false) * x(i) * y(i);
-        temp(0, 2) -= mass(i, false) * x(i) * z(i);
-        temp(1, 2) -= mass(i, false) * y(i) * z(i);
+        temp(0, 1) -= mass(i, true) * x(i) * y(i);
+        temp(0, 2) -= mass(i, true) * x(i) * z(i);
+        temp(1, 2) -= mass(i, true) * y(i) * z(i);
     }
 
     //    mirror
