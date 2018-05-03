@@ -232,7 +232,7 @@ class PSI_API Molecule {
     int natom() const;
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
-    /// Nuclear charge of atom
+    /// Nuclear charge of atom, zero_ghost = true returns zero for ghost atoms, usually true
     const double& Z(int atom, bool zero_ghost) const;
     /// Nuclear charge of atom
     double fZ(int atom) const;
@@ -253,7 +253,7 @@ class PSI_API Molecule {
     Vector3 fxyz(int atom) const;
     /// Returns x, y, or z component of 'atom'
     double xyz(int atom, int _xyz) const;
-    /// Returns mass atom atom
+    /// Returns mass of atom, zero_ghost = true returns 0 for ghost atoms, usually false
     double mass(int atom, bool zero_ghost) const;
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
