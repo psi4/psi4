@@ -1187,7 +1187,7 @@ void export_mints(py::module& m) {
         .def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
-        .def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of *atom* (0-indexed)", py::arg("atom"), py::arg("zero_ghost") = true)
+        .def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of *atom* (0-indexed), optional *zero_ghost* returns 0 for ghost atoms defaults to true", py::arg("atom"), py::arg("zero_ghost") = true)
         .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy, "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")
@@ -1201,7 +1201,7 @@ void export_mints(py::module& m) {
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg2")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed)", py::arg("atom"), py::arg("zero_ghost") = false)
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), optional *zero_ghost* returns 0 for ghost atoms defaults to false", py::arg("atom"), py::arg("zero_ghost") = false)
         .def("set_mass", &Molecule::set_mass, "Sets mass of *atom* (0-indexed) to *mass*", py::arg("atom"), py::arg("mass"))
         .def("symbol", &Molecule::symbol,
              "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)")
