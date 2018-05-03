@@ -301,7 +301,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     // Mass-weighting the co-ordinates //
     //double massi[natom];
     outfile->Printf("\tAtomic Masses for Raman Computation:\n");
-    for(i=0; i < natom; i++) outfile->Printf("\t%d %12.8f\n", i, molecule->mass(i,false));
+    for(i=0; i < natom; i++) outfile->Printf("\t%d %12.8f\n", i, molecule->mass(i,true));
     outfile->Printf("\n");
 
     for(i=0; i<natom; i++)
@@ -310,7 +310,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
         for(j=0; j<3; j++)
         {
             //geom->set(i,j, geom_orig->get(i,j) * sqrt(massi[i]));
-            geom->set(i,j, geom_orig->get(i,j) * sqrt(molecule->mass(i,false)));
+            geom->set(i,j, geom_orig->get(i,j) * sqrt(molecule->mass(i,true)));
         }
     }
 	if(print >= 1)  {
@@ -386,7 +386,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     for(i=0;i<natom;i++)
     {
       //total_mass+=an2mass[(int)zvals[i]];
-      total_mass+=molecule->mass(i,false);
+      total_mass+=molecule->mass(i,true);
     }
 
     for(i=0; i < natom*3; i++)
@@ -394,7 +394,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
       icart = i % 3;
       iatom = i/3;
       //imass = an2mass[(int)zvals[iatom]];
-      imass = molecule->mass(iatom,false);
+      imass = molecule->mass(iatom,true);
 
       P->set(i,i,1.0);
 
@@ -403,7 +403,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
         jcart = j % 3;
         jatom = j/3;
         //jmass = an2mass[(int)zvals[jatom]];
-        jmass = molecule->mass(jatom,false);
+        jmass = molecule->mass(jatom,true);
 
         P->add(i,j,-1.0*sqrt(imass*jmass)/total_mass*(icart==jcart));
 
@@ -426,7 +426,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
       for(j=0; j < 3; j++)
       {
         //M->set((i*3+j),(i*3+j),1/sqrt(an2mass[(int)zvals[i]]/_au2amu));
-        M->set((i*3+j),(i*3+j),1/sqrt((molecule->mass(i,false))/pc_au2amu));
+        M->set((i*3+j),(i*3+j),1/sqrt((molecule->mass(i,true))/pc_au2amu));
       }
     }
     //printf("Mass-Weighting Matrix (for Hessian):\n");
