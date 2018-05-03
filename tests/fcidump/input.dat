@@ -10,7 +10,7 @@ set {
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 'Ne, 6-311g, integrals in FCIDUMP format')  # TEST
+compare_fcidumps('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 8, 'Ne, 6-311g, integrals in FCIDUMP format')  # TEST
 clean()
 
 #set {
@@ -21,7 +21,7 @@ clean()
 #
 #scf_e, scf_wfn = energy('SCF', return_wfn=True)
 #fcidump(scf_wfn, fname='Ne.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
-#compare_fcidumps('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', 'Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format')  # TEST
+#compare_fcidumps('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', 8, 'Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format')  # TEST
 #clean()
 
 # Now run without symmetry
@@ -35,8 +35,7 @@ set {
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.C1.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP',
-                 'Ne, C1, 6-311g, integrals in FCIDUMP format')  # TEST
+compare_fcidumps('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP', 8, 'Ne, C1, 6-311g, integrals in FCIDUMP format')  # TEST
 clean()
 
 #set {
@@ -47,4 +46,4 @@ clean()
 #
 #scf_e, scf_wfn = energy('SCF', return_wfn=True)
 #fcidump(scf_wfn, fname='Ne.C1.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
-#compare_fcidumps('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', 'Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format')  # TEST
+#compare_fcidumps('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', 8, 'Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format')  # TEST

@@ -229,13 +229,14 @@ def readin_fcidump(fname):
     return header, integrals
 
 
-def compare_fcidumps(expected, computed, label):
+def compare_fcidumps(expected, computed, digits, label):
     """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
-    when value *computed* matches value *expected*.
+    when value *computed* matches value *expected* to the number of *digits*.
     Performs a system exit on failure. Used in input files in the test suite.
 
     :param expected: reference FCIDUMP file
     :param computed: computed FCIDUMP file
+    :param digits: number of digits to compare to
     :param label: string labelling the test
     """
     # Grab expected header and integrals
@@ -248,7 +249,7 @@ def compare_fcidumps(expected, computed, label):
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
         raise TestComparisonError(header_diff)
     # Compare integrals
-    compare_arrays(ref_intdump, intdump, 10, label)
+    compare_arrays(ref_intdump, intdump, digits, label)
 
 
 def _parse_fcidump_header(header_string):
