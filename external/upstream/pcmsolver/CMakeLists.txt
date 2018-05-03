@@ -1,5 +1,5 @@
     if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.1.12 CONFIG QUIET)
+    find_package(PCMSolver 1.2.1 CONFIG QUIET)
 
     if(${PCMSolver_FOUND})
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
@@ -23,7 +23,7 @@
 
         ExternalProject_Add(pcmsolver_external
             GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-            GIT_TAG v1.1.12
+            GIT_TAG v1.2.1
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -38,7 +38,7 @@
                        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
                        -DSTATIC_LIBRARY_ONLY=${_a_only}
                        -DSHARED_LIBRARY_ONLY=${_so_only}
-                       -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant for thread safety
+                       -DENABLE_OPENMP=OFF
                        #-DENABLE_XHOST=${ENABLE_XHOST}  # option missing
                        # always fpic'd
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
@@ -46,7 +46,7 @@
                        -DENABLE_TIMER=OFF
                        -DENABLE_LOGGER=OFF
                        -DBUILD_STANDALONE=OFF
-                       -DENABLE_Fortran_API=OFF
+                       -DTEST_Fortran_API=OFF
                        -DENABLE_CXX11_SUPPORT=ON
                        -DENABLE_64BIT_INTEGERS=OFF
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
