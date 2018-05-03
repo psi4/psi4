@@ -36,7 +36,16 @@ pcm = {
   }
 }
 
+# Explicitly ask for numerical
 thisenergy = optimize('scf', molecule=h2o, dertype='energy')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                                #TEST
+clean()
+
+# Check that numerical gradient is used anyway
+set g_convergence gau_tight
+thisenergy = optimize('scf', molecule=h2o)
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 7, "Reference energy")                                #TEST
