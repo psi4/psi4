@@ -39,7 +39,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #include <cmath>
 
@@ -813,7 +813,7 @@ void SOMCSCF::zero_ras(SharedMatrix vector) {
 /// End SOMCSCF class
 
 /// DFSOMCSCF class
-DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DF_Helper> df, SharedMatrix AOTOSO,
+DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFHelper> df, SharedMatrix AOTOSO,
                      SharedMatrix H)
     : SOMCSCF(jk, AOTOSO, H) {
     dfh_ = df;

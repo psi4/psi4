@@ -188,18 +188,20 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // will still have 3d electrons active.  Alkali earth atoms will
         // have one valence electron in this scheme.
         for (int A = 0; A < mymol->natom(); A++) {
-            // If this center as an ECP present, move along.
-            if (n_ecp_core(mymol->label(A))) continue;
-            double Z = mymol->Z(A);
-            if (Z > 2) nfzc += 1;
-            if (Z > 10) nfzc += 4;
-            if (Z > 18) nfzc += 4;
-            if (Z > 36) nfzc += 9;
-            if (Z > 54) nfzc += 9;
-            if (Z > 86) nfzc += 16;
-            if (Z > 108) {
+            double Z   = mymol->Z(A);
+            // Add ECPs to Z, the number of electrons less ECP-treated electrons
+            double ECP = n_ecp_core(mymol->label(A));
+            if (Z + ECP > 2) nfzc += 1;
+            if (Z + ECP > 10) nfzc += 4;
+            if (Z + ECP > 18) nfzc += 4;
+            if (Z + ECP > 36) nfzc += 9;
+            if (Z + ECP > 54) nfzc += 9;
+            if (Z + ECP > 86) nfzc += 16;
+            if (Z + ECP > 108) {
                 throw PSIEXCEPTION("Invalid atomic number");
             }
+            // If this center has an ECP, some pairs are already frozen
+            if (ECP > 0) nfzc -= ECP/2;
         }
         return nfzc;
     } else {

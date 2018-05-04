@@ -21,7 +21,22 @@ def load_hessian(shess, dtype):
 
 
 def to_string(hess, handle, dtype='psi4'):
+    """Writes Hessian in various formats.
 
+    Parameters
+    ----------
+    hess : ndarray
+        (3 * nat, 3 * nat) Hessian array.
+    handle : filename or file handle
+        If file handle, it must have been opened in binary, `wb`.
+    dtype : {'fcmfinal', 'cfour', 'psi4', 'intder'}, optional
+        Format to write Hessian.
+
+    Returns
+    -------
+    None
+
+    """
     nat = hess.shape[0] // 3
     assert hess.shape == (3 * nat, 3 * nat)
 
@@ -33,3 +48,5 @@ def to_string(hess, handle, dtype='psi4'):
 
         # Bounty! a Psi4 mug or similar gear to anyone who trace the `6 * nat` above to a pre-PSI/CCQC source.
         #   See discussion starting https://github.com/psi4/psi4/pull/953#issuecomment-381447849
+    else:
+        raise ValidationError('Unknown dtype: {}'.format(dtype))

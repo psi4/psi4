@@ -411,8 +411,8 @@ def validate_and_fill_units(name=None, units='Angstrom', input_units_to_au=None,
     if name is not None:
         molinit['name'] = name
 
-    if units in ['Angstrom', 'Bohr']:
-        molinit['units'] = units
+    if units.capitalize() in ['Angstrom', 'Bohr']:
+        molinit['units'] = units.capitalize()
     else:
         raise ValidationError('Invalid molecule geometry units: {}'.format(units))
 

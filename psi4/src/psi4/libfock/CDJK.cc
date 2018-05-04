@@ -54,7 +54,7 @@ namespace psi {
 
 
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance):
-    DFJK(primary,primary), cholesky_tolerance_(cholesky_tolerance)
+    DiskDFJK(primary,primary), cholesky_tolerance_(cholesky_tolerance)
 {
 }
 CDJK::~CDJK()

@@ -324,20 +324,20 @@ funcs.append({
     "citation": '    J. Sun, et al., J. Chem. Phys. 138, 044113, 2013\n',
 })
 
-#funcs.append({
-#    "name": "MGGA_MVSh",
-#    "alias": ["MGGA-MVSH", "MVSH"],
-#    "x_functionals": {
-#        "HYB_MGGA_X_MVSH": {
-#            "use_libxc": True
-#        }
-#    },
-#    "c_functionals": {
-#        "GGA_C_REGTPSS": {}
-#    },
-#    "description": '   MGGA_MV2h Hybrid Meta-GGA XC Functional\n',
-#    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinsky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
-#})
+funcs.append({
+    "name": "MGGA_MVSh",
+    "alias": ["MGGA-MVSH", "MVSH"],
+    "x_functionals": {
+        "HYB_MGGA_X_MVSH": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "GGA_C_REGTPSS": {}
+    },
+    "description": '   MGGA_MV2h Hybrid Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, J.P. Perdew, A. Ruzsinsky, Proc. Natl. Acad. Sci. USA 112, 685, 2015\n',
+})
 
 
 def get_pw6b95_tweaks():

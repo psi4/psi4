@@ -649,7 +649,7 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     Cr.clear();
 
     // If scf_type is DF we can do some extra JK voodo
-    if ((options_.get_str("SCF_TYPE") == "DF") || (options_.get_str("SCF_TYPE") == "CD")){
+    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || (options_.get_str("SCF_TYPE") == "CD")){
 
         SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
         Cdocc->set_name("Cdocc");

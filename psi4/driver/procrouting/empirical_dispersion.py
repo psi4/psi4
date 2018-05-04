@@ -34,6 +34,7 @@ from psi4.driver.qcdb import interface_gcp as gcp
 from psi4.driver.qcdb.dashparam import get_dispersion_aliases
 from psi4.driver.qcdb.dashparam import get_default_dashparams
 from psi4.driver import p4util
+#import numpy as np
 
 class EmpericalDispersion(object):
     def __init__(self, alias, dtype, **kwargs):
@@ -102,6 +103,11 @@ class EmpericalDispersion(object):
                 if len(tuple_params) > 4:
                     raise Exception("Too many parameter in input tuple param.")
 
+        # DFT-NL dispersion. 
+        elif self.dtype in ["-nl"]:
+             self.disp_type = 'nl'
+
+
         # 4b) Build coefficients for psi4
         else:
             self.dtype = self.dtype.replace('-d2p4', '-d2')
@@ -130,7 +136,7 @@ class EmpericalDispersion(object):
                 self.dash_params[k] = kwargs.pop(k)
 
         if len(kwargs):
-            raise Exception("The following DFTD3 parameters were not understood for %s dispersion type: %s" %
+            raise Exception("The following parameters in empirical_dispersion.py were not understood for %s dispersion type: %s" %
                             (dtype, ', '.join(kwargs.keys())))
 
         # 6) Process citations
@@ -187,8 +193,13 @@ class EmpericalDispersion(object):
             self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
             self.bibtex = "Grimme:2011:1456"
 
+        elif self.dtype == "-nl":
+            self.description = "    Grimme's -NL (DFT plus  VV10 correlation) "
+            self.citation = "    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 \n"
+            self.bibtex = "Grimme:2011:3866"
+
         else:
-            raise Exception("Emperical Dispersion type %s not understood." % self.dtype)
+            raise Exception("Empirical Dispersion type %s not understood." % self.dtype)
 
         # 6b) add custom citations if available
         if custom_citation:
@@ -196,10 +207,13 @@ class EmpericalDispersion(object):
 
     def print_out(self, level=1):
 
-        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype)
+        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype.upper())
         core.print_out(self.description + "\n")
 
         core.print_out(self.citation + "\n\n")
+       
+        if self.disp_type=='nl':
+           return
 
         core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"])
         if "s8" in self.dash_params.keys():

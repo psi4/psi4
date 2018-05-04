@@ -38,7 +38,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #include <iomanip>
 
@@ -152,8 +152,8 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     size_t max_MO = 0;
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
-    // Build DF_Helper
-    dfh_ = std::make_shared<DF_Helper>(primary_, auxiliary_);
+    // Build DFHelper
+    dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
     dfh_->set_method("DIRECT_iaQ");
     dfh_->set_nthreads(nthread);

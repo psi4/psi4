@@ -174,6 +174,7 @@ public:
     // => Setters <= //
 
     void set_lock(bool locked) { locked_ = locked; }
+    void set_do_vv10( bool do_vv10) { needs_vv10_ = do_vv10;}
     void set_name(const std::string & name) { name_ = name; }
     void set_description(const std::string & description) { description_ = description; }
     void set_citation(const std::string & citation) { citation_ = citation; }

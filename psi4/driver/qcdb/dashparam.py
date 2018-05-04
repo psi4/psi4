@@ -53,6 +53,7 @@ def get_dispersion_aliases():
     dispersion_names["d2"] = "d2p4"
     dispersion_names["d3"] = "d3zero"
     dispersion_names["d3m"] = "d3mzero"
+    dispersion_names["nl"] = "nl"
     return(dispersion_names)
 
 dash_alias = get_dispersion_aliases()
@@ -309,6 +310,24 @@ dashcoeff = {
         'pbe0'        : {'s6': 1.000, 's8': 0.528823, 'a1': 0.007912, 'a2': 6.162326},
         'lcwpbe'      : {'s6': 1.000, 's8': 0.906564, 'a1': 0.563761, 'a2': 3.593680},
     },
+    'nl': { 
+        'blyp'        : {'b':  4.000, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, 
+        'hf'          : {'b':  3.900, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, # not implemented
+        'revpbe'      : {'b':  3.700, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, 
+        'revpbe38'    : {'b':  4.700, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'}, 
+        'b3lyp'       : {'b':  4.800, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
+        'b3pw91'      : {'b':  4.500, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
+        'revpbe0'     : {'b':  4.300, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 \n'},
+        'bp86'        : {'b':  4.400, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
+        'pbe0'        : {'b':  6.900, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
+        'pbe'         : {'b':  6.400, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'}, # unclear if this is the real origin
+        'tpss0'       : {'b':  5.500, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
+        'tpss'        : {'b':  5.000, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme, J. Chem. Theory Comput. 9, 308-315, 2013 \n'},
+        'b2gpplyp'    : {'b':  9.900, 'c': 0.0093, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'},
+        'b2plyp'      : {'b':  7.800, 'c': 0.0093, 'citation' : '    J. Calbo, E. Orti, J. C. Sancho-Garcia, J. Arago, J. Chem. Theory Comput. 11, 932-939, 1015 \n'}, 
+        'pwpb95'      : {'b': 11.100, 'c': 0.0093, 'citation' : '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014 \n'}, 
+    },
+
 } # yapf: disable
 
 
@@ -408,5 +427,7 @@ def get_default_dashparams(dtype):
         return ({"s6": 1.0, "sr6": 1.0, "s8": 1.0, "beta": 1.0, "alpha6": 14.0})
     elif dtype == 'd3mbj':
         return ({"s6": 1.0, "a1": 1.0, "s8": 1.0, "a2": 1.0})
+    elif dtype == 'nl':
+        return ({"b": 1.0, "c": 0.0093})
     else:
         return ({"s6": 1.0})

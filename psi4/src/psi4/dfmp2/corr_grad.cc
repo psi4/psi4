@@ -66,7 +66,7 @@ std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<BasisSet> pri
 {
     Options& options = Process::environment.options;
 
-    if (options.get_str("SCF_TYPE") == "DF") {
+    if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
 
         DFCorrGrad* jk = new DFCorrGrad(primary,auxiliary);
 

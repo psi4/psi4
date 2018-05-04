@@ -140,6 +140,44 @@ funcs.append({
 })
 
 funcs.append({
+# note by H.Kruse: Uses the full-core parameters in the Yu paper. But my and L. Georigk's experience shows that it hardly matters.
+# Use FC is recommended by S. Grimme.
+# May this madness never end.
+    "name": "DSD-BLYP-NL",
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.29
+        }
+    },
+    "x_hf": {
+        "alpha": 0.71
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.54
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.47,
+        "ss": 0.40,
+    },
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 12.00,
+            "c": 0.0093,
+        },
+        "citation": "    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014\n" 
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-BLYP-NL (D3BJ,FC parameters) VV10 SCS Double Hybrid XC Functional\n',
+})
+
+
+
+
+funcs.append({
     "name": "CORE-DSD-BLYP",
     "x_functionals": {
         "GGA_X_B88": {
@@ -266,6 +304,40 @@ funcs.append({
 })
 
 funcs.append({
+# note: Using the D3BJ form for NL, which is sensible but not explicitly mentioned in the paper
+    "name": "DSD-PBEP86-NL",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.31
+        }
+    },
+    "x_hf": {
+        "alpha": 0.69
+    },
+    "c_functionals": {
+        "GGA_C_P86": {
+            "alpha": 0.44
+        }
+    },
+    "c_mp2": {
+        "os": 0.52,
+        "ss": 0.22
+    },
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 12.8,
+            "c": 0.0093,
+        },
+        "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016 \n'
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEP86-NL (D3BJ parameters) VV10 SCS Double Hybrid XC Functional\n',
+})
+
+
+
+funcs.append({
     "name": "DSD-PBEP86-D2",
     "x_functionals": {
         "GGA_X_PBE": {
@@ -381,6 +453,40 @@ funcs.append({
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
 })
+
+
+funcs.append({
+    "name": "DSD-PBEPBE-NL",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.32
+        }
+    },
+    "x_hf": {
+        "alpha": 0.68
+    },
+    "c_functionals": {
+        "GGA_C_PBE": {
+            "alpha": 0.49
+        }
+    },
+    "c_mp2": {
+        "alpha": 1.0,
+        "os": 0.55,
+        "ss": 0.13
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEPBE-NL (D3BJ parameters) VV10 SCS Double Hybrid XC Functional\n',
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 9.6,
+            "c": 0.0093,
+        },
+        "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
+    },
+})
+
 
 funcs.append({
     "name": "DSD-BP86-D2",
@@ -617,6 +723,39 @@ funcs.append({
     },
 })
 
+funcs.append({
+    "name": "DSD-PBEB95-NL",
+    "x_functionals": {
+        "GGA_X_PBE": {
+            "alpha": 0.34
+        }
+    },
+    "x_hf": {
+        "alpha": 0.66
+    },
+    "c_functionals": {
+      "MGGA_C_BC95": {
+            "alpha": 0.55
+        }
+    },
+    "c_mp2": {
+        "os": 0.46,
+        "ss": 0.09
+    },
+    "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
+    "description": '    DSD-PBEB95-NL (D3BJ parameters) VV10 SCS Double Hybrid Meta-GGA XC Functional\n',
+    "dispersion": {
+        "type": "nl",
+        "params": {
+            "b": 12.50,
+            "c": 0.0093,
+        },
+        "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
+    },
+})
+
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
+

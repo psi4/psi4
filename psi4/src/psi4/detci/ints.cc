@@ -65,7 +65,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/dfhelper.h"
 
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ciwave.h"
@@ -133,15 +133,12 @@ void CIWavefunction::setup_dfmcscf_ints() {
     outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
 
     /// Build JK object
-    if (options_.get_str("SCF_TYPE") == "DF") {
-        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
-    } else {
-        jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
-    }
+    size_t effective_memory = Process::environment.get_memory() * 0.8 / sizeof(double);
+    jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, effective_memory);
 
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
+    jk_->set_memory(effective_memory);
     jk_->initialize();
     jk_->print_header();
 
@@ -152,7 +149,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
 
     /// Build DF object
     // ==> Init DF object <== /
-    dfh_ = std::make_shared<DF_Helper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
+    dfh_ = std::make_shared<DFHelper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
     dfh_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     dfh_->set_method("STORE");
     dfh_->set_nthreads(num_threads_);
@@ -369,14 +366,10 @@ void CIWavefunction::setup_mcscf_ints() {
     ints_->set_print(0);
 
     // Conventional JK build
-    if (options_.get_str("SCF_TYPE") == "DF") {
-        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
-    } else {
-        jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
-    }
+    jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->set_memory(Process::environment.get_memory() * 0.8);
+    jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->initialize();
     jk_->print_header();
 
@@ -394,17 +387,15 @@ void CIWavefunction::setup_mcscf_ints_ao() {
 #else
         throw PSIEXCEPTION("GTFock was not compiled in this version");
 #endif
-    } else if (scf_type == "DF") {
-        jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_);
-    } else if (scf_type == "CD" or scf_type == "PK" or scf_type == "DIRECT" or scf_type == "OUT_OF_CORE") {
-        jk_ = JK::build_JK(this->basisset(), BasisSet::zero_ao_basis_set(), options_);
+    } else if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) or scf_type == "CD" or scf_type == "PK" or scf_type == "DIRECT" or scf_type == "OUT_OF_CORE") {
+        jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
     } else {
         outfile->Printf("\n Please select GTFock, DF, CD or PK for use with MCSCF_TYPE AO");
         throw PSIEXCEPTION("AO_CASSCF does not work with your SCF_TYPE");
     }
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->set_memory(Process::environment.get_memory() * 0.8);
+    jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->initialize();
     jk_->print_header();
     ints_init_ = true;

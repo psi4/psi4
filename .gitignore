@@ -69,6 +69,8 @@ tests/*/pcmsolver.inp
 tests/*/*.xyz
 tests/*/*.grad
 tests/*/*.hess
+tests/*/*.molden_normal_modes
+tests/*/*.vibrec
 tests/*/grid_esp.dat
 tests/*/grid_field.dat
 tests/*/fsapt/*

@@ -526,6 +526,7 @@ void export_mints(py::module& m) {
 
         .def("transpose_this", &Matrix::transpose_this, "Transpose the matrix in-place")
         .def("transpose", &Matrix::transpose, "Creates a new matrix that is the transpose of this matrix")
+        .def("hermitivitize", &Matrix::hermitivitize, "Average off-diagonal element in-place")
         .def("add", matrix_one(&Matrix::add), "Adds a matrix to this matrix")
         .def("axpy", &Matrix::axpy, "Add to this matrix another matrix scaled by a", py::arg("a"), py::arg("X"))
         .def("subtract", matrix_one(&Matrix::subtract), "Substract a matrix from this matrix")
@@ -1049,7 +1050,7 @@ void export_mints(py::module& m) {
              "First nuclear derivative T + V + Perturb integrals")
 
         // First and second derivatives of one and two electron integrals in AO and MO basis.
-        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices") 
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices")
         .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
         .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
         .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
@@ -1366,7 +1367,8 @@ void export_mints(py::module& m) {
         .def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy,
              "Return the si'th Gaussian shell on center", py::arg("center"), py::arg("si"))
         .def("n_frozen_core", &BasisSet::n_frozen_core,
-             "Returns the number of frozen core electrons, accounting for the presence of any ECPs.")
+             "Returns the number of orbital (non-ECP) frozen core electrons. For a given molecule and "
+             "|globals__freeze_core|, `(n_ecp_core()/2 + n_frozen_core()) = constant`.")
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core),
              "Returns the total number of core electrons associated with all ECPs in this basis.")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core),

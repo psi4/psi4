@@ -46,6 +46,12 @@ Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`
 section is also relevant here.
 
+.. note:: After May 2017 (anytime after the v1.1 release), |PSIfour|
+   switched from hand- (+Matlab) coded functionals to Libxc. Thus
+   many DFT results will be slightly different. Functionals more than
+   slightly different are B97-D, wB97X (note, *not* wB97X-D), SOGGA,
+   DFDL, and M05.
+
 Theory
 ~~~~~~
 
@@ -672,9 +678,11 @@ for something like::
 Dispersion Corrections
 ~~~~~~~~~~~~~~~~~~~~~~
 
-:ref:`Dispersion corrections are discussed here. <sec:dftd3>`
+:ref:`DFT-D dispersion corrections are discussed here. <sec:dftd3>`
 
 :ref:`HF-3c and PBEh-3c dispersion and BSSE corrections are discussed here. <sec:gcp>`
+
+:ref:`DFT-NL dispersion corrections are discussed here. <sec:dftnl>`
 
 Recommendations
 ~~~~~~~~~~~~~~~

@@ -53,12 +53,12 @@ using namespace psi;
 
 namespace psi {
 
-DFJK::DFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
+DiskDFJK::DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
     : JK(primary), auxiliary_(auxiliary) {
     common_init();
 }
-DFJK::~DFJK() {}
-void DFJK::common_init() {
+DiskDFJK::~DiskDFJK() {}
+void DiskDFJK::common_init() {
     df_ints_num_threads_ = 1;
 #ifdef _OPENMP
     df_ints_num_threads_ = Process::environment.get_n_threads();
@@ -69,7 +69,7 @@ void DFJK::common_init() {
     is_core_ = true;
     psio_ = PSIO::shared_object();
 }
-SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
+SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     // Target quantity
     Dimension dim(Ci->nirrep());
     for (int symm = 0; symm < Ci->nirrep(); symm++) {
@@ -247,9 +247,9 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
 
     return Iia;
 }
-void DFJK::print_header() const {
+void DiskDFJK::print_header() const {
     if (print_) {
-        outfile->Printf("  ==> DFJK: Density-Fitted J/K Matrices <==\n\n");
+        outfile->Printf("  ==> DiskDFJK: Density-Fitted J/K Matrices <==\n\n");
 
         outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
@@ -267,7 +267,7 @@ void DFJK::print_header() const {
         auxiliary_->print_by_level("outfile", print_);
     }
 }
-bool DFJK::is_core() const {
+bool DiskDFJK::is_core() const {
     size_t ntri = sieve_->function_pairs().size();
     size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
     size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
@@ -282,7 +282,7 @@ bool DFJK::is_core() const {
     else
         return (three_memory + 2L * two_memory < memory_);
 }
-size_t DFJK::memory_temp() const {
+size_t DiskDFJK::memory_temp() const {
     size_t mem = 0L;
 
     // J Overhead (Jtri, Dtri, d)
@@ -292,7 +292,7 @@ size_t DFJK::memory_temp() const {
 
     return mem;
 }
-int DFJK::max_rows() const {
+int DiskDFJK::max_rows() const {
     // Start with all memory
     size_t mem = memory_;
     // Subtract J/K/wK/C/D overhead
@@ -314,14 +314,14 @@ int DFJK::max_rows() const {
 
     return (int)max_rows;
 }
-int DFJK::max_nocc() const {
+int DiskDFJK::max_nocc() const {
     int max_nocc = 0;
     for (size_t N = 0; N < C_left_ao_.size(); N++) {
         max_nocc = (C_left_ao_[N]->colspi()[0] > max_nocc ? C_left_ao_[N]->colspi()[0] : max_nocc);
     }
     return max_nocc;
 }
-void DFJK::initialize_temps() {
+void DiskDFJK::initialize_temps() {
     J_temp_ = std::make_shared<Vector>("Jtemp", sieve_->function_pairs().size());
     D_temp_ = std::make_shared<Vector>("Dtemp", sieve_->function_pairs().size());
     d_temp_ = std::make_shared<Vector>("dtemp", max_rows_);
@@ -350,7 +350,7 @@ void DFJK::initialize_temps() {
     else
         E_right_ = std::make_shared<Matrix>("E_right", primary_->nbf(), max_rows_ * max_nocc_);
 }
-void DFJK::initialize_w_temps() {
+void DiskDFJK::initialize_w_temps() {
     int max_rows_w = max_rows_ / 2;
     max_rows_w = (max_rows_w < 1 ? 1 : max_rows_w);
 
@@ -375,7 +375,7 @@ void DFJK::initialize_w_temps() {
     E_left_ = std::make_shared<Matrix>("E_left", primary_->nbf(), max_rows_w * max_nocc_);
     E_right_ = std::make_shared<Matrix>("E_right", primary_->nbf(), max_rows_w * max_nocc_);
 }
-void DFJK::free_temps() {
+void DiskDFJK::free_temps() {
     J_temp_.reset();
     D_temp_.reset();
     d_temp_.reset();
@@ -384,13 +384,13 @@ void DFJK::free_temps() {
     C_temp_.clear();
     Q_temp_.clear();
 }
-void DFJK::free_w_temps() {
+void DiskDFJK::free_w_temps() {
     E_left_.reset();
     E_right_.reset();
     C_temp_.clear();
     Q_temp_.clear();
 }
-void DFJK::preiterations() {
+void DiskDFJK::preiterations() {
     // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
         sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
@@ -412,7 +412,7 @@ void DFJK::preiterations() {
     }
 }
 
-void DFJK::compute_JK() {
+void DiskDFJK::compute_JK() {
     max_nocc_ = max_nocc();
     max_rows_ = max_rows();
 
@@ -440,12 +440,12 @@ void DFJK::compute_JK() {
         }
     }
 }
-void DFJK::postiterations() {
+void DiskDFJK::postiterations() {
     Qmn_.reset();
     Qlmn_.reset();
     Qrmn_.reset();
 }
-void DFJK::initialize_JK_core() {
+void DiskDFJK::initialize_JK_core() {
     size_t ntri = sieve_->function_pairs().size();
     size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
     size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
@@ -632,7 +632,7 @@ void DFJK::initialize_JK_core() {
         psio_->close(unit_, 1);
     }
 }
-void DFJK::initialize_JK_disk() {
+void DiskDFJK::initialize_JK_disk() {
     // Try to load
     if (df_ints_io_ == "LOAD") {
         return;
@@ -953,7 +953,7 @@ void DFJK::initialize_JK_disk() {
 
     psio_->close(unit_, 1);
 }
-void DFJK::initialize_wK_core() {
+void DiskDFJK::initialize_wK_core() {
     int naux = auxiliary_->nbf();
     int ntri = sieve_->function_pairs().size();
 
@@ -1124,7 +1124,7 @@ void DFJK::initialize_wK_core() {
         psio_->close(unit_, 1);
     }
 }
-void DFJK::initialize_wK_disk() {
+void DiskDFJK::initialize_wK_disk() {
     // Try to load
     if (df_ints_io_ == "LOAD") {
         psio_->open(unit_, PSIO_OPEN_OLD);
@@ -1547,7 +1547,7 @@ void DFJK::initialize_wK_disk() {
     psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
     psio_->close(unit_, 1);
 }
-void DFJK::rebuild_wK_disk() {
+void DiskDFJK::rebuild_wK_disk() {
     // Already open
     outfile->Printf("    Rebuilding (Q|w|mn) Integrals (new omega)\n\n");
 
@@ -1669,7 +1669,7 @@ void DFJK::rebuild_wK_disk() {
     psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
     // No need to close
 }
-void DFJK::manage_JK_core() {
+void DiskDFJK::manage_JK_core() {
     for (int Q = 0; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
         if (do_J_) {
@@ -1684,7 +1684,7 @@ void DFJK::manage_JK_core() {
         }
     }
 }
-void DFJK::manage_JK_disk() {
+void DiskDFJK::manage_JK_disk() {
     int ntri = sieve_->function_pairs().size();
     Qmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_, ntri);
     psio_->open(unit_, PSIO_OPEN_OLD);
@@ -1710,7 +1710,7 @@ void DFJK::manage_JK_disk() {
     psio_->close(unit_, 1);
     Qmn_.reset();
 }
-void DFJK::manage_wK_core() {
+void DiskDFJK::manage_wK_core() {
     int max_rows_w = max_rows_ / 2;
     max_rows_w = (max_rows_w < 1 ? 1 : max_rows_w);
     for (int Q = 0; Q < auxiliary_->nbf(); Q += max_rows_w) {
@@ -1721,7 +1721,7 @@ void DFJK::manage_wK_core() {
         timer_off("JK: wK");
     }
 }
-void DFJK::manage_wK_disk() {
+void DiskDFJK::manage_wK_disk() {
     int max_rows_w = max_rows_ / 2;
     max_rows_w = (max_rows_w < 1 ? 1 : max_rows_w);
     int ntri = sieve_->function_pairs().size();
@@ -1752,7 +1752,7 @@ void DFJK::manage_wK_disk() {
     Qlmn_.reset();
     Qrmn_.reset();
 }
-void DFJK::block_J(double** Qmnp, int naux) {
+void DiskDFJK::block_J(double** Qmnp, int naux) {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     size_t num_nm = function_pairs.size();
 
@@ -1783,7 +1783,7 @@ void DFJK::block_J(double** Qmnp, int naux) {
         }
     }
 }
-void DFJK::block_K(double** Qmnp, int naux) {
+void DiskDFJK::block_K(double** Qmnp, int naux) {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
     size_t num_nm = function_pairs.size();
@@ -1870,7 +1870,7 @@ void DFJK::block_K(double** Qmnp, int naux) {
         timer_off("JK: K2");
     }
 }
-void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
+void DiskDFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
     size_t num_nm = function_pairs.size();

@@ -45,7 +45,7 @@ endif()
 
 #  <<  Pybind11 & Python  >>
 set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
-find_package(pybind11 2.2.2 EXACT CONFIG REQUIRED)
+find_package(pybind11 2.2.3 EXACT CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
@@ -83,7 +83,7 @@ else()
 endif()
 
 if(${ENABLE_libefp})
-    find_package(libefp 1.4.2 CONFIG REQUIRED COMPONENTS shallow)
+    find_package(libefp 1.5.0 CONFIG REQUIRED COMPONENTS shallow)
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
@@ -120,7 +120,7 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 
 if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.1.12 CONFIG REQUIRED)
+    find_package(PCMSolver 1.2.1 CONFIG REQUIRED)
     get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
@@ -137,7 +137,7 @@ else()
     message(STATUS "Disabled simint")
 endif()
 
-find_package(Libxc 4.0 CONFIG REQUIRED)
+find_package(Libxc 4.0.2 CONFIG REQUIRED)
 get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
@@ -238,15 +238,14 @@ endif()
 
 # <<<  Export Config  >>>
 
-if((DEFINED ENV{CONDA_BUILD}) AND ((UNIX AND NOT APPLE) OR
-                                   ((APPLE) AND (CMAKE_CXX_COMPILER_ID MATCHES GNU))))
+if((DEFINED ENV{CONDA_BUILD}) AND (UNIX AND NOT APPLE))
     # installed-alongside GCC compilers compatible with the Intel compilers used in
-    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-core/build.sh
-    set(cache_CMAKE_C_COMPILER       "/opt/anaconda1anaconda2anaconda3/bin/gcc")
+    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/build.sh
+    set(cache_CMAKE_C_COMPILER       "\${GCC}")
     set(cache_CMAKE_C_FLAGS          " -march=native -fopenmp")
-    set(cache_CMAKE_CXX_COMPILER     "/opt/anaconda1anaconda2anaconda3/bin/g++")
+    set(cache_CMAKE_CXX_COMPILER     "\${GXX}")
     set(cache_CMAKE_CXX_FLAGS        " -march=native -fopenmp")
-    set(cache_CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran")
+    set(cache_CMAKE_Fortran_COMPILER "\${GFORTRAN}")
     set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
 elseif((DEFINED ENV{CONDA_BUILD}) AND (APPLE) AND (CMAKE_CXX_COMPILER_ID MATCHES AppleClang))
     # for stdlib compatibility, must be consistent with Darwin section of

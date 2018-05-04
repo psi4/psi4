@@ -1199,7 +1199,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE CD GTFOCK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
     /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
     options.add_int("PK_MAX_BUCKETS", 500);
     /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
@@ -1481,12 +1481,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Dispersion Corrections <table:dashd>` for the order in which
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
+    /*- Parameters defining the -NL/-V dispersion correction. First b, then C -*/
+    options.add("NL_DISPERSION_PARAMETERS", new ArrayType());
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number) for VV10 NL integration. -*/
     options.add_int("DFT_VV10_SPHERICAL_POINTS", 146);
     /*- Number of radial points for VV10 NL integration. -*/
     options.add_int("DFT_VV10_RADIAL_POINTS", 50);
     /*- Rho cutoff for VV10 NL integration. !expert -*/
     options.add_double("DFT_VV10_RHO_CUTOFF", 1.e-8);
+    /*- Define VV10 parameter b -*/
+    options.add_double("DFT_VV10_B", 0.0);
+    /*- Define VV10 parameter C -*/
+    options.add_double("DFT_VV10_C", 0.0);
+    /*- post-scf VV10 correction -*/
+    options.add_bool("DFT_VV10_POSTSCF", false);
     /*- The convergence on the orbital localization procedure -*/
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
@@ -4411,8 +4419,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_bool("EFP_ELST", true);
         /*- Do include exchange repulsion energy term in EFP computation? -*/
         options.add_bool("EFP_EXCH", true);
-        /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("EFP_POL", true);
+        /*- Do include polarization energy term in EFP computation? (EFP_POL c. v1.1) -*/
+        options.add_bool("EFP_IND", true);
         /*- Do include dispersion energy term in EFP computation? -*/
         options.add_bool("EFP_DISP", true);
         /*- Fragment-fragment electrostatic damping type. ``SCREEN``
@@ -4420,16 +4428,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         ``OVERLAP`` is damping that computes charge penetration energy. -*/
         options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
         /*- Fragment-fragment polarization damping type. ``TT`` is a
-        damping formula like Tang and Toennies. -*/
-        options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
+        damping formula like Tang and Toennies. (EFP_POL_DAMPING c. v1.1) -*/
+        options.add_str("EFP_IND_DAMPING", "TT", "TT OFF");
         /*- Fragment-fragment dispersion damping type. ``TT`` is a damping
         formula by Tang and Toennies. ``OVERLAP`` is overlap-based
         dispersion damping. -*/
         options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
-        /*- Do include electrostatics energy term in QM/EFP computation? -*/
-        options.add_bool("QMEFP_ELST", true);
-        /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("QMEFP_POL", true);
+        /*- Do include electrostatics energy term in QM/EFP computation? (QMEFP_ELST c. v1.1) -*/
+        options.add_bool("EFP_QM_ELST", true);
+        /*- Do include polarization energy term in QM/EFP computation? (QMEFP_POL c. v1.1) -*/
+        options.add_bool("EFP_QM_IND", true);
         /*- Do EFP gradient? !expert -*/
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
         /*- Do turn on QM/EFP terms? !expert -*/
