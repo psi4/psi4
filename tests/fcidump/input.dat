@@ -10,15 +10,15 @@ set {
   e_convergence 1e-8
 }
 
-e_scf, scf_wfn = energy('SCF', return_wfn=True)
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
-scf_1el_e, scf_2el_e, scf_e, mp2_e = compare_fcidump_headers('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 'Ne, 6-311g, integrals in FCIDUMP format') # TEST
-compare_values(get_variable("ONE-ELECTRON ENERGY"), scf_1el_e, 7, "Ne, 6-311g, RHF 1-electron energy") #TEST
-compare_values(get_variable("TWO-ELECTRON ENERGY"), scf_2el_e, 7, "Ne, 6-311g, RHF 2-electron energy") #TEST
-compare_values(e_scf, scf_e, 10, "Ne, 6-311g, RHF total energy") #TEST
+energies = compare_fcidump_headers('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 'Ne, 6-311g, integrals in FCIDUMP format') # TEST
+compare_values(get_variable("ONE-ELECTRON ENERGY"), energies['ONE-ELECTRON ENERGY'], 7, "Ne, 6-311g, RHF 1-electron energy") #TEST
+compare_values(get_variable("TWO-ELECTRON ENERGY"), energies['TWO-ELECTRON ENERGY'], 7, "Ne, 6-311g, RHF 2-electron energy") #TEST
+compare_values(scf_e, energies['SCF TOTAL ENERGY'], 10, "Ne, 6-311g, RHF total energy") #TEST
 set mp2_type conv
 energy('MP2', ref_wfn=scf_wfn)
-compare_values(get_variable("MP2 CORRELATION ENERGY"), mp2_e, 10, "Ne, 6-311g, RMP2 correlation energy") #TEST
+compare_values(get_variable("MP2 CORRELATION ENERGY"), energies['MP2 CORRELATION ENERGY'], 10, "Ne, 6-311g, RMP2 correlation energy") #TEST
 clean()
 
 set {
@@ -29,15 +29,15 @@ set {
   e_convergence 1e-8
 }
 
-e_scf, scf_wfn = energy('SCF', return_wfn=True)
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
-scf_1el_e, scf_2el_e, scf_e, mp2_e = compare_fcidump_headers('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', 'Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
-compare_values(get_variable("ONE-ELECTRON ENERGY"), scf_1el_e, 7, "Ne, cc-pVDZ, UHF 1-electron energy") #TEST
-compare_values(get_variable("TWO-ELECTRON ENERGY"), scf_2el_e, 7, "Ne, cc-pVDZ, UHF 2-electron energy") #TEST
-compare_values(e_scf, scf_e, 10, "Ne, cc-pVDZ, UHF total energy") #TEST
+energies = compare_fcidump_headers('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', 'Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
+compare_values(get_variable("ONE-ELECTRON ENERGY"), energies['ONE-ELECTRON ENERGY'], 7, "Ne, cc-pVDZ, UHF 1-electron energy") #TEST
+compare_values(get_variable("TWO-ELECTRON ENERGY"), energies['TWO-ELECTRON ENERGY'], 7, "Ne, cc-pVDZ, UHF 2-electron energy") #TEST
+compare_values(scf_e, energies['SCF TOTAL ENERGY'], 10, "Ne, cc-pVDZ, UHF total energy") #TEST
 set mp2_type conv
 energy('MP2', ref_wfn=scf_wfn)
-compare_values(get_variable("MP2 CORRELATION ENERGY"), mp2_e, 10, "Ne, cc-pVDZ, UMP2 correlation energy") #TEST
+compare_values(get_variable("MP2 CORRELATION ENERGY"), energies['MP2 CORRELATION ENERGY'], 10, "Ne, cc-pVDZ, UMP2 correlation energy") #TEST
 clean()
 
 # Now run without symmetry
@@ -51,15 +51,15 @@ set {
   e_convergence 1e-8
 }
 
-e_scf, scf_wfn = energy('SCF', return_wfn=True)
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.C1.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
-scf_1el_e, scf_2el_e, scf_e, mp2_e = compare_fcidump_headers('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP', 'Ne, C1, 6-311g, integrals in FCIDUMP format')  # TEST
-compare_values(get_variable("ONE-ELECTRON ENERGY"), scf_1el_e, 7, "Ne, C1, 6-311g, RHF 1-electron energy") #TEST
-compare_values(get_variable("TWO-ELECTRON ENERGY"), scf_2el_e, 7, "Ne, C1, 6-311g, RHF 2-electron energy") #TEST
-compare_values(e_scf, scf_e, 10, "Ne, C1, 6-311g, RHF total energy") #TEST
+energies = compare_fcidump_headers('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP', 'Ne, C1, 6-311g, integrals in FCIDUMP format')  # TEST
+compare_values(get_variable("ONE-ELECTRON ENERGY"), energies['ONE-ELECTRON ENERGY'], 7, "Ne, C1, 6-311g, RHF 1-electron energy") #TEST
+compare_values(get_variable("TWO-ELECTRON ENERGY"), energies['TWO-ELECTRON ENERGY'], 7, "Ne, C1, 6-311g, RHF 2-electron energy") #TEST
+compare_values(scf_e, energies['SCF TOTAL ENERGY'], 10, "Ne, C1, 6-311g, RHF total energy") #TEST
 set mp2_type conv
 energy('MP2', ref_wfn=scf_wfn)
-compare_values(get_variable("MP2 CORRELATION ENERGY"), mp2_e, 10, "Ne, C1, 6-311g, RMP2 correlation energy") #TEST
+compare_values(get_variable("MP2 CORRELATION ENERGY"), energies['MP2 CORRELATION ENERGY'], 10, "Ne, C1, 6-311g, RMP2 correlation energy") #TEST
 clean()
 
 set {
@@ -70,12 +70,12 @@ set {
   e_convergence 1e-8
 }
 
-e_scf, scf_wfn = energy('SCF', return_wfn=True)
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.C1.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
-scf_1el_e, scf_2el_e, scf_e, mp2_e = compare_fcidump_headers('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', 'Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
-compare_values(get_variable("ONE-ELECTRON ENERGY"), scf_1el_e, 7, "Ne, C1, cc-pVDZ, UHF 1-electron energy") #TEST
-compare_values(get_variable("TWO-ELECTRON ENERGY"), scf_2el_e, 7, "Ne, C1, cc-pVDZ, UHF 2-electron energy") #TEST
-compare_values(e_scf, scf_e, 10, "Ne, C1, cc-pVDZ, UHF total energy") #TEST
+energies = compare_fcidump_headers('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', 'Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
+compare_values(get_variable("ONE-ELECTRON ENERGY"), energies['ONE-ELECTRON ENERGY'], 7, "Ne, C1, cc-pVDZ, UHF 1-electron energy") #TEST
+compare_values(get_variable("TWO-ELECTRON ENERGY"), energies['TWO-ELECTRON ENERGY'], 7, "Ne, C1, cc-pVDZ, UHF 2-electron energy") #TEST
+compare_values(scf_e, energies['SCF TOTAL ENERGY'], 10, "Ne, C1, cc-pVDZ, UHF total energy") #TEST
 set mp2_type conv
 energy('MP2', ref_wfn=scf_wfn)
-compare_values(get_variable("MP2 CORRELATION ENERGY"), mp2_e, 10, "Ne, C1, cc-pVDZ, UMP2 correlation energy") #TEST
+compare_values(get_variable("MP2 CORRELATION ENERGY"), energies['MP2 CORRELATION ENERGY'], 10, "Ne, C1, cc-pVDZ, UMP2 correlation energy") #TEST

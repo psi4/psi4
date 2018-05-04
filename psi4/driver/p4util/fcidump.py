@@ -226,6 +226,7 @@ def readin_fcidump(fname):
         header_string = re.match(b'(?:&FCI((?:.*?\r?\n?)*)&END)', data).group(1)
     header = _parse_fcidump_header(header_string.decode('utf-8'))
     integrals = _parse_fcidump_integrals(fname)
+
     return header, integrals
 
 
@@ -234,7 +235,13 @@ def compare_fcidump_headers(expected, computed, label):
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 
-    :returns: a tuple of energies computed from the MO integrals (SCF 1-el, SCF 2-el, SCF total, MP2 correlation)
+    :returns: a dictionary of energies computed from the MO integrals.
+    The key-value pairs are:
+      - 'NUCLEAR REPULSION ENERGY' : nuclear repulsion plus frozen core energy
+      - 'ONE-ELECTRON ENERGY' : SCF one-electron energy
+      - 'TWO-ELECTRON ENERGY' : SCF two-electron energy
+      - 'SCF TOTAL ENERGY' : SCF total energy
+      - 'MP2 CORRELATION ENERGY' : MP2 correlation energy
 
     :param expected: reference FCIDUMP file
     :param computed: computed FCIDUMP file
@@ -251,24 +258,33 @@ def compare_fcidump_headers(expected, computed, label):
         raise TestComparisonError(header_diff)
     success(label)
 
+    energies = {}
     nbf = header['norb']
+
     # Skip the last line, i.e. Enuc + Efzc
     ints = intdump[:-1, 0]
+    energies['NUCLEAR REPULSION ENERGY'] = intdump[-1, 0]
+
     # Get indices
     idxs = intdump[:, 1:].astype(np.int) - 1
+
     # Slices
     sl = slice(ints.shape[0] - nbf, ints.shape[0])
+
     # Extract orbital energies
     epsilon = np.zeros(nbf)
     epsilon[idxs[sl, 0]] = ints[sl]
+
     # Count how many 2-index integrals we have
     sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
     two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
     sl = slice(sl.stop - two_index, sl.stop)
+
     # Extract Hcore
     Hcore = np.zeros((nbf, nbf))
     Hcore[(idxs[sl, 0], idxs[sl, 1])] = ints[sl]
     Hcore[(idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+
     # Extract ERIs
     sl = slice(0, sl.start)
     eri = np.zeros((nbf, nbf, nbf, nbf))
@@ -280,11 +296,18 @@ def compare_fcidump_headers(expected, computed, label):
     eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
     eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
     eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+
     # Compute SCF energy
-    scf_1el_e, scf_2el_e = _scf_energy_from_fcidump(Hcore, eri, np.where(epsilon < 0)[0], header['uhf'])
+    energies['ONE-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'] = _scf_energy_from_fcidump(
+        Hcore, eri,
+        np.where(epsilon < 0)[0], header['uhf'])
+    energies[
+        'SCF TOTAL ENERGY'] = energies['ONE-ELECTRON ENERGY'] + energies['TWO-ELECTRON ENERGY'] + energies['NUCLEAR REPULSION ENERGY']
+
     # Compute MP2 energy
-    mp2_e = _mp2_energy_from_fcidump(eri, epsilon, header['uhf'])
-    return scf_1el_e, scf_2el_e, (scf_1el_e + scf_2el_e), mp2_e
+    energies['MP2 CORRELATION ENERGY'] = _mp2_energy_from_fcidump(eri, epsilon, header['uhf'])
+
+    return energies
 
 
 def _scf_energy_from_fcidump(Hcore, ERI, occ_sl, unrestricted):
