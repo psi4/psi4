@@ -28,8 +28,6 @@
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
 from __future__ import division
 
-import mmap
-import re
 from datetime import datetime
 
 import numpy as np
@@ -216,18 +214,90 @@ def write_eigenvalues(eigs, mo_idx):
 def readin_fcidump(fname):
     """Function to read in a FCIDUMP file.
 
-    :returns: a tuple with the header and the data in the FCIDUMP file
+    :returns: a dictionary with FCIDUMP header and integrals
+    The key-value pairs are:
+      - 'norb' : number of basis functions
+      - 'nelec' : number of electrons
+      - 'ms2' : spin polarization of the system
+      - 'isym' : symmetry of state (if present in FCIDUMP)
+      - 'orbsym' : list of symmetry labels of each orbital
+      - 'uhf' : whether restricted or unrestricted
+      - 'enuc' : nuclear repulsion plus frozen core energy
+      - 'epsilon' : orbital energies
+      - 'hcore' : core Hamiltonian
+      - 'eri' : electron-repulsion integrals
 
     :param fname: FCIDUMP file name
     """
-    with open(fname, 'r+') as f:
-        data = mmap.mmap(f.fileno(), 0)
-        # Get the string in between &FCI and &END.
-        header_string = re.match(b'(?:&FCI((?:.*?\r?\n?)*)&END)', data).group(1)
-    header = _parse_fcidump_header(header_string.decode('utf-8'))
-    integrals = _parse_fcidump_integrals(fname)
+    intdump = {}
+    with open(fname, 'r') as handle:
+        assert '&FCI' == handle.readline().strip()
 
-    return header, integrals
+        skiplines = 1
+        read = True
+        while True:
+            skiplines += 1
+            line = handle.readline()
+            if 'END' in line:
+                break
+
+            key, value = line.split('=')
+            value = value.strip().rstrip(',')
+            if key == 'UHF':
+                value = 'TRUE' in value
+            elif key == 'ORBSYM':
+                value = [int(x) for x in value.split(',')]
+            else:
+                value = int(value.replace(',', ''))
+
+            intdump[key.lower()] = value
+
+    # Read the data and index, skip header
+    raw_ints = np.genfromtxt(fname, skip_header=skiplines)
+
+    # Read last line, i.e. Enuc + Efzc
+    intdump['enuc'] = raw_ints[-1, 0]
+
+    # Read in integrals and indices
+    ints = raw_ints[:-1, 0]
+
+    # Get dimensions and indices
+    nbf = intdump['norb']
+    idxs = raw_ints[:, 1:].astype(np.int) - 1
+
+    # Slices
+    sl = slice(ints.shape[0] - nbf, ints.shape[0])
+
+    # Extract orbital energies
+    epsilon = np.zeros(nbf)
+    epsilon[idxs[sl, 0]] = ints[sl]
+    intdump['epsilon'] = epsilon
+
+    # Count how many 2-index intdump we have
+    sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
+    two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
+    sl = slice(sl.stop - two_index, sl.stop)
+
+    # Extract Hcore
+    Hcore = np.zeros((nbf, nbf))
+    Hcore[(idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    Hcore[(idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    intdump['hcore'] = Hcore
+
+    # Extract ERIs
+    sl = slice(0, sl.start)
+    eri = np.zeros((nbf, nbf, nbf, nbf))
+    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
+    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
+    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
+    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
+    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    intdump['eri'] = eri
+
+    return intdump
 
 
 def compare_fcidump_headers(expected, computed, label):
@@ -248,64 +318,35 @@ def compare_fcidump_headers(expected, computed, label):
     :param label: string labelling the test
     """
     # Grab expected header and integrals
-    ref_header, ref_intdump = readin_fcidump(expected)
-    header, intdump = readin_fcidump(computed)
+    ref_intdump = readin_fcidump(expected)
+    intdump = readin_fcidump(computed)
 
     # Compare headers
-    header_diff = DeepDiff(ref_header, header, ignore_order=True)
+    header_diff = DeepDiff(
+        ref_intdump,
+        intdump,
+        ignore_order=True,
+        exclude_paths={"root['enuc']", "root['hcore']", "root['eri']", "root['epsilon']"})
     if header_diff:
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
         raise TestComparisonError(header_diff)
     success(label)
 
     energies = {}
-    nbf = header['norb']
-
-    # Skip the last line, i.e. Enuc + Efzc
-    ints = intdump[:-1, 0]
-    energies['NUCLEAR REPULSION ENERGY'] = intdump[-1, 0]
-
-    # Get indices
-    idxs = intdump[:, 1:].astype(np.int) - 1
-
-    # Slices
-    sl = slice(ints.shape[0] - nbf, ints.shape[0])
-
-    # Extract orbital energies
-    epsilon = np.zeros(nbf)
-    epsilon[idxs[sl, 0]] = ints[sl]
-
-    # Count how many 2-index integrals we have
-    sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
-    two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
-    sl = slice(sl.stop - two_index, sl.stop)
-
-    # Extract Hcore
-    Hcore = np.zeros((nbf, nbf))
-    Hcore[(idxs[sl, 0], idxs[sl, 1])] = ints[sl]
-    Hcore[(idxs[sl, 1], idxs[sl, 0])] = ints[sl]
-
-    # Extract ERIs
-    sl = slice(0, sl.start)
-    eri = np.zeros((nbf, nbf, nbf, nbf))
-    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
-    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
-    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
-    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
-    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
-    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
-    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
-    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    energies['NUCLEAR REPULSION ENERGY'] = intdump['enuc']
+    epsilon = intdump['epsilon']
+    Hcore = intdump['hcore']
+    eri = intdump['eri']
 
     # Compute SCF energy
     energies['ONE-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'] = _scf_energy_from_fcidump(
         Hcore, eri,
-        np.where(epsilon < 0)[0], header['uhf'])
+        np.where(epsilon < 0)[0], intdump['uhf'])
     energies[
         'SCF TOTAL ENERGY'] = energies['ONE-ELECTRON ENERGY'] + energies['TWO-ELECTRON ENERGY'] + energies['NUCLEAR REPULSION ENERGY']
 
     # Compute MP2 energy
-    energies['MP2 CORRELATION ENERGY'] = _mp2_energy_from_fcidump(eri, epsilon, header['uhf'])
+    energies['MP2 CORRELATION ENERGY'] = _mp2_energy_from_fcidump(eri, epsilon, intdump['uhf'])
 
     return energies
 
@@ -337,48 +378,3 @@ def _mp2_energy_from_fcidump(ERI, epsilon, unrestricted):
         mp2_e = np.einsum('iajb,iajb,iajb->', MO, MO, denom) + np.einsum('iajb,iajb,iajb->', MO - MO.swapaxes(1, 3),
                                                                          MO, denom)
     return mp2_e
-
-
-def _parse_fcidump_header(header_string):
-    """Parse FCIDUMP preamble, using regexes.
-
-    :returns: a dictionary with the contents of the header
-
-    :param fname: the multiline header string
-    """
-    # Set up a dictionary of regexes for the stuff we want.
-    # The value in the (key, value) pair is a tuple.
-    # The first element is the regex, the second is a function to process the result of the match.
-    # yapf: disable
-    parser = {
-        # Get NORB, transform to integer
-          'norb' : ('(?:NORB=(\d+))', int)
-        # Get NELEC, transform to integer
-        , 'nelec' : ('(?:NELEC=(\d+))', int)
-        # Get MS2, transform to integer
-        , 'ms2' : ('(?:MS2=(\d+))', int)
-        # Get ISYM, if present, transform to integer
-        , 'isym' : ('(?:ISYM=(\d+))?', (lambda x: int(x) if x is not None else 1))
-        # Get ORBSYM, transform to list of integers
-        , 'orbsym' : ('(?:ORBSYM=(\d.+))', (lambda x: [int(y.strip()) for y in x.rstrip(',').split(',')]))
-        # Get UHF, transform to True or False
-        , 'uhf' : ('(?:UHF=((?:.TRUE.|.FALSE.)))', (lambda x: True if x.lower() == '.true.' else False))
-    }
-    # yapf: enable
-    # Generate preamble dictionary.
-    # The keys are shared with the parser dictionary, the values result
-    # from searching, case-insensitively, with the corresponding regex (v[0])
-    # and applying the processing function (v[1]) on the result.
-    preamble = {k: v[1](re.search(v[0], header_string, re.I).group(1)) for k, v in parser.items()}
-    return preamble
-
-
-def _parse_fcidump_integrals(fname):
-    """Parse FCIDUMP integrals, using a regex.
-
-    :returns: an array with the integrals and their indices as floats, i.e. the body of the FCIDUMP
-
-    :param fname: FCIDUMP file name
-    """
-    regex = r'(-?[0-9]+\.?[0-9]*(?:[Ee][+-]?[0-9]+)?)\s*(\d+)\s*(\d+)\s*(\d+)\s*(\d+)'
-    return np.fromregex(fname, regex, dtype=float)
