@@ -63,11 +63,15 @@ Installation
 
 * v2rdm_casscf is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
-* If using the |PSIfour| binary, v2rdm_casscf has already been installed alongside.
+* If using the Psi4conda installer, v2rdm_casscf has already been installed alongside.
+
+* If using the |PSIfour| conda package, the v2rdm_casscf conda package can
+  be obtained through ``conda install v2rdm_casscf -c psi4`` or ``conda install
+  psi4-rt -c psi4``.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  v2rdm_casscf can be obtained through ``conda install v2rdm_casscf``.
+  v2rdm_casscf can be obtained through ``conda install v2rdm_casscf -c psi4``.
   Then, hint its location with :envvar:`PYTHONPATH`.
 
 * To remove a conda installation, ``conda remove v2rdm_casscf``.

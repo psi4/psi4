@@ -60,8 +60,8 @@ Installation
 
 **Binary**
 
-* .. image:: https://anaconda.org/evaleev/libint/badges/version.svg
-     :target: https://anaconda.org/evaleev/libint
+* .. image:: https://anaconda.org/psi4/libint/badges/version.svg
+     :target: https://anaconda.org/psi4/libint
 
 * Libint is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
@@ -69,9 +69,12 @@ Installation
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  Libint can be obtained through ``conda install libint``.
+  Libint can be obtained through ``conda install libint -c psi4``.
   Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect Libint and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use 
+  Libint from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove libint``.
 
@@ -79,6 +82,8 @@ Installation
 
 * .. image:: https://img.shields.io/github/tag/evaleev/libint.svg?maxAge=2592000
      :target: https://github.com/evaleev/libint/tree/v1
+
+  Note that |PSIfour| uses v1.
 
 * If using |PSIfour| built from source and you want Libint built from
   from source also,
@@ -105,6 +110,7 @@ How to configure Libint for building Psi4
 * :makevar:`Libint_DIR` |w---w| CMake variable to specify where pre-built Libint can be found. Set to installation directory containing ``share/cmake/Libint/LibintConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_Libint` |w---w| CMake variable to force internal build of Libint instead of detecting pre-built
 * :makevar:`CMAKE_INSIST_FIND_PACKAGE_Libint` |w---w| CMake variable to force detecting pre-built Libint and not falling back on internal build
+* :makevar:`MAX_AM_ERI` |w---w| CMake variable to specify minimum highest angular momentum built or detected
 
 **Examples**
 
@@ -129,4 +135,10 @@ C. Build bundled despite pre-built being detectable
   .. code-block:: bash
 
     >>> cmake -DCMAKE_PREFIX_PATH=/path/to/unwanted/libint/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_Libint=ON
+
+D. Build bundled shared library with AM=6
+
+  .. code-block:: bash
+
+    >>> cmake -DMAX_AM_ERI=6 -DBUILD_SHARED_LIBS=ON
 

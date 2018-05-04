@@ -65,6 +65,8 @@ non-derivative integrals.
    throw an error if you try to execute that class of computation. But
    there may be more, so use with caution.
 
+.. warning:: erd seems to be having some problems with Intel 2018 compilers. presently disabled in conda package.
+
 Installation
 ~~~~~~~~~~~~
 
@@ -79,10 +81,13 @@ Installation
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  erd can be obtained through ``conda install erd``.
+  erd can be obtained through ``conda install erd -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_erd`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect erd and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use
+  erd from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove erd``.
 

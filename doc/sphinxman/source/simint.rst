@@ -57,6 +57,8 @@ integral_package simint`` (do this in ``~/.psi4rc`` for universal effect)
 runs libderiv from Libint for derivative integrals and simint for
 non-derivative integrals. Note that present AM maximum is ``$$(gg|gg)$$``
 
+.. warning:: simint seems to be having some problems with Intel 2018 compilers. presently disabled in conda package.
+
 Installation
 ~~~~~~~~~~~~
 
@@ -69,14 +71,17 @@ Installation
 
 * The conda package is compiled to least-common-denominator, namely SSE instruction set.
 
-.. * If using the |PSIfour| binary, simint has already been installed alongside.
+* If using the |PSIfour| binary, simint has already been installed alongside.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  simint can be obtained through ``conda install simint``.
+  simint can be obtained through ``conda install simint -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_simint`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect simint and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use 
+  simint from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove simint``.
 
