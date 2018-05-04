@@ -33,10 +33,10 @@ import re
 from datetime import datetime
 
 import numpy as np
-
 from deepdiff import DeepDiff
+
 from psi4.driver import constants
-from psi4.driver.p4util.util import compare_arrays
+from psi4.driver.p4util.util import success
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
 from .exceptions import *
@@ -72,7 +72,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     reference = core.get_option('SCF', 'REFERENCE')
     ints_tolerance = core.get_global_option('INTS_TOLERANCE')
     # Some sanity checks
-    if reference not in ['RHF']: #, 'UHF']:
+    if reference not in ['RHF', 'UHF']:
         raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
     if oe_ints is None:
         oe_ints = []
@@ -229,14 +229,15 @@ def readin_fcidump(fname):
     return header, integrals
 
 
-def compare_fcidumps(expected, computed, digits, label):
-    """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
-    when value *computed* matches value *expected* to the number of *digits*.
+def compare_fcidump_headers(expected, computed, label):
+    """Function to compare the headers of two FCIDUMP files. Prints :py:func:`util.success`
+    when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
+
+    :returns: a tuple of energies computed from the MO integrals (SCF 1-el, SCF 2-el, SCF total, MP2 correlation)
 
     :param expected: reference FCIDUMP file
     :param computed: computed FCIDUMP file
-    :param digits: number of digits to compare to
     :param label: string labelling the test
     """
     # Grab expected header and integrals
@@ -248,8 +249,71 @@ def compare_fcidumps(expected, computed, digits, label):
     if header_diff:
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
         raise TestComparisonError(header_diff)
-    # Compare integrals
-    compare_arrays(ref_intdump, intdump, digits, label)
+    success(label)
+
+    nbf = header['norb']
+    # Skip the last line, i.e. Enuc + Efzc
+    ints = intdump[:-1, 0]
+    # Get indices
+    idxs = intdump[:, 1:].astype(np.int) - 1
+    # Slices
+    sl = slice(ints.shape[0] - nbf, ints.shape[0])
+    # Extract orbital energies
+    epsilon = np.zeros(nbf)
+    epsilon[idxs[sl, 0]] = ints[sl]
+    # Count how many 2-index integrals we have
+    sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
+    two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
+    sl = slice(sl.stop - two_index, sl.stop)
+    # Extract Hcore
+    Hcore = np.zeros((nbf, nbf))
+    Hcore[(idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    Hcore[(idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    # Extract ERIs
+    sl = slice(0, sl.start)
+    eri = np.zeros((nbf, nbf, nbf, nbf))
+    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
+    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
+    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
+    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
+    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    # Compute SCF energy
+    scf_1el_e, scf_2el_e = _scf_energy_from_fcidump(Hcore, eri, np.where(epsilon < 0)[0], header['uhf'])
+    # Compute MP2 energy
+    mp2_e = _mp2_energy_from_fcidump(eri, epsilon, header['uhf'])
+    return scf_1el_e, scf_2el_e, (scf_1el_e + scf_2el_e), mp2_e
+
+
+def _scf_energy_from_fcidump(Hcore, ERI, occ_sl, unrestricted):
+    scf_1el_e = np.einsum('ii->', Hcore[np.ix_(occ_sl, occ_sl)])
+    if not unrestricted:
+        scf_1el_e *= 2
+    coulomb = np.einsum('iijj->', ERI[np.ix_(occ_sl, occ_sl, occ_sl, occ_sl)])
+    exchange = np.einsum('ijij->', ERI[np.ix_(occ_sl, occ_sl, occ_sl, occ_sl)])
+    if unrestricted:
+        scf_2el_e = 0.5 * (coulomb - exchange)
+    else:
+        scf_2el_e = 2.0 * coulomb - exchange
+    return scf_1el_e, scf_2el_e
+
+
+def _mp2_energy_from_fcidump(ERI, epsilon, unrestricted):
+    # Occupied and virtual slices
+    occ_sl = np.where(epsilon < 0)[0]
+    vir_sl = np.where(epsilon > 0)[0]
+    eocc = epsilon[occ_sl]
+    evir = epsilon[vir_sl]
+    denom = 1 / (eocc.reshape(-1, 1, 1, 1) - evir.reshape(-1, 1, 1) + eocc.reshape(-1, 1) - evir)
+    MO = ERI[np.ix_(occ_sl, vir_sl, occ_sl, vir_sl)]
+    if unrestricted:
+        mp2_e = 0.5 * np.einsum("abrs,abrs,abrs->", MO, MO - MO.swapaxes(1, 3), denom)
+    else:
+        mp2_e = np.einsum('iajb,iajb,iajb->', MO, MO, denom) + np.einsum('iajb,iajb,iajb->', MO - MO.swapaxes(1, 3),
+                                                                         MO, denom)
+    return mp2_e
 
 
 def _parse_fcidump_header(header_string):
