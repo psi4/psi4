@@ -1610,6 +1610,10 @@ class PointGroup(object):
         """Returns the CharacterTable for this point group."""
         return CharacterTable(self.PYbits)
 
+    def order(self):
+        """Returns the order of this point group."""
+        return self.char_table().order()
+
 #    def equiv(self, grp, tol=1.0e-6):
 #        """Returns 1 if the point groups *self* and *grp* are equivalent,
 #        0 otherwise.

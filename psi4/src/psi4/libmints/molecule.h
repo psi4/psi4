@@ -281,6 +281,7 @@ public:
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;
     int atom_at_position2(Vector3&, double tol = 0.05) const;
+    int atom_at_position3(const std::array<double, 3>&, const double tol = 0.05) const;
     /// @}
 
     /// Do we reinterpret coordentries during a call to update_geometry?

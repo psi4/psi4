@@ -3219,7 +3219,6 @@ def compute_atom_map(mol, tol=0.05):
                 np3[ii] = 0
                 for jj in range(3):
                     np3[ii] += so[ii][jj] * ac[jj]
-
             atom_map[i][g] = mol.atom_at_position(np3, tol)
             if atom_map[i][g] < 0:
                 print("""  Molecule:\n""")
