@@ -58,7 +58,7 @@ macro(find_math_libs _service)
     set(NARGN ${ARGN})
     foreach(l ${NARGN})
         set(_stat "")
-        if(ENABLE_GENERIC)
+        if(ENABLE_GENERIC_MATH)
             IF((NOT "${l}" STREQUAL "iomp5") AND (NOT "${l}" STREQUAL "pthread") AND
                (NOT "${l}" STREQUAL "dl") AND (NOT "${l}" STREQUAL "m"))
                 set(_stat "lib${l}.a")

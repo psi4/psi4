@@ -162,7 +162,7 @@ else()
     set(_blacs_lib)
 endif()
 
-if(ENABLE_GENERIC AND (UNIX AND NOT APPLE))
+if(ENABLE_GENERIC_MATH AND (UNIX AND NOT APPLE))
     set(_start_group "-Wl,--start-group")
     set(_end_group "-Wl,--end-group")
 else()
@@ -182,7 +182,7 @@ else()
     set(_extras)
 endif()
 
-if(NOT ENABLE_GENERIC)
+if(NOT ENABLE_GENERIC_MATH)
     # prefer mkl_rt.so as covers most situations
     #set(MKL_BLAS_LIBS mkl_rt ${_mkl_omp} ${_extras} pthread m dl)
     set(MKL_BLAS_LIBS mkl_rt pthread m dl)
@@ -196,7 +196,7 @@ set(MKL_BLAS_LIBS4 ${_scalapack_lib} ${_start_group} ${_compiler_mkl_interface}$
 # ancient MKL BLAS
 set(MKL_BLAS_LIBS5 mkl guide m dl)
 
-if(NOT ENABLE_GENERIC)
+if(NOT ENABLE_GENERIC_MATH)
     # prefer mkl_rt.so as covers most situations
     set(MKL_LAPACK_LIBS mkl_rt)
 endif()
