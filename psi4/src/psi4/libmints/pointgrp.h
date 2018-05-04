@@ -141,7 +141,10 @@ void similar(unsigned char bits, unsigned char *sim, char& cnt);
 class SymmetryOperation
 {
 private:
-    double d[3][3];
+    // Some necessary Python imports become nightmarish if you try double[3][3]
+    // While a std::array<double, 9> would be simpler, it hurts code readability...
+    // ...and forces an otherwise unnecessary reshape, Py-side.
+    std::array<std::array<double, 3>, 3> d;
     unsigned short bits_;
 
     void analyze_d();
@@ -157,13 +160,17 @@ public:
     double trace() const
     { return d[0][0] + d[1][1] + d[2][2]; }
 
+    // For the sake of Python export, expose d to reading
+    const std::array<std::array<double, 3>, 3>& matrix()
+    { return d; }
+
     /// returns the i'th row of the transformation matrix
     double *operator[](int i)
-    { return d[i]; }
+    { return &d[i][0]; }
 
     /// const version of the above
     const double *operator[](int i) const
-    { return d[i]; }
+    { return &d[i][0]; }
 
     /** returns a reference to the (i,j)th element of the transformation
         matrix */
@@ -176,7 +183,7 @@ public:
 
     /// zero out the symop
     void zero()
-    { ::memset(d, 0, sizeof(double) * 9); }
+    { ::memset(&d, 0, sizeof(double) * 9); }
 
     /// This operates on this with r (i.e. return r * this).
     SymmetryOperation operate(const SymmetryOperation& r) const;
@@ -662,6 +669,9 @@ public:
 
     /// Returns the CharacterTable for this point group.
     CharacterTable char_table() const;
+    /// Returns the order of this point group
+    int order() const
+    { return char_table().order(); }
     /// Returns the Schoenflies symbol for this point group.
     std::string symbol() const
     { return symb; }
