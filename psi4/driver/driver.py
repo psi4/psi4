@@ -86,6 +86,10 @@ def _find_derivative_type(ptype, method_name, user_dertype):
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
 
+    if (core.get_global_option('PCM')) and (dertype != 0):
+        core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
+        dertype = 0
+
     # Summary validation
     if (dertype == 2) and (method_name in procedures['hessian']):
         pass

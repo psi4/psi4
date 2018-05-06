@@ -110,9 +110,9 @@ polarization charges. It is mainly useful for debugging.
 .. warning:: ROHF with PCM is known **not to work**. See `issue #999 on GitHub <https://github.com/psi4/psi4/issues/999>`_.
              For the adventurous, a fix is available in `pull request #953 on GitHub <https://github.com/psi4/psi4/pull/953>`_
 
-.. warning:: Analytic gradients and Hessians **are not** available with PCM. You will need
-             to add the ``dertype='energy'`` to ``optimize`` to correctly perform a geometry
-             optimization using finite differences. See :srcsample:`pcmsolver/opt-fd` for a sample input.
+.. warning:: Analytic gradients and Hessians **are not** available with PCM. Finite differences will be used
+             regardless of the ``dertype`` passed to the ``optimize`` function.
+             See :srcsample:`pcmsolver/opt-fd` for a sample input.
 
 The PCM model and molecular cavity are specified in a ``pcm`` section that has
 to be explicitly typed in by the user. This additional section follows a syntax
