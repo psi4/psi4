@@ -50,6 +50,7 @@ platform capabilities, *etc*.
    libefp
    erd
    fchk
+   gau2grid
    gcp
    gdma
    libint
@@ -59,6 +60,7 @@ platform capabilities, *etc*.
    simint
    plugin_snsmp2
    plugin_v2rdm_casscf
+   libxc
 
 .. comment * MPI4Py
 .. comment * MADNESS

@@ -84,6 +84,9 @@ Installation
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect CheMPS2 and activate dependent code.
 
+* Previous bullet had details. To build |PSIfour| from source and use
+  Libint from conda without thinking, consult :ref:`sec:condapsi4dev`.
+
 * To remove a conda installation, ``conda remove chemps2``.
 
 **Source**
@@ -154,7 +157,7 @@ How to configure CheMPS2 for building Psi4
 
 * Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) CheMPS2
 
-* Upstream Dependencies |w---w| CheMPS2 |dr| HDF5 |dr| zlib
+* Upstream Dependencies |w---w| CheMPS2 |dr| BLAS/LAPACK, HDF5 |dr| zlib
 
 **CMake Variables**
 

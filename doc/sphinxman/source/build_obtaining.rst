@@ -145,7 +145,7 @@ Conda Binary Package
   .. code-block:: bash
 
      >>> conda create -n p4env psi4 -c psi4
-     >>> source activate p4env
+     >>> conda activate p4env
 
 * **Build**
 
@@ -256,7 +256,7 @@ Tarball from GitHub Repository
 
 * **Get Initially**
 
-  From the |PSIfour| repository at https://github.com/psi4/psi4, hit the
+  Discouraged! From the |PSIfour| repository at https://github.com/psi4/psi4, hit the
   "Clone or download" then "Download ZIP" button. Locally, unpack as
   below.
 

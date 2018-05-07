@@ -70,10 +70,13 @@ Installation
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  PCMSolver can be obtained through ``conda install pcmsolver``.
+  PCMSolver can be obtained through ``conda install pcmsolver -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_PCMSolver`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect PCMSolver and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use
+  pcmsolver from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove pcmsolver``.
 
@@ -181,7 +184,7 @@ How to configure PCMSolver for building Psi4
 
 * Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) PCMSolver
 
-* Upstream Dependencies |w---w| PCMSolver |dr| Fortran, ???
+* Upstream Dependencies |w---w| PCMSolver |dr| Fortran, zlib
 
 **CMake Variables**
 

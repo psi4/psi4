@@ -54,6 +54,26 @@ The plugin is distributed under the 2-clause BSD license.
 Installation
 ~~~~~~~~~~~~
 
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/snsmp2/badges/version.svg
+     :target: https://anaconda.org/psi4/snsmp2
+
+* snsmp2 is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
+
+* If using the Psi4conda installer, snsmp2 has already been installed alongside.
+
+* If using the |PSIfour| conda package, the snsmp2 conda package can
+  be obtained through ``conda install snsmp2 -c psi4`` or ``conda install
+  psi4-rt -c psi4``.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  snsmp2 can be obtained through ``conda install snsmp2 -c psi4``.
+  Then, hint its location with :envvar:`PYTHONPATH`.
+
+* To remove a conda installation, ``conda remove snsmp2``.
+
 **Source**
 
 * .. image:: https://img.shields.io/github/tag/DEShawResearch/sns-mp2.svg?maxAge=2592000

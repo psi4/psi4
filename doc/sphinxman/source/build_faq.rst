@@ -116,6 +116,7 @@ Runtime Setup
 #. :ref:`faq:inplace`
 #. :ref:`faq:psi4scratch`
 #. :ref:`faq:psidatadir`
+#. :ref:`faq:psi4psiapipath`
 
 Running |PSIfour|
 -----------------
