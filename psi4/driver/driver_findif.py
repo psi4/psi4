@@ -313,7 +313,7 @@ def comp_grad_from_energy(mol, E):
         3:
         lambda i: (E[2 * i + 1] - E[2 * i]) / (2.0 * data["disp_size"]),
         5:
-        lambda i: (E[4 * i] - 8.0 * E[4 * i + 1] + 8.0 * E[4 * i + 2] - E[4 * i + 2] - E[4 * i + 3]) / (12.0 * data["disp_size"])
+        lambda i: (E[4 * i] - 8.0 * E[4 * i + 1] + 8.0 * E[4 * i + 2] - E[4 * i + 3]) / (12.0 * data["disp_size"])
     }
 
     try:
@@ -323,15 +323,15 @@ def comp_grad_from_energy(mol, E):
     g_q = np.asarray(g_q)
 
     if data["print_lvl"]:
-        cnt = 1 - data["num_pts"]
         max_disp = (data["num_pts"] - 1) // 2  # The numerator had better be divisible by two.
+        e_per_salc = 2 * max_disp
         energy_string = ""
         for i in range(1, max_disp + 1):
-            energy_string = "Energy(-{})      ".format(i) + energy_string + "Energy(+{})      ".format(i)
-        core.print_out("\n\t Coord      " + energy_string + "Force\n")
+            energy_string = "Energy(-{})        ".format(i) + energy_string + "Energy(+{})        ".format(i)
+        core.print_out("\n\t Coord      " + energy_string + "    Force\n")
         for salc in range(data["Nsalc"]):
-            cnt += max_disp * 2
-            core.print_out("\t{:5d}" + " {17.10}" * (cnt + 1) + "\n")
+            print_str = "\t{:5d}" + " {:17.10f}" * (e_per_salc + 1) + "\n"
+            core.print_out(print_str.format(salc, *E[e_per_salc*salc:e_per_salc*(salc+1)], g_q[salc]))
         core.print_out("\n")
 
     Bmat = data["salc_list"].matrix()
