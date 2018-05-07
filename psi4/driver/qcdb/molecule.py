@@ -1357,6 +1357,149 @@ class Molecule(LibmintsMolecule):
         return smol
 
     @staticmethod
+    def contiguize_from_fragment_pattern(frag_pattern,
+                                         geom=None,
+                                         elea=None,
+                                         elez=None,
+                                         elem=None,
+                                         mass=None,
+                                         real=None,
+                                         elbl=None,
+                                         verbose=1):
+        """Take (nat, ?) array-like arrays and return with atoms arranged by (nfr, ?) `frag_pattern`."""
+
+        vsplt = np.cumsum([len(fr) for fr in frag_pattern])
+        nat = vsplt[-1]
+        fragment_separators = vsplt[:-1]
+
+        if not np.array_equal(np.sort(np.concatenate(frag_pattern)), np.arange(nat)):
+            raise ValidationError("""Fragmentation pattern skips atoms: {}""".format(frag_pattern))
+        if not np.array_equal(np.concatenate(frag_pattern), np.arange(nat)):
+            print("""Warning: Psi4 is reordering atoms to accommodate non-contiguous fragments""")
+
+        def reorder(arr):
+            assert nat == len(arr), """wrong number of atoms in array"""
+            return np.concatenate([np.array(arr)[fr] for fr in frag_pattern], axis=0)
+
+        if geom is not None:
+            ncgeom = np.array(geom).reshape(-1, 3)
+            assert nat == ncgeom.shape[0], """dropped atoms!"""
+            geom = np.vstack([ncgeom[fr] for fr in frag_pattern])
+            geom = geom.reshape((-1))
+
+        if elea is not None:
+            elea = reorder(elea)
+        if elez is not None:
+            elez = reorder(elez)
+        if elem is not None:
+            elem = reorder(elem)
+        if mass is not None:
+            mass = reorder(mass)
+        if real is not None:
+            real = reorder(real)
+        if elbl is not None:
+            elbl = reorder(elbl)
+
+        return {'fragment_separators': fragment_separators,
+                'geom': geom,
+                'elea': elea,
+                'elez': elez,
+                'elem': elem,
+                'mass': mass,
+                'real': real,
+                'elbl': elbl}
+
+    @staticmethod
+    def from_schema(molschema, return_dict=False, verbose=1):
+        """Construct Molecule from non-Psi4 schema.
+
+        Light wrapper around :py:func:`~qcdb.Molecule.from_arrays`.
+
+        Parameters
+        ----------
+        molschema : dict
+            Dictionary form of Molecule following known schema.
+        return_dict : bool, optional
+            Additionally return Molecule dictionary intermediate.
+        verbose : int, optional
+            Amount of printing.
+
+        Returns
+        -------
+        mol : :py:class:`~qcdb.Molecule`
+        molrec : dict, optional
+            Dictionary representation of instance.
+            Only provided if `return_dict` is True.
+
+        """
+
+        if ((molschema.get('schema_name', '') == 'QC_JSON') and
+            (molschema.get('schema_version', '') == 0)):
+            # Lost Fields
+            # -----------
+            # * 'comment'
+            # * 'provenance'
+            ms = molschema['molecule']
+
+            if 'fragments' in ms:
+                frag_pattern = ms['fragments']
+            else:
+                frag_pattern = [np.arange(len(ms['symbols']))]
+
+            dcontig = Molecule.contiguize_from_fragment_pattern(frag_pattern,
+                                                                    geom=ms['geometry'],
+                                                                    elea=None,
+                                                                    elez=None,
+                                                                    elem=ms['symbols'],
+                                                                    mass=ms.get('masses', None),
+                                                                    real=ms.get('real', None),
+                                                                    elbl=None)
+
+            molrec = molparse.from_arrays(geom=dcontig['geom'],
+                                          elea=None,
+                                          elez=None,
+                                          elem=dcontig['elem'],
+                                          mass=dcontig['mass'],
+                                          real=dcontig['real'],
+                                          elbl=None,
+                                          name=ms.get('name', None),
+                                          units='Bohr',
+                                          input_units_to_au=None,
+                                          fix_com=ms.get('fix_com', None),
+                                          fix_orientation=ms.get('fix_orientation', None),
+                                          fix_symmetry=None,
+                                          fragment_separators=dcontig['fragment_separators'],
+                                          fragment_charges=ms.get('fragment_charges', None),
+                                          fragment_multiplicities=ms.get('fragment_multiplicities', None),
+                                          molecular_charge=ms.get('molecular_charge', None),
+                                          molecular_multiplicity=ms.get('molecular_multiplicity', None),
+                                          domain='qm',
+                                          #missing_enabled_return=missing_enabled_return,
+                                          #tooclose=tooclose,
+                                          #zero_ghost_fragments=zero_ghost_fragments,
+                                          #nonphysical=nonphysical,
+                                          #mtol=mtol,
+                                          verbose=verbose)
+
+        else:
+            raise ValidationError("""Schema not recognized""")
+
+        if return_dict:
+            return Molecule.from_dict(molrec), molrec
+        else:
+            return Molecule.from_dict(molrec)
+
+    def _raw_to_schema(self, dtype, units='Angstrom', return_type='json'):
+        """Serializes instance into JSON or YAML according to schema `dtype`."""
+
+        molrec = self.to_dict(np_out=True)
+        jymol = molparse.to_schema(molrec,
+                                   dtype=dtype,
+                                   units=units,
+                                   return_type=return_type)
+        return jymol
+
+    @staticmethod
     def _raw_to_dict(self, force_c1=False, force_units=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
@@ -1596,24 +1739,15 @@ class Molecule(LibmintsMolecule):
         self.update_geometry()
         if self.natom() != self.nallatom():
             raise ValidationError("""BFS not adapted for dummy atoms""")
+
         cgeom, cmass, celem, celez, cuniq = self.to_arrays()
         frag_pattern = BFS(cgeom, celez, seed_atoms=seed_atoms, bond_threshold=bond_threshold)
         outputs = [frag_pattern]
 
-        frlen = [len(fr) for fr in frag_pattern]
-        vsplt = np.cumsum(frlen)
-        assert vsplt[-1] == self.natom(), """BFS dropped atoms"""
-
-        fgeoms = [cgeom[fr] for fr in frag_pattern]
-        fmasss = [cmass[fr] for fr in frag_pattern]
-        felems = [celem[fr] for fr in frag_pattern]
-        felezs = [celez[fr] for fr in frag_pattern]
-        fgeom = np.vstack(fgeoms)
-        fmass = np.concatenate(fmasss, axis=0)
-        felem = np.concatenate(felems, axis=0)
-        felez = np.concatenate(felezs, axis=0)
-
         if return_arrays:
+            fgeoms = [cgeom[fr] for fr in frag_pattern]
+            fmasss = [cmass[fr] for fr in frag_pattern]
+            felems = [celem[fr] for fr in frag_pattern]
             outputs.append((fgeoms, fmasss, felems))
 
         if return_molecules:
@@ -1632,10 +1766,15 @@ class Molecule(LibmintsMolecule):
             outputs.append(ret_mols)
 
         if return_molecule:
-            molrec = molparse.from_arrays(geom=fgeom,
-                                          mass=fmass,
-                                          elem=felem,
-                                          elez=felez,
+            dcontig = Molecule.contiguize_from_fragment_pattern(frag_pattern,
+                                                                geom=cgeom,
+                                                                elez=celez,
+                                                                elem=celem,
+                                                                mass=cmass)
+            molrec = molparse.from_arrays(geom=dcontig['geom'],
+                                          mass=dcontig['mass'],
+                                          elem=dcontig['elem'],
+                                          elez=dcontig['elez'],
                                           units='Bohr',
                                           molecular_charge=self.molecular_charge(),
                                           # molecular_multiplicity may not be conservable upon fragmentation
@@ -1643,7 +1782,7 @@ class Molecule(LibmintsMolecule):
                                           fix_com=self.com_fixed(),
                                           fix_orientation=self.orientation_fixed(),
                                           fix_symmetry=(None if self.symmetry_from_input() == '' else self.symmetry_from_input()),
-                                          fragment_separators=vsplt[:-1])
+                                          fragment_separators=dcontig['fragment_separators'])
             if isinstance(self, Molecule):
                 ret_mol = Molecule.from_dict(molrec)
             else:
@@ -1886,3 +2025,4 @@ Molecule.BFS = Molecule._raw_BFS
 Molecule.B787 = Molecule._raw_B787
 Molecule.scramble = Molecule._raw_scramble
 Molecule.to_string = Molecule._raw_to_string
+Molecule.to_schema = Molecule._raw_to_schema

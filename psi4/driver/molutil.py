@@ -29,10 +29,13 @@
 """Module with utility functions that act on molecule objects."""
 from __future__ import absolute_import
 
+import numpy as np
+
 from psi4 import core
 from psi4.driver.p4util import constants, filter_comments
 from psi4.driver.inputparser import process_pubchem_command, pubchemre
 from psi4.driver import qcdb
+from psi4.driver.p4util.exceptions import *
 
 
 def molecule_set_attr(self, name, value):
@@ -170,6 +173,87 @@ def molecule_from_arrays(cls,
             return core.Molecule.from_dict(molrec)
 
 
+@classmethod
+def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
+        """Construct Molecule from non-Psi4 schema.
+
+        Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
+
+        Parameters
+        ----------
+        molschema : dict
+            Dictionary form of Molecule following known schema.
+        return_dict : bool, optional
+            Additionally return Molecule dictionary intermediate.
+        verbose : int, optional
+            Amount of printing.
+
+        Returns
+        -------
+        mol : :py:class:`psi4.core.Molecule`
+        molrec : dict, optional
+            Dictionary representation of instance.
+            Only provided if `return_dict` is True.
+
+        """
+
+        if ((molschema.get('schema_name', '') == 'QC_JSON') and
+            (molschema.get('schema_version', '') == 0)):
+            # Lost Fields
+            # -----------
+            # * 'comment'
+            # * 'provenance'
+            ms = molschema['molecule']
+
+            if 'fragments' in ms:
+                frag_pattern = ms['fragments']
+            else:
+                frag_pattern = [np.arange(len(ms['symbols']))]
+
+            dcontig = qcdb.Molecule.contiguize_from_fragment_pattern(frag_pattern,
+                                                                     geom=ms['geometry'],
+                                                                     elea=None,
+                                                                     elez=None,
+                                                                     elem=ms['symbols'],
+                                                                     mass=ms.get('masses', None),
+                                                                     real=ms.get('real', None),
+                                                                     elbl=None)
+
+            molrec = qcdb.molparse.from_arrays(geom=dcontig['geom'],
+                                               elea=None,
+                                               elez=None,
+                                               elem=dcontig['elem'],
+                                               mass=dcontig['mass'],
+                                               real=dcontig['real'],
+                                               elbl=None,
+                                               name=ms.get('name', None),
+                                               units='Bohr',
+                                               input_units_to_au=None,
+                                               fix_com=ms.get('fix_com', None),
+                                               fix_orientation=ms.get('fix_orientation', None),
+                                               fix_symmetry=None,
+                                               fragment_separators=dcontig['fragment_separators'],
+                                               fragment_charges=ms.get('fragment_charges', None),
+                                               fragment_multiplicities=ms.get('fragment_multiplicities', None),
+                                               molecular_charge=ms.get('molecular_charge', None),
+                                               molecular_multiplicity=ms.get('molecular_multiplicity', None),
+                                               domain='qm',
+                                               #missing_enabled_return=missing_enabled_return,
+                                               #tooclose=tooclose,
+                                               #zero_ghost_fragments=zero_ghost_fragments,
+                                               #nonphysical=nonphysical,
+                                               #mtol=mtol,
+                                               verbose=verbose)
+
+        else:
+            raise ValidationError("""Schema not recognized""")
+
+        if return_dict:
+            return core.Molecule.from_dict(molrec), molrec
+        else:
+            return core.Molecule.from_dict(molrec)
+
+
 def dynamic_variable_bind(cls):
     """Function to dynamically add extra members to
     the core.Molecule class.
@@ -191,6 +275,8 @@ def dynamic_variable_bind(cls):
     cls.from_arrays = molecule_from_arrays
     cls.from_string = molecule_from_string
     cls.to_string = qcdb.Molecule._raw_to_string
+    cls.from_schema = molecule_from_schema
+    cls.to_schema = qcdb.Molecule._raw_to_schema
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance

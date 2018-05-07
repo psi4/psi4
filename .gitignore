@@ -51,6 +51,8 @@ input.py.dat
 *.cube
 dfh.*
 
+*.json
+
 # Special test cases
 tests/*/iter.dat
 tests/*/*.in

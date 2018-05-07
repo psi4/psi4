@@ -1397,13 +1397,13 @@ void OEProp::compute_mo_extents()
         Ca = Ca_ao();
         Cb = Cb_ao();
     }
-    
+
     std::vector<SharedVector> mo_es;
     mo_es.push_back(SharedVector(new Vector("<x^2>", basisset_->nbf())));
     mo_es.push_back(SharedVector(new Vector("<y^2>", basisset_->nbf())));
     mo_es.push_back(SharedVector(new Vector("<z^2>", basisset_->nbf())));
     mo_es.push_back(SharedVector(new Vector("<r^2>", basisset_->nbf())));
-    
+
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> ao_Dpole;
     std::vector<SharedMatrix> ao_Qpole;
@@ -1611,6 +1611,13 @@ void OEProp::compute_mulliken_charges()
     outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
     wfn_->set_atomic_point_charges(apcs);
+
+    auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, mol->natom());
+    for (size_t i = 0; i < mol->natom(); i++){
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+    wfn_->set_array("MULLIKEN_CHARGES", vec_apcs);
+
 //    Free memory
     delete[] Qa;
     delete[] Qb;
@@ -1698,6 +1705,14 @@ void OEProp::compute_lowdin_charges()
     outfile->Printf( "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
     wfn_->set_atomic_point_charges(apcs);
+
+    auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, mol->natom());
+    for (size_t i = 0; i < mol->natom(); i++){
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+    wfn_->set_array("LOWDIN_CHARGES", vec_apcs);
+
+
     delete[] Qa;
     delete[] Qb;
 
@@ -1708,7 +1723,7 @@ void OEProp::compute_mayer_indices()
     outfile->Printf( "\n\n  Mayer Bond Indices:\n\n");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
-    
+
     SharedMatrix bis;
 
     int nbf = basisset_->nbf();
@@ -1811,7 +1826,7 @@ void OEProp::compute_mayer_indices()
         outfile->Printf( "  Atomic Valences: \n");
         MBI_valence->print();
     }
-    
+
     wfn_->set_array("MAYER_INDICES", MBI_total);
 
 }
@@ -1822,7 +1837,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 //    We may wanna get rid of these if we have NAOs...
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
-    
+
     int nbf = basisset_->nbf();
 
     SharedMatrix Da;
@@ -1934,12 +1949,12 @@ void OEProp::compute_no_occupations()
     std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
     outfile->Printf( "  Natural Orbital Occupations:\n\n");
-    
+
     // Terminally, it will be [metric_a , metric_b, metric] or [metric] depending on same_dens
     std::vector<std::vector<std::tuple<double, int, int> >> metrics;
 
     if (!same_dens_) {
-        
+
 
         SharedVector Oa;
         SharedVector Ob;
@@ -1959,9 +1974,9 @@ void OEProp::compute_no_occupations()
                 metric_a.push_back(std::tuple<double,int,int>(Oa->get(h,i), i ,h));
             }
         }
-        
+
         metrics.push_back(metric_a);
-        
+
         std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double,int,int> >());
         int offset_a = wfn_->nalpha();
         int start_occ_a = offset_a - max_noon_;
@@ -1989,7 +2004,7 @@ void OEProp::compute_no_occupations()
                 metric_b.push_back(std::tuple<double,int,int>(Ob->get(h,i), i ,h));
             }
         }
-        
+
         metrics.push_back(metric_b);
 
         std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double,int,int> >());
@@ -2025,7 +2040,7 @@ void OEProp::compute_no_occupations()
             metric.push_back(std::tuple<double,int,int>(Ot->get(h,i), i ,h));
         }
     }
-    
+
     metrics.push_back(metric);
 
     std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
@@ -2049,9 +2064,9 @@ void OEProp::compute_no_occupations()
         }
     }
     outfile->Printf( "\n");
-    
+
     wfn_->set_no_occupations(metrics);
-    
+
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 
 }

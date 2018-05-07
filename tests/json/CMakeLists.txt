@@ -1,2 +1,5 @@
-add_subdirectory(energy)
-add_subdirectory(gradient)
+add_subdirectory(v11_energy)
+add_subdirectory(v11_gradient)
+add_subdirectory(schema_0_energy)
+add_subdirectory(schema_0_gradient)
+add_subdirectory(schema_0_properties)
