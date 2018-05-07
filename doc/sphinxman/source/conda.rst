@@ -34,7 +34,7 @@ Conda Binary Distribution
 =========================
 
 .. warning:: As of v1.2rc1, new (conda build 3; updated compilers)
-   conda packages area available for Linux but not Mac).
+   conda packages are available for Linux but not Mac).
    Psi4conda installers are not ready for either platform.
 
 |PSIfour| is available as a pre-compiled binary for Mac and Linux (and
