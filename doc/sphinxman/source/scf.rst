@@ -667,6 +667,9 @@ if the instability still exists. For more attempts, set |scf__max_attempts|;
 the default value of 1 is recommended. In case the SCF ends up in the same minimum, modification
 of |scf__follow_step_scale| is recommended over increasing |scf__max_attempts|.
 
+.. note:: Setting the option |scf__stability_analysis| to ``FOLLOW`` is only avalible for UHF. When using 
+   RHF and ROHF instabilities can be checked, but not followed. If you want to attempt to find a lower energy solution
+   you should re-run the calculation with |scf__reference| set to ``UHF``.
 
 The main algorithm available in |PSIfour| is the Direct Inversion algorithm. It can *only*
 work with |scf__scf_type| ``PK``, and it explicitly builds the full electronic Hessian
@@ -684,15 +687,15 @@ analysis. The capabilities of both algorithms are summarized below:
 
 .. table:: Stability analysis methods available in |PSIfour|
 
-    +------------------+------------------+----------------------------------------------+-----------------+
-    |     Algorithm    | |scf__reference| |     Stability checked                        | |scf__scf_type| |
-    +==================+==================+==============================================+=================+
-    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | PK only         |
-    +                  +------------------+----------------------------------------------+-----------------+
-    | Direct Inversion |       ROHF       | Internal                                     | PK only         |
-    +------------------+------------------+----------------------------------------------+-----------------+
-    |   Davidson       |       UHF        | Internal                                     |   Anything      |
-    +------------------+------------------+----------------------------------------------+-----------------+
+    +------------------+------------------+----------------------------------------------+---------------------------+-----------------+
+    |     Algorithm    | |scf__reference| |     Stability checked                        | |scf__stability_analysis| | |scf__scf_type| |
+    +==================+==================+==============================================+===========================+=================+
+    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | ``CHECK``                 |   PK only       |
+    +                  +------------------+----------------------------------------------+---------------------------+-----------------+
+    | Direct Inversion |       ROHF       | Internal                                     | ``CHECK``                 |   PK only       |
+    +------------------+------------------+----------------------------------------------+---------------------------+-----------------+
+    |   Davidson       |       UHF        | Internal                                     | ``CHECK`` or ``FOLLOW``   |   Anything      |
+    +------------------+------------------+----------------------------------------------+---------------------------+-----------------+
 
 The best algorithm is automatically selected, *i.e.* Davidson for UHF :math:`\rightarrow` UHF and Direct Inversion otherwise.
 
