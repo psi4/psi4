@@ -211,7 +211,7 @@ def write_eigenvalues(eigs, mo_idx):
     return eigs_dump
 
 
-def readin_fcidump(fname):
+def fcidump_from_file(fname):
     """Function to read in a FCIDUMP file.
 
     :returns: a dictionary with FCIDUMP header and integrals
@@ -300,8 +300,8 @@ def readin_fcidump(fname):
     return intdump
 
 
-def compare_fcidump_headers(expected, computed, label):
-    """Function to compare the headers of two FCIDUMP files. Prints :py:func:`util.success`
+def compare_fcidumps(expected, computed, label):
+    """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 
@@ -318,8 +318,8 @@ def compare_fcidump_headers(expected, computed, label):
     :param label: string labelling the test
     """
     # Grab expected header and integrals
-    ref_intdump = readin_fcidump(expected)
-    intdump = readin_fcidump(computed)
+    ref_intdump = fcidump_from_file(expected)
+    intdump = fcidump_from_file(computed)
 
     # Compare headers
     header_diff = DeepDiff(
