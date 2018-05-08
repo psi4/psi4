@@ -3,8 +3,8 @@ from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.qcdb import libmintsmolecule
 from psi4 import core
 import numpy as np
-import scipy.linalg as la
-
+#import scipy.linalg as la
+from psi4.driver.p4util import block_diag
 
 def _displace_cart(mol, geom, salc_list, i_m, step_size):
     """
@@ -547,7 +547,8 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
             core.Matrix.from_array(normal_irr).print_out()
 
     # We have the Hessian in each irrep! The final task is to perform coordinate transforms.
-    H = la.block_diag(*H_pi)
+    #H = la.block_diag(*H_pi)
+    H = block_diag(*H_pi)
     B = np.vstack(B_pi)
 
     if data["print_lvl"] >= 3:

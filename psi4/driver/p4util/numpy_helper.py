@@ -587,3 +587,32 @@ def _dimension_iter(dim):
 core.Dimension.from_list = _dimension_from_list
 core.Dimension.to_tuple = _dimension_to_tuple
 core.Dimension.__iter__ = _dimension_iter
+
+# General functions for NumPy array manipulation
+def block_diag(*args):
+    """
+    Convert square NumPy array to a single block diagonal array.
+    """
+
+    # Validate the input matrices.
+    dim = 0
+    for matrix in args:
+        try:
+            shape = matrix.shape
+            dim += shape[0]
+        except (AttributeError, TypeError):
+            raise ValidationError("Cannot construct block diagonal from non-arrays.")
+        if len(shape) != 2:
+            raise ValidationError("Cannot construct block diagonal from non-2D arrays.")
+        if shape[0] != shape[1]:
+            raise ValidationError("Cannot construct block diagonal from non-square arrays.")
+
+    # If this is too slow, try a sparse matrix?
+    block_diag = np.zeros((dim, dim))
+    start = 0
+    for matrix in args:
+        next_block = slice(start, start + matrix.shape[0])
+        block_diag[next_block, next_block] = matrix
+        start += matrix.shape[0]
+
+    return block_diag
