@@ -1375,7 +1375,7 @@ class Molecule(LibmintsMolecule):
         if not np.array_equal(np.sort(np.concatenate(frag_pattern)), np.arange(nat)):
             raise ValidationError("""Fragmentation pattern skips atoms: {}""".format(frag_pattern))
         if not np.array_equal(np.concatenate(frag_pattern), np.arange(nat)):
-            print("""Warning: Psi4 is reordering atoms to accommodate non-contiguous fragments""")
+           raise ValueError("""Error: Psi4 would need to reorder atoms to accommodate non-contiguous fragments""")
 
         def reorder(arr):
             assert nat == len(arr), """wrong number of atoms in array"""

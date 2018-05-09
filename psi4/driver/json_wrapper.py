@@ -131,6 +131,10 @@ def run_json_qc_schema(json_data, clean):
     # Build molecule
     mol = core.Molecule.from_schema(json_data)
 
+    # Update molecule geometry as we orient and fix_com
+    json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
+
+
     # Set options
     for k, v in json_data["keywords"].items():
         core.set_global_option(k, v)
@@ -218,7 +222,6 @@ def run_json_qc_schema(json_data, clean):
 
     json_data["properties"] = props
     json_data["success"] = True
-    # print(json.dumps(json_data, indent=2))
 
     # Reset state
     _clean_psi_environ(clean)

@@ -1,0 +1,74 @@
+{
+  "schema_name": "QC_JSON",
+  "schema_version": 0,
+  "molecule": {
+    "geometry": [
+      0.0,
+      0.0,
+      -5.0,
+      0.0,
+      0.0,
+      5.0
+    ],
+    "symbols": [
+      "He",
+      "He"
+    ],
+    "real": [
+      true,
+      false
+    ]
+  },
+  "driver": "energy",
+  "model": {
+    "method": "SCF",
+    "basis": "cc-pVDZ"
+  },
+  "keywords": {
+    "scf_type": "df"
+  },
+  "raw_output": null,
+  "success": true,
+  "provenance": {
+    "creator": "Psi4",
+    "version": "1.2rc1",
+    "routine": "psi4.json.run_json"
+  },
+  "psi4:qcvars": {
+    "CURRENT DIPOLE X": 0.0,
+    "CURRENT DIPOLE Y": 0.0,
+    "CURRENT DIPOLE Z": -1.2141520228781195e-07,
+    "CURRENT ENERGY": -2.85518836280515,
+    "CURRENT REFERENCE ENERGY": -2.85518836280515,
+    "HF TOTAL ENERGY": -2.85518836280515,
+    "NUCLEAR REPULSION ENERGY": 0.0,
+    "ONE-ELECTRON ENERGY": -3.8820496359492576,
+    "SCF DIPOLE X": 0.0,
+    "SCF DIPOLE Y": 0.0,
+    "SCF DIPOLE Z": -1.2141520228781195e-07,
+    "SCF ITERATION ENERGY": -2.85518836280515,
+    "SCF ITERATIONS": 1.0,
+    "SCF N ITERS": 1.0,
+    "SCF TOTAL ENERGY": -2.85518836280515,
+    "TWO-ELECTRON ENERGY": 1.0268612731441076
+  },
+  "return_result": -2.85518836280515,
+  "properties": {
+    "calcinfo_nbasis": 10,
+    "calcinfo_nmo": 10,
+    "calcinfo_nalpha": 1,
+    "calcinfo_nbeta": 1,
+    "calcinfo_natom": 2,
+    "scf_one_electron_energy": -3.8820496359492576,
+    "scf_two_electron_energy": 1.0268612731441076,
+    "nuclear_repulsion_energy": 0.0,
+    "scf_dipole_moment": [
+      0.0,
+      0.0,
+      -1.2141520228781195e-07
+    ],
+    "scf_iterations": 1,
+    "scf_total_energy": -2.85518836280515,
+    "return_energy": -2.85518836280515
+  }
+}
