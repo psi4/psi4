@@ -68,6 +68,7 @@ tests/*/PEDRA.OUT
 tests/*/cavity.npz
 tests/*/cavity.off
 tests/*/pcmsolver.inp
+tests/fcidump/*.INTDUMP
 tests/*/*.xyz
 tests/*/*.grad
 tests/*/*.hess

@@ -27,29 +27,31 @@
 #
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
 from __future__ import division
-import numpy as np
+
 from datetime import datetime
-from difflib import unified_diff
-from uuid import uuid4
-from .exceptions import *
+
+import numpy as np
+from deepdiff import DeepDiff
+
 from psi4.driver import constants
-from psi4.driver.p4util.util import compare_arrays
+from psi4.driver.p4util.util import compare_values, success
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
+from .exceptions import *
 
-def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
+
+def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
     Additional one-electron integrals, including orbital energies, can also be saved.
     This latter format can be used with the HANDE QMC code but is not standard.
 
     :returns: None
 
-    :raises: ValidationError when SCF wavefunction is neither RHF nor UHF
+    :raises: ValidationError when SCF wavefunction is not RHF
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
     :param fname: name of the integrals file, defaults to INTDUMP
-    :param write_footer: whether to write a timestamp in the file footer, defaults to False.
     :param oe_ints: list of additional one-electron integrals to save to file.
     So far only EIGENVALUES is a valid option.
 
@@ -59,14 +61,14 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
     >>> E, wfn = energy('scf', return_wfn=True)
     >>> fcidump(wfn)
 
-    >>> # [2] Save orbital energies, one- and two-electron integrals. Print timestamp in footer.
+    >>> # [2] Save orbital energies, one- and two-electron integrals.
     >>> E, wfn = energy('scf', return_wfn=True)
-    >>> fcidump(wfn, oe_ints=['EIGENVALUES'], write_footer=True)
+    >>> fcidump(wfn, oe_ints=['EIGENVALUES'])
 
     """
     # Get some options
     reference = core.get_option('SCF', 'REFERENCE')
-    ints_tolerance = core.get_option('SCF', 'INTS_TOLERANCE')
+    ints_tolerance = core.get_global_option('INTS_TOLERANCE')
     # Some sanity checks
     if reference not in ['RHF', 'UHF']:
         raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
@@ -133,14 +135,15 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
             moH.load(core.IO.shared_object(), constants.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
-            MO_FZC = moH.get_block(mo_slice, mo_slice).to_array()
+            MO_FZC = moH.get_block(mo_slice, mo_slice)
             offset = 0
-            for h, block in enumerate(MO_FZC):
+            for h, block in enumerate(MO_FZC.nph):
                 il = np.tril_indices(block.shape[0])
                 for index, x in np.ndenumerate(block[il]):
                     row = mo_idx(il[0][index] + offset)
                     col = mo_idx(il[1][index] + offset)
-                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                    if (abs(x) > ints_tolerance):
+                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -153,27 +156,29 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
             moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
             moH_A.load(core.IO.shared_object(), constants.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
-            MO_FZC_A = moH_A.get_block(mo_slice, mo_slice).to_array()
+            MO_FZC_A = moH_A.get_block(mo_slice, mo_slice)
             offset = 0
-            for h, block in enumerate(MO_FZC_A):
+            for h, block in enumerate(MO_FZC_A.nph):
                 il = np.tril_indices(block.shape[0])
                 for index, x in np.ndenumerate(block[il]):
                     row = alpha_mo_idx(il[0][index] + offset)
                     col = alpha_mo_idx(il[1][index] + offset)
-                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                    if (abs(x) > ints_tolerance):
+                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             PSIF_MO_B_FZC = 'MO-basis Beta Frozen-Core Oper'
             moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
             moH_B.load(core.IO.shared_object(), constants.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
-            MO_FZC_B = moH_B.get_block(mo_slice, mo_slice).to_array()
+            MO_FZC_B = moH_B.get_block(mo_slice, mo_slice)
             offset = 0
-            for h, block in enumerate(MO_FZC_B):
+            for h, block in enumerate(MO_FZC_B.nph):
                 il = np.tril_indices(block.shape[0])
                 for index, x in np.ndenumerate(block[il]):
                     row = beta_mo_idx(il[0][index] + offset)
                     col = beta_mo_idx(il[1][index] + offset)
-                    intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                    if (abs(x) > ints_tolerance):
+                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -191,11 +196,6 @@ def fcidump(wfn, fname='INTDUMP', write_footer=False, oe_ints=None):
         e_fzc = ints.get_frozen_core_energy()
         e_nuc = molecule.nuclear_repulsion_energy(wfn.get_dipole_field_strength())
         intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
-        if write_footer:
-            time_string = datetime.now().strftime('%A, %d %B %Y %I:%M%p')
-            footer = 'Generated on {} using Psi4 {}\n'.format(time_string, core.version())
-            footer += 'UUID {}\n'.format(uuid4())
-            intdump.write(footer)
     core.print_out('Done generating {} with integrals in FCIDUMP format.\n'.format(fname))
 
 
@@ -211,26 +211,186 @@ def write_eigenvalues(eigs, mo_idx):
     return eigs_dump
 
 
+def fcidump_from_file(fname):
+    """Function to read in a FCIDUMP file.
+
+    :returns: a dictionary with FCIDUMP header and integrals
+    The key-value pairs are:
+      - 'norb' : number of basis functions
+      - 'nelec' : number of electrons
+      - 'ms2' : spin polarization of the system
+      - 'isym' : symmetry of state (if present in FCIDUMP)
+      - 'orbsym' : list of symmetry labels of each orbital
+      - 'uhf' : whether restricted or unrestricted
+      - 'enuc' : nuclear repulsion plus frozen core energy
+      - 'epsilon' : orbital energies
+      - 'hcore' : core Hamiltonian
+      - 'eri' : electron-repulsion integrals
+
+    :param fname: FCIDUMP file name
+    """
+    intdump = {}
+    with open(fname, 'r') as handle:
+        assert '&FCI' == handle.readline().strip()
+
+        skiplines = 1
+        read = True
+        while True:
+            skiplines += 1
+            line = handle.readline()
+            if 'END' in line:
+                break
+
+            key, value = line.split('=')
+            value = value.strip().rstrip(',')
+            if key == 'UHF':
+                value = 'TRUE' in value
+            elif key == 'ORBSYM':
+                value = [int(x) for x in value.split(',')]
+            else:
+                value = int(value.replace(',', ''))
+
+            intdump[key.lower()] = value
+
+    # Read the data and index, skip header
+    raw_ints = np.genfromtxt(fname, skip_header=skiplines)
+
+    # Read last line, i.e. Enuc + Efzc
+    intdump['enuc'] = raw_ints[-1, 0]
+
+    # Read in integrals and indices
+    ints = raw_ints[:-1, 0]
+
+    # Get dimensions and indices
+    nbf = intdump['norb']
+    idxs = raw_ints[:, 1:].astype(np.int) - 1
+
+    # Slices
+    sl = slice(ints.shape[0] - nbf, ints.shape[0])
+
+    # Extract orbital energies
+    epsilon = np.zeros(nbf)
+    epsilon[idxs[sl, 0]] = ints[sl]
+    intdump['epsilon'] = epsilon
+
+    # Count how many 2-index intdump we have
+    sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
+    two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
+    sl = slice(sl.stop - two_index, sl.stop)
+
+    # Extract Hcore
+    Hcore = np.zeros((nbf, nbf))
+    Hcore[(idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    Hcore[(idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    intdump['hcore'] = Hcore
+
+    # Extract ERIs
+    sl = slice(0, sl.start)
+    eri = np.zeros((nbf, nbf, nbf, nbf))
+    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
+    eri[(idxs[sl, 0], idxs[sl, 1], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
+    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 2], idxs[sl, 3])] = ints[sl]
+    eri[(idxs[sl, 1], idxs[sl, 0], idxs[sl, 3], idxs[sl, 2])] = ints[sl]
+    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 0], idxs[sl, 1])] = ints[sl]
+    eri[(idxs[sl, 2], idxs[sl, 3], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    eri[(idxs[sl, 3], idxs[sl, 2], idxs[sl, 1], idxs[sl, 0])] = ints[sl]
+    intdump['eri'] = eri
+
+    return intdump
+
+
 def compare_fcidumps(expected, computed, label):
     """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
+
+    :returns: a dictionary of energies computed from the MO integrals.
+    The key-value pairs are:
+      - 'NUCLEAR REPULSION ENERGY' : nuclear repulsion plus frozen core energy
+      - 'ONE-ELECTRON ENERGY' : SCF one-electron energy
+      - 'TWO-ELECTRON ENERGY' : SCF two-electron energy
+      - 'SCF TOTAL ENERGY' : SCF total energy
+      - 'MP2 CORRELATION ENERGY' : MP2 correlation energy
+
+    :param expected: reference FCIDUMP file
+    :param computed: computed FCIDUMP file
+    :param label: string labelling the test
     """
     # Grab expected header and integrals
-    with open(expected) as ref_dump:
-        ref_header = [next(ref_dump) for x in range(7)]
-    ref_intdump = np.loadtxt(expected, skiprows=7)
-    # Grab computed header and integrals
-    with open(computed) as dump:
-        header = [next(dump) for x in range(7)]
-    intdump = np.loadtxt(computed, skiprows=7)
+    ref_intdump = fcidump_from_file(expected)
+    intdump = fcidump_from_file(computed)
 
     # Compare headers
-    header_diff = list(unified_diff(ref_header, header, fromfile=expected, tofile=computed))
+    header_diff = DeepDiff(
+        ref_intdump,
+        intdump,
+        ignore_order=True,
+        exclude_paths={"root['enuc']", "root['hcore']", "root['eri']", "root['epsilon']"})
     if header_diff:
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
-        for l in header_diff:
-            message += l
-        raise TestComparisonError(message)
-    # Compare integrals
-    compare_arrays(ref_intdump, intdump, 10, label)
+        raise TestComparisonError(header_diff)
+
+    ref_energies = _energies_from_fcidump(ref_intdump)
+    energies = _energies_from_fcidump(intdump)
+
+    pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], 7, label + '. 1-electron energy')
+    pass_2el = compare_values(ref_energies['TWO-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'], 7, label + '. 2-electron energy')
+    pass_scf = compare_values(ref_energies['SCF TOTAL ENERGY'], energies['SCF TOTAL ENERGY'], 10, label + '. SCF total energy')
+    pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], 10, label + '. MP2 correlation energy')
+
+    if (pass_1el and pass_2el and pass_scf and pass_mp2):
+        success(label)
+
+    return True
+
+
+def _energies_from_fcidump(intdump):
+    energies = {}
+    energies['NUCLEAR REPULSION ENERGY'] = intdump['enuc']
+    epsilon = intdump['epsilon']
+    Hcore = intdump['hcore']
+    eri = intdump['eri']
+
+    # Compute SCF energy
+    energies['ONE-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'] = _scf_energy(Hcore, eri,
+                                                                                   np.where(epsilon < 0)[0],
+                                                                                   intdump['uhf'])
+    # yapf: disable
+    energies['SCF TOTAL ENERGY'] = energies['ONE-ELECTRON ENERGY'] + energies['TWO-ELECTRON ENERGY'] + energies['NUCLEAR REPULSION ENERGY']
+    # yapf: enable
+
+    # Compute MP2 energy
+    energies['MP2 CORRELATION ENERGY'] = _mp2_energy(eri, epsilon, intdump['uhf'])
+
+    return energies
+
+
+def _scf_energy(Hcore, ERI, occ_sl, unrestricted):
+    scf_1el_e = np.einsum('ii->', Hcore[np.ix_(occ_sl, occ_sl)])
+    if not unrestricted:
+        scf_1el_e *= 2
+    coulomb = np.einsum('iijj->', ERI[np.ix_(occ_sl, occ_sl, occ_sl, occ_sl)])
+    exchange = np.einsum('ijij->', ERI[np.ix_(occ_sl, occ_sl, occ_sl, occ_sl)])
+    if unrestricted:
+        scf_2el_e = 0.5 * (coulomb - exchange)
+    else:
+        scf_2el_e = 2.0 * coulomb - exchange
+
+    return scf_1el_e, scf_2el_e
+
+
+def _mp2_energy(ERI, epsilon, unrestricted):
+    # Occupied and virtual slices
+    occ_sl = np.where(epsilon < 0)[0]
+    vir_sl = np.where(epsilon > 0)[0]
+    eocc = epsilon[occ_sl]
+    evir = epsilon[vir_sl]
+    denom = 1 / (eocc.reshape(-1, 1, 1, 1) - evir.reshape(-1, 1, 1) + eocc.reshape(-1, 1) - evir)
+    MO = ERI[np.ix_(occ_sl, vir_sl, occ_sl, vir_sl)]
+    if unrestricted:
+        mp2_e = 0.5 * np.einsum("abrs,abrs,abrs->", MO, MO - MO.swapaxes(1, 3), denom)
+    else:
+        mp2_e = np.einsum('iajb,iajb,iajb->', MO, MO, denom) + np.einsum('iajb,iajb,iajb->', MO - MO.swapaxes(1, 3),
+                                                                         MO, denom)
+    return mp2_e
