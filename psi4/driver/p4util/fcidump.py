@@ -34,7 +34,7 @@ import numpy as np
 from deepdiff import DeepDiff
 
 from psi4.driver import constants
-from psi4.driver.p4util.util import success
+from psi4.driver.p4util.util import compare_values, success
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
 from .exceptions import *
@@ -330,8 +330,22 @@ def compare_fcidumps(expected, computed, label):
     if header_diff:
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
         raise TestComparisonError(header_diff)
-    success(label)
 
+    ref_energies = _energies_from_fcidump(ref_intdump)
+    energies = _energies_from_fcidump(intdump)
+
+    pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], 7, label + '. 1-electron energy')
+    pass_2el = compare_values(ref_energies['TWO-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'], 7, label + '. 2-electron energy')
+    pass_scf = compare_values(ref_energies['SCF TOTAL ENERGY'], energies['SCF TOTAL ENERGY'], 10, label + '. SCF total energy')
+    pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], 10, label + '. MP2 correlation energy')
+
+    if (pass_1el and pass_2el and pass_scf and pass_mp2):
+        success(label)
+
+    return True
+
+
+def _energies_from_fcidump(intdump):
     energies = {}
     energies['NUCLEAR REPULSION ENERGY'] = intdump['enuc']
     epsilon = intdump['epsilon']
@@ -339,19 +353,20 @@ def compare_fcidumps(expected, computed, label):
     eri = intdump['eri']
 
     # Compute SCF energy
-    energies['ONE-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'] = _scf_energy_from_fcidump(
-        Hcore, eri,
-        np.where(epsilon < 0)[0], intdump['uhf'])
-    energies[
-        'SCF TOTAL ENERGY'] = energies['ONE-ELECTRON ENERGY'] + energies['TWO-ELECTRON ENERGY'] + energies['NUCLEAR REPULSION ENERGY']
+    energies['ONE-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'] = _scf_energy(Hcore, eri,
+                                                                                   np.where(epsilon < 0)[0],
+                                                                                   intdump['uhf'])
+    # yapf: disable
+    energies['SCF TOTAL ENERGY'] = energies['ONE-ELECTRON ENERGY'] + energies['TWO-ELECTRON ENERGY'] + energies['NUCLEAR REPULSION ENERGY']
+    # yapf: enable
 
     # Compute MP2 energy
-    energies['MP2 CORRELATION ENERGY'] = _mp2_energy_from_fcidump(eri, epsilon, intdump['uhf'])
+    energies['MP2 CORRELATION ENERGY'] = _mp2_energy(eri, epsilon, intdump['uhf'])
 
     return energies
 
 
-def _scf_energy_from_fcidump(Hcore, ERI, occ_sl, unrestricted):
+def _scf_energy(Hcore, ERI, occ_sl, unrestricted):
     scf_1el_e = np.einsum('ii->', Hcore[np.ix_(occ_sl, occ_sl)])
     if not unrestricted:
         scf_1el_e *= 2
@@ -361,10 +376,11 @@ def _scf_energy_from_fcidump(Hcore, ERI, occ_sl, unrestricted):
         scf_2el_e = 0.5 * (coulomb - exchange)
     else:
         scf_2el_e = 2.0 * coulomb - exchange
+
     return scf_1el_e, scf_2el_e
 
 
-def _mp2_energy_from_fcidump(ERI, epsilon, unrestricted):
+def _mp2_energy(ERI, epsilon, unrestricted):
     # Occupied and virtual slices
     occ_sl = np.where(epsilon < 0)[0]
     vir_sl = np.where(epsilon > 0)[0]
