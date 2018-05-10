@@ -123,13 +123,17 @@ def run_json_qc_schema(json_data, clean):
     _clean_psi_environ(clean)
 
     # This is currently a forced override
-    json_data["schema_version"] = 0
+    if json_data["schema_version"] != 0:
+        raise KeyError("Schema version of '{}' not understood".format(json_data["schema_version"]))
 
     json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
     # Build molecule
     mol = core.Molecule.from_schema(json_data)
-    # print(json.dumps(json_data, indent=2))
+
+    # Update molecule geometry as we orient and fix_com
+    json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
+
 
     # Set options
     for k, v in json_data["keywords"].items():
@@ -197,6 +201,7 @@ def run_json_qc_schema(json_data, clean):
         "scf_dipole_moment": [psi_props[x] for x in ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]],
         "scf_iterations": int(psi_props["SCF ITERATIONS"]),
         "scf_total_energy": psi_props["SCF TOTAL ENERGY"],
+        "return_energy": psi_props["CURRENT ENERGY"],
     }
 
     # Pull out optional SCF keywords
@@ -217,7 +222,6 @@ def run_json_qc_schema(json_data, clean):
 
     json_data["properties"] = props
     json_data["success"] = True
-    # print(json.dumps(json_data, indent=2))
 
     # Reset state
     _clean_psi_environ(clean)

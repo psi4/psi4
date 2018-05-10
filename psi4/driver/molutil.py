@@ -217,7 +217,8 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
                                                                      elem=ms['symbols'],
                                                                      mass=ms.get('masses', None),
                                                                      real=ms.get('real', None),
-                                                                     elbl=None)
+                                                                     elbl=None,
+                                                                     throw_reorder=True)
 
             molrec = qcdb.molparse.from_arrays(geom=dcontig['geom'],
                                                elea=None,

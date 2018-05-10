@@ -50,7 +50,8 @@ expected_properties = {
   "mp2_singles_energy": 0.0,
   "mp2_doubles_energy": -0.20691671622148142,
   "mp2_total_correlation_energy": -0.20691671622148142,
-  "mp2_total_energy": -76.22831410222477
+  "mp2_total_energy": -76.22831410222477,
+  "return_energy": expected_return_result
 }
 
 psi4.json_wrapper.run_json(json_data)
@@ -81,7 +82,8 @@ expected_properties = {
   "mp2_singles_energy": 0.0,
   "mp2_doubles_energy": -0.2069490608880642,
   "mp2_total_correlation_energy": -0.2069490608880642,
-  "mp2_total_energy": -76.2283674281634
+  "mp2_total_energy": -76.2283674281634,
+  "return_energy": expected_return_result
 }
 
 # Switch run to exact MP2

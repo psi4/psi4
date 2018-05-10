@@ -1365,17 +1365,24 @@ class Molecule(LibmintsMolecule):
                                          mass=None,
                                          real=None,
                                          elbl=None,
-                                         verbose=1):
+                                         verbose=1,
+                                         throw_reorder=False):
         """Take (nat, ?) array-like arrays and return with atoms arranged by (nfr, ?) `frag_pattern`."""
 
         vsplt = np.cumsum([len(fr) for fr in frag_pattern])
         nat = vsplt[-1]
         fragment_separators = vsplt[:-1]
 
+        do_reorder = False
         if not np.array_equal(np.sort(np.concatenate(frag_pattern)), np.arange(nat)):
             raise ValidationError("""Fragmentation pattern skips atoms: {}""".format(frag_pattern))
+
         if not np.array_equal(np.concatenate(frag_pattern), np.arange(nat)):
             print("""Warning: Psi4 is reordering atoms to accommodate non-contiguous fragments""")
+            do_reorder = True
+
+        if do_reorder and throw_reorder:
+            raise ValueError("""Error: Psi4 would need to reorder atoms to accommodate non-contiguous fragments""")
 
         def reorder(arr):
             assert nat == len(arr), """wrong number of atoms in array"""
@@ -1453,7 +1460,8 @@ class Molecule(LibmintsMolecule):
                                                                     elem=ms['symbols'],
                                                                     mass=ms.get('masses', None),
                                                                     real=ms.get('real', None),
-                                                                    elbl=None)
+                                                                    elbl=None,
+                                                                    throw_reorder=True)
 
             molrec = molparse.from_arrays(geom=dcontig['geom'],
                                           elea=None,

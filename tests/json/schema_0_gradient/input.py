@@ -53,7 +53,8 @@ expected_properties = {
   "scf_one_electron_energy": -122.4452968291507,
   "scf_two_electron_energy": 37.62243738251799,
   "nuclear_repulsion_energy": 8.80146206062943,
-  "scf_total_energy": -76.02139738600329
+  "scf_total_energy": -76.02139738600329,
+  "return_energy": -76.02139738600329
 }
 
 psi4.json_wrapper.run_json(json_data)

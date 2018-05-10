@@ -1,5 +1,8 @@
 add_subdirectory(v11_energy)
 add_subdirectory(v11_gradient)
 add_subdirectory(schema_0_energy)
+add_subdirectory(schema_0_ghost)
+add_subdirectory(schema_0_orient)
+add_subdirectory(schema_0_throws)
 add_subdirectory(schema_0_gradient)
 add_subdirectory(schema_0_properties)

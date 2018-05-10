@@ -102,7 +102,8 @@ expected_properties = {
   "scf_one_electron_energy": -122.27509111304202,
   "scf_two_electron_energy": 37.49348718008625,
   "nuclear_repulsion_energy": 8.80146206062943,
-  "scf_total_energy": -75.98014187232634
+  "scf_total_energy": -75.98014187232634,
+  "return_energy": -75.98014187232634
 }
 
 
