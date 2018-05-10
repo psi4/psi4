@@ -704,7 +704,7 @@ void export_mints(py::module& m) {
         .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
         .def("irrep_index", [](const CdSalc& salc){return static_cast<int>(salc.irrep());},
              "Return the irrep index")
-        .def("print", &CdSalc::print, "Print the irrep index and the coordinates of the SALC of Cartesian displacments.")
+        .def("print_out", &CdSalc::print, "Print the irrep index and the coordinates of the SALC of Cartesian displacments.")
         .def("__getitem__", [](const CdSalc& salc, size_t i){return salc.component(i);})
         .def("__len__", [](const CdSalc& salc){return salc.ncomponent();})
         .def("__iter__", [](const CdSalc& salc){return py::make_iterator(salc.get_components());},
