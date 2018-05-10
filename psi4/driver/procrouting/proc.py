@@ -2241,7 +2241,7 @@ def run_dfmp2_gradient(name, **kwargs):
         core.set_global_option('SCF_TYPE', 'DF')
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if core.get_option('SCF', 'SCF_TYPE') != 'DF':
+    if "DF" not in core.get_option('SCF', 'SCF_TYPE'):
         raise ValidationError('DF-MP2 gradients need DF-SCF reference.')
 
     # Bypass the scf call if a reference wavefunction is given
