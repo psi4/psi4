@@ -565,7 +565,27 @@ CD
     vectors is not designed for computations with thousands of basis
     functions.
 
+In some cases the above algorithms have multiple implementations that return
+the same result, but are optimal under different molecules sizes and hardware
+configurations. Psi4 will automatically detect the correct algorithm to run and
+only expert users should manually select the below implementations. The DF
+algorithm has the following two implementations
 
+MEM_DF
+    A DF algorithm optimized around memory layout and is optimal as long as
+    there is sufficient memory to hold the three-index DF tensors in memory. This
+    algorithm may be faster for builds that require disk if SSDs are used.
+DISK_DF
+    A DF algorithm (the default DF algorithm before Psi4 1.2) optimized to
+    minimize Disk IO by sacrificing some performance due to memory layout.
+
+Note that these algorithms have both in-memory and on-disk options, but
+performance penalties up to a factor of 2.5 can be found if the incorrect
+algorithm is chosen. It is therefore highly recommended that the keyword "DF"
+be selected in all cases so that the correct implementation can be selected by
+Psi4’s internal routines. Expert users can manually switch between MEM_DF and
+DISK_DF; however, they may find documented exceptions during use as several
+post SCF algorithms require a specific implementation.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
