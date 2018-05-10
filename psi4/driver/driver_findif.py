@@ -169,7 +169,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
 
     if print_lvl > 1 and verbose:
         for salc in salc_list:
-            salc.print()
+            salc.print_out()
 
     data.update({
         "Ndisp_pi": Ndisp_pi,
@@ -330,12 +330,14 @@ def comp_grad_from_energy(mol, E):
             energy_string = "Energy(-{})        ".format(i) + energy_string + "Energy(+{})        ".format(i)
         core.print_out("\n\t Coord      " + energy_string + "    Force\n")
         for salc in range(data["Nsalc"]):
-            print_str = "\t{:5d}" + " {:17.10f}" * (e_per_salc + 1) + "\n"
-            core.print_out(print_str.format(salc, *E[e_per_salc*salc:e_per_salc*(salc+1)], g_q[salc]))
+            print_str = "\t{:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}" + "\n"
+            energies = E[e_per_salc * salc : e_per_salc * (salc+1)]
+            print_str = print_str.format(salc, force=g_q[salc], *energies)
+            core.print_out(print_str)
         core.print_out("\n")
 
     Bmat = data["salc_list"].matrix()
-    g_cart = g_q @ Bmat
+    g_cart = np.matmul(g_q, Bmat)
 
     gradient_matrix = core.Matrix("F-D gradient", data["Natom"], 3)
 
@@ -505,7 +507,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
         # For future convenience, we transpose.
         # Rows are gradients and columns are coordinates with respect to a particulr CdSALC.
         B_pi.append(data["salc_list"].matrix_irrep(h))
-        grads_adapted = (B_pi[-1] @ gradient_matrix).T
+        grads_adapted = np.matmul(B_pi[-1], gradient_matrix).T
 
         if data["print_lvl"] >= 3:
             core.print_out("Gradients in B-matrix coordinates\n")
@@ -540,7 +542,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
         evals = evals[idx]
         evects = evects[:, idx]
 
-        normal_irr = (B_pi[-1] * massweighter).T @ evects
+        normal_irr = np.matmul((B_pi[-1] * massweighter).T, evects)
 
         if data["print_lvl"] >= 2:
             core.print_out("\n\tNormal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep_lbls[h]))
@@ -558,7 +560,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
     # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
     # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
     # As such, the change of basis is formula A' = Xt A X, no inverses!
-    Hx = B.T @ H @ B
+    Hx = np.matmul(np.matmul(B.T, H), B)
     if data["print_lvl"] >= 3:
         core.print_out("\n\tForce constants in mass-weighted Cartesian coordinates.\n")
         core.Matrix.from_array(Hx).print_out()
