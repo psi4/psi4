@@ -115,6 +115,9 @@ def pybuild_wavefunction(mol, basis=None):
         basis = core.BasisSet.build(mol, "ORBITAL", basis)
 
     wfn = core.Wavefunction(mol, basis)
+    # Set basis for density-fitted calculations to the zero basis...
+    # ...until the user explicitly provides a DF basis.
+    wfn.set_basisset("DF_BASIS_SCF", core.BasisSet.zero_ao_basis_set())
     return wfn
 
 
