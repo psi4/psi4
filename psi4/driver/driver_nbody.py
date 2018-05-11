@@ -233,7 +233,7 @@ def nbody_gufunc(func, method_string, **kwargs):
             np_final_ptype = nbody_results['ptype_body_dict'][metadata['max_nbody']].copy()
         else:
             np_final_ptype = nbody_results['ptype_body_dict'][metadata['max_nbody']].copy()
-            np_final_ptype -= ptype_body_dict[1]
+            np_final_ptype -= nbody_results['ptype_body_dict'][1]
 
         nbody_results['ret_ptype'] = core.Matrix.from_array(np_final_ptype)
     else:
@@ -241,18 +241,19 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     # Build wfn and bind variables
     wfn = core.Wavefunction.build(metadata['molecule'], 'def2-svp')
-    dicts = ['energies', 'ptype', 'intermediates', 'energy_body_dict', 'ptype_body_dict', 'nbody']
-    for r in [component_results, nbody_results]:
-        for d in r:
-            if d in dicts:
-                for var, value in r[d].items():
-                    wfn.set_variable(str(var), value)
-                    core.set_variable(str(var), value)
+    if metadata['ptype'] == 'energy':
+        dicts = ['energies', 'ptype', 'intermediates', 'energy_body_dict', 'ptype_body_dict', 'nbody']
+        for r in [component_results, nbody_results]:
+            for d in r:
+                if d in dicts:
+                    for var, value in r[d].items():
+                        wfn.set_variable(str(var), value)
+                        core.set_variable(str(var), value)
 
     if metadata['ptype'] == 'gradient':
-        wfn.set_gradient(ret_ptype)
+        wfn.set_gradient(nbody_results['ret_ptype'])
     elif metadata['ptype'] == 'hessian':
-        wfn.set_hessian(ret_ptype)
+        wfn.set_hessian(nbody_results['ret_ptype'])
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
@@ -400,7 +401,7 @@ def compute_nbody_components(func, method_string, metadata):
     energies_dict = {}
     ptype_dict = {}
     intermediates_dict = {}
-    for n in compute_list.keys():
+    for count, n in enumerate(compute_list.keys()):
         core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         total = len(compute_list[n])
         for num, pair in enumerate(compute_list[n]):
@@ -409,6 +410,7 @@ def compute_nbody_components(func, method_string, metadata):
             ghost = list(set(pair[1]) - set(pair[0]))
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
+            current_mol.set_name(str(count))
             # Save energies info
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
             energies_dict[pair] = core.get_variable("CURRENT ENERGY")
@@ -562,7 +564,7 @@ def assemble_nbody_components(metadata, component_results):
                                       fragment_size_dict, nocp_ptype_by_level[n])
             _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
                                       vmfc_level_list[n], fragment_slice_dict, 
-                                      fragment_size_dict, mfc_ptype_by_level[n],
+                                      fragment_size_dict, vmfc_ptype_by_level[n],
                                       vmfc=True)
 
     # Compute cp energy and ptype

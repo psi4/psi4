@@ -583,10 +583,6 @@ def gradient(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
-    # Bounce to CP if bsse kwarg (someday)
-    if kwargs.get('bsse_type', None) is not None:
-        raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
-
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
@@ -594,6 +590,8 @@ def gradient(name, **kwargs):
         else:
             # Bounce to name if name is non-CBS function
             gradient_type = 'custom_function'
+    elif kwargs.get('bsse_type', None) is not None:
+        gradient_type = 'nbody_gufunc'
     elif '/' in name:
         gradient_type = 'cbs_gufunc'
     else:
@@ -619,6 +617,9 @@ def gradient(name, **kwargs):
         else:
             optstash = driver_util._set_convergence_criterion('energy', 'scf', 8, 10, 8, 10, 8)
             lowername = name
+    
+    elif gradient_type == 'nbody_gufunc':
+        return driver_nbody.nbody_gufunc(gradient, name, ptype='gradient', **kwargs)
 
     elif gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
@@ -985,9 +986,6 @@ def optimize(name, **kwargs):
     # For CBS wrapper, need to set retention on INTCO file
     if custom_gradient or ('/' in lowername):
         core.IOManager.shared_object().set_specific_retention(1, True)
-
-    if kwargs.get('bsse_type', None) is not None:
-        raise ValidationError("Optimize: Does not currently support 'bsse_type' arguements")
 
     full_hess_every = core.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
