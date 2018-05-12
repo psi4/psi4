@@ -583,7 +583,7 @@ Note that these algorithms have both in-memory and on-disk options, but
 performance penalties up to a factor of 2.5 can be found if the incorrect
 algorithm is chosen. It is therefore highly recommended that the keyword "DF"
 be selected in all cases so that the correct implementation can be selected by
-Psi4’s internal routines. Expert users can manually switch between MEM_DF and
+|PSIfours| internal routines. Expert users can manually switch between MEM_DF and
 DISK_DF; however, they may find documented exceptions during use as several
 post SCF algorithms require a specific implementation.
 
