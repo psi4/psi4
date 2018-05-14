@@ -1,3 +1,5 @@
+#! check that CC is returning the same values btwn CC*, FNOCC, and DFOCC modules
+
 molecule hf {
 H
 F 1 0.917

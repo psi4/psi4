@@ -1,3 +1,5 @@
+#! mtd/basis syntax examples
+
 molecule ne2 {
     0 1
     Ne 0 0 0

@@ -1,3 +1,5 @@
+#! test FCIDUMP functionality for rhf/uhf
+
 molecule ne {
   Ne  0  0  0
 }

@@ -1,4 +1,5 @@
-# DFT (LDA/GGA) test of custom implementations in: gga_superfuncs.py
+#! DFT (LDA/GGA) test of custom implementations in: gga_superfuncs.py
+
 # copy&paste list:
 #          "b86bpbe" : build_b86bpbe_superfunctional,
 #          "blyp"    : build_blyp_superfunctional,
