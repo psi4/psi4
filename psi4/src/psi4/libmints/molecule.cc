@@ -418,7 +418,7 @@ Vector3 Molecule::nuclear_dipole(const Vector3 &origin) const {
     return dipole;
 }
 
-Vector3 Molecule::center_of_mass() const {
+Vector3 Molecule::center_of_mass(bool zero_ghost) const {
     Vector3 ret;
     double total_m;
 
@@ -426,7 +426,7 @@ Vector3 Molecule::center_of_mass() const {
     total_m = 0.0;
 
     for (int i = 0; i < natom(); ++i) {
-        double m = mass(i, false);
+        double m = mass(i, zero_ghost);
         ret += m * xyz(i);
         total_m += m;
     }
@@ -1935,21 +1935,21 @@ std::string Molecule::save_string_xyz() const {
     return ss.str();
 }
 
-Matrix *Molecule::inertia_tensor() const {
+Matrix *Molecule::inertia_tensor(bool zero_ghost) const {
     int i;
     Matrix *tensor = new Matrix("Inertia Tensor", 3, 3);
     Matrix &temp = *tensor;
 
     for (i = 0; i < natom(); i++) {
         // I(alpha, alpha)
-        temp(0, 0) += mass(i, true) * (y(i) * y(i) + z(i) * z(i));
-        temp(1, 1) += mass(i, true) * (x(i) * x(i) + z(i) * z(i));
-        temp(2, 2) += mass(i, true) * (x(i) * x(i) + y(i) * y(i));
+        temp(0, 0) += mass(i, zero_ghost) * (y(i) * y(i) + z(i) * z(i));
+        temp(1, 1) += mass(i, zero_ghost) * (x(i) * x(i) + z(i) * z(i));
+        temp(2, 2) += mass(i, zero_ghost) * (x(i) * x(i) + y(i) * y(i));
 
         // I(alpha, beta)
-        temp(0, 1) -= mass(i, true) * x(i) * y(i);
-        temp(0, 2) -= mass(i, true) * x(i) * z(i);
-        temp(1, 2) -= mass(i, true) * y(i) * z(i);
+        temp(0, 1) -= mass(i, zero_ghost) * x(i) * y(i);
+        temp(0, 2) -= mass(i, zero_ghost) * x(i) * z(i);
+        temp(1, 2) -= mass(i, zero_ghost) * y(i) * z(i);
     }
 
     //    mirror
@@ -2838,11 +2838,8 @@ Vector3 Molecule::fxyz(int atom) const { return input_units_to_au_ * full_atoms_
 double Molecule::xyz(int atom, int _xyz) const { return input_units_to_au_ * atoms_[atom]->compute()[_xyz]; }
 
 const double &Molecule::Z(int atom, bool zero_ghost) const {
-    Element_to_Z z_list = Element_to_Z();
-    if (zero_ghost) {
-        return atoms_[atom]->Z();
-    }
-    else if (atoms_[atom]->Z() == 0.0) {
+    if (!zero_ghost && atoms_[atom]->Z() == 0.0) {
+        Element_to_Z z_list = Element_to_Z();
         static const double val = z_list[atoms_[atom]->symbol()];
         return val;
     }
