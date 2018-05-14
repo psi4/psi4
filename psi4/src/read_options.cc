@@ -169,6 +169,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   routing is not suitable, this targets a module. ``CCENERGY`` covers
   CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
   options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC");
+  /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
+  Convergence & Algorithm <table:conv_scf>` for default algorithm for
+  different calculation types. -*/
+  options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
   /*- Algorithm to use for MP2 computation.
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1196,10 +1200,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SCF density fitting computations.
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_SCF", "");
-    /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
-    Convergence & Algorithm <table:conv_scf>` for default algorithm for
-    different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
     /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
     options.add_int("PK_MAX_BUCKETS", 500);
     /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
