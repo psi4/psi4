@@ -40,10 +40,10 @@ psi4.json_wrapper.run_json(json_data)
 
 # Orients to Z axis
 psi4.compare_integers(True, json_data["success"], "JSON Success")  #TEST
-psi4.compare_values(expected_return_result, json_data["return_result"], 6, "Return Value")  #TEST
-psi4.compare_values(0.0, json_data["properties"]["scf_dipole_moment"][0], 6, "DIPOLE X")  #TEST
-psi4.compare_values(0.0, json_data["properties"]["scf_dipole_moment"][1], 6, "DIPOLE Y")  #TEST
-psi4.compare_values(linear_dipole, json_data["properties"]["scf_dipole_moment"][2], 6, "DIPOLE Z")  #TEST
+psi4.compare_values(expected_return_result, json_data["return_result"], 5, "Return Value")  #TEST
+psi4.compare_values(0.0, json_data["properties"]["scf_dipole_moment"][0], 5, "DIPOLE X")  #TEST
+psi4.compare_values(0.0, json_data["properties"]["scf_dipole_moment"][1], 5, "DIPOLE Y")  #TEST
+psi4.compare_values(linear_dipole, json_data["properties"]["scf_dipole_moment"][2], 5, "DIPOLE Z")  #TEST
 
 dist = np.linalg.norm(np.array(json_data["molecule"]["geometry"])[:3] - np.array(np.array(json_data["molecule"]["geometry"])[3:])) #TEST
 psi4.compare_values(1.732, dist, 4, "HF Bond Distance")  #TEST
@@ -53,10 +53,10 @@ psi4.json_wrapper.run_json(noorient_data)
 
 # Orients to Z axis
 psi4.compare_integers(True, noorient_data["success"], "JSON Success")  #TEST
-psi4.compare_values(expected_return_result, noorient_data["return_result"], 6, "Return Value")  #TEST
-psi4.compare_values(0.0, noorient_data["properties"]["scf_dipole_moment"][0], 6, "DIPOLE X")  #TEST
-psi4.compare_values(linear_dipole, noorient_data["properties"]["scf_dipole_moment"][1], 6, "DIPOLE Y")  #TEST
-psi4.compare_values(0.0, noorient_data["properties"]["scf_dipole_moment"][2], 6, "DIPOLE Z")  #TEST
-psi4.compare_arrays([0.0, 0.0, 0.0], noorient_data["molecule"]["geometry"][:3], 6, "H Position")  #TEST
-psi4.compare_arrays([0.0, 1.732, 0.0], noorient_data["molecule"]["geometry"][3:], 6, "F Position")  #TEST
+psi4.compare_values(expected_return_result, noorient_data["return_result"], 5, "Return Value")  #TEST
+psi4.compare_values(0.0, noorient_data["properties"]["scf_dipole_moment"][0], 5, "DIPOLE X")  #TEST
+psi4.compare_values(linear_dipole, noorient_data["properties"]["scf_dipole_moment"][1], 5, "DIPOLE Y")  #TEST
+psi4.compare_values(0.0, noorient_data["properties"]["scf_dipole_moment"][2], 5, "DIPOLE Z")  #TEST
+psi4.compare_arrays([0.0, 0.0, 0.0], noorient_data["molecule"]["geometry"][:3], 5, "H Position")  #TEST
+psi4.compare_arrays([0.0, 1.732, 0.0], noorient_data["molecule"]["geometry"][3:], 5, "F Position")  #TEST
 

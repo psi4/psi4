@@ -63,7 +63,7 @@ with open("output.json", "w") as ofile:
     json.dump(json_data, ofile, indent=2)
 
 psi4.compare_integers(True, json_data["success"], "JSON Success")                           #TEST
-psi4.compare_arrays(expected_return_result, json_data["return_result"], 6, "Return Value")  #TEST
+psi4.compare_arrays(expected_return_result, json_data["return_result"], 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():
-    psi4.compare_values(expected_properties[k], json_data["properties"][k], 6, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], json_data["properties"][k], 5, k.upper())   #TEST
