@@ -233,7 +233,7 @@ class PSI_API Molecule {
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom, zero_ghost = true returns zero for ghost atoms, usually true
-    const double& Z(int atom, bool zero_ghost) const;
+    const double Z(int atom, bool zero_ghost) const;
     /// Nuclear charge of atom
     double fZ(int atom) const;
     /// x position of atom
