@@ -124,6 +124,21 @@ def check_non_symmetric_jk_density(name):
         raise ValidationError("Method %s: Requires support for non-symmetric density matrices.\n"
                               "     Please set SCF_TYPE to %s" % (name, supp_string))
 
+def check_disk_df(name, optstash):
+
+    optstash.add_option(['SCF_TYPE'])
+
+    # Alter default algorithm
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DISK_DF')
+        core.print_out("""    Method '%s' requires SCF_TYPE = DISK_DF, setting.\n""" % name)
+    elif core.get_global_option('SCF_TYPE') == "DF":
+        core.set_global_option('SCF_TYPE', 'DISK_DF')
+        core.print_out("""    Method '%s' requires SCF_TYPE = DISK_DF, setting.\n""" % name)
+    else:
+        if core.get_global_option('SCF_TYPE') != "DISK_DF":
+            raise ValidationError("  %s requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation." % name)
+
 def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     """
     Printing for all CI Wavefunctions

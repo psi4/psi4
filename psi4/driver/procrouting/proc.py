@@ -1513,7 +1513,6 @@ def run_dfocc(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
         ['DFOCC', 'WFN_TYPE'],
         ['DFOCC', 'ORB_OPT'],
@@ -1527,17 +1526,7 @@ def run_dfocc(name, **kwargs):
         type_val = core.get_global_option(mtd_type)
         if type_val == 'DF':
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
-            # Alter default algorithm
-            if not core.has_option_changed('SCF', 'SCF_TYPE'):
-                core.set_global_option('SCF_TYPE', 'DISK_DF')
-                core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
-
-            elif core.get_global_option('SCF_TYPE') == "DF":
-                core.set_global_option('SCF_TYPE', 'DISK_DF')
-                core.print_out("""    DFOCC requires DiskDF JK type.\n""")
-            else:
-                if core.get_global_option('SCF_TYPE') != "DISK_DF":
-                    raise ValidationError("  DFOCC requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation.")
+            proc_util.check_disk_df(name.upper(), optstash)
 
         elif type_val == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
@@ -1633,7 +1622,6 @@ def run_dfocc_gradient(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
         ['REFERENCE'],
         ['DFOCC', 'WFN_TYPE'],
@@ -1641,16 +1629,8 @@ def run_dfocc_gradient(name, **kwargs):
         ['DFOCC', 'CC_LAMBDA'],
         ['GLOBALS', 'DERTYPE'])
 
-    # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DISK_DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DISK_DF.\n""")
 
-    if core.get_option('SCF', 'SCF_TYPE') == 'DF':
-        core.set_global_option('SCF_TYPE', 'DISK_DF')
-
-    if core.get_option('SCF', 'SCF_TYPE') != 'DISK_DF':
-        raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
+    proc_util.check_disk_df(name.upper(), optstash)
 
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
@@ -1717,7 +1697,6 @@ def run_dfocc_property(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
         ['DFOCC', 'WFN_TYPE'],
         ['DFOCC', 'ORB_OPT'],
@@ -1728,16 +1707,7 @@ def run_dfocc_property(name, **kwargs):
     else:
         raise ValidationError('Unidentified method ' % (name))
 
-    # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DISK_DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DISK_DF.\n""")
-
-    if core.get_option('SCF', 'SCF_TYPE') == 'DF':
-        core.set_global_option('SCF_TYPE', 'DISK_DF')
-
-    if core.get_option('SCF', 'SCF_TYPE') != 'DISK_DF':
-        raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
+    proc_util.check_disk_df(name.upper(), optstash)
 
     if name in ['mp2']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
@@ -3862,8 +3832,7 @@ def run_fnodfcc(name, **kwargs):
         ['FNOCC', 'RUN_CEPA'],
         ['FNOCC', 'DF_BASIS_CC'],
         ['SCF', 'DF_BASIS_SCF'],
-        ['SCF', 'DF_INTS_IO'],
-        ['SCF', 'SCF_TYPE'])
+        ['SCF', 'DF_INTS_IO'])
 
     core.set_local_option('FNOCC', 'DFCC', True)
     core.set_local_option('FNOCC', 'RUN_CEPA', False)
@@ -3885,16 +3854,7 @@ def run_fnodfcc(name, **kwargs):
             if core.get_option('FNOCC', 'DF_BASIS_CC') == 'CHOLESKY':
                 core.set_local_option('FNOCC', 'DF_BASIS_CC', '')
 
-            # Alter default algorithm
-            if not core.has_option_changed('SCF', 'SCF_TYPE'):
-                core.set_global_option('SCF_TYPE', 'DISK_DF')
-                core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
-            elif core.get_global_option('SCF_TYPE') == "DF":
-                core.set_global_option('SCF_TYPE', 'DISK_DF')
-                core.print_out("""    FNOCC requires DiskDF JK type.\n""")
-            else:
-                if core.get_global_option('SCF_TYPE') != "DISK_DF":
-                    raise ValidationError("  FFOCC requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation.")
+            proc_util.check_disk_df(name.upper(), optstash)
         else:
             raise ValidationError("""Invalid type '%s' for DFCC""" % type_val)
 

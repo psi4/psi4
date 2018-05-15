@@ -115,7 +115,7 @@ class OptionsState(object):
             raise ValidationError('Each argument to OptionsState should be an array, the first element of which is     the module scope and the second element of which is the module name. Bad argument: %s' % (item))
 
         if key in self.data:
-            raise ValidationError('Malformed options state, duplicate key adds of "%s"' % key)
+            raise ValidationError('Malformed options state, duplicate key adds of "%s". This should not happen, please raise a issue on github.com/psi4/psi4' % key)
         else:
             self.data[key] = OptionState(*key)
 
