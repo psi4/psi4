@@ -1532,6 +1532,7 @@ def run_dfocc(name, **kwargs):
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
             # Alter default algorithm
             if not core.has_global_option_changed('SCF_TYPE'):
+                optstash.add_option(['SCF_TYPE'])
                 core.set_global_option('SCF_TYPE', 'CD')
                 core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
             if core.get_global_option('SCF_TYPE') != 'CD':
@@ -3847,6 +3848,7 @@ def run_fnodfcc(name, **kwargs):
             core.set_local_option('FNOCC', 'DF_BASIS_CC', 'CHOLESKY')
             # Alter default algorithm
             if not core.has_global_option_changed('SCF_TYPE'):
+                optstash.add_option(['SCF_TYPE'])
                 core.set_global_option('SCF_TYPE', 'CD')
                 core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
 
@@ -4136,7 +4138,9 @@ def run_detcas(name, **kwargs):
 
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
-        ['SCF_TYPE']
+        ['SCF_TYPE'],
+        ['ONEPDM'],
+        ['OPDM_RELAX']
         )
 
     user_ref = core.get_option('DETCI', 'REFERENCE')
