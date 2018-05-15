@@ -1537,7 +1537,7 @@ def run_dfocc(name, **kwargs):
                 core.print_out("""    DFOCC requires DiskDF JK type.\n""")
             else:
                 if core.get_global_option('SCF_TYPE') != "DISK_DF":
-                    raise ValidationError("  DFOCC requires SCF_TYPE = DISK_DF")
+                    raise ValidationError("  DFOCC requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation.")
 
         elif type_val == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
@@ -3894,7 +3894,7 @@ def run_fnodfcc(name, **kwargs):
                 core.print_out("""    FNOCC requires DiskDF JK type.\n""")
             else:
                 if core.get_global_option('SCF_TYPE') != "DISK_DF":
-                    raise ValidationError("  FNOCC requires SCF_TYPE = DISK_DF")
+                    raise ValidationError("  FFOCC requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation.")
         else:
             raise ValidationError("""Invalid type '%s' for DFCC""" % type_val)
 
