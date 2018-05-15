@@ -102,21 +102,29 @@ class OptionsState(object):
 
     """
     def __init__(self, *largs):
-        self.data = []
+        self.data = {}
         for item in largs:
-            if len(item) == 2:
-                self.data.append(OptionState(item[1], item[0]))
-            elif len(item) == 1:
-                self.data.append(OptionState(item[0]))
-            else:
-                raise ValidationError('Each argument to OptionsState should be an array, the first element of which is     the module scope and the second element of which is the module name. Bad argument: %s' % (item))
+            self.add_option(item)
+
+    def add_option(self, item):
+        if len(item) == 2:
+            key = (item[1], item[0])
+        elif len(item) == 1:
+            key = (item[0], )
+        else:
+            raise ValidationError('Each argument to OptionsState should be an array, the first element of which is     the module scope and the second element of which is the module name. Bad argument: %s' % (item))
+
+        if key in self.data:
+            raise ValidationError('Malformed options state, duplicate key adds of "%s"' % key)
+        else:
+            self.data[key] = OptionState(*key)
 
     def __str__(self):
         text = ''
-        for item in self.data:
+        for key, item in self.data.items():
             text += str(item)
         return text
 
     def restore(self):
-        for item in self.data:
+        for key, item in self.data.items():
             item.restore()
