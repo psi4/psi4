@@ -1143,7 +1143,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             guessbasis = cast
         core.set_global_option('BASIS', guessbasis)
 
-        castdf = core.get_global_option('SCF_TYPE') == 'DF'
+        castdf = 'DF' in core.get_global_option('SCF_TYPE')
 
         if core.has_option_changed('SCF', 'DF_BASIS_GUESS'):
             castdf = core.get_option('SCF', 'DF_BASIS_GUESS')
@@ -2711,7 +2711,7 @@ def run_dfmp2_property(name, **kwargs):
         core.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if not core.get_global_option('SCF_TYPE') == 'DF':
+    if not 'DF' in core.get_global_option('SCF_TYPE'):
         raise ValidationError('DF-MP2 properties need DF-SCF reference.')
 
     properties = kwargs.pop('properties')
@@ -4167,7 +4167,7 @@ def run_detcas(name, **kwargs):
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
-        if ((core.get_global_option('SCF_TYPE') == 'DF') and (user_ref == 'RHF') and
+        if (('DF' in core.get_global_option('SCF_TYPE')) and (user_ref == 'RHF') and
                     (core.get_option('DETCI', 'MCSCF_TYPE') in ['DF', 'AO']) and
                     (core.get_option("DETCI", "MCSCF_GUESS") == "MP2")):
             core.set_global_option('ONEPDM', True)
