@@ -19,10 +19,10 @@ psi4.compare_integers(True, json_data["success"], "Success")                    
 
 bench_cp_energy = 0.183936053861                                                     #TEST
 cenergy = json_data["variables"]["CURRENT ENERGY"]                                   #TEST
-psi4.compare_values(bench_cp_energy, cenergy, 6, "SCF CURRENT ENERGY")               #TEST
+psi4.compare_values(bench_cp_energy, cenergy, 5, "SCF CURRENT ENERGY")               #TEST
 
 cenergy = json_data["return_value"]                                                  #TEST
-psi4.compare_values(bench_cp_energy, cenergy, 6, "SCF RETURN_VALUE")                 #TEST
+psi4.compare_values(bench_cp_energy, cenergy, 5, "SCF RETURN_VALUE")                 #TEST
 
 return_wfn = "return_wfn" not in json_data["kwargs"]                                 #TEST
 psi4.compare_integers(True, return_wfn, "Immutable input")                           #TEST

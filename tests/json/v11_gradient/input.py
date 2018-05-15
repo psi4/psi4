@@ -20,7 +20,7 @@ psi4.compare_integers(True, json_data["success"], "Success")                   #
 
 bench_energy = -5.433191881443323                                              #TEST
 cenergy = json_data["variables"]["CURRENT ENERGY"]                             #TEST
-psi4.compare_values(bench_energy, cenergy, 6, "SCF CURRENT ENERGY")            #TEST
+psi4.compare_values(bench_energy, cenergy, 5, "SCF CURRENT ENERGY")            #TEST
 
 bench_gradient = np.array([[  0.0 , 0.0 ,   0.4206844],
                            [  0.0 , 0.0 ,  -0.4206844]])
