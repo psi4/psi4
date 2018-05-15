@@ -116,7 +116,7 @@ def check_non_symmetric_jk_density(name):
     """
     Ensure non-symmetric density matrices are supported for the selected JK routine.
     """
-    scf_type = core.get_option('SCF', 'SCF_TYPE')
+    scf_type = core.get_global_option('SCF_TYPE')
     supp_jk_type = ['DF', 'DISK_DF', 'MEM_DF', 'CD', 'PK', 'DIRECT', 'OUT_OF_CORE']
     supp_string = ', '.join(supp_jk_type[:-1]) + ', or ' + supp_jk_type[-1] + '.'
 

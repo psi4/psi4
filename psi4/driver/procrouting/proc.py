@@ -1087,13 +1087,13 @@ def scf_helper(name, post_scf=True, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
-        ['SCF', 'SCF_TYPE'],  # Hack: scope gets changed internally with the Andy trick
+        ['SCF_TYPE'],  # Hack: scope gets changed internally with the Andy trick
     )
 
     optstash2 = p4util.OptionsState(
         ['BASIS'],
         ['DF_BASIS_SCF'],
-        ['SCF', 'SCF_TYPE'],
+        ['SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
     )
 
@@ -1143,7 +1143,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             guessbasis = cast
         core.set_global_option('BASIS', guessbasis)
 
-        castdf = core.get_option('SCF', 'SCF_TYPE') == 'DF'
+        castdf = core.get_global_option('SCF_TYPE') == 'DF'
 
         if core.has_option_changed('SCF', 'DF_BASIS_GUESS'):
             castdf = core.get_option('SCF', 'DF_BASIS_GUESS')
@@ -1153,7 +1153,7 @@ def scf_helper(name, post_scf=True, **kwargs):
                 castdf = False
 
         if castdf:
-            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            core.set_global_option('SCF_TYPE', 'DF')
             core.set_local_option('SCF', 'DF_INTS_IO', 'none')
 
             # Figure out the fitting basis set
@@ -1478,7 +1478,7 @@ def run_dcft(name, **kwargs):
 
     else:
         # Ensure IWL files have been written for non DF-DCFT
-        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
         dcft_wfn = core.dcft(ref_wfn)
 
     return dcft_wfn
@@ -1531,10 +1531,10 @@ def run_dfocc(name, **kwargs):
         elif type_val == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
             # Alter default algorithm
-            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            if not core.has_global_option_changed('SCF_TYPE'):
                 core.set_global_option('SCF_TYPE', 'CD')
                 core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
-            if core.get_option('SCF', 'SCF_TYPE') != 'CD':
+            if core.get_global_option('SCF_TYPE') != 'CD':
                 core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
             raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
@@ -1903,7 +1903,7 @@ def run_occ(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1969,7 +1969,7 @@ def run_occ_gradient(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -2001,8 +2001,8 @@ def run_scf(name, **kwargs):
     optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
 
 
     scf_wfn = scf_helper(name, post_scf=False, **kwargs)
@@ -2136,7 +2136,7 @@ def run_scf_hessian(name, **kwargs):
         ref_wfn = run_scf(name, **kwargs)
 
     badref = core.get_option('SCF', 'REFERENCE') in ['UHF', 'ROHF', 'CUHF', 'RKS', 'UKS']
-    badint = core.get_option('SCF', 'SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
+    badint = core.get_global_option('SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
@@ -2207,11 +2207,11 @@ def run_dfmp2_gradient(name, **kwargs):
         ['SCF_TYPE'])  # yes, this really must be global, not local to SCF
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+    if not core.has_global_option_changed('SCF_TYPE'):
         core.set_global_option('SCF_TYPE', 'DF')
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if "DF" not in core.get_option('SCF', 'SCF_TYPE'):
+    if "DF" not in core.get_global_option('SCF_TYPE'):
         raise ValidationError('DF-MP2 gradients need DF-SCF reference.')
 
     # Bypass the scf call if a reference wavefunction is given
@@ -2303,7 +2303,7 @@ def run_ccenergy(name, **kwargs):
         wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     # Obtain semicanonical orbitals
     if (core.get_option('SCF', 'REFERENCE') == 'ROHF') and \
@@ -2409,7 +2409,7 @@ def run_bccd(name, **kwargs):
         ref_wfn.semicanonicalize()
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     core.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
@@ -2707,11 +2707,11 @@ def run_dfmp2_property(name, **kwargs):
     core.set_global_option('OPDM_RELAX', 'TRUE')
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+    if not core.has_global_option_changed('SCF_TYPE'):
         core.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if not core.get_option('SCF', 'SCF_TYPE') == 'DF':
+    if not core.get_global_option('SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference.')
 
     properties = kwargs.pop('properties')
@@ -2946,7 +2946,7 @@ def run_adc(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     return core.adc(ref_wfn)
 
@@ -3027,7 +3027,7 @@ def run_detci(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     ciwfn = core.detci(ref_wfn)
 
@@ -3068,11 +3068,11 @@ def run_dfmp2(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
-        ['SCF', 'SCF_TYPE'])
+        ['SCF_TYPE'])
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
@@ -3115,11 +3115,11 @@ def run_dfep2(name, **kwargs):
     core.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
-        ['SCF', 'SCF_TYPE'])
+        ['SCF_TYPE'])
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
@@ -3224,7 +3224,7 @@ def run_dmrgscf(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
+        ['SCF_TYPE'],
         ['DMRG', 'DMRG_CASPT2_CALC'])
 
     # Bypass the scf call if a reference wavefunction is given
@@ -3233,7 +3233,7 @@ def run_dmrgscf(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     if 'CASPT2' in name.upper():
         core.set_local_option("DMRG", "DMRG_CASPT2_CALC", True)
@@ -3250,7 +3250,7 @@ def run_dmrgci(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
+        ['SCF_TYPE'],
         ['DMRG', 'DMRG_SCF_MAX_ITER'])
 
     # Bypass the scf call if a reference wavefunction is given
@@ -3259,7 +3259,7 @@ def run_dmrgci(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     core.set_local_option('DMRG', 'DMRG_SCF_MAX_ITER', 1)
 
@@ -3301,11 +3301,11 @@ def run_sapt(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+        ['SCF_TYPE'])
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
 
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -3326,7 +3326,7 @@ def run_sapt(name, **kwargs):
 
     # raise Exception("")
 
-    ri = core.get_option('SCF', 'SCF_TYPE')
+    ri = core.get_global_option('SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
 
@@ -3463,14 +3463,14 @@ def run_sapt_ct(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+        ['SCF_TYPE'])
 
     if 'ref_wfn' in kwargs:
         core.print_out('\nWarning! Argument ref_wfn is not valid for sapt computations\n')
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
 
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -3489,7 +3489,7 @@ def run_sapt_ct(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
-    ri = core.get_option('SCF', 'SCF_TYPE')
+    ri = core.get_global_option('SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
 
@@ -3615,11 +3615,11 @@ def run_fisapt(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+        ['SCF_TYPE'])
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
 
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -3846,7 +3846,7 @@ def run_fnodfcc(name, **kwargs):
         if type_val == 'CD':
             core.set_local_option('FNOCC', 'DF_BASIS_CC', 'CHOLESKY')
             # Alter default algorithm
-            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            if not core.has_global_option_changed('SCF_TYPE'):
                 core.set_global_option('SCF_TYPE', 'CD')
                 core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
 
@@ -3874,7 +3874,7 @@ def run_fnodfcc(name, **kwargs):
         core.set_local_option('FNOCC', 'NAT_ORBS', True)
         set_cholesky_from('CC_TYPE')
 
-    if core.get_option('SCF', 'SCF_TYPE') not in ['CD', 'DISK_DF']:
+    if core.get_global_option('SCF_TYPE') not in ['CD', 'DISK_DF']:
         raise ValidationError("""Invalid scf_type for DFCC.""")
 
     # save DF or CD ints generated by SCF for use in CC
@@ -4000,7 +4000,7 @@ def run_fnocc(name, **kwargs):
 
     if core.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:
         core.print_out("  Constructing Basis Sets for FNOCC...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
@@ -4103,7 +4103,7 @@ def run_cepa(name, **kwargs):
 
     if core.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:
         core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
@@ -4136,7 +4136,7 @@ def run_detcas(name, **kwargs):
 
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
-        ['SCF', 'SCF_TYPE']
+        ['SCF_TYPE']
         )
 
     user_ref = core.get_option('DETCI', 'REFERENCE')
@@ -4162,12 +4162,12 @@ def run_detcas(name, **kwargs):
             )
 
         # No real reason to do a conventional guess
-        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        if not core.has_global_option_changed('SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DF')
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
-        if ((core.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and
+        if ((core.get_global_option('SCF_TYPE') == 'DF') and (user_ref == 'RHF') and
                     (core.get_option('DETCI', 'MCSCF_TYPE') in ['DF', 'AO']) and
                     (core.get_option("DETCI", "MCSCF_GUESS") == "MP2")):
             core.set_global_option('ONEPDM', True)
@@ -4186,7 +4186,7 @@ def run_detcas(name, **kwargs):
 
     # The DF case
     if core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
-        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        if not core.has_global_option_changed('SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DF')
 
         core.print_out("  Constructing Basis Sets for MCSCF...\n\n")
@@ -4198,16 +4198,16 @@ def run_detcas(name, **kwargs):
 
     # The AO case
     elif core.get_option('DETCI', 'MCSCF_TYPE') == 'AO':
-        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        if not core.has_global_option_changed('SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DIRECT')
 
     # The conventional case
     elif core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV':
-        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        if not core.has_global_option_changed('SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'PK')
 
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:
         raise ValidationError("Run DETCAS: MCSCF_TYPE %s not understood." % str(core.get_option('DETCI', 'MCSCF_TYPE')))
 
