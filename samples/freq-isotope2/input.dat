@@ -1,35 +1,13 @@
 #! Vibrational and thermo analysis of several water isotopologs.
-#! Demonstrates Hessian reuse for different temperatures and pressures
-#! but not for different isotopologs.
+#! Demonstrates Hessian reuse for different temperatures, pressures, and isotopologs
 
-# all reference values from NWChem (see other files in this dir) unless otherwise notated
+# all reference values from NWChem (see other files in freq-isotope1 dir) unless otherwise notated
 
 molecule h2o {
   units au
   O      0.00000000    0.00000000    0.00000000
   H      0.00000000    1.93042809   -1.10715266
   H      0.00000000   -1.93042809   -1.10715266
-}
-
-molecule d2o {
-  units au
-  O                  0.00000000    0.00000000    0.00000000
-  H@2.014101779      0.00000000    1.93042809   -1.10715266
-  H@2.014101779      0.00000000   -1.93042809   -1.10715266
-}
-
-molecule hdo {
-  units au
-  O                  0.00000000    0.00000000    0.00000000
-  H@2.014101779      0.00000000    1.93042809   -1.10715266
-  H                  0.00000000   -1.93042809   -1.10715266
-}
-
-molecule dto {
-  units au
-  O                  0.00000000    0.00000000    0.00000000
-  H@2.014101779      0.00000000    1.93042809   -1.10715266
-  H@3.01604927       0.00000000   -1.93042809   -1.10715266
 }
 
 set basis sto-3g
@@ -39,37 +17,31 @@ set scf_type pk
 
 optimize('hf', molecule=h2o)
 
-# can't currently update masses with set_mass() in the mols and redetect the right symmetry
-#   so have to create as as above and update the geometry
-ogeo = h2o.geometry()
-d2o.update_geometry()
-d2o.set_geometry(ogeo)
-hdo.update_geometry()
-hdo.set_geometry(ogeo)
-dto.update_geometry()
-dto.set_geometry(ogeo)
+d2o = h2o.clone()
+d2o.set_mass(1, 2.014101779)
+d2o.set_mass(2, 2.014101779)
+
+hdo = h2o.clone()
+hdo.set_mass(1, 2.014101779)
+
+dto = h2o.clone()
+dto.set_mass(1, 2.014101779)
+dto.set_mass(2, 3.01604927)
 
 e, wfn = freq('hf', molecule=h2o, return_wfn=True)
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
 
-clean()
-
 set t 400.0
 
-#freq('hf', molecule=h2o)
-thermo(wfn, wfn.frequencies())
+vibanal_wfn(wfn)
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
-
-clean()
 
 set t 298.15
 
-freq('hf', molecule=d2o)
+vibanal_wfn(wfn, molecule=d2o)
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
 
-clean()
-
-e, wfn = freq('hf', molecule=hdo, return_wfn=True)
+vibanal_wfn(wfn, molecule=hdo)
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
 
 # For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
@@ -80,16 +52,14 @@ entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - ge
 
 set rotational_symmetry_number 2
 
-thermo(wfn, wfn.frequencies())
+vibanal_wfn(wfn, molecule=hdo)
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
-
-clean()
 
 # Could just reset the symmetry number to 1 since that's the correct
 #  value for DTO. But the below will calculate the default.
 
 psi4.revoke_global_option_changed('rotational_symmetry_number')
 
-freq('hf', molecule=dto)
+vibanal_wfn(wfn, molecule=dto)
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
 

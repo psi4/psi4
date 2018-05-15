@@ -12,6 +12,9 @@ molecule h2o {
 set basis cc-pVDZ
 energy('scf')
 
+
 compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
 compare_csx()  #TEST
+
+
 
