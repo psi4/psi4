@@ -2837,7 +2837,7 @@ Vector3 Molecule::fxyz(int atom) const { return input_units_to_au_ * full_atoms_
 
 double Molecule::xyz(int atom, int _xyz) const { return input_units_to_au_ * atoms_[atom]->compute()[_xyz]; }
 
-const double Molecule::Z(int atom, bool zero_ghost) const {
+double Molecule::Z(int atom, bool zero_ghost) const {
     if (!zero_ghost && atoms_[atom]->Z() == 0.0) {
         Element_to_Z z_list = Element_to_Z();
         return z_list[atoms_[atom]->symbol()];
