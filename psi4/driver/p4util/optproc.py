@@ -38,7 +38,7 @@ class OptionState(object):
     *module* scopes; otherwise (used for BASIS keywords), only global scope is stored.
     Class can store, print, and restore option values. ::
 
-        >>> OptionState('SCF_TYPE', 'SCF')
+        >>> OptionState('E_CONVERGENCE', 'SCF')
 
         >>> print(OptionState('DF_BASIS_MP2'))
 
@@ -93,7 +93,7 @@ class OptionsState(object):
 
         >>> optstash = OptionsState(
                 ['DF_BASIS_SCF'],
-                ['SCF', 'SCF_TYPE'],
+                ['SCF_TYPE'],
                 ['SCF', 'REFERENCE'])
 
         >>> print(optstash)

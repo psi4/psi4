@@ -44,13 +44,13 @@ __all__ = ['run_sapt_dft', 'sapt_dft']
 
 
 def run_sapt_dft(name, **kwargs):
-    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_GRAC_SHIFT'],
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_GRAC_SHIFT'],
                                    ['SCF', 'SAVE_JK'])
 
     core.tstart()
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
 
     core.prepare_options_for_module("SAPT")
 
@@ -86,7 +86,7 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
     core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
     core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
-    core.print_out("   JK Algorithm            %12s\n" % core.get_option("SCF", "SCF_TYPE"))
+    core.print_out("   JK Algorithm            %12s\n" % core.get_global_option("SCF_TYPE"))
     core.print_out("\n")
     core.print_out("   Required computations:\n")
     if (do_delta_hf):
@@ -106,7 +106,7 @@ def run_sapt_dft(name, **kwargs):
     core.IO.set_default_namespace('dimer')
     data = {}
 
-    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+    if (core.get_global_option('SCF_TYPE') == 'DF'):
         # core.set_global_option('DF_INTS_IO', 'LOAD')
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
@@ -114,28 +114,28 @@ def run_sapt_dft(name, **kwargs):
     hf_cache = {}
     hf_wfn_dimer = None
     if do_delta_hf:
-        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+        if (core.get_global_option('SCF_TYPE') == 'DF'):
             core.set_global_option('DF_INTS_IO', 'SAVE')
 
         hf_data = {}
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.get_variable("CURRENT ENERGY")
 
-        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+        if (core.get_global_option('SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'dimer', 'monomerA')
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
         hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
 
 
         core.set_global_option("SAVE_JK", True)
-        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+        if (core.get_global_option('SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
         hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
         core.set_global_option("SAVE_JK", False)
 
         # Move it back to monomer A
-        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+        if (core.get_global_option('SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerB', 'dimer')
 
         core.print_out("\n")
@@ -186,7 +186,7 @@ def run_sapt_dft(name, **kwargs):
     core.set_local_option('SCF', 'REFERENCE', 'RKS')
 
     # Compute Monomer A wavefunction
-    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+    if (core.get_global_option('SCF_TYPE') == 'DF'):
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
     if mon_a_shift:
@@ -201,7 +201,7 @@ def run_sapt_dft(name, **kwargs):
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
     # Compute Monomer B wavefunction
-    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+    if (core.get_global_option('SCF_TYPE') == 'DF'):
         core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
     if mon_b_shift:
@@ -216,7 +216,7 @@ def run_sapt_dft(name, **kwargs):
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
     # Write out header
-    scf_alg = core.get_option("SCF", "SCF_TYPE")
+    scf_alg = core.get_global_option("SCF_TYPE")
     sapt_dft_header(sapt_dft_functional, mon_a_shift, mon_b_shift, bool(do_delta_hf), scf_alg)
 
     # Call SAPT(DFT)

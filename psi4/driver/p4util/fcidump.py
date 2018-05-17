@@ -106,7 +106,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
         intdump.write(header)
 
     # Get an IntegralTransform object
-    check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), wfn)
+    check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), wfn)
     spaces = [core.MOSpace.all()]
     trans_type = core.IntegralTransform.TransformationType.Restricted
     if not wfn.same_a_b_orbs():

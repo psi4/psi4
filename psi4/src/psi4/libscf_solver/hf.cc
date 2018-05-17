@@ -1549,7 +1549,7 @@ void HF::initialize()
              molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
          }
          scf_type_ = "DF";
-         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
+         options_.set_global_str("SCF_TYPE", "DF"); // Scope is reset in proc.py. This is not pretty, but it works
     }
 
     if(attempt_number_ == 1){
@@ -1817,7 +1817,7 @@ void HF::iterations()
                 diis_manager_->reset_subspace();
             }
             scf_type_ = old_scf_type_;
-            options_.set_str("SCF", "SCF_TYPE", old_scf_type_);
+            options_.set_global_str("SCF_TYPE", old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
         }

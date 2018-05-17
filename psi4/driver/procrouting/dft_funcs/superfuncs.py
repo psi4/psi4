@@ -125,9 +125,9 @@ def build_superfunctional(name, restricted):
         raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
 
     # Check SCF_TYPE
-    if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+    if sup[0].is_x_lrc() and (core.get_global_option("SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
-            "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build." % core.get_option("SCF", "SCF_TYPE"))
+            "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build." % core.get_global_option("SCF_TYPE"))
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')

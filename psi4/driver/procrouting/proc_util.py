@@ -43,12 +43,12 @@ def scf_set_reference_local(name, is_dft=False):
     """
 
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
+        ['SCF_TYPE'],
         ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.get_global_option('SCF_TYPE', 'DF')
 
     # Alter reference name if needed
     user_ref = core.get_option('SCF', 'REFERENCE')
@@ -129,7 +129,7 @@ def check_disk_df(name, optstash):
     optstash.add_option(['SCF_TYPE'])
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+    if not core.has_global_option_changed('SCF_TYPE'):
         core.set_global_option('SCF_TYPE', 'DISK_DF')
         core.print_out("""    Method '%s' requires SCF_TYPE = DISK_DF, setting.\n""" % name)
     elif core.get_global_option('SCF_TYPE') == "DF":
