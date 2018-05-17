@@ -48,7 +48,7 @@ def scf_set_reference_local(name, is_dft=False):
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
-        core.get_global_option('SCF_TYPE', 'DF')
+        core.set_global_option('SCF_TYPE', 'DF')
 
     # Alter reference name if needed
     user_ref = core.get_option('SCF', 'REFERENCE')

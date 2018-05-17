@@ -1820,6 +1820,7 @@ void HF::iterations()
             options_.set_global_str("SCF_TYPE", old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
+            is_dfjk_ = false;
         }
 
         // Call any postiteration callbacks
