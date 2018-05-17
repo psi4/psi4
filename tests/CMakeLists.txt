@@ -238,6 +238,13 @@ if(ENABLE_v2rdm_casscf)
     message(STATUS "Adding test cases: Psi4 + v2rdm_casscf")
 endif()
 
+# <<<  GPU_DFCC  >>>
+
+if(ENABLE_gpu_dfcc)
+    add_subdirectory(gpu_dfcc)
+    message(STATUS "Adding test cases: Psi4 + gpu_dfcc")
+endif()
+
 # <<<  SNSMP2  >>>
 
 if(ENABLE_snsmp2)
