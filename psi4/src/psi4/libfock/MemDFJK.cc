@@ -85,7 +85,9 @@ void MemDFJK::preiterations() {
     // It should be noted that this bug does not show up in the 3-index transform.
     if (!auxiliary_->has_puream()) {
         std::stringstream error;
-        error << "DFHelper (MemDFJK): cannot do cartesian auxiliary functions";
+        error << "\nDFHelper (MemDFJK): Cannot do cartesian auxiliary functions. Please use the\n";
+        error << "                    SCF_TYPE = DF to automatically select the correct DF JK\n";
+        error << "                    backend implementation or choose DISK_DF for this computation.";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
