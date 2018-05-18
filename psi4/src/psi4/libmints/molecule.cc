@@ -403,6 +403,15 @@ int Molecule::atom_at_position2(Vector3 &b, double tol) const {
     return -1;
 }
 
+int Molecule::atom_at_position3(const std::array<double, 3> &coord, const double tol) const {
+    Vector3 b(coord);
+    for (int i = 0; i < natom(); ++i) {
+        Vector3 a = xyz(i);
+        if (b.distance(a) < tol) return i;
+    }
+    return -1;
+}
+
 Vector3 Molecule::nuclear_dipole() const {
     Vector3 origin(0.0, 0.0, 0.0);
     return nuclear_dipole(origin);

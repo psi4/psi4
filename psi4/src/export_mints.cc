@@ -516,6 +516,7 @@ void export_mints(py::module& m) {
         .def("nirrep", &Matrix::nirrep, py::return_value_policy::copy, "Returns the number of irreps")
         .def("symmetry", &Matrix::symmetry, py::return_value_policy::copy, "Returns the overall symmetry of the matrix")
         .def("identity", &Matrix::identity, "Sets the matrix to the identity")
+        .def("hermitize", &Matrix::hermitivitize, "Makes a real matrix symmetric by averaging the matrix and its transpose.")
         .def("copy_lower_to_upper", &Matrix::copy_lower_to_upper, "Copy the lower triangle to the upper triangle")
         .def("copy_upper_to_lower", &Matrix::copy_upper_to_lower, "Copy the upper triangle to the lower triangle")
         .def("zero_lower", &Matrix::zero_lower, "Zero the lower triangle")
@@ -528,6 +529,7 @@ void export_mints(py::module& m) {
         .def("transpose", &Matrix::transpose, "Creates a new matrix that is the transpose of this matrix")
         .def("hermitivitize", &Matrix::hermitivitize, "Average off-diagonal element in-place")
         .def("add", matrix_one(&Matrix::add), "Adds a matrix to this matrix")
+        .def("add", matrix_set4(&Matrix::add), "Increments row m and column n of irrep h's block matrix by val.", py::arg("h"), py::arg("m"), py::arg("n"), py::arg("val"))
         .def("axpy", &Matrix::axpy, "Add to this matrix another matrix scaled by a", py::arg("a"), py::arg("X"))
         .def("subtract", matrix_one(&Matrix::subtract), "Substract a matrix from this matrix")
         .def("accumulate_product", matrix_two(&Matrix::accumulate_product),
@@ -697,6 +699,23 @@ void export_mints(py::module& m) {
              "Returns a new Matrix object named name with default dimensions");
 //              py::arg("name"), py::arg("symmetry"));
 
+    py::class_<CdSalc::Component, std::shared_ptr<CdSalc::Component>>(
+        m, "SalcComponent", "Component of a Cartesian displacement SALC in the basis of atomic displacements.")
+        .def_readwrite("coef", &CdSalc::Component::coef, "The coefficient of the displacement")
+        .def_readwrite("atom", &CdSalc::Component::atom, "The index of the atom being displaced")
+        .def_readwrite("xyz", &CdSalc::Component::xyz, "The direction of tthe displacement, given by x as 1, y as 2, z as 3.");
+
+    py::class_<CdSalc, std::shared_ptr<CdSalc>>(
+        m, "CdSalc", "Cartesian displacement SALC")
+        .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
+        .def("irrep_index", [](const CdSalc& salc){return static_cast<int>(salc.irrep());},
+             "Return the irrep index")
+        .def("print_out", &CdSalc::print, "Print the irrep index and the coordinates of the SALC of Cartesian displacments.")
+        .def("__getitem__", [](const CdSalc& salc, size_t i){return salc.component(i);})
+        .def("__len__", [](const CdSalc& salc){return salc.ncomponent();})
+        .def("__iter__", [](const CdSalc& salc){return py::make_iterator(salc.get_components());},
+             py::keep_alive<0,1>());
+
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
         m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
         .def(py::init<std::shared_ptr<Molecule>, int, bool, bool>())
@@ -705,9 +724,14 @@ void export_mints(py::module& m) {
              "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.",
              py::arg("basename"), py::arg("factory"))
         .def("salc_name", &CdSalcList::salc_name, "Return the name of SALC #i.", py::arg("i"))
-        .def("print_out", &CdSalcList::print, "Print the SALC to the output file")
-        .def("matrix", &CdSalcList::matrix, "Return the SALCs")
-        .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return only the SALCS in irrep h", py::arg("h"));
+        .def("nirrep", &CdSalcList::nirrep, "Return the number of irreps")
+        .def("__getitem__", [](const CdSalcList& salclist, size_t i){return salclist[i];})
+        .def("__len__", [](const CdSalcList& salclist){return salclist.ncd();})
+        .def("__iter__", [](const CdSalcList& salclist){return py::make_iterator(salclist.get_salcs());},
+             py::keep_alive<0,1>())
+        .def("print_out", &CdSalcList::print, "Print the SALCs to the output file")
+        .def("matrix", &CdSalcList::matrix, "Return the matrix that transforms Cartesian displacements to SALCs")
+        .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return the matrix that transforms Cartesian displacements to SALCs of irrep h", py::arg("h"));
 
     py::class_<GaussianShell, std::shared_ptr<GaussianShell>>(m, "GaussianShell",
                                                               "Class containing information about basis functions")
@@ -1092,6 +1116,8 @@ void export_mints(py::module& m) {
                                   "operation, such as a rotation or reflection.")
         .def(py::init<const SymmetryOperation&>())
         .def("trace", &SymmetryOperation::trace, "Returns trace of transformation matrix")
+        .def("matrix", &SymmetryOperation::matrix,
+             "Return the matrix for the operation on Cartesians")
         .def("zero", &SymmetryOperation::zero, "Zero out the symmetry operation")
         .def("operate", &SymmetryOperation::operate, "Performs the operation arg2 * arg1")
         .def("transform", &SymmetryOperation::transform, "Performs the transform arg2 * arg1 * arg2~")
@@ -1106,7 +1132,10 @@ void export_mints(py::module& m) {
         .def("c2_x", &SymmetryOperation::c2_x, "Set equal to C2 about the x axis")
         .def("c2_y", &SymmetryOperation::c2_y, "Set equal to C2 about the y axis")
         .def("c2_z", &SymmetryOperation::c2_z, "Set equal to C2 about the z axis")
-        .def("transpose", &SymmetryOperation::transpose, "Performs transposition of matrix operation");
+        .def("transpose", &SymmetryOperation::transpose,
+             "Performs transposition of matrix operation")
+        // Warning! The __getitem__ function below copies the elements, it does not refer to them.
+        .def("__getitem__", [](const SymmetryOperation& self, size_t i){return std::vector<double>(self[i], self[i]+3);});
 
     py::class_<OrbitalSpace>(m, "OrbitalSpace", "Contains information about the orbitals")
         .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&,
@@ -1140,13 +1169,28 @@ void export_mints(py::module& m) {
 
     py::class_<PointGroup, std::shared_ptr<PointGroup>>(m, "PointGroup", "Contains information about the point group")
         .def(py::init<const std::string&>())
-        .def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group");
+        .def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group")
+        .def("order", &PointGroup::order, "Return the order of the point group")
+        .def("char_table", &PointGroup::char_table, "Return the CharacterTable of the point group");
     // def("origin", &PointGroup::origin).
     //            def("set_symbol", &PointGroup::set_symbol);
+
+    py::class_<CharacterTable, std::shared_ptr<CharacterTable>>(m, "CharacterTable", "Contains the character table of the point group")
+        .def(py::init<const unsigned char>())
+        .def(py::init<const std::string&>())
+        .def("gamma", &CharacterTable::gamma, "Returns the irrep with the given index in the character table")
+        .def("order", &CharacterTable::order, "Return the order of the point group")
+        .def("symm_operation", &CharacterTable::symm_operation, "Return the i'th symmetry operation");
+
+    py::class_<IrreducibleRepresentation, std::shared_ptr<IrreducibleRepresentation>>(m, "IrreducibleRepresentation", "An irreducible representation of the point group")
+        .def("character", &IrreducibleRepresentation::character, "Return the character of the i'th symmetry operation for the irrep")
+        .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix&);
     typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
     typedef Vector3 (Molecule::*nuclear_dipole2)() const;
+    typedef Vector3 (Molecule::*vector_by_index)(int) const;
+
 
     py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule", py::dynamic_attr(),
                                                     "Class to store the elements, coordinates, "
@@ -1192,6 +1236,7 @@ void export_mints(py::module& m) {
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")
         .def("z", &Molecule::z, "z position of atom")
+        .def("xyz", vector_by_index(&Molecule::xyz), "Return the Vector3 for atom i", py::arg("i"))
         .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
              "Nuclear charge of atom arg1 (0-indexed including dummies)")
         .def("fx", &Molecule::fx, "x position of atom arg1 (0-indexed including dummies in Bohr)")
@@ -1247,6 +1292,8 @@ void export_mints(py::module& m) {
              "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Tests to see if an atom is at the position arg2 with a given tolerance arg3")
+        .def("atom_at_position", &Molecule::atom_at_position3,
+             "Tests to see if an atom is at the position arg2 with a given tolerance arg3.")
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
         .def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr to output file")
         .def("print_out_in_angstrom", &Molecule::print_in_angstrom,
@@ -1434,8 +1481,11 @@ void export_mints(py::module& m) {
     py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer",
                                                                      "Performs Pipek-Mezey orbital localization");
 
-    py::class_<FCHKWriter, std::shared_ptr<FCHKWriter>>(m, "FCHKWriter",
-                                                        "Extracts information from a wavefunction object, \
+    py::class_<GradientWriter, std::shared_ptr<GradientWriter>>(m, "GradientWriter", "Writes a molecule's gradient to file")
+        .def(py::init<std::shared_ptr<Molecule>, const Matrix&>())
+        .def("write", &GradientWriter::write, "Write gradient to file", py::arg("filename"));
+
+    py::class_<FCHKWriter, std::shared_ptr<FCHKWriter>>(m, "FCHKWriter", "Extracts information from a wavefunction object, \
                                                                           and writes it to an FCHK file")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("write", &FCHKWriter::write, "Write wavefunction information to file", py::arg("filename"));

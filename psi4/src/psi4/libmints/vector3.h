@@ -29,6 +29,7 @@
 #ifndef _psi_src_lib_libmints__vector3_h
 #define _psi_src_lib_libmints__vector3_h
 
+#include <array>
 #include <cmath>
 #include <sstream>
 
@@ -52,6 +53,9 @@ public:
     }
     Vector3(const Vector3& p) {
         v_[0] = p.v_[0]; v_[1] = p.v_[1]; v_[2] = p.v_[2];
+    }
+    Vector3(const std::array<double, 3> p) {
+        v_[0] = p[0]; v_[1] = p[1]; v_[2] = p[2];
     }
 
     void operator=(const double *x) {

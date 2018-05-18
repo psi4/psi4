@@ -45,6 +45,7 @@ import numpy as np
 from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
+from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.procrouting import *
@@ -658,7 +659,7 @@ def gradient(name, **kwargs):
 
         # Obtain list of displacements
         # print("about to generate displacements")
-        displacements = core.fd_geoms_1_0(moleculeclone)
+        displacements = driver_findif.geoms_grad_from_energy(moleculeclone)
         # print(displacements)
         ndisp = len(displacements)
         # print("generated displacments")
@@ -764,7 +765,7 @@ def gradient(name, **kwargs):
 
         # Compute the gradient; last item in 'energies' is undisplaced
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = core.fd_1_0(molecule, energies)
+        G = driver_findif.comp_grad_from_energy(molecule, energies)
         G.print_out()
         wfn.set_gradient(G)
 
@@ -1378,7 +1379,7 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = core.fd_geoms_freq_1(moleculeclone, irrep)
+        displacements = driver_findif.geoms_hess_from_grad(moleculeclone, irrep)
         moleculeclone.reinterpret_coordentry(False)
         moleculeclone.fix_orientation(True)
 
@@ -1493,8 +1494,8 @@ def hessian(name, **kwargs):
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = core.fd_freq_1(molecule, gradients, irrep)  # TODO or moleculeclone?
-        wfn.set_hessian(H)
+        H = driver_findif.comp_hess_from_grad(molecule, gradients, irrep)  # TODO or moleculeclone?
+        wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 
@@ -1524,7 +1525,7 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = core.fd_geoms_freq_0(moleculeclone, irrep)
+        displacements = driver_findif.geoms_hess_from_energies(moleculeclone, irrep)
         moleculeclone.fix_orientation(True)
         moleculeclone.reinterpret_coordentry(False)
 
@@ -1631,8 +1632,8 @@ def hessian(name, **kwargs):
             wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
-        H = core.fd_freq_0(molecule, energies, irrep)
-        wfn.set_hessian(H)
+        H = driver_findif.comp_hess_from_energy(molecule, energies, irrep)
+        wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 
