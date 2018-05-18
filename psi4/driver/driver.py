@@ -1525,7 +1525,7 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = driver_findif.fd_geoms_freq_0(moleculeclone, irrep)
+        displacements = driver_findif.geoms_hess_from_energies(moleculeclone, irrep)
         moleculeclone.fix_orientation(True)
         moleculeclone.reinterpret_coordentry(False)
 
@@ -1632,8 +1632,8 @@ def hessian(name, **kwargs):
             wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
-        H = core.fd_freq_0(molecule, energies, irrep)
-        wfn.set_hessian(H)
+        H = driver_findif.comp_hess_from_energy(molecule, energies, irrep)
+        wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
         wfn.set_frequencies(core.get_frequencies())
 

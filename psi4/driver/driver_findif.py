@@ -359,6 +359,111 @@ def comp_grad_from_energy(mol, E):
     return sgradient
 
 
+def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print_lvl):
+    """Perform post-construction processing for a symmetry block of the Hessian.
+       Statements need to be printed, and the Hessian must be made orthogonal.
+
+    Parameters
+    ---------
+    H_block : np.array
+        A block of the Hessian for an irrep, in mass-weighted salcs.
+        Dimensions # cdsalcs by # cdsalcs.
+    B_block : np.array
+        A block of the B matrix for an irrep, which transforms CdSalcs to Cartesians.
+        Dimensions # cdsalcs by # cartesians.
+    massweighter : np.array
+        The mass associated with each atomic coordinate.
+        Dimension 3 * natom. Due to x, y, z, values appear in groups of three.
+    irrep : str
+        A string identifying the irrep H_block and B_block are of.
+    print_lvl : int
+        The level of printing information requested by the user.
+
+    Returns
+    -------
+    H_block : np.array
+        H_block, but made into an orthogonal array.
+    """
+
+    # Symmetrize our Hessian block.
+    # The symmetric structure is lost due to errors in the computation
+    temp_hess = core.Matrix.from_array(H_block)
+    temp_hess.hermitize()
+    H_block = np.array(temp_hess)
+
+    if print_lvl >= 3:
+        core.print_out("\n\tForce Constants for irrep {} in mass-weighted, ".format(irrep))
+        core.print_out("symmetry-adapted cartesian coordinates.\n")
+        core.Matrix.from_array(H_block).print_out()
+
+    evals, evects = np.linalg.eigh(H_block)
+    # Get our eigenvalues and eigenvectors in descending order.
+    idx = evals.argsort()[::-1]
+    evals = evals[idx]
+    evects = evects[:, idx]
+
+    normal_irr = np.matmul((B_block * massweighter).T, evects)
+
+    if print_lvl >= 2:
+        core.print_out("\n\tNormal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
+        core.Matrix.from_array(normal_irr).print_out()
+
+    return H_block
+
+
+def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
+    """Perform post-construction processing for a symmetry block of the Hessian.
+       Statements need to be printed, and the Hessian must be transformed.
+
+    Parameters
+    ---------
+    H_blocks : list of np.array
+        A list of blocks of the Hessian per irrep, in mass-weighted salcs.
+        Each is dimension # cdsalcs-in-irrep by # cdsalcs-in-irrep.
+    B_blocks : list of np.array
+        A block of the B matrix per irrep, which transforms CdSalcs to Cartesians.
+        Each is dimensions # cdsalcs-in-irrep by # cartesians.
+    massweighter : np.array
+        The mass associated with each atomic coordinate.
+        Dimension 3 * natom. Due to x, y, z, values appear in groups of three.
+    print_lvl : int
+        The level of printing information requested by the user.
+
+    Returns
+    -------
+    Hx : np.array
+        The Hessian in non-mass weighted cartesians.
+    """
+
+    # We have the Hessian in each irrep! The final task is to perform coordinate transforms.
+    #H = la.block_diag(*H_pi)
+    H = block_diag(*H_blocks)
+    B = np.vstack(B_blocks)
+
+    if print_lvl >= 3:
+        core.print_out("\n\tForce constant matrix for all computed irreps in mass-weighted SALCS.\n")
+        core.Matrix.from_array(H).print_out()
+
+    # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
+    # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
+    # As such, the change of basis is formula A' = Xt A X, no inverses!
+    Hx = np.matmul(np.matmul(B.T, H), B)
+    if print_lvl >= 3:
+        core.print_out("\n\tForce constants in mass-weighted Cartesian coordinates.\n")
+        core.Matrix.from_array(Hx).print_out()
+
+    # Un-massweight the Hessian.
+    Hx = np.transpose(Hx / massweighter) / massweighter
+
+    if print_lvl >= 3:
+        core.print_out("\n\tForce constants in Cartesian coordinates.\n")
+        core.Matrix.from_array(Hx).print_out()
+
+    if print_lvl:
+        core.print_out("\n-------------------------------------------------------------\n")
+
+    return Hx
+
 def comp_hess_from_grad(mol, G, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
@@ -505,7 +610,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
         gradient_matrix = np.array([grad.flatten() for grad in gradients]).T
         # Transform disps from Cartesian to CdSalc coordinates.
         # For future convenience, we transpose.
-        # Rows are gradients and columns are coordinates with respect to a particulr CdSALC.
+        # Rows are gradients and columns are coordinates with respect to a particular CdSALC.
         B_pi.append(data["salc_list"].matrix_irrep(h))
         grads_adapted = np.matmul(B_pi[-1], gradient_matrix).T
 
@@ -525,57 +630,121 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
             H_pi[-1] = (grads_adapted[::4] - 8 * grads_adapted[1::4] + 8 * grads_adapted[2::4] - grads_adapted[3::4]
                         ) / (12.0 * data["disp_size"])
 
-        # Symmetrize our Hessian block.
-        # The symmetric structure is lost due to errors in the gradients
-        temp_hess = core.Matrix.from_array(H_pi[-1])
-        temp_hess.hermitize()
-        H_pi[-1] = np.array(temp_hess)
+        H_pi[-1] = _process_hessian_symmetry_block(H_pi[-1], B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"])
 
-        if data["print_lvl"] >= 3:
-            core.print_out("\n\tForce Constants for irrep {} in mass-weighted, ".format(irrep_lbls[h]))
-            core.print_out("symmetry-adapted cartesian coordinates.\n")
-            core.Matrix.from_array(H_pi[-1]).print_out()
+    # All blocks of the Hessian are now constructed!
+    return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
-        evals, evects = np.linalg.eigh(H_pi[-1])
-        # Get our eigenvalues and eigenvectors in descending order.
-        idx = evals.argsort()[::-1]
-        evals = evals[idx]
-        evects = evects[:, idx]
 
-        normal_irr = np.matmul((B_pi[-1] * massweighter).T, evects)
+def comp_hess_from_energy(mol, E, freq_irrep_only):
+    """Compute the Hessian by finite difference of energies.
 
-        if data["print_lvl"] >= 2:
-            core.print_out("\n\tNormal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep_lbls[h]))
-            core.Matrix.from_array(normal_irr).print_out()
+    Parameters
+    ----------
+    mol : qcdb.molecule or psi4.core.Molecule
+        The molecule to compute the Hessian of.
+    G : list of psi4.core.Matrix
+        A list of energies of the molecule at displaced energies
+    freq_irrep_only
+        The Cotton ordered irrep to get frequencies for. Choose -1 for all
+        irreps.
 
-    # We have the Hessian in each irrep! The final task is to perform coordinate transforms.
-    #H = la.block_diag(*H_pi)
-    H = block_diag(*H_pi)
-    B = np.vstack(B_pi)
+    Returns
+    -------
+    hessian : np.array
+        The hessian in Cartesians, as a matrix with dimensions of
+        3*number-of-atoms by 3*number-of-atoms. """
 
-    if data["print_lvl"] >= 3:
-        core.print_out("\n\tForce constant matrix for all computed irreps in mass-weighted SALCS.\n")
-        core.Matrix.from_array(H).print_out()
+    def init_string(data):
+        out_str = ""
+        for i, energy in enumerate(E[:-1], start=1):
+             out_str += "\t{:5d} : {:20.10f}\n".format(i, energy)
+        return ("  Computing second-derivative from energies using projected, \n"
+                "  symmetry-adapted, cartesian coordinates.\n\n"
+                "  {:d} energies passed in, including the reference geometry.\n"
+                "\tUsing {:d}-point formula.\n"
+                "\tEnergy without displacement: {:15.10f}\n"
+                "\tCheck energies below for precision!\n{}".format(
+                    len(E),  data["num_pts"], E[-1], out_str))
 
-    # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
-    # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
-    # As such, the change of basis is formula A' = Xt A X, no inverses!
-    Hx = np.matmul(np.matmul(B.T, H), B)
-    if data["print_lvl"] >= 3:
-        core.print_out("\n\tForce constants in mass-weighted Cartesian coordinates.\n")
-        core.Matrix.from_array(Hx).print_out()
+    data = _initialize_findif(mol, freq_irrep_only, "2_0", init_string)
 
-    # Un-massweight the Hessian.
-    Hx = np.transpose(Hx / massweighter) / massweighter
+    Ndisp = sum(data["Ndisp_pi"]) + 1
+    if len(E) != Ndisp:
+        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), Ndisp))
 
-    if data["print_lvl"] >= 3:
-        core.print_out("\n\tForce constants in Cartesian coordinates.\n")
-        core.Matrix.from_array(Hx).print_out()
+    ref_energy = E[-1]
+    unused_energies = E[:-1]
+    massweighter = np.repeat([mol.mass(a) for a in range(data["Natom"])], 3)**(-0.5)
+    B_pi = []
+    H_pi = []
+    irrep_lbls = mol.irrep_labels()
 
-    if data["print_lvl"]:
-        core.print_out("\n-------------------------------------------------------------\n")
+    # Unlike in the gradient case, we have no symmetry transformations to worry about.
+    # We get to the task directly: assembling the force constants in each irrep block.
+    for irrep in range(data["Nirrep"]):
+        salcs = data["salc_indices_pi"][irrep]
+        if not salcs: continue
 
-    return Hx
+        Nsalcs = len(salcs)
+        Ndisps = data["Ndisp_pi"][irrep]
+        irrep_energies = unused_energies[:Ndisps]
+        unused_energies = unused_energies[Ndisps:]
+
+        # Step One: Diagonals
+        # For asymmetric irreps, the energy at a + disp if the same as at a - disp
+        # We exploited this, so we only need half the displacements for asymmetrics
+        disps_per_diag = (data["num_pts"] - 1) // (2 if irrep else 1)
+        diag_disps = disps_per_diag * Nsalcs
+        energies = np.asarray(irrep_energies[:diag_disps]).reshape((Nsalcs, -1))
+        # For simplicity, convert the case of an asymmetric to the symmetric case.
+        if irrep:
+            energies = np.hstack((energies, np.fliplr(energies)))
+        # Now determine all diagonal force constants for this irrep.
+        if data["num_pts"] == 3:
+            diag_fcs = energies[:,0] + energies[:,1]
+            diag_fcs -= 2 * ref_energy
+            diag_fcs /= (data["disp_size"] ** 2)
+        elif data["num_pts"] == 5:
+            diag_fcs = - energies[:,0] + 16 * energies[:,1] + 16 * energies[:,2] - energies[:,3]
+            diag_fcs -= 30 * ref_energy
+            diag_fcs /= (12 * data["disp_size"] ** 2)
+        H_irr = np.diag(diag_fcs)
+
+        # Step Two: Off-diagonals
+        num_unique_off_elts = Nsalcs * (Nsalcs - 1) // 2
+        offdiag_energies = irrep_energies[diag_disps:]
+        # If offdiagonal elements exist, put them into groups per salc pairs
+        # ...if offdiagonal elements DON'T exist, reshaping would raise an error.
+        if offdiag_energies:
+            offdiag_energies = np.reshape(offdiag_energies, (num_unique_off_elts, -1))
+        offdiag_row_index = 0
+
+        for i, salc in enumerate(salcs):
+            for j, salc2 in enumerate(salcs[:i]):
+                offdiag_row = offdiag_energies[offdiag_row_index]
+                if data["num_pts"] == 3:
+                    fc = (+ offdiag_row[0] + offdiag_row[1] + 2 * ref_energy
+                          - energies[i][0] - energies[i][1]
+                          - energies[j][0] - energies[j][1]) / (
+                          2 * data["disp_size"] ** 2)
+                elif data["num_pts"] == 5:
+                    fc = (- offdiag_row[0] - offdiag_row[2] + 9 * offdiag_row[3]
+                          - offdiag_row[4] - offdiag_row[5] + 9 * offdiag_row[6]
+                          - offdiag_row[7] - offdiag_row[8] + energies[i][0]
+                          - 7 * energies[i][1] - 7 * energies[i][2] + energies[i][3]
+                          + energies[j][0] - 7 * energies[j][1] - 7 * energies[j][2]
+                          + energies[j][3] + 12 * ref_energy) / (
+                          12 * data["disp_size"] ** 2)
+                H_irr[i, j] = fc
+                H_irr[j, i] = fc
+                offdiag_row_index += 1
+
+        B_pi.append(data["salc_list"].matrix_irrep(irrep))
+        H_pi.append(_process_hessian_symmetry_block(H_irr, B_pi[-1], massweighter, irrep_lbls[irrep], data["print_lvl"]))
+
+    # All blocks of the Hessian are now constructed!
+    return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
 def geoms_grad_from_energy(molecule):
@@ -620,7 +789,7 @@ def geoms_hess_from_grad(molecule, irrep):
     return _geom_generator(molecule, irrep, "2_1")
 
 
-def fd_geoms_freq_0(molecule, irrep):
+def geoms_hess_from_energies(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
     
