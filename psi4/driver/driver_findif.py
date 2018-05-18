@@ -464,7 +464,6 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     return Hx
 
-
 def comp_hess_from_grad(mol, G, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
