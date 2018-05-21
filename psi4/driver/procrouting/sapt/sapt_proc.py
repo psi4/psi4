@@ -384,7 +384,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
 
 def run_sf_sapt(name, **kwargs):
-    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'],
+    optstash = p4util.OptionsState(['SCF_TYPE'],
                                    ['SCF', 'REFERENCE'],
                                    ['SCF', 'DFT_GRAC_SHIFT'],
                                    ['SCF', 'SAVE_JK'])
@@ -392,8 +392,8 @@ def run_sf_sapt(name, **kwargs):
     core.tstart()
 
     # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
 
     core.prepare_options_for_module("SAPT")
 
@@ -431,7 +431,7 @@ def run_sf_sapt(name, **kwargs):
     core.IO.set_default_namespace('dimer')
     data = {}
 
-    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+    if (core.get_global_option('SCF_TYPE') == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
@@ -457,7 +457,7 @@ def run_sf_sapt(name, **kwargs):
 
     for key, value in sf_data.items():
         value = sf_data[key]
-        print_vals = (key, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kcalmol)
+        print_vals = (key, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kJmol)
         string = "    %-26s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]\n" % print_vals
         core.print_out(string)
     core.print_out("  " + "-" * 103 + "\n\n")
