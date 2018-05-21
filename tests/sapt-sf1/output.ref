@@ -1,0 +1,521 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 21 May 2018 03:03PM
+
+    Process ID: 3094
+    Host:       h80adf3e9.dhcp.vt.edu
+    PSIDATADIR: /Users/daniel/Gits/psi4jk/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+
+molecule dimer {
+# Set the spin of A
+0 2
+Li   0.00    0.00    0.00
+--
+# Set the spin of B
+0 2
+H   0.000   0.00   10.00
+symmetry c1
+units bohr
+}
+
+set {
+basis cc-pVDZ
+scf_type pk
+e_convergence 1e-8
+d_convergence 1e-8
+reference rohf
+}
+
+
+compare_dict = { #TEST
+    "SAPT ELST ENERGY":                 -0.02368051, #TEST
+    "E Elst10":                         -0.02368051, #TEST
+    "SAPT EXCH ENERGY":                  0.14186858, #TEST
+    "E Exch10(S^2) [highspin]":          0.14186858, #TEST
+    "E Exch10(S^2) [diagonal]":          0.00010209, #TEST
+    "E Exch10(S^2) [off-diagonal]":      0.14176648, #TEST
+} #TEST
+
+energy("SF-SAPT")
+
+for k, v in compare_dict.items():
+    compare_values(v / 1000.0, psi4.get_variable(k), 6, k) # TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on h80adf3e9.dhcp.vt.edu
+*** at Mon May 21 15:03:19 2018
+
+
+         ---------------------------------------------------------
+                          Spin-Flip SAPT Procedure                 
+
+                 by Daniel G. A. Smith and Konrad Patkowski        
+         ---------------------------------------------------------
+
+  ==> Algorithm <==
+
+   JK Algorithm                      PK
+
+   Required computations:
+     HF  (Monomer A)
+     HF  (Monomer B)
+
+
+*** tstart() called on h80adf3e9.dhcp.vt.edu
+*** at Mon May 21 15:03:19 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry LI         line    42 file /Users/daniel/Gits/psi4jk/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry H          line    22 file /Users/daniel/Gits/psi4jk/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                           SF-SAPT: HF Monomer A                   
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                             ROHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         LI           0.000000000000     0.000000000000    -1.256039927086     7.016004548000
+      Gh(H)           0.000000000000     0.000000000000     8.743960072914     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      0.68313  C =      0.68313 [cm^-1]
+  Rotational constants: A = ************  B =  20479.60741  C =  20479.60741 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 3
+  Nalpha       = 2
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 9
+    Number of basis function: 19
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         19      19       0       0       0       0
+   -------------------------------------------------------
+    Total      19      19       2       1       1       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:               9
+      Number of primitives:             30
+      Number of atomic orbitals:        20
+      Number of basis functions:        19
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 36290 doubles for integral storage.
+  We computed 1035 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.5612386961E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @ROHF iter   1:    -7.42968757036434   -7.42969e+00   1.39044e-03 
+   @ROHF iter   2:    -7.43225427959602   -2.56671e-03   2.95003e-04 DIIS
+   @ROHF iter   3:    -7.43241935196138   -1.65072e-04   1.96997e-05 DIIS
+   @ROHF iter   4:    -7.43242002455135   -6.72590e-07   1.84887e-06 DIIS
+   @ROHF iter   5:    -7.43242003391343   -9.36207e-09   9.26747e-07 DIIS
+   @ROHF iter   6:    -7.43242003729388   -3.38045e-09   1.00307e-07 DIIS
+   @ROHF iter   7:    -7.43242003733159   -3.77129e-11   8.71448e-10 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A     -2.477521  
+
+    Singly Occupied:                                                      
+
+       2A     -0.079266  
+
+    Virtual:                                                              
+
+       3A      0.038352     4A      0.038575     5A      0.038575  
+       6A      0.147809     7A      0.167005     8A      0.173005  
+       9A      0.173005    10A      0.209509    11A      0.335457  
+      12A      0.335457    13A      0.335457    14A      0.335457  
+      15A      0.336723    16A      1.495819    17A      1.817618  
+      18A      1.817618    19A      1.820155  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+    SOCC [     1 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:    -7.43242003733159
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -9.7134884304970459
+    Two-Electron Energy =                   2.2810683931654570
+    Total Energy =                         -7.4324200373315890
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -3.7681
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     3.7681
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0001     Total:     0.0001
+
+
+*** tstop() called on h80adf3e9.dhcp.vt.edu at Mon May 21 15:03:20 2018
+Module time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on h80adf3e9.dhcp.vt.edu
+*** at Mon May 21 15:03:20 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry LI         line    42 file /Users/daniel/Gits/psi4jk/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry H          line    22 file /Users/daniel/Gits/psi4jk/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                           SF-SAPT: HF Monomer B                   
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                             ROHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(LI)          0.000000000000     0.000000000000    -1.256039927086     7.016004548000
+         H            0.000000000000     0.000000000000     8.743960072914     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      0.68313  C =      0.68313 [cm^-1]
+  Rotational constants: A = ************  B =  20479.60741  C =  20479.60741 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 9
+    Number of basis function: 19
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         19      19       0       0       0       0
+   -------------------------------------------------------
+    Total      19      19       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:               9
+      Number of primitives:             30
+      Number of atomic orbitals:        20
+      Number of basis functions:        19
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 36290 doubles for integral storage.
+  We computed 1035 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.5612386961E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @ROHF iter   1:     0.14544759569923    1.45448e-01   2.49018e-02 
+   @ROHF iter   2:    -0.49927011248968   -6.44718e-01   3.13599e-04 DIIS
+   @ROHF iter   3:    -0.49929566965428   -2.55572e-05   7.66107e-05 DIIS
+   @ROHF iter   4:    -0.49929669259904   -1.02294e-06   5.09543e-05 DIIS
+   @ROHF iter   5:    -0.49929867508678   -1.98249e-06   4.54043e-06 DIIS
+   @ROHF iter   6:    -0.49929868963622   -1.45494e-08   8.72030e-07 DIIS
+   @ROHF iter   7:    -0.49929869020653   -5.70305e-10   2.29443e-08 DIIS
+   @ROHF iter   8:    -0.49929869020681   -2.79055e-13   4.77269e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+    
+
+    Singly Occupied:                                                      
+
+       1A     -0.186924  
+
+    Virtual:                                                              
+
+       2A      0.038050     3A      0.057611     4A      0.057611  
+       5A      0.063674     6A      0.238318     7A      0.333601  
+       8A      0.333601     9A      0.337673    10A      0.399763  
+      11A      0.400429    12A      0.400429    13A      0.400433  
+      14A      0.400433    15A      0.660953    16A      1.508259  
+      17A      1.508259    18A      1.510926    19A      3.785028  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:    -0.49929869020681
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -0.4992986902068075
+    Two-Electron Energy =                  -0.0000000000000001
+    Total Energy =                         -0.4992986902068076
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     8.7440
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:    -8.7409
+
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.0031     Total:     0.0031
+
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:     0.0078     Total:     0.0078
+
+
+*** tstop() called on h80adf3e9.dhcp.vt.edu at Mon May 21 15:03:20 2018
+Module time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+         ---------------------------------------------------------
+                 Spin-Flip SAPT Exchange and Electrostatics        
+
+                 by Daniel G. A. Smith and Konrad Patkowski        
+         ---------------------------------------------------------
+
+
+  ==> Preparing SF-SAPT Data Cache <== 
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+
+  ==> Computing required JK matrices <== 
+
+
+  ==> Computing Spin-Flip Exchange and Electostatics <== 
+
+   Spin-Flip SAPT Results
+  -------------------------------------------------------------------------------------------------------
+    Elst10                         -0.02368051 [mEh]     -0.01485975 [kcal/mol]     -0.06217318 [kJ/mol]
+    Exch10(S^2) [diagonal]          0.00010209 [mEh]      0.00006407 [kcal/mol]      0.00026805 [kJ/mol]
+    Exch10(S^2) [off-diagonal]      0.14176648 [mEh]      0.08895981 [kcal/mol]      0.37220790 [kJ/mol]
+    Exch10(S^2) [highspin]          0.14186858 [mEh]      0.08902388 [kcal/mol]      0.37247595 [kJ/mol]
+  -------------------------------------------------------------------------------------------------------
+
+
+*** tstop() called on h80adf3e9.dhcp.vt.edu at Mon May 21 15:03:20 2018
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	SAPT ELST ENERGY..................................................PASSED
+	E Elst10..........................................................PASSED
+	SAPT EXCH ENERGY..................................................PASSED
+	E Exch10(S^2) [highspin]..........................................PASSED
+	E Exch10(S^2) [diagonal]..........................................PASSED
+	E Exch10(S^2) [off-diagonal]......................................PASSED
+
+    Psi4 stopped on: Monday, 21 May 2018 03:03PM
+    Psi4 wall time for execution: 0:00:00.45
+
+*** Psi4 exiting successfully. Buy a developer a beer!
