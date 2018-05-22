@@ -122,7 +122,7 @@ class PSI_API Dimension {
  *      SharedVector v;
  *      v->get_block({begin,end}); // same as v->get_block(slice);
  */
-class Slice {
+class PSI_API Slice {
     Dimension begin_;
     Dimension end_;
 
