@@ -197,8 +197,8 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
 
         """
 
-        if ((molschema.get('schema_name', '') == 'QC_JSON') and
-            (molschema.get('schema_version', '') == 0)):
+        if ('qc_schema' in (molschema.get('schema_name', '')) and
+            (molschema.get('schema_version', '') == 1)):
             # Lost Fields
             # -----------
             # * 'comment'

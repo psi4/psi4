@@ -4,8 +4,8 @@ import json
 
 # Generate JSON data
 json_data = {
-  "schema_name": "QC_JSON",
-  "schema_version": 0,
+  "schema_name": "qc_schema_input",
+  "schema_version": 1,
   "molecule": {
     "geometry": [
       0.0,
@@ -57,7 +57,7 @@ expected_properties = {
   "return_energy": -76.02139738600329
 }
 
-psi4.json_wrapper.run_json(json_data)
+json_data = json_data = psi4.json_wrapper.run_json(json_data)
 
 with open("output.json", "w") as ofile:
     json.dump(json_data, ofile, indent=2)
