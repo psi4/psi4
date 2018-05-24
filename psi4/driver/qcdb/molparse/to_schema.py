@@ -41,7 +41,7 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
     ----------
     molrec : dict
         Psi4 json Molecule spec.
-    dtype : {'psi4', 0}
+    dtype : {'psi4', 1}
         Molecule schema format.
     units : {'Angstrom', 'Bohr'}
         Units in which to write string. There is not an option to write in
@@ -82,7 +82,7 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
         qcschema['units'] = units
         qcschema['name'] = name
 
-    elif dtype == 0:
+    elif dtype == 1:
         if units != 'Bohr':
             raise ValidationError("""QC_JSON_Schema {} allows only 'Bohr' coordinates, not {}.""".format(dtype, units))
 
@@ -99,6 +99,8 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
         qcschema['fragment_multiplicities'] = np.array(molrec['fragment_multiplicities'])
         qcschema['fix_com'] = molrec['fix_com']
         qcschema['fix_orientation'] = molrec['fix_orientation']
+    else:
+        raise TypeError("dtype not understood, valid options are {'psi4', 1}. Found {}.".format(dtype))
 
         # hmm, psi4/qcdb for provenance or does psi molrec need a passthrough field to preserve?
         #qcschema['provenance'] creator, version, routine

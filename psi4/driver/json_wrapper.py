@@ -81,7 +81,7 @@ def run_json(json_data, clean=True):
 
     # Attempt to run the computer
     try:
-        if ("schema_name" in json_data) and ("qc_schema" in json_data["schema_name"]):
+        if json_data.get("schema_name", "").startswith("qc_schema"):
             # qc_schema should be copied
             json_data = run_json_qc_schema(copy.deepcopy(json_data), clean)
         else:
