@@ -60,7 +60,7 @@ Visualization of Normal Modes
 
 |PSIfour| has the ability to export a Molden file that stores information about
 the harmonic frequencies and normal modes computed via :py:func:`~psi4.frequency`.
-This feature can be enabled by setting the option |globals__normal_modes_write| to true.
+This feature can be enabled by setting the option |findif__normal_modes_write| to true.
 The filename of the Molden file ends in ``.molden_normal_modes``, and the prefix is
 determined by |globals__writer_file_label| (if set), or else by the name of the
 output file plus the name of the current molecule.
@@ -70,6 +70,6 @@ mass weighted.
 Molden Interface Keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/globals__normal_modes_write.rst
+.. include:: autodir_options_c/findif__normal_modes_write.rst
 
 .. include:: autodir_options_c/globals__writer_file_label.rst
