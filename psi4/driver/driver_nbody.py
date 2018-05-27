@@ -46,7 +46,7 @@ def nCr(n, r):
 
 ### Begin CBS gufunc data
 
-def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict, fragment_size_dict, ret, vmfc=False):
+def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict, fragment_size_dict, ret, vmfc=False, n=0):
     """
     Sums gradient and hessian data from compute_list.
 
@@ -591,7 +591,7 @@ def assemble_nbody_components(metadata, component_results):
             _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
                                       vmfc_level_list[n], fragment_slice_dict, 
                                       fragment_size_dict, vmfc_ptype_by_level[n],
-                                      vmfc=True)
+                                      vmfc=True, n=n)
 
     # Compute cp energy and ptype
     if 'cp' in metadata['bsse_type_list']:
@@ -669,6 +669,21 @@ def assemble_nbody_components(metadata, component_results):
 
     # Compute vmfc energy and ptype
     if 'vmfc' in metadata['bsse_type_list']:
+        print('vmfc_ptype_by_level\n', vmfc_ptype_by_level)
+        for n in nbody_range:
+            if n == metadata['max_frag']:
+                if metadata['ptype'] != 'energy':
+                    vmfc_ptype_body_dict[n][:] = vmfc_ptype_by_level[n]
+                continue
+
+            for k in range(1, n + 1):
+                take_nk =  nCr(metadata['max_frag'] - k - 1, n - k)
+                sign = ((-1) ** (n - k))
+
+                if metadata['ptype'] != 'energy':
+                    value = vmfc_ptype_by_level[k]
+                    vmfc_ptype_body_dict[n] += take_nk * sign * value
+        print('\n\nvmfc_ptype_body_dict', vmfc_ptype_body_dict)
         _print_nbody_interaction_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         _print_nbody_total_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         vmfc_interaction_energy = vmfc_energy_body_dict[metadata['max_nbody']] - vmfc_energy_body_dict[1]
@@ -712,7 +727,7 @@ def assemble_nbody_components(metadata, component_results):
         if metadata['return_total_data']:
             np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
             if return_method == 'cp' and metadata['max_nbody'] > 1:
-                np_final_ptype = cp_total_ptype
+                np_final_ptype = cp_total_ptype.copy()
         else:
             np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
             np_final_ptype -= results['ptype_body_dict'][1]
