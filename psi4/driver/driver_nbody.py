@@ -95,23 +95,9 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
     else:
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
 
-def _print_nbody_total_energy(energy_body_dict, header):
-        core.print_out("""\n   ==> N-Body: %s  total energies <==\n\n""" % header)
-        core.print_out("""   n-Body     Total Energy [Eh]       Delta [kcal/mol]\n""")
-        previous_e = energy_body_dict[1]
-        nbody_range = list(energy_body_dict)
-        nbody_range.sort()
-        for n in nbody_range:
-            delta_e = (energy_body_dict[n] - previous_e)
-            delta_e_kcal = delta_e * constants.hartree2kcalmol
-            core.print_out("""     %4s  %20.12f  %20.12f\n""" %
-                                        (n, energy_body_dict[n], delta_e_kcal))
-            previous_e = energy_body_dict[n]
-        core.print_out("\n")
-
-def _print_nbody_interaction_energy(energy_body_dict, header):
-        core.print_out("""\n   ==> N-Body: %s  interaction energies <==\n\n""" % header)
-        core.print_out("""   n-Body     I.E. [kcal/mol]      Delta [kcal/mol]\n""")
+def _print_nbody_energy(energy_body_dict, header):
+        core.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
+        core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
         nbody_range = list(energy_body_dict)
         nbody_range.sort()
@@ -119,8 +105,8 @@ def _print_nbody_interaction_energy(energy_body_dict, header):
             delta_e = (energy_body_dict[n] - previous_e)
             delta_e_kcal = delta_e * constants.hartree2kcalmol
             int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol
-            core.print_out("""     %4s  %20.12f  %20.12f\n""" %
-                                        (n, int_e_kcal, delta_e_kcal))
+            core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" %
+                                        (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
             previous_e = energy_body_dict[n]
         core.print_out("\n")
 
@@ -329,10 +315,9 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
                 cp_compute_list[nbody].add( (x, basis_tuple) )
-        # Add monomers in monomer basis if total ptype is requested
-        if metadata['return_total_data'] and metadata['max_nbody'] > 1:
-            for x in fragment_range:
-                cp_compute_list[1].add( ((x,), (x,)))
+        # Add monomers in monomer basis
+        for x in fragment_range:
+            cp_compute_list[1].add( ((x,), (x,)))
 
     if 'nocp' in metadata['bsse_type_list']:
         # Everything in monomer basis
@@ -553,7 +538,7 @@ def assemble_nbody_components(metadata, component_results):
 
         # Energy
         # Extract energies for monomers in monomer basis for CP total data
-        if n==1 and metadata['return_total_data']:
+        if n==1:
             cp_monomers_in_monomer_basis = [v for v in cp_compute_list[1] if len(v[1]) == 1] 
             cp_monomer_energies = 0.0
             cp_monomer_energy_list = []
@@ -575,13 +560,6 @@ def assemble_nbody_components(metadata, component_results):
 
         # Do ptype
         if metadata['ptype'] != 'energy':
-            # Extract ptype data for monomers in monomer basis for CP total data
-            if metadata['return_total_data']:
-                cp_monomer_ptype = np.zeros(arr_shape)
-                _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
-                                          cp_monomers_in_monomer_basis, fragment_slice_dict, 
-                                          fragment_size_dict, cp_monomer_ptype)
-
             _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
                                       cp_compute_list[n], fragment_slice_dict, 
                                       fragment_size_dict, cp_ptype_by_level[n])
@@ -593,13 +571,20 @@ def assemble_nbody_components(metadata, component_results):
                                       fragment_size_dict, vmfc_ptype_by_level[n],
                                       vmfc=True, n=n)
 
+    if metadata['ptype'] != 'energy':
+        # Extract ptype data for monomers in monomer basis for CP total data
+        cp_monomer_ptype = np.zeros(arr_shape)
+        _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'],
+                                  cp_monomers_in_monomer_basis, fragment_slice_dict, 
+                                  fragment_size_dict, cp_monomer_ptype)
+
     # Compute cp energy and ptype
     if 'cp' in metadata['bsse_type_list']:
         for n in nbody_range:
             if n == metadata['max_frag']:
-                cp_energy_body_dict[n] = cp_energy_by_level[n]
+                cp_energy_body_dict[n] = cp_energy_by_level[n] - bsse
                 if metadata['ptype'] != 'energy':
-                    cp_ptype_body_dict[n][:] = cp_ptype_by_level[n]
+                    cp_ptype_body_dict[n][:] = cp_ptype_by_level[n] - bsse_ptype
                 continue
 
             for k in range(1, n + 1):
@@ -612,30 +597,34 @@ def assemble_nbody_components(metadata, component_results):
                     value = cp_ptype_by_level[k]
                     cp_ptype_body_dict[n] += take_nk * sign * value
 
+            if n == 1:
+                bsse = cp_energy_body_dict[n] - cp_monomer_energies
+                cp_energy_body_dict[n] = cp_monomer_energies
+                if metadata['ptype'] != 'energy':
+                    bsse_ptype = cp_ptype_body_dict[n] - cp_monomer_ptype
+                    cp_ptype_body_dict[n] = cp_monomer_ptype.copy()
+
+            if n > 1:
+                cp_energy_body_dict[n] -= bsse
+                if metadata['ptype'] != 'energy':
+                    cp_ptype_body_dict[n] -= bsse_ptype
+
         cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
         nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
-        _print_nbody_interaction_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
 
         for n in nbody_range[1:]:
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
-        if metadata['return_total_data']:
-            # Calculate cp total energy and ptype
-            _print_nbody_total_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
-            if metadata['max_nbody'] > 1:
-                cp_total_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1] + cp_monomer_energies
-                if metadata['ptype'] != 'energy':
-                    cp_total_ptype = cp_ptype_body_dict[metadata['max_nbody']] - cp_ptype_body_dict[1] + cp_monomer_ptype
-            else:
-                cp_total_energy = cp_energy_body_dict[metadata['max_nbody']]
-            core.print_out("   CP Corrected Total Energy: %20.12f [Eh]\n\n" %cp_total_energy)
-            nbody_dict['Counterpoise Corrected Total Energy'] = cp_total_energy
-            # Add extracted monomer energies back.
-            for i, j in enumerate(cp_monomers_in_monomer_basis):
-                cp_compute_list[1].add(j)
-                component_results['energies'][j] = cp_monomer_energy_list[i]
+        # Add extracted monomer energies back.
+        for i, j in enumerate(cp_monomers_in_monomer_basis):
+            cp_compute_list[1].add(j)
+            component_results['energies'][j] = cp_monomer_energy_list[i]
 
+        _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
+        cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
+        nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[metadata['max_nbody']]
+        nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
 
     # Compute nocp energy and ptype
     if 'nocp' in metadata['bsse_type_list']:
@@ -656,8 +645,7 @@ def assemble_nbody_components(metadata, component_results):
                     value = nocp_ptype_by_level[k]
                     nocp_ptype_body_dict[n] += take_nk * sign * value
 
-        _print_nbody_interaction_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
-        _print_nbody_total_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
+        _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
         nocp_interaction_energy = nocp_energy_body_dict[metadata['max_nbody']] - nocp_energy_body_dict[1]
         nbody_dict['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
@@ -669,7 +657,6 @@ def assemble_nbody_components(metadata, component_results):
 
     # Compute vmfc energy and ptype
     if 'vmfc' in metadata['bsse_type_list']:
-        print('vmfc_ptype_by_level\n', vmfc_ptype_by_level)
         for n in nbody_range:
             if n == metadata['max_frag']:
                 if metadata['ptype'] != 'energy':
@@ -683,9 +670,8 @@ def assemble_nbody_components(metadata, component_results):
                 if metadata['ptype'] != 'energy':
                     value = vmfc_ptype_by_level[k]
                     vmfc_ptype_body_dict[n] += take_nk * sign * value
-        print('\n\nvmfc_ptype_body_dict', vmfc_ptype_body_dict)
-        _print_nbody_interaction_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
-        _print_nbody_total_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
+
+        _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         vmfc_interaction_energy = vmfc_energy_body_dict[metadata['max_nbody']] - vmfc_energy_body_dict[1]
         nbody_dict['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Valiron-Mayer Function Couterpoise Interaction Energy'] = vmfc_interaction_energy
@@ -715,10 +701,6 @@ def assemble_nbody_components(metadata, component_results):
 
     if metadata['return_total_data']:
         results['ret_energy'] = results['energy_body_dict'][metadata['max_nbody']]
-        if return_method == 'cp' and metadata['max_nbody'] > 1:
-            results['ret_energy'] = cp_total_energy 
-        else:
-            results['ret_energy'] = results['energy_body_dict'][metadata['max_nbody']]
     else:
         results['ret_energy'] = results['energy_body_dict'][metadata['max_nbody']]
         results['ret_energy'] -= results['energy_body_dict'][1]
@@ -726,8 +708,6 @@ def assemble_nbody_components(metadata, component_results):
     if metadata['ptype'] != 'energy':
         if metadata['return_total_data']:
             np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
-            if return_method == 'cp' and metadata['max_nbody'] > 1:
-                np_final_ptype = cp_total_ptype.copy()
         else:
             np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
             np_final_ptype -= results['ptype_body_dict'][1]
