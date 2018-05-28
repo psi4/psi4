@@ -128,6 +128,7 @@ function(add_psi4_plugin TARGET SOURCES)
 
     add_library(${TARGET} MODULE ${ARGV})
     target_link_libraries(${TARGET} PRIVATE psi4::core)
+    target_link_libraries(${TARGET} PRIVATE tgt::omp)
     set_target_properties(${TARGET} PROPERTIES PREFIX "")
     if (APPLE)
         set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")

@@ -100,7 +100,7 @@ endif()
 #    add_definitions(-DHAVE_MKL_LAPACK)
 #endif()
 
-foreach(_service BLAS LAPACK)
+foreach(_service OMP BLAS LAPACK)
     if(ENABLE_AUTO_${_service})
         config_math_service(${_service})
     endif()
