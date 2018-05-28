@@ -403,7 +403,7 @@ def compute_nbody_components(func, method_string, metadata):
             ghost = list(set(pair[1]) - set(pair[0]))
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
-            current_mol.set_name(str(count))
+            current_mol.set_name("%i_%i" %(count, num))
             # Save energies info
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
             energies_dict[pair] = core.get_variable("CURRENT ENERGY")
