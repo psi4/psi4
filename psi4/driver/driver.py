@@ -1167,10 +1167,6 @@ def hessian(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
-    # Bounce to CP if bsse kwarg (someday)
-    if kwargs.get('bsse_type', None) is not None:
-        raise ValidationError("Hessian: Cannot specify bsse_type for hessian yet.")
-
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
@@ -1178,13 +1174,19 @@ def hessian(name, **kwargs):
         else:
             # Bounce to name if name is non-CBS function
             gradient_type = 'custom_function'
+    # Bounce to CP if bsse kwarg (someday)
+    elif kwargs.get('bsse_type', None) is not None:
+        gradient_type = 'nbody_gufunc' 
     elif '/' in name:
         gradient_type = 'cbs_gufunc'
     else:
         gradient_type = 'conventional'
 
+    # Call appropriate wrappers
+    if gradient_type == 'nbody_gufunc':
+        return driver_nbody.nbody_gufunc(hessian, name.lower(), ptype='hessian', **kwargs) 
     # Check if this is a CBS extrapolation
-    if gradient_type == "cbs_gufunc":
+    elif gradient_type == "cbs_gufunc":
         return driver_cbs._cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")
     elif gradient_type == "cbs_wrapper":
         return driver_cbs.cbs(hessian, "cbs", **kwargs, ptype="hessian")
@@ -1192,7 +1194,7 @@ def hessian(name, **kwargs):
         raise ValidationError("Hessian: Does not yet support custom functions.")
     else:
         lowername = name.lower()
-
+    
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
     dertype = 2

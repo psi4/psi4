@@ -86,7 +86,7 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
                 rel_start += 3 * fragment_size_dict[bas]
 
                 tmp_slice = fragment_slice_dict[bas]
-                abs_slices.append(slice(tmp_slice.start * 3, tmp_slice.end * 3))
+                abs_slices.append(slice(tmp_slice.start * 3, tmp_slice.stop * 3))
 
             for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
                 for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
