@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+import sys
+import math
 import time
+import importlib
+import subprocess
 
 # good
 #import numpy as np
@@ -50,10 +54,12 @@ def test_threaded_blas(args):
     rat2 = times["p4-n" + str(threads[0])] / times["p4-n" + str(threads[-1])]
     print("  NumPy@n%d : Psi4@n%d ratio (want ~1): %.2f" % (threads[-1], threads[-1], rat1))
     print("   Psi4@n%d : Psi4@n%d ratio (want ~%d): %.2f" % (threads[0], threads[-1], threads[-1], rat2))
+    if args.passfail:
+        assert math.isclose(rat1, 1.0, rel_tol=0.2), 'PsiAPI:NumPy speedup {} !~= 1.0'.format(rat1)
+        assert math.isclose(rat2, threads[-1], rel_tol=0.4), 'PsiAPI speedup {} !~= {}'.format(rat2, threads[-1])
 
 
 def test_psithon(args):
-    import subprocess
 
     inputdat = """
 molecule dimer {
@@ -93,6 +99,11 @@ compare_values(-0.00300901652,  psi4.get_variable("SAPT0 TOTAL ENERGY"), 6, "SAP
     with open(tfn + '.in', 'w') as fp:
         fp.write(inputdat)
 
+    run_psithon_inputs(args, tfn=tfn, label='Psi4')
+
+
+def run_psithon_inputs(args, tfn, label):
+
     times = {}
     threads = [1, int(args.nthread)]
 
@@ -108,19 +119,87 @@ compare_values(-0.00300901652,  psi4.get_variable("SAPT0 TOTAL ENERGY"), 6, "SAP
 
     rat1 = times[threads[0]] / times[threads[-1]]
     print("   Psi4@n%d : Psi4@n%d ratio (want ~%d): %.2f" % (threads[0], threads[-1], threads[-1], rat1))
+    if args.passfail:
+        #assert math.isclose(rat1, threads[-1], rel_tol=0.6), 'Psithon speedup {} !~= {}'.format(rat1, threads[-1])
+        assert rat1 > 1.3, '{} Psithon speedup {} !~= {}'.format(label, rat1, threads[-1])
 
 
-def print_math_ldd():
-    import sys
-    import subprocess
+def test_plugin_dfmp2(args):
 
-    import psi4
-    p4core = psi4.__file__[:-11] + 'core.so'
+    inputdat = """
+import %s
+
+memory 2 gb
+
+molecule {
+0 1
+C     0.0000000    0.0000000    1.0590353
+C     0.0000000   -1.2060084    1.7576742
+C     0.0000000   -1.2071767    3.1515905
+C     0.0000000    0.0000000    3.8485751
+C     0.0000000    1.2071767    3.1515905
+C     0.0000000    1.2060084    1.7576742
+H     0.0000000    0.0000000   -0.0215805
+H     0.0000000   -2.1416387    1.2144217
+H     0.0000000   -2.1435657    3.6929953
+H     0.0000000    0.0000000    4.9301499
+H     0.0000000    2.1435657    3.6929953
+H     0.0000000    2.1416387    1.2144217
+--
+0 1
+C    -1.3940633    0.0000000   -2.4541524
+C    -0.6970468    1.2072378   -2.4546277
+C     0.6970468    1.2072378   -2.4546277
+C     1.3940633    0.0000000   -2.4541524
+C     0.6970468   -1.2072378   -2.4546277
+C    -0.6970468   -1.2072378   -2.4546277
+H    -2.4753995    0.0000000   -2.4503221
+H    -1.2382321    2.1435655   -2.4536764
+H     1.2382321    2.1435655   -2.4536764
+H     2.4753995    0.0000000   -2.4503221
+H     1.2382321   -2.1435655   -2.4536764
+H    -1.2382321   -2.1435655   -2.4536764
+}
+
+set {
+  scf_type df
+  mp2_type df
+  basis aug-cc-pvdz
+  freeze_core true
+}
+
+e, wfn = energy('plugdfmp2', return_wfn=True)
+compare_values(-1.6309450762271729, wfn.get_variable('MP2 CORRELATION ENERGY'), 5, 'df-mp2 energy')  # aug-cc-pvdz
+#compare_values(-1.5720781831194317, wfn.get_variable('MP2 CORRELATION ENERGY'), 5, 'df-mp2 energy')  # cc-pvdz
+""" % (args.module)
+
+    tfn = '_dfmp2_plugin_thread_test_input_psi4_yo'
+    with open(tfn + '.in', 'w') as fp:
+        fp.write(inputdat)
+
+    run_psithon_inputs(args, tfn=tfn, label='Plugin dfmp2')
+
+
+def print_math_ldd(args):
+
+    module, sharedlibrary = args.module.split('/')
+    mod = importlib.import_module(module)
+    modcore = mod.__file__[:-11] + sharedlibrary
 
     if sys.platform.startswith('linux'):
-        cmd = """ldd -v {} | grep -e ':' -e 'mkl' -e 'openblas' -e 'iomp5' -e 'gomp'""".format(p4core)
+        cmd = """ldd -v {} | grep -e ':' -e 'mkl' -e 'openblas' -e 'iomp5' -e 'gomp'""".format(modcore)
         print('Running {} ...'.format(cmd))
         subprocess.call(cmd, shell=True)
+        lddout = subprocess.getoutput(cmd)
+        report = {'mkl': lddout.count('libmkl'),
+                  'iomp5': lddout.count('libiomp5'),
+                  'openblas': lddout.count('libopenblas'),
+                  'gomp': lddout.count('libgomp')}
+        print(report)
+        okmkl = bool(report['mkl']) and bool(report['iomp5']) and not bool(report['openblas']) and not bool(report['gomp'])
+        okopenblas = not bool(report['mkl']) and not bool(report['iomp5']) and bool(report['openblas']) and bool(report['gomp'])
+        if args.passfail:
+            assert okmkl != okopenblas
     else:
         print('Not available w/o `ldd`')
 
@@ -130,15 +209,22 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Psi4 threading tester. `psi4` and `import psi4` expected in *PATHs")
     parser.add_argument("-n", "--nthread", default=4,
-                        help="Number of threads to use. Psi4 disregards OMP_NUM_THREADS/MKL_NUM_THREADS.")
+                        help="""Number of threads to use. Psi4 disregards OMP_NUM_THREADS/MKL_NUM_THREADS.""")
+    parser.add_argument("--passfail", action='store_true',
+                        help="""Instead of just printing, run as tests.""")
+    parser.add_argument("--module", default='psi4/core.so',
+                        help="""In --ldd mode, module and shared library to analyze, e.g., 'greatplugin/cxxcode.so'.
+In --plugin-dfmp2 mode, name of dfmp2 module to load, e.g., 'plugdfmp2'.""")
 
     group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument('--psithon', action='store_true',
-                        help="""Test Psi4 (PsiAPI) vs NumPy in threaded matrix multiply.""")
     group.add_argument('--psiapi', action='store_true',
+                        help="""Test Psi4 (PsiAPI) vs NumPy in threaded matrix multiply.""")
+    group.add_argument('--psithon', action='store_true',
                         help="""Test Psi4 (PSIthon) in threaded SAPT calc.""")
     group.add_argument('--ldd', action='store_true',
-                        help="""Run ldd to examine BLAS and OMP linking of psi4/core.so.""")
+                        help="""Run ldd to examine BLAS and OMP linking of psi4/core.so (or whatever supplied to --module).""")
+    group.add_argument('--plugin-dfmp2', action='store_true',
+                        help="""Test dfmp2 plugin template (PSIthon) threading.""")
 
     args, unknown = parser.parse_known_args()
 
@@ -147,8 +233,25 @@ if __name__ == '__main__':
     elif args.psithon:
         test_psithon(args)
     elif args.ldd:
-        print_math_ldd()
+        print_math_ldd(args)
+    elif args.plugin_dfmp2:
+        test_plugin_dfmp2(args)
     else:
         test_threaded_blas(args)
         test_psithon(args)
-        print_math_ldd()
+        print_math_ldd(args)
+
+
+"""
+PFX="usr/local/psi4"
+PLUG="plugdfmp2"
+THD=8
+# * build psi4 and test its threading
+PYTHONPATH=stage/$PFX/lib/ python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --ldd
+PATH=stage/$PFX/bin/:$PATH PYTHONPATH=stage/$PFX/lib/ python stage/$PFX/share/psi4/scripts/test_threading.py --passfail -n$THD
+# * build an OpenMP plugin and test its threading
+stage/$PFX/bin/psi4 --plugin-name $PLUG --plugin-template dfmp2
+cd $PLUG && `../stage/$PFX/bin/psi4 --plugin-compile` && make && cd ..
+PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --ldd --module="$PLUG/$PLUG.so"
+PATH=stage/$PFX/bin/:$PATH PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --plugin-dfmp2 --module="$PLUG" -n$THD
+"""
