@@ -11,8 +11,6 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # -----------------------------------------------------------------------------
 
-set(OMP_LIBS)
-
 #-------------------------------------------------------------------------------
 # SYSTEM_NATIVE
 
@@ -94,7 +92,6 @@ set(OPENBLAS_LAPACK_LIBS openblas)
 set(MKL_BLAS_INCLUDE_PATH_SUFFIXES)
 set(MKL_LAPACK_INCLUDE_PATH_SUFFIXES)
 
-set(MKL_OMP_HEADERS    mkl.h)
 set(MKL_BLAS_HEADERS   mkl.h) #mkl_cblas.h)
 set(MKL_LAPACK_HEADERS mkl.h) #mkl_lapack.h)
 
@@ -120,7 +117,6 @@ if(ENABLE_OPENMP)
     if(MKL_COMPILER_BINDINGS MATCHES Clang)
         set(_thread_lib mkl_intel_thread)
     endif()
-    set(MKL_OMP_LIBS "iomp5;-Wl,--as-needed")
 else()
     set(_thread_lib mkl_sequential)
 endif()

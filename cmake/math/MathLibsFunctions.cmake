@@ -15,7 +15,7 @@
 include(FindPackageHandleStandardArgs)
 include(FindPackageMessage)
 
-foreach(_service OMP BLAS LAPACK)
+foreach(_service BLAS LAPACK)
     if(NOT ${_service}_LANG)
         set(${_service}_LANG C)
     elseif(${_service}_LANG STREQUAL "C" OR ${_service}_LANG STREQUAL "CXX")
