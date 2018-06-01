@@ -79,8 +79,9 @@ extensions = [
     'cloud_sptheme.ext.index_styling',
     'cloud_sptheme.ext.escaped_samp_literals',
     # from Astropy
-    'astropy_helpers.extern.automodapi.automodapi',
-    'astropy_helpers.extern.automodapi.automodsumm',
+    'sphinx_automodapi.automodapi',
+    'sphinx_automodapi.automodsumm',
+    'sphinx_automodapi.smart_resolver',
     # from Psi4
     'sphinx_psi_theme.ext.psidomain',
     'sphinx_psi_theme.ext.relbar_toc',

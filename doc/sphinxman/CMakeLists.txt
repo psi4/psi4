@@ -15,10 +15,10 @@ if(NOT (LATEX_COMPILER AND PDFLATEX_COMPILER))
 endif()
 
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-    "import sphinx_psi_theme; import cloud_sptheme; import astropy_helpers; import graphviz"
+    "import sphinx_psi_theme; import cloud_sptheme; import sphinx_automodapi; import graphviz"
     OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 if(_exec_python_err)
-    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme astropy-helpers graphviz python-graphviz -c conda-forge -c astropy -c psi4)")
+    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi graphviz python-graphviz -c conda-forge -c psi4)")
     set(SPHINX_STUFF_FOUND "OFF")
 
 else()
