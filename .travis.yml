@@ -26,7 +26,6 @@ matrix:
         - clang-3.6
         - libhdf5-serial-dev
         - gfortran
-        - libomp-dev
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
