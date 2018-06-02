@@ -35,7 +35,7 @@ macro(find_omp_libs _service)
     foreach(_l IN LISTS _ls)
         get_filename_component(_fullspec "${OpenMP_${_l}_LIBRARY}" DIRECTORY)
 
-        #message("${_l} 0 ${_lib} ${_fullspec}")
+        #message("${_service} ${_l} 0 ${_lib} ${_fullspec}")
         set(_stat "")
         find_library(_lib
                      NAMES ${_l}
@@ -44,23 +44,27 @@ macro(find_omp_libs _service)
                            ${OpenMP_ROOT}
                      DOC "Path to the ${_l} library for OpenMP"
                      NO_DEFAULT_PATH)
-        #message("${_l} A ${_lib}")
+        #message("${_service} ${_l} A ${_lib}")
         find_library(_lib
                      NAMES ${_l})
-        #message("${_l} B ${_lib}")
+        #message("${_service} ${_l} B ${_lib}")
         if(_lib)
             set(_libs ${_libs} ${_lib})
-        else()
-            # remainder may be linker directives ("-Wl,") or implicit libs, so let the linker handle them
+        elseif(${_l} MATCHES "-Wl,")
             set(_libs ${_libs} ${_l})
+        else()
+            ## remainder could be implicit libs handlable by the linker
+            #set(_libs ${_libs} ${_l})
+            set(_libs ${_service}_LIBRARIES-NOTFOUND)
+            break()
         endif()
         unset(_lib CACHE)
     endforeach()
     set(${_service}_LIBRARIES ${_libs})
     unset(_lib CACHE)
     unset(_libs CACHE)
+    #message("    ${_service}_LIBRARIES ${${_service}_LIBRARIES}")
     unset(_service)
-    #message("    _service_LIBRARIES ${${_service}_LIBRARIES}")
 endmacro()
 
 
