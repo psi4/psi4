@@ -549,7 +549,7 @@ Python
     and 3.6. After 1.2, only Python 3 will be supported
     `in accordance with other scientific software projects
     <https://python3statement.org/>`_). Once Python 3.7 is released,
-    the plan is to support >=3.6 for the foreseeable future.
+    the plan is to support >=3.6 or at least two Python versions.
 
 .. index:: license
 

@@ -30,6 +30,7 @@ if(${ENABLE_v2rdm_casscf})
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -Dpsi4_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/psi4
                        -Dpybind11_DIR=${pybind11_DIR}
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}

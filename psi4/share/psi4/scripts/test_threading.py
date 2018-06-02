@@ -196,8 +196,9 @@ def print_math_ldd(args):
                   'openblas': lddout.count('libopenblas'),
                   'gomp': lddout.count('libgomp')}
         print(report)
-        okmkl = bool(report['mkl']) and bool(report['iomp5']) and not bool(report['openblas']) and not bool(report['gomp'])
-        okopenblas = not bool(report['mkl']) and not bool(report['iomp5']) and bool(report['openblas']) and bool(report['gomp'])
+        report = {k : bool(v) for k, v in report.items()}
+        okmkl = report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
+        okopenblas = not report['mkl'] and not report['iomp5'] and report['openblas'] and report['gomp']
         if args.passfail:
             assert okmkl != okopenblas
     else:

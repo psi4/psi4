@@ -1174,7 +1174,7 @@ H. Build with explicit non-MKL LAPACK
 
   * On Mac, the native Accelerate libraries are very nice and would
     be recommended but for the potential conflict between |PSIfour|
-    BLAS and NumPy BLAS.
+    BLAS and NumPy BLAS. Unless you've a special NumPy, avoid!
 
   * The open-source LAPACK distributions OpenBLAS (formerly GotoBLAS)
     mostly works. Use it at your own risk and after testing your
