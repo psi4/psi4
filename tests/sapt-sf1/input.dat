@@ -1,3 +1,4 @@
+#! Tests the Psi4 SF-SAPT code
 
 molecule dimer {
 # Set the spin of A
@@ -22,11 +23,10 @@ reference rohf
 
 compare_dict = { #TEST
     "SAPT ELST ENERGY":                 -0.02368051, #TEST
-    "E Elst10":                         -0.02368051, #TEST
     "SAPT EXCH ENERGY":                  0.14186858, #TEST
-    "E Exch10(S^2) [highspin]":          0.14186858, #TEST
-    "E Exch10(S^2) [diagonal]":          0.00010209, #TEST
-    "E Exch10(S^2) [off-diagonal]":      0.14176648, #TEST
+    "SAPT EXCH10(S^2),HIGHSPIN ENERGY":          0.14186858, #TEST
+    "SAPT EXCH10(S^2),DIAGONAL ENERGY":          0.00010209, #TEST
+    "SAPT EXCH10(S^2),OFF-DIAGONAL ENERGY":      0.14176648, #TEST
 } #TEST
 
 energy("SF-SAPT")

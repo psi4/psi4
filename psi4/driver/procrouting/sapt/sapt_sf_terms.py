@@ -59,7 +59,7 @@ def _sf_compute_JK(jk, Cleft, Cright, rotation=None):
         return_single = True
 
     if len(Cleft) != len(Cright):
-        raise Exception("Cleft list is not the same length as Cright list")
+        raise ValidationError("Cleft list is not the same length as Cright list")
 
     jk.C_clear()
 
@@ -79,7 +79,7 @@ def _sf_compute_JK(jk, Cleft, Cright, rotation=None):
             mor = Cr.shape[1]
 
             if (rotation[num].shape[0] != mol) or (rotation[num].shape[1] != mor):
-                raise Exception("_sf_compute_JK: Tensor size does not match Cl (%d) /Cr (%d) : %s" %
+                raise ValidationError("_sf_compute_JK: Tensor size does not match Cl (%d) /Cr (%d) : %s" %
                                 (mol, mor, str(rotation[num].shape)))
 
             # Figure out the small MO index to contract to
@@ -201,7 +201,7 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
 
     ### Compute Terms
     if do_print:
-        core.print_out("\n  ==> Computing Spin-Flip Exchange and Electostatics <== \n\n")
+        core.print_out("\n  ==> Computing Spin-Flip Exchange and Electrostatics <== \n\n")
 
     w_A = V_A + 2 * J["ii"] + J["aa"]
     w_B = V_B + 2 * J["jj"] + J["bb"]

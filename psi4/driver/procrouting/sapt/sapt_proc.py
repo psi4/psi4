@@ -462,14 +462,24 @@ def run_sf_sapt(name, **kwargs):
         core.print_out(string)
     core.print_out("  " + "-" * 103 + "\n\n")
 
-    # Set variables
-    core.set_variable("SAPT ELST ENERGY", sf_data["Elst10"])
-    core.set_variable("SAPT EXCH ENERGY", sf_data["Exch10(S^2) [highspin]"])
-
     dimer_wfn = core.Wavefunction.build(sapt_dimer, wfn_A.basisset())
+
+    # Set variables
+    psivar_tanslator = {
+        "Elst10": "SAPT ELST ENERGY",
+        "Exch10(S^2) [diagonal]": "SAPT EXCH10(S^2),DIAGONAL ENERGY",
+        "Exch10(S^2) [off-diagonal]": "SAPT EXCH10(S^2),OFF-DIAGONAL ENERGY",
+        "Exch10(S^2) [highspin]": "SAPT EXCH10(S^2),HIGHSPIN ENERGY",
+    }
+
     for k, v in sf_data.items():
-        dimer_wfn.set_variable(k, v)
-        core.set_variable("E " + k, v)
+        psi_k = psivar_tanslator[k]
+        
+        dimer_wfn.set_variable(psi_k, v)
+        core.set_variable(psi_k, v)
+
+    # Copy over highspin
+    core.set_variable("SAPT EXCH ENERGY", sf_data["Exch10(S^2) [highspin]"])
 
     core.tstop()
 
