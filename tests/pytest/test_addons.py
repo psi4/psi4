@@ -726,14 +726,13 @@ def test_v2rdm_casscf():
       'restricted_docc': [ 2, 0, 0, 0, 0, 2, 0, 0 ],
       'active': [ 1, 0, 1, 1, 0, 1, 1, 1 ],
     })
-    ##psi4.set_module_options('v2rdm_casscf', {
-    psi4.set_options({
-    #  'positivity': 'dqg',
+    psi4.set_module_options('v2rdm_casscf', {
+      'positivity': 'dqg',
       'r_convergence': 1e-5,
       'e_convergence': 1e-6,
       'maxiter': 20000,
-    #  #'orbopt_frequency': 1000,
-    #  #'mu_update_frequency': 1000,
+      #'orbopt_frequency': 1000,
+      #'mu_update_frequency': 1000,
     })
 
     psi4.activate(n2)
