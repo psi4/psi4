@@ -1,4 +1,4 @@
-find_package(gau2grid 1.0 CONFIG QUIET)
+find_package(gau2grid 1.0 CONFIG QUIET COMPONENTS gaussian)
 
 if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
@@ -26,6 +26,8 @@ else()
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DMAX_AM=${MAX_AM_ERI}
+                   -DCARTESIAN_ORDER=row
+                   -DSPHERICAL_ORDER=gaussian
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
