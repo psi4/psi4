@@ -71,6 +71,7 @@ set(${PN}_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
 
 # location of psi4/core.so
 set(${PN}_LIBRARY "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@/psi4/@PYTHON_MODULE_PREFIX@core.so")
+set(${PN}_SYS_PATH "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@")
 
 # presence of external addons
 macro(psi4_component name on)
@@ -101,9 +102,10 @@ endforeach()
 check_required_components(${PN})
 
 if(NOT CMAKE_REQUIRED_QUIET)
-    message(STATUS "Psi4 script:  ${${PN}_EXECUTABLE}")
-    message(STATUS "Psi4 headers: ${${PN}_INCLUDE_DIR}")
-    message(STATUS "Psi4 library: ${${PN}_LIBRARY}")
+    message(STATUS "Psi4 script:   ${${PN}_EXECUTABLE}")
+    message(STATUS "Psi4 headers:  ${${PN}_INCLUDE_DIR}")
+    message(STATUS "Psi4 library:  ${${PN}_LIBRARY}")
+    message(STATUS "Psi4 sys.path: ${${PN}_SYS_PATH}")
     message(STATUS "Psi4 components: ${${PN}_FOUND_COMPONENTS}")
     message(STATUS "Python executable: @PYTHON_EXECUTABLE@")
 endif()
