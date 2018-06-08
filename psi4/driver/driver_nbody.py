@@ -57,14 +57,15 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
         return
 
     sign = 1
+
     # Do ptype
     if ptype == 'gradient':
         for fragn, basisn in compute_list:
-            start = 0
-            grad = np.asarray(ptype_dict[(fragn, basisn)])
-
             if vmfc:
                 sign = ((-1) ** (n - len(fragn)))
+
+            start = 0
+            grad = np.asarray(ptype_dict[(fragn, basisn)])
 
             for bas in basisn:
                 end = start + fragment_size_dict[bas]
@@ -75,7 +76,7 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
         for fragn, basisn in compute_list:
             hess = np.asarray(ptype_dict[(fragn, basisn)])
             if vmfc:
-                raise Exception("VMFC for hessian NYI")
+                sign = ((-1) ** (n - len(fragn)))
 
             # Build up start and end slices
             abs_start, rel_start = 0, 0
@@ -658,6 +659,8 @@ def assemble_nbody_components(metadata, component_results):
     # Compute vmfc energy and ptype
     if 'vmfc' in metadata['bsse_type_list']:
         for n in nbody_range:
+            if n > 1 and metadata['ptype'] != 'energy':
+                vmfc_ptype_by_level[n] += vmfc_ptype_by_level[1]
             if n == metadata['max_frag']:
                 if metadata['ptype'] != 'energy':
                     vmfc_ptype_body_dict[n][:] = vmfc_ptype_by_level[n]
