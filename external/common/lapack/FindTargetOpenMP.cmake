@@ -2,6 +2,7 @@
 # ----------------------
 #
 # OpenMP cmake module to wrap FindOpenMP.cmake in a target.
+# It is designed to imitate or supplement the official Kitware module c. 3.10.
 #
 # This module sets the following variables in your project: ::
 #
@@ -43,7 +44,7 @@ else()
 
         if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
             set(OpenMP_CXX_FLAGS "-fopenmp")
-            set(OpenMP_CXX_LIB_NAMES "gomp2;pthread")
+            set(OpenMP_CXX_LIB_NAMES "gomp;pthread")
         elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
             set(OpenMP_CXX_FLAGS "-qopenmp")
             set(OpenMP_CXX_LIB_NAMES "iomp5;pthread")

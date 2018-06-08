@@ -27,8 +27,9 @@
 #                     needed by BLAS/LAPACK.
 #
 
-# expand any name-only libraries
 macro(find_omp_libs _service)
+    # Expands any name-only libraries
+    # * adapted from: https://github.com/coderefinery/autocmake/blob/22ef2b17da6a26813fc3c8b1240bcabfd9317295/modules/math_libs.cmake#L304-L337
     set(_lib)
     set(_libs)
     set(_ls "${ARGN}")

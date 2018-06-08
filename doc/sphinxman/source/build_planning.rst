@@ -1169,8 +1169,8 @@ H. Build with explicit non-MKL LAPACK
   * Perhaps the best choice, if available, is Intel's MKL library,
     which includes efficient threaded BLAS and LAPACK (as of |PSIfour|
     v1.1, earliest known working version is MKL 2013). MKL, which is
-    freely available through conda, is the only BLAS/LAPACK distribution
-    fully supported by |PSIfour|.
+    freely available through conda, is the only threaded BLAS/LAPACK
+    distribution fully supported by |PSIfour|.
 
   * On Mac, the native Accelerate libraries are very nice and would
     be recommended but for the potential conflict between |PSIfour|
