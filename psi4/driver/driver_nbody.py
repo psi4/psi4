@@ -227,6 +227,11 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     # Assemble N-Body quantities
     nbody_results = assemble_nbody_components(metadata, component_results)
+    if metadata['ptype'] != 'energy':
+        nbody_results['ret_ptype'].name = 'Total %s' %metadata['ptype'].capitalize()
+        core.print_out("   ==> N-Body: %s <==\n" %metadata['ptype'])
+        nbody_results['ret_ptype'].print_atom_vector()
+        core.print_out("\n")
 
     # Build wfn and bind variables
     wfn = core.Wavefunction.build(metadata['molecule'], 'def2-svp')
