@@ -277,24 +277,40 @@ OneBodyAOInt* IntegralFactory::electric_field(int deriv)
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
 {
 #ifdef USING_simint
-    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
+    printf("erd_eri: into USING_simint\n");
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT") {
+        printf("erd_eri: returning INTEGRAL_PACKAGE=SIMINT\n");
         return new SimintERI(this, deriv, use_shell_pairs);
-#elif defined USING_erd
-    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
-        return new ERDERI(this, deriv, use_shell_pairs);
+    }
 #endif
+#ifdef USING_erd
+    printf("erd_eri: into USING_erd\n");
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD") {
+        printf("erd_eri: returning INTEGRAL_PACKAGE=ERD\n");
+        return new ERDERI(this, deriv, use_shell_pairs);
+    }
+#endif
+    printf("erd_eri: returning libint\n");
     return eri(deriv, use_shell_pairs);
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs)
 {
 #ifdef USING_simint
-    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
+    printf("eri: into USING_simint\n");
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT") {
+        printf("eri: returning INTEGRAL_PACKAGE=SIMINT\n");
         return new SimintERI(this, deriv, use_shell_pairs);
-#elif defined USING_erd
-    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
-        return new ERDERI(this, deriv, use_shell_pairs);
+    }
 #endif
+#ifdef USING_erd
+    printf("eri: into USING_erd\n");
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD") {
+        printf("eri: returning INTEGRAL_PACKAGE=ERD\n");
+        return new ERDERI(this, deriv, use_shell_pairs);
+    }
+#endif
+    printf("eri: returning libint\n");
     return new ERI(this, deriv, use_shell_pairs);
 }
 
