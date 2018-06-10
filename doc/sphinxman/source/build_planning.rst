@@ -865,6 +865,30 @@ F. Build with specific (Intel) compilers from :envvar:`PATH` based on GCC
               -DCMAKE_C_FLAGS="-gnu-prefix=${GCCPFX}" \
               -DCMAKE_CXX_FLAGS="-gnu-prefix=${GCCPFX}"
 
+G. Build on Linux with specific (Intel) compilers from :envvar:`PATH`
+   based on GCC from conda in **activated** environment
+   (:envvar:`CONDA_PREFIX` and :envvar:`HOST` are defined upon
+   activation)
+
+  .. code-block:: bash
+
+    >>> cmake -DCMAKE_C_COMPILER=icc \
+              -DCMAKE_CXX_COMPILER=icpc \
+              -DCMAKE_C_FLAGS="-gnu-prefix=${CONDA_PREFIX}/bin/${HOST} --sysroot=${CONDA_PREFIX}/${HOST}/sysroot" \
+              -DCMAKE_CXX_FLAGS="-gnu-prefix=${CONDA_PREFIX}/bin/${HOST} --sysroot=${CONDA_PREFIX}/${HOST}/sysroot"
+
+H. Build on Linux with specific (GCC) compilers from 
+   from conda in **activated** environment
+   (:envvar:`CONDA_PREFIX` and :envvar:`HOST` are defined upon
+   activation)
+
+  .. code-block:: bash
+
+    >>> cmake -DCMAKE_C_COMPILER=${GCC} \
+              -DCMAKE_CXX_COMPILER=${GXX} \
+              -DCMAKE_Fortran_COMPILER=${GFORTRAN}
+
+
 .. _`faq:approvedcxx`:
 
 What C and C++ compilers and versions are approved
@@ -885,7 +909,7 @@ On Mac, the following work nicely.
 >= 4.9. This compliance is checked for at build-time with file
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
-compilers also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
+compilers on Linux also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
 
 * :ref:`faq:modgcc`
 
@@ -1107,13 +1131,13 @@ D. Build with Intel MKL
 
     >>> MATH_ROOT=/path/to/intel/vers/linux/mkl/ cmake
 
-E. Build with Intel MKL from conda
+E. Build with Intel MKL from conda (install ``mkl-devel`` package from defaults channel)
 
   .. code-block:: bash
 
-    # won't work, as mkl.h header also needed
+    >>> cmake -DLAPACK_LIBRARIES="${CONDA_PREFIX}/lib/libmkl_rt.so" -DLAPACK_INCLUDE_DIRS="${CONDA_PREFIX}/include"
 
-F. OpenBLAS
+F. OpenBLAS - see note below.
 
   .. code-block:: bash
 
@@ -1144,15 +1168,38 @@ H. Build with explicit non-MKL LAPACK
 
   * Perhaps the best choice, if available, is Intel's MKL library,
     which includes efficient threaded BLAS and LAPACK (as of |PSIfour|
-    v1.1, earliest known working version is MKL 2013). On Mac, the
-    native Accelerate libraries are also recommended.
+    v1.1, earliest known working version is MKL 2013). MKL, which is
+    freely available through conda, is the only threaded BLAS/LAPACK
+    distribution fully supported by |PSIfour|.
 
-  * For open-source LAPACK distributions, OpenBLAS (formerly GotoBLAS)
-    is known to work, while ATLAS is known
-    (https://github.com/psi4/psi4/issues/391) to have stability issues
-    with the DFOCC module.
+  * On Mac, the native Accelerate libraries are very nice and would
+    be recommended but for the potential conflict between |PSIfour|
+    BLAS and NumPy BLAS. Unless you've a special NumPy, avoid!
+
+  * The open-source LAPACK distributions OpenBLAS (formerly GotoBLAS)
+    mostly works. Use it at your own risk and after testing your
+    particular distribution, including tests run multithreaded,
+    if you intend to run |PSIfour| so. Use at least 0.2.15, and
+    pay attention to how it was compiled - unthreaded seems safe,
+    openmp-threaded is mostly safe, default pthreaded is *not* safe. See
+    https://github.com/psi4/psi4/issues/1009 for recent analysis.
+
+  * Another open-source LAPACK distribution, ATLAS had
+    stability issues with the DFOCC module at last testing,
+    https://github.com/psi4/psi4/issues/391.
 
   * ACML libraries are known to work with |PSIfour| v1.1 at ACML 6.
+
+* Because of how link loaders work, at runtime, the BLAS of |PSIfour|
+  and the BLAS of NumPy are not independent. There can be unpredictable
+  but reproducible numerical and thread-scaling errors if |PSIfour|
+  and NumPy BLAS don't match down to the library name (that is,
+  ``libmkl_rt``, ``libmkl_core.so``, ``libmkl_core.a`` are *not*
+  interchangeable). See https://github.com/psi4/psi4/issues/1007,
+  https://github.com/psi4/psi4/issues/748,
+  https://github.com/psi4/psi4/issues/755 for gory discussions.
+  Choose your NumPy and |PSIfour| compile conditions to use the same
+  BLAS distribution.
 
 * The BLAS/LAPACK detected for |PSIfour| are also linked into any
   Add-Ons (*e.g.*, libefp) that require them, rather than relying on
@@ -1176,7 +1223,6 @@ H. Build with explicit non-MKL LAPACK
   headers, need to be detected. The exception is MKL, where the ``mkl.h``
   header defines additional functionality; it must be located to use
   BLAS threading.
-
 
 .. _`cmake:python`:
 

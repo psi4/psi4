@@ -40,6 +40,7 @@ endif()
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:Libxc::xc,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
+target_link_libraries(core PRIVATE tgt::lapack)  # OpenMP flags to core.cc
 target_link_libraries(core PUBLIC pybind11::module)
 target_link_libraries(core PRIVATE Threads::Threads)
 

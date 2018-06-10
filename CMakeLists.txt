@@ -167,7 +167,6 @@ add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(custom_cxxstandard)
-include(autocmake_omp)
 include(custom_static_library)
 
 ################################  Main Project  ################################
@@ -219,6 +218,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
+              -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -Dambit_DIR=${ambit_DIR}
