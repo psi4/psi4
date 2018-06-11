@@ -139,6 +139,7 @@ _addons_ = {
     "v2rdm_casscf": _plugin_import("v2rdm_casscf"),
     "forte": _plugin_import("forte"),
     "snsmp2": _plugin_import("snsmp2"),
+    "resp": _plugin_import("resp"),
 }
 
 def addons(request=None):
