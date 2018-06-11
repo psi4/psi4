@@ -187,22 +187,27 @@ def print_math_ldd(args):
     modcore = mod.__file__[:-11] + sharedlibrary
 
     if sys.platform.startswith('linux'):
-        cmd = """ldd -v {} | grep -e ':' -e 'mkl' -e 'openblas' -e 'iomp5' -e 'gomp'""".format(modcore)
-        print('Running {} ...'.format(cmd))
-        subprocess.call(cmd, shell=True)
-        lddout = subprocess.getoutput(cmd)
-        report = {'mkl': lddout.count('libmkl'),
-                  'iomp5': lddout.count('libiomp5'),
-                  'openblas': lddout.count('libopenblas'),
-                  'gomp': lddout.count('libgomp')}
-        print(report)
-        report = {k : bool(v) for k, v in report.items()}
-        okmkl = report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
-        okopenblas = not report['mkl'] and not report['iomp5'] and report['openblas'] and report['gomp']
-        if args.passfail:
-            assert okmkl != okopenblas
+        lddish = 'ldd -v'
+    elif sys.platform.startswith('darwin'):
+        lddish = 'otool -L'
     else:
-        print('Not available w/o `ldd`')
+        print('Not available w/o `ldd` or `otool`')
+        return True
+
+    cmd = """{} {} | grep -e ':' -e 'mkl' -e 'openblas' -e 'iomp5' -e 'gomp'""".format(lddish, modcore)
+    print('Running {} ...'.format(cmd))
+    subprocess.call(cmd, shell=True)
+    lddout = subprocess.getoutput(cmd)
+    report = {'mkl': lddout.count('libmkl'),
+              'iomp5': lddout.count('libiomp5'),
+              'openblas': lddout.count('libopenblas'),
+              'gomp': lddout.count('libgomp')}
+    print(report)
+    report = {k : bool(v) for k, v in report.items()}
+    okmkl = report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
+    okopenblas = not report['mkl'] and not report['iomp5'] and report['openblas'] and report['gomp']
+    if args.passfail:
+        assert okmkl != okopenblas
 
 
 if __name__ == '__main__':

@@ -17,8 +17,7 @@ if(NOT TARGET tgt::lapack)
 
     include(CMakeFindDependencyMacro)
     if(NOT TARGET tgt::MathOpenMP)
-        # uses isMKL, ENABLE_OPENMP, CMAKE_CXX_COMPILER_ID
-        message("TargetLAPACK ${isMKL}, ${ENABLE_OPENMP}, ${CMAKE_CXX_COMPILER_ID}")
+        message(STATUS "Detecting MathOpenMP -- OpenMP? ${ENABLE_OPENMP}, MKL? ${isMKL}, CXX=${CMAKE_CXX_COMPILER_ID}")
         find_dependency(MathOpenMP)
     endif()
 
