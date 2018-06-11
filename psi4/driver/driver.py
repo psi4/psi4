@@ -983,8 +983,8 @@ def optimize(name, **kwargs):
         step_gradients = []
         step_coordinates = []
 
-    # For CBS wrapper, need to set retention on INTCO file
-    if custom_gradient or ('/' in lowername):
+    # For CBS and nbody wrappers, need to set retention on INTCO file
+    if custom_gradient or ('/' in lowername) or kwargs.get('bsse_type', None) is not None:
         core.IOManager.shared_object().set_specific_retention(1, True)
 
     full_hess_every = core.get_option('OPTKING', 'FULL_HESS_EVERY')
@@ -1099,6 +1099,10 @@ def optimize(name, **kwargs):
             for postcallback in hooks['optimize']['post']:
                 postcallback(lowername, wfn=wfn, **kwargs)
             core.clean()
+
+            # Cleanup binary file 1
+            if custom_gradient or ('/' in lowername) or kwargs.get('bsse_type', None) is not None:
+                core.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
 
