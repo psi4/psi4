@@ -64,15 +64,18 @@ def run_json(json_data, clean=True):
         psi4_io = core.IOManager.shared_object()
         psi4_io.set_default_path(json_data["scratch_location"])
 
+    # Direct output
+    outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
+    core.set_output_file(outfile, False)
+
     # Set memory
     if "memory" in json_data:
         psi4.set_memory(json_data["memory"])
 
+
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
     if return_output:
-        outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
-        core.set_output_file(outfile, False)
         json_data["raw_output"] = "Not yet run."
 
     # Set a few flags
