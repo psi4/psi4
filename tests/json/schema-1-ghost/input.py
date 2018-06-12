@@ -27,7 +27,7 @@ json_data = {
         "scf_type": "df"
     },
     "memory": 1024 * 1024 * 1024,
-    "ncores": 1,
+    "nthreads": 1,
 }
 
 # Write expected output
