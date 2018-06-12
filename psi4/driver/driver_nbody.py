@@ -551,7 +551,6 @@ def assemble_nbody_components(metadata, component_results):
             for i in cp_monomers_in_monomer_basis:
                 cp_monomer_energy_list.append(component_results['energies'][i])
                 cp_monomer_energies += component_results['energies'][i]
-                del component_results['energies'][i]
                 cp_compute_list[1].remove(i)
 
         cp_energy_by_level[n]   = sum(component_results['energies'][v] for v in cp_compute_list[n])
@@ -622,10 +621,9 @@ def assemble_nbody_components(metadata, component_results):
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
-        # Add extracted monomer energies back.
+        # Add extracted monomers back.
         for i, j in enumerate(cp_monomers_in_monomer_basis):
             cp_compute_list[1].add(j)
-            component_results['energies'][j] = cp_monomer_energy_list[i]
 
         _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
         cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
