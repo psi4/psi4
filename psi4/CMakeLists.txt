@@ -238,38 +238,13 @@ endif()
 
 # <<<  Export Config  >>>
 
-if((DEFINED ENV{CONDA_BUILD}) AND (UNIX AND NOT APPLE))
-    # installed-alongside GCC compilers compatible with the Intel compilers used in
-    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/build.sh
-    set(cache_CMAKE_C_COMPILER       "\${GCC}")
-    set(cache_CMAKE_C_FLAGS          " -march=native -fopenmp")
-    set(cache_CMAKE_CXX_COMPILER     "\${GXX}")
-    set(cache_CMAKE_CXX_FLAGS        " -march=native -fopenmp")
-    set(cache_CMAKE_Fortran_COMPILER "\${GFORTRAN}")
-    set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
-elseif((DEFINED ENV{CONDA_BUILD}) AND (APPLE) AND (CMAKE_CXX_COMPILER_ID MATCHES AppleClang))
-    # for stdlib compatibility, must be consistent with Darwin section of
-    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-core/build.sh
-    set(cache_CMAKE_C_COMPILER       "/usr/bin/clang")
-    set(cache_CMAKE_CXX_COMPILER     "/usr/bin/clang++")
-    set(cache_CMAKE_CXX_FLAGS        " -stdlib=libc++")
-    set(cache_CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran")
-    set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
-else()
-    # normal plugin use. this initializes the plugin compilation from the
-    #   same-computer parent Psi4 compilation
-    set(cache_CMAKE_C_COMPILER       "${CMAKE_C_COMPILER}")
-    set(cache_CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}")
-    set(cache_CMAKE_CXX_COMPILER     "${CMAKE_CXX_COMPILER}")
-    set(cache_CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}")
-    set(cache_CMAKE_Fortran_COMPILER "${CMAKE_Fortran_COMPILER}")
-    set(cache_CMAKE_Fortran_FLAGS    "${CMAKE_Fortran_FLAGS}")
-    set(cache_pybind11_DIR           "${pybind11_DIR}")
+if(NOT (DEFINED ENV{CONDA_BUILD}))
+    # normal plugin use - initialize plugin compilation from the same-computer parent Psi4 compilation
+    configure_file(psi4PluginCache.cmake.in psi4PluginCache.cmake @ONLY)
+    install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
+            DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 endif()
-
-configure_file(psi4PluginCache.cmake.in psi4PluginCache.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
-              ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
+install(FILES ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
               ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
