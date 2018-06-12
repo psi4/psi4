@@ -61,11 +61,11 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
     # Do ptype
     if ptype == 'gradient':
         for fragn, basisn in compute_list:
-            if vmfc:
-                sign = ((-1) ** (n - len(fragn)))
-
             start = 0
             grad = np.asarray(ptype_dict[(fragn, basisn)])
+
+            if vmfc:
+                sign = ((-1) ** (n - len(fragn)))
 
             for bas in basisn:
                 end = start + fragment_size_dict[bas]
@@ -75,6 +75,7 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
     elif ptype == 'hessian':
         for fragn, basisn in compute_list:
             hess = np.asarray(ptype_dict[(fragn, basisn)])
+
             if vmfc:
                 sign = ((-1) ** (n - len(fragn)))
 

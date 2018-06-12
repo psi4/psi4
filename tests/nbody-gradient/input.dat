@@ -1,0 +1,28 @@
+#! MP2/aug-cc-pv[DT]Z many body gradient of an arbitrary Helium complex
+
+comparison_gradient_dict = {} #TEST
+comparison_gradient_dict['nocp'] = [[-0.000000000000,     0.000000000000,    -0.000008106671], #TEST  
+                                    [ 0.000000000000,    -0.000000478704,     0.000004053336], #TEST
+                                    [-0.000000000000,     0.000000478704,     0.000004053336]] #TEST
+
+comparison_gradient_dict['cp']   = [[-0.000000000000,     0.000004675134,     0.000001145535], #TEST
+                                    [ 0.000002267167,    -0.000002253992,    -0.000000572767], #TEST
+                                    [-0.000002267167,    -0.000002421141,    -0.000000572767]] #TEST
+
+comparison_gradient_dict['vmfc'] = [[ 0.000000000000,    -0.000000000000,    -0.000005200318], #TEST
+                                    [ 0.000000000000,    -0.000000478704,     0.000002578173], #TEST
+                                    [-0.000000000000,     0.000000478704,     0.000002622146]] #TEST
+
+molecule he_trimer {
+He 0 0 0
+--
+He 0 0 4
+--
+He 0 4 0
+}
+
+bsse = ['nocp', 'cp', 'vmfc']
+for b in bsse:
+    g = gradient('MP2/cc-pV[D,T]Z', molecule=he_trimer, bsse_type=b, max_nbody=2, return_total_data=True)
+    compare_arrays(comparison_gradient_dict[b], g, 8, '%s many-body gradient' %b) #TEST
+    core.clean()

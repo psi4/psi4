@@ -1178,7 +1178,7 @@ def hessian(name, **kwargs):
         else:
             # Bounce to name if name is non-CBS function
             gradient_type = 'custom_function'
-    # Bounce to CP if bsse kwarg (someday)
+
     elif kwargs.get('bsse_type', None) is not None:
         gradient_type = 'nbody_gufunc' 
     elif '/' in name:
