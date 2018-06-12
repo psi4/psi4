@@ -247,7 +247,7 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
                                                verbose=verbose)
 
         else:
-            raise ValidationError("""Schema not recognized""")
+            raise ValidationError("""Schema not recognized, schema_name/schema_version: {}/{} """.format(molschema.get('schema_name', 'NA'), molschema.get('schema_version', 'NA')))
 
         if return_dict:
             return core.Molecule.from_dict(molrec), molrec
