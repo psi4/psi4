@@ -1216,9 +1216,9 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.set_local_option('SCF', 'GUESS', 'CORE')
 
     if core.get_global_option('BASIS') == '':
-        if name == 'hf3c':
+        if name in ['hf3c', 'hf-3c']:
             core.set_global_option('BASIS', 'minix')
-        elif name == 'pbeh3c':
+        elif name in ['pbeh3c', 'pbeh-3c']:
             core.set_global_option('BASIS', 'def2-msvp')
 
     # the FIRST scf call
