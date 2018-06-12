@@ -133,6 +133,9 @@ def run_json_qc_schema(json_data, clean):
     if json_data["schema_version"] != 1:
         raise KeyError("Schema version of '{}' not understood".format(json_data["schema_version"]))
 
+    if json_data.get("ncores", False) is not False:
+        psi4.set_num_threads(json_data["ncores"], quiet=True)
+
     json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
     # Build molecule
