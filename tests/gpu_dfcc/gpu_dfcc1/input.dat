@@ -26,6 +26,7 @@ set {
   maxiter 30
 }
 
+set_num_threads(2)
 en_dfcc     = energy('ccsd')
 en_gpu_dfcc = energy('gpu-df-ccsd')
 
