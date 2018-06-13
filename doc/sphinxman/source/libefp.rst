@@ -70,10 +70,13 @@ Installation
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  libefp can be obtained through ``conda install libefp``.
+  libefp can be obtained through ``conda install libefp -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_libefp`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect libefp and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use
+  libefp from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove libefp``.
 
@@ -309,7 +312,7 @@ How to configure libefp for building Psi4
 
 * Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) libefp
 
-* Upstream Dependencies |w---w| libefp |dr| None
+* Upstream Dependencies |w---w| libefp |dr| BLAS/LAPACK
 
 **CMake Variables**
 

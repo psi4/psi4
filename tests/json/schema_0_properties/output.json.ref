@@ -1,0 +1,137 @@
+{
+  "schema_name": "QC_JSON",
+  "schema_version": 0,
+  "molecule": {
+    "geometry": [
+      0.0,
+      0.0,
+      -0.1294769411935893,
+      0.0,
+      -1.494187339479985,
+      1.0274465079245698,
+      0.0,
+      1.494187339479985,
+      1.0274465079245698
+    ],
+    "symbols": [
+      "O",
+      "H",
+      "H"
+    ],
+    "no_com": true,
+    "no_reorient": true
+  },
+  "driver": "properties",
+  "model": {
+    "method": "HF",
+    "basis": "6-31G",
+    "properties": [
+      "dipole",
+      "quadrupole",
+      "mulliken_charges",
+      "lowdin_charges",
+      "wiberg_lowdin_indices",
+      "mayer_indices",
+      "mayer_indices"
+    ]
+  },
+  "keywords": {
+    "scf_type": "df",
+    "mp2_type": "df"
+  },
+  "raw_output": null,
+  "success": true,
+  "provenance": {
+    "creator": "Psi4",
+    "version": "1.1",
+    "routine": "psi4.json.run_json"
+  },
+  "psi4:qcvars": {
+    "CURRENT ENERGY": -75.98014187232633,
+    "CURRENT REFERENCE ENERGY": -75.98014187232633,
+    "HF DIPOLE X": 0.0,
+    "HF DIPOLE Y": 0.0,
+    "HF DIPOLE Z": 2.6443634497158617,
+    "HF QUADRUPOLE XX": -7.300687696691921,
+    "HF QUADRUPOLE XY": -1.838756748474808e-16,
+    "HF QUADRUPOLE XZ": 0.0,
+    "HF QUADRUPOLE YY": -4.136264661490269,
+    "HF QUADRUPOLE YZ": 0.0,
+    "HF QUADRUPOLE ZZ": -5.87249123162414,
+    "HF TOTAL ENERGY": -75.98014187232633,
+    "NUCLEAR REPULSION ENERGY": 8.80146206062943,
+    "ONE-ELECTRON ENERGY": -122.27509111304201,
+    "SCF DIPOLE X": 0.0,
+    "SCF DIPOLE Y": 0.0,
+    "SCF DIPOLE Z": 2.6443634497158617,
+    "SCF ITERATION ENERGY": -75.98014187232633,
+    "SCF ITERATIONS": 8.0,
+    "SCF N ITERS": 8.0,
+    "SCF TOTAL ENERGY": -75.98014187232633,
+    "TWO-ELECTRON ENERGY": 37.49348718008625
+  },
+  "return_result": {
+    "dipole": [
+      0.0,
+      0.0,
+      2.6443634497158617
+    ],
+    "quadrupole": [
+      -7.300687696691921,
+      -1.838756748474808e-16,
+      0.0,
+      -4.136264661490269,
+      0.0,
+      -5.87249123162414
+    ],
+    "mulliken_charges": [
+      -0.7967275695997671,
+      0.3983637847998829,
+      0.3983637847998829
+    ],
+    "lowdin_charges": [
+      -0.5945105406840803,
+      0.29725527034203836,
+      0.29725527034203847
+    ],
+    "wiberg_lowdin_indices": [
+      0.0,
+      0.9237385044125312,
+      0.9237385044125307,
+      0.9237385044125312,
+      0.0,
+      0.0069926500194418175,
+      0.9237385044125307,
+      0.0069926500194418175,
+      0.0
+    ],
+    "mayer_indices": [
+      0.0,
+      0.8020640449355972,
+      0.8020640449355972,
+      0.8020640449355972,
+      0.0,
+      0.0030200257785247,
+      0.8020640449355972,
+      0.0030200257785247,
+      0.0
+    ]
+  },
+  "properties": {
+    "calcinfo_nbasis": 13,
+    "calcinfo_nmo": 13,
+    "calcinfo_nalpha": 5,
+    "calcinfo_nbeta": 5,
+    "calcinfo_natom": 3,
+    "scf_one_electron_energy": -122.27509111304201,
+    "scf_two_electron_energy": 37.49348718008625,
+    "nuclear_repulsion_energy": 8.80146206062943,
+    "scf_dipole_moment": [
+      0.0,
+      0.0,
+      2.6443634497158617
+    ],
+    "scf_iterations": 8,
+    "scf_total_energy": -75.98014187232633
+  }
+}

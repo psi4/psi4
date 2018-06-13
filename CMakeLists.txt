@@ -16,7 +16,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #  <<<  CMake build overview  >>>
 #
 #    >>> ls
-#    external/  LICENSE  psi4/  tests/  ...
+#    external/  COPYING  psi4/  tests/  ...
 #    >>> cmake -H. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
 #    ...
 #    -- Generating done
@@ -28,10 +28,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #
 #    - CMake (e.g., `conda install cmake`)
 #    - C++ and C compilers (C++11 compliant)
-#    - BLAS/LAPACK (also runtime; e.g., `conda install mkl mkl-include`)
+#    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
 #    - deepdiff (runtime only; e.g., `conda install deepdiff -c conda-forge`)
+#    - networkx (runtime only; e.g., `conda install networkx`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -136,7 +137,7 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
 option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
-option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
+option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)

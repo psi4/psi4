@@ -86,6 +86,10 @@ def _find_derivative_type(ptype, method_name, user_dertype):
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
 
+    if (core.get_global_option('PCM')) and (dertype != 0):
+        core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
+        dertype = 0
+
     # Summary validation
     if (dertype == 2) and (method_name in procedures['hessian']):
         pass
@@ -119,7 +123,7 @@ def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
     translations_projection_sound = (not core.get_option('SCF', 'EXTERN') and
                                      not core.get_option('SCF', 'PERTURB_H') and
                                      not efp_present)
-    rotations_projection_sound = (translations_projection_sound and 
+    rotations_projection_sound = (translations_projection_sound and
                                   stationary_point)
 
     return translations_projection_sound, rotations_projection_sound
@@ -604,7 +608,7 @@ def gradient(name, **kwargs):
     core.clean_variables()
 
     # no analytic derivatives for scf_type cd
-    if core.get_option('SCF', 'SCF_TYPE') == 'CD':
+    if core.get_global_option('SCF_TYPE') == 'CD':
         if (dertype == 1):
             raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
 
@@ -836,6 +840,7 @@ def properties(*args, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+    kwargs['molecule'] = molecule
 
     # Allow specification of methods to arbitrary order
     lowername = args[0].lower()
@@ -1817,7 +1822,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
         #    raise ValidationError('Impostor molecule trying to be analyzed! geometry\n{}\n   !=\n{}'.format(
         #        np.asarray(mol.geometry()), np.asarray(molecule.geometry())))
         mol = molecule
-            
+
     m = np.asarray([mol.mass(at) for at in range(mol.natom())])
     irrep_labels = mol.irrep_labels()
 

@@ -3,6 +3,7 @@
 # * moved option up
 # * toggled option default to ON
 # * reorganized logic for Fortran + C/CXX, see https://github.com/coderefinery/autocmake/issues/177
+# * separated language _FOUND detection, see https://github.com/coderefinery/autocmake/issues/247
 
 #.rst:
 #
@@ -30,17 +31,31 @@ if(ENABLE_OPENMP)
         find_package(OpenMP)
     endif()
 
-    if(OPENMP_FOUND)
-        add_definitions(-DHAVE_OPENMP)
-        if(DEFINED CMAKE_C_COMPILER_ID)
+    set(_omp_enabled_for_enabled_lang OFF)
+
+    if(DEFINED CMAKE_C_COMPILER_ID)
+        if(OPENMP_FOUND OR OpenMP_C_FOUND)
+            set(_omp_enabled_for_enabled_lang ON)
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         endif()
-        if(DEFINED CMAKE_CXX_COMPILER_ID)
+    endif()
+
+    if(DEFINED CMAKE_CXX_COMPILER_ID)
+        if(OPENMP_FOUND OR OpenMP_CXX_FOUND)
+            set(_omp_enabled_for_enabled_lang ON)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         endif()
-        if(DEFINED CMAKE_Fortran_COMPILER_ID)
+    endif()
+
+    if(DEFINED CMAKE_Fortran_COMPILER_ID)
+        if(OPENMP_FOUND OR OpenMP_Fortran_FOUND)
+            set(_omp_enabled_for_enabled_lang ON)
             set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
         endif()
+    endif()
+
+    if(${_omp_enabled_for_enabled_lang})
+        add_definitions(-DHAVE_OPENMP)
     endif()
 
     if(DEFINED CMAKE_Fortran_COMPILER_ID AND NOT DEFINED OpenMP_Fortran_FLAGS)

@@ -70,10 +70,13 @@ Installation
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  PCMSolver can be obtained through ``conda install pcmsolver``.
+  PCMSolver can be obtained through ``conda install pcmsolver -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_PCMSolver`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect PCMSolver and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use
+  pcmsolver from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove pcmsolver``.
 
@@ -110,9 +113,9 @@ polarization charges. It is mainly useful for debugging.
 .. warning:: ROHF with PCM is known **not to work**. See `issue #999 on GitHub <https://github.com/psi4/psi4/issues/999>`_.
              For the adventurous, a fix is available in `pull request #953 on GitHub <https://github.com/psi4/psi4/pull/953>`_
 
-.. warning:: Analytic gradients and Hessians **are not** available with PCM. You will need
-             to add the ``dertype='energy'`` to ``optimize`` to correctly perform a geometry
-             optimization using finite differences. See :srcsample:`pcmsolver/opt-fd` for a sample input.
+.. warning:: Analytic gradients and Hessians **are not** available with PCM. Finite differences will be used
+             regardless of the ``dertype`` passed to the ``optimize`` function.
+             See :srcsample:`pcmsolver/opt-fd` for a sample input.
 
 The PCM model and molecular cavity are specified in a ``pcm`` section that has
 to be explicitly typed in by the user. This additional section follows a syntax
@@ -181,7 +184,7 @@ How to configure PCMSolver for building Psi4
 
 * Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) PCMSolver
 
-* Upstream Dependencies |w---w| PCMSolver |dr| Fortran, ???
+* Upstream Dependencies |w---w| PCMSolver |dr| Fortran, zlib
 
 **CMake Variables**
 

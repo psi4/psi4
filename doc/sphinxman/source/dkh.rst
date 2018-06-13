@@ -65,10 +65,13 @@ Installation
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  dkh can be obtained through ``conda install dkh``.
+  dkh can be obtained through ``conda install dkh -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_dkh`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect dkh and activate dependent code.
+
+* Previous bullet had details. To build |PSIfour| from source and use
+  dkh from conda without thinking, consult :ref:`sec:condapsi4dev`.
 
 * To remove a conda installation, ``conda remove dkh``.
 

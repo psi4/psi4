@@ -565,7 +565,27 @@ CD
     vectors is not designed for computations with thousands of basis
     functions.
 
+In some cases the above algorithms have multiple implementations that return
+the same result, but are optimal under different molecules sizes and hardware
+configurations. Psi4 will automatically detect the correct algorithm to run and
+only expert users should manually select the below implementations. The DF
+algorithm has the following two implementations
 
+MEM_DF
+    A DF algorithm optimized around memory layout and is optimal as long as
+    there is sufficient memory to hold the three-index DF tensors in memory. This
+    algorithm may be faster for builds that require disk if SSDs are used.
+DISK_DF
+    A DF algorithm (the default DF algorithm before Psi4 1.2) optimized to
+    minimize Disk IO by sacrificing some performance due to memory layout.
+
+Note that these algorithms have both in-memory and on-disk options, but
+performance penalties up to a factor of 2.5 can be found if the incorrect
+algorithm is chosen. It is therefore highly recommended that the keyword "DF"
+be selected in all cases so that the correct implementation can be selected by
+|PSIfours| internal routines. Expert users can manually switch between MEM_DF and
+DISK_DF; however, they may find documented exceptions during use as several
+post SCF algorithms require a specific implementation.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
@@ -667,6 +687,9 @@ if the instability still exists. For more attempts, set |scf__max_attempts|;
 the default value of 1 is recommended. In case the SCF ends up in the same minimum, modification
 of |scf__follow_step_scale| is recommended over increasing |scf__max_attempts|.
 
+.. note:: Setting the option |scf__stability_analysis| to ``FOLLOW`` is only avalible for UHF. When using 
+   RHF and ROHF instabilities can be checked, but not followed. If you want to attempt to find a lower energy solution
+   you should re-run the calculation with |scf__reference| set to ``UHF``.
 
 The main algorithm available in |PSIfour| is the Direct Inversion algorithm. It can *only*
 work with |scf__scf_type| ``PK``, and it explicitly builds the full electronic Hessian
@@ -684,15 +707,15 @@ analysis. The capabilities of both algorithms are summarized below:
 
 .. table:: Stability analysis methods available in |PSIfour|
 
-    +------------------+------------------+----------------------------------------------+-----------------+
-    |     Algorithm    | |scf__reference| |     Stability checked                        | |scf__scf_type| |
-    +==================+==================+==============================================+=================+
-    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | PK only         |
-    +                  +------------------+----------------------------------------------+-----------------+
-    | Direct Inversion |       ROHF       | Internal                                     | PK only         |
-    +------------------+------------------+----------------------------------------------+-----------------+
-    |   Davidson       |       UHF        | Internal                                     |   Anything      |
-    +------------------+------------------+----------------------------------------------+-----------------+
+    +------------------+------------------+----------------------------------------------+---------------------------+-----------------+
+    |     Algorithm    | |scf__reference| |     Stability checked                        | |scf__stability_analysis| | |scf__scf_type| |
+    +==================+==================+==============================================+===========================+=================+
+    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | ``CHECK``                 |   PK only       |
+    +                  +------------------+----------------------------------------------+---------------------------+-----------------+
+    | Direct Inversion |       ROHF       | Internal                                     | ``CHECK``                 |   PK only       |
+    +------------------+------------------+----------------------------------------------+---------------------------+-----------------+
+    |   Davidson       |       UHF        | Internal                                     | ``CHECK`` or ``FOLLOW``   |   Anything      |
+    +------------------+------------------+----------------------------------------------+---------------------------+-----------------+
 
 The best algorithm is automatically selected, *i.e.* Davidson for UHF :math:`\rightarrow` UHF and Direct Inversion otherwise.
 

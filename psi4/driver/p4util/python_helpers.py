@@ -115,6 +115,9 @@ def pybuild_wavefunction(mol, basis=None):
         basis = core.BasisSet.build(mol, "ORBITAL", basis)
 
     wfn = core.Wavefunction(mol, basis)
+    # Set basis for density-fitted calculations to the zero basis...
+    # ...until the user explicitly provides a DF basis.
+    wfn.set_basisset("DF_BASIS_SCF", core.BasisSet.zero_ao_basis_set())
     return wfn
 
 
@@ -168,7 +171,7 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
         core.set_global_option("SCF_TYPE", jk_type)
 
     if aux is None:
-        if core.get_option("SCF", "SCF_TYPE") == "DF":
+        if core.get_global_option("SCF_TYPE") == "DF":
             aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
                                       core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
                                       core.get_global_option('BASIS'), orbital_basis.has_puream())

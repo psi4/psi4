@@ -42,6 +42,7 @@ set reference rks
 set freeze_core false
 set dft_radial_points 99
 set dft_spherical_points 302
+set dft_block_scheme naive
 
 #activate(h2)
 #eb2plyp = energy('dsd-pbep86')
@@ -50,6 +51,8 @@ set dft_spherical_points 302
 activate(h2)
 eb2plyp = energy('b2plyp')
 clean()
+
+set dft_block_scheme octree
 
 activate(h2o)
 eb2plyp = energy('b2plyp')

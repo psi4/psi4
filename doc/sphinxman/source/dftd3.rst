@@ -59,11 +59,15 @@ Installation
 
 * DFTD3 is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
-* If using the |PSIfour| binary, DFTD3 has already been installed alongside.
+* If using the Psi4conda installer, DFTD3 has already been installed alongside.
+
+* If using the |PSIfour| conda package, the dftd3 conda package can
+  be obtained through ``conda install dftd3 -c psi4`` or ``conda install
+  psi4-rt -c psi4``.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  the dftd3 executable can be obtained through ``conda install dftd3``.
+  the dftd3 executable can be obtained through ``conda install dftd3 -c psi4``.
 
 * To remove a conda installation, ``conda remove dftd3``.
 

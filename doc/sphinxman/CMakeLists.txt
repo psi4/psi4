@@ -52,6 +52,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     build_obtaining.rst libint.rst erd.rst simint.rst gcp.rst
     index_tutorials.rst prog_faq.rst manage_index.rst manage_git.rst
     style_c.rst prog_blas.rst add_tests.rst plugin_snsmp2.rst dftnl.rst
+    libxc.rst gau2grid.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
