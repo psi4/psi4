@@ -1084,27 +1084,27 @@ void DFJKGrad::build_Amn_x_terms()
         psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
     }
 
-    SharedMatrix Jmn;
     SharedMatrix Kmn;
+    SharedMatrix wKmn;
     SharedMatrix Ami;
     SharedMatrix Aij;
 
-    double** Jmnp;
     double** Kmnp;
+    double** wKmnp;
     double** Amip;
     double** Aijp;
 
     if (do_K_ || do_wK_) {
-        Jmn = std::make_shared<Matrix>("Jmn", max_rows, nso * (size_t) nso);
+        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t) nso);
         Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
         Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
-        Jmnp = Jmn->pointer();
+        Kmnp = Kmn->pointer();
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
     if (do_wK_) {
-        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t) nso);
-        Kmnp = Kmn->pointer();
+        wKmn = std::make_shared<Matrix>("wKmn", max_rows, nso * (size_t) nso);
+        wKmnp = wKmn->pointer();
     }
 
     double** Dtp = Dt_->pointer();
@@ -1145,6 +1145,24 @@ void DFJKGrad::build_Amn_x_terms()
 
     double factor = (restricted ? 2.0 : 1.0);
 
+
+    // => Figure out required transforms <= //
+
+    // unit, disk buffer name, nmo_size, psio_address, output_buffer
+    std::vector<std::tuple<size_t, std::string, double**, size_t, psio_address, double**>> transforms;
+    if (do_K_ || do_wK_) {
+        transforms.push_back(std::make_tuple(unit_a_, "(A|ij)", Cap, na, next_Aija, Kmnp));
+        if (!restricted){
+            transforms.push_back(std::make_tuple(unit_b_, "(A|ij)", Cbp, nb, next_Aijb, Kmnp));
+        }
+    }
+    if (do_wK_) {
+        transforms.push_back(std::make_tuple(unit_a_, "(A|w|ij)", Cap, na, next_Awija, wKmnp));
+        if (!restricted){
+            transforms.push_back(std::make_tuple(unit_b_, "(A|w|ij)", Cbp, nb, next_Awijb, wKmnp));
+        }
+    }
+
     // => Master Loop <= //
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
@@ -1161,70 +1179,29 @@ void DFJKGrad::build_Amn_x_terms()
 
         // => J_mn^A <= //
 
-        // > Alpha < //
-        if (do_K_ || do_wK_) {
+        for (const auto& trans : transforms) {
+
+            // > Unpack transform < //
+            size_t unit = std::get<0>(trans);
+            std::string buffer = std::get<1>(trans);
+            double** Cp = std::get<2>(trans);
+            size_t nmo = std::get<3>(trans);
+            psio_address address = std::get<4>(trans);
+            double** retp = std::get<5>(trans);
+
+            size_t nmo2 = nmo * nmo;
 
             // > Stripe < //
-            psio_->read(unit_a_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
+            psio_->read(unit, buffer.c_str(), (char*)Aijp[0], sizeof(double) * np * nmo2, address, &address);
 
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
+                C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, &Aijp[0][P * nmo2], nmo, 0.0, Amip[P], nmo);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
-        }
-
-        // > Beta < //
-        if (!restricted && (do_K_ || do_wK_)) {
-
-            // > Stripe < //
-            psio_->read(unit_b_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
-        }
-
-        // => K_mn^A <= //
-
-        // > Alpha < //
-        if (do_wK_) {
-
-            // > Stripe < //
-            psio_->read(unit_a_, "(A|w|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Awija, &next_Awija);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Kmnp[0], nso);
-        }
-
-        // > Beta < //
-        if (!restricted && do_wK_) {
-
-            // > Stripe < //
-            psio_->read(unit_b_, "(A|w|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Awijb, &next_Awijb);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Kmnp[0], nso);
+            C_DGEMM('N', 'T', np * (size_t)nso, nso, nmo, factor, Amip[0], nmo, Cp[0], nmo, 0.0, retp[0], nso);
         }
 
         // > Integrals < //
@@ -1306,29 +1283,29 @@ void DFJKGrad::build_Amn_x_terms()
                         }
 
                         if (do_K_) {
-                            double Jval = 1.0 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)];
-                            grad_Kp[aP][0] += Jval * (*Px);
-                            grad_Kp[aP][1] += Jval * (*Py);
-                            grad_Kp[aP][2] += Jval * (*Pz);
-                            grad_Kp[aM][0] += Jval * (*Mx);
-                            grad_Kp[aM][1] += Jval * (*My);
-                            grad_Kp[aM][2] += Jval * (*Mz);
-                            grad_Kp[aN][0] += Jval * (*Nx);
-                            grad_Kp[aN][1] += Jval * (*Ny);
-                            grad_Kp[aN][2] += Jval * (*Nz);
+                            double Kval = 1.0 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
+                            grad_Kp[aP][0] += Kval * (*Px);
+                            grad_Kp[aP][1] += Kval * (*Py);
+                            grad_Kp[aP][2] += Kval * (*Pz);
+                            grad_Kp[aM][0] += Kval * (*Mx);
+                            grad_Kp[aM][1] += Kval * (*My);
+                            grad_Kp[aM][2] += Kval * (*Mz);
+                            grad_Kp[aN][0] += Kval * (*Nx);
+                            grad_Kp[aN][1] += Kval * (*Ny);
+                            grad_Kp[aN][2] += Kval * (*Nz);
                         }
 
                         if (do_wK_) {
-                            double Kval = 0.5 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
-                            grad_wKp[aP][0] += Kval * (*Px);
-                            grad_wKp[aP][1] += Kval * (*Py);
-                            grad_wKp[aP][2] += Kval * (*Pz);
-                            grad_wKp[aM][0] += Kval * (*Mx);
-                            grad_wKp[aM][1] += Kval * (*My);
-                            grad_wKp[aM][2] += Kval * (*Mz);
-                            grad_wKp[aN][0] += Kval * (*Nx);
-                            grad_wKp[aN][1] += Kval * (*Ny);
-                            grad_wKp[aN][2] += Kval * (*Nz);
+                            double wKval = 0.5 * perm * wKmnp[p + oP][(m + oM) * nso + (n + oN)];
+                            grad_wKp[aP][0] += wKval * (*Px);
+                            grad_wKp[aP][1] += wKval * (*Py);
+                            grad_wKp[aP][2] += wKval * (*Pz);
+                            grad_wKp[aM][0] += wKval * (*Mx);
+                            grad_wKp[aM][1] += wKval * (*My);
+                            grad_wKp[aM][2] += wKval * (*Mz);
+                            grad_wKp[aN][0] += wKval * (*Nx);
+                            grad_wKp[aN][1] += wKval * (*Ny);
+                            grad_wKp[aN][2] += wKval * (*Nz);
                         }
 
                         Px++;
