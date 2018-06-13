@@ -253,16 +253,10 @@ void DFJKGrad::compute_gradient()
     //  J^x = (A|pq)^x d_A Dt_pq
     //  K^x = (A|pq)^x (A|pq)
     // wK^x = 0.5 * (A|pq)^x (A|w|pq)
+    // wK^x = 0.5 * (A|w|pq)^x (A|pq)
     timer_on("JKGrad: Amnx");
     build_Amn_x_terms();
     timer_off("JKGrad: Amnx");
-
-    //  (A|pq) = (A|ij) C_ip C_iq
-    // wK^x = 0.5 * (A|pq)^x (A|w|pq)
-    timer_on("JKGrad: Awmnx");
-    build_Amn_x_lr_terms();
-    timer_off("JKGrad: Awmnx");
-
 
     //  J^x  = 0.5 * (C|D)^x [(C|B)^-1 (B|pq) D_tpq] [(D|A)^-1 (A|rs) Dt_rs]
     //  J^x += (A|pq)^x D_pq  [(A|B)^-1 (B|rs) Dt_rs]
@@ -275,13 +269,13 @@ void DFJKGrad::compute_gradient()
     // wK^x += 0.5 * (A|w|pq)^x (A|pq)
 
 
-    // gradients_["Coulomb"]->print();
-    // if (do_K_) {
-    //     gradients_["Exchange"]->print();
-    // }
-    // if (do_wK_) {
-    //     gradients_["Exchange,LR"]->print();
-    // }
+    gradients_["Coulomb"]->print();
+    if (do_K_) {
+        gradients_["Exchange"]->print();
+    }
+    if (do_wK_) {
+        gradients_["Exchange,LR"]->print();
+    }
 
     // => Close temp files <= //
     psio_->close(unit_a_, 0);
@@ -1119,9 +1113,13 @@ void DFJKGrad::build_Amn_x_terms()
     // => Integrals <= //
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> omega_eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        if (do_wK_){
+            omega_eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_, 1)));
+        }
     }
 
     // => Temporary Gradients <= //
@@ -1269,6 +1267,7 @@ void DFJKGrad::build_Amn_x_terms()
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
 
+                        //  J^x = (A|pq)^x d_A Dt_pq
                         if (do_J_) {
                             double Ival = 1.0 * perm * dp[p + oP + pstart] * Dtp[m + oM][n + oN];
                             grad_Jp[aP][0] += Ival * (*Px);
@@ -1282,6 +1281,8 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Jp[aN][2] += Ival * (*Nz);
                         }
 
+
+                        //  K^x = (A|pq)^x (A|pq)
                         if (do_K_) {
                             double Kval = 1.0 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
                             grad_Kp[aP][0] += Kval * (*Px);
@@ -1295,6 +1296,8 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Kp[aN][2] += Kval * (*Nz);
                         }
 
+
+                        // wK^x = 0.5 * (A|pq)^x (A|w|pq)
                         if (do_wK_) {
                             double wKval = 0.5 * perm * wKmnp[p + oP][(m + oM) * nso + (n + oN)];
                             grad_wKp[aP][0] += wKval * (*Px);
@@ -1319,6 +1322,51 @@ void DFJKGrad::build_Amn_x_terms()
                         Nz++;
                     }
                 }
+            }
+
+            //  wK^x = 0.5 * (A|w|pq)^x (A|pq)
+            if (do_wK_){
+
+                omega_eri[thread]->compute_shell_deriv1(P,0,M,N);
+                const double* buffer = omega_eri[thread]->buffer();
+
+                const double *Px = buffer + 0*ncart;
+                const double *Py = buffer + 1*ncart;
+                const double *Pz = buffer + 2*ncart;
+                const double *Mx = buffer + 3*ncart;
+                const double *My = buffer + 4*ncart;
+                const double *Mz = buffer + 5*ncart;
+                const double *Nx = buffer + 6*ncart;
+                const double *Ny = buffer + 7*ncart;
+                const double *Nz = buffer + 8*ncart;
+
+                for (int p = 0; p < nP; p++) {
+                    for (int m = 0; m < nM; m++) {
+                        for (int n = 0; n < nN; n++) {
+                            double wKval = 0.5 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
+                            grad_wKp[aP][0] += wKval * (*Px);
+                            grad_wKp[aP][1] += wKval * (*Py);
+                            grad_wKp[aP][2] += wKval * (*Pz);
+                            grad_wKp[aM][0] += wKval * (*Mx);
+                            grad_wKp[aM][1] += wKval * (*My);
+                            grad_wKp[aM][2] += wKval * (*Mz);
+                            grad_wKp[aN][0] += wKval * (*Nx);
+                            grad_wKp[aN][1] += wKval * (*Ny);
+                            grad_wKp[aN][2] += wKval * (*Nz);
+                            Px++;
+                            Py++;
+                            Pz++;
+                            Mx++;
+                            My++;
+                            Mz++;
+                            Nx++;
+                            Ny++;
+                            Nz++;
+                        }
+
+                    }
+                }
+
             }
         }
     }
@@ -1349,230 +1397,7 @@ void DFJKGrad::build_Amn_x_terms()
     //gradients_["Exchange"]->print();
     //gradients_["Exchange,LR"]->print();
 }
-void DFJKGrad::build_Amn_x_lr_terms()
-{
-    if (!do_wK_) return;
 
-    // => Sizing <= //
-
-    int natom = primary_->molecule()->natom();
-    int nso = primary_->nbf();
-    int naux = auxiliary_->nbf();
-    int na = Ca_->colspi()[0];
-    int nb = Cb_->colspi()[0];
-
-    bool restricted = (Ca_ == Cb_);
-
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    int npairs = shell_pairs.size();
-
-    // => Memory Constraints <= //
-
-    int max_rows;
-    int maxP = auxiliary_->max_function_per_shell();
-    size_t row_cost = 0L;
-    row_cost += nso * (size_t) nso;
-    row_cost += nso * (size_t) na;
-    row_cost += na * (size_t) na;
-    size_t rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = (int) rows;
-
-    // => Block Sizing <= //
-
-    std::vector<int> Pstarts;
-    int counter = 0;
-    Pstarts.push_back(0);
-    for (int P = 0; P < auxiliary_->nshell(); P++) {
-        int nP = auxiliary_->shell(P).nfunction();
-        if (counter + nP > max_rows) {
-            counter = 0;
-            Pstarts.push_back(P);
-        }
-        counter += nP;
-    }
-    Pstarts.push_back(auxiliary_->nshell());
-
-    // => Temporary Buffers <= //
-
-    SharedMatrix Jmn;
-    SharedMatrix Ami;
-    SharedMatrix Aij;
-
-    double** Jmnp;
-    double** Amip;
-    double** Aijp;
-
-    Jmn = std::make_shared<Matrix>("Jmn", max_rows, nso * (size_t) nso);
-    Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
-    Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
-    Jmnp = Jmn->pointer();
-    Amip = Ami->pointer();
-    Aijp = Aij->pointer();
-
-    double** Cap = Ca_->pointer();
-    double** Cbp = Cb_->pointer();
-
-    psio_address next_Aija = PSIO_ZERO;
-    psio_address next_Aijb = PSIO_ZERO;
-
-    // => Integrals <= //
-
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_,1)));
-    }
-
-    // => Temporary Gradients <= //
-
-    std::vector<SharedMatrix> wKtemps;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        wKtemps.push_back(std::make_shared<Matrix>("wKtemp", natom, 3));
-    }
-
-    // => R/U doubling factor <= //
-
-    double factor = (restricted ? 2.0 : 1.0);
-
-    // => Master Loop <= //
-
-    for (int block = 0; block < Pstarts.size() - 1; block++) {
-
-        // > Sizing < //
-
-        int Pstart = Pstarts[block];
-        int Pstop  = Pstarts[block+1];
-        int NP = Pstop - Pstart;
-
-        int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
-        int np = pstop - pstart;
-
-        // => J_mn^A <= //
-
-        // > Alpha < //
-        if (true) {
-
-            // > Stripe < //
-            psio_->read(unit_a_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
-        }
-
-        // > Beta < //
-        if (!restricted) {
-
-            // > Stripe < //
-            psio_->read(unit_b_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
-        }
-
-        // > Integrals < //
-        int nthread_df = df_ints_num_threads_;
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
-
-            int thread = 0;
-#ifdef _OPENMP
-            thread = omp_get_thread_num();
-#endif
-
-            int P =  PMN / npairs + Pstart;
-            int MN = PMN % npairs;
-            int M = shell_pairs[MN].first;
-            int N = shell_pairs[MN].second;
-
-            eri[thread]->compute_shell_deriv1(P,0,M,N);
-
-            const double* buffer = eri[thread]->buffer();
-
-            int nP = auxiliary_->shell(P).nfunction();
-            int cP = auxiliary_->shell(P).ncartesian();
-            int aP = auxiliary_->shell(P).ncenter();
-            int oP = auxiliary_->shell(P).function_index() - pstart;
-
-            int nM = primary_->shell(M).nfunction();
-            int cM = primary_->shell(M).ncartesian();
-            int aM = primary_->shell(M).ncenter();
-            int oM = primary_->shell(M).function_index();
-
-            int nN = primary_->shell(N).nfunction();
-            int cN = primary_->shell(N).ncartesian();
-            int aN = primary_->shell(N).ncenter();
-            int oN = primary_->shell(N).function_index();
-
-            int ncart = cP * cM * cN;
-            const double *Px = buffer + 0*ncart;
-            const double *Py = buffer + 1*ncart;
-            const double *Pz = buffer + 2*ncart;
-            const double *Mx = buffer + 3*ncart;
-            const double *My = buffer + 4*ncart;
-            const double *Mz = buffer + 5*ncart;
-            const double *Nx = buffer + 6*ncart;
-            const double *Ny = buffer + 7*ncart;
-            const double *Nz = buffer + 8*ncart;
-
-            double perm = (M == N ? 1.0 : 2.0);
-
-            double** grad_wKp = wKtemps[thread]->pointer();
-
-            for (int p = 0; p < nP; p++) {
-                for (int m = 0; m < nM; m++) {
-                    for (int n = 0; n < nN; n++) {
-
-                        double Kval = 0.5 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)];
-                        grad_wKp[aP][0] += Kval * (*Px);
-                        grad_wKp[aP][1] += Kval * (*Py);
-                        grad_wKp[aP][2] += Kval * (*Pz);
-                        grad_wKp[aM][0] += Kval * (*Mx);
-                        grad_wKp[aM][1] += Kval * (*My);
-                        grad_wKp[aM][2] += Kval * (*Mz);
-                        grad_wKp[aN][0] += Kval * (*Nx);
-                        grad_wKp[aN][1] += Kval * (*Ny);
-                        grad_wKp[aN][2] += Kval * (*Nz);
-
-                        Px++;
-                        Py++;
-                        Pz++;
-                        Mx++;
-                        My++;
-                        Mz++;
-                        Nx++;
-                        Ny++;
-                        Nz++;
-                    }
-                }
-            }
-        }
-    }
-
-    // => Temporary Gradient Reduction <= //
-
-    //gradients_["Exchange,LR"]->zero();
-
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        gradients_["Exchange,LR"]->add(wKtemps[t]);
-    }
-
-    //gradients_["Exchange,LR"]->print();
-}
 void DFJKGrad::compute_hessian()
 {
 
