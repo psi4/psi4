@@ -182,7 +182,7 @@ void DFJKGrad::compute_gradient()
         gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient",natom,3);
     }
     if (do_wK_) {
-        throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
+        // throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
         gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient",natom,3);
     }
 
@@ -196,33 +196,92 @@ void DFJKGrad::compute_gradient()
 
     // => Gradient Construction: Get in there and kill 'em all! <= //
 
+
+    // Using
+
+    // d Minv          d M
+    // ------ = -Minv ----- Minv
+    //   dx             dx
+
+    // we get
+
+    // d (mn|w|A) Minv[A][B] (B|rs)
+    // ---------------------------- =
+    //             dx
+    //                              x
+    //                      (mn|w|A)  Minv[A][B] (B|rs)
+
+    //                                            x
+    //                   -  (mn|w|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
+
+    //                                                 x
+    //                   +  (mn|w|A)  Minv[A][B] (B|rs)
+
+    // c_B = (B|pq) D_pq
+    // (B|ij) = (B|pq) C_pi C_qi
     timer_on("JKGrad: Amn");
     build_Amn_terms();
     timer_off("JKGrad: Amn");
 
+    // (B|w|ij) = (B|w|pq) C_pi C_qi
     timer_on("JKGrad: Awmn");
     build_Amn_lr_terms();
     timer_off("JKGrad: Awmn");
 
+    // c_A = (A|B)^-1 c_B
+    // (A|ij) = (A|B)^-1 (B|ij)
+    // (A|w|ij) = (A|B)^-1 (B|w|ij)
     timer_on("JKGrad: AB");
     build_AB_inv_terms();
     timer_off("JKGrad: AB");
 
+    // W_AB = (A|ij) (B|ij)
+    // V_AB = 0.5 * [(A|w|ij) (B|ij) + (A|ij) (B|w|ij)]
     timer_on("JKGrad: UV");
     build_UV_terms();
     timer_off("JKGrad: UV");
 
+    //  J^x = 0.5 * (A|B)^x c_B c_A
+    //  K^x = 0.5 * (A|B)^x W_AB
+    // wK^x = 0.5 * (A|B)^x V_AB
     timer_on("JKGrad: ABx");
     build_AB_x_terms();
     timer_off("JKGrad: ABx");
 
+    //  (A|pq)   = (A|ij) C_ip C_iq
+    //  (A|w|pq) = (A|w|ij) C_ip C_iq
+    //  J^x = (A|pq)^x d_A Dt_pq
+    //  K^x = (A|pq)^x (A|pq)
+    // wK^x = 0.5 * (A|pq)^x (A|w|pq)
     timer_on("JKGrad: Amnx");
     build_Amn_x_terms();
     timer_off("JKGrad: Amnx");
 
+    //  (A|pq) = (A|ij) C_ip C_iq
+    // wK^x = 0.5 * (A|pq)^x (A|w|pq)
     timer_on("JKGrad: Awmnx");
     build_Amn_x_lr_terms();
     timer_off("JKGrad: Awmnx");
+
+
+    //  J^x  = 0.5 * (C|D)^x [(C|B)^-1 (B|pq) D_tpq] [(D|A)^-1 (A|rs) Dt_rs]
+    //  J^x += (A|pq)^x D_pq  [(A|B)^-1 (B|rs) Dt_rs]
+
+    //  K^x  = 0.5 * (A|B)^x (ij|A)(A|C)^-1(C|B)^-1(B|ij)
+    //  K^x += (A|pq)^x (A|pq)
+
+    // wK^x  = 0.5 * (A|B)^x [(ij|A)(A|C)^-1] [(C|B)^-1(B|w|ij)]
+    // wK^x += 0.5 * (A|pq)^x (A|w|pq)
+    // wK^x += 0.5 * (A|w|pq)^x (A|pq)
+
+
+    // gradients_["Coulomb"]->print();
+    // if (do_K_) {
+    //     gradients_["Exchange"]->print();
+    // }
+    // if (do_wK_) {
+    //     gradients_["Exchange,LR"]->print();
+    // }
 
     // => Close temp files <= //
     psio_->close(unit_a_, 0);
@@ -626,108 +685,48 @@ void DFJKGrad::build_AB_inv_terms()
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
 
-    // > Alpha < //
-    if (true) {
-        psio_address next_Aija = PSIO_ZERO;
+    // K and wK 3 index temps
+    std::vector<std::string> buffers;
+    buffers.push_back("(A|ij)");
+    if (do_wK_) buffers.push_back("(A|w|ij)");
 
-        for (long int ij = 0L; ij < na *(size_t) na; ij += max_cols) {
-            int ncols = (ij + max_cols >= na * (size_t) na ? na * (size_t) na - ij : max_cols);
+    // Units and sizing for alpha/beta
+    std::vector<std::pair<size_t, size_t>> us_vec;
+    us_vec.push_back(std::make_pair(unit_a_, na));
+    if (!restricted) us_vec.push_back(std::make_pair(unit_b_, nb));
 
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->read(unit_a_,"(A|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
+    // Transform all three index buffers (A|B)(B|ij) -> (A|ij)
+    for (const auto& buff_name : buffers) {
+        for (const auto& us : us_vec) {
+            size_t unit_name = us.first;
+            size_t nmo_size = us.second;
+            size_t nmo_size2 = nmo_size * nmo_size;
+
+            psio_address next_Aija = PSIO_ZERO;
+
+            for (long int ij = 0L; ij < nmo_size2; ij += max_cols) {
+                int ncols = (ij + max_cols >= nmo_size2 ? nmo_size2 - ij : max_cols);
+
+                // > Read < //
+                for (int Q = 0; Q < naux; Q++) {
+                    next_Aija = psio_get_address(PSIO_ZERO, sizeof(double) * (Q * (size_t)nmo_size2 + ij));
+                    psio_->read(unit_name, buff_name.c_str(), (char*)Aijp[Q], sizeof(double) * ncols, next_Aija,
+                                &next_Aija);
+                }
+
+                // > GEMM <//
+                C_DGEMM('N', 'N', naux, ncols, naux, 1.0, Jp[0], naux, Aijp[0], max_cols, 0.0, Bijp[0], max_cols);
+
+                // > Stripe < //
+                for (int Q = 0; Q < naux; Q++) {
+                    next_Aija = psio_get_address(PSIO_ZERO, sizeof(double) * (Q * (size_t)nmo_size2 + ij));
+                    psio_->write(unit_name, buff_name.c_str(), (char*)Bijp[Q], sizeof(double) * ncols, next_Aija,
+                                 &next_Aija);
+                }
             }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->write(unit_a_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
-            }
-
         }
     }
 
-    // > Beta < //
-    if (!restricted) {
-        psio_address next_Aijb = PSIO_ZERO;
-
-        for (long int ij = 0L; ij < nb *(size_t) nb; ij += max_cols) {
-            int ncols = (ij + max_cols >= nb * (size_t) nb ? nb * (size_t) nb - ij : max_cols);
-
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->read(unit_b_,"(A|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->write(unit_b_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-        }
-    }
-
-    if (!do_wK_)
-        return;
-
-    // > Alpha < //
-    if (true) {
-        psio_address next_Aija = PSIO_ZERO;
-
-        for (long int ij = 0L; ij < na *(size_t) na; ij += max_cols) {
-            int ncols = (ij + max_cols >= na * (size_t) na ? na * (size_t) na - ij : max_cols);
-
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->read(unit_a_,"(A|w|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
-            }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->write(unit_a_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
-            }
-
-        }
-    }
-
-    // > Beta < //
-    if (!restricted) {
-        psio_address next_Aijb = PSIO_ZERO;
-
-        for (long int ij = 0L; ij < nb *(size_t) nb; ij += max_cols) {
-            int ncols = (ij + max_cols >= nb * (size_t) nb ? nb * (size_t) nb - ij : max_cols);
-
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->read(unit_b_,"(A|w|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->write(unit_b_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-        }
-    }
 }
 void DFJKGrad::build_UV_terms()
 {
@@ -802,6 +801,7 @@ void DFJKGrad::build_UV_terms()
         return;
 
     // => W < = //
+    V->zero();
 
     // > Alpha < //
     if (true) {
@@ -835,6 +835,7 @@ void DFJKGrad::build_UV_terms()
     } else {
         V->scale(2.0);
     }
+    V->hermitivitize();
     psio_->write_entry(unit_c_,"W",(char*) Vp[0], sizeof(double) * naux * naux);
 }
 void DFJKGrad::build_AB_x_terms()
@@ -976,7 +977,7 @@ void DFJKGrad::build_AB_x_terms()
                 }
 
                 if (do_wK_) {
-                    double Wval = 0.5 * perm * (0.5 * (Wp[p + oP][q + oQ] + Wp[q + oQ][p + oP]));
+                    double Wval = 0.5 * perm * Wp[p + oP][q + oQ];
                     grad_wKp[aP][0] -= Wval * (*Px);
                     grad_wKp[aP][1] -= Wval * (*Py);
                     grad_wKp[aP][2] -= Wval * (*Pz);
