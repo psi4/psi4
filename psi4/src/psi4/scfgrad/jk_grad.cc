@@ -696,6 +696,7 @@ void DFJKGrad::build_AB_inv_terms()
             size_t unit_name = us.first;
             size_t nmo_size = us.second;
             size_t nmo_size2 = nmo_size * nmo_size;
+            // printf("%s | %zu %zu\n", buff_name.c_str(), unit_name, nmo_size);
 
             psio_address next_Aija = PSIO_ZERO;
 
@@ -993,9 +994,9 @@ void DFJKGrad::build_AB_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
-    //gradients_["Coulomb"]->zero();
-    //gradients_["Exchange"]->zero();
-    //gradients_["Exchange,LR"]->zero();
+    // gradients_["Coulomb"]->zero();
+    // gradients_["Exchange"]->zero();
+    // gradients_["Exchange,LR"]->zero();
 
     if (do_J_) {
         for (int t = 0; t < df_ints_num_threads_; t++) {
@@ -1014,8 +1015,8 @@ void DFJKGrad::build_AB_x_terms()
     }
 
     //gradients_["Coulomb"]->print();
-    //gradients_["Exchange"]->print();
-    //gradients_["Exchange,LR"]->print();
+    // gradients_["Exchange"]->print();
+    // gradients_["Exchange,LR"]->print();
 }
 void DFJKGrad::build_Amn_x_terms()
 {
@@ -1151,13 +1152,13 @@ void DFJKGrad::build_Amn_x_terms()
     std::vector<std::tuple<size_t, std::string, double**, size_t, psio_address, double**>> transforms;
     if (do_K_ || do_wK_) {
         transforms.push_back(std::make_tuple(unit_a_, "(A|ij)", Cap, na, next_Aija, Kmnp));
-        if (!restricted){
+        if (!restricted) {
             transforms.push_back(std::make_tuple(unit_b_, "(A|ij)", Cbp, nb, next_Aijb, Kmnp));
         }
     }
     if (do_wK_) {
         transforms.push_back(std::make_tuple(unit_a_, "(A|w|ij)", Cap, na, next_Awija, wKmnp));
-        if (!restricted){
+        if (!restricted) {
             transforms.push_back(std::make_tuple(unit_b_, "(A|w|ij)", Cbp, nb, next_Awijb, wKmnp));
         }
     }
@@ -1178,6 +1179,8 @@ void DFJKGrad::build_Amn_x_terms()
 
         // => J_mn^A <= //
 
+        if (do_K_ || do_wK_) Kmn->zero();
+        if (do_wK_) wKmn->zero();
         for (const auto& trans : transforms) {
 
             // > Unpack transform < //
@@ -1187,6 +1190,7 @@ void DFJKGrad::build_Amn_x_terms()
             size_t nmo = std::get<3>(trans);
             psio_address address = std::get<4>(trans);
             double** retp = std::get<5>(trans);
+            // printf("%4.2lf : %zu  %s %zu\n", factor, unit, buffer.c_str(), nmo);
 
             size_t nmo2 = nmo * nmo;
 
@@ -1196,12 +1200,14 @@ void DFJKGrad::build_Amn_x_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, &Aijp[0][P * nmo2], nmo, 0.0, Amip[P], nmo);
+                C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, &Aijp[0][P * nmo2], nmo, 0.0, Amip[P], na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N', 'T', np * (size_t)nso, nso, nmo, factor, Amip[0], nmo, Cp[0], nmo, 0.0, retp[0], nso);
+            C_DGEMM('N', 'T', np * (size_t)nso, nso, nmo, factor, Amip[0], na, Cp[0], nmo, 1.0, retp[0], nso);
         }
+
+
 
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
@@ -1374,9 +1380,9 @@ void DFJKGrad::build_Amn_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
-    //gradients_["Coulomb"]->zero();
-    //gradients_["Exchange"]->zero();
-    //gradients_["Exchange,LR"]->zero();
+    // gradients_["Coulomb"]->zero();
+    // gradients_["Exchange"]->zero();
+    // gradients_["Exchange,LR"]->zero();
 
     if (do_J_) {
         for (int t = 0; t < df_ints_num_threads_; t++) {
@@ -1394,9 +1400,9 @@ void DFJKGrad::build_Amn_x_terms()
         }
     }
 
-    //gradients_["Coulomb"]->print();
-    //gradients_["Exchange"]->print();
-    //gradients_["Exchange,LR"]->print();
+    // gradients_["Coulomb"]->print();
+    // gradients_["Exchange"]->print();
+    // gradients_["Exchange,LR"]->print();
 }
 
 void DFJKGrad::compute_hessian()
@@ -2205,9 +2211,11 @@ void DirectJKGrad::compute_gradient()
         std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         if (do_J_) {
             gradients_["Coulomb"]->copy(vals["J"]);
+            gradients_["Coulomb"]->print();
         }
         if (do_K_) {
             gradients_["Exchange"]->copy(vals["K"]);
+            gradients_["Exchange"]->print();
         }
     }
     if (do_wK_) {
@@ -2217,6 +2225,7 @@ void DirectJKGrad::compute_gradient()
         }
         std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         gradients_["Exchange,LR"]->copy(vals["K"]);
+        gradients_["Exchange,LR"]->print();
     }
 }
 std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
