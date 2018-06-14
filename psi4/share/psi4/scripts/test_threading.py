@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import math
 import time
 import importlib
 import subprocess
+
+if sys.version_info <= (3, 0):
+    print('Much of this script needs py3')
+    sys.exit()
 
 # good
 #import numpy as np
@@ -184,7 +189,7 @@ def print_math_ldd(args):
 
     module, sharedlibrary = args.module.split('/')
     mod = importlib.import_module(module)
-    modcore = mod.__file__[:-11] + sharedlibrary
+    modcore = os.path.dirname(os.path.abspath(mod.__file__)) + os.path.sep + sharedlibrary
 
     if sys.platform.startswith('linux'):
         lddish = 'ldd -v'

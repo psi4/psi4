@@ -26,6 +26,10 @@
 
 set(PN TargetOpenMP)
 
+if (NOT ${PN}_FIND_QUIETLY)
+    message(STATUS "Detecting MathOpenMP -- ?OpenMP=${ENABLE_OPENMP}, ?MKL=${isMKL}, CXX=${CMAKE_CXX_COMPILER_ID}")
+endif()
+
 # 1st precedence - libraries passed in through -DOpenMP_LIBRARIES
 if (OpenMP_LIBRARIES AND OpenMP_FLAGS AND OpenMP_CXX_LIB_NAMES)
     if (NOT ${PN}_FIND_QUIETLY)
