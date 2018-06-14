@@ -1,7 +1,5 @@
 #! aug-cc-pvdz H2O Test DF-CCSD vs GPU-DF-CCSD
 
-sys.path.insert(0,'../../../.')
-
 import gpu_dfcc
 
 molecule {
