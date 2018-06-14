@@ -1,4 +1,4 @@
-#! aug-cc-pvdz H2O Test DF-CCSD vs GPU-DF-CCSD
+#! aug-cc-pvdz H2O Test DF-CCSD(T) vs GPU-DF-CCSD(T)
 
 sys.path.insert(0,'../../../.')
 
@@ -22,8 +22,8 @@ set {
 }
 
 set_num_threads(2)
-en_dfcc     = energy('ccsd')
-en_gpu_dfcc = energy('gpu-df-ccsd')
+en_dfcc     = energy('ccsd(t)')
+en_gpu_dfcc = energy('gpu-df-ccsd(t)')
 
-compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy") # TEST
+compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD(T) total energy") # TEST
 
