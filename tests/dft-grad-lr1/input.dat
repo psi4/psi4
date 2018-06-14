@@ -1,4 +1,4 @@
-#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+#! wB97X-D cc-pVDZ gradient of S22 HCN
 
 ref = psi4.Matrix.from_list([                                 #TEST
       [  -0.00199842420035,   0.02983607974145,   0.00000000000000],  #TEST
@@ -24,5 +24,5 @@ set {
 anl_grad = gradient('wB97X-D', dertype=1)
 compare_matrices(ref, anl_grad, 7, "Analytic Gradient vs Reference")    #TEST
 
-#fd_grad = gradient('wB97X-D', dertype=0)
-#compare_matrices(anl_grad, fd_grad, 3, "Analytic vs FD Gradients")    #TEST
+# fd_grad = gradient('wB97X-D', dertype=0)
+# compare_matrices(anl_grad, fd_grad, 3, "Analytic vs FD Gradients")    #TEST
