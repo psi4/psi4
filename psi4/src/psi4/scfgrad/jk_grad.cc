@@ -2211,11 +2211,11 @@ void DirectJKGrad::compute_gradient()
         std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         if (do_J_) {
             gradients_["Coulomb"]->copy(vals["J"]);
-            gradients_["Coulomb"]->print();
+            // gradients_["Coulomb"]->print();
         }
         if (do_K_) {
             gradients_["Exchange"]->copy(vals["K"]);
-            gradients_["Exchange"]->print();
+            // gradients_["Exchange"]->print();
         }
     }
     if (do_wK_) {
@@ -2225,7 +2225,7 @@ void DirectJKGrad::compute_gradient()
         }
         std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         gradients_["Exchange,LR"]->copy(vals["K"]);
-        gradients_["Exchange,LR"]->print();
+        // gradients_["Exchange,LR"]->print();
     }
 }
 std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
