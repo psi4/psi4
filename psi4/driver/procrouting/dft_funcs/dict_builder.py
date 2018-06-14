@@ -172,8 +172,8 @@ def check_consistency(func_dictionary):
         raise ValidationError("SCF: No exchange specified in functional %s." % (name))
 
     # 1c) require at least an empty correlation functional entry or C_MP2
-    elif "c_functionals" not in func_dictionary and "c_mp2" not in func_dictionary:
-        raise ValidationError("SCF: No correlation specified in functional %s." % (name))
+    # elif "c_functionals" not in func_dictionary and "c_mp2" not in func_dictionary:
+    #     raise ValidationError("SCF: No correlation specified in functional %s." % (name))
 
     # 2) use_libxc handling:
     use_libxc = 0

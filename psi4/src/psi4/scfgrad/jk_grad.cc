@@ -269,13 +269,14 @@ void DFJKGrad::compute_gradient()
     // wK^x += 0.5 * (A|w|pq)^x (A|pq)
 
 
-    gradients_["Coulomb"]->print();
-    if (do_K_) {
-        gradients_["Exchange"]->print();
-    }
-    if (do_wK_) {
-        gradients_["Exchange,LR"]->print();
-    }
+    // Printing
+    // gradients_["Coulomb"]->print();
+    // if (do_K_) {
+    //     gradients_["Exchange"]->print();
+    // }
+    // if (do_wK_) {
+    //     gradients_["Exchange,LR"]->print();
+    // }
 
     // => Close temp files <= //
     psio_->close(unit_a_, 0);
