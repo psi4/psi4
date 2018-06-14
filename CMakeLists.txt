@@ -111,15 +111,6 @@ if(ENABLE_erd)
     message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
 
-if(ENABLE_gpu_dfcc)
-    find_package(CUDA)
-    if(CUDA_FOUND)
-    else()
-       message("Cuda not found. Disabling cuda")
-       set(ENABLE_gpu_dfcc OFF)
-    endif()
-endif()
-
 ############################  Options: Build How?  #############################
 include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
