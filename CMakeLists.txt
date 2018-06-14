@@ -90,6 +90,7 @@ option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
 option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (can also be added at runtime)" OFF)
+option(ENABLE_gpu_dfcc "Enables gpu accelerated dfcc" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -108,6 +109,15 @@ endif()
 
 if(ENABLE_erd)
     message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
+endif()
+
+if(ENABLE_gpu_dfcc)
+    find_package(CUDA)
+    if(CUDA_FOUND)
+    else()
+       message("Cuda not found. Disabling cuda")
+       set(ENABLE_gpu_dfcc OFF)
+    endif()
 endif()
 
 ############################  Options: Build How?  #############################
