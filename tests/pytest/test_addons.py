@@ -1,6 +1,8 @@
 import psi4
 import pytest
 
+from addons import *
+
 
 using_ambit = pytest.mark.skipif(psi4.addons("ambit") is False,
                                 reason="Psi4 not compiled with ambit. Rebuild with -DENABLE_ambit")
@@ -750,6 +752,7 @@ def test_v2rdm_casscf():
     assert psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
 
+@hardware_nvidia_gpu
 @using_gpu_dfcc
 def test_gpu_dfcc():
     """gpu_dfcc/tests/gpu_dfcc1"""
