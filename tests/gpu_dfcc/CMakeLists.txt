@@ -1,2 +1,2 @@
-add_subdirectory(gpu_dfcc1)
-add_subdirectory(gpu_dfcc2)
+add_subdirectory(gpudfcc1)
+add_subdirectory(gpudfcc2)
