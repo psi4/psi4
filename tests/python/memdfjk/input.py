@@ -1,3 +1,5 @@
+#! compare MemJK and DiskJK
+
 import psi4
 import numpy as np
 import random

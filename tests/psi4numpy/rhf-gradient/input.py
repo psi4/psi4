@@ -1,3 +1,5 @@
+#! rhf gradient code
+
 # -*- coding: utf-8 -*- 
 """
 This script calculates nuclear gradients of RHF Wavefunction using

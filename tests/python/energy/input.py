@@ -1,3 +1,5 @@
+#! PsiAPI energy example
+
 import psi4
 
 psi4.set_output_file("output.dat", False)

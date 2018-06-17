@@ -1,3 +1,5 @@
+#! test c. v1.1 Schema
+
 import numpy as np
 import psi4
 

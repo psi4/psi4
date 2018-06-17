@@ -1,3 +1,5 @@
+#! RHF Hessian code
+
 # -*- coding: utf-8 -*- 
 """
 This script calculates nuclear Hessians of RHF Wavefunction using

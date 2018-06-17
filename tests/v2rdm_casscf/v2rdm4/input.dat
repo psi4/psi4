@@ -1,3 +1,5 @@
+#! v2rdm_casscf 1,4-phenylenedinitrene/(10,10)/cc-pVDZ
+
 sys.path.insert(0, '../../..')
 import v2rdm_casscf
 

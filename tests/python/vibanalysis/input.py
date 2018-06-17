@@ -1,3 +1,5 @@
+#! compare analytic, findif by G, findif by E vibrational analyses for several mols
+
 import numpy as np
 import psi4
 from psi4.driver import qcdb

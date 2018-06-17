@@ -1,3 +1,5 @@
+#! coded full CI vs. detci
+
 import time
 import numpy as np
 import psi4

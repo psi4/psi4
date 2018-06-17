@@ -1,3 +1,5 @@
+#! PsiAPI scanning a potential energy curve
+
 import psi4
 import numpy as np
 

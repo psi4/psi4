@@ -1,3 +1,5 @@
+#! PsiAPI pubchem access
+
 import psi4
 from psi4.driver.constants.physconst import hartree2ev
 
