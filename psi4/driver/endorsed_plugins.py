@@ -35,6 +35,11 @@ except ImportError:
     pass
 
 try:
+    import gpu_dfcc
+except ImportError:
+    pass
+
+try:
     import forte
 except ImportError:
     pass

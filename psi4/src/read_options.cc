@@ -85,7 +85,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
   options.add("RAS4", new ArrayType());
-
+  
   /*- An array giving the number of restricted doubly-occupied orbitals per
   irrep (not excited in CI wavefunctions, but orbitals can be optimized
   in MCSCF) -*/
@@ -112,6 +112,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   irreducible representation) -*/
   options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
+  options.add("NUM_GPUS", 1);
   /*- Do use pure angular momentum basis functions?
   If not explicitly set, the default comes from the basis set.
   **Cfour Interface:** Keyword translates into |cfour__cfour_spherical|. -*/

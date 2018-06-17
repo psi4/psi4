@@ -1,6 +1,8 @@
 import psi4
 import pytest
 
+from addons import *
+
 
 using_ambit = pytest.mark.skipif(psi4.addons("ambit") is False,
                                 reason="Psi4 not compiled with ambit. Rebuild with -DENABLE_ambit")
@@ -28,6 +30,8 @@ using_simint = pytest.mark.skipif(psi4.addons("simint") is False,
                                 reason="Psi4 not compiled with simint. Rebuild with -DENABLE_simint")
 using_v2rdm_casscf = pytest.mark.skipif(psi4.addons("v2rdm_casscf") is False,
                                 reason="Psi4 not detecting plugin v2rdm_casscf. Build plugin if necessary and add to envvar PYTHONPATH")
+using_gpu_dfcc = pytest.mark.skipif(psi4.addons("gpu_dfcc") is False,
+                                reason="Psi4 not detecting plugin gpu_dfcc. Build plugin if necessary and add to envvar PYTHONPATH")
 using_forte = pytest.mark.skipif(psi4.addons("forte") is False,
                                 reason="Psi4 not detecting plugin forte. Build plugin if necessary and add to envvar PYTHONPATH")
 using_snsmp2 = pytest.mark.skipif(psi4.addons("snsmp2") is False,
@@ -748,6 +752,43 @@ def test_v2rdm_casscf():
     assert psi4.compare_values(refscf, psi4.get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy")
     assert psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
+
+@hardware_nvidia_gpu
+@using_gpu_dfcc
+def test_gpu_dfcc():
+    """gpu_dfcc/tests/gpu_dfcc1"""
+    #! cc-pvdz (H2O)2 Test DF-CCSD vs GPU-DF-CCSD
+    
+    import gpu_dfcc 
+ 
+    H20 = psi4.geometry("""
+               O          0.000000000000     0.000000000000    -0.068516219310   
+               H          0.000000000000    -0.790689573744     0.543701060724   
+               H          0.000000000000     0.790689573744     0.543701060724   
+    """)
+    
+    psi4.set_memory(32000000000)
+    psi4.set_options({
+      'cc_timings': False,
+      'num_gpus': 1,
+      'cc_type': 'df',
+      'df_basis_cc':  'aug-cc-pvdz-ri',
+      'df_basis_scf': 'aug-cc-pvdz-jkfit',
+      'basis':        'aug-cc-pvdz',
+      'freeze_core': 'true',
+      'e_convergence': 1e-8,
+      'd_convergence': 1e-8,
+      'r_convergence': 1e-8,
+      'scf_type': 'df',
+      'maxiter': 30})
+    psi4.set_num_threads(2)
+    en_dfcc     = psi4.energy('ccsd', molecule=H20)
+    en_gpu_dfcc = psi4.energy('gpu-df-ccsd', molecule=H20)
+    
+    assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
+    
+    
+    
 @using_dftd3
 @using_gcp
 def test_grimme_3c():
