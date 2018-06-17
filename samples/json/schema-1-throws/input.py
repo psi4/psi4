@@ -6,8 +6,8 @@ import json
 
 # Generate JSON data
 json_data = {
-    "schema_name": "QC_JSON",
-    "schema_version": 0,
+    "schema_name": "qc_schema_input",
+    "schema_version": 1,
     "molecule": {
         "geometry": [
             0.0, 0.0, -0.1294769411935893,
@@ -28,18 +28,18 @@ json_data = {
 }
 
 # Check non-contiguous fragment throws
-psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.json_wrapper.run_json(json_data)
 
 
 # Check symbol length errors
 del json_data["molecule"]["fragments"]
 json_data["molecule"]["symbols"] = ["O", "H"]
-psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.json_wrapper.run_json(json_data)
 
 
 # Check keyword errors
 json_data["molecule"]["symbols"] = ["O", "H", "H"]
 json_data["model"] = {"method": "SCF", "basis": "sto-3g"}
 json_data["keywords"] = {"scf_type": "super_df"}
-psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.json_wrapper.run_json(json_data)
 

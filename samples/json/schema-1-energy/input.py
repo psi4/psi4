@@ -6,8 +6,8 @@ import json
 
 # Generate JSON data
 json_data = {
-  "schema_name": "QC_JSON",
-  "schema_version": 0,
+  "schema_name": "qc_schema_input",
+  "schema_version": 1,
   "molecule": {
     "geometry": [
       0.0,
@@ -56,16 +56,11 @@ expected_properties = {
   "return_energy": expected_return_result
 }
 
-psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.json_wrapper.run_json(json_data)
 
-with open("output.json", "w") as ofile:                                                     #TEST
-    json.dump(json_data, ofile, indent=2)                                                   #TEST
 
-psi4.compare_integers(True, json_data["success"], "JSON Success")                           #TEST
-psi4.compare_values(expected_return_result, json_data["return_result"], 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():
-    psi4.compare_values(expected_properties[k], json_data["properties"][k], 5, k.upper())   #TEST
 
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634
@@ -91,11 +86,8 @@ expected_properties = {
 # Switch run to exact MP2
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
-psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.json_wrapper.run_json(json_data)
 
-psi4.compare_integers(True, json_data["success"], "JSON Success")                           #TEST
-psi4.compare_values(expected_return_result, json_data["return_result"], 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():
-    psi4.compare_values(expected_properties[k], json_data["properties"][k], 5, k.upper())   #TEST
 

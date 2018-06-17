@@ -7,8 +7,8 @@ import copy
 
 # Generate JSON data
 json_data = {
-    "schema_name": "QC_JSON",
-    "schema_version": 0,
+    "schema_name": "qc_schema_input",
+    "schema_version": 1,
     "molecule": {
         "geometry": [
             0.0,
@@ -38,13 +38,13 @@ noorient_data["molecule"]["fix_com"] = True
 expected_return_result = -100.0194177509218
 linear_dipole = 1.948993625469663 
 
-psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.json_wrapper.run_json(json_data)
 
 # Orients to Z axis
 
 
 
-psi4.json_wrapper.run_json(noorient_data)
+json_ret = psi4.json_wrapper.run_json(noorient_data)
 
 # Orients to Z axis
 
