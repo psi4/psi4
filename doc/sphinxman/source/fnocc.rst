@@ -323,7 +323,7 @@ Alternatively, the user can request that the DF-CCSD(T) procedure use a
 set of vectors defined by the Cholesky decomposition of the ERI tensor as
 the auxiliary basis. This feature is enabled by specifying |globals__cc_type| ``CD``.
 CD methods can be enabled in the SCF
-procedure as well, by specifying the |scf__scf_type| as ``CD``.  The
+procedure as well, by specifying the |globals__scf_type| as ``CD``.  The
 accuracy of the decomposition can be controlled through the keyword
 |fnocc__cholesky_tolerance|.
 

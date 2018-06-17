@@ -802,6 +802,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT)
     analysis to quantitatively analyze non-covalent interactions. -*/
 
+    /*- SUBSECTION SAPT(HF) -*/
+
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
@@ -2239,7 +2241,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("EP2_NUM_IP", 3);
       /*- Number of Electron Affinities to compute, starting with the LUMO. -*/
       options.add_int("EP2_NUM_EA", 0);
-      /*- Explicitly pick orbitals to use in the EP2 method, overrides EP2_NUM_ options. Input
+      /*- Explicitly pick orbitals to use in the EP2 method, overrides |dfep2__EP2_NUM_IP| and |dfep2__ep2_num_ea| options. Input
          array should be [[orb1, orb2], [], ...] for each irrep. -*/
       options.add("EP2_ORBITALS", new ArrayType());
       /*- What is the maximum number of iterations? -*/
