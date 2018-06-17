@@ -81,7 +81,7 @@ extensions = [
     # from Astropy
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.automodsumm',
-    'sphinx_automodapi.smart_resolver',
+    #'sphinx_automodapi.smart_resolver',
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
@@ -394,4 +394,12 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'
             'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
             'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {'python': ('http://docs.python.org/3.6', None),
+                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+                       'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
+                       'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+                       #'psi4.core': ('http://psicode.org/psi4manual/master/', None),
+                      }
 
