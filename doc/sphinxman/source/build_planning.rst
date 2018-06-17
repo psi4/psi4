@@ -1323,7 +1323,7 @@ Debugging |PSIfour| has gotten a little confusing now that it's running through 
 .. valgrind --suppressions=<file_name>
 .. ```
 .. 
-.. will run valgrind with the suppression file located on disk at "file_name". Lucky for you, Psi4 comes with such a suppression file at [``$top-level-psi4-dir/lib/valgrind-python.supp``](../blob/master/lib/valgrind-python.supp). This should remove all the boost python errors.
+.. will run valgrind with the suppression file located on disk at "file_name". Lucky for you, Psi4 comes with such a suppression file at [``$top-level-psi4-dir/psi4/share/psi4/scripts/valgrind-python.supp``](../blob/master/psi4/share/psi4/scripts/valgrind-python.supp). This should remove all the python errors.
 ..  
 .. The other error, boost overflow error arises from ``src/lib/libmints/sieve.cc`` where the inverse
 .. of the complementary error function is being called.  The internet seems to claim that this is a
