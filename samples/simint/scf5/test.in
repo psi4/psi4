@@ -1,0 +1,175 @@
+#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using SIMINT integrals.
+
+set integral_package SIMINT 
+
+print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2') #TEST
+
+#Ensure that the checkpoint file is always nuked
+psi4_io.set_specific_retention(32,False)
+
+Eref_nuc      =   30.78849213614545 #TEST
+Eref_sing_can = -149.58723684929720 #TEST
+Eref_sing_df  = -149.58715054487624 #TEST
+Eref_uhf_can  = -149.67135517240553 #TEST
+Eref_uhf_df   = -149.67125624291961 #TEST
+Eref_rohf_can = -149.65170765757173 #TEST
+Eref_rohf_df  = -149.65160796208073 #TEST
+
+molecule singlet_o2 {
+    0 1
+    O
+    O 1 1.1
+    units    angstrom
+}
+
+molecule triplet_o2 {
+    0 3
+    O
+    O 1 1.1
+    units    angstrom
+}
+singlet_o2.update_geometry()
+triplet_o2.update_geometry()
+
+print_stdout('   -Nuclear Repulsion:') #TEST
+compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")  #TEST
+compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")  #TEST
+
+activate(singlet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    print 2
+}
+
+print_stdout('    -Singlet RHF:') #TEST
+set scf reference rhf
+
+set scf scf_type pk
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet PK RHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Direct RHF energy') #TEST
+
+set scf scf_type out_of_core
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Disk RHF energy') #TEST
+
+set scf scf_type df
+E = energy('scf')
+compare_values(Eref_sing_df, E, 6, 'Singlet DF RHF energy') #TEST
+
+print_stdout('    -Singlet UHF:') #TEST
+set scf reference uhf
+
+set scf scf_type pk
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet PK UHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Direct UHF energy') #TEST
+
+set scf scf_type out_of_core
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Disk UHF energy') #TEST
+
+set scf scf_type df
+E = energy('scf')
+compare_values(Eref_sing_df, E, 6, 'Singlet DF UHF energy') #TEST
+
+print_stdout('    -Singlet CUHF:') #TEST
+set scf reference cuhf
+
+set scf scf_type pk
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet PK CUHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Direct CUHF energy') #TEST
+
+set scf scf_type out_of_core
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Disk CUHF energy') #TEST
+
+set scf scf_type df
+E = energy('scf')
+compare_values(Eref_sing_df, E, 6, 'Singlet DF CUHF energy') #TEST
+
+activate(triplet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    guess core
+    print 2
+}
+
+print_stdout('    -Triplet UHF:') #TEST
+set scf reference uhf
+
+set scf scf_type pk
+E = energy('scf')
+compare_values(Eref_uhf_can, E, 6, 'Triplet PK UHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_uhf_can, E, 6, 'Triplet Direct UHF energy') #TEST
+
+set scf scf_type out_of_core
+E = energy('scf')
+compare_values(Eref_uhf_can, E, 6, 'Triplet Disk UHF energy') #TEST
+
+set scf scf_type df
+E = energy('scf')
+compare_values(Eref_uhf_df, E, 6, 'Triplet DF UHF energy') #TEST
+
+clean()
+
+print_stdout('    -Triplet ROHF:') #TEST
+set scf reference rohf
+
+set scf scf_type pk
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet PK ROHF energy') #TEST
+clean()
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet Direct ROHF energy') #TEST
+clean()
+
+set scf scf_type out_of_core
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet Disk ROHF energy') #TEST
+clean()
+
+set scf scf_type df
+E = energy('scf')
+compare_values(Eref_rohf_df, E, 6, 'Triplet DF ROHF energy') #TEST
+
+clean()
+
+print_stdout('    -Triplet CUHF:') #TEST
+set scf reference cuhf
+
+set scf scf_type pk
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet PK CUHF energy') #TEST
+clean()
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet Direct CUHF energy') #TEST
+clean()
+
+set scf scf_type out_of_core
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet Disk CUHF energy') #TEST
+clean()
+
+set scf scf_type df
+E = energy('scf')
+compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy') #TEST
