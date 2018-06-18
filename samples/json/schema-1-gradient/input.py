@@ -65,4 +65,3 @@ with open("output.json", "w") as ofile:
     json.dump(json_ret, ofile, indent=2)
 
 
-for k in expected_properties.keys():

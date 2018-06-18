@@ -119,7 +119,7 @@ psi4.compare_strings("qc_schema_output", json_ret["schema_name"], "Schema Name")
 for k in expected_return_result.keys():                                                     #TEST
     psi4.compare_arrays(expected_return_result[k], json_ret["return_result"][k], 5, "Result: " + k.upper())  #TEST
 
-for k in expected_properties.keys():
+for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
 
 

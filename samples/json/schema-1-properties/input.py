@@ -113,6 +113,5 @@ json_ret = psi4.json_wrapper.run_json(json_data)
 
 
 
-for k in expected_properties.keys():
 
 

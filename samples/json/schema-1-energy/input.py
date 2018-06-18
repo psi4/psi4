@@ -60,7 +60,6 @@ json_ret = psi4.json_wrapper.run_json(json_data)
 
 
 
-for k in expected_properties.keys():
 
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634
@@ -89,5 +88,4 @@ json_data["keywords"]["mp2_type"] = "conv"
 json_ret = psi4.json_wrapper.run_json(json_data)
 
 
-for k in expected_properties.keys():
 
