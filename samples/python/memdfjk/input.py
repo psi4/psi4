@@ -1,3 +1,5 @@
+#! compare MemJK and DiskJK
+
 import psi4
 import numpy as np
 import random
@@ -29,13 +31,13 @@ C_vectors  = [[spaces[names[left]], spaces[names[right]]] for left, right in spa
 
 # DiskJK
 psi4.set_options({"SCF_TYPE" : "DISK_DF"})
-DiskJK = JK.build_JK(primary, aux)
+DiskJK = psi4.core.JK.build_JK(primary, aux)
 DiskJK.initialize()
 DiskJK.print_header()
 
 # symm_JK
 psi4.set_options({"SCF_TYPE" : "MEM_DF"})
-MemJK = JK.build_JK(primary, aux)
+MemJK = psi4.core.JK.build_JK(primary, aux)
 MemJK.initialize()
 MemJK.print_header()
 

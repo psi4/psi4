@@ -57,7 +57,7 @@ Adding |scf__DFT_VV10_B| to any functional activates the calculation of the VV10
 
 The default `C` parameter will be used.
 
-Similar to |scf_DFT_DISPERSION_PARAMETERS| the tuple |scf_NL_DISPERSION_PARAMETERS| can used::
+Similar to |scf__DFT_DISPERSION_PARAMETERS| the tuple |scf__NL_DISPERSION_PARAMETERS| can used::
     
     set NL_DISPERSION_PARAMTERS [4.0]
     energy('blyp')
@@ -70,4 +70,4 @@ post-SCF time savings
 ~~~~~~~~~~~~~~~~~~~~~
 
 Substantial time-savings for energy calculations are available by evaluating the VV10 kernel only at the converged electron density, i.e. in a post-SCF fashion.
-The deviations from the fully self-consistent treatment are usually minimal. To activate this set |scf_DFT_VV10_POSTSCF| to `true`.
+The deviations from the fully self-consistent treatment are usually minimal. To activate this set |scf__DFT_VV10_POSTSCF| to `true`.

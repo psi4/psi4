@@ -1,3 +1,5 @@
+#! examine JK packing forms
+
 import psi4
 import numpy as np
 from collections import OrderedDict

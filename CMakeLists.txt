@@ -142,6 +142,7 @@ option_with_default(ENABLE_GENERIC "Enables mostly static linking of language li
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
+option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
