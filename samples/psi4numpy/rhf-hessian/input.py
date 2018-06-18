@@ -5,7 +5,7 @@
 This script calculates nuclear Hessians of RHF Wavefunction using
 derivatives of one and two electron integrals obtained from PSI4
 
-Reference: "Derivative studies in hartree-fock and møller-plesset theories",
+Reference: "Derivative studies in hartree-fock and moller-plesset theories",
 J. A. Pople, R. Krishnan, H. B. Schlegel and J. S. Binkley
 DOI: 10.1002/qua.560160825
 """

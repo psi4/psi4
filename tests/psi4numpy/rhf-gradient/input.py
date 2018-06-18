@@ -1,11 +1,10 @@
 #! rhf gradient code
 
-# -*- coding: utf-8 -*- 
 """
 This script calculates nuclear gradients of RHF Wavefunction using
 gradients of one and two electron integrals obtained from PSI4. 
 
-Reference: "Derivative studies in hartree-fock and møller-plesset theories",
+Reference: "Derivative studies in Hartree--Fock and Moller--Plesset theories",
 J. A. Pople, R. Krishnan, H. B. Schlegel and J. S. Binkley
 DOI: 10.1002/qua.560160825
 """
