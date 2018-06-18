@@ -69,6 +69,7 @@ procedures = {
             'dfocc'         : proc.run_dfocc,  # full control over dfocc
             'qchf'          : proc.run_qchf,
             'ccd'           : proc.run_dfocc,
+            'sf-sapt'       : sapt.run_sf_sapt,
             'sapt(dft)'     : sapt.run_sapt_dft,
             'sapt0'         : proc.run_sapt,
             'ssapt0'        : proc.run_sapt,
