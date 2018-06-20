@@ -32,7 +32,8 @@ import numpy as np
 
 from ..util import unnp
 from ..physconst import psi_bohr2angstroms
-
+from ..exceptions import *
+from .to_string import formula_generator
 
 def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
     """Translate Psi4 json Molecule spec into json from other schemas.
