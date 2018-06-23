@@ -1524,7 +1524,7 @@ def run_dfocc(name, **kwargs):
 
     def set_cholesky_from(mtd_type):
         type_val = core.get_global_option(mtd_type)
-        if type_val == 'DF':
+        if type_val in ['DISK_DF', 'DF']:
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             proc_util.check_disk_df(name.upper(), optstash)
 
@@ -3129,7 +3129,7 @@ def run_dfep2(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DF-EP2 is not availabel for %s references.",
+        raise ValidationError("DF-EP2 is not available for %s references.",
                               core.get_global_option('REFERENCE'))
 
 
@@ -3852,7 +3852,7 @@ def run_fnodfcc(name, **kwargs):
                 core.set_global_option('SCF_TYPE', 'CD')
                 core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
 
-        elif type_val == 'DF':
+        elif type_val in ['DISK_DF', 'DF']:
             if core.get_option('FNOCC', 'DF_BASIS_CC') == 'CHOLESKY':
                 core.set_local_option('FNOCC', 'DF_BASIS_CC', '')
 

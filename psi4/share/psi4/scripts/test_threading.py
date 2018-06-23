@@ -126,7 +126,7 @@ def run_psithon_inputs(args, tfn, label):
     print("   Psi4@n%d : Psi4@n%d ratio (want ~%d): %.2f" % (threads[0], threads[-1], threads[-1], rat1))
     if args.passfail:
         #assert math.isclose(rat1, threads[-1], rel_tol=0.6), 'Psithon speedup {} !~= {}'.format(rat1, threads[-1])
-        assert rat1 > 1.3, '{} Psithon speedup {} !~= {}'.format(label, rat1, threads[-1])
+        assert rat1 > 1.25, '{} Psithon speedup {} !~= {}'.format(label, rat1, threads[-1])
 
 
 def test_plugin_dfmp2(args):
