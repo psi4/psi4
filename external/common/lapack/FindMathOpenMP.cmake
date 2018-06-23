@@ -92,7 +92,8 @@ if (${isMKL} MATCHES "MKL")
 endif()
 
 if (ENABLE_OPENMP)
-    find_package(TargetOpenMP REQUIRED COMPONENTS ${TargetOpenMP_FIND_COMPONENTS})
+    # *not* REQUIRED b/c some compilers don't support OpenMP and -DENABLE_OPENMP isn't a build-or-die-trying
+    find_package(TargetOpenMP COMPONENTS ${TargetOpenMP_FIND_COMPONENTS})
 endif()
 
 set(PN MathOpenMP)
