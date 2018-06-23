@@ -731,8 +731,8 @@ def comp_hess_from_energy(mol, E, freq_irrep_only):
                     fc = (+offdiag_row[0] + offdiag_row[1] + 2 * ref_energy - energies[i][0] - energies[i][1] -
                           energies[j][0] - energies[j][1]) / (2 * data["disp_size"]**2)
                 elif data["num_pts"] == 5:
-                    fc = (-offdiag_row[0] - offdiag_row[2] + 9 * offdiag_row[3] - offdiag_row[4] - offdiag_row[5] +
-                          9 * offdiag_row[6] - offdiag_row[7] - offdiag_row[8] + energies[i][0] - 7 * energies[i][1] -
+                    fc = (-offdiag_row[0] - offdiag_row[1] + 9 * offdiag_row[2] - offdiag_row[3] - offdiag_row[4] +
+                          9 * offdiag_row[5] - offdiag_row[6] - offdiag_row[7] + energies[i][0] - 7 * energies[i][1] -
                           7 * energies[i][2] + energies[i][3] + energies[j][0] - 7 * energies[j][1] -
                           7 * energies[j][2] + energies[j][3] + 12 * ref_energy) / (12 * data["disp_size"]**2)
                 H_irr[i, j] = fc
