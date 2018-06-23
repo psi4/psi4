@@ -34,11 +34,12 @@ endforeach()
 # <<  Detect OpenMP and modify for BLAS/LAPACK  >>
 if(NOT TARGET tgt::MathOpenMP)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+    set(TargetOpenMP_FIND_COMPONENTS "CXX")
     find_package(MathOpenMP)
 endif()
 
 include(CMakePrintHelpers)
-cmake_print_properties(TARGETS OpenMP::OpenMP_CXX tgt::MathOpenMP blas lapk lapack
+cmake_print_properties(TARGETS OpenMP::OpenMP_C OpenMP::OpenMP_CXX OpenMP::OpenMP_Fortran OpenMP::OpenMP tgt::MathOpenMP lapack
                        PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRS INTERFACE_LINK_LIBRARIES)
 
 get_property(_ill TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)

@@ -33,8 +33,10 @@ if(${ENABLE_libefp})
                        -DINSTALL_DEVEL_HEADERS=ON
                        -DFRAGLIB_UNDERSCORE_L=OFF
                        -DFRAGLIB_DEEP=OFF
+                       -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DTargetOpenMP_FIND_COMPONENTS:STRING=C
             INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
         set(libefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
