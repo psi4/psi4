@@ -74,7 +74,11 @@ if (${isMKL} MATCHES "MKL")
     if ((CMAKE_C_COMPILER_ID STREQUAL GNU) OR
         (CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
         (CMAKE_Fortran_COMPILER_ID STREQUAL GNU))
-        set(_MathOpenMP_LIB_NAMES "iomp5;-Wl,--as-needed")
+        if (APPLE)
+            set(_MathOpenMP_LIB_NAMES "iomp5")
+        else()
+            set(_MathOpenMP_LIB_NAMES "iomp5;-Wl,--as-needed")
+        endif()
         find_omp_libs("MathOpenMP" ${_MathOpenMP_LIB_NAMES})
         set_property(TARGET tgt::MathOpenMP PROPERTY INTERFACE_LINK_LIBRARIES "${MathOpenMP_LIBRARIES}")
     endif()
