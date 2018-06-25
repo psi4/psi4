@@ -22,6 +22,7 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 # <<<  Marshal Dependencies & Add-ons  >>>
 
 set(_addons)
+set(TargetOpenMP_FIND_COMPONENTS "CXX")
 find_package(TargetLAPACK CONFIG REQUIRED)
 get_property(_ill TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 list(GET _ill 0 _ill0)

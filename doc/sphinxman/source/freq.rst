@@ -55,6 +55,52 @@ thermochemical analysis.
 
 .. autofunction:: psi4.hessian(name [, molecule, return_wfn, func, dertype, irrep])
 
+It's handy to collect the wavefunction after a frequency
+calculation through ``e, wfn = psi4.frequency(...,
+return_wfn=True)`` as the frequencies can be accessed through
+:py:func:`psi4.core.Wavefunction.frequencies()`, the Hessian through
+:py:func:`psi4.core.Wavefunction.hessian()`, and much other computation
+info through ``psi4.core.Wavefunction.frequency_analysis``
+(note no parentheses). Examples of using this data
+structure can be found :srcsample:`fd-freq-gradient` and
+:srcsample:`python/vibanalysis`. Formatted printing of vibrational
+results is available through :py:func:`qcdb.vib.print_vibs`.
+
+.. _`table:frequency_analysis`:
+
+.. table:: Results accessible through ``psi4.core.Wavefunction.frequency_analysis``
+
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | key           | description (lbl & comment)                | units     | data (real/imaginary modes)                          |
+    +===============+============================================+===========+======================================================+
+    | omega         | frequency                                  | cm^-1     | nd.array(ndof) complex (real/imag)                   |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | q             | normal mode, normalized mass-weighted      | a0 u^1/2  | ndarray(ndof, ndof) float                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | w             | normal mode, un-mass-weighted              | a0        | ndarray(ndof, ndof) float                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | x             | normal mode, normalized un-mass-weighted   | a0        | ndarray(ndof, ndof) float                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | degeneracy    | degree of degeneracy                       |           | ndarray(ndof) int                                    |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | TRV           | translation/rotation/vibration             |           | ndarray(ndof) str 'TR' or 'V' or '-' for partial     |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | gamma         | irreducible representation                 |           | ndarray(ndof) str irrep or None if unclassifiable    |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | mu            | reduced mass                               | u         | ndarray(ndof) float (+/+)                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | k             | force constant                             | mDyne/A   | ndarray(ndof) float (+/-)                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | DQ0           | RMS deviation v=0                          | a0 u^1/2  | ndarray(ndof) float (+/0)                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | Qtp0          | Turning point v=0                          | a0 u^1/2  | ndarray(ndof) float (+/0)                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | Xtp0          | Turning point v=0                          | a0        | ndarray(ndof) float (+/0)                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+    | theta_vib     | char temp                                  | K         | ndarray(ndof) float (+/0)                            |
+    +---------------+--------------------------------------------+-----------+------------------------------------------------------+
+
+
 Visualization of Normal Modes
 -----------------------------
 

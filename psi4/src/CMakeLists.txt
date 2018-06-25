@@ -30,6 +30,9 @@ add_library(core SHARED ${sources_list})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
 target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_OPTION})
+if(TARGET ambit::ambit)
+    target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} ambit_interface ${POST_LIBRARY_OPTION})
+endif()
 
 if(TARGET dkh::dkh)
     target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:dkh::dkh,INTERFACE_COMPILE_DEFINITIONS>)

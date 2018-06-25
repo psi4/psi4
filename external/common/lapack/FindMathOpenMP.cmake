@@ -12,7 +12,7 @@
 #
 # * this is a hack until we update min cmake (to 3.10?)
 # * it is specific to Psi4 in that:
-#   * we only care about C++ OpenMP
+#   * we only care about C++ OpenMP. updated for C/CXX/Fortran
 #   * minimum Intel in 2017, so no need to add logic for lower
 #   * we never use OPENMP_FOUND
 # * this is run by the TargetLAPACK module and tgt::lapack is supplemented by
@@ -22,7 +22,7 @@
 #
 #   tgt::MathOpenMP - always defined, though it may be a dummy target
 #                     if OpenMP disabled or compiler incapable. If OpenMP
-#                     enabled and found, linked to OpenMP::OpenMP_CXX as
+#                     enabled and found, linked to OpenMP::OpenMP as
 #                     well as carries any additional flags or libraries
 #                     needed by BLAS/LAPACK.
 #
@@ -41,8 +41,7 @@ macro(find_omp_libs _service)
         find_library(_lib
                      NAMES ${_l}
                      HINTS ${_fullspec}
-                           ${OpenMP_CXX_LIBRARY_DIRS}
-                           ${OpenMP_ROOT}
+                           ${OpenMP_LIBRARY_DIRS}
                      DOC "Path to the ${_l} library for OpenMP"
                      NO_DEFAULT_PATH)
         #message("${_service} ${_l} A ${_lib}")
@@ -72,12 +71,23 @@ endmacro()
 add_library(tgt::MathOpenMP INTERFACE IMPORTED)
 
 if (${isMKL} MATCHES "MKL")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-        set(_MathOpenMP_LIB_NAMES "iomp5;-Wl,--as-needed")
+    if ((CMAKE_C_COMPILER_ID STREQUAL GNU) OR
+        (CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
+        (CMAKE_Fortran_COMPILER_ID STREQUAL GNU))
+        if (APPLE)
+            set(_MathOpenMP_LIB_NAMES "iomp5")
+        else()
+            set(_MathOpenMP_LIB_NAMES "iomp5;-Wl,--as-needed")
+        endif()
         find_omp_libs("MathOpenMP" ${_MathOpenMP_LIB_NAMES})
         set_property(TARGET tgt::MathOpenMP PROPERTY INTERFACE_LINK_LIBRARIES "${MathOpenMP_LIBRARIES}")
     endif()
 
+    if (CMAKE_C_COMPILER_ID STREQUAL Clang)
+        if (NOT DEFINED OpenMP_C_FLAG)
+            set (OpenMP_C_FLAG "-fopenmp=libiomp5")
+        endif()
+    endif()
     if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
         if (NOT DEFINED OpenMP_CXX_FLAG)
             set (OpenMP_CXX_FLAG "-fopenmp=libiomp5")
@@ -86,7 +96,8 @@ if (${isMKL} MATCHES "MKL")
 endif()
 
 if (ENABLE_OPENMP)
-    find_package(TargetOpenMP)
+    # *not* REQUIRED b/c some compilers don't support OpenMP and -DENABLE_OPENMP isn't a build-or-die-trying
+    find_package(TargetOpenMP COMPONENTS ${TargetOpenMP_FIND_COMPONENTS})
 endif()
 
 set(PN MathOpenMP)
@@ -96,10 +107,6 @@ set (${PN}_MESSAGE "Found MathOpenMP: ${_ill}")
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args (${PN} DEFAULT_MSG ${PN}_MESSAGE)
 
-if (TARGET OpenMP::OpenMP_CXX)
-    set_property(TARGET tgt::MathOpenMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES "OpenMP::OpenMP_CXX")
+if (TARGET OpenMP::OpenMP)
+    set_property(TARGET tgt::MathOpenMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES "OpenMP::OpenMP")
 endif()
-
-#include(CMakePrintHelpers)
-#cmake_print_properties(TARGETS tgt::MathOpenMP
-#                       PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRS INTERFACE_LINK_LIBRARIES)

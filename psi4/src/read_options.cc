@@ -3001,7 +3001,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       point group (e.g., C2v for methane). Default takes into account symmetry
       reduction through asymmetric isotopic substitution and is unaffected by
       user-set symmetry on molecule, so this option is the sole way to influence
-      the symmetry-dependent aspects of the thermodynamic analysis. -*/
+      the symmetry-dependent aspects of the thermodynamic analysis.
+      Note that this factor is handled differently among quantum chemistry software. -*/
       options.add_int("ROTATIONAL_SYMMETRY_NUMBER", 1);
   }
   if (name == "CFOUR"|| options.read_globals()) {

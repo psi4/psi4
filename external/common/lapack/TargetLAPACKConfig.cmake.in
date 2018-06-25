@@ -23,4 +23,8 @@ if(NOT TARGET tgt::lapack)
     get_property(_ill TARGET tgt::lapack PROPERTY INTERFACE_LINK_LIBRARIES)
     get_property(_illl TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
     get_property(_illb TARGET tgt::blas PROPERTY INTERFACE_LINK_LIBRARIES)
+
+    include(CMakePrintHelpers)
+    cmake_print_properties(TARGETS OpenMP::OpenMP_C OpenMP::OpenMP_CXX OpenMP::OpenMP_Fortran OpenMP::OpenMP tgt::MathOpenMP tgt::lapack
+                           PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRS INTERFACE_LINK_LIBRARIES)
 endif()
