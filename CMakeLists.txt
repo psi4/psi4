@@ -109,6 +109,7 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
 endif()
 
 if(ENABLE_erd)
+    message(FATAL_ERROR "The Psi4/ERD interface is broken, probably since spring 2017. We'll try to fix it (comment this line to try), but disabling for now.")
     message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
 
