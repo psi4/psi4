@@ -1,5 +1,5 @@
 if(${ENABLE_gpu_dfcc})
-    find_package(gpu_dfcc 0.2 CONFIG QUIET)  # TODO change when final
+    find_package(gpu_dfcc 0.3 CONFIG QUIET)
     if(${gpu_dfcc_FOUND})
         get_property(_loc TARGET gpu_dfcc::gpu_dfcc PROPERTY LOCATION)
         message(STATUS "${Cyan}Found gpu_dfcc${ColourReset}: ${_loc} (found version ${gpu_dfcc_VERSION})")
@@ -16,7 +16,7 @@ if(${ENABLE_gpu_dfcc})
         ExternalProject_Add(gpu_dfcc_external
             DEPENDS psi4-core
             GIT_REPOSITORY https://github.com/edeprince3/gpu_dfcc
-            GIT_TAG fd1dd94  # v0.2 + 2  # TODO change when final
+            GIT_TAG v0.3  # 16606bf
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
