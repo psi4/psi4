@@ -49,7 +49,6 @@
             "givenName": "A.",
             "additionalName": "Eugene",
             "familyName": "DePrince",
-            "affiliation": "",
             "affiliation": "Department of Chemistry and Biochemistry, Florida State University",
             "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/edeprince3"
@@ -69,7 +68,7 @@
             "familyName": "Bozkaya",
             "affiliation": "Department of Chemistry, Hacettepe University, Turkey",
             "@id": "https://orcid.org/0000-",
-            "@id": "https://github.com/"
+            "@id": "https://github.com/bozkaya"
         },
         {
             "@type": "Person",
@@ -77,14 +76,14 @@
             "additionalName": "Yu.",
             "familyName": "Sokolov",
             "affiliation": "Division of Chemistry and Chemical Engineering, California Institute of Technology",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0003-2637-4134",
             "@id": "https://github.com/ssh2"
         },
         {
             "@type": "Person",
             "givenName": "Roberto",
             "familyName": "Di Remigio",
-            "affiliation": "Centre for Theoretical and Computational Chemistry, UiT, The Arctic University of Norway",
+            "affiliation": "Hylleraas Centre for Quantum Molecular Sciences, UiT - The Arctic University of Norway",
             "@id": "https://orcid.org/0000-0002-5452-9239",
             "@id": "https://github.com/robertodr"
         },
@@ -94,7 +93,6 @@
             "additionalName": "M.",
             "familyName": "Richard",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/ryanmrichard"
         },
         {
@@ -111,7 +109,7 @@
             "givenName": "Andrew",
             "additionalName": "M.",
             "familyName": "James",
-            "affiliation": "Department of Chemistry, Virginia Institute of Technology",
+            "affiliation": "Department of Chemistry, Virginia Tech",
             "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/amjames"
         },
@@ -120,7 +118,7 @@
             "givenName": "Harley",
             "additionalName": "R.",
             "familyName": "McAlexander",
-            "affiliation": "Department of Chemistry, Virginia Institute of Technology",
+            "affiliation": "Department of Chemistry, Virginia Tech",
             "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/harls"
         },
@@ -128,8 +126,8 @@
             "@type": "Person",
             "givenName": "Ashutosh",
             "familyName": "Kumar",
-            "affiliation": "Department of Chemistry, Virginia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0001-7589-6030",
             "@id": "https://github.com/ashutoshvt"
         },
         {
@@ -144,8 +142,8 @@
             "@type": "Person",
             "givenName": "Xiao",
             "familyName": "Wang",
-            "affiliation": "Department of Chemistry, Virginia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0003-1402-7522",
             "@id": "https://github.com/xwang862"
         },
         {
@@ -178,7 +176,7 @@
             "givenName": "Konrad",
             "familyName": "Patkowski",
             "affiliation": "Department of Chemistry and Biochemistry, Auburn University",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0002-4468-207X",
             "@id": "https://github.com/konpat"
         },
         {
@@ -195,7 +193,7 @@
             "givenName": "Edward",
             "additionalName": "F.",
             "familyName": "Valeev",
-            "affiliation": "Department of Chemistry, Virginia Institute of Technology",
+            "affiliation": "Department of Chemistry, Virginia Tech",
             "@id": "https://orcid.org/0000-0001-9923-6256",
             "@id": "https://github.com/evaleev"
         },
@@ -222,7 +220,7 @@
             "givenName": "T.",
             "additionalName": "Daniel",
             "familyName": "Crawford",
-            "affiliation": "Department of Chemistry, Virginia Institute of Technology",
+            "affiliation": "Department of Chemistry, Virginia Tech",
             "@id": "https://orcid.org/0000-0002-7961-7016",
             "@id": "https://github.com/lothian"
         },
@@ -240,7 +238,7 @@
             "givenName": "Peter",
             "familyName": "Kraus",
             "affiliation": "Liebniz University, Hannover, Germany",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0002-4359-5003",
             "@id": "https://github.com/PeterKraus"
         },
         {
@@ -248,7 +246,7 @@
             "givenName": "Holger",
             "familyName": "Kruse",
             "affiliation": "Institute of Biophysics, Czech Republic",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0002-0560-1513",
             "@id": "https://github.com/hokru"
         },
         {
@@ -275,22 +273,23 @@
             "additionalName": "A.",
             "familyName": "Shaw",
             "affiliation": "University of Sheffield",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0002-9977-0835",
             "@id": "https://github.com/robashaw"
         }
     ],
     "developmentStatus": "active",
-    "downloadUrl": "https://github.com/caltechlibrary/datatools/archive/v0.0.24.zip",
+    "downloadUrl": "http://psicode.org/downloads.html",
     "keywords": [
-        "csv",
-        "json",
-        "xlsx",
-        "golang",
-        "bash"
+        "quantum-chemistry",
+        "computational-chemistry",
+        "chemistry",
+        "physics"
     ],
-    "maintainer": "https://orcid.org/0000-0003-0900-6903",
+    "maintainer": "https://orcid.org/0000-0002-5570-7666",
     "programmingLanguage": [
         "C++",
-        "Python"
+        "Python",
+        "C",
+        "Fortran"
     ]
 }
