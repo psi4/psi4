@@ -14,7 +14,6 @@
             "additionalName": "M.",
             "familyName": "Parrish",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/robparrish"
         },
         {
@@ -50,7 +49,7 @@
             "additionalName": "Eugene",
             "familyName": "DePrince",
             "affiliation": "Department of Chemistry and Biochemistry, Florida State University",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0003-1061-2521",
             "@id": "https://github.com/edeprince3"
         },
         {
@@ -60,14 +59,14 @@
             "familyName": "Hohenstein",
             "affiliation": "Department of Chemistry and Biochemistry, The City College of New York",
             "@id": "https://orcid.org/0000-0002-2119-2959",
-            "@id": "https://github.com/????"
+            "@id": "https://github.com/ehohenstein2"
         },
         {
             "@type": "Person",
             "givenName": "U\u0223ur",
             "familyName": "Bozkaya",
             "affiliation": "Department of Chemistry, Hacettepe University, Turkey",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0002-5203-2210",
             "@id": "https://github.com/bozkaya"
         },
         {
@@ -101,7 +100,7 @@
             "additionalName": "F.",
             "familyName": "Gonthier",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0002-2933-4085",
             "@id": "https://github.com/jgonthier"
         },
         {
@@ -110,7 +109,7 @@
             "additionalName": "M.",
             "familyName": "James",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0001-5821-6064",
             "@id": "https://github.com/amjames"
         },
         {
@@ -119,7 +118,6 @@
             "additionalName": "R.",
             "familyName": "McAlexander",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/harls"
         },
         {
@@ -135,7 +133,6 @@
             "givenName": "Masaaki",
             "familyName": "Saitow",
             "affiliation": "Department of Chemistry and Research Center for Smart Molecules, Rikkyo University, Japan",
-            "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/msaitow"
         },
         {
@@ -151,8 +148,7 @@
             "givenName": "Benjamin",
             "additionalName": "P.",
             "familyName": "Pritchard",
-            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
+            "affiliation": "The Molecular Sciences Software Institute",
             "@id": "https://github.com/bennybp"
         },
         {
@@ -160,7 +156,7 @@
             "givenName": "Prakash",
             "familyName": "Verma",
             "affiliation": "Department of Chemistry, Emory University",
-            "@id": "https://orcid.org/0000-",
+            "@id": "https://orcid.org/0000-0003-3048-9380",
             "@id": "https://github.com/PrakashVermaQTP"
         },
         {
@@ -264,7 +260,6 @@
             "additionalName": "C.",
             "familyName": "Schieber",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
-            "@id": "https://orcid.org/0000-",
             "@id": "https://github.com/schiebermc"
         },
         {
