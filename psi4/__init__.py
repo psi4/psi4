@@ -104,3 +104,5 @@ if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
     sys.path.insert(1, "@cppe_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
     sys.path.insert(1, "@pylibefp_PYMOD@")
+
+from .broker import broker
