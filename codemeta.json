@@ -237,7 +237,7 @@
             "@type": "Person",
             "givenName": "Peter",
             "familyName": "Kraus",
-            "affiliation": "Liebniz University, Hannover, Germany",
+            "affiliation": "Leibniz University, Hannover, Germany",
             "@id": "https://orcid.org/0000-0002-4359-5003",
             "@id": "https://github.com/PeterKraus"
         },
@@ -245,7 +245,7 @@
             "@type": "Person",
             "givenName": "Holger",
             "familyName": "Kruse",
-            "affiliation": "Institute of Biophysics, Czech Republic",
+            "affiliation": "Institute of Biophysics of the CAS, v.v.i., Czech Republic",
             "@id": "https://orcid.org/0000-0002-0560-1513",
             "@id": "https://github.com/hokru"
         },
