@@ -16,7 +16,7 @@ if(${ENABLE_gpu_dfcc})
         ExternalProject_Add(gpu_dfcc_external
             DEPENDS psi4-core
             GIT_REPOSITORY https://github.com/edeprince3/gpu_dfcc
-            GIT_TAG v0.3  # 16606bf
+            GIT_TAG b98c6f1  # v0.3 + 1 (install fix)
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -28,11 +28,13 @@ if(${ENABLE_gpu_dfcc})
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
+                       -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                        -Dpsi4_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/psi4
                        -Dpybind11_DIR=${pybind11_DIR}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_CUDA_FLAGS:STRING=${CMAKE_CUDA_FLAGS}
+                             -DCMAKE_PREFIX_PATH:PATH=${STAGED_INSTALL_PREFIX}
             INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
         set(gpu_dfcc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gpu_dfcc CACHE PATH "path to internally built gpu_dfccConfig.cmake" FORCE)

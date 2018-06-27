@@ -38,9 +38,9 @@ if(NOT TARGET tgt::MathOpenMP)
     find_package(MathOpenMP)
 endif()
 
-include(CMakePrintHelpers)
-cmake_print_properties(TARGETS OpenMP::OpenMP_C OpenMP::OpenMP_CXX OpenMP::OpenMP_Fortran OpenMP::OpenMP tgt::MathOpenMP lapack
-                       PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRS INTERFACE_LINK_LIBRARIES)
+#include(CMakePrintHelpers)
+#cmake_print_properties(TARGETS OpenMP::OpenMP_CXX OpenMP::OpenMP tgt::MathOpenMP lapack
+#                       PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRS INTERFACE_LINK_LIBRARIES)
 
 get_property(_ill TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 list(GET _ill 0 _ill0)

@@ -197,20 +197,26 @@ def print_math_ldd(args):
         print('Not available w/o `ldd` or `otool`')
         return True
 
-    cmd = """{} {} | grep -e ':' -e 'mkl' -e 'openblas' -e 'iomp5' -e 'gomp'""".format(lddish, modcore)
+    cmd = """{} {} | grep -e ':' -e 'mkl' -e 'openblas' -e 'iomp5' -e 'gomp' -e 'libomp'""".format(lddish, modcore)
     print('Running {} ...'.format(cmd))
     subprocess.call(cmd, shell=True)
     lddout = subprocess.getoutput(cmd)
     report = {'mkl': lddout.count('libmkl'),
               'iomp5': lddout.count('libiomp5'),
               'openblas': lddout.count('libopenblas'),
+              'omp': lddout.count('libomp'),
               'gomp': lddout.count('libgomp')}
     print(report)
     report = {k : bool(v) for k, v in report.items()}
     okmkl = report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
+    okiomp5 = not report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
     okopenblas = not report['mkl'] and not report['iomp5'] and report['openblas'] and report['gomp']
     if args.passfail:
-        assert okmkl != okopenblas
+        if sys.platform.startswith('linux'):
+            assert okmkl != okopenblas
+        elif sys.platform.startswith('darwin'):
+            # plugins on Mac won't show mkl through otool (linked to psi4.core)
+            assert (okmkl != okopenblas) or (okiomp5 != okopenblas)
 
 
 if __name__ == '__main__':
