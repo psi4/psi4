@@ -7,14 +7,24 @@ import time
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_equal
 
-from ipi.interfaces.sockets import Client
 import psi4
+try:
+    from ipi.interfaces.sockets import Client
+    ipi_available = True
+except ImportError:
+    ipi_available = False
+    # Define Client to enable testing of the Broker in the unittests
+    class Client(object): pass
 
 
 class Broker(Client):
     def __init__(self, options, genbas=None, serverdata=False):
         self.serverdata = serverdata
-        if serverdata:
+        if not ipi_available:
+            print("i-pi is not available for import:",
+                  "The broker infrastructure will not be available!")
+            super(Broker, self).__init__()
+        elif serverdata:
             mode, address, port = serverdata.split(":")
             mode = string.lower(mode)
             super(Broker, self).__init__(address=address, port=port,
