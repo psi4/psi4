@@ -1799,6 +1799,32 @@ def frequency(name, **kwargs):
 
 
 def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
+    """Function to perform analysis of a hessian or hessian block, specifically...
+    calling for and printing vibrational and thermochemical analysis, setting thermochemical variables,
+    and writing the vibrec and normal mode files.
+
+    Parameters
+    ----------
+    wfn : psi4.core.wavefunction
+        The wavefunction which had its Hessian computed.
+    hess : psi4.core.Matrix
+        The hessian to analyze, if not the hessian in wfn.
+    irrep : int or string
+        The irrep for which frequencies are calculated. Thermochemical analysis is skipped if this is given,
+        as only one symmetry block of the hessian has been computed.
+    molecule : psi4.core.molecule or qcdb.molecule
+        The molecule to pull information from, if not the molecule in wfn. Must at least have similar
+        geometry to the molecule in wfn.
+    project_trans : boolean
+        Should translations be projected in the harmonic analysis?
+    project_rot : boolean
+        Should rotations be projected in the harmonic analysis?
+
+    Returns
+    -------
+    vibinfo : dict
+        A dictionary of vibrational information. See psi4/driver/qcdb/vib.py:harmonic_analysis
+    """
 
     if hess is None:
         nmwhess = np.asarray(wfn.hessian())
@@ -1856,7 +1882,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
         core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
         core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
 
-        core.set_variable("ZERO K ENTHALPHY", therminfo['ZPE_tot'].data)
+        core.set_variable("ZERO K ENTHALPY", therminfo['ZPE_tot'].data)
         core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
         core.set_variable("ENTHALPY", therminfo['H_tot'].data)
         core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
