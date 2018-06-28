@@ -73,6 +73,11 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         Miscellaneous information required by callers.
     """
 
+    core.print_out("\n         ----------------------------------------------------------\n")
+    core.print_out("                                   FINDIF\n")
+    core.print_out("                     R. A. King and Jonathon Misiewicz\n")
+    core.print_out("         ---------------------------------------------------------\n\n")
+
     print_lvl = core.get_option("FINDIF", "PRINT")
     num_pts = core.get_option("FINDIF", "POINTS")
     disp_size = core.get_option("FINDIF", "DISP_SIZE")
@@ -231,8 +236,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         raise ValidationError("FINDIF: Mode {} not recognized.".format(mode))
 
     def init_string(data):
-        return ("\n-------------------------------------------------------------\n\n"
-                "  Using finite-differences of {:s}.\n"
+        return ("  Using finite-differences of {:s}.\n"
                 "\tGenerating geometries for use with {:d}-point formula.\n"
                 "\tDisplacement size will be {:6.2e}.\n".format(print_msg, data["num_pts"], data["disp_size"]))
 
