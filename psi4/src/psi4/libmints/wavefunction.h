@@ -419,15 +419,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     void set_Ca(SharedMatrix& Ca_new);
     /// Sets the beta electrons MO coefficients
     void set_Cb(SharedMatrix& Cb_new);
-    /// Sets the T1 amplitudes
-    virtual void set_T1(SharedMatrix& T1_new) { throw PSIEXCEPTION("There are no T1 amplitudes for this wavefunction."); };
-    /// Sets the T2 amplitudes
-    virtual void set_T2(SharedMatrix& T2_new) { throw PSIEXCEPTION("There are no T2 amplitudes for this wavefunction."); };
-    /// Sets the L1 amplitudes
-    virtual void set_L1(SharedMatrix& L1_new) { throw PSIEXCEPTION("There are no L1 amplitudes for this wavefunction."); };
-    /// Sets the L2 amplitudes
-    virtual void set_L2(SharedMatrix& L2_new) { throw PSIEXCEPTION("There are no L2 amplitudes for this wavefunction."); };
-
 
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;

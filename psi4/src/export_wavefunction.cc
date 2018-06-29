@@ -96,10 +96,6 @@ void export_wavefunction(py::module& m) {
         .def("S", &Wavefunction::S, "Returns the overlap matrix.")
         .def("set_Ca", &Wavefunction::set_Ca, "Sets the Alpha Orbitals")
         .def("set_Cb", &Wavefunction::set_Cb, "Sets the Beta Orbitals.")
-        .def("set_T1", &Wavefunction::set_T1, "Sets the T1 amplitudes.")
-        .def("set_T2", &Wavefunction::set_T2, "Sets the T2 amplitudes.")
-        .def("set_L1", &Wavefunction::set_L1, "Sets the L1 amplitudes.")
-        .def("set_L2", &Wavefunction::set_L2, "Sets the L2 amplitudes.")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,
@@ -190,8 +186,12 @@ void export_wavefunction(py::module& m) {
 #endif
         .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
 
-    py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(m, "CCEnergyWavefunction", "docstring");
-    py::class_<cclambda::CCLambdaWavefunction, std::shared_ptr<cclambda::CCLambdaWavefunction>, Wavefunction>(m, "CCLambdaWavefunction", "docstring");
+    py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(m, "CCEnergyWavefunction", "docstring")
+        .def("set_T1", &ccenergy::CCEnergyWavefunction::set_T1, "Sets the T1 amplitudes.")
+        .def("set_T2", &ccenergy::CCEnergyWavefunction::set_T2, "Sets the T2 amplitudes.");
+    py::class_<cclambda::CCLambdaWavefunction, std::shared_ptr<cclambda::CCLambdaWavefunction>, ccenergy::CCEnergyWavefunction, Wavefunction>(m, "CCLambdaWavefunction", "docstring")
+        .def("set_L1", &cclambda::CCLambdaWavefunction::set_L1, "Sets the L1 amplitudes.")
+        .def("set_L2", &cclambda::CCLambdaWavefunction::set_L2, "Sets the L2 amplitudes.");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
