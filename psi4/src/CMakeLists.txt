@@ -30,7 +30,7 @@ set(sources_list
 add_library(core SHARED ${sources_list})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
-target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_OPTION})
+target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd plugin qt ${POST_LIBRARY_OPTION})
 if(TARGET ambit::ambit)
     target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} ambit_interface ${POST_LIBRARY_OPTION})
 endif()
