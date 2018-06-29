@@ -251,6 +251,11 @@ def nbody_gufunc(func, method_string, **kwargs):
         wfn.set_gradient(nbody_results['ret_ptype'])
     elif metadata['ptype'] == 'hessian':
         wfn.set_hessian(nbody_results['ret_ptype'])
+        ret_ptype = nbody_results['ret_ptype'].clone()
+        component_results['ptype'], metadata['ptype'] = component_results['gradients'], 'gradient'
+        nbody_results = assemble_nbody_components(metadata, component_results)
+        wfn.set_gradient(nbody_results['ret_ptype'])
+        nbody_results['ret_ptype'] = ret_ptype
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
@@ -399,6 +404,7 @@ def compute_nbody_components(func, method_string, metadata):
 
     # Now compute the energies
     energies_dict = {}
+    gradients_dict = {}
     ptype_dict = {}
     intermediates_dict = {}
     for count, n in enumerate(compute_list.keys()):
@@ -412,8 +418,9 @@ def compute_nbody_components(func, method_string, metadata):
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
             current_mol.set_name("%i_%i" %(count, num))
             # Save energies info
-            ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
+            ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
             energies_dict[pair] = core.get_variable("CURRENT ENERGY")
+            gradients_dict[pair] = wfn.gradient()
             var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), 
                                                           ', '.join([str(i) for i in pair[1]]))
             intermediates_dict[var_key] = core.get_variable("CURRENT ENERGY")
@@ -425,7 +432,7 @@ def compute_nbody_components(func, method_string, metadata):
 
             core.clean()
 
-    return {'energies': energies_dict, 'ptype': ptype_dict, 'intermediates': intermediates_dict}
+    return {'energies': energies_dict, 'gradients': gradients_dict, 'ptype': ptype_dict, 'intermediates': intermediates_dict}
 
 def assemble_nbody_components(metadata, component_results):
     """Assembles N-body components into interaction quantities according to requested BSSE procedure(s).
