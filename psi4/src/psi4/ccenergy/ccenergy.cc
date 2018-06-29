@@ -330,7 +330,7 @@ double CCEnergyWavefunction::compute_energy()
             outfile->Printf( "\n");
             amp_write();
 
-			// Get T amplitudes
+            // Get T amplitudes
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
             SharedMatrix new_t1 = SharedMatrix(new Matrix(&t1));
             set_T1(new_t1);
