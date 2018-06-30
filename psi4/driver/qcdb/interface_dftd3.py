@@ -198,7 +198,7 @@ def run_dftd3(mol, func=None, dashlvl=None, dashparam=None, dertype=None, verbos
 
     # We seem to have a problem with one atom, force the correct result
     if numAtoms == 1:
-	os.chdir(current_directory)
+        os.chdir(current_directory)
         dashd = 0.0
         dashdderiv = core.Matrix(1, 3)
 
