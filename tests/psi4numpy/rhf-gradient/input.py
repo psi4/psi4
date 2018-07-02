@@ -21,6 +21,8 @@ import numpy as np
 np.set_printoptions(precision=15, linewidth=200, suppress=True)
 import psi4
 
+psi4.set_output_file("output.dat", False)
+
 mol = psi4.geometry("""
 O
 H 1 1.1
