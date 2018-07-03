@@ -32,7 +32,7 @@
     coresponding one- and two-particle density matrices.
 */
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"

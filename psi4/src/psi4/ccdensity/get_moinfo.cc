@@ -32,8 +32,8 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <string.h>
-#include <string.h>
+#include <cstring>
+#include <cstring>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"

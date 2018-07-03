@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <string.h>
+#include <cstring>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
