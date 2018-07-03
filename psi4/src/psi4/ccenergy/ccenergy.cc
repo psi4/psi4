@@ -54,9 +54,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/types.h>
 
 namespace psi { namespace ccenergy {
 
