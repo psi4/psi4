@@ -2141,14 +2141,14 @@ void RadialGridMgr::GolombWelsch(int n, double a[], double b[], double q[])
 
 void RadialGridMgr::getLegendreRoots(int n, double r[], double w[])
 {
-    double a[n], bhack[n+1];
-    double *const b = &bhack[1]; // Note that b[n-1] is unused.
+    std::vector<double> a(n), bhack(n+1);
+    double *const b = &(bhack.data()[1]); // Note that b[n-1] is unused.
     for (int i = 0; i < n; i++) {
         a[i] = 0;
         int k = i + 1; // Easier to read
         b[i] = k/sqrt(4*k*k - 1);
     }
-    GolombWelsch(n, a, b, w);
+    GolombWelsch(n, a.data(), b, w);
     for (int i = 0; i < n; i++) {
         const double muzero = 2; // Value of $\int_{-1}^1\!dx$
         r[i] = a[i];
@@ -2170,14 +2170,14 @@ void RadialGridMgr::getLaguerreRoots(int n, double r[], double w[])
     // space for that extra element, and then declare that `b'
     // starts one element forward. That is, b[0] = bhack[1]. Then
     // b[-1] = bhack[0] is a valid memory location.
-    double a[n], bhack[n+1];
-    double *const b = &bhack[1]; // Note that b[n-1] is unused; it's almost enough to make you want to renumber the arrays.
+    std::vector<double> a(n), bhack(n+1);
+    double *const b = &(bhack.data()[1]); // Note that b[n-1] is unused; it's almost enough to make you want to renumber the arrays.
     for (int i = 0; i < n; i++) {
         a[i] = 2*i+1;
         b[i] = -(i+1);
     }
 
-    GolombWelsch(n, a, b, w);
+    GolombWelsch(n, a.data(), b, w);
     // The `w' vector right now just contains the first element of the eigenvectors
     // described in the Golomb-Welsch paper. The actual weights are
     //    w[i] = muzero*w[i]*w[i]
@@ -2328,13 +2328,13 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[])
     if (n > TABSIZE)
         throw PSIEXCEPTION("Psi4 does not support MultiExp radial grids for n > 200.");
 
-    double a[n], bhack[n+1];
-    double *const b = &bhack[1]; // Note that b[n-1] is unused.
+    std::vector<double> a(n), bhack(n+1);
+    double *const b = &(bhack.data()[1]); // Note that b[n-1] is unused.
     for (int i = 0; i < n; i++) {
         a[i] = alphas[i];
         b[i] = betas[i];
     }
-    GolombWelsch(n, a, b, w);
+    GolombWelsch(n, a.data(), b, w);
     for (int i = 0; i < n; i++) {
         const double muzero = 2; // Value of $\int_0^1(\ln x)^2dx$
         r[i] = a[i];
@@ -2509,8 +2509,8 @@ const MassPoint *StandardGridMgr::GetSG1grid(int Z)
 
 void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const& spec, int radscheme, MassPoint *grid_out)
 {
-    double r[spec.nrad], wr[spec.nrad];
-    RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r, wr, spec.rparam);
+    std::vector<double> r(spec.nrad), wr(spec.nrad);
+    RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r.data(), wr.data(), spec.rparam);
 
     int k_grid = 0; // Will index into `grid'.
     int k_rad = 0; // Will index into `r' and `wr'
@@ -2847,7 +2847,7 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
 
     int natom = molecule_->natom();
     // Find the distance from point mp to each atom in the molecule.
-    double dist[natom];
+    std::vector<double> dist(natom);
     for (int l = 0; l < natom; l++)
         dist[l] = distToAtom(mp, l);
 
@@ -3164,7 +3164,7 @@ OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(std::shared_ptr<Molec
 {
     // First we build a copy of the molecule in which we've rotated the z-axis to where we want it.
     int natom = mol->natom();
-    LAtom rotmol[natom];
+    std::vector<LAtom> rotmol(natom);
     for (int i = 0; i < natom; i++) {
         // Translate each atom to the origin and then rotate the system to put the Z-axis where
         // it belongs.
@@ -3209,7 +3209,7 @@ OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(std::shared_ptr<Molec
         // Is it an equally-good atom?
         if (!warned && fequ(XYDist, bestXYDist) && fequ(pos.z, bestZ) && rotmol[i].atomicNumber == rotmol[bestAtom].atomicNumber) {
             double alternateAngle = atan2(rotmol[i].pos.y, rotmol[i].pos.x);
-            if (!bothAnglesResultInEquivalentGrids(rotmol, natom, bestAngle, alternateAngle)) {
+            if (!bothAnglesResultInEquivalentGrids(rotmol.data(), natom, bestAngle, alternateAngle)) {
                 outfile->Printf( "Warning: Arbitrary grid orientation. (You can't do anything about this.)\n");
                 warned = true;
             }
@@ -3372,7 +3372,7 @@ OrientationMgr::SymmetryType OrientationMgr::sphericalTopMatrix(std::shared_ptr<
 {
     // Build a copy of the molecule where all the atoms are shifted to the center.
     int natom = origmol->natom();
-    LAtom mol[natom];
+    std::vector<LAtom> mol(natom);
     for (int i = 0; i < natom; i++) {
         // Translate each atom to the origin
         LVector displaced = {origmol->x(i) - center.x, origmol->y(i) - center.y, origmol->z(i) - center.z};
@@ -3382,12 +3382,12 @@ OrientationMgr::SymmetryType OrientationMgr::sphericalTopMatrix(std::shared_ptr<
     // We have to check for octahedral symmetry before tetrahedral because an octahedrally-symmetric
     // molecule has a bunch of extraneous C_2 axes. The tetrahedral checker will
     // spot them and do the wrong thing.
-    if (LookForIcosahedralSymmetry(mol, natom, Q_out)) {
+    if (LookForIcosahedralSymmetry(mol.data(), natom, Q_out)) {
         *Q_out = symmetricTopMatrix(origmol, *Q_out, center);
         return ICOSAHEDRAL;
-    } else if (LookForOctahedralSymmetry(mol, natom, Q_out)) {
+    } else if (LookForOctahedralSymmetry(mol.data(), natom, Q_out)) {
         return OCTAHEDRAL;
-    } else if (LookForTetrahedralSymmetry(mol, natom, Q_out)) {
+    } else if (LookForTetrahedralSymmetry(mol.data(), natom, Q_out)) {
         return TETRAHEDRAL;
     } else {
         outfile->Printf( "Warning: Molecule has a spherically-symmetric moment of charge but lacks icosahedral, octahedral, and tetrahedral symmetry.");
@@ -3561,13 +3561,12 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
 
         if (opt.namedGrid == -1) { // Not using a named grid
-            double r[opt.nradpts];
-            double wr[opt.nradpts];
+            std::vector<double> r(opt.nradpts), wr(opt.nradpts);
             double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
-            RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r, wr, alpha);
+            RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(), wr.data(), alpha);
 
             // RMP: Want this stuff too
-            radial_grids_.push_back(RadialGrid::build("Unknown", opt.nradpts, r, wr, alpha));
+            radial_grids_.push_back(RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha));
             std::vector<std::shared_ptr<SphericalGrid> > spheres;
             spherical_grids_.push_back(spheres);
 
@@ -3638,8 +3637,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
         int Z = molecule_->true_atomic_number(A);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
 
-            double  r[rs[A].size()];
-            double wr[rs[A].size()];
+            std::vector<double> r(rs[A].size()), wr(rs[A].size());
             double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
 
             // Bloody great
@@ -3649,7 +3647,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
             }
 
             // RMP: Want this stuff too
-            radial_grids_.push_back(RadialGrid::build("Unknown", rs[A].size(), r, wr, alpha));
+            radial_grids_.push_back(RadialGrid::build("Unknown", rs[A].size(), r.data(), wr.data(), alpha));
             std::vector<std::shared_ptr<SphericalGrid> > spheres;
             spherical_grids_.push_back(spheres);
 
