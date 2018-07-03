@@ -865,7 +865,7 @@ void OEProp::compute()
 
     
     if (title_ == "") {
-        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is \'%s\'\n", Da_so_->name().c_str());
+        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is '%s'\n", Da_so_->name().c_str());
     } else {
         outfile->Printf( "\nProperties computed using the %s density matrix\n\n", title_.c_str());
     }
