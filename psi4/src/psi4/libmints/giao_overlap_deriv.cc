@@ -66,10 +66,9 @@ GiaoOverlapDerivInt::~GiaoOverlapDerivInt()
 
 /* 
  *   Here compute_pair calculates the first derivative of overlap of GIAOs with 
- *   respect to external magnetic field at zero field. The second derivate will 
- *   be added later and would be computed by compute_pair_deriv1 function.
+ *   respect to external magnetic field at zero field.
  *                      
- *                      dS/dB   =  i/2  * Q_MN<mu|r|nu> 
+ *                      dS(mu,nu)/dB   =  i/2  * Q_MN<mu|r|nu> 
  *                      where, R_MN x r = Q_MN r    
  *
  * 
@@ -79,4 +78,10 @@ void GiaoOverlapDerivInt::compute_pair(const GaussianShell& s1, const GaussianSh
 {
  
 }
+
+ /*  The second derivate to be added later and would be then computed by compute_pair_deriv1 function. */
+//void GiaoOverlapDerivInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2)
+//{
+//
+//}
 

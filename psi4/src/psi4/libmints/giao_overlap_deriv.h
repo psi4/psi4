@@ -44,23 +44,22 @@ namespace psi {
  *  \brief This class computes derivatives of overlaps of gauge invariant atomic
  *   orbitals (GIAO) with respect to magnetic field at zero field.
  *
- *   Here compute_pair calculates the first derivative of overlap of GIAOs with 
- *   respect to external magnetic field at zero field. The second derivate will 
- *   be added later and would be computed by compute_pair_deriv1 function. Use an 
- *   IntegralFactory to create this object.
- *                      
- *                      dS/dB   =  i/2  * Q_MN<mu|r|nu> 
- *                      where, R_MN x r = Q_MN r    
- *
+ *   Use an IntegralFactory to create this object.
  */
 class GiaoOverlapDerivInt : public OneBodyAOInt
 {
     //! Generic Obara Saika recursion object.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
-    //! Computes the overlap gradient between a given shell pair.
+ /*  Here compute_pair calculates the first derivative of overlap of GIAOs with 
+ *   respect to external magnetic field at zero field.
+ *                      
+ *                      dS(mu,nu)/dB   =  i/2  * Q_MN<mu|r|nu> 
+ *                      where, R_MN x r = Q_MN r    
+ *
+ */
     void compute_pair(const GaussianShell& , const GaussianShell&);
-    //! Computes the overlap hessian between a given shell pair.
+    //! The second derivative to be added later and would be then computed by the compute_pair_deriv1 function.  
     //void compute_pair_deriv1(const GaussianShell& , const GaussianShell&);
 
 public:
