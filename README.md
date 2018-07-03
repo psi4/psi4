@@ -9,6 +9,7 @@
 <a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
 <a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
+<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems">_<img src="https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6-blue.svg" /></a>
 <a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
 <a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
 <br><br>
@@ -42,7 +43,7 @@ strives to be friendly to both users and developers.
 
 * **Anaconda**  https://anaconda.org/psi4 (binary available for Linux, Mac, and WSL Windows [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#how-to-install-a-psi4-binary-with-the-psi4conda-installer-download-site)
 
-* **CodeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
+* **CodeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4) (More like 70% -- we'll get this back soon.)
 
 * **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 and follow [GitHub contribution procedure](http://psicode.org/psi4manual/master/build_obtaining.html#faq-githubworkflow))
 

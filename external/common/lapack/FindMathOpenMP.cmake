@@ -77,6 +77,7 @@ if (${isMKL} MATCHES "MKL")
         if (APPLE)
             set(_MathOpenMP_LIB_NAMES "iomp5")
         else()
+            # https://stackoverflow.com/questions/25986091/telling-gcc-to-not-link-libgomp-so-it-links-libiomp5-instead
             set(_MathOpenMP_LIB_NAMES "iomp5;-Wl,--as-needed")
         endif()
         find_omp_libs("MathOpenMP" ${_MathOpenMP_LIB_NAMES})

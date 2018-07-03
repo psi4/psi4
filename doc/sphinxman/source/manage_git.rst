@@ -323,3 +323,11 @@ First, what's happening? ``sys.path`` (where modules can be imported from in pyt
 
 The way around this is to move the python file you're running to any other directory. Or, within the file, do ``sys.path.insert(0, {objdir}/stage/{prefix}/lib/{pymod_lib_dir}``.
 
+How to find tests without output.ref
+------------------------------------
+
+Ideally, each new test or much-altered test should add its own
+``output.ref``. When that doesn't happen, this command helps. ::
+
+    find tests/ -mindepth 1 -maxdepth 1 -type d '!' -exec test -e "{}/output.ref" ";" -print
+
