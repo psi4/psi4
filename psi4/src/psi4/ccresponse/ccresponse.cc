@@ -45,6 +45,7 @@
 #include "psi4/physconst.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/psi4-dec.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
@@ -81,7 +82,7 @@ void roa(void);
 
 void preppert(std::shared_ptr<BasisSet> primary);
 
-int ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
+PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
   int **cachelist, *cachefiles;
 
@@ -151,7 +152,8 @@ int ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
   timer_off("ccresponse");
 
   exit_io();
-  return 0;
+
+  return PsiReturnType::Success;
 }
 
 void init_io(void)
