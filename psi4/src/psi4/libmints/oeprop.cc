@@ -864,11 +864,11 @@ void OEProp::compute()
 {
 
     
-    if (title_ == "")
-        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is %s\n", Da_so_->name().c_str());
-    
-    else
+    if (title_ == "") {
+        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is \'%s\'\n", Da_so_->name().c_str());
+    } else {
         outfile->Printf( "\nProperties computed using the %s density matrix\n\n", title_.c_str());
+    }
 
     // Search for multipole strings, which are handled separately
     std::set<std::string>::const_iterator iter = tasks_.begin();
