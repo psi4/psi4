@@ -270,6 +270,27 @@
             "affiliation": "University of Sheffield",
             "@id": "https://orcid.org/0000-0002-9977-0835",
             "@id": "https://github.com/robashaw"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Edward",
+            "additionalName": "T.",
+            "familyName": "Seidl",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Curtis",
+            "additionalName": "L.",
+            "familyName": "Janssen",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Matthew",
+            "additionalName": "L.",
+            "familyName": "Leininger",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology"
         }
     ],
     "developmentStatus": "active",
