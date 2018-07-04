@@ -32,6 +32,7 @@
 #include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <functional>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -1383,10 +1384,10 @@ void HF::guess()
         }
 
 
-        if ((guess_Ca_->nirrep() != nirrep_) or (guess_Cb_->nirrep() != nirrep_)) {
+        if ((guess_Ca_->nirrep() != nirrep_) || (guess_Cb_->nirrep() != nirrep_)) {
             throw PSIEXCEPTION("Number of guess of the input orbitals do not match number of irreps of the wavefunction.");
         }
-        if ((guess_Ca_->rowspi() != nsopi_) or (guess_Cb_->rowspi() != nsopi_)) {
+        if ((guess_Ca_->rowspi() != nsopi_) || (guess_Cb_->rowspi() != nsopi_)) {
             throw PSIEXCEPTION("Nso of the guess orbitals do not match Nso of the wavefunction.");
         }
 
