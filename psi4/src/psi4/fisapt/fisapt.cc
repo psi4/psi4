@@ -46,6 +46,9 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/lib3index/dfhelper.h"
 
+#include <ctime>
+#include <functional>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
