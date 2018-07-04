@@ -37,7 +37,6 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include <cstdio>
-#include <unistd.h>
 #include <memory>
 #include <algorithm>
 #include <functional>
