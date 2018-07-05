@@ -32,7 +32,7 @@
 ** \ingroup CIOMR
 */
 
-#include <strings.h>
+#include <cstring>
 
 namespace psi {
 
@@ -48,7 +48,7 @@ namespace psi {
 */
 void zero_arr(double *a, int size)
 {
-  bzero(a,sizeof(double)*size);
+  memset(a, 0, sizeof(double)*size);
 }
 
 /*!
@@ -65,7 +65,7 @@ void zero_mat(double **a, int n, int m)
   int i;
 
   for (i=0; i < n; i++) {
-    bzero(a[i],sizeof(double)*m);
+    memset(a[i], 0, sizeof(double)*m);
   }
 }
 
