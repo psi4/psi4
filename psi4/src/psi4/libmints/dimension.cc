@@ -105,11 +105,11 @@ Dimension& Dimension::operator-=(const Dimension& b) {
     return *this;
 }
 
-PSI_API bool operator==(const Dimension& a, const Dimension& b) { return (a.blocks_ == b.blocks_); }
+bool operator==(const Dimension& a, const Dimension& b) { return (a.blocks_ == b.blocks_); }
 
-PSI_API bool operator!=(const Dimension& a, const Dimension& b) { return !operator==(a, b); }
+bool operator!=(const Dimension& a, const Dimension& b) { return !operator==(a, b); }
 
-PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
+Dimension operator+(const Dimension& a, const Dimension& b) {
     Dimension result = a;
     if (a.n() == b.n()) {
         for (int i = 0, maxi = a.n(); i < maxi; ++i) result[i] += b[i];
@@ -122,7 +122,7 @@ PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
     return result;
 }
 
-PSI_API Dimension operator-(const Dimension& a, const Dimension& b) {
+Dimension operator-(const Dimension& a, const Dimension& b) {
     Dimension result = a;
     if (a.n() == b.n()) {
         for (int i = 0, maxi = a.n(); i < maxi; ++i) result[i] -= b[i];
@@ -171,7 +171,7 @@ bool Slice::validate_slice() {
             break;
         }
     }
-    if (not valid) {
+    if (!valid) {
         begin_.print();
         end_.print();
         throw PSIEXCEPTION(msg);

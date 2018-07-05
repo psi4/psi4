@@ -35,6 +35,7 @@
 #include "wavefunction.h"
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 namespace psi {
 
@@ -73,7 +74,7 @@ int BesselFunction::tabulate(const double accuracy) {
 	// where F_j(z) = e^(-z) * (z^2/2)^j / j!
 	int lmax = lMax + TAYLOR_CUT;
 	
-	double F[order + 1]; // F_j above
+	std::vector<double> F(order + 1); // F_j above
 	
 	K[0][0] = 1.0;
 	double z, z2; // z and z^2 / 2
@@ -172,7 +173,7 @@ void BesselFunction::calculate(const double z, int maxL, std::vector<double> &va
 		} else {
 			// Determine the necessary derivatives from
 			// K_l^(n+1) = C_l K_(l-1)^(n) + (C_l + 1/(2l+1))K_(l+1)^(n) - K_l^(n)
-			double dK[TAYLOR_CUT+1][maxLambda];
+			std::vector<std::vector<double>> dK(TAYLOR_CUT+1, std::vector<double>(maxLambda));
 		
 			// Copy K values into dK
 			for (int l = 0; l < maxLambda; l++)

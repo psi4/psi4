@@ -64,6 +64,7 @@
 #include <fstream>
 #include <regex>
 #include <tuple>
+#include <functional>
 
 namespace psi {
 
