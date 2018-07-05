@@ -33,38 +33,10 @@
 */
 
 namespace psi {
-	
-/*!
-** combinations() : Calculates the number of ways to choose k objects
-**    from n objects, or "n choose k" 
-**
-** Parameters:
-**   \param n   =  number of objects in total
-**   \param k   =  number of objects taken at a time
-**
-** Returns:
-**    number of combinations of n objects taken k at a time ("n choose k")
-**    (returned as a double).
-**
-** \ingroup QT
-*/
-double combinations(int n, int k)
-{
-   double factorial(int) ;
-   double comb ;
-
-   if (n == k) return (1.0) ;
-   else if (k > n) return(0.0) ;
-   else if (k == 0) return(1.0) ; 
-   comb = factorial(n) / (factorial(k) * factorial(n-k)) ;
- 
-   return(comb) ;
-}
-
 
 /*!
 ** factorial(): Returns n!
-** 
+**
 ** Parameters:
 **    \param n  = number to take factorial of
 **
@@ -82,7 +54,31 @@ double factorial(int n)
       }
 }
 
+/*!
+** combinations() : Calculates the number of ways to choose k objects
+**    from n objects, or "n choose k" 
+**
+** Parameters:
+**   \param n   =  number of objects in total
+**   \param k   =  number of objects taken at a time
+**
+** Returns:
+**    number of combinations of n objects taken k at a time ("n choose k")
+**    (returned as a double).
+**
+** \ingroup QT
+*/
+double combinations(int n, int k)
+{
+   double comb ;
 
+   if (n == k) return (1.0) ;
+   else if (k > n) return(0.0) ;
+   else if (k == 0) return(1.0) ; 
+   comb = factorial(n) / (factorial(k) * factorial(n-k)) ;
+ 
+   return(comb) ;
+}
 
 /*
 ** test combinations routines

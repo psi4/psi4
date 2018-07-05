@@ -46,11 +46,9 @@ namespace psi {
 ** \param cols    = number of columns
 ** \param outfile = output file pointer for printing
 **
-** Returns: Always returns zero...
-**
 ** \ingroup QT
 */
-int mat_print(double **matrix, int rows, int cols, std::string out)
+void mat_print(double **matrix, int rows, int cols, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             std::make_shared<PsiOutStream>(out));
@@ -102,9 +100,6 @@ int mat_print(double **matrix, int rows, int cols, std::string out)
 
       printer->Printf("\n");
     }
-
-  return 0;
-
 }
 
 }
