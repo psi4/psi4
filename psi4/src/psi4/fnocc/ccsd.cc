@@ -41,6 +41,7 @@
 
 #include <sys/times.h>
 #include <unistd.h>
+#include <ctime>
 #ifdef _OPENMP
     #include<omp.h>
 #else

@@ -33,6 +33,7 @@
  * fortran-ordered blas routines
  */
 
+#include "psi4/pragma.h"
 #include "blas_mangle.h"
 
 typedef long int integer;
@@ -48,7 +49,7 @@ void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,intege
 /**
  * fortran-ordered dgemm
  */
-void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
+void PSI_API F_DGEMM(char transa,char transb, integer m, integer n, integer k,
             doublereal alpha,doublereal*A,integer lda,doublereal*B,integer ldb,
             doublereal beta,doublereal*C,integer ldc);
 
