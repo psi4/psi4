@@ -39,7 +39,7 @@
 using namespace psi;
 
 GiaoOverlapDerivInt::GiaoOverlapDerivInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+1, bs2->max_am())
+    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();

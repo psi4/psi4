@@ -1702,6 +1702,21 @@ std::vector<SharedMatrix> MintsHelper::ao_nabla() {
     return nabla;
 }
 
+// Derivatives of GIAO or LONDON orbitals
+std::vector<SharedMatrix> MintsHelper::giao_overlap_deriv() {
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> dSdB;
+
+    dSdB.push_back(std::make_shared<Matrix>("AO dS/dBx", basisset_->nbf(), basisset_->nbf()));
+    dSdB.push_back(std::make_shared<Matrix>("AO dS/dBy", basisset_->nbf(), basisset_->nbf()));
+    dSdB.push_back(std::make_shared<Matrix>("AO dS/dBz", basisset_->nbf(), basisset_->nbf()));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->giao_overlap_deriv());
+    ints->compute(dSdB);
+
+    return dSdB;
+}
+
 std::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps, bool project_out_translations,
                                                  bool project_out_rotations) {
     return std::make_shared<CdSalcList>(molecule_, needed_irreps, project_out_translations, project_out_rotations);

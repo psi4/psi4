@@ -69,6 +69,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
+#include "psi4/libmints/giao_overlap_deriv.h"
 
 #include <string>
 
@@ -912,7 +913,9 @@ void export_mints(py::module& m) {
         .def("electrostatic", &IntegralFactory::electrostatic,
              "Returns a OneBodyInt that computes the point electrostatic potential")
         .def("overlap_3c", &IntegralFactory::overlap_3c,
-             "Returns a OneBodyInt that computes the 3 center overlap integral");
+             "Returns a OneBodyInt that computes the 3 center overlap integral")
+        .def("giao_overlap_deriv", &IntegralFactory::giao_overlap_deriv, 
+             "Returns a OneBodyInt that computes the derivative of GIAO overlap integrals", py::arg("deriv") = 0);
 
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
@@ -1003,6 +1006,7 @@ void export_mints(py::module& m) {
              "coordinates (needed for EFP and PE)")
         .def("electric_field_value", &MintsHelper::electric_field_value,
              "Electric field expectation value at given sites")
+        .def("giao_overlap_deriv", &MintsHelper::giao_overlap_deriv, "Vector of GIAO overlap integrals")
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
