@@ -22,7 +22,7 @@ molecular properties. We can routinely perform computations with more
 than 2500 basis functions running serially or on multi-core machines.
 
 With computationally demanding portions written in C++, exports
-many C++ classes into Python via Pybind11, and a flexible Python driver, Psi4
+of many C++ classes into Python via Pybind11, and a flexible Python driver, Psi4
 strives to be friendly to both users and developers.
 
 * **Users' Website**  www.psicode.org
