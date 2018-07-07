@@ -1,6 +1,6 @@
 <p align="center">
 <a href="https://travis-ci.org/psi4/psi4"> <img src="https://travis-ci.org/psi4/psi4.svg?branch=master" /></a>
-<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.1.svg" /></a>
+<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.2.svg" /></a>
 <a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
 <a href="https://codecov.io/gh/psi4/psi4"> <img src="https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg" /></a>
 <!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
@@ -9,7 +9,7 @@
 <a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
 <a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
-<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems">_<img src="https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6-blue.svg" /></a>
+<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6-blue.svg" /></a>
 <a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
 <a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
 <br><br>
@@ -21,8 +21,8 @@ designed for efficient, high-accuracy simulations of a variety of
 molecular properties. We can routinely perform computations with more
 than 2500 basis functions running serially or on multi-core machines.
 
-With computationally demanding portions written in C++, Pybind11 exports
-many of the C++ classes into Python, and a flexible Python driver, Psi4
+With computationally demanding portions written in C++, exports
+of many C++ classes into Python via Pybind11, and a flexible Python driver, Psi4
 strives to be friendly to both users and developers.
 
 * **Users' Website**  www.psicode.org
