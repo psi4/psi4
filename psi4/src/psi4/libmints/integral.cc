@@ -43,6 +43,7 @@
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/overlap.h"
+#include "psi4/libmints/giao_overlap_deriv.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
@@ -201,6 +202,12 @@ OneBodySOInt* IntegralFactory::so_traceless_quadrupole() {
 
 OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+// GIAO functions 
+OneBodyAOInt* IntegralFactory::giao_overlap_deriv(int deriv)
+{
+    return new GiaoOverlapDerivInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
