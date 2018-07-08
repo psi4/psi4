@@ -1704,9 +1704,7 @@ std::vector<SharedMatrix> MintsHelper::ao_nabla() {
 
 // Derivatives of GIAO or LONDON orbitals
 std::vector<SharedMatrix> MintsHelper::giao_overlap_deriv() {
-    // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> dSdB;
-
     dSdB.push_back(std::make_shared<Matrix>("AO dS/dBx", basisset_->nbf(), basisset_->nbf()));
     dSdB.push_back(std::make_shared<Matrix>("AO dS/dBy", basisset_->nbf(), basisset_->nbf()));
     dSdB.push_back(std::make_shared<Matrix>("AO dS/dBz", basisset_->nbf(), basisset_->nbf()));
@@ -1715,6 +1713,19 @@ std::vector<SharedMatrix> MintsHelper::giao_overlap_deriv() {
     ints->compute(dSdB);
 
     return dSdB;
+}
+
+std::vector<SharedMatrix> MintsHelper::giao_angmom() {
+    std::vector<SharedMatrix> Giao_LN;
+
+    Giao_LN.push_back(std::make_shared<Matrix>("GIAO LNx", basisset_->nbf(), basisset_->nbf()));
+    Giao_LN.push_back(std::make_shared<Matrix>("GIAO LNy", basisset_->nbf(), basisset_->nbf()));
+    Giao_LN.push_back(std::make_shared<Matrix>("GIAO LNz", basisset_->nbf(), basisset_->nbf()));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->giao_angmom());
+    ints->compute(Giao_LN);
+
+    return Giao_LN;
 }
 
 std::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps, bool project_out_translations,

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 list(APPEND sources
   local.cc
   onebody.cc
@@ -67,6 +68,10 @@ list(APPEND sources
   gaussquad.cc
   ecpint.cc
   orthog.cc
+  giao_overlap_deriv.cc
+  giao_angmom.cc
+  giao_kinetic.cc
+  giao_potential.cc
   )
 
 psi4_add_module(lib mints sources)

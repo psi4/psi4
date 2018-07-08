@@ -310,6 +310,8 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> so_traceless_quadrupole();
     // Vector GIAO or LONDON Overlap Derivative Integrals
     std::vector<SharedMatrix> giao_overlap_deriv();
+    // Vector GIAO or LONDON Angular Momentum Integrals
+    std::vector<SharedMatrix> giao_angmom();
 
     /// Returns a CdSalcList object
     std::shared_ptr<CdSalcList> cdsalcs(int needed_irreps = 0xF, bool project_out_translations = true,
