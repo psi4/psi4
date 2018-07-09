@@ -48,10 +48,13 @@ namespace psi {
  */
 class GiaoPotentialInt : public OneBodyAOInt
 {
-    //! Generic Obara Saika recursion object.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
+    /// Computes integrals between two shell objects.
     void compute_pair(const GaussianShell& , const GaussianShell&);
+protected:
+    //! Generic Obara Saika recursion object.
+    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
+    /// Matrix of coordinates/charges of partial charges
+    SharedMatrix Zxyz_;
 
 public:
     //! Constructor, it assumes you are computing the first derivatives by default
@@ -59,6 +62,12 @@ public:
     GiaoPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     //! Virtual destructor
     virtual ~GiaoPotentialInt();
+
+    /// Set the field of charges
+    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
+
+    /// Get the field of charges
+    SharedMatrix charge_field() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }

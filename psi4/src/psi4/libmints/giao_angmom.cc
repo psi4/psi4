@@ -39,7 +39,7 @@
 using namespace psi;
 
 GiaoAngmomInt::GiaoAngmomInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
+    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -47,7 +47,6 @@ GiaoAngmomInt::GiaoAngmomInt(std::vector<SphericalTransform>& st, std::shared_pt
     int maxnao1 = (maxam1+1)*(maxam1+2)/2;
     int maxnao2 = (maxam2+1)*(maxam2+2)/2;
 
-    // deriv_ == 0 -> first order GIAO derivatives 
     // Increase buffer size to handle x, y, and z components
     if (deriv_ == 0) {
         buffer_ = new double[3*maxnao1*maxnao2];
@@ -122,7 +121,7 @@ void GiaoAngmomInt::compute_pair(const GaussianShell& s1, const GaussianShell& s
             double dB_pfac = -0.5*over_pf;
 
             // Do recursion
-            overlap_recur_.compute(PA, PB, gamma, am1+2, am2+2);
+            overlap_recur_.compute(PA, PB, gamma, am1+1, am2+1);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
