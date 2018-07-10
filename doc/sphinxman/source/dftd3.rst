@@ -40,15 +40,14 @@ Interface to DFTD3 by S. Grimme
 *Module:* :ref:`Samples <apdx:testSuitedftd3>`
 
 .. image:: https://img.shields.io/badge/home-DFTD3-5077AB.svg
-   :target: http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english
+   :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/get-the-current-version-of-dft-d3
 
 .. raw:: html
 
    <br>
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
-   :target: http://www.thch.uni-bonn.de/tc/downloads/DFT-D3/data/man.pdf
-
+   :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf
 Installation
 ~~~~~~~~~~~~
 
@@ -74,7 +73,7 @@ Installation
 **Source**
 
 * .. image:: https://img.shields.io/badge/home-DFTD3-5077AB.svg
-     :target: http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english
+     :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/get-the-current-version-of-dft-d3
 
 * If using |PSIfour| built from source and you want to build DFTD3 from
   from source also,
@@ -169,7 +168,7 @@ fit for individual functionals are now :math:`s_6`, :math:`s_8`,
 .. math:: f_{damp} = a_1 \sqrt{\frac{C_8^{ij}}{C_6^{ij}}} + a_2
 
 All parameters characterizing the dispersion correction are taken from
-`http://toc.uni-muenster.de/DFTD3/ <http://toc.uni-muenster.de/DFTD3/>`_
+`Grimme's website <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/get-the-current-version-of-dft-d3>`_
 or else from the literature.
 
 Running DFTD3
