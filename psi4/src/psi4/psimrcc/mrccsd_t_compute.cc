@@ -99,7 +99,7 @@ void MRCCSD_T::compute()
     }
   }
 
-  if(not options_.get_bool("DIAGONALIZE_HEFF")){
+  if(!options_.get_bool("DIAGONALIZE_HEFF")){
     double Heff_E = 0.0;
     for(int mu = 0; mu < nrefs; ++mu){
       for(int nu = 0; nu < nrefs; ++nu){
