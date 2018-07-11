@@ -54,6 +54,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
     endif()
 
 else()
-    message(WARNING "Please add a check in CheckCompilerVersion.cmake for ${CMAKE_CXX_COMPILER_ID}.")
+    message(WARNING "Please add a check in custom_cxxstandard.cmake for ${CMAKE_CXX_COMPILER_ID}.")
 endif()
 

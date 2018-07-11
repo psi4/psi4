@@ -35,6 +35,11 @@ except ImportError:
     pass
 
 try:
+    import gpu_dfcc
+except ImportError:
+    pass
+
+try:
     import forte
 except ImportError:
     pass
@@ -51,3 +56,8 @@ except ImportError as e:
         raise ImportError("""Psi4 plugin 'snsmp2' available, but scipy missing. Try `conda install scipy` or `pip install scipy`.""")
     else:
         pass
+
+try:
+    import resp
+except ImportError:
+    pass

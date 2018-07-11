@@ -182,7 +182,7 @@ void DFJKGrad::compute_gradient()
         gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient",natom,3);
     }
     if (do_wK_) {
-        throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
+        // throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
         gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient",natom,3);
     }
 
@@ -196,33 +196,87 @@ void DFJKGrad::compute_gradient()
 
     // => Gradient Construction: Get in there and kill 'em all! <= //
 
+
+    // Using
+
+    // d Minv          d M
+    // ------ = -Minv ----- Minv
+    //   dx             dx
+
+    // we get
+
+    // d (mn|w|A) Minv[A][B] (B|rs)
+    // ---------------------------- =
+    //             dx
+    //                              x
+    //                      (mn|w|A)  Minv[A][B] (B|rs)
+
+    //                                            x
+    //                   -  (mn|w|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
+
+    //                                                 x
+    //                   +  (mn|w|A)  Minv[A][B] (B|rs)
+
+    // c_B = (B|pq) D_pq
+    // (B|ij) = (B|pq) C_pi C_qi
     timer_on("JKGrad: Amn");
     build_Amn_terms();
     timer_off("JKGrad: Amn");
 
+    // (B|w|ij) = (B|w|pq) C_pi C_qi
     timer_on("JKGrad: Awmn");
     build_Amn_lr_terms();
     timer_off("JKGrad: Awmn");
 
+    // c_A = (A|B)^-1 c_B
+    // (A|ij) = (A|B)^-1 (B|ij)
+    // (A|w|ij) = (A|B)^-1 (B|w|ij)
     timer_on("JKGrad: AB");
     build_AB_inv_terms();
     timer_off("JKGrad: AB");
 
+    // W_AB = (A|ij) (B|ij)
+    // V_AB = 0.5 * [(A|w|ij) (B|ij) + (A|ij) (B|w|ij)]
     timer_on("JKGrad: UV");
     build_UV_terms();
     timer_off("JKGrad: UV");
 
+    //  J^x = 0.5 * (A|B)^x c_B c_A
+    //  K^x = 0.5 * (A|B)^x W_AB
+    // wK^x = 0.5 * (A|B)^x V_AB
     timer_on("JKGrad: ABx");
     build_AB_x_terms();
     timer_off("JKGrad: ABx");
 
+    //  (A|pq)   = (A|ij) C_ip C_iq
+    //  (A|w|pq) = (A|w|ij) C_ip C_iq
+    //  J^x = (A|pq)^x d_A Dt_pq
+    //  K^x = (A|pq)^x (A|pq)
+    // wK^x = 0.5 * (A|pq)^x (A|w|pq)
+    // wK^x = 0.5 * (A|w|pq)^x (A|pq)
     timer_on("JKGrad: Amnx");
     build_Amn_x_terms();
     timer_off("JKGrad: Amnx");
 
-    timer_on("JKGrad: Awmnx");
-    build_Amn_x_lr_terms();
-    timer_off("JKGrad: Awmnx");
+    //  J^x  = 0.5 * (C|D)^x [(C|B)^-1 (B|pq) D_tpq] [(D|A)^-1 (A|rs) Dt_rs]
+    //  J^x += (A|pq)^x D_pq  [(A|B)^-1 (B|rs) Dt_rs]
+
+    //  K^x  = 0.5 * (A|B)^x (ij|A)(A|C)^-1(C|B)^-1(B|ij)
+    //  K^x += (A|pq)^x (A|pq)
+
+    // wK^x  = 0.5 * (A|B)^x [(ij|A)(A|C)^-1] [(C|B)^-1(B|w|ij)]
+    // wK^x += 0.5 * (A|pq)^x (A|w|pq)
+    // wK^x += 0.5 * (A|w|pq)^x (A|pq)
+
+
+    // Printing
+    // gradients_["Coulomb"]->print();
+    // if (do_K_) {
+    //     gradients_["Exchange"]->print();
+    // }
+    // if (do_wK_) {
+    //     gradients_["Exchange,LR"]->print();
+    // }
 
     // => Close temp files <= //
     psio_->close(unit_a_, 0);
@@ -626,108 +680,49 @@ void DFJKGrad::build_AB_inv_terms()
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
 
-    // > Alpha < //
-    if (true) {
-        psio_address next_Aija = PSIO_ZERO;
+    // K and wK 3 index temps
+    std::vector<std::string> buffers;
+    buffers.push_back("(A|ij)");
+    if (do_wK_) buffers.push_back("(A|w|ij)");
 
-        for (long int ij = 0L; ij < na *(size_t) na; ij += max_cols) {
-            int ncols = (ij + max_cols >= na * (size_t) na ? na * (size_t) na - ij : max_cols);
+    // Units and sizing for alpha/beta
+    std::vector<std::pair<size_t, size_t>> us_vec;
+    us_vec.push_back(std::make_pair(unit_a_, na));
+    if (!restricted) us_vec.push_back(std::make_pair(unit_b_, nb));
 
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->read(unit_a_,"(A|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
+    // Transform all three index buffers (A|B)(B|ij) -> (A|ij)
+    for (const auto& buff_name : buffers) {
+        for (const auto& us : us_vec) {
+            size_t unit_name = us.first;
+            size_t nmo_size = us.second;
+            size_t nmo_size2 = nmo_size * nmo_size;
+            // printf("%s | %zu %zu\n", buff_name.c_str(), unit_name, nmo_size);
+
+            psio_address next_Aija = PSIO_ZERO;
+
+            for (long int ij = 0L; ij < nmo_size2; ij += max_cols) {
+                int ncols = (ij + max_cols >= nmo_size2 ? nmo_size2 - ij : max_cols);
+
+                // > Read < //
+                for (int Q = 0; Q < naux; Q++) {
+                    next_Aija = psio_get_address(PSIO_ZERO, sizeof(double) * (Q * (size_t)nmo_size2 + ij));
+                    psio_->read(unit_name, buff_name.c_str(), (char*)Aijp[Q], sizeof(double) * ncols, next_Aija,
+                                &next_Aija);
+                }
+
+                // > GEMM <//
+                C_DGEMM('N', 'N', naux, ncols, naux, 1.0, Jp[0], naux, Aijp[0], max_cols, 0.0, Bijp[0], max_cols);
+
+                // > Stripe < //
+                for (int Q = 0; Q < naux; Q++) {
+                    next_Aija = psio_get_address(PSIO_ZERO, sizeof(double) * (Q * (size_t)nmo_size2 + ij));
+                    psio_->write(unit_name, buff_name.c_str(), (char*)Bijp[Q], sizeof(double) * ncols, next_Aija,
+                                 &next_Aija);
+                }
             }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->write(unit_a_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
-            }
-
         }
     }
 
-    // > Beta < //
-    if (!restricted) {
-        psio_address next_Aijb = PSIO_ZERO;
-
-        for (long int ij = 0L; ij < nb *(size_t) nb; ij += max_cols) {
-            int ncols = (ij + max_cols >= nb * (size_t) nb ? nb * (size_t) nb - ij : max_cols);
-
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->read(unit_b_,"(A|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->write(unit_b_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-        }
-    }
-
-    if (!do_wK_)
-        return;
-
-    // > Alpha < //
-    if (true) {
-        psio_address next_Aija = PSIO_ZERO;
-
-        for (long int ij = 0L; ij < na *(size_t) na; ij += max_cols) {
-            int ncols = (ij + max_cols >= na * (size_t) na ? na * (size_t) na - ij : max_cols);
-
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->read(unit_a_,"(A|w|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
-            }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
-                psio_->write(unit_a_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
-            }
-
-        }
-    }
-
-    // > Beta < //
-    if (!restricted) {
-        psio_address next_Aijb = PSIO_ZERO;
-
-        for (long int ij = 0L; ij < nb *(size_t) nb; ij += max_cols) {
-            int ncols = (ij + max_cols >= nb * (size_t) nb ? nb * (size_t) nb - ij : max_cols);
-
-            // > Read < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->read(unit_b_,"(A|w|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-            // > GEMM <//
-            C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
-
-            // > Stripe < //
-            for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
-                psio_->write(unit_b_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
-            }
-
-        }
-    }
 }
 void DFJKGrad::build_UV_terms()
 {
@@ -802,6 +797,7 @@ void DFJKGrad::build_UV_terms()
         return;
 
     // => W < = //
+    V->zero();
 
     // > Alpha < //
     if (true) {
@@ -835,6 +831,7 @@ void DFJKGrad::build_UV_terms()
     } else {
         V->scale(2.0);
     }
+    V->hermitivitize();
     psio_->write_entry(unit_c_,"W",(char*) Vp[0], sizeof(double) * naux * naux);
 }
 void DFJKGrad::build_AB_x_terms()
@@ -976,7 +973,7 @@ void DFJKGrad::build_AB_x_terms()
                 }
 
                 if (do_wK_) {
-                    double Wval = 0.5 * perm * (0.5 * (Wp[p + oP][q + oQ] + Wp[q + oQ][p + oP]));
+                    double Wval = 0.5 * perm * Wp[p + oP][q + oQ];
                     grad_wKp[aP][0] -= Wval * (*Px);
                     grad_wKp[aP][1] -= Wval * (*Py);
                     grad_wKp[aP][2] -= Wval * (*Pz);
@@ -997,9 +994,9 @@ void DFJKGrad::build_AB_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
-    //gradients_["Coulomb"]->zero();
-    //gradients_["Exchange"]->zero();
-    //gradients_["Exchange,LR"]->zero();
+    // gradients_["Coulomb"]->zero();
+    // gradients_["Exchange"]->zero();
+    // gradients_["Exchange,LR"]->zero();
 
     if (do_J_) {
         for (int t = 0; t < df_ints_num_threads_; t++) {
@@ -1018,8 +1015,8 @@ void DFJKGrad::build_AB_x_terms()
     }
 
     //gradients_["Coulomb"]->print();
-    //gradients_["Exchange"]->print();
-    //gradients_["Exchange,LR"]->print();
+    // gradients_["Exchange"]->print();
+    // gradients_["Exchange,LR"]->print();
 }
 void DFJKGrad::build_Amn_x_terms()
 {
@@ -1083,27 +1080,27 @@ void DFJKGrad::build_Amn_x_terms()
         psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
     }
 
-    SharedMatrix Jmn;
     SharedMatrix Kmn;
+    SharedMatrix wKmn;
     SharedMatrix Ami;
     SharedMatrix Aij;
 
-    double** Jmnp;
     double** Kmnp;
+    double** wKmnp;
     double** Amip;
     double** Aijp;
 
     if (do_K_ || do_wK_) {
-        Jmn = std::make_shared<Matrix>("Jmn", max_rows, nso * (size_t) nso);
+        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t) nso);
         Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
         Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
-        Jmnp = Jmn->pointer();
+        Kmnp = Kmn->pointer();
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
     if (do_wK_) {
-        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t) nso);
-        Kmnp = Kmn->pointer();
+        wKmn = std::make_shared<Matrix>("wKmn", max_rows, nso * (size_t) nso);
+        wKmnp = wKmn->pointer();
     }
 
     double** Dtp = Dt_->pointer();
@@ -1118,9 +1115,13 @@ void DFJKGrad::build_Amn_x_terms()
     // => Integrals <= //
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> omega_eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        if (do_wK_){
+            omega_eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_, 1)));
+        }
     }
 
     // => Temporary Gradients <= //
@@ -1144,6 +1145,24 @@ void DFJKGrad::build_Amn_x_terms()
 
     double factor = (restricted ? 2.0 : 1.0);
 
+
+    // => Figure out required transforms <= //
+
+    // unit, disk buffer name, nmo_size, psio_address, output_buffer
+    std::vector<std::tuple<size_t, std::string, double**, size_t, psio_address, double**>> transforms;
+    if (do_K_ || do_wK_) {
+        transforms.push_back(std::make_tuple(unit_a_, "(A|ij)", Cap, na, next_Aija, Kmnp));
+        if (!restricted) {
+            transforms.push_back(std::make_tuple(unit_b_, "(A|ij)", Cbp, nb, next_Aijb, Kmnp));
+        }
+    }
+    if (do_wK_) {
+        transforms.push_back(std::make_tuple(unit_a_, "(A|w|ij)", Cap, na, next_Awija, wKmnp));
+        if (!restricted) {
+            transforms.push_back(std::make_tuple(unit_b_, "(A|w|ij)", Cbp, nb, next_Awijb, wKmnp));
+        }
+    }
+
     // => Master Loop <= //
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
@@ -1160,71 +1179,35 @@ void DFJKGrad::build_Amn_x_terms()
 
         // => J_mn^A <= //
 
-        // > Alpha < //
-        if (do_K_ || do_wK_) {
+        if (do_K_ || do_wK_) Kmn->zero();
+        if (do_wK_) wKmn->zero();
+        for (const auto& trans : transforms) {
+
+            // > Unpack transform < //
+            size_t unit = std::get<0>(trans);
+            std::string buffer = std::get<1>(trans);
+            double** Cp = std::get<2>(trans);
+            size_t nmo = std::get<3>(trans);
+            psio_address address = std::get<4>(trans);
+            double** retp = std::get<5>(trans);
+            // printf("%4.2lf : %zu  %s %zu\n", factor, unit, buffer.c_str(), nmo);
+
+            size_t nmo2 = nmo * nmo;
 
             // > Stripe < //
-            psio_->read(unit_a_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
+            psio_->read(unit, buffer.c_str(), (char*)Aijp[0], sizeof(double) * np * nmo2, address, &address);
 
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
+                C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, &Aijp[0][P * nmo2], nmo, 0.0, Amip[P], na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
+            C_DGEMM('N', 'T', np * (size_t)nso, nso, nmo, factor, Amip[0], na, Cp[0], nmo, 1.0, retp[0], nso);
         }
 
-        // > Beta < //
-        if (!restricted && (do_K_ || do_wK_)) {
 
-            // > Stripe < //
-            psio_->read(unit_b_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
-        }
-
-        // => K_mn^A <= //
-
-        // > Alpha < //
-        if (do_wK_) {
-
-            // > Stripe < //
-            psio_->read(unit_a_, "(A|w|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Awija, &next_Awija);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Kmnp[0], nso);
-        }
-
-        // > Beta < //
-        if (!restricted && do_wK_) {
-
-            // > Stripe < //
-            psio_->read(unit_b_, "(A|w|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Awijb, &next_Awijb);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Kmnp[0], nso);
-        }
 
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
@@ -1291,6 +1274,7 @@ void DFJKGrad::build_Amn_x_terms()
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
 
+                        //  J^x = (A|pq)^x d_A Dt_pq
                         if (do_J_) {
                             double Ival = 1.0 * perm * dp[p + oP + pstart] * Dtp[m + oM][n + oN];
                             grad_Jp[aP][0] += Ival * (*Px);
@@ -1304,30 +1288,34 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Jp[aN][2] += Ival * (*Nz);
                         }
 
+
+                        //  K^x = (A|pq)^x (A|pq)
                         if (do_K_) {
-                            double Jval = 1.0 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)];
-                            grad_Kp[aP][0] += Jval * (*Px);
-                            grad_Kp[aP][1] += Jval * (*Py);
-                            grad_Kp[aP][2] += Jval * (*Pz);
-                            grad_Kp[aM][0] += Jval * (*Mx);
-                            grad_Kp[aM][1] += Jval * (*My);
-                            grad_Kp[aM][2] += Jval * (*Mz);
-                            grad_Kp[aN][0] += Jval * (*Nx);
-                            grad_Kp[aN][1] += Jval * (*Ny);
-                            grad_Kp[aN][2] += Jval * (*Nz);
+                            double Kval = 1.0 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
+                            grad_Kp[aP][0] += Kval * (*Px);
+                            grad_Kp[aP][1] += Kval * (*Py);
+                            grad_Kp[aP][2] += Kval * (*Pz);
+                            grad_Kp[aM][0] += Kval * (*Mx);
+                            grad_Kp[aM][1] += Kval * (*My);
+                            grad_Kp[aM][2] += Kval * (*Mz);
+                            grad_Kp[aN][0] += Kval * (*Nx);
+                            grad_Kp[aN][1] += Kval * (*Ny);
+                            grad_Kp[aN][2] += Kval * (*Nz);
                         }
 
+
+                        // wK^x = 0.5 * (A|pq)^x (A|w|pq)
                         if (do_wK_) {
-                            double Kval = 0.5 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
-                            grad_wKp[aP][0] += Kval * (*Px);
-                            grad_wKp[aP][1] += Kval * (*Py);
-                            grad_wKp[aP][2] += Kval * (*Pz);
-                            grad_wKp[aM][0] += Kval * (*Mx);
-                            grad_wKp[aM][1] += Kval * (*My);
-                            grad_wKp[aM][2] += Kval * (*Mz);
-                            grad_wKp[aN][0] += Kval * (*Nx);
-                            grad_wKp[aN][1] += Kval * (*Ny);
-                            grad_wKp[aN][2] += Kval * (*Nz);
+                            double wKval = 0.5 * perm * wKmnp[p + oP][(m + oM) * nso + (n + oN)];
+                            grad_wKp[aP][0] += wKval * (*Px);
+                            grad_wKp[aP][1] += wKval * (*Py);
+                            grad_wKp[aP][2] += wKval * (*Pz);
+                            grad_wKp[aM][0] += wKval * (*Mx);
+                            grad_wKp[aM][1] += wKval * (*My);
+                            grad_wKp[aM][2] += wKval * (*Mz);
+                            grad_wKp[aN][0] += wKval * (*Nx);
+                            grad_wKp[aN][1] += wKval * (*Ny);
+                            grad_wKp[aN][2] += wKval * (*Nz);
                         }
 
                         Px++;
@@ -1342,14 +1330,59 @@ void DFJKGrad::build_Amn_x_terms()
                     }
                 }
             }
+
+            //  wK^x = 0.5 * (A|w|pq)^x (A|pq)
+            if (do_wK_){
+
+                omega_eri[thread]->compute_shell_deriv1(P,0,M,N);
+                const double* buffer = omega_eri[thread]->buffer();
+
+                const double *Px = buffer + 0*ncart;
+                const double *Py = buffer + 1*ncart;
+                const double *Pz = buffer + 2*ncart;
+                const double *Mx = buffer + 3*ncart;
+                const double *My = buffer + 4*ncart;
+                const double *Mz = buffer + 5*ncart;
+                const double *Nx = buffer + 6*ncart;
+                const double *Ny = buffer + 7*ncart;
+                const double *Nz = buffer + 8*ncart;
+
+                for (int p = 0; p < nP; p++) {
+                    for (int m = 0; m < nM; m++) {
+                        for (int n = 0; n < nN; n++) {
+                            double wKval = 0.5 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
+                            grad_wKp[aP][0] += wKval * (*Px);
+                            grad_wKp[aP][1] += wKval * (*Py);
+                            grad_wKp[aP][2] += wKval * (*Pz);
+                            grad_wKp[aM][0] += wKval * (*Mx);
+                            grad_wKp[aM][1] += wKval * (*My);
+                            grad_wKp[aM][2] += wKval * (*Mz);
+                            grad_wKp[aN][0] += wKval * (*Nx);
+                            grad_wKp[aN][1] += wKval * (*Ny);
+                            grad_wKp[aN][2] += wKval * (*Nz);
+                            Px++;
+                            Py++;
+                            Pz++;
+                            Mx++;
+                            My++;
+                            Mz++;
+                            Nx++;
+                            Ny++;
+                            Nz++;
+                        }
+
+                    }
+                }
+
+            }
         }
     }
 
     // => Temporary Gradient Reduction <= //
 
-    //gradients_["Coulomb"]->zero();
-    //gradients_["Exchange"]->zero();
-    //gradients_["Exchange,LR"]->zero();
+    // gradients_["Coulomb"]->zero();
+    // gradients_["Exchange"]->zero();
+    // gradients_["Exchange,LR"]->zero();
 
     if (do_J_) {
         for (int t = 0; t < df_ints_num_threads_; t++) {
@@ -1367,234 +1400,11 @@ void DFJKGrad::build_Amn_x_terms()
         }
     }
 
-    //gradients_["Coulomb"]->print();
-    //gradients_["Exchange"]->print();
-    //gradients_["Exchange,LR"]->print();
+    // gradients_["Coulomb"]->print();
+    // gradients_["Exchange"]->print();
+    // gradients_["Exchange,LR"]->print();
 }
-void DFJKGrad::build_Amn_x_lr_terms()
-{
-    if (!do_wK_) return;
 
-    // => Sizing <= //
-
-    int natom = primary_->molecule()->natom();
-    int nso = primary_->nbf();
-    int naux = auxiliary_->nbf();
-    int na = Ca_->colspi()[0];
-    int nb = Cb_->colspi()[0];
-
-    bool restricted = (Ca_ == Cb_);
-
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    int npairs = shell_pairs.size();
-
-    // => Memory Constraints <= //
-
-    int max_rows;
-    int maxP = auxiliary_->max_function_per_shell();
-    size_t row_cost = 0L;
-    row_cost += nso * (size_t) nso;
-    row_cost += nso * (size_t) na;
-    row_cost += na * (size_t) na;
-    size_t rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = (int) rows;
-
-    // => Block Sizing <= //
-
-    std::vector<int> Pstarts;
-    int counter = 0;
-    Pstarts.push_back(0);
-    for (int P = 0; P < auxiliary_->nshell(); P++) {
-        int nP = auxiliary_->shell(P).nfunction();
-        if (counter + nP > max_rows) {
-            counter = 0;
-            Pstarts.push_back(P);
-        }
-        counter += nP;
-    }
-    Pstarts.push_back(auxiliary_->nshell());
-
-    // => Temporary Buffers <= //
-
-    SharedMatrix Jmn;
-    SharedMatrix Ami;
-    SharedMatrix Aij;
-
-    double** Jmnp;
-    double** Amip;
-    double** Aijp;
-
-    Jmn = std::make_shared<Matrix>("Jmn", max_rows, nso * (size_t) nso);
-    Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
-    Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
-    Jmnp = Jmn->pointer();
-    Amip = Ami->pointer();
-    Aijp = Aij->pointer();
-
-    double** Cap = Ca_->pointer();
-    double** Cbp = Cb_->pointer();
-
-    psio_address next_Aija = PSIO_ZERO;
-    psio_address next_Aijb = PSIO_ZERO;
-
-    // => Integrals <= //
-
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_,1)));
-    }
-
-    // => Temporary Gradients <= //
-
-    std::vector<SharedMatrix> wKtemps;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        wKtemps.push_back(std::make_shared<Matrix>("wKtemp", natom, 3));
-    }
-
-    // => R/U doubling factor <= //
-
-    double factor = (restricted ? 2.0 : 1.0);
-
-    // => Master Loop <= //
-
-    for (int block = 0; block < Pstarts.size() - 1; block++) {
-
-        // > Sizing < //
-
-        int Pstart = Pstarts[block];
-        int Pstop  = Pstarts[block+1];
-        int NP = Pstop - Pstart;
-
-        int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
-        int np = pstop - pstart;
-
-        // => J_mn^A <= //
-
-        // > Alpha < //
-        if (true) {
-
-            // > Stripe < //
-            psio_->read(unit_a_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
-        }
-
-        // > Beta < //
-        if (!restricted) {
-
-            // > Stripe < //
-            psio_->read(unit_b_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
-
-            // > (A|ij) C_mi -> (A|mj) < //
-#pragma omp parallel for
-            for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
-            }
-
-            // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
-        }
-
-        // > Integrals < //
-        int nthread_df = df_ints_num_threads_;
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
-
-            int thread = 0;
-#ifdef _OPENMP
-            thread = omp_get_thread_num();
-#endif
-
-            int P =  PMN / npairs + Pstart;
-            int MN = PMN % npairs;
-            int M = shell_pairs[MN].first;
-            int N = shell_pairs[MN].second;
-
-            eri[thread]->compute_shell_deriv1(P,0,M,N);
-
-            const double* buffer = eri[thread]->buffer();
-
-            int nP = auxiliary_->shell(P).nfunction();
-            int cP = auxiliary_->shell(P).ncartesian();
-            int aP = auxiliary_->shell(P).ncenter();
-            int oP = auxiliary_->shell(P).function_index() - pstart;
-
-            int nM = primary_->shell(M).nfunction();
-            int cM = primary_->shell(M).ncartesian();
-            int aM = primary_->shell(M).ncenter();
-            int oM = primary_->shell(M).function_index();
-
-            int nN = primary_->shell(N).nfunction();
-            int cN = primary_->shell(N).ncartesian();
-            int aN = primary_->shell(N).ncenter();
-            int oN = primary_->shell(N).function_index();
-
-            int ncart = cP * cM * cN;
-            const double *Px = buffer + 0*ncart;
-            const double *Py = buffer + 1*ncart;
-            const double *Pz = buffer + 2*ncart;
-            const double *Mx = buffer + 3*ncart;
-            const double *My = buffer + 4*ncart;
-            const double *Mz = buffer + 5*ncart;
-            const double *Nx = buffer + 6*ncart;
-            const double *Ny = buffer + 7*ncart;
-            const double *Nz = buffer + 8*ncart;
-
-            double perm = (M == N ? 1.0 : 2.0);
-
-            double** grad_wKp = wKtemps[thread]->pointer();
-
-            for (int p = 0; p < nP; p++) {
-                for (int m = 0; m < nM; m++) {
-                    for (int n = 0; n < nN; n++) {
-
-                        double Kval = 0.5 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)];
-                        grad_wKp[aP][0] += Kval * (*Px);
-                        grad_wKp[aP][1] += Kval * (*Py);
-                        grad_wKp[aP][2] += Kval * (*Pz);
-                        grad_wKp[aM][0] += Kval * (*Mx);
-                        grad_wKp[aM][1] += Kval * (*My);
-                        grad_wKp[aM][2] += Kval * (*Mz);
-                        grad_wKp[aN][0] += Kval * (*Nx);
-                        grad_wKp[aN][1] += Kval * (*Ny);
-                        grad_wKp[aN][2] += Kval * (*Nz);
-
-                        Px++;
-                        Py++;
-                        Pz++;
-                        Mx++;
-                        My++;
-                        Mz++;
-                        Nx++;
-                        Ny++;
-                        Nz++;
-                    }
-                }
-            }
-        }
-    }
-
-    // => Temporary Gradient Reduction <= //
-
-    //gradients_["Exchange,LR"]->zero();
-
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        gradients_["Exchange,LR"]->add(wKtemps[t]);
-    }
-
-    //gradients_["Exchange,LR"]->print();
-}
 void DFJKGrad::compute_hessian()
 {
 
@@ -2401,9 +2211,11 @@ void DirectJKGrad::compute_gradient()
         std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         if (do_J_) {
             gradients_["Coulomb"]->copy(vals["J"]);
+            // gradients_["Coulomb"]->print();
         }
         if (do_K_) {
             gradients_["Exchange"]->copy(vals["K"]);
+            // gradients_["Exchange"]->print();
         }
     }
     if (do_wK_) {
@@ -2413,6 +2225,7 @@ void DirectJKGrad::compute_gradient()
         }
         std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         gradients_["Exchange,LR"]->copy(vals["K"]);
+        // gradients_["Exchange,LR"]->print();
     }
 }
 std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)

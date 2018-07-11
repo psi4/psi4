@@ -1,0 +1,1274 @@
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-5 entry H          line    23 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ-JKFIT
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-5 entry H          line    51 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, False]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, False, True].......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, False].......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [False, True, True]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, False].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, False, True]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, False]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + Qpq core (AOs, MOs, met): [True, True, True].........PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, False]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, False, True].......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, False].......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [False, True, True]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, False].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, False, True]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, False]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pQq core (AOs, MOs, met): [True, True, True].........PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, False]......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, False]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, True].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, False, True].......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, False].......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [False, True, True]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, False].......PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, False].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, True]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, False, True]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, False]........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, False]........PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:                STORE
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, True].........PASSED
+	Alg: STORE + pqQ core (AOs, MOs, met): [True, True, True].........PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, False].....PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, False, True]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, False]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [False, True, True].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, False]......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, False, True].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, False].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + Qpq core (AOs, MOs, met): [True, True, True]........PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, False].....PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, False, True]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, False]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [False, True, True].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, False]......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, False, True].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, False].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pQq core (AOs, MOs, met): [True, True, True]........PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, False].....PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, False].....PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, True]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, False, True]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, False]......PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [False, True, True].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, False]......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, False]......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, True].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, False, True].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, False].......PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, False].......PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:               DIRECT
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, True]........PASSED
+	Alg: DIRECT + pqQ core (AOs, MOs, met): [True, True, True]........PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, False].PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, False].PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, False].PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, False].PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, False].PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, False].PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                  False
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, True]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, True]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, True]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, True]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, True]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, False, True]..PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.0016GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, False]..PASSED
+
+    ==> DFHelper memory announcement <==
+        Turning off in-core AOs.  DFHelper needs at least (0.006418GB), but it only got (0.00178GB)
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                  1
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                  False
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [False, True, True]...PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, False]..PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, False]..PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                   True
+    MO_core:                  False
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, True]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, False, True]...PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:              False
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, False]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, False]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, False]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, False]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, False]...PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, False]...PASSED
+  ==> DFHelper <==
+    nao:                         70
+    naux:                       150
+    Schwarz cutoff:           1E-12
+    Mask sparsity (%):          27)
+    Memory (MB):                 15
+    OpenMP threads:               1
+    Algorithm:           DIRECT_iaQ
+    AO_core:                   True
+    MO_core:                   True
+    Hold Metric:               True
+    Metric Power:            -5E-01
+    Fitting condition:        1E-12
+
+
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, True]....PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, True]....PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, True]....PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, True]....PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, True]....PASSED
+	Alg: DIRECT_iaQ + pqQ core (AOs, MOs, met): [True, True, True]....PASSED

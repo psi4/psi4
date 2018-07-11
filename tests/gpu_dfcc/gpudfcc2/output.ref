@@ -1,0 +1,833 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2rc3.dev19 
+
+                         Git: Rev {enable_gpu_dfcc} b3dff61 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 14 June 2018 11:46AM
+
+    Process ID: 12289
+    Host:       ed7
+    PSIDATADIR: /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4
+    Memory:     500.0 MiB
+    Threads:    2
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! aug-cc-pvdz H2O Test DF-CCSD(T) vs GPU-DF-CCSD(T)
+
+sys.path.insert(0,'../../../.')
+
+import gpu_dfcc
+
+molecule {
+           O          0.000000000000     0.000000000000    -0.068516219310   
+           H          0.000000000000    -0.790689573744     0.543701060724   
+           H          0.000000000000     0.790689573744     0.543701060724   
+}
+
+memory 17000 mb
+set {
+  basis aug-cc-pvdz
+  freeze_core true
+  e_convergence 1e-8
+  d_convergence 1e-8
+  r_convergence 1e-8
+  scf_type df
+  cc_type df
+}
+
+set_num_threads(2)
+en_dfcc     = energy('ccsd(t)')
+en_gpu_dfcc = energy('gpu-df-ccsd(t)')
+
+compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD(T) total energy") # TEST
+
+--------------------------------------------------------------------------
+
+  Memory set to  15.832 GiB by Python driver.
+  Threads set to 2 by Python driver.
+    Method 'CCSD(T)' requires SCF_TYPE = DISK_DF, setting.
+
+*** tstart() called on ed7
+*** at Thu Jun 14 11:46:39 2018
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   250 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    36 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        2 Threads,  16212 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+         H            0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+         H           -0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529973282
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DISK_DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        18      18       0       0       0       0
+     A2         4       4       0       0       0       0
+     B1         7       7       0       0       0       0
+     B2        12      12       0       0       0       0
+   -------------------------------------------------------
+    Total      41      41       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              2
+    Integrals threads:           2
+    Memory (MB):             12159
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 52
+    Number of basis function: 150
+    Number of Cartesian functions: 171
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -75.82666758734101   -7.58267e+01   9.09105e-02 
+   @DF-RHF iter   1:   -76.01284456944154   -1.86177e-01   1.34446e-02 
+   @DF-RHF iter   2:   -76.02922784430274   -1.63833e-02   7.81765e-03 DIIS
+   @DF-RHF iter   3:   -76.03532759861280   -6.09975e-03   9.85045e-04 DIIS
+   @DF-RHF iter   4:   -76.03561914182870   -2.91543e-04   3.18684e-04 DIIS
+   @DF-RHF iter   5:   -76.03566621039863   -4.70686e-05   8.28712e-05 DIIS
+   @DF-RHF iter   6:   -76.03566963386670   -3.42347e-06   9.33594e-06 DIIS
+   @DF-RHF iter   7:   -76.03566968293372   -4.90670e-08   1.51269e-06 DIIS
+   @DF-RHF iter   8:   -76.03566968371112   -7.77405e-10   2.69034e-07 DIIS
+   @DF-RHF iter   9:   -76.03566968373934   -2.82228e-11   5.76956e-08 DIIS
+   @DF-RHF iter  10:   -76.03566968374074   -1.39266e-12   6.27173e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -20.584239     2A1    -1.335647     1B2    -0.696479  
+       3A1    -0.577439     1B1    -0.506106  
+
+    Virtual:                                                              
+
+       4A1     0.034658     2B2     0.057722     5A1     0.174901  
+       2B1     0.198751     6A1     0.219018     3B2     0.232772  
+       4B2     0.278549     7A1     0.326071     1A2     0.382613  
+       8A1     0.397881     3B1     0.427473     5B2     0.532911  
+       9A1     0.636696     6B2     0.654104     7B2     0.794625  
+      10A1     0.917437     4B1     1.105427    11A1     1.117509  
+       2A2     1.145099    12A1     1.291954     8B2     1.454194  
+       5B1     1.470010    13A1     1.572206     9B2     1.971534  
+       3A2     1.988356     6B1     2.082925    14A1     2.346452  
+      10B2     2.398798    15A1     2.533949    11B2     2.701650  
+      16A1     2.959675     7B1     3.671282    17A1     3.683511  
+       4A2     3.694439    18A1     3.974411    12B2     4.219132  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -76.03566968374074
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299732816
+    One-Electron Energy =                -122.2744486639993653
+    Two-Electron Energy =                  37.4373134502853446
+    Total Energy =                        -76.0356696837407355
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.2197
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:40 2018
+Module time:
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+
+  Constructing Basis Sets for FNOCC...
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   204 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    30 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+
+
+*** tstart() called on ed7
+*** at Thu Jun 14 11:46:40 2018
+
+
+
+        *******************************************************
+        *                                                     *
+        *                       DF-CCSD                       *
+        *                 Density-fitted CCSD                 *
+        *                                                     *
+        *                   Eugene DePrince                   *
+        *                                                     *
+        *******************************************************
+
+
+  ==> 3-index integrals <==
+
+  ==> DF Tensor (by Rob Parrish) <==
+
+ => Primary Basis Set <= 
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+ => Auxiliary Basis Set <= 
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-RI
+    Number of shells: 40
+    Number of basis function: 118
+    Number of Cartesian functions: 136
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+    Number of auxiliary functions:         118
+
+  ==> Memory <==
+
+        Total memory available:           16212.46 mb
+
+        CCSD memory requirements:             4.09 mb
+            3-index integrals:                1.63 mb
+            CCSD intermediates:               2.47 mb
+
+        (T) part (regular algorithm):         2.47 mb
+
+  ==> Input parameters <==
+
+        Freeze core orbitals?                 yes
+        Use frozen natural orbitals?           no
+        r_convergence:                  1.000e-08
+        e_convergence:                  1.000e-08
+        Number of DIIS vectors:                 8
+        Number of frozen core orbitals:         1
+        Number of active occupied orbitals:     4
+        Number of active virtual orbitals:     36
+        Number of frozen virtual orbitals:      0
+
+
+  Begin singles and doubles coupled cluster iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 1   -0.2231285258   -0.2231285258    0.2144301451        0
+      1   1 1   -0.2246170723   -0.0014885464    0.0405751244        0
+      2   2 1   -0.2296017342   -0.0049846619    0.0139443383        0
+      3   3 1   -0.2308839320   -0.0012821978    0.0059118958        0
+      4   4 1   -0.2308069702    0.0000769618    0.0011170733        0
+      5   5 1   -0.2308167210   -0.0000097508    0.0003793757        0
+      6   6 1   -0.2308221280   -0.0000054070    0.0001020628        0
+      7   7 1   -0.2308201714    0.0000019567    0.0000334453        0
+      8   8 1   -0.2308199141    0.0000002572    0.0000099862        1
+      9   8 2   -0.2308200034   -0.0000000893    0.0000035024        0
+     10   8 3   -0.2308198444    0.0000001590    0.0000012419        0
+     11   8 4   -0.2308198700   -0.0000000255    0.0000004179        0
+     12   8 5   -0.2308198685    0.0000000015    0.0000001300        0
+     13   8 6   -0.2308198731   -0.0000000045    0.0000000410        0
+     14   8 7   -0.2308198741   -0.0000000010    0.0000000097        0
+
+  CCSD iterations converged!
+
+        T1 diagnostic:                        0.012977005826
+        D1 diagnostic:                        0.028194766725
+
+        OS MP2 correlation energy:           -0.166416231914
+        SS MP2 correlation energy:           -0.056712293927
+        MP2 correlation energy:              -0.223128525842
+      * MP2 total energy:                   -76.258798209582
+
+        OS CCSD correlation energy:          -0.181264461677
+        SS CCSD correlation energy:          -0.049555412415
+        CCSD correlation energy:             -0.230819874092
+      * CCSD total energy:                  -76.266489557833
+
+  Total time for CCSD iterations:       1.30 s (user)
+                                        0.10 s (system)
+                                           1 s (total)
+
+  Time per iteration:                   0.09 s (user)
+                                        0.01 s (system)
+                                        0.07 s (total)
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:41 2018
+Module time:
+	user time   =       1.43 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.73 seconds =       0.05 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on ed7
+*** at Thu Jun 14 11:46:41 2018
+
+
+        *******************************************************
+        *                                                     *
+        *                      CCSD(T)                        *
+        *                                                     *
+        *******************************************************
+
+        num_threads:                      2
+        available memory:       16212.46 mb
+        memory requirements:        2.47 mb
+
+        Number of ijk combinations: 20
+
+        Computing (T) correction...
+
+        % complete  total time
+              10.0         0 s
+              20.0         0 s
+              30.0         0 s
+              40.0         0 s
+              50.0         0 s
+              60.0         0 s
+              70.0         0 s
+              80.0         0 s
+              90.0         0 s
+
+        (T) energy                            -0.005540526869
+
+        CCSD(T) correlation energy            -0.236360400961
+      * CCSD(T) total energy                 -76.272030084702
+
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:41 2018
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.88 seconds =       0.05 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:41 2018
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.88 seconds =       0.05 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+    Method 'GPU-DF-CCSD(T)' requires SCF_TYPE = DISK_DF, setting.
+
+*** tstart() called on ed7
+*** at Thu Jun 14 11:46:41 2018
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   250 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    36 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        2 Threads,  16212 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+         H            0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+         H           -0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529973282
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DISK_DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        18      18       0       0       0       0
+     A2         4       4       0       0       0       0
+     B1         7       7       0       0       0       0
+     B2        12      12       0       0       0       0
+   -------------------------------------------------------
+    Total      41      41       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              2
+    Integrals threads:           2
+    Memory (MB):             12159
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 52
+    Number of basis function: 150
+    Number of Cartesian functions: 171
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -75.82666758734098   -7.58267e+01   7.52256e-02 
+   @DF-RHF iter   1:   -76.01284456944157   -1.86177e-01   1.19071e-02 
+   @DF-RHF iter   2:   -76.02922784430271   -1.63833e-02   5.88021e-03 DIIS
+   @DF-RHF iter   3:   -76.03532759861284   -6.09975e-03   1.00866e-03 DIIS
+   @DF-RHF iter   4:   -76.03561914182868   -2.91543e-04   2.73148e-04 DIIS
+   @DF-RHF iter   5:   -76.03566621039872   -4.70686e-05   7.72374e-05 DIIS
+   @DF-RHF iter   6:   -76.03566963386675   -3.42347e-06   1.04069e-05 DIIS
+   @DF-RHF iter   7:   -76.03566968293373   -4.90670e-08   1.38559e-06 DIIS
+   @DF-RHF iter   8:   -76.03566968371102   -7.77291e-10   2.68200e-07 DIIS
+   @DF-RHF iter   9:   -76.03566968373937   -2.83507e-11   4.59181e-08 DIIS
+   @DF-RHF iter  10:   -76.03566968374072   -1.35003e-12   5.88540e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -20.584239     2A1    -1.335647     1B2    -0.696479  
+       3A1    -0.577439     1B1    -0.506106  
+
+    Virtual:                                                              
+
+       4A1     0.034658     2B2     0.057722     5A1     0.174901  
+       2B1     0.198751     6A1     0.219018     3B2     0.232772  
+       4B2     0.278549     7A1     0.326071     1A2     0.382613  
+       8A1     0.397881     3B1     0.427473     5B2     0.532911  
+       9A1     0.636696     6B2     0.654104     7B2     0.794625  
+      10A1     0.917437     4B1     1.105427    11A1     1.117509  
+       2A2     1.145099    12A1     1.291954     8B2     1.454194  
+       5B1     1.470010    13A1     1.572206     9B2     1.971534  
+       3A2     1.988356     6B1     2.082925    14A1     2.346452  
+      10B2     2.398798    15A1     2.533949    11B2     2.701650  
+      16A1     2.959675     7B1     3.671282    17A1     3.683511  
+       4A2     3.694439    18A1     3.974411    12B2     4.219132  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -76.03566968374072
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299732816
+    One-Electron Energy =                -122.2744486639993227
+    Two-Electron Energy =                  37.4373134502853162
+    Total Energy =                        -76.0356696837407213
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.2197
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:41 2018
+Module time:
+	user time   =       1.12 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.04 seconds =       0.07 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   204 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    30 file /edfs/users/deprince/edeprince3/psi4/install/gnu-gpu-dfcc/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+
+
+Reading options from the GPU_DFCC block
+Calling plugin gpu_dfcc.so.
+
+
+  ==> 3-index integrals <==
+
+  ==> DF Tensor (by Rob Parrish) <==
+
+ => Primary Basis Set <= 
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+ => Auxiliary Basis Set <= 
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-RI
+    Number of shells: 40
+    Number of basis function: 118
+    Number of Cartesian functions: 136
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+    Number of auxiliary functions:         118
+
+
+  _________________________________________________________
+  CUDA device properties:
+  name:                         Quadro GP100
+  major version:                           6
+  minor version:                           0
+  canMapHostMemory:                        1
+  totalGlobalMem:                      16278 mb
+  sharedMemPerBlock:                   49152
+  clockRate:                           1.442 ghz
+  regsPerBlock:                        65536
+  warpSize:                               32
+  maxThreadsPerBlock:                   1024
+  _________________________________________________________
+
+
+  allocating gpu memory...  Total memory requirements:            4.13 mb
+  3-index integrals:                    1.67 mb
+  CCSD intermediates:                   2.47 mb
+
+  memory requirements for CCSD(T):     13.15 mb
+
+
+  Begin singles and doubles coupled cluster iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 1   -0.2231285258   -0.2231285258    0.2144301451        0
+      1   1 1   -0.2246170723   -0.0014885464    0.0405751244        0
+      2   2 1   -0.2296017342   -0.0049846619    0.0139443383        0
+      3   3 1   -0.2308839320   -0.0012821978    0.0059118958        0
+      4   4 1   -0.2308069702    0.0000769618    0.0011170733        0
+      5   5 1   -0.2308167210   -0.0000097508    0.0003793757        0
+      6   6 1   -0.2308221280   -0.0000054070    0.0001020628        0
+      7   7 1   -0.2308201714    0.0000019567    0.0000334453        0
+      8   8 1   -0.2308199141    0.0000002572    0.0000099862        0
+      9   8 2   -0.2308200034   -0.0000000893    0.0000035024        1
+     10   8 3   -0.2308198444    0.0000001590    0.0000012419        0
+     11   8 4   -0.2308198700   -0.0000000255    0.0000004179        0
+     12   8 5   -0.2308198685    0.0000000015    0.0000001300        0
+     13   8 6   -0.2308198731   -0.0000000045    0.0000000410        0
+     14   8 7   -0.2308198741   -0.0000000010    0.0000000097        0
+
+  CCSD iterations converged!
+
+        T1 diagnostic:                        0.012977005826
+        D1 diagnostic:                        0.028194766725
+
+        OS MP2 correlation energy:           -0.166416231914
+        SS MP2 correlation energy:           -0.056712293927
+        MP2 correlation energy:              -0.223128525842
+      * MP2 total energy:                   -76.258798209582
+
+        OS CCSD correlation energy:          -0.181264461677
+        SS CCSD correlation energy:          -0.049555412415
+        CCSD correlation energy:             -0.230819874092
+      * CCSD total energy:                  -76.266489557833
+
+  Total time for CCSD iterations:       4.39 s (user)
+                                        6.41 s (system)
+                                           1 s (total)
+
+  Time per iteration:                   0.31 s (user)
+                                        0.46 s (system)
+                                        0.07 s (total)
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:47 2018
+Module time:
+	user time   =       6.41 seconds =       0.11 minutes
+	system time =      10.59 seconds =       0.18 minutes
+	total time  =          6 seconds =       0.10 minutes
+Total time:
+	user time   =       9.33 seconds =       0.16 minutes
+	system time =      10.75 seconds =       0.18 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on ed7
+*** at Thu Jun 14 11:46:47 2018
+
+
+        *******************************************************
+        *                                                     *
+        *                      CCSD(T)                        *
+        *                                                     *
+        *******************************************************
+
+        num_threads =                    12
+        available memory =      16199.31 mb
+        memory requirements =      13.15 mb
+
+        Number of ijk combinations: 20
+
+        Computing (T) correction...
+
+        % complete  total time
+              20.0         0 s
+              85.0         0 s
+
+        (T) energy                            -0.005540526869
+
+        CCSD(T) correlation energy            -0.236360400961
+      * CCSD(T) total energy                 -76.272030084702
+
+
+*** tstop() called on ed7 at Thu Jun 14 11:46:47 2018
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       9.53 seconds =       0.16 minutes
+	system time =      10.97 seconds =       0.18 minutes
+	total time  =          8 seconds =       0.13 minutes
+	CCSD(T) total energy..............................................PASSED
+
+    Psi4 stopped on: Thursday, 14 June 2018 11:46AM
+    Psi4 wall time for execution: 0:00:07.60
+
+*** Psi4 exiting successfully. Buy a developer a beer!

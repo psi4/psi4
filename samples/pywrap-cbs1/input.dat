@@ -1,8 +1,8 @@
 #! Various basis set extrapolation tests
 
 molecule {
+0 2
 Li
-
 }
 
 set {
@@ -73,7 +73,7 @@ e_cbs = energy(cbs,
 clean()
 
 
-def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
+def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     """Note that the _2 is necessary to signal this is a fn involving 2 zeta-levels.
     Yes, this fn is just the corl_xtpl_helgaker_2 w/o error checking and printing.
 
