@@ -39,9 +39,27 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/3index.h"
 
+#include <ctime>
+
+#ifdef _MSC_VER
+// Fake Windows implementation of the system/user timer
+struct tms {
+    double tms_stime;
+    double tms_utime;
+};
+static void times(struct tms *time) {
+    time->tms_stime = 0;
+    time->tms_utime = 0;
+}
+#define _SC_CLK_TCK 0
+static long sysconf(int name) {
+    return (long)name;
+}
+#else
 #include <sys/times.h>
 #include <unistd.h>
-#include <ctime>
+#endif
+
 #ifdef _OPENMP
     #include<omp.h>
 #else
