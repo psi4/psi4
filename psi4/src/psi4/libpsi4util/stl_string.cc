@@ -32,12 +32,10 @@
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
-#include <libgen.h>
 #include <string.h>
 #include <regex>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <limits.h>
 
 #include "libpsi4util.h"
@@ -235,21 +233,12 @@ std::string add_reference(std::string &str, int reference) {
 void append_reference(std::string &str, int reference) { str += "{" + to_string(reference) + "}"; }
 
 Timer::Timer()
-    : ___start(),
-      ___end(),
-      ___dummy(),
-      delta_time_seconds(0),
-      delta_time_hours(0),
-      delta_time_days(0) {
-    gettimeofday(&___start, &___dummy);
-}
+    : start(std::chrono::high_resolution_clock::now()) {}
 
-double Timer::get() {
-    gettimeofday(&___end, &___dummy);
-    delta_time_seconds =
-        (___end.tv_sec - ___start.tv_sec) + (___end.tv_usec - ___start.tv_usec) / 1000000.0;
-    delta_time_hours = delta_time_seconds / 3600.0;
-    delta_time_days = delta_time_hours / 24.0;
-    return (delta_time_seconds);
+double Timer::get()
+{
+    auto duration = std::chrono::high_resolution_clock::now() - start;
+    // Convert clock ticks to seconds
+    return std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();
 }
 }
