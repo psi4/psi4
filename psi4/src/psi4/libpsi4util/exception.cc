@@ -26,9 +26,11 @@
  * @END LICENSE
  */
 
-
+#ifndef _MSC_VER
 #include <execinfo.h>
 #include <cxxabi.h>
+#endif
+
 #include <vector>
 #include <sstream>
 #include <cstring>
@@ -48,6 +50,9 @@ PsiException::PsiException(std::string msg,
     std::stringstream message;
     message << std::endl << "Fatal Error: " << msg << std::endl;
     message << "Error occurred in file: " << file_ << " on line: " << line_ << std::endl;
+
+// Disable stack trace printing on Windows
+#ifndef _MSC_VER
 
     std::vector<void *> Stack(5);
     char **strings;
@@ -80,6 +85,7 @@ PsiException::PsiException(std::string msg,
             ::free(demangledname);
         }
     }
+#endif
 
     msg_ = message.str();
 }
