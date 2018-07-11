@@ -85,8 +85,19 @@
 #include <cstring>
 #include <ctime>
 
-#include <sys/time.h>
+#ifdef _MSC_VER
+// Fake Windows implementation of the system/user timer
+struct tms {
+    double tms_stime;
+    double tms_utime;
+};
+static void times(struct tms *time) {
+    time->tms_stime = 0;
+    time->tms_utime = 0;
+}
+#else
 #include <sys/times.h>
+#endif
 
 #ifdef _MSC_VER
 #include <Winsock2.h>
