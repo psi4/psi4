@@ -199,7 +199,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         return driver_nbody_helper.multi_level(func, **kwargs)
     metadata['ptype'] = kwargs.pop('ptype', None)
     metadata['return_wfn'] = kwargs.pop('return_wfn', False)
-    metadata['return_total_data'] = kwargs.pop('return_total_data', True)
+    metadata['return_total_data'] = kwargs.pop('return_total_data', False)
     metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
     metadata['molecule'].update_geometry()
     metadata['embedding_charges'] = kwargs.get('embedding_charges', False)
