@@ -37,6 +37,7 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
+from psi4.driver import driver_nbody_helper
 
 ### Math helper functions
 
@@ -97,8 +98,8 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
     else:
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
 
-def _print_nbody_energy(energy_body_dict, header):
-        core.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
+def _print_nbody_energy(energy_body_dict, header, embedding=False):
+        core.print_out("""\n   ==> N-Body: %s energies <==\n\n""" % header)
         core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
         nbody_range = list(energy_body_dict)
@@ -106,7 +107,7 @@ def _print_nbody_energy(energy_body_dict, header):
         for n in nbody_range:
             delta_e = (energy_body_dict[n] - previous_e)
             delta_e_kcal = delta_e * constants.hartree2kcalmol
-            int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol
+            int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol if not embedding else np.nan 
             core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" %
                                         (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
             previous_e = energy_body_dict[n]
@@ -115,11 +116,11 @@ def _print_nbody_energy(energy_body_dict, header):
 def nbody_gufunc(func, method_string, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
-    This is a generalized univeral function for computing interaction quantities.
+    This is a generalized univeral function for computing interaction and total quantities.
 
-    :returns: *return type of func* |w--w| The interaction data.
+    :returns: *return type of func* |w--w| The data.
 
-    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
     :type func: function
     :param func: ``energy`` || etc.
@@ -165,6 +166,28 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         If True returns the total data (energy/gradient/etc) of the system,
         otherwise returns interaction data.
+
+    :type levels: dict
+    :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'super_system': 'scf'} || {1: 2, 2: 'ccsd(t)', 3: 'mp2'}
+
+        Dictionary of different levels of theory for different levels of expansion
+        Note that method_string is not used in this case.
+        super_system computes all higher order n-body effects up to nfragments.
+
+    :type embedding_charges: dict
+    :param embedding_charges: ``{1: [-0.834, 0.417, 0.417], ..}``
+
+        Dictionary of atom-centered point charges. keys: 1-based index of fragment, values: list of charges for each fragment.
+
+    :type charge_method: string
+    :param charge_method: ``scf/6-31g`` || ``b3lyp/6-31g*`` || etc
+
+        Method to compute point charges for monomers. Overrides embedding_charges if both are provided.
+
+    :type charge_type: string
+    :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES`` 
+
+        Default is ``MULLIKEN_CHARGES``
     """
 
     # Initialize dictionaries for easy data passing
@@ -172,11 +195,14 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     # Parse some kwargs
     kwargs = p4util.kwargs_lower(kwargs)
+    if kwargs.get('levels', False):
+        return driver_nbody_helper.multi_level(func, **kwargs)
     metadata['ptype'] = kwargs.pop('ptype', None)
     metadata['return_wfn'] = kwargs.pop('return_wfn', False)
-    metadata['return_total_data'] = kwargs.pop('return_total_data', False)
+    metadata['return_total_data'] = kwargs.pop('return_total_data', True)
     metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
     metadata['molecule'].update_geometry()
+    metadata['embedding_charges'] = kwargs.get('embedding_charges', False)
     metadata['kwargs'] = kwargs
     core.clean_variables()
 
@@ -228,15 +254,24 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     # Assemble N-Body quantities
     nbody_results = assemble_nbody_components(metadata, component_results)
-    if metadata['ptype'] != 'energy':
-        nbody_results['ret_ptype'].name = 'Total %s' %metadata['ptype'].capitalize()
-        core.print_out("   ==> N-Body: %s <==\n" %metadata['ptype'])
-        nbody_results['ret_ptype'].print_atom_vector()
-        core.print_out("\n")
 
     # Build wfn and bind variables
     wfn = core.Wavefunction.build(metadata['molecule'], 'def2-svp')
-    dicts = ['energies', 'ptype', 'intermediates', 'energy_body_dict', 'ptype_body_dict', 'nbody']
+    dicts = ['energies', 'ptype', 'intermediates', 'energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody']
+    if metadata['ptype'] == 'gradient':
+        wfn.set_gradient(nbody_results['ret_ptype'])
+        nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
+    elif metadata['ptype'] == 'hessian':
+        nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
+        wfn.set_hessian(nbody_results['ret_ptype'])
+        component_results_gradient = component_results.copy()
+        component_results_gradient['ptype'] = component_results_gradient['gradients']
+        metadata['ptype'] = 'gradient'
+        nbody_results_gradient = assemble_nbody_components(metadata, component_results_gradient)
+        wfn.set_gradient(nbody_results_gradient['ret_ptype'])
+        nbody_results['gradient_body_dict'] = nbody_results_gradient['ptype_body_dict']
+
+
     for r in [component_results, nbody_results]:
         for d in r:
             if d in dicts:
@@ -245,17 +280,7 @@ def nbody_gufunc(func, method_string, **kwargs):
                         wfn.set_variable(str(var), value)
                         core.set_variable(str(var), value)
                     except:
-                        wfn.set_array(str(var), core.Matrix.from_array(value))
-
-    if metadata['ptype'] == 'gradient':
-        wfn.set_gradient(nbody_results['ret_ptype'])
-    elif metadata['ptype'] == 'hessian':
-        wfn.set_hessian(nbody_results['ret_ptype'])
-        ret_ptype = nbody_results['ret_ptype'].clone()
-        component_results['ptype'], metadata['ptype'] = component_results['gradients'], 'gradient'
-        nbody_results = assemble_nbody_components(metadata, component_results)
-        wfn.set_gradient(nbody_results['ret_ptype'])
-        nbody_results['ret_ptype'] = ret_ptype
+                        wfn.set_array(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
@@ -326,6 +351,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         basis_tuple = tuple(fragment_range)
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
+                if metadata['max_nbody'] == 1: break
                 cp_compute_list[nbody].add( (x, basis_tuple) )
         # Add monomers in monomer basis
         for x in fragment_range:
@@ -407,6 +433,8 @@ def compute_nbody_components(func, method_string, metadata):
     gradients_dict = {}
     ptype_dict = {}
     intermediates_dict = {}
+    if kwargs.get('charge_method', False):
+        driver_nbody_helper.compute_charges(kwargs['charge_method'], kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), metadata)
     for count, n in enumerate(compute_list.keys()):
         core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         total = len(compute_list[n])
@@ -417,6 +445,7 @@ def compute_nbody_components(func, method_string, metadata):
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
             current_mol.set_name("%i_%i" %(count, num))
+            if metadata['embedding_charges']: driver_nbody_helper.electrostatic_embedding(metadata, pair=pair)
             # Save energies info
             ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
             energies_dict[pair] = core.get_variable("CURRENT ENERGY")
@@ -584,6 +613,10 @@ def assemble_nbody_components(metadata, component_results):
                                       fragment_size_dict, vmfc_ptype_by_level[n],
                                       vmfc=True, n=n)
 
+        # Add extracted monomers back.
+        for i, j in enumerate(cp_monomers_in_monomer_basis):
+            cp_compute_list[1].add(j)
+
     if metadata['ptype'] != 'energy':
         # Extract ptype data for monomers in monomer basis for CP total data
         cp_monomer_ptype = np.zeros(arr_shape)
@@ -629,11 +662,7 @@ def assemble_nbody_components(metadata, component_results):
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
             nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
 
-        # Add extracted monomers back.
-        for i, j in enumerate(cp_monomers_in_monomer_basis):
-            cp_compute_list[1].add(j)
-
-        _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
+        _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)", metadata['embedding_charges'])
         cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
         nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
@@ -657,7 +686,7 @@ def assemble_nbody_components(metadata, component_results):
                     value = nocp_ptype_by_level[k]
                     nocp_ptype_body_dict[n] += take_nk * sign * value
 
-        _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
+        _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)", metadata['embedding_charges'])
         nocp_interaction_energy = nocp_energy_body_dict[metadata['max_nbody']] - nocp_energy_body_dict[1]
         nbody_dict['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
@@ -685,7 +714,7 @@ def assemble_nbody_components(metadata, component_results):
                     value = vmfc_ptype_by_level[k]
                     vmfc_ptype_body_dict[n] += take_nk * sign * value
 
-        _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
+        _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)", metadata['embedding_charges'])
         vmfc_interaction_energy = vmfc_energy_body_dict[metadata['max_nbody']] - vmfc_energy_body_dict[1]
         nbody_dict['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Valiron-Mayer Function Couterpoise Interaction Energy'] = vmfc_interaction_energy
