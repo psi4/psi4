@@ -1014,7 +1014,7 @@ void DFJKGrad::build_AB_x_terms()
         }
     }
 
-    //gradients_["Coulomb"]->print();
+    // gradients_["Coulomb"]->print();
     // gradients_["Exchange"]->print();
     // gradients_["Exchange,LR"]->print();
 }
@@ -1149,17 +1149,17 @@ void DFJKGrad::build_Amn_x_terms()
     // => Figure out required transforms <= //
 
     // unit, disk buffer name, nmo_size, psio_address, output_buffer
-    std::vector<std::tuple<size_t, std::string, double**, size_t, psio_address, double**>> transforms;
+    std::vector<std::tuple<size_t, std::string, double**, size_t, psio_address*, double**>> transforms;
     if (do_K_ || do_wK_) {
-        transforms.push_back(std::make_tuple(unit_a_, "(A|ij)", Cap, na, next_Aija, Kmnp));
+        transforms.push_back(std::make_tuple(unit_a_, "(A|ij)", Cap, na, &next_Aija, Kmnp));
         if (!restricted) {
-            transforms.push_back(std::make_tuple(unit_b_, "(A|ij)", Cbp, nb, next_Aijb, Kmnp));
+            transforms.push_back(std::make_tuple(unit_b_, "(A|ij)", Cbp, nb, &next_Aijb, Kmnp));
         }
     }
     if (do_wK_) {
-        transforms.push_back(std::make_tuple(unit_a_, "(A|w|ij)", Cap, na, next_Awija, wKmnp));
+        transforms.push_back(std::make_tuple(unit_a_, "(A|w|ij)", Cap, na, &next_Awija, wKmnp));
         if (!restricted) {
-            transforms.push_back(std::make_tuple(unit_b_, "(A|w|ij)", Cbp, nb, next_Awijb, wKmnp));
+            transforms.push_back(std::make_tuple(unit_b_, "(A|w|ij)", Cbp, nb, &next_Awijb, wKmnp));
         }
     }
 
@@ -1188,14 +1188,16 @@ void DFJKGrad::build_Amn_x_terms()
             std::string buffer = std::get<1>(trans);
             double** Cp = std::get<2>(trans);
             size_t nmo = std::get<3>(trans);
-            psio_address address = std::get<4>(trans);
+            psio_address* address = std::get<4>(trans);
             double** retp = std::get<5>(trans);
-            // printf("%4.2lf : %zu  %s %zu\n", factor, unit, buffer.c_str(), nmo);
+            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page, address->offset);
 
             size_t nmo2 = nmo * nmo;
 
             // > Stripe < //
-            psio_->read(unit, buffer.c_str(), (char*)Aijp[0], sizeof(double) * np * nmo2, address, &address);
+            psio_->read(unit, buffer.c_str(), (char*)Aijp[0], sizeof(double) * np * nmo2, *address, address);
+            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page, address->offset);
+            // printf("\n");
 
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
