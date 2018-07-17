@@ -90,7 +90,6 @@ void HF::common_init() {
     attempt_number_ = 1;
     ref_C_ = false;
     reset_occ_ = false;
-    is_dfjk_ = false;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();

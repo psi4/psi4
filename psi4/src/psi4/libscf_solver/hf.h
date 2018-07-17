@@ -130,7 +130,6 @@ class HF : public Wavefunction {
 
     /// The soon to be ubiquitous JK object
     std::shared_ptr<JK> jk_;
-    bool is_dfjk_;
 
     /// Are we to do MOM?
     bool MOM_enabled_;

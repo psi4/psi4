@@ -2072,7 +2072,7 @@ def run_scf_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
-    if "_disp_functor" in dir(ref_wfn):
+    if hasattr(ref_wfn, "_disp_functor"):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
         ref_wfn.set_array("-D Gradient", disp_grad)
 
@@ -2140,7 +2140,7 @@ def run_scf_hessian(name, **kwargs):
     if badref or badint:
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
-    if "_disp_functor" in dir(ref_wfn):
+    if hasattr(ref_wfn, "_disp_functor"):
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
         ref_wfn.set_array("-D Hessian", disp_hess)
 

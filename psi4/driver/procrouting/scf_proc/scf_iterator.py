@@ -176,7 +176,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
 
-    df = core.get_option('SCF', "SCF_TYPE") == "DF"
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
 
     if self.iteration_ < 2:
@@ -474,11 +473,8 @@ def scf_finalize_energy(self):
     if core.get_option('SCF', 'PRINT') > 0:
         self.print_orbitals()
 
-    prefix = ""
-    if core.get_option("SCF", "SCF_TYPE") == "DF":
-        prefix = "DF-"
-
-    core.print_out("  @%s%s Final Energy: %20.14f" % (prefix, reference, energy))
+    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    core.print_out("  @%s%s Final Energy: %20.14f" % ('DF-' if is_dfjk else '', reference, energy))
     # if (perturb_h_) {
     #     core.print_out(" with %f %f %f perturbation" %
     #                    (dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]))
