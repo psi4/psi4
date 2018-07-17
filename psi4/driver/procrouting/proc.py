@@ -4260,8 +4260,8 @@ def run_efp(name, **kwargs):
         psiopt = 'EFP_' + opt.upper()
         if core.has_option_changed('EFP', psiopt):
             efpopts[opt] = core.get_option('EFP', psiopt)
-    efpopts['ai_elst'] = False
-    efpopts['ai_ind'] = False
+    efpopts['qm_elst'] = False
+    efpopts['qm_ind'] = False
     efpobj.set_opts(efpopts, label='psi', append='psi')
     do_gradient = core.get_option('EFP', 'DERTYPE') == 'FIRST'
 

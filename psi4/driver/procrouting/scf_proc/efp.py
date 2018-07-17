@@ -58,9 +58,9 @@ def get_qm_atoms_opts(mol):
         if core.has_option_changed('EFP', psiopt):
             opts[opt] = core.get_option('EFP', psiopt)
     for opt in ['elst', 'ind']:
-        psiopt = 'QMEFP_' + opt.upper()
+        psiopt = 'EFP_QM_' + opt.upper()
         if core.has_option_changed('EFP', psiopt):
-            opts['ai_' + opt] = core.get_option('EFP', psiopt)
+            opts['qm_' + opt] = core.get_option('EFP', psiopt)
 
     return ptc, coords, opts
 
