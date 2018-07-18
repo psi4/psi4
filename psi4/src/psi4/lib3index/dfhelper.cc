@@ -391,17 +391,17 @@ void DFHelper::prepare_AO() {
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 0, psteps);
 
     // declare largest necessary
-    std::vector<double> M(std::get<0>(plargest) / 2); // there was a factor of two built in
-    std::vector<double> F(std::get<0>(plargest) / 2);
-    std::vector<double> metric;
-    double* Mp = M.data();
-    double* Fp = F.data();
+    std::unique_ptr<double[]> M(new double[std::get<0>(plargest) / 2]); // there was a factor of two built in
+    std::unique_ptr<double[]> F(new double[std::get<0>(plargest) / 2]);
+    std::unique_ptr<double[]> metric;
+    double* Mp = M.get();
+    double* Fp = F.get();
 
     // grab metric
     double* metp;
     if (!hold_met_) {
-        metric.resize(naux_ * naux_);
-        metp = metric.data();
+        metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        metp = metric.get();
         std::string filename = return_metfile(mpower_);
         get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
 
@@ -489,14 +489,14 @@ void DFHelper::prepare_AO_core() {
     } else {
 
         // declare sparse buffer
-        std::vector<double> Qpq(std::get<0>(plargest));
-        double* Mp = Qpq.data();
+        std::unique_ptr<double[]> Qpq(new double[std::get<0>(plargest)]);
+        double* Mp = Qpq.get();
+        std::unique_ptr<double[]> metric;
         double* metp;
-        std::vector<double> metric;
 
         if (!hold_met_) {
-            metric.resize(naux_ * naux_);
-            metp = metric.data();
+            metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+            metp = metric.get();
             std::string filename = return_metfile(mpower_);
             get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
         } else
@@ -1623,24 +1623,23 @@ void DFHelper::transform() {
     {
 
         // declare buffers
-        // T: first tmp.  F: final transform. N: transposing buffer.
-        std::vector<double> T(max_block * nao * wtmp);
-        std::vector<double> F(max_block * wfinal);
-        std::vector<double> N;
-        double* Tp = T.data();
-        double* Fp = F.data();
+        std::unique_ptr<double[]> T(new double[max_block * nao * wtmp]);
+        std::unique_ptr<double[]> F(new double[max_block * wfinal]);
+        std::unique_ptr<double[]> N;
+        double* Tp = T.get();
+        double* Fp = F.get();
         double* Np;
         if(!MO_core_){
-            N.resize(max_block * wfinal);
-            Np = N.data();
+            N = std::unique_ptr<double[]>(new double[max_block * wfinal]);
+            Np = N.get();
         }
 
         // AO buffer, allocate if not in-core, else point to in-core
-        std::vector<double> M;
+        std::unique_ptr<double[]> M;
         double* Mp;
         if (!AO_core_) {
-            M.resize(std::get<0>(Qlargest));
-            Mp = M.data();
+            M = std::unique_ptr<double[]>(new double[std::get<0>(Qlargest)]);
+            Mp = M.get();
         } else {
             Mp = Ppq_.data();
         }
@@ -1775,11 +1774,11 @@ void DFHelper::transform() {
     if(direct_iaQ_ || direct_) {
 
         // prepare metric
+        std::unique_ptr<double[]> metric;
         double* metp;
-        std::vector<double> metric;
         if (!hold_met_) {
-            metric.resize(naux_ * naux_);
-            metp = metric.data();
+            metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+            metp = metric.get();
             std::string filename = return_metfile(mpower_);
             get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
         } else
@@ -1789,8 +1788,8 @@ void DFHelper::transform() {
 
             if(MO_core_) {
 
-                std::vector<double> N(naux * wfinal);
-                double* Np = N.data();
+                std::unique_ptr<double[]> N(new double[naux * wfinal]);
+                double* Np = N.get();
 
                 for (auto& kv : transf_core_) {
                     size_t l = std::get<0>(sizes_[std::get<1>(files_[kv.first])]);
@@ -1810,10 +1809,10 @@ void DFHelper::transform() {
                 size_t total_mem =
                     (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
 
-                std::vector<double> M(total_mem);
-                std::vector<double> F(total_mem);
-                double* Mp = M.data();
-                double* Fp = F.data();
+                std::unique_ptr<double[]> M(new double[total_mem]);
+                std::unique_ptr<double[]> F(new double[total_mem]);
+                double* Mp = M.get();
+                double* Fp = F.get();
                 for (std::vector<std::string>::iterator itr = order_.begin(); itr != order_.end(); itr++)
                     contract_metric_Qpq(*itr, metp, Mp, Fp, total_mem);
 
@@ -1828,18 +1827,18 @@ void DFHelper::transform() {
                 size_t total_mem =
                     (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
 
-                std::vector<double> M(total_mem);
-                std::vector<double> F(total_mem);
-                double* Mp = M.data();
-                double* Fp = F.data();
+                std::unique_ptr<double[]> M(new double[total_mem]);
+                std::unique_ptr<double[]> F(new double[total_mem]);
+                double* Mp = M.get();
+                double* Fp = F.get();
 
                 for (std::vector<std::string>::iterator itr = order_.begin(); itr != order_.end(); itr++)
                     contract_metric(*itr, metp, Mp, Fp, total_mem);
 
             } else {
 
-                std::vector<double> N(naux * wfinal);
-                double* Np = N.data();
+                std::unique_ptr<double[]> N(new double[naux * wfinal]);
+                double* Np = N.get();
 
                 for (auto& kv : transf_core_) {
                     size_t a0 = std::get<0>(sizes_[std::get<1>(files_[kv.first])]);
@@ -2483,8 +2482,8 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
     size_t M2 = std::get<2>(sizes_[filename]);
     std::tuple<size_t, size_t, size_t> sizes;
 
-    std::vector<double> M(M0 * M1 * M2);
-    double* Mp = M.data();
+    std::unique_ptr<double[]> M(new double[M0 * M1 * M2]);
+    double* Mp = M.get();
     double* Fp = transf_core_[name].data();
     C_DCOPY(M0 * M1 * M2, Fp, 1, Mp, 1);
 
@@ -2606,10 +2605,10 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
     }
 
     // declare
-    std::vector<double> M(largest);
-    std::vector<double> F(largest);
-    double* Mp = M.data();
-    double* Fp = F.data();
+    std::unique_ptr<double[]> M(new double[largest]);
+    std::unique_ptr<double[]> F(new double[largest]);
+    double* Mp = M.get();
+    double* Fp = F.get();
     std::tuple<size_t, size_t, size_t> sizes;
 
     bool on = false;
@@ -2820,14 +2819,14 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     }
 
     // declare bufs
-    std::vector<double> M;   // AOs
-    std::vector<double> T1;  // Ktmp1
-    std::vector<double> T2;  // Ktmp2
+    std::unique_ptr<double[]> M;  // AOs
+    std::unique_ptr<double[]> T1; // Ktmp1
+    std::unique_ptr<double[]> T2; // Ktmp2
 
     // allocate first Ktmp
     size_t Ktmp_size = (!max_nocc ? totsb * 1 : totsb * max_nocc);
     Ktmp_size = std::max(Ktmp_size * nao, nthreads_ * naux); // max necessary
-    T1.resize(Ktmp_size);
+    T1 = std::unique_ptr<double[]>(new double[Ktmp_size]);
 
     // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the
     // second tmp in the K build, as well as the completed, pruned J build.
@@ -2837,14 +2836,14 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         Ktmp_size = std::max(nao * nao, Ktmp_size); // max necessary
     }
 
-    T2.resize(Ktmp_size);
-    double* T1p = T1.data();
-    double* T2p = T2.data();
+    T2 = std::unique_ptr<double[]>(new double[Ktmp_size]);
+    double* T1p = T1.get();
+    double* T2p = T2.get();
     double* Mp;
 
     if (!AO_core_) {
-        M.resize(tots);
-        Mp = M.data();
+        M = std::unique_ptr<double[]>(new double[tots]);
+        Mp = M.get();
     } else
         Mp = Ppq_.data();
 
