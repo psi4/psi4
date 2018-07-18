@@ -455,18 +455,16 @@ def scf_finalize_energy(self):
 
     energy = self.get_energies("Total Energy")
 
-    fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
-    if converged or not fail_on_maxiter:
-
-        if print_lvl > 0:
-            self.print_orbitals()
-
-        if converged:
-            core.print_out("  Energy converged.\n\n")
-        else:
-            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
-
-        prefix = "DF-" if is_dfjk else ''
+#    fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
+#    if converged or not fail_on_maxiter:
+#
+#        if print_lvl > 0:
+#            self.print_orbitals()
+#
+#        if converged:
+#            core.print_out("  Energy converged.\n\n")
+#        else:
+#            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
 
     if core.get_option('SCF', 'PRINT') > 0:
         self.print_orbitals()
