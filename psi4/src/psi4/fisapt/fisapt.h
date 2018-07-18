@@ -69,6 +69,29 @@ protected:
     /// Map of matrices
     std::map<std::string, std::shared_ptr<Matrix> > matrices_;
 
+    // Build the ExchInd20 potential in the monomer A ov space
+    std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+    // Build the Ind20 potential in the monomer A ov space
+    std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+
+    /// Helper to drop a matrix to filepath/A->name().dat
+    void drop(std::shared_ptr<Matrix> A, const std::string& filepath);
+    /// Helper to drop a vector to filepath/A->name().dat
+    void drop(std::shared_ptr<Vector> A, const std::string& filepath);
+    /// Helper to extract columns from a matrix
+    static std::shared_ptr<Matrix> extract_columns(
+        const std::vector<int>& cols,
+        std::shared_ptr<Matrix> A);
+
+public:
+    /// Initialize an FISAPT object with an SCF reference
+    FISAPT(std::shared_ptr<Wavefunction> scf);
+    FISAPT(std::shared_ptr<Wavefunction> scf, Options& options);
+    virtual ~FISAPT();
+
+    /// Gogo!
+    // void compute_energy();  // now py-side
+
     // => FISAPT 0th-Order Wavefunction <= //
 
     /// Common initialization (bases, orbitals, eigenvalues, etc)
@@ -123,29 +146,6 @@ protected:
     void ind();
     /// Print SAPT results
     void print_trailer();
-
-    // Build the ExchInd20 potential in the monomer A ov space
-    std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
-    // Build the Ind20 potential in the monomer A ov space
-    std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
-
-    /// Helper to drop a matrix to filepath/A->name().dat
-    void drop(std::shared_ptr<Matrix> A, const std::string& filepath);
-    /// Helper to drop a vector to filepath/A->name().dat
-    void drop(std::shared_ptr<Vector> A, const std::string& filepath);
-    /// Helper to extract columns from a matrix
-    static std::shared_ptr<Matrix> extract_columns(
-        const std::vector<int>& cols,
-        std::shared_ptr<Matrix> A);
-
-public:
-    /// Initialize an FISAPT object with an SCF reference
-    FISAPT(std::shared_ptr<Wavefunction> scf);
-    FISAPT(std::shared_ptr<Wavefunction> scf, Options& options);
-    virtual ~FISAPT();
-
-    /// Gogo!
-    void compute_energy();
 
     /// Dispersion
     void disp(std::map<std::string, SharedMatrix> matrix_cache,

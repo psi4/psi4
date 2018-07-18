@@ -3666,6 +3666,7 @@ def run_fisapt(name, **kwargs):
 
 
     fisapt_wfn = core.FISAPT(ref_wfn)
+    from .sapt import fisapt_proc
     fisapt_wfn.compute_energy()
 
     optstash.restore()
