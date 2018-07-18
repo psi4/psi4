@@ -62,11 +62,6 @@ protected:
     std::map<std::string, SharedMatrix > basis_values_;
     /// Map of temp names to Matrices containing temps
     std::map<std::string, SharedMatrix > basis_temps_;
-    /// [L]: pure_index, cart_index, coef
-    std::vector<std::vector<std::tuple<int,int,double> > > spherical_transforms_;
-
-    /// Setup spherical_transforms_
-    void build_spherical();
     /// Allocate registers
     virtual void allocate();
 

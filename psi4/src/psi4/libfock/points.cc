@@ -564,31 +564,20 @@ SharedVector PointFunctions::point_value(const std::string& key) { return point_
 
 SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbital_values_[key]; }
 
-BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
-    : primary_(primary), max_points_(max_points), max_functions_(max_functions) {
-    build_spherical();
-    set_deriv(0);
+BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary,
+                               int max_points, int max_functions)
+    : primary_(primary),
+      max_points_(max_points),
+      max_functions_(max_functions) {
+  if (!primary_->has_puream()) {
+    puream_ = false;
+    return;
+  }
+
+  puream_ = true;
+  set_deriv(0);
 }
 BasisFunctions::~BasisFunctions() {}
-void BasisFunctions::build_spherical() {
-    if (!primary_->has_puream()) {
-        puream_ = false;
-        return;
-    }
-
-    puream_ = true;
-
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
-
-    for (int L = 0; L <= primary_->max_am(); L++) {
-        std::vector<std::tuple<int, int, double> > comp;
-        std::shared_ptr<SphericalTransformIter> trans(fact->spherical_transform_iter(L));
-        for (trans->first(); !trans->is_done(); trans->next()) {
-            comp.push_back(std::tuple<int, int, double>(trans->pureindex(), trans->cartindex(), trans->coef()));
-        }
-        spherical_transforms_.push_back(comp);
-    }
-}
 void BasisFunctions::allocate() {
     basis_values_.clear();
     basis_temps_.clear();
