@@ -1,5 +1,5 @@
 if(${ENABLE_libefp})
-    find_package(pylibefp 0.1 CONFIG QUIET)
+    find_package(pylibefp 0.3 CONFIG QUIET)
 
     if(${pylibefp_FOUND})
         get_property(_loc TARGET pylibefp::core PROPERTY LOCATION)
@@ -21,7 +21,7 @@ if(${ENABLE_libefp})
                     libefp_external
                     pybind11_external
             GIT_REPOSITORY https://github.com/loriab/pylibefp
-            #GIT_TAG v1.8.4
+            GIT_TAG 07ec7e9  # v0.3+7  # add tag when stable
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
