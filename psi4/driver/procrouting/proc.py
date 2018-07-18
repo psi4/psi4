@@ -4253,7 +4253,7 @@ def run_efp(name, **kwargs):
     core.print_out(efpobj.geometry_summary(units_to_bohr=constants.bohr2angstroms))
 
     # set options
-    # * 'chtr', 'ai_exch', 'ai_disp', 'ai_chtr' may be enabled in a future libefp release
+    # * 'chtr', 'qm_exch', 'qm_disp', 'qm_chtr' may be enabled in a future libefp release
     efpopts = {}
     for opt in ['elst', 'exch', 'ind', 'disp',
                    'elst_damping', 'ind_damping', 'disp_damping']:

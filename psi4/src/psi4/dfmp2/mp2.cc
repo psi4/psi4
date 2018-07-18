@@ -108,7 +108,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
         if (symcol != nmopi_[h]) {
             outfile->Printf(
                 "Problem determining natural orbital and density matrix symmetries.\n"
-                "Future calls to oeprop will not work, using this density.  Try disabling symmetry.\n\n");
+                "Future calls to oeprop using this density will not work. Try disabling symmetry.\n\n");
             occ->zero();
             Cno->zero();
             Dso->zero();

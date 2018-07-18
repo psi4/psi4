@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2017 The Psi4 Developers.
+# Copyright (c) 2007-2018 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -50,7 +50,7 @@ def get_qm_atoms_opts(mol):
         coords.append(mol.z(iat))
 
     # set options
-    # * 'chtr', 'ai_exch', 'ai_disp', 'ai_chtr' may be enabled in a future libefp release
+    # * 'chtr', 'qm_exch', 'qm_disp', 'qm_chtr' may be enabled in a future libefp release
     opts = {}
     for opt in ['elst', 'exch', 'ind', 'disp',
                 'elst_damping', 'ind_damping', 'disp_damping']:
@@ -63,8 +63,6 @@ def get_qm_atoms_opts(mol):
             opts['qm_' + opt] = core.get_option('EFP', psiopt)
 
     return ptc, coords, opts
-
-
 
 
 def modify_Fock_permanent(mol, mints, verbose=1):

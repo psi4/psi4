@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2017 The Psi4 Developers.
+# Copyright (c) 2007-2018 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -61,13 +61,13 @@ def scf_compute_energy(self):
     returns the SCF energy computed by finalize_energy().
 
     """
-    if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_option('SCF', 'SCF_TYPE') == 'DIRECT'):
+    if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast DF iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
         core.print_out("  Starting with a DF guess...\n\n")
-        with p4util.OptionsStateCM(['SCF', 'SCF_TYPE']):
-            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+        with p4util.OptionsStateCM(['SCF_TYPE']):
+            core.set_global_option('SCF_TYPE', 'DF')
             self.initialize()
             try:
                 self.iterations()
@@ -163,7 +163,7 @@ def scf_initialize(self):
 
 def scf_iterate(self, e_conv=None, d_conv=None):
 
-    df = core.get_option('SCF', "SCF_TYPE") == "DF"
+    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
@@ -175,8 +175,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
-
-    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
 
     if self.iteration_ < 2:
         core.print_out("  ==> Iterations <==\n\n")
