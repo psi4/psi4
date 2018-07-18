@@ -39,7 +39,7 @@
 using namespace psi;
 
 GiaoKineticInt::GiaoKineticInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
+    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+2)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -123,10 +123,10 @@ void GiaoKineticInt::compute_pair(const GaussianShell& s1, const GaussianShell& 
             PB[2] = P[2] - B[2];
 
             double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
-            double dB_pfac = -0.5*over_pf;
+            double dB_pfac = 0.5*over_pf;
 
             // Do recursion
-            overlap_recur_.compute(PA, PB, gamma, am1+1, am2+1);
+            overlap_recur_.compute(PA, PB, gamma, am1+1, am2+2);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
@@ -152,52 +152,35 @@ void GiaoKineticInt::compute_pair(const GaussianShell& s1, const GaussianShell& 
                             double y1  = y01 + y00*B[1];
                             double z1  = z01 + z00*B[2];
 
-                            double I1, I2, I3, I4;
+                            double tx00 = a2*(2*l2+1)*x[l1][l2] - 2*a2*a2*x[l1][l2+2];
+                            if (l2 >= 2)
+                              tx00 -= 0.5*l2*(l2-1)*x[l1][l2-2];
+                            double ty00 = a2*(2*m2+1)*y[m1][m2] - 2*a2*a2*y[m1][m2+2];
+                            if (m2 >= 2)
+                              ty00 -= 0.5*m2*(m2-1)*y[m1][m2-2];
+                            double tz00 = a2*(2*n2+1)*z[n1][n2] - 2*a2*a2*z[n1][n2+2];
+                            if (n2 >= 2)
+                              tz00 -= 0.5*n2*(n2-1)*z[n1][n2-2];
 
-                            I1 = (l1 == 0 || l2 == 0) ? 0.0 : x[l1-1][l2-1] * over_pf;
-                            I2 = x[l1+1][l2+1]  * over_pf;
-                            I3 = (l2 == 0) ? 0.0 : x[l1+1][l2-1] * over_pf;
-                            I4 = (l1 == 0) ? 0.0 : x[l1-1][l2+1] * over_pf;
-                            double tx00 = 0.5 * l1 * l2 * I1 + 2.0 * a1 * a2 * I2 - a1 * l2 * I3 - l1 * a2 * I4;
+                            double tx10 = a2*(2*l2+1)*(x[l1+1][l2] + A[0]*x[l1][l2]) - 2*a2*a2*(x[l1+1][l2+2] + A[0]*x[l1][l2+2]);
+                            if (l2 >= 2)
+                              tx10 -= 0.5*l2*(l2-1)*(x[l1+1][l2-2] + A[0]*x[l1][l2-2]);
+                            double ty10 = a2*(2*m2+1)*(y[m1+1][m2] + A[1]*y[m1][m2]) - 2*a2*a2*(y[m1+1][m2+2] + A[1]*y[m1][m2+2]);
+                            if (m2 >= 2)
+                              ty10 -= 0.5*m2*(m2-1)*(y[m1+1][m2-2] + A[1]*y[m1][m2-2]);
+                            double tz10 = a2*(2*n2+1)*(z[n1+1][n2] + A[2]*z[n1][n2]) - 2*a2*a2*(z[n1+1][n2+2] + A[2]*z[n1][n2+2]);
+                            if (n2 >= 2)
+                              tz10 -= 0.5*n2*(n2-1)*(z[n1+1][n2-2] + A[2]*z[n1][n2-2]);
 
-                            I1 = (l1 == 0 || l2 == 0) ? 0.0 : (x[l1][l2-1] + A[0] * x[l1-1][l2-1]) * over_pf;
-                            I2 = (x[l1+2][l2+1] + A[0] * x[l1+1][l2+1]) * over_pf;
-                            I3 = (l2 == 0) ? 0.0 : (x[l1+2][l2-1] + A[0] * x[l1+1][l2-1]) * over_pf;
-                            I4 = (l1 == 0) ? 0.0 : (x[l1][l2+1] + A[0] * x[l1-1][l2+1]) * over_pf;
-                            double tx10 = 0.5 * l1 * l2 * I1 + 2.0 * a1 * a2 * I2 - a1 * l2 * I3 - l1 * a2 * I4;
-
-                            I1 = (m1 == 0 || m2 == 0) ? 0.0 : y[m1-1][m2-1] * over_pf;
-                            I2 = y[m1+1][m2+1] * over_pf;
-                            I3 = (m2 == 0) ? 0.0 : y[m1+1][m2-1] * over_pf;
-                            I4 = (m1 == 0) ? 0.0 : y[m1-1][m2+1] * over_pf;
-                            double ty00 = 0.5 * m1 * m2 * I1 + 2.0 * a1 * a2 * I2 - a1 * m2 * I3 - m1 * a2 * I4;
-
-                            I1 = (m1 == 0 || m2 == 0) ? 0.0 : (y[m1][m2-1] + A[1] * y[m1-1][m2-1]) * over_pf;
-                            I2 = (y[m1+2][m2+1] + A[1] * y[m1+1][m2+1]) * over_pf;
-                            I3 = (m2 == 0) ? 0.0 : (y[m1+2][m2-1] + A[1] * y[m1+1][m2-1]) * over_pf;
-                            I4 = (m1 == 0) ? 0.0 : (y[m1][m2+1] + A[1] * y[m1-1][m2+1]) * over_pf;
-                            double ty10 = 0.5 * m1 * m2 * I1 + 2.0 * a1 * a2 * I2 - a1 * m2 * I3 - m1 * a2 * I4;
-
-                            I1 = (n1 == 0 || n2 == 0) ? 0.0 : z[n1-1][n2-1] * over_pf;
-                            I2 = z[n1+1][n2+1] * over_pf;
-                            I3 = (n2 == 0) ? 0.0 : z[n1+1][n2-1] * over_pf;
-                            I4 = (n1 == 0) ? 0.0 : z[n1-1][n2+1] * over_pf;
-                            double tz00 = 0.5 * n1 * n2 * I1 + 2.0 * a1 * a2 * I2 - a1 * n2 * I3 - n1 * a2 * I4;
-
-                            I1 = (n1 == 0 || n2 == 0) ? 0.0 : (z[n1][n2-1] + A[2] * z[n1-1][n2-1]) * over_pf;
-                            I2 = (z[n1+2][n2+1] + A[2] * z[n1+1][n2+1]) * over_pf;
-                            I3 = (n2 == 0) ? 0.0 : (z[n1+2][n2-1] + A[2] * z[n1+1][n2-1]) * over_pf;
-                            I4 = (n1 == 0) ? 0.0 : (z[n1][n2+1] + A[2] * z[n1-1][n2-1]) * over_pf;
-                            double tz10 = 0.5 * n1 * n2 * I1 + 2.0 * a1 * a2 * I2 - a1 * n2 * I3 - n1 * a2 * I4;
 
                             double xT = tx10*y00*z00 + x1*ty00*z00  + x1*y00*tz00;
                             double yT = tx00*y1*z00  + x00*ty10*z00 + x00*y1*tz00;
                             double zT = tx00*y00*z1  + x00*ty00*z1  + x00*y00*tz10;
 
-                             buffer_[ao12]       += dB_pfac * ( AB[1] * zT - AB[2] * yT); 
-                             buffer_[ao12+ydisp] += dB_pfac * ( AB[2] * xT - AB[0] * zT); 
-                             buffer_[ao12+zdisp] += dB_pfac * ( AB[0] * yT - AB[1] * xT);
-                             ao12++;
+                            buffer_[ao12]       += dB_pfac * ( AB[1] * zT - AB[2] * yT); 
+                            buffer_[ao12+ydisp] += dB_pfac * ( AB[2] * xT - AB[0] * zT); 
+                            buffer_[ao12+zdisp] += dB_pfac * ( AB[0] * yT - AB[1] * xT);
+                            ao12++;
                         }
                     }
                 }

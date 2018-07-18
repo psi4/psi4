@@ -1728,6 +1728,32 @@ std::vector<SharedMatrix> MintsHelper::giao_angmom() {
     return Giao_LN;
 }
 
+std::vector<SharedMatrix> MintsHelper::giao_kinetic() {
+    std::vector<SharedMatrix> Giao_K;
+
+    Giao_K.push_back(std::make_shared<Matrix>("GIAO Kx", basisset_->nbf(), basisset_->nbf()));
+    Giao_K.push_back(std::make_shared<Matrix>("GIAO Ky", basisset_->nbf(), basisset_->nbf()));
+    Giao_K.push_back(std::make_shared<Matrix>("GIAO Kz", basisset_->nbf(), basisset_->nbf()));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->giao_kinetic());
+    ints->compute(Giao_K);
+
+    return Giao_K;
+}
+
+std::vector<SharedMatrix> MintsHelper::giao_potential() {
+    std::vector<SharedMatrix> Giao_V;
+
+    Giao_V.push_back(std::make_shared<Matrix>("GIAO Vx", basisset_->nbf(), basisset_->nbf()));
+    Giao_V.push_back(std::make_shared<Matrix>("GIAO Vy", basisset_->nbf(), basisset_->nbf()));
+    Giao_V.push_back(std::make_shared<Matrix>("GIAO Vz", basisset_->nbf(), basisset_->nbf()));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->giao_potential());
+    ints->compute(Giao_V);
+
+    return Giao_V;
+}
+
 std::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps, bool project_out_translations,
                                                  bool project_out_rotations) {
     return std::make_shared<CdSalcList>(molecule_, needed_irreps, project_out_translations, project_out_rotations);

@@ -51,7 +51,7 @@ GiaoPotentialInt::GiaoPotentialInt(std::vector<SphericalTransform>& st, std::sha
 
     // Increase buffer size to handle x, y, and z components
     if (deriv_ == 0) {
-        potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am()+1, bs2->max_am()+1);
+        potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am()+2, bs2->max_am()+1);
         buffer_ = new double[3*maxnao1*maxnao2];
         set_chunks(3);
     }
@@ -91,9 +91,10 @@ void GiaoPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell
     A[0] = s1.center()[0];
     A[1] = s1.center()[1];
     A[2] = s1.center()[2];
+
     B[0] = s2.center()[0];
     B[1] = s2.center()[1];
-    B[3] = s2.center()[2];
+    B[2] = s2.center()[2];
 
     int ydisp = INT_NCART(am1) * INT_NCART(am2);
     int zdisp = ydisp + INT_NCART(am1) * INT_NCART(am2);
@@ -155,14 +156,14 @@ void GiaoPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell
                 double PC[3];
 
                 double Z = Zxyzp[atom][0];
-                double dB_pfac = 0.5 * over_pf * Z;
+                double dB_pfac = 0.5 * over_pf * -Z;
 
                 PC[0] = P[0] - Zxyzp[atom][1];
                 PC[1] = P[1] - Zxyzp[atom][2];
                 PC[2] = P[2] - Zxyzp[atom][3];
 
                 // Do recursion
-                potential_recur_->compute(PA, PB, PC, gamma, am1, am2);
+                potential_recur_->compute(PA, PB, PC, gamma, am1+1, am2);
 
                 ao12 = 0;
                 for(int ii = 0; ii <= am1; ii++) {
@@ -189,7 +190,7 @@ void GiaoPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell
                                 double yV = vi[iind_010][jind][0] + A[1] * V;
                                 double zV = vi[iind_001][jind][0] + A[2] * V;
 
-                                buffer_[ao12] += dB_pfac * ( AB[1] * zV - AB[2] * yV);
+                                buffer_[ao12]       += dB_pfac * ( AB[1] * zV - AB[2] * yV);
                                 buffer_[ao12+ydisp] += dB_pfac * ( AB[2] * xV - AB[0] * zV);
                                 buffer_[ao12+zdisp] += dB_pfac * ( AB[0] * yV - AB[1] * xV);
                                 ao12++;

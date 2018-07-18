@@ -312,6 +312,10 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> giao_overlap_deriv();
     // Vector GIAO or LONDON Angular Momentum Integrals
     std::vector<SharedMatrix> giao_angmom();
+    // Vector GIAO or LONDON kinetic energy Integrals
+    std::vector<SharedMatrix> giao_kinetic();
+    // Vector GIAO or LONDON potential energy Integrals
+    std::vector<SharedMatrix> giao_potential();
 
     /// Returns a CdSalcList object
     std::shared_ptr<CdSalcList> cdsalcs(int needed_irreps = 0xF, bool project_out_translations = true,
