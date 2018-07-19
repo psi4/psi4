@@ -248,7 +248,7 @@ void DFHelper::print_header() {
     outfile->Printf("    Algorithm:          %11s\n", method_.c_str());
     outfile->Printf("    AO_core:            %11s\n", (AO_core_ ? "True" : "False"));
     outfile->Printf("    MO_core:            %11s\n", (MO_core_ ? "True" : "False"));
-    outfile->Printf("    Hold Metric:        %11d\n", (hold_met_ ? "True" : "False"));
+    outfile->Printf("    Hold Metric:        %11s\n", (hold_met_ ? "True" : "False"));
     outfile->Printf("    Metric Power:       %11.0E\n", mpower_);
     outfile->Printf("    Fitting condition:  %11.0E\n", condition_);
     outfile->Printf("\n\n");
@@ -1690,7 +1690,7 @@ void DFHelper::transform() {
                 // perform first contraction
                 timer_on("DFH: Total Workflow");
                 timer_on("DFH: Total Transform");
-                timer_on("DFH: First Contraction");
+                timer_on("DFH: 1st Contraction");
                 if (direct_iaQ_) {
                     // (qb)(Q|pq)->(Q|pb)
                     C_DGEMM('N', 'N', block_size * nao_, bsize, nao_, 1.0, &Mp[bump], nao_, Bp, bsize, 0.0, Tp, bsize);
@@ -1698,7 +1698,7 @@ void DFHelper::transform() {
                     // (bq)(p|Qq)->(p|Qb)
                     first_transform_pQq(nao, naux, bsize, bcount, block_size, Mp, Tp, Bp, C_buffers);
                 }
-                timer_off("DFH: First Contraction");
+                timer_off("DFH: 1st Contraction");
                 timer_off("DFH: Total Transform");
                 timer_off("DFH: Total Workflow");
 
@@ -1726,7 +1726,7 @@ void DFHelper::transform() {
                     // (wp)(p|Qb)->(w|Qb)
                     timer_on("DFH: Total Workflow");
                     timer_on("DFH: Total Transform");
-                    timer_on("DFH: Second Contraction");
+                    timer_on("DFH: 2nd Contraction");
                     if (direct_iaQ_) {
                         size_t bump = (MO_core_ ? begin * wsize * bsize : 0);
                         // (pw)(Q|pb)->(Q|bw)
@@ -1749,7 +1749,7 @@ void DFHelper::transform() {
                         C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
                     }
-                    timer_off("DFH: Second Contraction");
+                    timer_off("DFH: 2nd Contraction");
                     timer_off("DFH: Total Transform");
                     timer_off("DFH: Total Workflow");
 

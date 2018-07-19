@@ -1,0 +1,311 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareSourceCode",
+    "description": "Psi4: Open-Source Quantum Chemistry - an electronic structure package in C++ driven by Python",
+    "name": "Psi4",
+    "codeRepository": "https://github.com/psi4/psi4",
+    "issueTracker": "https://github.com/psi4/psi4/issues",
+    "license": "https://opensource.org/licenses/lgpl-3.0.html",
+    "version": "1.2",
+    "author": [
+        {
+            "@type": "Person",
+            "givenName": "Robert",
+            "additionalName": "M.",
+            "familyName": "Parrish",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "@id": "https://github.com/robparrish"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Lori",
+            "additionalName": "A.",
+            "familyName": "Burns",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "@id": "https://orcid.org/0000-0003-2852-5864",
+            "@id": "https://github.com/loriab"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Daniel",
+            "additionalName": "G. A.",
+            "familyName": "Smith",
+            "affiliation": "The Molecular Sciences Software Institute",
+            "@id": "https://orcid.org/0000-0001-8626-0900",
+            "@id": "https://github.com/dgasmith"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Andrew",
+            "additionalName": "C.",
+            "familyName": "Simmonett",
+            "affiliation": "National Institutes of Health -- National Heart, Lung and Blood Institute",
+            "@id": "https://orcid.org/0000-0002-5921-9272",
+            "@id": "https://github.com/andysim"
+        },
+        {
+            "@type": "Person",
+            "givenName": "A.",
+            "additionalName": "Eugene",
+            "familyName": "DePrince",
+            "affiliation": "Department of Chemistry and Biochemistry, Florida State University",
+            "@id": "https://orcid.org/0000-0003-1061-2521",
+            "@id": "https://github.com/edeprince3"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Edward",
+            "additionalName": "G.",
+            "familyName": "Hohenstein",
+            "affiliation": "Department of Chemistry and Biochemistry, The City College of New York",
+            "@id": "https://orcid.org/0000-0002-2119-2959",
+            "@id": "https://github.com/ehohenstein2"
+        },
+        {
+            "@type": "Person",
+            "givenName": "U\u0223ur",
+            "familyName": "Bozkaya",
+            "affiliation": "Department of Chemistry, Hacettepe University, Turkey",
+            "@id": "https://orcid.org/0000-0002-5203-2210",
+            "@id": "https://github.com/bozkaya"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Alexander",
+            "additionalName": "Yu.",
+            "familyName": "Sokolov",
+            "affiliation": "Division of Chemistry and Chemical Engineering, California Institute of Technology",
+            "@id": "https://orcid.org/0000-0003-2637-4134",
+            "@id": "https://github.com/ssh2"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Roberto",
+            "familyName": "Di Remigio",
+            "affiliation": "Hylleraas Centre for Quantum Molecular Sciences, UiT - The Arctic University of Norway",
+            "@id": "https://orcid.org/0000-0002-5452-9239",
+            "@id": "https://github.com/robertodr"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Ryan",
+            "additionalName": "M.",
+            "familyName": "Richard",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "@id": "https://github.com/ryanmrichard"
+        },
+        {
+            "@type": "Person",
+            "givenName": "J\u0169r\u0180me",
+            "additionalName": "F.",
+            "familyName": "Gonthier",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "@id": "https://orcid.org/0000-0002-2933-4085",
+            "@id": "https://github.com/jgonthier"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Andrew",
+            "additionalName": "M.",
+            "familyName": "James",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0001-5821-6064",
+            "@id": "https://github.com/amjames"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Harley",
+            "additionalName": "R.",
+            "familyName": "McAlexander",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://github.com/harls"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Ashutosh",
+            "familyName": "Kumar",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0001-7589-6030",
+            "@id": "https://github.com/ashutoshvt"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Masaaki",
+            "familyName": "Saitow",
+            "affiliation": "Department of Chemistry and Research Center for Smart Molecules, Rikkyo University, Japan",
+            "@id": "https://github.com/msaitow"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Xiao",
+            "familyName": "Wang",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0003-1402-7522",
+            "@id": "https://github.com/xwang862"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Benjamin",
+            "additionalName": "P.",
+            "familyName": "Pritchard",
+            "affiliation": "The Molecular Sciences Software Institute",
+            "@id": "https://github.com/bennybp"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Prakash",
+            "familyName": "Verma",
+            "affiliation": "Department of Chemistry, Emory University",
+            "@id": "https://orcid.org/0000-0003-3048-9380",
+            "@id": "https://github.com/PrakashVermaQTP"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Henry",
+            "additionalName": "F.",
+            "familyName": "Schaefer",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "@id": "https://orcid.org/0000-0003-0252-2083"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Konrad",
+            "familyName": "Patkowski",
+            "affiliation": "Department of Chemistry and Biochemistry, Auburn University",
+            "@id": "https://orcid.org/0000-0002-4468-207X",
+            "@id": "https://github.com/konpat"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Rollin",
+            "additionalName": "A.",
+            "familyName": "King",
+            "affiliation": "Department of Chemistry, Bethel University",
+            "@id": "https://orcid.org/0000-0002-1173-4187",
+            "@id": "https://github.com/psi-rking"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Edward",
+            "additionalName": "F.",
+            "familyName": "Valeev",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0001-9923-6256",
+            "@id": "https://github.com/evaleev"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Francesco",
+            "additionalName": "A.",
+            "familyName": "Evangelista",
+            "affiliation": "Department of Chemistry, Emory University",
+            "@id": "https://orcid.org/0000-0002-7917-6652",
+            "@id": "https://github.com/fevangelista"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Justin",
+            "additionalName": "M.",
+            "familyName": "Turney",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "@id": "https://orcid.org/0000-0003-3659-0711",
+            "@id": "https://github.com/jturney"
+        },
+        {
+            "@type": "Person",
+            "givenName": "T.",
+            "additionalName": "Daniel",
+            "familyName": "Crawford",
+            "affiliation": "Department of Chemistry, Virginia Tech",
+            "@id": "https://orcid.org/0000-0002-7961-7016",
+            "@id": "https://github.com/lothian"
+        },
+        {
+            "@type": "Person",
+            "givenName": "C.",
+            "additionalName": "David",
+            "familyName": "Sherrill",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "@id": "https://orcid.org/0000-0002-5570-7666",
+            "@id": "https://github.com/CDSherrill"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Peter",
+            "familyName": "Kraus",
+            "affiliation": "Leibniz University, Hannover, Germany",
+            "@id": "https://orcid.org/0000-0002-4359-5003",
+            "@id": "https://github.com/PeterKraus"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Holger",
+            "familyName": "Kruse",
+            "affiliation": "Institute of Biophysics of the CAS, v.v.i., Czech Republic",
+            "@id": "https://orcid.org/0000-0002-0560-1513",
+            "@id": "https://github.com/hokru"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Marvin",
+            "additionalName": "H.",
+            "familyName": "Lechner",
+            "affiliation": "Department of Chemistry, Technical University of Munich",
+            "@id": "https://orcid.org/0000-0002-1676-2718",
+            "@id": "https://github.com/mhlechner"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Matthew",
+            "additionalName": "C.",
+            "familyName": "Schieber",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "@id": "https://github.com/schiebermc"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Robert",
+            "additionalName": "A.",
+            "familyName": "Shaw",
+            "affiliation": "University of Sheffield",
+            "@id": "https://orcid.org/0000-0002-9977-0835",
+            "@id": "https://github.com/robashaw"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Edward",
+            "additionalName": "T.",
+            "familyName": "Seidl",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Curtis",
+            "additionalName": "L.",
+            "familyName": "Janssen",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Matthew",
+            "additionalName": "L.",
+            "familyName": "Leininger",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology"
+        }
+    ],
+    "developmentStatus": "active",
+    "downloadUrl": "http://psicode.org/downloads.html",
+    "keywords": [
+        "quantum-chemistry",
+        "computational-chemistry",
+        "chemistry",
+        "physics"
+    ],
+    "maintainer": "https://orcid.org/0000-0002-5570-7666",
+    "programmingLanguage": [
+        "C++",
+        "Python",
+        "C",
+        "Fortran"
+    ]
+}

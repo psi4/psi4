@@ -2,6 +2,17 @@
 *******************************************************************************
 
 
+Monday, July 2, 2018 -- LAB
+
+[40] Following reports by @rainli323, investigation by @mdav2 in
+psi4/psi4#1058, and advice from from @bennybp that EMSL was probably
+right since 3.5 (2d) is double 1.75 (d), changed Fluorine tighter
+d-shell exponent from 2.396 --> 3.5.
+
+*******************************************************************************
+*******************************************************************************
+
+
 Friday, April 27, 2018 -- PK
 
 [39] The Jansen basis sets added in [33] are polarisation consistent, as

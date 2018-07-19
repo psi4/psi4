@@ -1,0 +1,19 @@
+#! HF3C fd and analytical gradient
+
+ref = psi4.Matrix.from_list([                                 #TEST
+           [ -0.000000000000,     0.000000000000,    -0.118041687256],  #TEST
+           [  0.000000000000,    -0.103275936355,     0.059020843628],  #TEST
+           [ -0.000000000000,     0.103275936355,     0.059020843628]]) #TEST
+molecule mol {
+O
+H 1 1.1
+H 1 1.1 2 109
+}
+
+set basis cc-pVDZ
+grad_fd = psi4.gradient("HF3C", dertype=0)
+grad = psi4.gradient("HF3c", dertype=1)
+
+
+compare_matrices(grad, grad_fd, 5, "HF3C fd gradient check")
+compare_matrices(ref, grad, 7, "HF3C analytical gradient check")

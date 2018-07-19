@@ -608,7 +608,7 @@ def gradient(name, **kwargs):
     core.clean_variables()
 
     # no analytic derivatives for scf_type cd
-    if core.get_option('SCF', 'SCF_TYPE') == 'CD':
+    if core.get_global_option('SCF_TYPE') == 'CD':
         if (dertype == 1):
             raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
 

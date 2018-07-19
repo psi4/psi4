@@ -210,6 +210,8 @@ PSIF_DFOCC_INTS             =  276  # DFOCC Integrals
 PSIF_DFOCC_AMPS             =  277  # DFOCC Amplitudes
 PSIF_DFOCC_DENS             =  278  # DFOCC PDMs
 PSIF_DFOCC_IABC             =  279  # DFOCC (IA|BC)
-PSIF_DFOCC_TEMP             =  280  # DFOCC temporary storage
+PSIF_DFOCC_ABIC             =  280  # DFOCC <AB|IC>
+PSIF_DFOCC_MIABC            =  281  # DFOCC M_iabc
+PSIF_DFOCC_TEMP             =  282  # DFOCC temporary storage
 PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
 

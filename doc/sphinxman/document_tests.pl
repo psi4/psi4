@@ -60,6 +60,15 @@ my %ExeFolder = (
    "gdma/"      => "gdma",
    "dkh/"       => "dkh",
    "erd/"       => "erd",
+   "v2rdm_casscf/" => "v2rdm_casscf",
+   "snsmp2/"    => "snsmp2",
+   "simint/"    => "simint",
+   "gpu_dfcc/"  => "gpu_dfcc",
+   "gcp/"       => "gcp",
+   "cookbook/"  => "cookbook",
+   "json/"      => "json",
+   "psi4numpy/" => "psi4numpy",
+   "python/"    => "python",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -82,6 +91,15 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^gdma$/;
     next if $File =~ /^dkh$/;
     next if $File =~ /^erd$/;
+    next if $File =~ /^v2rdm_casscf$/;
+    next if $File =~ /^snsmp2$/;
+    next if $File =~ /^simint$/;
+    next if $File =~ /^gpu_dfcc$/;
+    next if $File =~ /^gcp$/;
+    next if $File =~ /^cookbook$/;
+    next if $File =~ /^python$/;
+    next if $File =~ /^json$/;
+    next if $File =~ /^psi4numpy$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }
@@ -106,8 +124,20 @@ if ($ExeFolder{$exe} ne "corepsi4") {
 print RSTSUMMARY "\n=============================================   ============\n";
 print RSTSUMMARY   "Input File                                      Description \n";
 print RSTSUMMARY   "=============================================   ============\n";
+
+my @pytestdirs = qw( python/ json/ psi4numpy/ );
+my $iext;
+my $text;
+if ( grep( /^$exe$/, @pytestdirs ) ) {
+   $iext = "py";
+   $text = "py";
+} else {
+   $iext = "dat";
+   $text = "in";
+}
+
 foreach my $Dir(readdir TESTS){
-    my $Input = $TestsFolder."/".$Dir."/input.dat";
+    my $Input = $TestsFolder."/".$Dir."/input.".$iext;
     # Look for an input file in each subdirectory, or move on
     open(INPUT, "<$Input") or next;
     #
@@ -118,9 +148,9 @@ foreach my $Dir(readdir TESTS){
         # This directory doesn't exist in psi4/samples, make it now
         mkdir $SamplesDirectory or die "\nI can't create $SamplesDirectory\n";
     }
-    my $SampleInput = $SamplesDirectory."/input.dat";
+    my $SampleInput = $SamplesDirectory."/input.".$iext;
     open(SAMPLE, ">$SampleInput") or die "\nI can't write to $SampleInput\n";
-    my $TestInput = $SamplesDirectory."/test.in";
+    my $TestInput = $SamplesDirectory."/test.".$text;
     open(TEST, ">$TestInput") or die "\nI can't write to $TestInput\n";
     my $Description;
     my $TestOnlyNoSample = 0;

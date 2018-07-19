@@ -40,3 +40,12 @@ for i in range(9):                                                           #TE
     compare_values(Eyvals[i], Eyref[i], 6, "Ey at grid point %d" % i)        #TEST
     compare_values(Ezvals[i], Ezref[i], 6, "Ez at grid point %d" % i)        #TEST
 
+set basis cc-pvtz
+
+E, wfn = prop('scf/cc-pvdz', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+Vvals_2 = wfn.oeprop.Vvals()
+
+for i in range(9):                                                                               #TEST
+    compare_values(Vvals_2[i], Vvals[i], 8, "SCF vs SCF/cc-pvdz: V at grid point %d" % i)        #TEST
+
+

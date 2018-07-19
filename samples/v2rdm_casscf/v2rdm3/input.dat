@@ -1,0 +1,40 @@
+#! H3 / cc-pvdz / D+D3 vs full CI, scf_type = PK
+
+# job description
+print('        H3 / cc-pvdz / D+D3 vs full CI, scf_type = PK')
+
+sys.path.insert(0, '../../..')
+import v2rdm_casscf
+
+molecule h3 {
+0 2
+H
+H 1 1.0
+H 1 2.0 2 90.0
+}
+
+set {
+  guess sad
+  basis sto-3g
+  scf_type pk
+  d_convergence      1e-10
+  guess sad
+  maxiter 500
+  reference rohf
+
+}
+set v2rdm_casscf {
+  positivity d
+  constrain_d3 true
+  r_convergence  1e-5
+  e_convergence  1e-6
+  maxiter 20000
+  optimize_orbitals false
+  semicanonicalize_orbitals false
+}
+
+activate(h3)
+v2rdm = energy('v2rdm-casscf')
+fci   = energy('fci')
+
+

@@ -245,11 +245,11 @@ SharedMatrix SCFGrad::compute_gradient()
     gradients_["Coulomb"] = jk_gradients["Coulomb"];
     if (functional_->is_x_hybrid()) {
         gradients_["Exchange"] = jk_gradients["Exchange"];
-        gradients_["Exchange"]->scale(-(functional_->x_alpha()));
+        gradients_["Exchange"]->scale(-functional_->x_alpha());
     }
     if (functional_->is_x_lrc()) {
         gradients_["Exchange,LR"] = jk_gradients["Exchange,LR"];
-        gradients_["Exchange,LR"]->scale(-(1.0 - functional_->x_alpha()));
+        gradients_["Exchange,LR"]->scale(-functional_->x_beta());
     }
     timer_off("Grad: JK");
 
@@ -1022,11 +1022,11 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians_["Coulomb"] = jk_hessians["Coulomb"];
         if (functional->is_x_hybrid()) {
             hessians_["Exchange"] = jk_hessians["Exchange"];
-            hessians_["Exchange"]->scale(-(functional->x_alpha()));
+            hessians_["Exchange"]->scale(-functional->x_alpha());
         }
         if (functional->is_x_lrc()) {
             hessians_["Exchange,LR"] = jk_hessians["Exchange,LR"];
-            hessians_["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
+            hessians_["Exchange,LR"]->scale(-functional->x_beta());
         }
     } else {
         hessians_["Coulomb"] = jk_hessians["Coulomb"];

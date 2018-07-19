@@ -27,3 +27,10 @@ Eyvals = wfn.oeprop.Eyvals()
 Ezvals = wfn.oeprop.Ezvals()
 
 
+set basis cc-pvtz
+
+E, wfn = prop('scf/cc-pvdz', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+Vvals_2 = wfn.oeprop.Vvals()
+
+
+

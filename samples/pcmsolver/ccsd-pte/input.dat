@@ -1,8 +1,5 @@
 #! coupled-cluster with PCM
 
-nucenergy = 0.0000000000000000 # TEST 
-scf_polenergy = -0.6908724085545570 # TEST
-scf_totalenergy = -199.515074015114 # TEST
 
 molecule Mg
 {
@@ -42,6 +39,3 @@ pcm =
 }
 
 energy_pte, wfn = energy('ccsd', return_wfn=True)
-compare_values(Mg.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") # TEST
-compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
-compare_values(pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE algorithm)") # TEST
