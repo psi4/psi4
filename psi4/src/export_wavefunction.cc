@@ -137,7 +137,7 @@ void export_wavefunction(py::module& m) {
              "The level of theory this wavefunction corresponds to.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring")
         .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
-        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunctions molecule.")
+        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
@@ -285,8 +285,10 @@ void export_wavefunction(py::module& m) {
     /// FISAPT functions
     py::class_<fisapt::FISAPT, std::shared_ptr<fisapt::FISAPT>>(m, "FISAPT", "A Fragment-SAPT Wavefunction")
         .def(py::init<std::shared_ptr<Wavefunction>>())
-        //.def("compute_energy", &fisapt::FISAPT::compute_energy, "Computes the FSAPT energy.")
-        .def("scalars", &fisapt::FISAPT::scalars, "Return the interally computed scalars.")
+        .def("molecule", &fisapt::FISAPT::molecule, "Returns the FISAPT's molecule.")
+        .def("scalars", &fisapt::FISAPT::scalars, "Return the interally computed scalars (not copied).")
+        .def("vectors", &fisapt::FISAPT::vectors, "Return the interally computed vectors (not copied).")
+        .def("matrices", &fisapt::FISAPT::matrices, "Return the interally computed matrices (not copied).")
         .def("print_header", &fisapt::FISAPT::print_header, "Print header, bases, sizes, etc.")
         .def("localize", &fisapt::FISAPT::localize, "Localize the active occupied orbitals via IBO2.")
         .def("partition", &fisapt::FISAPT::partition, "Partition the nuclei and electrons.")
@@ -308,8 +310,7 @@ void export_wavefunction(py::module& m) {
         .def("fexch", &fisapt::FISAPT::fexch, "F-SAPT0 exchange.")
         .def("find", &fisapt::FISAPT::find, "F-SAPT0 induction.")
         .def("fdisp", &fisapt::FISAPT::fdisp, "F-SAPT0 dispersion.")
-        .def("fdrop", &fisapt::FISAPT::fdrop, "F-SAPT0 output.")
-        .def("plot", &fisapt::FISAPT::plot, "Plot some analysis files.")
+        .def("raw_plot", &fisapt::FISAPT::raw_plot, "Plot some analysis files.")
         .def("print_trailer", &fisapt::FISAPT::print_trailer, "Print SAPT results.");
 
     /// CIWavefunction functions

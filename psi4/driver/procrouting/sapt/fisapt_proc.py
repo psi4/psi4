@@ -26,13 +26,16 @@
 # @END LICENSE
 #
 
-#from psi4.driver import p4util
-#from psi4.driver import constants
-#from psi4.driver.p4util.exceptions import ConvergenceError, ValidationError
+import os
+
+import numpy as np
+
 from psi4 import core
 
 
 def fisapt_compute_energy(self):
+    """Computes the FSAPT energy. FISAPT::compute_energy"""
+
     # => Header <=
 
     self.print_header()
@@ -104,4 +107,107 @@ def fisapt_compute_energy(self):
     self.print_trailer()
 
 
+def fisapt_fdrop(self):
+    """Drop output files from FSAPT calculation. FISAPT::fdrop"""
+
+    filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+    os.mkdir(filepath)
+
+    core.print_out("  ==> F-SAPT Output <==\n\n")
+
+    core.print_out("    F-SAPT Data Filepath = {}\n\n".format(filepath))
+
+    geomfile = filepath + os.sep + 'geom.xyz'
+    xyz = self.molecule().to_string(dtype='xyz', units='Angstrom')
+    with open(geomfile, 'w') as fh:
+        fh.write(xyz)
+
+    vectors = self.vectors()
+    matrices = self.matrices()
+
+    matrices["Qocc0A"].name = "QA"
+    matrices["Qocc0B"].name = "QB"
+    matrices["Elst_AB"].name = "Elst"
+    matrices["Exch_AB"].name = "Exch"
+    matrices["IndAB_AB"].name = "IndAB"
+    matrices["IndBA_AB"].name = "IndBA"
+    matrices["Disp_AB"].name = "Disp"
+
+    drop(vectors["ZA"], filepath)
+    drop(vectors["ZB"], filepath)
+    drop(matrices["Qocc0A"], filepath)
+    drop(matrices["Qocc0B"], filepath)
+    drop(matrices["Elst_AB"], filepath)
+    drop(matrices["Exch_AB"], filepath)
+    drop(matrices["IndAB_AB"], filepath)
+    drop(matrices["IndBA_AB"], filepath)
+    drop(matrices["Disp_AB"], filepath)
+
+    if core.get_option("FISAPT", "sSAPT0_SCALE"):
+        ssapt_filepath = core.get_option("FISAPT", "FISAPT_FsSAPT_FILEPATH")
+        os.mkdir(ssapt_filepath)
+
+        core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
+
+        geomfile = ssapt_filepath + os.sep + 'geom.xyz'
+        with open(geomfile, 'w') as fh:
+            fh.write(xyz)
+
+        matrices["sIndAB_AB"].name = "IndAB"
+        matrices["sIndBA_AB"].name = "IndBA"
+        matrices["sDisp_AB"].name = "Disp"
+
+        drop(vectors["ZA"], ssapt_filepath)
+        drop(vectors["ZB"], ssapt_filepath)
+        drop(matrices["Qocc0A"], ssapt_filepath)
+        drop(matrices["Qocc0B"], ssapt_filepath)
+        drop(matrices["Elst_AB"], ssapt_filepath)
+        drop(matrices["Exch_AB"], ssapt_filepath)
+        drop(matrices["sIndAB_AB"], ssapt_filepath)
+        drop(matrices["sIndBA_AB"], ssapt_filepath)
+        drop(matrices["sDisp_AB"], ssapt_filepath)
+
+
+def fisapt_plot(self):
+    """Filesystem wrapper for FISAPT::plot."""
+
+    # will raise exception if exists
+    filepath = core.get_option("FISAPT", "FISAPT_PLOT_FILEPATH")
+    os.mkdir(filepath)
+
+    geomfile = filepath + os.sep + 'geom.xyz'
+    xyz = self.molecule().to_string(dtype='xyz', units='Angstrom')
+    with open(geomfile, 'w') as fh:
+        fh.write(xyz)
+
+    self.raw_plot(filepath)
+
+
+def drop(array, filepath):
+    """Helper to drop array to disk. FISAPT::drop
+
+    Parameters
+    ----------
+    array : psi4.core.Matrix or psi4.core.Vector
+        Matrix or vector to be written disk in plain text.
+    filepath : str
+        Full or partial file path. `array` will be written
+        to <filepath>/<array.name>.dat.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Equivalent to https://github.com/psi4/psi4archive/blob/master/psi4/src/psi4/fisapt/fisapt.cc#L4389-L4420
+
+    """
+    filename = filepath + os.sep + array.name + '.dat'
+    with open(filename, 'wb') as handle:
+        np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=' ', newline='\n')
+
+
 core.FISAPT.compute_energy = fisapt_compute_energy
+core.FISAPT.fdrop = fisapt_fdrop
+core.FISAPT.plot = fisapt_plot

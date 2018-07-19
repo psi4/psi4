@@ -42,7 +42,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libcubeprop/csg.h"
-#include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/lib3index/dfhelper.h"
 
@@ -2349,22 +2348,15 @@ void FISAPT::print_trailer() {
     Process::environment.globals["SAPT HF(2) ENERGY C"] = scalars_["E_C"];
     Process::environment.globals["SAPT HF(2) ENERGY HF"] = scalars_["HF"];
 }
-void FISAPT::plot() {
+void FISAPT::raw_plot(const std::string& filepath) {
     outfile->Printf("  ==> Scalar Field Plots <==\n\n");
 
-    std::string filepath = options_.get_str("FISAPT_PLOT_FILEPATH");
     outfile->Printf("    F-SAPT Plot Filepath = %s\n\n", filepath.c_str());
-
-    filesystem::create_directory(filepath);
 
     auto csg = std::make_shared<CubicScalarGrid>(primary_, options_);
     csg->set_filepath(filepath);
     csg->print_header();
     csg->set_auxiliary_basis(reference_->get_basisset("DF_BASIS_SCF"));
-
-    std::stringstream ss;
-    ss << filepath << "/geom.xyz";
-    primary_->molecule()->save_xyz_file(ss.str(), true);
 
     /// Zeroth-order wavefunctions
     std::shared_ptr<Matrix> D_A = matrices_["D_A"];
@@ -4069,93 +4061,6 @@ void FISAPT::fdisp() {
     outfile->Printf("\n");
     // fflush(outfile);
 }
-void FISAPT::fdrop() {
-    outfile->Printf("  ==> F-SAPT Output <==\n\n");
-
-    std::string filepath = options_.get_str("FISAPT_FSAPT_FILEPATH");
-    outfile->Printf("    F-SAPT Data Filepath = %s\n\n", filepath.c_str());
-
-    filesystem::create_directory(filepath);
-
-    std::stringstream ss;
-    ss << filepath << "/geom.xyz";
-    primary_->molecule()->save_xyz_file(ss.str(), true);
-
-    matrices_["Qocc0A"]->set_name("QA");
-    matrices_["Qocc0B"]->set_name("QB");
-    matrices_["Elst_AB"]->set_name("Elst");
-    matrices_["Exch_AB"]->set_name("Exch");
-    matrices_["IndAB_AB"]->set_name("IndAB");
-    matrices_["IndBA_AB"]->set_name("IndBA");
-    matrices_["Disp_AB"]->set_name("Disp");
-
-    drop(vectors_["ZA"], filepath);
-    drop(vectors_["ZB"], filepath);
-    drop(matrices_["Qocc0A"], filepath);
-    drop(matrices_["Qocc0B"], filepath);
-    drop(matrices_["Elst_AB"], filepath);
-    drop(matrices_["Exch_AB"], filepath);
-    drop(matrices_["IndAB_AB"], filepath);
-    drop(matrices_["IndBA_AB"], filepath);
-    drop(matrices_["Disp_AB"], filepath);
-
-    if (options_.get_bool("sSAPT0_SCALE")) {
-        std::string sSAPT_filepath = options_.get_str("FISAPT_FsSAPT_FILEPATH");
-        outfile->Printf("    sF-SAPT Data Filepath = %s\n\n", sSAPT_filepath.c_str());
-
-        filesystem::create_directory(sSAPT_filepath);
-
-        std::stringstream sSAPT_ss;
-        sSAPT_ss << sSAPT_filepath << "/geom.xyz";
-        primary_->molecule()->save_xyz_file(sSAPT_ss.str(), true);
-
-        matrices_["sIndAB_AB"]->set_name("IndAB");
-        matrices_["sIndBA_AB"]->set_name("IndBA");
-        matrices_["sDisp_AB"]->set_name("Disp");
-
-        drop(vectors_["ZA"], sSAPT_filepath);
-        drop(vectors_["ZB"], sSAPT_filepath);
-        drop(matrices_["Qocc0A"], sSAPT_filepath);
-        drop(matrices_["Qocc0B"], sSAPT_filepath);
-        drop(matrices_["Elst_AB"], sSAPT_filepath);
-        drop(matrices_["Exch_AB"], sSAPT_filepath);
-        drop(matrices_["sIndAB_AB"], sSAPT_filepath);
-        drop(matrices_["sIndBA_AB"], sSAPT_filepath);
-        drop(matrices_["sDisp_AB"], sSAPT_filepath);
-    }
-}
-
-void FISAPT::drop(std::shared_ptr<Matrix> A, const std::string& filepath) {
-    std::stringstream ss;
-    ss << filepath << "/" << A->name() << ".dat";
-    FILE* fh = fopen(ss.str().c_str(), "w");
-
-    int nrow = A->rowspi()[0];
-    int ncol = A->colspi()[0];
-    double** Ap = A->pointer();
-
-    for (int i = 0; i < nrow; i++) {
-        for (int j = 0; j < ncol; j++) {
-            fprintf(fh, "%24.16E%s", Ap[i][j], (j + 1 == ncol ? "" : " "));
-        }
-        fprintf(fh, "\n");
-    }
-    fclose(fh);
-}
-void FISAPT::drop(std::shared_ptr<Vector> A, const std::string& filepath) {
-    std::stringstream ss;
-    ss << filepath << "/" << A->name() << ".dat";
-    FILE* fh = fopen(ss.str().c_str(), "w");
-
-    int ndim = A->dimpi()[0];
-    double* Ap = A->pointer();
-
-    for (int i = 0; i < ndim; i++) {
-        fprintf(fh, "%24.16E\n", Ap[i]);
-    }
-    fclose(fh);
-}
-
 std::shared_ptr<Matrix> FISAPT::extract_columns(const std::vector<int>& cols, std::shared_ptr<Matrix> A) {
     int nm = A->rowspi()[0];
     int na = A->colspi()[0];
