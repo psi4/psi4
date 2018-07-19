@@ -1394,7 +1394,7 @@ void FISAPT::exch() {
     outfile->Printf("\n");
     // fflush(outfile);
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_, 3.0);
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
@@ -1566,7 +1566,7 @@ void FISAPT::ind() {
     outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n", ExchInd20u);
     outfile->Printf("\n");
     // fflush(outfile);
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
         double sExchInd20u_AB = 2.0 * scale * xuA->vector_dot(uB);
         double sExchInd20u_BA = 2.0 * scale * xuB->vector_dot(uA);
@@ -1643,7 +1643,7 @@ void FISAPT::ind() {
     scalars_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
     scalars_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
         double sExchInd20r_AB = scale * ExchInd20r_AB;
         double sExchInd20r_BA = scale * ExchInd20r_BA;
@@ -2300,7 +2300,7 @@ void FISAPT::print_trailer() {
     outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
                     scalars_["SAPT"] * 1000.0, scalars_["SAPT"] * pc_hartree2kcalmol,
                     scalars_["SAPT"] * pc_hartree2kJmol);
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         outfile->Printf("  Total sSAPT0 %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scaled.c_str(), scalars_["sSAPT"] * 1000.0, scalars_["sSAPT"] * pc_hartree2kcalmol,
                         scalars_["sSAPT"] * pc_hartree2kJmol);
@@ -2891,7 +2891,7 @@ void FISAPT::fexch() {
         matrices_["Exch_AB"]->scale(scale);
         outfile->Printf("    Scaling F-SAPT Exch10(S^2) by %11.3E to match Exch10\n\n", scale);
     }
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_, 3.0);
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
@@ -3145,7 +3145,7 @@ void FISAPT::find() {
     int snb = 0;
     int snA = 0;
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         sna = na;
         snB = nB;
         snb = nb;
@@ -3203,7 +3203,7 @@ void FISAPT::find() {
             Ind20u_AB += Jval;
             ExchInd20u_AB_termsp[a][B] = Kval;
             ExchInd20u_AB += Kval;
-            if (options_.get_bool("sSAPT0_SCALE")) {
+            if (options_.get_bool("SSAPT0_SCALE")) {
                 sExchInd20u_AB_termsp[a][B] = Kval;
                 sExchInd20u_AB += Kval;
                 sIndu_AB_termsp[a][B] = Jval + Kval;
@@ -3240,7 +3240,7 @@ void FISAPT::find() {
             Ind20u_BA += Jval;
             ExchInd20u_BA_termsp[A][b] = Kval;
             ExchInd20u_BA += Kval;
-            if (options_.get_bool("sSAPT0_SCALE")) {
+            if (options_.get_bool("SSAPT0_SCALE")) {
                 sExchInd20u_BA_termsp[A][b] = Kval;
                 sExchInd20u_BA += Kval;
                 sIndu_BA_termsp[A][b] = Jval + Kval;
@@ -3263,7 +3263,7 @@ void FISAPT::find() {
     outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n", ExchInd20u);
     outfile->Printf("\n");
     // fflush(outfile);
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         double sExchInd20u = sExchInd20u_AB + sExchInd20u_BA;
         outfile->Printf("    sExch-Ind20,u (A<-B) = %18.12lf [Eh]\n", sExchInd20u_AB);
         outfile->Printf("    sExch-Ind20,u (B<-A) = %18.12lf [Eh]\n", sExchInd20u_BA);
@@ -3564,7 +3564,7 @@ void FISAPT::fdisp() {
     int snfb = 0;
     int snb = 0;
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         snA = nA;
         snfa = nfa;
         sna = na;
@@ -3925,7 +3925,7 @@ void FISAPT::fdisp() {
     // ==> Master Loop <== //
 
     double scale = 1.0;
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         scale = sSAPT0_scale_;
     }
 
@@ -4010,7 +4010,7 @@ void FISAPT::fdisp() {
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
                         E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
-                        if (options_.get_bool("sSAPT0_SCALE"))
+                        if (options_.get_bool("SSAPT0_SCALE"))
                             sE_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
                         ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
                         sExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
@@ -4036,7 +4036,7 @@ void FISAPT::fdisp() {
         }
     }
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         auto sE_exch_disp20 = std::make_shared<Matrix>("sE_exch_disp20", na, nb);
         sE_exch_disp20->copy(E_exch_disp20);
         double** sE_exch_disp20p = sE_exch_disp20->pointer();
@@ -4054,10 +4054,10 @@ void FISAPT::fdisp() {
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    if (options_.get_bool("sSAPT0_SCALE")) scalars_["sExch-Disp20"] = sExchDisp20;
+    if (options_.get_bool("SSAPT0_SCALE")) scalars_["sExch-Disp20"] = sExchDisp20;
     outfile->Printf("    Disp20              = %18.12lf [Eh]\n", Disp20);
     outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n", ExchDisp20);
-    if (options_.get_bool("sSAPT0_SCALE")) outfile->Printf("    sExch-Disp20         = %18.12lf [Eh]\n", sExchDisp20);
+    if (options_.get_bool("SSAPT0_SCALE")) outfile->Printf("    sExch-Disp20         = %18.12lf [Eh]\n", sExchDisp20);
     outfile->Printf("\n");
     // fflush(outfile);
 }

@@ -143,8 +143,8 @@ def fisapt_fdrop(self):
     drop(matrices["IndBA_AB"], filepath)
     drop(matrices["Disp_AB"], filepath)
 
-    if core.get_option("FISAPT", "sSAPT0_SCALE"):
-        ssapt_filepath = core.get_option("FISAPT", "FISAPT_FsSAPT_FILEPATH")
+    if core.get_option("FISAPT", "SSAPT0_SCALE"):
+        ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
         os.mkdir(ssapt_filepath)
 
         core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
