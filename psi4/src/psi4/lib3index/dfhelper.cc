@@ -470,9 +470,9 @@ void DFHelper::prepare_AO_core() {
 
     // allocate final AO vector
     if (direct_iaQ_) {
-        Ppq_.resize(naux_ * nao_ * nao_);
+        Ppq_ = std::unique_ptr<double[]>(new double[naux_ * nao_ * nao_]);
     } else {
-        Ppq_.resize(big_skips_[nao_]);
+        Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nao_]]);
     }
 
     // outfile->Printf("\n    ==> Begin AO Blocked Construction <==\n\n");
@@ -1405,7 +1405,7 @@ void DFHelper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t be
         C_DGEMM('N', 'N', naux_, mi, naux_, 1.0, metp, naux_, &Qpq[skip2], mi, 0.0, &Ppq_[skip1 + jump], si);
     }
     // copy upper-to-lower
-    double* Ppq = Ppq_.data();
+    double* Ppq = Ppq_.get();
 #pragma omp parallel for num_threads(nthreads_) schedule(static)
     for (size_t omu = begin; omu <= end; omu++) {
         for (size_t Q = 0; Q < naux_; Q++) {
@@ -1615,7 +1615,7 @@ void DFHelper::transform() {
     if(MO_core_){
         for (auto& kv : transf_) {
             size_t size = std::get<1>(spaces_[std::get<0>(kv.second)]) * std::get<1>(spaces_[std::get<1>(kv.second)]);
-            transf_core_[kv.first].resize(size * naux);
+            transf_core_[kv.first] = std::unique_ptr<double[]>(new double[size * naux]);
         }
     }
 
@@ -1641,7 +1641,7 @@ void DFHelper::transform() {
             M = std::unique_ptr<double[]>(new double[std::get<0>(Qlargest)]);
             Mp = M.get();
         } else {
-            Mp = Ppq_.data();
+            Mp = Ppq_.get();
         }
 
         // transform in steps, blocking over the auxiliary basis (Q blocks)
@@ -1717,9 +1717,9 @@ void DFHelper::transform() {
 
                     // grab in-core pointer
                     if(direct_iaQ_ && MO_core_){
-                        Fp = transf_core_[order_[count + k]].data();
+                        Fp = transf_core_[order_[count + k]].get();
                     } else if (MO_core_) {
-                        Np = transf_core_[order_[count + k]].data();
+                        Np = transf_core_[order_[count + k]].get();
                     }
 
                     // perform final contraction
@@ -1796,7 +1796,7 @@ void DFHelper::transform() {
                     size_t r = std::get<1>(sizes_[std::get<1>(files_[kv.first])]);
                     size_t Q = std::get<2>(sizes_[std::get<1>(files_[kv.first])]);
 
-                    double* Lp = kv.second.data();
+                    double* Lp = kv.second.get();
                     C_DCOPY(l * r * Q, Lp, 1, Np, 1);
 
                     // (Q|ia) (PQ) -> (ia|Q)
@@ -1845,7 +1845,7 @@ void DFHelper::transform() {
                     size_t a1 = std::get<1>(sizes_[std::get<1>(files_[kv.first])]);
                     size_t a2 = std::get<2>(sizes_[std::get<1>(files_[kv.first])]);
 
-                    double* Lp = kv.second.data();
+                    double* Lp = kv.second.get();
                     C_DCOPY(a0 * a1 * a2, Lp, 1, Np, 1);
 
                     // the following differs depending on the form being outputted
@@ -2191,7 +2191,7 @@ void DFHelper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t>
         size_t a1 = std::get<1>(sizes);
         size_t a2 = std::get<2>(sizes);
 
-        double* Fp = transf_core_[name].data();
+        double* Fp = transf_core_[name].get();
 #pragma omp parallel num_threads(nthreads_)
         for (size_t i = 0; i < A0; i++) {
             for (size_t j = 0; j < A1; j++) {
@@ -2279,7 +2279,7 @@ SharedMatrix DFHelper::get_tensor(std::string name, std::vector<size_t> t0, std:
         size_t a1 = std::get<1>(sizes);
         size_t a2 = std::get<2>(sizes);
 
-        double* Fp = transf_core_[name].data();
+        double* Fp = transf_core_[name].get();
 #pragma omp parallel num_threads(nthreads_)
         for (size_t i = 0; i < A0; i++) {
             for (size_t j = 0; j < A1; j++) {
@@ -2484,7 +2484,7 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
 
     std::unique_ptr<double[]> M(new double[M0 * M1 * M2]);
     double* Mp = M.get();
-    double* Fp = transf_core_[name].data();
+    double* Fp = transf_core_[name].get();
     C_DCOPY(M0 * M1 * M2, Fp, 1, Mp, 1);
 
     bool on = false;
@@ -2845,7 +2845,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         M = std::unique_ptr<double[]>(new double[tots]);
         Mp = M.get();
     } else
-        Mp = Ppq_.data();
+        Mp = Ppq_.get();
 
     // transform in steps (blocks of Q)
     for (size_t j = 0, bcount = 0; j < Qsteps.size(); j++) {
