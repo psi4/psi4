@@ -260,6 +260,8 @@ void RHF::form_C() {
 }
 
 void RHF::form_D() {
+    D_->zero();
+
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -269,8 +271,6 @@ void RHF::form_D() {
 
         double** Ca = Ca_->pointer(h);
         double** D = D_->pointer(h);
-
-        if (na == 0) memset(static_cast<void*>(D[0]), '\0', sizeof(double) * nso * nso);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, D[0], nso);
     }
@@ -784,7 +784,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     return ret_vec;
 }
 
-int RHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     int fock_builds;
     time_t start, stop;
     start = time(nullptr);

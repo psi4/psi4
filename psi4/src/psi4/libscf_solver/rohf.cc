@@ -470,6 +470,9 @@ void ROHF::form_initial_C() {
 }
 
 void ROHF::form_D() {
+    Da_->zero();
+    Db_->zero();
+
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -481,9 +484,6 @@ void ROHF::form_D() {
         double** Ca = Ca_->pointer(h);
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
-
-        if (na == 0) memset(static_cast<void*>(Da[0]), '\0', sizeof(double) * nso * nso);
-        if (nb == 0) memset(static_cast<void*>(Db[0]), '\0', sizeof(double) * nso * nso);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Da[0], nso);
         C_DGEMM('N', 'T', nso, nso, nb, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Db[0], nso);
@@ -790,7 +790,7 @@ void ROHF::damping_update(double damping_percentage) {
     Dt_->add(Db_);
 }
 
-int ROHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     time_t start, stop;
     start = time(nullptr);
 

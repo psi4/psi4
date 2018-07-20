@@ -301,6 +301,9 @@ void CUHF::form_C() {
 }
 
 void CUHF::form_D() {
+    Da_->zero();
+    Db_->zero();
+
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -313,9 +316,6 @@ void CUHF::form_D() {
         double** Cb = Cb_->pointer(h);
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
-
-        if (na == 0) memset(static_cast<void*>(Da[0]), '\0', sizeof(double) * nso * nso);
-        if (nb == 0) memset(static_cast<void*>(Db[0]), '\0', sizeof(double) * nso * nso);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Da[0], nso);
         C_DGEMM('N', 'T', nso, nso, nb, 1.0, Cb[0], nmo, Cb[0], nmo, 0.0, Db[0], nso);

@@ -281,7 +281,7 @@ void HF::damping_update(double damping_percentage) {
         "type of SCF wavefunction yet.");
 }
 
-int HF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     throw PSIEXCEPTION(
         "Sorry, second-order convergence has not been implemented for this "
         "type of SCF wavefunction yet.");

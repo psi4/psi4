@@ -276,6 +276,9 @@ void UHF::form_C() {
 }
 
 void UHF::form_D() {
+    Da_->zero();
+    Db_->zero();
+
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -288,9 +291,6 @@ void UHF::form_D() {
         double** Cb = Cb_->pointer(h);
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
-
-        if (na == 0) ::memset(static_cast<void*>(Da[0]), '\0', sizeof(double) * nso * nso);
-        if (nb == 0) ::memset(static_cast<void*>(Db[0]), '\0', sizeof(double) * nso * nso);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Da[0], nso);
         C_DGEMM('N', 'T', nso, nso, nb, 1.0, Cb[0], nmo, Cb[0], nmo, 0.0, Db[0], nso);
@@ -797,7 +797,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     return ret_vec;
 }
-int UHF::soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
     time_t start, stop;
     start = time(nullptr);
 

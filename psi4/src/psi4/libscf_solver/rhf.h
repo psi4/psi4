@@ -74,7 +74,7 @@ class RHF : public HF {
     void finalize();
 
     void damping_update(double);
-    int soscf_update(float soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
     bool stability_analysis();
 
     /// Hessian-vector computers and solvers

@@ -243,8 +243,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             # EFP: Add efp contribution to energy
             efp_Dt = self.Da().clone()
             efp_Dt.add(self.Db())
-            efp_wfn_dependent_energy = self.molecule().EFP.get_wavefunction_dependent_energy()
-            SCFE += efp_wfn_dependent_energy
+            SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
         self.set_energies("Total Energy", SCFE)
         Ediff = SCFE - SCFE_old
@@ -373,7 +372,7 @@ def scf_finalize_energy(self):
         self.functional().set_lock(False)
         self.functional().set_do_vv10(True)
         self.functional().set_lock(True)
-        core.print_out("  ==> calculating VV10 correction on post-scf density <==\n\n")
+        core.print_out("  ==> Computing Non-Self-Consistent VV10 Energy Correction <==\n\n")
         SCFE = 0.0
         self.form_V()
         SCFE += self.compute_E()
@@ -490,7 +489,7 @@ def scf_finalize_energy(self):
 
     # recompute the Fock matrices as they are modified during the SCF
     #   iteration and might need to be dumped to checkpoint later
-    self.form_F()
+    #self.form_F()  # not needed anymore?
 
     # Properties
     #  Comments so that autodoc utility will find these PSI variables
@@ -549,14 +548,14 @@ def scf_print_energies(self):
     self.set_variable('NUCLEAR REPULSION ENERGY', enuc)
     self.set_variable('ONE-ELECTRON ENERGY', e1)
     self.set_variable('TWO-ELECTRON ENERGY', e2)
-    if abs(exc) > 1.0e-14:
+    if self.functional().needs_xc():
         self.set_variable('DFT XC ENERGY', exc)
         self.set_variable('DFT VV10 ENERGY', evv10)
         self.set_variable('DFT FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
         self.set_variable('DFT TOTAL ENERGY', dft_energy)
     else:
         self.set_variable('HF TOTAL ENERGY', hf_energy)
-    if abs(ed) > 1.0e-14:
+    if hasattr(self, "_disp_functor"):
         self.set_variable('DISPERSION CORRECTION ENERGY', ed)
 
     self.set_variable('SCF ITERATIONS', self.iteration_)
