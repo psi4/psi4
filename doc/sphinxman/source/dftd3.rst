@@ -48,6 +48,7 @@ Interface to DFTD3 by S. Grimme
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
    :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf
+
 Installation
 ~~~~~~~~~~~~
 
