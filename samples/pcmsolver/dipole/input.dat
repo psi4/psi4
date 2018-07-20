@@ -1,16 +1,8 @@
 #! dipole moment for HF and B3LYP in presence of perturbation
 
-ref_energies = { 'HF'    : [-76.0203919443, -76.0223213132,  # TEST
-                            -76.0194350648, -76.0232937811], # TEST
-                 'B3LYP' : [-76.4174428941, -76.4192585316,  # TEST
-                            -76.4165433643, -76.4201746101]  # TEST
                }
 # Reference values, in atomic units, for finite difference formulas
-ref_3pt = { 'HF'    : 0.9646844572, # TEST
-            'B3LYP' : 0.9078187054  # TEST
           }
-ref_5pt = { 'HF'    : 0.9646862512, # TEST
-            'B3LYP' : 0.9078211247  # TEST
           }
 
 molecule h2o {
@@ -60,7 +52,6 @@ for m in ['HF', 'B3LYP']:
     # Tabulate the results of the energy computation
     for val in range(len(lambdas)):
         print_out("Perturbation strength = %7.4f, %s computed energy = %16.10f\n" % (lambdas[val], m, energies[val]))
-        compare_values(ref_energies[m][val], energies[val], 8, 'Energy for displacement %d' % val) # TEST
     print_out("Total dipoles\n")
     print_out("%s 3-point stencil: mu(z) = %10.10f ea0, %10.10f Debye\n" % (m, dm_z_3point, dm_z_3point*psi_dipmom_au2debye))
     print_out("%s 5-point stencil: mu(z) = %10.10f ea0, %10.10f Debye\n" % (m, dm_z_5point, dm_z_5point*psi_dipmom_au2debye))
@@ -71,6 +62,3 @@ for m in ['HF', 'B3LYP']:
     oeprop(wfn, 'MULTIPOLES(1)')
     analytic = get_variable('SCF DIPOLE Z')
 
-    compare_values(ref_3pt[m], dm_z_3point, 8, 'Z dipole moment, using 3-point stencil %s' % m) # TEST
-    compare_values(ref_5pt[m], dm_z_5point, 8, 'Z dipole moment, using 5-point stencil %s' % m) # TEST
-    compare_values(ref_5pt[m]*psi_dipmom_au2debye, analytic, 5, 'Z dipole moment, analytic result %s' % m) # TEST

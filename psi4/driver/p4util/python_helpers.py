@@ -171,7 +171,7 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
         core.set_global_option("SCF_TYPE", jk_type)
 
     if aux is None:
-        if core.get_option("SCF", "SCF_TYPE") == "DF":
+        if core.get_global_option("SCF_TYPE") == "DF":
             aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
                                       core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
                                       core.get_global_option('BASIS'), orbital_basis.has_puream())

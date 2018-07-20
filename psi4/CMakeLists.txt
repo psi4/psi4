@@ -22,6 +22,7 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 # <<<  Marshal Dependencies & Add-ons  >>>
 
 set(_addons)
+set(TargetOpenMP_FIND_COMPONENTS "CXX")
 find_package(TargetLAPACK CONFIG REQUIRED)
 get_property(_ill TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 list(GET _ill 0 _ill0)
@@ -100,7 +101,7 @@ else()
     message(STATUS "Disabled erd")
 endif()
 
-find_package(gau2grid 1.0 CONFIG REQUIRED)
+find_package(gau2grid 1.1 CONFIG REQUIRED COMPONENTS gaussian)
 get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
@@ -201,8 +202,8 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
 install(FILES ../tests/pytest/conftest.py
+              ../tests/pytest/addons.py
               ../tests/pytest/test_psi4.py
-              ../tests/pytest/test_aaa_profiling.py
               ../tests/pytest/test_addons.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
@@ -238,41 +239,12 @@ endif()
 
 # <<<  Export Config  >>>
 
-if((DEFINED ENV{CONDA_BUILD}) AND (UNIX AND NOT APPLE))
-    # installed-alongside GCC compilers compatible with the Intel compilers used in
-    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/build.sh
-    set(cache_CMAKE_C_COMPILER       "\${GCC}")
-    set(cache_CMAKE_C_FLAGS          " -march=native -fopenmp")
-    set(cache_CMAKE_CXX_COMPILER     "\${GXX}")
-    set(cache_CMAKE_CXX_FLAGS        " -march=native -fopenmp")
-    set(cache_CMAKE_Fortran_COMPILER "\${GFORTRAN}")
-    set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
-elseif((DEFINED ENV{CONDA_BUILD}) AND (APPLE) AND (CMAKE_CXX_COMPILER_ID MATCHES AppleClang))
-    # for stdlib compatibility, must be consistent with Darwin section of
-    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-core/build.sh
-    set(cache_CMAKE_C_COMPILER       "/usr/bin/clang")
-    set(cache_CMAKE_CXX_COMPILER     "/usr/bin/clang++")
-    set(cache_CMAKE_CXX_FLAGS        " -stdlib=libc++")
-    set(cache_CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran")
-    set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
-else()
-    # normal plugin use. this initializes the plugin compilation from the
-    #   same-computer parent Psi4 compilation
-    set(cache_CMAKE_C_COMPILER       "${CMAKE_C_COMPILER}")
-    set(cache_CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}")
-    set(cache_CMAKE_CXX_COMPILER     "${CMAKE_CXX_COMPILER}")
-    set(cache_CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}")
-    set(cache_CMAKE_Fortran_COMPILER "${CMAKE_Fortran_COMPILER}")
-    set(cache_CMAKE_Fortran_FLAGS    "${CMAKE_Fortran_FLAGS}")
-    set(cache_pybind11_DIR           "${pybind11_DIR}")
-endif()
-
 configure_file(psi4PluginCache.cmake.in psi4PluginCache.cmake @ONLY)
+
 install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
               ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
               ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
-              ${PSI4_ROOT}/cmake/autocmake_omp.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>

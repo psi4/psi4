@@ -1440,8 +1440,8 @@ class Molecule(LibmintsMolecule):
 
         """
 
-        if ((molschema.get('schema_name', '') == 'QC_JSON') and
-            (molschema.get('schema_version', '') == 0)):
+        if (molschema.get('schema_name', '').startswith('qc_schema') and
+            (molschema.get('schema_version', '') == 1)):
             # Lost Fields
             # -----------
             # * 'comment'
@@ -1611,7 +1611,7 @@ class Molecule(LibmintsMolecule):
 
     @classmethod
     def from_dict(cls, molrec, verbose=1):
-    
+
         mol = cls()
         mol._internal_from_dict(molrec=molrec, verbose=verbose)
         return mol

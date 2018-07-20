@@ -43,7 +43,7 @@ namespace helpers
 namespace psi4
 {
 
-void convert(const psi::Matrix &matrix, ambit::Tensor *target)
+void PSI_API convert(const psi::Matrix &matrix, ambit::Tensor *target)
 {
     if (target->rank() != 2)
         throw std::runtime_error(
@@ -77,7 +77,7 @@ void convert(const psi::Matrix &matrix, ambit::Tensor *target)
     (*target)() = local_tensor();
 }
 
-void convert(const psi::Vector &vector, ambit::Tensor *target)
+void PSI_API convert(const psi::Vector &vector, ambit::Tensor *target)
 {
     if (target->rank() != 1)
         throw std::runtime_error(

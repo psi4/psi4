@@ -159,7 +159,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
                                  Options& options, bool do_wK, size_t doubles) {
 
     std::string jk_type = options.get_str("SCF_TYPE");
-    if (do_wK and jk_type == "MEM_DF") { // throw instead of auto fallback?
+    if (do_wK && jk_type == "MEM_DF") { // throw instead of auto fallback?
         std::stringstream error;
         error << "Cannot do SCF_TYPE == 'MEM_DF' and do_wK (yet), please set SCF_TYPE = 'DISK_DF' ";
         throw PSIEXCEPTION(error.str().c_str());

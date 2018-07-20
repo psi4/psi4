@@ -1,10 +1,39 @@
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2018 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This file is part of Psi4.
+#
+# Psi4 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# Psi4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with Psi4; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
 import json
 
 import numpy as np
 
 from ..util import unnp
 from ..physconst import psi_bohr2angstroms
-
+from ..exceptions import *
+from .to_string import formula_generator
 
 def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
     """Translate Psi4 json Molecule spec into json from other schemas.
@@ -13,7 +42,7 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
     ----------
     molrec : dict
         Psi4 json Molecule spec.
-    dtype : {'psi4', 0}
+    dtype : {'psi4', 1}
         Molecule schema format.
     units : {'Angstrom', 'Bohr'}
         Units in which to write string. There is not an option to write in
@@ -54,7 +83,7 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
         qcschema['units'] = units
         qcschema['name'] = name
 
-    elif dtype == 0:
+    elif dtype == 1:
         if units != 'Bohr':
             raise ValidationError("""QC_JSON_Schema {} allows only 'Bohr' coordinates, not {}.""".format(dtype, units))
 
@@ -71,6 +100,8 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
         qcschema['fragment_multiplicities'] = np.array(molrec['fragment_multiplicities'])
         qcschema['fix_com'] = molrec['fix_com']
         qcschema['fix_orientation'] = molrec['fix_orientation']
+    else:
+        raise TypeError("dtype not understood, valid options are {'psi4', 1}. Found {}.".format(dtype))
 
         # hmm, psi4/qcdb for provenance or does psi molrec need a passthrough field to preserve?
         #qcschema['provenance'] creator, version, routine

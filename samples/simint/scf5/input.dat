@@ -1,0 +1,134 @@
+#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using SIMINT integrals.
+
+set integral_package SIMINT
+
+
+#Ensure that the checkpoint file is always nuked
+psi4_io.set_specific_retention(32,False)
+
+
+molecule singlet_o2 {
+    0 1
+    O
+    O 1 1.1
+    units    angstrom
+}
+
+molecule triplet_o2 {
+    0 3
+    O
+    O 1 1.1
+    units    angstrom
+}
+singlet_o2.update_geometry()
+triplet_o2.update_geometry()
+
+
+activate(singlet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    print 2
+}
+
+set scf reference rhf
+
+set scf_type pk
+E = energy('scf')
+
+set scf_type direct
+E = energy('scf')
+
+set scf_type out_of_core
+E = energy('scf')
+
+set scf_type df
+E = energy('scf')
+
+set scf reference uhf
+
+set scf_type pk
+E = energy('scf')
+
+set scf_type direct
+E = energy('scf')
+
+set scf_type out_of_core
+E = energy('scf')
+
+set scf_type df
+E = energy('scf')
+
+set scf reference cuhf
+
+set scf_type pk
+E = energy('scf')
+
+set scf_type direct
+E = energy('scf')
+
+set scf_type out_of_core
+E = energy('scf')
+
+set scf_type df
+E = energy('scf')
+
+activate(triplet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    guess core
+    print 2
+}
+
+set scf reference uhf
+
+set scf_type pk
+E = energy('scf')
+
+set scf_type direct
+E = energy('scf')
+
+set scf_type out_of_core
+E = energy('scf')
+
+set scf_type df
+E = energy('scf')
+
+clean()
+
+set scf reference rohf
+
+set scf_type pk
+E = energy('scf')
+clean()
+
+set scf_type direct
+E = energy('scf')
+clean()
+
+set scf_type out_of_core
+E = energy('scf')
+clean()
+
+set scf_type df
+E = energy('scf')
+
+clean()
+
+set scf reference cuhf
+
+set scf_type pk
+E = energy('scf')
+clean()
+
+set scf_type direct
+E = energy('scf')
+clean()
+
+set scf_type out_of_core
+E = energy('scf')
+clean()
+
+set scf_type df
+E = energy('scf')

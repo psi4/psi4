@@ -547,6 +547,10 @@ void py_psi_clean_options() {
     Process::environment.options.clear();
     Process::environment.options.set_read_globals(true);
     read_options("", Process::environment.options, true);
+    for (std::map<std::string, plugin_info>::iterator it=plugins.begin(); it!=plugins.end(); ++it) {
+        // Get the plugin options back into the global space
+        it->second.read_options(it->second.name, Process::environment.options);
+    }
     Process::environment.options.set_read_globals(false);
 }
 

@@ -5,6 +5,10 @@ describes how to merge code changes into Psi4.  As of February 2016, the
 procedure for contributing code is exactly the same for the core development
 team and for external contributors.
 
+**Working on your first Pull Request?** You can learn how from
+this *free* series [How to Contribute to an Open Source Project on
+GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github)
+
 ## Getting Started
 
 * Make sure you have a [GitHub account](https://github.com/signup/free).
