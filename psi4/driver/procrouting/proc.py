@@ -3644,7 +3644,9 @@ def run_fisapt(name, **kwargs):
         raise ValidationError('FISAPT requires requires \"reference rhf\".')
 
     if ref_wfn is None:
+        core.timer_on("FISAPT: Dimer SCF")
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+        core.timer_off("FISAPT: Dimer SCF")
 
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
