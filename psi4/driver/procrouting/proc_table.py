@@ -69,6 +69,7 @@ procedures = {
             'dfocc'         : proc.run_dfocc,  # full control over dfocc
             'qchf'          : proc.run_qchf,
             'ccd'           : proc.run_dfocc,
+            'sf-sapt'       : sapt.run_sf_sapt,
             'sapt(dft)'     : sapt.run_sapt_dft,
             'sapt0'         : proc.run_sapt,
             'ssapt0'        : proc.run_sapt,
@@ -211,7 +212,7 @@ energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
 # Integrate DFT with driver routines
 for key in functionals:
       ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
-                              
+
       procedures['energy'][key] = proc.run_scf
 
       # Properties
@@ -219,7 +220,7 @@ for key in functionals:
             procedures['properties'][key] = proc.run_scf_property
 
       # Gradients
-      if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
+      if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc())):
             procedures['gradient'][key] = proc.run_scf_gradient
 
       # Hessians

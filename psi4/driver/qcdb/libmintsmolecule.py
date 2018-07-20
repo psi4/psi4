@@ -1068,7 +1068,7 @@ class LibmintsMolecule(object):
 
             for i in range(self.natom()):
                 geom = self.atoms[i].compute()
-                text += """    %8s%4s """ % (self.symbol(i), "" if self.Z(i) else "(Gh)")
+                text += """      %3s%-7s """ % ("" if self.Z(i) else "Gh(", self.symbol(i) + ("" if self.Z(i) else ")"))
                 for j in range(3):
                     text += """  %17.12f""" % (geom[j])
                 text += "\n"
@@ -1106,7 +1106,7 @@ class LibmintsMolecule(object):
             text += """    ------------   -----------------  -----------------  -----------------\n"""
 
             for i in range(self.natom()):
-                text += """    %8s%4s """ % (self.symbol(i), "" if self.Z(i) else "(Gh)")
+                text += """      %3s%-7s """ % ("" if self.Z(i) else "Gh(", self.symbol(i) + ("" if self.Z(i) else ")"))
                 text += ("""  %17.12f""" * 3).format(*(self.xyz(i)))
                 text += "\n"
             text += "\n"
@@ -1132,7 +1132,7 @@ class LibmintsMolecule(object):
             text += """    ------------   -----------------  -----------------  -----------------\n"""
 
             for i in range(self.natom()):
-                text += """    %8s%4s """ % (self.symbol(i), "" if self.Z(i) else "(Gh)")
+                text += """      %3s%-7s """ % ("" if self.Z(i) else "Gh(", self.symbol(i) + ("" if self.Z(i) else ")"))
                 text += ("""  %17.12f""" * 3).format(*self.xyz(i) * psi_bohr2angstroms)
                 text += "\n"
             text += "\n"
@@ -1158,7 +1158,7 @@ class LibmintsMolecule(object):
 
             for i in range(self.nallatom()):
                 geom = self.full_atoms[i].compute()
-                text += """    %8s%4s """ % (self.fsymbol(i), "" if self.fZ(i) else "(Gh)")
+                text += """      %3s%-7s """ % ("" if self.fZ(i) else "Gh(", self.fsymbol(i) + ("" if self.fZ(i) else ")"))
                 for j in range(3):
                     text += """  %17.12f""" % (geom[j])
                 text += "\n"

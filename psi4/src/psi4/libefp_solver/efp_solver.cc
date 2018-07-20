@@ -81,6 +81,10 @@ int EFP::get_frag_count(void) {
     return n;
 }
 
+void log_cb(const char *msg) {
+    outfile->Printf("LIBEFP: %s\n", msg);
+}
+
 #ifdef USING_libefp
 /*
  * Basic creation of EFP object and options structure
@@ -95,6 +99,8 @@ void EFP::common_init() {
     if ((res = efp_set_opts(efp_, &opts)))
         throw PsiException("EFP::common_init():efp_set_opts() " + std::string(efp_result_to_string(res)), __FILE__,
                            __LINE__);
+
+    efp_set_error_log(log_cb);
 }
 
 /*

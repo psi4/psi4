@@ -53,7 +53,7 @@ sys.path.insert(0, os.path.abspath('@psi4_SOURCE_DIR@/plugins/'))
 sys.path.insert(0, os.path.abspath('@CMAKE_CURRENT_SOURCE_DIR@/source'))
 
 # Import Sphinx themes
-import sphinx_psi_theme
+import @SPHINX_THEME@
 
 
 # -- General configuration -----------------------------------------------------
@@ -79,12 +79,16 @@ extensions = [
     'cloud_sptheme.ext.index_styling',
     'cloud_sptheme.ext.escaped_samp_literals',
     # from Astropy
-    'astropy_helpers.extern.automodapi.automodapi',
-    'astropy_helpers.extern.automodapi.automodsumm',
-    # from Psi4
-    'sphinx_psi_theme.ext.psidomain',
-    'sphinx_psi_theme.ext.relbar_toc',
+    'sphinx_automodapi.automodapi',
+    'sphinx_automodapi.automodsumm',
+    #'sphinx_automodapi.smart_resolver',
 ]
+if '@SPHINX_THEME@' == 'sphinx_psi_theme':
+    extensions.extend([
+        # from Psi4
+        'sphinx_psi_theme.ext.psidomain',
+        'sphinx_psi_theme.ext.relbar_toc',
+    ])
 
 autosummary_generate = True
 autodoc_default_flags = ['members',
@@ -177,7 +181,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_psi_theme'
+html_theme = '@SPHINX_THEME@'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -185,7 +189,10 @@ html_theme = 'sphinx_psi_theme'
 html_theme_options = {"roottarget": "index" }
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinx_psi_theme.get_theme_dir()]
+if '@SPHINX_THEME@' == 'sphinx_psi_theme':
+    html_theme_path = [@SPHINX_THEME@.get_theme_dir()]
+else:
+    html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -213,9 +220,11 @@ html_favicon = 'favicon-psi4.ico'
 html_last_updated_fmt = '%A, %d %B %Y %I:%M%p'
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {'**': ['localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']}
-html_sidebars = {'**': ['searchbox.html', 'localtoc.html'],
-                 'index': ['searchbox.html', 'impressum.html']}
+if '@SPHINX_THEME@' == 'sphinx_psi_theme':
+    html_sidebars = {'**': ['searchbox.html', 'localtoc.html'],
+                     'index': ['searchbox.html', 'impressum.html']}
+else:
+    html_sidebars = {'**': ['localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -385,4 +394,12 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'
             'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
             'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {'python': ('http://docs.python.org/3.6', None),
+                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+                       'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
+                       'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+                       #'psi4.core': ('http://psicode.org/psi4manual/master/', None),
+                      }
 

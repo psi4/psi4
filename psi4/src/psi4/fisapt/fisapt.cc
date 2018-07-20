@@ -91,41 +91,67 @@ void FISAPT::compute_energy() {
 
     // => Zero-th Order Wavefunction <= //
 
+    timer_on("FISAPT: Setup");
     localize();
     partition();
     overlap();
     kinetic();
     nuclear();
     coulomb();
+    timer_off("FISAPT: Setup");
+    timer_on("FISAPT: Monomer SCF");
     scf();
+    timer_off("FISAPT: Monomer SCF");
     freeze_core();
     unify();
+    timer_on("FISAPT: Subsys E");
     dHF();
+    timer_off("FISAPT: Subsys E");
 
     // => SAPT0 <= //
 
+    timer_on("FISAPT:SAPT:elst");
     elst();
+    timer_off("FISAPT:SAPT:elst");
+    timer_on("FISAPT:SAPT:exch");
     exch();
+    timer_off("FISAPT:SAPT:exch");
+    timer_on("FISAPT:SAPT:ind");
     ind();
+    timer_off("FISAPT:SAPT:ind");
     if (!options_.get_bool("FISAPT_DO_FSAPT")) {
+        timer_on("FISAPT:SAPT:disp");
         disp(matrices_, vectors_, true);  // Expensive, only do if needed
+        timer_off("FISAPT:SAPT:disp");
     }
 
     // => F-SAPT0 <= //
 
     if (options_.get_bool("FISAPT_DO_FSAPT")) {
+        timer_on("FISAPT:FSAPT:loc");
         flocalize();
+        timer_off("FISAPT:FSAPT:loc");
+        timer_on("FISAPT:FSAPT:elst");
         felst();
+        timer_off("FISAPT:FSAPT:elst");
+        timer_on("FISAPT:FSAPT:exch");
         fexch();
+        timer_off("FISAPT:FSAPT:exch");
+        timer_on("FISAPT:FSAPT:ind");
         find();
+        timer_off("FISAPT:FSAPT:ind");
+        timer_on("FISAPT:FSAPT:disp");
         fdisp();
+        timer_off("FISAPT:FSAPT:disp");
         fdrop();
     }
 
     // => Scalar-Field Analysis <= //
 
     if (options_.get_bool("FISAPT_DO_PLOT")) {
+        timer_on("FISAPT:FSAPT:cubeplot");
         plot();
+        timer_off("FISAPT:FSAPT:cubeplot");
     }
 
     // => Summary <= //

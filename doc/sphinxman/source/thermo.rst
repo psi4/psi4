@@ -36,8 +36,8 @@
 Vibrational and Thermochemical Analysis
 =======================================
 
-.. codeauthor:: Rollin A. King
-.. comment.. sectionauthor:: Rollin A. King and Lori A. Burns
+.. codeauthor:: Rollin A. King and Lori A. Burns
+.. sectionauthor:: Lori A. Burns
 
 *Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <psi4/src/psi4/thermo>`
 
@@ -69,6 +69,21 @@ Keywords
 
 Examples
 ^^^^^^^^
+
+A thermochemical analysis is performed after any full (not just specific
+symmetry subgroups). If the wavefunction is retained, it may be reused
+at a different temperature, pressure, rotational symmetry number, or
+isotopic substitution through the function :py:func:`qcdb.vib.thermo`
+as is shown in :srcsample:`freq-isotope2`.
+
+A few summary psivars are set: "ZPVE", "THERMAL ENERGY CORRECTION",
+"ENTHALPY CORRECTION", "GIBBS FREE ENERGY CORRECTION", "ZERO K
+ENTHALPHY", "THERMAL ENERGY", "ENTHALPY", "GIBBS FREE ENERGY".
+But additionally, every valid combination of {S, Cv, Cp, ZPE, E, H, G}
+with {elec, trans, rot, vib, corr, tot} (e.g., vibrational entropy,
+S_vib, and enthalpy correction, H_corr) is returned by dictionary
+from the ``thermo`` function. See :srcsample:`python/vibanalysis`
+(near the end) for an example.
 
 
 .. index::

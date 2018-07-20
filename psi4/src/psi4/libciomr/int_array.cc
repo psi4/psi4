@@ -59,7 +59,7 @@ namespace psi {
 ** C. David Sherrill
 ** \ingroup CIOMR
 */
-int * PSI_API init_int_array(int size)
+PSI_API int * init_int_array(int size)
 {
   int *array;
 
@@ -103,7 +103,7 @@ void zero_int_array(int *a, int size)
 **
 ** \ingroup CIOMR
 */
-int ** PSI_API init_int_matrix(int rows, int cols)
+PSI_API int ** init_int_matrix(int rows, int cols)
 {
    int **array=nullptr;
    int i;

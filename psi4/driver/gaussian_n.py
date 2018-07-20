@@ -48,10 +48,10 @@ def run_gaussian_2(name, **kwargs):
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
         ['FREEZE_CORE'],
         ['MP2_TYPE'],
-        ['SCF','SCF_TYPE'])
+        ['SCF_TYPE'])
 
     # override default scf_type
-    core.set_local_option('SCF','SCF_TYPE','PK')
+    core.set_global_option('SCF_TYPE','PK')
 
     # optimize geometry at scf level
     core.clean()

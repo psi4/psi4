@@ -680,6 +680,17 @@ void HF::finalize()
 
 }
 
+void HF::set_jk(std::shared_ptr<JK> jk) {
+    // Cheap basis check
+    int jk_nbf = jk->basisset()->nbf();
+    int hf_nbf = basisset_->nbf();
+    if (hf_nbf != jk_nbf) {
+        throw PSIEXCEPTION("Tried setting a JK object whos number of basis functions does not match HF's!");
+    }
+
+    jk_ = jk;
+}
+
 void HF::semicanonicalize()
 {
     throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");
@@ -1550,7 +1561,7 @@ void HF::initialize()
              molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
          }
          scf_type_ = "DF";
-         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
+         options_.set_global_str("SCF_TYPE", "DF"); // Scope is reset in proc.py. This is not pretty, but it works
     }
 
     if(attempt_number_ == 1){
@@ -1818,9 +1829,10 @@ void HF::iterations()
                 diis_manager_->reset_subspace();
             }
             scf_type_ = old_scf_type_;
-            options_.set_str("SCF", "SCF_TYPE", old_scf_type_);
+            options_.set_global_str("SCF_TYPE", old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
+            is_dfjk_ = false;
         }
 
         // Call any postiteration callbacks

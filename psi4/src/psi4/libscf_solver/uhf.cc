@@ -903,6 +903,9 @@ bool UHF::diis()
 
 bool UHF::stability_analysis()
 {
+    if (functional_->needs_xc()) {
+        throw PSIEXCEPTION("Stability analysis not yet supported for XC functionals.");
+    }
     auto stab = std::make_shared<UStab>(shared_from_this(), options_);
     stab->compute_energy();
     SharedMatrix eval_sym = stab->analyze();
