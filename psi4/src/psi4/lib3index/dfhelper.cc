@@ -219,32 +219,35 @@ void DFHelper::AO_core() {
 
     // a fraction of memory to use, do we want it as an option?
     double fraction_of_memory = 0.8;
-
+    
+    outfile->Printf("    ==> DFHelper memory announcement <==\n");
     if (memory_ * fraction_of_memory < required) {
         AO_core_ = false;
-        outfile->Printf("\n    ==> DFHelper memory announcement <==\n");
-        std::stringstream ann;
-        ann << "        Turning off in-core AOs.  DFHelper needs at least (";
-        ann << required / fraction_of_memory * 8 / 1e9 << "GB), but it only got (" <<
-            memory_ * 8 / 1e9 << "GB)\n";
-        outfile->Printf(ann.str().c_str());
+        outfile->Printf("        Turning off in-core AOs.\n");
+        outfile->Printf("        DFHelper needs %12.3f [GiB], got %d [GiB].\n\n", (int) (required / fraction_of_memory * 8 / (1024 * 1024 * 1024)),
+            (int) (memory_ * 8 / (1024 * 1024 * 1024)));
+    } else {
+        outfile->Printf("        Memory Resources sufficient for in-core AOs.\n");
+        outfile->Printf("        DFHelper needs %d [GiB], got %d [GiB].\n\n", (int) (required / fraction_of_memory * 8 / (1024 * 1024 * 1024)),
+            (int) (memory_ * 8 / (1024 * 1024 * 1024)));
     }
 
 }
 void DFHelper::print_header() {
     outfile->Printf("  ==> DFHelper <==\n");
-    outfile->Printf("    nao:                %11ld\n", nao_);
-    outfile->Printf("    naux:               %11ld\n", naux_);
-    outfile->Printf("    Schwarz cutoff:     %11.0E\n", cutoff_);
-    outfile->Printf("    Mask sparsity (%%): %11.0f)\n", 100. * ao_sparsity());
-    outfile->Printf("    Memory (MB):        %11ld\n", (memory_ * 8L) / (1024L * 1024L));
-    outfile->Printf("    OpenMP threads:     %11d\n", nthreads_);
-    outfile->Printf("    Algorithm:          %11s\n", method_.c_str());
-    outfile->Printf("    AO_core:            %11s\n", (AO_core_ ? "True" : "False"));
-    outfile->Printf("    MO_core:            %11s\n", (MO_core_ ? "True" : "False"));
-    outfile->Printf("    Hold Metric:        %11s\n", (hold_met_ ? "True" : "False"));
-    outfile->Printf("    Metric Power:       %11.0E\n", mpower_);
-    outfile->Printf("    Fitting condition:  %11.0E\n", condition_);
+    outfile->Printf("    nao:                     %11ld\n", nao_);
+    outfile->Printf("    naux:                    %11ld\n", naux_);
+    outfile->Printf("    Schwarz cutoff:          %11.0E\n", cutoff_);
+    outfile->Printf("    Mask sparsity (%%):       %11.0f\n", 100. * ao_sparsity());
+    outfile->Printf("    DFH Avail. Memory [GiB]: %11.3f\n", (double)((memory_ * 8L) / (1024L * 1024L * 1024L)));
+    outfile->Printf("    OpenMP threads:          %11d\n", nthreads_);
+    outfile->Printf("    Algorithm:               %11s\n", method_.c_str());
+    outfile->Printf("    AO_core:                 %11s\n", (AO_core_ ? "True" : "False"));
+    outfile->Printf("    MO_core:                 %11s\n", (MO_core_ ? "True" : "False"));
+    outfile->Printf("    Hold Metric:             %11s\n", (hold_met_ ? "True" : "False"));
+    outfile->Printf("    Metric Power:            %11.0E\n", mpower_);
+    outfile->Printf("    Fitting condition:       %11.0E\n", condition_);
+    outfile->Printf("    Q Shell Max:             %11d\n", (int) Qshell_max_);
     outfile->Printf("\n\n");
 }
 
