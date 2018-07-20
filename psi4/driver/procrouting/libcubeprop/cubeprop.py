@@ -26,10 +26,28 @@
 # @END LICENSE
 #
 
-from .proc_table import procedures, hooks, energy_only_methods
-from .proc import scf_helper, scf_wavefunction_factory
-from .empirical_dispersion import EmpericalDispersion
-from . import dft_funcs
-from . import response
-from . import scf_proc
-from . import libcubeprop
+import os
+
+from psi4 import core
+
+from psi4.driver.p4util.exceptions import ValidationError
+
+
+def cubeprop_compute_properties(self):
+    """Filesystem wrapper for CubeProperties::raw_compute_properties."""
+
+    filepath = core.get_global_option("CUBEPROP_FILEPATH")
+
+    # Is filepath a valid directory?
+    if not os.path.isdir(os.path.abspath(os.path.expandvars(filepath))):
+        raise ValidationError("""Filepath "{}" is not valid.  Please create this directory.""".format(filepath))
+
+    geomfile = filepath + os.sep + 'geom.xyz'
+    xyz = self.basisset().molecule().to_string(dtype='xyz', units='Angstrom')
+    with open(geomfile, 'w') as fh:
+        fh.write(xyz)
+
+    self.raw_compute_properties()
+
+
+core.CubeProperties.compute_properties = cubeprop_compute_properties

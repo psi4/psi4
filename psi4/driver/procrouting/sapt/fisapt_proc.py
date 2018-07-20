@@ -133,15 +133,15 @@ def fisapt_fdrop(self):
     matrices["IndBA_AB"].name = "IndBA"
     matrices["Disp_AB"].name = "Disp"
 
-    drop(vectors["ZA"], filepath)
-    drop(vectors["ZB"], filepath)
-    drop(matrices["Qocc0A"], filepath)
-    drop(matrices["Qocc0B"], filepath)
-    drop(matrices["Elst_AB"], filepath)
-    drop(matrices["Exch_AB"], filepath)
-    drop(matrices["IndAB_AB"], filepath)
-    drop(matrices["IndBA_AB"], filepath)
-    drop(matrices["Disp_AB"], filepath)
+    _drop(vectors["ZA"], filepath)
+    _drop(vectors["ZB"], filepath)
+    _drop(matrices["Qocc0A"], filepath)
+    _drop(matrices["Qocc0B"], filepath)
+    _drop(matrices["Elst_AB"], filepath)
+    _drop(matrices["Exch_AB"], filepath)
+    _drop(matrices["IndAB_AB"], filepath)
+    _drop(matrices["IndBA_AB"], filepath)
+    _drop(matrices["Disp_AB"], filepath)
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
         ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
@@ -157,15 +157,15 @@ def fisapt_fdrop(self):
         matrices["sIndBA_AB"].name = "IndBA"
         matrices["sDisp_AB"].name = "Disp"
 
-        drop(vectors["ZA"], ssapt_filepath)
-        drop(vectors["ZB"], ssapt_filepath)
-        drop(matrices["Qocc0A"], ssapt_filepath)
-        drop(matrices["Qocc0B"], ssapt_filepath)
-        drop(matrices["Elst_AB"], ssapt_filepath)
-        drop(matrices["Exch_AB"], ssapt_filepath)
-        drop(matrices["sIndAB_AB"], ssapt_filepath)
-        drop(matrices["sIndBA_AB"], ssapt_filepath)
-        drop(matrices["sDisp_AB"], ssapt_filepath)
+        _drop(vectors["ZA"], ssapt_filepath)
+        _drop(vectors["ZB"], ssapt_filepath)
+        _drop(matrices["Qocc0A"], ssapt_filepath)
+        _drop(matrices["Qocc0B"], ssapt_filepath)
+        _drop(matrices["Elst_AB"], ssapt_filepath)
+        _drop(matrices["Exch_AB"], ssapt_filepath)
+        _drop(matrices["sIndAB_AB"], ssapt_filepath)
+        _drop(matrices["sIndBA_AB"], ssapt_filepath)
+        _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 
 def fisapt_plot(self):
@@ -183,7 +183,7 @@ def fisapt_plot(self):
     self.raw_plot(filepath)
 
 
-def drop(array, filepath):
+def _drop(array, filepath):
     """Helper to drop array to disk. FISAPT::drop
 
     Parameters
