@@ -73,7 +73,7 @@ matrix:
         - gfortran-4.9
     env:
       - CXX_COMPILER='g++-4.9'
-      - PYTHON_VER='2.7'
+      - PYTHON_VER='3.6'
       - C_COMPILER='gcc-4.9'
       - Fortran_COMPILER='gfortran-4.9'
       - BUILD_TYPE='release'
