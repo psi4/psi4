@@ -662,7 +662,7 @@ funcs.append({
     "name": "PTPSS",
     "x_functionals": {
         "MGGA_X_TPSS": {
-            "tweak": [0.15, 0.88491, 0.047, 0.872, 0.16952],
+            "tweak": [0.15, 0.88491, 0.047, 0.872, 0.16952, -999., -999.],  # last two are filled in from defaults
             "alpha": 0.50
         }
     },

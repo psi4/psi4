@@ -172,7 +172,7 @@ funcs.append({
     },
     "c_functionals": {
         "GGA_C_PBE": {
-            "tweak": [0.03]
+            "tweak": [0.03, -999., -999.]  # last two are filled in from defaults
         }
     },
     "dispersion": {

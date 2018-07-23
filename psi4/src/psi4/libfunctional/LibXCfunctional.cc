@@ -215,11 +215,11 @@ void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;
     if (xc_func_name_ == "XC_GGA_X_WPBEH") {
-        xc_gga_x_wpbeh_set_params(xc_functional_.get(), omega);
+        xc_func_set_ext_params(xc_functional_.get(), &omega);
     } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {
-        xc_gga_x_hjs_set_params(xc_functional_.get(), omega);
+        xc_func_set_ext_params(xc_functional_.get(), &omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") {
-        xc_gga_x_wpbeh_set_params(xc_functional_->func_aux[0], omega);
+        xc_func_set_ext_params(xc_functional_->func_aux[0], &omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
         xc_functional_->cam_omega = omega;
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
@@ -268,25 +268,31 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
     if (xc_func_name_ == "XC_GGA_X_B86") {
         if (vsize == 3) {
             // (XC(func_type) *p, FLOAT beta, FLOAT gamma, FLOAT omega);
-            xc_gga_x_b86_set_params(xc_functional_.get(), values[0], values[1], values[2]);
+            // xc_gga_x_b86_set_params(xc_functional_.get(), values[0], values[1], values[2]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_B88") {
         if (vsize == 2) {
             // (XC(func_type) *p, FLOAT beta, FLOAT gamma);
-            xc_gga_x_b88_set_params(xc_functional_.get(), values[0], values[1]);
+            // xc_gga_x_b88_set_params(xc_functional_.get(), values[0], values[1]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_PBE") {
         if (vsize == 2) {
-            //  (XC(func_type) *p, FLOAT kappa, FLOAT mu);
-            xc_gga_x_pbe_set_params(xc_functional_.get(), values[0], values[1]);
+            // (XC(func_type) *p, FLOAT kappa, FLOAT mu);
+            // xc_gga_x_pbe_set_params(xc_functional_.get(), values[0], values[1]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_C_PBE") {
-        if (vsize == 1) {
-            // (XC(func_type) *p, FLOAT beta);
-            xc_gga_c_pbe_set_params(xc_functional_.get(), values[0]);
+        if (vsize == 3) {
+            // (XC(func_type) *p, FLOAT beta); FLOAT gamma, FLOAT BB
+            // xc_gga_c_pbe_set_params(xc_functional_.get(), values[0]);
+            values[1] = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), 1);
+            values[2] = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), 2);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_PW91") {
@@ -299,19 +305,22 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
     } else if (xc_func_name_ == "XC_GGA_X_RPBE") {
         if (vsize == 2) {
             // (XC(func_type) *p, FLOAT kappa, FLOAT mu);
-            xc_gga_x_rpbe_set_params(xc_functional_.get(), values[0], values[1]);
+            // xc_gga_x_rpbe_set_params(xc_functional_.get(), values[0], values[1]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_OPTX") {
         if (vsize == 3) {
             // (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT gamma);
-            xc_gga_x_optx_set_params(xc_functional_.get(), values[0], values[1], values[2]);
+            // xc_gga_x_optx_set_params(xc_functional_.get(), values[0], values[1], values[2]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_C_LYP") {
         if (vsize == 4) {
             // (XC(func_type) *p, FLOAT A, FLOAT B, FLOAT c, FLOAT d);
-            xc_gga_c_lyp_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3]);
+            // xc_gga_c_lyp_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if ((xc_func_name_ == "XC_HYB_GGA_XC_HSE03") || (xc_func_name_ == "XC_HYB_GGA_XC_HSE06")) {
@@ -321,23 +330,28 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_X_TPSS") {
-        if (vsize == 5) {
+        if (vsize == 7) {
             // (xc_func_type *p, double b, double c, double e, double kappa, double mu, double BLOC_a, double BLOC_bu);
-            xc_mgga_x_tpss_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3], values[4], 2.0,
-                                      0.0);
+            // xc_mgga_x_tpss_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3], values[4], 2.0,
+            //                           0.0);
+            values[5] = 2.0;
+            values[6] = 0.0;
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_C_TPSS") {
         if (vsize == 6) {
             // (xc_func_type *p, double beta, double d, double C0_0, double C0_1, double C0_2, double C0_3);
-            xc_mgga_c_tpss_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3], values[4],
-                                      values[5]);
+            // xc_mgga_c_tpss_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3], values[4],
+            //                           values[5]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_MGGA_C_BC95") {
         if (vsize == 2) {
             // (XC(func_type) *p, FLOAT css, FLOAT copp);
-            xc_mgga_c_bc95_set_params(xc_functional_.get(), values[0], values[1]);
+            // xc_mgga_c_bc95_set_params(xc_functional_.get(), values[0], values[1]);
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
         // } else if (xc_func_name_ == "XC_MGGA_C_PKZB") {
