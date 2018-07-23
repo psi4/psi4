@@ -214,8 +214,16 @@ void DFHelper::initialize() {
 }
 void DFHelper::AO_core() {
 
-    // total size of sparse AOs
-    size_t required = ( do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+    size_t required;
+
+    if(direct_iaQ_) {
+        // the direct_iaQ method does not use sparse storage
+        // if do_wK added to code, the following will need to be changed to match
+        required = naux_ * nao_ * nao_ ;
+    } else {
+        // total size of sparse AOs
+        required = ( do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+    }
 
     // C_buffers (conservative estimate since I do not have max_nocc TODO)
     required += nthreads_ * nao_ * nao_;
@@ -577,6 +585,7 @@ std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem,
     // returns pair(largest buffer size, largest block size)
     return std::make_pair(largest, block_size);
 }
+
 std::pair<size_t, size_t> DFHelper::Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                                  std::vector<std::pair<size_t, size_t>>& b) {
     size_t extra = (hold_met_ ? naux_ * naux_ : 0);
