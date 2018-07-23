@@ -164,8 +164,8 @@ void DFHelper::initialize() {
     // did we get enough memory for at least the metric?
     if(naux_ * naux_ > memory_) {
         std::stringstream error;
-        error << "DFHelper: The Coulomb metric requires at least " << naux_ * naux_ * 8 / 1e9
-              << "GB.  We need that plus some more, but we only got " << memory_ * 8 / 1e9 << "GB.";
+        error << "DFHelper: The Coulomb metric requires at least " << naux_ * naux_ * 8 / (1024 * 1024 * 1024.0)
+              << "[GiB].  We need that plus some more, but we only got " << memory_ * 8 / (1024 * 1024 * 1024.0) << "[GiB].";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
@@ -208,8 +208,16 @@ void DFHelper::initialize() {
 }
 void DFHelper::AO_core() {
 
-    // total size of sparse AOs
-    size_t required = ( do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+    size_t required;
+
+    if(direct_iaQ_) {
+        // the direct_iaQ method does not use sparse storage
+        // if do_wK added to code, the following will need to be changed to match
+        required = naux_ * nao_ * nao_ ;
+    } else {
+        // total size of sparse AOs
+        required = ( do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+    }
 
     // C_buffers (conservative estimate since I do not have max_nocc TODO)
     required += nthreads_ * nao_ * nao_;
@@ -219,35 +227,32 @@ void DFHelper::AO_core() {
 
     // a fraction of memory to use, do we want it as an option?
     double fraction_of_memory = 0.8;
+    if (memory_ * fraction_of_memory < required) AO_core_ = false;
 
-    if (memory_ * fraction_of_memory < required) {
-        AO_core_ = false;
-        outfile->Printf("\n    ==> DFHelper memory announcement <==\n");
-        std::stringstream ann;
-        ann << "        Turning off in-core AOs.  DFHelper needs at least (";
-        ann << required / fraction_of_memory * 8 / 1e9 << "GB), but it only got (" <<
-            memory_ * 8 / 1e9 << "GB)\n";
-        outfile->Printf(ann.str().c_str());
+    if (print_lvl_ > 0) {
+        outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
+                        (required / fraction_of_memory * 8 / (1024 * 1024 * 1024.0)),
+                        (memory_ * 8 / (1024 * 1024 * 1024.0)));
+        outfile->Printf("%s in-core AOs.\n\n", (memory_ * fraction_of_memory < required) ? "Turning off" : "Using");
     }
-
 }
 void DFHelper::print_header() {
     outfile->Printf("  ==> DFHelper <==\n");
-    outfile->Printf("    nao:                %11ld\n", nao_);
-    outfile->Printf("    naux:               %11ld\n", naux_);
-    outfile->Printf("    Schwarz cutoff:     %11.0E\n", cutoff_);
-    outfile->Printf("    Mask sparsity (%%): %11.0f)\n", 100. * ao_sparsity());
-    outfile->Printf("    Memory (MB):        %11ld\n", (memory_ * 8L) / (1024L * 1024L));
-    outfile->Printf("    OpenMP threads:     %11d\n", nthreads_);
-    outfile->Printf("    Algorithm:          %11s\n", method_.c_str());
-    outfile->Printf("    AO_core:            %11s\n", (AO_core_ ? "True" : "False"));
-    outfile->Printf("    MO_core:            %11s\n", (MO_core_ ? "True" : "False"));
-    outfile->Printf("    Hold Metric:        %11s\n", (hold_met_ ? "True" : "False"));
-    outfile->Printf("    Metric Power:       %11.0E\n", mpower_);
-    outfile->Printf("    Fitting condition:  %11.0E\n", condition_);
+    outfile->Printf("    nao:                     %11ld\n", nao_);
+    outfile->Printf("    naux:                    %11ld\n", naux_);
+    outfile->Printf("    Schwarz cutoff:          %11.0E\n", cutoff_);
+    outfile->Printf("    Mask sparsity (%%):       %11.0f\n", 100. * ao_sparsity());
+    outfile->Printf("    DFH Avail. Memory [GiB]: %11.3f\n", (memory_ * 8L) / ((double) (1024L * 1024L * 1024L)));
+    outfile->Printf("    OpenMP threads:          %11d\n", nthreads_);
+    outfile->Printf("    Algorithm:               %11s\n", method_.c_str());
+    outfile->Printf("    AO_core:                 %11s\n", (AO_core_ ? "True" : "False"));
+    outfile->Printf("    MO_core:                 %11s\n", (MO_core_ ? "True" : "False"));
+    outfile->Printf("    Hold Metric:             %11s\n", (hold_met_ ? "True" : "False"));
+    outfile->Printf("    Metric Power:            %11.0E\n", mpower_);
+    outfile->Printf("    Fitting condition:       %11.0E\n", condition_);
+    outfile->Printf("    Q Shell Max:             %11d\n", (int) Qshell_max_);
     outfile->Printf("\n\n");
 }
-
 void DFHelper::prepare_sparsity() {
     // prep info vectors
     std::vector<double> shell_max_vals(pshells_ * pshells_, 0.0);
@@ -552,7 +557,7 @@ std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem,
             if (count == 1 && i != pshells_ - 1) {
                 std::stringstream error;
                 error << "DFHelper: not enough memory for (p shell) AO blocking!"
-                      << " required memory: " << constraint * 8 / 1e9 << "GB.";
+                      << " required memory: " << constraint * 8 / (1024 * 1024 * 1024.0) << "[GiB].";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (constraint > mem) {
@@ -1275,7 +1280,7 @@ void DFHelper::metric_contraction_blocking(std::vector<std::pair<size_t, size_t>
             if (count == 1 && i != blocking_index - 1) {
                 std::stringstream error;
                 error << "DFHelper:contract_metric: not enough memory, ";
-                error << "needs at least " << ((count * block_sizes) * memory_factor + memory_bump) / 1e9 * 8. << "GB";
+                error << "needs at least " << ((count * block_sizes) * memory_factor + memory_bump) / (1024 * 1024 * 1024.0) * 8. << "[GiB]";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (total_mem < count * block_sizes) {

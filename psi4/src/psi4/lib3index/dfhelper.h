@@ -141,6 +141,12 @@ class PSI_API DFHelper {
     void set_omega(double omega) { omega_ = omega; }
     size_t get_omega() { return omega_; }
 
+    ///
+    /// set the printing verbosity parameter
+    /// @param print_lvl indicating verbosity
+    ///
+    void set_print_lvl(int print_lvl) { print_lvl_ = print_lvl; }
+
     /// Initialize the object
     void initialize();
 
@@ -291,6 +297,7 @@ class PSI_API DFHelper {
     bool do_wK_ = false;
     double omega_;
     bool debug_ = false;
+    int print_lvl_ = 1;
 
     // => in-core machinery <=
     void AO_core();
