@@ -31,7 +31,7 @@ molecule {
 }
 
 set {
-    scf_type      df
+    scf_type      mem_df
     basis         cc-pvdz
     freeze_core   true
     mp2_type      df

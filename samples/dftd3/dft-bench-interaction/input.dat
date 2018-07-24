@@ -1,0 +1,34 @@
+#! functionals + DFTD3 interaction energies vs. other programs
+
+molecule h2o_dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+no_reorient
+}
+
+set {
+   basis 6-31G
+   dft_radial_points 200
+   dft_spherical_points 590                
+   guess sad
+   e_convergence 9 
+   d_convergence 9 
+}
+
+
+# Current version of Psi4 does not match Q-Chem for these tests
+
+# The following data is from an older 
+# version of Psi4 (~April 2017, SHA: 53e752c)  
+
+# Current version of Psi4 does not match pre-LibXC Psi4
+# (~April 2017, SHA: 53e752c)
+
+

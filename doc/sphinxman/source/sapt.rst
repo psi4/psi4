@@ -37,7 +37,7 @@
 SAPT: Symmetry-Adapted Perturbation Theory
 ==========================================
 
-.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish and J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier
+.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish, J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier, and Daniel. G. A. Smith
 .. sectionauthor:: Edward G. Hohenstein and J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <psi4/src/psi4/libsapt_solver>`
@@ -792,4 +792,20 @@ set to :math:`1.0`.
    methods in :ref:`SAPT module<sec:sapt>`, there is no workaround;
    on-the-fly construction of an auxiliary basis through Cholesky
    decomposition (not implemented) is the long-term solution.
+
+Spin-Flip SAPT
+^^^^^^^^^^^^^^
+
+SAPT0 with two open-shell references will always yield a high-spin complex.  In
+order to obtain a SAPT-based estimate of the splittings between different spin
+states of a complex the first-order exchange energies for all multiplets can be
+shown to be a linear combination of two matrix elements: a diagonal exchange
+term that determines the spin-averaged effect and a spin-flip term responsible
+for the splittings between the states. The numerical factors in this linear
+combination are determined solely by the Clebsch-Gordan coefficients:
+accordingly, the :math:`S^{2}` approximation implies a Heisenberg Hamiltonian
+picture with a single coupling strength parameter determining all the
+splittings. This method can be invoked with `energy("SF-SAPT")` and
+publications resulting from the use of the SF-SAPT code should cite the
+following publications: [Patkowski:2018:164110]_
 

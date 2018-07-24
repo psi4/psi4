@@ -13,9 +13,8 @@ o 1 1.158
 set {
   basis cc-pcvdz
   reference uks
-  dft_functional b3lyp
 }
-energy('omp3')
+energy('omp3', dft_functional='b3lyp')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST

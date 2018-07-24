@@ -120,7 +120,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
     size_t j_abs = o->get_tuple_abs_index(ijk.ind_abs<1>());
     size_t k_abs = o->get_tuple_abs_index(ijk.ind_abs<2>());
 
-    if((i_abs <= j_abs) and (j_abs <= k_abs)){
+    if((i_abs <= j_abs) && (j_abs <= k_abs)){
       int i_sym     = o->get_tuple_irrep(ijk.ind_abs<0>());
       int j_sym     = o->get_tuple_irrep(ijk.ind_abs<1>());
       int k_sym     = o->get_tuple_irrep(ijk.ind_abs<2>());
@@ -269,7 +269,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
       //////////////
       // IJK CASE //
       //////////////
-      if((i_abs < j_abs) and (j_abs <= k_abs)){
+      if((i_abs < j_abs) && (j_abs <= k_abs)){
         for(int mu = 0; mu < nrefs; ++mu){
           T[mu][ijk_sym]->zero();
         }
@@ -375,7 +375,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
       //////////////
       // IKJ CASE //
       //////////////
-      if((i_abs <= j_abs) and (j_abs < k_abs)){
+      if((i_abs <= j_abs) && (j_abs < k_abs)){
 
         for(int mu = 0; mu < nrefs; ++mu){
           T[mu][ijk_sym]->zero();
@@ -482,7 +482,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
       //////////////
       // JKI CASE //
       //////////////
-      if((i_abs < j_abs) and (j_abs < k_abs)){
+      if((i_abs < j_abs) && (j_abs < k_abs)){
 
         for(int mu = 0; mu < nrefs; ++mu){
           T[mu][ijk_sym]->zero();
@@ -589,7 +589,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
       //////////////
       // AAA CASE //
       //////////////
-      if((i_abs < j_abs) and (j_abs < k_abs)){
+      if((i_abs < j_abs) && (j_abs < k_abs)){
 
         for(int mu = 0; mu < nrefs; ++mu){
           T[mu][ijk_sym]->zero();

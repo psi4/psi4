@@ -14,6 +14,13 @@ if(${ENABLE_simint})
 
         include(ExternalProject)
         message(STATUS "Suitable simint could not be located, ${Magenta}Building simint${ColourReset} instead.")
+
+        if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+            if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "18.0.0"))
+                message(FATAL_ERROR "ICPC version 2018 builds an incorrect simint library. Use the conda package or build simint separately with GNU or Intel 2017 compilers.")
+            endif()
+        endif()
+
         ExternalProject_Add(simint_external
             URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
             UPDATE_COMMAND ""
