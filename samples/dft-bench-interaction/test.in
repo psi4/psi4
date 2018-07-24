@@ -1,0 +1,179 @@
+#! functionals + DFTD3 interaction energies vs. other programs
+
+molecule h2o_dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+no_reorient
+}
+
+set {
+   basis 6-31G
+   dft_radial_points 200
+   dft_spherical_points 590                
+   guess sad
+   e_convergence 9 
+   d_convergence 9 
+}
+
+qchem_data = {                              #TEST
+     'M08-SO':  -0.015457831899993835,      #TEST
+       'EDF1':   -0.01126603059999809,      #TEST
+    'MPW1B95':  -0.014382823700003655,      #TEST
+     #'B97-D3':  -0.014457017899999869,      #TEST  # moved to dftd3/
+     'PW6B95':  -0.014544493599998987,      #TEST
+      'wB97X':  -0.015628902399981826,      #TEST
+     'B3LYP5':  -0.014495724699997936,      #TEST
+  'LRC-wPBEh':  -0.014707218200015859,      #TEST
+      'B97-3':  -0.013107695500011118,      #TEST
+    'wB97M-V':  -0.015223345600006155,      #TEST
+       'dlDF':  -0.010088011800021945,      #TEST
+       'PW91':  -0.016014746499990906,      #TEST
+       'VV10':  -0.016081289799984688,      #TEST
+    'HCTH147':  -0.013252202800018154,      #TEST
+    'wB97X-D':  -0.014624603200005026,      #TEST
+      'B1B95':  -0.013252541999989376,      #TEST
+   'B5050LYP':  -0.014947490799997354,      #TEST
+    'HCTH407':  -0.013576969300018504,      #TEST
+     'M08-HX':  -0.015079677599985075,      #TEST
+        'M06':   -0.01433740340000611,      #TEST
+     'MPWB1K':  -0.014399146500011284,      #TEST
+      'B3LYP':  -0.014530691900006332,      #TEST
+     'B1PW91':   -0.01306882930001052,      #TEST
+      'MPW1K':  -0.014260395900009826,      #TEST
+      'M11-L':  -0.012019633599990698,      #TEST
+   'MGGA_MS1':   -0.01351906039998596,      #TEST
+  'CAM-B3LYP':  -0.015949469999995358,      #TEST
+    'HCTH120':  -0.014021496899999875,      #TEST
+     'B97M-V':  -0.014093954400010489,      #TEST
+       'TPSS':  -0.014166766300007794,      #TEST
+     'M06-2X':  -0.014908116099988433,      #TEST
+        'M05':  -0.015658180300007984,      #TEST
+     'BHHLYP':  -0.014826161000002003,      #TEST
+     'B3PW91':  -0.013387121399986768,      #TEST
+       'BB1K':   -0.01348168410000028,      #TEST
+     'M06-HF':  -0.015305073399986213,      #TEST
+        'BOP':  -0.011758206199985466,      #TEST
+   'MGGA_MS2':  -0.013864158900005918,      #TEST
+   'MGGA_MS0':  -0.014110803499988833,      #TEST
+      'B97-K':  -0.014334623400017676,      #TEST
+    'revTPSS':   -0.01401370380000344,      #TEST
+     'HCTH93':  -0.011037074399993685,      #TEST
+       'wB97':    -0.0160148410000005,      #TEST
+       'BP86':  -0.013888959300004444,      #TEST
+       'PBE0':  -0.014959106900008123,      #TEST
+       'BLYP':  -0.014295819799983178,      #TEST
+        'B97':  -0.013959107299996276,      #TEST
+      'X3LYP':   -0.01518704669999238,      #TEST
+      'B97-1':  -0.014677337999998485,      #TEST
+   'revTPSSh':  -0.013956341099998326,      #TEST
+    'LC-VV10':   -0.01564637040000605,      #TEST
+      'O3LYP':  -0.012458762299985437,      #TEST
+      'PWB6K':  -0.015027543100018192,      #TEST
+     'M05-2X':  -0.015140837600000623,      #TEST
+        'M11':  -0.015210644100008608,      #TEST
+      'B1LYP':   -0.01442269369998428,      #TEST
+       'EDF2':  -0.015517714200015575,      #TEST
+      'B3P86':  -0.014204538500010244,      #TEST
+        'PBE':  -0.015458037099989497,      #TEST
+      'B97-2':  -0.013202621199994269,      #TEST
+    'wB97X-V':  -0.015110275099985415,      #TEST
+   'LRC-wPBE':  -0.014715257600002474,      #TEST
+      'TPSSh':  -0.014080877399976544,      #TEST
+      'B97-D':   -0.01404225510000856,      #TEST
+   #'wB97X-D3':  -0.014866630699998495,      #TEST  # moved to dftd3/
+# The following functionals are not included 
+# in Psi4 at the moment. 
+#      'VSXC':  -0.013831423100000961,      #TEST
+#   'wM06-D3':   -0.01516112189999319,      #TEST
+#     'SCAN0':  -0.015104640800018387,      #TEST
+#   'revPBE0':  -0.013125196299981212,      #TEST
+#    'revPBE':  -0.012936360399990576,      #TEST
+#   'SOGGA11':  -0.013399847600013004,      #TEST
+#  'MPW1PW91':  -0.014253465099983487,      #TEST
+#   'MN12-SX':  -0.013014032299992095,      #TEST
+# 'MGGA_MS2h':  -0.013884631800010538,      #TEST
+#    'MN12-L':  -0.012247615899994457,      #TEST
+#       'BMK':  -0.013459764800003882,      #TEST
+#       'N12':  -0.015315167000011343,      #TEST
+#  'MGGA_MVS':  -0.014523163799992744,      #TEST
+#   'MPW1PBE':  -0.014213777900010882,      #TEST
+#      'PKZB':  -0.010730960099991194,      #TEST
+#     'SOGGA':   -0.01718002680000552,      #TEST
+#    'MN15-L':  -0.012257241699998644,      #TEST
+#    't-HCTH':  -0.013934805299996356,      #TEST
+#    'B3TLAP':  -0.015522181499989074,      #TEST
+#   'BP86VWN':  -0.013888425199994003,      #TEST
+#     'PBE50':   -0.01474868999999046,      #TEST
+#   'LRC-BOP':  -0.015729893699997888,      #TEST
+# 'MGGA_MVSh':  -0.014513894700002083,      #TEST
+# 'SOGGA11-X':  -0.014139857399996458,      #TEST
+#   't-HCTHh':   -0.01431957730001443,      #TEST
+#    'PBEsol':  -0.016973350200004234,      #TEST
+#    'wM05-D':  -0.014749651200006042,      #TEST
+#     'M06-L':  -0.013173485099997606,      #TEST
+#    'N12-SX':  -0.015641602000002308,      #TEST
+#     'PBEOP':  -0.014218454399994584,      #TEST
+#      'SCAN':   -0.01516967690001536,      #TEST
+#   'MPW1LYP':  -0.015608801100000846,      #TEST
+#       'GAM':   -0.01491073450002034,      #TEST
+}                                           #TEST
+
+# Current version of Psi4 does not match Q-Chem for these tests
+expected_fail_qchem = ['B97-D', 'wB97X-D3'] #TEST
+
+# The following data is from an older 
+# version of Psi4 (~April 2017, SHA: 53e752c)  
+old_psi4_data = {                           #TEST 
+      'BP86': -0.013889878815405154,        #TEST
+      'BLYP': -0.014294874492634335,        #TEST
+    #'B97-D3': -0.014455902448531788,        #TEST  # moved to dftd3/
+    'B3LYP5': -0.014494768950584103,        #TEST
+       'PBE': -0.015457134998626998,        #TEST
+    'M05-2X': -0.015145056492713138,        #TEST
+   'wB97X-D': -0.014613361929264101,        #TEST
+      'wB97': -0.015991295341081013,        #TEST
+   'HCTH120': -0.014020533321001949,        #TEST
+      'dlDF': -0.010087591449917,           #TEST
+      'PBE0': -0.014958205517643819,        #TEST
+     'B97-1': -0.014676434498966273,        #TEST
+      'PW91': -0.01602902561316455,         #TEST
+       'M05': -0.015654414236166758,        #TEST
+     'B3LYP': -0.014529738435527406,        #TEST
+   'HCTH407': -0.013575929357500627,        #TEST
+   'HCTH147': -0.01325130624383064,         #TEST
+     'SOGGA': -0.01806810274382542,         #TEST
+     'B97-2': -0.013201680603032173,        #TEST
+     'B97-D': -0.014041140231540794,        #TEST
+     'wB97X': -0.01638428793378921,         #TEST
+}                                           #TEST
+
+# Current version of Psi4 does not match pre-LibXC Psi4
+# (~April 2017, SHA: 53e752c)
+expected_fail_old_psi4 = ['B97-D', 'wB97X'] #TEST
+
+
+for func in qchem_data.keys():                                                                                 #TEST
+    psi4_ie = energy(func, molecule=h2o_dimer, bsse_type='nocp')                                               #TEST
+                                                                                                               #TEST 
+    qchem_ie = qchem_data[func]                                                                                #TEST
+                                                                                                               #TEST 
+    if func in expected_fail_qchem:                                                                            #TEST
+        compare_values(qchem_ie, psi4_ie, 4, func + ': Psi4 vs. Q-Chem', exitonfail = False)                   #TEST
+    else:                                                                                                      #TEST
+        compare_values(qchem_ie, psi4_ie, 4, func + ': Psi4 vs. Q-Chem')                                       #TEST
+                                                                                                               #TEST
+    if func not in old_psi4_data:                                                                              #TEST
+        continue                                                                                               #TEST    
+                                                                                                               #TEST      
+    old_psi4_ie = old_psi4_data[func]                                                                          #TEST
+    if func in expected_fail_old_psi4:                                                                         #TEST
+        compare_values(old_psi4_ie, psi4_ie, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)', exitonfail = False)  #TEST
+    else:                                                                                                      #TEST
+        compare_values(old_psi4_ie, psi4_ie, 6, func + ': Psi4 vs. Psi4 1.0 (pre-Libxc)')                      #TEST

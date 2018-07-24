@@ -294,7 +294,7 @@ class PSI_API DFHelper {
 
     // => in-core machinery <=
     void AO_core();
-    std::vector<double> Ppq_;
+    std::unique_ptr<double[]> Ppq_;
     std::map<double, SharedMatrix> metrics_;
 
     // => AO building machinery <=
@@ -363,7 +363,7 @@ class PSI_API DFHelper {
     // => spaces and transformation maps <=
     std::map<std::string, std::tuple<SharedMatrix, size_t>> spaces_;
     std::map<std::string, std::tuple<std::string, std::string, size_t>> transf_;
-    std::map<std::string, std::vector<double>> transf_core_;
+    std::map<std::string, std::unique_ptr<double[]>> transf_core_;
 
     // => transformation machinery <=
     std::pair<size_t, size_t> identify_order();

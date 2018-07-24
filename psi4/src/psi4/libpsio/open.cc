@@ -32,12 +32,24 @@
  */
 
 #include <cstdio>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <cstring>
 #include <cstdlib>
+#ifdef _MSC_VER
+#include <io.h>
+#define SYSTEM_OPEN ::_open
+#define SYSTEM_CLOSE ::_close
+#define PSIO_OPEN_OLD_FLAGS _O_BINARY | _O_CREAT | _O_RDWR
+#define PSIO_OPEN_NEW_FLAGS _O_BINARY | _O_CREAT | _O_RDWR | _O_TRUNC
+#define PERMISSION_MODE _S_IWRITE
+#else
 #include <unistd.h>
+#define SYSTEM_OPEN ::open
+#define SYSTEM_CLOSE ::close
+#define PSIO_OPEN_OLD_FLAGS O_CREAT | O_RDWR
+#define PSIO_OPEN_NEW_FLAGS O_CREAT | O_RDWR | O_TRUNC
+#define PERMISSION_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+#endif
 #include <string>
 #include <map>
 #include <sstream>
@@ -111,10 +123,14 @@ void PSIO::open(size_t unit, int status) {
 
     /* Now open the volume */
     if (status == PSIO_OPEN_OLD) {
-        this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR,0644);
+        this_unit->vol[i].stream = SYSTEM_OPEN(this_unit->vol[i].path,
+                                               PSIO_OPEN_OLD_FLAGS,
+                                               PERMISSION_MODE);
     }
     else if(status == PSIO_OPEN_NEW) {
-        this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR|O_TRUNC,0644);
+        this_unit->vol[i].stream = SYSTEM_OPEN(this_unit->vol[i].path,
+                                               PSIO_OPEN_NEW_FLAGS,
+                                               PERMISSION_MODE);
     }
     else psio_error(unit,PSIO_ERROR_OSTAT);
 
@@ -202,10 +218,10 @@ bool PSIO::exists(size_t unit) {
     sprintf(fullpath, "%s%s.%zu", path2, name, unit);
 
     /* Now open the volume */
-      stream = ::open(fullpath,O_RDWR);
+      stream = SYSTEM_OPEN(fullpath,O_RDWR);
       /* and close it again, if opening worked */
       if (stream != -1) {
-        ::close(stream);
+        SYSTEM_CLOSE(stream);
       }
 
     if (stream == -1) {

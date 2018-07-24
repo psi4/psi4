@@ -185,7 +185,6 @@ protected:
     void build_UV_terms();
     void build_AB_x_terms();
     void build_Amn_x_terms();
-    void build_Amn_x_lr_terms();
 
     /// File number for Alpha (Q|mn) tensor
     size_t unit_a_;

@@ -398,8 +398,6 @@ public:
                                std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
 
 // Working with a pair is annoying, so we define a new function below
-    virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack(
-            const std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> >& x){} ;
     virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack_paired(
             const std::shared_ptr<Vector>& x);
 

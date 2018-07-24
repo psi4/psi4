@@ -32,7 +32,6 @@
  */
 
 #include <cstdlib>
-#include <unistd.h>
 #include <cstring>
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH

@@ -13,14 +13,16 @@ set scf_type pk
 set cubeprop_tasks ['orbitals','density']
 set cubeprop_orbitals [1,2,3,4,5]
 set cubic_grid_overage [1.0,1.0,1.0]
+set e_convergence 9
+set d_convergence 8
 
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 cubeprop(scf_wfn)
 
 for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
-    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
-    this_cube = open('Psi_a_%s.cube' % n,'r').read()
+    ref_cube = 'Psi_a_%s.cube.ref' % n
+    this_cube ='Psi_a_%s.cube' % n
 
 for s in ['Da','Db','Dt','Ds']:
-    ref_cube = open('%s.cube.ref' % s,'r').read()
-    this_cube = open('%s.cube' % s,'r').read()
+    ref_cube = '%s.cube.ref' % s
+    this_cube = '%s.cube' % s
