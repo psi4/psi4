@@ -31,7 +31,6 @@ from __future__ import division
 from datetime import datetime
 
 import numpy as np
-from deepdiff import DeepDiff
 
 from psi4.driver import constants
 from psi4.driver.p4util.util import compare_values, success
@@ -106,7 +105,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
         intdump.write(header)
 
     # Get an IntegralTransform object
-    check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), wfn)
+    check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), wfn)
     spaces = [core.MOSpace.all()]
     trans_type = core.IntegralTransform.TransformationType.Restricted
     if not wfn.same_a_b_orbs():
@@ -317,6 +316,12 @@ def compare_fcidumps(expected, computed, label):
     :param computed: computed FCIDUMP file
     :param label: string labelling the test
     """
+
+    try:
+        from deepdiff import DeepDiff
+    except ImportError:
+        raise ImportError("""Install deepdiff. `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
+
     # Grab expected header and integrals
     ref_intdump = fcidump_from_file(expected)
     intdump = fcidump_from_file(computed)

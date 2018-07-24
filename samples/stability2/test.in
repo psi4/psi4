@@ -23,6 +23,7 @@ nucenergy =   18.91527043470638  #TEST
 refenergy =  -92.19555660616885  #TEST
 
 molecule cn {
+0 2
    C
    N 1 R
 
