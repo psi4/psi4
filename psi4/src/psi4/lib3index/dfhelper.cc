@@ -233,16 +233,22 @@ void DFHelper::AO_core() {
 
     // a fraction of memory to use, do we want it as an option?
     double fraction_of_memory = 0.8;
-    
-    outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
-                   (required / fraction_of_memory * 8 / (1024 * 1024 * 1024.0)),
-                   (memory_ * 8 / (1024 * 1024 * 1024.0)));
+
     if (memory_ * fraction_of_memory < required) {
         AO_core_ = false;
+        outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
+                        (required / fraction_of_memory * 8 / (1024 * 1024 * 1024.0)),
+                        (memory_ * 8 / (1024 * 1024 * 1024.0)));
         outfile->Printf("Turning off in-core AOs.\n\n");
     } else {
-        outfile->Printf("Using in-core AOs.\n\n");
+        if (print_lvl_ > 0) {
+            outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
+                            (required / fraction_of_memory * 8 / (1024 * 1024 * 1024.0)),
+                            (memory_ * 8 / (1024 * 1024 * 1024.0)));
+            outfile->Printf("Using in-core AOs.\n\n");
+        }
     }
+
 }
 void DFHelper::print_header() {
     outfile->Printf("  ==> DFHelper <==\n");
