@@ -26,10 +26,12 @@
  * @END LICENSE
  */
 
+#include <ctime>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <algorithm>
+#include <functional>
 #include <vector>
 #include <utility>
 #include <tuple>

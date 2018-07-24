@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <ctime>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
