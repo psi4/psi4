@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
+#include <functional>
 #include <vector>
 #include <utility>
 
