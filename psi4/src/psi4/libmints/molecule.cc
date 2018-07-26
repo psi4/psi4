@@ -219,13 +219,15 @@ Molecule &Molecule::operator=(const Molecule &other) {
 
     // Deep copy the map of variables
     full_atoms_.clear();
+    atoms_.clear();
+    std::shared_ptr<CoordEntry> new_atom;
     std::vector<std::shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
     for (; iter != other.full_atoms_.end(); ++iter) {
-        full_atoms_.push_back((*iter)->clone(full_atoms_, geometry_variables_));
-    }
-    atoms_.clear();
-    for (iter = other.atoms_.begin(); iter != other.atoms_.end(); ++iter) {
-        atoms_.push_back((*iter)->clone(atoms_, geometry_variables_));
+        new_atom = (*iter)->clone(full_atoms_, geometry_variables_);
+        full_atoms_.push_back(new_atom);
+        // To guarantee every atom is identically a full_atom, add the needed full_atom into atoms
+        // If we lose any atoms this way, we have a bigger problem.
+        if (new_atom->symbol() != "X") atoms_.push_back(new_atom);
     }
 
     // This is called here, so that the atoms list is populated
