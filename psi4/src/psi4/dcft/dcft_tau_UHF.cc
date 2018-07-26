@@ -40,6 +40,7 @@
 #include "psi4/liboptions/liboptions.h"
 
 #include <algorithm>
+#include <functional>
 
 namespace psi{ namespace dcft{
 

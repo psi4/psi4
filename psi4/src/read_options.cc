@@ -85,7 +85,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
   options.add("RAS4", new ArrayType());
-
+  
   /*- An array giving the number of restricted doubly-occupied orbitals per
   irrep (not excited in CI wavefunctions, but orbitals can be optimized
   in MCSCF) -*/
@@ -112,6 +112,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   irreducible representation) -*/
   options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
+  options.add("NUM_GPUS", 1);
   /*- Do use pure angular momentum basis functions?
   If not explicitly set, the default comes from the basis set.
   **Cfour Interface:** Keyword translates into |cfour__cfour_spherical|. -*/
@@ -169,6 +170,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   routing is not suitable, this targets a module. ``CCENERGY`` covers
   CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
   options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC");
+  /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
+  Convergence & Algorithm <table:conv_scf>` for default algorithm for
+  different calculation types. -*/
+  options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
   /*- Algorithm to use for MP2 computation.
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -797,6 +802,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT)
     analysis to quantitatively analyze non-covalent interactions. -*/
 
+    /*- SUBSECTION SAPT(HF) -*/
+
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
@@ -1196,10 +1203,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SCF density fitting computations.
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_SCF", "");
-    /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
-    Convergence & Algorithm <table:conv_scf>` for default algorithm for
-    different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
     /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
     options.add_int("PK_MAX_BUCKETS", 500);
     /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
@@ -2238,7 +2241,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("EP2_NUM_IP", 3);
       /*- Number of Electron Affinities to compute, starting with the LUMO. -*/
       options.add_int("EP2_NUM_EA", 0);
-      /*- Explicitly pick orbitals to use in the EP2 method, overrides EP2_NUM_ options. Input
+      /*- Explicitly pick orbitals to use in the EP2 method, overrides |dfep2__EP2_NUM_IP| and |dfep2__ep2_num_ea| options. Input
          array should be [[orb1, orb2], [], ...] for each irrep. -*/
       options.add("EP2_ORBITALS", new ArrayType());
       /*- What is the maximum number of iterations? -*/
@@ -2998,7 +3001,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       point group (e.g., C2v for methane). Default takes into account symmetry
       reduction through asymmetric isotopic substitution and is unaffected by
       user-set symmetry on molecule, so this option is the sole way to influence
-      the symmetry-dependent aspects of the thermodynamic analysis. -*/
+      the symmetry-dependent aspects of the thermodynamic analysis.
+      Note that this factor is handled differently among quantum chemistry software. -*/
       options.add_int("ROTATIONAL_SYMMETRY_NUMBER", 1);
   }
   if (name == "CFOUR"|| options.read_globals()) {

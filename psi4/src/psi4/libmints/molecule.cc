@@ -1615,7 +1615,7 @@ void Molecule::print_in_angstrom() const {
         outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
         for (int i = 0; i < natom(); ++i) {
-            outfile->Printf("    %8s%4s ", symbol(i).c_str(), Z(i) ? "" : "(Gh)");
+            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", xyz(i, j) * pc_bohr2angstroms);
             outfile->Printf("\n");
         }
@@ -1638,7 +1638,7 @@ void Molecule::print_in_bohr() const {
         outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
         for (int i = 0; i < natom(); ++i) {
-            outfile->Printf("    %8s%4s ", symbol(i).c_str(), Z(i) ? "" : "(Gh)");
+            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", xyz(i, j));
             outfile->Printf("\n");
         }
@@ -1689,7 +1689,7 @@ void Molecule::print() const {
 
         for (int i = 0; i < natom(); ++i) {
             Vector3 geom = atoms_[i]->compute();
-            outfile->Printf("    %8s%4s ", symbol(i).c_str(), Z(i) ? "" : "(Gh)");
+            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("  %17.12f", mass(i));
             outfile->Printf("\n");
@@ -1734,7 +1734,7 @@ void Molecule::print_cluster() const {
             }
 
             Vector3 geom = atoms_[i]->compute();
-            outfile->Printf("    %8s%4s ", symbol(i).c_str(), Z(i) ? "" : "(Gh)");
+            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("\n");
         }
@@ -1755,7 +1755,7 @@ void Molecule::print_full() const {
 
         for (size_t i = 0; i < full_atoms_.size(); ++i) {
             Vector3 geom = full_atoms_[i]->compute();
-            outfile->Printf("    %8s%4s ", fsymbol(i).c_str(), fZ(i) ? "" : "(Gh)");
+            outfile->Printf("      %3s%-7s ", fZ(i) ? "" : "Gh(", (fsymbol(i) + (fZ(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("\n");
         }

@@ -2,7 +2,8 @@
 
 refnuc =   45.86202474447                                                                #TEST
 refall = -457.47320868249                                                                #TEST
-reffzc = -457.47130951838                                                                #TEST
+reffzc = -457.38127218548                                                                #TEST
+reffHe = -457.47130951838                                                                #TEST
 
 molecule dimer {
     Ne
@@ -14,13 +15,20 @@ set {
     print 2
 }
 
-# All electrons on Ne correlated
+# All electrons on Ne correlated, all non-ECP electrons on Xe correlated
 Eall = energy('mp2')
 compare_values(refnuc, dimer.nuclear_repulsion_energy(), 8, "Nuclear repulsion energy")  #TEST 
-compare_values(refall, Eall, 8, "All Ne electrons correlated MP2 energy with ECP")       #TEST
+compare_values(refall, Eall, 8, "MP2 energy with all-electron Ne and ECP on Xe")         #TEST
 
 set freeze_core true
 set guess read
-# 1s electrons on Ne frozen, but Xe should not be affected
+# [He] electrons on Ne frozen, [Kr] electrons on Xe frozen
 Efzc = energy('mp2')
-compare_values(reffzc, Efzc, 8, "Frozen core MP2 energy with ECP")                       #TEST
+compare_values(reffzc, Efzc, 8, "MP2 energy with frozen [He] and [Kr]")                  #TEST
+
+set freeze_core false
+set num_frozen_docc 1
+set guess read
+# [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
+EfHe = energy('mp2')
+compare_values(reffHe, EfHe, 8, "MP2 energy with frozen [He] and ECP")                   #TEST

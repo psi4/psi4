@@ -50,6 +50,7 @@
 #include "psi4/libpsi4util/process.h"
 
 #include <algorithm>
+#include <functional>
 #include <tuple>
 #include <sstream>
 

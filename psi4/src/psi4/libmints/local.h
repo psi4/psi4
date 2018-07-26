@@ -131,7 +131,7 @@ public:
 
 };
 
-class BoysLocalizer : public Localizer
+class PSI_API BoysLocalizer : public Localizer
 {
 
 protected:

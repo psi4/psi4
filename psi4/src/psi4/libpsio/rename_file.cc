@@ -32,15 +32,9 @@
  */
 
 #include <cstdio>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <cstring>
 #include <cstdlib>
-#include <unistd.h>
 #include <string>
-#include <map>
-#include <sstream>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
@@ -67,13 +61,9 @@ void PSIO::rename_file(size_t old_unit, size_t new_unit) {
   sprintf(old_full_path, "%s%s.%zu", old_path, old_name, old_unit);
   sprintf(new_full_path, "%s%s.%zu", new_path, new_name, new_unit);
 
-  /* move the file.  i don't know how to do this without a system call */
-  char*systemcall =
-      (char*)malloc((strlen(old_full_path)+strlen(new_full_path)+100)*sizeof(char));
-  sprintf(systemcall,"mv %s %s",old_full_path,new_full_path);
-  int returnvalue=system(systemcall);
+  /* move the file */
+  rename(old_full_path, new_full_path);
 
-  free(systemcall);
   free(old_name);
   free(new_name);
   free(old_full_path);

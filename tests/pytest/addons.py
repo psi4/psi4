@@ -31,6 +31,30 @@ def is_numpy_new_enough(version_feature_introduced):
     return parse_version(numpy.version.version) >= parse_version(version_feature_introduced)
 
 
+def is_nvidia_gpu_present():
+    try:
+        import GPUtil
+    except ImportError:  # py36 ModuleNotFoundError
+        try:
+            import gpu_dfcc
+        except ImportError:  # py36 ModuleNotFoundError
+            # who knows?
+            return False
+        else:
+            return gpu_dfcc.cudaGetDeviceCount() > 0
+    else:
+        try:
+            ngpu = len(GPUtil.getGPUs())
+        except OSError:  # py3 FileNotFoundError
+            # no `nvidia-smi`
+            return False
+        else:
+            return ngpu > 0
+
+
+hardware_nvidia_gpu = pytest.mark.skipif(is_nvidia_gpu_present() is False,
+                                reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
+
 using_memory_profiler = pytest.mark.skipif(_plugin_import('memory_profiler') is False,
                                 reason='Not detecting module memory_profiler. Install package if necessary and add to envvar PYTHONPATH')
 

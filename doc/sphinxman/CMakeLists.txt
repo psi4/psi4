@@ -14,11 +14,17 @@ if(NOT (LATEX_COMPILER AND PDFLATEX_COMPILER))
    message(STATUS "No LaTeX (incl. pdflatex), no PDF docs. Pre-built documentation at http://psicode.org/psi4manual/master/index.html")
 endif()
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-    "import sphinx_psi_theme; import cloud_sptheme; import astropy_helpers; import graphviz"
-    OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
+if(SPHINX_THEME STREQUAL sphinx_psi_theme)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+        "import sphinx_psi_theme; import cloud_sptheme; import sphinx_automodapi; import graphviz"
+        OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
+else()
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+        "import ${SPHINX_THEME}; import sphinx_automodapi; import graphviz"
+        OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
+endif()
 if(_exec_python_err)
-    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme astropy-helpers graphviz python-graphviz -c conda-forge -c astropy -c psi4)")
+    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi graphviz python-graphviz -c conda-forge -c psi4)")
     set(SPHINX_STUFF_FOUND "OFF")
 
 else()

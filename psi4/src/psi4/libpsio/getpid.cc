@@ -33,13 +33,18 @@
  ** \ingroup PSIO
  */
 
+#ifdef _MSC_VER
+#include <process.h>
+#define SYSTEM_GETPID ::_getpid
+#else
 #include <unistd.h>
+#define SYSTEM_GETPID ::getpid
+#endif
 #include <cstring>
 #include <cstdlib>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
-#include <unistd.h>
 #include <sstream>
 
 namespace psi {
@@ -48,8 +53,7 @@ std::string PSIO::getpid(void) {
   std::stringstream ss;
 
   if (psi::restart_id.empty()) {
-    pid_t pid = ::getpid();
-    ss << pid;
+    ss << SYSTEM_GETPID();
   }
   else
     ss << psi::restart_id;
@@ -61,8 +65,7 @@ std::string psio_getpid(void) {
   std::stringstream ss;
 
   if (psi::restart_id.empty()) {
-    pid_t pid = ::getpid();
-    ss << pid;
+    ss << SYSTEM_GETPID();
   }
   else
     ss << psi::restart_id;

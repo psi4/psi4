@@ -11,7 +11,6 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # -----------------------------------------------------------------------------
 
-
 #-------------------------------------------------------------------------------
 # SYSTEM_NATIVE
 
@@ -118,10 +117,8 @@ if(ENABLE_OPENMP)
     if(MKL_COMPILER_BINDINGS MATCHES Clang)
         set(_thread_lib mkl_intel_thread)
     endif()
-    set(_mkl_omp iomp5)
 else()
     set(_thread_lib mkl_sequential)
-    set(_mkl_omp)
 endif()
 
 if(MKL_COMPILER_BINDINGS MATCHES Intel)
@@ -175,17 +172,18 @@ endif()
 #   MKL advisor says: Mac: iomp5 for icpc, clang, gcc; Linux: iomp5 for icpc, gomp or iomp5 for gcc
 #   We suppress gomp across the board for Mac/gcc, Linux/gcc, Linux/icpc (uses gcc under the hood
 #   and we want gcc-based plugins to inherit iomp5 properly).
-if(ENABLE_OPENMP AND ((MKL_COMPILER_BINDINGS MATCHES GNU) OR
-                      ((UNIX AND NOT APPLE) AND (MKL_COMPILER_BINDINGS MATCHES Intel))))
-    set(_extras "-fno-openmp")
-else()
-    set(_extras)
-endif()
+# LAB May 2018: We were using "-fno-openmp" to suppress gomp just on the link line. Now let's
+#   do so by sealing off any unresolved symbol from iomp5, then adding --as-needed to suppress
+#   gomp linking.
+#if(ENABLE_OPENMP AND ((MKL_COMPILER_BINDINGS MATCHES GNU) OR
+#                      ((UNIX AND NOT APPLE) AND (MKL_COMPILER_BINDINGS MATCHES Intel))))
+#    set(_extras "-Wl,--as-needed")
 
 if(NOT ENABLE_GENERIC_MATH)
     # prefer mkl_rt.so as covers most situations
+    set(MKL_BLAS_LIBS mkl_rt)
     #set(MKL_BLAS_LIBS mkl_rt ${_mkl_omp} ${_extras} pthread m dl)
-    set(MKL_BLAS_LIBS mkl_rt pthread m dl)
+    #set(MKL_BLAS_LIBS mkl_rt pthread m dl)
 endif()
 # miro: for MKL 10.0.1.014
 set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_start_group} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core mkl_def mkl_mc ${_blacs_lib}  ${_end_group} guide       pthread m dl)
@@ -207,10 +205,8 @@ set(MKL_LAPACK_LIBS3 mkl_lapack)
 
 unset(_lib_suffix)
 unset(_thread_lib)
-unset(_mkl_omp)
 unset(_compiler_mkl_interface)
 unset(_scalapack_lib)
 unset(_blacs_lib)
 unset(_start_group)
 unset(_end_group)
-unset(_extras)

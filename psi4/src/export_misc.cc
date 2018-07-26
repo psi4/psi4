@@ -29,10 +29,13 @@
 #include "psi4/pybind11.h"
 
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
 
 using namespace psi;
 
 void export_misc(py::module &m) {
+    m.def("timer_on", timer_on, "docstring");
+    m.def("timer_off", timer_off, "docstring");
     m.def("tstart", tstart, "docstring");
     m.def("tstop", tstop, "docstring");
 }

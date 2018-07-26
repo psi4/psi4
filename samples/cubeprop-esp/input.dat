@@ -9,15 +9,13 @@ H 1 1.0 2 104.5
 
 set basis cc-pvqz
 set cubeprop_tasks ['esp']
+set e_convergence 9
+set d_convergence 8
 
 e, wfn = energy('scf', return_wfn=True)
 cubeprop(wfn)
 
-#for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
-#    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
-#    this_cube = open('Psi_a_%s.cube' % n,'r').read()
-#
 for s in ['Dt', 'ESP']:
-    ref_cube = open('%s.cube.ref' % s,'r').read()
-    this_cube = open('%s.cube' % s,'r').read()
+    ref_cube = '%s.cube.ref' % s
+    this_cube = '%s.cube' % s
 

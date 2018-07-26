@@ -141,6 +141,12 @@ class PSI_API DFHelper {
     void set_omega(double omega) { omega_ = omega; }
     size_t get_omega() { return omega_; }
 
+    ///
+    /// set the printing verbosity parameter
+    /// @param print_lvl indicating verbosity
+    ///
+    void set_print_lvl(int print_lvl) { print_lvl_ = print_lvl; }
+
     /// Initialize the object
     void initialize();
 
@@ -291,10 +297,11 @@ class PSI_API DFHelper {
     bool do_wK_ = false;
     double omega_;
     bool debug_ = false;
+    int print_lvl_ = 1;
 
     // => in-core machinery <=
     void AO_core();
-    std::vector<double> Ppq_;
+    std::unique_ptr<double[]> Ppq_;
     std::map<double, SharedMatrix> metrics_;
 
     // => AO building machinery <=
@@ -363,7 +370,7 @@ class PSI_API DFHelper {
     // => spaces and transformation maps <=
     std::map<std::string, std::tuple<SharedMatrix, size_t>> spaces_;
     std::map<std::string, std::tuple<std::string, std::string, size_t>> transf_;
-    std::map<std::string, std::vector<double>> transf_core_;
+    std::map<std::string, std::unique_ptr<double[]>> transf_core_;
 
     // => transformation machinery <=
     std::pair<size_t, size_t> identify_order();

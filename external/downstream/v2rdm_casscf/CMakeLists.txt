@@ -1,5 +1,5 @@
 if(${ENABLE_v2rdm_casscf})
-    find_package(v2rdm_casscf 0.6 CONFIG QUIET)
+    find_package(v2rdm_casscf 0.8 CONFIG QUIET)
 
     if(${v2rdm_casscf_FOUND})
         get_property(_loc TARGET v2rdm_casscf::v2rdm_casscf PROPERTY LOCATION)
@@ -17,7 +17,7 @@ if(${ENABLE_v2rdm_casscf})
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
             GIT_REPOSITORY https://github.com/edeprince3/v2rdm_casscf
-            GIT_TAG e4145f5  # v0.6 + 13
+            GIT_TAG 976d8af  # v0.8 + 1 (internal version bump)
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -28,11 +28,14 @@ if(${ENABLE_v2rdm_casscf})
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
+                       -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                        -Dpsi4_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/psi4
                        -Dpybind11_DIR=${pybind11_DIR}
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
+                             -DCMAKE_PREFIX_PATH:PATH=${STAGED_INSTALL_PREFIX}
             INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
         set(v2rdm_casscf_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/v2rdm_casscf CACHE PATH "path to internally built v2rdm_casscfConfig.cmake" FORCE)
