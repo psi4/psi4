@@ -88,7 +88,7 @@ double invert_matrix(double **a, double **y, int N, std::string out)
       }
 
    for (j=0; j<N; j++) {
-       memset(col, 0, sizeof(double)*N);
+       memset(col, '\0', sizeof(double)*N);
        col[j] = 1.0 ;
        lubksb(a,N,indx,col) ;
        colptr = col;
