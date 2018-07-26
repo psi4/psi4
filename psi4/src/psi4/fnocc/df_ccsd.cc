@@ -27,6 +27,7 @@
  */
 
 #include "psi4/psi4-dec.h"
+#include "psi4/times.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
@@ -35,25 +36,6 @@
 #include "psi4/libmints/mintshelper.h"
 
 #include <ctime>
-
-#ifdef _MSC_VER
-// Fake Windows implementation of the system/user timer
-struct tms {
-    double tms_stime;
-    double tms_utime;
-};
-static void times(struct tms *time) {
-    time->tms_stime = 0;
-    time->tms_utime = 0;
-}
-#define _SC_CLK_TCK 0
-static long sysconf(int name) {
-    return (long)name;
-}
-#else
-#include <sys/times.h>
-#include <unistd.h>
-#endif
 
 #ifdef _OPENMP
     #include<omp.h>
