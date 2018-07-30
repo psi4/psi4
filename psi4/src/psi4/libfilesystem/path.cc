@@ -48,16 +48,19 @@
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #include <direct.h>
 #define SYSTEM_GETCWD ::_getcwd
-#define mkdir(D,P) _mkdir((D))
+#define SYSTEM_MKDIR(D,P) ::_mkdir((D))
 #include <io.h>
-#define truncate(F,S) _chsize(_fileno((F)),(S))
+#define SYSTEM_TRUNCATE(F,S) ::_chsize(::_fileno((F)),(S))
 #include <stdlib.h>
 #define PATH_MAX _MAX_PATH
-#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#define SYSTEM_REALPATH(N,R) ::_fullpath((R),(N),_MAX_PATH)
 #define PATH_SEPARATOR "\\"
 #else
 #include <unistd.h>
 #define SYSTEM_GETCWD ::getcwd
+#define SYSTEM_MKDIR ::mkdir
+#define SYSTEM_REALPATH ::realpath
+#define SYSTEM_TRUNCATE ::truncate
 #define PATH_SEPARATOR "/"
 #endif
 #include <sys/stat.h>
@@ -68,7 +71,7 @@ namespace filesystem {
 
 bool create_directory(const path &p)
 {
-    return mkdir(p.str().c_str(), S_IRUSR | S_IWUSR | S_IXUSR) == 0;
+    return SYSTEM_MKDIR(p.str().c_str(), S_IRUSR | S_IWUSR | S_IXUSR) == 0;
 }
 
 path path::make_absolute() const
@@ -84,7 +87,7 @@ path path::make_absolute() const
 #endif
 
     char *temp = new char[path_max];
-    if (realpath(str().c_str(), temp) == nullptr) {
+    if (SYSTEM_REALPATH(str().c_str(), temp) == nullptr) {
         // Ignore errors relating to a file or directory component not existing
         if (errno != (int)std::errc::no_such_file_or_directory &&
             errno != (int)std::errc::not_a_directory) {
@@ -221,11 +224,7 @@ bool path::remove_file()
 
 bool path::resize_file(size_t target_length)
 {
-#ifdef _MSC_VER
-    throw std::runtime_error("psi::filesystem::resize_file is not implemented on Windows");
-#else
-    return ::truncate(str().c_str(), (off_t) target_length) == 0;
-#endif
+    return SYSTEM_TRUNCATE(str().c_str(), (off_t) target_length) == 0;
 }
 
 path path::getcwd()
