@@ -35,6 +35,7 @@ if pymod.startswith(os.path.sep + os.path.sep):
     pymod = pymod[1:]
 pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
 data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
+executable = os.path.abspath(os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_BINDIR@', 'psi4']))
 
 # from . import config
 # data_dir = config.psidatadir
@@ -69,6 +70,7 @@ if "PSI_SCRATCH" in os.environ.keys():
     core.IOManager.shared_object().set_default_path(envvar_scratch)
 
 core.set_datadir(data_dir)
+del psi4_module_loc, pymod, pymod_dir_step, data_dir
 
 # Cleanup core at exit
 import atexit

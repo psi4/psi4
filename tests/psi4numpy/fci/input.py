@@ -1,7 +1,11 @@
+#! coded full CI vs. detci
+
 import time
 import numpy as np
 import psi4
 np.set_printoptions(precision=7, linewidth=200, threshold=2000, suppress=True)
+
+psi4.set_output_file("output.dat", False)
 
 # Set molecule to dimer
 dimer = psi4.geometry("""

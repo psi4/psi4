@@ -352,6 +352,9 @@ void export_mints(py::module& m) {
         .def(py::init<const std::vector<int>&>())
         .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
+        .def("sum", &Dimension::sum, "Gets the sum of the values in the dimension object")
+        .def("max", &Dimension::max, "Gets the maximum value from the dimension object")
+        .def("zero", &Dimension::zero, "Zeros all values in the dimension object")
         .def("n", &Dimension::n,
              // py::return_value_policy<copy_const_reference>(),
              py::return_value_policy::copy, "The order of the dimension")
@@ -919,6 +922,7 @@ void export_mints(py::module& m) {
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*normal_eri)();
+    typedef SharedMatrix (MintsHelper::*normal_eri_factory)(std::shared_ptr<IntegralFactory>);
     typedef SharedMatrix (MintsHelper::*normal_eri2)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                                                      std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     typedef SharedMatrix (MintsHelper::*normal_3c)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
@@ -997,12 +1001,12 @@ void export_mints(py::module& m) {
              py::arg("origin") = std::vector<double>{0, 0, 0}, py::arg("deriv") = 0)
 
         // Two-electron AO
-        .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")
+        .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", py::arg("factory") = nullptr)
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals", py::arg("bs1"), py::arg("bs2"),
              py::arg("bs3"), py::arg("bs4"))
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"),
              py::arg("Q"))
-        .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
+        .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"), py::arg("factory") = nullptr)
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
         .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"), py::arg("bs1"),
              py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
@@ -1052,7 +1056,7 @@ void export_mints(py::module& m) {
         // First and second derivatives of one and two electron integrals in AO and MO basis.
         .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices")
         .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
-        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices", py::arg("atom"), py::arg("omega") = 0.0, py::arg("factory") = nullptr)
         .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
         .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
         .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")

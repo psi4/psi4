@@ -21,7 +21,6 @@ dft_basis_tolerance 1.0E-10
 reference rks
 }
 
-#set dft_functional b97
 V11 = energy('b97-0')
 
 set dft_block_scheme octree

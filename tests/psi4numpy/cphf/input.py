@@ -4,7 +4,7 @@ import time
 import numpy as np
 import psi4
 
-#psi4.set_output_file("output.dat")
+psi4.set_output_file("output.dat")
 
 # Benzene
 mol = psi4.geometry("""

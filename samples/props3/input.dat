@@ -21,8 +21,8 @@ set {
     basis cc-pVDZ
     SCF_TYPE DF
     REFERENCE RHF
-    e_convergence 9
-    d_convergence 9
+    e_convergence 11
+    d_convergence 11
 }
 
 
