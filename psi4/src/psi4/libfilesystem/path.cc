@@ -41,19 +41,24 @@
 #include <system_error>
 
 #ifdef _MSC_VER
+#include <direct.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdlib.h>
 #define S_IRUSR 0
 #define S_IWUSR 0
 #define S_IXUSR 0
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#include <direct.h>
 #define SYSTEM_GETCWD ::_getcwd
 #define SYSTEM_MKDIR(D,P) ::_mkdir((D))
-#include <io.h>
-#define SYSTEM_TRUNCATE(F,S) ::_chsize(::_fileno((F)),(S))
-#include <stdlib.h>
 #define PATH_MAX _MAX_PATH
 #define SYSTEM_REALPATH(N,R) ::_fullpath((R),(N),_MAX_PATH)
+static int SYSTEM_TRUNCATE(const char *path, off_t length) {
+    int descriptor= ::_open(path, _O_BINARY | _O_WRONLY);
+    ::_chsize(descriptor, length);
+    return ::_close(descriptor);
+}
 #define PATH_SEPARATOR "\\"
 #else
 #include <unistd.h>
