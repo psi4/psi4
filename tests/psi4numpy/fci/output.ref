@@ -1,0 +1,558 @@
+
+*** tstart() called on psinet
+*** at Mon Jul  2 18:21:58 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry BE         line   102 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         BE           0.000000000000     0.000000000000     0.000000000000     9.012182201000
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVTZ
+    Blend: CC-PVTZ
+    Number of shells: 10
+    Number of basis function: 30
+    Number of Cartesian functions: 35
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         8       8       0       0       0       0
+     B1g        2       2       0       0       0       0
+     B2g        2       2       0       0       0       0
+     B3g        2       2       0       0       0       0
+     Au         1       1       0       0       0       0
+     B1u        5       5       0       0       0       0
+     B2u        5       5       0       0       0       0
+     B3u        5       5       0       0       0       0
+   -------------------------------------------------------
+    Total      30      30       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 1.2282572691E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:   -13.92247605603547   -1.39225e+01   7.04809e-02 
+   @RHF iter   2:   -14.56090873947657   -6.38433e-01   8.98539e-03 DIIS
+   @RHF iter   3:   -14.57254108843111   -1.16323e-02   1.00797e-03 DIIS
+   @RHF iter   4:   -14.57286392005041   -3.22832e-04   1.53368e-04 DIIS
+   @RHF iter   5:   -14.57287346814862   -9.54810e-06   1.05801e-06 DIIS
+   @RHF iter   6:   -14.57287346824621   -9.75930e-11   3.91021e-08 DIIS
+   @RHF iter   7:   -14.57287346824639   -1.75859e-13   4.35123e-10 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -4.732566     2Ag    -0.309254  
+
+    Virtual:                                                              
+
+       1B1u    0.049954     1B2u    0.049954     1B3u    0.049954  
+       3Ag     0.185687     2B1u    0.252952     2B2u    0.252952  
+       2B3u    0.252952     4Ag     0.457921     1B1g    0.457921  
+       1B2g    0.457921     1B3g    0.457921     5Ag     0.457921  
+       3B3u    1.001073     3B2u    1.001073     3B1u    1.001073  
+       2B1g    1.359002     2B2g    1.359002     2B3g    1.359002  
+       6Ag     1.359002     7Ag     1.359002     4B1u    1.367290  
+       4B2u    1.367290     5B1u    1.367290     4B3u    1.367290  
+       1Au     1.367290     5B3u    1.367290     5B2u    1.367290  
+       8Ag     1.465483  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     2,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -14.57287346824639
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                 -19.0621060454096423
+    Two-Electron Energy =                   4.4892325771632500
+    Total Energy =                        -14.5728734682463923
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon Jul  2 18:21:58 2018
+Module time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        2      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =       NO
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-08      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+    RAS1 LVL      =       -1      A RAS3 MAX    =        0
+    RAS1 MIN      =        0      B RAS3 MAX    =        0
+    A RAS1 LVL    =       -1      RAS4 LVL      =       30
+    A RAS1 MIN    =        0      A RAS4 MAX    =        0
+    A RAS1 MAX    =        0      B RAS4 MAX    =        0
+    B RAS1 LVL    =       -1      RAS4 MAX      =        0
+    B RAS1 MIN    =        0      A RAS34 MAX   =        0
+    B RAS1 MAX    =        0      B RAS34 MAX   =        0
+    RAS3 LVL      =       30      RAS34 MAX     =        0
+    RAS3 MAX      =        0
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso       30     8     2     2     2     1     5     5     5
+                 Nmo       30     8     2     2     2     1     5     5     5
+               Ndocc        2     2     0     0     0     0     0     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+                RAS1        0     0     0     0     0     0     0     0     0
+                RAS2       30     8     2     2     2     1     5     5     5
+                RAS3        0     0     0     0     0     0     0     0     0
+                RAS4        0     0     0     0     0     0     0     0     0
+      Active (total)       30     8     2     2     2     1     5     5     5
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 435 alpha and 435 beta strings
+    The CI space requires 24197 (2.42E+04) determinants and 8 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstart() called on psinet
+*** at Mon Jul  2 18:21:59 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry BE         line   102 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         BE           0.000000000000     0.000000000000     0.000000000000     9.012182201000
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVTZ
+    Blend: CC-PVTZ
+    Number of shells: 10
+    Number of basis function: 30
+    Number of Cartesian functions: 35
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         8       8       0       0       0       0
+     B1g        2       2       0       0       0       0
+     B2g        2       2       0       0       0       0
+     B3g        2       2       0       0       0       0
+     Au         1       1       0       0       0       0
+     B1u        5       5       0       0       0       0
+     B2u        5       5       0       0       0       0
+     B3u        5       5       0       0       0       0
+   -------------------------------------------------------
+    Total      30      30       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 1.2282572691E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:   -13.92247605603547   -1.39225e+01   7.04809e-02 
+   @RHF iter   2:   -14.56090873947657   -6.38433e-01   8.98539e-03 DIIS
+   @RHF iter   3:   -14.57254108843111   -1.16323e-02   1.00797e-03 DIIS
+   @RHF iter   4:   -14.57286392005041   -3.22832e-04   1.53368e-04 DIIS
+   @RHF iter   5:   -14.57287346814862   -9.54810e-06   1.05801e-06 DIIS
+   @RHF iter   6:   -14.57287346824621   -9.75930e-11   3.91021e-08 DIIS
+   @RHF iter   7:   -14.57287346824639   -1.75859e-13   4.35123e-10 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -4.732566     2Ag    -0.309254  
+
+    Virtual:                                                              
+
+       1B1u    0.049954     1B2u    0.049954     1B3u    0.049954  
+       3Ag     0.185687     2B1u    0.252952     2B2u    0.252952  
+       2B3u    0.252952     4Ag     0.457921     1B1g    0.457921  
+       1B2g    0.457921     1B3g    0.457921     5Ag     0.457921  
+       3B3u    1.001073     3B2u    1.001073     3B1u    1.001073  
+       2B1g    1.359002     2B2g    1.359002     2B3g    1.359002  
+       6Ag     1.359002     7Ag     1.359002     4B1u    1.367290  
+       4B2u    1.367290     5B1u    1.367290     4B3u    1.367290  
+       1Au     1.367290     5B3u    1.367290     5B2u    1.367290  
+       8Ag     1.465483  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     2,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -14.57287346824639
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                 -19.0621060454096423
+    Two-Electron Energy =                   4.4892325771632500
+    Total Energy =                        -14.5728734682463923
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon Jul  2 18:21:59 2018
+Module time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        2      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =       NO
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-08      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+    RAS1 LVL      =       -1      A RAS3 MAX    =        0
+    RAS1 MIN      =        0      B RAS3 MAX    =        0
+    A RAS1 LVL    =       -1      RAS4 LVL      =       30
+    A RAS1 MIN    =        0      A RAS4 MAX    =        0
+    A RAS1 MAX    =        0      B RAS4 MAX    =        0
+    B RAS1 LVL    =       -1      RAS4 MAX      =        0
+    B RAS1 MIN    =        0      A RAS34 MAX   =        0
+    B RAS1 MAX    =        0      B RAS34 MAX   =        0
+    RAS3 LVL      =       30      RAS34 MAX     =        0
+    RAS3 MAX      =        0
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso       30     8     2     2     2     1     5     5     5
+                 Nmo       30     8     2     2     2     1     5     5     5
+               Ndocc        2     2     0     0     0     0     0     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+                RAS1        0     0     0     0     0     0     0     0     0
+                RAS2       30     8     2     2     2     1     5     5     5
+                RAS3        0     0     0     0     0     0     0     0     0
+                RAS4        0     0     0     0     0     0     0     0     0
+      Active (total)       30     8     2     2     2     1     5     5     5
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 435 alpha and 435 beta strings
+    The CI space requires 24197 (2.42E+04) determinants and 8 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue = -14.61957144
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0    -14.619571444518   -1.4620E+01   2.1673E-01  
+   @CI  1:     0    -14.623778776276   -4.2073E-03   1.4767E-02  
+   @CI  2:     0    -14.623809429241   -3.0653E-05   1.4571E-03  
+   @CI  3:     0    -14.623809735726   -3.0648E-07   2.2822E-04  
+   @CI  4:     0    -14.623809754643   -1.8917E-08   9.1122E-05  
+   @CI  5:     0    -14.623809756526   -1.8821E-09   2.8613E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =          -14.572873468246392
+    Total CI energy =     -14.623809756525619
+
+   ==> DETCI root 0 information <==
+
+    DETCI Root 0 energy =   -14.623809756525619
+
+   The 20 most important determinants:
+
+    *   1    0.952476  (    0,    0)  1AgX 2AgX 
+    *   2   -0.122240  (  395,  395)  1AgX 1B3uX 
+    *   3   -0.122240  (  323,  323)  1AgX 1B2uX 
+    *   4   -0.122240  (  251,  251)  1AgX 1B1uX 
+    *   5   -0.077070  (  323,  331)  1AgX 1B2uA 2B2uB 
+    *   6   -0.077070  (  331,  323)  1AgX 1B2uB 2B2uA 
+    *   7   -0.077070  (  395,  403)  1AgX 1B3uA 2B3uB 
+    *   8   -0.077070  (  403,  395)  1AgX 1B3uB 2B3uA 
+    *   9   -0.077070  (  251,  259)  1AgX 1B1uA 2B1uB 
+    *  10   -0.077070  (  259,  251)  1AgX 1B1uB 2B1uA 
+    *  11   -0.051343  (  403,  403)  1AgX 2B3uX 
+    *  12   -0.051343  (  331,  331)  1AgX 2B2uX 
+    *  13   -0.051343  (  259,  259)  1AgX 2B1uX 
+    *  14   -0.035626  (    1,    1)  1AgX 3AgX 
+    *  15    0.026634  (    0,    1)  1AgX 2AgA 3AgB 
+    *  16    0.026634  (    1,    0)  1AgX 2AgB 3AgA 
+    *  17   -0.012905  (   22,   22)  2AgX 8AgX 
+    *  18    0.012215  (    1,   21)  1AgX 3AgA 8AgB 
+    *  19    0.012215  (   21,    1)  1AgX 3AgB 8AgA 
+    *  20   -0.008952  (   21,   21)  1AgX 8AgX 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	CI Energy.........................................................PASSED

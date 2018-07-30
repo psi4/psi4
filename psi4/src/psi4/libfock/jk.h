@@ -458,6 +458,11 @@ class PSI_API JK {
     // => Accessors <= //
 
     /**
+     * Returns the internal primary basis set.
+     */
+    std::shared_ptr<BasisSet> basisset() { return primary_; }
+
+    /**
      * Reference to C_left queue. It is YOUR job to
      * allocate and fill this object out
      */
@@ -1020,6 +1025,11 @@ class MemDFJK : public JK {
     * type on output file
     */
     virtual void print_header() const;
+
+    /**
+     * Returns the DFHelper object
+     */
+    std::shared_ptr<DFHelper> dfh() { return dfh_; }
 };
 }
 #endif

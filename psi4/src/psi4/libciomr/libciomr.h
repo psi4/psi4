@@ -95,9 +95,9 @@ void zero_arr(double *a, int size) ;
 void zero_mat(double **a, int rows, int cols) ;
 
 /* Functions in int_array.c */
-int * init_int_array(int size) ;
+PSI_API int * init_int_array(int size) ;
 void zero_int_array(int *a, int size);
-int **init_int_matrix(int rows, int cols);
+PSI_API int ** init_int_matrix(int rows, int cols);
 void free_int_matrix(int **array);
 void zero_int_matrix(int **array, int rows, int cols);
 void print_int_mat(int **a, int m, int n, std::string out);
@@ -111,7 +111,7 @@ void zero_long_int_matrix(long int **array, int rows, int cols);
 void print_long_int_mat(long int **a, int m, int n, std::string out);
 
 /* Functions in block_matrix.c */
-double ** block_matrix(size_t n, size_t m, bool mlock = false);
+PSI_API double ** block_matrix(size_t n, size_t m, bool mlock = false);
 void free_block(double **array);
 
 /* Functions in fndcor */

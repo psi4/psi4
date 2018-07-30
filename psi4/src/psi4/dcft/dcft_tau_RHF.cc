@@ -38,6 +38,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <algorithm>
+#include <functional>
 
 namespace psi{ namespace dcft{
 /**

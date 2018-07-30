@@ -61,13 +61,13 @@ def build_superfunctional(name, restricted):
         sup[0].set_max_points(npoints)
         sup[0].set_deriv(deriv)
         sup[0].allocate()
-    
+
     # Check for supplied dict_func functionals
     elif isinstance(name, dict):
         sup = dict_builder.build_superfunctional_from_dictionary(name, npoints, deriv, restricted)
     # Check for pre-defined dict-based functionals
     elif name.lower() in dict_builder.functionals:
-        sup = dict_builder.build_superfunctional_from_dictionary(dict_builder.functionals[name.lower()], 
+        sup = dict_builder.build_superfunctional_from_dictionary(dict_builder.functionals[name.lower()],
                                                                  npoints, deriv, restricted)
     else:
         raise ValidationError("SCF: Functional (%s) not found!" % name)
@@ -125,15 +125,15 @@ def build_superfunctional(name, restricted):
         raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
 
     # Check SCF_TYPE
-    if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+    if sup[0].is_x_lrc() and (core.get_global_option("SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
-            "SCF: SCF_TYPE (%s) not supported for range-separated functionals." % core.get_option("SCF", "SCF_TYPE"))
+            "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build." % core.get_global_option("SCF_TYPE"))
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
 
     sup[0].set_lock(True)
-    
+
     return sup
 
 

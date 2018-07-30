@@ -1,183 +1,29 @@
-
-    -----------------------------------------------------------------------
-          Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
-
-                         Git: Rev {master} 3fbd859 
-
-
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
-
-    -----------------------------------------------------------------------
-
-
-    Psi4 started on: Monday, 15 May 2017 03:33PM
-
-    Process ID:  12069
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
-    Memory:     500.0 MiB
-    Threads:    1
-    
-  ==> Input File <==
-
---------------------------------------------------------------------------
-#! A simple Psi 4 input script to compute a SCF reference using Psi4's libJK
-
-import time
-import numpy as np
-
-# Benzene
-molecule mol {
-He
-symmetry c1
-}
-
-set {
-basis aug-cc-pVDZ
-scf_type df
-e_convergence 1e-8
-}
-
-# Set tolerances
-maxiter = 12
-E_conv = 1.0E-6
-D_conv = 1.0E-5
-
-# Integral generation from Psi4's MintsHelper
-wfn = psi4.Wavefunction.build(mol, psi4.get_global_option("BASIS"))
-mints = MintsHelper(wfn.basisset())
-S = mints.ao_overlap()
-
-# Get nbf and ndocc for closed shell molecules
-nbf = wfn.nso()
-ndocc = wfn.nalpha()
-if wfn.nalpha() != wfn.nbeta():
-    raise PsiException("Only valid for RHF wavefunctions!")
-
-psi4.print_out('\nNumber of occupied orbitals: %d\n' % ndocc)
-psi4.print_out('Number of basis functions:   %d\n' % nbf)
-
-# Build H_core
-V = mints.ao_potential()
-T = mints.ao_kinetic()
-H = T.clone()
-H.add(V)
-
-# Orthogonalizer A = S^(-1/2)
-A = mints.ao_overlap()
-A.power(-0.5, 1.e-16)
-
-# Diagonalize routine
-def build_orbitals(diag):
-    Fp = psi4.Matrix.triplet(A, diag, A, True, False, True)
-
-    Cp = psi4.Matrix(nbf, nbf)
-    eigvecs = psi4.Vector(nbf)
-    Fp.diagonalize(Cp, eigvecs, psi4.DiagonalizeOrder.Ascending)
-
-    C = psi4.Matrix.doublet(A, Cp, False, False)
-
-    Cocc = psi4.Matrix(nbf, ndocc)
-    Cocc.np[:] = C.np[:, :ndocc]
-
-    D = psi4.Matrix.doublet(Cocc, Cocc, False, True)
-    return C, Cocc, D
-
-# Build core orbitals
-C, Cocc, D = build_orbitals(H)
-
-# Setup data for DIIS
-t = time.time()
-E = 0.0
-Enuc = mol.nuclear_repulsion_energy()
-Eold = 0.0
-Dold = psi4.Matrix(nbf, nbf)
-Fock_list = []
-DIIS_error = []
-
-# Initialize the JK object
-jk = psi4.JK.build(wfn.basisset())
-jk.set_memory(int(1.25e8))  # 1GB
-jk.initialize()
-jk.print_header()
-
-psi4.print_out('\nTotal time taken for setup: %.3f seconds\n' % (time.time() - t))
-
-psi4.print_out('\nStart SCF iterations:\n\n')
-t = time.time()
-
-for SCF_ITER in range(1, maxiter + 1):
-
-    # Compute JK
-    jk.C_left_add(Cocc)
-    jk.compute()
-    jk.C_clear()
-
-    # Build Fock matrix
-    F = H.clone()
-    F.axpy(2.0, jk.J()[0])
-    F.axpy(-1.0, jk.K()[0])
-
-    # DIIS error build and update
-    diis_e = psi4.Matrix.triplet(F, D, S, False, False, False)
-    diis_e.subtract(psi4.Matrix.triplet(S, D, F, False, False, False))
-    diis_e = psi4.Matrix.triplet(A, diis_e, A, False, False, False)
-
-    # SCF energy and update
-    FH = F.clone()
-    FH.add(H)
-    SCF_E = FH.vector_dot(D) + Enuc
-
-    dRMS = diis_e.rms()
-
-    psi4.print_out('SCF Iteration %3d: Energy = %4.16f   dE = % 1.5E   dRMS = %1.5E\n'
-          % (SCF_ITER, SCF_E, (SCF_E - Eold), dRMS))
-    if (abs(SCF_E - Eold) < E_conv) and (dRMS < D_conv):
-        break
-
-    Eold = SCF_E
-    Dold = D
-
-    # Diagonalize Fock matrix
-    C, Cocc, D = build_orbitals(F)
-
-    if SCF_ITER == maxiter:
-        psi4.clean()
-        raise Exception("Maximum number of SCF cycles exceeded.\n")
-
-psi4.print_out('Total time for SCF iterations: %.3f seconds \n\n' % (time.time() - t))
-
-psi4.print_out('Final SCF energy: %.8f hartree\n' % SCF_E)
-compare_values(-2.8557342505784704, SCF_E, 6, 'SCF Energy')
---------------------------------------------------------------------------
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry HE         line    49 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
-
-    There are an even number of electrons - assuming singlet.
-    Specify the multiplicity in the molecule input block.
+    atoms 1   entry O          line   250 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
-Number of occupied orbitals: 1
-Number of basis functions:   9
+Number of occupied orbitals: 5
+Number of basis functions:   41
+
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1 entry HE         line    38 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1   entry O          line   270 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+
+  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.
+           Please use the build_JK(primary, auxiliary, options, do_wK, memory)
+           constructor as DiskDFJK non-optimal performance.
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
@@ -193,27 +39,29 @@ Number of basis functions:   9
    => Auxiliary Basis Set <=
 
   Basis Set: (AUG-CC-PVDZ AUX)
-    Blend: DEF2-QZVPP-JKFIT
-    Number of shells: 9
-    Number of basis function: 23
-    Number of Cartesian functions: 25
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 52
+    Number of basis function: 150
+    Number of Cartesian functions: 171
     Spherical Harmonics?: true
-    Max angular momentum: 2
+    Max angular momentum: 3
 
 
-Total time taken for setup: 0.144 seconds
+Total time taken for setup: 0.134 seconds
 
 Start SCF iterations:
 
-SCF Iteration   1: Energy = -2.7426453046750838   dE = -2.74265E+00   dRMS = 5.33311E-02
-SCF Iteration   2: Energy = -2.8546218515627664   dE = -1.11977E-01   dRMS = 4.68508E-03
-SCF Iteration   3: Energy = -2.8557100669985691   dE = -1.08822E-03   dRMS = 5.28753E-04
-SCF Iteration   4: Energy = -2.8557331648244855   dE = -2.30978E-05   dRMS = 1.06919E-04
-SCF Iteration   5: Energy = -2.8557341964964986   dE = -1.03167E-06   dRMS = 2.49383E-05
-SCF Iteration   6: Energy = -2.8557342505784673   dE = -5.40820E-08   dRMS = 5.81800E-06
-Total time for SCF iterations: 0.002 seconds 
+SCF Iteration   1: Energy = -68.6092608896004634   dE = -6.86093E+01   dRMS = 7.51473E-02
+SCF Iteration   2: Energy = -65.9921126158615721   dE =  2.61715E+00   dRMS = 6.29506E-02
+SCF Iteration   3: Energy = -75.1190897260815831   dE = -9.12698E+00   dRMS = 3.57415E-02
+SCF Iteration   4: Energy = -75.7449986192636828   dE = -6.25909E-01   dRMS = 1.88596E-02
+SCF Iteration   5: Energy = -75.9928126939466608   dE = -2.47814E-01   dRMS = 3.23855E-03
+SCF Iteration   6: Energy = -76.0030710136050942   dE = -1.02583E-02   dRMS = 5.58643E-04
+SCF Iteration   7: Energy = -76.0033136343329687   dE = -2.42621E-04   dRMS = 1.02191E-04
+SCF Iteration   8: Energy = -76.0033365550265927   dE = -2.29207E-05   dRMS = 2.67040E-05
+SCF Iteration   9: Energy = -76.0033387536686007   dE = -2.19864E-06   dRMS = 8.91032E-06
+SCF Iteration  10: Energy = -76.0033389840168354   dE = -2.30348E-07   dRMS = 1.43725E-06
+Total time for SCF iterations: 0.022 seconds 
 
-Final SCF energy: -2.85573425 hartree
+Final SCF energy: -76.00333898 hartree
 	SCF Energy........................................................PASSED
-
-*** Psi4 exiting successfully. Buy a developer a beer!

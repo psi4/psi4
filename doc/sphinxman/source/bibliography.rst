@@ -390,3 +390,7 @@ Bibliography
 .. [McGibbon:2017:161725]
    R. T. McGibbon, A. G. Taube, A. G. Donchev, K. Siva, F. Hern\ |a_acute|\ andez, C. Hargus, K. H. Law, J. L. Klepeis, D. E. Shaw
    *J. Chem. Phys.* **147**, 161725 (2017).
+
+.. [Patkowski:2018:164110]
+   Konrad Patkowski, Piotr S. \.Zuchowski, Daniel G. A. Smith
+   *J. Chem. Phys.* **148**, 164110 (2018).

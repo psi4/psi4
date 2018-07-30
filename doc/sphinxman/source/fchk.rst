@@ -50,7 +50,7 @@ time.  To generate a FCHK file, simply store the wavefunction from the energy
 calculation, and use it to create an FCHK writer::
 
     energy, wfn = energy('scf', return_wfn=True)
-    fchk_writer = psi4.FCHKWriter(wfn)
+    fchk_writer = psi4.core.FCHKWriter(wfn)
     fchk_writer.write('output.fchk')
 
 The file will be written to the name passed to the FCHK writer's *write()*
@@ -61,7 +61,7 @@ density is required for these methods, the user should instead request a
 gradient computation, to ensure that the density is updated appropriately::
 
     grad, wfn = gradient('mp2', return_wfn=True)
-    fchk_writer = psi4.FCHKWriter(wfn)
+    fchk_writer = psi4.core.FCHKWriter(wfn)
     fchk_writer.write('output.fchk')
 
 .. autofunction:: psi4.fchk(wfn, filename)

@@ -1,13 +1,13 @@
 #! DFT Functional Smoke Test
 
-test_dict = {                    #TEST
-     "B2PLYP":   -76.2924549107, #TEST
-  "CAM-B3LYP":   -76.3552628688, #TEST
-   "DLDF+D09":   -76.8410958136, #TEST
- "DSD-PBEP86":   -76.2060029910, #TEST
-        "PBE":   -76.2994541311, #TEST
-       "WPBE":   -76.3341949067, #TEST
-}                                #TEST
+test_dict = {                         #TEST
+          "B2PLYP":   -76.2924549107, #TEST
+       "CAM-B3LYP":   -76.3552628688, #TEST
+        "DLDF+D09":   -76.8410958136, #TEST
+ "DSD-PBEP86-D3BJ":   -76.2032218018, #TEST
+             "PBE":   -76.2994541311, #TEST
+            "WPBE":   -76.3341949067, #TEST
+}                                     #TEST
 
 molecule h2o {
 0 1
@@ -23,5 +23,19 @@ set dft_radial_points 75
 set scf_type df
 
 for k, v in test_dict.items():
+    if k == 'DSD-PBEP86-D3BJ' and 'dftd3' not in psi4.addons():
+        continue
     ret = energy(k)
-    compare_values(v, ret, 5, "RKS 0 1  %10s Energy" % k)
+    compare_values(v, ret, 5, "RKS 0 1  %15s Energy" % k)
+
+pbe = {
+    "name": "PBE-TEST",
+    "x_functionals": { "GGA_X_PBE": {} },
+    "c_functionals": { "GGA_C_PBE": {} },
+}
+
+ret = energy("scf", dft_functional="PBE")
+compare_values(test_dict["PBE"], ret, 5, "RKS 0 1              PBE Energy, dft_functional='PBE'")  #TEST
+
+ret = energy("scf", dft_functional=pbe)
+compare_values(test_dict["PBE"], ret, 5, "RKS 0 1              PBE Energy, dft_functional=dict()") #TEST

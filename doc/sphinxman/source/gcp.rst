@@ -40,14 +40,14 @@ Interface to gCP by S. Grimme
 *Module:* :ref:`Samples <apdx:testSuitegcp>`
 
 .. image:: https://img.shields.io/badge/home-gCP-5077AB.svg
-   :target: http://www.thch.uni-bonn.de/tc/downloads/gcp/index.html
+   :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp
 
 .. raw:: html
 
    <br>
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
-   :target: http://www.thch.uni-bonn.de/tc/downloads/gcp/data/manGCP.pdf
+   :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/manGCP.pdf
 
 Installation
 ~~~~~~~~~~~~
@@ -74,7 +74,7 @@ Installation
 **Source**
 
 * .. image:: https://img.shields.io/badge/home-gCP-5077AB.svg
-     :target: http://www.thch.uni-bonn.de/tc/downloads/gcp/getgCP.html
+     :target: https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/getgcp
 
 * If using |PSIfour| built from source and you want to build gCP from
   from source also, follow the instructions provided with the source

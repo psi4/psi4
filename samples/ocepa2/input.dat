@@ -10,8 +10,7 @@ o 1 1.158
 set {
   basis cc-pcvdz
   reference uks
-  dft_functional b3lyp 
   e_convergence 8
 }
-energy('olccd')
+energy('olccd', dft_functional='b3lyp')
 

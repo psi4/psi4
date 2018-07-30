@@ -44,8 +44,6 @@ PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 
-#include <unistd.h>
-
 namespace psi {
 
 /* Definition of global data */

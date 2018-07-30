@@ -17,3 +17,12 @@ compare_values(-0.000675030191, get_variable('efp ind energy'), 6, 'EFP-EFP Ind'
 compare_values(-0.021092526180, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST
 compare_values( 0.018202051938, get_variable('current energy'), 6, 'EFP-EFP Total')  #TEST
 
+molecule h2 {
+H 0. 0. 0.
+H 0. 0. 1.
+}
+
+try:
+    energy('efp')
+except ValidationError:
+    compare_integers(1, 1, 'Handled no EFP system')  #TEST

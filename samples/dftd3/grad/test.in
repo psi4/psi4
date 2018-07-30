@@ -27,11 +27,3 @@ grad = gradient('bp86-d2gr')
 compare_matrices(ref, grad, 7, "Outsourced dft gradients called by name")  #TEST
 clean()
 
-
-set {
-    dft_functional bp86-d2gr
-    reference rks
-}
-
-grad = gradient('bp86-d2gr')
-compare_matrices(ref, grad, 7, "Outsourced dft gradients called by options") #TEST
