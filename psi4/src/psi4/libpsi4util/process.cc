@@ -33,7 +33,6 @@
 #include "psi4/libpsi4util/process.h"
 
 #include <regex>
-#include <unistd.h>
 
 //MKL Header
 #ifdef USING_LAPACK_MKL
