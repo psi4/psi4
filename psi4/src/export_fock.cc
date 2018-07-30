@@ -50,6 +50,7 @@ void export_fock(py::module &m) {
                         return JK::build_JK(basis, aux, Process::environment.options);
                     })
         .def("initialize", &JK::initialize)
+        .def("basisset", &JK::basisset)
         .def("set_cutoff", &JK::set_cutoff)
         .def("set_memory", &JK::set_memory)
         .def("set_omp_nthread", &JK::set_omp_nthread)
@@ -171,13 +172,13 @@ void export_fock(py::module &m) {
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
-        [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i, int j) 
-        { 
+        [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i, int j)
+        {
            return scf::SADGuess(basis, atomic_bases, i, j, Process::environment.options);
         })
         .def("compute_guess", &scf::SADGuess::compute_guess)
         .def("set_print", &scf::SADGuess::set_print)
-        .def("set_debug", &scf::SADGuess::set_debug)    
+        .def("set_debug", &scf::SADGuess::set_debug)
         .def("set_atomic_fit_bases", &scf::SADGuess::set_atomic_fit_bases)
         .def("Da", &scf::SADGuess::Da)
         .def("Db", &scf::SADGuess::Db)

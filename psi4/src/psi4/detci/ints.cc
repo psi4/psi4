@@ -387,7 +387,7 @@ void CIWavefunction::setup_mcscf_ints_ao() {
 #else
         throw PSIEXCEPTION("GTFock was not compiled in this version");
 #endif
-    } else if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) or scf_type == "CD" or scf_type == "PK" or scf_type == "DIRECT" or scf_type == "OUT_OF_CORE") {
+    } else if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || scf_type == "CD" || scf_type == "PK" || scf_type == "DIRECT" || scf_type == "OUT_OF_CORE") {
         jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
     } else {
         outfile->Printf("\n Please select GTFock, DF, CD or PK for use with MCSCF_TYPE AO");

@@ -83,6 +83,7 @@ tests/*/plot/*
 share/python/pcm_placeholder.py
 tests/plugins/skeleton*/input.dat
 metadata.out.py
+metadata.out.cmake
 
 # Compilation directories that people use
 obj*

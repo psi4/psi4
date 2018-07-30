@@ -57,6 +57,7 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libdiis/diisentry.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/lib3index/dfhelper.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
@@ -451,6 +452,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         MemDFJK* dfjk = new MemDFJK(bas, fit);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+        dfjk->dfh()->set_print_lvl(0);
         jk = std::unique_ptr<JK>(dfjk);
     } else if (options_.get_str("SAD_SCF_TYPE") == "DIRECT") {
         DirectJK* directjk(new DirectJK(bas));

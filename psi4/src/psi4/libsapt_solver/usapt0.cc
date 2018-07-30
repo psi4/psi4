@@ -37,6 +37,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/lib3index/dfhelper.h"
+#include <ctime>
 
 using namespace psi;
 using namespace std;

@@ -1,0 +1,434 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 13 June 2018 07:56PM
+
+    Process ID: 73306
+    Host:       Daniels-MacBook-Pro.local
+    PSIDATADIR: /Users/daniel/Gits/psi4ds/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+ref = psi4.Matrix.from_list([                                 #TEST
+      [  -0.00199842420035,   0.02983607974145,   0.00000000000000],  #TEST
+      [   0.00246926425406,  -0.03701068810593,   0.00000000000000],  #TEST
+      [  -0.00045776352907,   0.00697861382993,   0.00000000000000]]) #TEST
+
+molecule {
+  0 1
+  N    -0.0034118    3.5353926    0.0000000
+  C     0.0751963    2.3707040    0.0000000
+  H     0.1476295    1.3052847    0.0000000
+}
+
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    dft_radial_points     99
+    dft_spherical_points  302
+    points 5
+}
+
+anl_grad = gradient('wB97X-D', dertype=1)
+compare_matrices(ref, anl_grad, 7, "Analytic Gradient vs Reference")    #TEST
+
+#fd_grad = gradient('wB97X-D', dertype=0)
+#compare_matrices(anl_grad, fd_grad, 3, "Analytic vs FD Gradients")    #TEST
+--------------------------------------------------------------------------
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Wed Jun 13 19:56:31 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry N          line   168 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry C          line   138 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3 entry H          line    22 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         N           -0.040558457589     0.600639828526     0.000000000000    14.003074004780
+         C            0.038049642411    -0.564048771474     0.000000000000    12.000000000000
+         H            0.110482842411    -1.629468071474     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A = 83386922.25089  B =      1.45345  C =      1.45345 [cm^-1]
+  Rotational constants: A = 2499877038665.02588  B =  43573.43250  C =  43573.43174 [MHz]
+  Nuclear repulsion =   23.669879231087002
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 14
+  Nalpha       = 7
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 15
+    Number of basis function: 33
+    Number of Cartesian functions: 35
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: WB97X-D <= 
+
+    wB97X-D Hyb-GGA Exchange-Correlation Functional
+
+    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys. 10, 6615 (2008)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange-Correlation Functionals <=
+
+    1.0000   wB97D range-separated functional
+
+   => Exact (HF) Exchange <=
+
+    0.7780            HF,LR [omega = 0.2000]
+    0.2220               HF 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             99
+    Spherical Points    =            302
+    Total Points        =          86317
+    Total Blocks        =            702
+    Max Points          =            256
+    Max Functions       =             33
+
+   => -CHG: Empirical Dispersion <=
+
+    Chai and Head-Gordon Dispersion Correction
+    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620
+
+        S6 =   1.000000E+00
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry N          line   171 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2 entry C          line   121 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 3 entry H          line    51 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        24      24       0       0       0       0
+     A"         9       9       0       0       0       0
+   -------------------------------------------------------
+    Total      33      33       7       7       7       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                 Yes
+    Omega:               2.000E-01
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 57
+    Number of basis function: 163
+    Number of Cartesian functions: 187
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 7.7788208310E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:   -93.70929160040222   -9.37093e+01   8.45890e-02 
+   @DF-RKS iter   1:   -93.33696583451469    3.72326e-01   1.12522e-02 
+   @DF-RKS iter   2:   -93.28802843718189    4.89374e-02   1.90384e-02 DIIS
+   @DF-RKS iter   3:   -93.39178925249968   -1.03761e-01   1.11630e-03 DIIS
+   @DF-RKS iter   4:   -93.39273543488153   -9.46182e-04   5.13314e-04 DIIS
+   @DF-RKS iter   5:   -93.39296613982967   -2.30705e-04   1.37929e-04 DIIS
+   @DF-RKS iter   6:   -93.39299666241089   -3.05226e-05   3.34424e-05 DIIS
+   @DF-RKS iter   7:   -93.39299798279427   -1.32038e-06   6.92515e-06 DIIS
+   @DF-RKS iter   8:   -93.39299801331848   -3.05242e-08   1.27381e-06 DIIS
+   @DF-RKS iter   9:   -93.39299801417474   -8.56261e-10   1.36901e-07 DIIS
+   @DF-RKS iter  10:   -93.39299801419179   -1.70530e-11   3.43405e-08 DIIS
+   @DF-RKS iter  11:   -93.39299801419253   -7.38964e-13   4.60826e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -14.477963     2Ap   -10.358963     3Ap    -1.019004  
+       4Ap    -0.699179     5Ap    -0.471854     1App   -0.443726  
+       6Ap    -0.443726  
+
+    Virtual:                                                              
+
+       7Ap     0.092027     2App    0.092027     8Ap     0.144920  
+       9Ap     0.279446    10Ap     0.552921     3App    0.552921  
+      11Ap     0.634459    12Ap     0.753089    13Ap     0.824921  
+       4App    0.880931    14Ap     0.880931    15Ap     1.067976  
+       5App    1.161556    16Ap     1.161557     6App    1.178585  
+      17Ap     1.178587    18Ap     1.530277    19Ap     1.796523  
+       7App    1.796523    20Ap     1.958841     8App    1.958846  
+      21Ap     2.149002    22Ap     2.637467     9App    2.637467  
+      23Ap     2.876678    24Ap     3.136700  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     6,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:   -93.39299801419253
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             23.6698792310870019
+    One-Electron Energy =                -172.3719302501164634
+    Two-Electron Energy =                  64.0084687934852781
+    DFT Exchange-Correlation Energy =      -8.6993291997281759
+    Empirical Dispersion Energy =          -0.0000865889201739
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -93.3929980141925284
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.1037      Y:    -1.5293      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0271      Y:     0.3986      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0766      Y:    -1.1308      Z:     0.0000     Total:     1.1334
+
+  Dipole Moment: [D]
+     X:     0.1946      Y:    -2.8741      Z:     0.0000     Total:     2.8807
+
+
+*** tstop() called on Daniels-MacBook-Pro.local at Wed Jun 13 19:56:36 2018
+Module time:
+	user time   =       4.47 seconds =       0.07 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       4.47 seconds =       0.07 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Wed Jun 13 19:56:36 2018
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         N           -0.040558457589     0.600639828526     0.000000000000    14.003074004780
+         C            0.038049642411    -0.564048771474     0.000000000000    12.000000000000
+         H            0.110482842411    -1.629468071474     0.000000000000     1.007825032070
+
+  Nuclear repulsion =   23.669879231087002
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 15
+    Number of basis function: 33
+    Number of Cartesian functions: 35
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                 Yes
+    Omega:               2.000E-01
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 57
+    Number of basis function: 163
+    Number of Cartesian functions: 187
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> DFT Potential <==
+
+   => Composite Functional: WB97X-D <= 
+
+    wB97X-D Hyb-GGA Exchange-Correlation Functional
+
+    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys. 10, 6615 (2008)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange-Correlation Functionals <=
+
+    1.0000   wB97D range-separated functional
+
+   => Exact (HF) Exchange <=
+
+    0.7780            HF,LR [omega = 0.2000]
+    0.2220               HF 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             99
+    Spherical Points    =            302
+    Total Points        =          86317
+    Total Blocks        =            702
+    Max Points          =            256
+    Max Functions       =             33
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.001998424204     0.029836079800     0.000000000000
+       2        0.002469264256    -0.037010688145     0.000000000000
+       3       -0.000457763528     0.006978613811     0.000000000000
+
+
+*** tstop() called on Daniels-MacBook-Pro.local at Wed Jun 13 19:56:37 2018
+Module time:
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       5.41 seconds =       0.09 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+	Analytic Gradient vs Reference....................................PASSED
+
+    Psi4 stopped on: Wednesday, 13 June 2018 07:56PM
+    Psi4 wall time for execution: 0:00:05.56
+
+*** Psi4 exiting successfully. Buy a developer a beer!

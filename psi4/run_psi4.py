@@ -140,8 +140,13 @@ if args["output"] is None:
 # Plugin compile line
 if args['plugin_compile']:
     share_cmake_dir = os.path.sep.join([cmake_install_prefix, 'share', 'cmake', 'psi4'])
-    print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(share_cmake_dir, cmake_install_prefix))
-    sys.exit()
+
+    plugincachealongside = os.path.isfile(share_cmake_dir + os.path.sep + 'psi4PluginCache.cmake')
+    if plugincachealongside:
+        print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(share_cmake_dir, cmake_install_prefix))
+        sys.exit()
+    else:
+        print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@PYTHON_EXECUTABLE@")

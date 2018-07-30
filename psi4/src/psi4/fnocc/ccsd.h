@@ -100,7 +100,7 @@ class CoupledCluster: public Wavefunction{
 
     /// cc or qci (t)
     PsiReturnType triples();
-    PsiReturnType lowmemory_triples();
+    PSI_API PsiReturnType lowmemory_triples();
     double et;
 
     /// mp4 triples

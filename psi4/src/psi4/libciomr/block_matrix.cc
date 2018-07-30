@@ -35,11 +35,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <strings.h>
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include <unistd.h>
 #ifdef _POSIX_MEMLOCK
 #include <sys/mman.h>
 #endif
@@ -75,7 +73,7 @@ namespace psi {
 ** \ingroup CIOMR
 */
 
-double ** PSI_API block_matrix(size_t n, size_t m, bool memlock)
+PSI_API double ** block_matrix(size_t n, size_t m, bool memlock)
 {
     double **A=nullptr;
     double *B=nullptr;

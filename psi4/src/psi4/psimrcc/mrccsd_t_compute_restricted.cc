@@ -63,7 +63,7 @@ void MRCCSD_T::compute_restricted()
 
   compute_ooo_triples_restricted();
   compute_ooO_triples_restricted();
-  if(not closed_shell_case){
+  if(!closed_shell_case){
     compute_oOO_triples_restricted();
     compute_OOO_triples_restricted();
   }
@@ -107,7 +107,7 @@ void MRCCSD_T::compute_restricted()
     }
   }
 
-  if(not options_.get_bool("DIAGONALIZE_HEFF")){
+  if(!options_.get_bool("DIAGONALIZE_HEFF")){
     double Heff_E = 0.0;
     for(int mu = 0; mu < nrefs; ++mu){
       for(int nu = 0; nu < nrefs; ++nu){
@@ -156,7 +156,7 @@ void MRCCSD_T::compute_ooo_triples_restricted()
     size_t j_abs = o->get_tuple_abs_index(ijk.ind_abs<1>());
     size_t k_abs = o->get_tuple_abs_index(ijk.ind_abs<2>());
 
-    if((i_abs < j_abs) and (j_abs < k_abs)){
+    if((i_abs < j_abs) && (j_abs < k_abs)){
 
       int i_sym    = o->get_tuple_irrep(ijk.ind_abs<0>());
       int j_sym    = o->get_tuple_irrep(ijk.ind_abs<1>());
@@ -310,7 +310,7 @@ void MRCCSD_T::compute_OOO_triples_restricted()
     size_t j_abs = o->get_tuple_abs_index(ijk.ind_abs<1>());
     size_t k_abs = o->get_tuple_abs_index(ijk.ind_abs<2>());
 
-    if((i_abs < j_abs) and (j_abs < k_abs)){
+    if((i_abs < j_abs) && (j_abs < k_abs)){
 
       int i_sym    = o->get_tuple_irrep(ijk.ind_abs<0>());
       int j_sym    = o->get_tuple_irrep(ijk.ind_abs<1>());

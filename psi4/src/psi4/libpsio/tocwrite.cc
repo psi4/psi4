@@ -32,7 +32,6 @@
  */
 
 #include <cstdlib>
-#include <unistd.h>
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
