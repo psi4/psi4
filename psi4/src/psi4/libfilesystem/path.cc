@@ -40,10 +40,28 @@
 #include <cstring>
 #include <system_error>
 
+#ifdef _MSC_VER
+#define S_IRUSR 0
+#define S_IWUSR 0
+#define S_IXUSR 0
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#include <direct.h>
+#define SYSTEM_GETCWD ::_getcwd
+#define mkdir(D,P) _mkdir((D))
+#include <io.h>
+#define truncate(F,S) _chsize(_fileno((F)),(S))
+#include <stdlib.h>
+#define PATH_MAX _MAX_PATH
+#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#define PATH_SEPARATOR "\\"
+#else
 #include <unistd.h>
+#define SYSTEM_GETCWD ::getcwd
+#define PATH_SEPARATOR "/"
+#endif
 #include <sys/stat.h>
 #include <limits.h>
-#include <libgen.h>
 
 namespace psi {
 namespace filesystem {
@@ -86,22 +104,27 @@ bool path::exists() const
 
 void path::set(const std::string &str)
 {
-    path_ = tokenize(str, "/");
-    absolute_ = !str.empty() && str[0] == '/';
+    path_ = tokenize(str, PATH_SEPARATOR);
+#ifdef _MSC_VER
+    absolute_ = !str.empty() && str[1] == ':';
+#else
+    absolute_ = !str.empty() && str[0] == PATH_SEPARATOR[0];
+#endif
 }
 
 std::string path::str() const
 {
     std::ostringstream ss;
 
+#ifndef _MSC_VER
     if (absolute_)
-        ss << "/";
+        ss << PATH_SEPARATOR;
+#endif
 
     for (size_t i = 0; i < path_.size(); ++i) {
         ss << path_[i];
-        if (i + 1 < path_.size()) {
-            ss << "/";
-        }
+        if (i + 1 < path_.size())
+            ss << PATH_SEPARATOR;
     }
 
     return ss.str();
@@ -125,17 +148,8 @@ bool path::is_file() const
 
 std::string path::stem() const
 {
-    char tpath[PATH_MAX + 1];
     std::string path = filename();
-
-    std::size_t found = path.find_last_of(".");
-    path = path.substr(0, found);
-
-    if (path.size() > PATH_MAX)
-        throw std::runtime_error("path is longer than PATH_MAX.");
-    strncpy(tpath, path.c_str(), PATH_MAX);
-    char *temp = ::basename(tpath);
-    return std::string(temp);
+    return path.substr(0, path.find_last_of("."));
 }
 
 std::string path::filename() const
@@ -207,13 +221,17 @@ bool path::remove_file()
 
 bool path::resize_file(size_t target_length)
 {
+#ifdef _MSC_VER
+    throw std::runtime_error("psi::filesystem::resize_file is not implemented on Windows");
+#else
     return ::truncate(str().c_str(), (off_t) target_length) == 0;
+#endif
 }
 
 path path::getcwd()
 {
     char temp[PATH_MAX];
-    if (::getcwd(temp, PATH_MAX) == nullptr)
+    if (SYSTEM_GETCWD(temp, PATH_MAX) == nullptr)
         throw std::runtime_error("path::getcwd(): " + std::string(strerror(errno)));
     return path(temp);
 }
