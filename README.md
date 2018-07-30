@@ -13,7 +13,7 @@
 <a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
 <a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
 <br><br>
-<img src="https://github.com/psi4/psi4media/blob/master/logos/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
+<img src="https://github.com/psi4/psi4media/blob/master/logos-psi4/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
 </p>
 
 Psi4 is an open-source suite of *ab initio* quantum chemistry programs
