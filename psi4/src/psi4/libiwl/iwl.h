@@ -58,16 +58,16 @@ struct iwlbuf {
 };
 
 
-void iwl_buf_fetch(struct iwlbuf *Buf);
+void PSI_API iwl_buf_fetch(struct iwlbuf *Buf);
 void iwl_buf_put(struct iwlbuf *Buf);
 
 int iwl_rdone(int itap, const char *label, double *ints, int ntri, int erase,
               int printflg, std::string out);
 
-void iwl_buf_init(struct iwlbuf *Buf, int intape, double cutoff,
+void PSI_API iwl_buf_init(struct iwlbuf *Buf, int intape, double cutoff,
       int oldfile, int readflag);
 void iwl_buf_flush(struct iwlbuf *Buf, int lastbuf);
-void iwl_buf_close(struct iwlbuf *Buf, int keep);
+void PSI_API iwl_buf_close(struct iwlbuf *Buf, int keep);
 void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
                      double value, int printflag, std::string out, int dirac);
 
