@@ -1723,7 +1723,7 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, natom):
 def _contract_scheme_orders(needdict, datakey='f_energy'):
     """Prepared named arguments for extrapolation functions by
     extracting zetas and values (which one determined by *datakey*) out
-    of *needdict* and returning a dictionary whose keys are contructed
+    of *needdict* and returning a dictionary whose keys are constructed
     from _lmh_labels.
 
     """

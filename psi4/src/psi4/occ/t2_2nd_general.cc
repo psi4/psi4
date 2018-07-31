@@ -146,7 +146,7 @@ if (reference_ == "RESTRICTED") {
     global_dpd_->buf4_close(&Tp);
 
 
-    // initalize Tnew and Told
+    // initialize Tnew and Told
     global_dpd_->buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_2new <OO|VV>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -424,7 +424,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&Tp);
 
 
-    // initalize Tnew and Told
+    // initialize Tnew and Told
     global_dpd_->buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_2new <OO|VV>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -585,7 +585,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&Tp);
 
 
-    // initalize Tnew and Told
+    // initialize Tnew and Told
     global_dpd_->buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_2new <oo|vv>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -757,7 +757,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&Tp);
 
 
-    // initalize Tnew and Told
+    // initialize Tnew and Told
     global_dpd_->buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_2new <Oo|Vv>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),

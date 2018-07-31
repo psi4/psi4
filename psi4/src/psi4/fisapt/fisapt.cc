@@ -1428,7 +1428,7 @@ void FISAPT::ind() {
     std::shared_ptr<Vector> eps_vir0A = vectors_["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir0B = vectors_["eps_vir0B"];
 
-    // => ExchInd pertubations <= //
+    // => ExchInd perturbations <= //
 
     std::shared_ptr<Matrix> C_O_A = Matrix::triplet(D_B, S, matrices_["Cocc_A"]);
     std::shared_ptr<Matrix> C_P_A = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, matrices_["Cocc_B"]);

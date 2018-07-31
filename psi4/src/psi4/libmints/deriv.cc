@@ -575,7 +575,7 @@ SharedMatrix Deriv::compute()
 
             if ( !deriv_density_backtransformed_ ) {
 
-                // Dial up an integral tranformation object to backtransform the OPDM, TPDM and Lagrangian
+                // Dial up an integral transformation object to backtransform the OPDM, TPDM and Lagrangian
                 std::vector<std::shared_ptr<MOSpace> > spaces;
                 spaces.push_back(MOSpace::all);
                 std::shared_ptr<IntegralTransform> ints_transform = std::shared_ptr<IntegralTransform>(

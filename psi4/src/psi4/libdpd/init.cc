@@ -68,7 +68,7 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
             int num_subspaces, std::vector<int*> &spaceArrays)
 {
     if(dpd_list[dpd_num])
-        throw PSIEXCEPTION("Attempting to initilize new DPD instance before the old one was freed.");
+        throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
     dpd_list[dpd_num] = new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
                                 priority, num_subspaces, spaceArrays);
     dpd_default = dpd_num;

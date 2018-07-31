@@ -2649,7 +2649,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
     options.add_str("WFN_TYPE","OMP2","OMP2 OMP3 OCEPA OMP2.5");
-    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm.
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algorithm.
     The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");

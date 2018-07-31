@@ -990,7 +990,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                     int labs = lirrepoff_[lsym] + lrel;
                     int lsooff = ksooff * nso4 + ltr;
 
-                    // Only totally symmetric pertubations are considered here!
+                    // Only totally symmetric perturbations are considered here!
                     if (isym ^ jsym ^ ksym ^ lsym) continue;
 
                     int iiabs = iabs;

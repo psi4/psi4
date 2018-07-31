@@ -245,7 +245,7 @@ void diagSS(int C_irr) {
 
    if (pf) outfile->Printf("%d initial single excitation guesses\n",C_index);
    if (C_index == 0) {
-      outfile->Printf( "No intial guesses obtained for %s state \n",
+      outfile->Printf( "No initial guesses obtained for %s state \n",
 	      moinfo.irr_labs[moinfo.sym^C_irr].c_str());
       exit(1);
     }

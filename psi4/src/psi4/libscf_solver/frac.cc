@@ -139,7 +139,7 @@ void HF::frac() {
         // Load the old orbitals in if requested
         if (options_.get_bool("FRAC_LOAD")) {
             outfile->Printf("    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
-            throw PSIEXCEPTION("FRAC_LOAD is currently not an avilable feature");
+            throw PSIEXCEPTION("FRAC_LOAD is currently not an available feature");
             // load_orbitals();
         }
 

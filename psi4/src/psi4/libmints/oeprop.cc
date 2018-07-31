@@ -880,7 +880,7 @@ void OEProp::compute()
         if(std::regex_match(str, matches, mpoles)){
             int order;
             if(!from_string<int>(order, matches[1], std::dec))
-                throw PSIEXCEPTION("Problem detemining multipole order!  Specify, e.g., MULTIPOLE(5)");
+                throw PSIEXCEPTION("Problem determining multipole order!  Specify, e.g., MULTIPOLE(5)");
             compute_multipoles(order);
         }
     }

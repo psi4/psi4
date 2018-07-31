@@ -428,7 +428,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         D->print();
     }
 
-    // Compute inital E for reference
+    // Compute initial E for reference
     double E = D->vector_dot(H);
     E *= 0.5;
 
