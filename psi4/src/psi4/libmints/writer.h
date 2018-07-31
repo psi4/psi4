@@ -44,16 +44,6 @@ class Molecule;
 class Matrix;
 class Wavefunction;
 
-class GradientWriter {
-    std::shared_ptr<Molecule> molecule_;
-    const Matrix &gradient_;
-
-   public:
-    GradientWriter(std::shared_ptr<Molecule> mol, const Matrix &grad);
-
-    void write(const std::string &filename);
-};
-
 class FCHKWriter {
    private:
     /*! \brief Extracts information from a wavefunction object, and writes it into a formatted FCHK

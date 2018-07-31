@@ -55,6 +55,7 @@ from . import vib
 from .vib import compare_vibinfos
 from . import molparse
 from . import hessparse
+from . import gradparse
 
 # Load items that are useful to access from an input file
 from .psiutil import *

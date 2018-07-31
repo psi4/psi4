@@ -1473,10 +1473,6 @@ void export_mints(py::module& m) {
     py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer",
                                                                      "Performs Pipek-Mezey orbital localization");
 
-    py::class_<GradientWriter, std::shared_ptr<GradientWriter>>(m, "GradientWriter", "Writes a molecule's gradient to file")
-        .def(py::init<std::shared_ptr<Molecule>, const Matrix&>())
-        .def("write", &GradientWriter::write, "Write gradient to file", py::arg("filename"));
-
     py::class_<FCHKWriter, std::shared_ptr<FCHKWriter>>(m, "FCHKWriter", "Extracts information from a wavefunction object, \
                                                                           and writes it to an FCHK file")
         .def(py::init<std::shared_ptr<Wavefunction>>())

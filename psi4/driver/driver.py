@@ -638,12 +638,6 @@ def gradient(name, **kwargs):
         # Perform the gradient calculation
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
-        optstash.restore()
-        if return_wfn:
-            return (wfn.gradient(), wfn)
-        else:
-            return wfn.gradient()
-
     else:
         core.print_out("""gradient() will perform gradient computation by finite difference of analytic energies.\n""")
 
@@ -766,15 +760,22 @@ def gradient(name, **kwargs):
         # Compute the gradient; last item in 'energies' is undisplaced
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
         G = driver_findif.comp_grad_from_energy(molecule, energies)
-        G.print_out()
-        wfn.set_gradient(G)
+        grad_psi_matrix = core.Matrix.from_array(G)
+        grad_psi_matrix.print_out()
+        wfn.set_gradient(grad_psi_matrix)
 
-        optstash.restore()
 
-        if return_wfn:
-            return (wfn.gradient(), wfn)
-        else:
-            return wfn.gradient()
+    optstash.restore()
+
+    if core.get_option('FINDIF', 'GRADIENT_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
+        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD',
+                                     mol=molecule, energy=wfn.energy())
+
+    if return_wfn:
+        return (wfn.gradient(), wfn)
+    else:
+        return wfn.gradient()
 
 
 def properties(*args, **kwargs):

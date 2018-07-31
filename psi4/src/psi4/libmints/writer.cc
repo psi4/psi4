@@ -46,35 +46,6 @@
 using namespace psi;
 ;
 
-GradientWriter::GradientWriter(std::shared_ptr<Molecule> mol, const Matrix& grad)
-    : molecule_(mol), gradient_(grad)
-{
-}
-
-void GradientWriter::write(const std::string &filename)
-{
-   auto printer = std::make_shared<PsiOutStream>(filename,std::ostream::app);
-   int i;
-
-
-    printer->Printf("%-59.59s %-10.10s%-9.9s\n",
-            molecule_->name().c_str(),
-            "(wfn)",
-            "(dertype)");
-
-    printer->Printf("%5d%20.10lf\n", molecule_->natom(), Process::environment.globals["CURRENT ENERGY"]);
-
-    for (i=0; i<molecule_->natom(); ++i) {
-        printer->Printf("%20.10lf%20.10lf%20.10lf%20.10lf\n",
-                double(molecule_->Z(i)), molecule_->x(i), molecule_->y(i), molecule_->z(i));
-    }
-
-    for (i=0; i<molecule_->natom(); ++i) {
-        printer->Printf("                    %20.10lf%20.10lf%20.10lf\n",
-                gradient_(i, 0), gradient_(i, 1), gradient_(i, 2));
-    }
-}
-
 MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
 {

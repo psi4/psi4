@@ -298,13 +298,9 @@ def comp_grad_from_energy(mol, E):
 
     Returns
     -------
-    gradient : psi4.core.Matrix
+    gradient : np.array
         The gradient in Cartesians, as a matrix with dimensions
         number-of-atoms by 3. """
-
-    # NOTE: Yes, this returns psi4.core.Matrix, not an ndarray.
-    # Due to GradientWriter, the function internally needs the gradient as a psi4.core.Matrix.
-    # TODO: Move GradientWriter py-side, as well? This function would simplify nicely.
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
@@ -346,23 +342,14 @@ def comp_grad_from_energy(mol, E):
 
     B = data["salc_list"].matrix()
     g_cart = np.matmul(g_q, B)
-
-    gradient_matrix = core.Matrix("F-D gradient", data["Natom"], 3)
-
-    for atom in range(data["Natom"]):
-        for xyz in range(3):
-            gradient_matrix.set(atom, xyz, g_cart[3 * atom + xyz] * np.sqrt(mol.mass(atom)))
-
-    if core.get_option("FINDIF", "GRADIENT_WRITE"):
-        grad = core.GradientWriter(mol, gradient_matrix)
-        gradfile = core.get_writer_file_prefix(mol.name()) + ".grad"
-        grad.write(gradfile)
-        core.print_out("\t Gradient written.\n")
+    g_cart = g_cart.reshape(data["Natom"], 3)
+    massweighter = np.array([mol.mass(a) for a in range(data["Natom"])])**(0.5)
+    g_cart = (g_cart.T * massweighter).T
 
     if data["print_lvl"]:
         core.print_out("\n-------------------------------------------------------------\n")
 
-    return gradient_matrix
+    return g_cart
 
 
 def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print_lvl):
