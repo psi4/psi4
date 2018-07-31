@@ -103,7 +103,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <math.h>
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"

@@ -932,6 +932,8 @@ void* EaT_RHF_thread(void* thread_data_in)
   } /* i */
 
   pthread_exit(nullptr);
+
+  return nullptr;
 }
 
 }} // namespace psi::CCTRIPLES
