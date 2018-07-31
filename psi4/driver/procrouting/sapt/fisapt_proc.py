@@ -110,10 +110,10 @@ def fisapt_compute_energy(self):
 def fisapt_fdrop(self):
     """Drop output files from FSAPT calculation. FISAPT::fdrop"""
 
-    filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
-    os.mkdir(filepath)
-
     core.print_out("  ==> F-SAPT Output <==\n\n")
+
+    filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+    os.makedirs(filepath, exist_ok=True)
 
     core.print_out("    F-SAPT Data Filepath = {}\n\n".format(filepath))
 
@@ -145,7 +145,7 @@ def fisapt_fdrop(self):
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
         ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
-        os.mkdir(ssapt_filepath)
+        os.makedirs(ssapt_filepath, exist_ok=True)
 
         core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
 
@@ -171,9 +171,8 @@ def fisapt_fdrop(self):
 def fisapt_plot(self):
     """Filesystem wrapper for FISAPT::plot."""
 
-    # will raise exception if exists
     filepath = core.get_option("FISAPT", "FISAPT_PLOT_FILEPATH")
-    os.mkdir(filepath)
+    os.makedirs(filepath, exist_ok=True)
 
     geomfile = filepath + os.sep + 'geom.xyz'
     xyz = self.molecule().to_string(dtype='xyz', units='Angstrom')
