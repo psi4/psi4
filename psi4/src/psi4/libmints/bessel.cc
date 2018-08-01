@@ -56,6 +56,7 @@ void BesselFunction::init(int _lMax, int _N, int _order, const double accuracy) 
 	K = new double*[N+1];
 	for (int i = 0; i < N+1; i++) K[i] = new double[lMax + TAYLOR_CUT + 1];
 	C = new double[lMax+TAYLOR_CUT];
+	dK = std::vector<std::vector<double>>(TAYLOR_CUT+1, std::vector<double>(lMax + TAYLOR_CUT));
 	
 	// Tabulate values
 	tabulate(accuracy);
@@ -173,7 +174,6 @@ void BesselFunction::calculate(const double z, int maxL, std::vector<double> &va
 		} else {
 			// Determine the necessary derivatives from
 			// K_l^(n+1) = C_l K_(l-1)^(n) + (C_l + 1/(2l+1))K_(l+1)^(n) - K_l^(n)
-			std::vector<std::vector<double>> dK(TAYLOR_CUT+1, std::vector<double>(maxLambda));
 		
 			// Copy K values into dK
 			for (int l = 0; l < maxLambda; l++)
