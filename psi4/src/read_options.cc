@@ -988,7 +988,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Do an F-SAPT analysis? -*/
       options.add_bool("FISAPT_DO_FSAPT", true);
-      /*- Filepath to drop F-SAPT data -*/
+      /*- Filepath to drop F-SAPT data within input file directory -*/
       options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/");
       /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
       options.add_bool("FISAPT_FSAPT_EXCH_SCALE", true);
@@ -998,7 +998,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
       /*- Do sSAPT0 exchange-scaling with F-SAPT -*/
       options.add_bool("SSAPT0_SCALE", false);
-      /*- Filepath to drop  sSAPT0 exchange-scaling F-SAPT data -*/
+      /*- Filepath to drop sSAPT0 exchange-scaling F-SAPT data within input file directory -*/
       options.add_str_i("FISAPT_FSSAPT_FILEPATH", "s-fsapt/");
 
       // => CubicScalarGrid options <= //
@@ -1016,7 +1016,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Plot a scalar-field analysis -*/
       options.add_bool("FISAPT_DO_PLOT", false);
-      /*- Filepath to drop scalar data -*/
+      /*- Filepath to drop scalar data within input file directory -*/
       options.add_str_i("FISAPT_PLOT_FILEPATH", "plot/");
 
       // => Localization Tech <= //
