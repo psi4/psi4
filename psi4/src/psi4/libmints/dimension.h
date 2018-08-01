@@ -96,10 +96,10 @@ class PSI_API Dimension {
     const int& get(int i) const { return blocks_[i]; }
     void set(int i, int val) { blocks_[i] = val; }
 
-    friend bool operator==(const Dimension& a, const Dimension& b);
-    friend bool operator!=(const Dimension& a, const Dimension& b);
-    friend Dimension operator+(const Dimension& a, const Dimension& b);
-    friend Dimension operator-(const Dimension& a, const Dimension& b);
+    PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
+    PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);
+    PSI_API friend Dimension operator+(const Dimension& a, const Dimension& b);
+    PSI_API friend Dimension operator-(const Dimension& a, const Dimension& b);
 };
 
 /*! \ingroup MINTS

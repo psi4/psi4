@@ -36,7 +36,13 @@
 #include "psi4/libpsi4util/process.h"
 
 #include <string>
+#ifdef _MSC_VER
+#include <process.h>
+#define SYSTEM_GETPID ::_getpid
+#else
 #include <unistd.h>
+#define SYSTEM_GETPID ::getpid
+#endif
 
 namespace psi {
 
@@ -63,7 +69,7 @@ namespace psi {
 
 std::string PSI_API get_writer_file_prefix(const std::string& molecule_name)
 {
-    const std::string pid= "." + std::to_string(getpid());
+    const std::string pid= "." + std::to_string(SYSTEM_GETPID());
     const std::string label = Process::environment.options.get_str("WRITER_FILE_LABEL");
     if (!label.empty()) {
         return label+pid;

@@ -69,6 +69,8 @@ private:
 	/// Coefficients for derivatives of Bessel function
 	double *C; 
 	
+	std::vector<std::vector<double>> dK;
+
 	/**
 	  * Pretabulates the Bessel function to a given accuracy.
 	  * @param accuracy - the tolerance at which a value is considered converged
