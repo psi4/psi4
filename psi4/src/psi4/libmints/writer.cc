@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <utility>
 #include <algorithm>
+#include <vector>
 #include "psi4/libmints/writer.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
@@ -209,7 +210,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     std::vector<std::pair<double, std::pair<int, int> > > mos;
 
     // Number of MOs to write
-    int nmoh[wavefunction_->nirrep()];
+    std::vector<int> nmoh(wavefunction_->nirrep());
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
 	if (dovirtual)
 	    nmoh[h] = wavefunction_->nmopi()[h];

@@ -43,7 +43,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <strings.h>
+#include <cstring>
 
 namespace psi {
 
@@ -67,7 +67,7 @@ long int * init_long_int_array(int size)
     outfile->Printf("size = %d\n",size);
     exit(PSI_RETURN_FAILURE);
   }
-  bzero(array,sizeof(long int)*size);
+  memset(array, 0, sizeof(long int)*size);
   return(array);
 }
 

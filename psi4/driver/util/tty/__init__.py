@@ -26,11 +26,9 @@
 # @END LICENSE
 #
 
-import fcntl
 import os
 import sys
 import struct
-import termios
 import textwrap
 
 if sys.version_info[0] == 2:
@@ -152,6 +150,8 @@ def terminal_size():
 
     def ioctl_GWINSZ(fd):
         try:
+            import fcntl # Not available on Windows
+            import termios # Not available on Windows
             rc = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
         except:
             return

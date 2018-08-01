@@ -974,7 +974,7 @@ void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStre
     for (auto child_iter = children.begin(), end_child_iter = children.end(); child_iter != end_child_iter;
          ++child_iter) {
         printer->Printf("%s", indent.c_str());
-        print_timer(*child_iter, printer, 28 - indent.length());
+        print_timer(*child_iter, printer, 36 - indent.length());
         print_nested_timer(*child_iter, printer, indent + "| ");
     }
 }
@@ -1038,7 +1038,7 @@ void timer_done(void) {
 
     const std::list<Timer_Structure> timer_list = root_timer.summarize();
     for (auto timer_iter = timer_list.begin(), end_iter = timer_list.end(); timer_iter != end_iter; ++timer_iter) {
-        print_timer(*timer_iter, printer, 28);
+        print_timer(*timer_iter, printer, 36);
     }
 
     printer->Printf("\n-----------------------------------------------------------\n");

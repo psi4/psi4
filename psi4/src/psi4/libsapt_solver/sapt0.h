@@ -84,10 +84,10 @@ private:
   SAPTDFInts set_Q14_AR();
 
   Iterator get_iterator(long int, SAPTDFInts*, bool alloc=true);
-  Iterator set_iterator(int, SAPTDFInts*, bool alloc=true);
+  Iterator set_iterator(long int, SAPTDFInts*, bool alloc=true);
 
   Iterator get_iterator(long int, SAPTDFInts*, SAPTDFInts*, bool alloc=true);
-  Iterator set_iterator(int, SAPTDFInts*, SAPTDFInts*, bool alloc=true);
+  Iterator set_iterator(long int, SAPTDFInts*, SAPTDFInts*, bool alloc=true);
 
   void read_all(SAPTDFInts*);
   void read_block(Iterator *, SAPTDFInts *);

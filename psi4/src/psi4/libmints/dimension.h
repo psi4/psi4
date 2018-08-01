@@ -96,10 +96,10 @@ class PSI_API Dimension {
     const int& get(int i) const { return blocks_[i]; }
     void set(int i, int val) { blocks_[i] = val; }
 
-    friend bool operator==(const Dimension& a, const Dimension& b);
-    friend bool operator!=(const Dimension& a, const Dimension& b);
-    friend Dimension operator+(const Dimension& a, const Dimension& b);
-    friend Dimension operator-(const Dimension& a, const Dimension& b);
+    PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
+    PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);
+    PSI_API friend Dimension operator+(const Dimension& a, const Dimension& b);
+    PSI_API friend Dimension operator-(const Dimension& a, const Dimension& b);
 };
 
 /*! \ingroup MINTS
@@ -122,7 +122,7 @@ class PSI_API Dimension {
  *      SharedVector v;
  *      v->get_block({begin,end}); // same as v->get_block(slice);
  */
-class Slice {
+class PSI_API Slice {
     Dimension begin_;
     Dimension end_;
 

@@ -44,7 +44,6 @@ methods_dict_ = {
     'energy': driver.energy,
     'gradient': driver.gradient,
     'properties': driver.properties,
-    'optimize': driver.optimize,
     'hessian': driver.hessian,
     'frequency': driver.frequency,
 }
@@ -65,15 +64,18 @@ def run_json(json_data, clean=True):
         psi4_io = core.IOManager.shared_object()
         psi4_io.set_default_path(json_data["scratch_location"])
 
+    # Direct output
+    outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
+    core.set_output_file(outfile, False)
+
     # Set memory
     if "memory" in json_data:
         psi4.set_memory(json_data["memory"])
 
+
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
     if return_output:
-        outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
-        core.set_output_file(outfile, False)
         json_data["raw_output"] = "Not yet run."
 
     # Set a few flags
@@ -82,9 +84,11 @@ def run_json(json_data, clean=True):
 
     # Attempt to run the computer
     try:
-        if ("schema_name" in json_data) and (json_data["schema_name"] == "QC_JSON"):
-            run_json_qc_schema(json_data, clean)
+        if json_data.get("schema_name", "").startswith("qc_schema"):
+            # qc_schema should be copied
+            json_data = run_json_qc_schema(copy.deepcopy(json_data), clean)
         else:
+            # Original run updates inplace
             run_json_original_v1_1(json_data, clean)
 
     except Exception as error:
@@ -123,8 +127,14 @@ def run_json_qc_schema(json_data, clean):
     _clean_psi_environ(clean)
 
     # This is currently a forced override
-    if json_data["schema_version"] != 0:
+    if json_data["schema_name"] != "qc_schema_input":
+        raise KeyError("Schema name of '{}' not understood".format(json_data["schema_name"]))
+
+    if json_data["schema_version"] != 1:
         raise KeyError("Schema version of '{}' not understood".format(json_data["schema_version"]))
+
+    if json_data.get("nthreads", False) is not False:
+        psi4.set_num_threads(json_data["nthreads"], quiet=True)
 
     json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
@@ -225,6 +235,8 @@ def run_json_qc_schema(json_data, clean):
 
     # Reset state
     _clean_psi_environ(clean)
+
+    json_data["schema_name"] = "qc_schema_output"
 
     return json_data
 

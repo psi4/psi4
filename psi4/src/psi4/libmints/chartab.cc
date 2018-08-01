@@ -89,13 +89,13 @@ using namespace psi;
 ////////////////////////////////////////////////////////////////////////
 
 CharacterTable::CharacterTable()
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(),
       bits_(0)
 {
 }
 
 CharacterTable::CharacterTable(const CharacterTable& ct)
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(),
       bits_(0)
 {
     *this = ct;

@@ -754,12 +754,12 @@ class BasisSet(object):
         #nolongerenvvar psidatadir = os.environ.get('PSIDATADIR', None)
         #nolongerpredicatble psidatadir = __file__ + '/../../..' if psidatadir is None else psidatadir
         if psidatadir:
-            libraryPath = ':' + os.path.abspath(psidatadir) + '/basis'
+            libraryPath = os.pathsep + os.path.join(os.path.abspath(psidatadir), 'basis')
         else:
             libraryPath = ''
-        basisPath = os.path.abspath('.') + \
-            ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
-            libraryPath
+        basisPath = os.path.abspath('.') + os.pathsep
+        basisPath += os.pathsep.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(os.pathsep)])
+        basisPath += libraryPath
 
         # Validate deffit for key
         univdef_zeta = 4
@@ -896,7 +896,7 @@ class BasisSet(object):
                 # Ne'er found :-(
                 text2  = """  Shell Entries: %s\n""" % (seek['entry'])
                 text2 += """  Basis Sets: %s\n""" % (seek['basis'])
-                text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(':'))))
+                text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(os.pathsep))))
                 text2 += """  Input Blocks: %s\n""" % (', '.join(seek['strings']))
                 raise BasisSetNotFound('BasisSet::construct: Unable to find a basis set for atom %d for key %s among:\n%s' % \
                     (at + 1, key, text2))

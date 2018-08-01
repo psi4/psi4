@@ -42,6 +42,7 @@
 #include "psi4/lib3index/dfhelper.h"
 
 #include <cmath>
+#include <ctime>
 
 namespace psi {
 

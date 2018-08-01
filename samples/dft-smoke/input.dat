@@ -15,5 +15,17 @@ set dft_radial_points 75
 set scf_type df
 
 for k, v in test_dict.items():
+    if k == 'DSD-PBEP86-D3BJ' and 'dftd3' not in psi4.addons():
+        continue
     ret = energy(k)
-    compare_values(v, ret, 5, "RKS 0 1  %10s Energy" % k)
+    compare_values(v, ret, 5, "RKS 0 1  %15s Energy" % k)
+
+pbe = {
+    "name": "PBE-TEST",
+    "x_functionals": { "GGA_X_PBE": {} },
+    "c_functionals": { "GGA_C_PBE": {} },
+}
+
+ret = energy("scf", dft_functional="PBE")
+
+ret = energy("scf", dft_functional=pbe)

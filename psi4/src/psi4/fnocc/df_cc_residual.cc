@@ -38,7 +38,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/3index.h"
 
-#include <sys/times.h>
 #include "psi4/libciomr/libciomr.h"
 #ifdef _OPENMP
     #include<omp.h>

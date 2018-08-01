@@ -1,0 +1,22 @@
+#! HF3C fd and analytical frequency
+
+# Changing ref freq on basis of diff after projection. 
+#  pre-proj  all modes:array(['0.0027i', '0.0004', '0.0006', '950.8842', '1137.0842', '1217.0028', '2166.3889', '2804.6651', '3100.0664'],
+#  pre-proj  all modes:['0.0001i' '0.0000i' '0.0000i' '0.0000' '0.0000' '0.0001' '2166.3889' '2804.6651' '3098.6811']
+
+
+molecule mol {
+O
+H 1 1.1
+H 1 1.1 2 109
+symmetry c1
+}
+
+set basis sto-3g
+scf_e_fd, scf_wfn_fd = psi4.frequency("HF3C", dertype=1, return_wfn=True, project_rot=True)
+freq_fd = scf_wfn_fd.frequencies()
+
+scf_e, scf_wfn = psi4.frequency("HF3C", dertype=2, return_wfn=True, project_rot=True)
+freq = scf_wfn.frequencies()
+
+

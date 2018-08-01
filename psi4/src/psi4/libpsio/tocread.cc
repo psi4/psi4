@@ -31,7 +31,6 @@
  \ingroup PSIO
  */
 
-#include <unistd.h>
 #include <cstdlib>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"

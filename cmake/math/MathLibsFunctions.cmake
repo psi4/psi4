@@ -79,7 +79,7 @@ macro(find_math_libs _service)
             set(_libs ${_libs} ${_lib})
         elseif((${l} STREQUAL "-Wl,--start-group") OR
                (${l} STREQUAL "-Wl,--end-group") OR
-               (${l} STREQUAL "-fno-openmp"))
+               (${l} STREQUAL "-Wl,--as-needed"))
             set(_libs ${_libs} ${l})
         else()
             set(${_SERVICE}_LIBRARIES ${_SERVICE}_LIBRARIES-NOTFOUND)

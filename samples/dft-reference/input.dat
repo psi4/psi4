@@ -1,0 +1,16 @@
+#! MP2 with a PBE0 reference computation
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+basis 6-31G
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+

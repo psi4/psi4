@@ -35,7 +35,6 @@
 #include "psi4/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
-#include <strings.h>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
@@ -61,7 +60,7 @@ double * init_array(size_t size)
     outfile->Printf("size = %ld\n",size);
     exit(PSI_RETURN_FAILURE);
   }
-  bzero(array,size*(size_t)sizeof(double));
+  memset(array,0,size*(size_t)sizeof(double));
   return(array);
 }
 

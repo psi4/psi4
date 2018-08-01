@@ -30,6 +30,16 @@ set geom_maxiter 2
 convergence_error_set = False
 try:
     optimize('scf')
-except psi4.ConvergenceError:
+except psi4.OptimizationConvergenceError as ex:
     convergence_error_set = True
+    wfn_from_error = ex.wfn
+
+# grab molecule from the optimization that ended in an error and print
+#   geometry out to the output file. note that geometry is the next step the
+#   optimizer would have taken, not the geometry of the last available SCF and
+#   gradient.
+mol_from_error = wfn_from_error.molecule()
+mol_from_error.print_out()
+
 compare_integers(1, int(convergence_error_set), 'opt() exit gracefully but truthfully')
+compare_values(9.297919, wfn_from_error.molecule().nuclear_repulsion_energy(), 2, 'NRE from error exit')

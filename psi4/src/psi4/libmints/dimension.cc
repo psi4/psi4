@@ -171,7 +171,7 @@ bool Slice::validate_slice() {
             break;
         }
     }
-    if (not valid) {
+    if (!valid) {
         begin_.print();
         end_.print();
         throw PSIEXCEPTION(msg);

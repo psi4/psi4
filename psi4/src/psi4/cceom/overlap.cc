@@ -46,7 +46,7 @@
 
 namespace psi { namespace cceom {
 
-int overlap(int C_irr, int current) {
+void overlap(int C_irr, int current) {
   dpdfile2 R1, R1A, R1B;
   dpdfile2 R1_old, R1A_old, R1B_old;
   dpdbuf4 R2, R2AA, R2BB, R2AB;
@@ -164,8 +164,6 @@ int overlap(int C_irr, int current) {
     global_dpd_->buf4_close(&R2BB);
     global_dpd_->buf4_close(&R2AB);
   }
-
-  return 1;
 }
 
 void overlap_stash(int C_irr)

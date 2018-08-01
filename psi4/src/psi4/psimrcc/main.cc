@@ -109,7 +109,7 @@ psimrcc(SharedWavefunction ref_wfn, Options &options)
 
   int nactmo = moinfo->get_nactv();
   int nactel = moinfo->get_nactive_ael() + moinfo->get_nactive_bel();
-  if(nactel > 2 and nactmo > 2){
+  if(nactel > 2 && nactmo > 2){
       outfile->Printf("\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
       outfile->Printf("\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
       outfile->Printf("\n            but will negled matrix elements of the effective Hamiltonian between");
@@ -125,7 +125,7 @@ psimrcc(SharedWavefunction ref_wfn, Options &options)
     mrpt2(ref_wfn, options);
   }else{
     mrccsd(ref_wfn, options);
-    if(nactel > 2 and nactmo > 2){
+    if(nactel > 2 && nactmo > 2){
         outfile->Printf("\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
         outfile->Printf("\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
         outfile->Printf("\n            but will negled matrix elements of the effective Hamiltonian between");

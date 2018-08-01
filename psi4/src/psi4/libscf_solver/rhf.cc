@@ -33,6 +33,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <ctime>
 #include <algorithm>
 #include <vector>
 #include <utility>
@@ -823,6 +824,9 @@ int RHF::soscf_update() {
 }
 
 bool RHF::stability_analysis() {
+    if (functional_->needs_xc()) {
+        throw PSIEXCEPTION("Stability analysis not yet supported for XC functionals.");
+    }
     if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     } else {

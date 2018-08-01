@@ -12,3 +12,4 @@ set {
 }
 
 properties('cc2',properties=['polarizability'])
+ref_static_polar = 5.240960398531

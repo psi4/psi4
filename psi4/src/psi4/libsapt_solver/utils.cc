@@ -204,13 +204,13 @@ Iterator SAPT0::get_iterator(long int mem, SAPTDFInts *intA, bool alloc)
   if (intA->dress_) max_length += 3L;
   if (ij_size > mem)
     throw PsiException("Not enough memory", __FILE__,__LINE__);
-  int length = mem/ij_size;
+  long int length = mem/ij_size;
   if (length > max_length) length = max_length;
 
   return(set_iterator(length,intA,alloc));
 }
 
-Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, bool alloc)
+Iterator SAPT0::set_iterator(long int length, SAPTDFInts *intA, bool alloc)
 {
   if (0 >= length)
     throw PsiException("Not enough memory", __FILE__,__LINE__);
@@ -255,13 +255,13 @@ Iterator SAPT0::get_iterator(long int mem, SAPTDFInts *intA, SAPTDFInts *intB,
   if (intA->dress_ || intB->dress_) max_length += 3L;
   if (ij_size > mem)
     throw PsiException("Not enough memory", __FILE__,__LINE__);
-  int length = mem/ij_size;
+  long int length = mem/ij_size;
   if (length > max_length) length = max_length;
 
   return(set_iterator(length,intA,intB,alloc));
 }
 
-Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, SAPTDFInts *intB,
+Iterator SAPT0::set_iterator(long int length, SAPTDFInts *intA, SAPTDFInts *intB,
    bool alloc)
 {
   if (0 >= length)

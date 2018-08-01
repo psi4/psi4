@@ -2,7 +2,7 @@ set(sources_list dcft_lambda_UHF.cc main.cc AO_contribute.cc dcft.cc dcft_gradie
 
 # See https://github.com/psi4/psi4/issues/923
 if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.1 AND
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0.3 AND
        (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 18.0 OR
         CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 18.0))
            message(WARNING "Intel C++ (ICC) 18.0 fails to compile dcft_gradient_UHF.cc with aggressive optimization flags")

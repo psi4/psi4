@@ -53,7 +53,7 @@ namespace psi { namespace ccdensity {
 
 void ael(struct RHO_Params *rho_params)
 {
-  int dim,i,j,k;
+  int dim,i,j,k = 0;
   double **rho_g, *evals, **evects, **tmat, **rho_x, ael, **rho_diff, trace;
 
   dim = moinfo.nmo - moinfo.nfzv;

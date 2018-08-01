@@ -44,7 +44,7 @@ long int Position(long int i,long int j){
 /**
  * fortran-ordered dgemv
  */
-void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,integer lda,
+void PSI_API F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,integer lda,
             doublereal*X,integer incx,doublereal beta,doublereal*Y,integer incy){
     DGEMV(trans,m,n,alpha,A,lda,X,incx,beta,Y,incy);
 }

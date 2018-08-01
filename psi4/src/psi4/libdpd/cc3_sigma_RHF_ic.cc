@@ -924,6 +924,8 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     free(Va);
 
     pthread_exit(nullptr);
+
+    return nullptr;
 }
 
 }

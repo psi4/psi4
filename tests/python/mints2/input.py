@@ -3,6 +3,8 @@
 #! lowered to account for the different basis sets.
 import psi4
 
+psi4.set_output_file("output.dat", False)
+
 refnuc =  204.01995737868003 #TEST
 refscf = -228.95763005849557 #TEST
 

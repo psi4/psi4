@@ -33,6 +33,8 @@
 
 using namespace psi;
 
+uint64_t binomial(int n, int c1); // From solidharmonics.cc
+
 MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int order, int nderiv) :
 OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mi_recur_(bs1->max_am()+2, bs2->max_am()+2, order), order_(order)
 {
@@ -83,22 +85,6 @@ SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, i
 
     return sret;
 }
-
-inline uint64_t binomial(int n, int c1)
-{
-    uint64_t num = 1;
-    uint64_t den = 1;
-    int c2 = n - c1;
-    int i;
-    for (i=c2+1; i<=n; i++) {
-        num *= i;
-    }
-    for (i=2; i<=c1; i++) {
-        den *= i;
-    }
-    return num/den;
-}
-
 
 // The engine only supports segmented basis sets
 void MultipoleInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2)
