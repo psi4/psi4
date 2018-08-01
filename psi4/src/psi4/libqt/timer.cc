@@ -74,6 +74,7 @@
 ** Tianyuan Zhang, June 2017
 */
 
+#include "psi4/times.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
@@ -84,20 +85,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-
-#ifdef _MSC_VER
-// Fake Windows implementation of the system/user timer
-struct tms {
-    double tms_stime;
-    double tms_utime;
-};
-static void times(struct tms *time) {
-    time->tms_stime = 0;
-    time->tms_utime = 0;
-}
-#else
-#include <sys/times.h>
-#endif
 
 #ifdef _MSC_VER
 #include <Winsock2.h>

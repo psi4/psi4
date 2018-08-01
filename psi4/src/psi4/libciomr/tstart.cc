@@ -34,6 +34,7 @@
 
 #define EXTERN
 #include "psi4/psi4-dec.h"
+#include "psi4/times.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cstdio>
@@ -41,24 +42,6 @@
 #include <cstring>
 #include <ctime>
 #include <string>
-
-#ifdef _MSC_VER
-// Fake Windows implementation of the system/user timer
-struct tms {
-    double tms_stime;
-    double tms_utime;
-};
-static void times(struct tms *time) {
-    time->tms_stime = 0;
-    time->tms_utime = 0;
-}
-#define _SC_CLK_TCK 0
-static long sysconf(int name) {
-    return (long)name;
-}
-#else
-#include <sys/times.h>
-#endif
 
 #ifdef _MSC_VER
 #include <Winsock2.h>
