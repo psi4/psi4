@@ -1,92 +1,105 @@
 #! DFT Functional Test
 
-E11 = -74.9493412744 #TEST
-E12 = -75.3196957567 #TEST
-E13 = -75.3185459160 #TEST
-E14 = -75.3128178610 #TEST
-E15 = -75.2976775610 #TEST
-E16 = -75.3498758149 #TEST
-E21 = -74.9493412744 #TEST
-E22 = -75.3196957567 #TEST
-E23 = -75.3185459160 #TEST
-E24 = -75.3128178610 #TEST
-E25 = -75.2976775610 #TEST
-E26 = -75.3498758149 #TEST
-E31 = -74.6448669477 #TEST
-E32 = -74.9677634492 #TEST
-E33 = -74.9709217377 #TEST
-E34 = -74.9632650037 #TEST
-E35 = -74.9473089301 #TEST
-E36 = -74.9993295855 #TEST
-E41 = -74.4108252721 #TEST
-E42 = -74.8155846044 #TEST
-E43 = -74.8011166756 #TEST
-E44 = -74.7977834552 #TEST
-E45 = -74.7903025944 #TEST
-E46 = -74.8445334536 #TEST
+# 0 1 RKS #TEST
+E11 = -74.9357068787385145 #TEST
+E12 = -75.3197140610340625 #TEST
+E13 = -75.3185355826822160 #TEST
+E14 = -75.3128213911699902 #TEST
+E15 = -75.2976806223330613 #TEST
+E16 = -75.3498797721002660 #TEST
+E17 = -75.3210508004300294 #TEST
+
+# 0 1 UKS #TEST
+E21 = -74.9357068787385003 #TEST
+E22 = -75.3197140610340767 #TEST
+E23 = -75.3185355826822445 #TEST
+E24 = -75.3128213911699760 #TEST
+E25 = -75.2976806223330755 #TEST
+E26 = -75.3498797721002660 #TEST
+E27 = -75.3210508004300294 #TEST
+
+# 1 2 UKS #TEST
+E31 = -74.5654072902463554 #TEST
+E32 = -74.9675191320969105 #TEST
+E33 = -74.9709318523569834 #TEST
+E34 = -74.9632764313327584 #TEST
+E35 = -74.9473111459943766 #TEST
+E36 = -74.9993325074533175 #TEST
+E37 = -74.9700149955636164 #TEST
+
+# -1 2 UKS #TEST
+E41 = -74.4314203811425159  #TEST
+E42 = -74.8154430046892287  #TEST
+E43 = -74.8010994378889364  #TEST
+E44 = -74.7977822237182011  #TEST
+E45 = -74.7903056121161853  #TEST
+E46 = -74.8445375507154438  #TEST
+E47 = -74.8012730505169543  #TEST
 
 molecule h2o {
 0 1
-O
-H 1 1.0
-H 1 1.0 2 104.5
+O 0.000000000000  0.000000000000 -0.068516219310
+H 0.000000000000 -0.790689573744  0.543701060724
+H 0.000000000000  0.790689573744  0.543701060724
+no_com
+no_reorient
 }
 
 set {
-print 2
-basis sto-3g
-
-guess core
-scf_type direct
-dft_spherical_points 302
-dft_radial_points 99
-reference rks
+    print 2
+    basis sto-3g
+    scf_type direct
+    dft_spherical_points 302
+    dft_radial_points 99
+    reference rks
+    e_convergence 1.e-8
+    d_convergence 1.e-8
 }
 
-set dft_functional b3lyp
-V12 = energy('scf')
-compare_values(E12,V12, 3, "RKS  0 1  B3LYP Energy") #TEST
+V11 = energy('scf', dft_functional="svwn")
+compare_values(E11, V11, 7, "RKS  0 1    SVWN Energy") #TEST
 
-set dft_functional wB97
-# set dft_omega 0.4
-V13 = energy('scf')
-compare_values(E13,V13, 3, "RKS  0 1   wB97 Energy") #TEST
+V12 = energy('scf', dft_functional="b3lyp")
+compare_values(E12, V12, 7, "RKS  0 1   B3LYP Energy") #TEST
 
-set dft_functional wB97X 
-# set dft_omega 0.3
-V14 = energy('scf')
-compare_values(E14,V14, 3, "RKS  0 1  wB97X Energy") #TEST
+V13 = energy('scf', dft_functional="wB97")
+compare_values(E13, V13, 7, "RKS  0 1    wB97 Energy") #TEST
 
-set dft_functional b86bpbe
-V15 = energy('scf')
-compare_values(E15,V15, 3, "RKS  0 1 B86BPBE Energy") #TEST
+V14 = energy('scf', dft_functional="wB97X")
+compare_values(E14, V14, 7, "RKS  0 1   wB97X Energy") #TEST
 
-set dft_functional pw86pbe
-V16 = energy('scf')
-compare_values(E16,V16, 3, "RKS  0 1 PW86PBE Energy") #TEST
+V15 = energy('scf', dft_functional="b86bpbe")
+compare_values(E15, V15, 7, "RKS  0 1 B86BPBE Energy") #TEST
+
+V16 = energy('scf', dft_functional="pw86pbe")
+compare_values(E16, V16, 7, "RKS  0 1 PW86PBE Energy") #TEST
+
+V17 = energy('scf', dft_functional="m05")
+compare_values(E17, V17, 7, "RKS  0 1     M05 Energy") #TEST
 
 set scf_type direct
 set reference uks
 
-set dft_functional b3lyp
-V22 = energy('scf')
-compare_values(E22,V22, 3, "UKS  0 1  B3LYP Energy") #TEST
+V21 = energy('scf', dft_functional="svwn")
+compare_values(E21, V21, 7, "UKS  0 1    SVWN Energy") #TEST
 
-set dft_functional wB97
-V23 = energy('scf')
-compare_values(E23,V23, 3, "UKS  0 1   wB97 Energy") #TEST
+V22 = energy('scf', dft_functional="b3lyp")
+compare_values(E22, V22, 7, "UKS  0 1   B3LYP Energy") #TEST
 
-set dft_functional wB97X 
-V24 = energy('scf')
-compare_values(E24,V24, 3, "UKS  0 1  wB97X Energy") #TEST
+V23 = energy('scf', dft_functional="wB97")
+compare_values(E23, V23, 7, "UKS  0 1    wB97 Energy") #TEST
 
-set dft_functional b86bpbe
-V25 = energy('scf')
-compare_values(E25,V25, 3, "UKS  0 1 B86BPBE Energy") #TEST
+V24 = energy('scf', dft_functional="wB97X")
+compare_values(E24, V24, 7, "UKS  0 1   wB97X Energy") #TEST
 
-set dft_functional pw86pbe
-V26 = energy('scf')
-compare_values(E26,V26, 3, "UKS  0 1 PW86PBE Energy") #TEST
+V25 = energy('scf', dft_functional="b86bpbe")
+compare_values(E25, V25, 7, "UKS  0 1 B86BPBE Energy") #TEST
+
+V26 = energy('scf', dft_functional="pw86pbe")
+compare_values(E26, V26, 7, "UKS  0 1 PW86PBE Energy") #TEST
+
+V27 = energy('scf', dft_functional="m05")
+compare_values(E27, V27, 7, "UKS  0 1     M05 Energy") #TEST
 
 molecule h2op {
 1 2
@@ -95,28 +108,26 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set basis sto-3g
-# Must be reset in each new molecule
+V31 = energy('scf', dft_functional="svwn")
+compare_values(E31, V31, 7, "UKS  1 2    SVWN Energy") #TEST
 
-set dft_functional b3lyp
-V32 = energy('scf')
-compare_values(E32,V32, 3, "UKS  1 2  B3LYP Energy") #TEST
+V32 = energy('scf', dft_functional="b3lyp")
+compare_values(E32, V32, 7, "UKS  1 2   B3LYP Energy") #TEST
 
-set dft_functional wB97
-V33 = energy('scf')
-compare_values(E33,V33, 3, "UKS  1 2   wB97 Energy") #TEST
+V33 = energy('scf', dft_functional="wB97")
+compare_values(E33, V33, 7, "UKS  1 2    wB97 Energy") #TEST
 
-set dft_functional wB97X 
-V34 = energy('scf')
-compare_values(E34,V34, 3, "UKS  1 2  wB97X Energy") #TEST
+V34 = energy('scf', dft_functional="wB97X")
+compare_values(E34, V34, 7, "UKS  1 2   wB97X Energy") #TEST
 
-set dft_functional b86bpbe
-V35 = energy('scf')
-compare_values(E35,V35, 3, "UKS  1 2 B86BPBE Energy") #TEST
+V35 = energy('scf', dft_functional="b86bpbe")
+compare_values(E35, V35, 7, "UKS  1 2 B86BPBE Energy") #TEST
 
-set dft_functional pw86pbe
-V36 = energy('scf')
-compare_values(E36,V36, 3, "UKS  1 2 PW86PBE Energy") #TEST
+V36 = energy('scf', dft_functional="pw86pbe")
+compare_values(E36, V36, 7, "UKS  1 2 PW86PBE Energy") #TEST
+
+V37 = energy('scf', dft_functional="m05")
+compare_values(E37, V37, 7, "UKS  1 2     M05 Energy") #TEST
 
 molecule h2om {
 -1 2
@@ -125,24 +136,25 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set basis sto-3g
+set guess sad
 
-set dft_functional b3lyp
-V42 = energy('scf')
-compare_values(E42,V42, 3, "UKS -1 2  B3LYP Energy") #TEST
+V41 = energy('scf', dft_functional="svwn")
+compare_values(E41, V41, 7, "UKS -1 2    SVWN Energy") #TEST
 
-set dft_functional wB97
-V43 = energy('scf')
-compare_values(E43,V43, 3, "UKS -1 2   wB97 Energy") #TEST
+V42 = energy('scf', dft_functional="b3lyp")
+compare_values(E42, V42, 7, "UKS -1 2   B3LYP Energy") #TEST
 
-set dft_functional wB97X 
-V44 = energy('scf')
-compare_values(E44,V44, 3, "UKS -1 2  wB97X Energy") #TEST
+V43 = energy('scf', dft_functional="wB97")
+compare_values(E43, V43, 7, "UKS -1 2    wB97 Energy") #TEST
 
-set dft_functional b86bpbe
-V45 = energy('scf')
-compare_values(E45,V45, 3, "UKS -1 2 B86BPBE Energy") #TEST
+V44 = energy('scf', dft_functional="wB97X")
+compare_values(E44, V44, 7, "UKS -1 2   wB97X Energy") #TEST
 
-set dft_functional pw86pbe
-V46 = energy('scf')
-compare_values(E46,V46, 3, "UKS -1 2 PW86PBE Energy") #TEST
+V45 = energy('scf', dft_functional="b86bpbe")
+compare_values(E45, V45, 7, "UKS -1 2 B86BPBE Energy") #TEST
+
+V46 = energy('scf', dft_functional="pw86pbe")
+compare_values(E46, V46, 7, "UKS -1 2 PW86PBE Energy") #TEST
+
+V47 = energy('scf', dft_functional="m05")
+compare_values(E47, V47, 7, "UKS -1 2     M05 Energy") #TEST

@@ -22,10 +22,3 @@ set {
 grad = gradient('bp86-d2gr')
 clean()
 
-
-set {
-    dft_functional bp86-d2gr
-    reference rks
-}
-
-grad = gradient('bp86-d2gr')

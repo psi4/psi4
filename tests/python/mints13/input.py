@@ -4,6 +4,8 @@ import numpy as np
 import psi4
 from psi4.driver import qcdb
 
+psi4.set_output_file("output.dat", False)
+
 def test_chgmult(expected, cgmpdict, label):
     rc, rfc, rm, rfm = expected
     qcdb.compare_integers(rc, cgmpdict['molecular_charge'], label + ': c')

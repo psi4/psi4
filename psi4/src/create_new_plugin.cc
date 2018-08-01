@@ -32,11 +32,9 @@
 #include <regex>
 #include <sstream>
 #include <ostream>
-#include <sys/stat.h>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libfilesystem/path.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
 
 #define STRINGIFY(x) #x
@@ -101,11 +99,9 @@ public:
     {
         // The location of the plugin templates, in the Psi4 source
         std::string psiDataDirName = Process::environment.get_datadir();
-        std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
+        std::string psiDataDirWithPlugin = (filesystem::path(psiDataDirName) / filesystem::path("plugin")).str();
 
-        std::string fpath = filesystem::path(psiDataDirWithPlugin).make_absolute().str();
-        struct stat sb;
-        if (::stat(fpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+        if (!filesystem::path(psiDataDirWithPlugin).is_directory()) {
             printf("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
                            "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);

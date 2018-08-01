@@ -1,58 +1,59 @@
 #! DFT Functional Test
 
 
+
+
+
 molecule h2o {
 0 1
-O
-H 1 1.0
-H 1 1.0 2 104.5
+O 0.000000000000  0.000000000000 -0.068516219310
+H 0.000000000000 -0.790689573744  0.543701060724
+H 0.000000000000  0.790689573744  0.543701060724
+no_com
+no_reorient
 }
 
 set {
-print 2
-basis sto-3g
-
-guess core
-scf_type direct
-dft_spherical_points 302
-dft_radial_points 99
-reference rks
+    print 2
+    basis sto-3g
+    scf_type direct
+    dft_spherical_points 302
+    dft_radial_points 99
+    reference rks
+    e_convergence 1.e-8
+    d_convergence 1.e-8
 }
 
-set dft_functional b3lyp
-V12 = energy('scf')
+V11 = energy('scf', dft_functional="svwn")
 
-set dft_functional wB97
-# set dft_omega 0.4
-V13 = energy('scf')
+V12 = energy('scf', dft_functional="b3lyp")
 
-set dft_functional wB97X 
-# set dft_omega 0.3
-V14 = energy('scf')
+V13 = energy('scf', dft_functional="wB97")
 
-set dft_functional b86bpbe
-V15 = energy('scf')
+V14 = energy('scf', dft_functional="wB97X")
 
-set dft_functional pw86pbe
-V16 = energy('scf')
+V15 = energy('scf', dft_functional="b86bpbe")
+
+V16 = energy('scf', dft_functional="pw86pbe")
+
+V17 = energy('scf', dft_functional="m05")
 
 set scf_type direct
 set reference uks
 
-set dft_functional b3lyp
-V22 = energy('scf')
+V21 = energy('scf', dft_functional="svwn")
 
-set dft_functional wB97
-V23 = energy('scf')
+V22 = energy('scf', dft_functional="b3lyp")
 
-set dft_functional wB97X 
-V24 = energy('scf')
+V23 = energy('scf', dft_functional="wB97")
 
-set dft_functional b86bpbe
-V25 = energy('scf')
+V24 = energy('scf', dft_functional="wB97X")
 
-set dft_functional pw86pbe
-V26 = energy('scf')
+V25 = energy('scf', dft_functional="b86bpbe")
+
+V26 = energy('scf', dft_functional="pw86pbe")
+
+V27 = energy('scf', dft_functional="m05")
 
 molecule h2op {
 1 2
@@ -61,23 +62,19 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set basis sto-3g
-# Must be reset in each new molecule
+V31 = energy('scf', dft_functional="svwn")
 
-set dft_functional b3lyp
-V32 = energy('scf')
+V32 = energy('scf', dft_functional="b3lyp")
 
-set dft_functional wB97
-V33 = energy('scf')
+V33 = energy('scf', dft_functional="wB97")
 
-set dft_functional wB97X 
-V34 = energy('scf')
+V34 = energy('scf', dft_functional="wB97X")
 
-set dft_functional b86bpbe
-V35 = energy('scf')
+V35 = energy('scf', dft_functional="b86bpbe")
 
-set dft_functional pw86pbe
-V36 = energy('scf')
+V36 = energy('scf', dft_functional="pw86pbe")
+
+V37 = energy('scf', dft_functional="m05")
 
 molecule h2om {
 -1 2
@@ -86,19 +83,18 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set basis sto-3g
+set guess sad
 
-set dft_functional b3lyp
-V42 = energy('scf')
+V41 = energy('scf', dft_functional="svwn")
 
-set dft_functional wB97
-V43 = energy('scf')
+V42 = energy('scf', dft_functional="b3lyp")
 
-set dft_functional wB97X 
-V44 = energy('scf')
+V43 = energy('scf', dft_functional="wB97")
 
-set dft_functional b86bpbe
-V45 = energy('scf')
+V44 = energy('scf', dft_functional="wB97X")
 
-set dft_functional pw86pbe
-V46 = energy('scf')
+V45 = energy('scf', dft_functional="b86bpbe")
+
+V46 = energy('scf', dft_functional="pw86pbe")
+
+V47 = energy('scf', dft_functional="m05")

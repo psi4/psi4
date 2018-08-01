@@ -35,6 +35,8 @@
 
 #include <cstdlib>
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 /*!
@@ -53,7 +55,7 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-void eigsort(double *d, double **v, int n)
+void PSI_API eigsort(double *d, double **v, int n)
 {
   int i,j,k;
   double p;

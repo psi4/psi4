@@ -34,7 +34,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <string.h>
+#include <cstring>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"

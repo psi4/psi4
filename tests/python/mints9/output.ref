@@ -1,0 +1,389 @@
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   138 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2   entry O          line   198 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-4 entry H          line    22 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+	name..............................................................PASSED
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000     0.687415759726    15.994914619560
+         H           -0.000000000000     0.700000000000    -1.212584240274     1.007825032070
+         H            0.000000000000    -0.700000000000    -1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry C          line   159 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2   entry O          line   235 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 3-4 entry H          line    19 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000     0.687415759726    15.994914619560
+         H           -0.000000000000     0.700000000000    -1.212584240274     1.007825032070
+         H            0.000000000000    -0.700000000000    -1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: DZ_PLUS
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   178 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2   entry O          line   198 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-4 entry H          line    22 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000     0.687415759726    15.994914619560
+         H           -0.000000000000     0.700000000000    -1.212584240274     1.007825032070
+         H            0.000000000000    -0.700000000000    -1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: (DZ_PLUS AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry C          line   112 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2   entry O          line   235 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 3-4 entry H          line    19 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000     0.687415759726    15.994914619560
+         H           -0.000000000000     0.700000000000    -1.212584240274     1.007825032070
+         H            0.000000000000    -0.700000000000    -1.212584240274     1.007825032070
+
+  Basis Set: (DZ_PLUS AUX)
+    Blend: AUG-CC-PVDZ-RI + CC-PVDZ-RI
+    Number of shells: 52
+    Number of basis function: 156
+    Number of Cartesian functions: 182
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000     0.687415759726    15.994914619560
+         H           -0.000000000000     0.700000000000    -1.212584240274     1.007825032070
+         H            0.000000000000    -0.700000000000    -1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: DZ_PLUSPLUS
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry C          line   178 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2 entry O          line   198 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 4 entry H          line    22 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+	name..............................................................PASSED
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -0.000000000000     0.712584240274     0.000000000000    12.000000000000
+         O           -0.000000000000    -0.687415759726     0.000000000000    15.994914619560
+         H           -0.700000000000     1.212584240274     0.000000000000     1.007825032070
+         H            0.700000000000     1.212584240274     0.000000000000     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: DZ_PLUSPLUSRI
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry C          line   112 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2   entry O          line   235 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 3-4 entry H          line    19 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.712584240274     0.000000000000    12.000000000000
+         O            0.000000000000    -0.687415759726     0.000000000000    15.994914619560
+         H           -0.700000000000     1.212584240274     0.000000000000     1.007825032070
+         H            0.700000000000     1.212584240274     0.000000000000     1.007825032070
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.712584240274     0.000000000000    12.000000000000
+         O            0.000000000000    -0.687415759726     0.000000000000    15.994914619560
+         H           -0.700000000000     1.212584240274     0.000000000000     1.007825032070
+         H            0.700000000000     1.212584240274     0.000000000000     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: DZ_PLUSPLUSPLUS
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   178 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2   entry O          line   198 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-4 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000     0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000    -0.687415759726    15.994914619560
+         H           -0.700000000000    -0.000000000000     1.212584240274     1.007825032070
+         H            0.700000000000     0.000000000000     1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: (DZ_PLUSPLUSPLUS AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry C          line   154 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2   entry O          line   221 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 3-4 entry H          line    70 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000     0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000    -0.687415759726    15.994914619560
+         H           -0.700000000000    -0.000000000000     1.212584240274     1.007825032070
+         H            0.700000000000     0.000000000000     1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   178 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2   entry O          line   250 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 3-4 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000     0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000    -0.687415759726    15.994914619560
+         H           -0.700000000000    -0.000000000000     1.212584240274     1.007825032070
+         H            0.700000000000     0.000000000000     1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry C          line   154 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2   entry O          line   270 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 3-4 entry H          line    70 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000     0.712584240274    12.000000000000
+         O            0.000000000000     0.000000000000    -0.687415759726    15.994914619560
+         H           -0.700000000000    -0.000000000000     1.212584240274     1.007825032070
+         H            0.700000000000     0.000000000000     1.212584240274     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: DZ_PLUSPLUSPLUS
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   178 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2   entry O          line   198 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-5 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	symm..............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.673185910378    -0.042238573752     0.000000000000    12.000000000000
+         O           -0.726814089622    -0.042238573752     0.000000000000    15.994914619560
+         H            1.173185910378     0.257761426248    -0.600000000000     1.007825032070
+         H            1.173185910378     0.257761426248     0.600000000000     1.007825032070
+         H            1.173185910378     0.657761426248     0.000000000000     1.007825032070
+
+   => Loading Basis Set <=
+
+    Name: DISGUISED5Z
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry HE         line    58 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pv5z.gbs 
+    atoms 2 entry NE         line   572 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pv5z.gbs 
+
+    Molecular point group: c2v
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         HE           0.000000000000     0.000000000000    -1.666380828532     4.002603254150
+         NE           0.000000000000     0.000000000000     0.333619171468    19.992440175420
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+   => Loading Basis Set <=
+
+    Name: (DISGUISED5Z AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1 entry HE         line    61 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pv5z-ri.gbs 
+    atoms 2 entry NE         line   665 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pv5z-ri.gbs 
+
+    Molecular point group: c2v
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         HE           0.000000000000     0.000000000000    -1.666380828532     4.002603254150
+         NE           0.000000000000     0.000000000000     0.333619171468    19.992440175420
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED
+	squashed 4z aux for 5z orb........................................PASSED
+    Molecular point group: c2v
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         HE           0.000000000000     0.000000000000    -1.666380828532     4.002603254150
+         NE           0.000000000000     0.000000000000     0.333619171468    19.992440175420
+
+   => Loading Basis Set <=
+
+    Name: UGGH
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry HE         line    39 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 2 entry NE         line   417 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pv5z-jkfit.gbs 
+
+	nbf().............................................................PASSED
+	nao().............................................................PASSED
+	callby............................................................PASSED
+	blend.............................................................PASSED

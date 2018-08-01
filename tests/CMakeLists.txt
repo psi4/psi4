@@ -54,6 +54,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
+                  dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dft-freq dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10 
                   dft1-alt dft2 dft3 dft-omega docs-bases docs-dft extern1 extern2
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms isapt1 isapt2
@@ -85,7 +86,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   sapt7 sapt8 scf-bz2 scf-ecp scf-guess-read1 scf-upcast-custom-basis scf-guess-read2 scf-bs scf1 scf-occ
                   scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf-large soscf-ref
-                  soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare dft-custom dft-reference
+                  soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
@@ -236,6 +237,13 @@ endif()
 if(ENABLE_v2rdm_casscf)
     add_subdirectory(v2rdm_casscf)
     message(STATUS "Adding test cases: Psi4 + v2rdm_casscf")
+endif()
+
+# <<<  GPU_DFCC  >>>
+
+if(ENABLE_gpu_dfcc)
+    add_subdirectory(gpu_dfcc)
+    message(STATUS "Adding test cases: Psi4 + gpu_dfcc")
 endif()
 
 # <<<  SNSMP2  >>>

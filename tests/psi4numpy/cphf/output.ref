@@ -1,0 +1,229 @@
+
+*** tstart() called on psinet
+*** at Mon Jul  2 18:21:58 2018
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   250 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000    -0.000000000000    -0.075791843589    15.994914619560
+         H            0.000000000000    -0.866811828967     0.601435779270     1.007825032070
+         H            0.000000000000     0.866811828967     0.601435779270     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     20.53324  B =     11.13094  C =      7.21807 [cm^-1]
+  Rotational constants: A = 615570.97611  B = 333697.07564  C = 216392.23421 [MHz]
+  Nuclear repulsion =    8.002366450718046
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         41      41       0       0       0       0
+   -------------------------------------------------------
+    Total      41      41       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory (MB):                375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 52
+    Number of basis function: 150
+    Number of Cartesian functions: 171
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.7713258631E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -75.67134805272795   -7.56713e+01   3.08300e-02 
+   @DF-RHF iter   1:   -75.98223607568207   -3.10888e-01   5.25992e-03 
+   @DF-RHF iter   2:   -75.99634748013750   -1.41114e-02   3.20627e-03 DIIS
+   @DF-RHF iter   3:   -76.00295363907425   -6.60616e-03   5.01564e-04 DIIS
+   @DF-RHF iter   4:   -76.00326858573585   -3.14947e-04   1.46266e-04 DIIS
+   @DF-RHF iter   5:   -76.00333239278466   -6.38070e-05   4.37954e-05 DIIS
+   @DF-RHF iter   6:   -76.00333884384001   -6.45106e-06   7.04334e-06 DIIS
+   @DF-RHF iter   7:   -76.00333898115545   -1.37315e-07   1.52438e-06 DIIS
+   @DF-RHF iter   8:   -76.00333898845494   -7.29949e-09   3.74367e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.599227     2A     -1.295406     3A     -0.647574  
+       4A     -0.559004     5A     -0.500304  
+
+    Virtual:                                                              
+
+       6A      0.032110     7A      0.056938     8A      0.174790  
+       9A      0.203093    10A      0.207655    11A      0.233412  
+      12A      0.251164    13A      0.317774    14A      0.375244  
+      15A      0.383432    16A      0.413074    17A      0.518296  
+      18A      0.604757    19A      0.627223    20A      0.782518  
+      21A      0.900359    22A      1.113271    23A      1.121377  
+      24A      1.136234    25A      1.252012    26A      1.422438  
+      27A      1.439227    28A      1.559695    29A      1.906127  
+      30A      1.940044    31A      2.029785    32A      2.207622  
+      33A      2.275110    34A      2.326981    35A      2.679291  
+      36A      2.949796    37A      3.666965    38A      3.679300  
+      39A      3.680372    40A      3.864928    41A      4.038331  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -76.00333898845494
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.0023664507180463
+    One-Electron Energy =                -120.8083860601131505
+    Two-Electron Energy =                  36.8026806209401585
+    Total Energy =                        -76.0033389884549422
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.1273
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.2978
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.8295     Total:     0.8295
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.1084     Total:     2.1084
+
+
+*** tstop() called on psinet at Mon Jul  2 18:21:58 2018
+Module time:
+	user time   =       0.54 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.54 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+   -----------------------------------------------------
+                  Generalized CG Solver                
+                  by Daniel. G. A. Smith               
+   -----------------------------------------------------
+    Maxiter             =          20
+    Convergence         =   1.000E-06
+    Number of equations =           3
+
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+    Guess      1.994e+00    2.078e+00       3         0
+        1      6.685e-01    9.275e-01       3         0
+        2      1.790e-01    2.404e-01       3         0
+        3      5.093e-02    7.863e-02       3         0
+        4      1.023e-02    1.832e-02       3         0
+        5      1.981e-03    3.118e-03       3         0
+        6      3.407e-04    6.438e-04       3         0
+        7      5.672e-05    1.335e-04       3         0
+        8      8.856e-06    1.733e-05       3         0
+        9      1.349e-06    2.382e-06       2         0
+       10      3.605e-07    6.484e-07       0         0
+   -----------------------------------------------------
+
+                 CPHF Dipole Polarizability:         
+                  X            Y            Z
+        X       8.0156       0.0000      -0.0000
+        Y       0.0000      12.5036      -0.0000
+        Z      -0.0000      -0.0000      10.0416
+
+	Dipole XX Polarizability..........................................PASSED
+	Dipole YY Polarizability..........................................PASSED
+	Dipole ZZ Polarizability..........................................PASSED
