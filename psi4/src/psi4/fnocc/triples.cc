@@ -34,6 +34,7 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
+#include <ctime>
 #ifdef _OPENMP
    #include<omp.h>
 #endif

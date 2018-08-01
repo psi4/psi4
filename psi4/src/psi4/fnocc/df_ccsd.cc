@@ -27,14 +27,16 @@
  */
 
 #include "psi4/psi4-dec.h"
+#include "psi4/times.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#include"psi4/libqt/qt.h"
-#include<sys/times.h>
-#include <unistd.h>
+#include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/mintshelper.h"
+
+#include <ctime>
+
 #ifdef _OPENMP
     #include<omp.h>
 #else
