@@ -33,7 +33,6 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver.p4util import constants, filter_comments
-from psi4.driver.inputparser import process_pubchem_command, pubchemre
 from psi4.driver import qcdb
 from psi4.driver.p4util.exceptions import *
 
@@ -299,11 +298,24 @@ def geometry(geom, name="default"):
     the string are filtered.
 
     """
-    core.efp_init()
-    geom = pubchemre.sub(process_pubchem_command, geom)
-    geom = filter_comments(geom)
-    molecule = core.Molecule.create_molecule_from_string(geom)
+    molrec = qcdb.molparse.from_string(geom,
+                                       enable_qm=True,
+                                       missing_enabled_return_qm='minimal',
+                                       enable_efp=True,
+                                       missing_enabled_return_efp='none')
+
+    molecule = core.Molecule.from_dict(molrec['qm'])
     molecule.set_name(name)
+
+    if 'efp' in molrec:
+        try:
+            import pylibefp
+        except ImportError as e:  # py36 ModuleNotFoundError
+            raise ImportError("""Install pylibefp to use EFP functionality. `conda install pylibefp -c psi4` Or build with `-DENABLE_libefp`""") from e
+        #print('pylibefp (found version {})'.format(pylibefp.__version__))
+        efpobj = pylibefp.from_dict(molrec['efp'])
+        # pylibefp.core.efp rides along on molecule
+        molecule.EFP = efpobj
 
     # Attempt to go ahead and construct the molecule
     try:

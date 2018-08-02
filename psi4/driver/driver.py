@@ -117,8 +117,8 @@ def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
     """
     stationary_point = gradient.rms() < stationary_criterion  # 1.e-2 pulled out of a hat
 
-    efp = core.get_active_efp()
-    efp_present = efp.nfragments() > 0
+    mol = core.get_active_molecule()
+    efp_present = hasattr(mol, 'EFP')
 
     translations_projection_sound = (not core.get_option('SCF', 'EXTERN') and
                                      not core.get_option('SCF', 'PERTURB_H') and

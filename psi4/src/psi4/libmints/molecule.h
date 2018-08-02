@@ -82,12 +82,6 @@ public:
         Ghost    /*!< Include, but with ghost atoms */
     };
 
-    enum FragmentLevel {
-        QMatom  = 1,    /*!< Quantum mechanical */
-        EFPatom = 2,    /*!< Effective fragment potential */
-        ALLatom = 3     /*!< All atom types */
-    };
-
     typedef std::vector<std::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
 
@@ -108,10 +102,6 @@ protected:
     /// Move to center of mass or not?
     bool move_to_com_;
 
-    /// Whether the charge was given by the user
-    bool charge_specified_;
-    /// Whether the multiplicity was specified by the user
-    bool multiplicity_specified_;
     /// The molecular charge
     int molecular_charge_;
     /// The multiplicity (defined as 2Ms + 1)
@@ -194,13 +184,6 @@ public:
     Molecule& operator=(const Molecule& other);
     /// @}
 
-
-    /**
-     * Pull information from an XYZ file. Useful for debugging.
-     * \param xyzfilename Filename of xyz file.
-     */
-    void init_with_xyz(const std::string& xyzfilename);
-
     /**
      * Add an atom to the molecule
      * \param Z atomic number
@@ -218,17 +201,10 @@ public:
     void add_unsettled_atom(double Z, std::vector<std::string> anchor, std::string sym = "", double mass = 0.0,
                             double charge = 0.0, std::string lbl = "", int A = -1);
 
-    /// Whether the multiplicity was given by the user
-    bool multiplicity_specified() const { return multiplicity_specified_; }  // TODO remove
-    /// Whether the charge was given by the user
-    bool charge_specified() const { return charge_specified_; }  // TODO remove
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
-    /// Returns the list of atoms belonging to a fragment.
-    // Needed for EFP interface
-    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }  // TODO remove?
     /// Set whether to leave the geometry alone upon update_geometry()
     void set_lock_frame(bool tf) { lock_frame_ = tf; }
 
@@ -499,14 +475,6 @@ public:
     /// @}
 
     /**
-     * Given a string (including newlines to separate lines), builds a new molecule
-     * and wraps it in a smart pointer
-     *
-     * @param geom a string providing the user's input
-     */
-    static std::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
-
-    /**
      * Regenerates a input file molecule specification string
      * from the current state of the Molecule. Contains Cartesian
      * geometry info, fragmentation, charges and multiplicities,
@@ -641,14 +609,12 @@ public:
 
     /// Sets the molecular charge
     void set_molecular_charge(int charge) {
-        charge_specified_ = true;
         molecular_charge_ = charge;
     }
     /// Gets the molecular charge
     int molecular_charge() const { return molecular_charge_; }
     /// Sets the multiplicity (defined as 2Ms + 1)
     void set_multiplicity(int mult) {
-        multiplicity_specified_ = true;
         multiplicity_ = mult;
     }
     /// Get the multiplicity (defined as 2Ms + 1)

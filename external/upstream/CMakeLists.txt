@@ -8,6 +8,7 @@ foreach(dir pybind11
             gdma
             libint
             pcmsolver
+            pylibefp
             simint
             libxc
 )

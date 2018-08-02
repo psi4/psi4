@@ -26,15 +26,17 @@
  * @END LICENSE
  */
 
-#ifndef EFP_H
-#define EFP_H
+#include "psi4/pybind11.h"
 
-#include "psi4/psi4-dec.h"
+#include "psi4/libdiis/diisentry.h"
+#include "psi4/libdiis/diismanager.h"
 
-namespace psi { namespace efp {
+using namespace psi;
 
-    PsiReturnType efp_init(Options & options);
+void export_diis(py::module &m) {
 
-}}
-
-#endif
+    py::class_<DIISManager, std::shared_ptr<DIISManager> >(m, "DIISManager", "docstring")
+        .def(py::init<>())
+        .def("reset_subspace", &DIISManager::reset_subspace, "docstring")
+        .def("delete_diis_file", &DIISManager::delete_diis_file, "docstring");
+}

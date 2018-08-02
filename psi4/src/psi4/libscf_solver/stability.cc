@@ -105,13 +105,14 @@ void UStab::print_header() {
     outfile->Printf("         ------------------------------------------------------------\n");
     outfile->Printf("                              UHF Stability code                     \n");
     outfile->Printf("                                Jérôme Gonthier                     \n");
-    outfile->Printf("               Strong inspiration from R. Parrish's CIS              \n");
+    outfile->Printf("                   Strong inspiration from R. Parrish's CIS          \n");
     outfile->Printf("         ------------------------------------------------------------\n\n");
 
     outfile->Printf("  ==> Geometry <==\n\n");
     molecule_->print();
-    outfile->Printf( "  Nuclear repulsion = %20.15f\n", molecule_->nuclear_repulsion_energy(wfn->get_dipole_field_strength()));
-    //outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf("  Nuclear repulsion = %20.15f\n",
+                    molecule_->nuclear_repulsion_energy(wfn->get_dipole_field_strength()));
+    // outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf("  ==> Basis Set <==\n\n");
     basis_->print_by_level("outfile", print_);

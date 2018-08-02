@@ -288,17 +288,6 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         fragment_types.push_back(Molecule::Real);
     }
 
-    //for (auto item : molrec["fragment_types"]) {
-    //    if (item.cast<std::string>() == "Real")
-    //        fragment_types.push_back(Molecule::Real);
-    //    else if (item.cast<std::string>() == "Ghost")
-    //        fragment_types.push_back(Molecule::Ghost);
-    //    else if (item.cast<std::string>() == "Absent")
-    //        fragment_types.push_back(Molecule::Absent);
-    //    else
-    //        throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
-    //}
-
     std::vector<int> fragment_charges;
     for (auto item : molrec["fragment_charges"])
         fragment_charges.push_back(static_cast<int>(item.cast<double>()));
@@ -1278,9 +1267,6 @@ void export_mints(py::module& m) {
              "forces the geometry to have that symmetry.")
         .def("inertia_tensor", &Molecule::inertia_tensor,
              "Returns intertial tensor")
-        .def_static(
-             "create_molecule_from_string", &Molecule::create_molecule_from_string,
-             "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg2 is in the list, returns true if it is, and returns false if "
              "not")
