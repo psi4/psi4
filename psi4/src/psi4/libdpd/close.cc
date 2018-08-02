@@ -97,7 +97,7 @@ DPD::~DPD()
         free(orbs2);
     }
 
-    if(orbspi and orbsym){
+    if(orbspi && orbsym){
         for(i=0; i < num_subspaces; i++) {
             free(orbspi[i]);
             free(orbsym[i]);

@@ -44,6 +44,7 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 namespace psi {
 
@@ -58,7 +59,7 @@ static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi) {
 		// along with the zeroth order term
 		// Pmm = (-1)^m (2m-1)!!(1-x^2)^{m/2}
 		double x2 = x * x;
-		double Plm[lmax+1][lmax+1]; 
+		std::vector<std::vector<double>> Plm(lmax+1, std::vector<double>(lmax+1));
 		// First get all Pmm terms
 		Plm[0][0] = 1.0;
         // Make sure that 1-x^2 doesn't go below 0, due to roundoff
@@ -419,12 +420,12 @@ int RadialIntegral::integrate(int maxL, int gridSize, TwoIndex<double> &intValue
 	std::function<double(double, double*, int)> intgd = integrand; 
 	values.assign(maxL+1, 0.0);
 	int test;
-	double params[gridSize];
+	std::vector<double> params(gridSize);
 	for (int i = 0; i < grid.start; i++) params[i] = 0.0;
 	for (int i = grid.end+1; i < gridSize; i++) params[i] = 0.0;
 	for (int l = offset; l <= maxL; l+=skip) {
 		for (int i = grid.start; i <= grid.end; i++) params[i] = intValues(l, i); 
-		test = grid.integrate(intgd, params, tolerance);
+		test = grid.integrate(intgd, params.data(), tolerance);
 		values[l] = grid.getI();
 		if (test == 0) break;
 	}
@@ -468,8 +469,8 @@ void RadialIntegral::type1(int maxL, int N, int offset, const GaussianShell &U, 
 			newGrid.end = gridSize-1;
 			
 			// Build U and bessel tabs
-			double Utab[gridSize];
-            buildU(U, U.am(), N, newGrid, Utab);
+			std::vector<double> Utab(gridSize);
+			buildU(U, U.am(), N, newGrid, Utab.data());
 			buildBessel(gridPoints, gridSize, maxL, besselValues, 2.0*p(a,b)*P(a,b));
 			
 			// Start building intvalues, and prescreen
@@ -557,8 +558,8 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 	smallGrid.start = 0;
 	smallGrid.end = gridSize-1;
 	
-	double Utab[gridSize];
-	buildU(U, l, N, smallGrid, Utab);
+	std::vector<double> Utab(gridSize);
+	buildU(U, l, N, smallGrid, Utab.data());
 	values.assign(l1end+1, l2end+1, 0.0);
 	
 	// Build the F matrices
@@ -573,14 +574,14 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 	// Build the integrals
 	bool foundStart, tooSmall;
 	std::vector<int> tests((l1end +1) * (l2end+1));
-	double params[gridSize]; 
+	std::vector<double> params(gridSize);
 	bool failed = false;
 	int ix = 0;
 	for (int l1 = 0; l1 <= l1end; l1++) {
 		for (int l2 = 0; l2 <= l2end; l2++) {
 			
 			for (int i = 0; i < gridSize; i++) params[i] = Utab[i] * Fa(l1, i) * Fb(l2, i);
-			tests[ix] = smallGrid.integrate(intgd, params, tolerance);
+			tests[ix] = smallGrid.integrate(intgd, params.data(), tolerance);
 			failed = failed || (tests[ix] == 0); 
 			values(l1, l2) = tests[ix] == 0 ? 0.0 : smallGrid.getI();
 			ix++; 
@@ -611,12 +612,12 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 				newGrid.end = gridSize - 1;
 			
 				// Build U and bessel tabs
-				double Utab2[gridSize];
-				buildU(U, l, N, newGrid, Utab2);
+				std::vector<double> Utab2(gridSize);
+				buildU(U, l, N, newGrid, Utab2.data());
 				buildBessel(gridPoints2, gridSize, l1end, Fa, 2.0*zeta_a*A);
 				buildBessel(gridPoints2, gridSize, l2end, Fb, 2.0*zeta_b*B);
 				
-				double Xvals[gridSize];
+				std::vector<double> Xvals(gridSize);
 				double ria, rib;
 				for (int i = 0; i < gridSize; i++) {
 					ria = gridPoints2[i] - A;
@@ -624,7 +625,7 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 					Xvals[i] = exp(-zeta_a*ria*ria -zeta_b*rib*rib) * Utab2[i];
 				}
 				
-				double params2[gridSize]; 
+				std::vector<double> params2(gridSize);
 				int test;
 				ix = 0;
 				for (int l1 = 0; l1 <= l1end; l1++) {
@@ -632,7 +633,7 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 						
 						if (tests[ix] == 0) {
 							for (int i = 0; i < gridSize; i++) params2[i] = Xvals[i] * Fa(l1, i) * Fb(l2, i);
-							test = newGrid.integrate(intgd, params2, tolerance); 
+							test = newGrid.integrate(intgd, params2.data(), tolerance);
 							if (test == 0) std::cerr << "Failed at second attempt" << std::endl;
 							values(l1, l2) += c_a * c_b * newGrid.getI(); 
 						}

@@ -32,7 +32,15 @@
  */
 
 #include <cstdio>
+#ifdef _MSC_VER
+#include <io.h>
+#define SYSTEM_READ ::_read
+#define SYSTEM_WRITE ::_write
+#else
 #include <unistd.h>
+#define SYSTEM_READ ::read
+#define SYSTEM_WRITE ::write
+#endif
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
@@ -79,12 +87,12 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size,
     this_page_total = this_page_max;
   buf_offset = 0;
   if (wrt) {
-      errcod_uli =:: write(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
+      errcod_uli = SYSTEM_WRITE(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
           this_page_total);
     if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
   }
   else {
-      errcod_uli = ::read(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
+      errcod_uli = SYSTEM_READ(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
           this_page_total);
     if(errcod_uli != this_page_total)
       psio_error(unit,PSIO_ERROR_READ);
@@ -100,12 +108,12 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size,
     this_vol = this_page % numvols;
     this_page_total = PSIO_PAGELEN;
     if(wrt) {
-        errcod_uli = ::write(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
+        errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             this_page_total);
       if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
     }
     else {
-        errcod_uli = ::read(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
+        errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             this_page_total);
       if(errcod_uli != this_page_total)
         psio_error(unit,PSIO_ERROR_READ);
@@ -118,12 +126,12 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size,
   this_vol = this_page % numvols;
   if(bytes_left) {
     if(wrt) {
-        errcod_uli = ::write(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
+        errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             bytes_left);
       if(errcod_uli != bytes_left) psio_error(unit,PSIO_ERROR_WRITE);
     }
     else {
-        errcod_uli = ::read(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
+        errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             bytes_left);
       if(errcod_uli != bytes_left)
         psio_error(unit,PSIO_ERROR_READ);

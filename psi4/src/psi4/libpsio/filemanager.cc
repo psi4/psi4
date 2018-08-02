@@ -26,7 +26,13 @@
  * @END LICENSE
  */
 
+#ifdef _MSC_VER
+#include <io.h>
+#define SYSTEM_UNLINK ::_unlink
+#else
 #include <unistd.h>
+#define SYSTEM_UNLINK ::unlink
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -42,7 +48,11 @@ namespace psi{
 PSIOManager::PSIOManager()
 {
     pid_ = psio_getpid();
+#ifdef _MSC_VER
+    set_default_path("C:\\");
+#else
     set_default_path("/tmp");
+#endif
 }
 
 PSIOManager::~PSIOManager()
@@ -231,7 +241,7 @@ void PSIOManager::psiclean()
         if (retained_files_.count((*it).first) == 0) {
             //Safe to delete
 
-                unlink((*it).first.c_str());
+                SYSTEM_UNLINK((*it).first.c_str());
         } else {
             temp[(*it).first] = (*it).second;
         }
@@ -240,7 +250,7 @@ void PSIOManager::psiclean()
     files_ = temp;
 
 //        unlink("psi.clean");
-    unlink(("psi." + pid_ + ".clean").c_str());
+    SYSTEM_UNLINK(("psi." + pid_ + ".clean").c_str());
 }
 
 }

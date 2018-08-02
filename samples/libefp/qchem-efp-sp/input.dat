@@ -10,3 +10,11 @@ set EFP_DISP_DAMPING tt  # q-chem and psi4 have different defaults for this opti
 energy('efp')
 
 
+molecule h2 {
+H 0. 0. 0.
+H 0. 0. 1.
+}
+
+try:
+    energy('efp')
+except ValidationError:

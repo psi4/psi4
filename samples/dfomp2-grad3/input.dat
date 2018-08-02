@@ -1,0 +1,29 @@
+#! Tests OMP2 gradient in the presence of a dipole field
+
+molecule h2o {
+  0 1
+  O    0.000000000000     0.000000000000    -0.071143036192 
+  H    0.000000000000    -0.758215806856     0.564545805801 
+  H    0.000000000000     0.758215806856     0.564545805801 
+}
+
+set {
+  basis cc-pvdz
+  scf_type df
+  reference uhf
+  freeze_core true
+  d_convergence 12
+  r_convergence 12
+  e_convergence 12
+  mp2_type df
+}
+
+set perturb_h true
+set perturb_with dipole
+set perturb_dipole [0, 0, -0.05]
+
+analytic = gradient('omp2')
+
+set findif points 5
+findif = gradient('omp2', dertype=0)
+

@@ -249,7 +249,7 @@ double Dispersion::compute_energy(std::shared_ptr<Molecule> m)
 
         // -DAS dispersion only involves inter-fragment terms
         if (m->nactive_fragments() == 1) {
-		//Just in case, since auto fragment is not called 
+		//Just in case, since auto fragment is not called
     		outfile->Printf("\n    Only one fragment provided, no empirical dispersion will be added.\n\n");
 		return 0.0;
 	}
@@ -378,6 +378,10 @@ SharedMatrix Dispersion::compute_gradient(std::shared_ptr<Molecule> m)
 {
     auto G = std::make_shared<Matrix>("Dispersion Gradient", m->natom(), 3);
     double **Gp = G->pointer();
+
+    if (Damping_type_ == Damping_TT) {
+        throw PSIEXCEPTION("+Das Gradients not yet implemented");
+    }
 
     for (int i = 0; i < m->natom(); i++) {
         for (int j = 0; j < i; j++) {

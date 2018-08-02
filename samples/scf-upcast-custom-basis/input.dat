@@ -1,3 +1,5 @@
+#! test scf castup with custom basis sets
+
 molecule {
   O 
   H 1 0.96

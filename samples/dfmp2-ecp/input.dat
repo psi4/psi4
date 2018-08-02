@@ -11,10 +11,16 @@ set {
     print 2
 }
 
-# All electrons on Ne correlated
+# All electrons on Ne correlated, all non-ECP electrons on Xe correlated
 Eall = energy('mp2')
 
 set freeze_core true
 set guess read
-# 1s electrons on Ne frozen, but Xe should not be affected
+# [He] electrons on Ne frozen, [Kr] electrons on Xe frozen
 Efzc = energy('mp2')
+
+set freeze_core false
+set num_frozen_docc 1
+set guess read
+# [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
+EfHe = energy('mp2')

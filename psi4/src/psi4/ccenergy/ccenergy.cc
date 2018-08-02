@@ -54,9 +54,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/types.h>
 
 namespace psi { namespace ccenergy {
 
@@ -213,7 +210,7 @@ double CCEnergyWavefunction::compute_energy()
     outfile->Printf( "  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
     moinfo_.ecc = energy();
     pair_energies(&emp2_aa, &emp2_ab);
-    double last_energy;
+    double last_energy = 0;
 
     moinfo_.t1diag = diagnostic();
     moinfo_.d1diag = d1diag();

@@ -39,7 +39,7 @@
 #include "psi4/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
-#include <strings.h>
+#include <cstring>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
@@ -59,7 +59,7 @@ namespace psi {
 ** C. David Sherrill
 ** \ingroup CIOMR
 */
-int * PSI_API init_int_array(int size)
+PSI_API int * init_int_array(int size)
 {
   int *array;
 
@@ -68,7 +68,7 @@ int * PSI_API init_int_array(int size)
     outfile->Printf("size = %d\n",size);
     exit(PSI_RETURN_FAILURE);
   }
-  bzero(array,sizeof(int)*size);
+  memset(array, 0, sizeof(int)*size);
   return(array);
 }
 
@@ -86,7 +86,7 @@ int * PSI_API init_int_array(int size)
 */
 void zero_int_array(int *a, int size)
 {
-   bzero(a,sizeof(int)*size);
+   memset(a, 0, sizeof(int)*size);
 }
 
 
@@ -103,7 +103,7 @@ void zero_int_array(int *a, int size)
 **
 ** \ingroup CIOMR
 */
-int ** PSI_API init_int_matrix(int rows, int cols)
+PSI_API int ** init_int_matrix(int rows, int cols)
 {
    int **array=nullptr;
    int i;
@@ -122,7 +122,7 @@ int ** PSI_API init_int_matrix(int rows, int cols)
    for (i=1; i<rows; i++) {
      array[i] = array[i-1] + cols;
    }
-   bzero(array[0], sizeof(int)*cols*rows);
+   memset(array[0], 0, sizeof(int)*cols*rows);
 
    return array;
 }
