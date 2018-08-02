@@ -118,7 +118,7 @@ void MOLECULE::read_geom_grad(void) {
       double **grad = fragments[f]->g_grad_pointer();
 
       for (int i=0; i<fragments[f]->g_natom(); ++i) {
-          Z[i] = mol->Z(atom);
+          Z[i] = mol->true_atomic_number(atom);
 
           geom[i][0] = geometry(atom, 0);
           geom[i][1] = geometry(atom, 1);
