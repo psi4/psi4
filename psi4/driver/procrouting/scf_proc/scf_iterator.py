@@ -160,7 +160,6 @@ def scf_initialize(self):
         self.set_energies("Total Energy", self.compute_initial_E())
 
 
-
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
@@ -486,10 +485,6 @@ def scf_finalize_energy(self):
         Dt.add(self.Db())
         _, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
         self.push_back_external_potential(Vpcm)
-
-    # recompute the Fock matrices as they are modified during the SCF
-    #   iteration and might need to be dumped to checkpoint later
-    #self.form_F()  # not needed anymore?
 
     # Properties
     #  Comments so that autodoc utility will find these PSI variables
