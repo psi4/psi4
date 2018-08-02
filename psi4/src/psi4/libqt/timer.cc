@@ -74,6 +74,7 @@
 ** Tianyuan Zhang, June 2017
 */
 
+#include "psi4/times.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
@@ -85,9 +86,12 @@
 #include <cstring>
 #include <ctime>
 
-#include <sys/time.h>
-#include <sys/times.h>
+#ifdef _MSC_VER
+#include <Winsock2.h>
+#include <winsock.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <chrono>
 #include <list>
@@ -1270,7 +1274,7 @@ void parallel_timer_off(const std::string& key, int thread_rank) {
             parent_ptr = on_child_ptr;
         }
     }
-    if (parallel_timer.get_parent() != nullptr and empty_parallel()) {
+    if (parallel_timer.get_parent() != nullptr && empty_parallel()) {
         parallel_timer.get_parent()->merge_move_all(&parallel_timer);
         parallel_timer.set_parent(nullptr);
     }
