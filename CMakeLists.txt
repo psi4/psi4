@@ -192,7 +192,7 @@ ExternalProject_Add(psi4-core
            simint_external
            libxc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
-   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -245,8 +245,7 @@ ExternalProject_Add(psi4-core
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
-   BUILD_ALWAYS 1
-   INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
+   BUILD_ALWAYS 1)
 
 add_subdirectory(external/downstream)
 add_subdirectory(doc)
