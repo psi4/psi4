@@ -181,10 +181,10 @@ before_script:
 - cd build
 - ../.scripts/travis_build.sh
 script:
-- ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+- ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
-- ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 --test
+- ./stage/bin/psi4 --test
 
 # safelist
 branches:
