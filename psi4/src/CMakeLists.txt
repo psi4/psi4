@@ -71,7 +71,7 @@ install(EXPORT "psi4Targets"
 
 # <<<  RPATH  >>>
 
-set(_full_path_staged_libdir "${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(_full_path_staged_libdir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 file(RELATIVE_PATH _rel ${_full_path_staged_libdir}${PYMOD_INSTALL_LIBDIR}/psi4
                         ${_full_path_staged_libdir})
 if(APPLE)
