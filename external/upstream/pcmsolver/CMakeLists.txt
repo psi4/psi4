@@ -30,7 +30,6 @@
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                       -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
