@@ -59,6 +59,7 @@ import xml.etree.ElementTree as ET
 
 from ..exceptions import *
 
+
 class PubChemObj(object):
     def __init__(self, cid, mf, iupac):
         self.url = 'http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi'

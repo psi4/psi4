@@ -104,6 +104,7 @@ void export_functional(py::module &m) {
         .def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "Sets the amount of OS MP2 correlation.")
         .def("set_vv10_b", &SuperFunctional::set_vv10_b, "Sets the VV10 b parameter.")
         .def("set_vv10_c", &SuperFunctional::set_vv10_c, "Sets the VV10 c parameter.")
+        .def("set_do_vv10", &SuperFunctional::set_do_vv10, "Sets whether to do VV10 correction.")
         .def("set_grac_shift", &SuperFunctional::set_grac_shift, "Sets the GRAC bulk shift value.")
         .def("set_grac_alpha", &SuperFunctional::set_grac_alpha, "Sets the GRAC alpha parameter.")
         .def("set_grac_beta", &SuperFunctional::set_grac_beta, "Sets the GRAC beta parameter.")

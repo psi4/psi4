@@ -216,7 +216,6 @@ Mg 0 0"""
     with pytest.raises(qcdb.ValidationError):
         final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
 
-
 subject4 = """pubchem:benzene"""
 
 ans4 = {'geom': [

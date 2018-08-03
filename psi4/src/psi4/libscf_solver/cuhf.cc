@@ -101,11 +101,11 @@ void CUHF::common_init() {
     }
 }
 
-void CUHF::damp_update() {
-    Da_->scale(1.0 - damping_percentage_);
-    Da_->axpy(damping_percentage_, Da_old_);
-    Db_->scale(1.0 - damping_percentage_);
-    Db_->axpy(damping_percentage_, Db_old_);
+void CUHF::damping_update(double damping_percentage) {
+    Da_->scale(1.0 - damping_percentage);
+    Da_->axpy(damping_percentage, Da_old_);
+    Db_->scale(1.0 - damping_percentage);
+    Db_->axpy(damping_percentage, Db_old_);
     Dt_->copy(Da_);
     Dt_->add(Db_);
 }
@@ -146,7 +146,6 @@ void CUHF::save_density_and_energy() {
     Da_old_->copy(Dt_);
     Db_old_->copy(Dt_);
     Dt_old_->copy(Dt_);
-    Eold_ = E_;
 }
 
 void CUHF::form_G() {
@@ -167,8 +166,6 @@ void CUHF::form_G() {
     Ka_ = K[0];
     Kb_ = K[1];
 }
-
-void CUHF::save_information() {}
 
 void CUHF::compute_spin_contamination() {
     double dN = 0.0;
@@ -203,16 +200,6 @@ void CUHF::compute_spin_contamination() {
     outfile->Printf("\n  @Spin Contamination Metric: %8.5F\n", dS);
     outfile->Printf("  @S^2 Expected:              %8.5F\n", S2);
     outfile->Printf("  @S^2 Observed:              %8.5F\n", S2 + dS);
-}
-
-bool CUHF::test_convergency() {
-    double ediff = E_ - Eold_;
-
-    // Drms was already computed
-    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
-        return true;
-    else
-        return false;
 }
 
 void CUHF::form_initialF() {
@@ -314,6 +301,9 @@ void CUHF::form_C() {
 }
 
 void CUHF::form_D() {
+    Da_->zero();
+    Db_->zero();
+
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -326,9 +316,6 @@ void CUHF::form_D() {
         double** Cb = Cb_->pointer(h);
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
-
-        if (na == 0) memset(static_cast<void*>(Da[0]), '\0', sizeof(double) * nso * nso);
-        if (nb == 0) memset(static_cast<void*>(Db[0]), '\0', sizeof(double) * nso * nso);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, Da[0], nso);
         C_DGEMM('N', 'T', nso, nso, nb, 1.0, Cb[0], nmo, Cb[0], nmo, 0.0, Db[0], nso);
@@ -367,17 +354,17 @@ double CUHF::compute_E() {
     return Etotal;
 }
 
-void CUHF::compute_orbital_gradient(bool save_diis) {
+double CUHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
     SharedMatrix grad_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix grad_b = form_FDSmSDF(Fb_, Db_);
 
     // Store the RMS gradient for convergence checking
-    Drms_ = 0.5 * (grad_a->rms() + grad_b->rms());
+    double Drms = 0.5 * (grad_a->rms() + grad_b->rms());
 
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors_, "HF DIIS vector",
-                                                          DIISManager::LargestError, DIISManager::OnDisk);
+            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
+                                                          DIISManager::OnDisk);
             diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, grad_a.get(), DIISEntry::Matrix, grad_b.get());
             diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
             initialized_diis_manager_ = true;
@@ -385,6 +372,7 @@ void CUHF::compute_orbital_gradient(bool save_diis) {
 
         diis_manager_->add_entry(4, grad_a.get(), grad_b.get(), Fa_.get(), Fb_.get());
     }
+    return Drms;
 }
 
 bool CUHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }
@@ -393,7 +381,6 @@ bool CUHF::stability_analysis() {
     throw PSIEXCEPTION("CUHF stability analysis has not been implemented yet.  Sorry :(");
     return false;
 }
-
 
 std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
@@ -407,10 +394,8 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
-    if (epsilon_a_) hf_wfn->epsilon_a_ =
-        epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    if (epsilon_b_) hf_wfn->epsilon_b_ =
-        epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
+    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
     // H_ ans X_ reset in the HF constructor, copy them over here
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
@@ -418,7 +403,5 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
-
-
 }
 }

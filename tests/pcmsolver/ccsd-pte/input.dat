@@ -1,6 +1,6 @@
 #! coupled-cluster with PCM
 
-nucenergy = 0.0000000000000000 # TEST 
+nucenergy = 0.0000000000000000 # TEST
 scf_polenergy = -0.6908724085545570 # TEST
 scf_totalenergy = -199.515074015114 # TEST
 pte_correnergy = -0.002507986199683  #TEST was -0.002501910865185
@@ -8,39 +8,39 @@ pte_totalenergy = -199.517582001311979  #TEST was -199.517575925979429
 
 molecule Mg
 {
-	symmetry c1
-	Mg 0.00000 0.00000 0.00000
-	2 1
-	units bohr
-	no_reorient
-	no_com
+  symmetry c1
+  Mg 0.00000 0.00000 0.00000
+  2 1
+  units bohr
+  no_reorient
+  no_com
 }
 
 set
 {
-	basis cc-pVDZ
-	scf_type pk
-	pcm true
-	pcm_scf_type total
-	pcm_cc_type pte
+  basis cc-pVDZ
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+  pcm_cc_type pte
 }
 
 pcm =
 {
-	Units = Angstrom
-	Medium
-	{
-		SolverType = IEFPCM
-		Solvent = Water
-	}
-	Cavity
-	{
-		RadiiSet = UFF
-		Type = GePol
-		Scaling = False
-		Area = 1.0
-		Mode = Implicit
-	}
+  Units = Angstrom
+  Medium
+  {
+    SolverType = IEFPCM
+    Solvent = Water
+  }
+  Cavity
+  {
+    RadiiSet = UFF
+    Type = GePol
+    Scaling = False
+    Area = 1.0
+    Mode = Implicit
+  }
 }
 
 energy_pte, wfn = energy('ccsd', return_wfn=True)

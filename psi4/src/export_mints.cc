@@ -175,12 +175,14 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     // Modify the nuclear charges, to account for the ECP.
     if (totalncore) {
         for (int atom = 0; atom < mol->natom(); ++atom) {
-            const std::string& basis = mol->basis_on_atom(atom);
-            const std::string& label = mol->label(atom);
-            int ncore = basis_atom_ncore[basis][label];
-            int Z = mol->true_atomic_number(atom) - ncore;
-            mol->set_nuclear_charge(atom, Z);
-            basisset->set_n_ecp_core(label, ncore);
+            if (mol->Z(atom) > 0) {
+                const std::string& basis = mol->basis_on_atom(atom);
+                const std::string& label = mol->label(atom);
+                int ncore = basis_atom_ncore[basis][label];
+                int Z = mol->true_atomic_number(atom) - ncore;
+                mol->set_nuclear_charge(atom, Z);
+                basisset->set_n_ecp_core(label, ncore);
+            }
         }
     }
 
@@ -287,17 +289,6 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         fragments.push_back(std::make_pair (fragment_separators[i-1], fragment_separators[i]));
         fragment_types.push_back(Molecule::Real);
     }
-
-    //for (auto item : molrec["fragment_types"]) {
-    //    if (item.cast<std::string>() == "Real")
-    //        fragment_types.push_back(Molecule::Real);
-    //    else if (item.cast<std::string>() == "Ghost")
-    //        fragment_types.push_back(Molecule::Ghost);
-    //    else if (item.cast<std::string>() == "Absent")
-    //        fragment_types.push_back(Molecule::Absent);
-    //    else
-    //        throw PSIEXCEPTION("Invalid fragment type to construct Molecule.");
-    //}
 
     std::vector<int> fragment_charges;
     for (auto item : molrec["fragment_charges"])
@@ -1278,9 +1269,6 @@ void export_mints(py::module& m) {
              "forces the geometry to have that symmetry.")
         .def("inertia_tensor", &Molecule::inertia_tensor,
              "Returns intertial tensor")
-        .def_static(
-             "create_molecule_from_string", &Molecule::create_molecule_from_string,
-             "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg2 is in the list, returns true if it is, and returns false if "
              "not")

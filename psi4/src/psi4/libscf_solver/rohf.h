@@ -33,10 +33,11 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
-namespace psi { namespace scf {
+namespace psi {
+namespace scf {
 
 class ROHF : public HF {
-protected:
+   protected:
     SharedMatrix moFeff_;
     SharedMatrix soFeff_;
     SharedMatrix Dt_;
@@ -53,51 +54,45 @@ protected:
 
     void form_initialF();
     void form_initial_C();
-    void form_C();
-    void form_D();
     double compute_initial_E();
-    double compute_E();
-    virtual bool stability_analysis();
     virtual void prepare_canonical_orthogonalization();
     void semicanonicalize();
 
-    void form_G();
-    void form_F();
-
-    virtual void compute_orbital_gradient(bool save_diis);
-    bool diis();
-
-    bool test_convergency();
-
-    void save_information();
-    // Finalize memory/files
-    virtual void finalize();
-
-    void save_density_and_energy();
-    void format_guess();
-
     // Second-order convergence code
     void Hx(SharedMatrix x, SharedMatrix ret);
-    virtual int soscf_update(void);
 
-    /** Applies damping to the density update */
-    virtual void damp_update();
+    void format_guess();
 
     void common_init();
-public:
+
+   public:
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
-    ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
-         Options& options, std::shared_ptr<PSIO> psio);
+    ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
+         std::shared_ptr<PSIO> psio);
     virtual ~ROHF();
 
-    SharedMatrix moFeff() const {return moFeff_; }
-    SharedMatrix moFa() const {return moFa_; }
-    SharedMatrix moFb() const {return moFb_; }
+    SharedMatrix moFeff() const { return moFeff_; }
+    SharedMatrix moFa() const { return moFa_; }
+    SharedMatrix moFb() const { return moFb_; }
+
+    bool diis();
+    void save_density_and_energy();
+    double compute_orbital_gradient(bool save_diis, int max_diis_vectors);
+
+    void form_C();
+    void form_D();
+    void form_F();
+    void form_G();
+    double compute_E();
+    void finalize();
+
+    void damping_update(double);
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
+    bool stability_analysis();
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
-
 };
-
-}}
+}
+}
 
 #endif

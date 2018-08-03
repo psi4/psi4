@@ -46,7 +46,8 @@ class PSIO;
 namespace scf {
 
 class HF : public Wavefunction {
-protected:
+   protected:
+    double Drms_;
 
     /// The kinetic energy matrix
     SharedMatrix T_;
@@ -65,6 +66,9 @@ protected:
     SharedMatrix diag_F_temp_;
     /// Temporary matrix for diagonalize_F
     SharedMatrix diag_C_temp_;
+    /// List of external potentials to add to Fock matrix and updated at every iteration
+    /// e.g. PCM potential
+    std::vector<SharedMatrix> external_potentials_;
 
     /// Old C Alpha matrix (if needed for MOM)
     SharedMatrix Ca_old_;
@@ -75,15 +79,8 @@ protected:
     SharedMatrix guess_Ca_;
     SharedMatrix guess_Cb_;
 
-    /// Energy convergence threshold
-    double energy_threshold_;
-
-    /// Density convergence threshold
-    double density_threshold_;
-
-    /// Previous iteration's energy and current energy
-    double Eold_;
-    double E_;
+    // Q: right now, thresholds are removed from Wfn since only appear once, py-side.
+    //    should we instead store here the E & D to which SCF was converged?
 
     /// Table of energy components
     std::map<std::string, double> energies_;
@@ -92,30 +89,17 @@ protected:
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
 
-    /// The RMS error in the density
-    double Drms_;
-
-    /// Max number of iterations for HF
-    int maxiter_;
-
-    /// Fail if we don't converge by maxiter?
+    ///
     bool ref_C_;
-
-    /// Fail if we don't converge by maxiter?
-    bool fail_on_maxiter_;
 
     /// Current Iteration
     int iteration_;
 
     /// Did the SCF converge?
-
     bool converged_;
 
     /// Nuclear repulsion energy
     double nuclearrep_;
-
-    /// Whether DIIS was performed this iteration, or not
-    bool diis_performed_;
 
     /// DOCC vector from input (if found)
     bool input_docc_;
@@ -126,7 +110,7 @@ protected:
     /// Whether its broken symmetry solution or not
     bool broken_symmetry_;
 
-    //Initial SAD doubly occupied may be more than ndocc
+    // Initial SAD doubly occupied may be more than ndocc
     // int sad_nocc_[8];
     Dimension original_doccpi_;
     Dimension original_soccpi_;
@@ -135,35 +119,25 @@ protected:
     bool reset_occ_;
 
     /// Mapping arrays
-    int *so2symblk_;
-    int *so2index_;
+    int* so2symblk_;
+    int* so2index_;
 
     /// SCF algorithm type
     std::string scf_type_;
-
-    /// Old SCF type for DF guess trick
-    /// TODO We should really get rid of that and put it in the driver
-    std::string old_scf_type_;
-
 
     /// The value below which integrals are neglected
     double integral_threshold_;
 
     /// The soon to be ubiquitous JK object
     std::shared_ptr<JK> jk_;
-    bool is_dfjk_;
 
     /// Are we to do MOM?
     bool MOM_enabled_;
     /// Are we to do excited-state MOM?
     bool MOM_excited_;
-    /// MOM started?
-    bool MOM_started_;
     /// MOM performed?
     bool MOM_performed_;
 
-    /// Are we to fractionally occupy?
-    bool frac_enabled_;
     /// Frac started? (Same thing as frac_performed_)
     bool frac_performed_;
 
@@ -172,57 +146,145 @@ protected:
     /// DIIS manager for all SCF wavefunctions
     std::shared_ptr<DIISManager> diis_manager_;
 
-    /// How many min vectors for DIIS
-    int min_diis_vectors_;
-    /// How many max vectors for DIIS
-    int max_diis_vectors_;
     /// When do we start collecting vectors for DIIS
     int diis_start_;
     /// Are we even using DIIS?
     int diis_enabled_;
 
-    /// Are we doing second-order convergence acceleration?
-    bool soscf_enabled_;
-    /// What is the gradient threshold that we should start?
-    double soscf_r_start_;
-    /// Maximum number of iterations
-    int soscf_min_iter_;
-    /// Minimum number of iterations
-    int soscf_max_iter_;
-    /// Break if the residual RMS is less than this
-    double soscf_conv_;
-    /// Do we print the microiterations?
-    double soscf_print_;
-
-    /// The amount (%) of the previous orbitals to mix in during SCF damping
-    double damping_percentage_;
-    /// The energy convergence at which SCF damping is disabled
-    double damping_convergence_;
-    /// Whether to use SCF damping
-    bool damping_enabled_;
-    /// Whether damping was actually performed this iteration
-    bool damping_performed_;
-
     // parameters for hard-sphere potentials
-    double radius_; // radius of spherical potential
-    double thickness_; // thickness of spherical barrier
-    int r_points_; // number of radial integration points
-    int theta_points_; // number of colatitude integration points
-    int phi_points_; // number of azimuthal integration points
+    double radius_;     // radius of spherical potential
+    double thickness_;  // thickness of spherical barrier
+    int r_points_;      // number of radial integration points
+    int theta_points_;  // number of colatitude integration points
+    int phi_points_;    // number of azimuthal integration points
 
     /// DFT variables
     std::shared_ptr<SuperFunctional> functional_;
     std::shared_ptr<VBase> potential_;
 
-
     // CPHF info
     int cphf_nfock_builds_;
     bool cphf_converged_;
 
-public:
+    /// Edit matrices if we are doing canonical orthogonalization
+    virtual void prepare_canonical_orthogonalization() { return; }
 
-    /// The number of iterations needed to reach convergence
-    int iterations_needed() {return iterations_needed_;}
+    /// Prints the orbital occupation
+    void print_occupation();
+
+    /// Common initializer
+    void common_init();
+
+    /// Maximum overlap method for prevention of oscillation/excited state SCF
+    void MOM();
+    /// Start the MOM algorithm (requires one iteration worth of setup)
+    void MOM_start();
+
+    /// Fractional occupation UHF/UKS
+    void frac();
+
+    void print_stability_analysis(std::vector<std::pair<double, int>>& vec);
+
+    /// Determine how many core and virtual orbitals to freeze
+    void compute_fcpi();
+    void compute_fvpi();
+
+    /// Prints the orbitals energies and symmetries (helper method)
+    void print_orbital_pairs(const char* header, std::vector<std::pair<double, std::pair<std::string, int>>> orbs);
+
+    /// Which set of iterations we're on in this computation, e.g., for stability
+    /// analysis, where we want to retry SCF without going through all of the setup
+    int attempt_number_;
+
+    /// The number of electrons
+    int nelectron_;
+
+    /// The charge of the system
+    int charge_;
+
+    /// The multiplicity of the system (specified as 2 Ms + 1)
+    int multiplicity_;
+
+    /// SAD Guess and propagation
+    void compute_SAD_guess();
+
+    /** Transformation, diagonalization, and backtransform of Fock matrix */
+    virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
+
+    /** Computes the initial MO coefficients (default is to call form_C) */
+    virtual void form_initial_C() { form_C(); }
+
+    /** Form Fia (for DIIS) **/
+    virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
+
+    /** Form X'(FDS - SDF)X (for DIIS) **/
+    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
+
+    /** Performs any operations required for a incoming guess **/
+    virtual void format_guess();
+
+   public:
+    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct, Options& options,
+       std::shared_ptr<PSIO> psio);
+
+    virtual ~HF();
+
+    /// Get and set current iteration
+    int iteration() const { return iteration_; }
+    void set_iteration(int iter) { iteration_ = iter; }
+
+    /// Are we even using DIIS?
+    bool diis_enabled() const { return bool(diis_enabled_); }
+    void set_diis_enabled(bool tf) { diis_enabled_ = int(tf); }
+
+    /// When do we start collecting vectors for DIIS
+    int diis_start() const { return diis_start_; }
+    void set_diis_start(int iter) { diis_start_ = iter; }
+
+    /// Frac performed current iteration?
+    bool frac_performed() const { return frac_performed_; }
+    void set_frac_performed(bool tf) { frac_performed_ = tf; }
+
+    /// Are we to do excited-state MOM?
+    bool MOM_excited() const { return MOM_excited_; }
+    void set_MOM_excited(bool tf) { MOM_excited_ = tf; }
+
+    /// MOM performed?
+    bool MOM_performed() const { return MOM_performed_; }
+    void set_MOM_performed(bool tf) { MOM_performed_ = tf; }
+
+    // Q: MOM_started_ was ditched b/c same info as MOM_performed_
+
+    /// Which set of iterations we're on in this computation, e.g., for stability
+    /// analysis, where we want to retry SCF without going through all of the setup
+    int attempt_number() const { return attempt_number_; }
+    void set_attempt_number(int an) { attempt_number_ = an; }
+
+    /// Check the stability of the wavefunction, and correct (if requested)
+    virtual bool stability_analysis();
+
+    /** Computes the initial energy. */
+    virtual double compute_initial_E() { return 0.0; }
+
+    /// Check MO phases
+    void check_phases();
+
+    /// Prints the orbitals in arbitrary order (works with MOM)
+    void print_orbitals();
+
+    /// Prints some opening information
+    void print_header();
+
+    /// Prints some details about nsopi/nmopi, and initial occupations
+    void print_preiterations();
+
+    /** Compute/print spin contamination information (if unrestricted) **/
+    virtual void compute_spin_contamination();
+
+    /// The DIIS object
+    std::shared_ptr<DIISManager> diis_manager() const { return diis_manager_; }
+    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
+    bool initialized_diis_manager() const { return initialized_diis_manager_; }
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
@@ -236,186 +298,33 @@ public:
     /// The DFT Potential object (or null if it has been deleted)
     std::shared_ptr<VBase> V_potential() const { return potential_; }
 
-    /// The RMS error in the density
-    double rms_density_error() {return Drms_;}
-
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;
     std::shared_ptr<Vector> occupation_b() const;
 
-    // PCM interface
-    bool pcm_enabled_;
-    std::shared_ptr<PCM> hf_pcm_;
-
-protected:
-
-    /// Formation of H is the same regardless of RHF, ROHF, UHF
-    // Temporarily converting to virtual function for testing embedding
-    // potentials.  TDC, 5/23/12.
-    virtual void form_H();
-
-    /// Formation of S^+1/2 and S^-1/2 are the same
-    void form_Shalf();
-
-    /// Edit matrices if we are doing canonical orthogonalization
-    virtual void prepare_canonical_orthogonalization() { return; }
-
-    /// Prints the orbital occupation
-    void print_occupation();
-
-    /// Common initializer
-    void common_init();
-
-    /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
-    void find_occupation();
-
-    /// Maximum overlap method for prevention of oscillation/excited state SCF
-    void MOM();
-    /// Start the MOM algorithm (requires one iteration worth of setup)
-    void MOM_start();
-
-    /// Fractional occupation UHF/UKS
-    void frac();
-    /// Renormalize orbitals to 1.0 before saving
-    void frac_renormalize();
-
-    /// Check the stability of the wavefunction, and correct (if requested)
-    virtual bool stability_analysis();
-    void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
-
-
-    /// Determine how many core and virtual orbitals to freeze
-    void compute_fcpi();
-    void compute_fvpi();
-
-    /// Prints the orbitals energies and symmetries (helper method)
-    void print_orbitals(const char* header, std::vector<std::pair<double,
-                        std::pair< std::string, int> > > orbs);
-
-    /// Prints the orbitals in arbitrary order (works with MOM)
-    void print_orbitals();
-
-    /// Prints the energy breakdown from this SCF
-    void print_energies();
-
-    /// Prints some opening information
-    void print_header();
-
-    /// Prints some details about nsopi/nmopi, and initial occupations
-    void print_preiterations();
-
-    /// Do any needed integral setup
-    virtual void integrals();
-
-    /// Which set of iterations we're on in this computation, e.g., for stability
-    /// analysis, where we want to retry SCF without going through all of the setup
-    int attempt_number_;
-    /// Maximum number of macroiterations to take in e.g. a stability analysis
-    int max_attempts_;
-
-    /// The number of electrons
-    int nelectron_;
-
-    /// The charge of the system
-    int charge_;
-
-    /// The multiplicity of the system (specified as 2 Ms + 1)
-    int multiplicity_;
-
-    /// The number of iterations need to reach convergence
-    int iterations_needed_;
-
-    /// Compute energy for the iteration.
-    virtual double compute_E() = 0;
-
     /// Save the current density and energy.
-    virtual void save_density_and_energy() = 0;
-
-    /// Check MO phases
-    void check_phases();
-
-    /// SAD Guess and propagation
-    void compute_SAD_guess();
+    virtual void save_density_and_energy();
 
     /// Reset to regular occupation from the fractional occupation
     void reset_occupation();
 
-    /// Form the guess (gaurantees C, D, and E)
-    virtual void guess();
-
-    /** Applies damping to the density update */
-    virtual void damp_update();
+    /// Compute energy for the iteration.
+    virtual double compute_E();
 
     /** Applies second-order convergence acceleration */
-    virtual int soscf_update();
+    virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
 
-    /** Transformation, diagonalization, and backtransform of Fock matrix */
-    virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
-
-    /** Computes the initial MO coefficients (default is to call form_C) */
-    virtual void form_initial_C() { form_C(); }
-
-    /** Computes the initial energy. */
-    virtual double compute_initial_E() { return 0.0; }
-
-    /** Test convergence of the wavefunction */
-    virtual bool test_convergency() { return false; }
-
-    /** Compute/print spin contamination information (if unrestricted) **/
-    virtual void compute_spin_contamination();
-
-    /** Saves information to the checkpoint file */
-    virtual void save_information() {}
-
-    /** Compute the orbital gradient */
-    virtual void compute_orbital_gradient(bool) {}
+    /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
+    void find_occupation();
 
     /** Performs DIIS extrapolation */
     virtual bool diis() { return false; }
 
-    /** Form Fia (for DIIS) **/
-    virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
+    /** Compute the orbital gradient */
+    virtual double compute_orbital_gradient(bool save_diis, int max_diis_vectors) { return 0.0; }
 
-    /** Form X'(FDS - SDF)X (for DIIS) **/
-    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
-
-    /** Performs any operations required for a incoming guess **/
-    virtual void format_guess();
-
-    /** Save orbitals to use later as a guess **/
-    // virtual void save_orbitals();
-
-    /** Tells whether or not to read Fock matrix as a guess **/
-    // bool do_use_fock_guess();
-
-    /** Load fock matrix from previous computation to form guess MO coefficients **/
-    // virtual void load_fock();
-
-    /** Load orbitals from previous computation, projecting if needed **/
-    // virtual void load_orbitals();
-
-public:
-    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
-       Options& options, std::shared_ptr<PSIO> psio);
-
-    virtual ~HF();
-
-    /// Specialized initialization, compute integrals and does everything to prepare for iterations
-    virtual void initialize();
-
-    /// Performs the actual SCF iterations
-    virtual void iterations();
-
-    /// Performs stability analysis and calls back SCF with new guess if needed,
-    /// Returns the SCF energy
-    ///  This function should be called once orbitals are ready for energy/property computations,
-    /// usually after iterations() is called.
-    virtual double finalize_E();
-
-    /// Base class Wavefunction requires this function. Here it is simply a wrapper around
-    /// initialize(), iterations(), finalize_E(). It returns the SCF energy computed by
-    /// finalize_E()
-    virtual double compute_energy();
+    /** Applies damping to the density update */
+    virtual void damping_update(double);
 
     /// Clears memory and closes files (Should they be open) prior to correlated code execution
     /// Derived classes override it for additional operations and then call HF::finalize()
@@ -428,6 +337,23 @@ public:
     /// semicanonical basis.
     virtual void semicanonicalize();
 
+    /// Renormalize orbitals to 1.0 before saving
+    void frac_renormalize();
+
+    /// Formation of H is the same regardless of RHF, ROHF, UHF
+    // Temporarily converting to virtual function for testing embedding
+    // potentials.  TDC, 5/23/12.
+    virtual void form_H();
+
+    /// Do any needed integral setup
+    virtual void integrals();
+
+    /// Formation of S^+1/2 and S^-1/2 are the same
+    void form_Shalf();
+
+    /// Form the guess (guarantees C, D, and E)
+    virtual void guess();
+
     /// Compute the MO coefficients (C_)
     virtual void form_C();
 
@@ -437,24 +363,24 @@ public:
     /// Computes the density matrix (V_)
     virtual void form_V();
 
-    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
-    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
-
     /** Computes the Fock matrix */
-    virtual void form_F() = 0;
+    virtual void form_F();
 
     /** Forms the G matrix */
-    virtual void form_G() = 0;
+    virtual void form_G();
 
+    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
+    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
     virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
                                                std::string return_basis = "MO");
     virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
-                                                 double conv_tol = 1.e-4, int max_iter = 10,
-                                                 int print_lvl = 1);
+    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
+                                                 int max_iter = 10, int print_lvl = 1);
+
+    // CPHF data
     bool cphf_converged() { return cphf_converged_; }
     int cphf_nfock_builds() { return cphf_nfock_builds_; }
 
@@ -467,13 +393,24 @@ public:
     void guess_Cb(SharedMatrix Cb) { guess_Cb_ = Cb; }
 
     // Expert option to reset the occuption or not at iteration zero
-    void reset_occ(bool reset) { reset_occ_ = reset; }
+    bool reset_occ() const { return reset_occ_; }
+    void set_reset_occ(bool reset) { reset_occ_ = reset; }
 
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
-    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
-};
+    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
+        sad_fitting_basissets_ = basis_vec;
+    }
 
-}} // Namespaces
+    // Energies data
+    void set_energies(std::string key, double value) { energies_[key] = value; }
+    double get_energies(std::string key) { return energies_[key]; }
+
+    // External potentials
+    void clear_external_potentials() { external_potentials_.clear(); }
+    void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
+};
+}
+}  // Namespaces
 
 #endif

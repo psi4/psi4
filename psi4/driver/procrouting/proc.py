@@ -1159,7 +1159,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             # Figure out the fitting basis set
             if castdf is True:
                 core.set_global_option('DF_BASIS_SCF', '')
-            elif isinstance(castdf, (unicode, str)):
+            elif isinstance(castdf, str):
                 core.set_global_option('DF_BASIS_SCF', castdf)
             else:
                 raise ValidationError("Unexpected castdf option (%s)." % castdf)
@@ -1234,7 +1234,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
-        if "_disp_functor" in dir(ref_wfn):
+        if hasattr(ref_wfn, "_disp_functor"):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
@@ -1263,16 +1263,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
         p4util.banner(name.upper())
         core.print_out('\n')
-
-
-    # EFP preparation
-    efp = core.get_active_efp()
-    if efp.nfragments() > 0:
-        core.set_legacy_molecule(scf_molecule)
-        core.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
-        core.efp_set_options()
-        efp.set_qm_atoms()
-        efp.print_out()
 
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
@@ -1323,7 +1313,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         old_ref = str(data["reference"]).replace("KS", "").replace("HF", "")
         new_ref = core.get_option('SCF', 'REFERENCE').replace("KS", "").replace("HF", "")
         if old_ref != new_ref:
-            scf_wfn.reset_occ(True)
+            scf_wfn.reset_occ_ = True
 
 
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
@@ -1356,9 +1346,18 @@ def scf_helper(name, post_scf=True, **kwargs):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
-    if "_disp_functor" in dir(scf_wfn):
+    if hasattr(scf_wfn, "_disp_functor"):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
         scf_wfn.set_variable("-D Energy", disp_energy)
+
+    # PCM preparation
+    if core.get_option('SCF', 'PCM'):
+        pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
+        pcm_print_level = core.get_option('SCF', "PRINT")
+        scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
+        core.print_out("""  PCM does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        use_c1 = True
 
     e_scf = scf_wfn.compute_energy()
     core.set_variable("SCF TOTAL ENERGY", e_scf)
@@ -2073,7 +2072,7 @@ def run_scf_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
-    if "_disp_functor" in dir(ref_wfn):
+    if hasattr(ref_wfn, "_disp_functor"):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
         ref_wfn.set_array("-D Gradient", disp_grad)
 
@@ -2141,7 +2140,7 @@ def run_scf_hessian(name, **kwargs):
     if badref or badint:
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
-    if "_disp_functor" in dir(ref_wfn):
+    if hasattr(ref_wfn, "_disp_functor"):
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
         ref_wfn.set_array("-D Hessian", disp_hess)
 
@@ -4242,16 +4241,47 @@ def run_efp(name, **kwargs):
     computation (ignore any QM atoms).
 
     """
-    # initialize library
-    efp = core.get_active_efp()
 
-    if efp.nfragments() == 0:
+    efp_molecule = kwargs.get('molecule', core.get_active_molecule())
+    try:
+        efpobj = efp_molecule.EFP
+    except AttributeError:
         raise ValidationError("""Method 'efp' not available without EFP fragments in molecule""")
 
-    # set options
-    core.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
-    core.efp_set_options()
+    # print efp geom in [A]
+    core.print_out(efpobj.banner())
+    core.print_out(efpobj.geometry_summary(units_to_bohr=constants.bohr2angstroms))
 
-    efp.print_out()
-    returnvalue = efp.compute()
-    return returnvalue
+    # set options
+    # * 'chtr', 'qm_exch', 'qm_disp', 'qm_chtr' may be enabled in a future libefp release
+    efpopts = {}
+    for opt in ['elst', 'exch', 'ind', 'disp',
+                   'elst_damping', 'ind_damping', 'disp_damping']:
+        psiopt = 'EFP_' + opt.upper()
+        if core.has_option_changed('EFP', psiopt):
+            efpopts[opt] = core.get_option('EFP', psiopt)
+    efpopts['qm_elst'] = False
+    efpopts['qm_ind'] = False
+    efpobj.set_opts(efpopts, label='psi', append='psi')
+    do_gradient = core.get_option('EFP', 'DERTYPE') == 'FIRST'
+
+    # compute and report
+    efpobj.compute(do_gradient=do_gradient)
+    core.print_out(efpobj.energy_summary(label='psi'))
+
+    ene = efpobj.get_energy(label='psi')
+    core.set_variable('EFP ELST ENERGY', ene['electrostatic'] + ene['charge_penetration'] + ene['electrostatic_point_charges'])
+    core.set_variable('EFP IND ENERGY', ene['polarization'])
+    core.set_variable('EFP DISP ENERGY', ene['dispersion'])
+    core.set_variable('EFP EXCH ENERGY', ene['exchange_repulsion'])
+    core.set_variable('EFP TOTAL ENERGY', ene['total'])
+    core.set_variable('CURRENT ENERGY', ene['total'])
+
+    if do_gradient:
+        core.print_out(efpobj.gradient_summary())
+
+        torq = efpobj.get_gradient()
+        torq = core.Matrix.from_array(np.asarray(torq).reshape(-1, 6))
+        core.set_array_variable('EFP TORQUE', torq)
+
+    return ene['total']

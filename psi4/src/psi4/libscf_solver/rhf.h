@@ -37,8 +37,7 @@ namespace psi {
 namespace scf {
 
 class RHF : public HF {
-protected:
-
+   protected:
     // Temporary matrices
     SharedMatrix D_;
     SharedMatrix Dold_;
@@ -47,36 +46,14 @@ protected:
     SharedMatrix K_;
     SharedMatrix wK_;
 
-    void form_C();
-    void form_D();
-    virtual void damp_update();
     double compute_initial_E();
-    virtual double compute_E();
-    virtual bool stability_analysis();
-
-    virtual void form_F();
-    virtual void form_G();
-    virtual void form_V();
-    virtual void compute_orbital_gradient(bool save_fock);
-
-    bool diis();
-
-    bool test_convergency();
 
     void common_init();
 
-    // Finalize memory/files
-    virtual void finalize();
-
-    void save_density_and_energy();
-
-    // Second-order convergence code
-    virtual int soscf_update(void);
-
-public:
+   public:
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
-    RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
-        Options& options, std::shared_ptr<PSIO> psio);
+    RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
+        std::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
     virtual SharedMatrix Da() const;
@@ -84,19 +61,33 @@ public:
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
 
+    bool diis();
+    void save_density_and_energy();
+    double compute_orbital_gradient(bool save_fock, int max_diis_vectors);
+
+    void form_C();
+    void form_D();
+    void form_F();
+    void form_G();
+    void form_V();
+    double compute_E();
+    void finalize();
+
+    void damping_update(double);
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
+    bool stability_analysis();
+
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
     virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
                                                std::string return_basis = "MO");
     virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
-                                                 double conv_tol = 1.e-4, int max_iter = 10,
-                                                 int print_lvl = 1);
+    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
+                                                 int max_iter = 10, int print_lvl = 1);
 
     std::shared_ptr<RHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
-
 };
-
-}}
+}
+}
 
 #endif

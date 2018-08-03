@@ -29,6 +29,9 @@
 r"""Module to provide mechanism to store and restore option states in driver.
 
 """
+import sys
+from contextlib import contextmanager
+
 from .exceptions import *
 
 
@@ -128,3 +131,10 @@ class OptionsState(object):
     def restore(self):
         for key, item in self.data.items():
             item.restore()
+
+
+@contextmanager
+def OptionsStateCM(osd):
+    oso = OptionsState(osd)
+    yield
+    oso.restore()

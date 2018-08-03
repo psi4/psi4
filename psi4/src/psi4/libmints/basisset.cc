@@ -189,19 +189,22 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // have one valence electron in this scheme.
         for (int A = 0; A < mymol->natom(); A++) {
             double Z   = mymol->Z(A);
-            // Add ECPs to Z, the number of electrons less ECP-treated electrons
-            double ECP = n_ecp_core(mymol->label(A));
-            if (Z + ECP > 2) nfzc += 1;
-            if (Z + ECP > 10) nfzc += 4;
-            if (Z + ECP > 18) nfzc += 4;
-            if (Z + ECP > 36) nfzc += 9;
-            if (Z + ECP > 54) nfzc += 9;
-            if (Z + ECP > 86) nfzc += 16;
-            if (Z + ECP > 108) {
-                throw PSIEXCEPTION("Invalid atomic number");
+            // Exclude ghosted atoms from core-freezing
+            if (Z > 0) {
+                // Add ECPs to Z, the number of electrons less ECP-treated electrons
+                double ECP = n_ecp_core(mymol->label(A));
+                if (Z + ECP > 2) nfzc += 1;
+                if (Z + ECP > 10) nfzc += 4;
+                if (Z + ECP > 18) nfzc += 4;
+                if (Z + ECP > 36) nfzc += 9;
+                if (Z + ECP > 54) nfzc += 9;
+                if (Z + ECP > 86) nfzc += 16;
+                if (Z + ECP > 108) {
+                    throw PSIEXCEPTION("Invalid atomic number");
+                }
+                // If this center has an ECP, some pairs are already frozen
+                if (ECP > 0) nfzc -= ECP/2;
             }
-            // If this center has an ECP, some pairs are already frozen
-            if (ECP > 0) nfzc -= ECP/2;
         }
         return nfzc;
     } else {

@@ -61,7 +61,6 @@ except ImportError as err:
 
 from psi4.core import set_output_file, get_variable, set_variable, get_num_threads, set_num_threads
 core.initialize()
-core.efp_init()
 
 if "PSI_SCRATCH" in os.environ.keys():
     envvar_scratch = os.environ["PSI_SCRATCH"]
@@ -94,7 +93,10 @@ from .metadata import __version__, version_formatter
 from .extras import get_input_directory, addons, test
 
 # Python portions of compiled-in Add-Ons
+# * Note that this is a "battening down the hatches" for the many
+#   rather than letting PYTHONPATH rule for the few.
 import sys
 if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
     sys.path.insert(1, "@PCMSolver_PYMOD@")
-
+if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+    sys.path.insert(1, "@pylibefp_PYMOD@")

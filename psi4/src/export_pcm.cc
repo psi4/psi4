@@ -28,24 +28,23 @@
 
 #include "psi4/pybind11.h"
 
-#include "psi4/libefp_solver/efp_solver.h"
-#include "psi4/liboptions/liboptions.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libpsipcm/psipcm.h"
 
 using namespace psi;
-using namespace psi::efp;
+#ifdef USING_PCMSolver
 
-void export_efp(py::module& m) {
-    // because there is no default constructor for libefp, need flag
-    // "no_init" and the constructor definition, def(init<Options&>())
-    py::class_<EFP, std::shared_ptr<EFP> >(m, "EFP", "Class interfacing with libefp")
-        .def(py::init<Options&>())
-        .
-#ifdef USING_libefp
-        def("compute", &EFP::compute, "Computes libefp energies and, if active, torque")
-        .def("set_qm_atoms", &EFP::set_qm_atoms, "Provides libefp with QM fragment information")
-        .def("print_out", &EFP::print_out, "Prints options settings and EFP and QM geometries")
-        .
-#endif
-        def("nfragments", &EFP::get_frag_count,
-            "Returns the number of EFP fragments in the molecule");
+void export_pcm(py::module& m) {
+    py::class_<PCM, std::shared_ptr<PCM>> pcm(m, "PCM", "Class interfacing with PCMSolver");
+
+    py::enum_<PCM::CalcType>(pcm, "CalcType")
+        .value("Total", PCM::CalcType::Total)
+        .value("NucAndEle", PCM::CalcType::NucAndEle)
+        .value("EleOnly", PCM::CalcType::EleOnly);
+
+    pcm.def(py::init<std::string, int, std::shared_ptr<BasisSet>>())
+        .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix",
+             py::arg("D"), py::arg("type"));
 }
+#endif
