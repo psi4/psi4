@@ -127,7 +127,6 @@ message(STATUS "Psi4 rpath: ${psi4_RPATH}")
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
                            EXPORT_NAME core
-                           SUFFIX ".so"  # for python module
-                           #SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+                           SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
                            INSTALL_RPATH "${psi4_RPATH}"
                            BUILD_WITH_INSTALL_RPATH ON)
