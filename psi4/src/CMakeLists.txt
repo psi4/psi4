@@ -46,7 +46,14 @@ target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PRIVATE tgt::lapack)  # OpenMP flags to core.cc
 target_link_libraries(core PUBLIC pybind11::module)
-target_link_libraries(core PRIVATE Threads::Threads)
+if(MSVC AND DEFINED PTHREADS_WIN32)
+    target_link_libraries(core PRIVATE ${PTHREADS_WIN32})
+else()
+    target_link_libraries(core PRIVATE Threads::Threads)
+endif()
+if(MSVC)
+    target_link_libraries(core PRIVATE Ws2_32)
+endif()
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the

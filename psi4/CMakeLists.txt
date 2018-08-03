@@ -53,6 +53,16 @@ message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MIN
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 find_package(Threads REQUIRED)
 
+# On Windows, FindThreads refuses to find pthreads library
+if(MSVC AND NOT DEFINED CMAKE_USE_PTHREADS_INIT)
+    find_library(PTHREADS_WIN32 pthreads)
+    if(DEFINED PTHREADS_WIN32)
+        message(STATUS "Found pthreads: ${PTHREADS_WIN32}")
+    else()
+        message(FATAL_ERROR "Cannot find pthreads, try: conda install -c conda-forge pthreads-win32")
+    endif()
+endif()
+
 find_package(DL)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
