@@ -36,7 +36,7 @@ macro(find_omp_libs _service)
     foreach(_l IN LISTS _ls)
         get_filename_component(_fullspec "${OpenMP_${_l}_LIBRARY}" DIRECTORY)
 
-        #message("${_service} ${_l} 0 ${_lib} ${_fullspec}")
+        #message("${_service} ${_l} 0 ${_lib} ${_fullspec} ${${_service}_LIBRARIES}")
         set(_stat "")
         find_library(_lib
                      NAMES ${_l}
@@ -56,6 +56,9 @@ macro(find_omp_libs _service)
             ## remainder could be implicit libs handlable by the linker
             #set(_libs ${_libs} ${_l})
             set(_libs ${_service}_LIBRARIES-NOTFOUND)
+            if (NOT ${_service}_FIND_QUIETLY)
+                message(STATUS "Could NOT find ${_l} -- consider adding full directory path to OpenMP_LIBRARY_DIRS")
+            endif()
             break()
         endif()
         unset(_lib CACHE)
