@@ -14,18 +14,19 @@
 <a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
 <a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
 <br>
-<!-- Project/Communication -->
-<a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
-<a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
-<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
-<!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
-<a href="https://psi4.slack.com/messages"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg" /></a>
-<a href="mailto:psi4aiqc+slackinvite@gmail.com?subject=request slack invite (incl. who, where, email)"> <img src="https://img.shields.io/badge/dev_chat-invite-808493.svg" /></a>
-<br>
 <!-- Supported -->
 <a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%20WSL-orange.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/python-3.5%2C%203.6%2C%203.7-blue.svg" /></a>
+<br>
+<!-- Project/Communication -->
+<a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
+<a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<a href="http://vergil.chemistry.gatech.edu/nu-psicode/install-v1.2rc2.html"> <img src="https://img.shields.io/badge/obtain-latest-green.svg" /></a>
+<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
+<!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
+<a href="https://psi4.slack.com/messages"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg" /></a>
+<a href="mailto:psi4aiqc+slackinvite@gmail.com?subject=request slack invite (incl. who, where, email)"> <img src="https://img.shields.io/badge/dev_chat-invite-808493.svg" /></a>
 <br>
 <!-- Obtain -->
 <a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
