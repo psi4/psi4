@@ -1,17 +1,37 @@
 <p align="center">
+<!-- Commit -->
 <a href="https://travis-ci.org/psi4/psi4"> <img src="https://travis-ci.org/psi4/psi4.svg?branch=master" /></a>
-<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.2.svg" /></a>
-<a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
+<!-- <a href="https://ci.appveyor.com/project/loriab/psi4"> <img src="https://img.shields.io/appveyor/ci/psi4/psi4.svg" /></a> -->
 <a href="https://codecov.io/gh/psi4/psi4"> <img src="https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg" /></a>
-<!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
-<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
 <br>
+<!-- Release -->
+<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/release/psi4/psi4.svg" /></a>
+<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/release-date/psi4/psi4.svg" /></a>
+<a href="https://github.com/psi4/psi4/releases/tag/v1.2"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.2.svg" /></a>
+<br>
+<!-- PR Activity -->
+<a href="https://github.com/psi4/psi4/graphs/contributors"> <img src="https://img.shields.io/github/commit-activity/y/psi4/psi4.svg" /></a>
+<a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
+<a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
+<br>
+<!-- Project/Communication -->
 <a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
-<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
-<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6-blue.svg" /></a>
+<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
+<!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
+<a href="https://psi4.slack.com/messages"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg" /></a>
+<a href="mailto:psi4aiqc+slackinvite@gmail.com?subject=request slack invite (incl. who, where, email)"> <img src="https://img.shields.io/badge/dev_chat-invite-808493.svg" /></a>
+<br>
+<!-- Supported -->
 <a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
-<a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
+<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%20WSL-orange.svg" /></a>
+<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/python-3.5%2C%203.6%2C%203.7-blue.svg" /></a>
+<br>
+<!-- Obtain -->
+<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
+<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/platforms.svg" /> </a>
+<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/version.svg" /> </a>
+<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/latest_release_relative_date.svg" /> </a>
 <br><br>
 <img src="https://github.com/psi4/psi4media/blob/master/logos-psi4/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
 </p>
