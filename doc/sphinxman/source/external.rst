@@ -147,6 +147,15 @@ messy) flag will prevent files being deleted at the end of the run::
 |psirc| File
 ============
 
+.. caution:: It is very easy to forget about the |psirc| file you once
+   created, leading to great confusion over why all your jobs are using
+   the wrong memory or are suddenly not density-fit. Also be aware that
+   |psirc| contents count as part of your input file (invoked after
+   e.g. ``from psi4 import *`` and before your Psithon-->Python parsed
+   input commands), so these settings take priority over command-line
+   arguments to the ``psi4`` executable.
+   Please use the |psirc| file conscientiously.
+
 If using the environment variable :envvar:`PSI_SCRATCH` is inconvenient,
 or if some ``psi4_io`` commands must be present in all input files,
 the |psirc| resource file can be used (example :source:`samples/example_psi4rc_file`). 
