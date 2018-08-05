@@ -2300,7 +2300,7 @@ def run_ccenergy(name, **kwargs):
         aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
                                             core.get_global_option("DF_BASIS_CC"),
                                             "RIFIT", core.get_global_option("BASIS"))
-        wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)

@@ -197,9 +197,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
             self.H().copy(self.Horig)
-            global mints
-            mints = core.MintsHelper(self.basisset())
-            Vefp = modify_Fock_induced(self.molecule().EFP, mints, verbose=verbose-1)
+            global mints_psi4_yo
+            mints_psi4_yo = core.MintsHelper(self.basisset())
+            Vefp = modify_Fock_induced(self.molecule().EFP, mints_psi4_yo, verbose=verbose-1)
             Vefp = core.Matrix.from_array(Vefp)
             self.H().add(Vefp)
 
@@ -237,11 +237,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         SCFE += self.compute_E()
         if efp_enabled:
-            global efp_Dt
+            global efp_Dt_psi4_yo
 
             # EFP: Add efp contribution to energy
-            efp_Dt = self.Da().clone()
-            efp_Dt.add(self.Db())
+            efp_Dt_psi4_yo = self.Da().clone()
+            efp_Dt_psi4_yo.add(self.Db())
             SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
         self.set_energies("Total Energy", SCFE)
@@ -733,15 +733,15 @@ def field_fn(xyz):
     Notes
     -----
     Function signature defined by libefp, so function uses number of
-    basis functions and integrals factory `mints` and total density
-    matrix `efp_Dt` from global namespace.
+    basis functions and integrals factory `mints_psi4_yo` and total density
+    matrix `efp_Dt_psi4_yo` from global namespace.
 
     """
     points = np.array(xyz).reshape(-1, 3)
     npt = len(points)
 
     # Cartesian basis one-electron EFP perturbation
-    nbf = mints.basisset().nbf()
+    nbf = mints_psi4_yo.basisset().nbf()
     field_ints = np.zeros((3, nbf, nbf))
 
     # Electric field at points
@@ -749,11 +749,11 @@ def field_fn(xyz):
 
     for ipt in range(npt):
         # get electric field integrals from Psi4
-        p4_field_ints = mints.electric_field(origin=points[ipt])
+        p4_field_ints = mints_psi4_yo.electric_field(origin=points[ipt])
 
-        field[ipt] = [np.vdot(efp_Dt, np.asarray(p4_field_ints[0])),  # Ex
-                      np.vdot(efp_Dt, np.asarray(p4_field_ints[1])),  # Ey
-                      np.vdot(efp_Dt, np.asarray(p4_field_ints[2]))]  # Ez
+        field[ipt] = [np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[0])),  # Ex
+                      np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[1])),  # Ey
+                      np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[2]))]  # Ez
 
     field = np.reshape(field, 3 * npt)
 
