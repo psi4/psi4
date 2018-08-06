@@ -857,10 +857,6 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
-void py_psi_set_frequencies(std::shared_ptr<Vector> freq) { Process::environment.set_frequencies(freq); }
-
-std::shared_ptr<Vector> py_psi_get_frequencies() { return Process::environment.frequencies(); }
-
 std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
     auto empty = std::make_shared<psi::Vector>();
     return empty;  // charges not added to process.h for environment - yet(?)
@@ -1071,12 +1067,8 @@ PYBIND11_MODULE(core, core) {
              "Returns the most recently computed gradient, as a N by 3 :py:class:`~psi4.core.Matrix` object.");
     core.def("set_gradient", py_psi_set_gradient,
              "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
-    core.def("get_frequencies", py_psi_get_frequencies,
-             "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
              "Returns the most recently computed atomic point charges, as a double * object.");
-    core.def("set_frequencies", py_psi_set_frequencies,
-             "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet") = false,
              "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");

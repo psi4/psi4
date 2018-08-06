@@ -1498,7 +1498,6 @@ def hessian(name, **kwargs):
         H = driver_findif.comp_hess_from_grad(molecule, gradients, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
-        wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
         core.set_variable('CURRENT ENERGY', energies[-1])
@@ -1636,7 +1635,6 @@ def hessian(name, **kwargs):
         H = driver_findif.comp_hess_from_energy(molecule, energies, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
-        wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
         core.set_variable('CURRENT ENERGY', energies[-1])
@@ -1806,14 +1804,15 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
 
     Parameters
     ----------
-    wfn : psi4.core.wavefunction
+    wfn : :py:class:`~psi4.core.Wavefunction`
         The wavefunction which had its Hessian computed.
-    hess : psi4.core.Matrix
-        The hessian to analyze, if not the hessian in wfn.
+    hess : ndarray of float, optional
+        Hessian to analyze, if not the hessian in wfn.
+        (3*nat, 3*nat) non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
     irrep : int or string
         The irrep for which frequencies are calculated. Thermochemical analysis is skipped if this is given,
         as only one symmetry block of the hessian has been computed.
-    molecule : psi4.core.molecule or qcdb.molecule
+    molecule : :py:class:`~psi4.core.Molecule` or qcdb.Molecule, optional
         The molecule to pull information from, if not the molecule in wfn. Must at least have similar
         geometry to the molecule in wfn.
     project_trans : boolean
@@ -1824,7 +1823,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     Returns
     -------
     vibinfo : dict
-        A dictionary of vibrational information. See psi4/driver/qcdb/vib.py:harmonic_analysis
+        A dictionary of vibrational information. See :py:func:`~psi4.driver.qcdb.vib.harmonic_analysis`
     """
 
     if hess is None:

@@ -32,7 +32,7 @@ from .util import filter_comments
 
 # TODO: Include gradient loading feature, analagously to hessian loading.
 
-def to_string(grad, handle, dtype='psi4', mol=None, energy=None):
+def to_string(grad, handle, dtype='file11', mol=None, energy=None):
     """Writes gradient in various formats.
 
     Parameters
@@ -62,12 +62,12 @@ def to_string(grad, handle, dtype='psi4', mol=None, energy=None):
     except AssertionError:
         raise ValidationError("gradient shape much be number of atoms * 3. Received shape: {}".format(grad.shape))
 
-    if dtype in {'file11', 'GRD'}:
+    if dtype in ['file11', 'GRD']:
         if mol is None:
             raise ValidationError("molecule must both be defined to print a gradient in file11 format.")
 
     # Now actually write out the gradients.
-    if dtype in {'file11'}:
+    if dtype in ['file11']:
         # We can forgive a missing energy, but not a missing molecule.
         head = "{:59} {:10}{:9}\n".format(mol.name(), "(wfn)", "(dertype)")
         head += "{:5d}{:20.10f}".format(mol.natom(), energy)
@@ -75,7 +75,7 @@ def to_string(grad, handle, dtype='psi4', mol=None, energy=None):
             head += ("\n" + 4 * "{:20.10f}").format(mol.Z(atom), mol.x(atom), mol.y(atom), mol.z(atom))
         np.savetxt(handle, grad, fmt=" " * 20 + "%20.10f%20.10f%20.10f", delimiter='', newline='\n', header=head, comments='')
 
-    elif dtype in {'GRD'}:
+    elif dtype in ['GRD']:
         head = '{:5}{:20.10f}'.format(mol.natom(), 0)
         for atom in range(mol.natom()):
             head += ("\n" + 4 * "{:20.10f}").format(mol.Z(atom), mol.x(atom), mol.y(atom), mol.z(atom))
@@ -85,7 +85,7 @@ def to_string(grad, handle, dtype='psi4', mol=None, energy=None):
         modified_grad = np.insert(grad, 0, charges, axis=1)
         np.savetxt(handle, modified_grad, fmt='%20.10f', delimiter='', newline='\n', header=head, comments='')
 
-    elif dtype in {'minimal'}:
+    elif dtype in ['minimal']:
         head = '{:5}{:5}'.format(grad.shape[0], grad.size)
         np.savetxt(handle, grad, fmt='%20.10f', delimiter='', newline='\n', header=head, comments='')
 

@@ -1,13 +1,13 @@
 from __future__ import division
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import libmintsmolecule
+from psi4.driver.qcdb import molecule
 from psi4 import core
 import numpy as np
 #import scipy.linalg as la
 from psi4.driver.p4util import block_diag
 
 # CONVENTIONS:
-# N at the start of a variable name is short for "number of."
+# n_ at the start of a variable name is short for "number of."
 # _pi at the end of a variable name is short for "per irrep."
 # h is the index of an irrep.
 
@@ -94,18 +94,17 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
     r_project = t_project and bool(core.get_option("FINDIF", "FD_PROJECT"))
     salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
 
-    # Convention: A capital N at the start of variable means "number of"
-    Natom = mol.natom()
-    Nirrep = salc_list.nirrep()
-    Nsalc = salc_list.ncd()
+    n_atom = mol.natom()
+    n_irrep = salc_list.nirrep()
+    n_salc = salc_list.ncd()
 
     if print_lvl and verbose:
-        core.print_out("\tNumber of atoms is {:d}.\n".format(Natom))
+        core.print_out("    Number of atoms is {:d}.\n".format(n_atom))
         if method_allowed_irreps != 0x1:
-            core.print_out("\tNumber of irreps is {:d}.\n".format(Nirrep))
-        core.print_out("\tNumber of {!s}SALCs is {:d}.\n".format("" if method_allowed_irreps != 0x1 else "symmetric ",
-                                                                 Nsalc))
-        core.print_out("\tTranslations projected? {:d}. Rotations projected? {:d}.\n".format(t_project, r_project))
+            core.print_out("    Number of irreps is {:d}.\n".format(n_irrep))
+        core.print_out("    Number of {!s}SALCs is {:d}.\n".format("" if method_allowed_irreps != 0x1 else "symmetric ",
+                                                                 n_salc))
+        core.print_out("    Translations projected? {:d}. Rotations projected? {:d}.\n".format(t_project, r_project))
 
     # TODO: Replace with a generator from a stencil to a set of points.
     pts_dict = {
@@ -121,14 +120,11 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         }
     }
 
-    # We won't need disps for a while, but let's validate num_pts early.
-    try:
-        disps = pts_dict[num_pts]
-    except KeyError:
+    if num_pts not in pts_dict:
         raise ValidationError("FINDIF: Invalid number of points!")
 
     # Convention: x_pi means x_per_irrep. The ith element is x for irrep i, with Cotton ordering.
-    salc_indices_pi = [[] for h in range(Nirrep)]
+    salc_indices_pi = [[] for h in range(n_irrep)]
 
     # Validate that we have an irrep matching the user-specified irrep, if any.
     try:
@@ -143,48 +139,49 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
 
     # If the method allows more than one irrep, print how the irreps partition the SALCS.
     if print_lvl and method_allowed_irreps != 0x1 and verbose:
-        core.print_out("\tIndex of SALCs per irrep:\n")
-        for h in range(Nirrep):
+        core.print_out("    Index of SALCs per irrep:\n")
+        for h in range(n_irrep):
             if print_lvl > 1 or freq_irrep_only in {h, -1}:
                 tmp = (" {:d} " * len(salc_indices_pi[h])).format(*salc_indices_pi[h])
-                core.print_out("\t {:d} : ".format(h + 1) + tmp + "\n")
-        core.print_out("\tNumber of SALCs per irrep:\n")
-        for h in range(Nirrep):
+                core.print_out("     {:d} : ".format(h + 1) + tmp + "\n")
+        core.print_out("    Number of SALCs per irrep:\n")
+        for h in range(n_irrep):
             if print_lvl > 1 or freq_irrep_only in {h, -1}:
-                core.print_out("\t Irrep {:d}: {:d}\n".format(h + 1, len(salc_indices_pi[h])))
+                core.print_out("     Irrep {:d}: {:d}\n".format(h + 1, len(salc_indices_pi[h])))
 
     # Now that we've printed the SALCs, clear any that are not of user-specified symmetry.
     if freq_irrep_only != -1:
-        for h in range(Nirrep):
+        for h in range(n_irrep):
             if h != freq_irrep_only:
                 salc_indices_pi[h].clear()
 
-    Ndisp_pi = []
+    n_disp_pi = []
+    disps = pts_dict[num_pts] # We previously validated num_pts in pts_dict.
 
     for irrep, indices in enumerate(salc_indices_pi):
-        Ndisp = len(indices) * len(disps["asym" if irrep != 0 else "sym"])
+        n_disp = len(indices) * len(disps["asym" if irrep != 0 else "sym"])
         if mode == "2_0":
             # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
-            Ndisp += len(indices) * (len(indices) - 1) // 2 * len(disps["off"])
-        Ndisp_pi.append(Ndisp)
+            n_disp += len(indices) * (len(indices) - 1) // 2 * len(disps["off"])
+        n_disp_pi.append(n_disp)
 
     # Let's print out the number of geometries, the displacement multiplicity, and the CdSALCs!
     if print_lvl and verbose:
-        core.print_out("\tNumber of geometries (including reference) is {:d}.\n".format(sum(Ndisp_pi) + 1))
+        core.print_out("    Number of geometries (including reference) is {:d}.\n".format(sum(n_disp_pi) + 1))
         if method_allowed_irreps != 0x1:
-            core.print_out("\tNumber of displacements per irrep:\n")
-            for i, ndisp in enumerate(Ndisp_pi, start=1):
-                core.print_out("\t  Irrep {:d}: {:d}\n".format(i, ndisp))
+            core.print_out("    Number of displacements per irrep:\n")
+            for i, ndisp in enumerate(n_disp_pi, start=1):
+                core.print_out("      Irrep {:d}: {:d}\n".format(i, ndisp))
 
     if print_lvl > 1 and verbose:
         for salc in salc_list:
             salc.print_out()
 
     data.update({
-        "Ndisp_pi": Ndisp_pi,
-        "Nirrep": Nirrep,
-        "Nsalc": Nsalc,
-        "Natom": Natom,
+        "n_disp_pi": n_disp_pi,
+        "n_irrep": n_irrep,
+        "n_salc": n_salc,
+        "n_atom": n_atom,
         "salc_list": salc_list,
         "salc_indices_pi": salc_indices_pi,
         "disps": disps
@@ -224,10 +221,10 @@ def _geom_generator(mol, freq_irrep_only, mode):
         "energies to determine gradients",
         "2_1":
         "gradients to determine vibrational frequencies and \n"
-        "  normal modes.  Resulting frequencies are only valid at stationary points.",
+        "  normal modes.  Resulting frequencies are only valid at stationary points",
         "2_0":
         "gradients to determine vibrational frequencies and \n"
-        "  normal modes.  Resulting frequencies are only valid at stationary points."
+        "  normal modes.  Resulting frequencies are only valid at stationary points"
     }
 
     try:
@@ -237,8 +234,8 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     def init_string(data):
         return ("  Using finite-differences of {:s}.\n"
-                "\tGenerating geometries for use with {:d}-point formula.\n"
-                "\tDisplacement size will be {:6.2e}.\n".format(print_msg, data["num_pts"], data["disp_size"]))
+                "    Generating geometries for use with {:d}-point formula.\n"
+                "    Displacement size will be {:6.2e}.\n".format(print_msg, data["num_pts"], data["disp_size"]))
 
     data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
 
@@ -257,7 +254,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         _displace_cart(mol, new_geom, data["salc_list"], index_steps, data["disp_size"])
         disp_geoms.append(new_geom)
 
-    for h in range(data["Nirrep"]):
+    for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
 
         for index in active_indices:
@@ -304,17 +301,17 @@ def comp_grad_from_energy(mol, E):
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
-                "\tUsing {:d}-point formula.\n"
-                "\tEnergy without displacement: {:15.10f}\n"
-                "\tCheck energies below for precision!\n"
-                "\tForces are for mass-weighted, symmetry-adapted cartesians (in au).\n".format(
+                "    Using {:d}-point formula.\n"
+                "    Energy without displacement: {:15.10f}\n"
+                "    Check energies below for precision!\n"
+                "    Forces are for mass-weighted, symmetry-adapted cartesians (in au).\n".format(
                     data["num_pts"], E[-1]))
 
     data = _initialize_findif(mol, -1, "1_0", init_string)
 
-    Ndisp = sum(data["Ndisp_pi"]) + 1  # +1 for the reference
-    if len(E) != Ndisp:
-        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), Ndisp))
+    n_disp = sum(data["n_disp_pi"]) + 1  # +1 for the reference
+    if len(E) != n_disp:
+        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), n_disp))
 
     # Discard the reference energy.
     E = np.asarray(E[:-1])
@@ -332,18 +329,18 @@ def comp_grad_from_energy(mol, E):
         energy_string = ""
         for i in range(1, max_disp + 1):
             energy_string = "Energy(-{})        ".format(i) + energy_string + "Energy(+{})        ".format(i)
-        core.print_out("\n\t Coord      " + energy_string + "    Force\n")
-        for salc in range(data["Nsalc"]):
-            print_str = "\t{:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}" + "\n"
+        core.print_out("\n     Coord      " + energy_string + "    Force\n")
+        for salc in range(data["n_salc"]):
+            print_str = "    {:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}" + "\n"
             energies = E[e_per_salc * salc:e_per_salc * (salc + 1)]
             print_str = print_str.format(salc, force=g_q[salc], *energies)
             core.print_out(print_str)
         core.print_out("\n")
 
     B = data["salc_list"].matrix()
-    g_cart = np.matmul(g_q, B)
-    g_cart = g_cart.reshape(data["Natom"], 3)
-    massweighter = np.array([mol.mass(a) for a in range(data["Natom"])])**(0.5)
+    g_cart = np.dot(g_q, B)
+    g_cart = g_cart.reshape(data["n_atom"], 3)
+    massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
     g_cart = (g_cart.T * massweighter).T
 
     if data["print_lvl"]:
@@ -385,7 +382,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
     H_block = np.array(temp_hess)
 
     if print_lvl >= 3:
-        core.print_out("\n\tForce Constants for irrep {} in mass-weighted, ".format(irrep))
+        core.print_out("\n    Force Constants for irrep {} in mass-weighted, ".format(irrep))
         core.print_out("symmetry-adapted cartesian coordinates.\n")
         core.Matrix.from_array(H_block).print_out()
 
@@ -395,10 +392,10 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
     evals = evals[idx]
     evects = evects[:, idx]
 
-    normal_irr = np.matmul((B_block * massweighter).T, evects)
+    normal_irr = np.dot((B_block * massweighter).T, evects)
 
     if print_lvl >= 2:
-        core.print_out("\n\tNormal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
+        core.print_out("\n    Normal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
         core.Matrix.from_array(normal_irr).print_out()
 
     return H_block
@@ -434,22 +431,22 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     B = np.vstack(B_blocks)
 
     if print_lvl >= 3:
-        core.print_out("\n\tForce constant matrix for all computed irreps in mass-weighted SALCS.\n")
+        core.print_out("\n    Force constant matrix for all computed irreps in mass-weighted SALCS.\n")
         core.Matrix.from_array(H).print_out()
 
     # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
     # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
     # As such, the change of basis is formula A' = Xt A X, no inverses!
-    Hx = np.matmul(np.matmul(B.T, H), B)
+    Hx = np.dot(np.dot(B.T, H), B)
     if print_lvl >= 3:
-        core.print_out("\n\tForce constants in mass-weighted Cartesian coordinates.\n")
+        core.print_out("\n    Force constants in mass-weighted Cartesian coordinates.\n")
         core.Matrix.from_array(Hx).print_out()
 
     # Un-massweight the Hessian.
     Hx = np.transpose(Hx / massweighter) / massweighter
 
     if print_lvl >= 3:
-        core.print_out("\n\tForce constants in Cartesian coordinates.\n")
+        core.print_out("\n    Force constants in Cartesian coordinates.\n")
         core.Matrix.from_array(Hx).print_out()
 
     if print_lvl:
@@ -484,9 +481,9 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
 
     data = _initialize_findif(mol, freq_irrep_only, "2_1", init_string)
 
-    Ndisp = sum(data["Ndisp_pi"]) + 1  # +1 for the reference geometry
-    if len(G) != Ndisp:
-        raise ValidationError("FINDIF: Received {} gradients for {} geometries.".format(len(G), Ndisp))
+    n_disp = sum(data["n_disp_pi"]) + 1  # +1 for the reference geometry
+    if len(G) != n_disp:
+        raise ValidationError("FINDIF: Received {} gradients for {} geometries.".format(len(G), n_disp))
 
     # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
     # Good News: By taking advantage of that, we (potentially) ran less computations.
@@ -501,12 +498,11 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
 
     # Determine what atoms map to what other atoms under the point group operations.
     # The py-side compute_atom_map will work whether mol is a Py-side or C-side object.
-    # TODO: I suspect I'm confusing rows and columns in this print.
-    atom_map = libmintsmolecule.compute_atom_map(mol)
+    atom_map = molecule.compute_atom_map(mol)
     if data["print_lvl"] >= 3:
-        core.print_out("\tThe atom map:\n")
+        core.print_out("    The atom map:\n")
         for atom, sym_image_list in enumerate(atom_map):
-            core.print_out("\t {:d} : ".format(atom + 1))
+            core.print_out("     {:d} : ".format(atom + 1))
             for image_atom in sym_image_list:
                 core.print_out("{:4d}".format(image_atom + 1))
             core.print_out("\n")
@@ -515,12 +511,12 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
     # A list of lists of gradients, per irrep
     gradients_pi = []
     # Extract and print the symmetric gradients. This need no additional processing.
-    gradients_pi.append([np.array(grad) for grad in G[0:data["Ndisp_pi"][0]]])
+    gradients_pi.append([np.array(grad) for grad in G[0:data["n_disp_pi"][0]]])
     # Asymmetric gradients need additional processing. For future convenience, we discard the symmetric ones.
-    G = G[data["Ndisp_pi"][0]:]
+    G = G[data["n_disp_pi"][0]:]
 
     if data["print_lvl"] >= 3:
-        core.print_out("\tSymmetric gradients\n")
+        core.print_out("    Symmetric gradients\n")
         for gradient in gradients_pi[0]:
             core.Matrix.from_array(gradient).print_out()
             #gradient.print_out()
@@ -528,10 +524,10 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
     # Asymmetric gradient. There's always SOME operation that transforms a positive
     # into a negative displacement.By doing extra things here, we can find the
     # gradients at the positive displacements.
-    for h in range(1, data["Nirrep"]):
+    for h in range(1, data["n_irrep"]):
 
         # If there are no CdSALCs in this irrep, let's skip it.
-        if not data["Ndisp_pi"][h]:
+        if not data["n_disp_pi"][h]:
             gradients_pi.append([])
             continue
 
@@ -549,7 +545,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
         else:
             raise ValidationError("A symmetric gradient passed for a non-symmetric one.")
         if data["print_lvl"]:
-            core.print_out("\tOperation {} takes plus displacements of irrep {} to minus ones.\n".format(
+            core.print_out("    Operation {} takes plus displacements of irrep {} to minus ones.\n".format(
                 group_op + 1, gamma.symbol()))
 
         so = np.array(ct.symm_operation(group_op).matrix())
@@ -559,7 +555,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
             """Populate gradients, with step -n, -n+1, ... -1, 1, ... n.
                Positive displacements are computed."""
             gradients.append(np.array(G.pop(0)))
-            new_grad = np.zeros((data["Natom"], 3))
+            new_grad = np.zeros((data["n_atom"], 3))
             for atom, image in enumerate(atom_map):
                 atom2 = image[group_op]
                 new_grad[atom2] = np.einsum("xy,y->x", so, gradients[-1][atom])
@@ -576,11 +572,11 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
 
     # Massweight all gradients.
     # Remember, the atom currently corresponds to our 0 index, hence these transpose tricks.
-    massweighter = np.asarray([mol.mass(a) for a in range(data["Natom"])])**(-0.5)
+    massweighter = np.asarray([mol.mass(a) for a in range(data["n_atom"])])**(-0.5)
     gradients_pi = [[(grad.T * massweighter).T for grad in gradients] for gradients in gradients_pi]
 
     if data["print_lvl"] >= 3:
-        core.print_out("\tAll mass-weighted gradients\n")
+        core.print_out("    All mass-weighted gradients\n")
         for gradients in gradients_pi:
             for grad in gradients:
                 core.Matrix.from_array(grad).print_out()
@@ -593,8 +589,8 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
     irrep_lbls = mol.irrep_labels()
     massweighter = np.repeat(massweighter, 3)
 
-    for h in range(data["Nirrep"]):
-        Ndisp = data["Ndisp_pi"][h]
+    for h in range(data["n_irrep"]):
+        n_disp = data["n_disp_pi"][h]
         Nindices = len(data["salc_indices_pi"][h])
         gradients = gradients_pi[h]
 
@@ -607,11 +603,11 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
         # For future convenience, we transpose.
         # Rows are gradients and columns are coordinates with respect to a particular CdSALC.
         B_pi.append(data["salc_list"].matrix_irrep(h))
-        grads_adapted = np.matmul(B_pi[-1], gradient_matrix).T
+        grads_adapted = np.dot(B_pi[-1], gradient_matrix).T
 
         if data["print_lvl"] >= 3:
             core.print_out("Gradients in B-matrix coordinates\n")
-            for disp in range(Ndisp):
+            for disp in range(n_disp):
                 core.print_out(" disp {:d}: ".format(disp))
                 for salc in grads_adapted[disp]:
                     core.print_out("{:15.10f}".format(salc))
@@ -654,44 +650,44 @@ def comp_hess_from_energy(mol, E, freq_irrep_only):
     def init_string(data):
         out_str = ""
         for i, energy in enumerate(E[:-1], start=1):
-            out_str += "\t{:5d} : {:20.10f}\n".format(i, energy)
+            out_str += "    {:5d} : {:20.10f}\n".format(i, energy)
         return ("  Computing second-derivative from energies using projected, \n"
                 "  symmetry-adapted, cartesian coordinates.\n\n"
                 "  {:d} energies passed in, including the reference geometry.\n"
-                "\tUsing {:d}-point formula.\n"
-                "\tEnergy without displacement: {:15.10f}\n"
-                "\tCheck energies below for precision!\n{}".format(len(E), data["num_pts"], E[-1], out_str))
+                "    Using {:d}-point formula.\n"
+                "    Energy without displacement: {:15.10f}\n"
+                "    Check energies below for precision!\n{}".format(len(E), data["num_pts"], E[-1], out_str))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", init_string)
 
-    Ndisp = sum(data["Ndisp_pi"]) + 1
-    if len(E) != Ndisp:
-        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), Ndisp))
+    n_disp = sum(data["n_disp_pi"]) + 1
+    if len(E) != n_disp:
+        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), n_disp))
 
     ref_energy = E[-1]
     unused_energies = E[:-1]
-    massweighter = np.repeat([mol.mass(a) for a in range(data["Natom"])], 3)**(-0.5)
+    massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
     H_pi = []
     irrep_lbls = mol.irrep_labels()
 
     # Unlike in the gradient case, we have no symmetry transformations to worry about.
     # We get to the task directly: assembling the force constants in each irrep block.
-    for h in range(data["Nirrep"]):
+    for h in range(data["n_irrep"]):
         salcs = data["salc_indices_pi"][h]
         if not salcs: continue
 
-        Nsalcs = len(salcs)
-        Ndisps = data["Ndisp_pi"][h]
-        irrep_energies = unused_energies[:Ndisps]
-        unused_energies = unused_energies[Ndisps:]
+        n_salcs = len(salcs)
+        n_disps = data["n_disp_pi"][h]
+        irrep_energies = unused_energies[:n_disps]
+        unused_energies = unused_energies[n_disps:]
 
         # Step One: Diagonals
         # For asymmetric irreps, the energy at a + disp if the same as at a - disp
         # We exploited this, so we only need half the displacements for asymmetrics
         disps_per_diag = (data["num_pts"] - 1) // (2 if h else 1)
-        diag_disps = disps_per_diag * Nsalcs
-        energies = np.asarray(irrep_energies[:diag_disps]).reshape((Nsalcs, -1))
+        diag_disps = disps_per_diag * n_salcs
+        energies = np.asarray(irrep_energies[:diag_disps]).reshape((n_salcs, -1))
         # For simplicity, convert the case of an asymmetric to the symmetric case.
         if h:
             energies = np.hstack((energies, np.fliplr(energies)))
@@ -707,7 +703,7 @@ def comp_hess_from_energy(mol, E, freq_irrep_only):
         H_irr = np.diag(diag_fcs)
 
         # Step Two: Off-diagonals
-        num_unique_off_elts = Nsalcs * (Nsalcs - 1) // 2
+        num_unique_off_elts = n_salcs * (n_salcs - 1) // 2
         offdiag_energies = irrep_energies[diag_disps:]
         # If offdiagonal elements exist, put them into groups per salc pairs
         # ...if offdiagonal elements DON'T exist, reshaping would raise an error.
