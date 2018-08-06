@@ -403,7 +403,6 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 
     // Per thread temporaries
     std::vector<SharedMatrix> V_local;
-    std::vector<std::shared_ptr<Vector>> Q_temp;
     for (size_t i = 0; i < num_threads_; i++) {
         V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
     }
@@ -810,12 +809,10 @@ SharedMatrix RV::compute_gradient() {
     }
 
     // Per thread temporaries
-    std::vector<SharedMatrix> V_local, G_local;
-    std::vector<std::shared_ptr<Vector>> Q_temp;
+    std::vector<SharedMatrix> G_local, U_local;
     for (size_t i = 0; i < num_threads_; i++) {
         G_local.push_back(std::make_shared<Matrix>("G Temp", natom, 3));
-        V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
-        Q_temp.push_back(std::make_shared<Vector>("Quadrature Tempt", max_points));
+        U_local.push_back(std::make_shared<Matrix>("U Temp", max_points, max_functions));
     }
 
     std::vector<double> functionalq(num_threads_);
@@ -832,42 +829,20 @@ SharedMatrix RV::compute_gradient() {
         rank = omp_get_thread_num();
 #endif
 
+        // Get per-rank workers
+        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        double** V2p = V_local[rank]->pointer();
-        double** Gp = G_local[rank]->pointer();
-        double* QTp = Q_temp[rank]->pointer();
-        double** Dp = pworker->D_scratch()[0]->pointer();
-
-        // Scratch
-        double** Tp = pworker->scratch()[0]->pointer();
-        SharedMatrix U_local(pworker->scratch()[0]->clone());
-        double** Up = U_local->pointer();
-
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
-        int npoints = block->npoints();
-        double* x = block->x();
-        double* y = block->y();
-        double* z = block->z();
-        double* w = block->w();
-        const std::vector<int>& function_map = block->functions_local_to_global();
-        int nlocal = function_map.size();
 
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
         parallel_timer_off("Properties", rank);
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values());
         parallel_timer_off("Functional", rank);
 
         parallel_timer_on("V_xc gradient", rank);
-        double** phi = pworker->basis_value("PHI")->pointer();
-        double** phi_x = pworker->basis_value("PHI_X")->pointer();
-        double** phi_y = pworker->basis_value("PHI_Y")->pointer();
-        double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
 
         // => Compute quadrature <= //
         std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
@@ -877,133 +852,9 @@ SharedMatrix RV::compute_gradient() {
         rhoayq[rank] += qvals[3];
         rhoazq[rank] += qvals[4];
 
-        // => LSDA Contribution <= //
-        for (int P = 0; P < npoints; P++) {
-            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tp[P], 1);
-        }
+        // => Integrate all contributions into G <= //
+        dft_integrators::rks_gradient_integrator(primary_, block, fworker, pworker, G_local[rank], U_local[rank]);
 
-        // => GGA Contribution (Term 1) <= //
-        if (fworker->is_gga()) {
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-
-            for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), phi_x[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P]), phi_y[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P]), phi_z[P], 1, Tp[P], 1);
-            }
-        }
-
-        // => Synthesis <= //
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tp[0], max_functions, Dp[0], max_functions, 0.0, Up[0],
-                max_functions);
-
-        for (int ml = 0; ml < nlocal; ml++) {
-            int A = primary_->function_to_center(function_map[ml]);
-            Gp[A][0] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], max_functions);
-            Gp[A][1] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], max_functions);
-            Gp[A][2] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], max_functions);
-        }
-
-        // => GGA Contribution (Term 2) <= //
-        if (fworker->is_gga()) {
-            double** phi_xx = pworker->basis_value("PHI_XX")->pointer();
-            double** phi_xy = pworker->basis_value("PHI_XY")->pointer();
-            double** phi_xz = pworker->basis_value("PHI_XZ")->pointer();
-            double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
-            double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
-            double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dp[0], max_functions, 0.0, Up[0],
-                    max_functions);
-
-            // x
-            for (int P = 0; P < npoints; P++) {
-                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), Up[P], 1, Tp[P], 1);
-            }
-            for (int ml = 0; ml < nlocal; ml++) {
-                int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xx[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-            }
-
-            // y
-            for (int P = 0; P < npoints; P++) {
-                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P]), Up[P], 1, Tp[P], 1);
-            }
-            for (int ml = 0; ml < nlocal; ml++) {
-                int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yy[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-            }
-
-            // z
-            for (int P = 0; P < npoints; P++) {
-                std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P]), Up[P], 1, Tp[P], 1);
-            }
-            for (int ml = 0; ml < nlocal; ml++) {
-                int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_zz[0][ml], max_functions);
-            }
-        }
-
-        // => Meta Contribution <= //
-        if (fworker->is_meta()) {
-            double** phi_xx = pworker->basis_value("PHI_XX")->pointer();
-            double** phi_xy = pworker->basis_value("PHI_XY")->pointer();
-            double** phi_xz = pworker->basis_value("PHI_XZ")->pointer();
-            double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
-            double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
-            double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-            double* v_tau_a = vals["V_TAU_A"]->pointer();
-
-            double** phi_i[3];
-            phi_i[0] = phi_x;
-            phi_i[1] = phi_y;
-            phi_i[2] = phi_z;
-
-            double** phi_ij[3][3];
-            phi_ij[0][0] = phi_xx;
-            phi_ij[0][1] = phi_xy;
-            phi_ij[0][2] = phi_xz;
-            phi_ij[1][0] = phi_xy;
-            phi_ij[1][1] = phi_yy;
-            phi_ij[1][2] = phi_yz;
-            phi_ij[2][0] = phi_xz;
-            phi_ij[2][1] = phi_yz;
-            phi_ij[2][2] = phi_zz;
-
-            for (int i = 0; i < 3; i++) {
-                double*** phi_j = phi_ij[i];
-                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], max_functions, Dp[0], max_functions, 0.0,
-                        Up[0], max_functions);
-                for (int P = 0; P < npoints; P++) {
-                    std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-                    C_DAXPY(nlocal, -2.0 * w[P] * (v_tau_a[P]), Up[P], 1, Tp[P], 1);
-                }
-                for (int ml = 0; ml < nlocal; ml++) {
-                    int A = primary_->function_to_center(function_map[ml]);
-                    Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[0][0][ml], max_functions);
-                    Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[1][0][ml], max_functions);
-                    Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[2][0][ml], max_functions);
-                }
-            }
-        }
-        U_local.reset();
         parallel_timer_off("V_xc gradient", rank);
     }
 
