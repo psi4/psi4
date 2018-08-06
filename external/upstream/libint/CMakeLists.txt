@@ -1,4 +1,4 @@
-find_package(Libint 1.2.0 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
+find_package(Libint 1.2.1 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
 if(${Libint_FOUND})
     get_property(_loc TARGET Libint::int PROPERTY LOCATION)
