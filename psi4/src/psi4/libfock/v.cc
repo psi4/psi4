@@ -336,7 +336,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
         parallel_timer_on("VV10 Fock", rank);
 
         // => LSDA and GGA contribution (symmetrized) <= //
-        dft_integrators::rks_gga_integrator(block, fworker, pworker, V_local[rank]);
+        dft_integrators::rks_integrator(block, fworker, pworker, V_local[rank], 1);
 
         // => Unpacking <= //
         const std::vector<int>& function_map = block->functions_local_to_global();
@@ -406,7 +406,6 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     std::vector<std::shared_ptr<Vector>> Q_temp;
     for (size_t i = 0; i < num_threads_; i++) {
         V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
-        Q_temp.push_back(std::make_shared<Vector>("Quadrature Temp", max_points));
     }
 
     auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
@@ -428,7 +427,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         rank = omp_get_thread_num();
 #endif
 
-        // Pull out workers
+        // Get per-rank workers
         std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
@@ -458,44 +457,14 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         rhoayq[rank] += qvals[3];
         rhoazq[rank] += qvals[4];
 
-        // => LSDA and GGA contribution (symmetrized) <= //
-        dft_integrators::rks_gga_integrator(block, fworker, pworker, V_local[rank]);
+        // => LSDA, GGA, and meta contribution (symmetrized) <= //
+        dft_integrators::rks_integrator(block, fworker, pworker, V_local[rank]);
 
-        // Pull out data that may be needed later on
+        // => Unpacking <= //
         double** V2p = V_local[rank]->pointer();
-        int npoints = block->npoints();
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
-        // => Meta contribution <= //
-        if (ansatz >= 2) {
-            // parallel_timer_on("Meta", rank);
-            double** Tp = pworker->scratch()[0]->pointer();
-            double** phi = pworker->basis_value("PHI")->pointer();
-            double** phix = pworker->basis_value("PHI_X")->pointer();
-            double** phiy = pworker->basis_value("PHI_Y")->pointer();
-            double** phiz = pworker->basis_value("PHI_Z")->pointer();
-            double* v_tau_a = fworker->value("V_TAU_A")->pointer();
-            double* w = block->w();
-
-            double** phi_w[3];
-            phi_w[0] = phix;
-            phi_w[1] = phiy;
-            phi_w[2] = phiz;
-
-            for (int i = 0; i < 3; i++) {
-                double** phiw = phi_w[i];
-                for (int P = 0; P < npoints; P++) {
-                    std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-                    C_DAXPY(nlocal, v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
-                }
-                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tp[0], max_functions, 1.0,
-                        V2p[0], max_functions);
-            }
-            // parallel_timer_off("Meta", rank);
-        }
-
-        // => Unpacking <= //
         for (int ml = 0; ml < nlocal; ml++) {
             int mg = function_map[ml];
             for (int nl = 0; nl < ml; nl++) {
@@ -898,18 +867,15 @@ SharedMatrix RV::compute_gradient() {
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
         double** phi_z = pworker->basis_value("PHI_Z")->pointer();
         double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* zk = vals["V"]->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
 
-        // => Quadrature values <= //
-        functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
-        for (int P = 0; P < npoints; P++) {
-            QTp[P] = w[P] * rho_a[P];
-        }
-        rhoaq[rank] += C_DDOT(npoints, w, 1, rho_a, 1);
-        rhoaxq[rank] += C_DDOT(npoints, QTp, 1, x, 1);
-        rhoayq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
-        rhoazq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
+        // => Compute quadrature <= //
+        std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
+        functionalq[rank] += qvals[0];
+        rhoaq[rank]  += qvals[1];
+        rhoaxq[rank] += qvals[2];
+        rhoayq[rank] += qvals[3];
+        rhoazq[rank] += qvals[4];
 
         // => LSDA Contribution <= //
         for (int P = 0; P < npoints; P++) {
