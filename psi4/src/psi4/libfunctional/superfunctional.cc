@@ -462,6 +462,9 @@ void SuperFunctional::allocate() {
 
     std::vector<std::string> list;
 
+    // Temporaries
+    list.push_back("Q_TMP");
+
     // LSDA
     if (deriv_ >= 0) {
         list.push_back("V");

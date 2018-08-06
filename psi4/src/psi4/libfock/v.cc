@@ -29,6 +29,7 @@
 #include "v.h"
 #include "cubature.h"
 #include "points.h"
+#include "dft_integrators.h"
 
 #include "psi4/libfunctional/LibXCfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -466,22 +467,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         rank = omp_get_thread_num();
 #endif
 
+        // Pull out workers
+        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        double** V2p = V_local[rank]->pointer();
-        double* QTp = Q_temp[rank]->pointer();
-
-        // Scratch
-        double** Tp = pworker->scratch()[0]->pointer();
-
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
-        int npoints = block->npoints();
-        double* x = block->x();
-        double* y = block->y();
-        double* z = block->z();
-        double* w = block->w();
-        const std::vector<int>& function_map = block->functions_local_to_global();
-        int nlocal = function_map.size();
 
         // Compute Rho, Phi, etc
         parallel_timer_on("Properties", rank);
@@ -490,7 +479,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 
         // Compute functional values
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        fworker->compute_functional(pworker->point_values());
         parallel_timer_off("Functional", rank);
 
         if (debug_ > 4) {
@@ -499,69 +488,34 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         }
 
         parallel_timer_on("V_xc", rank);
-        double** phi = pworker->basis_value("PHI")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* zk = vals["V"]->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
 
-        // => Quadrature values <= //
-        functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
-        for (int P = 0; P < npoints; P++) {
-            QTp[P] = w[P] * rho_a[P];
-        }
-        rhoaq[rank] += C_DDOT(npoints, w, 1, rho_a, 1);
-        rhoaxq[rank] += C_DDOT(npoints, QTp, 1, x, 1);
-        rhoayq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
-        rhoazq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
+        // => Compute quadrature <= //
+        std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
+        functionalq[rank] += qvals[0];
+        rhoaq[rank]  += qvals[1];
+        rhoaxq[rank] += qvals[2];
+        rhoayq[rank] += qvals[3];
+        rhoazq[rank] += qvals[4];
 
         // => LSDA contribution (symmetrized) <= //
-        // parallel_timer_on("LSDA Phi_tmp", rank);
-        for (int P = 0; P < npoints; P++) {
-            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
-        }
-        // parallel_timer_off("LSDA Phi_tmp", rank);
+        dft_integrators::rks_gga_integrator(block, fworker, pworker, V_local[rank]);
 
-        // => GGA contribution (symmetrized) <= //
-        if (ansatz >= 1) {
-            // parallel_timer_on("GGA Phi_tmp", rank);
-            double** phix = pworker->basis_value("PHI_X")->pointer();
-            double** phiy = pworker->basis_value("PHI_Y")->pointer();
-            double** phiz = pworker->basis_value("PHI_Z")->pointer();
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
-
-            for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
-            }
-            // parallel_timer_off("GGA Phi_tmp", rank);
-        }
-
-        // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        // parallel_timer_on("LSDA/GGA V form", rank);
-        // printf("nlocal: %d, npoints %d, maxf %d\n", nlocal, npoints, max_functions);
-        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions, 0.0, V2p[0],
-                max_functions);
-
-        // Symmetrization (V is Hermitian)
-        for (int m = 0; m < nlocal; m++) {
-            for (int n = 0; n <= m; n++) {
-                V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
-            }
-        }
-        // parallel_timer_off("LSDA/GGA V form", rank);
+        // Pull out data that may be needed later on
+        double** V2p = V_local[rank]->pointer();
+        int npoints = block->npoints();
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
 
         // => Meta contribution <= //
         if (ansatz >= 2) {
             // parallel_timer_on("Meta", rank);
+            double** Tp = pworker->scratch()[0]->pointer();
+            double** phi = pworker->basis_value("PHI")->pointer();
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
             double* v_tau_a = vals["V_TAU_A"]->pointer();
+            double* w = block->w();
 
             double** phi_w[3];
             phi_w[0] = phix;
