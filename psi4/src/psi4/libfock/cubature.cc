@@ -3926,6 +3926,7 @@ void BlockOPoints::populate()
             }
         }
     }
+    local_nbf_ = functions_local_to_global_.size();
 }
 void BlockOPoints::print(std::string out, int print)
 {
@@ -4129,6 +4130,7 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius)
     npoints_ = blocker->npoints();
     max_points_ = blocker->max_points();
     max_functions_ = blocker->max_functions();
+    collocation_size_ = blocker->collocation_size();
 
     const std::vector<std::shared_ptr<BlockOPoints> >& block = blocker->blocks();
     for (size_t i = 0; i < block.size(); i++) {
@@ -4202,6 +4204,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const
     printer->Printf("    Total Blocks        = %14zu\n", blocks_.size());
     printer->Printf("    Max Points          = %14d\n", max_points_);
     printer->Printf("    Max Functions       = %14d\n", max_functions_);
+    // printer->Printf("    Collocation Size [MiB] = %14.3f\n", max_functions_);
     printer->Printf("\n");
 
 }
@@ -4250,6 +4253,7 @@ void NaiveGridBlocker::block()
     npoints_ = npoints_ref_;
     max_points_ = tol_max_points_;
     max_functions_ = extents_->basis()->nbf();
+    collocation_size_ = max_points_ * max_functions_;
 
     x_ = new double[npoints_];
     y_ = new double[npoints_];
@@ -4481,9 +4485,11 @@ void OctreeGridBlocker::block()
     }
 
     max_functions_ = 0;
+    collocation_size_ = 0;
     for (size_t A = 0; A < blocks_.size(); A++) {
-        if ((size_t)max_functions_ < blocks_[A]->functions_local_to_global().size())
-            max_functions_ = blocks_[A]->functions_local_to_global().size();
+        collocation_size_ += blocks_[A]->local_nbf() * blocks_[A]->npoints();
+        if ((size_t)max_functions_ < blocks_[A]->local_nbf())
+            max_functions_ = blocks_[A]->local_nbf();
     }
 
     if (bench_) {

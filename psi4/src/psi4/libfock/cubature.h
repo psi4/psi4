@@ -75,6 +75,8 @@ protected:
     int max_points_;
     /// Maximum number of functions in a block
     int max_functions_;
+    // The total collocation size
+    size_t collocation_size_;
     /// Full x points.
     double* x_;
     /// Full y points.
@@ -349,6 +351,7 @@ class BlockOPoints {
 protected:
     /// number of points in this block
     int npoints_;
+    int local_nbf_;
 
     /// Data holders if requested
     SharedVector xvec_;
@@ -393,6 +396,8 @@ public:
 
     /// Number of grid points
     int npoints() const { return npoints_; }
+    /// Number of basis functions in the block
+    int local_nbf() const { return local_nbf_; }
     /// Print a trace of this BlockOPoints
     void print(std::string out_fname = "outfile", int print = 2);
 
