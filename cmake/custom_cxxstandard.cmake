@@ -53,6 +53,11 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
         message(FATAL_ERROR "CLANG version must be at least 3.6!")
     endif()
 
+elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+    if(MSVC_TOOLSET_VERSION LESS 140)
+        message(FATAL_ERROR "MSVC toolset version must be at least 14.0!")
+    endif()
+
 else()
     message(WARNING "Please add a check in custom_cxxstandard.cmake for ${CMAKE_CXX_COMPILER_ID}.")
 endif()
