@@ -595,9 +595,9 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
     const std::map<std::string, SharedVector>& vals, int npoints) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
-    for (std::map<std::string, SharedVector>::const_iterator it = values_.begin();
-         it != values_.end(); ++it) {
-        ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
+    // Zero out values
+    for (auto kv : values_){
+        kv.second->zero();
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
@@ -835,7 +835,8 @@ double SuperFunctional::compute_vv10_kernel(
 
         // Add Phi agnostic quantities
         vv10_e += l_w[i] * l_rho[i] * vv10_beta;
-        v_rho[i] += vv10_beta;
+        v_rho[i] = vv10_beta;
+        v_gamma[i] = 0.0;
 
         if (l_rho[i] < l_thresh) continue;
 
