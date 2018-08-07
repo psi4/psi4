@@ -136,7 +136,7 @@ funcs.append({
         "GGA_X_PW91": {}
     },
     "c_functionals": {
-        "GGA_C_Pw91": {}
+        "GGA_C_PW91": {}
     },
     "citation": '    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992\n',
     "description": '    PW91 GGA Exchange-Correlation Functional\n',
@@ -148,7 +148,7 @@ funcs.append({
         "GGA_X_mPW91": {}
     },
     "c_functionals": {
-        "GGA_C_Pw91": {}
+        "GGA_C_PW91": {}
     },
     "citation": '    C. Adamo, V. Barone, J. Chem. Phys., 108, 664, 1998\n',
     "description": '    mPWPW GGA Exchange-Correlation Functional\n',

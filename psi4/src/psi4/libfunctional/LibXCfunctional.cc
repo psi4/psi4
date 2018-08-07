@@ -295,12 +295,12 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
             xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
-    } else if (xc_func_name_ == "XC_GGA_X_PW91") {
-        if (vsize == 7) {
+    } else if (xc_func_name_ == "XC_GGA_X_MPW91") {
+        if (vsize == 3) {
             // (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT c, FLOAT d, FLOAT f, FLOAT alpha, FLOAT expo);
             // xc_gga_x_pw91_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3], values[4],
             //                          values[5], values[6]);
-            //xc_func_set_ext_params(xc_functional_.get(), values.data());
+            xc_func_set_ext_params(xc_functional_.get(), values.data());
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_RPBE") {

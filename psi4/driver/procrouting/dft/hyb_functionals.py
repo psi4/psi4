@@ -355,13 +355,13 @@ def get_pw6b95_tweaks():
     c_pw6 = bt / (X_FACTOR_C * X2S * X2S)
     d_pw6 = -(bt - beta) / (X_FACTOR_C * X2S * X2S)
     f_pw6 = 1.0e-6 / (X_FACTOR_C * X2S**expo_pw6)
-    return ([a_pw6, b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
+    return ([bt, alpha_pw6, expo_pw6])
 
 
 funcs.append({
     "name": "PW6B95",
     "x_functionals": {
-        "GGA_X_PW91": {
+        "GGA_X_MPW91": {
             "tweak": get_pw6b95_tweaks(),
             "alpha": 0.72
         }
