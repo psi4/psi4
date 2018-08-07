@@ -208,8 +208,8 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std:
     int rank = 0;
 
     // Build local points workers as they max_points/max_funcs may differ
-    int max_points = nlgrid.max_points();
-    int max_functions = nlgrid.max_functions();
+    const int max_points = nlgrid.max_points();
+    const int max_functions = nlgrid.max_functions();
 
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread, only need RKS-like terms
@@ -303,7 +303,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
 
     // => Setup info <=
     int rank = 0;
-    int max_functions = nlgrid.max_functions();
+    const int max_functions = nlgrid.max_functions();
     double** Vp = ret->pointer();
 
     // VV10 temps
@@ -374,6 +374,7 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     // => VV10 Grid and Cache <=
     std::map<std::string, std::string> opt_map;
     opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
+    // opt_map["DFT_NUCLEAR_SCHEME"] = "BECKE";
 
     std::map<std::string, int> opt_int_map;
     opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
@@ -388,9 +389,9 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
 
     // => Setup info <=
     int rank = 0;
-    int max_functions = nlgrid.max_functions();
-    int max_points = nlgrid.max_points();
-    int natom = primary_->molecule()->natom();
+    const int max_functions = nlgrid.max_functions();
+    const int max_points = nlgrid.max_points();
+    const int natom = primary_->molecule()->natom();
 
     // VV10 temps
     std::vector<double> vv10_exc(num_threads_);
@@ -414,6 +415,10 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         std::shared_ptr<BlockOPoints> block = nlgrid.blocks()[Q];
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = nl_point_workers[rank];
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        const int nlocal = function_map.size();
+        const int npoints = block->npoints();
+        double** Tp = pworker->scratch()[0]->pointer();
 
         // Compute Rho, Phi, etc
         pworker->compute_points(block);
@@ -422,7 +427,7 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         std::map<std::string, SharedVector> vals = fworker->values();
 
         parallel_timer_on("Kernel", rank);
-        vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block);
+        vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints, true);
         parallel_timer_off("Kernel", rank);
 
         parallel_timer_on("V_xc gradient", rank);
@@ -431,6 +436,36 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         dft_integrators::rks_gradient_integrator(primary_, block, fworker, pworker, G_local[rank], U_local[rank]);
 
         // => Grid gradient contributions <= //
+        double** Gp = G_local[rank]->pointer();
+        const double* x_grid = fworker->vv_value("GRID_WX")->pointer();
+        const double* y_grid = fworker->vv_value("GRID_WY")->pointer();
+        const double* z_grid = fworker->vv_value("GRID_WZ")->pointer();
+        double** phi = pworker->basis_value("PHI")->pointer();
+        double** phi_x = pworker->basis_value("PHI_X")->pointer();
+        double** phi_y = pworker->basis_value("PHI_Y")->pointer();
+        double** phi_z = pworker->basis_value("PHI_Z")->pointer();
+
+        // double xcontrib = 0.0;
+        // double ycontrib = 0.0;
+        // double zcontrib = 0.0;
+        // for (size_t i = 0; i < npoints; i++){
+        //     xcontrib += x_grid[i];
+        //     ycontrib += y_grid[i];
+        //     zcontrib += z_grid[i];
+        // }
+        for (int P = 0; P < npoints; P++) {
+            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
+            C_DAXPY(nlocal, z_grid[P], phi[P], 1, Tp[P], 1);
+        }
+        for (int ml = 0; ml < nlocal; ml++) {
+            int A = primary_->function_to_center(function_map[ml]);
+            // Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_x[0][ml], max_functions);
+            // Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_y[0][ml], max_functions);
+            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions);
+            printf("Value %d %16.15lf\n", A, C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions));
+        }
+
+        printf("--\n");
 
 
         parallel_timer_off("V_xc gradient", rank);
@@ -441,6 +476,8 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     for (auto const& val : G_local) {
         G->add(val);
     }
+    G->print();
+    G->zero();
 
     double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
     timer_off("V: VV10");

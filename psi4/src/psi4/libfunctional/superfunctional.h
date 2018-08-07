@@ -146,12 +146,13 @@ public:
     // Copmutes the Cache data for VV10 dispersion
     double compute_vv10_kernel(const std::map<std::string, SharedVector>& vals,
                                const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-                               std::shared_ptr<BlockOPoints> block, int npoints = -1);
+                               std::shared_ptr<BlockOPoints> block, int npoints = -1, bool do_grad=false);
 
     // => Input/Output <= //
 
     std::map<std::string, SharedVector>& values() { return values_; }
-    SharedVector value(const std::string& key);
+    SharedVector value(const std::string& key) { return values_[key]; }
+    SharedVector vv_value(const std::string& key) { return vv_values_[key]; }
 
     std::vector<std::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<std::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
