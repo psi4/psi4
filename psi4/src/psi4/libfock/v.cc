@@ -202,7 +202,7 @@ std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
 
-void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std::map<std::string, SharedVector>>& vv10_cache, std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers) {
+void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std::map<std::string, SharedVector>>& vv10_cache, std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz) {
 
     // Densities should be set by the calling functional
     int rank = 0;
@@ -214,7 +214,7 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std:
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread, only need RKS-like terms
         auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
-        point_tmp->set_ansatz(1);
+        point_tmp->set_ansatz(ansatz);
         point_tmp->set_pointers(D);
         nl_point_workers.push_back(point_tmp);
     }
@@ -366,6 +366,85 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
     timer_off("V: VV10");
     return vv10_e;
+}
+SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
+    timer_on("V: VV10");
+    timer_on("Setup");
+
+    // => VV10 Grid and Cache <=
+    std::map<std::string, std::string> opt_map;
+    opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
+
+    std::map<std::string, int> opt_int_map;
+    opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
+    opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
+
+    DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+    std::vector<std::map<std::string, SharedVector>> vv10_cache;
+    std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
+    prepare_vv10_cache(nlgrid, D, vv10_cache, nl_point_workers, 2);
+
+    timer_off("Setup");
+
+    // => Setup info <=
+    int rank = 0;
+    int max_functions = nlgrid.max_functions();
+    int max_points = nlgrid.max_points();
+    int natom = primary_->molecule()->natom();
+
+    // VV10 temps
+    std::vector<double> vv10_exc(num_threads_);
+
+    // Per thread temporaries
+    std::vector<SharedMatrix> G_local, U_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        G_local.push_back(std::make_shared<Matrix>("G Temp", natom, 3));
+        U_local.push_back(std::make_shared<Matrix>("U Temp", max_points, max_functions));
+    }
+
+// => Compute the kernel <=
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
+// Get thread info
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        // Get per rank-workers
+        std::shared_ptr<BlockOPoints> block = nlgrid.blocks()[Q];
+        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
+        std::shared_ptr<PointFunctions> pworker = nl_point_workers[rank];
+
+        // Compute Rho, Phi, etc
+        pworker->compute_points(block);
+
+        // Updates the vals map and returns the energy
+        std::map<std::string, SharedVector> vals = fworker->values();
+
+        parallel_timer_on("Kernel", rank);
+        vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block);
+        parallel_timer_off("Kernel", rank);
+
+        parallel_timer_on("V_xc gradient", rank);
+
+        // => LSDA and GGA gradient contributions <= //
+        dft_integrators::rks_gradient_integrator(primary_, block, fworker, pworker, G_local[rank], U_local[rank]);
+
+        // => Grid gradient contributions <= //
+
+
+        parallel_timer_off("V_xc gradient", rank);
+    }
+
+    // Sum up the matrix
+    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
+    for (auto const& val : G_local) {
+        G->add(val);
+    }
+
+    double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
+    timer_off("V: VV10");
+    return G;
 }
 
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
@@ -788,9 +867,9 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 SharedMatrix RV::compute_gradient() {
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
-    if (functional_->needs_vv10()) {
-        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
-    }
+    // if (functional_->needs_vv10()) {
+    //     throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
+    // }
     // How many atoms?
     int natom = primary_->molecule()->natom();
 
@@ -892,6 +971,10 @@ SharedMatrix RV::compute_gradient() {
 
     for (size_t i = 0; i < num_threads_; i++) {
         point_workers_[i]->set_deriv(old_deriv);
+    }
+    if (functional_->needs_vv10()) {
+        // throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
+        G->add(vv10_nlc_gradient(D_AO_[0]));
     }
 
     // RKS

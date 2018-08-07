@@ -96,8 +96,10 @@ protected:
         DFTGrid& nlgrid,
         SharedMatrix D,
         std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-        std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers);
+        std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers,
+        int ansatz=1);
     double vv10_nlc(SharedMatrix D, SharedMatrix ret);
+    SharedMatrix vv10_nlc_gradient(SharedMatrix D);
 
     /// Set things up
     void common_init();
