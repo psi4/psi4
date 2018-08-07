@@ -120,8 +120,8 @@ option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
 option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
-option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON
-                  "-xHost" "-march=native" "/arch:AVX2" "/arch:AVX")
+option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
+                  "-xHost" "-march=native" "/arch:AVX2")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
