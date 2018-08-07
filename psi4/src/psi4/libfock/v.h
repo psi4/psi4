@@ -92,6 +92,11 @@ protected:
     bool grac_initialized_;
 
     // VV10 dispersion, return vv10_nlc energy
+    void prepare_vv10_cache(
+        DFTGrid& nlgrid,
+        SharedMatrix D,
+        std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+        std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers);
     double vv10_nlc(SharedMatrix D, SharedMatrix ret);
 
     /// Set things up
