@@ -1,4 +1,4 @@
-find_package(Libint 1.2.1 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
+find_package(Libint 1.2.0 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
 if(${Libint_FOUND})
     get_property(_loc TARGET Libint::int PROPERTY LOCATION)
@@ -12,9 +12,8 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable Libint could not be located, ${Magenta}Building Libint${ColourReset} instead.")
     ExternalProject_Add(libint_external
-        GIT_REPOSITORY https://github.com/evaleev/libint
-        GIT_TAG b13e71d # v1.2.1 + 2 + (Win port) release-1-2-1
-        UPDATE_COMMAND ""
+        # "git checkout" fails on Windows, because of "*" in filenames (e.g. basis set files)
+        URL https://github.com/evaleev/libint/archive/b13e71d3cf9960460c4019e5ecf2546a5f361c71.zip
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}

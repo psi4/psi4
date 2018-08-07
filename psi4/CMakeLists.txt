@@ -123,7 +123,7 @@ else()
     message(STATUS "Disabled gdma")
 endif()
 
-find_package(Libint 1.2.1 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
+find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
