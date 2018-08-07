@@ -139,7 +139,7 @@ def to_string(molrec, dtype, units='Angstrom', atom_format=None, ghost_format=No
         smol.append(symm_line)
         smol.append(last_line)
 
-    return '\n'.join(smol)
+    return '\n'.join(smol) + '\n'
 
 
 def _atoms_formatter(molrec, geom, atom_format, ghost_format, width, prec, sp):

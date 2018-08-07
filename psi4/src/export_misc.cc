@@ -34,8 +34,8 @@
 using namespace psi;
 
 void export_misc(py::module &m) {
-    m.def("timer_on", timer_on, "docstring");
-    m.def("timer_off", timer_off, "docstring");
+    m.def("timer_on", timer_on, "Start timer with argument as label");
+    m.def("timer_off", timer_off, "Stop timer of label argument");
     m.def("tstart", tstart, "docstring");
     m.def("tstop", tstop, "docstring");
 }

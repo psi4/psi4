@@ -82,7 +82,7 @@
 // The integral files used by libtrans
 #define PSIF_LIBTRANS_DPD      61   /*- libtrans: All transformed integrals in DPD format are sent here by default -*/
 #define PSIF_LIBTRANS_A_HT     62   /*- libtrans: Alpha half-transformed integrals in DPD format -*/
-#define PSIF_LIBTRANS_B_HT     63   /*- libtrans: Beta half-tranformed integrals in DPD format -*/
+#define PSIF_LIBTRANS_B_HT     63   /*- libtrans: Beta half-transformed integrals in DPD format -*/
 
 #define PSIF_LIBDIIS           64   /*- Storage for libdiis -*/
 #define PSIF_DFT_GRID          65   /*- Storage for DFT/pseudospectral grid -*/

@@ -2060,7 +2060,7 @@ void Matrix::cholesky_factorize() {
             int err = C_DPOTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
                 if (err < 0) {
-                    outfile->Printf("cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
+                    outfile->Printf("cholesky_factorize: C_DPOTRF: argument %d has invalid parameter.\n", -err);
 
                     abort();
                 }
@@ -2264,7 +2264,7 @@ void Matrix::general_invert() {
             int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
             if (err != 0) {
                 if (err < 0) {
-                    outfile->Printf("invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
+                    outfile->Printf("invert: C_DGETRF: argument %d has invalid parameter.\n", -err);
 
                     abort();
                 }
@@ -2281,7 +2281,7 @@ void Matrix::general_invert() {
             err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
             if (err != 0) {
                 if (err < 0) {
-                    outfile->Printf("invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
+                    outfile->Printf("invert: C_DGETRI: argument %d has invalid parameter.\n", -err);
 
                     abort();
                 }

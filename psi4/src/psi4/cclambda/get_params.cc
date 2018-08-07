@@ -466,7 +466,7 @@ void get_params(Options& options)
     outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
 
-  outfile->Printf("\tParamaters for left-handed eigenvectors:\n");
+  outfile->Printf("\tParameters for left-handed eigenvectors:\n");
   outfile->Printf("\t    Irr   Root  Ground-State?    EOM energy        R0\n");
   for (i=0; i<params.nstates; ++i) {
     outfile->Printf("\t%3d %3d %5d %10s %18.10lf %14.10lf\n", i+1, pL_params[i].irrep, pL_params[i].root+1,

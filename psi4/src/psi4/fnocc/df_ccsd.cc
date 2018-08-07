@@ -610,7 +610,7 @@ void DFCoupledCluster::AllocateMemory() {
 
       if ( available_memory > total_memory + df_memory - size_of_t2) {
           outfile->Printf("\n");
-          outfile->Printf("        Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+          outfile->Printf("        Warning: cannot accommodate T2 in core. T2 will be stored on disk.\n");
           outfile->Printf("\n");
 
           t2_on_disk = true;

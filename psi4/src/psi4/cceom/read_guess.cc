@@ -88,7 +88,7 @@ void read_guess_init(void)
         }
         else { /* check consistency of other excitations */
           if (moinfo.occ_sym[i]^moinfo.vir_sym[a] != this_irrep) {
-            outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
+            outfile->Printf( "\nInconsistent symmetries in components of guess %d.\n", k);
             exit(2);
           }
         }
@@ -106,13 +106,13 @@ void read_guess_init(void)
         else { /* check consistency of other excitations */
           if (spin == 0) {
             if (moinfo.aocc_sym[i]^moinfo.avir_sym[a] != this_irrep) {
-              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsistent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }
           else {
             if (moinfo.bocc_sym[i]^moinfo.bvir_sym[a] != this_irrep) {
-              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsistent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }
@@ -182,7 +182,7 @@ void read_guess(int C_irr)
         }
         else{ /* check other excitations for consistency */
           if (moinfo.occ_sym[i]^moinfo.vir_sym[a] != this_irrep) {
-            outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
+            outfile->Printf( "\nInconsistent symmetries in components of guess %d.\n", k);
             exit(2);
           }
         }
@@ -197,13 +197,13 @@ void read_guess(int C_irr)
         else{ /* check other excitations for consistency */
           if (spin == 0) {
             if (moinfo.aocc_sym[i]^moinfo.avir_sym[a] != this_irrep) {
-              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsistent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }
           else {
             if (moinfo.bocc_sym[i]^moinfo.bvir_sym[a] != this_irrep) {
-              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsistent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }

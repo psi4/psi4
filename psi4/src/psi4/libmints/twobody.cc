@@ -712,7 +712,7 @@ static void transform2e_3(int am, SphericalTransformIter& sti, double *s, double
 }
 
 // am => angular momentum of l
-// sti => spherical tranformation iterator
+// sti => spherical transformation iterator
 // s => source integrals buffer
 // t => target buffer
 // nijk => how many i, j, k combinations are there?

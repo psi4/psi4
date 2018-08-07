@@ -60,15 +60,15 @@ SOMCSCF::SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) : 
 }
 SOMCSCF::~SOMCSCF() {}
 void SOMCSCF::transform(bool approx_only) {
-    throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
+    throw PSIEXCEPTION("The SOMCSCF object must be initialized as a DF or Disk object.");
 }
 SharedMatrix SOMCSCF::compute_Q(SharedMatrix TPDM) {
-    throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
+    throw PSIEXCEPTION("The SOMCSCF object must be initialized as a DF or Disk object.");
 }
 SharedMatrix SOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) {
-    throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
+    throw PSIEXCEPTION("The SOMCSCF object must be initialized as a DF or Disk object.");
 }
-void SOMCSCF::set_act_MO() { throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object."); }
+void SOMCSCF::set_act_MO() { throw PSIEXCEPTION("The SOMCSCF object must be initialized as a DF or Disk object."); }
 void SOMCSCF::set_ras(std::vector<Dimension> ras_spaces) {
     ras_spaces_ = ras_spaces;
     casscf_ = false;

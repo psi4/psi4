@@ -243,24 +243,24 @@ if (reference_ == "RESTRICTED") {
 
         if (cost_iabc_ < memory_mb_) {
             incore_iabc_ = 1;
-            outfile->Printf(     "\tSwitching to the incore algoritm for iabc..\n");
+            outfile->Printf(     "\tSwitching to the incore algorithm for iabc..\n");
 
         }
         else {
             incore_iabc_ = 0;
-            outfile->Printf(     "\tSwitching to the out of core algoritm for iabc..\n");
+            outfile->Printf(     "\tSwitching to the out of core algorithm for iabc..\n");
 
         }
 
         //cost_abcd_ = 8 * nvoA * nvoA * nvoA * nvoA;
         if (cost_abcd_ < memory_mb_) {
             incore_abcd_ = 1;
-            outfile->Printf(     "\tSwitching to the incore algoritm for abcd..\n");
+            outfile->Printf(     "\tSwitching to the incore algorithm for abcd..\n");
 
         }
         else {
             incore_abcd_ = 0;
-            outfile->Printf(     "\tSwitching to the out of core algoritm for abcd..\n");
+            outfile->Printf(     "\tSwitching to the out of core algorithm for abcd..\n");
 
         }
     }// end if (wfn_type_ == "OMP2")
