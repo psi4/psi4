@@ -97,7 +97,9 @@ void export_wavefunction(py::module& m) {
         .def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership,
              "Returns the requested Beta Orbital subset.")
         .def("Fa", &Wavefunction::Fa, "Returns the Alpha Fock Matrix.")
+        .def("Fa_subset", &Wavefunction::Fa_subset, "Returns the Alpha Fock Matrix in the requested basis (AO,SO).")
         .def("Fb", &Wavefunction::Fb, "Returns the Beta Fock Matrix.")
+        .def("Fb_subset", &Wavefunction::Fb_subset, "Returns the Beta Fock Matrix in the requested basis (AO,SO).")
         .def("Da", &Wavefunction::Da, "Returns the Alpha Density Matrix.")
         .def("Db", &Wavefunction::Db, "Returns the Beta Density Matrix.")
         .def("Da_subset", &Wavefunction::Da_subset, py::return_value_policy::take_ownership,
