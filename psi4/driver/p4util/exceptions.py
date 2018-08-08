@@ -85,12 +85,21 @@ class ConvergenceError(PsiException):
     def __init__(self, eqn_description, maxit):
         msg = "Could not converge %s in %d iterations." % (eqn_description, maxit)
         PsiException.__init__(self, msg)
+        self.maxit = maxit
         self.message = msg
         core.print_out('\nPsiException: %s\n\n' % (msg))
 
 
 class OptimizationConvergenceError(ConvergenceError):
     """Error called for problems with geometry optimizer."""
+
+    def __init__(self, eqn_description, maxit, wfn):
+        ConvergenceError.__init__(self, eqn_description, maxit)
+        self.wfn = wfn
+
+
+class SCFConvergenceError(ConvergenceError):
+    """Error called for problems with SCF iterations."""
 
     def __init__(self, eqn_description, maxit, wfn):
         ConvergenceError.__init__(self, eqn_description, maxit)
