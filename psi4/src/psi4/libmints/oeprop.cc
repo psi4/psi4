@@ -158,7 +158,7 @@ void Prop::set_Ca(SharedMatrix C)
 {
     Ca_so_ = C;
     if (same_orbs_) {
-        Ca_so_ = Ca_so_;
+        Cb_so_ = Ca_so_;
     }
 }
 void Prop::set_Cb(SharedMatrix C)
