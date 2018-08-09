@@ -64,17 +64,6 @@ class BasisSet;
 class Prop {
 
 protected:
-    /// Print flag
-    int print_;
-    /// Debug flag
-    int debug_;
-
-    /// The title of this Prop object, for use in saving info
-    std::string title_;
-
-    /// The set of tasks to complete
-    std::set<std::string> tasks_;
-
     /// The wavefunction object this Prop is built around
     std::shared_ptr<Wavefunction> wfn_;
     /// The basisset for this wavefunction
@@ -110,10 +99,6 @@ protected:
     /// Common initialization
     void common_init();
 
-    /// Print header
-    virtual void print_header() = 0;
-
-    int max_noon_ = 3;
 
 public:
 
@@ -203,6 +188,45 @@ public:
     // => Some integral helpers <= //
     SharedMatrix overlap_so();
 
+    /// Computes the center for a given property, for the current molecule. Weighted center of geometry function
+    Vector3 compute_center(const double *property) const;
+
+};
+
+/**
+* The TaskListComputer, a utility base class to add, remove tasks to a tasklist.
+*
+* Historically this class was part of Prop. As prop provides lots of meaningful
+* functionality without the need to actually compute everything asap in a task loop,
+* it was split off here.
+*
+* Recommendations:
+*   - This class should be removed in the future. A clear API with directly exposed
+*     functions (using SharedPointer return values) without writing into global
+*     environments is the way to go.
+*
+*   - Before using this as a base in a new class, it should be investigated, whether a direct
+*     API would be a better approach with a "PropFactory" for use in the interactive
+*     interpreter.
+*/
+
+class TaskListComputer
+{
+protected:
+    /// Print flag
+    int print_;
+    /// Debug flag
+    int debug_;
+
+    /// The title of this Prop object, for use in saving info
+    std::string title_;
+
+    /// The set of tasks to complete
+    std::set<std::string> tasks_;
+
+public:
+    /// Print header
+    virtual void print_header() = 0;
     // => Queue/Compute Routines <= //
 
     /// Add a single task to the queue
@@ -219,10 +243,12 @@ public:
     virtual void compute() = 0;
 
     // => Utility Routines <= //
-
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
 
+
+    TaskListComputer();
+    virtual ~TaskListComputer() {}
 };
 
 
@@ -230,7 +256,7 @@ public:
 * The OEProp object, computes arbitrary expectation values (scalars)
 * analyses (typically vectors)
 **/
-class OEProp : public Prop {
+class OEProp : public Prop, public TaskListComputer {
 
 protected:
     /// Common initialization
@@ -266,7 +292,7 @@ protected:
     /// Compute field at specified grid points
     void compute_field_over_grid();
 
-
+    int max_noon_ = 3;
     /// The center about which properties are computed
     Vector3 origin_;
     /// Whether the origin is on a symmetry axis or not

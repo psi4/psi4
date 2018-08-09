@@ -79,10 +79,6 @@ Prop::~Prop()
 }
 void Prop::common_init()
 {
-    title_ = "";
-    print_ = 1;
-    debug_ = 0;
-    tasks_.clear();
     set_wavefunction(wfn_);
 }
 void Prop::set_wavefunction(std::shared_ptr<Wavefunction> wfn)
@@ -284,17 +280,24 @@ void Prop::set_Db_mo(SharedMatrix D)
     }
     delete[] temp;
 }
-void Prop::add(const std::string& prop)
+TaskListComputer::TaskListComputer()
+{
+    title_ = "";
+    print_ = 1;
+    debug_ = 0;
+    tasks_.clear();
+}
+void TaskListComputer::add(const std::string& prop)
 {
     tasks_.insert(prop);
 }
-void Prop::add(std::vector<std::string> props)
+void TaskListComputer::add(std::vector<std::string> props)
 {
     for (int i = 0; i < (int)props.size(); i++) {
         tasks_.insert(props[i]);
     }
 }
-void Prop::clear()
+void TaskListComputer::clear()
 {
     tasks_.clear();
 }
@@ -734,15 +737,7 @@ SharedMatrix Prop::overlap_so()
     return S;
 }
 
-OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
-{
-    common_init();
-}
-OEProp::~OEProp()
-{
-}
-
-Vector3 OEProp::compute_center(const double *property) const
+Vector3 Prop::compute_center(const double *property) const
 {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     int natoms = mol->natom();
@@ -762,6 +757,15 @@ Vector3 OEProp::compute_center(const double *property) const
     y /= sum;
     z /= sum;
     return Vector3(x, y, z);
+}
+
+
+OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
+{
+    common_init();
+}
+OEProp::~OEProp()
+{
 }
 
 void OEProp::common_init()

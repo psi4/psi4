@@ -35,8 +35,8 @@
 using namespace psi;
 
 void export_oeprop(py::module &m) {
-    py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring")
-        .def("set_title", &OEProp::set_title, "docstring");
+    py::class_<TaskListComputer, std::shared_ptr<TaskListComputer> >(m, "TaskListComputer", "docstring")
+        .def("set_title", &TaskListComputer::set_title, "docstring");
 
     //     def(init<std::shared_ptr<Wavefunction> >()).
     //     def("print_header", pure_virtual(&Prop::print_header)).
@@ -48,7 +48,7 @@ void export_oeprop(py::module &m) {
     //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
 
-    py::class_<OEProp, std::shared_ptr<OEProp>, Prop>(m, "OEProp", "docstring")
+    py::class_<OEProp, std::shared_ptr<OEProp>, Prop, TaskListComputer>(m, "OEProp", "docstring")
         .
         // TODO had no_init but init member present
         def(py::init<std::shared_ptr<Wavefunction> >())
