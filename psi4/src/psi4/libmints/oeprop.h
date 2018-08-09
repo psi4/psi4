@@ -196,7 +196,7 @@ public:
 /**
 * The TaskListComputer, a utility base class to add, remove tasks to a tasklist.
 *
-* Historically this class was part of Prop. As prop provides lots of meaningful
+* Historically this class was part of Prop. As Prop provides lots of meaningful
 * functionality without the need to actually compute everything asap in a task loop,
 * it was split off here.
 *
@@ -246,9 +246,42 @@ public:
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
 
-
+    // Constructor, sets defaults for print and debug
     TaskListComputer();
+    // Destructor
     virtual ~TaskListComputer() {}
+};
+
+class MultipolePropCalc : public Prop
+{
+private:
+    MultipolePropCalc();
+protected:
+    /// The center about which properties are computed
+    Vector3 origin_;
+    /// Whether the origin is on a symmetry axis or not
+    bool origin_preserves_symmetry_;
+public:
+    /// Common initialization
+    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn);
+    //Output Type of multipole function, name, elec, nuc, tot
+    typedef std::vector<
+            std::tuple<
+            std::string,
+            double,
+            double,
+            double
+            >
+    > MultipoleOutputType;
+    typedef std::shared_ptr<MultipoleOutputType> MultipoleOutputType_ptr;
+    /// Compute arbitrary-order multipoles up to (and including) l=order. returns name, elec, nuc and tot as vector_ptr
+    MultipoleOutputType_ptr compute_multipoles(int order, bool transition = false, bool print_output = false, bool verbose = false);
+    /// Compute dipole
+    SharedVector compute_dipole(bool transition = false, bool print_output = false, bool verbose = false);
+    /// Compute quadrupole
+    SharedMatrix compute_quadrupole(bool transition = false, bool print_output = false, bool verbose = false);
+    /// Compute mo extents
+    std::vector<SharedVector> compute_mo_extents(bool print_output = false);
 };
 
 
@@ -257,7 +290,9 @@ public:
 * analyses (typically vectors)
 **/
 class OEProp : public Prop, public TaskListComputer {
-
+private:
+    /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
+    OEProp();
 protected:
     /// Common initialization
     void common_init();
@@ -292,11 +327,9 @@ protected:
     /// Compute field at specified grid points
     void compute_field_over_grid();
 
+    MultipolePropCalc mpc;
+
     int max_noon_ = 3;
-    /// The center about which properties are computed
-    Vector3 origin_;
-    /// Whether the origin is on a symmetry axis or not
-    bool origin_preserves_symmetry_;
 
     /// The ESP in a.u., computed at each grid point
     std::vector<double> Vvals_;
@@ -310,8 +343,6 @@ protected:
 public:
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
-    /// Constructor, uses globals and Process::environment::reference wavefunction
-    OEProp();
     /// Destructor
     virtual ~OEProp();
 

@@ -760,7 +760,7 @@ Vector3 Prop::compute_center(const double *property) const
 }
 
 
-OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
+OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn), mpc(wfn)
 {
     common_init();
 }
@@ -770,10 +770,19 @@ OEProp::~OEProp()
 
 void OEProp::common_init()
 {
+    Options &options = Process::environment.options;
+    print_ = options.get_int("PRINT");
+
+    // Determine number of NOONs to print; default is 3
+    if(options.get_str("PRINT_NOONS") == "ALL") max_noon_ = wfn_->nmo();
+        else max_noon_ = to_integer(options.get_str("PRINT_NOONS"));
+}
+
+
+MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
+{
     // See if the user specified the origin
     Options &options = Process::environment.options;
-
-    print_ = options.get_int("PRINT");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     int natoms = mol->natom();
@@ -812,9 +821,6 @@ void OEProp::common_init()
     outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n",
             origin_[0], origin_[1], origin_[2]);
 
-    // Determine number of NOONs to print; default is 3
-    if(options.get_str("PRINT_NOONS") == "ALL") max_noon_ = wfn_->nmo();
-    else max_noon_ = to_integer(options.get_str("PRINT_NOONS"));
 
     /*
      * Now check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
@@ -846,8 +852,8 @@ void OEProp::common_init()
             }
         }
     }
-
 }
+
 
 void OEProp::print_header()
 {
@@ -920,6 +926,27 @@ void OEProp::compute()
 
 void OEProp::compute_multipoles(int order, bool transition)
 {
+    typedef MultipolePropCalc::MultipoleOutputType OutType;
+    MultipolePropCalc::MultipoleOutputType_ptr out = mpc.compute_multipoles(order,transition,true,print_ > 4);
+    MultipolePropCalc::MultipoleOutputType & mpoles = *out;
+    for (OutType::iterator it = mpoles.begin(); it != mpoles.end(); ++it)
+    {
+        std::string name;
+        double total_mpole = 0.0;
+        // unpack the multipole, which is: name, nuc, elec, total, ignore nuc and elec:
+        std::tie(name, std::ignore, std::ignore, total_mpole) = *it;
+        /*- Process::environment.globals["DIPOLE X"] -*/
+        /*- Process::environment.globals["DIPOLE Y"] -*/
+        /*- Process::environment.globals["32-POLE XXXXX"] -*/
+        /*- Process::environment.globals["32-POLE XXXXY"] -*/
+        Process::environment.globals[name] = total_mpole;
+    }
+}
+
+MultipolePropCalc::MultipoleOutputType_ptr MultipolePropCalc::compute_multipoles(int order, bool transition, bool print_output, bool verbose)
+{
+    MultipolePropCalc::MultipoleOutputType_ptr mot_ptr = std::make_shared<MultipolePropCalc::MultipoleOutputType>();
+    MultipolePropCalc::MultipoleOutputType & mot = *mot_ptr;
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     SharedMatrix Da;
@@ -958,7 +985,8 @@ void OEProp::compute_multipoles(int order, bool transition)
         }
     }
 
-    if(print_ > 4){
+    if (verbose)
+    {
         std::vector<SharedMatrix>::iterator iter;
         for(iter = mp_ints.begin(); iter != mp_ints.end(); ++iter)
             iter->get()->print();
@@ -966,10 +994,13 @@ void OEProp::compute_multipoles(int order, bool transition)
 
     SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
 
-    outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
-    outfile->Printf( "\n ------------------------------------------------------------------------------------\n");
-    outfile->Printf( "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
-    outfile->Printf( " ------------------------------------------------------------------------------------\n\n");
+    if (print_output)
+    {
+        outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
+        outfile->Printf( "\n ------------------------------------------------------------------------------------\n");
+        outfile->Printf( "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+        outfile->Printf( " ------------------------------------------------------------------------------------\n\n");
+    }
     double convfac = pc_dipmom_au2debye;
     int address = 0;
     for(int l = 1; l <= order; ++l){
@@ -980,29 +1011,37 @@ void OEProp::compute_multipoles(int order, bool transition)
         if(l > 2)
             ss << "^" << l-1;
         std::string exp = ss.str();
-        outfile->Printf( " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        if (print_output)
+        {
+            outfile->Printf( " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        }
         for(int component = 0; component < ncomponents; ++component){
             SharedMatrix mpmat = mp_ints[address];
             std::string name = mpmat->name();
             double nuc = transition ? 0.0 : nuclear_contributions->get(address);
             double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
             double tot = nuc + elec;
-            outfile->Printf( " %-20s: %18.7f   %18.7f   %18.7f\n",
-                    name.c_str(), elec, nuc, tot);
+            if (print_output)
+            {
+                outfile->Printf( " %-20s: %18.7f   %18.7f   %18.7f\n",
+                        name.c_str(), elec, nuc, tot);
+            }
             std::string upper_name = to_upper_copy(name);
-            /*- Process::environment.globals["DIPOLE X"] -*/
-            /*- Process::environment.globals["DIPOLE Y"] -*/
-            /*- Process::environment.globals["32-POLE XXXXX"] -*/
-            /*- Process::environment.globals["32-POLE XXXXY"] -*/
-            Process::environment.globals[upper_name] = tot;
+            mot.push_back(std::make_tuple(upper_name,nuc,elec,tot));
             ++address;
         }
-        outfile->Printf( "\n");
+        if (print_output)
+        {
+            outfile->Printf( "\n");
+        }
         convfac *= pc_bohr2angstroms;
     }
-    outfile->Printf( " --------------------------------------------------------------------------------\n");
+    if (print_output)
+    {
+        outfile->Printf( " --------------------------------------------------------------------------------\n");
+    }
 
-
+    return mot_ptr;
 }
 
 
@@ -1201,6 +1240,21 @@ void OEProp::compute_esp_at_nuclei()
 
 void OEProp::compute_dipole(bool transition)
 {
+    SharedVector dipole = mpc.compute_dipole(transition,true,print_ > 4);
+    // Dipole components in Debye
+    std::stringstream s;
+    s << title_ << " DIPOLE X";
+    Process::environment.globals[s.str()] = dipole->get(0);
+    s.str(std::string());
+    s << title_ << " DIPOLE Y";
+    Process::environment.globals[s.str()] = dipole->get(1);
+    s.str(std::string());
+    s << title_ << " DIPOLE Z";
+    Process::environment.globals[s.str()] = dipole->get(2);
+}
+
+SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_output, bool verbose)
+{
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     Vector3 de;
@@ -1241,7 +1295,7 @@ void OEProp::compute_dipole(bool transition)
         }
     }
 
-    if (print_ > 4){
+    if (verbose){
         for (int n = 0; n < 3; ++n) dipole_ints[n]->print();
     }
 
@@ -1252,47 +1306,78 @@ void OEProp::compute_dipole(bool transition)
     SharedVector ndip = DipoleInt::nuclear_contribution(mol, origin_);
 
     if (!transition) {
-
-        outfile->Printf( "  Nuclear Dipole Moment: [e a0]\n");
-        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
-                ndip->get(0), ndip->get(1), ndip->get(2));
-        outfile->Printf( "\n");
-        outfile->Printf( "  Electronic Dipole Moment: [e a0]\n");
-        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
-                de[0], de[1], de[2]);
-        outfile->Printf( "\n");
+        if (print_output)
+        {
+            outfile->Printf( "  Nuclear Dipole Moment: [e a0]\n");
+            outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+                    ndip->get(0), ndip->get(1), ndip->get(2));
+            outfile->Printf( "\n");
+            outfile->Printf( "  Electronic Dipole Moment: [e a0]\n");
+            outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+                    de[0], de[1], de[2]);
+            outfile->Printf( "\n");
+        }
 
         de[0] += ndip->get(0, 0);
         de[1] += ndip->get(0, 1);
         de[2] += ndip->get(0, 2);
     }
 
-    outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
-    outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
-       de[0], de[1], de[2], de.norm());
-    outfile->Printf( "\n");
+    if (print_output)
+    {
+        outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
+        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
+           de[0], de[1], de[2], de.norm());
+        outfile->Printf( "\n");
+    }
 
     double dfac = pc_dipmom_au2debye;
-    outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
-    outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
-       de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
-    outfile->Printf( "\n");
+    if (print_output)
+    {
+        outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
+        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
+           de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
+        outfile->Printf( "\n");
+    }
 
     // Dipole components in Debye
-    std::stringstream s;
-    s << title_ << " DIPOLE X";
-    Process::environment.globals[s.str()] = de[0]*dfac;
-    s.str(std::string());
-    s << title_ << " DIPOLE Y";
-    Process::environment.globals[s.str()] = de[1]*dfac;
-    s.str(std::string());
-    s << title_ << " DIPOLE Z";
-    Process::environment.globals[s.str()] = de[2]*dfac;
+    double dipole_x = de[0]*dfac;
+    double dipole_y = de[1]*dfac;
+    double dipole_z = de[2]*dfac;
 
+    auto output = std::make_shared<Vector>(3);
+    output->set(0,dipole_x);
+    output->set(1,dipole_y);
+    output->set(2,dipole_z);
 
+    return output;
 }
 
 void OEProp::compute_quadrupole(bool transition)
+{
+    SharedMatrix quadrupole_ptr = mpc.compute_quadrupole(transition, true, print_ > 4);
+    Matrix & quadrupole = *quadrupole_ptr;
+    std::stringstream s;
+    s << title_ << " QUADRUPOLE XX";
+    Process::environment.globals[s.str()] = quadrupole.get(0,0);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE YY";
+    Process::environment.globals[s.str()] = quadrupole.get(1,1);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE ZZ";
+    Process::environment.globals[s.str()] = quadrupole.get(2,2);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE XY";
+    Process::environment.globals[s.str()] = quadrupole.get(0,1);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE XZ";
+    Process::environment.globals[s.str()] = quadrupole.get(0,2);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE YZ";
+    Process::environment.globals[s.str()] = quadrupole.get(1,2);
+}
+
+SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_output, bool verbose)
 {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Da;
@@ -1331,7 +1416,7 @@ void OEProp::compute_quadrupole(bool transition)
         }
     }
 
-    if(print_ > 4)
+    if(verbose)
         for(int n = 0; n < 6; ++n)
             qpole_ints[n]->print();
 
@@ -1357,44 +1442,60 @@ void OEProp::compute_quadrupole(bool transition)
 
     // Print multipole components
     double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
-    outfile->Printf( "  %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
-    outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
-       qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
-    outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
-       qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
-    outfile->Printf( "\n");
+    if (print_output)
+    {
+        outfile->Printf( "  %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
+        outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
+           qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
+        outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
+           qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
+        outfile->Printf( "\n");
+    }
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    outfile->Printf( "  Traceless %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
-    outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
-       (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
-    outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
-       qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
-    outfile->Printf( "\n");
+    if (print_output)
+    {
+        outfile->Printf( "  Traceless %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
+        outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
+           (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
+        outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
+           qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
+        outfile->Printf( "\n");
+    }
 
     // Quadrupole components in Debye Ang
-    std::stringstream s;
-    s << title_ << " QUADRUPOLE XX";
-    Process::environment.globals[s.str()] = qe[0]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YY";
-    Process::environment.globals[s.str()] = qe[3]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE ZZ";
-    Process::environment.globals[s.str()] = qe[5]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XY";
-    Process::environment.globals[s.str()] = qe[1]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XZ";
-    Process::environment.globals[s.str()] = qe[2]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YZ";
-    Process::environment.globals[s.str()] = qe[4]*dfac;
+    double xx = qe[0]*dfac;
+    double yy = qe[3]*dfac;
+    double zz = qe[5]*dfac;
+    double xy = qe[1]*dfac;
+    double xz = qe[2]*dfac;
+    double yz = qe[4]*dfac;
 
+    auto output = std::make_shared<Matrix>(3,3);
+    Matrix & outmat = *output;
+    outmat.set(0,0,xx);
+    outmat.set(1,1,yy);
+    outmat.set(2,2,zz);
 
+    outmat.set(0,1,xy);
+    outmat.set(1,0,xy);
+
+    outmat.set(1,2,yz);
+    outmat.set(2,1,yz);
+
+    outmat.set(0,2,xz);
+    outmat.set(2,0,xz);
+
+    return output;
 }
+
 void OEProp::compute_mo_extents()
+{
+    std::vector<SharedVector> mo_es = mpc.compute_mo_extents(true);
+    wfn_->set_mo_extents(mo_es);
+}
+
+std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_output)
 {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Ca;
@@ -1512,9 +1613,11 @@ void OEProp::compute_mo_extents()
             }
         }
         std::sort(metric.begin(),metric.end());
-
-        outfile->Printf( "\n  Orbital extents (a.u.):\n");
-        outfile->Printf( "    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        if (print_output)
+        {
+            outfile->Printf( "\n  Orbital extents (a.u.):\n");
+            outfile->Printf( "    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        }
 
         for (int i = 0; i < nmo; i++) {
             int n = std::get<1>(metric[i]);
@@ -1523,28 +1626,33 @@ void OEProp::compute_mo_extents()
             double xx = quadrupole[0]->get(0, i),
                    yy = quadrupole[1]->get(0, i),
                    zz = quadrupole[2]->get(0, i);
-            outfile->Printf( "    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
-                    i,
-                    labels[h].c_str(),
-                    n,
-                    std::fabs(quadrupole[0]->get(0, i)),
-                    std::fabs(quadrupole[1]->get(0, i)),
-                    std::fabs(quadrupole[2]->get(0, i)),
-                    std::fabs(xx + yy + zz));
+            if (print_output)
+            {
+                outfile->Printf( "    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
+                        i,
+                        labels[h].c_str(),
+                        n,
+                        std::fabs(quadrupole[0]->get(0, i)),
+                        std::fabs(quadrupole[1]->get(0, i)),
+                        std::fabs(quadrupole[2]->get(0, i)),
+                        std::fabs(xx + yy + zz));
+            }
                     mo_es[0]->set(0,i,quadrupole[0]->get(0, i));
                     mo_es[1]->set(0,i,quadrupole[1]->get(0, i));
                     mo_es[2]->set(0,i,quadrupole[2]->get(0, i));
                     mo_es[3]->set(0,i,fabs(xx + yy + zz));
         }
-
-        outfile->Printf( "\n");
+        if (print_output)
+        {
+            outfile->Printf( "\n");
+        }
 
     } else {
 
         // TODO: Both alpha and beta orbitals are reported separately
         // This helps identify symmetry breaking
     }
-    wfn_->set_mo_extents(mo_es);
+    return mo_es;
 }
 
 void OEProp::compute_mulliken_charges()
