@@ -32,13 +32,16 @@ import re
 import struct
 from collections import defaultdict
 from decimal import Decimal
+
+import numpy as np
+
 from .pdict import PreservingDict
 from .periodictable import *
 from .physconst import *
 from .exceptions import *
 from .molecule import Molecule
-from .orient import OrientMols
 from .options import conv_float2negexp
+from .hessparse import load_hessian
 
 
 def harvest_output(outtext):
@@ -572,7 +575,9 @@ def harvest(p4Mol, c4out, **largs):
         grdMol, grdGrad = None, None
 
     if 'FCMFINAL' in largs:
-        fcmHess = harvest_FCM(largs['FCMFINAL'])
+        fcmHess = load_hessian(largs['FCMFINAL'], dtype='fcmfinal')
+        if np.count_nonzero(fcmHess) == 0:
+            fcmHess = None
     else:
         fcmHess = None
 
@@ -612,19 +617,37 @@ def harvest(p4Mol, c4out, **largs):
 
     # Set up array reorientation object
     if p4Mol and grdMol:
-        p4c4 = OrientMols(p4Mol, grdMol)
-        oriCoord = p4c4.transform_coordinates2(grdMol)
-        oriGrad = p4c4.transform_gradient(grdGrad)
-        oriDip = None if dipolDip is None else p4c4.transform_vector(dipolDip)
+        rmsd, mill, amol = grdMol.B787(p4Mol, atoms_map=False, mols_align=True, verbose=0)
+
+        oriCoord = mill.align_coordinates(grdMol.geometry(np_out=True))
+        oriGrad = mill.align_gradient(np.array(grdGrad))
+        if dipolDip is None:
+            oriDip = None
+        else:
+            oriDip = mill.align_vector(np.array(dipolDip))
+
+        if fcmHess is None:
+            oriHess = None
+        else:
+            oriHess = mill.align_hessian(np.array(fcmHess))
+
     elif p4Mol and outMol:
-        p4c4 = OrientMols(p4Mol, outMol)
-        oriCoord = p4c4.transform_coordinates2(outMol)
+        # TODO watch out - haven't seen atom_map=False yet
+        rmsd, mill, amol = outMol.B787(p4Mol, atoms_map=True, mols_align=True, verbose=0)
+
+        oriCoord = mill.align_coordinates(outMol.geometry(np_out=True))
         oriGrad = None
-        oriDip = None if dipolDip is None else p4c4.transform_vector(dipolDip)
+        oriHess = None  # I don't think we ever get FCMFINAL w/o GRAD
+        if dipolDip is None:
+            oriDip = None
+        else:
+            oriDip = mill.align_vector(np.array(dipolDip))
+
     elif outMol:
         oriCoord = None
         oriGrad = None
         oriDip = None if dipolDip is None else dipolDip
+        oriHess = None
 
 #    print p4c4
 #    print '    <<<   [4] C4-ORI-MOL   >>>'
@@ -643,17 +666,22 @@ def harvest(p4Mol, c4out, **largs):
 
     retMol = None if p4Mol else grdMol
 
-    if oriDip:
+    if oriDip is not None:
         outPsivar['CURRENT DIPOLE X'] = str(oriDip[0] * psi_dipmom_au2debye)
         outPsivar['CURRENT DIPOLE Y'] = str(oriDip[1] * psi_dipmom_au2debye)
         outPsivar['CURRENT DIPOLE Z'] = str(oriDip[2] * psi_dipmom_au2debye)
 
-    if oriGrad:
+    if oriGrad is not None:
         retGrad = oriGrad
-    elif grdGrad:
+    elif grdGrad is not None:
         retGrad = grdGrad
     else:
         retGrad = None
+
+    if oriHess is not None:
+        retHess = oriHess
+    else:
+        retHess = None
 
     return outPsivar, retGrad, retMol
 
@@ -724,7 +752,7 @@ def harvest_zmat(zmat):
                 isBohr = ' bohr'
 
     molxyz = '%d%s\n%d %d\n' % (Nat, isBohr, charge, mult) + molxyz
-    mol = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+    mol = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     return mol
 
@@ -1098,17 +1126,18 @@ def backtransform(chgeMol, permMol, chgeGrad=None, chgeDip=None):
     orientation embodied by *permMol*. Currently for vpt2.
 
     """
-    # Set up array reorientation object
-    p4c4 = OrientMols(permMol, chgeMol)  # opposite than usual
-    oriCoord = p4c4.transform_coordinates2(chgeMol)
+    # Set up array reorientation object -- opposite than usual
+    # OrienMols --> B787 untested, particularly atommap
+    rmsd, mill, amol = chgeMol.B787(permMol, atoms_map=True, mols_align=True, verbose=0)
+    oriCoord = mill.align_coordinates(chgeMol.geometry(np_out=False))
     p4Elem = []
     for at in range(chgeMol.natom()):
         p4Elem.append(chgeMol.Z(at))
-    oriElem = p4c4.transform_elementlist(p4Elem)
-    oriElemMap = p4c4.Catommap
+    oriElem = mill.align_atoms(np.array(p4Elem))
+    oriElemMap = mill.atommap
 
-    oriGrad = None if chgeGrad is None else p4c4.transform_gradient(chgeGrad)
-    oriDip = None if chgeDip is None else p4c4.transform_vector(chgeDip)
+    oriGrad = None if chgeGrad is None else mill.align_gradient(np.array(chgeGrad))
+    oriDip = None if chgeDip is None else mill.align_vector(np.array(chgeDip))
 
     if chgeGrad and chgeDip:
         return oriElemMap, oriElem, oriCoord, oriGrad, oriDip
@@ -1179,5 +1208,6 @@ def jajo2mol(jajodic):
         posn *= 3
         molxyz += '%s %21.15f %21.15f %21.15f\n' % (el, coord[posn], coord[posn + 1], coord[posn + 2])
     mol = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+    mol = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     return mol
