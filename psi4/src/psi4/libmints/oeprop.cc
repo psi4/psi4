@@ -760,7 +760,7 @@ Vector3 Prop::compute_center(const double *property) const
 }
 
 
-OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn), mpc(wfn)
+OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn), mpc(wfn), pac(wfn)
 {
     common_init();
 }
@@ -1655,22 +1655,40 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     return mo_es;
 }
 
+typedef PopulationAnalysisCalc PAC;
+
 void OEProp::compute_mulliken_charges()
 {
-    outfile->Printf( "  Mulliken Charges: (a.u.)\n");
+    PAC::SharedStdVector Qa_ptr,Qb_ptr,apcs ;
+    std::tie(Qa_ptr,Qb_ptr,apcs) = pac.compute_mulliken_charges(true);
+    wfn_->set_atomic_point_charges(apcs);
 
+    auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, apcs->size());
+    for (size_t i = 0; i < apcs->size(); i++){
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+    wfn_->set_array("MULLIKEN_CHARGES", vec_apcs);
+}
+
+std::tuple<PAC::SharedStdVector,PAC::SharedStdVector,PAC::SharedStdVector>  PopulationAnalysisCalc::compute_mulliken_charges(bool print_output)
+{
+    if (print_output)
+    {
+        outfile->Printf( "  Mulliken Charges: (a.u.)\n");
+    }
     std::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    auto Qa_ptr = std::make_shared<std::vector<double>>(mol->natom());
+    auto Qb_ptr = std::make_shared<std::vector<double>>(mol->natom());
+    std::vector<double> & Qa = *Qa_ptr;
+    std::vector<double> & Qb = *Qb_ptr;
+
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
-    double* Qa = new double[mol->natom()];
     double* PSa = new double[basisset_->nbf()];
     double suma = 0.0;
 
-    double* Qb = new double[mol->natom()];
     double* PSb = new double[basisset_->nbf()];
     double sumb = 0.0;
-
-    ::memset(Qa, '\0', mol->natom()*sizeof(double));
-    ::memset(Qb, '\0', mol->natom()*sizeof(double));
 
     SharedMatrix Da;
     SharedMatrix Db;
@@ -1714,51 +1732,72 @@ void OEProp::compute_mulliken_charges()
     }
 
 //    Print out the Mulliken populations and charges
-
-    outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    if (print_output)
+    {
+        outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
         double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
         (*apcs)[A]=Qt;
-        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
-            Qa[A], Qb[A], Qs, Qt);
+        if (print_output)
+        {
+            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+                Qa[A], Qb[A], Qs, Qt);
+        }
         nuc += (double) mol->Z(A);
    }
 
-    outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
-        suma, sumb, nuc - suma - sumb);
-    wfn_->set_atomic_point_charges(apcs);
-
-    auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, mol->natom());
-    for (size_t i = 0; i < mol->natom(); i++){
-        vec_apcs->set(0, i, (*apcs)[i]);
+    if (print_output)
+    {
+        outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+                suma, sumb, nuc - suma - sumb);
     }
-    wfn_->set_array("MULLIKEN_CHARGES", vec_apcs);
+
 
 //    Free memory
-    delete[] Qa;
-    delete[] Qb;
     delete[] PSa;
     delete[] PSb;
 
-    outfile->Printf( "\n");
+    if (print_output)
+        outfile->Printf( "\n");
+
+    return std::make_tuple(Qa_ptr,Qb_ptr,apcs);
 
 }
 void OEProp::compute_lowdin_charges()
 {
-    outfile->Printf( "  Lowdin Charges: (a.u.)\n");
+    PAC::SharedStdVector Qa_ptr,Qb_ptr,apcs ;
+    std::tie(Qa_ptr,Qb_ptr,apcs) = pac.compute_lowdin_charges(true);
+    wfn_->set_atomic_point_charges(apcs);
 
+    auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, apcs->size());
+    for (size_t i = 0; i < apcs->size(); i++){
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+    wfn_->set_array("LOWDIN_CHARGES", vec_apcs);
+}
+
+std::tuple<PAC::SharedStdVector,PAC::SharedStdVector,PAC::SharedStdVector> PopulationAnalysisCalc::compute_lowdin_charges(bool print_output)
+{
+    if (print_output)
+    {
+        outfile->Printf( "  Lowdin Charges: (a.u.)\n");
+    }
     std::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    auto Qa_ptr = std::make_shared<std::vector<double>>(mol->natom());
+    auto Qb_ptr = std::make_shared<std::vector<double>>(mol->natom());
+    std::vector<double> & Qa = *Qa_ptr;
+    std::vector<double> & Qb = *Qb_ptr;
+
+
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
-    double* Qa = new double[mol->natom()];
+
     double suma = 0.0;
 
-    double* Qb = new double[mol->natom()];
     double sumb = 0.0;
-
-    ::memset(Qa, '\0', mol->natom()*sizeof(double));
-    ::memset(Qb, '\0', mol->natom()*sizeof(double));
 
     SharedMatrix Da;
     SharedMatrix Db;
@@ -1809,36 +1848,45 @@ void OEProp::compute_lowdin_charges()
 
 //    Print out the populations and charges
 
-    outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    if (print_output)
+    {
+        outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
         double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
         (*apcs)[A]=Qt;
-        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
-            Qa[A], Qb[A], Qs, Qt);
+        if (print_output)
+        {
+            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+                Qa[A], Qb[A], Qs, Qt);
+        }
         nuc += (double) mol->Z(A);
     }
-
-    outfile->Printf( "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
-        suma, sumb, nuc - suma - sumb);
-    wfn_->set_atomic_point_charges(apcs);
-
-    auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, mol->natom());
-    for (size_t i = 0; i < mol->natom(); i++){
-        vec_apcs->set(0, i, (*apcs)[i]);
+    if (print_output)
+    {
+        outfile->Printf( "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+            suma, sumb, nuc - suma - sumb);
     }
-    wfn_->set_array("LOWDIN_CHARGES", vec_apcs);
 
-
-    delete[] Qa;
-    delete[] Qb;
-
-
+    return std::make_tuple(Qa_ptr,Qb_ptr,apcs);
 }
 void OEProp::compute_mayer_indices()
 {
-    outfile->Printf( "\n\n  Mayer Bond Indices:\n\n");
+    SharedMatrix MBI_total,MBI_alpha,MBI_beta;
+    SharedVector MBI_valence;
+    std::tie(MBI_total,MBI_alpha,MBI_beta,MBI_valence) = pac.compute_mayer_indices();
+
+    wfn_->set_array("MAYER_INDICES", MBI_total);
+}
+
+std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector> PopulationAnalysisCalc::compute_mayer_indices(bool print_output)
+{
+    if (print_output)
+    {
+        outfile->Printf( "\n\n  Mayer Bond Indices:\n\n");
+    }
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1929,28 +1977,42 @@ void OEProp::compute_mayer_indices()
 
 //    A nicer output is needed ...
 
-    if (same_dens_) {
-        MBI_total->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        MBI_valence->print();
-    }
-    else {
-        outfile->Printf( "  Total Bond Index: \n");
-        MBI_total->print();
-        outfile->Printf( "  Alpha Contribution: \n");
-        MBI_alpha->print();
-        outfile->Printf( "  Beta Contribution: \n");
-        MBI_beta->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        MBI_valence->print();
+    if (print_output)
+    {
+        if (same_dens_) {
+            MBI_total->print();
+            outfile->Printf( "  Atomic Valences: \n");
+            MBI_valence->print();
+        }
+        else {
+            outfile->Printf( "  Total Bond Index: \n");
+            MBI_total->print();
+            outfile->Printf( "  Alpha Contribution: \n");
+            MBI_alpha->print();
+            outfile->Printf( "  Beta Contribution: \n");
+            MBI_beta->print();
+            outfile->Printf( "  Atomic Valences: \n");
+            MBI_valence->print();
+        }
     }
 
-    wfn_->set_array("MAYER_INDICES", MBI_total);
+    return std::make_tuple(MBI_total,MBI_alpha,MBI_beta,MBI_valence);
 
 }
 void OEProp::compute_wiberg_lowdin_indices()
 {
-    outfile->Printf( "\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+    SharedMatrix WBI_total,WBI_alpha,WBI_beta;
+    SharedVector WBI_valence;
+    std::tie(WBI_total,WBI_alpha,WBI_beta,WBI_valence) = pac.compute_wiberg_lowdin_indices();
+    wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
+}
+
+std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector>  PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output)
+{
+    if (print_output)
+    {
+        outfile->Printf( "\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+    }
 
 //    We may wanna get rid of these if we have NAOs...
 
@@ -2043,33 +2105,44 @@ void OEProp::compute_wiberg_lowdin_indices()
 
 //    Print out the bond index matrix
 //    A nicer output is needed ...
-
-    if (same_dens_) {
-        WBI_total->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        WBI_valence->print();
+    if (print_output)
+    {
+        if (same_dens_) {
+            WBI_total->print();
+            outfile->Printf( "  Atomic Valences: \n");
+            WBI_valence->print();
+        }
+        else {
+            outfile->Printf( "  Total Bond Index: \n");
+            WBI_total->print();
+            outfile->Printf( "  Alpha Contribution: \n");
+            WBI_alpha->print();
+            outfile->Printf( "  Beta Contribution: \n");
+            WBI_beta->print();
+            outfile->Printf( "  Atomic Valences: \n");
+            WBI_valence->print();
+        }
     }
-    else {
-        outfile->Printf( "  Total Bond Index: \n");
-        WBI_total->print();
-        outfile->Printf( "  Alpha Contribution: \n");
-        WBI_alpha->print();
-        outfile->Printf( "  Beta Contribution: \n");
-        WBI_beta->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        WBI_valence->print();
-    }
-    wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
+    return std::make_tuple(WBI_total,WBI_alpha,WBI_beta,WBI_valence);
 }
 
 void OEProp::compute_no_occupations()
 {
+    std::vector<std::vector<std::tuple<double, int, int> >> metrics;
+    pac.compute_no_occupations(metrics,max_noon_,true);
+    wfn_->set_no_occupations(metrics);
+}
+void PopulationAnalysisCalc::compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int> > > & output_metrics, int max_noon, bool print_output)
+{
     std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
-    outfile->Printf( "  Natural Orbital Occupations:\n\n");
+    if (print_output)
+    {
+        outfile->Printf( "  Natural Orbital Occupations:\n\n");
+    }
 
     // Terminally, it will be [metric_a , metric_b, metric] or [metric] depending on same_dens
-    std::vector<std::vector<std::tuple<double, int, int> >> metrics;
+    std::vector<std::vector<std::tuple<double, int, int> >> & metrics = output_metrics;
 
     if (!same_dens_) {
 
@@ -2097,24 +2170,28 @@ void OEProp::compute_no_occupations()
 
         std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double,int,int> >());
         int offset_a = wfn_->nalpha();
-        int start_occ_a = offset_a - max_noon_;
+        int start_occ_a = offset_a - max_noon;
         start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
-        int stop_vir_a = offset_a + max_noon_ + 1;
+        int stop_vir_a = offset_a + max_noon + 1;
         stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
 
-        outfile->Printf( "  Alpha Occupations:\n");
-        for (int index = start_occ_a; index < stop_vir_a; index++) {
-            if (index < offset_a) {
-                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
-                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
-                std::get<0>(metric_a[index]));
-            } else {
-                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
-                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
-                std::get<0>(metric_a[index]));
+        if (print_output)
+        {
+            outfile->Printf( "  Alpha Occupations:\n");
+
+            for (int index = start_occ_a; index < stop_vir_a; index++) {
+                if (index < offset_a) {
+                    outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
+                    std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
+                    std::get<0>(metric_a[index]));
+                } else {
+                    outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
+                    std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
+                    std::get<0>(metric_a[index]));
+                }
             }
+            outfile->Printf( "\n");
         }
-        outfile->Printf( "\n");
 
         std::vector<std::tuple<double, int, int> > metric_b;
         for (int h = 0; h < Ob->nirrep(); h++) {
@@ -2128,24 +2205,27 @@ void OEProp::compute_no_occupations()
         std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double,int,int> >());
 
         int offset_b = wfn_->nbeta();
-        int start_occ_b = offset_b - max_noon_;
+        int start_occ_b = offset_b - max_noon;
         start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
-        int stop_vir_b = offset_b + max_noon_ + 1;
+        int stop_vir_b = offset_b + max_noon + 1;
         stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
-        outfile->Printf( "  Beta Occupations:\n");
-        for (int index = start_occ_b; index < stop_vir_b; index++) {
-            if (index < offset_b) {
-                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
-                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
-                std::get<0>(metric_b[index]));
-            } else {
-                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
-                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
-                std::get<0>(metric_b[index]));
+        if (print_output)
+        {
+            outfile->Printf( "  Beta Occupations:\n");
+            for (int index = start_occ_b; index < stop_vir_b; index++) {
+                if (index < offset_b) {
+                    outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
+                    std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
+                    std::get<0>(metric_b[index]));
+                } else {
+                    outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
+                    std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
+                    std::get<0>(metric_b[index]));
+                }
             }
+            outfile->Printf( "\n");
         }
-        outfile->Printf( "\n");
 
     }
 
@@ -2164,26 +2244,27 @@ void OEProp::compute_no_occupations()
     std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
 
     int offset = wfn_->nbeta();
-    int start_occ = offset - max_noon_;
+    int start_occ = offset - max_noon;
     start_occ = (start_occ < 0 ? 0 : start_occ);
-    int stop_vir = offset + max_noon_ + 1;
+    int stop_vir = offset + max_noon + 1;
     stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size()  : stop_vir);
 
-    outfile->Printf( "  Total Occupations:\n");
-    for (int index = start_occ; index < stop_vir; index++) {
-        if (index < offset) {
-            outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
-            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
-            std::get<0>(metric[index]));
-        } else {
-            outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
-            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
-            std::get<0>(metric[index]));
+    if (print_output)
+    {
+        outfile->Printf( "  Total Occupations:\n");
+        for (int index = start_occ; index < stop_vir; index++) {
+            if (index < offset) {
+                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
+                std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
+                std::get<0>(metric[index]));
+            } else {
+                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
+                std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
+                std::get<0>(metric[index]));
+            }
         }
+        outfile->Printf( "\n");
     }
-    outfile->Printf( "\n");
-
-    wfn_->set_no_occupations(metrics);
 
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 

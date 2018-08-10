@@ -284,6 +284,25 @@ public:
     std::vector<SharedVector> compute_mo_extents(bool print_output = false);
 };
 
+class PopulationAnalysisCalc : public Prop
+{
+private:
+    PopulationAnalysisCalc();
+public:
+    typedef std::shared_ptr<std::vector<double> > SharedStdVector;
+    PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn);
+    virtual ~PopulationAnalysisCalc();
+    /// Compute Mulliken Charges
+    std::tuple<SharedStdVector,SharedStdVector,SharedStdVector>  compute_mulliken_charges(bool print_output = false);
+    /// Compute Lowdin Charges
+    std::tuple<SharedStdVector,SharedStdVector,SharedStdVector> compute_lowdin_charges(bool print_output = false);
+    /// Compute Mayer Bond Indices (non-orthogoal basis)
+    std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector> compute_mayer_indices(bool print_output = false);
+    /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
+    std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector>  compute_wiberg_lowdin_indices(bool print_output = false);
+    /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
+    void compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int> > > & output_metrics, int max_noon = 3, bool print_output = false);
+};
 
 /**
 * The OEProp object, computes arbitrary expectation values (scalars)
@@ -328,7 +347,7 @@ protected:
     void compute_field_over_grid();
 
     MultipolePropCalc mpc;
-
+    PopulationAnalysisCalc pac;
     int max_noon_ = 3;
 
     /// The ESP in a.u., computed at each grid point
