@@ -1,4 +1,4 @@
-find_package(gau2grid 1.1 CONFIG QUIET COMPONENTS gaussian)
+find_package(gau2grid 1.2 CONFIG QUIET COMPONENTS gaussian)
 
 if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
@@ -14,7 +14,7 @@ else()
     ExternalProject_Add(gau2grid_external
         DEPENDS pybind11_external
         GIT_REPOSITORY https://github.com/dgasmith/gau2grid
-        GIT_TAG v1.1.0
+        GIT_TAG v1.2.0
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
