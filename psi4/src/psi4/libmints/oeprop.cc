@@ -1656,6 +1656,15 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
 }
 
 typedef PopulationAnalysisCalc PAC;
+PopulationAnalysisCalc::PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
+{
+    //No internal state. num_noon is now an argument.
+}
+
+PopulationAnalysisCalc::~PopulationAnalysisCalc()
+{
+
+}
 
 void OEProp::compute_mulliken_charges()
 {

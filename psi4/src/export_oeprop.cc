@@ -35,6 +35,8 @@
 using namespace psi;
 
 void export_oeprop(py::module &m) {
+    py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
+
     py::class_<TaskListComputer, std::shared_ptr<TaskListComputer> >(m, "TaskListComputer", "docstring")
         .def("set_title", &TaskListComputer::set_title, "docstring");
 
