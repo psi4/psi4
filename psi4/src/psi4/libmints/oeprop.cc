@@ -760,7 +760,7 @@ Vector3 Prop::compute_center(const double *property) const
 }
 
 
-OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn), mpc(wfn), pac(wfn)
+OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn), mpc(wfn,get_origin_from_environment()), pac(wfn), epc(wfn)
 {
     common_init();
 }
@@ -779,51 +779,14 @@ void OEProp::common_init()
 }
 
 
-MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
+MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const & origin) : Prop(wfn), origin_(origin)
 {
-    // See if the user specified the origin
-    Options &options = Process::environment.options;
+    typedef MultipolePropCalc MPC;
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
-    int natoms = mol->natom();
-    if(options["PROPERTIES_ORIGIN"].has_changed()){
-        int size = options["PROPERTIES_ORIGIN"].size();
-
-        if(size == 1){
-            double *property = new double[natoms];
-            std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
-            if(str == "COM"){
-                for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->mass(atom);
-            }else if(str == "NUCLEAR_CHARGE"){
-                for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->charge(atom);
-            }else{
-                throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
-            }
-            origin_ = compute_center(property);
-            delete [] property;
-        }else if(size == 3){
-            double x = options["PROPERTIES_ORIGIN"][0].to_double();
-            double y = options["PROPERTIES_ORIGIN"][1].to_double();
-            double z = options["PROPERTIES_ORIGIN"][2].to_double();
-            bool convert = mol->units() == Molecule::Angstrom;
-            if(convert){
-                x /= pc_bohr2angstroms;
-                y /= pc_bohr2angstroms;
-                z /= pc_bohr2angstroms;
-            }
-            origin_ = Vector3(x, y, z);
-        }else{
-            throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
-        }
-    }
-    outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n",
-            origin_[0], origin_[1], origin_[2]);
-
 
     /*
-     * Now check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
+     * Check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
      */
     CharacterTable ct = mol->point_group()->char_table();
     int nirrep = ct.nirrep();
@@ -854,6 +817,54 @@ MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(w
     }
 }
 
+Vector3 OEProp::get_origin_from_environment() const
+{
+    // This function gets called early in the constructor of OEProp.
+    // Take care not to use or initialize members, which are only initialized later.
+    // The only member used here is basisset, which is initialized in the base class.
+    // See if the user specified the origin
+    Options &options = Process::environment.options;
+    Vector3 origin;
+
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    int natoms = mol->natom();
+    if(options["PROPERTIES_ORIGIN"].has_changed()){
+        int size = options["PROPERTIES_ORIGIN"].size();
+
+        if(size == 1){
+            double *property = new double[natoms];
+            std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
+            if(str == "COM"){
+                for(int atom = 0; atom < natoms; ++atom)
+                    property[atom] = mol->mass(atom);
+            }else if(str == "NUCLEAR_CHARGE"){
+                for(int atom = 0; atom < natoms; ++atom)
+                    property[atom] = mol->charge(atom);
+            }else{
+                throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
+            }
+            origin = compute_center(property);
+            delete [] property;
+        }else if(size == 3){
+            double x = options["PROPERTIES_ORIGIN"][0].to_double();
+            double y = options["PROPERTIES_ORIGIN"][1].to_double();
+            double z = options["PROPERTIES_ORIGIN"][2].to_double();
+            bool convert = mol->units() == Molecule::Angstrom;
+            if(convert){
+                x /= pc_bohr2angstroms;
+                y /= pc_bohr2angstroms;
+                z /= pc_bohr2angstroms;
+            }
+            origin = Vector3(x, y, z);
+        }else{
+            throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
+        }
+    }
+    outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n",
+            origin[0], origin[1], origin[2]);
+
+    return origin;
+}
 
 void OEProp::print_header()
 {
@@ -1095,13 +1106,29 @@ public:
     }
 };
 
+ESPPropCalc::ESPPropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
+{
+}
+
+ESPPropCalc::~ESPPropCalc()
+{
+}
+
 void OEProp::compute_esp_over_grid()
+{
+    epc.compute_esp_over_grid(true);
+}
+
+void ESPPropCalc::compute_esp_over_grid(bool print_output)
 {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
-    outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
+    if (print_output)
+    {
+        outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
+    }
 
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
@@ -1142,11 +1169,19 @@ void OEProp::compute_esp_over_grid()
 
 void OEProp::compute_field_over_grid()
 {
+    epc.compute_field_over_grid(true);
+}
+
+void ESPPropCalc::compute_field_over_grid(bool print_output)
+{
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
-    outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
+    if (print_output)
+    {
+        outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
+    }
 
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
@@ -1191,8 +1226,19 @@ void OEProp::compute_field_over_grid()
     fclose(gridout);
 }
 
-
 void OEProp::compute_esp_at_nuclei()
+{
+    std::shared_ptr<std::vector<double>> nesps = epc.compute_esp_at_nuclei(true, print_ > 2);
+    for(int atom1 = 0; atom1 < nesps->size(); ++atom1){
+        std::stringstream s;
+        s << "ESP AT CENTER " << atom1+1;
+        /*- Process::environment.globals["ESP AT CENTER n"] -*/
+        Process::environment.globals[s.str()] = (*nesps)[atom1];
+    }
+    wfn_->set_esp_at_nuclei(nesps);
+}
+
+std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool print_output, bool verbose)
 {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1210,17 +1256,22 @@ void OEProp::compute_esp_at_nuclei()
     }
 
     Matrix dist = mol->distance_matrix();
-    outfile->Printf( "\n Electrostatic potentials at the nuclear coordinates:\n");
-    outfile->Printf( " ---------------------------------------------\n");
-    outfile->Printf( "   Center     Electrostatic Potential (a.u.)\n");
-    outfile->Printf( " ---------------------------------------------\n");
+    if (print_output)
+    {
+        outfile->Printf( "\n Electrostatic potentials at the nuclear coordinates:\n");
+        outfile->Printf( " ---------------------------------------------\n");
+        outfile->Printf( "   Center     Electrostatic Potential (a.u.)\n");
+        outfile->Printf( " ---------------------------------------------\n");
+    }
     for(int atom1 = 0; atom1 < natoms; ++atom1){
         std::stringstream s;
         s << "ESP AT CENTER " << atom1+1;
         auto ints = std::make_shared<Matrix>(s.str(), nbf, nbf);
         epot->compute(ints, mol->xyz(atom1));
-        if(print_ > 2)
+        if (verbose)
+        {
             ints->print();
+        }
         double elec = Dtot->vector_dot(ints);
         double nuc = 0.0;
         for(int atom2 = 0; atom2 < natoms; ++atom2){
@@ -1228,14 +1279,18 @@ void OEProp::compute_esp_at_nuclei()
                 continue;
             nuc += mol->Z(atom2) / dist[0][atom1][atom2];
         }
-        outfile->Printf( "  %3d %2s           %16.12f\n",
-                atom1+1, mol->label(atom1).c_str(), nuc+elec);
-        /*- Process::environment.globals["ESP AT CENTER n"] -*/
-        Process::environment.globals[s.str()] = nuc+elec;
+        if (print_output)
+        {
+            outfile->Printf( "  %3d %2s           %16.12f\n",
+                    atom1+1, mol->label(atom1).c_str(), nuc+elec);
+        }
         (*nesps)[atom1] = nuc+elec;
     }
-    wfn_->set_esp_at_nuclei(nesps);
-    outfile->Printf( " ---------------------------------------------\n");
+    if (print_output)
+    {
+        outfile->Printf( " ---------------------------------------------\n");
+    }
+    return nesps;
 }
 
 void OEProp::compute_dipole(bool transition)

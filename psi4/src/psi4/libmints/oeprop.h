@@ -263,7 +263,7 @@ protected:
     bool origin_preserves_symmetry_;
 public:
     /// Common initialization
-    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn);
+    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const & origin);
     //Output Type of multipole function, name, elec, nuc, tot
     typedef std::vector<
             std::tuple<
@@ -304,6 +304,41 @@ public:
     void compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int> > > & output_metrics, int max_noon = 3, bool print_output = false);
 };
 
+
+class ESPPropCalc : public Prop {
+private:
+    //Constructing without wavefunction is forbidden:
+    ESPPropCalc();
+
+protected:
+    /// The ESP in a.u., computed at each grid point
+    std::vector<double> Vvals_;
+    /// The field components in a.u. computed at each grid point
+    std::vector<double> Exvals_;
+    std::vector<double> Eyvals_;
+    std::vector<double> Ezvals_;
+
+public:
+    /// Constructor
+    ESPPropCalc(std::shared_ptr<Wavefunction> wfn);
+    /// Destructor
+    virtual ~ESPPropCalc();
+
+    std::vector<double> const & Vvals() const { return Vvals_; }
+    std::vector<double> const & Exvals() const { return Exvals_; }
+    std::vector<double> const & Eyvals() const { return Eyvals_; }
+    std::vector<double> const & Ezvals() const { return Ezvals_; }
+
+    /// This function is missing, it should be removed until it is implemented.
+    void compute_electric_field_and_gradients();
+    /// Compute electrostatic potentials at the nuclei
+    std::shared_ptr<std::vector<double>> compute_esp_at_nuclei(bool print_output = false, bool verbose = false);
+    /// Compute electrostatic potential at specified grid points
+    void compute_esp_over_grid(bool print_output = false);
+    /// Compute field at specified grid points
+    void compute_field_over_grid(bool print_output = false);
+};
+
 /**
 * The OEProp object, computes arbitrary expectation values (scalars)
 * analyses (typically vectors)
@@ -337,7 +372,7 @@ protected:
     void compute_wiberg_lowdin_indices();
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
     void compute_no_occupations();
-    /// Compute electric field and electric field gradients
+    /// Compute electric field and electric field gradients, this function is missing, the declaration should be removed.
     void compute_electric_field_and_gradients();
     /// Compute electrostatic potentials at the nuclei
     void compute_esp_at_nuclei();
@@ -348,17 +383,12 @@ protected:
 
     MultipolePropCalc mpc;
     PopulationAnalysisCalc pac;
+    ESPPropCalc epc;
+
     int max_noon_ = 3;
 
-    /// The ESP in a.u., computed at each grid point
-    std::vector<double> Vvals_;
-    /// The field components in a.u. computed at each grid point
-    std::vector<double> Exvals_;
-    std::vector<double> Eyvals_;
-    std::vector<double> Ezvals_;
+    Vector3 get_origin_from_environment() const;
 
-    /// Computes the center for a given property, for the current molecule
-    Vector3 compute_center(const double *property) const;
 public:
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
@@ -373,10 +403,10 @@ public:
     /// Compute and print/save the properties
     void compute();
 
-    std::vector<double> Vvals() const { return Vvals_; }
-    std::vector<double> Exvals() const { return Exvals_; }
-    std::vector<double> Eyvals() const { return Eyvals_; }
-    std::vector<double> Ezvals() const { return Ezvals_; }
+    std::vector<double> const & Vvals() const { return epc.Vvals(); }
+    std::vector<double> const & Exvals() const { return epc.Exvals(); }
+    std::vector<double> const & Eyvals() const { return epc.Eyvals(); }
+    std::vector<double> const & Ezvals() const { return epc.Ezvals(); }
 };
 
 /**
