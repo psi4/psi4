@@ -30,6 +30,7 @@
 
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
 
 using namespace psi;
@@ -49,6 +50,16 @@ void export_oeprop(py::module &m) {
     //     def("set_Db_so", &Prop::set_Db_so, "docstring").
     //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
+
+    py::class_<ESPPropCalc, std::shared_ptr<ESPPropCalc>, Prop>(
+            m,
+            "ESPPropCalc",
+            "ESPPropCalc gives access to routines calculating the ESP on a grid")
+        .def(
+                "compute_esp_over_grid_in_memory",
+                &ESPPropCalc::compute_esp_over_grid_in_memory,
+                "Computes ESP on specified grid Nx3 (as SharedMatrix)"
+                );
 
     py::class_<OEProp, std::shared_ptr<OEProp>, Prop, TaskListComputer>(m, "OEProp", "docstring")
         .

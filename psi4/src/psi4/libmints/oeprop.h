@@ -384,6 +384,8 @@ public:
     void compute_esp_over_grid(bool print_output = false);
     /// Compute field at specified grid points
     void compute_field_over_grid(bool print_output = false);
+    /// Compute electrostatic potential at grid points based on input grid, OpenMP version. input_grid is Nx3
+    SharedVector compute_esp_over_grid_in_memory(SharedMatrix input_grid) const;
 };
 
 /**

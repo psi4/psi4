@@ -1166,6 +1166,59 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output)
     fclose(gridout);
 }
 
+SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_grid) const
+{
+    // We only want a plain matrix to work with here:
+    if (input_grid->nirrep() != 1)
+    {
+        throw PSIEXCEPTION("ESPPropCalc only allows \"plain\" input matrices with, i.e. nirrep == 1.");
+    }
+    if (input_grid->coldim() != 3)
+    {
+        throw PSIEXCEPTION("ESPPropCalc only allows \"plain\" input matrices with a dimension of N (rows) x 3 (cols)");
+    }
+
+    int number_of_grid_points = input_grid->rowdim();
+    SharedVector output_ptr = std::make_shared<Vector>(number_of_grid_points);
+    Vector & output = *output_ptr;
+
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+
+    SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
+    if (same_dens_) {
+        Dtot->scale(2.0);
+    }else{
+        Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
+    }
+
+    int const nbf = basisset_->nbf();
+
+
+    bool convert = mol->units() == Molecule::Angstrom;
+
+    #pragma openmp parallel for
+    for(int i = 0; i < number_of_grid_points; ++i){
+        Vector3 origin(input_grid->get(i,0),input_grid->get(i,1),input_grid->get(i,2));
+        if(convert)
+            origin /= pc_bohr2angstroms;
+        auto ints = std::make_shared<Matrix>(nbf, nbf);
+        ints->zero();
+        epot->compute(ints, origin);
+        double Velec = Dtot->vector_dot(ints);
+        double Vnuc = 0.0;
+        int natom = mol->natom();
+        for(int i=0; i < natom; i++) {
+            Vector3 dR = origin - mol->xyz(i);
+            double r = dR.norm();
+            if(r > 1.0E-8)
+                Vnuc += mol->Z(i)/r;
+        }
+        double Vtot = Velec + Vnuc;
+        output[i] = Vtot;
+    }
+    return output_ptr;
+}
 
 void OEProp::compute_field_over_grid()
 {
