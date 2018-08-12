@@ -55,6 +55,7 @@ void export_oeprop(py::module &m) {
             m,
             "ESPPropCalc",
             "ESPPropCalc gives access to routines calculating the ESP on a grid")
+        .def(py::init<std::shared_ptr<Wavefunction> >())
         .def(
                 "compute_esp_over_grid_in_memory",
                 &ESPPropCalc::compute_esp_over_grid_in_memory,
