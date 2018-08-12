@@ -252,6 +252,22 @@ public:
     virtual ~TaskListComputer() {}
 };
 
+/**
+* MultipolePropCalc
+*
+* Class, which calculates multipoles and mo_extents.
+*
+* Historically this class was part of OEProp.
+*
+* It is initialized with a wavefunction and an origin vector. If the origin breaks symmetry,
+* a warning is generated. Apart from this, this class does not have output, it also does
+* not export any values into the environment.
+*
+* If you are looking for previous OEProp functionality (i.e. output and environment exports)
+* OEProp still contains all that.
+*
+*/
+
 class MultipolePropCalc : public Prop
 {
 private:
@@ -284,6 +300,21 @@ public:
     std::vector<SharedVector> compute_mo_extents(bool print_output = false);
 };
 
+/**
+* PopulationAnalysisCalc
+*
+* Class, which carries out popular population analysis, such as Mulliken or Loewdin.
+*
+* Historically this class was part of OEProp.
+*
+* It is initialized with a wavefunction. It does not generate any output or populate any
+* environment variables.
+*
+* If you are looking for previous OEProp functionality (i.e. output and environment exports)
+* OEProp still contains all that.
+*
+*/
+
 class PopulationAnalysisCalc : public Prop
 {
 private:
@@ -305,6 +336,22 @@ public:
 };
 
 
+/**
+* ESPPropCalc
+*
+* Class, which calculates multiple potentials based on a grid.
+*
+* Historically this class was part of OEProp.
+*
+* It is initialized with a wavefunction.
+* environment variables. Most functions currently require a file "grid.dat" to be present.
+* The functions generate their output on disk in files such as grid-esp.dat.
+* No environment variables are populated.
+*
+* If you are looking for previous OEProp functionality (i.e. output and environment exports)
+* OEProp still contains all that.
+*
+*/
 class ESPPropCalc : public Prop {
 private:
     //Constructing without wavefunction is forbidden:
