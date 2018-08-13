@@ -782,7 +782,6 @@ void OEProp::common_init()
 MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const & origin) : Prop(wfn), origin_(origin)
 {
     typedef MultipolePropCalc MPC;
-
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     /*
@@ -824,7 +823,7 @@ Vector3 OEProp::get_origin_from_environment() const
     // The only member used here is basisset, which is initialized in the base class.
     // See if the user specified the origin
     Options &options = Process::environment.options;
-    Vector3 origin;
+    Vector3 origin(0.0,0.0,0.0);
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     int natoms = mol->natom();
@@ -2386,6 +2385,91 @@ void PopulationAnalysisCalc::compute_no_occupations(std::vector<std::vector<std:
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 
 }
+
+void OEProp::set_wavefunction(std::shared_ptr<Wavefunction> wfn)
+{
+    mpc.set_wavefunction(wfn);
+    pac.set_wavefunction(wfn);
+    epc.set_wavefunction(wfn);
+}
+
+void OEProp::set_restricted(bool restricted)
+{
+    mpc.set_restricted(restricted);
+    pac.set_restricted(restricted);
+    epc.set_restricted(restricted);
+}
+
+void OEProp::set_epsilon_a(SharedVector epsilon_a)
+{
+    mpc.set_epsilon_a(epsilon_a);
+    pac.set_epsilon_a(epsilon_a);
+    epc.set_epsilon_a(epsilon_a);
+}
+
+void OEProp::set_epsilon_b(SharedVector epsilon_b)
+{
+    mpc.set_epsilon_b(epsilon_b);
+    pac.set_epsilon_b(epsilon_b);
+    epc.set_epsilon_b(epsilon_b);
+}
+
+void OEProp::set_Ca(SharedMatrix Ca)
+{
+    mpc.set_Ca(Ca);
+    pac.set_Ca(Ca);
+    epc.set_Ca(Ca);
+}
+
+void OEProp::set_Cb(SharedMatrix Cb)
+{
+    mpc.set_Cb(Cb);
+    pac.set_Cb(Cb);
+    epc.set_Cb(Cb);
+}
+
+void OEProp::set_Da_ao(SharedMatrix Da, int symmetry)
+{
+    mpc.set_Da_ao(Da,symmetry);
+    pac.set_Da_ao(Da,symmetry);
+    epc.set_Da_ao(Da,symmetry);
+}
+
+void OEProp::set_Db_ao(SharedMatrix Db, int symmetry)
+{
+    mpc.set_Db_ao(Db,symmetry);
+    pac.set_Db_ao(Db,symmetry);
+    epc.set_Db_ao(Db,symmetry);
+}
+
+void OEProp::set_Da_so(SharedMatrix Da)
+{
+    mpc.set_Da_so(Da);
+    pac.set_Da_so(Da);
+    epc.set_Da_so(Da);
+}
+
+void OEProp::set_Db_so(SharedMatrix Db)
+{
+    mpc.set_Db_so(Db);
+    pac.set_Db_so(Db);
+    epc.set_Db_so(Db);
+}
+
+void OEProp::set_Da_mo(SharedMatrix Da)
+{
+    mpc.set_Da_mo(Da);
+    pac.set_Da_mo(Da);
+    epc.set_Da_mo(Da);
+}
+
+void OEProp::set_Db_mo(SharedMatrix Db)
+{
+    mpc.set_Db_mo(Db);
+    pac.set_Db_mo(Db);
+    epc.set_Db_mo(Db);
+}
+
 
 //GridProp::GridProp(std::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
 //{

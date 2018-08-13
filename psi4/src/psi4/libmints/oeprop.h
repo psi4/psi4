@@ -456,6 +456,31 @@ public:
     std::vector<double> const & Exvals() const { return epc.Exvals(); }
     std::vector<double> const & Eyvals() const { return epc.Eyvals(); }
     std::vector<double> const & Ezvals() const { return epc.Ezvals(); }
+
+    // These functions need to be overridden to pass on to the feature classes:
+
+    // Change restricted flag. Resets C/D/epsilon matrices from wfn
+    void set_wavefunction(std::shared_ptr<Wavefunction> wfn);
+    // Change restricted flag. Resets C/D/epsilon matrices from wfn
+    void set_restricted(bool restricted);
+    // Set alpha eigenvalues, MO pitzer order basis
+    void set_epsilon_a(SharedVector epsilon_a);
+    // Set beta eigenvalues, MO pitzer order basis. Throws if restricted
+    void set_epsilon_b(SharedVector epsilon_a);
+    // Set alpha C matrix, SO/MO pitzer order basis.
+    void set_Ca(SharedMatrix Ca);
+    // Set beta C matrix, SO/MO pitzer order basis. Throws if restricted
+    void set_Cb(SharedMatrix Cb);
+
+    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
+
+    // TODO Add symmetry is irrep number
+    void set_Da_ao(SharedMatrix Da, int symmetry = 0);
+    void set_Db_ao(SharedMatrix Db, int symmetry = 0);
+    void set_Da_so(SharedMatrix Da);
+    void set_Db_so(SharedMatrix Db);
+    void set_Da_mo(SharedMatrix Da);
+    void set_Db_mo(SharedMatrix Db);
 };
 
 /**
