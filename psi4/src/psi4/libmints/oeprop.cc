@@ -1993,7 +1993,7 @@ void OEProp::compute_mayer_indices()
 {
     SharedMatrix MBI_total,MBI_alpha,MBI_beta;
     SharedVector MBI_valence;
-    std::tie(MBI_total,MBI_alpha,MBI_beta,MBI_valence) = pac.compute_mayer_indices();
+    std::tie(MBI_total,MBI_alpha,MBI_beta,MBI_valence) = pac.compute_mayer_indices(true);
 
     wfn_->set_array("MAYER_INDICES", MBI_total);
 }
@@ -2120,7 +2120,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 {
     SharedMatrix WBI_total,WBI_alpha,WBI_beta;
     SharedVector WBI_valence;
-    std::tie(WBI_total,WBI_alpha,WBI_beta,WBI_valence) = pac.compute_wiberg_lowdin_indices();
+    std::tie(WBI_total,WBI_alpha,WBI_beta,WBI_valence) = pac.compute_wiberg_lowdin_indices(true);
     wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
 }
 
@@ -2246,7 +2246,7 @@ std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector>  PopulationAnaly
 void OEProp::compute_no_occupations()
 {
     std::vector<std::vector<std::tuple<double, int, int> >> metrics;
-    pac.compute_no_occupations(metrics,max_noon_,true);
+    pac.compute_no_occupations(metrics, max_noon_,true);
     wfn_->set_no_occupations(metrics);
 }
 void PopulationAnalysisCalc::compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int> > > & output_metrics, int max_noon, bool print_output)
