@@ -36,6 +36,7 @@ from psi4.driver import p4util
 from psi4.driver import constants
 from psi4.driver.p4util.exceptions import ConvergenceError, ValidationError
 from psi4 import core
+from . import smart_scf
 
 from .efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
 
@@ -121,6 +122,9 @@ def scf_initialize(self):
         efpobj.set_opts(efpopts, label='psi', append='psi')
 
         efpobj.set_electron_density_field_fn(field_fn)
+    #smart_enabled=core.get_option('SCF',"smartscf")
+    #if core.get_option('SCF', "SMARTSCF"):
+    #    if core.get_option('
 
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
@@ -158,11 +162,13 @@ def scf_initialize(self):
         # We're reading the orbitals from the previous set of iterations.
         self.form_D()
         self.set_energies("Total Energy", self.compute_initial_E())
+        #MMD: Should reset E/Drms history?
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    smart_enabled=True #temp for development
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
@@ -175,6 +181,17 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
 
+
+    smart_enabled=core.get_option('SCF','SMART_SCF')
+    print(smart_enabled)
+    if smart_enabled:
+        self.smart_solver=smart_scf.smart_solver(self)
+        core.print_out('Using smartSCF, by M.M. Davis and M. Estep\n\n')
+        self.smart_solver.smart_guess()
+
+    #if self.damping_enabled:
+    #    self.damping_percentage = core.get_option("SCF",'DAMPING_PERCENTAGE')
+
     if self.iteration_ < 2:
         core.print_out("  ==> Iterations <==\n\n")
         core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   "
@@ -186,6 +203,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     Drms = 0.0
     while True:
         self.iteration_ += 1
+        print(self.iteration_)
 
         diis_performed = False
         soscf_performed = False
@@ -247,8 +265,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_energies("Total Energy", SCFE)
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
-
         status = []
+
+        if smart_enabled:
+            self.smart_solver.smart_iter(SCFE,Drms)
 
         # We either do SOSCF or DIIS
         if (soscf_enabled and (self.iteration_ > 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
@@ -294,6 +314,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 add_to_diis_subspace = True
 
             Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+            print('scf_procdrms'.format(Drms))
 
             if (self.diis_enabled_
                     and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
@@ -327,10 +348,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # After we've built the new D, damp the update
-        if (damping_enabled and self.iteration_ > 1 and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
-            damping_percentage = core.get_option('SCF', "DAMPING_PERCENTAGE")
-            self.damping_update(damping_percentage * 0.01)
-            status.append("DAMP={}%".format(round(damping_percentage)))
+        #MMD: SmartSCF damps through here, just by modifying self.damping_enabled\
+                #and self.damping_percentage if needed.
+        if (damping_enabled and (self.iteration_ > 1 or\
+                core.get_option('SCF', "GUESS") == 'SAD')\
+                and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
+            #damping_percentage = core.get_option('SCF', "DAMPING_PERCENTAGE") 
+            self.damping_update(self.damping_percentage * 0.01)
+            status.append("DAMP={}%".format(round(self.damping_percentage)))
 
         if verbose > 3:
             self.Ca().print_out()
@@ -758,3 +783,21 @@ def field_fn(xyz):
     field = np.reshape(field, 3 * npt)
 
     return field
+def _validate_smart():
+    """Sanity-check smartSCF options
+
+    Raises
+    ------
+    ValidationError
+        If soscf, damping, DIIS, or other convergence settings don't match
+        between user defined settings and smart recommendations, do:
+            smart=0 -> no action, smart is desabledchange local.
+            smart=1 -> resolve diff by falling to smartscf recommendations, print a notice in output.
+            smart>=2 -> resolve diff by falling back to user defined settings
+                        for non-smartscf defined values.
+    Returns
+    -------
+    bool
+        whether smart was able to resolve differences. Changes local scfiter options if discrepancy. 
+    """
+    pass
