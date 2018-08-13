@@ -33,7 +33,6 @@ class smart_solver():
                 a la OPTKING dynamic_level
 
     Notes:
-        smart_level and opt_dict are not necessary for initial PR, but may be nice to have later on.
 
         The goal with having this class exist at all is to nicely contain\
                 tools for scf convergence in one spot. Extensibility\
@@ -143,39 +142,3 @@ class smart_solver():
 
         pass
 
-#smart_opt_dict is just an idea for adding 'tiers' of convergence\
-        #tricks, where the key is the 'smart_level' and the value is another\
-        #dictionary of various convergence options and/or values for things\
-        #like damping percentage etc. 
-
-smart_opt_dict = {
-            1:
-            {
-                "CASTUP":True,
-                "CASTUP_BASIS":'3-21G',
-                "SOSCF_dE":1e-5,
-                "SOSCF_quotient":3,
-                "init_damp":True,
-                "init_damp_percentage":40.0,
-                "noise_crit_damp":5e-2,#STDEV(last 3 iterations)/AVG(last 3 iterations)
-                "SOSCF_maxiter":25,
-                "SOSCF_maxiter_dynamic":True,
-                "oscillation_detect":True,#currently only 2 point oscillation detected
-                "oscillation_thresh":1e-5
-            },
-            2: 
-            {
-                "SOSCF_dE":1e-5,
-                "SOSCF_quotient":3
-            },
-            'COMMON':
-            {
-                "tight_e_conv":1e-9,
-                "tight_d_conv":1e-9
-            }
-        }
-            
-        
-
-                
-    
