@@ -436,6 +436,7 @@ protected:
 
     int max_noon_ = 3;
 
+    // retrieves the Origin vector from the environment.
     Vector3 get_origin_from_environment() const;
 
 public:
