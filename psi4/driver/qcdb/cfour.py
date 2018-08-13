@@ -42,6 +42,7 @@ from .exceptions import *
 from .molecule import Molecule
 from .options import conv_float2negexp
 from .hessparse import load_hessian
+from .align import B787
 
 
 def harvest_output(outtext):
@@ -617,9 +618,11 @@ def harvest(p4Mol, c4out, **largs):
 
     # Set up array reorientation object
     if p4Mol and grdMol:
-        rmsd, mill, amol = grdMol.B787(p4Mol, atoms_map=False, mols_align=True, verbose=0)
+        rgeom, _, _, _, runiq = p4Mol.to_arrays(dummy=True, ghost_as_dummy=True)
+        cgeom, _, _, _, cuniq = grdMol.to_arrays(dummy=True, ghost_as_dummy=True)
+        rmsd, mill = B787(cgeom=cgeom, rgeom=rgeom, cuniq=cuniq, runiq=runiq, atoms_map=False, mols_align=True, verbose=0)
 
-        oriCoord = mill.align_coordinates(grdMol.geometry(np_out=True))
+        oriCoord = mill.align_coordinates(grdMol.full_geometry(np_out=True))
         oriGrad = mill.align_gradient(np.array(grdGrad))
         if dipolDip is None:
             oriDip = None
@@ -633,9 +636,11 @@ def harvest(p4Mol, c4out, **largs):
 
     elif p4Mol and outMol:
         # TODO watch out - haven't seen atom_map=False yet
-        rmsd, mill, amol = outMol.B787(p4Mol, atoms_map=True, mols_align=True, verbose=0)
+        rgeom, _, _, _, runiq = p4Mol.to_arrays(dummy=True, ghost_as_dummy=True)
+        cgeom, _, _, _, cuniq = outMol.to_arrays(dummy=True, ghost_as_dummy=True)
+        rmsd, mill = B787(cgeom=cgeom, rgeom=rgeom, cuniq=cuniq, runiq=runiq, atoms_map=True, mols_align=True, verbose=0)
 
-        oriCoord = mill.align_coordinates(outMol.geometry(np_out=True))
+        oriCoord = mill.align_coordinates(outMol.full_geometry(np_out=True))
         oriGrad = None
         oriHess = None  # I don't think we ever get FCMFINAL w/o GRAD
         if dipolDip is None:
@@ -1128,8 +1133,11 @@ def backtransform(chgeMol, permMol, chgeGrad=None, chgeDip=None):
     """
     # Set up array reorientation object -- opposite than usual
     # OrienMols --> B787 untested, particularly atommap
-    rmsd, mill, amol = chgeMol.B787(permMol, atoms_map=True, mols_align=True, verbose=0)
-    oriCoord = mill.align_coordinates(chgeMol.geometry(np_out=False))
+    rgeom, _, _, _, runiq = permMol.to_arrays(dummy=True, ghost_as_dummy=True)
+    cgeom, _, _, _, cuniq = chgeMol.to_arrays(dummy=True, ghost_as_dummy=True)
+    rmsd, mill = B787(cgeom=cgeom, rgeom=rgeom, cuniq=cuniq, runiq=runiq, atoms_map=True, mols_align=True, verbose=0)
+
+    oriCoord = mill.align_coordinates(chgeMol.full_geometry(np_out=False))
     p4Elem = []
     for at in range(chgeMol.natom()):
         p4Elem.append(chgeMol.Z(at))
