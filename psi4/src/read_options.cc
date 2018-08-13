@@ -1318,6 +1318,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SOSCF_CONV", 5.0E-3);
     /*- Do we print the SOSCF microiterations?. -*/
     options.add_bool("SOSCF_PRINT", false);
+    /*- Do use SmartSCF? -*/
+    options.add_bool("SMART_SCF", false);
     /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
         performed. CHECK will print out the analysis of the wavefunction stability at the end of
         the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability

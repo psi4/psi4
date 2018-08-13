@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """
 The SCF iteration functions
 """
@@ -122,6 +121,9 @@ def scf_initialize(self):
         efpobj.set_opts(efpopts, label='psi', append='psi')
 
         efpobj.set_electron_density_field_fn(field_fn)
+    #smart_enabled=core.get_option('SCF',"smartscf")
+    #if core.get_option('SCF', "SMARTSCF"):
+    #    if core.get_option('
 
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
@@ -139,7 +141,7 @@ def scf_initialize(self):
             # EFP: Add in permanent moment contribution and cache
             core.timer_on("HF: Form Vefp")
             verbose = core.get_option('SCF', "PRINT")
-            Vefp = modify_Fock_permanent(self.molecule(), mints, verbose=verbose-1)
+            Vefp = modify_Fock_permanent(self.molecule(), mints, verbose=verbose - 1)
             Vefp = core.Matrix.from_array(Vefp)
             self.H().add(Vefp)
             Horig = self.H().clone()
@@ -165,6 +167,7 @@ def scf_initialize(self):
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    smart_enabled = True  #temp for development
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
@@ -177,19 +180,20 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
 
-
-    smart_enabled=core.get_option('SCF','SMART_SCF')
+    smart_enabled = core.get_option('SCF', 'SMART_SCF')
+    print(smart_enabled)
     if smart_enabled:
-        self.smart_solver=smart_scf.smart_solver(self)
+        self.smart_solver = smart_scf.smart_solver(self)
         core.print_out('Using smartSCF, by M.M. Davis and M. Estep\n\n')
+        self.smart_solver.smart_guess()
 
     #if self.damping_enabled:
     #    self.damping_percentage = core.get_option("SCF",'DAMPING_PERCENTAGE')
 
     if self.iteration_ < 2:
         core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   "
-                                                                                                      if is_dfjk else ""))
+        core.print_out(
+            "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   " if is_dfjk else ""))
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -211,7 +215,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.H().copy(self.Horig)
             global mints
             mints = core.MintsHelper(self.basisset())
-            Vefp = modify_Fock_induced(self.molecule().EFP, mints, verbose=verbose-1)
+            Vefp = modify_Fock_induced(self.molecule().EFP, mints, verbose=verbose - 1)
             Vefp = core.Matrix.from_array(Vefp)
             self.H().add(Vefp)
 
@@ -262,7 +266,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         if smart_enabled:
-            self.smart_solver.smart_iter(SCFE,Drms)
+            self.smart_solver.smart_iter(SCFE, Drms)
 
         # We either do SOSCF or DIIS
         if (soscf_enabled and (self.iteration_ > 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
@@ -276,8 +280,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             if not _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
                 nmicro = self.soscf_update(
-                    core.get_option('SCF', 'SOSCF_CONV'),
-                    core.get_option('SCF', 'SOSCF_MIN_ITER'),
+                    core.get_option('SCF', 'SOSCF_CONV'), core.get_option('SCF', 'SOSCF_MIN_ITER'),
                     core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
                 if nmicro > 0:
                     # if zero, the soscf call bounced for some reason
@@ -342,12 +345,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # After we've built the new D, damp the update
-        # SmartSCF damps through here, just by modifying self.damping_enabled
-                #and self.damping_percentage if needed. Added complexity s.t. SAD
-                #can damp from iteration "0" -> iteration "1".
-        if (damping_enabled and (self.iteration_ > 1 or
-                core.get_option('SCF', "GUESS") == 'SAD') and
-                Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
+        #MMD: SmartSCF damps through here, just by modifying self.damping_enabled\
+        #and self.damping_percentage if needed.
+        if (damping_enabled and (self.iteration_ > 1 or\
+                core.get_option('SCF', "GUESS") == 'SAD')\
+                and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
+            #damping_percentage = core.get_option('SCF', "DAMPING_PERCENTAGE")
             self.damping_update(self.damping_percentage * 0.01)
             status.append("DAMP={}%".format(round(self.damping_percentage)))
 
@@ -456,7 +459,9 @@ def scf_finalize_energy(self):
         self.set_energies("Total Energy", SCFE)
         core.print_out(efpobj.energy_summary(scfefp=SCFE, label='psi'))
 
-        core.set_variable('EFP ELST ENERGY', efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
+        core.set_variable(
+            'EFP ELST ENERGY',
+            efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
         core.set_variable('EFP IND ENERGY', efpene['polarization'])
         core.set_variable('EFP DISP ENERGY', efpene['dispersion'])
         core.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
@@ -472,16 +477,16 @@ def scf_finalize_energy(self):
 
     energy = self.get_energies("Total Energy")
 
-#    fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
-#    if converged or not fail_on_maxiter:
-#
-#        if print_lvl > 0:
-#            self.print_orbitals()
-#
-#        if converged:
-#            core.print_out("  Energy converged.\n\n")
-#        else:
-#            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
+    #    fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
+    #    if converged or not fail_on_maxiter:
+    #
+    #        if print_lvl > 0:
+    #            self.print_orbitals()
+    #
+    #        if converged:
+    #            core.print_out("  Energy converged.\n\n")
+    #        else:
+    #            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
 
     if core.get_option('SCF', 'PRINT') > 0:
         self.print_orbitals()
@@ -647,8 +652,8 @@ def _validate_diis():
 
         maxvecs = core.get_option('SCF', 'DIIS_MAX_VECS')
         if maxvecs < minvecs:
-            raise ValidationError(
-                'SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(maxvecs, minvecs))
+            raise ValidationError('SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(
+                maxvecs, minvecs))
 
     return enabled
 
@@ -725,8 +730,8 @@ def _validate_soscf():
 
         maxiter = core.get_option('SCF', 'SOSCF_MAX_ITER')
         if maxiter < miniter:
-            raise ValidationError(
-                'SCF SOSCF_MAX_ITER ({}) must be at least SOSCF_MIN_ITER ({})'.format(maxiter, miniter))
+            raise ValidationError('SCF SOSCF_MAX_ITER ({}) must be at least SOSCF_MIN_ITER ({})'.format(
+                maxiter, miniter))
 
         conv = core.get_option('SCF', 'SOSCF_CONV')
         if conv < 1.e-10:
@@ -770,10 +775,32 @@ def field_fn(xyz):
         # get electric field integrals from Psi4
         p4_field_ints = mints.electric_field(origin=points[ipt])
 
-        field[ipt] = [np.vdot(efp_Dt, np.asarray(p4_field_ints[0])),  # Ex
-                      np.vdot(efp_Dt, np.asarray(p4_field_ints[1])),  # Ey
-                      np.vdot(efp_Dt, np.asarray(p4_field_ints[2]))]  # Ez
+        field[ipt] = [
+            np.vdot(efp_Dt, np.asarray(p4_field_ints[0])),  # Ex
+            np.vdot(efp_Dt, np.asarray(p4_field_ints[1])),  # Ey
+            np.vdot(efp_Dt, np.asarray(p4_field_ints[2]))
+        ]  # Ez
 
     field = np.reshape(field, 3 * npt)
 
     return field
+
+
+def _validate_smart():
+    """Sanity-check smartSCF options
+
+    Raises
+    ------
+    ValidationError
+        If soscf, damping, DIIS, or other convergence settings don't match
+        between user defined settings and smart recommendations, do:
+            smart=0 -> no action, smart is desabledchange local.
+            smart=1 -> resolve diff by falling to smartscf recommendations, print a notice in output.
+            smart>=2 -> resolve diff by falling back to user defined settings
+                        for non-smartscf defined values.
+    Returns
+    -------
+    bool
+        whether smart was able to resolve differences. Changes local scfiter options if discrepancy. 
+    """
+    pass
