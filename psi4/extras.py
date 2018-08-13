@@ -127,7 +127,7 @@ _addons_ = {
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
-    "libefp": _CMake_to_Py_boolean("@ENABLE_libefp@"),
+    "libefp": _plugin_import("pylibefp"),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),

@@ -339,11 +339,6 @@ class PSI_API Molecule {
     void reinterpret_coordentries();
 
     /**
-     * Reinterpret the fragments for QM/EFP and build the atom list
-     */
-    void reinterpret_fragments();
-
-    /**
      * Find the nearest point group within the tolerance specified, and adjust
      * the coordinates to have that symmetry.
      */

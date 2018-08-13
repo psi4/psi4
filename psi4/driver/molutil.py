@@ -249,10 +249,8 @@ def geometry(geom, name="default"):
         try:
             import pylibefp
         except ImportError as e:  # py36 ModuleNotFoundError
-            raise ImportError(
-                """Install pylibefp to use EFP functionality: `conda install pylibefp -c psi4` Or build with `-DENABLE_libefp=ON`"""
-            ) from e
-        #print('pylibefp (found version {})'.format(pylibefp.__version__))
+            raise ImportError("""Install pylibefp to use EFP functionality. `conda install pylibefp -c psi4` Or build with `-DENABLE_libefp=ON`""") from e
+        #print('Using pylibefp: {} (version {})'.format(pylibefp.__file__, pylibefp.__version__))
         efpobj = pylibefp.from_dict(molrec['efp'])
         # pylibefp.core.efp rides along on molecule
         molecule.EFP = efpobj

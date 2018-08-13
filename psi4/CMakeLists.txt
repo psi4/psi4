@@ -94,7 +94,7 @@ if(${ENABLE_libefp})
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
 
-    find_package(pylibefp 0.3 CONFIG REQUIRED)
+    find_package(pylibefp 0.4 CONFIG REQUIRED)
     get_property(_loc TARGET pylibefp::core PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using pylibefp${ColourReset}: ${_loc} (version ${pylibefp_VERSION})")
