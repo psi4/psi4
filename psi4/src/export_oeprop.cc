@@ -57,7 +57,7 @@ void export_oeprop(py::module &m) {
         .def("compute_esp_over_grid_in_memory", &ESPPropCalc::compute_esp_over_grid_in_memory,
              "Computes ESP on specified grid Nx3 (as SharedMatrix)");
 
-    py::class_<OEProp, std::shared_ptr<OEProp>, Prop, TaskListComputer>(m, "OEProp", "docstring")
+    py::class_<OEProp, std::shared_ptr<OEProp>, TaskListComputer>(m, "OEProp", "docstring")
         .
         // TODO had no_init but init member present
         def(py::init<std::shared_ptr<Wavefunction> >())

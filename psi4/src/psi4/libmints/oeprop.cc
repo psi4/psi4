@@ -729,8 +729,10 @@ SharedMatrix Prop::overlap_so()
     return S;
 }
 
-Vector3 Prop::compute_center(const double* property) const {
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+std::string Prop::Da_name() const { return Da_so_->name(); }
+
+Vector3 OEProp::compute_center(const double* property) const {
+    std::shared_ptr<Molecule> mol = wfn_->molecule();
     int natoms = mol->natom();
     double x = 0.0;
     double y = 0.0;
@@ -751,7 +753,8 @@ Vector3 Prop::compute_center(const double* property) const {
 }
 
 OEProp::OEProp(std::shared_ptr<Wavefunction> wfn)
-    : Prop(wfn), mpc_(wfn, get_origin_from_environment()), pac_(wfn), epc_(wfn) {
+    : wfn_(wfn), mpc_(wfn, get_origin_from_environment()), pac_(wfn), epc_(wfn) {
+    if (wfn_.get() == nullptr) throw PSIEXCEPTION("Prop: Wavefunction is null");
     common_init();
 }
 OEProp::~OEProp() {}
@@ -811,7 +814,7 @@ Vector3 OEProp::get_origin_from_environment() const {
     Options& options = Process::environment.options;
     Vector3 origin(0.0, 0.0, 0.0);
 
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    std::shared_ptr<Molecule> mol = wfn_->molecule();
     int natoms = mol->natom();
     if(options["PROPERTIES_ORIGIN"].has_changed()){
         int size = options["PROPERTIES_ORIGIN"].size();
@@ -872,7 +875,8 @@ void OEProp::compute()
 
     
     if (title_ == "") {
-        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is '%s'\n", Da_so_->name().c_str());
+        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is '%s'\n",
+                        mpc_.Da_name().c_str());
     } else {
         outfile->Printf( "\nProperties computed using the %s density matrix\n\n", title_.c_str());
     }

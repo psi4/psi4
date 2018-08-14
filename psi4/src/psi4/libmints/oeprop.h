@@ -185,11 +185,12 @@ public:
     /// The total natural orbital occupations and orbitals in the AO basis
     std::pair<SharedMatrix, SharedVector> Nt_ao();
 
+    /// Density Matrix title, used for fallback naming of OEProp compute jobs
+    std::string Da_name() const;
+
     // => Some integral helpers <= //
     SharedMatrix overlap_so();
 
-    /// Computes the center for a given property, for the current molecule. Weighted center of geometry function
-    Vector3 compute_center(const double* property) const;
 };
 
 /**
@@ -386,12 +387,14 @@ class ESPPropCalc : public Prop {
 * The OEProp object, computes arbitrary expectation values (scalars)
 * analyses (typically vectors)
 **/
-class OEProp : public Prop, public TaskListComputer {
+class OEProp : public TaskListComputer {
    private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
     OEProp();
 
    protected:
+    /// The wavefunction object this Prop is built around
+    std::shared_ptr<Wavefunction> wfn_;
     /// Common initialization
     void common_init();
     /// Print header and information
@@ -434,6 +437,8 @@ class OEProp : public Prop, public TaskListComputer {
 
     // retrieves the Origin vector from the environment.
     Vector3 get_origin_from_environment() const;
+    /// Computes the center for a given property, for the current molecule. Weighted center of geometry function
+    Vector3 compute_center(const double* property) const;
 
    public:
     /// Constructor, uses globals
