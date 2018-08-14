@@ -4,7 +4,7 @@ from psi4.driver.p4util.exceptions import ConvergenceError, ValidationError
 from psi4 import core
 
 
-class smart_solver():
+class SmartSCFSolver():
     #TODO: Change to staging procedure
     """Purpose: enable easy extension of "smart" SCF solving capabilities.
     This class is an attribute of a wfn object ... a wfn object is also
@@ -32,7 +32,7 @@ class smart_solver():
                 tools for scf convergence in one spot. Extensibility
                 could go something like this:
 
-                    1. add a method to smart_solver class:
+                    1. add a method to SmartSCFSolver class:
                         def great_convergence(self):
                             great convergence tricks
 
@@ -50,7 +50,7 @@ class smart_solver():
             "frac_enabled": self.wfn.frac_enabled,
             "damping_enabled": self.wfn.damping_enabled,
             "soscf_enabled": self.wfn.soscf_enabled,
-            "MAXITER": core.get_option('SCF', 'MAXITER')
+            "maxiter": core.get_option('SCF', 'MAXITER')
         }
 
         #self.stage is where options are directly set by decision methods.
@@ -66,8 +66,8 @@ class smart_solver():
         """
 
         #Update Energy and Drms history
-        self.update_E_history()
-        self.update_Drms_history(Drms)
+        self.E_history.append(self.wfn.get_energies("Total Energy"))
+        self.Drms_history.append(Drms)
         if not self.initdamp():
             self.trailing_conv()
 
@@ -112,12 +112,12 @@ class smart_solver():
 
         guess_opt = core.get_option('SCF', "GUESS")
 
-        if (guess_opt in {'SAD', 'GWH', 'CORE'}):
+        if (guess_opt in {'SAD', 'GWH', 'CORE', 'READ'}):
             self.stage['DAMPING_PERCENTAGE'] = smart_vals['INIT_DAMP_PERCENT']
             self.stage['DAMPING_ENABLED'] = True
             return True
 
-    def dyn_damp(self, Drms_target=5E-4):
+    def dynamic_damping(self, Drms_target=5E-4):
         """
         Offers dynamic damping to hit a target Drms value.
         Default is 5E-4
@@ -128,20 +128,16 @@ class smart_solver():
         elif self.Drms_history[-1] > Drms_target:
             self.stage['DAMPING_PERCENTAGE'] = \
                     Drms_target/self.Drms_history[-1]
-
-    def update_E_history(self):
-        self.E_history.append(self.wfn.get_energies("Total Energy"))
-
-    def update_Drms_history(self, Drms):
-        self.Drms_history.append(Drms)
+        else:
+            pass
 
     def _validate_smart_iter(self):
         """Sanity-check a smart_iter to ensure options make sense. 
         
         If there is a qualitative conflict, such as DIIS and SOSCF both
-        requested by the smart_solver, then an error will be printed and the
+        requested by the SmartSCFSolver, then an error will be printed and the
         original user defined value will be taken. Conflicts like this should 
-        not arise if the smart_solver is operating correctly, however it is 
+        not arise if the SmartSCFSolver is operating correctly, however it is 
         incldued for defensive coding.
 
         Raises
@@ -161,8 +157,8 @@ class smart_solver():
                 self.wfn.soscf_enabled = self.stage[key]
 
         self.stage = {}
-      
+
 
 #seems silly to have a dict for just one option, but with more capabilities
-#I think this makes sense        
+#I think this makes sense
 gen_values = {'init_damp_percentage': 70}
