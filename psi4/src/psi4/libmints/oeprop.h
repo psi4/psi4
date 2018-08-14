@@ -426,9 +426,9 @@ class OEProp : public Prop, public TaskListComputer {
     /// Compute field at specified grid points
     void compute_field_over_grid();
 
-    MultipolePropCalc mpc;
-    PopulationAnalysisCalc pac;
-    ESPPropCalc epc;
+    MultipolePropCalc mpc_;
+    PopulationAnalysisCalc pac_;
+    ESPPropCalc epc_;
 
     int max_noon_ = 3;
 
@@ -449,10 +449,10 @@ class OEProp : public Prop, public TaskListComputer {
     /// Compute and print/save the properties
     void compute();
 
-    std::vector<double> const& Vvals() const { return epc.Vvals(); }
-    std::vector<double> const& Exvals() const { return epc.Exvals(); }
-    std::vector<double> const& Eyvals() const { return epc.Eyvals(); }
-    std::vector<double> const& Ezvals() const { return epc.Ezvals(); }
+    std::vector<double> const& Vvals() const { return epc_.Vvals(); }
+    std::vector<double> const& Exvals() const { return epc_.Exvals(); }
+    std::vector<double> const& Eyvals() const { return epc_.Eyvals(); }
+    std::vector<double> const& Ezvals() const { return epc_.Ezvals(); }
 
     // These functions need to be overridden to pass on to the feature classes:
 

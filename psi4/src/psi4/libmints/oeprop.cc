@@ -751,7 +751,7 @@ Vector3 Prop::compute_center(const double* property) const {
 }
 
 OEProp::OEProp(std::shared_ptr<Wavefunction> wfn)
-    : Prop(wfn), mpc(wfn, get_origin_from_environment()), pac(wfn), epc(wfn) {
+    : Prop(wfn), mpc_(wfn, get_origin_from_environment()), pac_(wfn), epc_(wfn) {
     common_init();
 }
 OEProp::~OEProp() {}
@@ -923,7 +923,7 @@ void OEProp::compute()
 void OEProp::compute_multipoles(int order, bool transition)
 {
     typedef MultipolePropCalc::MultipoleOutputType OutType;
-    MultipolePropCalc::MultipoleOutputType_ptr out = mpc.compute_multipoles(order, transition, true, print_ > 4);
+    MultipolePropCalc::MultipoleOutputType_ptr out = mpc_.compute_multipoles(order, transition, true, print_ > 4);
     MultipolePropCalc::MultipoleOutputType& mpoles = *out;
     for (OutType::iterator it = mpoles.begin(); it != mpoles.end(); ++it) {
         std::string name;
@@ -1087,7 +1087,7 @@ ESPPropCalc::ESPPropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn) {}
 
 ESPPropCalc::~ESPPropCalc() {}
 
-void OEProp::compute_esp_over_grid() { epc.compute_esp_over_grid(true); }
+void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
@@ -1182,7 +1182,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
     return output_ptr;
 }
 
-void OEProp::compute_field_over_grid() { epc.compute_field_over_grid(true); }
+void OEProp::compute_field_over_grid() { epc_.compute_field_over_grid(true); }
 
 void ESPPropCalc::compute_field_over_grid(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
@@ -1237,7 +1237,7 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
 }
 
 void OEProp::compute_esp_at_nuclei() {
-    std::shared_ptr<std::vector<double>> nesps = epc.compute_esp_at_nuclei(true, print_ > 2);
+    std::shared_ptr<std::vector<double>> nesps = epc_.compute_esp_at_nuclei(true, print_ > 2);
     for (int atom1 = 0; atom1 < nesps->size(); ++atom1) {
         std::stringstream s;
         s << "ESP AT CENTER " << atom1 + 1;
@@ -1297,7 +1297,7 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
 }
 
 void OEProp::compute_dipole(bool transition) {
-    SharedVector dipole = mpc.compute_dipole(transition, true, print_ > 4);
+    SharedVector dipole = mpc_.compute_dipole(transition, true, print_ > 4);
     // Dipole components in Debye
     std::stringstream s;
     s << title_ << " DIPOLE X";
@@ -1406,7 +1406,7 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
 }
 
 void OEProp::compute_quadrupole(bool transition) {
-    SharedMatrix quadrupole_ptr = mpc.compute_quadrupole(transition, true, print_ > 4);
+    SharedMatrix quadrupole_ptr = mpc_.compute_quadrupole(transition, true, print_ > 4);
     Matrix& quadrupole = *quadrupole_ptr;
     std::stringstream s;
     s << title_ << " QUADRUPOLE XX";
@@ -1535,7 +1535,7 @@ SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_o
 }
 
 void OEProp::compute_mo_extents() {
-    std::vector<SharedVector> mo_es = mpc.compute_mo_extents(true);
+    std::vector<SharedVector> mo_es = mpc_.compute_mo_extents(true);
     wfn_->set_mo_extents(mo_es);
 }
 
@@ -1700,7 +1700,7 @@ PopulationAnalysisCalc::~PopulationAnalysisCalc() {}
 void OEProp::compute_mulliken_charges()
 {
     PAC::SharedStdVector Qa_ptr, Qb_ptr, apcs;
-    std::tie(Qa_ptr, Qb_ptr, apcs) = pac.compute_mulliken_charges(true);
+    std::tie(Qa_ptr, Qb_ptr, apcs) = pac_.compute_mulliken_charges(true);
     wfn_->set_atomic_point_charges(apcs);
 
     auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, apcs->size());
@@ -1802,7 +1802,7 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
 void OEProp::compute_lowdin_charges()
 {
     PAC::SharedStdVector Qa_ptr, Qb_ptr, apcs;
-    std::tie(Qa_ptr, Qb_ptr, apcs) = pac.compute_lowdin_charges(true);
+    std::tie(Qa_ptr, Qb_ptr, apcs) = pac_.compute_lowdin_charges(true);
     wfn_->set_atomic_point_charges(apcs);
 
     auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, apcs->size());
@@ -1904,7 +1904,7 @@ void OEProp::compute_mayer_indices()
 {
     SharedMatrix MBI_total, MBI_alpha, MBI_beta;
     SharedVector MBI_valence;
-    std::tie(MBI_total, MBI_alpha, MBI_beta, MBI_valence) = pac.compute_mayer_indices(true);
+    std::tie(MBI_total, MBI_alpha, MBI_beta, MBI_valence) = pac_.compute_mayer_indices(true);
 
     wfn_->set_array("MAYER_INDICES", MBI_total);
 }
@@ -2027,7 +2027,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 {
     SharedMatrix WBI_total, WBI_alpha, WBI_beta;
     SharedVector WBI_valence;
-    std::tie(WBI_total, WBI_alpha, WBI_beta, WBI_valence) = pac.compute_wiberg_lowdin_indices(true);
+    std::tie(WBI_total, WBI_alpha, WBI_beta, WBI_valence) = pac_.compute_wiberg_lowdin_indices(true);
     wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
 }
 
@@ -2149,7 +2149,7 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
 
 void OEProp::compute_no_occupations() {
     std::vector<std::vector<std::tuple<double, int, int>>> metrics;
-    pac.compute_no_occupations(metrics, max_noon_, true);
+    pac_.compute_no_occupations(metrics, max_noon_, true);
     wfn_->set_no_occupations(metrics);
 }
 void PopulationAnalysisCalc::compute_no_occupations(
@@ -2281,75 +2281,75 @@ void PopulationAnalysisCalc::compute_no_occupations(
 }
 
 void OEProp::set_wavefunction(std::shared_ptr<Wavefunction> wfn) {
-    mpc.set_wavefunction(wfn);
-    pac.set_wavefunction(wfn);
-    epc.set_wavefunction(wfn);
+    mpc_.set_wavefunction(wfn);
+    pac_.set_wavefunction(wfn);
+    epc_.set_wavefunction(wfn);
 }
 
 void OEProp::set_restricted(bool restricted) {
-    mpc.set_restricted(restricted);
-    pac.set_restricted(restricted);
-    epc.set_restricted(restricted);
+    mpc_.set_restricted(restricted);
+    pac_.set_restricted(restricted);
+    epc_.set_restricted(restricted);
 }
 
 void OEProp::set_epsilon_a(SharedVector epsilon_a) {
-    mpc.set_epsilon_a(epsilon_a);
-    pac.set_epsilon_a(epsilon_a);
-    epc.set_epsilon_a(epsilon_a);
+    mpc_.set_epsilon_a(epsilon_a);
+    pac_.set_epsilon_a(epsilon_a);
+    epc_.set_epsilon_a(epsilon_a);
 }
 
 void OEProp::set_epsilon_b(SharedVector epsilon_b) {
-    mpc.set_epsilon_b(epsilon_b);
-    pac.set_epsilon_b(epsilon_b);
-    epc.set_epsilon_b(epsilon_b);
+    mpc_.set_epsilon_b(epsilon_b);
+    pac_.set_epsilon_b(epsilon_b);
+    epc_.set_epsilon_b(epsilon_b);
 }
 
 void OEProp::set_Ca(SharedMatrix Ca) {
-    mpc.set_Ca(Ca);
-    pac.set_Ca(Ca);
-    epc.set_Ca(Ca);
+    mpc_.set_Ca(Ca);
+    pac_.set_Ca(Ca);
+    epc_.set_Ca(Ca);
 }
 
 void OEProp::set_Cb(SharedMatrix Cb) {
-    mpc.set_Cb(Cb);
-    pac.set_Cb(Cb);
-    epc.set_Cb(Cb);
+    mpc_.set_Cb(Cb);
+    pac_.set_Cb(Cb);
+    epc_.set_Cb(Cb);
 }
 
 void OEProp::set_Da_ao(SharedMatrix Da, int symmetry) {
-    mpc.set_Da_ao(Da, symmetry);
-    pac.set_Da_ao(Da, symmetry);
-    epc.set_Da_ao(Da, symmetry);
+    mpc_.set_Da_ao(Da, symmetry);
+    pac_.set_Da_ao(Da, symmetry);
+    epc_.set_Da_ao(Da, symmetry);
 }
 
 void OEProp::set_Db_ao(SharedMatrix Db, int symmetry) {
-    mpc.set_Db_ao(Db, symmetry);
-    pac.set_Db_ao(Db, symmetry);
-    epc.set_Db_ao(Db, symmetry);
+    mpc_.set_Db_ao(Db, symmetry);
+    pac_.set_Db_ao(Db, symmetry);
+    epc_.set_Db_ao(Db, symmetry);
 }
 
 void OEProp::set_Da_so(SharedMatrix Da) {
-    mpc.set_Da_so(Da);
-    pac.set_Da_so(Da);
-    epc.set_Da_so(Da);
+    mpc_.set_Da_so(Da);
+    pac_.set_Da_so(Da);
+    epc_.set_Da_so(Da);
 }
 
 void OEProp::set_Db_so(SharedMatrix Db) {
-    mpc.set_Db_so(Db);
-    pac.set_Db_so(Db);
-    epc.set_Db_so(Db);
+    mpc_.set_Db_so(Db);
+    pac_.set_Db_so(Db);
+    epc_.set_Db_so(Db);
 }
 
 void OEProp::set_Da_mo(SharedMatrix Da) {
-    mpc.set_Da_mo(Da);
-    pac.set_Da_mo(Da);
-    epc.set_Da_mo(Da);
+    mpc_.set_Da_mo(Da);
+    pac_.set_Da_mo(Da);
+    epc_.set_Da_mo(Da);
 }
 
 void OEProp::set_Db_mo(SharedMatrix Db) {
-    mpc.set_Db_mo(Db);
-    pac.set_Db_mo(Db);
-    epc.set_Db_mo(Db);
+    mpc_.set_Db_mo(Db);
+    pac_.set_Db_mo(Db);
+    epc_.set_Db_mo(Db);
 }
 
 //GridProp::GridProp(std::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
