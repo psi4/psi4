@@ -369,6 +369,8 @@ class ZMatrixEntry : public CoordEntry {
                                                   atoms[ato_->entry_number()], aval_->clone(map),
                                                   atoms[dto_->entry_number()], dval_->clone(map));
         }
+        if (computed_)
+            temp->set_coordinates(coordinates_[0], coordinates_[1], coordinates_[2]);
         return temp;
     }
 };

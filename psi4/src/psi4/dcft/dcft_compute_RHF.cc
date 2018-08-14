@@ -110,7 +110,7 @@ double DCFTSolver::compute_energy_RHF()
         }
     }
     else {
-        throw PSIEXCEPTION("Unknown DCFT algoritm");
+        throw PSIEXCEPTION("Unknown DCFT algorithm");
     }
 
     // If not converged -> Break

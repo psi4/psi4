@@ -30,6 +30,7 @@
 #define MULTIPOLESYMMETRY_H
 
 #include "psi4/libmints/typedefs.h"
+#include "psi4/pragma.h"
 
 #include <vector>
 #include <string>
@@ -41,7 +42,7 @@ class Molecule;
 class IntegralFactory;
 class MatrixFactory;
 
-class OperatorSymmetry
+class PSI_API OperatorSymmetry
 {
     // The order of the multipole (dipole=1, quadrupole=2, etc...)
     int order_;

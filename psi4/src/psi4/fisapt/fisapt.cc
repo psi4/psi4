@@ -42,7 +42,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libcubeprop/csg.h"
-#include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/lib3index/dfhelper.h"
 
@@ -83,80 +82,6 @@ void FISAPT::common_init() {
     vectors_["eps_aocc"] = reference_->epsilon_a_subset("AO", "ACTIVE_OCC");
     vectors_["eps_avir"] = reference_->epsilon_a_subset("AO", "ACTIVE_VIR");
     vectors_["eps_fvir"] = reference_->epsilon_a_subset("AO", "FROZEN_VIR");
-}
-void FISAPT::compute_energy() {
-    // => Header <= //
-
-    print_header();
-
-    // => Zero-th Order Wavefunction <= //
-
-    timer_on("FISAPT: Setup");
-    localize();
-    partition();
-    overlap();
-    kinetic();
-    nuclear();
-    coulomb();
-    timer_off("FISAPT: Setup");
-    timer_on("FISAPT: Monomer SCF");
-    scf();
-    timer_off("FISAPT: Monomer SCF");
-    freeze_core();
-    unify();
-    timer_on("FISAPT: Subsys E");
-    dHF();
-    timer_off("FISAPT: Subsys E");
-
-    // => SAPT0 <= //
-
-    timer_on("FISAPT:SAPT:elst");
-    elst();
-    timer_off("FISAPT:SAPT:elst");
-    timer_on("FISAPT:SAPT:exch");
-    exch();
-    timer_off("FISAPT:SAPT:exch");
-    timer_on("FISAPT:SAPT:ind");
-    ind();
-    timer_off("FISAPT:SAPT:ind");
-    if (!options_.get_bool("FISAPT_DO_FSAPT")) {
-        timer_on("FISAPT:SAPT:disp");
-        disp(matrices_, vectors_, true);  // Expensive, only do if needed
-        timer_off("FISAPT:SAPT:disp");
-    }
-
-    // => F-SAPT0 <= //
-
-    if (options_.get_bool("FISAPT_DO_FSAPT")) {
-        timer_on("FISAPT:FSAPT:loc");
-        flocalize();
-        timer_off("FISAPT:FSAPT:loc");
-        timer_on("FISAPT:FSAPT:elst");
-        felst();
-        timer_off("FISAPT:FSAPT:elst");
-        timer_on("FISAPT:FSAPT:exch");
-        fexch();
-        timer_off("FISAPT:FSAPT:exch");
-        timer_on("FISAPT:FSAPT:ind");
-        find();
-        timer_off("FISAPT:FSAPT:ind");
-        timer_on("FISAPT:FSAPT:disp");
-        fdisp();
-        timer_off("FISAPT:FSAPT:disp");
-        fdrop();
-    }
-
-    // => Scalar-Field Analysis <= //
-
-    if (options_.get_bool("FISAPT_DO_PLOT")) {
-        timer_on("FISAPT:FSAPT:cubeplot");
-        plot();
-        timer_off("FISAPT:FSAPT:cubeplot");
-    }
-
-    // => Summary <= //
-
-    print_trailer();
 }
 void FISAPT::print_header() {
     outfile->Printf("\t --------------------------------------------\n");
@@ -1469,7 +1394,7 @@ void FISAPT::exch() {
     outfile->Printf("\n");
     // fflush(outfile);
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_, 3.0);
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
@@ -1503,7 +1428,7 @@ void FISAPT::ind() {
     std::shared_ptr<Vector> eps_vir0A = vectors_["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir0B = vectors_["eps_vir0B"];
 
-    // => ExchInd pertubations <= //
+    // => ExchInd perturbations <= //
 
     std::shared_ptr<Matrix> C_O_A = Matrix::triplet(D_B, S, matrices_["Cocc_A"]);
     std::shared_ptr<Matrix> C_P_A = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, matrices_["Cocc_B"]);
@@ -1641,7 +1566,7 @@ void FISAPT::ind() {
     outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n", ExchInd20u);
     outfile->Printf("\n");
     // fflush(outfile);
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
         double sExchInd20u_AB = 2.0 * scale * xuA->vector_dot(uB);
         double sExchInd20u_BA = 2.0 * scale * xuB->vector_dot(uA);
@@ -1718,7 +1643,7 @@ void FISAPT::ind() {
     scalars_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
     scalars_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
         double sExchInd20r_AB = scale * ExchInd20r_AB;
         double sExchInd20r_BA = scale * ExchInd20r_BA;
@@ -2375,7 +2300,7 @@ void FISAPT::print_trailer() {
     outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
                     scalars_["SAPT"] * 1000.0, scalars_["SAPT"] * pc_hartree2kcalmol,
                     scalars_["SAPT"] * pc_hartree2kJmol);
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         outfile->Printf("  Total sSAPT0 %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scaled.c_str(), scalars_["sSAPT"] * 1000.0, scalars_["sSAPT"] * pc_hartree2kcalmol,
                         scalars_["sSAPT"] * pc_hartree2kJmol);
@@ -2423,22 +2348,15 @@ void FISAPT::print_trailer() {
     Process::environment.globals["SAPT HF(2) ENERGY C"] = scalars_["E_C"];
     Process::environment.globals["SAPT HF(2) ENERGY HF"] = scalars_["HF"];
 }
-void FISAPT::plot() {
+void FISAPT::raw_plot(const std::string& filepath) {
     outfile->Printf("  ==> Scalar Field Plots <==\n\n");
 
-    std::string filepath = options_.get_str("FISAPT_PLOT_FILEPATH");
     outfile->Printf("    F-SAPT Plot Filepath = %s\n\n", filepath.c_str());
-
-    filesystem::create_directory(filepath);
 
     auto csg = std::make_shared<CubicScalarGrid>(primary_, options_);
     csg->set_filepath(filepath);
     csg->print_header();
     csg->set_auxiliary_basis(reference_->get_basisset("DF_BASIS_SCF"));
-
-    std::stringstream ss;
-    ss << filepath << "/geom.xyz";
-    primary_->molecule()->save_xyz_file(ss.str(), true);
 
     /// Zeroth-order wavefunctions
     std::shared_ptr<Matrix> D_A = matrices_["D_A"];
@@ -2973,7 +2891,7 @@ void FISAPT::fexch() {
         matrices_["Exch_AB"]->scale(scale);
         outfile->Printf("    Scaling F-SAPT Exch10(S^2) by %11.3E to match Exch10\n\n", scale);
     }
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_, 3.0);
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
@@ -3227,7 +3145,7 @@ void FISAPT::find() {
     int snb = 0;
     int snA = 0;
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         sna = na;
         snB = nB;
         snb = nb;
@@ -3285,7 +3203,7 @@ void FISAPT::find() {
             Ind20u_AB += Jval;
             ExchInd20u_AB_termsp[a][B] = Kval;
             ExchInd20u_AB += Kval;
-            if (options_.get_bool("sSAPT0_SCALE")) {
+            if (options_.get_bool("SSAPT0_SCALE")) {
                 sExchInd20u_AB_termsp[a][B] = Kval;
                 sExchInd20u_AB += Kval;
                 sIndu_AB_termsp[a][B] = Jval + Kval;
@@ -3322,7 +3240,7 @@ void FISAPT::find() {
             Ind20u_BA += Jval;
             ExchInd20u_BA_termsp[A][b] = Kval;
             ExchInd20u_BA += Kval;
-            if (options_.get_bool("sSAPT0_SCALE")) {
+            if (options_.get_bool("SSAPT0_SCALE")) {
                 sExchInd20u_BA_termsp[A][b] = Kval;
                 sExchInd20u_BA += Kval;
                 sIndu_BA_termsp[A][b] = Jval + Kval;
@@ -3345,7 +3263,7 @@ void FISAPT::find() {
     outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n", ExchInd20u);
     outfile->Printf("\n");
     // fflush(outfile);
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         double sExchInd20u = sExchInd20u_AB + sExchInd20u_BA;
         outfile->Printf("    sExch-Ind20,u (A<-B) = %18.12lf [Eh]\n", sExchInd20u_AB);
         outfile->Printf("    sExch-Ind20,u (B<-A) = %18.12lf [Eh]\n", sExchInd20u_BA);
@@ -3646,7 +3564,7 @@ void FISAPT::fdisp() {
     int snfb = 0;
     int snb = 0;
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         snA = nA;
         snfa = nfa;
         sna = na;
@@ -4007,7 +3925,7 @@ void FISAPT::fdisp() {
     // ==> Master Loop <== //
 
     double scale = 1.0;
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         scale = sSAPT0_scale_;
     }
 
@@ -4092,7 +4010,7 @@ void FISAPT::fdisp() {
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
                         E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
-                        if (options_.get_bool("sSAPT0_SCALE"))
+                        if (options_.get_bool("SSAPT0_SCALE"))
                             sE_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
                         ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
                         sExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
@@ -4118,7 +4036,7 @@ void FISAPT::fdisp() {
         }
     }
 
-    if (options_.get_bool("sSAPT0_SCALE")) {
+    if (options_.get_bool("SSAPT0_SCALE")) {
         auto sE_exch_disp20 = std::make_shared<Matrix>("sE_exch_disp20", na, nb);
         sE_exch_disp20->copy(E_exch_disp20);
         double** sE_exch_disp20p = sE_exch_disp20->pointer();
@@ -4136,100 +4054,13 @@ void FISAPT::fdisp() {
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    if (options_.get_bool("sSAPT0_SCALE")) scalars_["sExch-Disp20"] = sExchDisp20;
+    if (options_.get_bool("SSAPT0_SCALE")) scalars_["sExch-Disp20"] = sExchDisp20;
     outfile->Printf("    Disp20              = %18.12lf [Eh]\n", Disp20);
     outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n", ExchDisp20);
-    if (options_.get_bool("sSAPT0_SCALE")) outfile->Printf("    sExch-Disp20         = %18.12lf [Eh]\n", sExchDisp20);
+    if (options_.get_bool("SSAPT0_SCALE")) outfile->Printf("    sExch-Disp20         = %18.12lf [Eh]\n", sExchDisp20);
     outfile->Printf("\n");
     // fflush(outfile);
 }
-void FISAPT::fdrop() {
-    outfile->Printf("  ==> F-SAPT Output <==\n\n");
-
-    std::string filepath = options_.get_str("FISAPT_FSAPT_FILEPATH");
-    outfile->Printf("    F-SAPT Data Filepath = %s\n\n", filepath.c_str());
-
-    filesystem::create_directory(filepath);
-
-    std::stringstream ss;
-    ss << filepath << "/geom.xyz";
-    primary_->molecule()->save_xyz_file(ss.str(), true);
-
-    matrices_["Qocc0A"]->set_name("QA");
-    matrices_["Qocc0B"]->set_name("QB");
-    matrices_["Elst_AB"]->set_name("Elst");
-    matrices_["Exch_AB"]->set_name("Exch");
-    matrices_["IndAB_AB"]->set_name("IndAB");
-    matrices_["IndBA_AB"]->set_name("IndBA");
-    matrices_["Disp_AB"]->set_name("Disp");
-
-    drop(vectors_["ZA"], filepath);
-    drop(vectors_["ZB"], filepath);
-    drop(matrices_["Qocc0A"], filepath);
-    drop(matrices_["Qocc0B"], filepath);
-    drop(matrices_["Elst_AB"], filepath);
-    drop(matrices_["Exch_AB"], filepath);
-    drop(matrices_["IndAB_AB"], filepath);
-    drop(matrices_["IndBA_AB"], filepath);
-    drop(matrices_["Disp_AB"], filepath);
-
-    if (options_.get_bool("sSAPT0_SCALE")) {
-        std::string sSAPT_filepath = options_.get_str("FISAPT_FsSAPT_FILEPATH");
-        outfile->Printf("    sF-SAPT Data Filepath = %s\n\n", sSAPT_filepath.c_str());
-
-        filesystem::create_directory(sSAPT_filepath);
-
-        std::stringstream sSAPT_ss;
-        sSAPT_ss << sSAPT_filepath << "/geom.xyz";
-        primary_->molecule()->save_xyz_file(sSAPT_ss.str(), true);
-
-        matrices_["sIndAB_AB"]->set_name("IndAB");
-        matrices_["sIndBA_AB"]->set_name("IndBA");
-        matrices_["sDisp_AB"]->set_name("Disp");
-
-        drop(vectors_["ZA"], sSAPT_filepath);
-        drop(vectors_["ZB"], sSAPT_filepath);
-        drop(matrices_["Qocc0A"], sSAPT_filepath);
-        drop(matrices_["Qocc0B"], sSAPT_filepath);
-        drop(matrices_["Elst_AB"], sSAPT_filepath);
-        drop(matrices_["Exch_AB"], sSAPT_filepath);
-        drop(matrices_["sIndAB_AB"], sSAPT_filepath);
-        drop(matrices_["sIndBA_AB"], sSAPT_filepath);
-        drop(matrices_["sDisp_AB"], sSAPT_filepath);
-    }
-}
-
-void FISAPT::drop(std::shared_ptr<Matrix> A, const std::string& filepath) {
-    std::stringstream ss;
-    ss << filepath << "/" << A->name() << ".dat";
-    FILE* fh = fopen(ss.str().c_str(), "w");
-
-    int nrow = A->rowspi()[0];
-    int ncol = A->colspi()[0];
-    double** Ap = A->pointer();
-
-    for (int i = 0; i < nrow; i++) {
-        for (int j = 0; j < ncol; j++) {
-            fprintf(fh, "%24.16E%s", Ap[i][j], (j + 1 == ncol ? "" : " "));
-        }
-        fprintf(fh, "\n");
-    }
-    fclose(fh);
-}
-void FISAPT::drop(std::shared_ptr<Vector> A, const std::string& filepath) {
-    std::stringstream ss;
-    ss << filepath << "/" << A->name() << ".dat";
-    FILE* fh = fopen(ss.str().c_str(), "w");
-
-    int ndim = A->dimpi()[0];
-    double* Ap = A->pointer();
-
-    for (int i = 0; i < ndim; i++) {
-        fprintf(fh, "%24.16E\n", Ap[i]);
-    }
-    fclose(fh);
-}
-
 std::shared_ptr<Matrix> FISAPT::extract_columns(const std::vector<int>& cols, std::shared_ptr<Matrix> A) {
     int nm = A->rowspi()[0];
     int na = A->colspi()[0];

@@ -87,7 +87,7 @@ class PSI_API CubeProperties {
     // => High-Level Property Computers <= //
 
     /// Compute all relevant properties from options object specifications
-    void compute_properties();
+    void raw_compute_properties();
 
     // => Low-Level Property Computers (Do not use unless you are an advanced client code) <= //
 
@@ -106,6 +106,9 @@ class PSI_API CubeProperties {
     void compute_LOL(std::shared_ptr<Matrix> D, const std::string& key);
     /// Compute an ELF grid task (key.cube)
     void compute_ELF(std::shared_ptr<Matrix> D, const std::string& key);
+
+    /// Returns Orbital Basis Set
+    std::shared_ptr<BasisSet> basisset() { return basisset_; }
 };
 }
 

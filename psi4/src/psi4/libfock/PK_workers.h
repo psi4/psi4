@@ -255,8 +255,8 @@ private:
     bool is_shell_relevant();
 
     // This class should never be copied
-    PKWorker(const PKWorker &other) {}
-    PKWorker & operator = (PKWorker &other) {}
+    PKWorker(const PKWorker &other) = delete;
+    PKWorker & operator = (PKWorker &other) = delete;
 
 protected:
     /// Setter function for nbuf_

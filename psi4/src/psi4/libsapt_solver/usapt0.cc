@@ -808,7 +808,7 @@ void USAPT0::fock_terms() {
 
     // ==> Uncorrelated Second-Order Response Terms [Induction] <== //
 
-    // => ExchInd pertubations <= //
+    // => ExchInd perturbations <= //
 
     std::shared_ptr<Matrix> C_Oa_B = Matrix::triplet(Da_A, S, Cocca_B_);
     std::shared_ptr<Matrix> C_Ob_B = Matrix::triplet(Db_A, S, Coccb_B_);

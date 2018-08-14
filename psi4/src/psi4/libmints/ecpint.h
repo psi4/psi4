@@ -262,7 +262,7 @@ public:
 	RadialIntegral();
 	
 	/**
-	  * Initialises the object, in turn intialising the quadrature grids and BesselFunction
+	  * Initialises the object, in turn initialising the quadrature grids and BesselFunction
 	  * @param maxL - the maximum angular momentum of integral needed
 	  * @param tol - the tolerance for convergence of integrals (defaults to 1e-15)
 	  * @param small - the maximum number of quadrature points for the small integration grid (default 256, minimum recommended)

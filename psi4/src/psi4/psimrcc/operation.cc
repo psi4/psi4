@@ -71,7 +71,7 @@ void CCOperation::print()
   if(reindexing.size())
     outfile->Printf("\n\tReindexing = %s",reindexing.c_str());
   outfile->Printf("\n\tNumericalFactor = %lf",factor);
-  outfile->Printf("\tAssigment = %s",assignment.c_str());
+  outfile->Printf("\tAssignment = %s",assignment.c_str());
   outfile->Printf("\tOperation = %s",operation.c_str());
   outfile->Printf("\n\tA = %s",A_Matrix->get_label().c_str());
   if(B_Matrix!=nullptr)

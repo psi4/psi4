@@ -405,7 +405,7 @@ std::vector<int> MOLECULE::validate_angles(double const * const dq) {
   }
 
   if (!lin_angle.empty()) {
-    oprintf_out("\tNewly linear bends that need to be incoporated into the internal coordinates:\n");
+    oprintf_out("\tNewly linear bends that need to be incorporated into the internal coordinates:\n");
     for (std::size_t i=0; i<lin_angle.size(); i+=3)
       oprintf_out("\t%5d%5d%5d\n", lin_angle[i]+1, lin_angle[i+1]+1, lin_angle[i+2]+1);
   }

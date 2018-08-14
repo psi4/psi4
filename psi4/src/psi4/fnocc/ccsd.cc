@@ -125,7 +125,7 @@ void CoupledCluster::common_init() {
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
 
-  // get paramters from input
+  // get parameters from input
   e_conv   = options_.get_double("E_CONVERGENCE");
   r_conv   = options_.get_double("R_CONVERGENCE");
   maxiter = options_.get_int("MAXITER");
@@ -795,7 +795,7 @@ void CoupledCluster::AllocateMemory() {
   // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
      outfile->Printf("\n");
-     outfile->Printf("  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+     outfile->Printf("  Warning: cannot accommodate T2 in core. T2 will be stored on disk.\n");
      outfile->Printf("\n");
 
      t2_on_disk = true;
@@ -806,7 +806,7 @@ void CoupledCluster::AllocateMemory() {
      if (ov2tilesize*v > dim)     dim = ov2tilesize*v;
 
      if (dim<o*o*v*v){
-        throw PsiException("out of memory: general buffer cannot accomodate T2",__FILE__,__LINE__);
+        throw PsiException("out of memory: general buffer cannot accommodate T2",__FILE__,__LINE__);
      }
 
      outfile->Printf("\n");
