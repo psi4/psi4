@@ -770,7 +770,6 @@ void OEProp::common_init()
 
 MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const& origin)
     : Prop(wfn), origin_(origin) {
-    typedef MultipolePropCalc MPC;
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     /*
