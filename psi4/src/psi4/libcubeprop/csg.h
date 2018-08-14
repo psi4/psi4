@@ -189,6 +189,9 @@ class CubicScalarGrid {
     /// Compute the isocountour range that capture a given fraction of a property. Exponent is used
     /// to properly compute the density. E.g. for orbitals exponent = 2, for densities exponent = 1
     std::pair<double, double> compute_isocontour_range(double* v2, double exponent);
+    
+    /// A helper function to construct ECP comment in the cubefile header.
+    std::string ecp_header();
 };
 
 }  // End namespace
