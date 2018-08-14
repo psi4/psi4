@@ -189,30 +189,28 @@ public:
     SharedMatrix overlap_so();
 
     /// Computes the center for a given property, for the current molecule. Weighted center of geometry function
-    Vector3 compute_center(const double *property) const;
-
+    Vector3 compute_center(const double* property) const;
 };
 
 /**
-* The TaskListComputer, a utility base class to add, remove tasks to a tasklist.
-*
-* Historically this class was part of Prop. As Prop provides lots of meaningful
-* functionality without the need to actually compute everything asap in a task loop,
-* it was split off here.
-*
-* Recommendations:
-*   - This class should be removed in the future. A clear API with directly exposed
-*     functions (using SharedPointer return values) without writing into global
-*     environments is the way to go.
-*
-*   - Before using this as a base in a new class, it should be investigated, whether a direct
-*     API would be a better approach with a "PropFactory" for use in the interactive
-*     interpreter.
-*/
+ * The TaskListComputer, a utility base class to add, remove tasks to a tasklist.
+ *
+ * Historically this class was part of Prop. As Prop provides lots of meaningful
+ * functionality without the need to actually compute everything asap in a task loop,
+ * it was split off here.
+ *
+ * Recommendations:
+ *   - This class should be removed in the future. A clear API with directly exposed
+ *     functions (using SharedPointer return values) without writing into global
+ *     environments is the way to go.
+ *
+ *   - Before using this as a base in a new class, it should be investigated, whether a direct
+ *     API would be a better approach with a "PropFactory" for use in the interactive
+ *     interpreter.
+ */
 
-class TaskListComputer
-{
-protected:
+class TaskListComputer {
+   protected:
     /// Print flag
     int print_;
     /// Debug flag
@@ -224,7 +222,7 @@ protected:
     /// The set of tasks to complete
     std::set<std::string> tasks_;
 
-public:
+   public:
     /// Print header
     virtual void print_header() = 0;
     // => Queue/Compute Routines <= //
@@ -253,45 +251,40 @@ public:
 };
 
 /**
-* MultipolePropCalc
-*
-* Class, which calculates multipoles and mo_extents.
-*
-* Historically this class was part of OEProp.
-*
-* It is initialized with a wavefunction and an origin vector. If the origin breaks symmetry,
-* a warning is generated. Apart from this, this class does not have output, it also does
-* not export any values into the environment.
-*
-* If you are looking for previous OEProp functionality (i.e. output and environment exports)
-* OEProp still contains all that.
-*
-*/
+ * MultipolePropCalc
+ *
+ * Class, which calculates multipoles and mo_extents.
+ *
+ * Historically this class was part of OEProp.
+ *
+ * It is initialized with a wavefunction and an origin vector. If the origin breaks symmetry,
+ * a warning is generated. Apart from this, this class does not have output, it also does
+ * not export any values into the environment.
+ *
+ * If you are looking for previous OEProp functionality (i.e. output and environment exports)
+ * OEProp still contains all that.
+ *
+ */
 
-class MultipolePropCalc : public Prop
-{
-private:
+class MultipolePropCalc : public Prop {
+   private:
     MultipolePropCalc();
-protected:
+
+   protected:
     /// The center about which properties are computed
     Vector3 origin_;
     /// Whether the origin is on a symmetry axis or not
     bool origin_preserves_symmetry_;
-public:
+
+   public:
     /// Common initialization
-    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const & origin);
-    //Output Type of multipole function, name, elec, nuc, tot
-    typedef std::vector<
-            std::tuple<
-            std::string,
-            double,
-            double,
-            double
-            >
-    > MultipoleOutputType;
+    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const& origin);
+    // Output Type of multipole function, name, elec, nuc, tot
+    typedef std::vector<std::tuple<std::string, double, double, double>> MultipoleOutputType;
     typedef std::shared_ptr<MultipoleOutputType> MultipoleOutputType_ptr;
     /// Compute arbitrary-order multipoles up to (and including) l=order. returns name, elec, nuc and tot as vector_ptr
-    MultipoleOutputType_ptr compute_multipoles(int order, bool transition = false, bool print_output = false, bool verbose = false);
+    MultipoleOutputType_ptr compute_multipoles(int order, bool transition = false, bool print_output = false,
+                                               bool verbose = false);
     /// Compute dipole
     SharedVector compute_dipole(bool transition = false, bool print_output = false, bool verbose = false);
     /// Compute quadrupole
@@ -301,63 +294,64 @@ public:
 };
 
 /**
-* PopulationAnalysisCalc
-*
-* Class, which carries out popular population analysis, such as Mulliken or Loewdin.
-*
-* Historically this class was part of OEProp.
-*
-* It is initialized with a wavefunction. It does not generate any output or populate any
-* environment variables.
-*
-* If you are looking for previous OEProp functionality (i.e. output and environment exports)
-* OEProp still contains all that.
-*
-*/
+ * PopulationAnalysisCalc
+ *
+ * Class, which carries out popular population analysis, such as Mulliken or Loewdin.
+ *
+ * Historically this class was part of OEProp.
+ *
+ * It is initialized with a wavefunction. It does not generate any output or populate any
+ * environment variables.
+ *
+ * If you are looking for previous OEProp functionality (i.e. output and environment exports)
+ * OEProp still contains all that.
+ *
+ */
 
-class PopulationAnalysisCalc : public Prop
-{
-private:
+class PopulationAnalysisCalc : public Prop {
+   private:
     PopulationAnalysisCalc();
-public:
-    typedef std::shared_ptr<std::vector<double> > SharedStdVector;
+
+   public:
+    typedef std::shared_ptr<std::vector<double>> SharedStdVector;
     PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn);
     virtual ~PopulationAnalysisCalc();
     /// Compute Mulliken Charges
-    std::tuple<SharedStdVector,SharedStdVector,SharedStdVector>  compute_mulliken_charges(bool print_output = false);
+    std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
-    std::tuple<SharedStdVector,SharedStdVector,SharedStdVector> compute_lowdin_charges(bool print_output = false);
+    std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
-    std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector> compute_mayer_indices(bool print_output = false);
+    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
-    std::tuple<SharedMatrix,SharedMatrix,SharedMatrix,SharedVector>  compute_wiberg_lowdin_indices(bool print_output = false);
+    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_wiberg_lowdin_indices(
+        bool print_output = false);
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
-    void compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int> > > & output_metrics, int max_noon = 3, bool print_output = false);
+    void compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int>>>& output_metrics,
+                                int max_noon = 3, bool print_output = false);
 };
 
-
 /**
-* ESPPropCalc
-*
-* Class, which calculates multiple potentials based on a grid.
-*
-* Historically this class was part of OEProp.
-*
-* It is initialized with a wavefunction.
-* environment variables. Most functions currently require a file "grid.dat" to be present.
-* The functions generate their output on disk in files such as grid-esp.dat.
-* No environment variables are populated.
-*
-* If you are looking for previous OEProp functionality (i.e. output and environment exports)
-* OEProp still contains all that.
-*
-*/
+ * ESPPropCalc
+ *
+ * Class, which calculates multiple potentials based on a grid.
+ *
+ * Historically this class was part of OEProp.
+ *
+ * It is initialized with a wavefunction.
+ * environment variables. Most functions currently require a file "grid.dat" to be present.
+ * The functions generate their output on disk in files such as grid-esp.dat.
+ * No environment variables are populated.
+ *
+ * If you are looking for previous OEProp functionality (i.e. output and environment exports)
+ * OEProp still contains all that.
+ *
+ */
 class ESPPropCalc : public Prop {
-private:
-    //Constructing without wavefunction is forbidden:
+   private:
+    // Constructing without wavefunction is forbidden:
     ESPPropCalc();
 
-protected:
+   protected:
     /// The ESP in a.u., computed at each grid point
     std::vector<double> Vvals_;
     /// The field components in a.u. computed at each grid point
@@ -365,16 +359,16 @@ protected:
     std::vector<double> Eyvals_;
     std::vector<double> Ezvals_;
 
-public:
+   public:
     /// Constructor
     ESPPropCalc(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
     virtual ~ESPPropCalc();
 
-    std::vector<double> const & Vvals() const { return Vvals_; }
-    std::vector<double> const & Exvals() const { return Exvals_; }
-    std::vector<double> const & Eyvals() const { return Eyvals_; }
-    std::vector<double> const & Ezvals() const { return Ezvals_; }
+    std::vector<double> const& Vvals() const { return Vvals_; }
+    std::vector<double> const& Exvals() const { return Exvals_; }
+    std::vector<double> const& Eyvals() const { return Eyvals_; }
+    std::vector<double> const& Ezvals() const { return Ezvals_; }
 
     /// This function is missing, it should be removed until it is implemented.
     void compute_electric_field_and_gradients();
@@ -393,10 +387,11 @@ public:
 * analyses (typically vectors)
 **/
 class OEProp : public Prop, public TaskListComputer {
-private:
+   private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
     OEProp();
-protected:
+
+   protected:
     /// Common initialization
     void common_init();
     /// Print header and information
@@ -421,7 +416,8 @@ protected:
     void compute_wiberg_lowdin_indices();
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
     void compute_no_occupations();
-    /// Compute electric field and electric field gradients, this function is missing, the declaration should be removed.
+    /// Compute electric field and electric field gradients, this function is missing, the declaration should be
+    /// removed.
     void compute_electric_field_and_gradients();
     /// Compute electrostatic potentials at the nuclei
     void compute_esp_at_nuclei();
@@ -439,7 +435,7 @@ protected:
     // retrieves the Origin vector from the environment.
     Vector3 get_origin_from_environment() const;
 
-public:
+   public:
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
@@ -453,10 +449,10 @@ public:
     /// Compute and print/save the properties
     void compute();
 
-    std::vector<double> const & Vvals() const { return epc.Vvals(); }
-    std::vector<double> const & Exvals() const { return epc.Exvals(); }
-    std::vector<double> const & Eyvals() const { return epc.Eyvals(); }
-    std::vector<double> const & Ezvals() const { return epc.Ezvals(); }
+    std::vector<double> const& Vvals() const { return epc.Vvals(); }
+    std::vector<double> const& Exvals() const { return epc.Exvals(); }
+    std::vector<double> const& Eyvals() const { return epc.Eyvals(); }
+    std::vector<double> const& Ezvals() const { return epc.Ezvals(); }
 
     // These functions need to be overridden to pass on to the feature classes:
 
@@ -473,7 +469,8 @@ public:
     // Set beta C matrix, SO/MO pitzer order basis. Throws if restricted
     void set_Cb(SharedMatrix Cb);
 
-    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
+    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do
+    // the adding to Dt  <= //
 
     // TODO Add symmetry is irrep number
     void set_Da_ao(SharedMatrix Da, int symmetry = 0);

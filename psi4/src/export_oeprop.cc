@@ -52,15 +52,10 @@ void export_oeprop(py::module &m) {
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
 
     py::class_<ESPPropCalc, std::shared_ptr<ESPPropCalc>, Prop>(
-            m,
-            "ESPPropCalc",
-            "ESPPropCalc gives access to routines calculating the ESP on a grid")
+        m, "ESPPropCalc", "ESPPropCalc gives access to routines calculating the ESP on a grid")
         .def(py::init<std::shared_ptr<Wavefunction> >())
-        .def(
-                "compute_esp_over_grid_in_memory",
-                &ESPPropCalc::compute_esp_over_grid_in_memory,
-                "Computes ESP on specified grid Nx3 (as SharedMatrix)"
-                );
+        .def("compute_esp_over_grid_in_memory", &ESPPropCalc::compute_esp_over_grid_in_memory,
+             "Computes ESP on specified grid Nx3 (as SharedMatrix)");
 
     py::class_<OEProp, std::shared_ptr<OEProp>, Prop, TaskListComputer>(m, "OEProp", "docstring")
         .
@@ -80,8 +75,7 @@ void export_oeprop(py::module &m) {
         .def("Vvals", &OEProp::Vvals, "The electrostatic potential (in a.u.) at each grid point")
         .def("Exvals", &OEProp::Exvals, "The x component of the field (in a.u.) at each grid point")
         .def("Eyvals", &OEProp::Eyvals, "The y component of the field (in a.u.) at each grid point")
-        .def("Ezvals", &OEProp::Ezvals,
-             "The z component of the field (in a.u.) at each grid point");
+        .def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point");
 
     // class_<GridProp, std::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").
