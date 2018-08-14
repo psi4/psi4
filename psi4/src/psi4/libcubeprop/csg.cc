@@ -598,7 +598,7 @@ void CubicScalarGrid::compute_density(std::shared_ptr<Matrix> D, const std::stri
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
     comment << " [e/a0^3]. Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
-            << "," << isocontour_range.second << ")";
+            << "," << isocontour_range.second << ")." << ecp_header();
     // Write to disk
     write_gen_file(v, name, type, comment.str());
     delete[] v;
@@ -694,5 +694,23 @@ std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2, 
         if (sum > cumulative_threshold) break;
     }
     return std::make_pair(positive_isocontour, negative_isocontour);
+}
+std::string CubicScalarGrid::ecp_header() {
+    std::stringstream ecp_head;
+    ecp_head.str("");
+    if (primary_->has_ECP()) {
+        ecp_head << " Total core: " << primary_->n_ecp_core() << " [e] from 1-indexed atoms (";
+        std::stringstream ecp_atoms;
+        std::stringstream ecp_ncore;
+        for (int A = 0; A < mol_->natom(); A++) {
+            if (primary_->n_ecp_core(mol_->label(A)) > 0) {
+                ecp_atoms << A+1 << "[" << mol_->symbol(A).c_str() << "], ";
+                ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
+            }
+        }
+        ecp_head << ecp_atoms.str().substr(0,ecp_atoms.str().length()-2) << ") electrons (" 
+                 << ecp_ncore.str().substr(0,ecp_ncore.str().length()-2) << ").";
+    }
+    return ecp_head.str();
 }
 }
