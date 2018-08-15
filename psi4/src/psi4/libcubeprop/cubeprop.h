@@ -64,6 +64,9 @@ class PSI_API CubeProperties {
     std::vector<std::tuple<double, int, int> > info_b_;
     /// Auxiliary Basis Set if Any
     std::shared_ptr<BasisSet> auxiliary_;
+    /// Total number of alpha/beta electrons
+    int nalpha_;
+    int nbeta_;
 
     // => Computers <= //
 
