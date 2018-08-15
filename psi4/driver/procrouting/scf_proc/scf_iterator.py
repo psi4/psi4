@@ -343,8 +343,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         #can damp from iteration "0" -> iteration "1".
         if (damping_enabled and (self.iteration_ > 1 or core.get_option('SCF', "GUESS") == 'SAD')
                 and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
-            self.damping_update(self.damping_percentage * 0.01)
-            status.append("DAMP={}%".format(round(self.damping_percentage)))
+            damping_percentage = core.get_option('SCF', 'DAMPING_PERCENTAGE')
+            self.damping_update(damping_percentage * 0.01)
+            status.append("DAMP={}%".format(round(damping_percentage)))
 
         if verbose > 3:
             self.Ca().print_out()
