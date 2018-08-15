@@ -70,14 +70,18 @@ CubeProperties::CubeProperties(SharedWavefunction wfn) : options_(Process::envir
 
     int nirrep = wfn->nirrep();
     Dimension nmopi = wfn->nmopi();
+    nalpha_ = 0;
     // Gather orbital information
     for (int h = 0; h < nirrep; h++) {
+        nalpha_ += wfn->nalphapi()[h];
         for (int i = 0; i < (int)nmopi[h]; i++) {
             info_a_.push_back(std::tuple<double, int, int>(wfn->epsilon_a()->get(h, i), i, h));
         }
     }
     std::sort(info_a_.begin(), info_a_.end(), std::less<std::tuple<double, int, int> >());  // Sort as in wfn
+    nbeta_ = 0;
     for (int h = 0; h < nirrep; h++) {
+        nbeta_ += wfn->nbetapi()[h];
         for (int i = 0; i < (int)nmopi[h]; i++) {
             info_b_.push_back(std::tuple<double, int, int>(wfn->epsilon_b()->get(h, i), i, h));
         }
@@ -151,6 +155,41 @@ void CubeProperties::raw_compute_properties() {
                 int i = std::get<1>(info_b_[indsb0[ind]]);
                 int h = std::get<2>(info_b_[indsb0[ind]]);
                 labelsb.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
+            }
+            if (indsa0.size()) compute_orbitals(Ca_, indsa0, labelsa, "Psi_a");
+            if (indsb0.size()) compute_orbitals(Cb_, indsb0, labelsb, "Psi_b");
+        } else if (task == "FRONTIER_ORBITALS") {
+            std::vector<int> indsa0;
+            std::vector<int> indsb0;
+            std::vector<std::string> labelsa;
+            std::vector<std::string> labelsb;
+            CharacterTable ct = basisset_->molecule()->point_group()->char_table();
+            if (nalpha_ == nbeta_) {
+                indsa0.push_back(nalpha_-1);
+                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[nalpha_-1])).symbol() + "_HOMO");
+                indsa0.push_back(nalpha_);
+                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[nalpha_])).symbol() + "_LUMO");
+            } else {
+                indsa0.push_back(nalpha_);
+                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[nalpha_])).symbol() + "_LUMO");
+                indsb0.push_back(nbeta_+1);
+                labelsb.push_back(to_string(std::get<1>(info_b_[nbeta_+1]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_b_[nbeta_+1])).symbol() + "_LUMO");
+                indsa0.push_back(nalpha_-1);
+                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[nalpha_-1])).symbol() + "_SOMO");
+                indsb0.push_back(nbeta_);
+                labelsb.push_back(to_string(std::get<1>(info_b_[nbeta_]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_b_[nbeta_])).symbol() + "_SOMO");
+                indsa0.push_back(nalpha_-2);
+                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_-2]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[nalpha_-2])).symbol() + "_DOMO");
+                indsb0.push_back(nbeta_-1);
+                labelsb.push_back(to_string(std::get<1>(info_b_[nbeta_-1]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_b_[nbeta_-1])).symbol() + "_DOMO");
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0, labelsa, "Psi_a");
             if (indsb0.size()) compute_orbitals(Cb_, indsb0, labelsb, "Psi_b");
