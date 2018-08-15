@@ -195,7 +195,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     Drms = 0.0
     while True:
         self.iteration_ += 1
-        print(self.iteration_)
 
         diis_performed = False
         soscf_performed = False
@@ -306,7 +305,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 add_to_diis_subspace = True
 
             Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
-            print('scf_procdrms'.format(Drms))
 
             if (self.diis_enabled_
                     and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
