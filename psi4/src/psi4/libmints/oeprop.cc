@@ -2152,12 +2152,13 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
 }
 
 void OEProp::compute_no_occupations() {
-    std::vector<std::vector<std::tuple<double, int, int>>> metrics;
-    pac_.compute_no_occupations(metrics, max_noon_, true);
-    wfn_->set_no_occupations(metrics);
+    auto metrics_ptr = pac_.compute_no_occupations(max_noon_, true);
+    wfn_->set_no_occupations(*metrics_ptr);
 }
-void PopulationAnalysisCalc::compute_no_occupations(
-    std::vector<std::vector<std::tuple<double, int, int>>>& output_metrics, int max_noon, bool print_output) {
+std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> PopulationAnalysisCalc::compute_no_occupations(
+    int max_noon, bool print_output) {
+    std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> output_metrics_ptr =
+        std::make_shared<std::vector<std::vector<std::tuple<double, int, int>>>>();
     std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
     if (print_output) {
@@ -2165,7 +2166,7 @@ void PopulationAnalysisCalc::compute_no_occupations(
     }
 
     // Terminally, it will be [metric_a , metric_b, metric] or [metric] depending on same_dens
-    std::vector<std::vector<std::tuple<double, int, int>>>& metrics = output_metrics;
+    std::vector<std::vector<std::tuple<double, int, int>>>& metrics = *output_metrics_ptr;
 
     if (!same_dens_) {
         SharedVector Oa;
@@ -2279,7 +2280,7 @@ void PopulationAnalysisCalc::compute_no_occupations(
         }
         outfile->Printf("\n");
     }
-
+    return output_metrics_ptr;
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 
 }

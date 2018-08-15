@@ -327,8 +327,8 @@ class PopulationAnalysisCalc : public Prop {
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_wiberg_lowdin_indices(
         bool print_output = false);
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
-    void compute_no_occupations(std::vector<std::vector<std::tuple<double, int, int>>>& output_metrics,
-                                int max_noon = 3, bool print_output = false);
+    std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> compute_no_occupations(
+        int max_noon = 3, bool print_output = false);
 };
 
 /**
