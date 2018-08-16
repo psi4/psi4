@@ -193,6 +193,17 @@ void CubeProperties::raw_compute_properties() {
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0, labelsa, "Psi_a");
             if (indsb0.size()) compute_orbitals(Cb_, indsb0, labelsb, "Psi_b");
+        } else if (task == "DUAL_DESCRIPTOR") {
+            std::vector<int> indsa0;
+            if (nalpha_ != nbeta_) {
+                throw PSIEXCEPTION(task + "is not implemented for open-shell systems");
+            } else {
+                indsa0.push_back(nalpha_);
+                indsa0.push_back(nalpha_-1);
+                std::stringstream ss;
+                ss << "DUAL_" << (nalpha_+1) << "-" << nalpha_;
+                compute_difference(Ca_, indsa0, ss.str(), true);
+            }
         } else if (task == "BASIS_FUNCTIONS") {
             std::vector<int> inds0;
             if (options_["CUBEPROP_BASIS_FUNCTIONS"].size() == 0) {
@@ -226,6 +237,10 @@ void CubeProperties::compute_esp(std::shared_ptr<Matrix> Dt, const std::vector<d
 void CubeProperties::compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
                                       const std::vector<std::string>& labels, const std::string& key) {
     grid_->compute_orbitals(C, indices, labels, key);
+}
+void CubeProperties::compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
+                                      const std::string& label, bool square) {
+    grid_->compute_difference(C, indices, label, square);
 }
 void CubeProperties::compute_basis_functions(const std::vector<int>& indices, const std::string& key) {
     grid_->compute_basis_functions(indices, key);
