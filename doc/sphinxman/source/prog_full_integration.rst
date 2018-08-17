@@ -26,17 +26,19 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. include:: autodoc_abbr_options_c.rst
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+.. _`sec:prog_full_integration`:
 
-.. toctree::
-   optionshandling
-   proc_py
-   prog_blas
+=======================================
+Integrating New Features into |PSIfour|
+=======================================
 
-..   prog_basissets
+Overview of Required Steps
+--------------------------
+
+Explain the different steps that are needed to add a few feature to 
+|PSIfour| (where to put the code, how to add user options (w/docs), where
+to add targets to CMake files, adding test cases.
 
 

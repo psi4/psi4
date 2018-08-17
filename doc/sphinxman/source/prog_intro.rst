@@ -26,17 +26,15 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. _`sec:prog_intro`:
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+================================================
+Introduction to Programming in |PSIfour|
+================================================
 
 .. toctree::
-   optionshandling
-   proc_py
-   prog_blas
-
-..   prog_basissets
-
+   prog_welcome
+   prog_conduct
+   prog_overview 
+   prog_setup
 

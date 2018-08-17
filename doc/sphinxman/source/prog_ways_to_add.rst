@@ -26,17 +26,24 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. _`sec:prog_ways_to_add`:
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+=====================================================
+Ways to Add Code: Psi4NumPy, Plugin, Full Integration 
+=====================================================
 
-.. toctree::
-   optionshandling
-   proc_py
-   prog_blas
+Easier and more rapid development
+---------------------------------
 
-..   prog_basissets
+Fully-featured electronic structure programs are large and complex.
+However, the Psi4 ecosystem provides a path for easier and more
+rapid development of new features.
+
+Overview of what Psi4NumPy and Plugins are.  Suggest that Psi4NumPy
+might be the easiest and most rapid way to initially test new code.
+Then the code could go to a Plugin, which could be subseqently
+integrated fully into Psi4, or stay as a Plugin.
+
+There is a separate section that more fully explains plugins.
 
 

@@ -26,17 +26,15 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. _`sec:prog_psi4numpy`:
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+================================================
+Psi4NumPy
+================================================
 
-.. toctree::
-   optionshandling
-   proc_py
-   prog_blas
+Rapid initial development using Psi4NumPy
+-----------------------------------------
 
-..   prog_basissets
-
+Discuss what Psi4NumPy is, recommend it as a first step, point to repo,
+mention paper
 

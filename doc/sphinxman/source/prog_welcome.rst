@@ -26,17 +26,18 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. include:: autodoc_abbr_options_c.rst
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+.. _`sec:prog_welcome`:
 
-.. toctree::
-   optionshandling
-   proc_py
-   prog_blas
+===========================
+Welcome to New Programmers
+===========================
 
-..   prog_basissets
+The |PSIfour| community
+-----------------------
 
+|PSIfour| is an open-source project and welcomes contributions from
+developers around the world.  etc.  We have annual meetings, we welcome
+feedback, slack channel, etc.
 

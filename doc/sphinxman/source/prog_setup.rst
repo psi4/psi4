@@ -26,17 +26,18 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. include:: autodoc_abbr_options_c.rst
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+.. _`sec:prog_setup`:
 
-.. toctree::
-   optionshandling
-   proc_py
-   prog_blas
+=======================================
+Setting Up Your Development Environment
+=======================================
 
-..   prog_basissets
+Header
+------
+
+Instructions on getting the proper environment set up, cheatsheets for
+this, etc.
 
 
