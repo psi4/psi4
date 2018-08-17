@@ -44,7 +44,6 @@ from .qcformat import *
 from . import cfour
 from . import jajo
 from . import orca
-from .orient import OrientMols
 from .dbwrap import Database, DB4  #DatabaseWrapper, ReactionDatum, Reagent, Reaction
 from .libmintspointgrp import SymmetryOperation, PointGroup
 from .libmintsbasisset import BasisSet

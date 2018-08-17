@@ -180,7 +180,7 @@ What are the tools and dependencies strictly required for building Psi4
 
 The core |PSIfour| build requires the software below. Note that
 practically everything (including Python, CMake, NumPy, BLAS/LAPACK,
-Libint, and even C++ compilers on Linux) can be
+Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
@@ -189,7 +189,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
-* :ref:`Python interpreter and headers <cmake:python>` (2.7, 3.5, or 3.6) https://www.python.org/
+* :ref:`Python interpreter and headers <cmake:python>` (3.5, 3.6, or 3.7) https://www.python.org/
 
 * CMake (3.3+) http://www.cmake.org/download/
 
@@ -217,7 +217,7 @@ Additionally, there are runtime-only dependencies:
 * networkx https://github.com/networkx/networkx
 
 * deepdiff https://github.com/seperman/deepdiff
- 
+
 
 .. _`faq:addondepend`:
 
@@ -249,9 +249,9 @@ are available pre-built from conda.
   * HDF5 https://support.hdfgroup.org/HDF5/
   * zlib http://www.zlib.net/
 
-* :ref:`libefp <cmake:libefp>` |w---w| :ref:`[what is this?] <sec:libefp>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libefp/CMakeLists.txt#L1>`_
+* :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is this?] <sec:libefp>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libefp/CMakeLists.txt#L1>`_
 
-* :ref:`erd <cmake:erd>` |w---w| :ref:`[what is this?] <sec:erd>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/erd/CMakeLists.txt#L2>`_
+.. * :ref:`erd <cmake:erd>` |w---w| :ref:`[what is this?] <sec:erd>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/erd/CMakeLists.txt#L2>`_
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
@@ -283,6 +283,10 @@ Additionally, there are runtime-only capabilities:
 * v2rdm_casscf |w---w| :ref:`[what is this?] <sec:v2rdm_casscf>`
 
 * snsmp2 |w---w| :ref:`[what is this?] <sec:snsmp2>`
+
+* resp
+
+* gpu_dfcc
 
 .. _`faq:setupmaxameri`:
 
@@ -683,7 +687,9 @@ How to run Psi4 as executable or Python module from conda installation
 The configuration commands below are generic versions of the ones printed
 to your screen as advice upon installing |PSIfour| into a Anaconda,
 Miniconda, or Psi4conda distribution, :samp:`{condadist} =
-{ana|mini|psi4}conda`. If ``which conda python psi4`` points to your
+{ana|mini|psi4}conda`. To see the message again after initial installation,
+with the conda environment active, run ``.psi4-post-link.sh``.
+If ``which conda python psi4`` points to your
 :samp:`{condadist}` and ``echo $PSI_SCRATCH`` is set, skip ahead to the
 "Run |PSIfour|\" commands below. Otherwise, issue the following
 commands directly in your terminal or place them into your "rc" file and
@@ -877,7 +883,7 @@ G. Build on Linux with specific (Intel) compilers from :envvar:`PATH`
               -DCMAKE_C_FLAGS="-gnu-prefix=${CONDA_PREFIX}/bin/${HOST} --sysroot=${CONDA_PREFIX}/${HOST}/sysroot" \
               -DCMAKE_CXX_FLAGS="-gnu-prefix=${CONDA_PREFIX}/bin/${HOST} --sysroot=${CONDA_PREFIX}/${HOST}/sysroot"
 
-H. Build on Linux with specific (GCC) compilers from 
+H. Build on Linux with specific (GCC) compilers from
    from conda in **activated** environment
    (:envvar:`CONDA_PREFIX` and :envvar:`HOST` are defined upon
    activation)
@@ -924,8 +930,39 @@ for ``gcc`` and ``g++``. Just install `XCode
 <https://itunes.apple.com/us/app/xcode/id497799835>`_.  Some old versions
 of XCode can't handle some of the advanced C++ language features, but this
 is a *software* not *hardware* limitation. Checks for version compliance
-performed at build-time.
+performed at build-time. Note that this "AppleClang" will not be compatible
+with conda Mac packages using C++11, nor can it make use of OpenMP directives.
 
+Another route to obtaining ``clang`` compilers without the above limitations
+is through conda.
+
+.. code-block:: bash
+
+   # Install Clang 4.0.1 into a non-primary conda environment
+   >>> conda create -n clang401 clangxx_osx-64 clang_osx-64 llvm-openmp intel-openmp
+
+   # To Build, activate environment (prepends PATH and defines environment variables CLANG, CLANGXX, HOST, etc):
+   >>> conda activate clang401
+   >>> echo ${CLANGXX}
+   /path/to/miniconda/envs/clang401/bin/x86_64-apple-darwin13.4.0-clang++
+   >>> echo ${HOST}
+   x86_64-apple-darwin13.4.0
+
+   # build with Clang
+   >>> cmake -H. -Bbuild \
+        -DCMAKE_C_COMPILER=${CLANG} \
+        -DCMAKE_CXX_COMPILER=${CLANGXX} \
+        -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+        -DOpenMP_CXX_FLAG="-fopenmp=libiomp5"
+
+   # build with Intel
+   >>> cmake -H. -Bbuild \
+        -DCMAKE_C_COMPILER=icc \
+        -DCMAKE_CXX_COMPILER=icpc \
+        -DCMAKE_C_FLAGS="-clang-name=${CLANG}" \
+        -DCMAKE_CXX_FLAGS="-clang-name=${CLANG} -clangxx-name=${CLANGXX} -stdlib=libc++ -I${CONDA_PREFIX}/include/c++/v1"
+
+   # Configure and build
 
 .. _`faq:modgcc`:
 
@@ -985,7 +1022,7 @@ system. The latter route, tested on Linux with Intel compilers, is below.
    # Configure and build
 
    # To Run:
-   >>> export LD_LIBRARY_PATH=${GCC5}/lib:$LD_LIBRARY_PATH
+   >>> export LD_LIBRARY_PATH=${GCC7}/lib:$LD_LIBRARY_PATH
 
 
 .. _`faq:cray`:
@@ -1050,7 +1087,7 @@ On Linux and Mac, the following work nicely.
 * Packages to install for specific OS or package managers:
 
   * Ubuntu ``gfortran``
-  * conda ``gfortran_linux-64`` to get ``gfortran``
+  * conda ``gfortran_linux-64`` or ``gfortran_osx-64`` to get ``gfortran``
 
 
 .. _`faq:macgfortran`:
@@ -1059,9 +1096,9 @@ How to obtain a Fortran compiler for Mac without Fink, MacPorts, or Homebrew
 ----------------------------------------------------------------------------
 
 Xcode does not provide a Fortran compiler. A way to get one is to download
-the ``gcc`` conda package. This provides ``gcc``, ``g++``, and
-``gfortran`` compilers for Mac. The two former are 4.8.5 and so are too
-old to compile |PSIfour|, but the Fortran compiler will work.
+the ``gfortran_osx-64`` conda package. This provides
+``gfortran`` compilers for Mac. The version is 4.8.5, which is quite old,
+but the Fortran compiler will work.
 
 .. Xcode does not provide a Fortran compiler. Although a Fortran compiler is
 .. not required for Psi4, a broken one can prevent correct configuration. Do
@@ -1093,8 +1130,9 @@ How to configure BLAS/LAPACK for building Psi4
 * :makevar:`LAPACK_TYPE` |w---w| CMake variable to specify which LAPACK libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
 * :envvar:`MKL_ROOT` |w---w| Environment variable set by Intel compilervars scripts. Sufficient to trigger math detection of MKL at this location.
 * :envvar:`MATH_ROOT` |w---w| Environment variable to specify root directory in which BLAS/LAPACK libraries should be detected (*e.g.*, ``${MATH_ROOT}/lib64/libblas.so`` and ``${MATH_ROOT}/lib64/liblapack.so``).
-* :makevar:`LAPACK_LIBRARIES` |w---w| CMake variable to specify BLAS/LAPACK libraries explicitly, bypassing math detection. Should be semicolon-separated list of full paths.
+* :makevar:`LAPACK_LIBRARIES` |w---w| CMake variable to specify BLAS/LAPACK libraries explicitly, bypassing math detection. Should be ";"-separated list of full paths.
 * :makevar:`LAPACK_INCLUDE_DIRS` |w---w| CMake variable to specify BLAS/LAPACK header location explicitly, bypassing math detection. Only needed for MKL.
+* :makevar:`OpenMP_LIBRARY_DIRS` |w---w| CMake variable to specify OpenMP library (iomp5/gomp/omp) directories explicitly. Should be ";"-separated list of full directory paths. Usually the solution to error ``Could NOT find MathOpenMP``.
 
 **Examples**
 
@@ -1154,6 +1192,12 @@ H. Build with explicit non-MKL LAPACK
   .. code-block:: bash
 
     >>> cmake -DLAPACK_LIBRARIES="/path/to/lib/liblapack.so;/path/to/lib/libblas.a"
+
+I. Build with MKL and GCC (iomp5 needed instead of gomp for threading. use OpenMP_LIBRARY_DIRS to hint location.)
+
+  .. code-block:: bash
+
+    >>> cmake -DLAPACK_LIBRARIES=/opt/intel/mkl/lib/intel64/libmkl_rt.so -DLAPACK_INCLUDE_DIRS=/opt/intel/mkl/include -DOpenMP_LIBRARY_DIRS=/opt/intel/compiler/lib/intel64/
 
 **Notes**
 
@@ -1458,7 +1502,7 @@ How to run a subset of tests
 CTest allows flexibly partitioned running of the test suite. In
 the examples below, *testname* are regex of :source:`test names <tests>`,
 and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
-``libefp`` defined `[here, for example] 
+``libefp`` defined `[here, for example]
 <https://github.com/psi4/psi4/blob/master/tests/ci-property/CMakeLists.txt#L3)>`_.
 
 * Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
@@ -1565,6 +1609,14 @@ Ways to refer to |PSIfour| in text, in order of decreasing goodness:
   * as ``psi4`` in code
 
   * **NOT** ``PSI4`` or ``PSI``
+
+
+.. _`faq:psi4logos`:
+
+How to get a Psi4 logo file
+---------------------------
+
+All image files are stored in https://github.com/psi4/psi4media
 
 
 .. _`faq:localaddon`:

@@ -265,7 +265,7 @@ def run_cfour(name, **kwargs):
         #   c4mol is dinky, w/o chg, mult, dummies and retains name
         #   blank_molecule_psi4_yo so as to not interfere with future cfour {} blocks
 
-    if c4grad:
+    if c4grad is not None:
         mat = core.Matrix.from_list(c4grad)
         core.set_gradient(mat)
 
@@ -364,13 +364,13 @@ def run_cfour(name, **kwargs):
     core.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     core.print_variables()
-    if c4grad:
+    if c4grad is not None:
         core.get_gradient().print_out()
 
     core.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     core.print_variables()
-    if c4grad:
+    if c4grad is not None:
         core.get_gradient().print_out()
 
     # Quit if Cfour threw error
