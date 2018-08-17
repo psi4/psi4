@@ -39,6 +39,8 @@ Overview of Required Steps
 
 Explain the different steps that are needed to add a few feature to 
 |PSIfour| (where to put the code, how to add user options (w/docs), where
-to add targets to CMake files, adding test cases.
+to add targets to CMake files, adding test cases, adding a section
+to the Users' manual.  Several of those steps are already documented 
+elsewhere, so just point to them in the appropriate places.
 
 

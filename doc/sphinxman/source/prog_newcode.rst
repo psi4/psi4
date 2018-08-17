@@ -36,6 +36,7 @@ Adding New Code to |PSIfour|
    prog_ways_to_add
    plugins
    prog_full_integration 
+   proc_py
    style_c
    FAQ <prog_faq>
 

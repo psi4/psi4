@@ -29,7 +29,7 @@
 .. _`sec:prog_ways_to_add`:
 
 =====================================================
-Ways to Add Code: Psi4NumPy, Plugin, Full Integration 
+Ways to Add Code: Psi4NumPy, Plugins, Full Integration 
 =====================================================
 
 Easier and more rapid development
