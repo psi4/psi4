@@ -26,18 +26,30 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:prog_newcode`:
+.. include:: autodoc_abbr_options_c.rst
 
-================================================
-Adding New Code to |PSIfour|
-================================================
+.. _`sec:prog_setup`:
 
-.. toctree::
-   prog_ways_to_add
-   plugins
-   prog_full_integration 
-   proc_py
-   prog_style_py
-   prog_style_c
-   FAQ <prog_faq>
+=================
+Where to Get Help
+=================
+
+Slack
+-----
+
+|PSIfour| has an active `Slack channel <http://psi4.slack.com>`_
+for developers, and a friendly community willing to answer your questions.  
+
+Reporting Bugs
+--------------
+
+Program bugs should be reported as Issues on GitHub, 
+`here <https://github.com/psi4/psi4/issues>`_.
+
+Using |PSIfour|
+---------------
+
+Questions about using |PSIfour|, as opposed to programming for |PSIfour|,
+should be directed to the 
+`Psi4 User Forum <http://forum.psicode.org/t/welcome-to-the-psi4-forum/>`_.
 

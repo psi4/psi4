@@ -61,8 +61,9 @@ Programmers' Manual
 
    prog_intro
    prog_newcode
-   programming
+   prog_corelibs
    add_tests
+   prog_debug_profile
    documentation
    psipep
    manage_index

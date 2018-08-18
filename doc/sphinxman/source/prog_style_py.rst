@@ -26,16 +26,11 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:programming`:
+.. include:: autodoc_abbr_options_c.rst
 
-=====================================
-Programming: Using the Core Libraries
-=====================================
+.. _`sec:style_python`:
 
-.. toctree::
-   optionshandling
-   prog_blas
-
-..   prog_basissets
+Python Style
+============
 
 

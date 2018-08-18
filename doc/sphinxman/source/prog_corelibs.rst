@@ -26,18 +26,16 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:prog_newcode`:
+.. _`sec:prog_corelibs`:
 
-================================================
-Adding New Code to |PSIfour|
-================================================
+=====================================
+Programming with the Core Libraries
+=====================================
 
 .. toctree::
-   prog_ways_to_add
-   plugins
-   prog_full_integration 
-   proc_py
-   prog_style_py
-   prog_style_c
-   FAQ <prog_faq>
+   optionshandling
+   prog_blas
+
+..   prog_basissets
+
 
