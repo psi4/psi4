@@ -167,8 +167,8 @@ void Prop::set_Cb(SharedMatrix C)
 void Prop::set_Da_ao(SharedMatrix D, int symm)
 {
     Da_so_ = std::make_shared<Matrix>("Da_so", Ca_so_->rowspi(),Ca_so_->rowspi(),symm);
-
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
@@ -180,10 +180,9 @@ void Prop::set_Da_ao(SharedMatrix D, int symm)
         double** Urp = AO2USO_->pointer(h^symm);
         double** DAOp = D->pointer();
         double** DSOp = Da_so_->pointer(h);
-        C_DGEMM('N','N',nao,nsor,nao,1.0,DAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,DSOp[0],nsor);
+        C_DGEMM('N', 'N', nao, nsor, nao, 1.0, DAOp[0], nao, Urp[0], nsor, 0.0, temp_ptr, nsor);
+        C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp_ptr, nsor, 0.0, DSOp[0], nsor);
     }
-    delete[] temp;
 
     if (same_dens_) {
         Db_so_ = Da_so_;
@@ -196,7 +195,8 @@ void Prop::set_Db_ao(SharedMatrix D, int symm)
 
     Db_so_ = std::make_shared<Matrix>("Db_so", Cb_so_->rowspi(),Cb_so_->rowspi(),symm);
 
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
@@ -208,10 +208,9 @@ void Prop::set_Db_ao(SharedMatrix D, int symm)
         double** Urp = AO2USO_->pointer(h^symm);
         double** DAOp = D->pointer();
         double** DSOp = Db_so_->pointer(h);
-        C_DGEMM('N','N',nao,nsor,nao,1.0,DAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,DSOp[0],nsor);
+        C_DGEMM('N', 'N', nao, nsor, nao, 1.0, DAOp[0], nao, Urp[0], nsor, 0.0, temp_ptr, nsor);
+        C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp_ptr, nsor, 0.0, DSOp[0], nsor);
     }
-    delete[] temp;
 }
 void Prop::set_Da_so(SharedMatrix D)
 {
@@ -234,7 +233,8 @@ void Prop::set_Da_mo(SharedMatrix D)
     int symm = D->symmetry();
     int nirrep = D->nirrep();
 
-    double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
+    std::vector<double> temp(Ca_so_->max_ncol() * Ca_so_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
         int nmor = Ca_so_->colspi()[h^symm];
@@ -245,10 +245,9 @@ void Prop::set_Da_mo(SharedMatrix D)
         double** Crp = Ca_so_->pointer(h^symm);
         double** Dmop = D->pointer(h^symm);
         double** Dsop = Da_so_->pointer(h^symm);
-        C_DGEMM('N','T',nmol,nsor,nmor,1.0,Dmop[0],nmor,Crp[0],nmor,0.0,temp,nsor);
-        C_DGEMM('N','N',nsol,nsor,nmol,1.0,Clp[0],nmol,temp,nsor,0.0,Dsop[0],nsor);
+        C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp_ptr, nsor);
+        C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
-    delete[] temp;
 
     if (same_dens_) {
         Db_so_ = Da_so_;
@@ -264,7 +263,8 @@ void Prop::set_Db_mo(SharedMatrix D)
     int symm = D->symmetry();
     int nirrep = D->nirrep();
 
-    double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
+    std::vector<double> temp(Cb_so_->max_ncol() * Cb_so_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
         int nmor = Cb_so_->colspi()[h^symm];
@@ -275,10 +275,9 @@ void Prop::set_Db_mo(SharedMatrix D)
         double** Crp = Cb_so_->pointer(h^symm);
         double** Dmop = D->pointer(h^symm);
         double** Dsop = Db_so_->pointer(h^symm);
-        C_DGEMM('N','T',nmol,nsor,nmor,1.0,Dmop[0],nmor,Crp[0],nmor,0.0,temp,nsor);
-        C_DGEMM('N','N',nsol,nsor,nmol,1.0,Clp[0],nmol,temp,nsor,0.0,Dsop[0],nsor);
+        C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp_ptr, nsor);
+        C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
-    delete[] temp;
 }
 TaskListComputer::TaskListComputer() {
     title_ = "";
@@ -303,7 +302,8 @@ SharedVector Prop::epsilon_b()
 }
 SharedMatrix Prop::Da_ao()
 {
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr = temp.data();
     auto D = std::make_shared<Matrix>("Da (AO basis)", basisset_->nbf(), basisset_->nbf());
     int symm = Da_so_->symmetry();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
@@ -315,10 +315,9 @@ SharedMatrix Prop::Da_ao()
         double** Urp = AO2USO_->pointer(h^symm);
         double** DSOp = Da_so_->pointer(h^symm);
         double** DAOp = D->pointer();
-        C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
-        C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp_ptr, nao);
+        C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp_ptr, nao, 1.0, DAOp[0], nao);
     }
-    delete[] temp;
     return D;
 }
 SharedMatrix Prop::Db_ao()
@@ -326,7 +325,8 @@ SharedMatrix Prop::Db_ao()
     if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr;
     auto D = std::make_shared<Matrix>("Db (AO basis)", basisset_->nbf(), basisset_->nbf());
     int symm = Db_so_->symmetry();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
@@ -338,10 +338,9 @@ SharedMatrix Prop::Db_ao()
         double** Urp = AO2USO_->pointer(h^symm);
         double** DSOp = Db_so_->pointer(h^symm);
         double** DAOp = D->pointer();
-        C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
-        C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp_ptr, nao);
+        C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp_ptr, nao, 1.0, DAOp[0], nao);
     }
-    delete[] temp;
     return D;
 }
 SharedMatrix Prop::Ca_so()
@@ -377,8 +376,10 @@ SharedMatrix Prop::Da_mo()
 
     SharedMatrix S = overlap_so();
 
-    double* SC = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
-    double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
+    std::vector<double> SC(Ca_so_->max_ncol() * Ca_so_->max_nrow());
+    std::vector<double> temp(Ca_so_->max_ncol() * Ca_so_->max_nrow());
+    double* SC_ptr = SC.data();
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
         int nmor = Ca_so_->colspi()[h^symm];
@@ -392,13 +393,11 @@ SharedMatrix Prop::Da_mo()
         double** Dmop = D->pointer(h);
         double** Dsop = Da_so_->pointer(h);
 
-        C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
-        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
-        C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
-        C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
+        C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Dsop[0], nsor, SC_ptr, nmor, 0.0, temp_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC_ptr, nmol);
+        C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC_ptr, nmol, temp_ptr, nmor, 0.0, Dmop[0], nmor);
     }
-    delete[] temp;
-    delete[] SC;
     return D;
 }
 SharedMatrix Prop::Db_mo()
@@ -413,8 +412,11 @@ SharedMatrix Prop::Db_mo()
 
     SharedMatrix S = overlap_so();
 
-    double* SC = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
-    double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
+    std::vector<double> SC(Cb_so_->max_ncol() * Cb_so_->max_nrow());
+    std::vector<double> temp(Cb_so_->max_ncol() * Cb_so_->max_nrow());
+
+    double* SC_ptr = SC.data();
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
         int nmor = Cb_so_->colspi()[h^symm];
@@ -428,13 +430,11 @@ SharedMatrix Prop::Db_mo()
         double** Dmop = D->pointer(h);
         double** Dsop = Db_so_->pointer(h);
 
-        C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
-        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
-        C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
-        C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
+        C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Dsop[0], nsor, SC_ptr, nmor, 0.0, temp_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC_ptr, nmol);
+        C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC_ptr, nmol, temp_ptr, nmor, 0.0, Dmop[0], nmor);
     }
-    delete[] temp;
-    delete[] SC;
     return D;
 }
 SharedMatrix Prop::Dt_so(bool total)
@@ -820,7 +820,7 @@ Vector3 OEProp::get_origin_from_environment() const {
         int size = options["PROPERTIES_ORIGIN"].size();
 
         if(size == 1){
-            double *property = new double[natoms];
+            std::vector<double> property(natoms);
             std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
             if(str == "COM"){
                 for(int atom = 0; atom < natoms; ++atom)
@@ -831,8 +831,7 @@ Vector3 OEProp::get_origin_from_environment() const {
             }else{
                 throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
             }
-            origin = compute_center(property);
-            delete [] property;
+            origin = compute_center(property.data());
         }else if(size == 3){
             double x = options["PROPERTIES_ORIGIN"][0].to_double();
             double y = options["PROPERTIES_ORIGIN"][1].to_double();
@@ -926,10 +925,8 @@ void OEProp::compute()
 
 void OEProp::compute_multipoles(int order, bool transition)
 {
-    typedef MultipolePropCalc::MultipoleOutputType OutType;
-    MultipolePropCalc::MultipoleOutputType_ptr out = mpc_.compute_multipoles(order, transition, true, print_ > 4);
-    MultipolePropCalc::MultipoleOutputType& mpoles = *out;
-    for (OutType::iterator it = mpoles.begin(); it != mpoles.end(); ++it) {
+    MultipolePropCalc::MultipoleOutputType mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
+    for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
         std::string name;
         double total_mpole = 0.0;
         // unpack the multipole, which is: name, nuc, elec, total, ignore nuc and elec:
@@ -942,10 +939,9 @@ void OEProp::compute_multipoles(int order, bool transition)
     }
 }
 
-MultipolePropCalc::MultipoleOutputType_ptr MultipolePropCalc::compute_multipoles(int order, bool transition,
-                                                                                 bool print_output, bool verbose) {
-    MultipolePropCalc::MultipoleOutputType_ptr mot_ptr = std::make_shared<MultipolePropCalc::MultipoleOutputType>();
-    MultipolePropCalc::MultipoleOutputType& mot = *mot_ptr;
+MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int order, bool transition,
+                                                                             bool print_output, bool verbose) {
+    MultipolePropCalc::MultipoleOutputType mot = std::make_shared<MultipolePropCalc::MultipoleOutputTypeBase>();
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     SharedMatrix Da;
@@ -1021,7 +1017,7 @@ MultipolePropCalc::MultipoleOutputType_ptr MultipolePropCalc::compute_multipoles
                 outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", name.c_str(), elec, nuc, tot);
             }
             std::string upper_name = to_upper_copy(name);
-            mot.push_back(std::make_tuple(upper_name, nuc, elec, tot));
+            mot->push_back(std::make_tuple(upper_name, nuc, elec, tot));
             ++address;
         }
         if (print_output) {
@@ -1033,7 +1029,7 @@ MultipolePropCalc::MultipoleOutputType_ptr MultipolePropCalc::compute_multipoles
         outfile->Printf(" --------------------------------------------------------------------------------\n");
     }
 
-    return mot_ptr;
+    return mot;
 }
 
 
@@ -1148,8 +1144,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
     }
 
     int number_of_grid_points = input_grid->rowdim();
-    SharedVector output_ptr = std::make_shared<Vector>(number_of_grid_points);
-    Vector& output = *output_ptr;
+    SharedVector output = std::make_shared<Vector>(number_of_grid_points);
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
@@ -1181,9 +1176,9 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
             if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
         }
         double Vtot = Velec + Vnuc;
-        output[i] = Vtot;
+        (*output)[i] = Vtot;
     }
-    return output_ptr;
+    return output;
 }
 
 void OEProp::compute_field_over_grid() { epc_.compute_field_over_grid(true); }
@@ -1410,26 +1405,25 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
 }
 
 void OEProp::compute_quadrupole(bool transition) {
-    SharedMatrix quadrupole_ptr = mpc_.compute_quadrupole(transition, true, print_ > 4);
-    Matrix& quadrupole = *quadrupole_ptr;
+    SharedMatrix quadrupole = mpc_.compute_quadrupole(transition, true, print_ > 4);
     std::stringstream s;
     s << title_ << " QUADRUPOLE XX";
-    Process::environment.globals[s.str()] = quadrupole.get(0, 0);
+    Process::environment.globals[s.str()] = quadrupole->get(0, 0);
     s.str(std::string());
     s << title_ << " QUADRUPOLE YY";
-    Process::environment.globals[s.str()] = quadrupole.get(1, 1);
+    Process::environment.globals[s.str()] = quadrupole->get(1, 1);
     s.str(std::string());
     s << title_ << " QUADRUPOLE ZZ";
-    Process::environment.globals[s.str()] = quadrupole.get(2, 2);
+    Process::environment.globals[s.str()] = quadrupole->get(2, 2);
     s.str(std::string());
     s << title_ << " QUADRUPOLE XY";
-    Process::environment.globals[s.str()] = quadrupole.get(0, 1);
+    Process::environment.globals[s.str()] = quadrupole->get(0, 1);
     s.str(std::string());
     s << title_ << " QUADRUPOLE XZ";
-    Process::environment.globals[s.str()] = quadrupole.get(0, 2);
+    Process::environment.globals[s.str()] = quadrupole->get(0, 2);
     s.str(std::string());
     s << title_ << " QUADRUPOLE YZ";
-    Process::environment.globals[s.str()] = quadrupole.get(1, 2);
+    Process::environment.globals[s.str()] = quadrupole->get(1, 2);
 }
 
 SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_output, bool verbose) {
@@ -1521,19 +1515,19 @@ SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_o
     double yz = qe[4] * dfac;
 
     auto output = std::make_shared<Matrix>(3, 3);
-    Matrix& outmat = *output;
-    outmat.set(0, 0, xx);
-    outmat.set(1, 1, yy);
-    outmat.set(2, 2, zz);
 
-    outmat.set(0, 1, xy);
-    outmat.set(1, 0, xy);
+    output->set(0, 0, xx);
+    output->set(1, 1, yy);
+    output->set(2, 2, zz);
 
-    outmat.set(1, 2, yz);
-    outmat.set(2, 1, yz);
+    output->set(0, 1, xy);
+    output->set(1, 0, xy);
 
-    outmat.set(0, 2, xz);
-    outmat.set(2, 0, xz);
+    output->set(1, 2, yz);
+    output->set(2, 1, yz);
+
+    output->set(0, 2, xz);
+    output->set(2, 0, xz);
 
     return output;
 }
@@ -1703,8 +1697,8 @@ PopulationAnalysisCalc::~PopulationAnalysisCalc() {}
 
 void OEProp::compute_mulliken_charges()
 {
-    PAC::SharedStdVector Qa_ptr, Qb_ptr, apcs;
-    std::tie(Qa_ptr, Qb_ptr, apcs) = pac_.compute_mulliken_charges(true);
+    PAC::SharedStdVector Qa, Qb, apcs;
+    std::tie(Qa, Qb, apcs) = pac_.compute_mulliken_charges(true);
     wfn_->set_atomic_point_charges(apcs);
 
     auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, apcs->size());
@@ -1721,16 +1715,14 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     }
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    auto Qa_ptr = std::make_shared<std::vector<double>>(mol->natom());
-    auto Qb_ptr = std::make_shared<std::vector<double>>(mol->natom());
-    std::vector<double>& Qa = *Qa_ptr;
-    std::vector<double>& Qb = *Qb_ptr;
+    auto Qa = std::make_shared<std::vector<double>>(mol->natom());
+    auto Qb = std::make_shared<std::vector<double>>(mol->natom());
 
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
-    double* PSa = new double[basisset_->nbf()];
+    std::vector<double> PSa(basisset_->nbf());
     double suma = 0.0;
 
-    double* PSb = new double[basisset_->nbf()];
+    std::vector<double> PSb(basisset_->nbf());
     double sumb = 0.0;
 
     SharedMatrix Da;
@@ -1767,8 +1759,8 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
         int shell = basisset_->function_to_shell(mu);
         int A = basisset_->shell_to_center(shell);
 
-        Qa[A] += PSa[mu];
-        Qb[A] += PSb[mu];
+        (*Qa)[A] += PSa[mu];
+        (*Qb)[A] += PSb[mu];
 
         suma += PSa[mu];
         sumb += PSb[mu];
@@ -1780,12 +1772,12 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
-        double Qs = Qa[A] - Qb[A];
-        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        double Qs = (*Qa)[A] - (*Qb)[A];
+        double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A]=Qt;
         if (print_output) {
-            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), Qa[A], Qb[A],
-                            Qs, Qt);
+            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
+                            (*Qb)[A], Qs, Qt);
         }
         nuc += (double) mol->Z(A);
    }
@@ -1795,18 +1787,14 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
                        nuc - suma - sumb);
     }
 
-//    Free memory
-    delete[] PSa;
-    delete[] PSb;
-
     if (print_output) outfile->Printf("\n");
 
-    return std::make_tuple(Qa_ptr, Qb_ptr, apcs);
+    return std::make_tuple(Qa, Qb, apcs);
 }
 void OEProp::compute_lowdin_charges()
 {
-    PAC::SharedStdVector Qa_ptr, Qb_ptr, apcs;
-    std::tie(Qa_ptr, Qb_ptr, apcs) = pac_.compute_lowdin_charges(true);
+    PAC::SharedStdVector Qa, Qb, apcs;
+    std::tie(Qa, Qb, apcs) = pac_.compute_lowdin_charges(true);
     wfn_->set_atomic_point_charges(apcs);
 
     auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, apcs->size());
@@ -1823,10 +1811,8 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     }
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    auto Qa_ptr = std::make_shared<std::vector<double>>(mol->natom());
-    auto Qb_ptr = std::make_shared<std::vector<double>>(mol->natom());
-    std::vector<double>& Qa = *Qa_ptr;
-    std::vector<double>& Qb = *Qb_ptr;
+    auto Qa = std::make_shared<std::vector<double>>(mol->natom());
+    auto Qb = std::make_shared<std::vector<double>>(mol->natom());
 
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
 
@@ -1874,8 +1860,8 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
         int shell = basisset_->function_to_shell(mu);
         int A = basisset_->shell_to_center(shell);
 
-        Qa[A] += SDSa->get(0,mu,mu);
-        Qb[A] += SDSb->get(0,mu,mu);
+        (*Qa)[A] += SDSa->get(0, mu, mu);
+        (*Qb)[A] += SDSb->get(0, mu, mu);
 
         suma += SDSa->get(0,mu,mu);
         sumb += SDSb->get(0,mu,mu);
@@ -1888,12 +1874,12 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
-        double Qs = Qa[A] - Qb[A];
-        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        double Qs = (*Qa)[A] - (*Qb)[A];
+        double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A]=Qt;
         if (print_output) {
-            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), Qa[A], Qb[A],
-                            Qs, Qt);
+            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
+                            (*Qb)[A], Qs, Qt);
         }
         nuc += (double) mol->Z(A);
     }
@@ -1902,7 +1888,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
                         nuc - suma - sumb);
     }
 
-    return std::make_tuple(Qa_ptr, Qb_ptr, apcs);
+    return std::make_tuple(Qa, Qb, apcs);
 }
 void OEProp::compute_mayer_indices()
 {
@@ -2152,12 +2138,12 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
 }
 
 void OEProp::compute_no_occupations() {
-    auto metrics_ptr = pac_.compute_no_occupations(max_noon_, true);
-    wfn_->set_no_occupations(*metrics_ptr);
+    auto metrics = pac_.compute_no_occupations(max_noon_, true);
+    wfn_->set_no_occupations(*metrics);
 }
 std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> PopulationAnalysisCalc::compute_no_occupations(
     int max_noon, bool print_output) {
-    std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> output_metrics_ptr =
+    std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> metrics =
         std::make_shared<std::vector<std::vector<std::tuple<double, int, int>>>>();
     std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
@@ -2166,7 +2152,6 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
     }
 
     // Terminally, it will be [metric_a , metric_b, metric] or [metric] depending on same_dens
-    std::vector<std::vector<std::tuple<double, int, int>>>& metrics = *output_metrics_ptr;
 
     if (!same_dens_) {
         SharedVector Oa;
@@ -2188,7 +2173,7 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
             }
         }
 
-        metrics.push_back(metric_a);
+        metrics->push_back(metric_a);
 
         std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double,int,int> >());
         int offset_a = wfn_->nalpha();
@@ -2220,7 +2205,7 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
             }
         }
 
-        metrics.push_back(metric_b);
+        metrics->push_back(metric_b);
 
         std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double,int,int> >());
 
@@ -2257,7 +2242,7 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
         }
     }
 
-    metrics.push_back(metric);
+    metrics->push_back(metric);
 
     std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
 
@@ -2280,7 +2265,7 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
         }
         outfile->Printf("\n");
     }
-    return output_metrics_ptr;
+    return metrics;
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 
 }
