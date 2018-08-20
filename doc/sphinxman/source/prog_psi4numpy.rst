@@ -26,53 +26,15 @@
 .. # @END LICENSE
 .. #
 
-.. Psithon documentation master file, created by
-   sphinx-quickstart on Sun Feb 12 04:25:25 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _`sec:prog_psi4numpy`:
 
-==========================================
-|PSIfour|\ : Open-Source Quantum Chemistry
-==========================================
+================================================
+Psi4NumPy
+================================================
 
-.. toctree::
-   :maxdepth: 2
-   
-   introduction
-   external
-   index_tutorials
-   psithoninput
-   methods
-   interfacing
-   psithonfunc
-   customizing
+Rapid initial development using Psi4NumPy
+-----------------------------------------
 
-.. toctree::
-   :maxdepth: 3
+Discuss what Psi4NumPy is, recommend it as a first step, point to repo,
+mention paper
 
-   appendices
-
-===================
-Programmers' Manual
-===================
-
-.. toctree::
-   :maxdepth: 2
-
-   prog_intro
-   prog_newcode
-   prog_corelibs
-   add_tests
-   prog_debug_profile
-   documentation
-   psipep
-   manage_index
-   psi4api
-
-* Indices
-
- - :ref:`genindex`
- - :ref:`modindex`
- - :ref:`search`
-
-.. comment  autodoc_available_plugins

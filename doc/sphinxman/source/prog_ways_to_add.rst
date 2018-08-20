@@ -26,53 +26,24 @@
 .. # @END LICENSE
 .. #
 
-.. Psithon documentation master file, created by
-   sphinx-quickstart on Sun Feb 12 04:25:25 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _`sec:prog_ways_to_add`:
 
-==========================================
-|PSIfour|\ : Open-Source Quantum Chemistry
-==========================================
+=====================================================
+Ways to Add Code: Psi4NumPy, Plugins, Full Integration 
+=====================================================
 
-.. toctree::
-   :maxdepth: 2
-   
-   introduction
-   external
-   index_tutorials
-   psithoninput
-   methods
-   interfacing
-   psithonfunc
-   customizing
+Easier and more rapid development
+---------------------------------
 
-.. toctree::
-   :maxdepth: 3
+Fully-featured electronic structure programs are large and complex.
+However, the Psi4 ecosystem provides a path for easier and more
+rapid development of new features.
 
-   appendices
+Overview of what Psi4NumPy and Plugins are.  Suggest that Psi4NumPy
+might be the easiest and most rapid way to initially test new code.
+Then the code could go to a Plugin, which could be subseqently
+integrated fully into Psi4, or stay as a Plugin.
 
-===================
-Programmers' Manual
-===================
+There is a separate section that more fully explains plugins.
 
-.. toctree::
-   :maxdepth: 2
 
-   prog_intro
-   prog_newcode
-   prog_corelibs
-   add_tests
-   prog_debug_profile
-   documentation
-   psipep
-   manage_index
-   psi4api
-
-* Indices
-
- - :ref:`genindex`
- - :ref:`modindex`
- - :ref:`search`
-
-.. comment  autodoc_available_plugins
