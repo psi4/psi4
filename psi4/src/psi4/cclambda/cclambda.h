@@ -48,9 +48,9 @@ public:
     double compute_energy();
 
     /// Returns the L1 amplitudes
-    virtual SharedMatrix L1() const;
+    virtual SharedMatrix L1();
     /// Returns the L2 amplitudes
-    virtual SharedMatrix L2() const;
+    virtual SharedMatrix L2();
     virtual void set_L1(SharedMatrix& L1_new);
     virtual void set_L2(SharedMatrix& L2_new);
 

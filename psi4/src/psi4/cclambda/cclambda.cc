@@ -122,8 +122,6 @@ double CCLambdaWavefunction::compute_energy()
     energy_ = 0.0;
     int done=0, i, root_L_irr;
     int **cachelist, *cachefiles;
-    dpdfile2 l1;
-    dpdbuf4 l2;
 
     init_io();
     title();
@@ -281,16 +279,6 @@ double CCLambdaWavefunction::compute_energy()
           }
           Lsave_index(pL_params[i]); /* save Ls with indices in LAMPS */
           Lamp_write(pL_params[i]); /* write out largest  Ls */
-          //TODO maybe also for all params.nstates
-          global_dpd_->file2_init(&l1, PSIF_CC_LAMBDA, pL_params[0].irrep, 0, 1, "LIA");
-          SharedMatrix new_l1 = SharedMatrix(new Matrix(&l1));
-          set_L1(new_l1);
-          global_dpd_->file2_close(&l1);
-
-          global_dpd_->buf4_init(&l2, PSIF_CC_LAMBDA, pL_params[0].irrep, 0, 5, 0, 5, 0, "LIjAb");
-          SharedMatrix new_l2 = SharedMatrix(new Matrix(&l2));
-          set_L2(new_l2);
-          global_dpd_->buf4_close(&l2);
 
       /* sort_amps(); to be done by later functions */
           outfile->Printf( "\n\tIterations converged.\n");
@@ -593,11 +581,21 @@ void zeta_norm(struct L_Params L_params) {
   return;
 }
 
-SharedMatrix CCLambdaWavefunction::L1() const {
+SharedMatrix CCLambdaWavefunction::L1() {
+    dpdfile2 l1;
+    global_dpd_->file2_init(&l1, PSIF_CC_LAMBDA, pL_params[0].irrep, 0, 1, "LIA");
+    SharedMatrix new_l1 = SharedMatrix(new Matrix(&l1));
+    L1_ = new_l1;
+    global_dpd_->file2_close(&l1);
     return L1_;
 }
 
-SharedMatrix CCLambdaWavefunction::L2() const {
+SharedMatrix CCLambdaWavefunction::L2() {
+    dpdbuf4 l2;
+    global_dpd_->buf4_init(&l2, PSIF_CC_LAMBDA, pL_params[0].irrep, 0, 5, 0, 5, 0, "LIjAb");
+    SharedMatrix new_l2 = SharedMatrix(new Matrix(&l2));
+    L2_ = new_l2;
+    global_dpd_->buf4_close(&l2);
     return L2_;
 }
 

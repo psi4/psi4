@@ -96,8 +96,6 @@ double CCEnergyWavefunction::compute_energy()
     double **geom, *zvals, value;
     FILE *efile;
     int **cachelist, *cachefiles;
-    dpdfile2 t1;
-    dpdbuf4 t2;
     double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab, tval;
 
     moinfo_.iter=0;
@@ -329,16 +327,6 @@ double CCEnergyWavefunction::compute_energy()
 
             outfile->Printf( "\n");
             amp_write();
-
-            // Get T amplitudes
-            global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-            SharedMatrix new_t1 = SharedMatrix(new Matrix(&t1));
-            set_T1(new_t1);
-            global_dpd_->file2_close(&t1);
-            global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-            SharedMatrix new_t2 = SharedMatrix(new Matrix(&t2));
-            set_T2(new_t2);
-            global_dpd_->buf4_close(&t2);
 
             if (params_.analyze != 0) analyze();
             break;
@@ -663,11 +651,21 @@ void CCEnergyWavefunction::one_step(void) {
     return;
 }
 
-SharedMatrix CCEnergyWavefunction::T1() const {
+SharedMatrix CCEnergyWavefunction::T1() {
+    dpdfile2 t1;
+    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    SharedMatrix new_t1 = SharedMatrix(new Matrix(&t1));
+    T1_ = new_t1;
+    global_dpd_->file2_close(&t1);
     return T1_;
 }
 
-SharedMatrix CCEnergyWavefunction::T2() const {
+SharedMatrix CCEnergyWavefunction::T2() {
+    dpdbuf4 t2;
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    SharedMatrix new_t2 = SharedMatrix(new Matrix(&t2));
+    T2_ = new_t2;
+    global_dpd_->buf4_close(&t2);
     return T2_;
 }
 
