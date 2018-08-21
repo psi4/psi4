@@ -1255,9 +1255,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.IO.change_file_namespace(180, guesspace, namespace)
         core.IO.set_default_namespace(namespace)
 
-        # Set to read and project, and reset bases to final ones
         optstash2.restore()
-        core.set_local_option('SCF', 'GUESS', 'READ')
 
         # Print the banner for the standard operation
         core.print_out('\n')
