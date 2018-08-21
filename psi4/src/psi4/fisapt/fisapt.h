@@ -33,7 +33,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/lib3index/dfhelper.h"
+//#include "psi4/lib3index/dfhelper.h"
 
 
 #include <map>
@@ -43,6 +43,7 @@ namespace psi {
 
 class JK;
 class BasisSet;
+class DFHelper;
 
 namespace fisapt {
 
@@ -79,7 +80,7 @@ protected:
     std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
 
     // DFHelper object
-    std::shared_ptr<DFHelper::DFHelper> dfh_;
+    std::shared_ptr<DFHelper> dfh_;
 
     /// Helper to drop a matrix to filepath/A->name().dat
     /// Helper to drop a vector to filepath/A->name().dat
