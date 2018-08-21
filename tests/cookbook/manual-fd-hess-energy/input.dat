@@ -23,7 +23,7 @@ h2o.fix_orientation(True)
 
 # Displace the h2o molecule to get all displacements for hessian by energies.
 # Set -1 to 1 to get A1 frequencies, to 4 for B2...
-displacements = driver_findif._geom_generator(h2o, -1, "2_0")
+displacements = psi4.driver_findif.hessian_from_energy_geometries(h2o, -1)
 
 ndisp = len(displacements)
 
@@ -40,7 +40,7 @@ for n, displacement in enumerate(displacements):
   energies.append(E)
 
 # Compute the hessian of the h2o molecule from the energies, for all symmetry blocks
-H = driver_findif.comp_hess_from_energy(h2o, energies, -1)
+H = driver_findif.compute_hessian_from_energy(h2o, energies, -1)
 
 wfn = core.Wavefunction.build(h2o, core.get_global_option('BASIS'))
 wfn.set_hessian(core.Matrix.from_array(H))

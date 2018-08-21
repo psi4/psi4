@@ -4,7 +4,7 @@ from psi4.driver.qcdb import molecule
 from psi4 import core
 import numpy as np
 #import scipy.linalg as la
-from psi4.driver.p4util import block_diag
+from psi4.driver.p4util import block_diagonal_array
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -107,15 +107,17 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         core.print_out("    Translations projected? {:d}. Rotations projected? {:d}.\n".format(t_project, r_project))
 
     # TODO: Replace with a generator from a stencil to a set of points.
+    # Diagonal displacements differ between the totally symmetric irrep, compared to all others.
+    # Off-diagonal displacements are the same for both.
     pts_dict = {
         3: {
-            "sym": ((-1, ), (1, )),
-            "asym": ((-1, ), ),
+            "sym_irr": ((-1, ), (1, )),
+            "asym_irr": ((-1, ), ),
             "off": ((1, 1), (-1, -1))
         },
         5: {
-            "sym": ((-2, ), (-1, ), (1, ), (2, )),
-            "asym": ((-2, ), (-1, )),
+            "sym_irr": ((-2, ), (-1, ), (1, ), (2, )),
+            "asym_irr": ((-2, ), (-1, )),
             "off": ((-1, -2), (-2, -1), (-1, -1), (1, -1), (-1, 1), (1, 1), (2, 1), (1, 2))
         }
     }
@@ -159,7 +161,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
     disps = pts_dict[num_pts] # We previously validated num_pts in pts_dict.
 
     for irrep, indices in enumerate(salc_indices_pi):
-        n_disp = len(indices) * len(disps["asym" if irrep != 0 else "sym"])
+        n_disp = len(indices) * len(disps["asym_irr" if irrep != 0 else "sym_irr"])
         if mode == "2_0":
             # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
             n_disp += len(indices) * (len(indices) - 1) // 2 * len(disps["off"])
@@ -193,8 +195,9 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
 def _geom_generator(mol, freq_irrep_only, mode):
     """
     Generate geometries for the specified molecule and derivative levels.
-    You probably want to use the geoms_grad_from_energy, fd_geoms_freq_2_0,
-    or fd_geoms_freq_2_1 convenience functions. 
+    You probably want to use the gradient_from_energy_geometries,
+    hessian_from_energy_geometries, or hessian_form_gradient_geometries
+    convenience functions.
 
     Parameters
     ----------
@@ -260,7 +263,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         for index in active_indices:
             # Displace along the diagonal.
             # Remember that the totally symmetric irrep has special displacements.
-            for val in data["disps"]["sym" if h == 0 else "asym"]:
+            for val in data["disps"]["sym_irr" if h == 0 else "asym_irr"]:
                 append_geoms((index, ), val)
 
         # Hessian from energies? We have off-diagonal displacements to worry about.
@@ -283,7 +286,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
     return disp_geoms
 
 
-def comp_grad_from_energy(mol, E):
+def compute_gradient_from_energy(mol, E):
     """Compute the gradient by finite difference of energies.
 
     Parameters
@@ -427,7 +430,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     # We have the Hessian in each irrep! The final task is to perform coordinate transforms.
     #H = la.block_diag(*H_pi)
-    H = block_diag(*H_blocks)
+    H = block_diagonal_array(*H_blocks)
     B = np.vstack(B_blocks)
 
     if print_lvl >= 3:
@@ -455,7 +458,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     return Hx
 
 
-def comp_hess_from_grad(mol, G, freq_irrep_only):
+def compute_hessian_from_gradient(mol, G, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
@@ -571,7 +574,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
         gradients_pi.append(gradients)
 
     # Massweight all gradients.
-    # Remember, the atom currently corresponds to our 0 index, hence these transpose tricks.
+    # Remember, the atom currently corresponds to our 0 axis, hence these transpose tricks.
     massweighter = np.asarray([mol.mass(a) for a in range(data["n_atom"])])**(-0.5)
     gradients_pi = [[(grad.T * massweighter).T for grad in gradients] for gradients in gradients_pi]
 
@@ -627,7 +630,7 @@ def comp_hess_from_grad(mol, G, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def comp_hess_from_energy(mol, E, freq_irrep_only):
+def compute_hessian_from_energy(mol, E, freq_irrep_only):
     """Compute the Hessian by finite difference of energies.
 
     Parameters
@@ -733,7 +736,7 @@ def comp_hess_from_energy(mol, E, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def geoms_grad_from_energy(molecule):
+def gradient_from_energy_geometries(molecule):
     """
     Generate geometries for a gradient by finite difference of energies.
     
@@ -755,7 +758,7 @@ def geoms_grad_from_energy(molecule):
     return _geom_generator(molecule, -1, "1_0")
 
 
-def geoms_hess_from_grad(molecule, irrep):
+def hessian_from_gradient_geometries(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
     
@@ -775,7 +778,7 @@ def geoms_hess_from_grad(molecule, irrep):
     return _geom_generator(molecule, irrep, "2_1")
 
 
-def geoms_hess_from_energies(molecule, irrep):
+def hessian_from_energy_geometries(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
     

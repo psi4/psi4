@@ -295,11 +295,11 @@ class EmpericalDispersion(object):
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
         gradients = []
-        for geom in driver_findif.geoms_hess_from_grad(molecule, -1):
+        for geom in driver_findif.hessian_from_gradient_geometries(molecule, -1):
             molclone.set_geometry(geom)
             molclone.update_geometry()
             gradients.append(self.compute_gradient(molclone))
 
-        H = driver_findif.comp_hess_from_grad(molecule, gradients, -1)
+        H = driver_findif.compute_hessian_from_gradient(molecule, gradients, -1)
         optstash.restore()
         return core.Matrix.from_array(H)

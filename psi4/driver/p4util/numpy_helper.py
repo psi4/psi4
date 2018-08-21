@@ -486,7 +486,8 @@ def _irrep_access(self, *args, **kwargs):
     """
     Warns user when iterating/accessing an irreped object.
     """
-    raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple irreps. Please use .np or .nph explicitly.")
+    raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple"
+                          "irreps. Please use .np or .nph explicitly.")
 
 # Matrix attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
@@ -589,9 +590,10 @@ core.Dimension.to_tuple = _dimension_to_tuple
 core.Dimension.__iter__ = _dimension_iter
 
 # General functions for NumPy array manipulation
-def block_diag(*args):
+def block_diagonal_array(*args):
     """
     Convert square NumPy array to a single block diagonal array.
+    Mimic of SciPy's block_diag.
     """
 
     # Validate the input matrices.
