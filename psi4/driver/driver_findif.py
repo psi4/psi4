@@ -1,9 +1,35 @@
-from __future__ import division
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2018 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This file is part of Psi4.
+#
+# Psi4 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# Psi4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with Psi4; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
+import numpy as np
+from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.qcdb import molecule
-from psi4 import core
-import numpy as np
-#import scipy.linalg as la
 from psi4.driver.p4util import block_diagonal_array
 
 # CONVENTIONS:
@@ -102,8 +128,8 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         core.print_out("    Number of atoms is {:d}.\n".format(n_atom))
         if method_allowed_irreps != 0x1:
             core.print_out("    Number of irreps is {:d}.\n".format(n_irrep))
-        core.print_out("    Number of {!s}SALCs is {:d}.\n".format("" if method_allowed_irreps != 0x1 else "symmetric ",
-                                                                 n_salc))
+        core.print_out("    Number of {!s}SALCs is {:d}.\n".format("" if method_allowed_irreps != 0x1 else
+                                                                   "symmetric ", n_salc))
         core.print_out("    Translations projected? {:d}. Rotations projected? {:d}.\n".format(t_project, r_project))
 
     # TODO: Replace with a generator from a stencil to a set of points.
@@ -158,7 +184,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
                 salc_indices_pi[h].clear()
 
     n_disp_pi = []
-    disps = pts_dict[num_pts] # We previously validated num_pts in pts_dict.
+    disps = pts_dict[num_pts]  # We previously validated num_pts in pts_dict.
 
     for irrep, indices in enumerate(salc_indices_pi):
         n_disp = len(indices) * len(disps["asym_irr" if irrep != 0 else "sym_irr"])
@@ -299,8 +325,8 @@ def compute_gradient_from_energy(mol, E):
     Returns
     -------
     gradient : np.array
-        The gradient in Cartesians, as a matrix with dimensions
-        number-of-atoms by 3. """
+        (nat, 3) Cartesian gradient [Eh/a0].
+    """
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
@@ -429,7 +455,6 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     """
 
     # We have the Hessian in each irrep! The final task is to perform coordinate transforms.
-    #H = la.block_diag(*H_pi)
     H = block_diagonal_array(*H_blocks)
     B = np.vstack(B_blocks)
 
@@ -474,8 +499,8 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
     Returns
     -------
     hessian : np.array
-        The hessian in Cartesians, as a matrix with dimensions of
-        3*number-of-atoms by 3*number-of-atoms. """
+        (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
+    """
 
     def init_string(data):
         return ("  Computing second-derivative from gradients using projected, \n"
@@ -551,7 +576,7 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
             core.print_out("    Operation {} takes plus displacements of irrep {} to minus ones.\n".format(
                 group_op + 1, gamma.symbol()))
 
-        so = np.array(ct.symm_operation(group_op).matrix())
+        sym_op = np.array(ct.symm_operation(group_op).matrix())
         gradients = []
 
         def recursive_gradients(n):
@@ -561,7 +586,7 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
             new_grad = np.zeros((data["n_atom"], 3))
             for atom, image in enumerate(atom_map):
                 atom2 = image[group_op]
-                new_grad[atom2] = np.einsum("xy,y->x", so, gradients[-1][atom])
+                new_grad[atom2] = np.einsum("xy,y->x", sym_op, gradients[-1][atom])
             if n > 1:
                 recursive_gradients(n - 1)
             gradients.append(new_grad)
@@ -646,8 +671,7 @@ def compute_hessian_from_energy(mol, E, freq_irrep_only):
     Returns
     -------
     hessian : np.array
-        The hessian in Cartesians, as a matrix with dimensions of
-        # cartesians by # cartesians.
+        (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
 
     def init_string(data):
@@ -686,7 +710,7 @@ def compute_hessian_from_energy(mol, E, freq_irrep_only):
         unused_energies = unused_energies[n_disps:]
 
         # Step One: Diagonals
-        # For asymmetric irreps, the energy at a + disp if the same as at a - disp
+        # For asymmetric irreps, the energy at a + disp is the same as at a - disp
         # We exploited this, so we only need half the displacements for asymmetrics
         disps_per_diag = (data["num_pts"] - 1) // (2 if h else 1)
         diag_disps = disps_per_diag * n_salcs

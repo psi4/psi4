@@ -32,6 +32,7 @@ from .util import filter_comments
 
 # TODO: Include gradient loading feature, analagously to hessian loading.
 
+
 def to_string(grad, handle, dtype='file11', mol=None, energy=None):
     """Writes gradient in various formats.
 
@@ -58,9 +59,14 @@ def to_string(grad, handle, dtype='file11', mol=None, energy=None):
     """
     # Validate input.
     try:
-        assert grad.ndim == 2 and grad.shape[1] == 3
-    except AssertionError:
-        raise ValidationError("gradient shape much be number of atoms * 3. Received shape: {}".format(grad.shape))
+        grad = grad.reshape(-1, 3)
+    except ValueError:
+        raise ValidationError("Number of gradient entries must be divisible by 3. Received {} entries.".format(
+            grad.size))
+
+    if mol and grad.shape[0] != mol.natom():
+        raise ValidationError("Number of gradient entries must be number of atoms * 3. Received {} entries.".format(
+            grad.size))
 
     if dtype in ['file11', 'GRD']:
         if mol is None:
@@ -73,7 +79,8 @@ def to_string(grad, handle, dtype='file11', mol=None, energy=None):
         head += "{:5d}{:20.10f}".format(mol.natom(), energy)
         for atom in range(mol.natom()):
             head += ("\n" + 4 * "{:20.10f}").format(mol.Z(atom), mol.x(atom), mol.y(atom), mol.z(atom))
-        np.savetxt(handle, grad, fmt=" " * 20 + "%20.10f%20.10f%20.10f", delimiter='', newline='\n', header=head, comments='')
+        np.savetxt(
+            handle, grad, fmt=" " * 20 + "%20.10f%20.10f%20.10f", delimiter='', newline='\n', header=head, comments='')
 
     elif dtype in ['GRD']:
         head = '{:5}{:20.10f}'.format(mol.natom(), 0)
@@ -91,4 +98,3 @@ def to_string(grad, handle, dtype='file11', mol=None, energy=None):
 
     else:
         raise ValidationError('Unknown dtype: {}'.format(dtype))
-

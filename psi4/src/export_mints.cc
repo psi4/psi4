@@ -696,15 +696,16 @@ void export_mints(py::module& m) {
     py::class_<CdSalc::Component, std::shared_ptr<CdSalc::Component>>(
         m, "SalcComponent", "Component of a Cartesian displacement SALC in the basis of atomic displacements.")
         .def_readwrite("coef", &CdSalc::Component::coef, "The coefficient of the displacement")
-        .def_readwrite("atom", &CdSalc::Component::atom, "The index of the atom being displaced")
-        .def_readwrite("xyz", &CdSalc::Component::xyz, "The direction of tthe displacement, given by x as 1, y as 2, z as 3.");
+        .def_readwrite("atom", &CdSalc::Component::atom, "The index of the atom being displaced. 0-indexed.")
+        .def_readwrite("xyz", &CdSalc::Component::xyz, "The direction of the displacement, given by x as 0, y as 1, z as 2.");
 
     py::class_<CdSalc, std::shared_ptr<CdSalc>>(
         m, "CdSalc", "Cartesian displacement SALC")
         .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
         .def("irrep_index", [](const CdSalc& salc){return static_cast<int>(salc.irrep());},
              "Return the irrep index")
-        .def("print_out", &CdSalc::print, "Print the irrep index and the coordinates of the SALC of Cartesian displacments.")
+        .def("print_out", &CdSalc::print, "Print the irrep index and the coordinates of the SALC of Cartesian displacements. \
+                                           Irrep index is 0-indexed and Cotton ordered.")
         .def("__getitem__", [](const CdSalc& salc, size_t i){return salc.component(i);})
         .def("__len__", [](const CdSalc& salc){return salc.ncomponent();})
         .def("__iter__", [](const CdSalc& salc){return py::make_iterator(salc.get_components());},
@@ -1175,10 +1176,10 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&>())
         .def("gamma", &CharacterTable::gamma, "Returns the irrep with the given index in the character table")
         .def("order", &CharacterTable::order, "Return the order of the point group")
-        .def("symm_operation", &CharacterTable::symm_operation, "Return the i'th symmetry operation");
+        .def("symm_operation", &CharacterTable::symm_operation, "Return the i'th symmetry operation. 0-indexed.");
 
     py::class_<IrreducibleRepresentation, std::shared_ptr<IrreducibleRepresentation>>(m, "IrreducibleRepresentation", "An irreducible representation of the point group")
-        .def("character", &IrreducibleRepresentation::character, "Return the character of the i'th symmetry operation for the irrep")
+        .def("character", &IrreducibleRepresentation::character, "Return the character of the i'th symmetry operation for the irrep. 0-indexed.")
         .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix&);
@@ -1235,7 +1236,7 @@ void export_mints(py::module& m) {
         .def("x", &Molecule::x, "x position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("y", &Molecule::y, "y position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("z", &Molecule::z, "z position [Bohr] of atom arg0 (0-indexed without dummies)")
-        .def("xyz", vector_by_index(&Molecule::xyz), "Return the Vector3 for atom i", py::arg("i"))
+        .def("xyz", vector_by_index(&Molecule::xyz), "Return the Vector3 for atom i (0-indexed without dummies)", py::arg("i"))
         .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
              "Nuclear charge of atom arg1 (0-indexed including dummies)")
         .def("fx", &Molecule::fx, "x position of atom arg0 (0-indexed including dummies in Bohr)")
