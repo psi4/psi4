@@ -242,7 +242,7 @@ Matrix::Matrix(dpdbuf4 *inBuf)
     : name_("None"), rowspi_(inBuf->params->nirreps), colspi_(inBuf->params->nirreps)
 {
     matrix_ = NULL;
-    symmetry_ = 0; //inBuf->my_irrep;
+    symmetry_ = inBuf->my_irrep;
     nirrep_ = inBuf->params->nirreps;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = inBuf->params->rowtot[i];
