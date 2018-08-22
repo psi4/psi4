@@ -72,7 +72,8 @@ def scf_compute_energy(self):
             try:
                 self.iterations()
             except SCFConvergenceError:
-                raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self)
+                self.finalize() 
+                raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
         core.print_out("\n  DF guess converged.\n\n")
 
         # reset the DIIS & JK objects in prep for DIRECT
@@ -355,7 +356,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
             break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
-            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self)
+            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Drms)
 
 
 def scf_finalize_energy(self):
