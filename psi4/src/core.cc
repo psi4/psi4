@@ -42,7 +42,6 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/process.h"
 
 #include "psi4/psi4-dec.h"

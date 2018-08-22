@@ -34,7 +34,6 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
@@ -97,22 +96,8 @@ void CubeProperties::print_header() {
     outfile->Printf("  ==> One Electron Grid Properties (v2.0) <==\n\n");
     grid_->print_header();
 }
-void CubeProperties::compute_properties() {
+void CubeProperties::raw_compute_properties() {
     print_header();
-
-    std::string filepath = options_.get_str("CUBEPROP_FILEPATH");
-    std::stringstream ss;
-    ss << filepath << "/"
-       << "geom.xyz";
-
-    // Is filepath a valid directory?
-    if (filesystem::path(filepath).make_absolute().is_directory() == false) {
-        printf("Filepath \"%s\" is not valid.  Please create this directory.\n", filepath.c_str());
-        outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n", filepath.c_str());
-        exit(Failure);
-    }
-
-    basisset_->molecule()->save_xyz_file(ss.str());
 
     for (size_t ind = 0; ind < options_["CUBEPROP_TASKS"].size(); ind++) {
         std::string task = options_["CUBEPROP_TASKS"][ind].to_string();

@@ -1255,9 +1255,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.IO.change_file_namespace(180, guesspace, namespace)
         core.IO.set_default_namespace(namespace)
 
-        # Set to read and project, and reset bases to final ones
         optstash2.restore()
-        core.set_local_option('SCF', 'GUESS', 'READ')
 
         # Print the banner for the standard operation
         core.print_out('\n')
@@ -2300,7 +2298,7 @@ def run_ccenergy(name, **kwargs):
         aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
                                             core.get_global_option("DF_BASIS_CC"),
                                             "RIFIT", core.get_global_option("BASIS"))
-        wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
@@ -3666,6 +3664,7 @@ def run_fisapt(name, **kwargs):
 
 
     fisapt_wfn = core.FISAPT(ref_wfn)
+    from .sapt import fisapt_proc
     fisapt_wfn.compute_energy()
 
     optstash.restore()

@@ -48,9 +48,3 @@ Epsi = {  #TEST
 
 for key in keys:  #TEST
     compare_values(Eref[key], Epsi[key], 6, key)  #TEST
-
-
-
-
-
-

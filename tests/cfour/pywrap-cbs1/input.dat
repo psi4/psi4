@@ -67,7 +67,7 @@ compare_values(-2.90394676, e_cbs, 6, '[4] MP5: minimal info')  #TEST
 compare_values(2.0, get_variable('cbs number'), 6, '[4b]')  #TEST
 clean()
 
-def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
+def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     """Note that the _2 is necessary to signal this is a fn involving 2 zeta-levels.
     Yes, this fn is just the corl_xtpl_helgaker_2 w/o error checking and printing.
 

@@ -79,10 +79,6 @@ Prop::~Prop()
 }
 void Prop::common_init()
 {
-    title_ = "";
-    print_ = 1;
-    debug_ = 0;
-    tasks_.clear();
     set_wavefunction(wfn_);
 }
 void Prop::set_wavefunction(std::shared_ptr<Wavefunction> wfn)
@@ -158,7 +154,7 @@ void Prop::set_Ca(SharedMatrix C)
 {
     Ca_so_ = C;
     if (same_orbs_) {
-        Ca_so_ = Ca_so_;
+        Cb_so_ = Ca_so_;
     }
 }
 void Prop::set_Cb(SharedMatrix C)
@@ -171,8 +167,8 @@ void Prop::set_Cb(SharedMatrix C)
 void Prop::set_Da_ao(SharedMatrix D, int symm)
 {
     Da_so_ = std::make_shared<Matrix>("Da_so", Ca_so_->rowspi(),Ca_so_->rowspi(),symm);
-
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
@@ -184,10 +180,9 @@ void Prop::set_Da_ao(SharedMatrix D, int symm)
         double** Urp = AO2USO_->pointer(h^symm);
         double** DAOp = D->pointer();
         double** DSOp = Da_so_->pointer(h);
-        C_DGEMM('N','N',nao,nsor,nao,1.0,DAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,DSOp[0],nsor);
+        C_DGEMM('N', 'N', nao, nsor, nao, 1.0, DAOp[0], nao, Urp[0], nsor, 0.0, temp_ptr, nsor);
+        C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp_ptr, nsor, 0.0, DSOp[0], nsor);
     }
-    delete[] temp;
 
     if (same_dens_) {
         Db_so_ = Da_so_;
@@ -200,7 +195,8 @@ void Prop::set_Db_ao(SharedMatrix D, int symm)
 
     Db_so_ = std::make_shared<Matrix>("Db_so", Cb_so_->rowspi(),Cb_so_->rowspi(),symm);
 
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
@@ -212,10 +208,9 @@ void Prop::set_Db_ao(SharedMatrix D, int symm)
         double** Urp = AO2USO_->pointer(h^symm);
         double** DAOp = D->pointer();
         double** DSOp = Db_so_->pointer(h);
-        C_DGEMM('N','N',nao,nsor,nao,1.0,DAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,DSOp[0],nsor);
+        C_DGEMM('N', 'N', nao, nsor, nao, 1.0, DAOp[0], nao, Urp[0], nsor, 0.0, temp_ptr, nsor);
+        C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp_ptr, nsor, 0.0, DSOp[0], nsor);
     }
-    delete[] temp;
 }
 void Prop::set_Da_so(SharedMatrix D)
 {
@@ -238,7 +233,8 @@ void Prop::set_Da_mo(SharedMatrix D)
     int symm = D->symmetry();
     int nirrep = D->nirrep();
 
-    double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
+    std::vector<double> temp(Ca_so_->max_ncol() * Ca_so_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
         int nmor = Ca_so_->colspi()[h^symm];
@@ -249,10 +245,9 @@ void Prop::set_Da_mo(SharedMatrix D)
         double** Crp = Ca_so_->pointer(h^symm);
         double** Dmop = D->pointer(h^symm);
         double** Dsop = Da_so_->pointer(h^symm);
-        C_DGEMM('N','T',nmol,nsor,nmor,1.0,Dmop[0],nmor,Crp[0],nmor,0.0,temp,nsor);
-        C_DGEMM('N','N',nsol,nsor,nmol,1.0,Clp[0],nmol,temp,nsor,0.0,Dsop[0],nsor);
+        C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp_ptr, nsor);
+        C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
-    delete[] temp;
 
     if (same_dens_) {
         Db_so_ = Da_so_;
@@ -268,7 +263,8 @@ void Prop::set_Db_mo(SharedMatrix D)
     int symm = D->symmetry();
     int nirrep = D->nirrep();
 
-    double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
+    std::vector<double> temp(Cb_so_->max_ncol() * Cb_so_->max_nrow());
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
         int nmor = Cb_so_->colspi()[h^symm];
@@ -279,25 +275,23 @@ void Prop::set_Db_mo(SharedMatrix D)
         double** Crp = Cb_so_->pointer(h^symm);
         double** Dmop = D->pointer(h^symm);
         double** Dsop = Db_so_->pointer(h^symm);
-        C_DGEMM('N','T',nmol,nsor,nmor,1.0,Dmop[0],nmor,Crp[0],nmor,0.0,temp,nsor);
-        C_DGEMM('N','N',nsol,nsor,nmol,1.0,Clp[0],nmol,temp,nsor,0.0,Dsop[0],nsor);
+        C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp_ptr, nsor);
+        C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
-    delete[] temp;
 }
-void Prop::add(const std::string& prop)
-{
-    tasks_.insert(prop);
+TaskListComputer::TaskListComputer() {
+    title_ = "";
+    print_ = 1;
+    debug_ = 0;
+    tasks_.clear();
 }
-void Prop::add(std::vector<std::string> props)
-{
+void TaskListComputer::add(const std::string& prop) { tasks_.insert(prop); }
+void TaskListComputer::add(std::vector<std::string> props) {
     for (int i = 0; i < (int)props.size(); i++) {
         tasks_.insert(props[i]);
     }
 }
-void Prop::clear()
-{
-    tasks_.clear();
-}
+void TaskListComputer::clear() { tasks_.clear(); }
 SharedVector Prop::epsilon_a()
 {
     return SharedVector(epsilon_a_->clone());
@@ -308,7 +302,8 @@ SharedVector Prop::epsilon_b()
 }
 SharedMatrix Prop::Da_ao()
 {
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr = temp.data();
     auto D = std::make_shared<Matrix>("Da (AO basis)", basisset_->nbf(), basisset_->nbf());
     int symm = Da_so_->symmetry();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
@@ -320,10 +315,9 @@ SharedMatrix Prop::Da_ao()
         double** Urp = AO2USO_->pointer(h^symm);
         double** DSOp = Da_so_->pointer(h^symm);
         double** DAOp = D->pointer();
-        C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
-        C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp_ptr, nao);
+        C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp_ptr, nao, 1.0, DAOp[0], nao);
     }
-    delete[] temp;
     return D;
 }
 SharedMatrix Prop::Db_ao()
@@ -331,7 +325,8 @@ SharedMatrix Prop::Db_ao()
     if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
+    double* temp_ptr;
     auto D = std::make_shared<Matrix>("Db (AO basis)", basisset_->nbf(), basisset_->nbf());
     int symm = Db_so_->symmetry();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
@@ -343,10 +338,9 @@ SharedMatrix Prop::Db_ao()
         double** Urp = AO2USO_->pointer(h^symm);
         double** DSOp = Db_so_->pointer(h^symm);
         double** DAOp = D->pointer();
-        C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
-        C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp_ptr, nao);
+        C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp_ptr, nao, 1.0, DAOp[0], nao);
     }
-    delete[] temp;
     return D;
 }
 SharedMatrix Prop::Ca_so()
@@ -382,8 +376,10 @@ SharedMatrix Prop::Da_mo()
 
     SharedMatrix S = overlap_so();
 
-    double* SC = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
-    double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
+    std::vector<double> SC(Ca_so_->max_ncol() * Ca_so_->max_nrow());
+    std::vector<double> temp(Ca_so_->max_ncol() * Ca_so_->max_nrow());
+    double* SC_ptr = SC.data();
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
         int nmor = Ca_so_->colspi()[h^symm];
@@ -397,13 +393,11 @@ SharedMatrix Prop::Da_mo()
         double** Dmop = D->pointer(h);
         double** Dsop = Da_so_->pointer(h);
 
-        C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
-        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
-        C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
-        C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
+        C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Dsop[0], nsor, SC_ptr, nmor, 0.0, temp_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC_ptr, nmol);
+        C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC_ptr, nmol, temp_ptr, nmor, 0.0, Dmop[0], nmor);
     }
-    delete[] temp;
-    delete[] SC;
     return D;
 }
 SharedMatrix Prop::Db_mo()
@@ -418,8 +412,11 @@ SharedMatrix Prop::Db_mo()
 
     SharedMatrix S = overlap_so();
 
-    double* SC = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
-    double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
+    std::vector<double> SC(Cb_so_->max_ncol() * Cb_so_->max_nrow());
+    std::vector<double> temp(Cb_so_->max_ncol() * Cb_so_->max_nrow());
+
+    double* SC_ptr = SC.data();
+    double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
         int nmor = Cb_so_->colspi()[h^symm];
@@ -433,13 +430,11 @@ SharedMatrix Prop::Db_mo()
         double** Dmop = D->pointer(h);
         double** Dsop = Db_so_->pointer(h);
 
-        C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
-        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
-        C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
-        C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
+        C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Dsop[0], nsor, SC_ptr, nmor, 0.0, temp_ptr, nmor);
+        C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC_ptr, nmol);
+        C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC_ptr, nmol, temp_ptr, nmor, 0.0, Dmop[0], nmor);
     }
-    delete[] temp;
-    delete[] SC;
     return D;
 }
 SharedMatrix Prop::Dt_so(bool total)
@@ -734,17 +729,10 @@ SharedMatrix Prop::overlap_so()
     return S;
 }
 
-OEProp::OEProp(std::shared_ptr<Wavefunction> wfn) : Prop(wfn)
-{
-    common_init();
-}
-OEProp::~OEProp()
-{
-}
+std::string Prop::Da_name() const { return Da_so_->name(); }
 
-Vector3 OEProp::compute_center(const double *property) const
-{
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+Vector3 OEProp::compute_center(const double* property) const {
+    std::shared_ptr<Molecule> mol = wfn_->molecule();
     int natoms = mol->natom();
     double x = 0.0;
     double y = 0.0;
@@ -764,56 +752,31 @@ Vector3 OEProp::compute_center(const double *property) const
     return Vector3(x, y, z);
 }
 
+OEProp::OEProp(std::shared_ptr<Wavefunction> wfn)
+    : wfn_(wfn), mpc_(wfn, get_origin_from_environment()), pac_(wfn), epc_(wfn) {
+    if (wfn_.get() == nullptr) throw PSIEXCEPTION("Prop: Wavefunction is null");
+    common_init();
+}
+OEProp::~OEProp() {}
+
 void OEProp::common_init()
 {
-    // See if the user specified the origin
     Options &options = Process::environment.options;
-
     print_ = options.get_int("PRINT");
 
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
-    int natoms = mol->natom();
-    if(options["PROPERTIES_ORIGIN"].has_changed()){
-        int size = options["PROPERTIES_ORIGIN"].size();
-
-        if(size == 1){
-            double *property = new double[natoms];
-            std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
-            if(str == "COM"){
-                for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->mass(atom);
-            }else if(str == "NUCLEAR_CHARGE"){
-                for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->charge(atom);
-            }else{
-                throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
-            }
-            origin_ = compute_center(property);
-            delete [] property;
-        }else if(size == 3){
-            double x = options["PROPERTIES_ORIGIN"][0].to_double();
-            double y = options["PROPERTIES_ORIGIN"][1].to_double();
-            double z = options["PROPERTIES_ORIGIN"][2].to_double();
-            bool convert = mol->units() == Molecule::Angstrom;
-            if(convert){
-                x /= pc_bohr2angstroms;
-                y /= pc_bohr2angstroms;
-                z /= pc_bohr2angstroms;
-            }
-            origin_ = Vector3(x, y, z);
-        }else{
-            throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
-        }
-    }
-    outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n",
-            origin_[0], origin_[1], origin_[2]);
-
     // Determine number of NOONs to print; default is 3
-    if(options.get_str("PRINT_NOONS") == "ALL") max_noon_ = wfn_->nmo();
-    else max_noon_ = to_integer(options.get_str("PRINT_NOONS"));
+    if (options.get_str("PRINT_NOONS") == "ALL")
+        max_noon_ = wfn_->nmo();
+    else
+        max_noon_ = to_integer(options.get_str("PRINT_NOONS"));
+}
+
+MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const& origin)
+    : Prop(wfn), origin_(origin) {
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     /*
-     * Now check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
+     * Check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
      */
     CharacterTable ct = mol->point_group()->char_table();
     int nirrep = ct.nirrep();
@@ -831,18 +794,63 @@ void OEProp::common_init()
             // rr(xyz, xyz) tells us how the orbitals transform in this
             // symmetry operation, then we multiply by the character in
             // the irrep
-            for (int xyz = 0; xyz < 3; ++xyz)
-                t[xyz] += origin_[xyz]*rr(xyz, xyz) * gamma.character(G) / nirrep;
+            for (int xyz = 0; xyz < 3; ++xyz) t[xyz] += origin_[xyz] * rr(xyz, xyz) * gamma.character(G) / nirrep;
         }
 
         for (int xyz = 0; xyz < 3; ++xyz) {
-            if(std::fabs(t[xyz]) > 1.0E-8){
-                outfile->Printf( "The origin chosen breaks symmetry; multipoles will be computed without symmetry.\n");
+            if (std::fabs(t[xyz]) > 1.0E-8) {
+                outfile->Printf("The origin chosen breaks symmetry; multipoles will be computed without symmetry.\n");
                 origin_preserves_symmetry_ = false;
             }
         }
     }
+}
 
+Vector3 OEProp::get_origin_from_environment() const {
+    // This function gets called early in the constructor of OEProp.
+    // Take care not to use or initialize members, which are only initialized later.
+    // The only member used here is basisset, which is initialized in the base class.
+    // See if the user specified the origin
+    Options& options = Process::environment.options;
+    Vector3 origin(0.0, 0.0, 0.0);
+
+    std::shared_ptr<Molecule> mol = wfn_->molecule();
+    int natoms = mol->natom();
+    if(options["PROPERTIES_ORIGIN"].has_changed()){
+        int size = options["PROPERTIES_ORIGIN"].size();
+
+        if(size == 1){
+            std::vector<double> property(natoms);
+            std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
+            if(str == "COM"){
+                for(int atom = 0; atom < natoms; ++atom)
+                    property[atom] = mol->mass(atom);
+            }else if(str == "NUCLEAR_CHARGE"){
+                for(int atom = 0; atom < natoms; ++atom)
+                    property[atom] = mol->charge(atom);
+            }else{
+                throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
+            }
+            origin = compute_center(property.data());
+        }else if(size == 3){
+            double x = options["PROPERTIES_ORIGIN"][0].to_double();
+            double y = options["PROPERTIES_ORIGIN"][1].to_double();
+            double z = options["PROPERTIES_ORIGIN"][2].to_double();
+            bool convert = mol->units() == Molecule::Angstrom;
+            if(convert){
+                x /= pc_bohr2angstroms;
+                y /= pc_bohr2angstroms;
+                z /= pc_bohr2angstroms;
+            }
+            origin = Vector3(x, y, z);
+        }else{
+            throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
+        }
+    }
+    outfile->Printf("\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n", origin[0], origin[1],
+                    origin[2]);
+
+    return origin;
 }
 
 void OEProp::print_header()
@@ -866,7 +874,8 @@ void OEProp::compute()
 
     
     if (title_ == "") {
-        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is '%s'\n", Da_so_->name().c_str());
+        outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is '%s'\n",
+                        mpc_.Da_name().c_str());
     } else {
         outfile->Printf( "\nProperties computed using the %s density matrix\n\n", title_.c_str());
     }
@@ -880,7 +889,7 @@ void OEProp::compute()
         if(std::regex_match(str, matches, mpoles)){
             int order;
             if(!from_string<int>(order, matches[1], std::dec))
-                throw PSIEXCEPTION("Problem detemining multipole order!  Specify, e.g., MULTIPOLE(5)");
+                throw PSIEXCEPTION("Problem determining multipole order!  Specify, e.g., MULTIPOLE(5)");
             compute_multipoles(order);
         }
     }
@@ -916,6 +925,23 @@ void OEProp::compute()
 
 void OEProp::compute_multipoles(int order, bool transition)
 {
+    MultipolePropCalc::MultipoleOutputType mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
+    for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
+        std::string name;
+        double total_mpole = 0.0;
+        // unpack the multipole, which is: name, nuc, elec, total, ignore nuc and elec:
+        std::tie(name, std::ignore, std::ignore, total_mpole) = *it;
+        /*- Process::environment.globals["DIPOLE X"] -*/
+        /*- Process::environment.globals["DIPOLE Y"] -*/
+        /*- Process::environment.globals["32-POLE XXXXX"] -*/
+        /*- Process::environment.globals["32-POLE XXXXY"] -*/
+        Process::environment.globals[name] = total_mpole;
+    }
+}
+
+MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int order, bool transition,
+                                                                             bool print_output, bool verbose) {
+    MultipolePropCalc::MultipoleOutputType mot = std::make_shared<MultipolePropCalc::MultipoleOutputTypeBase>();
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     SharedMatrix Da;
@@ -954,7 +980,7 @@ void OEProp::compute_multipoles(int order, bool transition)
         }
     }
 
-    if(print_ > 4){
+    if (verbose) {
         std::vector<SharedMatrix>::iterator iter;
         for(iter = mp_ints.begin(); iter != mp_ints.end(); ++iter)
             iter->get()->print();
@@ -962,10 +988,12 @@ void OEProp::compute_multipoles(int order, bool transition)
 
     SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
 
-    outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
-    outfile->Printf( "\n ------------------------------------------------------------------------------------\n");
-    outfile->Printf( "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
-    outfile->Printf( " ------------------------------------------------------------------------------------\n\n");
+    if (print_output) {
+        outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
+        outfile->Printf("\n ------------------------------------------------------------------------------------\n");
+        outfile->Printf("     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+        outfile->Printf(" ------------------------------------------------------------------------------------\n\n");
+    }
     double convfac = pc_dipmom_au2debye;
     int address = 0;
     for(int l = 1; l <= order; ++l){
@@ -976,29 +1004,32 @@ void OEProp::compute_multipoles(int order, bool transition)
         if(l > 2)
             ss << "^" << l-1;
         std::string exp = ss.str();
-        outfile->Printf( " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        if (print_output) {
+            outfile->Printf(" L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        }
         for(int component = 0; component < ncomponents; ++component){
             SharedMatrix mpmat = mp_ints[address];
             std::string name = mpmat->name();
             double nuc = transition ? 0.0 : nuclear_contributions->get(address);
             double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
             double tot = nuc + elec;
-            outfile->Printf( " %-20s: %18.7f   %18.7f   %18.7f\n",
-                    name.c_str(), elec, nuc, tot);
+            if (print_output) {
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", name.c_str(), elec, nuc, tot);
+            }
             std::string upper_name = to_upper_copy(name);
-            /*- Process::environment.globals["DIPOLE X"] -*/
-            /*- Process::environment.globals["DIPOLE Y"] -*/
-            /*- Process::environment.globals["32-POLE XXXXX"] -*/
-            /*- Process::environment.globals["32-POLE XXXXY"] -*/
-            Process::environment.globals[upper_name] = tot;
+            mot->push_back(std::make_tuple(upper_name, nuc, elec, tot));
             ++address;
         }
-        outfile->Printf( "\n");
+        if (print_output) {
+            outfile->Printf("\n");
+        }
         convfac *= pc_bohr2angstroms;
     }
-    outfile->Printf( " --------------------------------------------------------------------------------\n");
+    if (print_output) {
+        outfile->Printf(" --------------------------------------------------------------------------------\n");
+    }
 
-
+    return mot;
 }
 
 
@@ -1052,13 +1083,20 @@ public:
     }
 };
 
-void OEProp::compute_esp_over_grid()
-{
+ESPPropCalc::ESPPropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn) {}
+
+ESPPropCalc::~ESPPropCalc() {}
+
+void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
+
+void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
-    outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
+    if (print_output) {
+        outfile->Printf("\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
+    }
 
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
@@ -1096,14 +1134,63 @@ void OEProp::compute_esp_over_grid()
     fclose(gridout);
 }
 
+SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_grid) const {
+    // We only want a plain matrix to work with here:
+    if (input_grid->nirrep() != 1) {
+        throw PSIEXCEPTION("ESPPropCalc only allows \"plain\" input matrices with, i.e. nirrep == 1.");
+    }
+    if (input_grid->coldim() != 3) {
+        throw PSIEXCEPTION("ESPPropCalc only allows \"plain\" input matrices with a dimension of N (rows) x 3 (cols)");
+    }
 
-void OEProp::compute_field_over_grid()
-{
+    int number_of_grid_points = input_grid->rowdim();
+    SharedVector output = std::make_shared<Vector>(number_of_grid_points);
+
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+
+    SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
+    if (same_dens_) {
+        Dtot->scale(2.0);
+    } else {
+        Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
+    }
+
+    int const nbf = basisset_->nbf();
+
+    bool convert = mol->units() == Molecule::Angstrom;
+
+#pragma openmp parallel for
+    for (int i = 0; i < number_of_grid_points; ++i) {
+        Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
+        if (convert) origin /= pc_bohr2angstroms;
+        auto ints = std::make_shared<Matrix>(nbf, nbf);
+        ints->zero();
+        epot->compute(ints, origin);
+        double Velec = Dtot->vector_dot(ints);
+        double Vnuc = 0.0;
+        int natom = mol->natom();
+        for (int i = 0; i < natom; i++) {
+            Vector3 dR = origin - mol->xyz(i);
+            double r = dR.norm();
+            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
+        }
+        double Vtot = Velec + Vnuc;
+        (*output)[i] = Vtot;
+    }
+    return output;
+}
+
+void OEProp::compute_field_over_grid() { epc_.compute_field_over_grid(true); }
+
+void ESPPropCalc::compute_field_over_grid(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
-    outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
+    if (print_output) {
+        outfile->Printf("\n Field computed on the grid and written to grid_field.dat\n");
+    }
 
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
@@ -1148,9 +1235,18 @@ void OEProp::compute_field_over_grid()
     fclose(gridout);
 }
 
+void OEProp::compute_esp_at_nuclei() {
+    std::shared_ptr<std::vector<double>> nesps = epc_.compute_esp_at_nuclei(true, print_ > 2);
+    for (int atom1 = 0; atom1 < nesps->size(); ++atom1) {
+        std::stringstream s;
+        s << "ESP AT CENTER " << atom1 + 1;
+        /*- Process::environment.globals["ESP AT CENTER n"] -*/
+        Process::environment.globals[s.str()] = (*nesps)[atom1];
+    }
+    wfn_->set_esp_at_nuclei(nesps);
+}
 
-void OEProp::compute_esp_at_nuclei()
-{
+std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool print_output, bool verbose) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     std::shared_ptr<std::vector<double>> nesps(new std::vector<double>(mol->natom()));
@@ -1167,17 +1263,20 @@ void OEProp::compute_esp_at_nuclei()
     }
 
     Matrix dist = mol->distance_matrix();
-    outfile->Printf( "\n Electrostatic potentials at the nuclear coordinates:\n");
-    outfile->Printf( " ---------------------------------------------\n");
-    outfile->Printf( "   Center     Electrostatic Potential (a.u.)\n");
-    outfile->Printf( " ---------------------------------------------\n");
+    if (print_output) {
+        outfile->Printf("\n Electrostatic potentials at the nuclear coordinates:\n");
+        outfile->Printf(" ---------------------------------------------\n");
+        outfile->Printf("   Center     Electrostatic Potential (a.u.)\n");
+        outfile->Printf(" ---------------------------------------------\n");
+    }
     for(int atom1 = 0; atom1 < natoms; ++atom1){
         std::stringstream s;
         s << "ESP AT CENTER " << atom1+1;
         auto ints = std::make_shared<Matrix>(s.str(), nbf, nbf);
         epot->compute(ints, mol->xyz(atom1));
-        if(print_ > 2)
+        if (verbose) {
             ints->print();
+        }
         double elec = Dtot->vector_dot(ints);
         double nuc = 0.0;
         for(int atom2 = 0; atom2 < natoms; ++atom2){
@@ -1185,18 +1284,32 @@ void OEProp::compute_esp_at_nuclei()
                 continue;
             nuc += mol->Z(atom2) / dist[0][atom1][atom2];
         }
-        outfile->Printf( "  %3d %2s           %16.12f\n",
-                atom1+1, mol->label(atom1).c_str(), nuc+elec);
-        /*- Process::environment.globals["ESP AT CENTER n"] -*/
-        Process::environment.globals[s.str()] = nuc+elec;
+        if (print_output) {
+            outfile->Printf("  %3d %2s           %16.12f\n", atom1 + 1, mol->label(atom1).c_str(), nuc + elec);
+        }
         (*nesps)[atom1] = nuc+elec;
     }
-    wfn_->set_esp_at_nuclei(nesps);
-    outfile->Printf( " ---------------------------------------------\n");
+    if (print_output) {
+        outfile->Printf(" ---------------------------------------------\n");
+    }
+    return nesps;
 }
 
-void OEProp::compute_dipole(bool transition)
-{
+void OEProp::compute_dipole(bool transition) {
+    SharedVector dipole = mpc_.compute_dipole(transition, true, print_ > 4);
+    // Dipole components in Debye
+    std::stringstream s;
+    s << title_ << " DIPOLE X";
+    Process::environment.globals[s.str()] = dipole->get(0);
+    s.str(std::string());
+    s << title_ << " DIPOLE Y";
+    Process::environment.globals[s.str()] = dipole->get(1);
+    s.str(std::string());
+    s << title_ << " DIPOLE Z";
+    Process::environment.globals[s.str()] = dipole->get(2);
+}
+
+SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_output, bool verbose) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     Vector3 de;
@@ -1237,7 +1350,7 @@ void OEProp::compute_dipole(bool transition)
         }
     }
 
-    if (print_ > 4){
+    if (verbose) {
         for (int n = 0; n < 3; ++n) dipole_ints[n]->print();
     }
 
@@ -1248,48 +1361,72 @@ void OEProp::compute_dipole(bool transition)
     SharedVector ndip = DipoleInt::nuclear_contribution(mol, origin_);
 
     if (!transition) {
-
-        outfile->Printf( "  Nuclear Dipole Moment: [e a0]\n");
-        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
-                ndip->get(0), ndip->get(1), ndip->get(2));
-        outfile->Printf( "\n");
-        outfile->Printf( "  Electronic Dipole Moment: [e a0]\n");
-        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
-                de[0], de[1], de[2]);
-        outfile->Printf( "\n");
+        if (print_output) {
+            outfile->Printf("  Nuclear Dipole Moment: [e a0]\n");
+            outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n", ndip->get(0), ndip->get(1),
+                            ndip->get(2));
+            outfile->Printf("\n");
+            outfile->Printf("  Electronic Dipole Moment: [e a0]\n");
+            outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n", de[0], de[1], de[2]);
+            outfile->Printf("\n");
+        }
 
         de[0] += ndip->get(0, 0);
         de[1] += ndip->get(0, 1);
         de[2] += ndip->get(0, 2);
     }
 
-    outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
-    outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
-       de[0], de[1], de[2], de.norm());
-    outfile->Printf( "\n");
+    if (print_output) {
+        outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
+        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", de[0], de[1], de[2],
+                        de.norm());
+        outfile->Printf("\n");
+    }
 
     double dfac = pc_dipmom_au2debye;
-    outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
-    outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
-       de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
-    outfile->Printf( "\n");
+    if (print_output) {
+        outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
+        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", de[0] * dfac,
+                        de[1] * dfac, de[2] * dfac, de.norm() * dfac);
+        outfile->Printf("\n");
+    }
 
     // Dipole components in Debye
-    std::stringstream s;
-    s << title_ << " DIPOLE X";
-    Process::environment.globals[s.str()] = de[0]*dfac;
-    s.str(std::string());
-    s << title_ << " DIPOLE Y";
-    Process::environment.globals[s.str()] = de[1]*dfac;
-    s.str(std::string());
-    s << title_ << " DIPOLE Z";
-    Process::environment.globals[s.str()] = de[2]*dfac;
+    double dipole_x = de[0] * dfac;
+    double dipole_y = de[1] * dfac;
+    double dipole_z = de[2] * dfac;
 
+    auto output = std::make_shared<Vector>(3);
+    output->set(0, dipole_x);
+    output->set(1, dipole_y);
+    output->set(2, dipole_z);
 
+    return output;
 }
 
-void OEProp::compute_quadrupole(bool transition)
-{
+void OEProp::compute_quadrupole(bool transition) {
+    SharedMatrix quadrupole = mpc_.compute_quadrupole(transition, true, print_ > 4);
+    std::stringstream s;
+    s << title_ << " QUADRUPOLE XX";
+    Process::environment.globals[s.str()] = quadrupole->get(0, 0);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE YY";
+    Process::environment.globals[s.str()] = quadrupole->get(1, 1);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE ZZ";
+    Process::environment.globals[s.str()] = quadrupole->get(2, 2);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE XY";
+    Process::environment.globals[s.str()] = quadrupole->get(0, 1);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE XZ";
+    Process::environment.globals[s.str()] = quadrupole->get(0, 2);
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE YZ";
+    Process::environment.globals[s.str()] = quadrupole->get(1, 2);
+}
+
+SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_output, bool verbose) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Da;
     SharedMatrix Db;
@@ -1327,7 +1464,7 @@ void OEProp::compute_quadrupole(bool transition)
         }
     }
 
-    if(print_ > 4)
+    if (verbose)
         for(int n = 0; n < 6; ++n)
             qpole_ints[n]->print();
 
@@ -1353,45 +1490,54 @@ void OEProp::compute_quadrupole(bool transition)
 
     // Print multipole components
     double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
-    outfile->Printf( "  %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
-    outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
-       qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
-    outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
-       qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
-    outfile->Printf( "\n");
+    if (print_output) {
+        outfile->Printf("  %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
+        outfile->Printf("    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", qe[0] * dfac, qe[3] * dfac, qe[5] * dfac);
+        outfile->Printf("    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", qe[1] * dfac, qe[2] * dfac, qe[4] * dfac);
+        outfile->Printf("\n");
+    }
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    outfile->Printf( "  Traceless %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
-    outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
-       (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
-    outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
-       qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
-    outfile->Printf( "\n");
+    if (print_output) {
+        outfile->Printf("  Traceless %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
+        outfile->Printf("    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", (qe[0] - dtrace) * dfac,
+                        (qe[3] - dtrace) * dfac, (qe[5] - dtrace) * dfac);
+        outfile->Printf("    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", qe[1] * dfac, qe[2] * dfac, qe[4] * dfac);
+        outfile->Printf("\n");
+    }
 
     // Quadrupole components in Debye Ang
-    std::stringstream s;
-    s << title_ << " QUADRUPOLE XX";
-    Process::environment.globals[s.str()] = qe[0]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YY";
-    Process::environment.globals[s.str()] = qe[3]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE ZZ";
-    Process::environment.globals[s.str()] = qe[5]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XY";
-    Process::environment.globals[s.str()] = qe[1]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XZ";
-    Process::environment.globals[s.str()] = qe[2]*dfac;
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YZ";
-    Process::environment.globals[s.str()] = qe[4]*dfac;
+    double xx = qe[0] * dfac;
+    double yy = qe[3] * dfac;
+    double zz = qe[5] * dfac;
+    double xy = qe[1] * dfac;
+    double xz = qe[2] * dfac;
+    double yz = qe[4] * dfac;
 
+    auto output = std::make_shared<Matrix>(3, 3);
 
+    output->set(0, 0, xx);
+    output->set(1, 1, yy);
+    output->set(2, 2, zz);
+
+    output->set(0, 1, xy);
+    output->set(1, 0, xy);
+
+    output->set(1, 2, yz);
+    output->set(2, 1, yz);
+
+    output->set(0, 2, xz);
+    output->set(2, 0, xz);
+
+    return output;
 }
-void OEProp::compute_mo_extents()
-{
+
+void OEProp::compute_mo_extents() {
+    std::vector<SharedVector> mo_es = mpc_.compute_mo_extents(true);
+    wfn_->set_mo_extents(mo_es);
+}
+
+std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Ca;
     SharedMatrix Cb;
@@ -1508,9 +1654,10 @@ void OEProp::compute_mo_extents()
             }
         }
         std::sort(metric.begin(),metric.end());
-
-        outfile->Printf( "\n  Orbital extents (a.u.):\n");
-        outfile->Printf( "    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        if (print_output) {
+            outfile->Printf("\n  Orbital extents (a.u.):\n");
+            outfile->Printf("    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        }
 
         for (int i = 0; i < nmo; i++) {
             int n = std::get<1>(metric[i]);
@@ -1519,46 +1666,64 @@ void OEProp::compute_mo_extents()
             double xx = quadrupole[0]->get(0, i),
                    yy = quadrupole[1]->get(0, i),
                    zz = quadrupole[2]->get(0, i);
-            outfile->Printf( "    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
-                    i,
-                    labels[h].c_str(),
-                    n,
-                    std::fabs(quadrupole[0]->get(0, i)),
-                    std::fabs(quadrupole[1]->get(0, i)),
-                    std::fabs(quadrupole[2]->get(0, i)),
-                    std::fabs(xx + yy + zz));
-                    mo_es[0]->set(0,i,quadrupole[0]->get(0, i));
-                    mo_es[1]->set(0,i,quadrupole[1]->get(0, i));
-                    mo_es[2]->set(0,i,quadrupole[2]->get(0, i));
-                    mo_es[3]->set(0,i,fabs(xx + yy + zz));
+            if (print_output) {
+                outfile->Printf("    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n", i, labels[h].c_str(), n,
+                                std::fabs(quadrupole[0]->get(0, i)), std::fabs(quadrupole[1]->get(0, i)),
+                                std::fabs(quadrupole[2]->get(0, i)), std::fabs(xx + yy + zz));
+            }
+            mo_es[0]->set(0, i, quadrupole[0]->get(0, i));
+            mo_es[1]->set(0, i, quadrupole[1]->get(0, i));
+            mo_es[2]->set(0, i, quadrupole[2]->get(0, i));
+            mo_es[3]->set(0, i, fabs(xx + yy + zz));
         }
-
-        outfile->Printf( "\n");
+        if (print_output) {
+            outfile->Printf("\n");
+        }
 
     } else {
 
         // TODO: Both alpha and beta orbitals are reported separately
         // This helps identify symmetry breaking
     }
-    wfn_->set_mo_extents(mo_es);
+    return mo_es;
 }
+
+typedef PopulationAnalysisCalc PAC;
+PopulationAnalysisCalc::PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn) {
+    // No internal state. num_noon is now an argument.
+}
+
+PopulationAnalysisCalc::~PopulationAnalysisCalc() {}
 
 void OEProp::compute_mulliken_charges()
 {
-    outfile->Printf( "  Mulliken Charges: (a.u.)\n");
+    PAC::SharedStdVector Qa, Qb, apcs;
+    std::tie(Qa, Qb, apcs) = pac_.compute_mulliken_charges(true);
+    wfn_->set_atomic_point_charges(apcs);
 
+    auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, apcs->size());
+    for (size_t i = 0; i < apcs->size(); i++) {
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+    wfn_->set_array("MULLIKEN_CHARGES", vec_apcs);
+}
+
+std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
+PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
+    if (print_output) {
+        outfile->Printf("  Mulliken Charges: (a.u.)\n");
+    }
     std::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    auto Qa = std::make_shared<std::vector<double>>(mol->natom());
+    auto Qb = std::make_shared<std::vector<double>>(mol->natom());
+
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
-    double* Qa = new double[mol->natom()];
-    double* PSa = new double[basisset_->nbf()];
+    std::vector<double> PSa(basisset_->nbf());
     double suma = 0.0;
 
-    double* Qb = new double[mol->natom()];
-    double* PSb = new double[basisset_->nbf()];
+    std::vector<double> PSb(basisset_->nbf());
     double sumb = 0.0;
-
-    ::memset(Qa, '\0', mol->natom()*sizeof(double));
-    ::memset(Qb, '\0', mol->natom()*sizeof(double));
 
     SharedMatrix Da;
     SharedMatrix Db;
@@ -1594,59 +1759,66 @@ void OEProp::compute_mulliken_charges()
         int shell = basisset_->function_to_shell(mu);
         int A = basisset_->shell_to_center(shell);
 
-        Qa[A] += PSa[mu];
-        Qb[A] += PSb[mu];
+        (*Qa)[A] += PSa[mu];
+        (*Qb)[A] += PSb[mu];
 
         suma += PSa[mu];
         sumb += PSb[mu];
     }
 
 //    Print out the Mulliken populations and charges
-
-    outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    if (print_output) {
+        outfile->Printf("   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
-        double Qs = Qa[A] - Qb[A];
-        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        double Qs = (*Qa)[A] - (*Qb)[A];
+        double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A]=Qt;
-        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
-            Qa[A], Qb[A], Qs, Qt);
+        if (print_output) {
+            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
+                            (*Qb)[A], Qs, Qt);
+        }
         nuc += (double) mol->Z(A);
    }
 
-    outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
-        suma, sumb, nuc - suma - sumb);
-    wfn_->set_atomic_point_charges(apcs);
-
-    auto vec_apcs = std::make_shared<Matrix>("Mulliken Charges: (a.u.)", 1, mol->natom());
-    for (size_t i = 0; i < mol->natom(); i++){
-        vec_apcs->set(0, i, (*apcs)[i]);
+   if (print_output) {
+       outfile->Printf("\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,
+                       nuc - suma - sumb);
     }
-    wfn_->set_array("MULLIKEN_CHARGES", vec_apcs);
 
-//    Free memory
-    delete[] Qa;
-    delete[] Qb;
-    delete[] PSa;
-    delete[] PSb;
+    if (print_output) outfile->Printf("\n");
 
-    outfile->Printf( "\n");
-
+    return std::make_tuple(Qa, Qb, apcs);
 }
 void OEProp::compute_lowdin_charges()
 {
-    outfile->Printf( "  Lowdin Charges: (a.u.)\n");
+    PAC::SharedStdVector Qa, Qb, apcs;
+    std::tie(Qa, Qb, apcs) = pac_.compute_lowdin_charges(true);
+    wfn_->set_atomic_point_charges(apcs);
 
+    auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, apcs->size());
+    for (size_t i = 0; i < apcs->size(); i++) {
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+    wfn_->set_array("LOWDIN_CHARGES", vec_apcs);
+}
+
+std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
+PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
+    if (print_output) {
+        outfile->Printf("  Lowdin Charges: (a.u.)\n");
+    }
     std::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    auto Qa = std::make_shared<std::vector<double>>(mol->natom());
+    auto Qb = std::make_shared<std::vector<double>>(mol->natom());
+
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
-    double* Qa = new double[mol->natom()];
+
     double suma = 0.0;
 
-    double* Qb = new double[mol->natom()];
     double sumb = 0.0;
-
-    ::memset(Qa, '\0', mol->natom()*sizeof(double));
-    ::memset(Qb, '\0', mol->natom()*sizeof(double));
 
     SharedMatrix Da;
     SharedMatrix Db;
@@ -1688,8 +1860,8 @@ void OEProp::compute_lowdin_charges()
         int shell = basisset_->function_to_shell(mu);
         int A = basisset_->shell_to_center(shell);
 
-        Qa[A] += SDSa->get(0,mu,mu);
-        Qb[A] += SDSb->get(0,mu,mu);
+        (*Qa)[A] += SDSa->get(0, mu, mu);
+        (*Qb)[A] += SDSb->get(0, mu, mu);
 
         suma += SDSa->get(0,mu,mu);
         sumb += SDSb->get(0,mu,mu);
@@ -1697,36 +1869,41 @@ void OEProp::compute_lowdin_charges()
 
 //    Print out the populations and charges
 
-    outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    if (print_output) {
+        outfile->Printf("   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    }
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
-        double Qs = Qa[A] - Qb[A];
-        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        double Qs = (*Qa)[A] - (*Qb)[A];
+        double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A]=Qt;
-        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
-            Qa[A], Qb[A], Qs, Qt);
+        if (print_output) {
+            outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
+                            (*Qb)[A], Qs, Qt);
+        }
         nuc += (double) mol->Z(A);
     }
-
-    outfile->Printf( "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
-        suma, sumb, nuc - suma - sumb);
-    wfn_->set_atomic_point_charges(apcs);
-
-    auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, mol->natom());
-    for (size_t i = 0; i < mol->natom(); i++){
-        vec_apcs->set(0, i, (*apcs)[i]);
+    if (print_output) {
+        outfile->Printf("\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,
+                        nuc - suma - sumb);
     }
-    wfn_->set_array("LOWDIN_CHARGES", vec_apcs);
 
-
-    delete[] Qa;
-    delete[] Qb;
-
-
+    return std::make_tuple(Qa, Qb, apcs);
 }
 void OEProp::compute_mayer_indices()
 {
-    outfile->Printf( "\n\n  Mayer Bond Indices:\n\n");
+    SharedMatrix MBI_total, MBI_alpha, MBI_beta;
+    SharedVector MBI_valence;
+    std::tie(MBI_total, MBI_alpha, MBI_beta, MBI_valence) = pac_.compute_mayer_indices(true);
+
+    wfn_->set_array("MAYER_INDICES", MBI_total);
+}
+
+std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAnalysisCalc::compute_mayer_indices(
+    bool print_output) {
+    if (print_output) {
+        outfile->Printf("\n\n  Mayer Bond Indices:\n\n");
+    }
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1817,30 +1994,40 @@ void OEProp::compute_mayer_indices()
 
 //    A nicer output is needed ...
 
-    if (same_dens_) {
-        MBI_total->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        MBI_valence->print();
-    }
-    else {
-        outfile->Printf( "  Total Bond Index: \n");
-        MBI_total->print();
-        outfile->Printf( "  Alpha Contribution: \n");
-        MBI_alpha->print();
-        outfile->Printf( "  Beta Contribution: \n");
-        MBI_beta->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        MBI_valence->print();
+    if (print_output) {
+        if (same_dens_) {
+            MBI_total->print();
+            outfile->Printf("  Atomic Valences: \n");
+            MBI_valence->print();
+        } else {
+            outfile->Printf("  Total Bond Index: \n");
+            MBI_total->print();
+            outfile->Printf("  Alpha Contribution: \n");
+            MBI_alpha->print();
+            outfile->Printf("  Beta Contribution: \n");
+            MBI_beta->print();
+            outfile->Printf("  Atomic Valences: \n");
+            MBI_valence->print();
+        }
     }
 
-    wfn_->set_array("MAYER_INDICES", MBI_total);
-
+    return std::make_tuple(MBI_total, MBI_alpha, MBI_beta, MBI_valence);
 }
 void OEProp::compute_wiberg_lowdin_indices()
 {
-    outfile->Printf( "\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+    SharedMatrix WBI_total, WBI_alpha, WBI_beta;
+    SharedVector WBI_valence;
+    std::tie(WBI_total, WBI_alpha, WBI_beta, WBI_valence) = pac_.compute_wiberg_lowdin_indices(true);
+    wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
+}
 
-//    We may wanna get rid of these if we have NAOs...
+std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector>
+PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
+    if (print_output) {
+        outfile->Printf("\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+    }
+
+    //    We may wanna get rid of these if we have NAOs...
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1920,48 +2107,53 @@ void OEProp::compute_wiberg_lowdin_indices()
 
 //    Compute valences
 
-        auto WBI_valence = std::make_shared<Vector>(natom);
+    auto WBI_valence = std::make_shared<Vector>(natom);
 
-        for (int iat = 0; iat < natom; iat++) {
-            for (int jat = 0; jat < natom; jat++) {
-                double valence = WBI_valence->get(0, iat);
-                WBI_valence->set(0, iat, valence + WBI_total->get(0, iat, jat));
-            }
+    for (int iat = 0; iat < natom; iat++) {
+        for (int jat = 0; jat < natom; jat++) {
+            double valence = WBI_valence->get(0, iat);
+            WBI_valence->set(0, iat, valence + WBI_total->get(0, iat, jat));
         }
+    }
 
 //    Print out the bond index matrix
 //    A nicer output is needed ...
-
-    if (same_dens_) {
-        WBI_total->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        WBI_valence->print();
+    if (print_output) {
+        if (same_dens_) {
+            WBI_total->print();
+            outfile->Printf("  Atomic Valences: \n");
+            WBI_valence->print();
+        } else {
+            outfile->Printf("  Total Bond Index: \n");
+            WBI_total->print();
+            outfile->Printf("  Alpha Contribution: \n");
+            WBI_alpha->print();
+            outfile->Printf("  Beta Contribution: \n");
+            WBI_beta->print();
+            outfile->Printf("  Atomic Valences: \n");
+            WBI_valence->print();
+        }
     }
-    else {
-        outfile->Printf( "  Total Bond Index: \n");
-        WBI_total->print();
-        outfile->Printf( "  Alpha Contribution: \n");
-        WBI_alpha->print();
-        outfile->Printf( "  Beta Contribution: \n");
-        WBI_beta->print();
-        outfile->Printf( "  Atomic Valences: \n");
-        WBI_valence->print();
-    }
-    wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
+    return std::make_tuple(WBI_total, WBI_alpha, WBI_beta, WBI_valence);
 }
 
-void OEProp::compute_no_occupations()
-{
+void OEProp::compute_no_occupations() {
+    auto metrics = pac_.compute_no_occupations(max_noon_, true);
+    wfn_->set_no_occupations(*metrics);
+}
+std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> PopulationAnalysisCalc::compute_no_occupations(
+    int max_noon, bool print_output) {
+    std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> metrics =
+        std::make_shared<std::vector<std::vector<std::tuple<double, int, int>>>>();
     std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
-    outfile->Printf( "  Natural Orbital Occupations:\n\n");
+    if (print_output) {
+        outfile->Printf("  Natural Orbital Occupations:\n\n");
+    }
 
     // Terminally, it will be [metric_a , metric_b, metric] or [metric] depending on same_dens
-    std::vector<std::vector<std::tuple<double, int, int> >> metrics;
 
     if (!same_dens_) {
-
-
         SharedVector Oa;
         SharedVector Ob;
         if (same_dens_) {
@@ -1981,28 +2173,30 @@ void OEProp::compute_no_occupations()
             }
         }
 
-        metrics.push_back(metric_a);
+        metrics->push_back(metric_a);
 
         std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double,int,int> >());
         int offset_a = wfn_->nalpha();
-        int start_occ_a = offset_a - max_noon_;
+        int start_occ_a = offset_a - max_noon;
         start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
-        int stop_vir_a = offset_a + max_noon_ + 1;
+        int stop_vir_a = offset_a + max_noon + 1;
         stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
 
-        outfile->Printf( "  Alpha Occupations:\n");
-        for (int index = start_occ_a; index < stop_vir_a; index++) {
-            if (index < offset_a) {
-                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
-                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
-                std::get<0>(metric_a[index]));
-            } else {
-                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
-                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
-                std::get<0>(metric_a[index]));
+        if (print_output) {
+            outfile->Printf("  Alpha Occupations:\n");
+
+            for (int index = start_occ_a; index < stop_vir_a; index++) {
+                if (index < offset_a) {
+                    outfile->Printf("  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
+                                    std::get<1>(metric_a[index]) + 1, labels[std::get<2>(metric_a[index])].c_str(),
+                                    std::get<0>(metric_a[index]));
+                } else {
+                    outfile->Printf("  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a, std::get<1>(metric_a[index]) + 1,
+                                    labels[std::get<2>(metric_a[index])].c_str(), std::get<0>(metric_a[index]));
+                }
             }
+            outfile->Printf("\n");
         }
-        outfile->Printf( "\n");
 
         std::vector<std::tuple<double, int, int> > metric_b;
         for (int h = 0; h < Ob->nirrep(); h++) {
@@ -2011,29 +2205,30 @@ void OEProp::compute_no_occupations()
             }
         }
 
-        metrics.push_back(metric_b);
+        metrics->push_back(metric_b);
 
         std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double,int,int> >());
 
         int offset_b = wfn_->nbeta();
-        int start_occ_b = offset_b - max_noon_;
+        int start_occ_b = offset_b - max_noon;
         start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
-        int stop_vir_b = offset_b + max_noon_ + 1;
+        int stop_vir_b = offset_b + max_noon + 1;
         stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
-        outfile->Printf( "  Beta Occupations:\n");
-        for (int index = start_occ_b; index < stop_vir_b; index++) {
-            if (index < offset_b) {
-                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
-                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
-                std::get<0>(metric_b[index]));
-            } else {
-                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
-                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
-                std::get<0>(metric_b[index]));
+        if (print_output) {
+            outfile->Printf("  Beta Occupations:\n");
+            for (int index = start_occ_b; index < stop_vir_b; index++) {
+                if (index < offset_b) {
+                    outfile->Printf("  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
+                                    std::get<1>(metric_b[index]) + 1, labels[std::get<2>(metric_b[index])].c_str(),
+                                    std::get<0>(metric_b[index]));
+                } else {
+                    outfile->Printf("  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b, std::get<1>(metric_b[index]) + 1,
+                                    labels[std::get<2>(metric_b[index])].c_str(), std::get<0>(metric_b[index]));
+                }
             }
+            outfile->Printf("\n");
         }
-        outfile->Printf( "\n");
 
     }
 
@@ -2047,34 +2242,104 @@ void OEProp::compute_no_occupations()
         }
     }
 
-    metrics.push_back(metric);
+    metrics->push_back(metric);
 
     std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
 
     int offset = wfn_->nbeta();
-    int start_occ = offset - max_noon_;
+    int start_occ = offset - max_noon;
     start_occ = (start_occ < 0 ? 0 : start_occ);
-    int stop_vir = offset + max_noon_ + 1;
+    int stop_vir = offset + max_noon + 1;
     stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size()  : stop_vir);
 
-    outfile->Printf( "  Total Occupations:\n");
-    for (int index = start_occ; index < stop_vir; index++) {
-        if (index < offset) {
-            outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
-            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
-            std::get<0>(metric[index]));
-        } else {
-            outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
-            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
-            std::get<0>(metric[index]));
+    if (print_output) {
+        outfile->Printf("  Total Occupations:\n");
+        for (int index = start_occ; index < stop_vir; index++) {
+            if (index < offset) {
+                outfile->Printf("  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1, std::get<1>(metric[index]) + 1,
+                                labels[std::get<2>(metric[index])].c_str(), std::get<0>(metric[index]));
+            } else {
+                outfile->Printf("  LUNO+%-2d: %4d%3s %8.3f\n", index - offset, std::get<1>(metric[index]) + 1,
+                                labels[std::get<2>(metric[index])].c_str(), std::get<0>(metric[index]));
+            }
         }
+        outfile->Printf("\n");
     }
-    outfile->Printf( "\n");
-
-    wfn_->set_no_occupations(metrics);
-
+    return metrics;
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 
+}
+
+void OEProp::set_wavefunction(std::shared_ptr<Wavefunction> wfn) {
+    mpc_.set_wavefunction(wfn);
+    pac_.set_wavefunction(wfn);
+    epc_.set_wavefunction(wfn);
+}
+
+void OEProp::set_restricted(bool restricted) {
+    mpc_.set_restricted(restricted);
+    pac_.set_restricted(restricted);
+    epc_.set_restricted(restricted);
+}
+
+void OEProp::set_epsilon_a(SharedVector epsilon_a) {
+    mpc_.set_epsilon_a(epsilon_a);
+    pac_.set_epsilon_a(epsilon_a);
+    epc_.set_epsilon_a(epsilon_a);
+}
+
+void OEProp::set_epsilon_b(SharedVector epsilon_b) {
+    mpc_.set_epsilon_b(epsilon_b);
+    pac_.set_epsilon_b(epsilon_b);
+    epc_.set_epsilon_b(epsilon_b);
+}
+
+void OEProp::set_Ca(SharedMatrix Ca) {
+    mpc_.set_Ca(Ca);
+    pac_.set_Ca(Ca);
+    epc_.set_Ca(Ca);
+}
+
+void OEProp::set_Cb(SharedMatrix Cb) {
+    mpc_.set_Cb(Cb);
+    pac_.set_Cb(Cb);
+    epc_.set_Cb(Cb);
+}
+
+void OEProp::set_Da_ao(SharedMatrix Da, int symmetry) {
+    mpc_.set_Da_ao(Da, symmetry);
+    pac_.set_Da_ao(Da, symmetry);
+    epc_.set_Da_ao(Da, symmetry);
+}
+
+void OEProp::set_Db_ao(SharedMatrix Db, int symmetry) {
+    mpc_.set_Db_ao(Db, symmetry);
+    pac_.set_Db_ao(Db, symmetry);
+    epc_.set_Db_ao(Db, symmetry);
+}
+
+void OEProp::set_Da_so(SharedMatrix Da) {
+    mpc_.set_Da_so(Da);
+    pac_.set_Da_so(Da);
+    epc_.set_Da_so(Da);
+}
+
+void OEProp::set_Db_so(SharedMatrix Db) {
+    mpc_.set_Db_so(Db);
+    pac_.set_Db_so(Db);
+    epc_.set_Db_so(Db);
+}
+
+void OEProp::set_Da_mo(SharedMatrix Da) {
+    mpc_.set_Da_mo(Da);
+    pac_.set_Da_mo(Da);
+    epc_.set_Da_mo(Da);
+}
+
+void OEProp::set_Db_mo(SharedMatrix Db) {
+    mpc_.set_Db_mo(Db);
+    pac_.set_Db_mo(Db);
+    epc_.set_Db_mo(Db);
 }
 
 //GridProp::GridProp(std::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)

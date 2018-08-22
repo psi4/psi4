@@ -424,7 +424,11 @@ def energy(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-
+    
+    # Bounce to CP if bsse kwarg
+    if kwargs.get('bsse_type', None) is not None:
+        return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
+    
     # Bounce if name is function
     if hasattr(name, '__call__'):
         return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
@@ -434,10 +438,6 @@ def energy(name, **kwargs):
     lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
-
-    # Bounce to CP if bsse kwarg
-    if kwargs.get('bsse_type', None) is not None:
-        return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
 
     # Bounce to CBS if "method/basis" name
     if "/" in lowername:

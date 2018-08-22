@@ -286,9 +286,11 @@ int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, 
         "Sorry, second-order convergence has not been implemented for this "
         "type of SCF wavefunction yet.");
 }
-void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not suppored for this type of SCF wavefunction."); }
+
+void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not supported for this type of SCF wavefunction."); }
 void HF::form_C() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
 void HF::form_D() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities."); }
+
 std::vector<SharedMatrix> HF::onel_Hx(std::vector<SharedMatrix> x) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct Hx products.");
 }

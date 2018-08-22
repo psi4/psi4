@@ -82,7 +82,7 @@ ENTHALPHY", "THERMAL ENERGY", "ENTHALPY", "GIBBS FREE ENERGY".
 But additionally, every valid combination of {S, Cv, Cp, ZPE, E, H, G}
 with {elec, trans, rot, vib, corr, tot} (e.g., vibrational entropy,
 S_vib, and enthalpy correction, H_corr) is returned by dictionary
-from the ``thermo`` function. See :srcsample:`python/vibanalysis`
+from the ``thermo`` function. See :srcsamplepy:`python/vibanalysis`
 (near the end) for an example.
 
 

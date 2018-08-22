@@ -61,7 +61,7 @@ void CCOperation::compute()
   );
 
   Timer numerical_timer;
-  // (1) Assigment of a number
+  // (1) Assignment of a number
   //     Expression of the type A = - 1/2
   if(operation=="add_factor")
     add_numerical_factor();

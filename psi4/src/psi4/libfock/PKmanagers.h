@@ -386,7 +386,7 @@ public:
 
 };
 
-/** Yoshimine sorting algoritm: the integrals are divided in
+/** Yoshimine sorting algorithm: the integrals are divided in
  * N batches that can individually fit in memory. Then, all
  * integrals are computed only once, and sorted in N little buffers,
  * one for each batch. As soon as a buffer is full, it gets dumped

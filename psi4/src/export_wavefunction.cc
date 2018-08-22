@@ -97,7 +97,9 @@ void export_wavefunction(py::module& m) {
         .def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership,
              "Returns the requested Beta Orbital subset.")
         .def("Fa", &Wavefunction::Fa, "Returns the Alpha Fock Matrix.")
+        .def("Fa_subset", &Wavefunction::Fa_subset, "Returns the Alpha Fock Matrix in the requested basis (AO,SO).")
         .def("Fb", &Wavefunction::Fb, "Returns the Beta Fock Matrix.")
+        .def("Fb_subset", &Wavefunction::Fb_subset, "Returns the Beta Fock Matrix in the requested basis (AO,SO).")
         .def("Da", &Wavefunction::Da, "Returns the Alpha Density Matrix.")
         .def("Db", &Wavefunction::Db, "Returns the Beta Density Matrix.")
         .def("Da_subset", &Wavefunction::Da_subset, py::return_value_policy::take_ownership,
@@ -137,7 +139,7 @@ void export_wavefunction(py::module& m) {
              "The level of theory this wavefunction corresponds to.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring")
         .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
-        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunctions molecule.")
+        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
@@ -285,9 +287,33 @@ void export_wavefunction(py::module& m) {
     /// FISAPT functions
     py::class_<fisapt::FISAPT, std::shared_ptr<fisapt::FISAPT>>(m, "FISAPT", "A Fragment-SAPT Wavefunction")
         .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("compute_energy", &fisapt::FISAPT::compute_energy, "Computes the FSAPT energy.")
-        .def("scalars", &fisapt::FISAPT::scalars, "Return the interally computed scalars.")
-        .def("disp", &fisapt::FISAPT::disp, "Computes the MP2-based DispE20 and Exch-DispE20 energy.");
+        .def("molecule", &fisapt::FISAPT::molecule, "Returns the FISAPT's molecule.")
+        .def("scalars", &fisapt::FISAPT::scalars, "Return the interally computed scalars (not copied).")
+        .def("vectors", &fisapt::FISAPT::vectors, "Return the interally computed vectors (not copied).")
+        .def("matrices", &fisapt::FISAPT::matrices, "Return the interally computed matrices (not copied).")
+        .def("print_header", &fisapt::FISAPT::print_header, "Print header, bases, sizes, etc.")
+        .def("localize", &fisapt::FISAPT::localize, "Localize the active occupied orbitals via IBO2.")
+        .def("partition", &fisapt::FISAPT::partition, "Partition the nuclei and electrons.")
+        .def("overlap", &fisapt::FISAPT::overlap, "Build the overlap integrals S.")
+        .def("kinetic", &fisapt::FISAPT::kinetic, "Build the kinetic integrals T.")
+        .def("nuclear", &fisapt::FISAPT::nuclear, "Build the nuclear potentials V and interaction energies.")
+        .def("coulomb", &fisapt::FISAPT::coulomb, "Build the J/K potentials for C, D, and E.")
+        .def("scf", &fisapt::FISAPT::scf, "Solve the relaxed SCF equations for A0 and B0.")
+        .def("freeze_core", &fisapt::FISAPT::freeze_core, "Freeze the core orbitals.")
+        .def("unify", &fisapt::FISAPT::unify, "Produce unified matrices for A', B', and C'.")
+        .def("dHF", &fisapt::FISAPT::dHF, "SAPT0 delta HF.")
+        .def("elst", &fisapt::FISAPT::elst, "SAPT0 electrostatics.")
+        .def("exch", &fisapt::FISAPT::exch, "SAPT0 exchange.")
+        .def("ind", &fisapt::FISAPT::ind, "SAPT0 induction.")
+        .def("disp", &fisapt::FISAPT::disp,
+             "Computes the MP2-based DispE20 and Exch-DispE20 energy.")
+        .def("flocalize", &fisapt::FISAPT::flocalize, "F-SAPT0 localize.")
+        .def("felst", &fisapt::FISAPT::felst, "F-SAPT0 electrostatics.")
+        .def("fexch", &fisapt::FISAPT::fexch, "F-SAPT0 exchange.")
+        .def("find", &fisapt::FISAPT::find, "F-SAPT0 induction.")
+        .def("fdisp", &fisapt::FISAPT::fdisp, "F-SAPT0 dispersion.")
+        .def("raw_plot", &fisapt::FISAPT::raw_plot, "Plot some analysis files.")
+        .def("print_trailer", &fisapt::FISAPT::print_trailer, "Print SAPT results.");
 
     /// CIWavefunction functions
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>, std::shared_ptr<psi::detci::CIvect>,

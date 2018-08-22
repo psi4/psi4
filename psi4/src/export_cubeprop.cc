@@ -31,11 +31,14 @@
 #include "psi4/libcubeprop/cubeprop.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/basisset.h"
 
 using namespace psi;
 
 void export_cubeprop(py::module& m) {
     py::class_<CubeProperties, std::shared_ptr<CubeProperties>>(m, "CubeProperties", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("compute_properties", &CubeProperties::compute_properties, "docstring");
+        .def("basisset", &CubeProperties::basisset, "Returns orbital/primary basis set associated with cubeprop.")
+        .def("raw_compute_properties", &CubeProperties::raw_compute_properties,
+            "Compute all relevant properties from options object specifications");
 }

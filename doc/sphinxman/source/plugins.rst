@@ -30,8 +30,8 @@
 
 .. _`sec:plugins`:
 
-Plugins: Adding New Functionality to |PSIfour|
-==============================================
+Creating New Plugins
+====================
 
 Modular Approach to Development
 -------------------------------

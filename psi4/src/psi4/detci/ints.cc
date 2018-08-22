@@ -493,7 +493,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
         Cact->set_column(0, v, Crot_vec);
     }
 
-    timer_on("CIWave: Forming Active Psuedo Density");
+    timer_on("CIWave: Forming Active Pseudo Density");
     /// Step 1:  D_{mu nu} ^{tu} = C_{mu t} C_{nu u} forall t, u in active
     std::vector<std::tuple<int, int, SharedMatrix, SharedMatrix>> D_vec;
     for (size_t i = 0; i < nact; i++) {
@@ -509,7 +509,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
             D_vec.push_back(std::make_tuple(i, j, Cmat_i, Cmat_j));
         }
     }
-    timer_off("CIWave: Forming Active Psuedo Density");
+    timer_off("CIWave: Forming Active Pseudo Density");
 
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();

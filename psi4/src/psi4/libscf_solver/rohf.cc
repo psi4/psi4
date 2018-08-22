@@ -1288,7 +1288,7 @@ bool ROHF::stability_analysis() {
         global_dpd_->buf4_close(&A);
         Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
 
-        outfile->Printf("    Lowest ROHF->ROHF stability eigenvalues:-\n");
+        outfile->Printf("    Lowest ROHF->ROHF stability eigenvalues:\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

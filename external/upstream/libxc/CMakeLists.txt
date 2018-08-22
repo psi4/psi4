@@ -13,7 +13,7 @@ else()
     message(STATUS "Suitable Libxc could not be located, ${Magenta}Building Libxc${ColourReset} instead.")
     ExternalProject_Add(libxc_external
         GIT_REPOSITORY https://github.com/psi4/libxc
-        GIT_TAG libxc4retweaked  # v4.0 (0387b1d1) + !62 + MVS corr + 4.0.2 bump + 2 build commits = c754e28
+        GIT_TAG a5eb119 # v4.0 (0387b1d1) + !62 + MVS corr + 4.0.2 bump + 2 build commits + (Win port )
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -462,7 +462,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
     spaces.push_back(bocc);
     spaces.push_back(bvir);
 
-    if(dpd_list[0]) throw PSIEXCEPTION("Attempting to initilize new DPD instance before the old one was freed.");
+    if(dpd_list[0]) throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
     dpd_list[0] = new DPD(0, nirreps, Process::environment.get_memory(), 0, cachefiles, cachelist, nullptr, 4, spaces);
     dpd_default = 0;
     global_dpd_ = dpd_list[0];
@@ -475,7 +475,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
     spaces.push_back(occ);
     spaces.push_back(vir);
 
-    if(dpd_list[0]) throw PSIEXCEPTION("Attempting to initilize new DPD instance before the old one was freed.");
+    if(dpd_list[0]) throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
     dpd_list[0] = new DPD(0, nirreps, Process::environment.get_memory(), 0, cachefiles, cachelist, nullptr, 2, spaces);
     dpd_default = 0;
     global_dpd_ = dpd_list[0];
