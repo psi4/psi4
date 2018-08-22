@@ -15,19 +15,20 @@
 
 molecule {
   O
-  H             1    1.028270
-  H             1    1.028270      2   96.767980
-}
-
-set {
-  basis sto-3g
-  scf_type pk
+  H             1    0.9894093
+  H             1    0.9894093      2   100.02688
 }
 
 set findif points 5
 
-sow = 0       # 0 to make displacements; then run energies separately; then 1 to collect them
+set {
+  basis sto-3g
+}
+
+sow = 0       # 1 to make displacements; then run energies separately; then 0 to collect them
 irrep = -1    # do all irreps, otherwise pick one of them (numbering starts with 0)
+project_rot = True # True to project rotations, False otherwise
+project_trans = True # True to project translations, False otherwise
 
 #
 # Below this line should not generally need changed.
@@ -37,11 +38,11 @@ molecule = psi4.get_active_molecule()
 molecule.update_geometry()
 natom = molecule.natom()
 
-displacements = psi4.fd_geoms_freq_0(irrep)
+displacements = driver_findif.hessian_from_energy_geometries(molecule, -1)
 
 if sow:
   ndisp = len(displacements)
-  print " %d displacements needed." % ndisp
+  print(" %d displacements needed." % ndisp)
 
   dispdir = "displacements"
   if not os.path.exists(dispdir):
@@ -98,8 +99,11 @@ else: # sow=0, means that we are ready to compute the frequencies, run after ene
       if (len(words) >= 4):  # check for empty lines
         if (words[0] == "FD") and (words[1] == "ENERGY") and (words[2] == "="):
           energies.append(float(words[3]))
-
-  psi4.fd_freq_0(energies, irrep)
+    
+  H = driver_findif.compute_hessian_from_energy(molecule, energies, -1)
+  wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
+  wfn.set_hessian(core.Matrix.from_array(H))
+  vibinfo = vibanal_wfn(wfn, irrep=None, project_trans=project_trans, project_rot=project_rot)
 
 clean()
 

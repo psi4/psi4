@@ -1569,7 +1569,9 @@ class Molecule(LibmintsMolecule):
         self.fix_com(molrec['fix_com'])
         self.fix_orientation(molrec['fix_orientation'])
         if 'fix_symmetry' in molrec:
-            self.reset_point_group(molrec['fix_symmetry'])
+            # Save the user-specified symmetry, but don't set it as the point group
+            # That step occurs in update_geometry, after the atoms are added
+            self.PYsymmetry_from_input = molrec['fix_symmetry'].lower()
 
         ## hack to prevent update_geometry termination upon no atoms
         #if nat == 0:

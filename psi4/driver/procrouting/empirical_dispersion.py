@@ -34,6 +34,7 @@ from psi4.driver.qcdb import interface_gcp as gcp
 from psi4.driver.qcdb.dashparam import get_dispersion_aliases
 from psi4.driver.qcdb.dashparam import get_default_dashparams
 from psi4.driver import p4util
+from psi4.driver import driver_findif
 #import numpy as np
 
 class EmpericalDispersion(object):
@@ -294,12 +295,11 @@ class EmpericalDispersion(object):
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
         gradients = []
-        for geom in core.fd_geoms_freq_1(molecule, -1):
+        for geom in driver_findif.hessian_from_gradient_geometries(molecule, -1):
             molclone.set_geometry(geom)
             molclone.update_geometry()
             gradients.append(self.compute_gradient(molclone))
 
-        H = core.fd_freq_1(molecule, gradients, -1)
-        # H.print_out()
+        H = driver_findif.compute_hessian_from_gradient(molecule, gradients, -1)
         optstash.restore()
-        return H
+        return core.Matrix.from_array(H)

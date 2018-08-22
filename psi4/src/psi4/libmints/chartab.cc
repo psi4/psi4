@@ -94,6 +94,7 @@ CharacterTable::CharacterTable()
 {
 }
 
+
 CharacterTable::CharacterTable(const CharacterTable& ct)
     : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(),
       bits_(0)

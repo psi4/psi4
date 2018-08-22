@@ -74,8 +74,10 @@ public:
 
     // made const function to access coef,atom,xyz through CdSalc[i]
     const Component& component(int com) const { return components_[com]; }
+    const std::vector<Component>& get_components() const { return components_; }
 
     char irrep() const { return irrep_; }
+
     void print() const;
 };
 
@@ -176,6 +178,8 @@ public:
     const CdSalc& operator[](int i) const { return salcs_[i]; }
 
     const CdSalcWRTAtom& atom_salc(int i) const { return atom_salcs_[i]; }
+
+    const std::vector<CdSalc>& get_salcs() const {return salcs_;}
 
     SharedMatrix matrix() const;
     SharedMatrix matrix_irrep(int h) const; // return only salcs of a given irrep
