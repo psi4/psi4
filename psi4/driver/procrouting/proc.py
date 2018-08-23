@@ -987,10 +987,12 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(name, ref_wfn, reference):
-    """Builds the correct wavefunction from the provided information
-    """
+def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
+    """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
+    provided information, sets relevant auxiliary basis sets on it,
+    and prepares any empirical dispersion.
 
+    """
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
@@ -1230,7 +1232,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.print_out("         " + banner.center(58));
         if cast:
             core.print_out("         " + "SCF Castup computation".center(58));
-        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
+        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
@@ -1268,7 +1270,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("\n         ---------------------------------------------------------\n");
         core.print_out("         " + banner.center(58));
 
-    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
+    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
