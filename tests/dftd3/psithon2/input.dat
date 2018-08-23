@@ -95,7 +95,7 @@ H   0.000000   0.000000   3.963929
 }
 
 eneyne.update_geometry()
-E, G = eneyne.run_dftd3('b3lyp', 'd2gr')
+E, G = eneyne.run_dftd3('b3lyp', 'd2')
 compare_values(ref_d2[0], E, 7, 'PSIPATH dftd3')              #TEST
 clean()
 
