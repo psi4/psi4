@@ -277,7 +277,8 @@ void export_functional(py::module &m) {
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
         .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0,
-                    py::arg("p1") = 0.0, py::arg("p2") = 0.0, py::arg("p3") = 0.0, "docstring")
+                    py::arg("alpha6") = 0.0, py::arg("sr6") = 0.0,
+                    "Initialize instance capable of computing a dispersion correction of *type*")
         .def("name", &Dispersion::name, "docstring")
         .def("description", &Dispersion::description, "docstring")
         .def("citation", &Dispersion::citation, "docstring")
