@@ -69,10 +69,10 @@ namespace psi {
 namespace dcft {
 
 /**
-  * Build the density-fitting tensor: b(Q|mn) in AO-basis
-  * b(Q|mn) = Sum_P (mn|P) [J^-1/2]_PQ
-  * where J is the matrix of (P|Q)
-  */
+ * Build the density-fitting tensor: b(Q|mn) in AO-basis
+ * b(Q|mn) = Sum_P (mn|P) [J^-1/2]_PQ
+ * where J is the matrix of (P|Q)
+ */
 void DCFTSolver::df_build_b_ao() {
     dcft_timer_on("DCFTSolver::df_build_b_ao()");
 
@@ -120,8 +120,8 @@ void DCFTSolver::df_build_b_ao() {
 }
 
 /**
-  * Form J(P,Q)^-1/2
-  */
+ * Form J(P,Q)^-1/2
+ */
 void DCFTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero) {
     //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
     int nthreads = 1;
@@ -205,8 +205,8 @@ void DCFTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<B
 }
 
 /**
-  * Form b(Q|mn)
-  */
+ * Form b(Q|mn)
+ */
 void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                           std::shared_ptr<BasisSet> zero) {
     bQmn_ao_ = std::make_shared<Matrix>(nQ_, nso_ * nso_);
@@ -302,8 +302,8 @@ void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Bas
 }
 
 /**
-  * Calculate memory required for density-fitting
-  */
+ * Calculate memory required for density-fitting
+ */
 void DCFTSolver::df_memory() {
     double memory = Process::environment.get_memory();
     int nthreads = 1;
@@ -355,8 +355,8 @@ void DCFTSolver::df_memory() {
 }
 
 /**
-  * Transform b(Q|mn) -> b(Q|pq)
-  */
+ * Transform b(Q|mn) -> b(Q|pq)
+ */
 void DCFTSolver::transform_b() {
     dcft_timer_on("DCFTSolver::Transform B(Q,mn) -> B(Q,pq)");
 
@@ -369,8 +369,8 @@ void DCFTSolver::transform_b() {
 }
 
 /**
-  * Transform b(Q|mu,nu) from AO basis to SO basis
-  */
+ * Transform b(Q|mu,nu) from AO basis to SO basis
+ */
 void DCFTSolver::transform_b_ao2so() {
     dcft_timer_on("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
 
@@ -426,8 +426,8 @@ void DCFTSolver::transform_b_ao2so() {
 }
 
 /**
-  * form b(Q,ij)
-  */
+ * form b(Q,ij)
+ */
 void DCFTSolver::formb_oo() {
     dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|ij)");
 
@@ -526,8 +526,8 @@ void DCFTSolver::formb_oo() {
 }
 
 /**
-  * form b(Q,ia)
-  */
+ * form b(Q,ia)
+ */
 void DCFTSolver::formb_ov() {
     dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|ia)");
 
@@ -624,8 +624,8 @@ void DCFTSolver::formb_ov() {
 }
 
 /**
-  * form b(Q,ab)
-  */
+ * form b(Q,ab)
+ */
 void DCFTSolver::formb_vv() {
     dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|ab)");
 
@@ -723,8 +723,8 @@ void DCFTSolver::formb_vv() {
 }
 
 /**
-  * form b(Q,pq)
-  */
+ * form b(Q,pq)
+ */
 void DCFTSolver::formb_pq() {
     dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|pq)");
 
@@ -1438,9 +1438,9 @@ void DCFTSolver::build_DF_tensors_RHF() {
 }
 
 /**
-  * Compute the contraction, gbar<ab|cd> lambda<ij|cd>, using density fitting.
-  * Memory required: O(V^3)
-  */
+ * Compute the contraction, gbar<ab|cd> lambda<ij|cd>, using density fitting.
+ * Memory required: O(V^3)
+ */
 void DCFTSolver::build_gbarlambda_RHF_v3mem() {
     dcft_timer_on("DCFTSolver::DF lambda<ij|cd> gbar<ab|cd> (v3 in memory)");
 
@@ -1847,9 +1847,9 @@ void DCFTSolver::build_DF_tensors_UHF() {
 }
 
 /**
-  * Compute the contraction, gbar<ab|cd> lambda<ij|cd>, using density fitting.
-  * Memory required: O(V^3)
-  */
+ * Compute the contraction, gbar<ab|cd> lambda<ij|cd>, using density fitting.
+ * Memory required: O(V^3)
+ */
 void DCFTSolver::build_gbarlambda_UHF_v3mem() {
     dcft_timer_on("DCFTSolver::DF lambda<ij|cd> gbar<ab|cd> (v3 in memory)");
 
@@ -2574,8 +2574,8 @@ void DCFTSolver::build_gbarKappa_UHF() {
 }
 
 /**
-  * Form J(P,Q)^-1/2 for SCF terms
-  */
+ * Form J(P,Q)^-1/2 for SCF terms
+ */
 void DCFTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero) {
     //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
     int nthreads = 1;
@@ -2659,8 +2659,8 @@ void DCFTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_p
 }
 
 /**
-  * Form b(Q|mn) for SCF terms
-  */
+ * Form b(Q|mn) for SCF terms
+ */
 void DCFTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                               std::shared_ptr<BasisSet> zero) {
     bQmn_ao_scf_ = std::make_shared<Matrix>(nQ_scf_, nso_ * nso_);
@@ -2757,8 +2757,8 @@ void DCFTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr
 }
 
 /**
-  * Transform b(Q|mu,nu) from AO basis to SO basis for SCF terms
-  */
+ * Transform b(Q|mu,nu) from AO basis to SO basis for SCF terms
+ */
 void DCFTSolver::transform_b_ao2so_scf() {
     dcft_timer_on("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
 
@@ -2814,8 +2814,8 @@ void DCFTSolver::transform_b_ao2so_scf() {
 }
 
 /**
-  * form b(Q,ij) for SCF terms
-  */
+ * form b(Q,ij) for SCF terms
+ */
 void DCFTSolver::formb_oo_scf() {
     dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|ij)");
 
@@ -2915,8 +2915,8 @@ void DCFTSolver::formb_oo_scf() {
 }
 
 /**
-  * form b(Q,pq) for SCF terms
-  */
+ * form b(Q,pq) for SCF terms
+ */
 void DCFTSolver::formb_pq_scf() {
     dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|pq)");
 
@@ -3005,5 +3005,5 @@ void DCFTSolver::formb_pq_scf() {
 
     dcft_timer_off("DCFTSolver::b(Q|mn) -> b(Q|pq)");
 }
-}
-}  // End namespace
+}  // namespace dcft
+}  // namespace psi

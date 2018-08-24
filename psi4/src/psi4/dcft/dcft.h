@@ -40,31 +40,30 @@
 
 // Handy mints timer macros, requires libqt to be included
 #ifdef DCFT_TIMER
-#   include "psi4/libqt/qt.h"
+#include "psi4/libqt/qt.h"
 
-#   define dcft_timer_on(a) timer_on((a));
-#   define dcft_timer_off(a) timer_off((a));
+#define dcft_timer_on(a) timer_on((a));
+#define dcft_timer_off(a) timer_off((a));
 #else
-#   define dcft_timer_on(a)
-#   define dcft_timer_off(a)
+#define dcft_timer_on(a)
+#define dcft_timer_off(a)
 #endif
 
-namespace psi{
+namespace psi {
 
 class Options;
 class IntegralTransform;
 
-namespace dcft{
+namespace dcft {
 
-class DCFTSolver:public Wavefunction
-{
-public:
+class DCFTSolver : public Wavefunction {
+   public:
     DCFTSolver(SharedWavefunction ref_wfn, Options &options);
     ~DCFTSolver();
 
     double compute_energy();
 
-protected:
+   protected:
     IntegralTransform *_ints;
 
     void mp2_guess();
@@ -98,13 +97,12 @@ protected:
     void update_fock();
     void dump_density();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
-    void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix& C1, SharedMatrix& C2,
-                        int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
-                        bool backwards, double alpha, double beta);
+    void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix &C1, SharedMatrix &C2, int *mospi_left, int *mospi_right,
+                        int **so_row, int **mo_row, bool backwards, double alpha, double beta);
     void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
-    void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
-                       int r, int s, double value, dpdfile2* = nullptr, dpdfile2* = nullptr, dpdfile2* = nullptr);
-    //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
+    void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q, int r, int s, double value,
+                       dpdfile2 * = nullptr, dpdfile2 * = nullptr, dpdfile2 * = nullptr);
+    // void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
     double compute_cumulant_residual();
@@ -265,7 +263,8 @@ protected:
     bool energyConverged_;
     /// Whether the user requested the DCFT functional that is variationally orbitally-optimized
     bool orbital_optimized_;
-    /// Whether the user requested the DCFT functional that computes the non-idempotent part of the OPDM exactly from the density cumulant
+    /// Whether the user requested the DCFT functional that computes the non-idempotent part of the OPDM exactly from
+    /// the density cumulant
     bool exact_tau_;
     /// The amount of information to print
     int print_;
@@ -376,7 +375,8 @@ protected:
     double regularizer_;
     /// Level shift for denominators in orbital updates
     double orbital_level_shift_;
-    /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to augment the subspace
+    /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to
+    /// augment the subspace
     double vec_add_tol_;
     /// Level shift applied to the diagonal of the density-weighted Fock operator
     double energy_level_shift_;
@@ -462,7 +462,8 @@ protected:
     SharedMatrix orbital_gradient_b_;
     /// Orbital and cumulant gradient in the basis of IDP
     SharedVector gradient_;
-    /// Contribution of the Fock matrix to the diagonal part of the Hessian. Used as preconditioner for conjugate gradient procedure
+    /// Contribution of the Fock matrix to the diagonal part of the Hessian. Used as preconditioner for conjugate
+    /// gradient procedure
     SharedVector Hd_;
     /// The step vector in the IDP basis
     SharedVector X_;
@@ -487,10 +488,8 @@ protected:
     /// Generator of the orbital rotations (Beta) with respect to the reference orbitals
     SharedMatrix Xtotal_b_;
 
-
     /// Used to align things in the output
     std::string indent;
-
 
     // Density-Fitting DCFT
     /// Density-fitted MP2 (DF-MP2) guess
@@ -504,8 +503,10 @@ protected:
     void formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
     void formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
     /// Form AO basis b(Q|mu,nu)
-    void formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
-    void formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
+    void formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                  std::shared_ptr<BasisSet> zero);
+    void formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                      std::shared_ptr<BasisSet> zero);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
@@ -600,6 +601,7 @@ protected:
     SharedMatrix mo_gammaB_;
 };
 
-}} // Namespaces
+}  // namespace dcft
+}  // namespace psi
 
-#endif // Header guard
+#endif  // Header guard

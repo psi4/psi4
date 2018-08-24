@@ -35,18 +35,17 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 /**
  * Updates the MO coefficients, transforms the integrals into both chemists'
  * and physcists' notation
  * for RHF reference.
  */
-void
-DCFTSolver::transform_integrals_RHF()
-{
+void DCFTSolver::transform_integrals_RHF() {
     dcft_timer_on("DCFTSolver::transform_integrals()");
 
-    if (options_.get_str("DCFT_TYPE") == "DF"){
+    if (options_.get_str("DCFT_TYPE") == "DF") {
         // Transform b(Q|mn) to b(Q|pq) in MO basis
         transform_b();
 
@@ -59,7 +58,7 @@ DCFTSolver::transform_integrals_RHF()
         /*- Transform g(VV|OO) -*/
         form_df_g_vvoo();
 
-        if(orbital_optimized_){
+        if (orbital_optimized_) {
             /*- Transform g(VO|OO) -*/
             form_df_g_vooo();
             /*- Transform g(OV|VV) -*/
@@ -69,13 +68,11 @@ DCFTSolver::transform_integrals_RHF()
         psio_->close(PSIF_LIBTRANS_DPD, 1);
 
         _ints->update_orbitals();
-    }
-    else{
+    } else {
         _ints->update_orbitals();
 
-        if(print_ > 1){
-            outfile->Printf( "\tTransforming integrals...\n");
-
+        if (print_ > 1) {
+            outfile->Printf("\tTransforming integrals...\n");
         }
         _ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
 
@@ -93,12 +90,12 @@ DCFTSolver::transform_integrals_RHF()
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ);
         dcft_timer_off("DCFTSolver::transform_OOVV");
 
-        if((options_.get_str("AO_BASIS") == "NONE")){
+        if ((options_.get_str("AO_BASIS") == "NONE")) {
             _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
         }
-        if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
-                                                   && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-                                                   || orbital_optimized_) {
+        if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING") &&
+             options_.get_str("QC_TYPE") == "SIMULTANEOUS") ||
+            orbital_optimized_) {
             // Compute the integrals needed for the MO Hessian
             dcft_timer_on("DCFTSolver::transform_VOOO");
             _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
@@ -108,7 +105,6 @@ DCFTSolver::transform_integrals_RHF()
             _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
             dcft_timer_off("DCFTSolver::transform_OVVV");
         }
-
     }
 
     /*
@@ -125,18 +121,15 @@ DCFTSolver::transform_integrals_RHF()
 
     sort_OOVV_integrals_RHF();
 
-    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV")
-        sort_VVVV_integrals_RHF();
+    if (options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV") sort_VVVV_integrals_RHF();
 
     // VVVO and OOOV integrals are needed for the QC algorithm
-    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
-                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-                                               || orbital_optimized_) {
-
+    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING") &&
+         options_.get_str("QC_TYPE") == "SIMULTANEOUS") ||
+        orbital_optimized_) {
         sort_OOOV_integrals_RHF();
 
         sort_OVVV_integrals_RHF();
-
     }
 
     if (orbital_optimized_) transform_core_integrals_RHF();
@@ -150,62 +143,60 @@ DCFTSolver::transform_integrals_RHF()
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
     dcft_timer_off("DCFTSolver::transform_integrals()");
-
-
 }
 
-void
-DCFTSolver:: sort_OVOV_integrals_RHF() {
+void DCFTSolver::sort_OVOV_integrals_RHF() {
     dpdbuf4 I;
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>"); // MO Ints <Oo|Vv>
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "MO Ints (OV|OV)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"),
+                           "MO Ints <OO|VV>");  // MO Ints <Oo|Vv>
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "MO Ints SF <OV|OV>:<Ov|oV>");
     global_dpd_->buf4_close(&I);
 }
 
-void
-DCFTSolver:: sort_OOOO_integrals_RHF() {
+void DCFTSolver::sort_OOOO_integrals_RHF() {
     dpdbuf4 I;
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-                           ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO|OO>"); // MO Ints <Oo|Oo>
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>=O]+"), ID("[O>=O]+"), 0,
+                           "MO Ints (OO|OO)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[O,O]"),
+                           "MO Ints <OO|OO>");  // MO Ints <Oo|Oo>
     global_dpd_->buf4_close(&I);
 }
 
-void
-DCFTSolver:: sort_OOVV_integrals_RHF() {
+void DCFTSolver::sort_OOVV_integrals_RHF() {
     dpdbuf4 I, Irs, Isr;
 
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
-                           ID("[V>=V]+"), ID("[O>=O]+"), 0, "MO Ints (VV|OO)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, sqrp, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV|OV>"); // MO Ints <oV|oV>, MO Ints <Ov|Ov>, MO Ints <ov|ov>
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"), ID("[V>=V]+"), ID("[O>=O]+"), 0,
+                           "MO Ints (VV|OO)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, sqrp, ID("[O,V]"), ID("[O,V]"),
+                           "MO Ints <OV|OV>");  // MO Ints <oV|oV>, MO Ints <Ov|Ov>, MO Ints <ov|ov>
     global_dpd_->buf4_close(&I);
 
     /*
      * Antisymmetrize the <OV|OV> integrals
      */
 
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "MO Ints <OV|OV>");
     global_dpd_->buf4_copy(&I, PSIF_LIBTRANS_DPD, "MO Ints <OV|OV> - <OV|VO>");
     global_dpd_->buf4_close(&I);
     // Resort (OV|OV) to the physists' notation
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "MO Ints (OV|OV)");
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "MO Ints <PS|RQ>");
     global_dpd_->buf4_close(&I);
-    global_dpd_->buf4_init(&Irs, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - <OV|VO>");
-    global_dpd_->buf4_init(&Isr, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <PS|RQ>");
-    for(int h = 0; h < nirrep_; ++h){
+    global_dpd_->buf4_init(&Irs, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "MO Ints <OV|OV> - <OV|VO>");
+    global_dpd_->buf4_init(&Isr, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "MO Ints <PS|RQ>");
+    for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&Irs, h);
         global_dpd_->buf4_mat_irrep_init(&Isr, h);
         global_dpd_->buf4_mat_irrep_rd(&Irs, h);
         global_dpd_->buf4_mat_irrep_rd(&Isr, h);
-        for(int row = 0; row < Irs.params->rowtot[h]; ++row){
-            for(int col = 0; col < Irs.params->coltot[h]; ++col){
+        for (int row = 0; row < Irs.params->rowtot[h]; ++row) {
+            for (int col = 0; col < Irs.params->coltot[h]; ++col) {
                 Irs.matrix[h][row][col] -= Isr.matrix[h][row][col];
             }
         }
@@ -215,39 +206,37 @@ DCFTSolver:: sort_OOVV_integrals_RHF() {
     }
 }
 
-void
-DCFTSolver:: sort_VVVV_integrals_RHF() {
+void DCFTSolver::sort_VVVV_integrals_RHF() {
     dpdbuf4 I;
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>=V]+"), ID("[V>=V]+"), 0,
+                           "MO Ints (VV|VV)");
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
     global_dpd_->buf4_close(&I);
 }
 
-void
-DCFTSolver:: sort_OOOV_integrals_RHF() {
+void DCFTSolver::sort_OOOV_integrals_RHF() {
     dpdbuf4 I;
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
-                           ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rpsq, ID("[O,V]"), ID("[O,O]"), "MO Ints <OV|OO>"); // MO Ints <oV|oO>, MO Ints <Ov|Oo>
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O>=O]+"), 0,
+                           "MO Ints (VO|OO)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rpsq, ID("[O,V]"), ID("[O,O]"),
+                           "MO Ints <OV|OO>");  // MO Ints <oV|oO>, MO Ints <Ov|Oo>
     // Intermediate MO_SF <OV|OO> = MO <Ov|oO>
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rpqs, ID("[O,V]"), ID("[O,O]"), "MO Ints SF <OV|OO>");
     global_dpd_->buf4_close(&I);
 }
 
-void
-DCFTSolver:: sort_OVVV_integrals_RHF() {
+void DCFTSolver::sort_OVVV_integrals_RHF() {
     dpdbuf4 I;
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>"); // MO Ints <Ov|Vv>
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>=V]+"), 0,
+                           "MO Ints (OV|VV)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,V]"), ID("[V,V]"),
+                           "MO Ints <OV|VV>");  // MO Ints <Ov|Vv>
     // Intermediate MO_SF <OV|VV> = MO <oV|Vv>
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prsq, ID("[O,V]"), ID("[V,V]"), "MO Ints SF <OV|VV>");
     global_dpd_->buf4_close(&I);
 }
 
-void
-DCFTSolver::transform_core_integrals_RHF() {
+void DCFTSolver::transform_core_integrals_RHF() {
     // Transform one-electron integrals to the MO basis and store them in the DPD file
     dpdfile2 H;
     Matrix aH(so_h_);
@@ -257,9 +246,9 @@ DCFTSolver::transform_core_integrals_RHF() {
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
     global_dpd_->file2_mat_init(&H);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0 ; i < naoccpi_[h]; ++i){
-            for(int j = 0 ; j < naoccpi_[h]; ++j){
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int j = 0; j < naoccpi_[h]; ++j) {
                 H.matrix[h][i][j] = aH.get(h, i, j);
             }
         }
@@ -269,9 +258,9 @@ DCFTSolver::transform_core_integrals_RHF() {
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
     global_dpd_->file2_mat_init(&H);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int a = 0 ; a < navirpi_[h]; ++a){
-            for(int b = 0 ; b < navirpi_[h]; ++b){
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int a = 0; a < navirpi_[h]; ++a) {
+            for (int b = 0; b < navirpi_[h]; ++b) {
                 H.matrix[h][a][b] = aH.get(h, naoccpi_[h] + a, naoccpi_[h] + b);
             }
         }
@@ -281,16 +270,15 @@ DCFTSolver::transform_core_integrals_RHF() {
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
     global_dpd_->file2_mat_init(&H);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0 ; i < naoccpi_[h]; ++i){
-            for(int j = 0 ; j < navirpi_[h]; ++j){
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int j = 0; j < navirpi_[h]; ++j) {
                 H.matrix[h][i][j] = aH.get(h, i, naoccpi_[h] + j);
             }
         }
     }
     global_dpd_->file2_mat_wrt(&H);
     global_dpd_->file2_close(&H);
-
 }
 
 /**
@@ -298,17 +286,16 @@ DCFTSolver::transform_core_integrals_RHF() {
  * Also builds the MO coefficient tensors in the alpha/beta, occ/vir spaces
  * for RHF reference
  */
-void
-DCFTSolver::build_denominators_RHF() {
+void DCFTSolver::build_denominators_RHF() {
     dcft_timer_on("DCFTSolver::build_denominators()");
 
     dpdbuf4 D;
     dpdfile2 F;
 
-    double *aOccEvals = new double [nalpha_];
-    double *bOccEvals = new double [nbeta_];
-    double *aVirEvals = new double [navir_];
-    double *bVirEvals = new double [nbvir_];
+    double *aOccEvals = new double[nalpha_];
+    double *bOccEvals = new double[nbeta_];
+    double *aVirEvals = new double[navir_];
+    double *bVirEvals = new double[nbvir_];
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int aOccCount = 0, aVirCount = 0;
@@ -321,42 +308,39 @@ DCFTSolver::build_denominators_RHF() {
     global_dpd_->file2_mat_rd(&T_OO);
     global_dpd_->file2_mat_rd(&T_VV);
 
-    //Diagonal elements of the Fock matrix
-    //Alpha spin
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
+    // Diagonal elements of the Fock matrix
+    // Alpha spin
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < naoccpi_[h]; ++i) {
             if (!exact_tau_) {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i);
-            }
-            else {
+            } else {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i) / (1.0 + 2.0 * T_OO.matrix[h][i][i]);
             }
-            for(int mu = 0; mu < nsopi_[h]; ++mu)
-                aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
+            for (int mu = 0; mu < nsopi_[h]; ++mu) aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
         }
 
-        for(int a = 0; a < navirpi_[h]; ++a){
+        for (int a = 0; a < navirpi_[h]; ++a) {
             if (!exact_tau_) {
                 aVirEvals[aVirCount++] = moFa_->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
+            } else {
+                aVirEvals[aVirCount++] =
+                    moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) / (1.0 - 2.0 * T_VV.matrix[h][a][a]);
             }
-            else {
-                aVirEvals[aVirCount++] = moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) / (1.0 - 2.0 * T_VV.matrix[h][a][a]);
-            }
-            for(int mu = 0; mu < nsopi_[h]; ++mu)
-                avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
+            for (int mu = 0; mu < nsopi_[h]; ++mu) avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
         }
     }
 
-    //Elements of the Fock matrix
+    // Elements of the Fock matrix
     if (!exact_tau_) {
-        //Alpha occupied
+        // Alpha occupied
         global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         global_dpd_->file2_mat_init(&F);
         int offset = 0;
-        for(int h = 0; h < nirrep_; ++h){
+        for (int h = 0; h < nirrep_; ++h) {
             offset += frzcpi_[h];
-            for(int i = 0 ; i < naoccpi_[h]; ++i){
-                for(int j = 0 ; j < naoccpi_[h]; ++j){
+            for (int i = 0; i < naoccpi_[h]; ++i) {
+                for (int j = 0; j < naoccpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFa_->get(h, i, j);
                 }
             }
@@ -365,14 +349,14 @@ DCFTSolver::build_denominators_RHF() {
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_close(&F);
 
-        //Alpha Virtual
+        // Alpha Virtual
         global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
         global_dpd_->file2_mat_init(&F);
         offset = 0;
-        for(int h = 0; h < nirrep_; ++h){
+        for (int h = 0; h < nirrep_; ++h) {
             offset += naoccpi_[h];
-            for(int i = 0 ; i < navirpi_[h]; ++i){
-                for(int j = 0 ; j < navirpi_[h]; ++j){
+            for (int i = 0; i < navirpi_[h]; ++i) {
+                for (int j = 0; j < navirpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
                 }
             }
@@ -382,18 +366,18 @@ DCFTSolver::build_denominators_RHF() {
         global_dpd_->file2_close(&F);
     }
 
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
-    for(int h = 0; h < nirrep_; ++h){
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+                           "D <OO|VV>");
+    for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
-        for(int row = 0; row < D.params->rowtot[h]; ++row){
+        for (int row = 0; row < D.params->rowtot[h]; ++row) {
             int i = D.params->roworb[h][row][0];
             int j = D.params->roworb[h][row][1];
-            for(int col = 0; col < D.params->coltot[h]; ++col){
+            for (int col = 0; col < D.params->coltot[h]; ++col) {
                 int a = D.params->colorb[h][col][0];
                 int b = D.params->colorb[h][col][1];
-                D.matrix[h][row][col] = 1.0/
-                                    (regularizer_ + aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
+                D.matrix[h][row][col] =
+                    1.0 / (regularizer_ + aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
@@ -401,15 +385,13 @@ DCFTSolver::build_denominators_RHF() {
     }
     global_dpd_->buf4_close(&D);
 
-
-    delete [] aOccEvals;
-    delete [] bOccEvals;
-    delete [] aVirEvals;
-    delete [] bVirEvals;
+    delete[] aOccEvals;
+    delete[] bOccEvals;
+    delete[] aVirEvals;
+    delete[] bVirEvals;
 
     dcft_timer_off("DCFTSolver::build_denominators()");
-
 }
 
-
-}} // Namespace
+}  // namespace dcft
+}  // namespace psi
