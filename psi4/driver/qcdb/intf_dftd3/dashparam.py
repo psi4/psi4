@@ -467,8 +467,12 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
     if dashcoeff_supplement is not None:
         supplement_dashlevel_lookup = {}
         for disp, ddisp in dashcoeff_supplement.items():
-            for fctl in ddisp['definitions'].keys():
-                supplement_dashlevel_lookup[fctl] = disp
+            for func, params in ddisp['definitions'].items():
+                if params.keys() != dashcoeff[disp]['default'].keys():
+                    if verbose > 2:
+                        print('Warning: trouble in dict_builder def:', func, params.keys(), '!=', dashcoeff[disp]['default'].keys())
+                else:
+                    supplement_dashlevel_lookup[func] = disp
 
     # << 1 >> use name_hint and/or level_hint to determine intended dispersion level
     if name_hint is None and level_hint is None:

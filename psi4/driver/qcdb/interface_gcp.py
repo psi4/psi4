@@ -42,7 +42,7 @@ try:
 except ImportError:
     from .exceptions import *
     isP4regime = False
-from .p4regex import *
+from .util import parse_dertype
 from .molecule import Molecule
 
 
@@ -82,15 +82,9 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 #        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
 
     if dertype is None:
-        dertype = -1
-    elif der0th.match(str(dertype)):
-        dertype = 0
-    elif der1st.match(str(dertype)):
-        dertype = 1
-#    elif der2nd.match(str(dertype)):
-#        raise ValidationError('Requested derivative level \'dertype\' %s not valid for run_dftd3.' % (dertype))
+        derint, derdriver = -1, 'gradient'
     else:
-        raise ValidationError('Requested derivative level \'dertype\' %s not valid for run_dftd3.' % (dertype))
+        derint, derdriver = parse_dertype(dertype, max_derivative=1)
 
 #    if func is None:
 #        if dashparam is None:
@@ -213,7 +207,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     # Call gcp program
     command = ['gcp', geomfile]
     command.extend(['-level', func])
-    if dertype != 0:
+    if derint != 0:
         command.append('-grad')
     try:
         #print('command', command)
@@ -237,7 +231,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
         raise Dftd3Error("""Unsuccessful gCP run.""")
 
     # Parse grad output
-    if dertype != 0:
+    if derint != 0:
         derivfile = './gcp_gradient'
         dfile = open(derivfile, 'r')
         dashdderiv = []
@@ -256,7 +250,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
                 (len(dashdderiv), self.natom()))
 
     # Prepare results for Psi4
-    if isP4regime and dertype != 0:
+    if isP4regime and derint != 0:
         core.set_variable('GCP CORRECTION ENERGY', dashd)
         psi_dashdderiv = core.Matrix.from_list(dashdderiv)
 
@@ -267,7 +261,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 
         text = '\n  ==> GCP Output <==\n'
         text += out.decode('utf-8')
-        if dertype != 0:
+        if derint != 0:
             with open(derivfile, 'r') as handle:
                 text += handle.read().replace('D', 'E')
             text += '\n'
@@ -280,7 +274,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 #    os.unlink(paramfile1)
 #    os.unlink(paramfile2)
 #    os.unlink(geomfile)
-#    if dertype != 0:
+#    if derint != 0:
 #        os.unlink(derivfile)
 #    if defmoved is True:
 #        os.rename(defaultfile + '_hide', defaultfile)
@@ -293,11 +287,11 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     os.chdir(current_directory)
 
     # return -D & d(-D)/dx
-    if dertype == -1:
+    if derint == -1:
         return dashd, dashdderiv
-    elif dertype == 0:
+    elif derint == 0:
         return dashd
-    elif dertype == 1:
+    elif derint == 1:
         return psi_dashdderiv
 
 try:

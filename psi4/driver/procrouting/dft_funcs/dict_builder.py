@@ -77,10 +77,10 @@ dict = {
 """
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.empirical_dispersion import get_dispersion_aliases
-from psi4.driver.qcdb.dashparam import dashcoeff
+from psi4.driver.qcdb import intf_dftd3
 
 import copy
+import collections
 
 from . import dict_xc_funcs
 from . import dict_lda_funcs
@@ -107,10 +107,11 @@ def get_functional_aliases(functional_dict):
     return aliases
 
 
-# alias table for dispersion
-dispersion_names = get_dispersion_aliases()
+_dispersion_aliases = intf_dftd3.get_dispersion_aliases()
 
 functionals = {}
+dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))
+
 for functional_name in dict_functionals:
     functional_aliases = get_functional_aliases(dict_functionals[functional_name])
 
@@ -120,27 +121,31 @@ for functional_name in dict_functionals:
 
     # if the parent functional is already dispersion corrected, skip to next
     if "dispersion" in dict_functionals[functional_name]:
+        disp = dict_functionals[functional_name]['dispersion']
+        dashcoeff_supplement[disp['type']]['definitions'][functional_name] = disp['params']
+        # TODO still needs citation
+        # this is to "bless" dft_funcs dispersion definitions
         continue
+
     # else loop through dispersion types in dashparams (also considering aliases)
-    # and build dispersion corrected version (applies also for aliases)
-    for dispersion_name in dispersion_names:
-        dispersion_type = dispersion_names[dispersion_name]
-        for dispersion_functional in dashcoeff[dispersion_type]:
+    #   and build dispersion corrected version (applies also for aliases)
+    for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
+        for dispersion_functional in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions']:
             if dispersion_functional.lower() in functional_aliases:
                 func = copy.deepcopy(dict_functionals[functional_name])
-                func["name"] = func["name"] + "-" + dispersion_type
+                func["name"] += "-" + resolved_dispersion_level
                 func["dispersion"] = dict()
 
                 # we need to pop the citation as the EmpiricalDispersion class only expects dashparams
-                if "citation" in dashcoeff[dispersion_type][dispersion_functional]:
-                    func["dispersion"]["citation"] = dashcoeff[dispersion_type][dispersion_functional].pop("citation")
-                func["dispersion"]["type"] = dispersion_type
-                func["dispersion"]["params"] = dashcoeff[dispersion_type][dispersion_functional]
+                if "citation" in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional]:
+                    func["dispersion"]["citation"] = intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional].pop("citation")
+                func["dispersion"]["type"] = resolved_dispersion_level
+                func["dispersion"]["params"] = intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional]
 
                 # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
-                # all point to the same method (M06-2X-D3ZERO)
+                #   all point to the same method (M06-2X-D3ZERO)
                 for alias in functional_aliases:
-                    alias = alias + "-" + dispersion_name.lower()
+                    alias += "-" + nominal_dispersion_level.lower()
                     functionals[alias] = func
 
 
