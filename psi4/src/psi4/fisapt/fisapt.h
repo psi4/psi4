@@ -33,8 +33,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-//#include "psi4/lib3index/dfhelper.h"
-
 
 #include <map>
 #include <tuple>
