@@ -48,18 +48,17 @@
 //  D    : Diagonal elements packed in DPD fashon of two index tensors, which is used in diagonalization step.
 //
 
-namespace psi{ namespace adc{
+namespace psi {
+namespace adc {
 
-void
-ADCWfn::rhf_prepare_tensors()
-{
+void ADCWfn::rhf_prepare_tensors() {
     bool do_pr = options_.get_bool("PR");
     char lbl[32], ampname[32];
     double *omega, **lambda;
     dpdbuf4 Aovov, K, V;
     dpdfile2 Xoo, Xvv, Aoo, Avv, Dov, Cocc, Cvir, B;
 
-    outfile->Printf( "\t==> CIS/ADC(1) Level <==\n\n");
+    outfile->Printf("\t==> CIS/ADC(1) Level <==\n\n");
     psio_->open(PSIF_ADC_SEM, PSIO_OPEN_NEW);
 
     // CIS calculation for obtaining the guess energy and vector
@@ -67,36 +66,38 @@ ADCWfn::rhf_prepare_tensors()
     // exchange operator (EEO) method a.k.a Fock-like contraction
     // is not utilized because the construction of sigma-vector for ADC(2) is
     // far more demanding step.
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "MO Ints <OV|OV>");
     global_dpd_->buf4_scmcopy(&V, PSIF_ADC, "A1234", -1.0);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "MO Ints <OO|VV>");
     global_dpd_->buf4_sort_axpy(&V, PSIF_ADC, prqs, ID("[O,V]"), ID("[O,V]"), "A1234", 2.0);
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
-    std::vector<std::string> irrep_      = molecule_->irrep_labels();
-    for(int h = 0;h < nirrep_;h++){
+    std::vector<std::string> irrep_ = molecule_->irrep_labels();
+    for (int h = 0; h < nirrep_; h++) {
         global_dpd_->buf4_mat_irrep_init(&Aovov, h);
         global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
-        for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
+        for (int ia = 0; ia < Aovov.params->rowtot[h]; ia++) {
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->colorb[h][ia][1];
-            for(int jb = 0;jb < Aovov.params->coltot[h];jb++){
+            for (int jb = 0; jb < Aovov.params->coltot[h]; jb++) {
                 int j = Aovov.params->colorb[h][jb][0];
                 int b = Aovov.params->colorb[h][jb][1];
-                Aovov.matrix[h][ia][jb] += (avire_[a]-aocce_[i]) * (i==j) * (a==b);
+                Aovov.matrix[h][ia][jb] += (avire_[a] - aocce_[i]) * (i == j) * (a == b);
             }
         }
         omega = init_array(Aovov.params->rowtot[h]);
         lambda = block_matrix(Aovov.params->rowtot[h], rpi_[h]);
-        if(rpi_[h]) david(Aovov.matrix[h], Aovov.params->coltot[h], rpi_[h], omega, lambda, 1e-14, 0);
-        for(int root = 0;root < rpi_[h];root++){
-            if(DEBUG_) printf("%d%3s, %10.7f\n", root+1, irrep_[h].c_str(), omega[root]);
-            omega_guess_->set(h,root, omega[root]);
+        if (rpi_[h]) david(Aovov.matrix[h], Aovov.params->coltot[h], rpi_[h], omega, lambda, 1e-14, 0);
+        for (int root = 0; root < rpi_[h]; root++) {
+            if (DEBUG_) printf("%d%3s, %10.7f\n", root + 1, irrep_[h].c_str(), omega[root]);
+            omega_guess_->set(h, root, omega[root]);
             sprintf(lbl, "B^(%d)_[%d]12", root, h);
             global_dpd_->file2_init(&B, PSIF_ADC, h, ID('O'), ID('V'), lbl);
             global_dpd_->file2_mat_init(&B);
-            for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
+            for (int ia = 0; ia < Aovov.params->rowtot[h]; ia++) {
                 int i = Aovov.params->roworb[h][ia][0];
                 int a = Aovov.params->roworb[h][ia][1];
 
@@ -107,13 +108,16 @@ ADCWfn::rhf_prepare_tensors()
             }
             global_dpd_->file2_mat_wrt(&B);
             global_dpd_->file2_mat_close(&B);
-            outfile->Printf( "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h].c_str(), omega[root], omega[root]*pc_hartree2ev);
-            outfile->Printf( "\t---------------------------------------------\n");
+            outfile->Printf("\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root + 1, irrep_[h].c_str(), omega[root],
+                            omega[root] * pc_hartree2ev);
+            outfile->Printf("\t---------------------------------------------\n");
             int nprint;
-            if(nxspi_[h] < num_amps_) nprint = nxspi_[h];
-            else nprint = num_amps_;
+            if (nxspi_[h] < num_amps_)
+                nprint = nxspi_[h];
+            else
+                nprint = num_amps_;
             amps_write(&B, nprint, "outfile");
-            outfile->Printf( "\n");
+            outfile->Printf("\n");
             global_dpd_->file2_close(&B);
         }
 
@@ -124,18 +128,22 @@ ADCWfn::rhf_prepare_tensors()
     }
     global_dpd_->buf4_close(&Aovov);
 
-
     // Initialize 4-index tensors for this step of calculation.
     global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
     global_dpd_->buf4_copy(&Aovov, PSIF_ADC_SEM, "A3h3p1234");
     global_dpd_->buf4_close(&Aovov);
 
-    if(do_pr) strcpy(ampname, "tilde 2 K1234 - K1243");
-    else      strcpy(ampname, "2 K1234 - K1243");
+    if (do_pr)
+        strcpy(ampname, "tilde 2 K1234 - K1243");
+    else
+        strcpy(ampname, "2 K1234 - K1243");
 
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    //global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
-    //global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "tilde 2 K1234 - K1243");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "MO Ints <OO|VV>");
+    // global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 -
+    // K1243");
+    // global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "tilde 2 K1234 -
+    // K1243");
     global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, ampname);
 
     global_dpd_->file2_init(&Xoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "XOO12");
@@ -161,9 +169,9 @@ ADCWfn::rhf_prepare_tensors()
     global_dpd_->file2_close(&Xvv);
 
 #if DEBUG_
-    outfile->Printf( ">> In prepare_tensor <<\n");
+    outfile->Printf(">> In prepare_tensor <<\n");
     global_dpd_->buf4_print(&K, outfile, 1);
-    //abort();
+// abort();
 #endif
 
     global_dpd_->buf4_close(&K);
@@ -171,25 +179,25 @@ ADCWfn::rhf_prepare_tensors()
 
     // A3h3p_{iajb} <-- \delta_{ij}(XVV)_{ab} + \delta_{ab}(XOO)_{ij}
     global_dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
-    for(int h = 0;h < nirrep_;h++){
+    for (int h = 0; h < nirrep_; h++) {
         global_dpd_->buf4_mat_irrep_init(&Aovov, h);
         global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
-        for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
+        for (int ia = 0; ia < Aovov.params->rowtot[h]; ia++) {
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->roworb[h][ia][1];
             int I = Aoo.params->rowidx[i];
             int A = Avv.params->rowidx[a];
             int Isym = Aoo.params->psym[i];
             int Asym = Avv.params->psym[a];
-            for(int jb = 0;jb < Aovov.params->coltot[h];jb++){
+            for (int jb = 0; jb < Aovov.params->coltot[h]; jb++) {
                 int j = Aovov.params->colorb[h][jb][0];
                 int b = Aovov.params->colorb[h][jb][1];
                 int J = Aoo.params->colidx[j];
                 int B = Avv.params->colidx[b];
                 int Jsym = Aoo.params->qsym[j];
                 int Bsym = Avv.params->qsym[b];
-                Aovov.matrix[h][ia][jb] += Aoo.matrix[Isym][I][J] * (a==b) * (Isym==Jsym)
-                    + Avv.matrix[Asym][A][B] * (i==j) * (Asym==Bsym);
+                Aovov.matrix[h][ia][jb] += Aoo.matrix[Isym][I][J] * (a == b) * (Isym == Jsym) +
+                                           Avv.matrix[Asym][A][B] * (i == j) * (Asym == Bsym);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&Aovov, h);
@@ -203,13 +211,13 @@ ADCWfn::rhf_prepare_tensors()
 
     // Preparing D tensor for each irrep
     global_dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
-    for(int h = 0;h < nirrep_;h++){
+    for (int h = 0; h < nirrep_; h++) {
         global_dpd_->buf4_mat_irrep_init(&Aovov, h);
         global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
         sprintf(lbl, "D_[%d]12", h);
         global_dpd_->file2_init(&Dov, PSIF_ADC_SEM, h, ID('O'), ID('V'), lbl);
         global_dpd_->file2_mat_init(&Dov);
-        for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
+        for (int ia = 0; ia < Aovov.params->rowtot[h]; ia++) {
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->roworb[h][ia][1];
 
@@ -229,5 +237,5 @@ ADCWfn::rhf_prepare_tensors()
     psio_->close(PSIF_ADC_SEM, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
-
-}} // End Namespaces
+}
+}  // End Namespaces
