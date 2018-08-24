@@ -71,22 +71,22 @@ namespace psi {
     table between two point groups.
 */
 class CorrelationTable {
-  private:
+   private:
     std::shared_ptr<PointGroup> group_;
     std::shared_ptr<PointGroup> subgroup_;
 
     int n_;
     int subn_;
-    int *ngamma_;
-    int **gamma_;
+    int* ngamma_;
+    int** gamma_;
 
     void clear();
-  public:
+
+   public:
     CorrelationTable();
 
     /// Create a correlation table for the two groups.
-    CorrelationTable(const std::shared_ptr<PointGroup>& group,
-                     const std::shared_ptr<PointGroup>& subgroup);
+    CorrelationTable(const std::shared_ptr<PointGroup>& group, const std::shared_ptr<PointGroup>& subgroup);
 
     ~CorrelationTable();
 
@@ -98,11 +98,10 @@ class CorrelationTable {
     /** Initalize the correlation table.  Returns 0 for success and nonzero
         for failure.  This will fail if the subgroup is not really a subgroup
         of group. */
-    int initialize_table(const std::shared_ptr<PointGroup>& group,
-                         const std::shared_ptr<PointGroup>& subgroup);
+    int initialize_table(const std::shared_ptr<PointGroup>& group, const std::shared_ptr<PointGroup>& subgroup);
 
     /// Converts error codes from initialize_table into a text string.
-    const char *error(int errcod);
+    const char* error(int errcod);
 
     /// Returns the number of irreps in the high order group.
     int n() const { return n_; }
@@ -113,7 +112,7 @@ class CorrelationTable {
     /// Returns the degeneracy of the subgroup irrep.
     int subdegen(int igamma) const;
     /// Returns the number of irreps in the low order group that an irrep
-    //from the high order group can be reduced to.
+    // from the high order group can be reduced to.
     int ngamma(int igamma) const { return ngamma_[igamma]; }
     /** Returns the irreps in the low order group that an irrep from the
         high order group can be reduced to. */
@@ -122,7 +121,7 @@ class CorrelationTable {
     // void print(std::ostream &o=ExEnv::out0()) const;
 };
 
-}
+}  // namespace psi
 
 #endif
 

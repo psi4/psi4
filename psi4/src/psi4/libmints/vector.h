@@ -45,9 +45,8 @@ class Matrix;
 class VectorIterator;
 
 /*! \ingroup MINTS */
-class PSI_API Vector
-{
-protected:
+class PSI_API Vector {
+   protected:
     /// Actual data, of size dimpi_.sum()
     std::vector<double> v_;
     /// Pointer offsets into v_, of size dimpi_.n()
@@ -74,7 +73,7 @@ protected:
     /// Numpy Shape
     std::vector<int> numpy_shape_;
 
-public:
+   public:
     /// Default constructor, zeros everything out
     Vector();
 
@@ -107,8 +106,7 @@ public:
     /**
      * Convenient creation function return SharedMatrix
      */
-    static SharedVector create(const std::string &name,
-                                          const Dimension &dim);
+    static SharedVector create(const std::string &name, const Dimension &dim);
 
     void init(int nirrep, int *dimpi);
 
@@ -164,7 +162,7 @@ public:
      * @param slice Vector slice
      * @return SharedVector object
      */
-    SharedVector get_block(const Slice& slice);
+    SharedVector get_block(const Slice &slice);
 
     /**
      * Set a vector block
@@ -172,7 +170,7 @@ public:
      * @param slice Vector slice
      * @param block the SharedVector object block to set
      */
-    void set_block(const Slice& slice,SharedVector block);
+    void set_block(const Slice &slice, SharedVector block);
 
     double &operator()(int i) { return vector_[0][i]; }
 
@@ -189,7 +187,7 @@ public:
     int dim(int h = 0) const { return dimpi_[h]; }
 
     /// Returns the dimension array
-    const Dimension& dimpi() const { return dimpi_; }
+    const Dimension &dimpi() const { return dimpi_; }
 
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }
@@ -281,8 +279,8 @@ public:
     /// @}
 
     /**
-    * Adds accessability to the matrix shape for numpy
-    */
+     * Adds accessability to the matrix shape for numpy
+     */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
 
@@ -290,9 +288,8 @@ public:
 };
 
 /*! \ingroup MINTS */
-class IntVector
-{
-protected:
+class IntVector {
+   protected:
     /// IntVector data
     int **vector_;
     /// Number of irreps
@@ -311,7 +308,7 @@ protected:
     /// Copies data to vector_
     void copy_from(int **);
 
-public:
+   public:
     /// Default constructor, zeros everything out
     IntVector();
 
@@ -339,65 +336,40 @@ public:
     void set(int *vec);
 
     /// Returns a pointer to irrep h
-    int *pointer(int h = 0)
-    {
-        return vector_[h];
-    }
+    int *pointer(int h = 0) { return vector_[h]; }
 
     /// Returns a single element value
-    int get(int h, int m)
-    {
-        return vector_[h][m];
-    }
+    int get(int h, int m) { return vector_[h][m]; }
 
     /// Sets a single element value
-    void set(int h, int m, int val)
-    {
-        vector_[h][m] = val;
-    }
+    void set(int h, int m, int val) { vector_[h][m] = val; }
 
     /// Returns a copy of the vector_
     int *to_block_vector();
 
     /// Returns the dimension per irrep h
-    int dim(int h = 0) const
-    {
-        return dimpi_[h];
-    }
+    int dim(int h = 0) const { return dimpi_[h]; }
 
     /// Returns the dimension array
-    int *dimpi() const
-    {
-        return dimpi_;
-    }
+    int *dimpi() const { return dimpi_; }
 
     /// Returns the number of irreps
-    int nirrep() const
-    {
-        return nirrep_;
-    }
+    int nirrep() const { return nirrep_; }
 
     /**
      * Sets the name of the vector, used in print(...)
      *
      * @param name New name to use.
      */
-    void set_name(const std::string &name)
-    {
-        name_ = name;
-    }
+    void set_name(const std::string &name) { name_ = name; }
 
     /**
      * Gets the name of the matrix.
      */
-    std::string name() const
-    {
-        return name_;
-    }
+    std::string name() const { return name_; }
 
     /// Python compatible printer
-    void print_out()
-    { print("outfile"); }
+    void print_out() { print("outfile"); }
 
     /**
      * Print the matrix using print_mat
@@ -416,6 +388,6 @@ public:
     friend class VectorIterator;
 };
 
-}
+}  // namespace psi
 
 #endif

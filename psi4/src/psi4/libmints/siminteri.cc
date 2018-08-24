@@ -452,4 +452,4 @@ SimintERI::SimintERI(const IntegralFactory *integral, int deriv, bool use_shell_
 
 SimintERI::SimintERI(const SimintERI &rhs) : SimintTwoElectronInt(rhs) {}
 
-}  // close namespace psi
+}  // namespace psi

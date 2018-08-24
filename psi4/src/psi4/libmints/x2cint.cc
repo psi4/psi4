@@ -202,9 +202,9 @@ void X2CInt::diagonalize_dirac_h() {
     SharedMatrix dtmpMat(ssFactory_->create_matrix("Dirac tmp Hamiltonian"));
 
     /* Prakash
-      * Step 3.
-      * Diagonalize the Dirac Hamiltonian with X2C 1e Hamiltonian
-      */
+     * Step 3.
+     * Diagonalize the Dirac Hamiltonian with X2C 1e Hamiltonian
+     */
 
     SXMat->power(-1.0 / 2.0);
     dMat->transform(SXMat);
@@ -289,9 +289,9 @@ void X2CInt::form_R() {
 #endif
 
     /*Prakash
-      * Step 6
-      * R = S^{-1/2} (S ^{-1/2} S_tilda S^{-1/2})^{-1/2} S^{1/2}
-      */
+     * Step 6
+     * R = S^{-1/2} (S ^{-1/2} S_tilda S^{-1/2})^{-1/2} S^{1/2}
+     */
 
     SharedMatrix S_inv_half(soFactory_->create_matrix("Eigenvector S matrix"));
     SharedMatrix sTmp1(soFactory_->create_matrix("S tmp1 matrix"));
@@ -479,4 +479,4 @@ void X2CInt::test_h_FW_plus() {
         }
     }
 }
-}
+}  // namespace psi

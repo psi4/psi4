@@ -43,8 +43,7 @@ class Molecule;
  *
  *  Use an IntegralFactory to create this object.
  */
-class ElectricFieldInt : public OneBodyAOInt
-{
+class ElectricFieldInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterElectricField efield_recur_;
 
@@ -52,14 +51,15 @@ class ElectricFieldInt : public OneBodyAOInt
     int natom_;
 
     //! Computes the electric field between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell &, const GaussianShell &);
 
     //! Computes the electric field gradient between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
+    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &);
 
-public:
+   public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    ElectricFieldInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    ElectricFieldInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                     int deriv = 0);
     //! Virtual destructor
     virtual ~ElectricFieldInt();
 
@@ -70,6 +70,6 @@ public:
     static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
 };
 
-}
+}  // namespace psi
 
 #endif

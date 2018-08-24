@@ -29,38 +29,37 @@
 #ifndef _psi_src_lib_libmints_nabla_h_
 #define _psi_src_lib_libmints_nabla_h_
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
-    class BasisSet;
-    class GaussianShell;
-    class SphericalTransform;
+class BasisSet;
+class GaussianShell;
+class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class DipoleInt
  *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class NablaInt : public OneBodyAOInt
-{
+class NablaInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     //! Computes the dipole between two gaussian shells.
     void compute_pair(const GaussianShell&, const GaussianShell&);
     //! Computes the dipole derivative between two gaussian shells.
-//    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
+    //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
-public:
+   public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    NablaInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    NablaInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor
     virtual ~NablaInt();
 
@@ -68,6 +67,6 @@ public:
     bool has_deriv1() { return true; }
 };
 
-}
+}  // namespace psi
 
 #endif

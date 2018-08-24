@@ -58,24 +58,24 @@
 //
 
 /* chartab.cc -- implementation of the point group classes
-*
-*      THIS SOFTWARE FITS THE DESCRIPTION IN THE U.S. COPYRIGHT ACT OF A
-*      "UNITED STATES GOVERNMENT WORK".  IT WAS WRITTEN AS A PART OF THE
-*      AUTHOR'S OFFICIAL DUTIES AS A GOVERNMENT EMPLOYEE.  THIS MEANS IT
-*      CANNOT BE COPYRIGHTED.  THIS SOFTWARE IS FREELY AVAILABLE TO THE
-*      PUBLIC FOR USE WITHOUT A COPYRIGHT NOTICE, AND THERE ARE NO
-*      RESTRICTIONS ON ITS USE, NOW OR SUBSEQUENTLY.
-*
-*  Author:
-*      E. T. Seidl
-*      Bldg. 12A, Rm. 2033
-*      Computer Systems Laboratory
-*      Division of Computer Research and Technology
-*      National Institutes of Health
-*      Bethesda, Maryland 20892
-*      Internet: seidl@alw.nih.gov
-*      June, 1993
-*/
+ *
+ *      THIS SOFTWARE FITS THE DESCRIPTION IN THE U.S. COPYRIGHT ACT OF A
+ *      "UNITED STATES GOVERNMENT WORK".  IT WAS WRITTEN AS A PART OF THE
+ *      AUTHOR'S OFFICIAL DUTIES AS A GOVERNMENT EMPLOYEE.  THIS MEANS IT
+ *      CANNOT BE COPYRIGHTED.  THIS SOFTWARE IS FREELY AVAILABLE TO THE
+ *      PUBLIC FOR USE WITHOUT A COPYRIGHT NOTICE, AND THERE ARE NO
+ *      RESTRICTIONS ON ITS USE, NOW OR SUBSEQUENTLY.
+ *
+ *  Author:
+ *      E. T. Seidl
+ *      Bldg. 12A, Rm. 2033
+ *      Computer Systems Laboratory
+ *      Division of Computer Research and Technology
+ *      National Institutes of Health
+ *      Bethesda, Maryland 20892
+ *      Internet: seidl@alw.nih.gov
+ *      June, 1993
+ */
 
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -89,90 +89,78 @@ using namespace psi;
 ////////////////////////////////////////////////////////////////////////
 
 CharacterTable::CharacterTable()
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(),
-      bits_(0)
-{
-}
-
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(), bits_(0) {}
 
 CharacterTable::CharacterTable(const CharacterTable& ct)
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(),
-      bits_(0)
-{
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(), bits_(0) {
     *this = ct;
 }
 
-CharacterTable::~CharacterTable()
-{
-    if (gamma_) delete[] gamma_; gamma_=0;
-    if (symop) delete[] symop; symop=0;
-    if (_inv) delete[] _inv; _inv=0;
-    nt=nirrep_=0;
+CharacterTable::~CharacterTable() {
+    if (gamma_) delete[] gamma_;
+    gamma_ = 0;
+    if (symop) delete[] symop;
+    symop = 0;
+    if (_inv) delete[] _inv;
+    _inv = 0;
+    nt = nirrep_ = 0;
 }
 
-CharacterTable&
-CharacterTable::operator=(const CharacterTable& ct)
-{
-    nt=ct.nt; pg=ct.pg; nirrep_=ct.nirrep_;
+CharacterTable& CharacterTable::operator=(const CharacterTable& ct) {
+    nt = ct.nt;
+    pg = ct.pg;
+    nirrep_ = ct.nirrep_;
 
     symb = ct.symb;
 
-    if (gamma_) delete[] gamma_; gamma_=0;
+    if (gamma_) delete[] gamma_;
+    gamma_ = 0;
     if (ct.gamma_) {
         gamma_ = new IrreducibleRepresentation[nirrep_];
-        for (int i=0; i < nirrep_; i++) {
+        for (int i = 0; i < nirrep_; i++) {
             gamma_[i].init();
             gamma_[i] = ct.gamma_[i];
         }
     }
 
-    if (symop)
-        delete[] symop;
-    symop=0;
+    if (symop) delete[] symop;
+    symop = 0;
 
     if (ct.symop) {
         symop = new SymmetryOperation[nirrep_];
-        for (int i=0; i < nirrep_; i++) {
+        for (int i = 0; i < nirrep_; i++) {
             symop[i] = ct.symop[i];
         }
     }
 
-    if (_inv)
-        delete[] _inv;
-    _inv=0;
+    if (_inv) delete[] _inv;
+    _inv = 0;
 
     if (ct._inv) {
         _inv = new int[nirrep_];
-        memcpy(_inv,ct._inv,sizeof(int)* nirrep_);
+        memcpy(_inv, ct._inv, sizeof(int) * nirrep_);
     }
 
     return *this;
 }
 
-void CharacterTable::print(std::string out) const
-{
+void CharacterTable::print(std::string out) const {
     if (!nirrep_) return;
-    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int i;
 
-    printer->Printf( "  point group %s\n\n", symb.c_str());
+    printer->Printf("  point group %s\n\n", symb.c_str());
 
-    for (i=0; i < nirrep_; i++)
-        gamma_[i].print(out);
+    for (i = 0; i < nirrep_; i++) gamma_[i].print(out);
 
-    printer->Printf( "\n  symmetry operation matrices:\n\n");
-    for (i=0; i < nirrep_; i++)
-        symop[i].print(out);
-
+    printer->Printf("\n  symmetry operation matrices:\n\n");
+    for (i = 0; i < nirrep_; i++) symop[i].print(out);
 
     printer->Printf("\n  inverse symmetry operation matrices:\n\n");
-    for (i=0; i < nirrep_; i++)
-        symop[inverse(i)].print(out);
+    for (i = 0; i < nirrep_; i++) symop[inverse(i)].print(out);
 }
 
-void CharacterTable::common_init()
-{
+void CharacterTable::common_init() {
     // first parse the point group symbol, this will give us the order of the
     // point group(g), the type of point group (pg), the order of the principle
     // rotation axis (nt), and the number of irreps (nirrep_)
@@ -189,9 +177,7 @@ void CharacterTable::common_init()
 }
 
 CharacterTable::CharacterTable(const std::string& cpg)
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(cpg),
-      bits_(0)
-{
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(cpg), bits_(0) {
     // Check the symbol coming in
     if (!PointGroup::full_name_to_bits(cpg, bits_)) {
         outfile->Printf("CharacterTable: Invalid point group name: %s\n", cpg.c_str());
@@ -200,17 +186,12 @@ CharacterTable::CharacterTable(const std::string& cpg)
     common_init();
 }
 
-CharacterTable::CharacterTable(unsigned char bits)
-    : bits_(bits)
-{
+CharacterTable::CharacterTable(unsigned char bits) : bits_(bits) {
     symb = PointGroup::bits_to_basic_name(bits);
     common_init();
 }
 
-unsigned char CharacterTable::bits()
-{
-    return bits_;
-}
+unsigned char CharacterTable::bits() { return bits_; }
 
 /////////////////////////////////////////////////////////////////////////////
 
