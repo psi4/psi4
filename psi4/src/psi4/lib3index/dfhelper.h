@@ -263,10 +263,9 @@ class PSI_API DFHelper {
     size_t get_naux() { return naux_; }
 
     /// builds J/K
-    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
-                           std::vector<SharedMatrix> D, std::vector<SharedMatrix> J,
-                           std::vector<SharedMatrix> K, size_t max_nocc,
-                           bool do_J, bool do_K, bool do_wK, bool lr_symmetric);
+    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> D,
+                  std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, size_t max_nocc, bool do_J, bool do_K,
+                  bool do_wK, bool lr_symmetric);
 
    protected:
     // => basis sets <=
@@ -308,20 +307,19 @@ class PSI_API DFHelper {
     void prepare_AO();
     void prepare_AO_core();
     void compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
-                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+                                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
-                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+                                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_p(const size_t start, const size_t stop, double* Mp,
-                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+                                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
-                           std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+                                            std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
     // first integral transforms
-    void first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size,
-        double* Mp, double* Tp, double* Bp, std::vector<std::vector<double>>& C_buffers);
-
+    void first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size, double* Mp,
+                             double* Tp, double* Bp, std::vector<std::vector<double>>& C_buffers);
 
     // => index vectors for screened AOs <=
     std::vector<size_t> small_skips_;
@@ -343,8 +341,8 @@ class PSI_API DFHelper {
                                                          std::vector<std::pair<size_t, size_t>>& b);
     std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                           std::vector<std::pair<size_t, size_t>>& b);
-    void metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps,
-        size_t blocking_index, size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump);
+    void metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, size_t blocking_index,
+                                     size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump);
 
     // => Schwarz Screening <=
     std::vector<size_t> schwarz_fun_mask_;
@@ -375,10 +373,9 @@ class PSI_API DFHelper {
     // => transformation machinery <=
     std::pair<size_t, size_t> identify_order();
     void print_order();
-    void put_transformations_Qpq(int naux, int begin, int end,
-        int wsize, int bsize, double* Fp, int ind, bool bleft);
-    void put_transformations_pQq(int naux, int begin, int end, int block_size, int bcount,
-        int wsize, int bsize, double* Np, double* Fp, int ind, bool bleft);
+    void put_transformations_Qpq(int naux, int begin, int end, int wsize, int bsize, double* Fp, int ind, bool bleft);
+    void put_transformations_pQq(int naux, int begin, int end, int block_size, int bcount, int wsize, int bsize,
+                                 double* Np, double* Fp, int ind, bool bleft);
     std::vector<std::pair<std::string, size_t>> sorted_spaces_;
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
@@ -386,9 +383,8 @@ class PSI_API DFHelper {
 
     // => FILE IO maintenence <=
     typedef struct StreamStruct {
-
         StreamStruct();
-        StreamStruct(std::string filename, std::string op, bool activate=true);
+        StreamStruct(std::string filename, std::string op, bool activate = true);
         ~StreamStruct();
 
         FILE* get_stream(std::string op);
@@ -426,7 +422,7 @@ class PSI_API DFHelper {
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
     std::string start_filename(std::string start);
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op=0);
+    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
     void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
@@ -439,10 +435,9 @@ class PSI_API DFHelper {
     void transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order);
 
     // => JK <=
-    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
-                           std::vector<SharedMatrix> D, std::vector<SharedMatrix> J,
-                           std::vector<SharedMatrix> K, size_t max_nocc,
-                           bool do_J, bool do_K, bool do_wK, bool lr_symmetric);
+    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> D,
+                    std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, size_t max_nocc, bool do_J, bool do_K,
+                    bool do_wK, bool lr_symmetric);
     void compute_D(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
     void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
@@ -451,12 +446,12 @@ class PSI_API DFHelper {
     void compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
                    double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
                    std::vector<std::vector<double>>& C_buffers, bool lr_symmetric);
-    std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(
-        std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc, bool lr_symmetric);
+    std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc,
+                                                          bool lr_symmetric);
 
     // => misc <=
     void fill(double* b, size_t count, double value);
 
 };  // End DF Helper class
-}  // psi4 namespace
+}  // namespace psi
 #endif

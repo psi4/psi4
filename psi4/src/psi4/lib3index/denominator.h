@@ -36,8 +36,7 @@ class Vector;
 
 // Denominator Factorizations (MP2-like for now)
 class Denominator {
-
-protected:
+   protected:
     // Denominator (w in rows, ia in column)
     SharedMatrix denominator_;
 
@@ -51,53 +50,50 @@ protected:
     double delta_;
 
     virtual void decompose() = 0;
-public:
+
+   public:
     Denominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta);
     virtual ~Denominator();
 
     // Factory method, algorithm should be LAPLACE or CHOLESKY
-    static std::shared_ptr<Denominator> buildDenominator(const std::string& algorithm,
-            std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta);
+    static std::shared_ptr<Denominator> buildDenominator(const std::string& algorithm, std::shared_ptr<Vector> eps_occ,
+                                                         std::shared_ptr<Vector> eps_vir, double delta);
 
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
     virtual void debug();
     SharedMatrix denominator() const { return denominator_; }
-
 };
 
 class LaplaceDenominator : public Denominator {
-
-protected:
+   protected:
     // Fully split denominator (w in rows, i in columns)
     SharedMatrix denominator_occ_;
     // Fully split denominator (w in rows, a in columns)
     SharedMatrix denominator_vir_;
 
     void decompose();
-public:
+
+   public:
     LaplaceDenominator(std::shared_ptr<Vector> eps_occ_, std::shared_ptr<Vector> eps_vir, double delta);
     ~LaplaceDenominator();
     void debug();
     SharedMatrix denominator_occ() const { return denominator_occ_; }
     SharedMatrix denominator_vir() const { return denominator_vir_; }
-
 };
 
 class CholeskyDenominator : public Denominator {
-
-protected:
+   protected:
     void decompose();
-public:
+
+   public:
     CholeskyDenominator(std::shared_ptr<Vector> eps_occ_, std::shared_ptr<Vector> eps_vir, double delta);
     ~CholeskyDenominator();
     void debug();
-
 };
 
 class SAPTDenominator {
-
-protected:
+   protected:
     // Denominator (w in rows, ar in column) (monomer A)
     SharedMatrix denominatorA_;
     // Denominator (w in rows, bs in column) (monomer B)
@@ -119,30 +115,27 @@ protected:
     bool debug_;
 
     virtual void decompose() = 0;
-    void check_denom(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-      SharedMatrix);
-public:
-    SAPTDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-      std::shared_ptr<Vector>, std::shared_ptr<Vector>, double, bool);
+    void check_denom(std::shared_ptr<Vector>, std::shared_ptr<Vector>, SharedMatrix);
+
+   public:
+    SAPTDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>,
+                    double, bool);
     virtual ~SAPTDenominator();
 
     // Factory method, algorithm should be LAPLACE or CHOLESKY
-    static std::shared_ptr<SAPTDenominator> buildDenominator(const std::string& algorithm,
-            std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
-            std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB,
-            double delta, bool debug = false);
+    static std::shared_ptr<SAPTDenominator> buildDenominator(
+        const std::string& algorithm, std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
+        std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB, double delta, bool debug = false);
 
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
     virtual void debug();
     SharedMatrix denominatorA() const { return denominatorA_; }
     SharedMatrix denominatorB() const { return denominatorB_; }
-
 };
 
 class SAPTLaplaceDenominator : public SAPTDenominator {
-
-protected:
+   protected:
     // Fully split denominator (w in rows, a in columns) (monomer A)
     SharedMatrix denominator_occA_;
     // Fully split denominator (w in rows, r in columns) (monomer A)
@@ -153,11 +146,11 @@ protected:
     SharedMatrix denominator_virB_;
 
     void decompose();
-    void check_split(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-      SharedMatrix, SharedMatrix);
-public:
-    SAPTLaplaceDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-      std::shared_ptr<Vector>, std::shared_ptr<Vector>, double, bool debug = false);
+    void check_split(std::shared_ptr<Vector>, std::shared_ptr<Vector>, SharedMatrix, SharedMatrix);
+
+   public:
+    SAPTLaplaceDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>,
+                           std::shared_ptr<Vector>, double, bool debug = false);
     ~SAPTLaplaceDenominator();
 
     void debug();
@@ -165,21 +158,19 @@ public:
     SharedMatrix denominator_virA() const { return denominator_virA_; }
     SharedMatrix denominator_occB() const { return denominator_occB_; }
     SharedMatrix denominator_virB() const { return denominator_virB_; }
-
 };
 
 class SAPTCholeskyDenominator : public SAPTDenominator {
-
-protected:
+   protected:
     void decompose();
-public:
-    SAPTCholeskyDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-      std::shared_ptr<Vector>, std::shared_ptr<Vector>, double, bool debug = false);
+
+   public:
+    SAPTCholeskyDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>,
+                            std::shared_ptr<Vector>, double, bool debug = false);
     ~SAPTCholeskyDenominator();
 };
 
 class TLaplaceDenominator {
-
     // Pointer to active occupied orbital eigenvalues
     std::shared_ptr<Vector> eps_occ_;
     // Pointer to active virtual orbital eigenvalues
@@ -195,7 +186,8 @@ class TLaplaceDenominator {
     int nvector_;
 
     virtual void decompose();
-public:
+
+   public:
     TLaplaceDenominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta);
     virtual ~TLaplaceDenominator();
 
@@ -206,5 +198,5 @@ public:
     SharedMatrix denominator_vir() const { return denominator_vir_; }
 };
 
-} // Namespace psi
+}  // Namespace psi
 #endif
