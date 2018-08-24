@@ -2595,32 +2595,32 @@ void FISAPT::felst() {
 #endif
 
     // => Get integrals from DFHelper <= //
-    auto dfh(std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
-    dfh->set_memory(doubles_);
-    dfh->set_method("DIRECT_iaQ");
-    dfh->set_nthreads(nT);
-    dfh->initialize();
-    dfh->print_header();
+    dfh_ = std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF"));
+    dfh_->set_memory(doubles_);
+    dfh_->set_method("DIRECT_iaQ");
+    dfh_->set_nthreads(nT);
+    dfh_->initialize();
+    dfh_->print_header();
 
-    dfh->add_space("a", matrices_["Locc0A"]);
-    dfh->add_space("b", matrices_["Locc0B"]);
+    dfh_->add_space("a", matrices_["Locc0A"]);
+    dfh_->add_space("b", matrices_["Locc0B"]);
 
-    dfh->add_transformation("Aaa", "a", "a");
-    dfh->add_transformation("Abb", "b", "b");
+    dfh_->add_transformation("Aaa", "a", "a");
+    dfh_->add_transformation("Abb", "b", "b");
 
-    dfh->transform();
+    dfh_->transform();
 
-    size_t nQ = dfh->get_naux();
+    size_t nQ = dfh_->get_naux();
     auto QaC = std::make_shared<Matrix>("QaC", na, nQ);
     double** QaCp = QaC->pointer();
     for (size_t a = 0; a < na; a++) {
-        dfh->fill_tensor("Aaa", QaCp[a], {a, a + 1}, {a, a + 1});
+        dfh_->fill_tensor("Aaa", QaCp[a], {a, a + 1}, {a, a + 1});
     }
 
     auto QbC = std::make_shared<Matrix>("QbC", nb, nQ);
     double** QbCp = QbC->pointer();
     for (size_t b = 0; b < nb; b++) {
-        dfh->fill_tensor("Abb", QbCp[b], {b, b + 1}, {b, b + 1});
+        dfh_->fill_tensor("Abb", QbCp[b], {b, b + 1}, {b, b + 1});
     }
 
     std::shared_ptr<Matrix> Elst10_3 = Matrix::doublet(QaC, QbC, false, true);
@@ -2684,6 +2684,9 @@ void FISAPT::felst() {
             Ep[a + nA][B] += E;
         }
     }
+
+    // Prepare DFHelper object for the next module
+    dfh_->clear_spaces();
 
     // => Summation <= //
 
@@ -2750,24 +2753,15 @@ void FISAPT::fexch() {
     size_t max_MO = 0;
     for (auto& mat : Cs) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
-    // => Get integrals from DFHelper <= //
-    auto dfh(std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
-    dfh->set_memory(doubles_);
-    dfh->set_method("DIRECT_iaQ");
-    dfh->set_nthreads(nT);
+    dfh_->add_space("a", Cs[0]);
+    dfh_->add_space("r", Cs[1]);
+    dfh_->add_space("b", Cs[2]);
+    dfh_->add_space("s", Cs[3]);
 
-    dfh->initialize();
-    dfh->print_header();
-
-    dfh->add_space("a", Cs[0]);
-    dfh->add_space("r", Cs[1]);
-    dfh->add_space("b", Cs[2]);
-    dfh->add_space("s", Cs[3]);
-
-    dfh->add_transformation("Aar", "a", "r");
-    dfh->add_transformation("Abs", "b", "s");
+    dfh_->add_transformation("Aar", "a", "r");
+    dfh_->add_transformation("Abs", "b", "s");
     
-    dfh->transform();
+    dfh_->transform();
 
     // ==> Electrostatic Potentials <== //
 
@@ -2823,7 +2817,7 @@ void FISAPT::fexch() {
     // E_exch1->print();
     // E_exch2->print();
 
-    size_t nQ = dfh->get_naux();
+    size_t nQ = dfh_->get_naux();
     auto TrQ = std::make_shared<Matrix>("TrQ", nr, nQ);
     double** TrQp = TrQ->pointer();
     auto TsQ = std::make_shared<Matrix>("TsQ", ns, nQ);
@@ -2833,29 +2827,29 @@ void FISAPT::fexch() {
     auto TaQ = std::make_shared<Matrix>("TaQ", na, nQ);
     double** TaQp = TaQ->pointer();
 
-    dfh->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
+    dfh_->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
 
     for (size_t a = 0; a < na; a++) {
-        dfh->fill_tensor("Aar", TrQ, {a, a + 1});
+        dfh_->fill_tensor("Aar", TrQ, {a, a + 1});
         C_DGEMM('N', 'N', nb, nQ, nr, 1.0, Sbrp[0], nr, TrQp[0], nQ, 0.0, TbQp[0], nQ);
-        dfh->write_disk_tensor("Bab", TbQ, {a, a + 1});
+        dfh_->write_disk_tensor("Bab", TbQ, {a, a + 1});
     }
 
-    dfh->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
+    dfh_->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
 
     for (size_t b = 0; b < nb; b++) {
-        dfh->fill_tensor("Abs", TsQ, {b, b + 1});
+        dfh_->fill_tensor("Abs", TsQ, {b, b + 1});
         C_DGEMM('N', 'N', na, nQ, ns, 1.0, Sasp[0], ns, TsQp[0], nQ, 0.0, TaQp[0], nQ);
-        dfh->write_disk_tensor("Bba", TaQ, {b, b + 1});
+        dfh_->write_disk_tensor("Bba", TaQ, {b, b + 1});
     }
 
     auto E_exch3 = std::make_shared<Matrix>("E_exch [a <x-x> b]", na, nb);
     double** E_exch3p = E_exch3->pointer();
 
     for (size_t a = 0; a < na; a++) {
-        dfh->fill_tensor("Bab", TbQ, {a, a + 1});
+        dfh_->fill_tensor("Bab", TbQ, {a, a + 1});
         for (size_t b = 0; b < nb; b++) {
-            dfh->fill_tensor("Bba", TaQ, {b, b + 1}, {a, a + 1});
+            dfh_->fill_tensor("Bba", TaQ, {b, b + 1}, {a, a + 1});
             E_exch3p[a][b] -= 2.0 * C_DDOT(nQ, TbQp[b], 1, TaQp[0], 1);
         }
     }
@@ -2896,6 +2890,10 @@ void FISAPT::fexch() {
         sSAPT0_scale_ = pow(sSAPT0_scale_, 3.0);
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
+
+    //Prepare DFHelper object for the next module
+    dfh_->clear_spaces();
+
 }
 void FISAPT::find() {
     outfile->Printf("  ==> F-SAPT Induction <==\n\n");
@@ -2941,18 +2939,12 @@ void FISAPT::find() {
     nT = Process::environment.get_n_threads();
 #endif
 
-    auto dfh(std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
-    dfh->set_memory(doubles_);
-    dfh->set_method("DIRECT_iaQ");
-    dfh->set_nthreads(nT);
-    dfh->initialize();
-    dfh->print_header();
-    size_t nQ = dfh->get_naux();
+    size_t nQ = dfh_->get_naux();
 
     // => ESPs <= //
 
-    dfh->add_disk_tensor("WBar", std::make_tuple(nB + nb, na, nr));
-    dfh->add_disk_tensor("WAbs", std::make_tuple(nA + na, nb, ns));
+    dfh_->add_disk_tensor("WBar", std::make_tuple(nB + nb, na, nr));
+    dfh_->add_disk_tensor("WAbs", std::make_tuple(nA + na, nb, ns));
 
     // => Nuclear Part (PITA) <= //
 
@@ -2972,7 +2964,7 @@ void FISAPT::find() {
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B, Vtemp2, Cvir_B, true, false, false);
-        dfh->write_disk_tensor("WAbs", Vbs, {A, A + 1});
+        dfh_->write_disk_tensor("WAbs", Vbs, {A, A + 1});
     }
 
     double* ZBp = vectors_["ZB"]->pointer();
@@ -2984,7 +2976,7 @@ void FISAPT::find() {
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A, Vtemp2, Cvir_A, true, false, false);
-        dfh->write_disk_tensor("WBar", Var, {B, B + 1});
+        dfh_->write_disk_tensor("WBar", Var, {B, B + 1});
     }
 
     // ==> DFHelper Setup (JKFIT Type, in Full Basis) <== //
@@ -2998,15 +2990,15 @@ void FISAPT::find() {
     size_t max_MO = 0;
     for (auto& mat : Cs) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
-    dfh->add_space("a", Cs[0]);
-    dfh->add_space("r", Cs[1]);
-    dfh->add_space("b", Cs[2]);
-    dfh->add_space("s", Cs[3]);
+    dfh_->add_space("a", Cs[0]);
+    dfh_->add_space("r", Cs[1]);
+    dfh_->add_space("b", Cs[2]);
+    dfh_->add_space("s", Cs[3]);
 
-    dfh->add_transformation("Aar", "a", "r");
-    dfh->add_transformation("Abs", "b", "s");
+    dfh_->add_transformation("Aar", "a", "r");
+    dfh_->add_transformation("Abs", "b", "s");
 
-    dfh->transform();
+    dfh_->transform();
 
     // => Electronic Part (Massive PITA) <= //
 
@@ -3018,10 +3010,10 @@ void FISAPT::find() {
     double** TsQp = TsQ->pointer();
     double** T1Asp = T1As->pointer();
     for (size_t b = 0; b < nb; b++) {
-        dfh->fill_tensor("Abs", TsQ, {b, b + 1});
+        dfh_->fill_tensor("Abs", TsQ, {b, b + 1});
         C_DGEMM('N', 'T', na, ns, nQ, 2.0, RaCp[0], nQ, TsQp[0], nQ, 0.0, T1Asp[0], ns);
         for (size_t a = 0; a < na; a++) {
-            dfh->write_disk_tensor("WAbs", T1Asp[a], {nA + a, nA + a + 1}, {b, b + 1});
+            dfh_->write_disk_tensor("WAbs", T1Asp[a], {nA + a, nA + a + 1}, {b, b + 1});
         }
     }
 
@@ -3030,10 +3022,10 @@ void FISAPT::find() {
     double** TrQp = TrQ->pointer();
     double** T1Brp = T1Br->pointer();
     for (size_t a = 0; a < na; a++) {
-        dfh->fill_tensor("Aar", TrQ, {a, a + 1});
+        dfh_->fill_tensor("Aar", TrQ, {a, a + 1});
         C_DGEMM('N', 'T', nb, nr, nQ, 2.0, RbDp[0], nQ, TrQp[0], nQ, 0.0, T1Brp[0], nr);
         for (size_t b = 0; b < nb; b++) {
-            dfh->write_disk_tensor("WBar", T1Brp[b], {nB + b, nB + b + 1}, {a, a + 1});
+            dfh_->write_disk_tensor("WBar", T1Brp[b], {nB + b, nB + b + 1}, {a, a + 1});
         }
     }
 
@@ -3182,7 +3174,7 @@ void FISAPT::find() {
 
     for (size_t B = 0; B < nB + nb; B++) {
         // ESP
-        dfh->fill_tensor("WBar", wB, {B, B + 1});
+        dfh_->fill_tensor("WBar", wB, {B, B + 1});
 
         // Uncoupled amplitude
         for (int a = 0; a < na; a++) {
@@ -3219,7 +3211,7 @@ void FISAPT::find() {
 
     for (size_t A = 0; A < nA + na; A++) {
         // ESP
-        dfh->fill_tensor("WAbs", wA, {A, A + 1});
+        dfh_->fill_tensor("WAbs", wA, {A, A + 1});
 
         // Uncoupled amplitude
         for (int b = 0; b < nb; b++) {
@@ -3332,8 +3324,8 @@ void FISAPT::find() {
         int nC = std::max(nA + na, nB + nb);
 
         for (size_t C = 0; C < nC; C++) {
-            if (C < nB + nb) dfh->fill_tensor("WBar", wB, {C, C + 1});
-            if (C < nA + na) dfh->fill_tensor("WAbs", wB, {C, C + 1});
+            if (C < nB + nb) dfh_->fill_tensor("WBar", wB, {C, C + 1});
+            if (C < nA + na) dfh_->fill_tensor("WAbs", wB, {C, C + 1});
 
             outfile->Printf("    Responses for (A <- Source B = %3d) and (B <- Source A = %3d)\n\n",
                             (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));
@@ -3522,6 +3514,8 @@ void FISAPT::find() {
             sEBAp[A][b + snB] = sEBA2p[A][b];
         }
     }
+    // We're done with dfh_'s integrals
+    dfh_->clear_all();
 }
 void FISAPT::fdisp() {
     outfile->Printf("  ==> F-SAPT Dispersion <==\n\n");

@@ -41,6 +41,7 @@ namespace psi {
 
 class JK;
 class BasisSet;
+class DFHelper;
 
 namespace fisapt {
 
@@ -75,6 +76,9 @@ protected:
     std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
     // Build the Ind20 potential in the monomer A ov space
     std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+
+    // DFHelper object
+    std::shared_ptr<DFHelper> dfh_;
 
     /// Helper to drop a matrix to filepath/A->name().dat
     /// Helper to drop a vector to filepath/A->name().dat
