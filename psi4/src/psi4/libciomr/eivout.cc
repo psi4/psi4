@@ -50,41 +50,38 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-void eivout(double **a, double *b, int m, int n, std::string out)
-{
+void eivout(double **a, double *b, int m, int n, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int ii, jj, kk, nn;
+    int i, j;
 
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out));
-   int ii,jj,kk,nn;
-  int i,j;
-
-  ii=0;jj=0;
+    ii = 0;
+    jj = 0;
 L200:
-  ii++;
-  jj++;
-  kk=10*jj;
-  nn=n;
-  if (nn > kk) nn=kk;
-  printer->Printf("\n");
-  for (i=ii; i <= nn; i++) printer->Printf("       %5d",i);
-  printer->Printf("\n");
-  for (i=0; i < m; i++) {
-    printer->Printf("\n%5d",i+1);
-    for (j=ii-1; j < nn; j++) {
-      printer->Printf("%12.7f",a[i][j]);
+    ii++;
+    jj++;
+    kk = 10 * jj;
+    nn = n;
+    if (nn > kk) nn = kk;
+    printer->Printf("\n");
+    for (i = ii; i <= nn; i++) printer->Printf("       %5d", i);
+    printer->Printf("\n");
+    for (i = 0; i < m; i++) {
+        printer->Printf("\n%5d", i + 1);
+        for (j = ii - 1; j < nn; j++) {
+            printer->Printf("%12.7f", a[i][j]);
+        }
     }
-  }
-  printer->Printf("\n");
-  printer->Printf("\n     ");
-  for (j=ii-1; j < nn; j++) {
-    printer->Printf("%12.7f",b[j]);
-  }
-  printer->Printf("\n");
-  if (n <= kk) {
-
-    return;
-  }
-  ii=kk; goto L200;
+    printer->Printf("\n");
+    printer->Printf("\n     ");
+    for (j = ii - 1; j < nn; j++) {
+        printer->Printf("%12.7f", b[j]);
+    }
+    printer->Printf("\n");
+    if (n <= kk) {
+        return;
+    }
+    ii = kk;
+    goto L200;
 }
-
 }

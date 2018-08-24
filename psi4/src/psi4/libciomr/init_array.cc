@@ -50,18 +50,15 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-double * init_array(size_t size)
-{
-  double *array;
+double *init_array(size_t size) {
+    double *array;
 
-  if ((array = (double *) malloc(size*(size_t)sizeof(double)))
-    == nullptr) {
-    outfile->Printf("init_array: trouble allocating memory \n");
-    outfile->Printf("size = %ld\n",size);
-    exit(PSI_RETURN_FAILURE);
-  }
-  memset(array,0,size*(size_t)sizeof(double));
-  return(array);
+    if ((array = (double *)malloc(size * (size_t)sizeof(double))) == nullptr) {
+        outfile->Printf("init_array: trouble allocating memory \n");
+        outfile->Printf("size = %ld\n", size);
+        exit(PSI_RETURN_FAILURE);
+    }
+    memset(array, 0, size * (size_t)sizeof(double));
+    return (array);
 }
-
 }
