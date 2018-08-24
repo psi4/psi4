@@ -38,7 +38,6 @@ typedef double Value;
 #define IWL_KEY_ONEL "IWL One-electron matrix elements"
 
 #define IWL_INTS_PER_BUF 2980
-
 }
 
 #endif
