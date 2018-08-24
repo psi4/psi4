@@ -37,9 +37,9 @@ class Options;
 
 namespace sapt {
 
-PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
-                   SharedWavefunction MonomerB, Options & options);
-
-}}
+PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB,
+                   Options& options);
+}
+}
 
 #endif
