@@ -32,11 +32,11 @@
  */
 
 #include <cstdio>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
@@ -45,45 +45,35 @@
 
 namespace psi {
 
-
-
 void PSIO::tocprint(size_t unit) {
-  psio_tocentry *this_entry;
+    psio_tocentry *this_entry;
 
-  bool already_open = open_check(unit);
-  if(!already_open) open(unit, PSIO_OPEN_OLD);
+    bool already_open = open_check(unit);
+    if (!already_open) open(unit, PSIO_OPEN_OLD);
 
-  this_entry = psio_unit[unit].toc;
+    this_entry = psio_unit[unit].toc;
 
-  outfile->Printf( "\nTable of Contents for Unit %5u\n", unit);
-  outfile->Printf(
-          "----------------------------------------------------------------------------\n");
-  outfile->Printf(
-          "Key                                   Spage    Soffset      Epage    Eoffset\n");
-  outfile->Printf(
-          "----------------------------------------------------------------------------\n");
+    outfile->Printf("\nTable of Contents for Unit %5u\n", unit);
+    outfile->Printf("----------------------------------------------------------------------------\n");
+    outfile->Printf("Key                                   Spage    Soffset      Epage    Eoffset\n");
+    outfile->Printf("----------------------------------------------------------------------------\n");
 
-  while (this_entry != nullptr) {
-    outfile->Printf("%-32s %10lu %10lu %10lu %10lu\n", this_entry->key,
-            this_entry->sadd.page, this_entry->sadd.offset,
-            this_entry->eadd.page, this_entry->eadd.offset);
-    this_entry = this_entry->next;
-  }
-  outfile->Printf("\n");
+    while (this_entry != nullptr) {
+        outfile->Printf("%-32s %10lu %10lu %10lu %10lu\n", this_entry->key, this_entry->sadd.page,
+                        this_entry->sadd.offset, this_entry->eadd.page, this_entry->eadd.offset);
+        this_entry = this_entry->next;
+    }
+    outfile->Printf("\n");
 
-
-  if(!already_open) close(unit, 1); // keep
+    if (!already_open) close(unit, 1);  // keep
 }
 
-  /*!
-   ** PSIO_TOCPRINT(): Print the table of contents for the given unit
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_TOCPRINT(): Print the table of contents for the given unit
+ **
+ ** \ingroup PSIO
+ */
 
-  void psio_tocprint(size_t unit) {
-    return _default_psio_lib_->tocprint(unit);
-  }
+void psio_tocprint(size_t unit) { return _default_psio_lib_->tocprint(unit); }
 
-
-}
+}  // namespace psi
