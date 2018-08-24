@@ -36,25 +36,22 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 
-namespace ambit
-{
+namespace ambit {
 
 class Tensor;
 
-namespace helpers
-{
+namespace helpers {
 
-namespace psi4
-{
+namespace psi4 {
 
 void convert(const psi::Matrix &matrix, ambit::Tensor *target);
 
 void convert(const psi::Vector &vector, ambit::Tensor *target);
 
-} // namespace psi4
+}  // namespace psi4
 
-} // namespace helpers
+}  // namespace helpers
 
-} // namespace ambit
+}  // namespace ambit
 
-#endif // AMBIT_CONVERTER_H
+#endif  // AMBIT_CONVERTER_H
