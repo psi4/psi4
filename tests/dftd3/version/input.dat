@@ -117,10 +117,11 @@ energy('b3lyp-d2', molecule=eeee)
 compare_values(refs['d2']['d'], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
 # single test below fails for mysterious dft reasons
 compare_values(refs['dft']['d'] + refs['d2']['d'], get_variable('DFT TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
-#compare_values(refs['dft']['d'] + refs['d2gr']['d'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+#compare_values(refs['dft']['d'] + refs['d2']['d'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
 
 energy('b3lyp-d3', molecule=mAuncp)
 compare_values(refs['d3zero']['m'], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
+compare_values(refs['d3zero']['m'], get_variable('B3LYP-D3 DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
 compare_values(refs['dft']['muncp'] + refs['d3zero']['m'], get_variable('DFT TOTAL ENERGY'), 5, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
 #compare_values(refs['dft']['muncp'] + refs['d3zero']['m'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
 

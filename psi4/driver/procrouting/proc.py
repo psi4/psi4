@@ -1015,13 +1015,17 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        if isinstance(disp_type, dict):
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(),
-                disp_type["type"], dashparams=disp_type["params"],
-                citation=disp_type["citation"], tuple_params=modified_disp_params)
-        else:
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
-                disp_type[0], disp_type[1], tuple_params=modified_disp_params)
+        wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint=superfunc.name(),
+                level_hint=disp_type["type"],
+                citation=disp_type["citation"],
+                param_tweaks=modified_disp_params,
+                engine=kwargs.get('engine', None))
+
+        # [Aug 2018] there once was a breed of `disp_type` that quacked
+        #   like a list rather than the more common dict handled above. if
+        #   ever again sighted, make an issue so this code can accommodate.
+
         wfn._disp_functor.print_out()
         if (disp_type["type"] == 'nl'):
             del wfn._disp_functor

@@ -218,6 +218,7 @@ def dynamic_variable_bind(cls):
     cls.to_string = qcdb.Molecule.to_string
     cls.from_schema = molecule_from_schema
     cls.to_schema = qcdb.Molecule.to_schema
+    cls.run_dftd3 = qcdb.Molecule.run_dftd3
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance

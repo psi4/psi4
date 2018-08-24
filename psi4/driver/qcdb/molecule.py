@@ -1235,6 +1235,74 @@ class Molecule(LibmintsMolecule):
             prec=prec)
         return smol
 
+    def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=1):
+        """Compute dispersion correction via Grimme's DFTD3 program.
+
+        Parameters
+        ----------
+        func : str, optional
+            Name of functional (func only, func & disp, or disp only) for
+            which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
+            blyp-d3(bj), hf+d). Any or all parameters initialized
+            from `dashcoeff[dashlvl][func]` can be overwritten via
+            `dashparam`.
+        dashlvl : str, optional
+            Name of dispersion correction to be applied (e.g., d, D2,
+            d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
+            "formal" to one.
+        dashparam : dict, optional
+            Values for the same keys as `dashcoeff[dashlvl]['default']`
+            used to override any or all values initialized by `func`.
+            Extra parameters will error.
+        dertype : int or str, optional
+            Maximum derivative level at which to run DFTD3. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose : int, optional
+            Amount of printing.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        """
+        from . import intf_dftd3
+
+        if dertype is None:
+            derint, derdriver = -1, 'gradient'
+        else:
+            derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        jobrec = intf_dftd3.run_dftd3_from_arrays(
+            molrec=self.to_dict(np_out=False),
+            name_hint=func,
+            level_hint=dashlvl,
+            param_tweaks=dashparam,
+            ptype=derdriver,
+            verbose=verbose)
+
+        if isinstance(self, Molecule):
+            pass
+        else:
+            from psi4 import core
+
+            for k, qca in jobrec['qcvars'].items():
+                if not isinstance(qca.data, np.ndarray):
+                    core.set_variable(k, float(qca.data))
+
+        if derint == -1:
+            return (float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data),
+                    jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data)
+        elif derint == 0:
+            return float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data)
+        elif derint == 1:
+            return jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data
+
     @staticmethod
     def from_schema(molschema, return_dict=False, verbose=1):
         """Construct Molecule from non-Psi4 schema.
@@ -1783,8 +1851,6 @@ class Molecule(LibmintsMolecule):
 
 
 # Attach methods to qcdb.Molecule class
-from .interface_dftd3 import run_dftd3 as _dftd3_qcdb_yo
-Molecule.run_dftd3 = _dftd3_qcdb_yo
 from .parker import xyz2mol as _parker_xyz2mol_yo
 Molecule.format_molecule_for_mol2 = _parker_xyz2mol_yo
 from .parker import bond_profile as _parker_bondprofile_yo
