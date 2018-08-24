@@ -40,27 +40,28 @@ namespace psi {
 
 class MOInfo;
 
-class ModelSpace{
-public:
-  ModelSpace(MOInfo* moinfo_obj_);
-  ~ModelSpace();
-  void print();
-private:
-  void startup();
-  void cleanup();
-  void build();
-  void classify();
+class ModelSpace {
+   public:
+    ModelSpace(MOInfo* moinfo_obj_);
+    ~ModelSpace();
+    void print();
 
-  int wfn_sym;
-  std::vector<SlaterDeterminant> determinants;
-  std::vector<int>  closed_to_all;  // closed-shell determinants
-  std::vector<int>  opensh_to_all;  // open-shell   determinants
-  std::vector<int>  unique_to_all;  // spin-unique  determinants
-  MOInfo* moinfo_obj;
+   private:
+    void startup();
+    void cleanup();
+    void build();
+    void classify();
+
+    int wfn_sym;
+    std::vector<SlaterDeterminant> determinants;
+    std::vector<int> closed_to_all;  // closed-shell determinants
+    std::vector<int> opensh_to_all;  // open-shell   determinants
+    std::vector<int> unique_to_all;  // spin-unique  determinants
+    MOInfo* moinfo_obj;
 };
 
-    extern ModelSpace  *model_space;
+extern ModelSpace* model_space;
 
-}
+}  // namespace psi
 
-#endif // _psi_src_lib_libmoinfo_model_space_h_
+#endif  // _psi_src_lib_libmoinfo_model_space_h_
