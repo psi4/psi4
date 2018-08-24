@@ -41,9 +41,7 @@ class VBase;
 // => BASE CLASSES <= //
 
 class Hamiltonian {
-
-protected:
-
+   protected:
     /// Print flag, defaults to 1
     int print_;
     /// Debug flag, defaults to 0
@@ -59,7 +57,7 @@ protected:
 
     void common_init();
 
-public:
+   public:
     // => Constructors < = //
 
     Hamiltonian(std::shared_ptr<JK> jk);
@@ -70,33 +68,33 @@ public:
     // => Accessors <= //
 
     /**
-    * Pointer to the JK object
-    * @return current JK object
-    */
+     * Pointer to the JK object
+     * @return current JK object
+     */
     std::shared_ptr<JK> jk() const { return jk_; }
     /**
-    * Pointer to the V object
-    * @return current VBase object
-    */
+     * Pointer to the V object
+     * @return current VBase object
+     */
     std::shared_ptr<VBase> v() const { return v_; }
 
     /**
-    * Print header information regarding Hamiltonian
-    * type on output file
-    */
+     * Print header information regarding Hamiltonian
+     * type on output file
+     */
     virtual void print_header() const = 0;
 
     // => Knobs <= //
 
     /**
-    * Knob to swap out a JK object
-    * @param jk new JK object
-    */
+     * Knob to swap out a JK object
+     * @param jk new JK object
+     */
     void set_JK(std::shared_ptr<JK> jk) { jk_ = jk; }
     /**
-    * Knob to swap out a V object
-    * @param v new V object
-    */
+     * Knob to swap out a V object
+     * @param v new V object
+     */
     void set_V(std::shared_ptr<VBase> v) { v_ = v; }
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }
@@ -109,8 +107,7 @@ public:
 };
 
 class RHamiltonian : public Hamiltonian {
-
-public:
+   public:
     // => Constructors < = //
 
     RHamiltonian(std::shared_ptr<JK> jk);
@@ -121,30 +118,27 @@ public:
     // => Required Methods <= //
 
     /**
-    * Return the approximate diagonal of the Hamiltonian
-    * (typically orbital energy differences). This is used
-    * for vector guess, eigenvector occupation, and preconditioning.
-    * @return diagonal approximation, blocked by symmetry
-    */
+     * Return the approximate diagonal of the Hamiltonian
+     * (typically orbital energy differences). This is used
+     * for vector guess, eigenvector occupation, and preconditioning.
+     * @return diagonal approximation, blocked by symmetry
+     */
     virtual std::shared_ptr<Vector> diagonal() = 0;
     /**
-    * Form the product Hx for each x found in the argument, placing in second argument
-    * @param x vector of state functions, blocked by symmetry
-    * @param b vector of product functions, blocked by symmetry (preallocated)
-    */
-    virtual void  product(const std::vector<std::shared_ptr<Vector> >& x,
-                                std::vector<std::shared_ptr<Vector> >& b) = 0;
+     * Form the product Hx for each x found in the argument, placing in second argument
+     * @param x vector of state functions, blocked by symmetry
+     * @param b vector of product functions, blocked by symmetry (preallocated)
+     */
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) = 0;
 
     /**
-    * Form the explicit hamiltonian for debugging purposes
-    */
+     * Form the explicit hamiltonian for debugging purposes
+     */
     SharedMatrix explicit_hamiltonian();
-
 };
 
 class UHamiltonian : public Hamiltonian {
-
-public:
+   public:
     // => Constructors < = //
 
     UHamiltonian(std::shared_ptr<JK> jk);
@@ -155,218 +149,159 @@ public:
     // => Required Methods <= //
 
     /**
-    * Return the approximate diagonal of the Hamiltonian
-    * (typically orbital energy differences). This is used
-    * for vector guess, eigenvector occupation, and preconditioning.
-    * @return diagonal approximation, \alpha and \beta vectors,
-    * blocked by symmetry
-    */
-    virtual std::pair<std::shared_ptr<Vector>,
-                      std::shared_ptr<Vector> > diagonal() = 0;
+     * Return the approximate diagonal of the Hamiltonian
+     * (typically orbital energy differences). This is used
+     * for vector guess, eigenvector occupation, and preconditioning.
+     * @return diagonal approximation, \alpha and \beta vectors,
+     * blocked by symmetry
+     */
+    virtual std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diagonal() = 0;
     /**
-    * Form the product Hx for each x found in the argument, placing in second argument
-    * @param x vector of state functions, \alpha and \beta, blocked by symmetry
-    * @param b vector of product functions, \alpha and \beta, blocked by symmetry (preallocated)
-    */
+     * Form the product Hx for each x found in the argument, placing in second argument
+     * @param x vector of state functions, \alpha and \beta, blocked by symmetry
+     * @param b vector of product functions, \alpha and \beta, blocked by symmetry (preallocated)
+     */
     virtual void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) = 0;
+                         std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) = 0;
     /**
-    * Form the explicit hamiltonian for debugging purposes
-    */
-    std::pair<SharedMatrix, SharedMatrix > explicit_hamiltonian();
+     * Form the explicit hamiltonian for debugging purposes
+     */
+    std::pair<SharedMatrix, SharedMatrix> explicit_hamiltonian();
 };
 
 // => APPLIED CLASSES <= //
 
 class MatrixRHamiltonian : public RHamiltonian {
-
-protected:
-
+   protected:
     SharedMatrix M_;
 
-public:
-
+   public:
     MatrixRHamiltonian(SharedMatrix M);
     virtual ~MatrixRHamiltonian();
 
     virtual void print_header() const;
     virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
-
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 };
 
 class MatrixUHamiltonian : public UHamiltonian {
+   protected:
+    std::pair<SharedMatrix, SharedMatrix> M_;
 
-protected:
-
-    std::pair<SharedMatrix, SharedMatrix > M_;
-
-public:
-
-    MatrixUHamiltonian(std::pair<SharedMatrix, SharedMatrix > M);
+   public:
+    MatrixUHamiltonian(std::pair<SharedMatrix, SharedMatrix> M);
     virtual ~MatrixUHamiltonian();
 
     virtual void print_header() const;
-    virtual std::pair<std::shared_ptr<Vector>,
-                      std::shared_ptr<Vector> > diagonal();
+    virtual std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diagonal();
     virtual void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
-
+                         std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
 };
 
 class CISRHamiltonian : public RHamiltonian {
-
-protected:
-
+   protected:
     bool singlet_;
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
     std::shared_ptr<Vector> eps_aocc_;
     std::shared_ptr<Vector> eps_avir_;
 
-public:
-    CISRHamiltonian(std::shared_ptr<JK> jk,
-                    SharedMatrix Caocc,
-                    SharedMatrix Cavir,
-                    std::shared_ptr<Vector> eps_aocc,
-                    std::shared_ptr<Vector> eps_avir,
-                    std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
+   public:
+    CISRHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Caocc, SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc,
+                    std::shared_ptr<Vector> eps_avir, std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
     virtual ~CISRHamiltonian();
 
     virtual void print_header() const;
     virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 
-    virtual std::vector<SharedMatrix > unpack(const std::shared_ptr<Vector>& x);
+    virtual std::vector<SharedMatrix> unpack(const std::shared_ptr<Vector>& x);
 
     void set_singlet(bool singlet) { singlet_ = singlet; }
-
 };
 
 class TDHFRHamiltonian : public RHamiltonian {
-
-protected:
-
+   protected:
     bool singlet_;
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
     std::shared_ptr<Vector> eps_aocc_;
     std::shared_ptr<Vector> eps_avir_;
 
-public:
-    TDHFRHamiltonian(std::shared_ptr<JK> jk,
-                    SharedMatrix Caocc,
-                    SharedMatrix Cavir,
-                    std::shared_ptr<Vector> eps_aocc,
-                    std::shared_ptr<Vector> eps_avir,
-                    std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
+   public:
+    TDHFRHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Caocc, SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc,
+                     std::shared_ptr<Vector> eps_avir, std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
     virtual ~TDHFRHamiltonian();
 
     virtual void print_header() const;
     virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 
     void set_singlet(bool singlet) { singlet_ = singlet; }
 };
 
 class CPHFRHamiltonian : public RHamiltonian {
-
-protected:
-
+   protected:
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
     std::shared_ptr<Vector> eps_aocc_;
     std::shared_ptr<Vector> eps_avir_;
 
-public:
-    CPHFRHamiltonian(std::shared_ptr<JK> jk,
-                     SharedMatrix Caocc,
-                     SharedMatrix Cavir,
-                     std::shared_ptr<Vector> eps_aocc,
-                     std::shared_ptr<Vector> eps_avir,
-                     std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
+   public:
+    CPHFRHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Caocc, SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc,
+                     std::shared_ptr<Vector> eps_avir, std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
     virtual ~CPHFRHamiltonian();
 
     virtual void print_header() const;
     virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 
     virtual std::map<std::string, SharedVector> pack(const std::map<std::string, std::shared_ptr<Matrix> >& b);
-    virtual std::vector<SharedMatrix > unpack(const std::vector<SharedVector >& x);
+    virtual std::vector<SharedMatrix> unpack(const std::vector<SharedVector>& x);
 };
 
 class TDARHamiltonian : public CISRHamiltonian {
-
-protected:
-
+   protected:
     SharedMatrix Cocc_;
 
-public:
-    TDARHamiltonian(std::shared_ptr<JK> jk,
-                    std::shared_ptr<VBase> v,
-                    SharedMatrix Cocc,
-                    SharedMatrix Caocc,
-                    SharedMatrix Cavir,
-                    std::shared_ptr<Vector> eps_aocc,
-                    std::shared_ptr<Vector> eps_avir);
+   public:
+    TDARHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v, SharedMatrix Cocc, SharedMatrix Caocc,
+                    SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir);
     virtual ~TDARHamiltonian();
 
     virtual void print_header() const;
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 };
 
 class TDDFTRHamiltonian : public TDHFRHamiltonian {
-
-protected:
-
+   protected:
     SharedMatrix Cocc_;
 
-public:
-    TDDFTRHamiltonian(std::shared_ptr<JK> jk,
-                    std::shared_ptr<VBase> v,
-                    SharedMatrix Cocc,
-                    SharedMatrix Caocc,
-                    SharedMatrix Cavir,
-                    std::shared_ptr<Vector> eps_aocc,
-                    std::shared_ptr<Vector> eps_avir);
+   public:
+    TDDFTRHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v, SharedMatrix Cocc, SharedMatrix Caocc,
+                      SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir);
     virtual ~TDDFTRHamiltonian();
 
     virtual void print_header() const;
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 };
 
 class CPKSRHamiltonian : public CPHFRHamiltonian {
-
-protected:
-
+   protected:
     SharedMatrix Cocc_;
 
-public:
-    CPKSRHamiltonian(std::shared_ptr<JK> jk,
-                    std::shared_ptr<VBase> v,
-                    SharedMatrix Cocc,
-                    SharedMatrix Caocc,
-                    SharedMatrix Cavir,
-                    std::shared_ptr<Vector> eps_aocc,
-                    std::shared_ptr<Vector> eps_avir);
+   public:
+    CPKSRHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v, SharedMatrix Cocc, SharedMatrix Caocc,
+                     SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir);
     virtual ~CPKSRHamiltonian();
 
     virtual void print_header() const;
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b);
 };
 
 // "Hamiltonian" for UHF stability analysis.
 class USTABHamiltonian : public UHamiltonian {
-
-protected:
-
+   protected:
     SharedMatrix Cocca_;
     SharedMatrix Cvira_;
     SharedMatrix Coccb_;
@@ -376,32 +311,22 @@ protected:
     std::shared_ptr<Vector> eps_occb_;
     std::shared_ptr<Vector> eps_virb_;
 
-public:
-
-// Should really use a map of matrices here. But meh.
-    USTABHamiltonian(std::shared_ptr<JK> jk,
-                     SharedMatrix Cocca,
-                     SharedMatrix Cvira,
-                     SharedMatrix Coccb,
-                     SharedMatrix Cvirb,
-                     std::shared_ptr<Vector> eps_occa,
-                     std::shared_ptr<Vector> eps_vira,
-                     std::shared_ptr<Vector> eps_occb,
-                     std::shared_ptr<Vector> eps_virb,
+   public:
+    // Should really use a map of matrices here. But meh.
+    USTABHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Cocca, SharedMatrix Cvira, SharedMatrix Coccb,
+                     SharedMatrix Cvirb, std::shared_ptr<Vector> eps_occa, std::shared_ptr<Vector> eps_vira,
+                     std::shared_ptr<Vector> eps_occb, std::shared_ptr<Vector> eps_virb,
                      std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
     virtual ~USTABHamiltonian();
 
     virtual void print_header() const;
-    virtual std::pair<std::shared_ptr<Vector>,
-                      std::shared_ptr<Vector> > diagonal();
+    virtual std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diagonal();
     virtual void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
+                         std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
 
-// Working with a pair is annoying, so we define a new function below
-    virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack_paired(
-            const std::shared_ptr<Vector>& x);
-
+    // Working with a pair is annoying, so we define a new function below
+    virtual std::vector<std::pair<SharedMatrix, SharedMatrix> > unpack_paired(const std::shared_ptr<Vector>& x);
 };
 
-}
+}  // namespace psi
 #endif

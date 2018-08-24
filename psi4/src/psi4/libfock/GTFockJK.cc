@@ -37,7 +37,7 @@ struct MinimalInterface {
     void GetJ(std::vector<SharedMatrix>&) {}
     void GetK(std::vector<SharedMatrix>&) {}
 };
-}
+}  // namespace psi
 #endif
 
 #ifdef ENABLE_GTFOCK
@@ -51,5 +51,5 @@ void GTFockJK::compute_JK() {
     Impl_->GetK(K_ao_);
     Impl_->destroy_gtfock();
 }
-}
+}  // namespace psi
 #endif

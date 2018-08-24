@@ -814,8 +814,7 @@ void SOMCSCF::zero_ras(SharedMatrix vector) {
 /// End SOMCSCF class
 
 /// DFSOMCSCF class
-DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFHelper> df, SharedMatrix AOTOSO,
-                     SharedMatrix H)
+DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFHelper> df, SharedMatrix AOTOSO, SharedMatrix H)
     : SOMCSCF(jk, AOTOSO, H) {
     dfh_ = df;
 }
@@ -834,15 +833,15 @@ void DFSOMCSCF::transform(bool approx_only) {
 
     auto AO_R = std::make_shared<Matrix>("AO_R", nao, nrot);
     auto AO_a = std::make_shared<Matrix>("AO_a", nao, aoc_rowdim - nrot);
-    
+
     double** rp = AO_R->pointer();
     double** ap = AO_a->pointer();
-    
+
     for (int h = 0, offset = 0, offset_act = 0; h < nirrep_; h++) {
         int hnso = nsopi_[h];
         if (hnso == 0) continue;
         double** Up = matrices_["AOTOSO"]->pointer(h);
-    
+
         int noccpih = Cocc->colspi()[h];
         int nactpih = Cact->colspi()[h];
         int nvirpih = Cvir->colspi()[h];
@@ -857,7 +856,7 @@ void DFSOMCSCF::transform(bool approx_only) {
             double** CSOp = Cact->pointer(h);
             C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &rp[0][offset], nrot);
             offset += nactpih;
-    
+
             C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &ap[0][offset_act],
                     aoc_rowdim - nrot);
             offset_act += nactpih;
@@ -869,10 +868,10 @@ void DFSOMCSCF::transform(bool approx_only) {
             offset += nvirpih;
         }
     }
-   
+
     // safety check
     dfh_->clear_spaces();
- 
+
     dfh_->add_space("R", AO_R);
     dfh_->add_space("a", AO_a);
 

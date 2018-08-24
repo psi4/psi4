@@ -1676,7 +1676,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     if (functional_->needs_vv10()) {
         SharedMatrix Ds = D_AO_[0]->clone();
         Ds->axpy(1.0, D_AO_[1]);
-        Ds->scale(0.5); // Will be scaled by a factor of 2 in vv10_nlc
+        Ds->scale(0.5);  // Will be scaled by a factor of 2 in vv10_nlc
 
         SharedMatrix V_vv10 = Ds->clone();
         V_vv10->zero();
@@ -2527,4 +2527,4 @@ SharedMatrix UV::compute_gradient() {
     return G;
 }
 
-}
+}  // namespace psi

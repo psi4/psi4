@@ -351,18 +351,18 @@ class PSI_API JK {
     virtual ~JK();
 
     /**
-    * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
-    * using knobs in options.
-    * Nmat and sym are options for GTFock
-    * sym means that all density matrices will be symmetric
-    * @return abstract JK object, tuned in with preset options
-    */
+     * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
+     * using knobs in options.
+     * Nmat and sym are options for GTFock
+     * sym means that all density matrices will be symmetric
+     * @return abstract JK object, tuned in with preset options
+     */
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options, std::string jk_type);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                                 Options& options, bool do_wK, size_t doubles);
+                                        Options& options, bool do_wK, size_t doubles);
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
@@ -400,27 +400,27 @@ class PSI_API JK {
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
     /**
-    * Set to do J tasks
-    * @param do_J do J matrices or not,
-    *        defaults to true
-    */
+     * Set to do J tasks
+     * @param do_J do J matrices or not,
+     *        defaults to true
+     */
     void set_do_J(bool do_J) { do_J_ = do_J; }
     /**
-    * Set to do K tasks
-    * @param do_K do K matrices or not,
-    *        defaults to true
-    */
+     * Set to do K tasks
+     * @param do_K do K matrices or not,
+     *        defaults to true
+     */
     void set_do_K(bool do_K) { do_K_ = do_K; }
     /**
-    * Set to do wK tasks
-    * @param do_wK do wK matrices or not,
-    *        defaults to false
-    */
+     * Set to do wK tasks
+     * @param do_wK do wK matrices or not,
+     *        defaults to false
+     */
     void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
     /**
-    * Set the omega value for wK
-    * @param omega range-separation parameter
-    */
+     * Set the omega value for wK
+     * @param omega range-separation parameter
+     */
     void set_omega(double omega) { omega_ = omega; }
 
     // => Computers <= //
@@ -512,9 +512,9 @@ class PSI_API JK {
     const std::vector<SharedMatrix>& D() const { return D_; }
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const = 0;
 };
 
@@ -564,9 +564,9 @@ class DiskJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const;
 };
 
@@ -629,9 +629,9 @@ class PSI_API PKJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const;
 };
 
@@ -696,9 +696,9 @@ class DirectJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const;
 };
 
@@ -749,9 +749,9 @@ class GTFockJK : public JK {
      */
     GTFockJK(std::shared_ptr<psi::BasisSet> Primary, size_t NMats, bool AreSymm);
     /** \brief Your interface to GTFock that works well with libfock
-    *   GTFock needs number of densities and symmetric at initialization
-    *   This code calls GTFock once the number of densities was read from jk object
-    */
+     *   GTFock needs number of densities and symmetric at initialization
+     *   This code calls GTFock once the number of densities was read from jk object
+     */
     GTFockJK(std::shared_ptr<psi::BasisSet> Primary);
 };
 
@@ -895,9 +895,9 @@ class PSI_API DiskDFJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const;
 };
 /**
@@ -925,9 +925,9 @@ class CDJK : public DiskDFJK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const;
 
    public:
@@ -956,7 +956,6 @@ class CDJK : public DiskDFJK {
  * wraps lib3index/DFHelper class
  */
 class MemDFJK : public JK {
-
    protected:
     // => DF-Specific stuff <= //
 
@@ -986,8 +985,7 @@ class MemDFJK : public JK {
     /// Common initialization
     void common_init();
 
-
-  public:
+   public:
     // => Constructors < = //
 
     /**
@@ -998,8 +996,7 @@ class MemDFJK : public JK {
 
     /// Destructor
     virtual ~MemDFJK();
-    
-    
+
     // => Knobs <= //
 
     /**
@@ -1010,20 +1007,19 @@ class MemDFJK : public JK {
      *        defaults to 1.0E-12
      */
     void set_condition(double condition) { condition_ = condition; }
-    
+
     /**
      * What number of threads to compute integrals on
      * @param val a positive integer
      */
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
-    
-    
+
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const;
 
     /**
@@ -1031,5 +1027,5 @@ class MemDFJK : public JK {
      */
     std::shared_ptr<DFHelper> dfh() { return dfh_; }
 };
-}
+}  // namespace psi
 #endif

@@ -56,12 +56,11 @@ class Options;
 // great way to get a 1000x slowdown. What an incredible smell you've discovered!
 //
 struct MassPoint {
-    double x,y,z,w;
+    double x, y, z, w;
 };
 
-
 class MolecularGrid {
-protected:
+   protected:
     int debug_;
 
     /// The molecule this grid is built on
@@ -108,21 +107,23 @@ protected:
     void remove_distant_points(double Rcut);
     void block(int max_points, int min_points, double max_radius);
 
-public:
+   public:
     struct MolecularGridOptions {
         double bs_radius_alpha;
         double pruning_alpha;
-        short radscheme;   // Effectively an enumeration
+        short radscheme;  // Effectively an enumeration
         short prunescheme;
         short nucscheme;
-        short namedGrid; // -1 = None, 0 = SG-0, 1 = SG-1
+        short namedGrid;  // -1 = None, 0 = SG-0, 1 = SG-1
         int nradpts;
         int nangpts;
     };
-protected:
+
+   protected:
     /// A copy of the options used, for printing purposes.
     MolecularGridOptions options_;
-public:
+
+   public:
     MolecularGrid(std::shared_ptr<Molecule> molecule);
     virtual ~MolecularGrid();
 
@@ -130,9 +131,9 @@ public:
     void buildGridFromOptions(MolecularGridOptions const& opt);
     /// Build the grid
     void buildGridFromOptions(MolecularGridOptions const& opt,
-        const std::vector<std::vector<double> >& rs,  // Radial nodes,     per atom
-        const std::vector<std::vector<double> >& ws,  // Radial weights,   per atom
-        const std::vector<std::vector<int> >&    Ls); // Spherical orders, per atom
+                              const std::vector<std::vector<double> >& rs,  // Radial nodes,     per atom
+                              const std::vector<std::vector<double> >& ws,  // Radial weights,   per atom
+                              const std::vector<std::vector<int> >& Ls);    // Spherical orders, per atom
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;
@@ -143,7 +144,9 @@ public:
     /// Radial grids, per atom
     const std::vector<std::shared_ptr<RadialGrid> >& radial_grids() const { return radial_grids_; }
     /// Spherical grids, per atom and radial point
-    const std::vector<std::vector<std::shared_ptr<SphericalGrid> > >& spherical_grids() const { return spherical_grids_; }
+    const std::vector<std::vector<std::shared_ptr<SphericalGrid> > >& spherical_grids() const {
+        return spherical_grids_;
+    }
     /// index_[fast_index] = slow_index. You do not own this
     int* index() const { return index_; }
 
@@ -172,8 +175,7 @@ public:
 };
 
 class PseudospectralGrid : public MolecularGrid {
-
-protected:
+   protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// The filename used to optionally build the grid
@@ -185,39 +187,30 @@ protected:
     /// Master builder methods
     void buildGridFromOptions();
 
-public:
-
+   public:
     /// Constructor to use for autogeneration
-    PseudospectralGrid(std::shared_ptr<Molecule> molecule,
-                       std::shared_ptr<BasisSet> primary,
-                       Options& options);
+    PseudospectralGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
     virtual ~PseudospectralGrid();
-
 };
 
 class DFTGrid : public MolecularGrid {
-
-protected:
+   protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// Master builder methods
-    void buildGridFromOptions(std::map<std::string, int> int_opts_map,
-                              std::map<std::string, std::string> opts_map);
+    void buildGridFromOptions(std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map);
     /// The Options object
     Options& options_;
 
-public:
+   public:
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-         std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map,
-         Options& options);
-virtual ~DFTGrid();
+            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map, Options& options);
+    virtual ~DFTGrid();
 };
 
 class RadialGrid {
-
-protected:
-
+   protected:
     /// Scheme
     std::string scheme_;
     /// Number of points in radial grid
@@ -239,7 +232,8 @@ protected:
 
     /// Protected constructor
     RadialGrid();
-public:
+
+   public:
     // ==> Initializers <== //
 
     /// Destructor
@@ -248,7 +242,8 @@ public:
     /// Master build routine
     static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha);
     /// Hack build routine (TODO: Remove ASAP)
-    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double* r, double* wr, double alpha);
+    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double* r, double* wr,
+                                             double alpha);
 
     // ==> Accessors <== //
 
@@ -268,9 +263,7 @@ public:
 };
 
 class SphericalGrid {
-
-protected:
-
+   protected:
     /// Scheme
     std::string scheme_;
     /// Number of points in radial grid
@@ -307,7 +300,8 @@ protected:
 
     /// Protected constructor
     SphericalGrid();
-public:
+
+   public:
     // ==> Initializers <== //
 
     /// Destructor
@@ -340,13 +334,10 @@ public:
 
     /// Reflection
     void print(std::string out_fname = "outfile", int level = 1) const;
-
-
 };
 
 class BlockOPoints {
-
-protected:
+   protected:
     /// number of points in this block
     int npoints_;
 
@@ -381,11 +372,9 @@ protected:
     /// Compute bounding sphere
     void bound();
 
-public:
-    BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
-                 std::shared_ptr<BasisExtents> extents);
-    BlockOPoints(int npoints, double* x, double* y, double* z, double* w,
-        std::shared_ptr<BasisExtents> extents);
+   public:
+    BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w, std::shared_ptr<BasisExtents> extents);
+    BlockOPoints(int npoints, double* x, double* y, double* z, double* w, std::shared_ptr<BasisExtents> extents);
     virtual ~BlockOPoints();
 
     /// Refresh populations (if extents_->delta() changes)
@@ -412,8 +401,7 @@ public:
 };
 
 class BasisExtents {
-
-protected:
+   protected:
     /// Basis this corresponds to
     std::shared_ptr<BasisSet> primary_;
     /// Cutoff value for basis values
@@ -425,14 +413,18 @@ protected:
 
     /// Recompute and shell_extents_
     void computeExtents();
-public:
+
+   public:
     BasisExtents(std::shared_ptr<BasisSet> primary, double delta);
     virtual ~BasisExtents();
 
     /// Print a trace of these extents
     void print(std::string out_fname = "outfile");
     /// Reset delta and recompute extents
-    void set_delta(double delta) { delta_ = delta; computeExtents(); }
+    void set_delta(double delta) {
+        delta_ = delta;
+        computeExtents();
+    }
 
     /// The cutoff value
     double delta() const { return delta_; }
@@ -444,5 +436,5 @@ public:
     double maxR() const { return maxR_; }
 };
 
-}
+}  // namespace psi
 #endif

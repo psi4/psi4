@@ -85,5 +85,5 @@ SharedWavefunction libfock(SharedWavefunction ref_wfn, Options& options) {
     return wfn;
     //    return Success;
 }
-}
-}
+}  // namespace libfock
+}  // namespace psi

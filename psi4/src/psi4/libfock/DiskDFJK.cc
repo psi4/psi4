@@ -479,7 +479,7 @@ void DiskDFJK::initialize_JK_core() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     const double** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     buffer[0] = eri[0]->buffer();
 
@@ -866,7 +866,7 @@ void DiskDFJK::initialize_JK_disk() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     const double** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
@@ -997,7 +997,7 @@ void DiskDFJK::initialize_wK_core() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     const double** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
@@ -1011,8 +1011,8 @@ void DiskDFJK::initialize_wK_core() {
 
     timer_on("JK: (A|mn)^L");
 
-#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, \
-                                 rank) schedule(dynamic) num_threads(nthread)
+#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule(dynamic) \
+    num_threads(nthread)
     for (MU = 0; MU < primary_->nshell(); ++MU) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -1068,7 +1068,7 @@ void DiskDFJK::initialize_wK_core() {
     // => Right Integrals <= //
 
     const double** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
         buffer2[Q] = eri2[Q]->buffer();
@@ -1078,8 +1078,8 @@ void DiskDFJK::initialize_wK_core() {
 
     timer_on("JK: (A|mn)^R");
 
-#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, \
-                                 rank) schedule(dynamic) num_threads(nthread)
+#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule(dynamic) \
+    num_threads(nthread)
     for (MU = 0; MU < primary_->nshell(); ++MU) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -1359,7 +1359,7 @@ void DiskDFJK::initialize_wK_disk() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     const double** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
@@ -1445,7 +1445,7 @@ void DiskDFJK::initialize_wK_disk() {
     // => Right Integrals <= //
 
     const double** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
         buffer2[Q] = eri2[Q]->buffer();
@@ -1568,7 +1568,7 @@ void DiskDFJK::rebuild_wK_disk() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     const double** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
         buffer2[Q] = eri2[Q]->buffer();
@@ -1950,4 +1950,4 @@ void DiskDFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
         timer_off("JK: wK2");
     }
 }
-}
+}  // namespace psi
