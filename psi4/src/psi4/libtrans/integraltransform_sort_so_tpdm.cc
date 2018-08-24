@@ -269,4 +269,4 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
         delete[] toc;
     }  // End pq iterator
 }
-}  // End namespace
+}  // namespace psi

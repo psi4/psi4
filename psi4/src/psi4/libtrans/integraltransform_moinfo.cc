@@ -570,7 +570,7 @@ void IntegralTransform::update_orbitals() {
 /**
  * Sets the orbital matrix, but touches nothing else. This is used for a MCSCF wavefunction
  * and is a bit of a hack, use at your own risk.
-**/
+ **/
 void IntegralTransform::set_orbitals(SharedMatrix C) {
     Ca_ = C->clone();
     Cb_ = Ca_;
