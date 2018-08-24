@@ -39,62 +39,62 @@
 
 #ifdef USE_FCMANGLE_H
 #include "FCMangle.h"
-#define dgemv  FC_GLOBAL(dgemv , DGEMV)
-#define dgemm  FC_GLOBAL(dgemm , DGEMM)
-#define dcopy  FC_GLOBAL(dcopy , DCOPY)
-#define daxpy  FC_GLOBAL(daxpy , DAXPY)
-#define dnrm2  FC_GLOBAL(drnm2 , DRNM2)
-#define dgesv  FC_GLOBAL(dgesv , DGESV)
-#define ddot   FC_GLOBAL(ddot  , DDOT)
-#define dsyev  FC_GLOBAL(dsyev , DSYEV)
-#define dspev  FC_GLOBAL(dspev , DSPEV)
+#define dgemv FC_GLOBAL(dgemv, DGEMV)
+#define dgemm FC_GLOBAL(dgemm, DGEMM)
+#define dcopy FC_GLOBAL(dcopy, DCOPY)
+#define daxpy FC_GLOBAL(daxpy, DAXPY)
+#define dnrm2 FC_GLOBAL(drnm2, DRNM2)
+#define dgesv FC_GLOBAL(dgesv, DGESV)
+#define ddot FC_GLOBAL(ddot, DDOT)
+#define dsyev FC_GLOBAL(dsyev, DSYEV)
+#define dspev FC_GLOBAL(dspev, DSPEV)
 #define dgesvd FC_GLOBAL(dgesvd, DGESVD)
-#else // USE_FCMANGLE_H
-#if FC_SYMBOL==2
-#define dgemv  dgemv_
-#define dgemm  dgemm_
-#define dcopy  dcopy_
-#define daxpy  daxpy_
-#define dnrm2  drnm2_
-#define dgesv  dgesv_
-#define ddot   ddot_  
-#define dsyev  dsyev_ 
-#define dspev  dspev_
+#else  // USE_FCMANGLE_H
+#if FC_SYMBOL == 2
+#define dgemv dgemv_
+#define dgemm dgemm_
+#define dcopy dcopy_
+#define daxpy daxpy_
+#define dnrm2 drnm2_
+#define dgesv dgesv_
+#define ddot ddot_
+#define dsyev dsyev_
+#define dspev dspev_
 #define dgesvd dgesvd_
-#elif FC_SYMBOL==1
-#define dgemv  dgemv
-#define dgemm  dgemm
-#define dcopy  dcopy
-#define daxpy  daxpy
-#define dnrm2  drnm2
-#define dgesv  dgesv
-#define ddot   ddot 
-#define dsyev  dsyev
-#define dspev  dspev
+#elif FC_SYMBOL == 1
+#define dgemv dgemv
+#define dgemm dgemm
+#define dcopy dcopy
+#define daxpy daxpy
+#define dnrm2 drnm2
+#define dgesv dgesv
+#define ddot ddot
+#define dsyev dsyev
+#define dspev dspev
 #define dgesvd dgesvd
-#elif FC_SYMBOL==3
-#define dgemv  DGEMV
-#define dgemm  DGEMM
-#define dcopy  DCOPY
-#define daxpy  DAXPY
-#define dnrm2  DRNM2
-#define dgesv  DGESV
-#define ddot   DDOT
-#define dsyev  DSYEV
-#define dspev  DSPEV
+#elif FC_SYMBOL == 3
+#define dgemv DGEMV
+#define dgemm DGEMM
+#define dcopy DCOPY
+#define daxpy DAXPY
+#define dnrm2 DRNM2
+#define dgesv DGESV
+#define ddot DDOT
+#define dsyev DSYEV
+#define dspev DSPEV
 #define dgesvd DGESVD
-#elif FC_SYMBOL==4
-#define dgemv  DGEMV_
-#define dgemm  DGEMM_
-#define dcopy  DCOPY_
-#define daxpy  DAXPY_
-#define dnrm2  DRNM2_
-#define dgesv  DGESV_
-#define ddot   DDOT_
-#define dsyev  DSYEV_
-#define dspev  DSPEV_
+#elif FC_SYMBOL == 4
+#define dgemv DGEMV_
+#define dgemm DGEMM_
+#define dcopy DCOPY_
+#define daxpy DAXPY_
+#define dnrm2 DRNM2_
+#define dgesv DGESV_
+#define ddot DDOT_
+#define dsyev DSYEV_
+#define dspev DSPEV_
 #define dgesvd DGESVD_
-#endif // FC_SYMBOL
-#endif // USE_FCMANGLE_H
+#endif  // FC_SYMBOL
+#endif  // USE_FCMANGLE_H
 
 #endif

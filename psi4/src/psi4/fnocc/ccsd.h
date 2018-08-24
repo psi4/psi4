@@ -37,20 +37,19 @@
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-PSI_API long int Position(long int i,long int j);
+PSI_API long int Position(long int i, long int j);
 
-namespace psi{ namespace fnocc{
+namespace psi {
+namespace fnocc {
 
-class CoupledCluster: public Wavefunction{
-  public:
-
-    CoupledCluster(std::shared_ptr<Wavefunction> reference_wavefunction,Options &options);
+class CoupledCluster : public Wavefunction {
+   public:
+    CoupledCluster(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     ~CoupledCluster();
 
     double compute_energy();
 
-  protected:
-
+   protected:
     int iter;
     int brueckner_iter;
 
@@ -61,7 +60,7 @@ class CoupledCluster: public Wavefunction{
     bool t2_on_disk;
 
     /// which cc method?
-    bool mp2_only,mp3_only,mp4_only,isccsd;
+    bool mp2_only, mp3_only, mp4_only, isccsd;
     int ccmethod;
 
     /// flag for low-memory triples algorithm
@@ -71,21 +70,21 @@ class CoupledCluster: public Wavefunction{
     void DefineTasks();
     void DefineLinearTasks();
     void DefineQuadraticTasks();
-    long int ncctasks,nqtasks,nltasks;
+    long int ncctasks, nqtasks, nltasks;
 
     /// task parameters - not used currently
-    struct CCTaskParams{
-        int mtile,ntile,ktile;
+    struct CCTaskParams {
+        int mtile, ntile, ktile;
     };
-    CCTaskParams*CCParams,*CCSubParams1,*CCSubParams2,*QParams,*LParams;
+    CCTaskParams *CCParams, *CCSubParams1, *CCSubParams2, *QParams, *LParams;
 
     /// cc/qci/mp task
-    struct CCTask{
-        void(psi::fnocc::CoupledCluster::*func)(CCTaskParams);
+    struct CCTask {
+        void (psi::fnocc::CoupledCluster::*func)(CCTaskParams);
         double flopcount;
-        char*name;
+        char *name;
     };
-    CCTask*CCTasklist,*CCSubTasklist1,*CCSubTasklist2,*LTasklist,*QTasklist;
+    CCTask *CCTasklist, *CCSubTasklist1, *CCSubTasklist2, *LTasklist, *QTasklist;
 
     /// solve qcisd/ccsd equations
     PsiReturnType CCSDIterations();
@@ -147,8 +146,8 @@ class CoupledCluster: public Wavefunction{
     void MP4_SDQ();
 
     /// components of mp3 and mp4 energies
-    double emp3_os,emp3_ss,emp3,emp4_sd_os,emp4_sd_ss,emp4_sd;
-    double emp4_q_os,emp4_q_ss,emp4_q;
+    double emp3_os, emp3_ss, emp3, emp4_sd_os, emp4_sd_ss, emp4_sd;
+    double emp4_q_os, emp4_q_ss, emp4_q;
 
     /// Update t1
     void UpdateT1(long int iter);
@@ -171,15 +170,15 @@ class CoupledCluster: public Wavefunction{
     void TwoJminusK(CCTaskParams params);
 
     /// DIIS functions
-    void DIIS(double*c,long int nvec,long int n,int replace_diis_iter);
-    void DIISOldVector(long int iter,int diis_iter,int replace_diis_iter);
-    double DIISErrorVector(int diis_iter,int replace_diis_iter,int iter);
-    void DIISNewAmplitudes(int diis_iter,int&replace_diis_iter);
+    void DIIS(double *c, long int nvec, long int n, int replace_diis_iter);
+    void DIISOldVector(long int iter, int diis_iter, int replace_diis_iter);
+    double DIISErrorVector(int diis_iter, int replace_diis_iter, int iter);
+    void DIISNewAmplitudes(int diis_iter, int &replace_diis_iter);
     long int maxdiis;
-    double*diisvec;
+    double *diisvec;
 
     /// basic parameters
-    long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nfzc,nfzv,nvirt_no;
+    long int ndoccact, ndocc, nvirt, nso, nmotemp, nmo, nfzc, nfzv, nvirt_no;
 
     /// available memory
     long int memory;
@@ -200,31 +199,30 @@ class CoupledCluster: public Wavefunction{
     double escf;
 
     /// workspace buffers.
-    double*integrals,*tempt,*tempv;
+    double *integrals, *tempt, *tempv;
 
     /// t1 and t2 buffers
-    double*tb,*t1;
+    double *tb, *t1;
 
     /// buffers for singles residual and a couple of tiny intermediates
-    double *w1,*I1,*I1p;
+    double *w1, *I1, *I1p;
 
     /// define tiling
     void DefineTilingCPU();
-    long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
-    long int tilesize,lasttile,maxelem;
-    long int ntiles,novtiles,nov2tiles;
+    long int ovtilesize, lastovtile, lastov2tile, ov2tilesize;
+    long int tilesize, lasttile, maxelem;
+    long int ntiles, novtiles, nov2tiles;
 };
 
 // DF CC class
-class PSI_API DFCoupledCluster : public CoupledCluster{
-
-  public:
-    DFCoupledCluster(SharedWavefunction ref_wfn, Options&options);
+class PSI_API DFCoupledCluster : public CoupledCluster {
+   public:
+    DFCoupledCluster(SharedWavefunction ref_wfn, Options &options);
     ~DFCoupledCluster();
 
     double compute_energy();
 
-  protected:
+   protected:
     void finalize();
 
     /// CCSD iterations
@@ -245,7 +243,7 @@ class PSI_API DFCoupledCluster : public CoupledCluster{
     virtual void Vabcd1();
 
     /// workspace buffers.
-    double*Abij,*Sbij;
+    double *Abij, *Sbij;
 
     /// check energy
     virtual double CheckEnergy();
@@ -254,11 +252,11 @@ class PSI_API DFCoupledCluster : public CoupledCluster{
     bool ischolesky_;
     long int nQ;
     long int nQ_scf;
-    double*Qov,*Qvv,*Qoo;
-    void  ThreeIndexIntegrals();
+    double *Qov, *Qvv, *Qoo;
+    void ThreeIndexIntegrals();
 
     /// more 3-index stuff for t1-transformed integrals
-    double * Ca_L, * Ca_R, **Ca;
+    double *Ca_L, *Ca_R, **Ca;
     double *Fij, *Fab, *Fia, *Fai;
     SharedMatrix H;
 
@@ -278,16 +276,14 @@ class PSI_API DFCoupledCluster : public CoupledCluster{
 };
 
 // coupled pair class
-class CoupledPair : public CoupledCluster{
-
-  public:
-    CoupledPair(std::shared_ptr<psi::Wavefunction>wfn,Options&options);
+class CoupledPair : public CoupledCluster {
+   public:
+    CoupledPair(std::shared_ptr<psi::Wavefunction> wfn, Options &options);
     ~CoupledPair();
 
     double compute_energy();
 
-  protected:
-
+   protected:
     /// coupled pair iterations
     PsiReturnType CEPAIterations();
 
@@ -296,10 +292,10 @@ class CoupledPair : public CoupledCluster{
 
     /// pair energies
     void PairEnergy();
-    double * pair_energy;
+    double *pair_energy;
 
     /// what kind of coupled pair method?
-    char * cepa_type;
+    char *cepa_type;
     int cepa_level;
 
     /// check energy
@@ -324,7 +320,7 @@ class CoupledPair : public CoupledCluster{
     /// banner
     void WriteBanner();
 };
-
-}}
+}
+}
 
 #endif
