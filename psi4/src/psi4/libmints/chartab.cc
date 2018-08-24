@@ -146,6 +146,8 @@ CharacterTable::operator=(const CharacterTable& ct)
         memcpy(_inv,ct._inv,sizeof(int)* nirrep_);
     }
 
+    bits_ = ct.bits_;
+
     return *this;
 }
 
