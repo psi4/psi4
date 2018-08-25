@@ -5,6 +5,7 @@ import sys
 import math
 import time
 import importlib
+import sysconfig
 import subprocess
 
 if sys.version_info <= (3, 0):
@@ -185,9 +186,13 @@ compare_values(-1.6309450762271729, wfn.get_variable('MP2 CORRELATION ENERGY'), 
 
 def print_math_ldd(args):
 
-    module, sharedlibrary = args.module.split('/')
+    module, sharedlibrary_woext = args.module.split('/')
     mod = importlib.import_module(module)
-    modcore = os.path.dirname(os.path.abspath(mod.__file__)) + os.path.sep + sharedlibrary
+    exts = [sysconfig.get_config_var("SO"), '.so']
+    for ext in exts:
+        modcore = os.path.dirname(os.path.abspath(mod.__file__)) + os.path.sep + sharedlibrary_woext + ext
+        if os.path.isfile(modcore):
+            break
 
     if sys.platform.startswith('linux'):
         lddish = 'ldd -v'
@@ -227,8 +232,8 @@ if __name__ == '__main__':
                         help="""Number of threads to use. Psi4 disregards OMP_NUM_THREADS/MKL_NUM_THREADS.""")
     parser.add_argument("--passfail", action='store_true',
                         help="""Instead of just printing, run as tests.""")
-    parser.add_argument("--module", default='psi4/core.so',
-                        help="""In --ldd mode, module and shared library to analyze, e.g., 'greatplugin/cxxcode.so'.
+    parser.add_argument("--module", default='psi4/core',
+                        help="""In --ldd mode, module and shared library (w/o extension) to analyze, e.g., 'greatplugin/cxxcode.so' or 'psi4/core.cpython-36m-x86_64-linux-gnu.so'.
 In --plugin-dfmp2 mode, name of dfmp2 module to load, e.g., 'plugdfmp2'.""")
 
     group = parser.add_mutually_exclusive_group(required=False)
@@ -267,6 +272,6 @@ PATH=stage/$PFX/bin/:$PATH PYTHONPATH=stage/$PFX/lib/ python stage/$PFX/share/ps
 # * build an OpenMP plugin and test its threading
 stage/$PFX/bin/psi4 --plugin-name $PLUG --plugin-template dfmp2
 cd $PLUG && `../stage/$PFX/bin/psi4 --plugin-compile` && make && cd ..
-PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --ldd --module="$PLUG/$PLUG.so"
+PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --ldd --module="$PLUG/$PLUG"
 PATH=stage/$PFX/bin/:$PATH PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --plugin-dfmp2 --module="$PLUG" -n$THD
 """
