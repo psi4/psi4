@@ -219,6 +219,12 @@ install(DIRECTORY include/psi4/
 install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
+install(DIRECTORY thinmintsdriver/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/thinmints/driver
+        FILES_MATCHING PATTERN "*.py")
+install(DIRECTORY driver/qcdb
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/thinmints/driver
+        FILES_MATCHING PATTERN "*.py")
 
 install(FILES header.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
@@ -228,6 +234,11 @@ configure_file(extras.py extras.py @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
+
+configure_file(thinmints__init__.py thinmints__init__.py @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/thinmints__init__.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/thinmints
+        RENAME __init__.py)
 
 install(FILES ../tests/pytest/conftest.py
               ../tests/pytest/addons.py
