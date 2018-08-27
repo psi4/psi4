@@ -10,7 +10,7 @@ set globals {
   scf_type pk
 }
 
-energy('ccsd')
+energy('scf')
 
 psi4.print_out('\n\tFD ENERGY = %20.15f\n' % psi4.get_variable('CURRENT ENERGY'))
 

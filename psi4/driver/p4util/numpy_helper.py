@@ -482,6 +482,12 @@ def _chain_dot(*args, **kwargs):
 
     return ret
 
+def _irrep_access(self, *args, **kwargs):
+    """
+    Warns user when iterating/accessing an irreped object.
+    """
+    raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple"
+                          "irreps. Please use .np or .nph explicitly.")
 
 # Matrix attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
@@ -496,6 +502,8 @@ core.Matrix.np_read = classmethod(_np_read)
 core.Matrix.to_serial = _to_serial
 core.Matrix.from_serial = classmethod(_from_serial)
 core.Matrix.chain_dot = _chain_dot
+core.Matrix.__iter__ = _irrep_access
+core.Matrix.__getitem__ = _irrep_access
 
 # Vector attributes
 core.Vector.from_array = classmethod(array_to_matrix)
@@ -509,6 +517,8 @@ core.Vector.np_write = _np_write
 core.Vector.np_read = classmethod(_np_read)
 core.Vector.to_serial = _to_serial
 core.Vector.from_serial = classmethod(_from_serial)
+core.Vector.__iter__ = _irrep_access
+core.Vector.__getitem__ = _irrep_access
 
 ### CIVector properties
 
@@ -578,3 +588,33 @@ def _dimension_iter(dim):
 core.Dimension.from_list = _dimension_from_list
 core.Dimension.to_tuple = _dimension_to_tuple
 core.Dimension.__iter__ = _dimension_iter
+
+# General functions for NumPy array manipulation
+def block_diagonal_array(*args):
+    """
+    Convert square NumPy array to a single block diagonal array.
+    Mimic of SciPy's block_diag.
+    """
+
+    # Validate the input matrices.
+    dim = 0
+    for matrix in args:
+        try:
+            shape = matrix.shape
+            dim += shape[0]
+        except (AttributeError, TypeError):
+            raise ValidationError("Cannot construct block diagonal from non-arrays.")
+        if len(shape) != 2:
+            raise ValidationError("Cannot construct block diagonal from non-2D arrays.")
+        if shape[0] != shape[1]:
+            raise ValidationError("Cannot construct block diagonal from non-square arrays.")
+
+    # If this is too slow, try a sparse matrix?
+    block_diag = np.zeros((dim, dim))
+    start = 0
+    for matrix in args:
+        next_block = slice(start, start + matrix.shape[0])
+        block_diag[next_block, next_block] = matrix
+        start += matrix.shape[0]
+
+    return block_diag

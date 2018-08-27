@@ -7,7 +7,7 @@ endforeach ()
 
 foreach (dir_name adc ccdensity ccenergy cceom cchbar cclambda ccresponse
          cctransort cctriples dcft detci dfmp2 dfep2
-         dfocc findif fisapt fnocc mcscf mrcc
+         dfocc fisapt fnocc mcscf mrcc
          occ optking psimrcc sapt scfgrad
          gdma_interface dmrg ambit_interface
         )

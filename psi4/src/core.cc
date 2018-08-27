@@ -306,46 +306,6 @@ PsiReturnType py_psi_mrcc_load_densities(SharedWavefunction ref_wfn, const py::d
     return mrcc::mrcc_load_ccdensities(ref_wfn, Process::environment.options, level);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_1_0(std::shared_ptr<Molecule> mol) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_1_0(mol, Process::environment.options);
-}
-
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(std::shared_ptr<Molecule> mol, int irrep) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_0(mol, Process::environment.options, irrep);
-}
-
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(std::shared_ptr<Molecule> mol, int irrep) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_1(mol, Process::environment.options, irrep);
-}
-
-std::vector<SharedMatrix> py_psi_atomic_displacements(std::shared_ptr<Molecule> mol) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::atomic_displacements(mol, Process::environment.options);
-}
-
-SharedMatrix py_psi_fd_1_0(std::shared_ptr<Molecule> mol, const py::list& energies) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_1_0(mol, Process::environment.options, energies);
-}
-
-SharedMatrix py_psi_fd_freq_0(std::shared_ptr<Molecule> mol, const py::list& energies, int irrep) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_0(mol, Process::environment.options, energies, irrep);
-}
-
-SharedMatrix py_psi_fd_freq_1(std::shared_ptr<Molecule> mol, const py::list& grads, int irrep) {
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
-}
-
-void py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
-                                  const double disp_size) {
-    findif::displace_atom(geom, atom, coord, sign, disp_size);
-}
-
 SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("DCFT");
     return dcft::dcft(ref_wfn, Process::environment.options);
@@ -896,10 +856,6 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
-void py_psi_set_frequencies(std::shared_ptr<Vector> freq) { Process::environment.set_frequencies(freq); }
-
-std::shared_ptr<Vector> py_psi_get_frequencies() { return Process::environment.frequencies(); }
-
 std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
     auto empty = std::make_shared<psi::Vector>();
     return empty;  // charges not added to process.h for environment - yet(?)
@@ -1110,12 +1066,8 @@ PYBIND11_MODULE(core, core) {
              "Returns the most recently computed gradient, as a N by 3 :py:class:`~psi4.core.Matrix` object.");
     core.def("set_gradient", py_psi_set_gradient,
              "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
-    core.def("get_frequencies", py_psi_get_frequencies,
-             "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
              "Returns the most recently computed atomic point charges, as a double * object.");
-    core.def("set_frequencies", py_psi_set_frequencies,
-             "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet") = false,
              "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
@@ -1242,22 +1194,6 @@ PYBIND11_MODULE(core, core) {
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     core.def("mrcc_load_densities", py_psi_mrcc_load_densities,
              "Reads in the density matrices from Kallay's MRCC code.");
-    core.def("fd_geoms_1_0", py_psi_fd_geoms_1_0,
-             "Gets list of displacements needed for a finite difference gradient computation, from energy points.");
-    core.def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0,
-             "Gets list of displacements needed for a finite difference frequency computation, from energy points, for "
-             "a given irrep.");
-    core.def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1,
-             "Gets list of displacements needed fof a finite difference frequency computation, from gradients, for a "
-             "given irrep");
-    core.def("fd_1_0", py_psi_fd_1_0, "Performs a finite difference gradient computation, from energy points.");
-    core.def("fd_freq_0", py_psi_fd_freq_0,
-             "Performs a finite difference frequency computation, from energy points, for a given irrep.");
-    core.def("fd_freq_1", py_psi_fd_freq_1,
-             "Performs a finite difference frequency computation, from gradients, for a given irrep.");
-    core.def("atomic_displacements", py_psi_atomic_displacements,
-             "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
-    core.def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     core.def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     // core.def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory
     // code.");

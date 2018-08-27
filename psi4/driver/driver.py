@@ -45,6 +45,7 @@ import numpy as np
 from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
+from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.procrouting import *
@@ -637,12 +638,6 @@ def gradient(name, **kwargs):
         # Perform the gradient calculation
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
-        optstash.restore()
-        if return_wfn:
-            return (wfn.gradient(), wfn)
-        else:
-            return wfn.gradient()
-
     else:
         core.print_out("""gradient() will perform gradient computation by finite difference of analytic energies.\n""")
 
@@ -658,7 +653,7 @@ def gradient(name, **kwargs):
 
         # Obtain list of displacements
         # print("about to generate displacements")
-        displacements = core.fd_geoms_1_0(moleculeclone)
+        displacements = driver_findif.gradient_from_energy_geometries(moleculeclone)
         # print(displacements)
         ndisp = len(displacements)
         # print("generated displacments")
@@ -764,16 +759,23 @@ def gradient(name, **kwargs):
 
         # Compute the gradient; last item in 'energies' is undisplaced
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = core.fd_1_0(molecule, energies)
-        G.print_out()
-        wfn.set_gradient(G)
+        G = driver_findif.compute_gradient_from_energy(molecule, energies)
+        grad_psi_matrix = core.Matrix.from_array(G)
+        grad_psi_matrix.print_out()
+        wfn.set_gradient(grad_psi_matrix)
 
-        optstash.restore()
 
-        if return_wfn:
-            return (wfn.gradient(), wfn)
-        else:
-            return wfn.gradient()
+    optstash.restore()
+
+    if core.get_option('FINDIF', 'GRADIENT_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
+        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD',
+                                     mol=molecule, energy=wfn.energy())
+
+    if return_wfn:
+        return (wfn.gradient(), wfn)
+    else:
+        return wfn.gradient()
 
 
 def properties(*args, **kwargs):
@@ -1378,7 +1380,7 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = core.fd_geoms_freq_1(moleculeclone, irrep)
+        displacements = driver_findif.hessian_from_gradient_geometries(moleculeclone, irrep)
         moleculeclone.reinterpret_coordentry(False)
         moleculeclone.fix_orientation(True)
 
@@ -1493,10 +1495,9 @@ def hessian(name, **kwargs):
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = core.fd_freq_1(molecule, gradients, irrep)  # TODO or moleculeclone?
-        wfn.set_hessian(H)
+        H = driver_findif.compute_hessian_from_gradient(molecule, gradients, irrep)  # TODO or moleculeclone?
+        wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
-        wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
         core.set_variable('CURRENT ENERGY', energies[-1])
@@ -1524,7 +1525,7 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = core.fd_geoms_freq_0(moleculeclone, irrep)
+        displacements = driver_findif.hessian_from_energy_geometries(moleculeclone, irrep)
         moleculeclone.fix_orientation(True)
         moleculeclone.reinterpret_coordentry(False)
 
@@ -1631,10 +1632,9 @@ def hessian(name, **kwargs):
             wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
-        H = core.fd_freq_0(molecule, energies, irrep)
-        wfn.set_hessian(H)
+        H = driver_findif.compute_hessian_from_energy(molecule, energies, irrep)
+        wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
-        wfn.set_frequencies(core.get_frequencies())
 
         # The last item in the list is the reference energy, return it
         core.set_variable('CURRENT ENERGY', energies[-1])
@@ -1798,6 +1798,33 @@ def frequency(name, **kwargs):
 
 
 def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
+    """Function to perform analysis of a hessian or hessian block, specifically...
+    calling for and printing vibrational and thermochemical analysis, setting thermochemical variables,
+    and writing the vibrec and normal mode files.
+
+    Parameters
+    ----------
+    wfn : :py:class:`~psi4.core.Wavefunction`
+        The wavefunction which had its Hessian computed.
+    hess : ndarray of float, optional
+        Hessian to analyze, if not the hessian in wfn.
+        (3*nat, 3*nat) non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
+    irrep : int or string
+        The irrep for which frequencies are calculated. Thermochemical analysis is skipped if this is given,
+        as only one symmetry block of the hessian has been computed.
+    molecule : :py:class:`~psi4.core.Molecule` or qcdb.Molecule, optional
+        The molecule to pull information from, if not the molecule in wfn. Must at least have similar
+        geometry to the molecule in wfn.
+    project_trans : boolean
+        Should translations be projected in the harmonic analysis?
+    project_rot : boolean
+        Should rotations be projected in the harmonic analysis?
+
+    Returns
+    -------
+    vibinfo : dict
+        A dictionary of vibrational information. See :py:func:`~psi4.driver.qcdb.vib.harmonic_analysis`
+    """
 
     if hess is None:
         nmwhess = np.asarray(wfn.hessian())
@@ -1855,7 +1882,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
         core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
         core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
 
-        core.set_variable("ZERO K ENTHALPHY", therminfo['ZPE_tot'].data)
+        core.set_variable("ZERO K ENTHALPY", therminfo['ZPE_tot'].data)
         core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
         core.set_variable("ENTHALPY", therminfo['H_tot'].data)
         core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
