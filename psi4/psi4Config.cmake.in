@@ -10,7 +10,7 @@
 #   psi4_INCLUDE_DIR - Directory where psi4/psi4-dec.h is located.
 ##   psi4_DEFINITIONS - Definitions necessary to use psi4, namely USING_psi4.
 ##   psi4_LIBRARIES - psi4 library to link against.
-#   psi4_LIBRARY - core.so library to link against.
+#   psi4_LIBRARY - core@PYTHON_MODULE_EXTENSION@ library to link against.
 #   psi4_EXECUTABLE - psi4 executable script.
 ##   psi4_FRAGLIB_DIRS - Directories (list) where EFP fragments are located
 #

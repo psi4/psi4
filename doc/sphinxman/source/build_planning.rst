@@ -565,7 +565,7 @@ installation.
  lib/psi4/header.py                                                           (prints file header)
  lib/psi4/metadata.py                                                          (psi4 version info)
  lib/psi4/__init__.py                                         (module marker/loader for psi4.core)
- lib/psi4/core.so                                         (c-side, compiled and bound by pybind11)
+ lib/psi4/core.cpython-*.so                               (c-side, compiled and bound by pybind11)
  # conda
  lib/pythonX.X/site-packages/psi4/
 
@@ -763,7 +763,7 @@ build directory and python from the source directory. This is an expert
 option for development, and not all functionality will be available. ::
 
     >>> cd {objdir}
-    >>> ln -s {top-level-psi4-dir}/{objdir}/stage/{prefix}/lib/psi4/core.so ../psi4/core.so
+    >>> ln -s {top-level-psi4-dir}/{objdir}/stage/{prefix}/lib/psi4/core.cpython-{ext_will_vary}.so ../psi4/core.cpython-{ext_will_vary}.so
     >>> python ../psi4/run_psi4.py --inplace input.dat
 
 
