@@ -47,18 +47,17 @@ from .molecule import Molecule
 
 
 def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dashparam=None
-    """Function to call Grimme's dftd3 program (http://toc.uni-muenster.de/DFTD3/)
-    to compute the -D correction of level *dashlvl* using parameters for
-    the functional *func*. The dictionary *dashparam* can be used to supply
-    a full set of dispersion parameters in the absense of *func* or to supply
-    individual overrides in the presence of *func*. Returns energy if *dertype* is 0,
-    gradient if *dertype* is 1, else tuple of energy and gradient if *dertype*
-    unspecified. The dftd3 executable must be independently compiled and found in
-    :envvar:`PATH` or :envvar:`PSIPATH`.
-    *self* may be either a qcdb.Molecule (sensibly) or a psi4.Molecule
-    (works b/c psi4.Molecule has been extended by this method py-side and
-    only public interface fns used) or a string that can be instantiated
-    into a qcdb.Molecule.
+    """Function to call Grimme's GCP program
+    https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/gcp
+    to compute an a posteriori geometrical BSSE correction to *self* for
+    several HF, generic DFT, and specific HF-3c and PBEh-3c method/basis
+    combinations, *func*. Returns energy if *dertype* is 0, gradient
+    if *dertype* is 1, else tuple of energy and gradient if *dertype*
+    unspecified. The gcp executable must be independently compiled and
+    found in :envvar:`PATH` or :envvar:`PSIPATH`. *self* may be either a
+    qcdb.Molecule (sensibly) or a psi4.Molecule (works b/c psi4.Molecule
+    has been extended by this method py-side and only public interface
+    fns used) or a string that can be instantiated into a qcdb.Molecule.
 
     """
     # Create (if necessary) and update qcdb.Molecule

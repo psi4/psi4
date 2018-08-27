@@ -320,7 +320,7 @@ dashcoeff = {
         'alias'           : [],
         'description'     : "    Grimme's -NL (DFT plus VV10 correlation) ",
         'citation'        : "    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866\n",
-        'bibtex'          : "Grimme:2011:3866",
+        'bibtex'          : "Hujo:2011:3866",
         'default'         : collections.OrderedDict([('b', 1.0), ('c', 0.0093)]),
         'definitions'     : {
             'blyp'        : {'b':  4.000, 'c': 0.0093, 'citation' : '    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011\n'},
@@ -539,11 +539,7 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
                     dashlevel_candidate_2, dashlevel_candidate_1))
     dashleveleff = dashlevel_candidate_1 or dashlevel_candidate_2
 
-    try:
-        allowed_params = dashcoeff[dashleveleff]['default'].keys()
-    except KeyError:
-        raise ValidationError("""Requested -D correction level ({}) not among ({})""".format(
-            dashlevel, dashcoeff.keys()))
+    allowed_params = dashcoeff[dashleveleff]['default'].keys()
 
     # << 2 >> use name_hint and/or param_tweaks to determine intended dispersion parameters
     if name_hint is None and param_tweaks is None:

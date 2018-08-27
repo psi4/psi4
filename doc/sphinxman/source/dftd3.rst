@@ -176,7 +176,7 @@ Running DFTD3
 ~~~~~~~~~~~~~
 
 A number of *a posteriori* dispersion corrections are available in
-|PSIfour|.  While most are computed within |PSIfours| codebase (-D1, -D2,
+|PSIfour|.  While some are computed within |PSIfours| codebase (-D1, -D2,
 -CHG, -DAS2009, -DAS2010), the -D3 correction and its variants are
 available only through the ``DFTD3`` program.  Once installed, the
 ``dftd3``/|PSIfour| interface is transparent, and all corrections are
@@ -210,44 +210,42 @@ program is suppressed; to see it in the output file, set print > 2.
 
 .. _`table:dashd`:
 
-.. table:: Variants of S. Grimme's -D correction
+.. table:: Variants of dispersion corrections
 
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | Extension [#f0]_                    | Variant and Computing Program                                                                           | |scf__dft_dispersion_parameters|                              |
-   +=====================================+=========================================================================================================+===============================================================+
-   | -D                                  | alias to -D2P4                                                                                          |                                                               |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D1                                 | -D1 [#f1]_ within |PSIfour|                                                                             |                                                               |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D2                                 | alias to -D2P4                                                                                          |                                                               |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D2P4                               | -D2 [#f2]_ within |PSIfour|                                                                             | [:math:`s_6`]                                                 |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D2GR                               | -D2 [#f2]_ through ``dftd3``                                                                            | [:math:`s_6`, :math:`\alpha_6`]                               |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D3                                 | alias to -D3ZERO                                                                                        |                                                               |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D3ZERO                             | -D3 [#f3]_ w/ original zero-damping through ``dftd3``                                                   | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\alpha_6`] |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D3BJ                               | -D3 [#f4]_ w/ newer Becke-Johnson rational damping through ``dftd3``                                    | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]          |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D3M                                | alias to -D3MZERO                                                                                       |                                                               |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D3MZERO                            | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping through ``dftd3``                 | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`]    |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
-   | -D3MBJ                              | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping through ``dftd3``                    | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]          |
-   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
+   | Extension [#f0]_                    | Variant                                                               | Computing Program (engine)      | |scf__dft_dispersion_parameters|                                               |
+   +=====================================+=======================================================================+=================================+================================================================================+
+   | -D                                  | alias to -D2                                                          |                                 |                                                                                |
+   | -D1                                 | -D1 [#f1]_                                                            | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   | -D2                                 | -D2 [#f2]_                                                            | |PSIfours| libdisp OR ``dftd3`` | [:math:`s_6`, :math:`\alpha_6`, :math:`s_{r,6}`]                               |
+   | -D3                                 | alias to -D3ZERO                                                      |                                 |                                                                                |
+   | -D3ZERO                             | -D3 [#f3]_ w/ original zero-damping                                   | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\alpha_6`, :math:`s_{r,8}`] |
+   | -D3BJ                               | -D3 [#f4]_ w/ newer Becke-Johnson rational damping                    | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                           |
+   | -D3(BJ)                             | alias to -D3BJ                                                        |                                 |                                                                                |
+   | -D3M                                | alias to -D3MZERO                                                     |                                 |                                                                                |
+   | -D3MZERO                            | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`]                     |
+   | -D3MBJ                              | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping    | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                           |
+   | -D3M(BJ)                            | alias to -D3MBJ                                                       |                                 |                                                                                |
+   | -NL                                 | Grimme's -NL (DFT plus VV10 correlation) [#f6]_                       | ????                            | [:math:`b`, :math:`c`]                                                         |
+   | -CHG                                | Chai & Head-Gordon dispersion formula [#f7]_                          | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   | -DAS2009                            | Podeszwa & Szalewicz dispersion formula [#f8]_                        | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   | -DAS2010                            | Podeszwa & Szalewicz dispersion formula [#f9]_                        | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
 
 .. rubric:: Footnotes
 
 .. [#f0] Note that there are functionals with these extensions (*e.g.*, wB97X-D) that, 
-   not being Grimme corrections, have nothing to do with this table.
+   not being Grimme corrections, won't follow this table exactly.
    
 .. [#f1] [Grimme:2004:1463]_
 .. [#f2] [Grimme:2006:1787]_
 .. [#f3] [Grimme:2010:154104]_
 .. [#f4] [Grimme:2011:1456]_
 .. [#f5] [Smith:2016:2197]_
+.. [#f6] [Hujo:2011:3866]_
+.. [#f7] [Chai:2010:6615]_
+.. [#f8] [Pernal:2009:263201]_
+.. [#f9] [Podeszwa:2010:550]_
 
 A few practical examples:
 
@@ -268,6 +266,10 @@ A few practical examples:
 
    set dft_dispersion_parameters [1.0, 2.0, 1.261, 14.0]
    energy('b3lyp-d3')
+
+* DFT-D2 single point with ``dftd3`` instead of |PSIfours| libdisp ::
+
+   energy('pbe-d2', engine='dftd3')
 
 If only dispersion corrections (rather than total energies) are of
 interest, the ``dftd3`` program can be run independently of the scf
