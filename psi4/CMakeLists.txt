@@ -170,6 +170,13 @@ endif()
 
 # <<<  Build  >>>
 
+if(MSVC)
+    # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
+    add_definitions("/D_USE_MATH_DEFINES")
+    # Set the exception handling model
+    add_definitions("/EHsc")
+endif()
+
 include_directories(include)
 include_directories(src)
 add_subdirectory(src)
