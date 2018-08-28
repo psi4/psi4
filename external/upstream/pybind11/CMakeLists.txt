@@ -14,14 +14,13 @@ else()
         GIT_REPOSITORY https://github.com/pybind/pybind11
         GIT_TAG v2.2.3
         UPDATE_COMMAND ""
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}  # unused, but needs working compiler
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}  # ditto
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
-                   -DPYBIND11_TEST=OFF
-        INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
+                   -DPYBIND11_TEST=OFF)
 
     set(pybind11_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pybind11 CACHE PATH "path to internally built pybind11Config.cmake" FORCE)
 endif()

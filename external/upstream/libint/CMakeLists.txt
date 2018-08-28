@@ -14,7 +14,7 @@ else()
     ExternalProject_Add(libint_external
         # "git checkout" fails on Windows, because of "*" in filenames (e.g. basis set files)
         URL https://github.com/evaleev/libint/archive/b13e71d3cf9960460c4019e5ecf2546a5f361c71.zip
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -29,8 +29,7 @@ else()
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -DMERGE_LIBDERIV_INCLUDEDIR=ON
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-        INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
+                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
     set(Libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint CACHE PATH "path to internally built LibintConfig.cmake" FORCE)
 endif()
