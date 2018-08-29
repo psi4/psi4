@@ -35,123 +35,107 @@
 
 #include <cstdio>
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
 extern MemoryManager* memory_manager;
 
-BlockVector::BlockVector()
- : nirreps_(0) ,ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0)
-{
-}
-
+BlockVector::BlockVector() : nirreps_(0), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {}
 
 BlockVector::BlockVector(std::string label, int nirreps, size_t*& rows_size)
- : label_(label), nirreps_(nirreps) ,ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0)
-{
-  startup(label,nirreps,rows_size);
+    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {
+    startup(label, nirreps, rows_size);
 }
 
 BlockVector::BlockVector(std::string label, int nirreps, int*& rows_size)
- : label_(label), nirreps_(nirreps) ,ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0)
-{
-  startup(label,nirreps,rows_size);
+    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {
+    startup(label, nirreps, rows_size);
 }
 
 BlockVector::BlockVector(std::string label, int nirreps, vecint& rows_size)
- : label_(label), nirreps_(nirreps) ,ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0)
-{
-  startup(label,nirreps,rows_size);
+    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {
+    startup(label, nirreps, rows_size);
 }
 
-BlockVector::~BlockVector()
-{
-  cleanup();
-}
+BlockVector::~BlockVector() { cleanup(); }
 
-void BlockVector::startup(std::string label, int nirreps, size_t*& rows_size)
-{
-  vector_base_ = new VectorBase*[nirreps_];
-  // Allocate the blocks
-  for(int h = 0; h < nirreps_; ++h){
-    vector_base_[h] = new VectorBase(rows_size[h]);
-  }
-
-  allocate1(size_t,rows_size_,nirreps);
-  allocate1(size_t,rows_offset_,nirreps);
-  // Compute the offsets
-  rows_offset_[0] = 0;
-  for(int h = 1; h < nirreps; ++h){
-    rows_size_[h] = rows_size[h];
-    rows_offset_[h] = rows_offset_[h-1] + rows_size[h-1];
-  }
-}
-
-void BlockVector::startup(std::string label, int nirreps, int*& rows_size)
-{
-  vector_base_ = new VectorBase*[nirreps_];
-  // Allocate the blocks
-  for(int h = 0; h < nirreps_; ++h){
-    vector_base_[h] = new VectorBase(rows_size[h]);
-  }
-
-  allocate1(size_t,rows_size_,nirreps);
-  allocate1(size_t,rows_offset_,nirreps);
-  // Compute the offsets
-  rows_offset_[0] = 0;
-  for(int h = 1; h < nirreps; ++h){
-    rows_size_[h] = rows_size[h];
-    rows_offset_[h] = rows_offset_[h-1] + rows_size[h-1];
-  }
-}
-
-void BlockVector::startup(std::string label, int nirreps, vecint& rows_size)
-{
-  vector_base_ = new VectorBase*[nirreps_];
-  // Allocate the blocks
-  for(int h = 0; h < nirreps_; ++h){
-    vector_base_[h] = new VectorBase(rows_size[h]);
-  }
-
-  allocate1(size_t,rows_size_,nirreps);
-  allocate1(size_t,rows_offset_,nirreps);
-  // Compute the offsets
-  rows_offset_[0] = 0;
-  for(int h = 1; h < nirreps; ++h){
-    rows_size_[h] = rows_size[h];
-    rows_offset_[h] = rows_offset_[h-1] + rows_size[h-1];
-  }
-}
-
-void BlockVector::cleanup()
-{
-  if(vector_base_){
-    for(int h = 0; h < nirreps_; ++h){
-      delete vector_base_[h];
+void BlockVector::startup(std::string label, int nirreps, size_t*& rows_size) {
+    vector_base_ = new VectorBase*[nirreps_];
+    // Allocate the blocks
+    for (int h = 0; h < nirreps_; ++h) {
+        vector_base_[h] = new VectorBase(rows_size[h]);
     }
-    delete[] vector_base_;
-  }
-  release1(rows_size_);
-  release1(rows_offset_);
+
+    allocate1(size_t, rows_size_, nirreps);
+    allocate1(size_t, rows_offset_, nirreps);
+    // Compute the offsets
+    rows_offset_[0] = 0;
+    for (int h = 1; h < nirreps; ++h) {
+        rows_size_[h] = rows_size[h];
+        rows_offset_[h] = rows_offset_[h - 1] + rows_size[h - 1];
+    }
 }
 
-void BlockVector::print()
-{
-  outfile->Printf("\n\n  ## %s ##\n",label_.c_str());
-  for(int h = 0; h < nirreps_; ++h){
-    vector_base_[h]->print();
-  }
+void BlockVector::startup(std::string label, int nirreps, int*& rows_size) {
+    vector_base_ = new VectorBase*[nirreps_];
+    // Allocate the blocks
+    for (int h = 0; h < nirreps_; ++h) {
+        vector_base_[h] = new VectorBase(rows_size[h]);
+    }
 
+    allocate1(size_t, rows_size_, nirreps);
+    allocate1(size_t, rows_offset_, nirreps);
+    // Compute the offsets
+    rows_offset_[0] = 0;
+    for (int h = 1; h < nirreps; ++h) {
+        rows_size_[h] = rows_size[h];
+        rows_offset_[h] = rows_offset_[h - 1] + rows_size[h - 1];
+    }
 }
 
+void BlockVector::startup(std::string label, int nirreps, vecint& rows_size) {
+    vector_base_ = new VectorBase*[nirreps_];
+    // Allocate the blocks
+    for (int h = 0; h < nirreps_; ++h) {
+        vector_base_[h] = new VectorBase(rows_size[h]);
+    }
 
-void BlockVector::copy(BlockVector& source)
-{
-  for(int h = 0; h < nirreps_; ++h){
-    vector_base_[h]->copy(*source.vector_base_[h]);
-  }
+    allocate1(size_t, rows_size_, nirreps);
+    allocate1(size_t, rows_offset_, nirreps);
+    // Compute the offsets
+    rows_offset_[0] = 0;
+    for (int h = 1; h < nirreps; ++h) {
+        rows_size_[h] = rows_size[h];
+        rows_offset_[h] = rows_offset_[h - 1] + rows_size[h - 1];
+    }
 }
 
-}}
+void BlockVector::cleanup() {
+    if (vector_base_) {
+        for (int h = 0; h < nirreps_; ++h) {
+            delete vector_base_[h];
+        }
+        delete[] vector_base_;
+    }
+    release1(rows_size_);
+    release1(rows_offset_);
+}
+
+void BlockVector::print() {
+    outfile->Printf("\n\n  ## %s ##\n", label_.c_str());
+    for (int h = 0; h < nirreps_; ++h) {
+        vector_base_[h]->print();
+    }
+}
+
+void BlockVector::copy(BlockVector& source) {
+    for (int h = 0; h < nirreps_; ++h) {
+        vector_base_[h]->copy(*source.vector_base_[h]);
+    }
+}
+
+}  // namespace mcscf
+}  // namespace psi
 
 // void BlockVector::zero()
 // {
