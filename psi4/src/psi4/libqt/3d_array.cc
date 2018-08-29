@@ -36,7 +36,7 @@
 */
 
 namespace psi {
-	
+
 /*!
 ** 3d_array(): Initialize a (non-contiguous) 3D array
 **
@@ -49,25 +49,23 @@ namespace psi {
 ** \ingroup QT
 */
 
-double ***init_3d_array(int p, int q, int r)
-{
-  double ***A;
-  int i,j,k;
+double ***init_3d_array(int p, int q, int r) {
+    double ***A;
+    int i, j, k;
 
-  A = (double ***) malloc(p * sizeof(double **));
-  for(i=0; i < p; i++) {
-    A[i] = (double **) malloc(q * sizeof(double *));
-    for(j=0; j < q; j++) {
-      A[i][j] = (double *) malloc(r * sizeof(double));
-      for(k=0; k < r; k++) {
-        A[i][j][k] = 0.0;
-      }
+    A = (double ***)malloc(p * sizeof(double **));
+    for (i = 0; i < p; i++) {
+        A[i] = (double **)malloc(q * sizeof(double *));
+        for (j = 0; j < q; j++) {
+            A[i][j] = (double *)malloc(r * sizeof(double));
+            for (k = 0; k < r; k++) {
+                A[i][j][k] = 0.0;
+            }
+        }
     }
-  }
 
-  return A;
+    return A;
 }
-
 
 /*!
 ** free_3d_array(): Free a (non-contiguous) 3D array
@@ -80,17 +78,15 @@ double ***init_3d_array(int p, int q, int r)
 **
 ** \ingroup QT
 */
-void free_3d_array(double ***A, int p, int q)
-{
-  int i,j;
+void free_3d_array(double ***A, int p, int q) {
+    int i, j;
 
-  for(i=0; i < p; i++)
-    for(j=0; j < q; j++)
-      free(A[i][j]);
+    for (i = 0; i < p; i++)
+        for (j = 0; j < q; j++) free(A[i][j]);
 
-  for(i=0; i < p; i++) free(A[i]);
+    for (i = 0; i < p; i++) free(A[i]);
 
-  free(A);
+    free(A);
 }
 
-}
+}  // namespace psi
