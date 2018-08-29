@@ -59,9 +59,6 @@ plugin_info plugin_load(std::string &plugin_pathname) {
         throw PSIEXCEPTION(msg);
     }
 
-    //    boost::filesystem::path pluginPath(plugin_pathname);
-    //    boost::filesystem::path pluginStem = pluginPath.stem();
-    //    info.name = pluginStem.string();
     info.name = filesystem::path(plugin_pathname).stem();
 
     // Modify info.name converting things that are allowed
