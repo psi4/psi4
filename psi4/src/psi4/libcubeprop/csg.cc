@@ -650,21 +650,24 @@ void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vec
     free_block(v);
 }
 void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
-                                         const std::string& label, bool square, const std::string& type) {
+                                         const std::string& label, const bool square, const std::string& type) {
     auto C2 = std::make_shared<Matrix>(primary_->nbf(), indices.size());
     double** Cp = C->pointer();
     double** C2p = C2->pointer();
     for (int k = 0; k < indices.size(); k++) {
         C_DCOPY(primary_->nbf(), &Cp[0][indices[k]], C->colspi()[0], &C2p[0][k], C2->colspi()[0]);
     }
-    double** v_t = block_matrix(indices.size(), npoints_);
-    double*  v = new double[npoints_];
+    double** v_t = block_matrix(indices.size(), npoints_); 
+    double*  v = new double[npoints_]; 
     memset(v_t[0], '\0', indices.size() * npoints_ * sizeof(double));
     memset(v, '\0', npoints_ * sizeof(double));
     add_orbitals(v_t, C2);
     for (int i = 0; i < npoints_; i++) {
-        if (square) v[i] = (v_t[0][i] - v_t[1][i])*(v_t[0][i] + v_t[1][i]);
-        else        v[i] = v_t[0][i] - v_t[1][i];
+        if (square) {
+            v[i] = (v_t[0][i] - v_t[1][i])*(v_t[0][i] + v_t[1][i]);
+        } else {
+            v[i] = v_t[0][i] - v_t[1][i];
+        }
     }
     std::pair<double, double> isocontour_range = compute_isocontour_range(v, 2.0);
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
@@ -731,7 +734,7 @@ std::string CubicScalarGrid::ecp_header() {
         std::stringstream ecp_ncore;
         for (int A = 0; A < mol_->natom(); A++) {
             if (primary_->n_ecp_core(mol_->label(A)) > 0) {
-                ecp_atoms << A+1 << "[" << mol_->symbol(A).c_str() << "], ";
+                ecp_atoms << A+1 << "[" << mol_->symbol(A) << "], ";
                 ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
             }
         }
