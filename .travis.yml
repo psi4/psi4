@@ -25,12 +25,12 @@ matrix:
         - liblapack-dev
         - clang-3.6
         - libhdf5-serial-dev
-        - gfortran-4.9
+        #- gfortran-4.9
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
       - C_COMPILER='clang-3.6'
-      - Fortran_COMPILER='gfortran-4.9'
+      #- Fortran_COMPILER='gfortran-4.9'
       - BUILD_TYPE='release'
       - NAME='clang'
       - VERSION='3.6'
@@ -151,10 +151,10 @@ before_script:
 - cd ${TRAVIS_BUILD_DIR}
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
-- export FC=${Fortran_COMPILER}
+#- export FC=${Fortran_COMPILER}
 - export CTEST_OUTPUT_ON_FAILURE=1
 - ${CXX_COMPILER} --version
-- ${Fortran_COMPILER} --version
+#- ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
     # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
     #   b/c their c++ symbols don't mix with the different Travis compilers. for other
