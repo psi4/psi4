@@ -39,10 +39,10 @@
 
 #define CCTRANSFORM_USE_BLAS
 
-#define MAX(i,j) ((i>j) ? i : j)
-#define MIN(i,j) ((i>j) ? j : i)
-#define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-#define four(i,j,k,l) INDEX(INDEX(i,j),INDEX(k,l))
+#define MAX(i, j) ((i > j) ? i : j)
+#define MIN(i, j) ((i > j) ? j : i)
+#define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
+#define four(i, j, k, l) INDEX(INDEX(i, j), INDEX(k, l))
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
@@ -50,46 +50,44 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 
-namespace psi{ namespace psimrcc{
-    extern MOInfo *moinfo;
+namespace psi {
+namespace psimrcc {
+extern MOInfo* moinfo;
 
 /*!
     \fn CCTransform::read_oei_integrals()
  */
-void CCTransform::read_oei_so_integrals()
-{
-  // Read all the (frozen + non-frozen) OEI in Pitzer order
-  allocate_oei_so();
+void CCTransform::read_oei_so_integrals() {
+    // Read all the (frozen + non-frozen) OEI in Pitzer order
+    allocate_oei_so();
 
-  int nso = moinfo->get_nso();
+    int nso = moinfo->get_nso();
 
-  double* H = new double[nso*(nso+1)/2];
+    double* H = new double[nso * (nso + 1) / 2];
 
-  // Read the kinetic energy integrals
-  for(int k=0; k<nso*(nso+1)/2;++k) H[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_T),H,nso*(nso+1)/2,0,0,"outfile");
+    // Read the kinetic energy integrals
+    for (int k = 0; k < nso * (nso + 1) / 2; ++k) H[k] = 0.0;
+    iwl_rdone(PSIF_OEI, const_cast<char*>(PSIF_SO_T), H, nso * (nso + 1) / 2, 0, 0, "outfile");
 
-  for(int i=0; i < nso; i++)
-    for(int j=0; j < nso; j++)
-      oei_so[i][j] = H[INDEX(i,j)];
+    for (int i = 0; i < nso; i++)
+        for (int j = 0; j < nso; j++) oei_so[i][j] = H[INDEX(i, j)];
 
-  // Read the potential energy integrals
-  for(int k=0; k<nso*(nso+1)/2;++k) H[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_V),H,nso*(nso+1)/2,0,0,"outfile");
+    // Read the potential energy integrals
+    for (int k = 0; k < nso * (nso + 1) / 2; ++k) H[k] = 0.0;
+    iwl_rdone(PSIF_OEI, const_cast<char*>(PSIF_SO_V), H, nso * (nso + 1) / 2, 0, 0, "outfile");
 
-  for(int i=0; i < nso; i++)
-    for(int j=0; j < nso; j++)
-      oei_so[i][j] += H[INDEX(i,j)];
+    for (int i = 0; i < nso; i++)
+        for (int j = 0; j < nso; j++) oei_so[i][j] += H[INDEX(i, j)];
 
-  // Read the overlap integrals
-  for(int k=0; k<nso*(nso+1)/2;++k) H[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_S),H,nso*(nso+1)/2,0,0,"outfile");
+    // Read the overlap integrals
+    for (int k = 0; k < nso * (nso + 1) / 2; ++k) H[k] = 0.0;
+    iwl_rdone(PSIF_OEI, const_cast<char*>(PSIF_SO_S), H, nso * (nso + 1) / 2, 0, 0, "outfile");
 
-  for(int i=0; i < nso; i++)
-    for(int j=0; j < nso; j++)
-      s_so[i][j] += H[INDEX(i,j)];
+    for (int i = 0; i < nso; i++)
+        for (int j = 0; j < nso; j++) s_so[i][j] += H[INDEX(i, j)];
 
-  delete[] H;
+    delete[] H;
 }
 
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi
