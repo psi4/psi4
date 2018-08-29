@@ -25,12 +25,10 @@ matrix:
         - liblapack-dev
         - clang-3.6
         - libhdf5-serial-dev
-        - gfortran
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
       - C_COMPILER='clang-3.6'
-      - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
       - NAME='clang'
       - VERSION='3.6'
@@ -168,7 +166,7 @@ before_script:
     -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
     -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
     -DENABLE_CheMPS2=OFF
-    -DENABLE_dkh=ON
+    -DENABLE_dkh=OFF
     -DENABLE_libefp=OFF
     -DENABLE_erd=OFF
     -DENABLE_gdma=ON
