@@ -25,6 +25,7 @@ matrix:
         - liblapack-dev
         - clang-3.6
         - libhdf5-serial-dev
+        - g++-4.9
         #- gfortran-4.9
     env:
       - CXX_COMPILER='clang++-3.6'
