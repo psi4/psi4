@@ -396,9 +396,9 @@ Bibliography
    *J. Chem. Phys.* **148**, 164110 (2018).
 
 .. [Morell:2005:205]
-   Christophe Morell, Andr\ |e_acute|\  Grand, and Alejandro Toro-Labb\ |e_acute|\
+   Christophe Morell, Andr\ |e_acute|\  Grand, and Alejandro Toro-Labb\ |e_acute| 
    *J. Phys. Chem. A* **109**, 205 (2005).
 
 .. [Martinez-Araya:2015:451]
-   Jorge Ignacio Mart\ |i_acute|\ inez-Araya
+   Jorge Ignacio Mart\ |i_acute|\ nez-Araya
    *J. Math. Chem.* **53**, 451 (2015).
