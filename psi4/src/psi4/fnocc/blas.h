@@ -44,8 +44,8 @@ namespace psi{ namespace fnocc{
 /**
  * fortran-ordered dgemv
  */
-void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,integer lda,
-            doublereal*X,integer incx,doublereal beta,doublereal*Y,integer incy);
+void PSI_API F_DGEMV(char trans, integer m, integer n, doublereal alpha, doublereal *A, integer lda, doublereal *X,
+                     integer incx, doublereal beta, doublereal *Y, integer incy);
 /**
  * fortran-ordered dgemm
  */

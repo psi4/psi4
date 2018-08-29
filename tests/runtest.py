@@ -106,7 +106,11 @@ def backtick(exelist):
 
 # run psi4 and collect testing status from any compare_* in input file
 if os.path.isfile(infile):
-    pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
+    exelist = [psi, infile, outfile, '-l', psidatadir]
+    # On Windows set Python interpreter explicitly as the shebang is ignored
+    if sys.platform.startswith('win'):
+        exelist = [sys.executable] + exelist
+    pyexitcode = backtick(exelist)
 elif os.path.isfile(infile.replace(".dat", ".py")):
     infile = infile.replace(".dat", ".py")
     os.environ["PYTHONPATH"] = psilibdir
