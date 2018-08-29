@@ -61,6 +61,10 @@ if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   target_compile_definitions(core PRIVATE -DINTEL_Fortran_ENABLED)
 endif()
 
+if(MSVC)
+    # Increase the number of addressable sections
+    target_compile_options(core PRIVATE "/bigobj")
+endif()
 
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 

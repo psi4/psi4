@@ -45,7 +45,12 @@ else()
 endif()
 
 #  <<  Pybind11 & Python  >>
-set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
+if(MSVC)
+    # As for MSVC 14.0, it is not possible to set anything bellow C++14, so just use defaults
+    set(PYBIND11_CPP_STANDARD "")
+else()
+    set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
+endif()
 find_package(pybind11 2.2.3 EXACT CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
@@ -169,6 +174,13 @@ elseif(UNIX)
 endif()
 
 # <<<  Build  >>>
+
+if(MSVC)
+    # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
+    add_definitions("/D_USE_MATH_DEFINES")
+    # Set the exception handling model
+    add_definitions("/EHsc")
+endif()
 
 include_directories(include)
 include_directories(src)
