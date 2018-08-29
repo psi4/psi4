@@ -213,6 +213,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       ``BASIS_FUNCTIONS`` - Phi_N
       ``LOL`` - LOLa, LOLb
       ``ELF`` - ELFa, ELFb
+      ``FRONTIER_ORBITALS`` - Psi_a_N_HOMO + Psi_a_N_LUMO
+      ``DUAL_DESCRIPTOR`` - DUAL_N_HOMO-M_LUMO 
   -*/
   options.add("CUBEPROP_TASKS", new ArrayType());
   /*- List of orbital indices for which cube files are generated (1-based,
