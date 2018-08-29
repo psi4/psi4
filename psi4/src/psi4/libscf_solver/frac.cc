@@ -290,5 +290,5 @@ void HF::compute_spin_contamination() {
     }
     outfile->Printf("\n");
 }
-}
-}
+}  // namespace scf
+}  // namespace psi

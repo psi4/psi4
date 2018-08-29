@@ -667,5 +667,5 @@ void HF::compute_SAD_guess() {
 
     energies_["Total Energy"] = 0.0;  // This is the -1th iteration
 }
-}
-}
+}  // namespace scf
+}  // namespace psi
