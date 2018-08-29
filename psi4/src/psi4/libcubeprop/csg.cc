@@ -657,27 +657,25 @@ void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::v
     for (int k = 0; k < indices.size(); k++) {
         C_DCOPY(primary_->nbf(), &Cp[0][indices[k]], C->colspi()[0], &C2p[0][k], C2->colspi()[0]);
     }
-    double** v_t = block_matrix(indices.size(), npoints_); 
-    double*  v = new double[npoints_]; 
-    memset(v_t[0], '\0', indices.size() * npoints_ * sizeof(double));
-    memset(v, '\0', npoints_ * sizeof(double));
-    add_orbitals(v_t, C2);
+    auto v_t = std::make_shared<Matrix>(indices.size(), npoints_);
+    double** v_tp = v_t->pointer();
+    auto v = std::make_shared<Vector>(npoints_);
+    double* vp = v->pointer();
+    add_orbitals(&v_tp[0], C2);
     for (int i = 0; i < npoints_; i++) {
-        if (square) {
-            v[i] = (v_t[0][i] - v_t[1][i])*(v_t[0][i] + v_t[1][i]);
-        } else {
-            v[i] = v_t[0][i] - v_t[1][i];
-        }
+         if (square) {
+             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i))*(v_t->get(0,i) + v_t->get(1,i)));
+         } else {
+             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i)));
+         }
     }
-    std::pair<double, double> isocontour_range = compute_isocontour_range(v, 2.0);
+    std::pair<double, double> isocontour_range = compute_isocontour_range(&vp[0], 2.0);
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
     comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
             << "," << isocontour_range.second << ")";
     // Write to disk
-    write_gen_file(v, label, type, comment.str());
-    free_block(v_t);
-    delete[] v;
+    write_gen_file(&vp[0], label, type, comment.str());
 }
 void CubicScalarGrid::compute_LOL(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type) {
     double* v = new double[npoints_];
