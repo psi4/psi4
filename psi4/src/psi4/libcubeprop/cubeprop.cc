@@ -149,12 +149,12 @@ void CubeProperties::raw_compute_properties() {
             for (size_t ind = 0; ind < indsa0.size(); ++ind) {
                 int i = std::get<1>(info_a_[indsa0[ind]]);
                 int h = std::get<2>(info_a_[indsa0[ind]]);
-                labelsa.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
+                labelsa.push_back(std::to_string(i + 1) + "-" + ct.gamma(h).symbol());
             }
             for (size_t ind = 0; ind < indsb0.size(); ++ind) {
                 int i = std::get<1>(info_b_[indsb0[ind]]);
                 int h = std::get<2>(info_b_[indsb0[ind]]);
-                labelsb.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
+                labelsb.push_back(std::to_string(i + 1) + "-" + ct.gamma(h).symbol());
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0, labelsa, "Psi_a");
             if (indsb0.size()) compute_orbitals(Cb_, indsb0, labelsb, "Psi_b");
@@ -166,34 +166,38 @@ void CubeProperties::raw_compute_properties() {
             CharacterTable ct = basisset_->molecule()->point_group()->char_table();
             if (nalpha_ == nbeta_) {
                 indsa0.push_back(nalpha_-1);
-                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_-1])).symbol() + "_HOMO");
                 indsa0.push_back(nalpha_);
-                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_])).symbol() + "_LUMO");
             } else {
                 indsa0.push_back(nalpha_);
-                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_])).symbol() + "_LUMO");
                 indsb0.push_back(nbeta_+1);
-                labelsb.push_back(to_string(std::get<1>(info_b_[nbeta_+1]) + 1) + "-" +
+                labelsb.push_back(std::to_string(std::get<1>(info_b_[nbeta_+1]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_b_[nbeta_+1])).symbol() + "_LUMO");
                 indsa0.push_back(nalpha_-1);
-                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_-1])).symbol() + "_SOMO");
                 indsb0.push_back(nbeta_);
-                labelsb.push_back(to_string(std::get<1>(info_b_[nbeta_]) + 1) + "-" +
+                labelsb.push_back(std::to_string(std::get<1>(info_b_[nbeta_]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_b_[nbeta_])).symbol() + "_SOMO");
                 indsa0.push_back(nalpha_-2);
-                labelsa.push_back(to_string(std::get<1>(info_a_[nalpha_-2]) + 1) + "-" +
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_-2]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_-2])).symbol() + "_DOMO");
                 indsb0.push_back(nbeta_-1);
-                labelsb.push_back(to_string(std::get<1>(info_b_[nbeta_-1]) + 1) + "-" +
+                labelsb.push_back(std::to_string(std::get<1>(info_b_[nbeta_-1]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_b_[nbeta_-1])).symbol() + "_DOMO");
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0, labelsa, "Psi_a");
             if (indsb0.size()) compute_orbitals(Cb_, indsb0, labelsb, "Psi_b");
         } else if (task == "DUAL_DESCRIPTOR") {
+            // Calculates the dual descriptor from frontier molecular orbitals.
+            // The dual descriptor is a good measure of electro-/nucleophilicity:
+            // f^2(r) = rho_lumo(r) - rho_homo(r)
+            // See 10.1021/jp046577a and 10.1007/s10910-014-0437-7
             std::vector<int> indsa0;
             if (nalpha_ != nbeta_) {
                 throw PSIEXCEPTION(task + "is not implemented for open-shell systems");
@@ -201,7 +205,7 @@ void CubeProperties::raw_compute_properties() {
                 indsa0.push_back(nalpha_);
                 indsa0.push_back(nalpha_-1);
                 std::stringstream ss;
-                ss << "DUAL_" << (nalpha_+1) << "-" << nalpha_;
+                ss << "DUAL_" << (nalpha_+1) << "_LUMO-" << nalpha_ << "_HOMO";
                 compute_difference(Ca_, indsa0, ss.str(), true);
             }
         } else if (task == "BASIS_FUNCTIONS") {
