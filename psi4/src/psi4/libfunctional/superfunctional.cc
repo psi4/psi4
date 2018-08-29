@@ -74,9 +74,7 @@ void SuperFunctional::common_init() {
     libxc_xc_func_ = false;
     locked_ = false;
 }
-std::shared_ptr<SuperFunctional> SuperFunctional::blank() {
-    return std::make_shared<SuperFunctional>();
-}
+std::shared_ptr<SuperFunctional> SuperFunctional::blank() { return std::make_shared<SuperFunctional>(); }
 std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
     // Only allow build from full XC kernals
     if (name.find("XC_") == std::string::npos) {
@@ -96,7 +94,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_x_omega(xc_func->omega());
     sup->set_x_alpha(xc_func->global_exchange());
     sup->set_x_beta(xc_func->lr_exchange());
-    if (xc_func->needs_vv10()){
+    if (xc_func->needs_vv10()) {
         sup->set_vv10_b(xc_func->vv10_b());
         sup->set_vv10_c(xc_func->vv10_c());
     }
@@ -142,8 +140,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 }
 void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Composite Functional: %s <= \n\n", name_.c_str());
 
     if (description_ != "") {
@@ -164,11 +161,10 @@ void SuperFunctional::print(std::string out, int level) const {
                     ((is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) ? "TRUE" : "FALSE"));
     printer->Printf("\n");
 
-    if (libxc_xc_func_){
+    if (libxc_xc_func_) {
         // Well thats nasty
         std::vector<std::tuple<std::string, int, double>> mix_data =
-            dynamic_cast<LibXCFunctional*>(c_functionals_[0].get())
-                ->get_mix_data();
+            dynamic_cast<LibXCFunctional*>(c_functionals_[0].get())->get_mix_data();
 
         int nxc = 0;
         int nexch = 0;
@@ -191,8 +187,7 @@ void SuperFunctional::print(std::string out, int level) const {
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 2) continue;
 
-                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]),
-                                std::get<0>(mix_data[i]).c_str());
+                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
                 printer->Printf("\n");
             }
             printer->Printf("\n");
@@ -203,8 +198,7 @@ void SuperFunctional::print(std::string out, int level) const {
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 0) continue;
 
-                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]),
-                                std::get<0>(mix_data[i]).c_str());
+                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
                 if (c_functionals_[0]->omega()) {
                     printer->Printf(" [omega = %6.4f]", c_functionals_[0]->omega());
                 }
@@ -216,8 +210,7 @@ void SuperFunctional::print(std::string out, int level) const {
         if ((x_omega_ + x_alpha_) > 0.0) {
             printer->Printf("   => Exact (HF) Exchange <=\n\n");
             if (x_omega_) {
-                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR",
-                                x_omega_);
+                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR", x_omega_);
             }
             if (x_alpha_) {
                 printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
@@ -230,8 +223,7 @@ void SuperFunctional::print(std::string out, int level) const {
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 1) continue;
 
-                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]),
-                                std::get<0>(mix_data[i]).c_str());
+                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
                 printer->Printf("\n");
             }
             printer->Printf("\n");
@@ -240,8 +232,7 @@ void SuperFunctional::print(std::string out, int level) const {
     } else {
         printer->Printf("   => Exchange Functionals <=\n\n");
         for (int i = 0; i < x_functionals_.size(); i++) {
-            printer->Printf("    %6.4f   %14s", x_functionals_[i]->alpha(),
-                            x_functionals_[i]->name().c_str());
+            printer->Printf("    %6.4f   %14s", x_functionals_[i]->alpha(), x_functionals_[i]->name().c_str());
             if (x_functionals_[i]->omega()) {
                 printer->Printf(" [omega = %6.4f]", x_functionals_[i]->omega());
             }
@@ -252,8 +243,7 @@ void SuperFunctional::print(std::string out, int level) const {
         if ((x_omega_ + x_alpha_) > 0.0) {
             printer->Printf("   => Exact (HF) Exchange <=\n\n");
             if (x_omega_) {
-                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR",
-                                x_omega_);
+                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR", x_omega_);
             }
             if (x_alpha_) {
                 printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
@@ -263,8 +253,7 @@ void SuperFunctional::print(std::string out, int level) const {
 
         printer->Printf("   => Correlation Functionals <=\n\n");
         for (int i = 0; i < c_functionals_.size(); i++) {
-            printer->Printf("    %6.4f   %14s", c_functionals_[i]->alpha(),
-                            c_functionals_[i]->name().c_str());
+            printer->Printf("    %6.4f   %14s", c_functionals_[i]->alpha(), c_functionals_[i]->name().c_str());
             if (c_functionals_[i]->omega()) {
                 printer->Printf(" [omega = %6.4f]", c_functionals_[i]->omega());
             }
@@ -273,7 +262,7 @@ void SuperFunctional::print(std::string out, int level) const {
         printer->Printf("\n");
     }
 
-    if (is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()){
+    if (is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) {
         printer->Printf("   => MP2 Correlation <=\n\n");
         if (c_omega_) {
             printer->Printf("    %6.4f   %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
@@ -300,7 +289,7 @@ void SuperFunctional::print(std::string out, int level) const {
         printer->Printf("\n");
     }
 
-    if (needs_vv10_){
+    if (needs_vv10_) {
         printer->Printf("   => VV10 Non-Local Parameters <=\n\n");
         printer->Printf("    VV10 B              = %14.4E\n", vv10_b_);
         printer->Printf("    VV10 C              = %14.4E\n", vv10_c_);
@@ -314,11 +303,11 @@ void SuperFunctional::print(std::string out, int level) const {
         for (int i = 0; i < c_functionals_.size(); i++) {
             c_functionals_[i]->print(out, level);
         }
-        if (needs_grac_){
-            if (grac_x_functional_){
+        if (needs_grac_) {
+            if (grac_x_functional_) {
                 grac_x_functional_->print(out, level);
             }
-            if (grac_c_functional_){
+            if (grac_c_functional_) {
                 grac_c_functional_->print(out, level);
             }
         }
@@ -353,7 +342,7 @@ void SuperFunctional::set_vv10_b(double vv10_b) {
     can_edit();
     needs_vv10_ = true;
     vv10_b_ = vv10_b;
-    vv10_beta_ =  1.0 / 32.0 * std::pow((3.0 / (vv10_b_ * vv10_b_)), (3.0 / 4.0));
+    vv10_beta_ = 1.0 / 32.0 * std::pow((3.0 / (vv10_b_ * vv10_b_)), (3.0 / 4.0));
 }
 void SuperFunctional::set_vv10_c(double vv10_c) {
     can_edit();
@@ -370,17 +359,17 @@ void SuperFunctional::set_grac_beta(double grac_beta) {
 }
 void SuperFunctional::set_grac_shift(double grac_shift) {
     can_edit();
-    if (!grac_x_functional_){
+    if (!grac_x_functional_) {
         throw PSIEXCEPTION("Set the GRAC functional before setting the shift.");
     }
     needs_grac_ = true;
     grac_shift_ = grac_shift;
 }
-void SuperFunctional::set_c_ss_alpha(double alpha){
+void SuperFunctional::set_c_ss_alpha(double alpha) {
     can_edit();
     c_ss_alpha_ = alpha;
 }
-void SuperFunctional::set_c_os_alpha(double alpha){
+void SuperFunctional::set_c_os_alpha(double alpha) {
     can_edit();
     c_os_alpha_ = alpha;
 }
@@ -406,14 +395,12 @@ std::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& nam
 }
 bool SuperFunctional::is_gga() const {
     for (int i = 0; i < x_functionals_.size(); i++) {
-        if (x_functionals_[i]->is_gga())
-            return true;
+        if (x_functionals_[i]->is_gga()) return true;
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-        if (c_functionals_[i]->is_gga())
-            return true;
+        if (c_functionals_[i]->is_gga()) return true;
     }
-    if (needs_grac_ || needs_vv10_){
+    if (needs_grac_ || needs_vv10_) {
         return true;
     }
     return false;
@@ -468,14 +455,14 @@ void SuperFunctional::allocate() {
     }
     if (deriv_ >= 1) {
         list.push_back("V_RHO_A");
-        if (is_polar){
+        if (is_polar) {
             list.push_back("V_RHO_B");
         }
     }
     if (deriv_ >= 2) {
         list.push_back("V_RHO_A_RHO_A");
 
-        if (is_polar){
+        if (is_polar) {
             list.push_back("V_RHO_A_RHO_B");
             list.push_back("V_RHO_B_RHO_B");
         }
@@ -486,7 +473,7 @@ void SuperFunctional::allocate() {
         if (deriv_ >= 1) {
             list.push_back("V_GAMMA_AA");
 
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_GAMMA_AB");
                 list.push_back("V_GAMMA_BB");
             }
@@ -494,7 +481,7 @@ void SuperFunctional::allocate() {
         if (deriv_ >= 2) {
             list.push_back("V_GAMMA_AA_GAMMA_AA");
 
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_GAMMA_AA_GAMMA_AB");
                 list.push_back("V_GAMMA_AA_GAMMA_BB");
                 list.push_back("V_GAMMA_AB_GAMMA_AB");
@@ -510,7 +497,7 @@ void SuperFunctional::allocate() {
             list.push_back("V_TAU_A");
             // list.push_back("V_LAPL_A");
 
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_TAU_B");
                 // list.push_back("V_LAPL_B");
             }
@@ -518,7 +505,7 @@ void SuperFunctional::allocate() {
         if (deriv_ >= 2) {
             list.push_back("V_TAU_A_TAU_A");
 
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_TAU_A_TAU_B");
                 list.push_back("V_TAU_B_TAU_B");
             }
@@ -530,7 +517,7 @@ void SuperFunctional::allocate() {
         if (deriv_ >= 2) {
             list.push_back("V_RHO_A_GAMMA_AA");
 
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_RHO_A_GAMMA_AB");
                 list.push_back("V_RHO_A_GAMMA_BB");
                 list.push_back("V_RHO_B_GAMMA_AA");
@@ -545,7 +532,7 @@ void SuperFunctional::allocate() {
         if (deriv_ >= 2) {
             list.push_back("V_RHO_A_TAU_A");
 
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_RHO_A_TAU_B");
                 list.push_back("V_RHO_B_TAU_A");
                 list.push_back("V_RHO_B_TAU_B");
@@ -557,7 +544,7 @@ void SuperFunctional::allocate() {
     if (is_gga() && is_meta()) {
         if (deriv_ >= 2) {
             list.push_back("V_GAMMA_AA_TAU_A");
-            if (is_polar){
+            if (is_polar) {
                 list.push_back("V_GAMMA_AA_TAU_B");
                 list.push_back("V_GAMMA_AB_TAU_A");
                 list.push_back("V_GAMMA_AB_TAU_B");
@@ -572,7 +559,7 @@ void SuperFunctional::allocate() {
     }
 
     if (needs_grac_) {
-        ac_values_["V"] = std::make_shared<Vector>("V", max_points_); // Not actually used
+        ac_values_["V"] = std::make_shared<Vector>("V", max_points_);  // Not actually used
         ac_values_["V_RHO_A"] = std::make_shared<Vector>("V_RHO_A", max_points_);
         ac_values_["V_GAMMA_AA"] = std::make_shared<Vector>("V_GAMMA_AA", max_points_);
         if (is_polar) {
@@ -592,8 +579,7 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
     const std::map<std::string, SharedVector>& vals, int npoints) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
-    for (std::map<std::string, SharedVector>::const_iterator it = values_.begin();
-         it != values_.end(); ++it) {
+    for (std::map<std::string, SharedVector>::const_iterator it = values_.begin(); it != values_.end(); ++it) {
         ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
     }
 
@@ -606,19 +592,18 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
 
     // Apply the grac shift, only valid for gradient computations
     if (needs_grac_ && (deriv_ == 1)) {
-        for (std::map<std::string, SharedVector>::const_iterator it = ac_values_.begin();
-             it != ac_values_.end(); ++it) {
+        for (std::map<std::string, SharedVector>::const_iterator it = ac_values_.begin(); it != ac_values_.end();
+             ++it) {
             ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
         }
-        if (grac_x_functional_){
+        if (grac_x_functional_) {
             grac_x_functional_->compute_functional(vals, ac_values_, npoints, 1);
         }
-        if (grac_c_functional_){
+        if (grac_c_functional_) {
             grac_c_functional_->compute_functional(vals, ac_values_, npoints, 1);
         }
 
-        if (is_unpolarized()){
-
+        if (is_unpolarized()) {
             double* rho = vals.find("RHO_A")->second->pointer();
             double* sigma = vals.find("GAMMA_AA")->second->pointer();
 
@@ -634,11 +619,10 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             const double pow43 = 4.0 / 3.0;
             double denx;
 
-            # pragma omp simd
-            for (size_t i = 0; i < npoints; i++){
-
+#pragma omp simd
+            for (size_t i = 0; i < npoints; i++) {
                 if (rho[i] < 1.e-16) {
-                    denx = 1.e2; // Will force grac_fx to 1
+                    denx = 1.e2;  // Will force grac_fx to 1
                 } else {
                     denx = std::pow(sigma[i], 0.5) / std::pow(rho[i], pow43);
                 }
@@ -654,10 +638,8 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             }
         }
 
-
         // This is turned off by allocate for now, this doesnt appear to be quite correct.
-        else{
-
+        else {
             throw PSIEXCEPTION("GRAC is not implemented for UKS functionals.");
             // double* rho_a = vals.find("RHO_A")->second->pointer();
             // double* rho_a_x = vals.find("RHO_AX")->second->pointer();
@@ -704,10 +686,9 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
 
     return values_;
 }
-std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
-    const std::map<std::string, SharedVector>& vals, std::shared_ptr<BlockOPoints> block,
-    double rho_thresh, int npoints, bool internal){
-
+std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const std::map<std::string, SharedVector>& vals,
+                                                                        std::shared_ptr<BlockOPoints> block,
+                                                                        double rho_thresh, int npoints, bool internal) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
     // Precompute prefactors
@@ -728,8 +709,8 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
     double* rhop = vals.find("RHO_A")->second->pointer();
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
 
-    // Eh, worth a shot
-    # pragma omp simd
+// Eh, worth a shot
+#pragma omp simd
     for (size_t i = 0; i < npoints; i++) {
         if (rhop[i] < rho_thresh) continue;
 
@@ -792,13 +773,10 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
     ret["KAPPA"] = kappa_vec;
 
     return ret;
-
 }
-double SuperFunctional::compute_vv10_kernel(
-    const std::map<std::string, SharedVector>& vals,
-    const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-    std::shared_ptr<BlockOPoints> block, int npoints) {
-
+double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVector>& vals,
+                                            const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+                                            std::shared_ptr<BlockOPoints> block, int npoints) {
     // Kernel between left (*this) and right (vv10_cache) grids
 
     // Compute the vv10 cache in place
@@ -824,8 +802,7 @@ double SuperFunctional::compute_vv10_kernel(
     double* l_W0 = vv_values_["W0"]->pointer();
     double* l_kappa = vv_values_["KAPPA"]->pointer();
 
-    for (size_t i = 0; i < l_npoints; i++){
-
+    for (size_t i = 0; i < l_npoints; i++) {
         // Add Phi agnostic quantities
         vv10_e += l_w[i] * l_rho[i] * vv10_beta;
         v_rho[i] += vv10_beta;
@@ -836,8 +813,7 @@ double SuperFunctional::compute_vv10_kernel(
         double phi = 0.0;
         double U = 0.0;
         double W = 0.0;
-        for (auto r_block : vv10_cache){
-
+        for (auto r_block : vv10_cache) {
             // Get right points
             double* r_x = r_block["X"]->pointer();
             double* r_y = r_block["Y"]->pointer();
@@ -849,8 +825,8 @@ double SuperFunctional::compute_vv10_kernel(
 
             size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
 
-            // Interior Kernel
-            # pragma omp simd reduction(+: phi, U, W)
+// Interior Kernel
+#pragma omp simd reduction(+ : phi, U, W)
             for (size_t j = 0; j < r_npoints; j++) {
                 // if (r_rho[i] < 1.e-8) continue;
 
@@ -875,12 +851,12 @@ double SuperFunctional::compute_vv10_kernel(
                 W += tmp_U * R2;
             }
 
-        } // End r blocks
+        }  // End r blocks
         // Mathematica for the win
         const double kappa_dn = l_kappa[i] / (6.0 * l_rho[i]);
         const double w0_dgamma = vv10_c_ * l_gamma[i] / (l_W0[i] * std::pow(l_rho[i], 4.0));
-        const double w0_drho = 2.0 / l_W0[i] *
-            (M_PI / 3.0 - vv10_c_ * (l_gamma[i] * l_gamma[i]) / std::pow(l_rho[i], 5.0));
+        const double w0_drho =
+            2.0 / l_W0[i] * (M_PI / 3.0 - vv10_c_ * (l_gamma[i] * l_gamma[i]) / std::pow(l_rho[i], 5.0));
 
         // Sum it all together
         vv10_e += 0.5 * l_w[i] * l_rho[i] * phi;
@@ -890,11 +866,10 @@ double SuperFunctional::compute_vv10_kernel(
 
     // printf("Nact/Ntot Ext %zu / %zu\n", nact, l_npoints);
     return vv10_e;
-
 }
 void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa,
-                                      SharedVector gamma_ab, SharedVector gamma_bb,
-                                      SharedVector tau_a, SharedVector tau_b) {
+                                      SharedVector gamma_ab, SharedVector gamma_bb, SharedVector tau_a,
+                                      SharedVector tau_b) {
     std::map<std::string, SharedVector> props;
     props["RHO_A"] = rho_a;
     props["RHO_B"] = rho_b;
@@ -905,15 +880,11 @@ void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, Sh
     props["TAU_B"] = tau_b;
     compute_functional(props);
 }
-SharedVector SuperFunctional::value(const std::string& key)
-{
-    return values_[key];
-}
-int SuperFunctional::ansatz() const
-{
+SharedVector SuperFunctional::value(const std::string& key) { return values_[key]; }
+int SuperFunctional::ansatz() const {
     if (is_meta()) return 2;
-    if (is_gga())  return 1;
+    if (is_gga()) return 1;
     return 0;
 }
 
-}
+}  // namespace psi

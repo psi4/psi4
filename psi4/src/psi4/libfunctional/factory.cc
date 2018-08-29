@@ -50,4 +50,4 @@ std::shared_ptr<Functional> Functional::build_base(const std::string& alias) {
 
     return std::shared_ptr<Functional>(fun);
 }
-}
+}  // namespace psi

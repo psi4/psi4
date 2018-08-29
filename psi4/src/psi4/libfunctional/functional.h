@@ -47,9 +47,7 @@ namespace psi {
  *
  **/
 class Functional {
-
-protected:
-
+   protected:
     // => Meta-Data <= //
 
     // Actually (1-\alpha)*w, the final scale of all computed values
@@ -84,8 +82,7 @@ protected:
     // Initialize null functional
     void common_init();
 
-public:
-
+   public:
     // => Constructors (Use the factory constructor, or really know what's up) <= //
 
     Functional();
@@ -100,8 +97,7 @@ public:
     // => Computers <= //
 
     virtual void compute_functional(const std::map<std::string, SharedVector>& in,
-                                    const std::map<std::string, SharedVector>& out, int npoints,
-                                    int deriv) = 0;
+                                    const std::map<std::string, SharedVector>& out, int npoints, int deriv) = 0;
 
     // => Parameters <= //
 
@@ -147,6 +143,6 @@ public:
     void py_print_detail(int level) const { print("outfile", level); }
 };
 
-}
+}  // namespace psi
 
 #endif
