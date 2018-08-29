@@ -35,10 +35,10 @@
 
 namespace psi {
 
-class PythonDataType : public DataType
-{
+class PythonDataType : public DataType {
     py::object python_object_;
-public:
+
+   public:
     PythonDataType();
     PythonDataType(const py::object& p);
     virtual ~PythonDataType();
@@ -53,6 +53,6 @@ public:
     PRAGMA_WARNING_POP
 };
 
-}
+}  // namespace psi
 
-#endif // _psi_src_lib_liboptions_python_h
+#endif  // _psi_src_lib_liboptions_python_h
