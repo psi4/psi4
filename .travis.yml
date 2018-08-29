@@ -25,10 +25,12 @@ matrix:
         - liblapack-dev
         - clang-3.6
         - libhdf5-serial-dev
+        - gfortran-4.9
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
       - C_COMPILER='clang-3.6'
+      - Fortran_COMPILER='gfortran-4.9'
       - BUILD_TYPE='release'
       - NAME='clang'
       - VERSION='3.6'
