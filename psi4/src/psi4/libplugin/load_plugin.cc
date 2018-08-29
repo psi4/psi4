@@ -40,8 +40,7 @@ namespace psi {
 
 #include <dlfcn.h>
 
-plugin_info plugin_load(std::string& plugin_pathname)
-{
+plugin_info plugin_load(std::string &plugin_pathname) {
     plugin_info info;
 
     info.plugin_handle = dlopen(plugin_pathname.c_str(), RTLD_LAZY);
@@ -51,7 +50,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
         throw PSIEXCEPTION(msg);
     }
 
-    info.read_options = (read_options_t) dlsym(info.plugin_handle, "read_options");
+    info.read_options = (read_options_t)dlsym(info.plugin_handle, "read_options");
     const char *dlsym_error2 = dlerror();
     if (dlsym_error2) {
         dlclose(info.plugin_handle);
@@ -60,9 +59,9 @@ plugin_info plugin_load(std::string& plugin_pathname)
         throw PSIEXCEPTION(msg);
     }
 
-//    boost::filesystem::path pluginPath(plugin_pathname);
-//    boost::filesystem::path pluginStem = pluginPath.stem();
-//    info.name = pluginStem.string();
+    //    boost::filesystem::path pluginPath(plugin_pathname);
+    //    boost::filesystem::path pluginStem = pluginPath.stem();
+    //    info.name = pluginStem.string();
     info.name = filesystem::path(plugin_pathname).stem();
 
     // Modify info.name converting things that are allowed
@@ -71,7 +70,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     // Replace all '-' with '_'
     info.name = std::regex_replace(info.name, std::regex("\\-"), format_underscore);
 
-    info.plugin = (plugin_t) dlsym(info.plugin_handle, info.name.c_str());
+    info.plugin = (plugin_t)dlsym(info.plugin_handle, info.name.c_str());
     const char *dlsym_error3 = dlerror();
     if (dlsym_error3) {
         dlclose(info.plugin_handle);
@@ -94,12 +93,10 @@ plugin_info plugin_load(std::string& plugin_pathname)
 
 #else
 
-plugin_info plugin_load(std::string& plugin_path)
-{
+plugin_info plugin_load(std::string& plugin_path) {
     throw PSIEXCEPTION("Plugins are not supported on your platform.\n");
     return plugin_info();
 }
 
 #endif
-
 }
