@@ -202,6 +202,8 @@ def nbody_gufunc(func, method_string, **kwargs):
     metadata['return_total_data'] = kwargs.pop('return_total_data', False)
     metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
     metadata['molecule'].update_geometry()
+    metadata['molecule'].fix_com(True)
+    metadata['molecule'].fix_orientation(True)
     metadata['embedding_charges'] = kwargs.get('embedding_charges', False)
     metadata['kwargs'] = kwargs
     core.clean_variables()
@@ -650,7 +652,7 @@ def assemble_nbody_components(metadata, component_results):
                     bsse_ptype = cp_ptype_body_dict[n] - cp_monomer_ptype
                     cp_ptype_body_dict[n] = cp_monomer_ptype.copy()
 
-            if n > 1:
+            else:
                 cp_energy_body_dict[n] -= bsse
                 if metadata['ptype'] != 'energy':
                     cp_ptype_body_dict[n] -= bsse_ptype
