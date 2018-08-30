@@ -26,6 +26,7 @@ matrix:
         - clang-3.6
         - libhdf5-serial-dev
         - gfortran
+        - g++-4.9
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
@@ -143,7 +144,7 @@ install:
 - conda info -a
 - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
 - source activate p4env
-- conda install dftd3 gcp resp snsmp2 pybind11=2.2.3 -c psi4/label/dev
+- conda install dftd3 gcp resp snsmp2 pylibefp pybind11=2.2.3 -c psi4/label/dev
 - conda list
 before_script:
 - python -V
