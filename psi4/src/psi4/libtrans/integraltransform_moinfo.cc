@@ -275,7 +275,7 @@ void IntegralTransform::process_spaces() {
                         if (mosym_[orb] == h) {
                             aOrbsPI[h]++;
                             aOrbSym[count] = h;
-                            if (aIndex) aIndex[count] = aindex[n];
+                            //if (aIndex) aIndex[count] = aindex[n];
                             count++;
                         }
                     }
