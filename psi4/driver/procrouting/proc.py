@@ -3668,7 +3668,7 @@ def run_fisapt(name, **kwargs):
     fisapt_wfn.compute_energy()
 
     optstash.restore()
-    return fisapt_wfn
+    return ref_wfn
 
 
 def run_mrcc(name, **kwargs):
