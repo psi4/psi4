@@ -33,13 +33,13 @@
 #include <cstdio>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-namespace psi { namespace cchbar {
+namespace psi {
+namespace cchbar {
 
-void status(const char *s, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-           std::make_shared<PsiOutStream>(out));
-   printer->Printf( "     %-15s...complete\n", s);
+void status(const char *s, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("     %-15s...complete\n", s);
 }
 
-}} // namespace psi::cchbar
+}  // namespace cchbar
+}  // namespace psi
