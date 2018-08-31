@@ -70,7 +70,7 @@ namespace psi {
 **
 ** \ingroup QT
 */
-void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
+PSI_API void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps)
 {
 
@@ -194,7 +194,7 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
 **
 ** \ingroup QT
 */
-void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
+PSI_API void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
                     int *frozen_uocc, int *order_alpha, int *order_beta,
                     int *orbspi, int nirreps)
 {
