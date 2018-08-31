@@ -44,13 +44,12 @@ typedef int (*read_options_t)(std::string, Options&);
 #define INIT_PLUGIN
 
 // The following lines are used by the PSI4 driver.
-typedef struct plugin_info_struct
-{
+typedef struct plugin_info_struct {
     // Uppercased plugin name.
     std::string name;
 
     // File handle to plugin
-    void *plugin_handle;
+    void* plugin_handle;
 
     // Used to call the user provided plugin code
     plugin_t plugin;
@@ -73,6 +72,6 @@ plugin_info plugin_load(std::string& plugin_path);
   @param plugin A plugin_info struct that contains the plugin to free.
 */
 void plugin_close(const plugin_info& plugin);
-}
+}  // namespace psi
 
 #endif
