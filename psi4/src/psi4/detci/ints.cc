@@ -104,9 +104,10 @@ void CIWavefunction::transform_ci_integrals() {
     auto act_space = std::make_shared<MOSpace>('X', orbitals, indices);
     spaces.push_back(act_space);
 
-    IntegralTransform* ints = new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
-                                                    IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
-                                                    IntegralTransform::FrozenOrbitals::OccAndVir, true);
+    IntegralTransform* ints =
+        new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
+                              IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
+                              IntegralTransform::FrozenOrbitals::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
@@ -353,9 +354,10 @@ void CIWavefunction::setup_mcscf_ints() {
     spaces.push_back(act_space_);
 
     // Now the occ space is active, the vir space is our rot space (FZC to FZV)
-    IntegralTransform* ints = new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
-                                                    IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
-                                                    IntegralTransform::FrozenOrbitals::OccAndVir, true);
+    IntegralTransform* ints =
+        new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
+                              IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
+                              IntegralTransform::FrozenOrbitals::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
@@ -366,7 +368,8 @@ void CIWavefunction::setup_mcscf_ints() {
     ints_->set_print(0);
 
     // Conventional JK build
-    jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
+    jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false,
+                       Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->set_do_J(true);
     jk_->set_do_K(true);
     jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
@@ -387,8 +390,10 @@ void CIWavefunction::setup_mcscf_ints_ao() {
 #else
         throw PSIEXCEPTION("GTFock was not compiled in this version");
 #endif
-    } else if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || scf_type == "CD" || scf_type == "PK" || scf_type == "DIRECT" || scf_type == "OUT_OF_CORE") {
-        jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_, false, Process::environment.get_memory() * 0.8 / sizeof(double));
+    } else if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || scf_type == "CD" || scf_type == "PK" ||
+               scf_type == "DIRECT" || scf_type == "OUT_OF_CORE") {
+        jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_, false,
+                           Process::environment.get_memory() * 0.8 / sizeof(double));
     } else {
         outfile->Printf("\n Please select GTFock, DF, CD or PK for use with MCSCF_TYPE AO");
         throw PSIEXCEPTION("AO_CASSCF does not work with your SCF_TYPE");
@@ -1069,5 +1074,5 @@ void CIWavefunction::pitzer_to_ci_order_twoel(SharedMatrix src, SharedVector des
         }
     }
 }
-}
-}  // namespace psi::detci
+}  // namespace detci
+}  // namespace psi
