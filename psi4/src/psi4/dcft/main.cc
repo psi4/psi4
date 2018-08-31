@@ -40,18 +40,17 @@
 
 using namespace psi;
 
+namespace psi {
+namespace dcft {
 
-namespace psi{ namespace dcft{
-
-SharedWavefunction dcft(SharedWavefunction ref_wfn, Options& options)
-{
+SharedWavefunction dcft(SharedWavefunction ref_wfn, Options& options) {
     // Start the timers
     tstart();
 
     outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf(    "\t*                        Density Cumulant Functional Theory                       *\n");
-    outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
-    outfile->Printf(    "\t***********************************************************************************\n");
+    outfile->Printf("\t*                        Density Cumulant Functional Theory                       *\n");
+    outfile->Printf("\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
+    outfile->Printf("\t***********************************************************************************\n");
 
     auto dcft = std::make_shared<DCFTSolver>(ref_wfn, options);
     dcft->compute_energy();
@@ -61,4 +60,5 @@ SharedWavefunction dcft(SharedWavefunction ref_wfn, Options& options)
     return dcft;
 }
 
-}} // End Namespaces
+}  // namespace dcft
+}  // namespace psi

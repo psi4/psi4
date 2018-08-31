@@ -35,8 +35,7 @@ namespace psi {
  *  \class ObaraSaikaTwoCenterRecursion
  *  \brief Generic Obara and Saika recursion object.
  */
-class ObaraSaikaTwoCenterRecursion
-{
+class ObaraSaikaTwoCenterRecursion {
     int max_am1_;
     int max_am2_;
 
@@ -47,9 +46,9 @@ class ObaraSaikaTwoCenterRecursion
     // No default constructor
     ObaraSaikaTwoCenterRecursion();
     // No assignment operator
-    ObaraSaikaTwoCenterRecursion& operator=(const ObaraSaikaTwoCenterRecursion&);
+    ObaraSaikaTwoCenterRecursion &operator=(const ObaraSaikaTwoCenterRecursion &);
 
-public:
+   public:
     /// Constructor, max_am1 and max_am2 are the max angular momentum on center 1 and 2.
     /// Needed to allocate enough memory.
     ObaraSaikaTwoCenterRecursion(int max_am1, int max_am2);
@@ -71,8 +70,7 @@ public:
  *  \brief Obara and Saika recursion object for moment integrals. Currently not used by DipoleInt, hopefully soon.
  *  THIS CLASS HAS NOT BEEN TESTED!!!
  */
-class ObaraSaikaTwoCenterMIRecursion
-{
+class ObaraSaikaTwoCenterMIRecursion {
     int max_am1_;
     int max_am2_;
     int max_m_;
@@ -84,9 +82,9 @@ class ObaraSaikaTwoCenterMIRecursion
     // No default constructor
     ObaraSaikaTwoCenterMIRecursion();
     // No assignment operator
-    ObaraSaikaTwoCenterMIRecursion& operator=(const ObaraSaikaTwoCenterMIRecursion&);
+    ObaraSaikaTwoCenterMIRecursion &operator=(const ObaraSaikaTwoCenterMIRecursion &);
 
-public:
+   public:
     ObaraSaikaTwoCenterMIRecursion(int max_am1, int max_am2, int max_m);
     ~ObaraSaikaTwoCenterMIRecursion();
 
@@ -100,9 +98,8 @@ public:
  *  \class ObaraSaikaTwoCenterVIRecursion
  *  \brief Obara and Saika recursion object for potential integrals.
  */
-class ObaraSaikaTwoCenterVIRecursion
-{
-protected:
+class ObaraSaikaTwoCenterVIRecursion {
+   protected:
     int max_am1_;
     int max_am2_;
     int size_;
@@ -112,13 +109,13 @@ protected:
     // Forms Fm(U) from A20 (OS 1986)
     void calculate_f(double *F, int n, double t);
 
-private:
+   private:
     // No default constructor
     ObaraSaikaTwoCenterVIRecursion();
     // No assignment operator
-    ObaraSaikaTwoCenterVIRecursion& operator=(const ObaraSaikaTwoCenterVIRecursion&);
+    ObaraSaikaTwoCenterVIRecursion &operator=(const ObaraSaikaTwoCenterVIRecursion &);
 
-public:
+   public:
     /// Constructor, max_am1 and max_am2 are the max angular momentum on center 1 and 2.
     /// Needed to allocate enough memory.
     ObaraSaikaTwoCenterVIRecursion(int max_am1, int max_am2);
@@ -148,20 +145,19 @@ public:
  *  \class ObaraSaikaTwoCenterVIDerivRecursion
  *  \brief Obara and Saika recursion object for computing potential derivatives.
  */
-class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion
-{
-protected:
+class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion {
+   protected:
     double ***vx_;
     double ***vy_;
     double ***vz_;
 
-private:
+   private:
     // No default constructor();
     ObaraSaikaTwoCenterVIDerivRecursion();
     // No assignment operator
-    ObaraSaikaTwoCenterVIDerivRecursion& operator=(const ObaraSaikaTwoCenterVIDerivRecursion&);
+    ObaraSaikaTwoCenterVIDerivRecursion &operator=(const ObaraSaikaTwoCenterVIDerivRecursion &);
 
-public:
+   public:
     ObaraSaikaTwoCenterVIDerivRecursion(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterVIDerivRecursion();
 
@@ -176,9 +172,8 @@ public:
  *  \class ObaraSaikaTwoCenterVIDerivRecursion
  *  \brief Obara and Saika recursion object for computing potential derivatives.
  */
-class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion
-{
-protected:
+class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion {
+   protected:
     double ***vxx_;
     double ***vxy_;
     double ***vxz_;
@@ -186,13 +181,13 @@ protected:
     double ***vyz_;
     double ***vzz_;
 
-private:
+   private:
     // No default constructor();
     ObaraSaikaTwoCenterVIDeriv2Recursion();
     // No assignment operator
-    ObaraSaikaTwoCenterVIDeriv2Recursion& operator=(const ObaraSaikaTwoCenterVIDeriv2Recursion&);
+    ObaraSaikaTwoCenterVIDeriv2Recursion &operator=(const ObaraSaikaTwoCenterVIDeriv2Recursion &);
 
-public:
+   public:
     ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterVIDeriv2Recursion();
 
@@ -210,21 +205,20 @@ public:
  *  \class ObaraSaikaTwoCenterElectricField
  *  \brief Obara and Saika recursion object for computing electric field integrals.
  */
-class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion
-{
-protected:
+class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
+   protected:
     double ***q_;
     double ***x_;
     double ***y_;
     double ***z_;
 
-private:
+   private:
     // No default constructor
     ObaraSaikaTwoCenterElectricField();
     // No assignment operator
-    ObaraSaikaTwoCenterElectricField& operator=(const ObaraSaikaTwoCenterElectricField&);
+    ObaraSaikaTwoCenterElectricField &operator=(const ObaraSaikaTwoCenterElectricField &);
 
-public:
+   public:
     ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterElectricField();
 
@@ -240,9 +234,8 @@ public:
  *  \class ObaraSaikaTwoCenterElectricFieldGradient
  *  \brief Obara and Saika recursion object for computing electric field gradient integrals.
  */
-class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField
-{
-protected:
+class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField {
+   protected:
     double ***exx_;
     double ***eyy_;
     double ***ezz_;
@@ -250,13 +243,13 @@ protected:
     double ***exz_;
     double ***eyz_;
 
-private:
+   private:
     // No default constructor
     ObaraSaikaTwoCenterElectricFieldGradient();
     // No assignment operator
-    ObaraSaikaTwoCenterElectricFieldGradient& operator=(const ObaraSaikaTwoCenterElectricFieldGradient&);
+    ObaraSaikaTwoCenterElectricFieldGradient &operator=(const ObaraSaikaTwoCenterElectricFieldGradient &);
 
-public:
+   public:
     ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterElectricFieldGradient();
 
@@ -267,87 +260,82 @@ public:
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
 
-
 /*! \ingroup MINTS
  *  \class ObaraSaikaTwoCenterEFPRecursion
  *  \brief Obara and Saika recursion object for potential integrals, and electric derivatives thereof, required in EFP.
  */
-class ObaraSaikaTwoCenterEFPRecursion
-{
-protected:
+class ObaraSaikaTwoCenterEFPRecursion {
+   protected:
     int max_am1_;
     int max_am2_;
     int size_;
 
-    double*** q_;
-    double*** x_;
-    double*** y_;
-    double*** z_;
-    double*** xx_;
-    double*** xy_;
-    double*** xz_;
-    double*** yy_;
-    double*** yz_;
-    double*** zz_;
-    double*** xxx_;
-    double*** xxy_;
-    double*** xxz_;
-    double*** xyy_;
-    double*** xyz_;
-    double*** xzz_;
-    double*** yyy_;
-    double*** yyz_;
-    double*** yzz_;
-    double*** zzz_;
+    double ***q_;
+    double ***x_;
+    double ***y_;
+    double ***z_;
+    double ***xx_;
+    double ***xy_;
+    double ***xz_;
+    double ***yy_;
+    double ***yz_;
+    double ***zz_;
+    double ***xxx_;
+    double ***xxy_;
+    double ***xxz_;
+    double ***xyy_;
+    double ***xyz_;
+    double ***xzz_;
+    double ***yyy_;
+    double ***yyz_;
+    double ***yzz_;
+    double ***zzz_;
 
     // Forms Fm(U) from A20 (OS 1986)
     void calculate_f(double *F, int n, double t);
 
-private:
+   private:
     // No default constructor
     ObaraSaikaTwoCenterEFPRecursion();
     // No assignment operator
-    ObaraSaikaTwoCenterEFPRecursion& operator=(const ObaraSaikaTwoCenterEFPRecursion&);
+    ObaraSaikaTwoCenterEFPRecursion &operator=(const ObaraSaikaTwoCenterEFPRecursion &);
 
-public:
+   public:
     /// Constructor, max_am1 and max_am2 are the max angular momentum on center 1 and 2.
     /// Needed to allocate enough memory.
     ObaraSaikaTwoCenterEFPRecursion(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterEFPRecursion();
 
     /// Returns the potential integral 3D matrix
-    double*** q  () const { return q_;   }
-    double*** x  () const { return x_;   }
-    double*** y  () const { return y_;   }
-    double*** z  () const { return z_;   }
-    double*** xx () const { return xx_;  }
-    double*** yy () const { return yy_;  }
-    double*** zz () const { return zz_;  }
-    double*** xy () const { return xy_;  }
-    double*** xz () const { return xz_;  }
-    double*** yz () const { return yz_;  }
-    double*** xxx() const { return xxx_; }
-    double*** yyy() const { return yyy_; }
-    double*** zzz() const { return zzz_; }
-    double*** xxy() const { return xxy_; }
-    double*** xxz() const { return xxz_; }
-    double*** xyy() const { return xyy_; }
-    double*** yyz() const { return yyz_; }
-    double*** xzz() const { return xzz_; }
-    double*** yzz() const { return yzz_; }
-    double*** xyz() const { return xyz_; }
+    double ***q() const { return q_; }
+    double ***x() const { return x_; }
+    double ***y() const { return y_; }
+    double ***z() const { return z_; }
+    double ***xx() const { return xx_; }
+    double ***yy() const { return yy_; }
+    double ***zz() const { return zz_; }
+    double ***xy() const { return xy_; }
+    double ***xz() const { return xz_; }
+    double ***yz() const { return yz_; }
+    double ***xxx() const { return xxx_; }
+    double ***yyy() const { return yyy_; }
+    double ***zzz() const { return zzz_; }
+    double ***xxy() const { return xxy_; }
+    double ***xxz() const { return xxz_; }
+    double ***xyy() const { return xyy_; }
+    double ***yyz() const { return yyz_; }
+    double ***xzz() const { return xzz_; }
+    double ***yzz() const { return yzz_; }
+    double ***xyz() const { return xyz_; }
 
     /// Computes the potential integral 3D matrix using the data provided.
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
-
 };
-
 
 /*! \ingroup MINTS
     \class ObaraSaikaThreeCenterRecursion
  */
-class ObaraSaikaThreeCenterRecursion
-{
+class ObaraSaikaThreeCenterRecursion {
     int max_am1_;
     int max_am2_;
     int max_am3_;
@@ -360,9 +348,9 @@ class ObaraSaikaThreeCenterRecursion
     ObaraSaikaThreeCenterRecursion();
 
     // No assignment operator
-    ObaraSaikaThreeCenterRecursion& operator=(const ObaraSaikaThreeCenterRecursion&);
+    ObaraSaikaThreeCenterRecursion &operator=(const ObaraSaikaThreeCenterRecursion &);
 
-public:
+   public:
     ObaraSaikaThreeCenterRecursion(int max_am1, int max_am2, int max_am3);
     ~ObaraSaikaThreeCenterRecursion();
 
@@ -374,13 +362,9 @@ public:
     double ***z() const { return z_; }
 
     /// Computes the recursion matrices for the data provided.
-    void compute(double GA[3],
-                 double GB[3],
-                 double GC[3],
-                 double gammac,
-                 int amA, int amB, int amC);
+    void compute(double GA[3], double GB[3], double GC[3], double gammac, int amA, int amB, int amC);
 };
 
-}
+}  // namespace psi
 
 #endif

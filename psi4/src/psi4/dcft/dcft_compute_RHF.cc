@@ -42,14 +42,14 @@
 
 #include <cmath>
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 
 /**
  * Compute DCFT energy using restricted HF reference
  */
-double DCFTSolver::compute_energy_RHF()
-{
-    orbitalsDone_    = false;
+double DCFTSolver::compute_energy_RHF() {
+    orbitalsDone_ = false;
     cumulantDone_ = false;
     densityConverged_ = false;
     energyConverged_ = false;
@@ -68,16 +68,16 @@ double DCFTSolver::compute_energy_RHF()
     mp2_guess_RHF();
 
     // Print out information about the job
-    outfile->Printf( "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
-    outfile->Printf( "\n\tDCFT Type:          \t\t %s", options_.get_str("DCFT_TYPE").c_str());
-    outfile->Printf( "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
-    outfile->Printf( "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
+    outfile->Printf("\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    outfile->Printf("\n\tDCFT Type:          \t\t %s", options_.get_str("DCFT_TYPE").c_str());
+    outfile->Printf("\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
+    outfile->Printf("\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
     if (options_.get_str("ALGORITHM") == "QC") {
-        outfile->Printf( "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
-        outfile->Printf( "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
+        outfile->Printf("\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
+        outfile->Printf("\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
     }
     if (energy_level_shift_ > 1E-6) {
-        outfile->Printf( "\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
+        outfile->Printf("\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
     }
 
     // Things that are not implemented yet...
@@ -85,7 +85,8 @@ double DCFTSolver::compute_energy_RHF()
         throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" &&
+        options_.get_str("QC_TYPE") == "SIMULTANEOUS")
         throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
@@ -104,32 +105,33 @@ double DCFTSolver::compute_energy_RHF()
     if (options_.get_str("ALGORITHM") == "SIMULTANEOUS") {
         if (!orbital_optimized_) {
             run_simult_dcft_RHF();
-        }
-        else {
+        } else {
             run_simult_dcft_oo_RHF();
         }
-    }
-    else {
+    } else {
         throw PSIEXCEPTION("Unknown DCFT algorithm");
     }
 
     // If not converged -> Break
-    if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
+    if (!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
-    std::string prefix = options_.get_str("DCFT_TYPE") == "DF"? "DF-" : " ";
+    std::string prefix = options_.get_str("DCFT_TYPE") == "DF" ? "DF-" : " ";
 
-    outfile->Printf("\n\t*%3s%5s SCF Energy                                 = %23.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
-    outfile->Printf(  "\t*%3s%5s Lambda Energy                              = %23.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
-    outfile->Printf(  "\t*%3s%5s Total Energy                               = %23.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
+    outfile->Printf("\n\t*%3s%5s SCF Energy                                 = %23.15f\n", prefix.c_str(),
+                    options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
+    outfile->Printf("\t*%3s%5s Lambda Energy                              = %23.15f\n", prefix.c_str(),
+                    options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
+    outfile->Printf("\t*%3s%5s Total Energy                               = %23.15f\n", prefix.c_str(),
+                    options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
 
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
 
-    if(!options_.get_bool("MO_RELAX")){
-        outfile->Printf( "Warning!  The orbitals were not relaxed\n");
+    if (!options_.get_bool("MO_RELAX")) {
+        outfile->Printf("Warning!  The orbitals were not relaxed\n");
     }
 
     print_opdm_RHF();
@@ -137,41 +139,34 @@ double DCFTSolver::compute_energy_RHF()
     return new_total_energy_;
 }
 
-void DCFTSolver::run_simult_dcft_RHF()
-{
+void DCFTSolver::run_simult_dcft_RHF() {
     // This is the simultaneous orbital/lambda update algorithm
     int cycle = 0;
-    outfile->Printf( "\n\n\t*=================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
-                         "\t*---------------------------------------------------------------------------------*\n");
+    outfile->Printf(
+        "\n\n\t*=================================================================================*\n"
+        "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
+        "\t*---------------------------------------------------------------------------------*\n");
     auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
 
     // DIIS on orbitals (AA and BB) and cumulants (AA, AB, BB)
     dpdbuf4 Laa, Lab, Lbb;
-    global_dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>");
-    global_dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(),
-                                         DIISEntry::Matrix, scf_error_b_.get(),
-                                         DIISEntry::DPDBuf4, &Laa,
-                                         DIISEntry::DPDBuf4, &Lab,
-                                         DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(),
-                                   DIISEntry::Matrix, Fb_.get(),
-                                   DIISEntry::DPDBuf4, &Laa,
-                                   DIISEntry::DPDBuf4, &Lab,
-                                   DIISEntry::DPDBuf4, &Lbb);
+    global_dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Lambda SF <OO|VV>");
+    global_dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Lambda <oo|vv>");
+    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
+                                      DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
+                                DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
 
-    while((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
-            && cycle++ < maxiter_){
+    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         // Save the old energy
         old_total_energy_ = new_total_energy_;
@@ -182,7 +177,7 @@ void DCFTSolver::run_simult_dcft_RHF()
         }
         transform_tau_RHF();
 
-        if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
+        if (options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();
 
             auto mo_h = std::make_shared<Matrix>("MO-based H", nirrep_, nmopi_, nmopi_);
@@ -198,8 +193,7 @@ void DCFTSolver::run_simult_dcft_RHF()
             Fa_->copy(moFa_);
             Fa_->transform(Ca_inverse);
             Fb_->copy(Fa_);
-        }
-        else{
+        } else {
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
 
@@ -236,29 +230,29 @@ void DCFTSolver::run_simult_dcft_RHF()
         new_total_energy_ += lambda_energy_;
         // Check convergence of the total DCFT energy
         energyConverged_ = std::fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
-        if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
-            //Store the DIIS vectors
+        if (orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_) {
+            // Store the DIIS vectors
             dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
             // Compute R_OOVV and R_oovv from R_OoVv, used as DIIS error vectors
             compute_R_AA_and_BB();
 
-            global_dpd_->buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                          ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
-            global_dpd_->buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                          ID("[O,O]"), ID("[V,V]"), 0, "R SF <OO|VV>"); // R <Oo|Vv>
-            global_dpd_->buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                          ID("[O,O]"), ID("[V,V]"), 0, "R <oo|vv>");
-            global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                          ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-            global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                          ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>"); // Lambda <Oo|Vv>
-            global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                          ID("[O,O]"), ID("[V,V]"), 0, "Lambda <oo|vv>");
-            if(diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb,
-                                       Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb)){
+            global_dpd_->buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "R <OO|VV>");
+            global_dpd_->buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "R SF <OO|VV>");  // R <Oo|Vv>
+            global_dpd_->buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "R <oo|vv>");
+            global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "Lambda <OO|VV>");
+            global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+            global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "Lambda <oo|vv>");
+            if (diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
+                                      Fb_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
-            if(diisManager.subspace_size() > mindiisvecs_){
+            if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
                 diisManager.extrapolate(5, Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
             }
@@ -278,9 +272,10 @@ void DCFTSolver::run_simult_dcft_RHF()
         old_cb_->copy(old_ca_);
         Cb_->copy(Ca_);
         // Make sure that the orbital phase is retained
-        if(!correct_mo_phases(false)){
-            outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
-                            "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
+        if (!correct_mo_phases(false)) {
+            outfile->Printf(
+                "\t\tThere was a problem correcting the MO phases.\n"
+                "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals_RHF();
@@ -288,11 +283,12 @@ void DCFTSolver::run_simult_dcft_RHF()
         densityConverged_ = update_scf_density_RHF() < orbitals_threshold_;
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
-        outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
-                cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
-                new_total_energy_, diisString.c_str());
+        outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,
+                        cumulant_convergence_, new_total_energy_ - old_total_energy_, new_total_energy_,
+                        diisString.c_str());
     }
-    outfile->Printf( "\t*=================================================================================*\n");
+    outfile->Printf("\t*=================================================================================*\n");
 }
 
-}} // Namespace
+}  // namespace dcft
+}  // namespace psi

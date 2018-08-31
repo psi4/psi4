@@ -145,6 +145,6 @@ class PSI_API Slice {
     /// Check if this Slice is acceptable
     bool validate_slice();
 };
-}
+}  // namespace psi
 
 #endif  // _psi_src_lib_libmints_dimension_h_

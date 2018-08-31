@@ -66,7 +66,6 @@ namespace detci {
 ** options = Options object used to parse user input
 */
 void CIWavefunction::get_mo_info() {
-
     CalcInfo_->sigma_initialized = 0;
 
     // Initial guess will overwrite some of this later.
@@ -87,8 +86,7 @@ void CIWavefunction::get_mo_info() {
         outfile->Printf("Warning: iopen=1,opentype=none. Making iopen=0\n");
         CalcInfo_->iopen = 0;
     } else if (!CalcInfo_->iopen &&
-               (Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN ||
-                Parameters_->opentype == PARM_OPENTYPE_SINGLET)) {
+               (Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN || Parameters_->opentype == PARM_OPENTYPE_SINGLET)) {
         outfile->Printf("Warning: iopen=0,opentype!=closed. Making iopen=1\n");
         CalcInfo_->iopen = 1;
     }
@@ -112,15 +110,10 @@ void CIWavefunction::get_mo_info() {
     Dimension frzcpi = reference_wavefunction_->frzcpi();
     // This routine sets all orbital subspace arrays properly given
     // some minimal starting information and an Options object
-    if (!ras_set3(CalcInfo_->nirreps, CalcInfo_->nmo, nmopi_,
-                  CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
-                  CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc,
-                  CalcInfo_->rstr_uocc, CalcInfo_->ras_opi,
-                  frzcpi,
-                  CalcInfo_->reorder.data(), 1,
-                  (Parameters_->mcscf ? true : false), options_)) {
-        throw PsiException("Error in ras_set3(). Aborting.", __FILE__,
-                           __LINE__);
+    if (!ras_set3(CalcInfo_->nirreps, CalcInfo_->nmo, nmopi_, CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
+                  CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc, CalcInfo_->rstr_uocc, CalcInfo_->ras_opi, frzcpi,
+                  CalcInfo_->reorder.data(), 1, (Parameters_->mcscf ? true : false), options_)) {
+        throw PsiException("Error in ras_set3(). Aborting.", __FILE__, __LINE__);
     }
 
     CalcInfo_->dropped_docc = CalcInfo_->frozen_docc + CalcInfo_->rstr_docc;
@@ -162,8 +155,7 @@ void CIWavefunction::get_mo_info() {
 
     // calculate number of electrons
     CalcInfo_->num_alp = CalcInfo_->num_bet = CalcInfo_->spab = 0;
-    if (Parameters_->opentype == PARM_OPENTYPE_NONE ||
-        Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN) {
+    if (Parameters_->opentype == PARM_OPENTYPE_NONE || Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN) {
         CalcInfo_->num_alp += CalcInfo_->docc.sum() + CalcInfo_->socc.sum();
         CalcInfo_->num_bet += CalcInfo_->docc.sum();
     } else if (Parameters_->opentype == PARM_OPENTYPE_SINGLET) {
@@ -215,9 +207,9 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->num_expl_cor_orbs = 0;  // this isn't enabled anymore, zero it
 
     CalcInfo_->num_fzc_orbs = CalcInfo_->frozen_docc.sum();  // truly frozen core, sum(frozen_docc)
-    CalcInfo_->num_rsc_orbs = CalcInfo_->rstr_docc.sum();  // restricted core, sum(rstr_docc)
+    CalcInfo_->num_rsc_orbs = CalcInfo_->rstr_docc.sum();    // restricted core, sum(rstr_docc)
     CalcInfo_->num_fzv_orbs = CalcInfo_->frozen_uocc.sum();  // truly frozen virts, sum(frozen_uocc)
-    CalcInfo_->num_rsv_orbs = CalcInfo_->rstr_uocc.sum();  // restricted virtuals, sum(rstr_uocc)
+    CalcInfo_->num_rsv_orbs = CalcInfo_->rstr_uocc.sum();    // restricted virtuals, sum(rstr_uocc)
 
     CalcInfo_->num_drc_orbs = CalcInfo_->num_fzc_orbs + CalcInfo_->num_rsc_orbs;
     CalcInfo_->num_drv_orbs = CalcInfo_->num_fzv_orbs + CalcInfo_->num_rsv_orbs;
@@ -225,8 +217,7 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->num_ci_orbs = CalcInfo_->nmo - CalcInfo_->num_drc_orbs - CalcInfo_->num_drv_orbs;
 
     if ((CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2 > IOFF_MAX) {
-        throw PsiException("error: IOFF_MAX not large enough!", __FILE__,
-                           __LINE__);
+        throw PsiException("error: IOFF_MAX not large enough!", __FILE__, __LINE__);
     }
 
     CalcInfo_->num_alp_expl = CalcInfo_->num_alp - CalcInfo_->num_drc_orbs;
@@ -269,4 +260,5 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->tf_onel_ints = std::make_shared<Vector>("CI TF One Electron Ints", ncitri);
 
 }  // end get_mo_info()
-}}  // namespace psi::detci
+}  // namespace detci
+}  // namespace psi

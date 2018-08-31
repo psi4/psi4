@@ -47,7 +47,7 @@ void DFOCC::effective_mograd() {
         WvoB->form_vo(WorbB);
     }
 
-    if (freeze_core_ == "TRUE") {
+    if (nfrzc > 0) {
         z_vector_fc();
         fc_grad_terms();
     }

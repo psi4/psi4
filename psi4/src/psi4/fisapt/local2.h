@@ -42,9 +42,7 @@ class Options;
 namespace fisapt {
 
 class IBOLocalizer2 {
-
-protected:
-
+   protected:
     // => Overall Parameters <= //
 
     /// Print flag
@@ -98,7 +96,6 @@ protected:
     /// Non-ghosted IAOs in full basis
     std::shared_ptr<Matrix> A_;
 
-
     /// Set defaults
     void common_init();
 
@@ -106,7 +103,7 @@ protected:
     void build_iaos();
     /// Localization task (returns U and L)
     static std::map<std::string, std::shared_ptr<Matrix> > localize_task(
-        std::shared_ptr<Matrix> L,                        // Matrix of <i|m> [nocc x nmin]
+        std::shared_ptr<Matrix> L,                          // Matrix of <i|m> [nocc x nmin]
         const std::vector<std::vector<int> >& minao_inds,   // List of minao indices per active center
         const std::vector<std::pair<int, int> >& rot_inds,  // List of allowed rotations (unique)
         double convergence,                                 // Convergence criterion
@@ -114,32 +111,20 @@ protected:
         int power                                           // Localization metric power
         );
     /// Energy-ordered local orbital permutation [nmo(local) x nmo(ordered)]
-    static std::shared_ptr<Matrix> reorder_orbitals(
-        std::shared_ptr<Matrix> F,
-        const std::vector<int>& ranges);
+    static std::shared_ptr<Matrix> reorder_orbitals(std::shared_ptr<Matrix> F, const std::vector<int>& ranges);
     /// Orbital atomic charges (natom x nmo)
-    std::shared_ptr<Matrix> orbital_charges(
-        std::shared_ptr<Matrix> L
-        );
+    std::shared_ptr<Matrix> orbital_charges(std::shared_ptr<Matrix> L);
 
-
-public:
-
+   public:
     // => Constructors <= //
 
-    IBOLocalizer2(
-        std::shared_ptr<BasisSet> primary,
-        std::shared_ptr<BasisSet> minao,
-        std::shared_ptr<Matrix> C);
+    IBOLocalizer2(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C);
 
     virtual ~IBOLocalizer2();
 
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
-    static std::shared_ptr<IBOLocalizer2> build(
-        std::shared_ptr<BasisSet> primary,
-        std::shared_ptr<BasisSet> minao,
-        std::shared_ptr<Matrix> C,
-        Options& options);
+    static std::shared_ptr<IBOLocalizer2> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
+                                                std::shared_ptr<Matrix> C, Options& options);
 
     // => Computers <= //
 
@@ -148,9 +133,10 @@ public:
 
     /// Localize the orbitals, returns the matrices L [nbf x nmo], U [nmo(dlocal) x nmo(local)], and F [nmo x nmo]
     std::map<std::string, std::shared_ptr<Matrix> > localize(
-        std::shared_ptr<Matrix> Cocc,              // Orbitals to localize [nbf x nmo], must live in C above
-        std::shared_ptr<Matrix> Focc,              // Fock matrix of orbitals to localize [nmo x nmo]
-        const std::vector<int>& ranges = std::vector<int>() // [0, nfocc, nocc] will separately localize core and valence
+        std::shared_ptr<Matrix> Cocc,  // Orbitals to localize [nbf x nmo], must live in C above
+        std::shared_ptr<Matrix> Focc,  // Fock matrix of orbitals to localize [nmo x nmo]
+        const std::vector<int>& ranges =
+            std::vector<int>()  // [0, nfocc, nocc] will separately localize core and valence
         );
     /// Print the charges
     void print_charges(double scale = 2.0);
@@ -168,11 +154,10 @@ public:
     void set_use_stars(bool use_stars) { use_stars_ = use_stars; }
     void set_stars_completeness(double stars_completeness) { stars_completeness_ = stars_completeness; }
     void set_stars(const std::vector<int>& stars) { stars_ = stars; }
-
 };
 
-} // Namespace fisapt
+}  // Namespace fisapt
 
-} // Namespace psi
+}  // Namespace psi
 
 #endif

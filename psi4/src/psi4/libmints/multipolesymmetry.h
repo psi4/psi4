@@ -36,14 +36,13 @@
 #include <string>
 #include <map>
 
-namespace psi{
+namespace psi {
 
 class Molecule;
 class IntegralFactory;
 class MatrixFactory;
 
-class PSI_API OperatorSymmetry
-{
+class PSI_API OperatorSymmetry {
     // The order of the multipole (dipole=1, quadrupole=2, etc...)
     int order_;
 
@@ -69,7 +68,7 @@ class PSI_API OperatorSymmetry
 
     void common_init();
 
-public:
+   public:
     enum Operator {
         Dipole = 1,
         Quadrupole = 2,
@@ -92,11 +91,9 @@ public:
      * @param mats Matrix factory. Used by create_matrices to create matrices of the
      *             proper size and symmetry.
      */
-    OperatorSymmetry(int order,
-                     std::shared_ptr<Molecule> mol,
-                     std::shared_ptr<IntegralFactory> ints,
+    OperatorSymmetry(int order, std::shared_ptr<Molecule> mol, std::shared_ptr<IntegralFactory> ints,
                      std::shared_ptr<MatrixFactory> mats);
-    //OperatorSymmetry(int order,
+    // OperatorSymmetry(int order,
     //                 std::shared_ptr<Molecule> mol,
     //                 std::shared_ptr<IntegralFactory> ints);
     virtual ~OperatorSymmetry();
@@ -104,11 +101,10 @@ public:
     std::string name_of_component(int i);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
 
-    std::vector<SharedMatrix > create_matrices(const std::string& basename);
+    std::vector<SharedMatrix> create_matrices(const std::string& basename);
 };
 
-class MultipoleSymmetry
-{
+class MultipoleSymmetry {
     // The order of the multipole (dipole=1, quadrupole=2, etc...)
     int order_;
 
@@ -126,12 +122,11 @@ class MultipoleSymmetry
     /**
      * A 3D map to hold the addresses of each {lx, ly, lz} combination
      */
-    std::map< int, std::map< int, std::map< int, int > > > addresses_;
+    std::map<int, std::map<int, std::map<int, int> > > addresses_;
 
     void common_init();
 
-public:
-
+   public:
     /** Constructor
      * Constructs an object that determines the symmetry of the different
      * components of all multipoles up to (and including) L=order.  For all componenets of a given order
@@ -144,23 +139,21 @@ public:
      * @param mats Matrix factory. Used by create_matrices to create matrices of the
      *             proper size and symmetry.
      */
-    MultipoleSymmetry(int order,
-                     std::shared_ptr<Molecule> mol,
-                     std::shared_ptr<IntegralFactory> ints,
-                     std::shared_ptr<MatrixFactory> mats);
-    //MultipoleSymmetry(int order,
+    MultipoleSymmetry(int order, std::shared_ptr<Molecule> mol, std::shared_ptr<IntegralFactory> ints,
+                      std::shared_ptr<MatrixFactory> mats);
+    // MultipoleSymmetry(int order,
     //                 std::shared_ptr<Molecule> mol,
     //                 std::shared_ptr<IntegralFactory> ints);
     virtual ~MultipoleSymmetry();
 
     /**
-    * Returns the address in the array of the {lx, ly, lz} moment.
-    */
+     * Returns the address in the array of the {lx, ly, lz} moment.
+     */
     int address_of_component(int lx, int ly, int lz);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
 
-    std::vector<SharedMatrix > create_matrices(const std::string& basename, bool ignore_symmetry=false);
+    std::vector<SharedMatrix> create_matrices(const std::string& basename, bool ignore_symmetry = false);
 };
-}
+}  // namespace psi
 
-#endif // MULTIPOLESYMMETRY_H
+#endif  // MULTIPOLESYMMETRY_H

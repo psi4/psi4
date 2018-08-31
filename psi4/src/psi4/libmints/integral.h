@@ -29,11 +29,11 @@
 #ifndef _psi_src_lib_libmints_integral_h_
 #define _psi_src_lib_libmints_integral_h_
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include <vector>
 
 #include "onebody.h"
@@ -42,27 +42,27 @@
 /*! \def INT_NCART(am)
     Gives the number of cartesian functions for an angular momentum.
 */
-#define INT_NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
+#define INT_NCART(am) ((am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0)
 /*! \def INT_PURE(am)
     Gives the number of spherical functions for an angular momentum.
 */
-#define INT_NPURE(am) (2*(am)+1)
+#define INT_NPURE(am) (2 * (am) + 1)
 /*! \def INT_NFUNC(pu,am)
     Gives the number of functions for an angular momentum based on pu.
 */
-#define INT_NFUNC(pu,am) ((pu)?INT_NPURE(am):INT_NCART(am))
+#define INT_NFUNC(pu, am) ((pu) ? INT_NPURE(am) : INT_NCART(am))
 /*! \def INT_CARTINDEX(am,i,j)
     Computes offset index for cartesian function.
 */
-#define INT_CARTINDEX(am,i,j) (((i) == (am))? 0 : (((((am) - (i) + 1)*((am) - (i)))>>1) + (am) - (i) - (j)))
+#define INT_CARTINDEX(am, i, j) (((i) == (am)) ? 0 : (((((am) - (i) + 1) * ((am) - (i))) >> 1) + (am) - (i) - (j)))
 /*! \def INT_ICART(a, b, c)
     Given a, b, and c compute a cartesian offset.
 */
-#define INT_ICART(a, b, c) (((((((a)+(b)+(c)+1)<<1)-(a))*((a)+1))>>1)-(b)-1)
+#define INT_ICART(a, b, c) (((((((a) + (b) + (c) + 1) << 1) - (a)) * ((a) + 1)) >> 1) - (b)-1)
 /*! \def INT_IPURE(l, m)
     Given l and m compute a pure function offset.
 */
-#define INT_IPURE(l, m) ((l)+(m))
+#define INT_IPURE(l, m) ((l) + (m))
 
 namespace psi {
 
@@ -81,15 +81,14 @@ class SOBasisSet;
 class CorrelationFactor;
 
 /*! \ingroup MINTS */
-class SphericalTransformComponent
-{
-protected:
+class SphericalTransformComponent {
+   protected:
     int a_, b_, c_;
     int cartindex_, pureindex_;
 
     double coef_;
 
-public:
+   public:
     /// Returns the exponent of x.
     int a() const { return a_; }
     /// Returns the exponent of y.
@@ -109,17 +108,17 @@ public:
 /*! \ingroup MINTS */
 /** This is a base class for a container for a sparse Cartesian to solid
     harmonic basis function transformation. */
-class SphericalTransform
-{
-protected:
+class SphericalTransform {
+   protected:
     std::vector<SphericalTransformComponent> components_;
-    int l_; // The angular momentum this transform is for.
+    int l_;  // The angular momentum this transform is for.
     int subl_;
 
     SphericalTransform();
 
     virtual void init();
-public:
+
+   public:
     SphericalTransform(int l, int subl = -1);
     virtual ~SphericalTransform() {}
 
@@ -143,26 +142,25 @@ public:
 
 /*! \ingroup MINTS */
 /// This describes a solid harmonic to Cartesian transformation.
-class ISphericalTransform : public SphericalTransform
-{
-protected:
+class ISphericalTransform : public SphericalTransform {
+   protected:
     ISphericalTransform();
     virtual void init();
-public:
-    ISphericalTransform(int l, int subl=-1);
+
+   public:
+    ISphericalTransform(int l, int subl = -1);
 };
 
-class SphericalTransformIter
-{
-private:
+class SphericalTransformIter {
+   private:
     const SphericalTransform& trans_;
     int i_;
 
-public:
+   public:
     SphericalTransformIter(const SphericalTransform& trans) : trans_(trans) { i_ = 0; }
 
     void first() { i_ = 0; }
-    void next()  { i_++;   }
+    void next() { i_++; }
     bool is_done() { return i_ < trans_.n() ? false : true; }
 
     /// Returns how many transforms are in this iterator.
@@ -173,21 +171,20 @@ public:
     /// Returns the spherical harmonic basis index of component i
     int pureindex() const { return trans_.pureindex(i_); }
     /// Returns the transformation coefficient of component i
-    double coef()   const { return trans_.coef(i_); }
+    double coef() const { return trans_.coef(i_); }
     /// Returns the Cartesian basis function's x exponent of component i
-    int a()         const { return trans_.a(i_); }
+    int a() const { return trans_.a(i_); }
     /// Returns the Cartesian basis function's y exponent of component i
-    int b()         const { return trans_.b(i_); }
+    int b() const { return trans_.b(i_); }
     /// Returns the Cartesian basis function's z exponent of component i
-    int c()         const { return trans_.c(i_); }
+    int c() const { return trans_.c(i_); }
     /// Return a component of the transform.
-    int l(int i) { return i?(i==1?b():c()):a(); }
+    int l(int i) { return i ? (i == 1 ? b() : c()) : a(); }
 };
 
 /*! \ingroup MINTS */
-class AOIntegralsIterator
-{
-private:
+class AOIntegralsIterator {
+   private:
     struct Integral {
         int i;
         int j;
@@ -207,9 +204,9 @@ private:
     int ii, iimax, jj, jjmax, kk, kkmax, ll, llmax;
     int ni, nj, nk, nl, fii, fij, fik, fil;
 
-public:
-    AOIntegralsIterator(const GaussianShell& s1, const GaussianShell& s2,
-                      const GaussianShell& s3, const GaussianShell& s4);
+   public:
+    AOIntegralsIterator(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3,
+                        const GaussianShell& s4);
 
     void first();
     void next();
@@ -219,14 +216,12 @@ public:
     int j() const { return current.j; }
     int k() const { return current.k; }
     int l() const { return current.l; }
-    int index() const { return current.index;}
+    int index() const { return current.index; }
 };
 
-
 /*! \ingroup MINTS */
-class AOShellCombinationsIterator
-{
-private:
+class AOShellCombinationsIterator {
+   private:
     struct ShellQuartet {
         int P;
         int Q;
@@ -248,12 +243,12 @@ private:
     std::shared_ptr<BasisSet> bs3_;
     std::shared_ptr<BasisSet> bs4_;
 
-public:
-    AOShellCombinationsIterator(std::shared_ptr<BasisSet>bs1, std::shared_ptr<BasisSet>bs2,
-                              std::shared_ptr<BasisSet>bs3, std::shared_ptr<BasisSet>bs4);
+   public:
+    AOShellCombinationsIterator(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
     AOShellCombinationsIterator();
-    void init(std::shared_ptr<BasisSet>bs1, std::shared_ptr<BasisSet>bs2,
-            std::shared_ptr<BasisSet>bs3, std::shared_ptr<BasisSet>bs4);
+    void init(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
+              std::shared_ptr<BasisSet> bs4);
 
     void first();
     void next();
@@ -268,9 +263,8 @@ public:
     AOIntegralsIterator integrals_iterator();
 };
 
-class PSI_API SOShellCombinationsIterator
-{
-private:
+class PSI_API SOShellCombinationsIterator {
+   private:
     struct ShellQuartet {
         int P;
         int Q;
@@ -292,12 +286,12 @@ private:
     std::shared_ptr<SOBasisSet> bs3_;
     std::shared_ptr<SOBasisSet> bs4_;
 
-public:
-    SOShellCombinationsIterator(std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
-                              std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
+   public:
+    SOShellCombinationsIterator(std::shared_ptr<SOBasisSet> bs1, std::shared_ptr<SOBasisSet> bs2,
+                                std::shared_ptr<SOBasisSet> bs3, std::shared_ptr<SOBasisSet> bs4);
     SOShellCombinationsIterator();
-    void init(std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
-            std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
+    void init(std::shared_ptr<SOBasisSet> bs1, std::shared_ptr<SOBasisSet> bs2, std::shared_ptr<SOBasisSet> bs3,
+              std::shared_ptr<SOBasisSet> bs4);
 
     void first();
     void next();
@@ -310,9 +304,8 @@ public:
     int end_of_PK() const { return current.end_of_PK; }
 };
 
-class PSI_API SO_PQ_Iterator
-{
-private:
+class PSI_API SO_PQ_Iterator {
+   private:
     struct PQ_Pair {
         int P;
         int Q;
@@ -325,8 +318,8 @@ private:
 
     std::shared_ptr<SOBasisSet> bs1_;
 
-public:
-    SO_PQ_Iterator(std::shared_ptr<SOBasisSet>bs1);
+   public:
+    SO_PQ_Iterator(std::shared_ptr<SOBasisSet> bs1);
     SO_PQ_Iterator();
 
     void first();
@@ -337,9 +330,8 @@ public:
     int q() const { return current.Q; }
 };
 
-class PSI_API SO_RS_Iterator
-{
-private:
+class PSI_API SO_RS_Iterator {
+   private:
     struct RS_Pair {
         int P;
         int Q;
@@ -360,12 +352,11 @@ private:
     std::shared_ptr<SOBasisSet> bs3_;
     std::shared_ptr<SOBasisSet> bs4_;
 
-public:
-    SO_RS_Iterator(const int &P, const int &Q,
-                   std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
-                   std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
-    SO_RS_Iterator(std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
-                   std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
+   public:
+    SO_RS_Iterator(const int& P, const int& Q, std::shared_ptr<SOBasisSet> bs1, std::shared_ptr<SOBasisSet> bs2,
+                   std::shared_ptr<SOBasisSet> bs3, std::shared_ptr<SOBasisSet> bs4);
+    SO_RS_Iterator(std::shared_ptr<SOBasisSet> bs1, std::shared_ptr<SOBasisSet> bs2, std::shared_ptr<SOBasisSet> bs3,
+                   std::shared_ptr<SOBasisSet> bs4);
 
     SO_RS_Iterator();
 
@@ -379,11 +370,9 @@ public:
     int s() const { return current.S; }
 };
 
-
 /*! \ingroup MINTS */
-class PSI_API IntegralFactory
-{
-protected:
+class PSI_API IntegralFactory {
+   protected:
     /// Center 1 basis set
     std::shared_ptr<BasisSet> bs1_;
     /// Center 2 basis set
@@ -398,10 +387,10 @@ protected:
     /// Provides ability to transform from sphericals (d=0, f=1, g=2)
     std::vector<ISphericalTransform> ispherical_transforms_;
 
-public:
+   public:
     /** Initialize IntegralFactory object given a BasisSet for each center. */
-    IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
+    IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
+                    std::shared_ptr<BasisSet> bs4);
     /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs1 | bs1 bs1). */
     IntegralFactory(std::shared_ptr<BasisSet> bs1);
 
@@ -417,41 +406,41 @@ public:
     std::shared_ptr<BasisSet> basis4() const;
 
     /// Set the basis set for each center.
-    virtual void set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-        std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
+    virtual void set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
+                           std::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodyAOInt* ao_overlap(int deriv=0);
+    virtual OneBodyAOInt* ao_overlap(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodySOInt* so_overlap(int deriv=0);
+    virtual OneBodySOInt* so_overlap(int deriv = 0);
 
     /// Returns a ThreeCenterOverlapINt that computes the overlap between three centers
     virtual ThreeCenterOverlapInt* overlap_3c();
 
     /// Returns an OneBodyInt that computes the kinetic energy integral.
-    virtual OneBodyAOInt* ao_kinetic(int deriv=0);
-    virtual OneBodySOInt* so_kinetic(int deriv=0);
+    virtual OneBodyAOInt* ao_kinetic(int deriv = 0);
+    virtual OneBodySOInt* so_kinetic(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the nuclear attraction integral.
-    virtual OneBodyAOInt* ao_potential(int deriv=0);
-    virtual OneBodySOInt* so_potential(int deriv=0);
-    
+    virtual OneBodyAOInt* ao_potential(int deriv = 0);
+    virtual OneBodySOInt* so_potential(int deriv = 0);
+
     /// Returns an OneBodyInt that computes the ECP integral.
-    virtual OneBodyAOInt* ao_ecp(int deriv=0);
-    virtual OneBodySOInt* so_ecp(int deriv=0);
+    virtual OneBodyAOInt* ao_ecp(int deriv = 0);
+    virtual OneBodySOInt* so_ecp(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the relativistic nuclear attraction integral.
-    virtual OneBodyAOInt* ao_rel_potential(int deriv=0);
-    virtual OneBodySOInt* so_rel_potential(int deriv=0);
+    virtual OneBodyAOInt* ao_rel_potential(int deriv = 0);
+    virtual OneBodySOInt* so_rel_potential(int deriv = 0);
 
     /// Returns the OneBodyInt that computes the pseudospectral grid integrals
     virtual OneBodyAOInt* ao_pseudospectral(int deriv = 0);
     virtual OneBodySOInt* so_pseudospectral(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the dipole integral.
-    virtual OneBodyAOInt* ao_dipole(int deriv=0);
-    virtual OneBodySOInt* so_dipole(int deriv=0);
+    virtual OneBodyAOInt* ao_dipole(int deriv = 0);
+    virtual OneBodySOInt* so_dipole(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the quadrupole integral.
     virtual OneBodyAOInt* ao_quadrupole();
@@ -466,53 +455,55 @@ public:
     virtual OneBodySOInt* so_traceless_quadrupole();
 
     /// Returns an OneBodyInt that computes the nabla integral.
-    virtual OneBodyAOInt* ao_nabla(int deriv=0);
-    virtual OneBodySOInt* so_nabla(int deriv=0);
+    virtual OneBodyAOInt* ao_nabla(int deriv = 0);
+    virtual OneBodySOInt* so_nabla(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the nabla integral.
-    virtual OneBodyAOInt* ao_angular_momentum(int deriv=0);
-    virtual OneBodySOInt* so_angular_momentum(int deriv=0);
+    virtual OneBodyAOInt* ao_angular_momentum(int deriv = 0);
+    virtual OneBodySOInt* so_angular_momentum(int deriv = 0);
 
     /// Returns a OneBodyInt that computes the multipole potential integrals for EFP
-    virtual OneBodyAOInt* ao_efp_multipole_potential(int deriv=0);
-    virtual OneBodySOInt* so_efp_multipole_potential(int deriv=0);
+    virtual OneBodyAOInt* ao_efp_multipole_potential(int deriv = 0);
+    virtual OneBodySOInt* so_efp_multipole_potential(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the electric field
-    virtual OneBodyAOInt *electric_field(int deriv=0);
+    virtual OneBodyAOInt* electric_field(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
-    virtual OneBodyAOInt *electrostatic();
+    virtual OneBodyAOInt* electrostatic();
 
     /// Returns an OneBodyInt that computes the electrostatic potential at desired points
     /// Want to change the name of this after the PCM dust settles
-    virtual OneBodyAOInt *pcm_potentialint();
+    virtual OneBodyAOInt* pcm_potentialint();
 
     /// Returns an ERI integral object
-    virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual TwoBodyAOInt* erd_eri(int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an erf complement ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an F12Scaled integral object
-    virtual TwoBodyAOInt* f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
+                                      bool use_shell_pairs = true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
+                                                bool use_shell_pairs = true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);
@@ -531,7 +522,7 @@ public:
     std::vector<SphericalTransform>& spherical_transform() { return spherical_transforms_; }
 
     /// Return a spherical transform iterator object for am
-    SphericalTransformIter* spherical_transform_iter(int am, int inv=0, int subl=-1) const;
+    SphericalTransformIter* spherical_transform_iter(int am, int inv = 0, int subl = -1) const;
 
     /// Return a new Cartesian iterator
     CartesianIter* cartesian_iter(int l) const;
@@ -541,9 +532,9 @@ public:
     RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l) const;
     /** Return the ShellRotation object for a shell of a given angular
         momentum. Pass nonzero to pure to do solid harmonics. */
-    ShellRotation shell_rotation(int am, SymmetryOperation&, int pure=0) const;
+    ShellRotation shell_rotation(int am, SymmetryOperation&, int pure = 0) const;
 };
 
-}
+}  // namespace psi
 
 #endif

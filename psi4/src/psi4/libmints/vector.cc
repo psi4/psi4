@@ -217,8 +217,7 @@ void Vector::set_block(const Slice &slice, SharedVector block) {
 void Vector::zero() { std::fill(v_.begin(), v_.end(), 0.0); }
 
 void Vector::print(std::string out, const char *extra) const {
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h;
     if (extra == nullptr) {
         printer->Printf("\n # %s #\n", name_.c_str());

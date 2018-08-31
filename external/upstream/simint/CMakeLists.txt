@@ -24,7 +24,7 @@ if(${ENABLE_simint})
         ExternalProject_Add(simint_external
             URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
             UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -39,8 +39,7 @@ if(${ENABLE_simint})
                        -DSIMINT_VECTOR=${SIMINT_VECTOR}
                        -DSIMINT_MAXAM=${MAX_AM_ERI}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-            INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
+                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
         set(simint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/simint CACHE PATH "path to internally built simintConfig.cmake" FORCE)
     endif()
