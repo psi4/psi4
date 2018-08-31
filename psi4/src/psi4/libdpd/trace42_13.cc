@@ -52,8 +52,7 @@ namespace psi {
 **   double beta: Prefactor for B.
 */
 
-int DPD::trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double beta)
-{
+int DPD::trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double beta) {
     int h, Gp, Gq, Gr, Gs;
     int p, q, r, s;
     int P, Q, R, S;
@@ -71,45 +70,43 @@ int DPD::trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double be
 #endif
 
     /* Read all of A into core */
-    for(h=0; h < nirreps; h++) {
+    for (h = 0; h < nirreps; h++) {
         buf4_mat_irrep_init(A, h);
         buf4_mat_irrep_rd(A, h);
     }
 
-    for(h=0; h < nirreps; h++) {
-
-        for(Gp=0; Gp < nirreps; Gp++) {
+    for (h = 0; h < nirreps; h++) {
+        for (Gp = 0; Gp < nirreps; Gp++) {
             Gq = Gp ^ h;
             Gr = Gp;
             Gs = Gq;
 
             /* Loop over target indices */
-            for(q=0; q < A->params->qpi[Gq]; q++) {
+            for (q = 0; q < A->params->qpi[Gq]; q++) {
                 Q = A->params->qoff[Gq] + q;
 
-                for(s=0; s < A->params->spi[Gs]; s++) {
+                for (s = 0; s < A->params->spi[Gs]; s++) {
                     S = A->params->soff[Gs] + s;
 
                     /* Loop over elements for which P==R */
-                    for(p=0; p < A->params->ppi[Gp]; p++) {
+                    for (p = 0; p < A->params->ppi[Gp]; p++) {
                         P = A->params->poff[Gp] + p;
                         R = P;
 
                         pq = A->params->rowidx[P][Q];
                         rs = A->params->colidx[R][S];
 
-                        if(!transb)  B->matrix[Gq][q][s] += alpha * A->matrix[h][pq][rs];
-                        else  B->matrix[Gq][s][q] += alpha * A->matrix[h][pq][rs];
-
+                        if (!transb)
+                            B->matrix[Gq][q][s] += alpha * A->matrix[h][pq][rs];
+                        else
+                            B->matrix[Gq][s][q] += alpha * A->matrix[h][pq][rs];
                     }
                 }
             }
-
         }
-
     }
 
-    for(h=0; h < nirreps; h++) {
+    for (h = 0; h < nirreps; h++) {
         buf4_mat_irrep_close(A, h);
     }
 
@@ -124,4 +121,4 @@ int DPD::trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double be
     return 0;
 }
 
-}
+}  // namespace psi
