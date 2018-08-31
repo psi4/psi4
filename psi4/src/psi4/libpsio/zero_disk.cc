@@ -31,11 +31,11 @@
  \ingroup PSIO
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include <string.h>
@@ -43,28 +43,26 @@
 namespace psi {
 
 void PSIO::zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
+    double *buf = new double[cols];
+    ::memset(static_cast<void *>(buf), '\0', cols * sizeof(double));
 
-      double* buf = new double[cols];
-      ::memset(static_cast<void*>(buf),'\0',cols*sizeof(double));
+    psio_address next_psio = PSIO_ZERO;
+    for (int i = 0; i < rows; i++) {
+        PSIO::write(unit, key, (char *)(buf), sizeof(double) * cols, next_psio, &next_psio);
+    }
 
-      psio_address next_psio = PSIO_ZERO;
-      for (int i=0; i<rows; i++) {
-          PSIO::write(unit,key,(char *) (buf),
-          sizeof(double)*cols,next_psio,&next_psio);
-      }
-
-      delete[] buf;
+    delete[] buf;
 }
 
-  /*!
-   ** PSIO_ZERO_DISK()
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_ZERO_DISK()
+ **
+ ** \ingroup PSIO
+ */
 
-  int psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
+int psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
     _default_psio_lib_->zero_disk(unit, key, rows, cols);
     return 1;
-  }
-
 }
+
+}  // namespace psi

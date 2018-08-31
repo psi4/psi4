@@ -31,30 +31,30 @@
  \ingroup PSIO
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 
 void PSIO::write_entry(size_t unit, const char *key, char *buffer, size_t size) {
-  psio_address end = PSIO_ZERO;
-  write(unit, key, buffer, size, PSIO_ZERO, &end);
+    psio_address end = PSIO_ZERO;
+    write(unit, key, buffer, size, PSIO_ZERO, &end);
 }
 
-  /*!
-   ** PSIO_WRITE_ENTRY()
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_WRITE_ENTRY()
+ **
+ ** \ingroup PSIO
+ */
 
-  int psio_write_entry(size_t unit, const char *key, char *buffer, size_t size) {
+int psio_write_entry(size_t unit, const char *key, char *buffer, size_t size) {
     _default_psio_lib_->write_entry(unit, key, buffer, size);
     return 1;
-  }
-
 }
+
+}  // namespace psi

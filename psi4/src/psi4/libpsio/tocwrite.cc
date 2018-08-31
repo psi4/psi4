@@ -32,54 +32,52 @@
  */
 
 #include <cstdlib>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 
 void PSIO::tocwrite(size_t unit) {
-  size_t i;
-  psio_ud *this_unit;
-  psio_tocentry *this_entry;
-  size_t entry_size;
-  psio_address address;
+    size_t i;
+    psio_ud *this_unit;
+    psio_tocentry *this_entry;
+    size_t entry_size;
+    psio_address address;
 
-  this_unit = &(psio_unit[unit]);
-  entry_size = sizeof(psio_tocentry) - 2*sizeof(psio_tocentry *);
+    this_unit = &(psio_unit[unit]);
+    entry_size = sizeof(psio_tocentry) - 2 * sizeof(psio_tocentry *);
 
-  if (!open_check(unit))
-    return;
+    if (!open_check(unit)) return;
 
-  wt_toclen(unit, this_unit->toclen);
+    wt_toclen(unit, this_unit->toclen);
 
-  this_entry = this_unit->toc;
-  address = psio_get_address(PSIO_ZERO, sizeof(size_t));
-  for (i=0; i < this_unit->toclen; i++) {
-    rw(unit, (char *) this_entry, address, entry_size, 1);
-    this_entry = this_entry->next;
-    if (this_entry != nullptr)
-      address = this_entry->sadd;
-  }
+    this_entry = this_unit->toc;
+    address = psio_get_address(PSIO_ZERO, sizeof(size_t));
+    for (i = 0; i < this_unit->toclen; i++) {
+        rw(unit, (char *)this_entry, address, entry_size, 1);
+        this_entry = this_entry->next;
+        if (this_entry != nullptr) address = this_entry->sadd;
+    }
 }
 
-  /*!
-   ** PSIO_TOCWRITE(): Write the table of contents for file number 'unit'.
-   **
-   ** \param unit  = The PSI unit to which we will write the TOC.
-   **
-   ** NB: This function should NOT call psio_error because the latter calls it!
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_TOCWRITE(): Write the table of contents for file number 'unit'.
+ **
+ ** \param unit  = The PSI unit to which we will write the TOC.
+ **
+ ** NB: This function should NOT call psio_error because the latter calls it!
+ **
+ ** \ingroup PSIO
+ */
 
-  int psio_tocwrite(size_t unit) {
+int psio_tocwrite(size_t unit) {
     _default_psio_lib_->tocwrite(unit);
     return 1;
-  }
-
 }
+
+}  // namespace psi
