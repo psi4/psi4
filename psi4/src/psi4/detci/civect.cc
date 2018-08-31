@@ -2201,7 +2201,7 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda, double *norm_a
 double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd, int precon, struct stringwr **alplist,
                       struct stringwr **betlist) {
     int buf, errcod, i;
-    double tval, norm = 0.0;
+    double tval = 0.0, norm = 0.0;
 
     for (buf = 0; buf < buf_per_vect_; buf++) {
         read(rootnum, buf);
