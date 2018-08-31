@@ -39,14 +39,12 @@
 #include <string>
 #include <vector>
 #include <map>
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 
 namespace psi {
-
-
 
 class Molecule;
 class GaussianShell;
@@ -55,7 +53,6 @@ class BasisSetParser;
 class SOBasisSet;
 class IntegralFactory;
 
-
 /*! \ingroup MINTS */
 
 //! Basis set container class
@@ -63,9 +60,8 @@ class IntegralFactory;
     from the checkpoint file storing the information in an internal Molecule class
     which can be accessed using molecule().
 */
-class PSI_API BasisSet
-{
-protected:
+class PSI_API BasisSet {
+   protected:
     friend class BasisSetParser;
 
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
@@ -165,10 +161,7 @@ protected:
     /// The flattened list of Cartesian coordinates for each atom
     double *xyz_;
 
-
-
-
-public:
+   public:
     BasisSet();
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
@@ -180,8 +173,7 @@ public:
      * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
      * @return BasisSet corresponding to this molecule and set of shells
      */
-    static std::shared_ptr<BasisSet> build(std::shared_ptr<Molecule> molecule,
-                                             const std::vector<ShellInfo> &shells);
+    static std::shared_ptr<BasisSet> build(std::shared_ptr<Molecule> molecule, const std::vector<ShellInfo> &shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
@@ -189,53 +181,53 @@ public:
     /** Number of primitives.
      *  @return The total number of primitives in all contractions.
      */
-    int nprimitive() const             { return nprimitive_; }
+    int nprimitive() const { return nprimitive_; }
     /** Number of ECP primitives.
      *  @return The total number of ECP primitives in all shells.
      */
-    int n_ecp_primitive() const        { return n_ecp_primitive_; }
+    int n_ecp_primitive() const { return n_ecp_primitive_; }
     /** Maximum number of primitives in a shell.
      *  Examines each shell and find the shell with the maximum number of primitives returns that
      *  number of primitives.
      *  @return Maximum number of primitives.
      */
-    int max_nprimitive() const         { return max_nprimitive_; }
+    int max_nprimitive() const { return max_nprimitive_; }
     /** Number of shells.
      *  @return Number of shells.
      */
-    int nshell() const                 { return n_shells_;  }
+    int nshell() const { return n_shells_; }
     /** Number of ECP shells.
      *  @return Number of ECP shells.
      */
-    int n_ecp_shell() const                 { return n_ecp_shells_;  }
+    int n_ecp_shell() const { return n_ecp_shells_; }
     /** Number of atomic orbitals (Cartesian).
      * @return The number of atomic orbitals (Cartesian orbitals, always).
      */
-    int nao() const                    { return nao_;         }
+    int nao() const { return nao_; }
     /** Number of basis functions (Spherical).
      *  @return The number of basis functions (Spherical, if has_puream() == true).
      */
-    int nbf() const                    { return nbf_;         }
+    int nbf() const { return nbf_; }
     /** Has ECP
      *  @return Whether this basis set object has an ECP associated with it
      */
-    bool has_ECP() const               { return n_ecp_shells_ > 0; }
+    bool has_ECP() const { return n_ecp_shells_ > 0; }
     /** Maximum angular momentum used in the basis set.
      *  @return Maximum angular momentum.
      */
-    int max_am() const                 { return max_am_;      }
+    int max_am() const { return max_am_; }
     /** Maximum angular momentum used in the ECPs in this.
      *  @return Maximum ECP angular momentum.
      */
-    int max_ecp_am() const             { return max_ecp_am_;      }
+    int max_ecp_am() const { return max_ecp_am_; }
     /** Spherical harmonics?
      *  @return true if using spherical harmonics
      */
-    bool has_puream() const            { return puream_;      }
+    bool has_puream() const { return puream_; }
     /** Compute the maximum number of basis functions contained in a shell.
      *  @return The max number of basis functions in a shell.
      */
-    int max_function_per_shell() const { return (puream_) ? 2*max_am_+1 : (max_am_+1)*(max_am_+2)/2; }
+    int max_function_per_shell() const { return (puream_) ? 2 * max_am_ + 1 : (max_am_ + 1) * (max_am_ + 2) / 2; }
     /** Molecule this basis is for.
      *  @return Shared pointer to the molecule for this basis set.
      */
@@ -271,20 +263,20 @@ public:
      *  @param si Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    const GaussianShell& shell(int si) const;
+    const GaussianShell &shell(int si) const;
 
     /** Return the si'th ECP  shell
      *  @param si Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    const GaussianShell& ecp_shell(int si) const;
+    const GaussianShell &ecp_shell(int si) const;
 
     /** Return the i'th Gaussian shell on center
      *  @param center atomic center
      *  @param si Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    const GaussianShell& shell(int center, int si) const;
+    const GaussianShell &shell(int center, int si) const;
 
     /// Return the number of core electrons associated with this (ECP) basisset, for the specified label.
     int n_ecp_core(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
@@ -296,7 +288,7 @@ public:
     void set_n_ecp_core(const std::string &label, int n) { ncore_[std::string(label)] = n; }
 
     /// Number of frozen core for molecule given freezing state, less any ECP present
-    int n_frozen_core(const std::string& depth = "", SharedMolecule mol=nullptr);
+    int n_frozen_core(const std::string &depth = "", SharedMolecule mol = nullptr);
 
     /** @{
      *  Print the basis set.
@@ -307,14 +299,14 @@ public:
     /// @}
 
     /// Returns the name of this basis set
-    const std::string & name() const { return name_; }
-    void set_name(const std::string str) {name_ = str;}
+    const std::string &name() const { return name_; }
+    void set_name(const std::string str) { name_ = str; }
 
     /// Return the construction key and target information
-    const std::string & key() const { return key_; }
-    void set_key(const std::string str) {key_ = str;}
-    const std::string & target() const { return target_; }
-    void set_target(const std::string str) {target_ = str;}
+    const std::string &key() const { return key_; }
+    void set_key(const std::string str) { key_ = str; }
+    const std::string &target() const { return target_; }
+    void set_target(const std::string str) { target_ = str; }
 
     /** Print basis set information according to the level of detail in print_level
      *  @param out The file stream to use for printing. Defaults to outfile.
@@ -356,7 +348,6 @@ public:
     /// Return the overall ECP shell number of the n'th ECP shell on the c'th center
     int ecp_shell_on_center(int c, int n) const { return center_to_ecp_shell_[c] + n; }
 
-
     /** Returns an empty basis set object.
      *
      *  Returns a BasisSet object that actually has a single s-function
@@ -371,7 +362,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty SOBasis object.
      */
-    static std::shared_ptr<SOBasisSet> zero_so_basis_set(const std::shared_ptr<IntegralFactory>& factory);
+    static std::shared_ptr<SOBasisSet> zero_so_basis_set(const std::shared_ptr<IntegralFactory> &factory);
 
     /** Returns a shell-labeled test basis set object
      *
@@ -386,7 +377,7 @@ public:
      * @param basisname Basis name
      * @return Compatible file name.
      */
-    static std::string make_filename(const std::string& basisname);
+    static std::string make_filename(const std::string &basisname);
 
     /// Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
@@ -396,12 +387,13 @@ public:
     //! Returns the vector of sorted shell list.
     std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 
-    // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the underlying molecule object.
+    // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the
+    // underlying molecule object.
     void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 };
 
-}
+}  // namespace psi
 
 #endif

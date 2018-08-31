@@ -35,75 +35,65 @@
 
 namespace psi {
 
+class SimintTwoElectronInt : public TwoBodyAOInt {
+   public:
+    typedef std::vector<simint_multi_shellpair> ShellPairVec;
+    typedef std::vector<simint_shell> ShellVec;
 
-class SimintTwoElectronInt : public TwoBodyAOInt
-{
-    public:
-        typedef std::vector<simint_multi_shellpair> ShellPairVec;
-        typedef std::vector<simint_shell> ShellVec;
+    SimintTwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    virtual ~SimintTwoElectronInt();
 
-        SimintTwoElectronInt(const IntegralFactory * integral, int deriv=0, bool use_shell_pairs=false);
-        virtual ~SimintTwoElectronInt();
+    virtual size_t compute_shell(const AOShellCombinationsIterator&) override;
 
-        virtual size_t compute_shell(const AOShellCombinationsIterator&) override;
+    virtual size_t compute_shell(int, int, int, int) override;
 
-        virtual size_t compute_shell(int, int, int, int) override;
+    virtual void compute_shell_blocks(int shellpair1, int shellpair2, int npair1 = -1, int npair2 = -1) override;
 
-        virtual void
-        compute_shell_blocks(int shellpair1, int shellpair2,
-                             int npair1 = -1, int npair2 = -1) override;
+    virtual size_t compute_shell_deriv1(int, int, int, int);
 
-        virtual size_t compute_shell_deriv1(int, int, int, int);
+    virtual size_t compute_shell_deriv2(int, int, int, int);
 
-        virtual size_t compute_shell_deriv2(int, int, int, int);
+   protected:
+    SimintTwoElectronInt(const SimintTwoElectronInt& rhs);
 
-    protected:
-        SimintTwoElectronInt(const SimintTwoElectronInt & rhs);
+   private:
+    void create_blocks(void);
 
-    private:
-        void create_blocks(void);
+    int maxam_;
+    size_t batchsize_;
+    size_t allwork_size_;
+    bool bra_same_, ket_same_, braket_same_;
 
-        int maxam_;
-        size_t batchsize_;
-        size_t allwork_size_;
-        bool bra_same_, ket_same_, braket_same_;
+    double* allwork_;
+    double* sharedwork_;
 
-        double * allwork_;
-        double * sharedwork_;
+    // plain simint shells
+    // WARNING - these may be shared across threads, so
+    // they are const to prevent issues with threads
+    // changing data from under another thread
+    std::shared_ptr<const ShellVec> shells1_;
+    std::shared_ptr<const ShellVec> shells2_;
+    std::shared_ptr<const ShellVec> shells3_;
+    std::shared_ptr<const ShellVec> shells4_;
 
-        // plain simint shells
-        // WARNING - these may be shared across threads, so
-        // they are const to prevent issues with threads
-        // changing data from under another thread
-        std::shared_ptr<const ShellVec> shells1_;
-        std::shared_ptr<const ShellVec> shells2_;
-        std::shared_ptr<const ShellVec> shells3_;
-        std::shared_ptr<const ShellVec> shells4_;
-
-        // my shell pairs
-        std::shared_ptr<const ShellPairVec> single_spairs_bra_;
-        std::shared_ptr<const ShellPairVec> single_spairs_ket_;
-        std::shared_ptr<const ShellPairVec> multi_spairs_bra_;
-        std::shared_ptr<const ShellPairVec> multi_spairs_ket_;
-
-
+    // my shell pairs
+    std::shared_ptr<const ShellPairVec> single_spairs_bra_;
+    std::shared_ptr<const ShellPairVec> single_spairs_ket_;
+    std::shared_ptr<const ShellPairVec> multi_spairs_bra_;
+    std::shared_ptr<const ShellPairVec> multi_spairs_ket_;
 };
 
+class SimintERI : public SimintTwoElectronInt {
+   protected:
+    SimintERI(const SimintERI& rhs);
 
-class SimintERI : public SimintTwoElectronInt
-{
-    protected:
-        SimintERI(const SimintERI & rhs);
+   public:
+    virtual bool cloneable() const override { return true; };
+    virtual SimintERI* clone() const override { return new SimintERI(*this); }
 
-    public:
-        virtual bool cloneable() const override { return true; };
-        virtual SimintERI * clone() const override { return new SimintERI(*this); }
-
-        SimintERI(const IntegralFactory * integral, int deriv=0, bool use_shell_pairs=false);
+    SimintERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
 };
 
-
-
-}
+}  // namespace psi
 
 #endif

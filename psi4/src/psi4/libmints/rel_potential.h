@@ -35,43 +35,43 @@
 #include "psi4/libmints/sointegral_onebody.h"
 
 namespace psi {
-    //TODO:  This is all in typedefs.h ....
-    class BasisSet;
-    class GaussianShell;
-    class ObaraSaikaTwoCenterVIRecursion;
-    class OneBodyAOInt;
-    class IntegralFactory;
-    class SphericalTransform;
-    class OneBodySOInt;
-    class CdSalcList;
+// TODO:  This is all in typedefs.h ....
+class BasisSet;
+class GaussianShell;
+class ObaraSaikaTwoCenterVIRecursion;
+class OneBodyAOInt;
+class IntegralFactory;
+class SphericalTransform;
+class OneBodySOInt;
+class CdSalcList;
 
 /*! \ingroup MINTS
  *  \class RelPotentialInt
  *  \brief Computes relativistic potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class RelPotentialInt : public OneBodyAOInt
-{
+class RelPotentialInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
     void compute_pair(const GaussianShell&, const GaussianShell&);
     /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell& );
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell& );
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
+    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&);
 
-protected:
+   protected:
     /// Recursion object that does the heavy lifting.
     ObaraSaikaTwoCenterVIRecursion* potential_recur_;
 
     /// Matrix of coordinates/charges of partial charges
     SharedMatrix Zxyz_;
 
-public:
+   public:
     /// Constructor. Assumes nuclear centers/charges as the potential
-    RelPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    RelPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                    int deriv = 0);
     virtual ~RelPotentialInt();
 
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<SharedMatrix > &result);
+    virtual void compute_deriv1(std::vector<SharedMatrix>& result);
 
     /// Computes the second derivatives and store them in result
     virtual void compute_deriv2(std::vector<SharedMatrix>& result);
@@ -86,12 +86,12 @@ public:
     bool has_deriv1() { return true; }
 };
 
-class RelPotentialSOInt : public OneBodySOInt
-{
+class RelPotentialSOInt : public OneBodySOInt {
     int natom_;
-public:
-    RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& , const std::shared_ptr<IntegralFactory> &);
-    RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
+
+   public:
+    RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>&, const std::shared_ptr<IntegralFactory>&);
+    RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>&, const IntegralFactory*);
 
     /**
      * Computes one-electron integral derivative matrices.
@@ -100,10 +100,9 @@ public:
      * \param result Where the integral derivatives are going.
      * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
      */
-    void compute_deriv1(std::vector<SharedMatrix > result,
-                        const CdSalcList& cdsalcs);
+    void compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList& cdsalcs);
 };
 
-}
+}  // namespace psi
 
 #endif

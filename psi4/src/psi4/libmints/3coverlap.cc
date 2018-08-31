@@ -35,70 +35,47 @@
 
 using namespace psi;
 
-ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform> st,
-                                             std::shared_ptr<BasisSet> bs1,
-                                             std::shared_ptr<BasisSet> bs2,
-                                             std::shared_ptr<BasisSet> bs3)
-    : overlap_recur_(bs1->max_am(), bs2->max_am(), bs3->max_am()),
-      bs1_(bs1), bs2_(bs2), bs3_(bs3), st_(st)
-{
+ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform> st, std::shared_ptr<BasisSet> bs1,
+                                             std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3)
+    : overlap_recur_(bs1->max_am(), bs2->max_am(), bs3->max_am()), bs1_(bs1), bs2_(bs2), bs3_(bs3), st_(st) {
     size_t size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) * INT_NCART(bs3->max_am());
 
     // Allocate memory for buffer_ storage
     try {
         buffer_ = new double[size];
-    }
-    catch (std::bad_alloc& e) {
-        outfile->Printf( "Error allocating memory for buffer_\n");
+    } catch (std::bad_alloc& e) {
+        outfile->Printf("Error allocating memory for buffer_\n");
         exit(EXIT_FAILURE);
     }
-    ::memset(buffer_, 0, sizeof(double)*size);
+    ::memset(buffer_, 0, sizeof(double) * size);
 
     try {
         temp_ = new double[size];
-    }
-    catch (std::bad_alloc& e) {
+    } catch (std::bad_alloc& e) {
         outfile->Printf("Error allocating memory for temp_\n");
         exit(EXIT_FAILURE);
     }
-    ::memset(temp_, 0, sizeof(double)*size);
+    ::memset(temp_, 0, sizeof(double) * size);
 }
 
-ThreeCenterOverlapInt::~ThreeCenterOverlapInt()
-{
+ThreeCenterOverlapInt::~ThreeCenterOverlapInt() {
     delete[] buffer_;
     delete[] temp_;
 }
 
-std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis()
-{
-    return bs1_;
-}
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis() { return bs1_; }
 
-std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis1()
-{
-    return bs1_;
-}
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis1() { return bs1_; }
 
-std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis2()
-{
-    return bs2_;
-}
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis2() { return bs2_; }
 
-std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis3()
-{
-    return bs3_;
-}
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis3() { return bs3_; }
 
-void ThreeCenterOverlapInt::compute_shell(int sh1, int sh2, int sh3)
-{
+void ThreeCenterOverlapInt::compute_shell(int sh1, int sh2, int sh3) {
     compute_pair(bs1_->shell(sh1), bs2_->shell(sh2), bs3_->shell(sh3));
 }
 
-void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
-                                         const GaussianShell& sB,
-                                         const GaussianShell& sC)
-{
+void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA, const GaussianShell& sB, const GaussianShell& sC) {
     size_t ao123;
     int amA = sA.am();
     int amB = sB.am();
@@ -124,15 +101,15 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
 
     memset(buffer_, 0, sA.ncartesian() * sC.ncartesian() * sB.ncartesian() * sizeof(double));
 
-    double ***x = overlap_recur_.x();
-    double ***y = overlap_recur_.y();
-    double ***z = overlap_recur_.z();
+    double*** x = overlap_recur_.x();
+    double*** y = overlap_recur_.y();
+    double*** z = overlap_recur_.z();
 
-    for (int pA=0; pA<nprimA; ++pA) {
+    for (int pA = 0; pA < nprimA; ++pA) {
         double aA = sA.exp(pA);
         double cA = sA.coef(pA);
 
-        for (int pB=0; pB<nprimB; ++pB) {
+        for (int pB = 0; pB < nprimB; ++pB) {
             double aB = sB.exp(pB);
             double cB = sB.coef(pB);
 
@@ -143,9 +120,9 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
             P[1] = (aA * A[1] + aB * B[1]) * oog;
             P[2] = (aA * A[2] + aB * B[2]) * oog;
 
-            double overlap_AB = exp(-aA*aB*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * cA * cB;
+            double overlap_AB = exp(-aA * aB * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * cA * cB;
 
-            for (int pC=0; pC<nprimC; ++pC) {
+            for (int pC = 0; pC < nprimC; ++pC) {
                 double aC = sC.exp(pC);
                 double cC = sC.coef(pC);
 
@@ -171,29 +148,30 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
                 GC[1] = G[1] - C[1];
                 GC[2] = G[2] - C[2];
 
-                double overlap_ACB = exp(-gamma*aC*oogc*PC2) * sqrt(gamma * oogc) * (gamma *oogc) * overlap_AB * cC;
+                double overlap_ACB =
+                    exp(-gamma * aC * oogc * PC2) * sqrt(gamma * oogc) * (gamma * oogc) * overlap_AB * cC;
 
-                 // Computes (ACB) overlap
+                // Computes (ACB) overlap
                 overlap_recur_.compute(GA, GB, GC, gammac, amA, amB, amC);
 
                 // We're going to be reordering the result of the above line.
                 // The result of above B is the fast running index, but I'm going to be make it C instead.
                 ao123 = 0;
-                for(int ii = 0; ii <= amA; ii++) {
+                for (int ii = 0; ii <= amA; ii++) {
                     int lA = amA - ii;
-                    for(int jj = 0; jj <= ii; jj++) {
+                    for (int jj = 0; jj <= ii; jj++) {
                         int mA = ii - jj;
                         int nA = jj;
 
-                        for(int mm = 0; mm <= amB; mm++) {
+                        for (int mm = 0; mm <= amB; mm++) {
                             int lB = amB - mm;
-                            for(int nn = 0; nn <= mm; nn++) {
+                            for (int nn = 0; nn <= mm; nn++) {
                                 int mB = mm - nn;
                                 int nB = nn;
 
-                                for(int kk = 0; kk <= amC; kk++) {
+                                for (int kk = 0; kk <= amC; kk++) {
                                     int lC = amC - kk;
-                                    for(int ll = 0; ll <= kk; ll++) {
+                                    for (int ll = 0; ll <= kk; ll++) {
                                         int mC = kk - ll;
                                         int nC = ll;
 
@@ -203,7 +181,7 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
                                         double z0 = z[nA][nC][nB];
 
                                         // But we're going to store then like (ABC) -> C fast running
-                                        buffer_[ao123++] += overlap_ACB*x0*y0*z0;
+                                        buffer_[ao123++] += overlap_ACB * x0 * y0 * z0;
                                     }
                                 }
                             }
@@ -218,53 +196,48 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
     pure_transform(sA, sB, sC);
 }
 
-void ThreeCenterOverlapInt::normalize_am(const GaussianShell& /*sA*/,
-                                         const GaussianShell& /*sB*/,
-                                         const GaussianShell& /*sC*/)
-{
+void ThreeCenterOverlapInt::normalize_am(const GaussianShell& /*sA*/, const GaussianShell& /*sB*/,
+                                         const GaussianShell& /*sC*/) {
     /// ACS commented this out.  The normalize:: function just returns 1.0, so this is not needed.
-//    // Assume integrals are done. Normalize for angular momentum
-//    int amA = sA.am();
-//    int amB = sB.am();
-//    int amC = sC.am();
+    //    // Assume integrals are done. Normalize for angular momentum
+    //    int amA = sA.am();
+    //    int amB = sB.am();
+    //    int amC = sC.am();
 
-//    size_t ao123 = 0;
-//    for(int ii = 0; ii <= amA; ii++) {
-//        int lA = amA - ii;
-//        for(int jj = 0; jj <= ii; jj++) {
-//            int mA = ii - jj;
-//            int nA = jj;
+    //    size_t ao123 = 0;
+    //    for(int ii = 0; ii <= amA; ii++) {
+    //        int lA = amA - ii;
+    //        for(int jj = 0; jj <= ii; jj++) {
+    //            int mA = ii - jj;
+    //            int nA = jj;
 
-//            double normA = GaussianShell::normalize(lA, mA, nA);
+    //            double normA = GaussianShell::normalize(lA, mA, nA);
 
-//            for(int mm = 0; mm <= amB; mm++) {
-//                int lB = amB - mm;
-//                for(int nn = 0; nn <= mm; nn++) {
-//                    int mB = mm - nn;
-//                    int nB = nn;
+    //            for(int mm = 0; mm <= amB; mm++) {
+    //                int lB = amB - mm;
+    //                for(int nn = 0; nn <= mm; nn++) {
+    //                    int mB = mm - nn;
+    //                    int nB = nn;
 
-//                    double normB = GaussianShell::normalize(lB, mB, nB);
+    //                    double normB = GaussianShell::normalize(lB, mB, nB);
 
-//                    for(int kk = 0; kk <= amC; kk++) {
-//                        int lC = amC - kk;
-//                        for(int ll = 0; ll <= kk; ll++) {
-//                            int mC = kk - ll;
-//                            int nC = ll;
+    //                    for(int kk = 0; kk <= amC; kk++) {
+    //                        int lC = amC - kk;
+    //                        for(int ll = 0; ll <= kk; ll++) {
+    //                            int mC = kk - ll;
+    //                            int nC = ll;
 
-//                            buffer_[ao123] *= normA * normB * GaussianShell::normalize(lC, mC, nC);
-//                            ao123++;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+    //                            buffer_[ao123] *= normA * normB * GaussianShell::normalize(lC, mC, nC);
+    //                            ao123++;
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
 }
 
-void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
-                                           const GaussianShell& s2,
-                                           const GaussianShell& s3)
-{
+void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3) {
     // Get the transforms from the basis set
     SphericalTransformIter trans1(st_[s1.am()]);
     SphericalTransformIter trans2(st_[s2.am()]);
@@ -287,51 +260,47 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
 
     // ABC -> ABc
     if (is_pure3) {
-
         ::memset(temp_, '\0', sizeof(double) * nao1 * nao2 * nso3);
 
         for (trans3.first(); !trans3.is_done(); trans3.next()) {
-            double *sptr = buffer_ + trans3.cartindex();
-            double *tptr = temp_   + trans3.pureindex();
+            double* sptr = buffer_ + trans3.cartindex();
+            double* tptr = temp_ + trans3.pureindex();
             double coef = trans3.coef();
             C_DAXPY(nao1 * nao2, coef, sptr, nao3, tptr, nso3);
         }
 
-        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nao2 * nso3);
+        ::memcpy((void*)buffer_, (void*)temp_, sizeof(double) * nao1 * nao2 * nso3);
     }
 
     // ABc -> Abc
     if (is_pure2) {
-
         ::memset(temp_, '\0', sizeof(double) * nao1 * nso2 * nso3);
 
         for (trans2.first(); !trans2.is_done(); trans2.next()) {
             double coef = trans2.coef();
-            double *sptr = buffer_ + trans2.cartindex() * nso3;
-            double *tptr = temp_   + trans2.pureindex() * nso3;
-            for (int a=0; a<nao1; ++a) {
-                C_DAXPY(nso3,coef,sptr,1,tptr,1);
+            double* sptr = buffer_ + trans2.cartindex() * nso3;
+            double* tptr = temp_ + trans2.pureindex() * nso3;
+            for (int a = 0; a < nao1; ++a) {
+                C_DAXPY(nso3, coef, sptr, 1, tptr, 1);
                 sptr += nao2 * nso3;
                 tptr += nso2 * nso3;
             }
         }
 
-        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nso2 * nso3);
+        ::memcpy((void*)buffer_, (void*)temp_, sizeof(double) * nao1 * nso2 * nso3);
     }
 
     // Abc -> abc
     if (is_pure1) {
-
         ::memset(temp_, '\0', sizeof(double) * nso1 * nso2 * nso3);
 
         for (trans1.first(); !trans1.is_done(); trans1.next()) {
-            double *sptr = buffer_ + trans1.cartindex() * nso2 * nso3;
-            double *tptr = temp_   + trans1.pureindex() * nso2 * nso3;
+            double* sptr = buffer_ + trans1.cartindex() * nso2 * nso3;
+            double* tptr = temp_ + trans1.pureindex() * nso2 * nso3;
             double coef = trans1.coef();
             C_DAXPY(nso2 * nso3, coef, sptr, 1, tptr, 1);
         }
 
-        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nso1 * nso2 * nso3);
+        ::memcpy((void*)buffer_, (void*)temp_, sizeof(double) * nso1 * nso2 * nso3);
     }
-
 }

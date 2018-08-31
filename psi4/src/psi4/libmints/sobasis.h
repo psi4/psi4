@@ -45,7 +45,7 @@ class PetiteList;
 /** SOTransformFunction describes how an AO function contributes to an SO
     function in a particular SO shell. */
 class SOTransformFunction {
-public:
+   public:
     /// The coefficient of the AO.
     double coef;
     /// The AO function number.
@@ -57,14 +57,13 @@ public:
 };
 
 class AOTransformFunction {
-public:
+   public:
     double coef;
     int aofunc;
     int sofunc;
     int irrep;
 
-    AOTransformFunction(double cf, int af, int sf, int irr)
-        : coef(cf), aofunc(af), sofunc(sf), irrep(irr) {}
+    AOTransformFunction(double cf, int af, int sf, int irr) : coef(cf), aofunc(af), sofunc(sf), irrep(irr) {}
 };
 
 /*! \ingroup MINTS */
@@ -72,7 +71,7 @@ public:
     function in a particular SO shell.  The information is stored in
     objects of type SOTransformFunction. */
 class SOTransformShell {
-public:
+   public:
     /// The number of the AO shell from which these functions come.
     int aoshell;
     /// The number of AO/SO function pairs contributing.
@@ -90,7 +89,7 @@ public:
     to compute the SO.  The information is stored in objects of
     type SOTransformShell. */
 class SOTransform {
-public:
+   public:
     int naoshell_allocated;
     /// The number of AO shells that make up this SO shell.
     int naoshell;
@@ -100,23 +99,22 @@ public:
     ~SOTransform();
     void set_naoshell(int n);
     /// Adds another term to the transform.
-    void add_transform(int aoshell, int irrep,
-                       double coef, int aofunc, int sofunc);
+    void add_transform(int aoshell, int irrep, double coef, int aofunc, int sofunc);
 };
 
 class AOTransform {
-public:
+   public:
     std::vector<AOTransformFunction> soshell;
     std::vector<AOTransformFunction> soshellpi[8];
     unsigned short nfuncpi[8];
 
-    void add_offsets(int nirreps, int *offsets){
-        for(int h=0; h<nirreps; ++h){
-            for(int n=0; n<nfuncpi[h]; ++n){
+    void add_offsets(int nirreps, int *offsets) {
+        for (int h = 0; h < nirreps; ++h) {
+            for (int n = 0; n < nfuncpi[h]; ++n) {
                 soshellpi[h][n].sofunc += offsets[h];
             }
         }
-        for(size_t z=0; z<soshell.size(); ++z) {
+        for (size_t z = 0; z < soshell.size(); ++z) {
             soshell[z].sofunc += offsets[soshell[z].irrep];
         }
     }
@@ -128,11 +126,10 @@ public:
 
 /** An SOBasis object describes the transformation from an atomic orbital basis
     to a symmetry orbital basis. */
-class PSI_API SOBasisSet
-{
-protected:
+class PSI_API SOBasisSet {
+   protected:
     std::shared_ptr<BasisSet> basis_;
-    const IntegralFactory* integral_;
+    const IntegralFactory *integral_;
     std::shared_ptr<PetiteList> petite_;
 
     int nshell_;
@@ -153,15 +150,15 @@ protected:
     AOTransform *aotrans_;
 
     //! vector of so shells numbers sorted in acending AM order.
-    std::vector< int > sorted_so_shell_list_;
+    std::vector<int> sorted_so_shell_list_;
 
     /// Handles initializing SOBasis
     void init();
 
-public:
+   public:
     /// Create an SOBasis object given a BasisSet and Integral objects.
-    SOBasisSet(const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>&);
-    SOBasisSet(const std::shared_ptr<BasisSet>&, const IntegralFactory*);
+    SOBasisSet(const std::shared_ptr<BasisSet> &, const std::shared_ptr<IntegralFactory> &);
+    SOBasisSet(const std::shared_ptr<BasisSet> &, const IntegralFactory *);
     ~SOBasisSet();
 
     std::shared_ptr<BasisSet> basis() const;
@@ -213,10 +210,10 @@ public:
     const AOTransform &aotrans(int i) const { return aotrans_[i]; }
 
     /** Return the PetiteList object used in creating this SOBasis.
-      * NOTE: There's a chance that this PetiteList is not the one
-      * you want. This petite list is specifically useful to the
-      * OneBodySOInt and TwoBodySOInt.
-      */
+     * NOTE: There's a chance that this PetiteList is not the one
+     * you want. This petite list is specifically useful to the
+     * OneBodySOInt and TwoBodySOInt.
+     */
     const std::shared_ptr<PetiteList> petite_list() const;
 
     /// Returns the dimension for each irrep.
@@ -230,50 +227,30 @@ public:
     void print(std::string out_fname = "outfile") const;
 };
 
-inline int SOBasisSet::function(int ishell)
-{
-    return func_[ishell];
-}
+inline int SOBasisSet::function(int ishell) { return func_[ishell]; }
 
-inline int SOBasisSet::irrep(int ishell, int ifunc) const
-{
-    return irrep_[func_[ishell]+ifunc];
-}
+inline int SOBasisSet::irrep(int ishell, int ifunc) const { return irrep_[func_[ishell] + ifunc]; }
 
-inline int SOBasisSet::irrep(int ifunc) const
-{
-    return irrep_[ifunc];
-}
+inline int SOBasisSet::irrep(int ifunc) const { return irrep_[ifunc]; }
 
-inline int SOBasisSet::function_offset_for_irrep(int irrep) const
-{
+inline int SOBasisSet::function_offset_for_irrep(int irrep) const {
     int r = 0;
-    for (int i=0; i<irrep; i++) {
+    for (int i = 0; i < irrep; i++) {
         r += nfunc_in_irrep_[i];
     }
     return r;
 }
 
-inline int SOBasisSet::function_within_irrep(int ishell, int ifunc) const
-{
-    return func_within_irrep_[func_[ishell]+ifunc];
+inline int SOBasisSet::function_within_irrep(int ishell, int ifunc) const {
+    return func_within_irrep_[func_[ishell] + ifunc];
 }
 
-inline int SOBasisSet::function_within_irrep(int ifunc) const
-{
-    return func_within_irrep_[ifunc];
-}
+inline int SOBasisSet::function_within_irrep(int ifunc) const { return func_within_irrep_[ifunc]; }
 
-inline int SOBasisSet::nfunction(int ishell, int iirrep) const
-{
-    return nfunc_[ishell][iirrep];
-}
+inline int SOBasisSet::nfunction(int ishell, int iirrep) const { return nfunc_[ishell][iirrep]; }
 
-inline int SOBasisSet::function_offset_within_shell(int ishell, int iirrep) const
-{
-    return funcoff_[ishell][iirrep];
-}
+inline int SOBasisSet::function_offset_within_shell(int ishell, int iirrep) const { return funcoff_[ishell][iirrep]; }
 
-}
+}  // namespace psi
 
 #endif

@@ -44,20 +44,19 @@ class GaussianShell;
  *  \brief Computes quadrupole integrals. At last check this may not be working.
  *  Use an IntegralFactory to create this object.
  */
-class QuadrupoleInt : public OneBodyAOInt
-{
+class QuadrupoleInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     // This the work horse function.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
-public:
-    QuadrupoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    void compute_pair(const GaussianShell &, const GaussianShell &);
+
+   public:
+    QuadrupoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     virtual ~QuadrupoleInt();
 
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
-
 };
 
-}
+}  // namespace psi
 
 #endif

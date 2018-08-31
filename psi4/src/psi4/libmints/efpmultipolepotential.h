@@ -39,7 +39,6 @@ class GaussianShell;
 class OneBodyAOInt;
 class SphericalTransform;
 
-
 /*! \ingroup MINTS
  *  \class MultipolePotentialInt
  *  \brief Computes multipole potential integrals, needed for EFP calculations.
@@ -80,22 +79,21 @@ class SphericalTransform;
  *     19    |      XYZ       |    6/15
  *
  */
-class EFPMultipolePotentialInt : public OneBodyAOInt
-{
+class EFPMultipolePotentialInt : public OneBodyAOInt {
     // OS Recursion for this type of potential integral
     ObaraSaikaTwoCenterEFPRecursion mvi_recur_;
 
     //! Computes the electric field between two gaussian shells.
     void compute_pair(const GaussianShell&, const GaussianShell&);
 
-public:
+   public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    EFPMultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    EFPMultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                             int deriv = 0);
     //! Virtual destructor
     virtual ~EFPMultipolePotentialInt();
-
 };
 
-}
+}  // namespace psi
 
 #endif

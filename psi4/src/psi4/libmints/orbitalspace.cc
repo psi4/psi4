@@ -257,7 +257,7 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
     return OrbitalSpace(id, name, newC, space2.basisset(), space2.integral());
 #endif
 }
-}  // namespace anonymous
+}  // namespace
 
 OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space,
                                             double lindep_tol) {

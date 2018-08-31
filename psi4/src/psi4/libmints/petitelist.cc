@@ -425,9 +425,7 @@ PetiteList::~PetiteList() {
     nbf_in_ir_ = 0;
 }
 
-std::shared_ptr<PetiteList> PetiteList::clone() {
-    return std::make_shared<PetiteList>(basis_, integral_);
-}
+std::shared_ptr<PetiteList> PetiteList::clone() { return std::make_shared<PetiteList>(basis_, integral_); }
 
 int PetiteList::nfunction(int i) const { return (c1_) ? basis_->nbf() : nbf_in_ir_[i]; }
 
@@ -658,8 +656,7 @@ Dimension PetiteList::SO_basisdim() {
 
 void PetiteList::print(std::string out) {
     int i;
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("PetiteList:\n");
 
     if (c1_) {

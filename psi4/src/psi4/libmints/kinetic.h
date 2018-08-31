@@ -29,21 +29,20 @@
 #ifndef _psi_src_lib_libmints_kinetic_h_
 #define _psi_src_lib_libmints_kinetic_h_
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include <vector>
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
 
-
 namespace psi {
 
-    class BasisSet;
-    class GaussianShell;
-    class SphericalTransform;
+class BasisSet;
+class GaussianShell;
+class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class KineticInt
@@ -51,8 +50,7 @@ namespace psi {
  *
  * Use an IntegralFactory to create this object.
  */
-class KineticInt : public OneBodyAOInt
-{
+class KineticInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
@@ -62,9 +60,9 @@ class KineticInt : public OneBodyAOInt
     void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
     void compute_pair_deriv2(const GaussianShell&, const GaussianShell&);
 
-public:
+   public:
     //! Constructor. Do not call directly, use an IntegralFactory.
-    KineticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    KineticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor.
     virtual ~KineticInt();
 
@@ -75,6 +73,6 @@ public:
     bool has_deriv2() { return true; }
 };
 
-}
+}  // namespace psi
 
 #endif

@@ -34,21 +34,20 @@ namespace psi {
 class SymmetryOperation;
 class IntegralFactory;
 
-class ShellRotation
-{
+class ShellRotation {
     int n_;
     int am_;
-    double **r_;
+    double** r_;
 
     void done();
 
-public:
+   public:
     /// Initialize this ShellRotation to hold a n by n transformation.
     ShellRotation(int n);
     /// Initialize this from another ShellRotation.
     ShellRotation(const ShellRotation&);
     /// Initialize using init(...) or, if pure is nonzero, init_pure(...).
-    ShellRotation(int a, SymmetryOperation&, const IntegralFactory*, int pure=0);
+    ShellRotation(int a, SymmetryOperation&, const IntegralFactory*, int pure = 0);
     virtual ~ShellRotation();
 
     /// Assign this to another shell rotation.
@@ -72,9 +71,9 @@ public:
     double* operator[](int i) { return r_[i]; }
 
     /// Returns the result of rot*this.
-    ShellRotation operate(const ShellRotation&rot) const;
+    ShellRotation operate(const ShellRotation& rot) const;
     /// Returns the result of rot*this*transpose(rot).
-    ShellRotation transform(const ShellRotation&rot) const;
+    ShellRotation transform(const ShellRotation& rot) const;
 
     /// Return the trace of the transformation.
     double trace() const;
@@ -83,6 +82,6 @@ public:
     void print() const;
 };
 
-}
+}  // namespace psi
 
-#endif // _psi_src_lib_libmints_shellrotation_h_
+#endif  // _psi_src_lib_libmints_shellrotation_h_

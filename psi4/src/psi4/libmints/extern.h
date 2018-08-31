@@ -47,8 +47,7 @@ class BasisSet;
  *  Like standard potential integrals, this is negative definite (electrons are the test charge)
  */
 class ExternalPotential {
-protected:
-
+   protected:
     /// Debug flag
     int debug_;
     /// Print flag
@@ -57,21 +56,21 @@ protected:
     /// Name of potential
     std::string name_;
     /// <Z,x,y,z> array of charges
-    std::vector<std::tuple<double,double,double,double> > charges_;
+    std::vector<std::tuple<double, double, double, double> > charges_;
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
     std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
 
-public:
+   public:
     /// Constructur, does nothing
     ExternalPotential();
     /// Destructor, does nothing
     ~ExternalPotential();
 
     /// Set name
-    void setName(const std::string & name) { name_ = name; }
+    void setName(const std::string& name) { name_ = name; }
 
     /// Add a charge Z at (x,y,z)
-    void addCharge(double Z,double x, double y, double z);
+    void addCharge(double Z, double x, double y, double z);
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
@@ -95,9 +94,8 @@ public:
     void set_print(int print) { print_ = print; }
     /// Debug flag
     void set_debug(int debug) { debug_ = debug; }
-
 };
 
-}
+}  // namespace psi
 
 #endif
