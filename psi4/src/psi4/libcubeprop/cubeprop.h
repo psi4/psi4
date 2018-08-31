@@ -110,6 +110,6 @@ class PSI_API CubeProperties {
     /// Returns Orbital Basis Set
     std::shared_ptr<BasisSet> basisset() { return basisset_; }
 };
-}
+}  // namespace psi
 
 #endif
