@@ -42,7 +42,8 @@
 #include "Params.h"
 #include "ccwave.h"
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
 /*
 ** DIIS: Direct inversion in the iterative subspace routine to
@@ -62,21 +63,21 @@ namespace psi { namespace ccenergy {
 ** -RMP 04/02/13
 */
 
+void CCEnergyWavefunction::diis(int iter) {
+    if (params_.ref == 0)
+        diis_RHF(iter);
+    else if (params_.ref == 1)
+        diis_ROHF(iter);
+    else if (params_.ref == 2)
+        diis_UHF(iter);
 
-void CCEnergyWavefunction::diis(int iter)
-{
-  if(params_.ref == 0) diis_RHF(iter);
-  else if(params_.ref == 1) diis_ROHF(iter);
-  else if(params_.ref == 2) diis_UHF(iter);
-
-  return;
+    return;
 }
 
-void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, double tolerance)
-{
+void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, double tolerance) {
     auto B2 = std::make_shared<Matrix>("B2", dimension, dimension);
     double** Bp = B2->pointer();
-    ::memcpy((void*) Bp[0], B[0], sizeof(double) * dimension * dimension);
+    ::memcpy((void*)Bp[0], B[0], sizeof(double) * dimension * dimension);
 
     double* Sp = new double[dimension];
     double* Tp = new double[dimension];
@@ -92,7 +93,7 @@ void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, d
         }
     } else {
         for (int i = 0; i < dimension - 1; i++) {
-            Sp[i] = pow(Bp[i][i],-1.0/2.0);
+            Sp[i] = pow(Bp[i][i], -1.0 / 2.0);
         }
         Sp[dimension - 1] = 1.0;
     }
@@ -105,7 +106,7 @@ void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, d
 
     B2->power(-1.0, tolerance);
 
-    C_DGEMV('N',dimension,dimension,1.0,Bp[0],dimension,C,1,0.0,Tp,1);
+    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, C, 1, 0.0, Tp, 1);
 
     for (int i = 0; i < dimension; i++) {
         C[i] = Sp[i] * Tp[i];
@@ -115,4 +116,5 @@ void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, d
     delete[] Tp;
 }
 
-}} // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi

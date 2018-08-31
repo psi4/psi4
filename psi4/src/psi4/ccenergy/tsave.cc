@@ -36,66 +36,64 @@
 #include "Params.h"
 #include "ccwave.h"
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
-void CCEnergyWavefunction::tsave(void)
-{
-  dpdfile2 t1;
-  dpdbuf4 t2;
+void CCEnergyWavefunction::tsave(void) {
+    dpdfile2 t1;
+    dpdbuf4 t2;
 
-  if(params_.ref == 0) { /** RHF **/
-    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tIA");
-    global_dpd_->file2_close(&t1);
+    if (params_.ref == 0) { /** RHF **/
+        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+        global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tIA");
+        global_dpd_->file2_close(&t1);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIjAb");
-    global_dpd_->buf4_close(&t2);
-  }
-  else if(params_.ref == 1) { /** ROHF **/
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIjAb");
+        global_dpd_->buf4_close(&t2);
+    } else if (params_.ref == 1) { /** ROHF **/
 
-    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tIA");
-    global_dpd_->file2_close(&t1);
+        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+        global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tIA");
+        global_dpd_->file2_close(&t1);
 
-    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
-    global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tia");
-    global_dpd_->file2_close(&t1);
+        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
+        global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tia");
+        global_dpd_->file2_close(&t1);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIJAB");
-    global_dpd_->buf4_close(&t2);
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIJAB");
+        global_dpd_->buf4_close(&t2);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tijab");
-    global_dpd_->buf4_close(&t2);
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tijab");
+        global_dpd_->buf4_close(&t2);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIjAb");
-    global_dpd_->buf4_close(&t2);
-  }
-  else if(params_.ref == 2) { /** UHF **/
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIjAb");
+        global_dpd_->buf4_close(&t2);
+    } else if (params_.ref == 2) { /** UHF **/
 
-    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tIA");
-    global_dpd_->file2_close(&t1);
+        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+        global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tIA");
+        global_dpd_->file2_close(&t1);
 
-    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
-    global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tia");
-    global_dpd_->file2_close(&t1);
+        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
+        global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "tia");
+        global_dpd_->file2_close(&t1);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIJAB");
-    global_dpd_->buf4_close(&t2);
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIJAB");
+        global_dpd_->buf4_close(&t2);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tijab");
-    global_dpd_->buf4_close(&t2);
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tijab");
+        global_dpd_->buf4_close(&t2);
 
-    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-    global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIjAb");
-    global_dpd_->buf4_close(&t2);
-
-  }
+        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+        global_dpd_->buf4_copy(&t2, PSIF_CC_TAMPS, "tIjAb");
+        global_dpd_->buf4_close(&t2);
+    }
 }
-}} // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi
