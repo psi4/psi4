@@ -34,33 +34,30 @@
 #include <ambit/tensor.h>
 //#include <tensor/core/core.h>
 
-namespace ambit
-{
+namespace ambit {
 
-namespace helpers
-{
+namespace helpers {
 
-namespace psi4
-{
+namespace psi4 {
 
-void PSI_API convert(const psi::Matrix &matrix, ambit::Tensor *target)
-{
-    if (target->rank() != 2)
-        throw std::runtime_error(
-            "convert(psi::Matrix, ambit::Tensor): Tensor is not rank 2");
+void PSI_API convert(const psi::Matrix &matrix, ambit::Tensor *target) {
+    if (target->rank() != 2) throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Tensor is not rank 2");
 
     if (matrix.nirrep() != 1)
-        throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Matrix "
-                                 "appears to have symmetry (nirrep != 1)");
+        throw std::runtime_error(
+            "convert(psi::Matrix, ambit::Tensor): Matrix "
+            "appears to have symmetry (nirrep != 1)");
 
     if (matrix.rowdim() != target->dim(0))
-        throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Matrix "
-                                 "and Tensor do not have the same number of "
-                                 "rows (dim(0))");
+        throw std::runtime_error(
+            "convert(psi::Matrix, ambit::Tensor): Matrix "
+            "and Tensor do not have the same number of "
+            "rows (dim(0))");
     if (matrix.coldim() != target->dim(1))
-        throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Matrix "
-                                 "and Tensor do not have the same number of "
-                                 "columns (dim(1))");
+        throw std::runtime_error(
+            "convert(psi::Matrix, ambit::Tensor): Matrix "
+            "and Tensor do not have the same number of "
+            "columns (dim(1))");
 
     size_t row = target->dim(0);
     size_t col = target->dim(1);
@@ -69,43 +66,40 @@ void PSI_API convert(const psi::Matrix &matrix, ambit::Tensor *target)
 
     if (row && col) {
         // copy data from SharedMatrix to local_tensor
-        std::copy(matrix.pointer()[0], matrix.pointer()[0] + (row * col),
-                  local_tensor.data().begin());
+        std::copy(matrix.pointer()[0], matrix.pointer()[0] + (row * col), local_tensor.data().begin());
     }
 
     // Splice data into the target tensor
     (*target)() = local_tensor();
 }
 
-void PSI_API convert(const psi::Vector &vector, ambit::Tensor *target)
-{
-    if (target->rank() != 1)
-        throw std::runtime_error(
-            "convert(psi::Matrix, ambit::Tensor): Tensor is not rank 1");
+void PSI_API convert(const psi::Vector &vector, ambit::Tensor *target) {
+    if (target->rank() != 1) throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Tensor is not rank 1");
 
     if (vector.nirrep() != 1)
-        throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Matrix "
-                                 "appears to have symmetry (nirrep != 1)");
+        throw std::runtime_error(
+            "convert(psi::Matrix, ambit::Tensor): Matrix "
+            "appears to have symmetry (nirrep != 1)");
 
     if (vector.dim() != target->dim(0))
-        throw std::runtime_error("convert(psi::Matrix, ambit::Tensor): Matrix "
-                                 "and Tensor do not have the same number of "
-                                 "elements (dim(0))");
+        throw std::runtime_error(
+            "convert(psi::Matrix, ambit::Tensor): Matrix "
+            "and Tensor do not have the same number of "
+            "elements (dim(0))");
 
     size_t row = target->dim(0);
 
     Tensor local_tensor = Tensor::build(CoreTensor, "Local Data", {row});
 
     // copy data from SharedMatrix to local_tensor
-    std::copy(vector.pointer(), vector.pointer() + (row),
-              local_tensor.data().begin());
+    std::copy(vector.pointer(), vector.pointer() + (row), local_tensor.data().begin());
 
     // Splice data into the target tensor
     (*target)() = local_tensor();
 }
 
-} // namespace psi4
+}  // namespace psi4
 
-} // namespace helpers
+}  // namespace helpers
 
-} // namespace ambit
+}  // namespace ambit
