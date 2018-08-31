@@ -40,19 +40,12 @@
 
 namespace psi {
 
-IWL::~IWL()
-{
-    close();
-}
+IWL::~IWL() { close(); }
 
-void IWL::close()
-{
-    if (psio_->open_check(itap_))
-        psio_->close(itap_, keep_);
-    if (labels_)
-        delete[](labels_);
-    if (values_)
-        delete[](values_);
+void IWL::close() {
+    if (psio_->open_check(itap_)) psio_->close(itap_, keep_);
+    if (labels_) delete[](labels_);
+    if (values_) delete[](values_);
     labels_ = nullptr;
     values_ = nullptr;
 }
@@ -66,12 +59,9 @@ void IWL::close()
 ** Close a Integrals With Labels Buffer
 ** \ingroup IWL
 */
-void PSI_API iwl_buf_close(struct iwlbuf *Buf, int keep)
-{
-
-   psio_close(Buf->itap, keep ? 1 : 0);
-   free(Buf->labels);
-   free(Buf->values);
+void PSI_API iwl_buf_close(struct iwlbuf *Buf, int keep) {
+    psio_close(Buf->itap, keep ? 1 : 0);
+    free(Buf->labels);
+    free(Buf->values);
 }
-
 }
