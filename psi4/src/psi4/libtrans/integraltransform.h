@@ -422,6 +422,6 @@ class PSI_API IntegralTransform {
     std::map<char, int> labelsUsed_;
 };
 
-}  // End namespaces
+}  // namespace psi
 
 #endif  // Header guard

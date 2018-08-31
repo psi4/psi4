@@ -166,21 +166,21 @@ void IntegralTransform::transform_oei_unrestricted(const std::shared_ptr<MOSpace
 }
 
 /**
-* Transforms a packed symmetric matrix.
-*
-* @param m - input matrix row dimension
-* @param n - output matrix row dimension
-* @param input - pointer to input integrals (the lower-triangle of a symmetric matrix)
-* @param pointer to output integrals (the lower-triangle of a symmetric matrix)
-* @param C transformation matrix (rectangular, m X n)
-* @param offset - the point in the full list of SOs where we want to start.  This is
-*                 useful for transforming integrals one irrep at a time and in this
-*                 case the offset would correspond to the position of the first
-*                 orbital in the current irrep.
-* @param order - a reordering array to change the order of the output
-* @param backtransform - whether this is a forward or backwards transformation
-* @param scale - the amount of the existing output buffer to mix into the result
-*/
+ * Transforms a packed symmetric matrix.
+ *
+ * @param m - input matrix row dimension
+ * @param n - output matrix row dimension
+ * @param input - pointer to input integrals (the lower-triangle of a symmetric matrix)
+ * @param pointer to output integrals (the lower-triangle of a symmetric matrix)
+ * @param C transformation matrix (rectangular, m X n)
+ * @param offset - the point in the full list of SOs where we want to start.  This is
+ *                 useful for transforming integrals one irrep at a time and in this
+ *                 case the offset would correspond to the position of the first
+ *                 orbital in the current irrep.
+ * @param order - a reordering array to change the order of the output
+ * @param backtransform - whether this is a forward or backwards transformation
+ * @param scale - the amount of the existing output buffer to mix into the result
+ */
 
 void IntegralTransform::trans_one(int m, int n, double *input, double *output, double **C, int offset, int *order,
                                   bool backtransform, double scale) {
