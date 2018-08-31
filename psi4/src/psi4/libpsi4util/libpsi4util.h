@@ -70,20 +70,17 @@ std::string add_reference(std::string &str, int reference);
 
 void append_reference(std::string &str, int reference);
 
-std::string find_and_replace(std::string &source, const std::string &target,
-                             const std::string &replace);
+std::string find_and_replace(std::string &source, const std::string &target, const std::string &replace);
 
 void trim_spaces(std::string &str);
 
 template <typename Range1T, typename Range2T>
-bool iequals(const Range1T &Input, const Range2T &Test){
-    if (std::distance(std::begin(Input), std::end(Input)) !=
-        std::distance(std::begin(Test), std::end(Test)))
+bool iequals(const Range1T &Input, const Range2T &Test) {
+    if (std::distance(std::begin(Input), std::end(Input)) != std::distance(std::begin(Test), std::end(Test)))
         return false;
 
-    return std::equal(
-        std::begin(Input), std::end(Input), std::begin(Test),
-        [](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
+    return std::equal(std::begin(Input), std::end(Input), std::begin(Test),
+                      [](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
 }
 
 std::vector<std::string> split(const std::string &input, const std::string &regex);
@@ -97,14 +94,15 @@ std::vector<std::string> split(const std::string &input, const std::string &rege
 size_t edit_distance(const std::string &s1, const std::string &s2);
 
 class PSI_API Timer {
-  public:
+   public:
     Timer();
     double get();
-  private:
+
+   private:
     std::chrono::high_resolution_clock::time_point start;
 };
 
 void generate_combinations(int n, int k, std::vector<std::vector<int>> &combinations);
 }
 
-#endif // _psi_src_lib_libpsi4util_libpsi4util_h_
+#endif  // _psi_src_lib_libpsi4util_libpsi4util_h_
