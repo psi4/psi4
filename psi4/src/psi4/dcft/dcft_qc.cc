@@ -2254,5 +2254,5 @@ bool DCFTSolver::augment_b(double *vec, double tol) {
 
     return false;
 }
-}
-}  // End namespaces
+}  // namespace dcft
+}  // namespace psi

@@ -37,16 +37,15 @@
 
 #include <cmath>
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 
 /**
  * Computes the residual for the lambda equations
  * R = G + F
  * @return RMS residual
  */
-double
-DCFTSolver::compute_cumulant_residual()
-{
+double DCFTSolver::compute_cumulant_residual() {
     dcft_timer_on("DCFTSolver::compute_lambda_residual()");
 
     dpdbuf4 R, G, F, I, V, W;
@@ -62,43 +61,42 @@ DCFTSolver::compute_cumulant_residual()
     // OOVV
 
     // R_IJAB = G_IJAB
-    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                           "G <OO|VV>");
     global_dpd_->buf4_copy(&G, PSIF_DCFT_DPD, "R <OO|VV>");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
+    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                           "R <OO|VV>");
 
     // R_IJAB += F_IJAB
-    global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "F <OO|VV>");
+    global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                           "F <OO|VV>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
     // R_IJAB += gbar_IJAB
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                           ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 1,
+                           "MO Ints <OO|VV>");
     dpd_buf4_add(&R, &I, 1.0);
     global_dpd_->buf4_close(&I);
 
     // Add third-order N-representability terms if needed
     if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
         // R_IJAB += V_IJAB
-        global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                               ID("[O>O]-"), ID("[V>V]-"), 0, "V <OO|VV>");
+        global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                               "V <OO|VV>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
 
         // R_IJAB += W_IJAB
-        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                               ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                               "W <OO|VV>");
         dpd_buf4_add(&R, &W, 1.0);
         global_dpd_->buf4_close(&W);
     }
 
-    for(int h = 0; h < nirrep_; ++h)
-        nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for (int h = 0; h < nirrep_; ++h) nElements += R.params->coltot[h] * R.params->rowtot[h];
 
     sumSQ += global_dpd_->buf4_dot_self(&R);
     global_dpd_->buf4_close(&R);
@@ -106,43 +104,39 @@ DCFTSolver::compute_cumulant_residual()
     // OoVv
 
     // R_IjAb = G_IjAb
-    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     global_dpd_->buf4_copy(&G, PSIF_DCFT_DPD, "R <Oo|Vv>");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
 
     // R_IjAb += F_IjAb
-    global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "F <Oo|Vv>");
+    global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "F <Oo|Vv>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
     // R_IjAb += gbar_IjAb
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                           ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                           "MO Ints <Oo|Vv>");
     dpd_buf4_add(&R, &I, 1.0);
     global_dpd_->buf4_close(&I);
 
     // Add third-order N-representability terms if needed
     if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
         // R_IjAb += V_IjAb
-        global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                               ID("[O,o]"), ID("[V,v]"), 0, "V <Oo|Vv>");
+        global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "V <Oo|Vv>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
 
         // R_IJAB += W_IJAB
-        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                               ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
+        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "W <Oo|Vv>");
         dpd_buf4_add(&R, &W, 1.0);
         global_dpd_->buf4_close(&W);
     }
 
-    for(int h = 0; h < nirrep_; ++h)
-        nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for (int h = 0; h < nirrep_; ++h) nElements += R.params->coltot[h] * R.params->rowtot[h];
 
     sumSQ += global_dpd_->buf4_dot_self(&R);
     global_dpd_->buf4_close(&R);
@@ -150,43 +144,42 @@ DCFTSolver::compute_cumulant_residual()
     // oovv
 
     // R_ijab = G_ijab
-    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                           "G <oo|vv>");
     global_dpd_->buf4_copy(&G, PSIF_DCFT_DPD, "R <oo|vv>");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
+    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                           "R <oo|vv>");
 
     // R_ijab += F_ijab
-    global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "F <oo|vv>");
+    global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                           "F <oo|vv>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
     // R_ijab += gbar_ijab
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                           ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 1,
+                           "MO Ints <oo|vv>");
     dpd_buf4_add(&R, &I, 1.0);
     global_dpd_->buf4_close(&I);
 
     // Add third-order N-representability terms if needed
     if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
         // R_ijab += V_ijab
-        global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                               ID("[o>o]-"), ID("[v>v]-"), 0, "V <oo|vv>");
+        global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                               "V <oo|vv>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
 
         // R_IJAB += W_IJAB
-        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                               ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                               "W <oo|vv>");
         dpd_buf4_add(&R, &W, 1.0);
         global_dpd_->buf4_close(&W);
     }
 
-    for(int h = 0; h < nirrep_; ++h)
-        nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for (int h = 0; h < nirrep_; ++h) nElements += R.params->coltot[h] * R.params->rowtot[h];
 
     sumSQ += global_dpd_->buf4_dot_self(&R);
     global_dpd_->buf4_close(&R);
@@ -195,17 +188,16 @@ DCFTSolver::compute_cumulant_residual()
 
     dcft_timer_off("DCFTSolver::compute_lambda_residual()");
 
-    if (nElements > 0) return sqrt(sumSQ / nElements);
-    else return 0.0;
+    if (nElements > 0)
+        return sqrt(sumSQ / nElements);
+    else
+        return 0.0;
 }
-
 
 /**
  * Builds the new lambda tensor from the intermediates
  */
-void
-DCFTSolver::update_cumulant_jacobi()
-{
+void DCFTSolver::update_cumulant_jacobi() {
     dcft_timer_on("DCFTSolver::update_lambda_from_residual()");
 
     dpdbuf4 L, D, R;
@@ -217,40 +209,37 @@ DCFTSolver::update_cumulant_jacobi()
      */
 
     // L_IJAB += R_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
-    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+                           "D <OO|VV>");
+    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
-    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                           "Lambda <OO|VV>");
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);
 
     // L_IjAb += R_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
-    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
-    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                           "Lambda <Oo|Vv>");
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);
 
     // L_IJAB += R_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
-    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+                           "D <oo|vv>");
+    global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
-    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                           "Lambda <oo|vv>");
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);
@@ -260,4 +249,5 @@ DCFTSolver::update_cumulant_jacobi()
     dcft_timer_off("DCFTSolver::update_lambda_from_residual()");
 }
 
-}} // Namespaces
+}  // namespace dcft
+}  // namespace psi
