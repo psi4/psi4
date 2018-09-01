@@ -887,4 +887,4 @@ std::vector<double> Options::get_double_vector(std::string key) {
 const char* Options::get_cstr(std::string key) { return (use(key).to_string().c_str()); }
 
 Data& Options::operator[](std::string key) { return use(key); }
-}
+}  // namespace psi
