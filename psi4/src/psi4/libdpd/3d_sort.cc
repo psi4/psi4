@@ -81,154 +81,160 @@
 
 namespace psi {
 
-void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx,
-                  int ***roworb, int *asym, int *bsym, int *aoff, int *boff,
-                  int *cpi, int *coff, int **rowidx_out, enum pattern index, int sum)
-{
+void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, int ***roworb,
+                  int *asym, int *bsym, int *aoff, int *boff, int *cpi, int *coff, int **rowidx_out, enum pattern index,
+                  int sum) {
     int Ga, Gb, Gc;
     int Gab, Gac, Gca, Gcb, Gbc, Gba;
     int A, B, C, a, b, c;
     int ab, ac, ca, cb, bc, ba;
 
-    switch(index) {
+    switch (index) {
+        case abc:
+            outfile->Printf("\ndpd_3d_sort: abc pattern is invalid.\n");
+            dpd_error("3d_sort", "outfile");
+            break;
 
-    case abc:
-        outfile->Printf( "\ndpd_3d_sort: abc pattern is invalid.\n");
-        dpd_error("3d_sort", "outfile");
-        break;
+        case acb:
+            for (Gab = 0; Gab < nirreps; Gab++) {
+                Gc = h ^ Gab;
 
-    case acb:
-        for(Gab=0; Gab < nirreps; Gab++) {
-            Gc = h ^ Gab;
+                for (ab = 0; ab < rowtot[Gab]; ab++) {
+                    A = roworb[Gab][ab][0];
+                    B = roworb[Gab][ab][1];
 
-            for(ab=0; ab < rowtot[Gab]; ab++) {
+                    Ga = asym[A];
+                    Gb = bsym[B];
+                    Gac = Ga ^ Gc;
 
-                A = roworb[Gab][ab][0];
-                B = roworb[Gab][ab][1];
+                    b = B - boff[Gb];
 
-                Ga = asym[A]; Gb = bsym[B];
-                Gac = Ga ^ Gc;
+                    for (c = 0; c < cpi[Gc]; c++) {
+                        C = coff[Gc] + c;
 
-                b = B - boff[Gb];
+                        ac = rowidx_out[A][C];
 
-                for(c=0; c < cpi[Gc]; c++) {
-                    C = coff[Gc] + c;
-
-                    ac = rowidx_out[A][C];
-
-                    if(sum) Wout[Gac][ac][b] += Win[Gab][ab][c];
-                    else Wout[Gac][ac][b] = Win[Gab][ab][c];
+                        if (sum)
+                            Wout[Gac][ac][b] += Win[Gab][ab][c];
+                        else
+                            Wout[Gac][ac][b] = Win[Gab][ab][c];
+                    }
                 }
             }
-        }
 
-        break;
+            break;
 
-    case cab:
-        for(Gab=0; Gab < nirreps; Gab++) {
-            Gc = h ^ Gab;
+        case cab:
+            for (Gab = 0; Gab < nirreps; Gab++) {
+                Gc = h ^ Gab;
 
-            for(ab=0; ab < rowtot[Gab]; ab++) {
+                for (ab = 0; ab < rowtot[Gab]; ab++) {
+                    A = roworb[Gab][ab][0];
+                    B = roworb[Gab][ab][1];
 
-                A = roworb[Gab][ab][0];
-                B = roworb[Gab][ab][1];
+                    Ga = asym[A];
+                    Gb = bsym[B];
+                    Gca = Ga ^ Gc;
 
-                Ga = asym[A]; Gb = bsym[B];
-                Gca = Ga ^ Gc;
+                    b = B - boff[Gb];
 
-                b = B - boff[Gb];
+                    for (c = 0; c < cpi[Gc]; c++) {
+                        C = coff[Gc] + c;
 
-                for(c=0; c < cpi[Gc]; c++) {
-                    C = coff[Gc] + c;
+                        ca = rowidx_out[C][A];
 
-                    ca = rowidx_out[C][A];
-
-                    if(sum) Wout[Gca][ca][b] += Win[Gab][ab][c];
-                    else Wout[Gca][ca][b] = Win[Gab][ab][c];
+                        if (sum)
+                            Wout[Gca][ca][b] += Win[Gab][ab][c];
+                        else
+                            Wout[Gca][ca][b] = Win[Gab][ab][c];
+                    }
                 }
             }
-        }
 
-        break;
+            break;
 
-    case cba:
-        for(Gab=0; Gab < nirreps; Gab++) {
-            Gc = h ^ Gab;
+        case cba:
+            for (Gab = 0; Gab < nirreps; Gab++) {
+                Gc = h ^ Gab;
 
-            for(ab=0; ab < rowtot[Gab]; ab++) {
+                for (ab = 0; ab < rowtot[Gab]; ab++) {
+                    A = roworb[Gab][ab][0];
+                    B = roworb[Gab][ab][1];
 
-                A = roworb[Gab][ab][0];
-                B = roworb[Gab][ab][1];
+                    Ga = asym[A];
+                    Gb = bsym[B];
+                    a = A - aoff[Ga];
 
-                Ga = asym[A]; Gb = bsym[B];
-                a = A - aoff[Ga];
+                    Gcb = Gc ^ Gb;
 
-                Gcb = Gc ^ Gb;
+                    for (c = 0; c < cpi[Gc]; c++) {
+                        C = coff[Gc] + c;
 
-                for(c=0; c < cpi[Gc]; c++) {
-                    C = coff[Gc] + c;
+                        cb = rowidx_out[C][B];
 
-                    cb = rowidx_out[C][B];
-
-                    if(sum) Wout[Gcb][cb][a] += Win[Gab][ab][c];
-                    else Wout[Gcb][cb][a] = Win[Gab][ab][c];
+                        if (sum)
+                            Wout[Gcb][cb][a] += Win[Gab][ab][c];
+                        else
+                            Wout[Gcb][cb][a] = Win[Gab][ab][c];
+                    }
                 }
             }
-        }
 
-        break;
+            break;
 
-    case bca:
-        for(Gab=0; Gab < nirreps; Gab++) {
-            Gc = h ^ Gab;
+        case bca:
+            for (Gab = 0; Gab < nirreps; Gab++) {
+                Gc = h ^ Gab;
 
-            for(ab=0; ab < rowtot[Gab]; ab++) {
+                for (ab = 0; ab < rowtot[Gab]; ab++) {
+                    A = roworb[Gab][ab][0];
+                    B = roworb[Gab][ab][1];
 
-                A = roworb[Gab][ab][0];
-                B = roworb[Gab][ab][1];
+                    Ga = asym[A];
+                    Gb = bsym[B];
+                    a = A - aoff[Ga];
 
-                Ga = asym[A]; Gb = bsym[B];
-                a = A - aoff[Ga];
+                    Gbc = Gb ^ Gc;
 
-                Gbc = Gb ^ Gc;
+                    for (c = 0; c < cpi[Gc]; c++) {
+                        C = coff[Gc] + c;
 
-                for(c=0; c < cpi[Gc]; c++) {
-                    C = coff[Gc] + c;
+                        bc = rowidx_out[B][C];
 
-                    bc = rowidx_out[B][C];
-
-                    if(sum) Wout[Gbc][bc][a] += Win[Gab][ab][c];
-                    else Wout[Gbc][bc][a] = Win[Gab][ab][c];
+                        if (sum)
+                            Wout[Gbc][bc][a] += Win[Gab][ab][c];
+                        else
+                            Wout[Gbc][bc][a] = Win[Gab][ab][c];
+                    }
                 }
             }
-        }
 
-        break;
+            break;
 
-    case bac:
-        for(Gab=0; Gab < nirreps; Gab++) {
-            Gc = h ^ Gab;
-            Gba = Gab;
+        case bac:
+            for (Gab = 0; Gab < nirreps; Gab++) {
+                Gc = h ^ Gab;
+                Gba = Gab;
 
-            for(ab=0; ab < rowtot[Gab]; ab++) {
+                for (ab = 0; ab < rowtot[Gab]; ab++) {
+                    A = roworb[Gab][ab][0];
+                    B = roworb[Gab][ab][1];
 
-                A = roworb[Gab][ab][0];
-                B = roworb[Gab][ab][1];
+                    ba = rowidx_out[B][A];
 
-                ba = rowidx_out[B][A];
+                    for (c = 0; c < cpi[Gc]; c++) {
+                        C = coff[Gc] + c;
 
-                for(c=0; c < cpi[Gc]; c++) {
-                    C = coff[Gc] + c;
-
-                    if(sum) Wout[Gba][ba][c] += Win[Gab][ab][c];
-                    else Wout[Gba][ba][c] = Win[Gab][ab][c];
+                        if (sum)
+                            Wout[Gba][ba][c] += Win[Gab][ab][c];
+                        else
+                            Wout[Gba][ba][c] = Win[Gab][ab][c];
+                    }
                 }
             }
-        }
 
-        break;
-
+            break;
     }
 }
 
-}
+}  // namespace psi
