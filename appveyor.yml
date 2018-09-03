@@ -19,7 +19,6 @@ install:
                  networkx
                  ninja
                  numpy
-                 pthreads-win32
                  pybind11
                  pytest
   - conda clean --all

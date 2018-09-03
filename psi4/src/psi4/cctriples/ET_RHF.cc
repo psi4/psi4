@@ -32,11 +32,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libqt/qt.h"
-#include <pthread.h>
 
 #include "MOInfo.h"
 #include "Params.h"
@@ -51,27 +53,23 @@
 
 namespace psi { namespace cctriples {
 
-pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
-
 struct thread_data {
  dpdfile2 *fIJ; dpdfile2 *fAB; dpdfile2 *fIA; dpdfile2 *T1;
  dpdbuf4 *T2; dpdbuf4 *Eints; dpdbuf4 *Dints; dpdbuf4 *Fints_local;
  double *ET_local; int Gi; int Gj; int Gk; int first_ijk; int last_ijk;
 };
 
-void *ET_RHF_thread(void *thread_data);
+void ET_RHF_thread(thread_data*);
 
 double ET_RHF(void)
 {
   int i,j,k,I,J,K,Gi,Gj,Gk, h, nirreps, cnt;
-  int nijk, nthreads, thread, *ijk_part, errcod;
+  int nijk, nthreads, thread, *ijk_part;
   int *occpi, *virtpi, *occ_off, *vir_off;
   double ET, *ET_array;
   dpdfile2 fIJ, fAB, fIA, T1;
   dpdbuf4 T2, Eints, Dints, *Fints_array;
   FILE *ijkfile;
-  pthread_t  *p_thread;
-  struct thread_data *thread_data_array;
 
   timer_on("ET_RHF");
 
@@ -114,8 +112,7 @@ double ET_RHF(void)
   outfile->Printf("    MKL num_threads set to 1 for explicit threading.\n\n");
 #endif
 
-  thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
-  p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
+  std::vector<thread_data> thread_data_array(nthreads);
 
   global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -228,21 +225,13 @@ double ET_RHF(void)
             thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
         }
 
-        for (thread=0;thread<nthreads;++thread) {
-          if (!ijk_part[thread]) continue;
-          errcod = pthread_create(&(p_thread[thread]), nullptr, ET_RHF_thread,
-                   (void *) &thread_data_array[thread]);
-          if (errcod) {
-            throw PsiException("pthread_create in ET_RHF()",__FILE__,__LINE__);
-          }
-        }
-
-        for (thread=0; thread<nthreads;++thread) {
-          if (!ijk_part[thread]) continue;
-          errcod = pthread_join(p_thread[thread], nullptr);
-          if (errcod) {
-            throw PsiException("pthread_join in ET_RHF() failed",__FILE__,__LINE__);
-          }
+        #pragma omp parallel num_threads(nthreads)
+        {
+          int ithread = 0;
+          #ifdef _OPENMP
+          ithread = omp_get_thread_num();
+          #endif
+          if (ijk_part[ithread]) ET_RHF_thread(&thread_data_array[ithread]);
         }
 
         for (thread=0;thread<nthreads;++thread)
@@ -279,9 +268,6 @@ double ET_RHF(void)
   free(ET_array);
   delete [] ijk_part;
 
-  free(thread_data_array);
-  free(p_thread);
-
   timer_off("ET_RHF");
 
 #ifdef USING_LAPACK_MKL
@@ -292,7 +278,7 @@ double ET_RHF(void)
 }
 
 
-void* ET_RHF_thread(void* thread_data_in)
+void ET_RHF_thread(thread_data* data)
 {
   int h, nirreps, cnt_ijk;
   int Gp, p, nump;
@@ -315,14 +301,12 @@ void* ET_RHF_thread(void* thread_data_in)
   dpdbuf4 *T2, *Eints, *Dints, *Fints;
   dpdfile2 *fIJ, *fAB, *fIA, *T1;
   int nijk, nthreads, first_ijk, last_ijk, thr_id;
-  struct thread_data *data;
 
   nirreps = moinfo.nirreps;
   occpi = moinfo.occpi; virtpi = moinfo.virtpi;
   occ_off = moinfo.occ_off;
   vir_off = moinfo.vir_off;
 
-  data = (struct thread_data *) thread_data_in;
   fIJ   = data->fIJ;
   fAB   = data->fAB;
   fIA   = data->fIA;
@@ -400,9 +384,8 @@ void* ET_RHF_thread(void* thread_data_in)
 
                   /* Set up F integrals */
                   Fints->matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
-          pthread_mutex_lock(&mut);
+                  #pragma omp critical
                   global_dpd_->buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
-          pthread_mutex_unlock(&mut);
 
                   /* Set up T2 amplitudes */
                   cd = T2->col_offset[Gkj][Gc];
@@ -457,9 +440,8 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gb = Gjk ^ Gd;
 
                   Fints->matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
-          pthread_mutex_lock(&mut);
+                  #pragma omp critical
                   global_dpd_->buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
-          pthread_mutex_unlock(&mut);
 
                   bd = T2->col_offset[Gjk][Gb];
 
@@ -509,9 +491,8 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gb = Gji ^ Gd;
 
                   Fints->matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
-          pthread_mutex_lock(&mut);
+                  #pragma omp critical
                   global_dpd_->buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
-          pthread_mutex_unlock(&mut);
 
                   bd = T2->col_offset[Gji][Gb];
 
@@ -561,9 +542,8 @@ void* ET_RHF_thread(void* thread_data_in)
                   Ga = Gij ^ Gd;
 
                   Fints->matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
-          pthread_mutex_lock(&mut);
+                  #pragma omp critical
                   global_dpd_->buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
-          pthread_mutex_unlock(&mut);
 
                   ad = T2->col_offset[Gij][Ga];
 
@@ -613,9 +593,8 @@ void* ET_RHF_thread(void* thread_data_in)
                   Ga = Gik ^ Gd;
 
                   Fints->matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
-          pthread_mutex_lock(&mut);
+                  #pragma omp critical
                   global_dpd_->buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
-          pthread_mutex_unlock(&mut);
 
                   ad = T2->col_offset[Gik][Ga];
 
@@ -665,9 +644,8 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gc = Gki ^ Gd;
 
                   Fints->matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
-          pthread_mutex_lock(&mut);
+                  #pragma omp critical
                   global_dpd_->buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
-          pthread_mutex_unlock(&mut);
 
                   cd = T2->col_offset[Gki][Gc];
 
@@ -956,9 +934,6 @@ void* ET_RHF_thread(void* thread_data_in)
           } /* j */
         } /* i */
 
-  pthread_exit(nullptr);
-
-  return nullptr;
 }
 
 }} // namespace psi::CCTRIPLES
