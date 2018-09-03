@@ -111,7 +111,7 @@ void host_writer(const char *);
 
 std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver_parsed_fname,
                                                     const std::shared_ptr<Molecule> &molecule);
-}  // detail
-}  // psi
+}  // namespace detail
+}  // namespace psi
 #endif
 #endif

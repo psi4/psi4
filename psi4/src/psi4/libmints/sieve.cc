@@ -39,28 +39,23 @@
 
 namespace psi {
 
-ERISieve::ERISieve(std::shared_ptr<BasisSet> primary, double sieve) :
-        primary_(primary), sieve_(sieve)
-{
+ERISieve::ERISieve(std::shared_ptr<BasisSet> primary, double sieve) : primary_(primary), sieve_(sieve) {
     common_init();
 }
 
-ERISieve::~ERISieve()
-{
-}
+ERISieve::~ERISieve() {}
 
-void ERISieve::common_init()
-{
+void ERISieve::common_init() {
     // if sieve_ is 0, then erfc_inv is infinite
     // the boost function just throws an error in this case
-    //if (sieve_ > 0.0) {
-    //    throw FeatureNotImplemented("libmints: sieve.cc", "replacement for boost::math::erfc_inv()", __FILE__, __LINE__);
-    //    erfc_thresh_ = boost::math::erfc_inv(sieve_);
+    // if (sieve_ > 0.0) {
+    //    throw FeatureNotImplemented("libmints: sieve.cc", "replacement for boost::math::erfc_inv()", __FILE__,
+    //    __LINE__); erfc_thresh_ = boost::math::erfc_inv(sieve_);
     //} else
     //    erfc_thresh_ = DBL_MAX;
 
     Options &options = Process::environment.options;
-    do_qqr_ = false; // Code below for QQR was/is utterly broken.
+    do_qqr_ = false;  // Code below for QQR was/is utterly broken.
 
     debug_ = 0;
 
@@ -68,8 +63,7 @@ void ERISieve::common_init()
     set_sieve(sieve_);
 }
 
-void ERISieve::set_sieve(double sieve)
-{
+void ERISieve::set_sieve(double sieve) {
     sieve_ = sieve;
     sieve2_ = sieve_ * sieve;
     sieve_over_max_ = sieve_ / max_;
@@ -84,7 +78,7 @@ void ERISieve::set_sieve(double sieve)
     size_t MUNU = 0L;
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU <= MU; NU++, MUNU++) {
-            if (shell_pair_values_[MU * (size_t) nshell_ + NU] >= sieve2_over_max_) {
+            if (shell_pair_values_[MU * (size_t)nshell_ + NU] >= sieve2_over_max_) {
                 shell_pairs_.push_back(std::make_pair(MU, NU));
                 shell_pairs_reverse_[MUNU] = offset;
                 offset++;
@@ -98,7 +92,7 @@ void ERISieve::set_sieve(double sieve)
     size_t munu = 0L;
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
-            if (function_pair_values_[mu * (size_t) nbf_ + nu] >= sieve2_over_max_) {
+            if (function_pair_values_[mu * (size_t)nbf_ + nu] >= sieve2_over_max_) {
                 function_pairs_.push_back(std::make_pair(mu, nu));
                 function_pairs_reverse_[munu] = offset;
                 offset++;
@@ -115,7 +109,7 @@ void ERISieve::set_sieve(double sieve)
 
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU < nshell_; NU++) {
-            if (shell_pair_values_[MU * (size_t) nshell_ + NU] >= sieve2_over_max_) {
+            if (shell_pair_values_[MU * (size_t)nshell_ + NU] >= sieve2_over_max_) {
                 shell_to_shell_[MU].push_back(NU);
             }
         }
@@ -123,7 +117,7 @@ void ERISieve::set_sieve(double sieve)
 
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu < nbf_; nu++) {
-            if (function_pair_values_[mu * (size_t) nbf_ + nu] >= sieve2_over_max_) {
+            if (function_pair_values_[mu * (size_t)nbf_ + nu] >= sieve2_over_max_) {
                 function_to_function_[mu].push_back(nu);
             }
         }
@@ -156,13 +150,13 @@ void ERISieve::set_sieve(double sieve)
         outfile->Printf("\n");
 
         outfile->Printf("   => Significant Shell Pairs <=\n\n");
-        for (int MN = 0; MN < (int) shell_pairs_.size(); MN++) {
+        for (int MN = 0; MN < (int)shell_pairs_.size(); MN++) {
             outfile->Printf("    %6d = (%3d,%3d|\n", MN, shell_pairs_[MN].first, shell_pairs_[MN].second);
         }
         outfile->Printf("\n");
 
         outfile->Printf("   => Significant Function Pairs <=\n\n");
-        for (int MN = 0; MN < (int) function_pairs_.size(); MN++) {
+        for (int MN = 0; MN < (int)function_pairs_.size(); MN++) {
             outfile->Printf("    %6d = (%3d,%3d|\n", MN, function_pairs_[MN].first, function_pairs_[MN].second);
         }
         outfile->Printf("\n");
@@ -185,7 +179,7 @@ void ERISieve::set_sieve(double sieve)
 
         outfile->Printf("   => Shell to Shell <=\n\n");
         for (int M = 0; M < nshell_; M++) {
-            for (int N = 0; N < (int) shell_to_shell_[M].size(); N++) {
+            for (int N = 0; N < (int)shell_to_shell_[M].size(); N++) {
                 outfile->Printf("    (%3d, %3d|\n", M, shell_to_shell_[M][N]);
             }
         }
@@ -193,26 +187,23 @@ void ERISieve::set_sieve(double sieve)
 
         outfile->Printf("   => Function to Function <=\n\n");
         for (int M = 0; M < nbf_; M++) {
-            for (int N = 0; N < (int) function_to_function_[M].size(); N++) {
+            for (int N = 0; N < (int)function_to_function_[M].size(); N++) {
                 outfile->Printf("    (%3d, %3d|\n", M, function_to_function_[M][N]);
             }
         }
         outfile->Printf("\n");
-
     }
-
 }
 
-void ERISieve::integrals()
-{
+void ERISieve::integrals() {
     int nshell = primary_->nshell();
     int nbf = primary_->nbf();
 
     nbf_ = nbf;
     nshell_ = nshell;
 
-    function_pair_values_.resize(nbf * (size_t) nbf);
-    shell_pair_values_.resize(nshell * (size_t) nshell);
+    function_pair_values_.resize(nbf * (size_t)nbf);
+    shell_pair_values_.resize(nshell * (size_t)nshell);
     ::memset(&function_pair_values_[0], '\0', sizeof(double) * nbf * nbf);
     ::memset(&shell_pair_values_[0], '\0', sizeof(double) * nshell * nshell);
     max_ = 0.0;
@@ -239,7 +230,7 @@ void ERISieve::integrals()
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
                     function_pair_values_[(p + oP) * nbf_ + (q + oQ)] =
-                    function_pair_values_[(q + oQ) * nbf_ + (p + oP)] = max_val;
+                        function_pair_values_[(q + oQ) * nbf_ + (p + oP)] = max_val;
                 }
             }
         }
@@ -316,16 +307,13 @@ void ERISieve::integrals()
 #endif
 }
 
-bool ERISieve::shell_significant_qqr(int M, int N, int R, int S)
-{
+bool ERISieve::shell_significant_qqr(int M, int N, int R, int S) {
+    double Q_mn = shell_pair_values_[N * (size_t)nshell_ + M];
+    double Q_rs = shell_pair_values_[R * (size_t)nshell_ + S];
 
-    double Q_mn = shell_pair_values_[N * (size_t) nshell_ + M];
-    double Q_rs = shell_pair_values_[R * (size_t) nshell_ + S];
+    double dist = contracted_centers_[N * (size_t)nshell_ + M].distance(contracted_centers_[R * (size_t)nshell_ + S]);
 
-    double dist = contracted_centers_[N * (size_t) nshell_ + M].distance(contracted_centers_[R * (size_t) nshell_ + S]);
-
-    double denom = dist - extents_[N * (size_t) nshell_ + M]
-                   - extents_[R * (size_t) nshell_ + S];
+    double denom = dist - extents_[N * (size_t)nshell_ + M] - extents_[R * (size_t)nshell_ + S];
 
     // this does the near field estimate if that's the only valid one
     // values of Q are squared
@@ -339,14 +327,7 @@ bool ERISieve::shell_significant_qqr(int M, int N, int R, int S)
         std::cout << "sieve2: " << sieve2_ << "\n";
     }
     return est >= sieve2_;
-
 }
 
-
-double ERISieve::shell_pair_value(int m, int n) const
-{
-
-    return shell_pair_values_[m * nshell_ + n];
-
-}
-}
+double ERISieve::shell_pair_value(int m, int n) const { return shell_pair_values_[m * nshell_ + n]; }
+}  // namespace psi

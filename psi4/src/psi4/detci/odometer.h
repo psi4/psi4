@@ -28,12 +28,12 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** ODOMETER(): Generalized odometer object.  Each `digit' can have its
 **   own min and max values (and actually each position can be filled by an
-**   integer, not just a single digit).  The low-index digits are the 
+**   integer, not just a single digit).  The low-index digits are the
 **   faster moving ones.  There is also a special lexical increment which
 **   ensures that digit i is greater than digit i+1.
 **
@@ -67,43 +67,43 @@
 #ifndef _psi_src_bin_detci_odometer_h
 #define _psi_src_bin_detci_odometer_h
 
-namespace psi { namespace detci {
+namespace psi {
+namespace detci {
 
 class Odometer {
-
    protected:
-      unsigned length ;
-      int* max ;
-      int* min ;
-      int* value ;
-       
+    unsigned length;
+    int* max;
+    int* min;
+    int* value;
+
    public:
-      Odometer() ;
-      Odometer(unsigned len) { size(len); }
-      ~Odometer() ; 
-      
-      void size(unsigned s) ;
-      void resize(unsigned s) ;
-      void set_max(int m) ;
-      void set_max_lex(int m) ;
-      void set_max(int* m) ;
-      void set_min(int m) ;
-      void set_min_lex(int m) ;
-      void set_min(int* m) ;
-      void set_value(int m) ;
-      void set_value(int* m) ;
-      void get_value(int* m) ;
-      void increment() ;
-      void increment_lex() ;
-      void reset() ;
-      void print() ;
-      unsigned at_max() ;
-      unsigned at_min() ;
-      unsigned get_length() 
-         {return length; }
-      unsigned boundscheck() ;
-} ;
+    Odometer();
+    Odometer(unsigned len) { size(len); }
+    ~Odometer();
 
-}} // namespace psi::detci
+    void size(unsigned s);
+    void resize(unsigned s);
+    void set_max(int m);
+    void set_max_lex(int m);
+    void set_max(int* m);
+    void set_min(int m);
+    void set_min_lex(int m);
+    void set_min(int* m);
+    void set_value(int m);
+    void set_value(int* m);
+    void get_value(int* m);
+    void increment();
+    void increment_lex();
+    void reset();
+    void print();
+    unsigned at_max();
+    unsigned at_min();
+    unsigned get_length() { return length; }
+    unsigned boundscheck();
+};
 
-#endif // header guard
+}  // namespace detci
+}  // namespace psi
+
+#endif  // header guard

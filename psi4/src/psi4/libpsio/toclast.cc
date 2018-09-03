@@ -36,13 +36,12 @@
 
 namespace psi {
 
-psio_tocentry*PSIO::toclast(size_t unit) {
-  psio_tocentry *this_entry = psio_unit[unit].toc;
+psio_tocentry *PSIO::toclast(size_t unit) {
+    psio_tocentry *this_entry = psio_unit[unit].toc;
 
-  while (this_entry->next != nullptr)
-    this_entry = this_entry->next;
+    while (this_entry->next != nullptr) this_entry = this_entry->next;
 
-  return (this_entry);
+    return (this_entry);
 }
 
-}
+}  // namespace psi

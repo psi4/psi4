@@ -28,8 +28,7 @@
 
 #include <cmath>
 
-inline Vector3 operator*(double d, const Vector3& x)
-{
+inline Vector3 operator*(double d, const Vector3& x) {
     Vector3 result;
     result[0] = d * x[0];
     result[1] = d * x[1];
@@ -37,13 +36,9 @@ inline Vector3 operator*(double d, const Vector3& x)
     return result;
 }
 
-inline Vector3 Vector3::operator*(double d) const
-{
-    return d*(*this);
-}
+inline Vector3 Vector3::operator*(double d) const { return d * (*this); }
 
-inline Vector3 Vector3::operator/(double d) const
-{
+inline Vector3 Vector3::operator/(double d) const {
     Vector3 result;
     result[0] = v_[0] / d;
     result[1] = v_[1] / d;
@@ -51,36 +46,29 @@ inline Vector3 Vector3::operator/(double d) const
     return result;
 }
 
-inline double Vector3::distance(const Vector3& s) const
-{
+inline double Vector3::distance(const Vector3& s) const {
     double x = v_[0] - s.v_[0];
     double y = v_[1] - s.v_[1];
     double z = v_[2] - s.v_[2];
-    return sqrt(x*x + y*y + z*z);
+    return sqrt(x * x + y * y + z * z);
 }
 
-inline void Vector3::normalize()
-{
-    double temp=0.0;
+inline void Vector3::normalize() {
+    double temp = 0.0;
     int i;
 
-    for (i=0; i<3; ++i)
-        temp += v_[i] * v_[i];
+    for (i = 0; i < 3; ++i) temp += v_[i] * v_[i];
     temp = 1.0 / sqrt(temp);
-    for (i=0; i<3; ++i)
-        v_[i] *= temp;
+    for (i = 0; i < 3; ++i) v_[i] *= temp;
 }
 
-inline Vector3 Vector3::cross(const Vector3& x) const
-{
-    Vector3 result(v_[1] * x.v_[2] - v_[2] * x.v_[1],
-                   v_[2] * x.v_[0] - v_[0] * x.v_[2],
+inline Vector3 Vector3::cross(const Vector3& x) const {
+    Vector3 result(v_[1] * x.v_[2] - v_[2] * x.v_[1], v_[2] * x.v_[0] - v_[0] * x.v_[2],
                    v_[0] * x.v_[1] - v_[1] * x.v_[0]);
     return result;
 }
 
-inline void Vector3::rotate(double theta, Vector3& axis)
-{
+inline void Vector3::rotate(double theta, Vector3& axis) {
     Vector3 result;
     Vector3 unitaxis = axis;
     unitaxis.normalize();
@@ -97,8 +85,7 @@ inline void Vector3::rotate(double theta, Vector3& axis)
     (*this) = result;
 }
 
-inline Vector3 Vector3::perp_unit(const Vector3& v) const
-{
+inline Vector3 Vector3::perp_unit(const Vector3& v) const {
     // try cross product
     Vector3 result = cross(v);
     double resultdotresult = result.dot(result);
@@ -108,13 +95,12 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
         // find the largest of this and v
         double dotprodt = this->dot(*this);
         double dotprodv = v.dot(v);
-        const Vector3 *d;
+        const Vector3* d;
         double dotprodd;
         if (dotprodt < dotprodv) {
             d = &v;
             dotprodd = dotprodv;
-        }
-        else {
+        } else {
             d = this;
             dotprodd = dotprodt;
         }
@@ -126,8 +112,7 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
             result[1] = 0.0;
             result[2] = 0.0;
             return result;
-        }
-        else {
+        } else {
             // choose a vector prependicular to d
             // choose it in one of the planes xy, xz, yz
             // choose the plane to be that which contains the two largest
@@ -141,17 +126,14 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
                 axis0 = 1;
                 if ((absd[2] - absd[0]) > 1.0e-12) {
                     axis1 = 2;
-                }
-                else {
+                } else {
                     axis1 = 0;
                 }
-            }
-            else {
+            } else {
                 axis0 = 0;
                 if ((absd[2] - absd[1]) > 1.0e-12) {
                     axis1 = 2;
-                }
-                else {
+                } else {
                     axis1 = 1;
                 }
             }
@@ -165,10 +147,9 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
         }
         result.normalize();
         return result;
-    }
-    else {
+    } else {
         // normalize the cross product and return the result
-        result *= 1.0/sqrt(resultdotresult);
+        result *= 1.0 / sqrt(resultdotresult);
         return result;
     }
 }

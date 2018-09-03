@@ -41,12 +41,11 @@ IntVector::IntVector() {
     name_ = "";
 }
 
-IntVector::IntVector(const IntVector& c) {
+IntVector::IntVector(const IntVector &c) {
     vector_ = nullptr;
     nirrep_ = c.nirrep_;
     dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = c.dimpi_[h];
+    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = c.dimpi_[h];
     alloc();
     copy_from(c.vector_);
     name_ = c.name_;
@@ -56,8 +55,7 @@ IntVector::IntVector(int nirreps, int *dimpi) {
     vector_ = nullptr;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
+    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
     alloc();
 }
 IntVector::IntVector(int dim) {
@@ -67,16 +65,15 @@ IntVector::IntVector(int dim) {
     dimpi_[0] = dim;
     alloc();
 }
-IntVector::IntVector(const std::string& name, int nirreps, int *dimpi) {
+IntVector::IntVector(const std::string &name, int nirreps, int *dimpi) {
     vector_ = nullptr;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
+    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
     alloc();
     name_ = name;
 }
-IntVector::IntVector(const std::string& name, int dim) {
+IntVector::IntVector(const std::string &name, int dim) {
     vector_ = nullptr;
     nirrep_ = 1;
     dimpi_ = new int[nirrep_];
@@ -87,26 +84,22 @@ IntVector::IntVector(const std::string& name, int dim) {
 
 IntVector::~IntVector() {
     release();
-    if (dimpi_)
-        delete[] dimpi_;
+    if (dimpi_) delete[] dimpi_;
 }
 
-void IntVector::init(int nirreps, int *dimpi)
-{
+void IntVector::init(int nirreps, int *dimpi) {
     if (dimpi_) delete[] dimpi_;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
+    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
     alloc();
 }
 
 void IntVector::alloc() {
-    if (vector_)
-        release();
+    if (vector_) release();
 
-    vector_ = (int**)malloc(sizeof(int*) * nirrep_);
-    for (int h=0; h<nirrep_; ++h) {
+    vector_ = (int **)malloc(sizeof(int *) * nirrep_);
+    for (int h = 0; h < nirrep_; ++h) {
         if (dimpi_[h]) {
             vector_[h] = new int[dimpi_[h]];
             memset(vector_[h], 0, dimpi_[h] * sizeof(int));
@@ -115,12 +108,10 @@ void IntVector::alloc() {
 }
 
 void IntVector::release() {
-    if (!vector_)
-        return;
+    if (!vector_) return;
 
-    for (int h=0; h<nirrep_; ++h) {
-        if (dimpi_[h])
-            delete[] (vector_[h]);
+    for (int h = 0; h < nirrep_; ++h) {
+        if (dimpi_[h]) delete[](vector_[h]);
     }
     free(vector_);
     vector_ = nullptr;
@@ -128,22 +119,19 @@ void IntVector::release() {
 
 void IntVector::copy_from(int **c) {
     size_t size;
-    for (int h=0; h<nirrep_; ++h) {
+    for (int h = 0; h < nirrep_; ++h) {
         size = dimpi_[h] * sizeof(int);
-        if (size)
-            memcpy(&(vector_[h][0]), &(c[h][0]), size);
+        if (size) memcpy(&(vector_[h][0]), &(c[h][0]), size);
     }
 }
 
 void IntVector::copy(const IntVector *rhs) {
     if (nirrep_ != rhs->nirrep_) {
         release();
-        if (dimpi_)
-            delete[] dimpi_;
+        if (dimpi_) delete[] dimpi_;
         nirrep_ = rhs->nirrep_;
         dimpi_ = new int[nirrep_];
-        for (int h=0; h<nirrep_; ++h)
-            dimpi_[h] = rhs->dimpi_[h];
+        for (int h = 0; h < nirrep_; ++h) dimpi_[h] = rhs->dimpi_[h];
         alloc();
     }
     copy_from(rhs->vector_);
@@ -151,12 +139,10 @@ void IntVector::copy(const IntVector *rhs) {
 void IntVector::copy(const IntVector &rhs) {
     if (nirrep_ != rhs.nirrep_) {
         release();
-        if (dimpi_)
-            delete[] dimpi_;
+        if (dimpi_) delete[] dimpi_;
         nirrep_ = rhs.nirrep_;
         dimpi_ = new int[nirrep_];
-        for (int h=0; h<nirrep_; ++h)
-            dimpi_[h] = rhs.dimpi_[h];
+        for (int h = 0; h < nirrep_; ++h) dimpi_[h] = rhs.dimpi_[h];
         alloc();
     }
     copy_from(rhs.vector_);
@@ -166,40 +152,37 @@ void IntVector::set(int *vec) {
     int h, i, ij;
 
     ij = 0;
-    for (h=0; h<nirrep_; ++h) {
-        for (i=0; i<dimpi_[h]; ++i) {
+    for (h = 0; h < nirrep_; ++h) {
+        for (i = 0; i < dimpi_[h]; ++i) {
             vector_[h][i] = vec[ij++];
         }
     }
 }
 
-void IntVector::print(std::string out, const char* extra) const {
+void IntVector::print(std::string out, const char *extra) const {
     int h;
-    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     if (extra == nullptr) {
-        printer->Printf( "\n # %s #\n", name_.c_str());
+        printer->Printf("\n # %s #\n", name_.c_str());
     } else {
-        printer->Printf( "\n # %s %s #\n", name_.c_str(), extra);
+        printer->Printf("\n # %s %s #\n", name_.c_str(), extra);
     }
-    for (h=0; h<nirrep_; ++h) {
-        printer->Printf( " Irrep: %d\n", h+1);
-        for (int i=0; i<dimpi_[h]; ++i)
-            printer->Printf( "   %4d: %10d\n", i+1, vector_[h][i]);
-        printer->Printf( "\n");
+    for (h = 0; h < nirrep_; ++h) {
+        printer->Printf(" Irrep: %d\n", h + 1);
+        for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %10d\n", i + 1, vector_[h][i]);
+        printer->Printf("\n");
     }
 }
 
 int *IntVector::to_block_vector() {
-    size_t size=0;
-    for (int h=0; h<nirrep_; ++h)
-        size += dimpi_[h];
+    size_t size = 0;
+    for (int h = 0; h < nirrep_; ++h) size += dimpi_[h];
 
     int *temp = new int[size];
     size_t offset = 0;
-    for (int h=0; h<nirrep_; ++h) {
-        for (int i=0; i<dimpi_[h]; ++i) {
-            temp[i+offset] = vector_[h][i];
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < dimpi_[h]; ++i) {
+            temp[i + offset] = vector_[h][i];
         }
         offset += dimpi_[h];
     }

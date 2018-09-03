@@ -39,9 +39,7 @@ class PSIO;
 namespace dfmp2 {
 
 class DFMP2 : public Wavefunction {
-
-protected:
-
+   protected:
     // Auxiliary basis
     std::shared_ptr<BasisSet> ribasis_;
     // Gradients map
@@ -113,19 +111,16 @@ protected:
 
     void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
 
-public:
+   public:
     DFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~DFMP2();
 
     double compute_energy();
     virtual SharedMatrix compute_gradient();
-
 };
 
 class RDFMP2 : public DFMP2 {
-
-protected:
-
+   protected:
     SharedMatrix Cfocc_;
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
@@ -173,15 +168,13 @@ protected:
     // Manage the formation of W and P contributions to the gradient
     virtual void form_gradient();
 
-public:
+   public:
     RDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RDFMP2();
 };
 
 class UDFMP2 : public DFMP2 {
-
-protected:
-
+   protected:
     SharedMatrix Caocc_a_;
     SharedMatrix Cavir_a_;
     SharedMatrix Caocc_b_;
@@ -229,25 +222,24 @@ protected:
     // Manage the formation of W and P contributions to the gradient
     virtual void form_gradient();
 
-public:
+   public:
     UDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UDFMP2();
 };
 
 class RODFMP2 : public UDFMP2 {
-
-protected:
-
+   protected:
     void common_init();
 
     // Print additional header
     virtual void print_header();
 
-public:
+   public:
     RODFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RODFMP2();
 };
 
-}}
+}  // namespace dfmp2
+}  // namespace psi
 
 #endif

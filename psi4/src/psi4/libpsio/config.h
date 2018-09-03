@@ -41,29 +41,29 @@ namespace psi {
 #define PSIO_MAXUNIT 500
 #define PSIO_PAGELEN 65536
 
-#define PSIO_ERROR_INIT       1
-#define PSIO_ERROR_DONE       2
-#define PSIO_ERROR_MAXVOL     3
-#define PSIO_ERROR_NOVOLPATH  4
-#define PSIO_ERROR_OPEN       5
-#define PSIO_ERROR_REOPEN     6
-#define PSIO_ERROR_CLOSE      7
-#define PSIO_ERROR_RECLOSE    8
-#define PSIO_ERROR_OSTAT      9
-#define PSIO_ERROR_LSEEK     10
-#define PSIO_ERROR_READ      11
-#define PSIO_ERROR_WRITE     12
-#define PSIO_ERROR_NOTOCENT  13
-#define PSIO_ERROR_TOCENTSZ  14
-#define PSIO_ERROR_KEYLEN    15
-#define PSIO_ERROR_BLKSIZ    16
-#define PSIO_ERROR_BLKSTART  17
-#define PSIO_ERROR_BLKEND    18
+#define PSIO_ERROR_INIT 1
+#define PSIO_ERROR_DONE 2
+#define PSIO_ERROR_MAXVOL 3
+#define PSIO_ERROR_NOVOLPATH 4
+#define PSIO_ERROR_OPEN 5
+#define PSIO_ERROR_REOPEN 6
+#define PSIO_ERROR_CLOSE 7
+#define PSIO_ERROR_RECLOSE 8
+#define PSIO_ERROR_OSTAT 9
+#define PSIO_ERROR_LSEEK 10
+#define PSIO_ERROR_READ 11
+#define PSIO_ERROR_WRITE 12
+#define PSIO_ERROR_NOTOCENT 13
+#define PSIO_ERROR_TOCENTSZ 14
+#define PSIO_ERROR_KEYLEN 15
+#define PSIO_ERROR_BLKSIZ 16
+#define PSIO_ERROR_BLKSTART 17
+#define PSIO_ERROR_BLKEND 18
 #define PSIO_ERROR_IDENTVOLPATH 19
-#define PSIO_ERROR_MAXUNIT   20
+#define PSIO_ERROR_MAXUNIT 20
 
 typedef struct {
-    size_t page; /* First page of entry */
+    size_t page;   /* First page of entry */
     size_t offset; /* Starting byte offset on fpage */
 } psio_address;
 
@@ -89,7 +89,6 @@ typedef struct {
 
 /** A convenient address initialization struct */
 extern PSI_API psio_address PSIO_ZERO;
-
 }
 
 #endif /* header guard */

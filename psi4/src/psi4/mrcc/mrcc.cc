@@ -56,8 +56,7 @@ namespace mrcc {
 
 namespace {
 
-void write_oei_to_disk(std::shared_ptr<PsiOutStream> &printer, SharedMatrix moH)
-{
+void write_oei_to_disk(std::shared_ptr<PsiOutStream> &printer, SharedMatrix moH) {
     // Walk through moH and save the non-zero values
     int offset = 0;
     for (int h = 0; h < moH->nirrep(); ++h) {
@@ -72,8 +71,7 @@ void write_oei_to_disk(std::shared_ptr<PsiOutStream> &printer, SharedMatrix moH)
     }
 }
 
-void write_tei_to_disk(std::shared_ptr<PsiOutStream> &printer, int nirrep, dpdbuf4 &K, double ints_tolerance)
-{
+void write_tei_to_disk(std::shared_ptr<PsiOutStream> &printer, int nirrep, dpdbuf4 &K, double ints_tolerance) {
     for (int h = 0; h < nirrep; ++h) {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
@@ -85,46 +83,42 @@ void write_tei_to_disk(std::shared_ptr<PsiOutStream> &printer, int nirrep, dpdbu
                 int s = K.params->colorb[h][rs][1];
 
                 if (std::fabs(K.matrix[h][pq][rs]) > ints_tolerance)
-                    printer->Printf("%28.20E%4d%4d%4d%4d\n",
-                                    K.matrix[h][pq][rs], p + 1, q + 1, r + 1, s + 1);
+                    printer->Printf("%28.20E%4d%4d%4d%4d\n", K.matrix[h][pq][rs], p + 1, q + 1, r + 1, s + 1);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
     }
 }
 
-void print_dim(const std::string &name, const Dimension &dim)
-{
+void print_dim(const std::string &name, const Dimension &dim) {
     outfile->Printf("        %15s [ ", name.c_str());
     for (int h = 0; h < dim.n(); ++h) {
         outfile->Printf("%3d", dim[h]);
-        if (h != dim.n() - 1)
-            outfile->Printf(",");
+        if (h != dim.n() - 1) outfile->Printf(",");
     }
     outfile->Printf("]\n");
 }
 
-class DPDFillerFunctor
-{
-private:
+class DPDFillerFunctor {
+   private:
     dpdfile4 *file_;
     dpdparams4 *params_;
     int **bucket_map_;
     int **bucket_offset_;
     bool symmetrize_;
     bool have_bra_ket_sym_;
-public:
-    DPDFillerFunctor(dpdfile4 *file, int **bucket_map,
-                     int **bucket_offset, bool symmetrize, bool have_bra_ket_sym) :
-            file_(file), bucket_map_(bucket_map),
-            bucket_offset_(bucket_offset), symmetrize_(symmetrize),
-            have_bra_ket_sym_(have_bra_ket_sym)
-    {
+
+   public:
+    DPDFillerFunctor(dpdfile4 *file, int **bucket_map, int **bucket_offset, bool symmetrize, bool have_bra_ket_sym)
+        : file_(file),
+          bucket_map_(bucket_map),
+          bucket_offset_(bucket_offset),
+          symmetrize_(symmetrize),
+          have_bra_ket_sym_(have_bra_ket_sym) {
         params_ = file_->params;
     }
 
-    void operator()(int this_bucket, int p, int q, int r, int s, double value)
-    {
+    void operator()(int this_bucket, int p, int q, int r, int s, double value) {
         if (symmetrize_) {
             // Symmetrize the quantity (used in density matrix processing)
             if (p != q) value *= 0.5;
@@ -138,12 +132,11 @@ public:
         int q_sym = params_->qsym[q];
         int r_sym = params_->rsym[r];
         int s_sym = params_->ssym[s];
-        int pq_sym = p_sym ^q_sym;
-        int rs_sym = r_sym ^s_sym;
+        int pq_sym = p_sym ^ q_sym;
+        int rs_sym = r_sym ^ s_sym;
 
         /* The allowed (Mulliken) permutations are very simple in this case */
         if (bucket_map_[p][q] == this_bucket) {
-
             /* Get the row and column indices and assign the value */
             int pq = params_->rowidx[p][q];
             int rs = params_->colidx[r][s];
@@ -170,26 +163,18 @@ public:
         }
     }
 
-private:
-    void error(const char *message, int p, int q, int r, int s,
-               int pq, int rs, int pq_sym, int rs_sym)
-    {
-
+   private:
+    void error(const char *message, int p, int q, int r, int s, int pq, int rs, int pq_sym, int rs_sym) {
         outfile->Printf("\n\tDPD Parameter Error in %s\n", message);
         outfile->Printf("\t-------------------------------------------------\n");
         outfile->Printf("\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
-        outfile->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p, q, r, s,
-                        pq, rs, pq_sym, rs_sym);
+        outfile->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p, q, r, s, pq, rs, pq_sym, rs_sym);
         throw PsiException("DPD idx failure.", __FILE__, __LINE__);
     }
 };
 
-class MRCCRestrictedReader
-{
-    enum
-    {
-        line_length = 45
-    };
+class MRCCRestrictedReader {
+    enum { line_length = 45 };
 
     FILE *ccdensities_;
     const double tolerance_;
@@ -202,10 +187,9 @@ class MRCCRestrictedReader
     int *abs_mo_to_rel_;
     int *abs_mo_to_irrep_;
 
-public:
+   public:
     MRCCRestrictedReader(FILE *ccdensities, const double tolerance, SharedMatrix one_particle)
-            : ccdensities_(ccdensities), tolerance_(tolerance), batch_(0), one_particle_(one_particle)
-    {
+        : ccdensities_(ccdensities), tolerance_(tolerance), batch_(0), one_particle_(one_particle) {
         batch_ = new char[line_length * 1000 + 1];
 
         const Dimension &nmopi = one_particle_->rowspi();
@@ -223,16 +207,14 @@ public:
         }
     }
 
-    ~MRCCRestrictedReader()
-    {
+    ~MRCCRestrictedReader() {
         delete[] abs_mo_to_irrep_;
         delete[] abs_mo_to_rel_;
         delete[] batch_;
     }
 
-    template<typename Filler>
-    void operator()(Filler &filler, int bucket)
-    {
+    template <typename Filler>
+    void operator()(Filler &filler, int bucket) {
         // ensure we're at the beginning.
         fseek(ccdensities_, 0, SEEK_CUR);
 
@@ -259,8 +241,7 @@ public:
                 // It's also normalized differently to Psi's, by a factor of 2.
                 if (r != 0 && s != 0) {
                     if (p >= r && q >= s)
-                        if (std::fabs(value) > tolerance_)
-                            filler(bucket, p - 1, r - 1, q - 1, s - 1, value * 0.5);
+                        if (std::fabs(value) > tolerance_) filler(bucket, p - 1, r - 1, q - 1, s - 1, value * 0.5);
                 } else
                     one_particle_->set(abs_mo_to_irrep_[p - 1], abs_mo_to_rel_[p - 1], abs_mo_to_rel_[q - 1], value);
 
@@ -271,8 +252,7 @@ public:
     }
 };
 
-class DPDBucketFiller
-{
+class DPDBucketFiller {
     dpdfile4 *I_;
 
     psio_address next_;
@@ -282,10 +262,9 @@ class DPDBucketFiller
     int **bucket_offset_;
     int **bucket_row_dim_;
     int **bucket_size_;
-public:
-    DPDBucketFiller(dpdfile4 *I, size_t memory_limit)
-            : I_(I), next_(PSIO_ZERO)
-    {
+
+   public:
+    DPDBucketFiller(dpdfile4 *I, size_t memory_limit) : I_(I), next_(PSIO_ZERO) {
         memory_limit /= sizeof(double);
         int nirrep = I_->params->nirreps;
         int nump = 0, numq = 0;
@@ -296,17 +275,17 @@ public:
         bucket_map_ = init_int_matrix(nump, numq);
 
         /* Room for one bucket to begin with */
-        bucket_offset_ = (int **) malloc(sizeof(int *));
+        bucket_offset_ = (int **)malloc(sizeof(int *));
         bucket_offset_[0] = init_int_array(nirrep);
-        bucket_row_dim_ = (int **) malloc(sizeof(int *));
+        bucket_row_dim_ = (int **)malloc(sizeof(int *));
         bucket_row_dim_[0] = init_int_array(nirrep);
-        bucket_size_ = (int **) malloc(sizeof(int *));
+        bucket_size_ = (int **)malloc(sizeof(int *));
         bucket_size_[0] = init_int_array(nirrep);
 
         /* Figure out how many passes we need and where each p,q goes */
         nbucket_ = 1;
         for (int h = 0; h < nirrep; ++h) {
-            size_t row_length = (size_t) I_->params->coltot[h ^ (I_->my_irrep)];
+            size_t row_length = (size_t)I_->params->coltot[h ^ (I_->my_irrep)];
             for (int row = 0; row < I_->params->rowtot[h]; ++row) {
                 if (memory_limit >= row_length) {
                     memory_limit -= row_length;
@@ -316,37 +295,34 @@ public:
                     nbucket_++;
                     memory_limit = memory_limit - row_length;
                     /* Make room for another bucket */
-		    int **p;
+                    int **p;
 
-		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_offset_),
-						    nbucket_ * sizeof(int *)));
-		    if(p == nullptr) {
-		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		    } else {
-		      bucket_offset_ = p;
-		    }
-		    bucket_offset_[nbucket_-1] = init_int_array(nirrep);
-		    bucket_offset_[nbucket_-1][h] = row;
+                    p = static_cast<int **>(realloc(static_cast<void *>(bucket_offset_), nbucket_ * sizeof(int *)));
+                    if (p == nullptr) {
+                        throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                    } else {
+                        bucket_offset_ = p;
+                    }
+                    bucket_offset_[nbucket_ - 1] = init_int_array(nirrep);
+                    bucket_offset_[nbucket_ - 1][h] = row;
 
-		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_row_dim_),
-						    nbucket_ * sizeof(int *)));
-		    if(p == nullptr) {
-		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		    } else {
-		      bucket_row_dim_ = p;
-		    }
-		    bucket_row_dim_[nbucket_-1] = init_int_array(nirrep);
-		    bucket_row_dim_[nbucket_-1][h] = 1;
+                    p = static_cast<int **>(realloc(static_cast<void *>(bucket_row_dim_), nbucket_ * sizeof(int *)));
+                    if (p == nullptr) {
+                        throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                    } else {
+                        bucket_row_dim_ = p;
+                    }
+                    bucket_row_dim_[nbucket_ - 1] = init_int_array(nirrep);
+                    bucket_row_dim_[nbucket_ - 1][h] = 1;
 
-		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_size_),
-						    nbucket_ * sizeof(int *)));
-		    if(p == nullptr) {
-		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		    } else {
-		      bucket_size_ = p;
-		    }
-		    bucket_size_[nbucket_-1] = init_int_array(nirrep);
-		    bucket_size_[nbucket_-1][h] = row_length;
+                    p = static_cast<int **>(realloc(static_cast<void *>(bucket_size_), nbucket_ * sizeof(int *)));
+                    if (p == nullptr) {
+                        throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                    } else {
+                        bucket_size_ = p;
+                    }
+                    bucket_size_[nbucket_ - 1] = init_int_array(nirrep);
+                    bucket_size_[nbucket_ - 1][h] = row_length;
                 }
                 int p = I_->params->roworb[h][row][0];
                 int q = I_->params->roworb[h][row][1];
@@ -355,8 +331,7 @@ public:
         }
     }
 
-    ~DPDBucketFiller()
-    {
+    ~DPDBucketFiller() {
         free_int_matrix(bucket_map_);
 
         for (int n = 0; n < nbucket_; ++n) {
@@ -369,14 +344,12 @@ public:
         free(bucket_size_);
     }
 
-    DPDFillerFunctor dpd_filler(bool symmetrize, bool have_bra_ket_sym)
-    {
+    DPDFillerFunctor dpd_filler(bool symmetrize, bool have_bra_ket_sym) {
         return DPDFillerFunctor(I_, bucket_map_, bucket_offset_, symmetrize, have_bra_ket_sym);
     }
 
-    template<typename IntegralProcessor>
-    void operator()(IntegralProcessor &mrccreader)
-    {
+    template <typename IntegralProcessor>
+    void operator()(IntegralProcessor &mrccreader) {
         DPDFillerFunctor filler = dpd_filler(false, false);
         next_ = PSIO_ZERO;
         for (int n = 0; n < nbucket_; ++n) { /* nbuckets = number of passes */
@@ -389,8 +362,8 @@ public:
 
             for (int h = 0; h < I_->params->nirreps; ++h) {
                 if (bucket_size_[n][h])
-                    _default_psio_lib_->write(I_->filenum, I_->label, (char *) I_->matrix[h][0],
-                                              bucket_size_[n][h] * ((long int) sizeof(double)), next_, &next_);
+                    _default_psio_lib_->write(I_->filenum, I_->label, (char *)I_->matrix[h][0],
+                                              bucket_size_[n][h] * ((long int)sizeof(double)), next_, &next_);
                 free_block(I_->matrix[h]);
             }
         } /* end loop over buckets/passes */
@@ -398,14 +371,14 @@ public:
 };
 
 /**
-  * Loads a RHF TPDM from CCDENSITIES into an IWL buffer.
-  * \param ccdensities File handle to process
-  * \param tolerance Any values below this are neglected
-  * \param active_mopi Dimension object of the MOs per irrep, needed to form OPDM matrix
-  * \param ints IntegralTransform object needed to determine DPD ID numbers.
-  */
-void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance, const Dimension &active_mopi, IntegralTransform &ints)
-{
+ * Loads a RHF TPDM from CCDENSITIES into an IWL buffer.
+ * \param ccdensities File handle to process
+ * \param tolerance Any values below this are neglected
+ * \param active_mopi Dimension object of the MOs per irrep, needed to form OPDM matrix
+ * \param ints IntegralTransform object needed to determine DPD ID numbers.
+ */
+void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance, const Dimension &active_mopi,
+                     IntegralTransform &ints) {
     // => Sizing <= //
 
     int debug = Process::environment.options.get_int("DEBUG");
@@ -429,9 +402,8 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     global_dpd_->buf4_scm(&Ibuf, 0.0);
     global_dpd_->buf4_close(&Ibuf);
 
-
-    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0,
-                            ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
+                            "MO TPDM (AA|AA)");
 
     auto one_particle = std::make_shared<Matrix>("MO-basis OPDM", active_mopi, active_mopi);
 
@@ -445,7 +417,6 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
 
     // Close DPD file
     global_dpd_->file4_close(&I);
-
 
     /****START OF HACK****/
     outfile->Printf("    Beginning integral transformation.\n");
@@ -473,15 +444,13 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     dpdbuf4 D;
     dpdfile2 X2;
 
-
     _default_psio_lib_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     _default_psio_lib_->tocprint(PSIF_LIBTRANS_DPD);
-    global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
-                           ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
-    global_dpd_->buf4_init(&D, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
-                           ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    global_dpd_->file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
-                            "X (2e contribution)");
+    global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), ints.DPD_ID("[A>=A]+"),
+                           ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
+    global_dpd_->buf4_init(&D, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), ints.DPD_ID("[A>=A]+"),
+                           ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
+    global_dpd_->file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'), "X (2e contribution)");
 
     // Check energy
     double enuc = ref->molecule()->nuclear_repulsion_energy(ref->get_dipole_field_strength());
@@ -525,8 +494,8 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     // Form the energy-weighted OPDM
 
     // Form the Lagrangian
-    //auto Lia = std::make_shared<Matrix>("Lia", naocc, navir);
-    //for (int h = 0; h < Lia->nirrep(); h++) {
+    // auto Lia = std::make_shared<Matrix>("Lia", naocc, navir);
+    // for (int h = 0; h < Lia->nirrep(); h++) {
     //    int ni = naocc[h];
     //    int na = navir[h];
     //    if (!ni || !na) continue;
@@ -541,7 +510,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     //}
 
     // Form the orbital response contributions to the relaxed OPDM
-    SharedMatrix Pia = one_particle->get_block({focc, focc + aocc},{docc,docc + avir});
+    SharedMatrix Pia = one_particle->get_block({focc, focc + aocc}, {docc, docc + avir});
     Pia->set_name("Pia (MRCC OPDM ov Block)");
 
     if (debug) {
@@ -558,12 +527,12 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     std::shared_ptr<JK> jk = cphf->jk();
 
     // Task and solve orbital Z-Vector Equations
-    std::map <std::string, SharedMatrix> &b = cphf->b();
+    std::map<std::string, SharedMatrix> &b = cphf->b();
     b["Orbital Z-Vector"] = Pia;
 
     cphf->compute_energy();
 
-    std::map <std::string, SharedMatrix> &x = cphf->x();
+    std::map<std::string, SharedMatrix> &x = cphf->x();
     SharedMatrix Xia = x["Orbital Z-Vector"];
 
     if (debug) {
@@ -598,8 +567,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
-bool has_key(const py::dict &data, const std::string &key)
-{
+bool has_key(const py::dict &data, const std::string &key) {
     bool found = false;
     for (auto item : data) {
         if (std::string(py::str(item.first)) == key) {
@@ -609,18 +577,15 @@ bool has_key(const py::dict &data, const std::string &key)
     }
     return found;
 }
-}
+}  // namespace
 
-PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, const py::dict &level)
-{
+PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, const py::dict &level) {
     tstart();
 
     outfile->Printf("  Psi4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
-    if (!has_key(level, "method") ||
-        !has_key(level, "order") ||
-        !has_key(level, "fullname"))
+    if (!has_key(level, "method") || !has_key(level, "order") || !has_key(level, "fullname"))
         throw PSIEXCEPTION("MRCC interface: Provided dictionary is incomplete.");
 
     int method = level["method"].cast<int>();
@@ -638,8 +603,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     // Check the reference.
     bool restricted = true;
 
-    if (options.get_str("REFERENCE") == "UHF")
-        restricted = false;
+    if (options.get_str("REFERENCE") == "UHF") restricted = false;
 
     if (pertcc && options.get_str("REFERENCE") == "ROHF") {
         outfile->Printf("\n");
@@ -648,9 +612,11 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     }
 
     // Use libtrans to initialize DPD
-    std::vector <std::shared_ptr<MOSpace>> spaces;
+    std::vector<std::shared_ptr<MOSpace>> spaces;
     spaces.push_back(MOSpace::all);
-    IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::TransformationType::Restricted : IntegralTransform::TransformationType::Unrestricted);
+    IntegralTransform ints(wave, spaces,
+                           restricted ? IntegralTransform::TransformationType::Restricted
+                                      : IntegralTransform::TransformationType::Unrestricted);
 
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
@@ -662,28 +628,24 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
 
     const Dimension active_mopi = wave->nmopi() - wave->frzcpi() - wave->frzvpi();
     if (restricted) {
-        load_restricted(wave, ccdensities, options.get_double("INTS_TOLERANCE"),
-                        active_mopi, ints);
+        load_restricted(wave, ccdensities, options.get_double("INTS_TOLERANCE"), active_mopi, ints);
     } else {
         throw PSIEXCEPTION("MRCC: Load unrestricted does not work.");
     }
-//    else
-//        load_unrestricted_tpdm(ccdensities);
+    //    else
+    //        load_unrestricted_tpdm(ccdensities);
 
     tstop();
     return Success;
 }
 
-PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, const py::dict &level)
-{
+PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, const py::dict &level) {
     tstart();
 
     outfile->Printf("  Psi4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
-    if (!has_key(level, "method") ||
-        !has_key(level, "order") ||
-        !has_key(level, "fullname"))
+    if (!has_key(level, "method") || !has_key(level, "order") || !has_key(level, "fullname"))
         throw PSIEXCEPTION("MRCC interface: Provided dictionary is incomplete.");
 
     int method = level["method"].cast<int>();
@@ -695,15 +657,15 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     outfile->Printf("    Generating inputs for %s.\n\n", fullname.c_str());
 
     outfile->Printf("    Automatically determined settings:\n");
-    outfile->Printf("        method %d\n        exlevel %d\n        fullname %s\n\n",
-                    method, exlevel, fullname.c_str());
+    outfile->Printf("        method %d\n        exlevel %d\n        fullname %s\n\n", method, exlevel,
+                    fullname.c_str());
 
     std::shared_ptr<Wavefunction> wave;
     //   freeze MP2 natural virtual orbitals?
     if (options.get_bool("NAT_ORBS")) {
         auto fno = std::make_shared<psi::fnocc::FrozenNO>(ref_wfn, options);
         fno->ComputeNaturalOrbitals();
-        wave = (std::shared_ptr<Wavefunction>) fno;
+        wave = (std::shared_ptr<Wavefunction>)fno;
     } else {
         wave = ref_wfn;
     }
@@ -731,7 +693,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     print_dim("Total MOs", active_mopi);
 
     outfile->Printf("\n");
-    //FILE* fort55 = fopen("fort.55", "w");
+    // FILE* fort55 = fopen("fort.55", "w");
     auto printer = std::make_shared<PsiOutStream>("fort.55", std::ostream::trunc);
     printer->Printf("%22d%22d\n", nbf, nelectron);
 
@@ -742,26 +704,25 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
             printer->Printf("%22d", h + 1);  // 1 based irrep ordering
 
             count++;
-            if (count % 3 == 0) // We only want 3 per line
+            if (count % 3 == 0)  // We only want 3 per line
                 printer->Printf("\n");
         }
     }
 
-    if (count % 3) // integrals start on their own line
+    if (count % 3)  // integrals start on their own line
         printer->Printf("\n");
 
     outfile->Printf("    Beginning integral transformation.\n");
 
     // Define the orbital space of the MO integrals we need.
-    std::vector <std::shared_ptr<MOSpace>> spaces;
+    std::vector<std::shared_ptr<MOSpace>> spaces;
     spaces.push_back(MOSpace::all);
 
     // Check the reference.
     bool closedshell = ref_wfn->same_a_b_dens();
     bool canonical = true;
 
-    if (options.get_str("REFERENCE") == "ROHF")
-        canonical = false;
+    if (options.get_str("REFERENCE") == "ROHF") canonical = false;
 
     if (pertcc && options.get_str("REFERENCE") == "ROHF") {
         outfile->Printf("\n");
@@ -782,12 +743,14 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     }
 
     if (options.get_str("REFERENCE") == "ROHF") {
-        scf::HF* wave = (scf::HF*)ref_wfn.get();
+        scf::HF *wave = (scf::HF *)ref_wfn.get();
         wave->semicanonicalize();
     }
 
     // Create integral transformation object
-    IntegralTransform ints(wave, spaces, closedshell ? IntegralTransform::TransformationType::Restricted : IntegralTransform::TransformationType::Unrestricted);
+    IntegralTransform ints(wave, spaces,
+                           closedshell ? IntegralTransform::TransformationType::Restricted
+                                       : IntegralTransform::TransformationType::Unrestricted);
 
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
@@ -807,36 +770,33 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     // RHF
     if (closedshell) {
-
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
-                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // In memory
-                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
-                               0,
-                               "MO Ints (AA|AA)");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),  // In memory
+                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),                            // On disk
+                               0, "MO Ints (AA|AA)");
         write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
         // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         auto moH = std::make_shared<Matrix>(PSIF_MO_FZC, wave->nmopi(), wave->nmopi());
         moH->load(_default_psio_lib_, PSIF_OEI);
-        Slice slice_fc(wave->frzcpi(),wave->frzcpi() + active_mopi);
-        SharedMatrix moHblock = moH->get_block(slice_fc,slice_fc);
+        Slice slice_fc(wave->frzcpi(), wave->frzcpi() + active_mopi);
+        SharedMatrix moHblock = moH->get_block(slice_fc, slice_fc);
         write_oei_to_disk(printer, moHblock);
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(wave->get_dipole_field_strength()), 0, 0, 0, 0);
+        printer->Printf(
+            "%28.20E%4d%4d%4d%4d\n",
+            ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(wave->get_dipole_field_strength()), 0, 0,
+            0, 0);
     } else {
-
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
 
         // Load up alpha alpha
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
-                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // In memory
-                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
-                               0,
-                               "MO Ints (AA|AA)");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),  // In memory
+                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),                            // On disk
+                               0, "MO Ints (AA|AA)");
         write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
@@ -844,11 +804,9 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up beta beta
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
-                               ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // In memory
-                               ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // On disk
-                               0,
-                               "MO Ints (aa|aa)");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"),  // In memory
+                               ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"),                            // On disk
+                               0, "MO Ints (aa|aa)");
         write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
@@ -856,11 +814,9 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up alpha beta
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
-                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // In memory
-                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // On disk
-                               0,
-                               "MO Ints (AA|aa)");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"),  // In memory
+                               ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"),                            // On disk
+                               0, "MO Ints (AA|aa)");
         write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
@@ -870,8 +826,8 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         // Load in alpha frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         auto moH = std::make_shared<Matrix>(PSIF_MO_A_FZC, wave->nmopi(), wave->nmopi());
         moH->load(_default_psio_lib_, PSIF_OEI);
-        Slice slice_fc(wave->frzcpi(),wave->frzcpi() + active_mopi);
-        SharedMatrix moHblock = moH->get_block(slice_fc,slice_fc);
+        Slice slice_fc(wave->frzcpi(), wave->frzcpi() + active_mopi);
+        SharedMatrix moHblock = moH->get_block(slice_fc, slice_fc);
         write_oei_to_disk(printer, moHblock);
 
         // Write out separator
@@ -880,7 +836,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         // Load in beta frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         auto moHb = std::make_shared<Matrix>(PSIF_MO_B_FZC, wave->nmopi(), wave->nmopi());
         moHb->load(_default_psio_lib_, PSIF_OEI);
-        SharedMatrix moHblockb = moHb->get_block(slice_fc,slice_fc);
+        SharedMatrix moHblockb = moHb->get_block(slice_fc, slice_fc);
         write_oei_to_disk(printer, moHblockb);
 
         // Write out separator
@@ -888,7 +844,10 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(wave->get_dipole_field_strength()), 0, 0, 0, 0);
+        printer->Printf(
+            "%28.20E%4d%4d%4d%4d\n",
+            ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(wave->get_dipole_field_strength()), 0, 0,
+            0, 0);
     }
     _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 
@@ -899,21 +858,19 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     int e_conv = 0;
 
     if (user_e >= 1.0)
-        throw InputException("Your energy convergence criterea is absurb.", "E_CONVERGENCE", user_e, __FILE__, __LINE__);
+        throw InputException("Your energy convergence criterea is absurb.", "E_CONVERGENCE", user_e, __FILE__,
+                             __LINE__);
 
     while (user_e <= 0.1) {
         user_e *= 10.0;
         e_conv++;
     }
 
-    if (e_conv == 0)
-        throw PSIEXCEPTION("e_conv became 0. This isn't right.");
+    if (e_conv == 0) throw PSIEXCEPTION("e_conv became 0. This isn't right.");
 
     // The following two are expert options.
-    if (options["MRCC_METHOD"].has_changed())
-        method = options.get_int("MRCC_METHOD");
-    if (options["MRCC_LEVEL"].has_changed())
-        exlevel = options.get_int("MRCC_LEVEL");
+    if (options["MRCC_METHOD"].has_changed()) method = options.get_int("MRCC_METHOD");
+    if (options["MRCC_LEVEL"].has_changed()) exlevel = options.get_int("MRCC_LEVEL");
 
     // defaults pertaining to closed shell calculation
     int closed_shell = 1;
@@ -945,23 +902,19 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     }
 
     // Let the user override this setting
-    if (options["MRCC_NUM_SINGLET_ROOTS"].has_changed())
-        nsing = options.get_int("MRCC_NUM_SINGLET_ROOTS");
-    if (options["MRCC_NUM_TRIPLET_ROOTS"].has_changed())
-        ntrip = options.get_int("MRCC_NUM_TRIPLET_ROOTS");
-    if (options["MRCC_NUM_DOUBLET_ROOTS"].has_changed())
-        ndoub = options.get_int("MRCC_NUM_DOUBLET_ROOTS");
+    if (options["MRCC_NUM_SINGLET_ROOTS"].has_changed()) nsing = options.get_int("MRCC_NUM_SINGLET_ROOTS");
+    if (options["MRCC_NUM_TRIPLET_ROOTS"].has_changed()) ntrip = options.get_int("MRCC_NUM_TRIPLET_ROOTS");
+    if (options["MRCC_NUM_DOUBLET_ROOTS"].has_changed()) ndoub = options.get_int("MRCC_NUM_DOUBLET_ROOTS");
 
     int HF_canonical = 1;
     if (!canonical) HF_canonical = 0;
 
     int symm = 0;
     for (int h = 0; h < nirrep; ++h)
-        for (int n = 0; n < active_socc[h]; ++n)
-            symm ^= h;
-    symm += 1; // stupid 1 based fortran
+        for (int n = 0; n < active_socc[h]; ++n) symm ^= h;
+    symm += 1;  // stupid 1 based fortran
     printer = std::make_shared<PsiOutStream>("fort.56", std::ostream::trunc);
-    //FILE* fort56 = fopen("fort.56", "w");
+    // FILE* fort56 = fopen("fort.56", "w");
     printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d%6d%6d      0      0%6d     0     0    0.00    0%6lu\n",
                     exlevel,                                         // # 1
                     nsing,                                           // # 2
@@ -977,7 +930,9 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
                     Process::environment.get_memory() / 1000 / 1000  // #21
     );
 
-    printer->Printf("ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem\n");
+    printer->Printf(
+        "ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, "
+        "sacc,   freq,dboc,  mem\n");
 
     for (int h = 0; h < nirrep; ++h) {
         for (int nmo = 0; nmo < active_mopi[h]; ++nmo) {
@@ -994,15 +949,13 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     outfile->Printf("done.\n");
 
-
     tstop();
 
     return Success;
 }
 
-}
-} // End Namespaces
-
+}  // namespace mrcc
+}  // namespace psi
 
 //  Comments so that autodoc utility will find these PSI variables
 //

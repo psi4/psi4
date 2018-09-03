@@ -46,9 +46,10 @@
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ciwave.h"
 
-namespace psi { namespace detci {
+namespace psi {
+namespace detci {
 
-//int cc_reqd_sblocks[CI_BLK_MAX];
+// int cc_reqd_sblocks[CI_BLK_MAX];
 
 /*
 ** compute_cc()
@@ -57,9 +58,7 @@ namespace psi { namespace detci {
 ** computation
 **
 */
-void CIWavefunction::compute_cc(void)
-{
-  outfile->Printf("compute_cc: Not yet available\n");
-}
+void CIWavefunction::compute_cc(void) { outfile->Printf("compute_cc: Not yet available\n"); }
 
-}} // namespace psi::detci
+}  // namespace detci
+}  // namespace psi

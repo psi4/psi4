@@ -32,12 +32,12 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-//MKL Header
+// MKL Header
 #ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 
-//OpenMP Header
+// OpenMP Header
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP
 #include <omp.h>
@@ -73,9 +73,7 @@ void Process::Environment::set_n_threads(int nthread) {
     // Process::environment.options.set_global_int("NUM_THREADS",nthread);
 }
 
-void Process::Environment::set_molecule(const std::shared_ptr<Molecule> &molecule) {
-    molecule_ = molecule;
-}
+void Process::Environment::set_molecule(const std::shared_ptr<Molecule> &molecule) { molecule_ = molecule; }
 
 std::shared_ptr<Molecule> Process::Environment::molecule() const { return molecule_; }
 
@@ -85,14 +83,11 @@ void Process::Environment::set_legacy_molecule(const std::shared_ptr<Molecule> &
 
 std::shared_ptr<Molecule> Process::Environment::legacy_molecule() const { return legacy_molecule_; }
 
-void Process::Environment::set_legacy_wavefunction(
-    const std::shared_ptr<Wavefunction> &legacy_wavefunction) {
+void Process::Environment::set_legacy_wavefunction(const std::shared_ptr<Wavefunction> &legacy_wavefunction) {
     legacy_wavefunction_ = legacy_wavefunction;
 }
 
-std::shared_ptr<Wavefunction> Process::Environment::legacy_wavefunction() const {
-    return legacy_wavefunction_;
-}
+std::shared_ptr<Wavefunction> Process::Environment::legacy_wavefunction() const { return legacy_wavefunction_; }
 
 Process::Environment Process::get_environment() { return environment; }
 

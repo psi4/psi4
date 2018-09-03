@@ -45,19 +45,18 @@ class Molecule;
  *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class PSI_API DipoleInt : public OneBodyAOInt
-{
+class PSI_API DipoleInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell &, const GaussianShell &);
     //! Computes the dipole derivative between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
+    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &);
 
-public:
+   public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    DipoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    DipoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor
     virtual ~DipoleInt();
 
@@ -68,6 +67,6 @@ public:
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
 };
 
-}
+}  // namespace psi
 
 #endif

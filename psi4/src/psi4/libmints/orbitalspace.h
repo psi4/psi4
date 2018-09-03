@@ -45,8 +45,7 @@ class IntegralFactory;
  * matrix and possible orbital energies. Relavent basis set and integral factory
  * are also contained.
  */
-class OrbitalSpace
-{
+class OrbitalSpace {
     /// Unique identifier
     std::string id_;
     /// Name of the orbital space.
@@ -63,28 +62,20 @@ class OrbitalSpace
     std::shared_ptr<IntegralFactory> ints_;
 
     /// MO Dimensionality
-    Dimension dim_; // dim_.n() better equal nirrep_
+    Dimension dim_;  // dim_.n() better equal nirrep_
 
     /// No default constructor
     OrbitalSpace();
 
-public:
-    OrbitalSpace(const std::string& id,
-                 const std::string& name,
-                 const SharedMatrix& full_C,
-                 const std::shared_ptr<Vector>& evals,
-                 const std::shared_ptr<BasisSet>& basis,
+   public:
+    OrbitalSpace(const std::string& id, const std::string& name, const SharedMatrix& full_C,
+                 const std::shared_ptr<Vector>& evals, const std::shared_ptr<BasisSet>& basis,
                  const std::shared_ptr<IntegralFactory>& ints);
 
-    OrbitalSpace(const std::string& id,
-                 const std::string& name,
-                 const SharedMatrix& full_C,
-                 const std::shared_ptr<BasisSet>& basis,
-                 const std::shared_ptr<IntegralFactory>& ints);
+    OrbitalSpace(const std::string& id, const std::string& name, const SharedMatrix& full_C,
+                 const std::shared_ptr<BasisSet>& basis, const std::shared_ptr<IntegralFactory>& ints);
 
-    OrbitalSpace(const std::string& id,
-                 const std::string& name,
-                 const std::shared_ptr<Wavefunction>& wave);
+    OrbitalSpace(const std::string& id, const std::string& name, const std::shared_ptr<Wavefunction>& wave);
 
     int nirrep() const;
     const std::string& id() const;
@@ -109,7 +100,7 @@ public:
     void print() const;
 
     /** Creates an OrbitalSpace from 'from' to the given basis set 'to'
-      */
+     */
     static OrbitalSpace transform(const OrbitalSpace& from, const std::shared_ptr<BasisSet>& to);
 
     /** Returns the overlap matrix between space1 and space2.
@@ -121,18 +112,15 @@ public:
     /** Returns the overlap matrix between basis1 and basis2.
         Throws if the overlap cannot be computed.
       */
-    static SharedMatrix overlap(const std::shared_ptr<BasisSet>& basis1,
-                                const std::shared_ptr<BasisSet>& basis2);
+    static SharedMatrix overlap(const std::shared_ptr<BasisSet>& basis1, const std::shared_ptr<BasisSet>& basis2);
 
     /** Given two spaces, it projects out one space from the other and returns the new spaces.
      * \param orb_space The space to project out. The returned space will be orthogonal to this.
      * \param ri_space The space being projected on. The returned space will be this space minus orb_space.
      * \param linear_tol The tolerance for linear dependencies.
      */
-    static OrbitalSpace build_cabs_space(
-            const OrbitalSpace& orb_space,
-            const OrbitalSpace& ri_space,
-            double linear_tol);
+    static OrbitalSpace build_cabs_space(const OrbitalSpace& orb_space, const OrbitalSpace& ri_space,
+                                         double linear_tol);
 
     /** Given two basis sets, it merges the basis sets and then constructs an orthogonalized
      * space with the same span. Linearly dependent orbitals are thrown out.
@@ -141,21 +129,20 @@ public:
      * \param aux_key option keyword for auxiliery basis set "DF_BASIS_MP2"
      * \param lindep_tol The tolerance for linear dependencies
      */
-    static OrbitalSpace build_ri_space(const std::shared_ptr<Molecule>& molecule, const std::string& obs_key, const std::string& aux_key, double lindep_tol);
+    static OrbitalSpace build_ri_space(const std::shared_ptr<Molecule>& molecule, const std::string& obs_key,
+                                       const std::string& aux_key, double lindep_tol);
 
     /** Given a basis set, it orthogonalizes the orbitals and returns a space with the same
      * span but orthogonal orbitals. Also, linear dependent orbitals are projected out.
      * \param aux_bs The basis to orthogonalize
      * \param lindep_tol The tolerance for linear dependencies
      */
-    static OrbitalSpace build_abs_space(std::shared_ptr<BasisSet> aux_bs, std::shared_ptr<IntegralFactory> ints, double lindep_tol);
-
+    static OrbitalSpace build_abs_space(std::shared_ptr<BasisSet> aux_bs, std::shared_ptr<IntegralFactory> ints,
+                                        double lindep_tol);
 };
 
-namespace SpaceBuilder
-{
-}
+namespace SpaceBuilder {}
 
-}
+}  // namespace psi
 
-#endif // _psi_src_lib_libmints_moindexspace_h_
+#endif  // _psi_src_lib_libmints_moindexspace_h_

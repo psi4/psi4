@@ -58,5 +58,5 @@ SharedMatrix DCFTSolver::compute_gradient() {
 
     return std::make_shared<Matrix>("nullptr", 0, 0);
 }
-}
-}  // End namespaces
+}  // namespace dcft
+}  // namespace psi

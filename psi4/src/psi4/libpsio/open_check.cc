@@ -31,38 +31,36 @@
  \ingroup PSIO
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 
 int PSIO::open_check(size_t unit) {
-  psio_ud *this_unit;
+    psio_ud *this_unit;
 
-  this_unit = &(psio_unit[unit]);
+    this_unit = &(psio_unit[unit]);
 
-  if (this_unit->vol[0].stream != -1)
-    return 1;
-  else
-    return 0;
+    if (this_unit->vol[0].stream != -1)
+        return 1;
+    else
+        return 0;
 }
 
-  /*!
-   ** PSIO_OPEN_CHECK(): Check to see if a given PSI direct access file
-   ** is already open.
-   **
-   ** \param unit = the PSI unit number.
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_OPEN_CHECK(): Check to see if a given PSI direct access file
+ ** is already open.
+ **
+ ** \param unit = the PSI unit number.
+ **
+ ** \ingroup PSIO
+ */
 
-  int psio_open_check(size_t unit) {
-    return _default_psio_lib_->open_check(unit);
-  }
+int psio_open_check(size_t unit) { return _default_psio_lib_->open_check(unit); }
 
-}
+}  // namespace psi

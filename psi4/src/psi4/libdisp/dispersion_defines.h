@@ -35,10 +35,10 @@
 
 // Atom Order: Gh, H, He, ...
 // For -DAS2010, last 6 values for C6, C8, and Beta are for hydrogen pairs
-// ***Depends on closest covelently-bonded atom to hydrogen 
+// ***Depends on closest covelently-bonded atom to hydrogen
 
-
-namespace psi { 
+namespace psi {
+// clang-format off
 const double RvdW_D1_[] = 
 {
     2.30546570658000,
@@ -5260,6 +5260,6 @@ double R_0_AB_[] = {
     8.1758994914085000,
     8.3792340078249000
 };
-
+// clang-format on
 }
 #endif

@@ -79,7 +79,8 @@ Matrix::Matrix() {
     symmetry_ = 0;
 }
 
-Matrix::Matrix(const std::string &name, int symmetry) : matrix_(nullptr), nirrep_(0), name_(name), symmetry_(symmetry) {}
+Matrix::Matrix(const std::string &name, int symmetry)
+    : matrix_(nullptr), nirrep_(0), name_(name), symmetry_(symmetry) {}
 
 Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
     matrix_ = nullptr;
@@ -806,8 +807,7 @@ SharedMatrix Matrix::to_block_sharedmatrix() const {
 }
 
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const {
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
 
     const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     int num_frames = int(n / print_ncol);
@@ -867,8 +867,7 @@ void Matrix::print_mat(const double *const *const a, int m, int n, std::string o
 
 void Matrix::print(std::string out, const char *extra) const {
     int h;
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     if (name_.length()) {
         if (extra == nullptr)
             printer->Printf("  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
@@ -914,8 +913,7 @@ void Matrix::print_to_mathematica() {
 
 void Matrix::print_atom_vector(std::string out) {
     int i;
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     if (name_.length()) {
         printer->Printf("\n  -%s:\n", name_.c_str());
     }
@@ -931,8 +929,7 @@ void Matrix::print_atom_vector(std::string out) {
 }
 
 void Matrix::eivprint(const Vector *const values, std::string out) {
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     if (symmetry_)
         throw PSIEXCEPTION("Matrix::eivprint: This print does not make sense for non-totally symmetric matrices.");
 
@@ -1368,7 +1365,6 @@ void Matrix::gemm(const char &transa, const char &transb, const std::vector<int>
         throw PSIEXCEPTION("Matrix::Advanced GEMM: Number of irreps do not equal.");
 
     for (int h = 0; h < nirrep_; ++h) {
-
         if (!k[h] || !m[h] || !n[h]) continue;
 
         int offa, offb, offc;
@@ -1583,7 +1579,7 @@ int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance
 
     return northog;
 }
-}
+}  // namespace
 
 void Matrix::schmidt() {
     for (int h = 0; h < nirrep(); ++h) {
@@ -3242,13 +3238,9 @@ void Matrix::load(const std::string &filename) {
     }
 }
 
-bool Matrix::equal(const Matrix &rhs, double TOL) {
-    return equal(&rhs, TOL);
-}
+bool Matrix::equal(const Matrix &rhs, double TOL) { return equal(&rhs, TOL); }
 
-bool Matrix::equal(const SharedMatrix &rhs, double TOL) {
-    return equal(rhs.get(), TOL);
-}
+bool Matrix::equal(const SharedMatrix &rhs, double TOL) { return equal(rhs.get(), TOL); }
 
 bool Matrix::equal(const Matrix *rhs, double TOL) {
     // Check dimensions
@@ -3263,8 +3255,7 @@ bool Matrix::equal(const Matrix *rhs, double TOL) {
     for (int h = 0; h < nirrep(); ++h) {
         for (int m = 0; m < rowspi()[h]; ++m) {
             for (int n = 0; n < colspi()[h ^ symmetry_]; ++n) {
-                if (std::fabs(get(h, m, n) - rhs->get(h, m, n)) > TOL)
-                    return false;
+                if (std::fabs(get(h, m, n) - rhs->get(h, m, n)) > TOL) return false;
             }
         }
     }

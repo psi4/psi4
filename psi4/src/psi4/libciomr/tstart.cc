@@ -64,39 +64,35 @@ double user_stop, sys_stop;
 **
 ** \ingroup CIOMR
 */
-void PSI_API tstart()
-{
-  int error;
-  char *name;
-  struct tms total_tmstime;
-  const long clk_tck = sysconf(_SC_CLK_TCK);
-  times(&total_tmstime);
+void PSI_API tstart() {
+    int error;
+    char *name;
+    struct tms total_tmstime;
+    const long clk_tck = sysconf(_SC_CLK_TCK);
+    times(&total_tmstime);
 
+    /// host name info, needed?
+    name = (char *)malloc(40 * sizeof(char));
+    error = gethostname(name, 40);
+    if (error != 0) strncpy(name, "nohostname", 11);
 
+    /// start a global timer
+    if (!running) {
+        time_start_overall = time(nullptr);
+        user_start_overall = ((double)total_tmstime.tms_utime) / clk_tck;
+        sys_start_overall = ((double)total_tmstime.tms_stime) / clk_tck;
+        running = 1;
+    }
 
-  /// host name info, needed?
-  name = (char *) malloc(40 * sizeof(char));
-  error = gethostname(name, 40);
-  if(error != 0) strncpy(name,"nohostname", 11);
+    /// start module timers
+    time_start = time(nullptr);
+    user_start = ((double)total_tmstime.tms_utime) / clk_tck;
+    sys_start = ((double)total_tmstime.tms_stime) / clk_tck;
 
-  /// start a global timer
-  if(!running){
-     time_start_overall = time(nullptr);
-     user_start_overall = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_start_overall = ((double) total_tmstime.tms_stime)/clk_tck;
-     running = 1;
-  }
+    outfile->Printf("\n*** tstart() called on %s\n", name);
+    outfile->Printf("*** at %s\n", ctime(&time_start));
 
-  /// start module timers
-  time_start = time(nullptr);
-  user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-  sys_start = ((double) total_tmstime.tms_stime)/clk_tck;
-
-
-  outfile->Printf("\n*** tstart() called on %s\n", name);
-  outfile->Printf("*** at %s\n",ctime(&time_start));
-
-  free(name);
+    free(name);
 }
 
 /*!
@@ -104,58 +100,48 @@ void PSI_API tstart()
 **
 ** \ingroup CIOMR
 */
-void PSI_API tstop()
-{
-  int error;
-  time_t total_time;
-  time_t total_time_overall;
-  struct tms total_tmstime;
-  char *name;
-  double user_s, sys_s;
+void PSI_API tstop() {
+    int error;
+    time_t total_time;
+    time_t total_time_overall;
+    struct tms total_tmstime;
+    char *name;
+    double user_s, sys_s;
 
-  name = (char *) malloc(40 * sizeof(char));
-  error = gethostname(name, 40);
-  if(error != 0) strncpy(name,"nohostname", 11);
+    name = (char *)malloc(40 * sizeof(char));
+    error = gethostname(name, 40);
+    if (error != 0) strncpy(name, "nohostname", 11);
 
-  time_end = time(nullptr);
-  total_time = time_end - time_start;
-  total_time_overall = time_end - time_start_overall;
+    time_end = time(nullptr);
+    total_time = time_end - time_start;
+    total_time_overall = time_end - time_start_overall;
 
-  times(&total_tmstime);
-  const long clk_tck = sysconf(_SC_CLK_TCK);
-  user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-  sys_stop = ((double) total_tmstime.tms_stime)/clk_tck;
+    times(&total_tmstime);
+    const long clk_tck = sysconf(_SC_CLK_TCK);
+    user_stop = ((double)total_tmstime.tms_utime) / clk_tck;
+    sys_stop = ((double)total_tmstime.tms_stime) / clk_tck;
 
-  user_s = user_stop - user_start;
-  sys_s = sys_stop - sys_start;
+    user_s = user_stop - user_start;
+    sys_s = sys_stop - sys_start;
 
+    outfile->Printf("\n*** tstop() called on %s at %s", name, ctime(&time_end));
 
-  outfile->Printf("\n*** tstop() called on %s at %s", name, ctime(&time_end));
+    /// print all module timings
+    outfile->Printf("Module time:\n");
+    outfile->Printf("\tuser time   = %10.2f seconds = %10.2f minutes\n", user_s, user_s / 60.0);
+    outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n", sys_s, sys_s / 60.0);
+    outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n", (int)total_time, ((double)total_time) / 60.0);
 
-  /// print all module timings
-  outfile->Printf("Module time:\n");
-  outfile->Printf("\tuser time   = %10.2f seconds = %10.2f minutes\n",
-          user_s, user_s/60.0);
-  outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n",
-          sys_s, sys_s/60.0);
-  outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n",
-          (int)total_time, ((double) total_time)/60.0);
+    user_s = user_stop - user_start_overall;
+    sys_s = sys_stop - sys_start_overall;
 
-  user_s = user_stop - user_start_overall;
-  sys_s = sys_stop - sys_start_overall;
+    /// print all overall timings
+    outfile->Printf("Total time:\n");
+    outfile->Printf("\tuser time   = %10.2f seconds = %10.2f minutes\n", user_s, user_s / 60.0);
+    outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n", sys_s, sys_s / 60.0);
+    outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n", (int)total_time_overall,
+                    ((double)total_time_overall) / 60.0);
 
-  /// print all overall timings
-  outfile->Printf("Total time:\n");
-  outfile->Printf("\tuser time   = %10.2f seconds = %10.2f minutes\n",
-          user_s, user_s/60.0);
-  outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n",
-          sys_s, sys_s/60.0);
-  outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n",
-          (int)total_time_overall, ((double) total_time_overall)/60.0);
-
-
-  free(name);
-
+    free(name);
 }
-
 }

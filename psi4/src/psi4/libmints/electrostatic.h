@@ -45,19 +45,18 @@ class Vector3;
  *  \brief Computes potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class ElectrostaticInt : public PotentialInt
-{
-    void compute_pair(const GaussianShell&, const GaussianShell&)
-    {}
+class ElectrostaticInt : public PotentialInt {
+    void compute_pair(const GaussianShell&, const GaussianShell&) {}
 
-public:
+   public:
     /// Constructor
-    ElectrostaticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    ElectrostaticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                     int deriv = 0);
     ~ElectrostaticInt();
 
-    // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
-    // The following line is to shut it up.
-    #pragma warning disable 1125
+// Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
+// The following line is to shut it up.
+#pragma warning disable 1125
     /// Computes integrals between two shells.
     void compute_shell(int, int, const Vector3&);
     /// Computes integrals between two shells.
@@ -75,6 +74,6 @@ public:
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol);
 };
 
-}
+}  // namespace psi
 
 #endif

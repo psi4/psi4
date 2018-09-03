@@ -545,4 +545,4 @@ DIISManager::~DIISManager() {
     if (_psio->open_check(PSIF_LIBDIIS)) _psio->close(PSIF_LIBDIIS, 1);
 }
 
-}  // Namespace
+}  // namespace psi

@@ -70,112 +70,113 @@ namespace psi {
 **
 ** \ingroup QT
 */
-void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in, int *frozen_uocc_in, int *order, int *orbs_per_irrep,
-                int nirreps) {
-    int cnt = 0, irrep, point, tmpi;
-    int *used, *offset;
-    int *docc, *socc, *frozen_docc, *frozen_uocc;
-    int *uocc;
+PSI_API void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
+      int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps)
+{
 
-    used = init_int_array(nirreps);
-    offset = init_int_array(nirreps);
+   int cnt=0, irrep, point, tmpi;
+   int *used, *offset;
+   int *docc, *socc, *frozen_docc, *frozen_uocc;
+   int *uocc;
 
-    docc = init_int_array(nirreps);
-    socc = init_int_array(nirreps);
-    frozen_docc = init_int_array(nirreps);
-    frozen_uocc = init_int_array(nirreps);
-    uocc = init_int_array(nirreps);
+   used = init_int_array(nirreps);
+   offset = init_int_array(nirreps);
 
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        docc[irrep] = docc_in[irrep];
-        socc[irrep] = socc_in[irrep];
-        frozen_docc[irrep] = frozen_docc_in[irrep];
-        frozen_uocc[irrep] = frozen_uocc_in[irrep];
-    }
+   docc = init_int_array(nirreps);
+   socc = init_int_array(nirreps);
+   frozen_docc = init_int_array(nirreps);
+   frozen_uocc = init_int_array(nirreps);
+   uocc = init_int_array(nirreps);
 
-    /* construct the offset array */
-    offset[0] = 0;
-    for (irrep = 1; irrep < nirreps; irrep++) {
-        offset[irrep] = offset[irrep - 1] + orbs_per_irrep[irrep - 1];
-    }
+   for (irrep=0; irrep<nirreps; irrep++) {
+      docc[irrep] = docc_in[irrep];
+      socc[irrep] = socc_in[irrep];
+      frozen_docc[irrep] = frozen_docc_in[irrep];
+      frozen_uocc[irrep] = frozen_uocc_in[irrep];
+      }
 
-    /* construct the uocc array */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
-        if (tmpi > orbs_per_irrep[irrep]) {
-            outfile->Printf("(reorder_qt): orbitals don't add up for irrep %d\n", irrep);
-            return;
-        } else
-            uocc[irrep] = orbs_per_irrep[irrep] - tmpi;
-    }
+   /* construct the offset array */
+   offset[0] = 0;
+   for (irrep=1; irrep<nirreps; irrep++) {
+      offset[irrep] = offset[irrep-1] + orbs_per_irrep[irrep-1];
+      }
 
-    /* do the frozen core */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        while (frozen_docc[irrep]) {
-            point = used[irrep] + offset[irrep];
-            order[point] = cnt++;
-            used[irrep]++;
-            frozen_docc[irrep]--;
-            docc[irrep]--;
-        }
-    }
+   /* construct the uocc array */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
+      if (tmpi > orbs_per_irrep[irrep]) {
+         outfile->Printf( "(reorder_qt): orbitals don't add up for irrep %d\n",
+            irrep);
+         return;
+         }
+      else
+         uocc[irrep] = orbs_per_irrep[irrep] - tmpi;
+      }
 
-    /* do doubly occupied orbitals */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        while (docc[irrep]) {
-            point = used[irrep] + offset[irrep];
-            order[point] = cnt++;
-            used[irrep]++;
-            docc[irrep]--;
-        }
-    }
+   /* do the frozen core */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      while (frozen_docc[irrep]) {
+         point = used[irrep] + offset[irrep];
+         order[point] = cnt++;
+         used[irrep]++;
+         frozen_docc[irrep]--;
+         docc[irrep]--;
+         }
+      }
 
-    /* do singly-occupied orbitals */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        while (socc[irrep]) {
-            point = used[irrep] + offset[irrep];
-            order[point] = cnt++;
-            used[irrep]++;
-            socc[irrep]--;
-        }
-    }
+   /* do doubly occupied orbitals */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      while (docc[irrep]) {
+         point = used[irrep] + offset[irrep];
+         order[point] = cnt++;
+         used[irrep]++;
+         docc[irrep]--;
+         }
+      }
 
-    /* do virtual orbitals */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        while (uocc[irrep]) {
-            point = used[irrep] + offset[irrep];
-            order[point] = cnt++;
-            used[irrep]++;
-            uocc[irrep]--;
-        }
-    }
+   /* do singly-occupied orbitals */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      while (socc[irrep]) {
+         point = used[irrep] + offset[irrep];
+         order[point] = cnt++;
+         used[irrep]++;
+         socc[irrep]--;
+         }
+      }
 
-    /* do frozen uocc */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        while (frozen_uocc[irrep]) {
-            point = used[irrep] + offset[irrep];
-            order[point] = cnt++;
-            used[irrep]++;
-            frozen_uocc[irrep]--;
-        }
-    }
+   /* do virtual orbitals */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      while (uocc[irrep]) {
+         point = used[irrep] + offset[irrep];
+         order[point] = cnt++;
+         used[irrep]++;
+         uocc[irrep]--;
+         }
+      }
 
-    /* do a final check */
-    for (irrep = 0; irrep < nirreps; irrep++) {
-        if (used[irrep] > orbs_per_irrep[irrep]) {
-            outfile->Printf("(reorder_qt): on final check, used more orbitals");
-            outfile->Printf("   than were available (%d vs %d) for irrep %d\n", used[irrep], orbs_per_irrep[irrep],
-                            irrep);
-        }
-    }
+   /* do frozen uocc */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      while (frozen_uocc[irrep]) {
+         point = used[irrep] + offset[irrep];
+         order[point] = cnt++;
+         used[irrep]++;
+         frozen_uocc[irrep]--;
+         }
+      }
 
-    free(used);
-    free(offset);
-    free(docc);
-    free(socc);
-    free(frozen_docc);
-    free(frozen_uocc);
-    free(uocc);
+
+   /* do a final check */
+   for (irrep=0; irrep<nirreps; irrep++) {
+      if (used[irrep] > orbs_per_irrep[irrep]) {
+         outfile->Printf( "(reorder_qt): on final check, used more orbitals");
+         outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
+            used[irrep], orbs_per_irrep[irrep], irrep);
+         }
+      }
+
+   free(used);  free(offset);
+   free(docc);  free(socc);  free(frozen_docc);  free(frozen_uocc);
+   free(uocc);
 }
 
 /*!
@@ -193,28 +194,41 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in, int *frozen_uoc
 **
 ** \ingroup QT
 */
-void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc, int *frozen_uocc, int *order_alpha, int *order_beta,
-                    int *orbspi, int nirreps) {
-    int p, nmo;
-    int cnt_alpha, cnt_beta, irrep, tmpi;
-    int *offset, this_offset;
-    int *uocc;
+PSI_API void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
+                    int *frozen_uocc, int *order_alpha, int *order_beta,
+                    int *orbspi, int nirreps)
+{
+  int p, nmo;
+  int cnt_alpha, cnt_beta, irrep, tmpi;
+  int *offset, this_offset;
+  int *uocc;
 
-    Dimension nalphapi(nirreps, "Number of alpha electrons per irrep");
-    Dimension nbetapi(nirreps, "Number of beta electrons per irrep");
-    for (int h = 0; h < nirreps; h++) {
-        nalphapi[h] = docc[h] + socc[h];
-        nbetapi[h] = docc[h];
-    }
+  Dimension nalphapi(nirreps, "Number of alpha electrons per irrep");
+  Dimension nbetapi(nirreps, "Number of beta electrons per irrep");
+  for (int h=0; h < nirreps; h++){
+    nalphapi[h] = docc[h] + socc[h];
+    nbetapi[h] = docc[h];
+  }
 
-    offset = init_int_array(nirreps);
+  offset = init_int_array(nirreps);
 
-    uocc = init_int_array(nirreps);
+  uocc = init_int_array(nirreps);
 
-    /* construct the offset array */
-    offset[0] = 0;
-    for (irrep = 1; irrep < nirreps; irrep++) {
-        offset[irrep] = offset[irrep - 1] + orbspi[irrep - 1];
+  /* construct the offset array */
+  offset[0] = 0;
+  for (irrep=1; irrep<nirreps; irrep++) {
+    offset[irrep] = offset[irrep-1] + orbspi[irrep-1];
+  }
+
+  /* construct the uocc array */
+  nmo = 0;
+  for (irrep=0; irrep<nirreps; irrep++) {
+    nmo += orbspi[irrep];
+    tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
+    if (tmpi > orbspi[irrep]) {
+      outfile->Printf( "(reorder_qt_uhf): orbitals don't add up for irrep %d\n",
+              irrep);
+      return;
     }
 
     /* construct the uocc array */

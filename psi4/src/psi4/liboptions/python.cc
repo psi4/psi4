@@ -31,32 +31,19 @@
 
 namespace psi {
 
+PythonDataType::PythonDataType() {}
 
-PythonDataType::PythonDataType()
-{
-}
+PythonDataType::PythonDataType(const py::object &p) : python_object_(p) {}
 
-PythonDataType::PythonDataType(const py::object &p)
-    : python_object_(p)
-{
-}
+PythonDataType::~PythonDataType() {}
 
-PythonDataType::~PythonDataType()
-{ }
+std::string PythonDataType::type() const { return std::string("python"); }
 
-std::string PythonDataType::type() const{
-    return std::string("python");
-}
-
-void PythonDataType::assign(const py::object &p)
-{
+void PythonDataType::assign(const py::object &p) {
     python_object_ = p;
     changed();
 }
 
-const py::object& PythonDataType::to_python() const
-{
-    return python_object_;
-}
+const py::object &PythonDataType::to_python() const { return python_object_; }
 
-}
+}  // namespace psi

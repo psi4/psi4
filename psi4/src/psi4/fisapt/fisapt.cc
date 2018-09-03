@@ -2021,16 +2021,16 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     dfh->add_space("a4", Cs[10]);
     dfh->add_space("b4", Cs[11]);
 
-    dfh->add_transformation("Aar", "a" , "r" );
-    dfh->add_transformation("Abs", "b" , "s" );
-    dfh->add_transformation("Bas", "a" , "s1");
-    dfh->add_transformation("Bbr", "b" , "r1");
-    dfh->add_transformation("Cas", "a2", "s" );
-    dfh->add_transformation("Cbr", "b2", "r" );
-    dfh->add_transformation("Dar", "a" , "r3");
-    dfh->add_transformation("Dbs", "b" , "s3");
-    dfh->add_transformation("Ear", "a4", "r" );
-    dfh->add_transformation("Ebs", "b4", "s" );
+    dfh->add_transformation("Aar", "a", "r");
+    dfh->add_transformation("Abs", "b", "s");
+    dfh->add_transformation("Bas", "a", "s1");
+    dfh->add_transformation("Bbr", "b", "r1");
+    dfh->add_transformation("Cas", "a2", "s");
+    dfh->add_transformation("Cbr", "b2", "r");
+    dfh->add_transformation("Dar", "a", "r3");
+    dfh->add_transformation("Dbs", "b", "s3");
+    dfh->add_transformation("Ear", "a4", "r");
+    dfh->add_transformation("Ebs", "b4", "s");
 
     dfh->transform();
 
@@ -2760,7 +2760,7 @@ void FISAPT::fexch() {
 
     dfh_->add_transformation("Aar", "a", "r");
     dfh_->add_transformation("Abs", "b", "s");
-    
+
     dfh_->transform();
 
     // ==> Electrostatic Potentials <== //
@@ -2891,9 +2891,8 @@ void FISAPT::fexch() {
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 
-    //Prepare DFHelper object for the next module
+    // Prepare DFHelper object for the next module
     dfh_->clear_spaces();
-
 }
 void FISAPT::find() {
     outfile->Printf("  ==> F-SAPT Induction <==\n\n");
@@ -3300,7 +3299,6 @@ void FISAPT::find() {
 
         // => JK Object <= //
 
-
         // TODO: Account for 2-index overhead in memory
         int nso = primary_->nbf();
         long int jk_memory = (long int)doubles_;
@@ -3310,9 +3308,10 @@ void FISAPT::find() {
         if (jk_memory < 0L) {
             throw PSIEXCEPTION("Too little static memory for FISAPT::induction");
         }
-        
-        std::shared_ptr<JK> jk = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, (size_t)jk_memory);
-        
+
+        std::shared_ptr<JK> jk =
+            JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, (size_t)jk_memory);
+
         jk->set_memory((size_t)jk_memory);
         jk->set_do_J(true);
         jk->set_do_K(true);
@@ -3764,16 +3763,16 @@ void FISAPT::fdisp() {
     dfh->add_space("a4", Cs[10]);
     dfh->add_space("b4", Cs[11]);
 
-    dfh->add_transformation("Aar", "r" , "a" );
-    dfh->add_transformation("Abs", "s" , "b" );
-    dfh->add_transformation("Bas", "s1", "a" );
-    dfh->add_transformation("Bbr", "r1", "b" );
-    dfh->add_transformation("Cas", "s" , "a2");
-    dfh->add_transformation("Cbr", "r" , "b2");
-    dfh->add_transformation("Dar", "r3", "a" );
-    dfh->add_transformation("Dbs", "s3", "b" );
-    dfh->add_transformation("Ear", "r" , "a4");
-    dfh->add_transformation("Ebs", "s" , "b4");
+    dfh->add_transformation("Aar", "r", "a");
+    dfh->add_transformation("Abs", "s", "b");
+    dfh->add_transformation("Bas", "s1", "a");
+    dfh->add_transformation("Bbr", "r1", "b");
+    dfh->add_transformation("Cas", "s", "a2");
+    dfh->add_transformation("Cbr", "r", "b2");
+    dfh->add_transformation("Dar", "r3", "a");
+    dfh->add_transformation("Dbs", "s3", "b");
+    dfh->add_transformation("Ear", "r", "a4");
+    dfh->add_transformation("Ebs", "s", "b4");
 
     dfh->transform();
 

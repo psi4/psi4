@@ -34,11 +34,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
-#include <pthread.h>
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -63,7 +65,7 @@ namespace psi {
 */
 
 
-void *cc3_sigma_RHF_ic_thread(void* thread_data_in);
+void cc3_sigma_RHF_ic_thread(thread_data&);
 
 void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                            int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
@@ -73,7 +75,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             std::make_shared<PsiOutStream>(out));
-    int h, nirreps, thread, nijk, *ijk_part, errcod=0;
+    int h, nirreps, thread, nijk, *ijk_part;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
     int i, j, k, l, a, b, c, d, row, col;
     int I, J, K, L, A, B, C, D;
@@ -92,12 +94,9 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     double value_ia, value_ka, denom_ia, denom_ka;
     dpdfile2 fIJ, fAB, *SIA_local;
     dpdbuf4 buf4_tmp, *SIjAb_local;
-    pthread_t  *p_thread;
-    struct thread_data *thread_data_array;
     char lbl[32];
 
-    thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
-    p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
+    std::vector<thread_data> thread_data_array(nthreads);
 
 #ifdef USING_LAPACK_MKL
     int old_threads = mkl_get_max_threads();
@@ -237,23 +236,13 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                 }
 
                 /* execute threads */
-                for (thread=0;thread<nthreads;++thread) {
-                    if (!ijk_part[thread]) continue;
-                    errcod = pthread_create(&(p_thread[thread]), nullptr, cc3_sigma_RHF_ic_thread,
-                                            (void *) &thread_data_array[thread]);
-                    if (errcod) {
-                        outfile->Printf("pthread_create in cc3_sigma_RHF_ic failed\n");
-                        exit(PSI_RETURN_FAILURE);
-                    }
-                }
-
-                for (thread=0; thread<nthreads;++thread) {
-                    if (!ijk_part[thread]) continue;
-                    errcod = pthread_join(p_thread[thread], nullptr);
-                    if (errcod) {
-                        outfile->Printf("pthread_join in cc3_sigma_RHF_ic failed\n");
-                        exit(PSI_RETURN_FAILURE);
-                    }
+                #pragma omp parallel num_threads(nthreads)
+                {
+                    int ithread = 0;
+                    #ifdef _OPENMP
+                    ithread = omp_get_thread_num();
+                    #endif
+                    if (ijk_part[ithread]) cc3_sigma_RHF_ic_thread(thread_data_array[ithread]);
                 }
 
                 for (thread=0;thread<nthreads;++thread) {
@@ -317,8 +306,6 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
             buf4_mat_irrep_close(SIjAb, h);
         }
     }
-    free(thread_data_array);
-    free(p_thread);
 
 #ifdef USING_LAPACK_MKL
     mkl_set_num_threads(old_threads);
@@ -326,7 +313,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
 
 }
 
-void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
+void cc3_sigma_RHF_ic_thread(thread_data& data)
 {
     int Ga, Gb, Gc, Gd, Gab, Gbc, Gl, Gik, Gki, Gkj, Glk, Gjk, Gli, Gijk, nirreps;
     int GC, GWX3, GX3, GW, GS, Gij, Gji, Gid, Gjd, Gkd;
@@ -337,7 +324,6 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     dpdbuf4 *SIjAb, SIjAb_local;
     dpdfile2 *SIA, SIA_local;
     char lbl[32];
-    struct thread_data data;
 
     int do_singles, do_doubles, *occpi, *occ_off, *virtpi, *vir_off;
     int Gi, Gj, Gk, thr_id, first_ijk, last_ijk;
@@ -347,8 +333,6 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     std::string out_fname;
     int newtrips;
     int Gcb, Gac, cb, ac;
-
-    data = *(struct thread_data *) thread_data_in;
 
     SIjAb  = data.SIjAb;
     SIA    = data.SIA;
@@ -923,9 +907,6 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     free(Wa);
     free(Va);
 
-    pthread_exit(nullptr);
-
-    return nullptr;
 }
 
 }

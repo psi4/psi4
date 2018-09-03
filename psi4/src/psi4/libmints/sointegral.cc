@@ -461,4 +461,4 @@ std::shared_ptr<SOBasisSet> TwoBodySOInt::basis2() const { return b2_; }
 std::shared_ptr<SOBasisSet> TwoBodySOInt::basis3() const { return b3_; }
 
 std::shared_ptr<SOBasisSet> TwoBodySOInt::basis4() const { return b4_; }
-}
+}  // namespace psi

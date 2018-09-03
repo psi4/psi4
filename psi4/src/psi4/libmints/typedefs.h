@@ -29,16 +29,16 @@
 #ifndef libmints_typedefs_h
 #define libmints_typedefs_h
 
-#include <memory> // for shared_ptr
+#include <memory>  // for shared_ptr
 
 // Handy mints timer macros, requires libqt to be included
 #ifdef MINTS_TIMER
-#   include "psi4/libqt/qt.h"
-#   define mints_timer_on(a) timer_on((a));
-#   define mints_timer_off(a) timer_off((a));
+#include "psi4/libqt/qt.h"
+#define mints_timer_on(a) timer_on((a));
+#define mints_timer_off(a) timer_off((a));
 #else
-#   define mints_timer_on(a)
-#   define mints_timer_off(a)
+#define mints_timer_on(a)
+#define mints_timer_off(a)
 #endif
 
 // Forward declare psi
@@ -55,7 +55,7 @@ using SharedWavefunction = std::shared_ptr<Wavefunction>;
 using SharedMolecule = std::shared_ptr<Molecule>;
 
 // Useful when working with SO-TEIs
-template<typename T>
+template <typename T>
 void swap_index(T& a, T& b) {
     T temp;
     temp = b;
@@ -63,9 +63,11 @@ void swap_index(T& a, T& b) {
     a = temp;
 }
 
-#define SWAP_INDEX(a, b) swap_index(a ## abs, b ## abs); swap_index(a ## rel, b ## rel); swap_index(a ## irrep, b ## irrep);
+#define SWAP_INDEX(a, b)        \
+    swap_index(a##abs, b##abs); \
+    swap_index(a##rel, b##rel); \
+    swap_index(a##irrep, b##irrep);
 
-}
+}  // namespace psi
 
-
-#endif // libmints_typedefs_h
+#endif  // libmints_typedefs_h
