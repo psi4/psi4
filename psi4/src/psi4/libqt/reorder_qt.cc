@@ -306,5 +306,6 @@ PSI_API void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc, int *frozen_
         free(offset);
         free(uocc);
     }
+}
 
 }  // namespace psi
