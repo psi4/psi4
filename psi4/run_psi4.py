@@ -36,6 +36,7 @@ import datetime
 import argparse
 from argparse import RawTextHelpFormatter
 
+# yapf: disable
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
 parser.add_argument("-i", "--input", default="input.dat",
                     help="Input file name. Default: input.dat.")
@@ -88,6 +89,7 @@ Generates a CMake command for building a plugin against this Psi4 installation.
 >>> `psi4 --plugin-compile`
 >>> make
 >>> psi4""")
+# yapf: enable
 
 # print("Environment Variables\n");
 # print("     PSI_SCRATCH           Directory where scratch files are written.")
@@ -143,7 +145,8 @@ if args['plugin_compile']:
 
     plugincachealongside = os.path.isfile(share_cmake_dir + os.path.sep + 'psi4PluginCache.cmake')
     if plugincachealongside:
-        print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(share_cmake_dir, cmake_install_prefix))
+        print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(
+            share_cmake_dir, cmake_install_prefix))
         sys.exit()
     else:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
@@ -182,7 +185,6 @@ if args['plugin_name']:
     psi4.plugin.create_plugin(args['plugin_name'], args['plugin_template'])
 
     sys.exit()
-
 
 if args["test"]:
     psi4.test()
@@ -232,7 +234,6 @@ if args["json"]:
 
     sys.exit()
 
-
 # Read input
 with open(args["input"]) as f:
     content = f.read()
@@ -258,7 +259,7 @@ if args["messy"]:
     else:
         for handler in atexit._exithandlers:
             for func in _clean_functions:
-                if handler[0] == func: 
+                if handler[0] == func:
                     atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
@@ -281,12 +282,22 @@ except Exception as exception:
     tb_str += str(exception)
     psi4.core.print_out("\n")
     psi4.core.print_out(tb_str)
-    psi4.core.print_out("\n")
+    psi4.core.print_out("\n\n")
+
+    psi4.core.print_out("Printing out the relevant lines from the post-processed input file:\n")
+    lines = content.splitlines()
+    python_input_lineno = traceback.extract_tb(exc_traceback)[1].lineno - 1  # -1 for 0 indexing
+    first_line = max(0, python_input_lineno - 5)  # Try to show five lines back...
+    last_line = min(len(lines), python_input_lineno + 6)  # Try to show five lines forward
+    for line in lines[first_line:python_input_lineno]:
+        psi4.core.print_out("    " + line + "\n")
+    psi4.core.print_out("--> " + lines[python_input_lineno] + "\n")
+    for line in lines[python_input_lineno + 1:last_line]:
+        psi4.core.print_out("    " + line + "\n")
+
     if psi4.core.get_output_file() != "stdout":
         print(tb_str)
     sys.exit(1)
 
-
 #    elif '***HDF5 library version mismatched error***' in str(err):
 #        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
-
