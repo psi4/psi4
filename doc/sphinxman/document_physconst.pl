@@ -74,7 +74,7 @@ printf RSTOUT "   +-%-23s-+-%-20s-+-%-100s-+\n", ('-' x 23), ('-' x 20), ('-' x 
 printf RSTOUT "   | %-23s | %-20s | %-100s |\n", "Label", "Value", "Description";
 printf RSTOUT "   +=%23s=+=%20s=+=%100s=+\n", ('=' x 23), ('=' x 20), ('=' x 100);
 while(<PHYSCONST>){
-    next unless /\s*#define\s+pc_(\w+)\s+([-Ee0-9.]+)\s+\/\*-(.*)-\*\//;
+    next unless /\s*#define\s+pc_(\w+)\s+([-+Ee0-9.]+)\s+\/\*-(.*)-\*\//;
     my $Var     = $1;
     my $Val     = $2;
     my $Comment = $3;
