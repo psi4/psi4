@@ -6,12 +6,12 @@
 #! are transformed into MO basis.
 
 # UHF-ODC-12                            #TEST
-refscf_uhf      = -76.0266030959050312  #TEST 
+refscf_uhf      = -76.0266030961285679  #TEST
 refmp2_uhf      = -76.230809106995821   #TEST
 refodc12_uhf    = -76.241636548124134   #TEST
 
 # RHF-ODC-12                            #TEST
-refscf_rhf      = -76.0266030959050596  #TEST
+refscf_rhf      = -76.02660309612853    #TEST
 refmp2_rhf      = -76.230809106995864   #TEST
 refodc12_rhf    = -76.241636548124106   #TEST 
 
