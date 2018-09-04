@@ -1,7 +1,7 @@
 #! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
 
 # The following values are taken from PSI3 #TEST
-refnuc   =   7.6466914045240 #TEST
+refnuc   =   7.6466914346    #TEST
 refscf   = -55.5301768881550 #TEST
 refci    = -55.6332640345465 #TEST
 refcorr  = refci - refscf    #TEST

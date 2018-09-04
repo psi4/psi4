@@ -1,7 +1,7 @@
 #! Patch of a glycine with a methyl group, to make alanine, then DF-SCF 
 #! energy calculation with the cc-pVDZ basis set
 
-eNuc =  256.652780316346650  #TEST
+eNuc =  256.6527813252       #TEST
 eSCF = -321.8674683375353425 #TEST
 
 molecule alanine {

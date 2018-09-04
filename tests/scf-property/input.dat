@@ -21,7 +21,7 @@ set globals = {
 }
 
 ch2.update_geometry()
-compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(6.6484189450, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',

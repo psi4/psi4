@@ -1,6 +1,6 @@
 #! Extrapolated energies with delta correction
 
-nucenergy_ref =   5.1767335623    #TEST
+nucenergy_ref =   5.1767335826  #TEST
 
 molecule hf {
     F
