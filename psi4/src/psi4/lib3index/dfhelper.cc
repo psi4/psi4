@@ -2194,8 +2194,8 @@ void DFHelper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t>
         size_t a2 = std::get<2>(sizes);
 
         double* Fp = transf_core_[name].get();
-#pragma omp parallel num_threads(nthreads_)
-        for (size_t i = 0; i < A0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+        for (long i = 0; i < A0; i++) {
             for (size_t j = 0; j < A1; j++) {
 #if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
@@ -2284,8 +2284,8 @@ SharedMatrix DFHelper::get_tensor(std::string name, std::vector<size_t> t0, std:
         size_t a2 = std::get<2>(sizes);
 
         double* Fp = transf_core_[name].get();
-#pragma omp parallel num_threads(nthreads_)
-        for (size_t i = 0; i < A0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+        for (long i = 0; i < A0; i++) {
             for (size_t j = 0; j < A1; j++) {
 #if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
@@ -2521,8 +2521,8 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
 
     if (a0 == 0) {
         if (a1 == 2) {  // (0|12) -> (0|21)
-#pragma omp parallel num_threads(nthreads_)
-            for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+            for (long i = 0; i < M0; i++) {
                 for (size_t j = 0; j < M1; j++) {
                     for (size_t k = 0; k < M2; k++) {
                         Fp[i * M1 * M2 + k * M1 + j] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2532,8 +2532,8 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
         }
     } else if (a0 == 1) {
         if (a1 == 0) {  // (0|12) -> (1|02)
-#pragma omp parallel num_threads(nthreads_)
-            for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+            for (long i = 0; i < M0; i++) {
                 for (size_t j = 0; j < M1; j++) {
 #if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
@@ -2544,8 +2544,8 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
                 }
             }
         } else if (a1 == 2) {  // (0|12) -> (1|20)
-#pragma omp parallel num_threads(nthreads_)
-            for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+            for (long i = 0; i < M0; i++) {
                 for (size_t j = 0; j < M1; j++) {
                     for (size_t k = 0; k < M2; k++) {
                         Fp[j * M0 * M2 + k * M0 + i] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2555,8 +2555,8 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
         }
     } else if (a0 == 2) {
         if (a1 == 0) {  // (0|12) -> (2|01)
-#pragma omp parallel num_threads(nthreads_)
-            for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+            for (long i = 0; i < M0; i++) {
                 for (size_t j = 0; j < M1; j++) {
                     for (size_t k = 0; k < M2; k++) {
                         Fp[k * M1 * M0 + i * M1 + j] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2564,8 +2564,8 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
                 }
             }
         } else if (a1 == 1) {  // (0|12) -> (2|10)
-#pragma omp parallel num_threads(nthreads_)
-            for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+            for (long i = 0; i < M0; i++) {
                 for (size_t j = 0; j < M1; j++) {
                     for (size_t k = 0; k < M2; k++) {
                         Fp[k * M1 * M0 + j * M0 + i] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2661,8 +2661,8 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
 
         if (a0 == 0) {
             if (a1 == 2) {  // (0|12) -> (0|21)
-#pragma omp parallel num_threads(nthreads_)
-                for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+                for (long i = 0; i < M0; i++) {
                     for (size_t j = 0; j < M1; j++) {
                         for (size_t k = 0; k < M2; k++) {
                             Fp[i * M1 * M2 + k * M1 + j] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2674,8 +2674,8 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
             }
         } else if (a0 == 1) {
             if (a1 == 0) {  // (0|12) -> (1|02)
-#pragma omp parallel num_threads(nthreads_)
-                for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+                for (long i = 0; i < M0; i++) {
                     for (size_t j = 0; j < M1; j++) {
 #if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
@@ -2688,8 +2688,8 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
                 put_tensor(new_filename, Fp, std::make_pair(0, M1 - 1), std::make_pair(start, stop),
                            std::make_pair(0, M2 - 1), op);
             } else if (a1 == 2) {  // (0|12) -> (1|20)
-#pragma omp parallel num_threads(nthreads_)
-                for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+                for (long i = 0; i < M0; i++) {
                     for (size_t j = 0; j < M1; j++) {
                         for (size_t k = 0; k < M2; k++) {
                             Fp[j * M0 * M2 + k * M0 + i] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2701,8 +2701,8 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
             }
         } else if (a0 == 2) {
             if (a1 == 0) {  // (0|12) -> (2|01)
-#pragma omp parallel num_threads(nthreads_)
-                for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+                for (long i = 0; i < M0; i++) {
                     for (size_t j = 0; j < M1; j++) {
                         for (size_t k = 0; k < M2; k++) {
                             Fp[k * M1 * M0 + i * M1 + j] = Mp[i * M1 * M2 + j * M2 + k];
@@ -2712,8 +2712,8 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
                 put_tensor(new_filename, Fp, std::make_pair(0, M2 - 1), std::make_pair(start, stop),
                            std::make_pair(0, M1 - 1), op);
             } else if (a1 == 1) {  // (0|12) -> (2|10)
-#pragma omp parallel num_threads(nthreads_)
-                for (size_t i = 0; i < M0; i++) {
+#pragma omp parallel for num_threads(nthreads_)
+                for (long i = 0; i < M0; i++) {
                     for (size_t j = 0; j < M1; j++) {
                         for (size_t k = 0; k < M2; k++) {
                             Fp[k * M1 * M0 + j * M0 + i] = Mp[i * M1 * M2 + j * M2 + k];
