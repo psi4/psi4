@@ -104,3 +104,8 @@ artifacts:
     name: psi4
   - path: build\tests
     name: tests
+
+branches:
+  only:
+    - master
+    # - 1.3.x
