@@ -284,15 +284,15 @@ except Exception as exception:
     psi4.core.print_out(tb_str)
     psi4.core.print_out("\n\n")
 
-    psi4.core.print_out("Printing out the relevant lines from the post-processed input file:\n")
+    psi4.core.print_out("Printing out the relevant lines from the Psithon --> Python processed input file:\n")
     lines = content.splitlines()
-    python_input_lineno = traceback.extract_tb(exc_traceback)[1].lineno - 1  # -1 for 0 indexing
-    first_line = max(0, python_input_lineno - 5)  # Try to show five lines back...
-    last_line = min(len(lines), python_input_lineno + 6)  # Try to show five lines forward
-    for line in lines[first_line:python_input_lineno]:
+    suspect_lineno = traceback.extract_tb(exc_traceback)[1].lineno - 1  # -1 for 0 indexing
+    first_line = max(0, suspect_lineno - 5)  # Try to show five lines back...
+    last_line = min(len(lines), suspect_lineno + 6)  # Try to show five lines forward
+    for line in lines[first_line:suspect_lineno]:
         psi4.core.print_out("    " + line + "\n")
-    psi4.core.print_out("--> " + lines[python_input_lineno] + "\n")
-    for line in lines[python_input_lineno + 1:last_line]:
+    psi4.core.print_out("--> " + lines[suspect_lineno] + "\n")
+    for line in lines[suspect_lineno + 1:last_line]:
         psi4.core.print_out("    " + line + "\n")
 
     if psi4.core.get_output_file() != "stdout":
