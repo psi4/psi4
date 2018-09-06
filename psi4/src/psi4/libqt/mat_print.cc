@@ -48,58 +48,52 @@ namespace psi {
 **
 ** \ingroup QT
 */
-void mat_print(double **matrix, int rows, int cols, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   div_t fraction;
-  int i,j;
-  int cols_per_page, num_pages, last_page, page, first_col;
+void mat_print(double **matrix, int rows, int cols, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    div_t fraction;
+    int i, j;
+    int cols_per_page, num_pages, last_page, page, first_col;
 
-  cols_per_page = 5;
+    cols_per_page = 5;
 
-  /* Determine the number of cols_per_page groups */
-  fraction = div(cols,cols_per_page);
-  num_pages = fraction.quot;  /* Number of complete column groups */
-  last_page = fraction.rem;  /* Number of columns in last group */
+    /* Determine the number of cols_per_page groups */
+    fraction = div(cols, cols_per_page);
+    num_pages = fraction.quot; /* Number of complete column groups */
+    last_page = fraction.rem;  /* Number of columns in last group */
 
-  /* Loop over the complete column groups */
-  for(page=0; page < num_pages; page++) {
-      first_col = page*cols_per_page;
+    /* Loop over the complete column groups */
+    for (page = 0; page < num_pages; page++) {
+        first_col = page * cols_per_page;
 
-      outfile->Printf("\n      ");
-      for(i=first_col; i < first_col+cols_per_page; i++)
-          printer->Printf("         %5d        ",i);
+        outfile->Printf("\n      ");
+        for (i = first_col; i < first_col + cols_per_page; i++) printer->Printf("         %5d        ", i);
 
-      printer->Printf("\n");
-      for(i=0; i < rows; i++) {
-          printer->Printf("\n%5d ",i);
+        printer->Printf("\n");
+        for (i = 0; i < rows; i++) {
+            printer->Printf("\n%5d ", i);
 
-          for(j=first_col; j < first_col+cols_per_page; j++)
-              printer->Printf("%22.15f",matrix[i][j]);
+            for (j = first_col; j < first_col + cols_per_page; j++) printer->Printf("%22.15f", matrix[i][j]);
         }
 
-      printer->Printf("\n");
+        printer->Printf("\n");
     }
 
-  /* Now print the remaining columns */
-  if(last_page) {
-      first_col = page*cols_per_page;
+    /* Now print the remaining columns */
+    if (last_page) {
+        first_col = page * cols_per_page;
 
-      printer->Printf("\n      ");
-      for(i=first_col; i < first_col+last_page; i++)
-          printer->Printf("         %5d        ",i);
+        printer->Printf("\n      ");
+        for (i = first_col; i < first_col + last_page; i++) printer->Printf("         %5d        ", i);
 
-      printer->Printf("\n");
-      for(i=0; i < rows; i++) {
-	  printer->Printf("\n%5d ",i);
+        printer->Printf("\n");
+        for (i = 0; i < rows; i++) {
+            printer->Printf("\n%5d ", i);
 
-	  for(j=first_col; j < first_col+last_page; j++)
-	      printer->Printf("%22.15f",matrix[i][j]);
-	}
+            for (j = first_col; j < first_col + last_page; j++) printer->Printf("%22.15f", matrix[i][j]);
+        }
 
-      printer->Printf("\n");
+        printer->Printf("\n");
     }
 }
 
-}
+}  // namespace psi

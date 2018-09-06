@@ -57,246 +57,235 @@ namespace psi {
 ** Returns: 0 for success, 1 for failure
 ** \ingroup QT
 */
-int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
-          std::string out, int print_lvl)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   double det, tval;
-   double **Bmat; /* Matrix of expansion vectors */
-   double **Ab;   /* Matrix of A x expansion vectors */
-   double **M;    /* Pople subspace matrix */
-   double *n;     /* overlap of b or transformed b in Ax = b
-                     with expansion vector zero */
-   double *r;     /* residual vector */
-   double *b;     /* b vector in Ax = b, or transformed b vector */
-   double *sign;  /* sign array  to insure diagonal element of A are positive */
-   double **Mtmp; /* tmp M matrix passed to flin */
-   int i, j, L=0, I;
-   double norm, rnorm=1.0, *dotprod, *alpha;
-   double *dvec;
-   int llast=0, last=0, maxdimen;
-   int quit=0;
+int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, std::string out, int print_lvl) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    double det, tval;
+    double **Bmat; /* Matrix of expansion vectors */
+    double **Ab;   /* Matrix of A x expansion vectors */
+    double **M;    /* Pople subspace matrix */
+    double *n;     /* overlap of b or transformed b in Ax = b
+                      with expansion vector zero */
+    double *r;     /* residual vector */
+    double *b;     /* b vector in Ax = b, or transformed b vector */
+    double *sign;  /* sign array  to insure diagonal element of A are positive */
+    double **Mtmp; /* tmp M matrix passed to flin */
+    int i, j, L = 0, I;
+    double norm, rnorm = 1.0, *dotprod, *alpha;
+    double *dvec;
+    int llast = 0, last = 0, maxdimen;
+    int quit = 0;
 
-   maxdimen = 200;
-   /* initialize working array */
-   Bmat = block_matrix(maxdimen, dimen);
-   alpha = init_array(maxdimen);
-   M = block_matrix(maxdimen, maxdimen);
-   Mtmp = block_matrix(maxdimen, maxdimen);
-   dvec = init_array(dimen);
-   Ab = block_matrix(maxdimen, dimen);
-   r = init_array(dimen);
-   b = init_array(dimen);
-   n = init_array(dimen);
-   dotprod = init_array(maxdimen);
-   sign = init_array(dimen);
+    maxdimen = 200;
+    /* initialize working array */
+    Bmat = block_matrix(maxdimen, dimen);
+    alpha = init_array(maxdimen);
+    M = block_matrix(maxdimen, maxdimen);
+    Mtmp = block_matrix(maxdimen, maxdimen);
+    dvec = init_array(dimen);
+    Ab = block_matrix(maxdimen, dimen);
+    r = init_array(dimen);
+    b = init_array(dimen);
+    n = init_array(dimen);
+    dotprod = init_array(maxdimen);
+    sign = init_array(dimen);
 
-   if (print_lvl > 6) {
-   printer->Printf("\n\n Using Pople's Method for solving linear equations.\n");
-   printer->Printf("     --------------------------------------------------\n");
-   printer->Printf("         Iter             Norm of Residual Vector      \n");
-   printer->Printf("        ------           -------------------------     \n");
-   }
+    if (print_lvl > 6) {
+        printer->Printf("\n\n Using Pople's Method for solving linear equations.\n");
+        printer->Printf("     --------------------------------------------------\n");
+        printer->Printf("         Iter             Norm of Residual Vector      \n");
+        printer->Printf("        ------           -------------------------     \n");
+    }
 
-   norm = 0.0;
-   for (i=0; i<dimen; i++) norm += x[i]*x[i];
-   if (norm < ZERO) quit = 1;
+    norm = 0.0;
+    for (i = 0; i < dimen; i++) norm += x[i] * x[i];
+    if (norm < ZERO) quit = 1;
 
-   if (!quit) {
-       for (i=0; i<dimen; i++) {
-           if (A[i][i] > ZERO) sign[i] = 1.0;
-           else sign[i] = -1.0;
-           x[i] *= sign[i];
-         }
+    if (!quit) {
+        for (i = 0; i < dimen; i++) {
+            if (A[i][i] > ZERO)
+                sign[i] = 1.0;
+            else
+                sign[i] = -1.0;
+            x[i] *= sign[i];
+        }
 
-       for (i=0; i<dimen; i++) {
-           Bmat[0][i] = x[i];
-           b[i] = x[i];
-           dvec[i] = sqrt(std::fabs(A[i][i]));
-           b[i] /= dvec[i];
-           /*   outfile->Printf("A[%d][%d] = %lf\n",i,i, A[i][i]);
-                outfile->Printf("dvec[%d] = %lf\n",i, dvec[i]);
-                outfile->Printf("x[%d] = %lf\n",i, x[i]);
-           */
-         }
+        for (i = 0; i < dimen; i++) {
+            Bmat[0][i] = x[i];
+            b[i] = x[i];
+            dvec[i] = sqrt(std::fabs(A[i][i]));
+            b[i] /= dvec[i];
+            /*   outfile->Printf("A[%d][%d] = %lf\n",i,i, A[i][i]);
+                 outfile->Printf("dvec[%d] = %lf\n",i, dvec[i]);
+                 outfile->Printf("x[%d] = %lf\n",i, x[i]);
+            */
+        }
 
-       if (print_lvl > 8) {
-           printer->Printf(" A matrix in POPLE(LIBQT):\n");
-           print_mat(A, dimen, dimen, out);
-         }
+        if (print_lvl > 8) {
+            printer->Printf(" A matrix in POPLE(LIBQT):\n");
+            print_mat(A, dimen, dimen, out);
+        }
 
-       /* Constructing P matrix */
-       for (i=0; i<dimen; i++) {
+        /* Constructing P matrix */
+        for (i = 0; i < dimen; i++) {
+            for (j = 0; j < dimen; j++) {
+                if (i == j)
+                    A[i][i] = 0.0;
+                else
+                    A[i][j] = -A[i][j] * sign[i];
+            }
+        }
+        if (print_lvl > 8) {
+            printer->Printf(" P matrix in POPLE(LIBQT):\n");
+            print_mat(A, dimen, dimen, out);
+        }
+
+        /* Precondition P matrix with diagonal elements of A */
+        for (i = 0; i < dimen; i++)
+            for (j = 0; j < dimen; j++) {
+                tval = 1.0 / (dvec[j] * dvec[i]);
+                A[i][j] *= tval;
+            }
+
+        if (print_lvl > 8) {
+            printer->Printf(" Preconditioned P matrix in POPLE(LIBQT):\n");
+            print_mat(A, dimen, dimen, out);
+        }
+
+        /*
+           for (i=0; i<dimen; i++) {
            for (j=0; j<dimen; j++) {
-               if (i==j) A[i][i] = 0.0;
-               else A[i][j] = -A[i][j]*sign[i];
-             }
-         }
-       if (print_lvl > 8) {
-           printer->Printf(" P matrix in POPLE(LIBQT):\n");
-           print_mat(A, dimen, dimen, out);
-         }
+           if (i==j) A[i][i] = 1.0 - A[i][i];
+           else A[i][j] = -A[i][j];
+           }
+           }
+        */
 
-       /* Precondition P matrix with diagonal elements of A */
-       for (i=0; i<dimen; i++)
-           for (j=0; j<dimen; j++) {
-               tval = 1.0/(dvec[j]*dvec[i]);
-               A[i][j] *= tval;
-             }
+        for (i = 0; i < dimen; i++) Bmat[0][i] /= dvec[i];
 
-       if (print_lvl > 8) {
-           printer->Printf(" Preconditioned P matrix in POPLE(LIBQT):\n");
-           print_mat(A, dimen, dimen, out);
-         }
+        // dot_arr(Bmat[0],Bmat[0],dimen,&norm);
+        norm = C_DDOT(dimen, Bmat[0], 1, Bmat[0], 1);
+        norm = sqrt(norm);
+        for (i = 0; i < dimen; i++) {
+            x[i] = Bmat[0][i];
+            Bmat[0][i] /= norm;
+        }
 
-       /*
-          for (i=0; i<dimen; i++) {
-          for (j=0; j<dimen; j++) {
-          if (i==j) A[i][i] = 1.0 - A[i][i];
-          else A[i][j] = -A[i][j];
-          }
-          }
-       */
+        // dot_arr(Bmat[0],x,dimen,&(n[0]));
+        n[0] = C_DDOT(dimen, Bmat[0], 1, x, 1);
 
-       for (i=0; i<dimen; i++) Bmat[0][i] /= dvec[i];
+        while (!last) {
+            /* form A*b_i */
+            for (i = 0; i < dimen; i++)
+                // dot_arr(A[i], Bmat[L], dimen, &(Ab[L][i]));
+                Ab[L][i] = C_DDOT(dimen, A[i], 1, Bmat[L], 1);
 
+            /* Construct M matrix */
+            /* M = delta_ij - <b_new|Ab_j> */
+            zero_mat(M, maxdimen, maxdimen);
+            for (i = 0; i <= L; i++) {
+                for (j = 0; j <= L; j++) {
+                    // dot_arr(Bmat[i], Ab[j], dimen, &(dotprod[i]));
+                    dotprod[i] = C_DDOT(dimen, Bmat[i], 1, Ab[j], 1);
+                    if (i == j)
+                        M[i][j] = 1.0 - dotprod[i];
+                    else
+                        M[i][j] = -dotprod[i];
+                }
+            }
 
-       //dot_arr(Bmat[0],Bmat[0],dimen,&norm);
-       norm = C_DDOT(dimen, Bmat[0], 1, Bmat[0], 1);
-       norm = sqrt(norm);
-       for (i=0; i<dimen; i++) {
-           x[i] = Bmat[0][i];
-           Bmat[0][i] /= norm;
-         }
+            if (llast) last = llast;
 
-       // dot_arr(Bmat[0],x,dimen,&(n[0]));
-       n[0] = C_DDOT(dimen, Bmat[0], 1, x, 1);
+            for (i = 0; i <= L; i++) {
+                alpha[i] = n[i];
+                for (j = 0; j <= L; j++) Mtmp[i][j] = M[i][j];
+            }
 
-       while (!last) {
-           /* form A*b_i */
-           for (i=0; i<dimen; i++)
-               // dot_arr(A[i], Bmat[L], dimen, &(Ab[L][i]));
-               Ab[L][i] = C_DDOT(dimen, A[i], 1, Bmat[L], 1);
+            flin(Mtmp, alpha, L + 1, 1, &det);
 
+            /* Need to form and backtransform x to orig basis x = D^(-1/2) x */
+            zero_arr(x, dimen);
+            for (i = 0; i <= L; i++)
+                for (I = 0; I < dimen; I++) x[I] += alpha[i] * Bmat[i][I] / dvec[I];
 
-           /* Construct M matrix */
-           /* M = delta_ij - <b_new|Ab_j> */
-           zero_mat(M, maxdimen, maxdimen);
-           for (i=0; i<=L; i++) {
-               for (j=0; j<=L; j++) {
-                   // dot_arr(Bmat[i], Ab[j], dimen, &(dotprod[i]));
-                   dotprod[i] = C_DDOT(dimen, Bmat[i], 1, Ab[j], 1);
-                   if (i==j) M[i][j] = 1.0 - dotprod[i];
-                   else M[i][j] = -dotprod[i];
-                 }
-             }
+            /* Form residual vector Ax - b = r */
+            zero_arr(r, dimen);
+            for (I = 0; I < dimen; I++)
+                for (i = 0; i <= L; i++) r[I] += alpha[i] * (Bmat[i][I] - Ab[i][I]);
 
-           if (llast) last = llast;
+            for (I = 0; I < dimen; I++) r[I] -= b[I];
 
-           for (i=0; i<=L; i++) {
-               alpha[i] = n[i];
-               for (j=0; j<=L; j++)
-                   Mtmp[i][j] = M[i][j];
-             }
+            // dot_arr(r, r, dimen, &rnorm);
+            rnorm = C_DDOT(dimen, r, 1, r, 1);
+            rnorm = sqrt(rnorm);
+            if (print_lvl > 6) {
+                printer->Printf("        %3d                     %10.3E\n", L + 1, rnorm);
+            }
 
-           flin(Mtmp, alpha, L+1, 1, &det);
+            if (L + 1 > dimen) {
+                printer->Printf("POPLE: Too many vectors in expansion space.\n");
+                return 1;
+            }
 
+            /* place residual in b vector space */
+            if (L + 1 >= maxdimen) {
+                printer->Printf(
+                    "POPLE (LIBQT): Number of expansion vectors exceeds"
+                    " maxdimen (%d)\n",
+                    L + 1);
+                return 1;
+            }
+            for (i = 0; i < dimen; i++) Bmat[L + 1][i] = Ab[L][i];
+            /*
+               for (i=0; i<dimen; i++) Bmat[L+1][i] = r[i];
+               for (i=0; i<dimen; i++) Bmat[L+1][i] = r[i]/(dvec[i]*dvec[i]);
+            */
 
-           /* Need to form and backtransform x to orig basis x = D^(-1/2) x */
-           zero_arr(x, dimen);
-           for (i=0; i<=L; i++)
-               for (I=0; I<dimen; I++)
-                   x[I] += alpha[i]*Bmat[i][I]/dvec[I];
+            /* Schmidt orthonormalize new b vec to expansion space */
+            for (j = 0; j <= L; j++) {
+                // dot_arr(Bmat[j], Bmat[L+1], dimen, &(dotprod[j]));
+                dotprod[j] = C_DDOT(dimen, Bmat[j], 1, Bmat[L + 1], 1);
+                for (I = 0; I < dimen; I++) Bmat[L + 1][I] -= dotprod[j] * Bmat[j][I];
+            }
 
-           /* Form residual vector Ax - b = r */
-           zero_arr(r, dimen);
-           for (I=0; I<dimen; I++)
-               for (i=0; i<=L; i++)
-                   r[I] += alpha[i]*(Bmat[i][I] - Ab[i][I]);
+            /* Normalize new expansion vector */
+            // dot_arr(Bmat[L+1], Bmat[L+1], dimen, &norm);
+            norm = C_DDOT(dimen, Bmat[L + 1], 1, Bmat[L + 1], 1);
+            norm = sqrt(norm);
+            for (I = 0; I < dimen; I++) Bmat[L + 1][I] /= norm;
 
-           for (I=0; I<dimen; I++) r[I] -= b[I];
+            /* check orthogonality of subspace */
+            if (0) {
+                for (i = 0; i <= L + 1; i++) {
+                    for (j = 0; j <= i; j++) {
+                        // dot_arr(Bmat[i], Bmat[j], dimen, &tval);
+                        tval = C_DDOT(dimen, Bmat[i], 1, Bmat[j], 1);
+                        printer->Printf("Bvec[%d] * Bvec[%d] = %f\n", i, j, tval);
+                    }
+                }
+            }
 
-           // dot_arr(r, r, dimen, &rnorm);
-           rnorm = C_DDOT(dimen, r, 1, r, 1);
-           rnorm = sqrt(rnorm);
-           if (print_lvl > 6) {
-               printer->Printf(
-                 "        %3d                     %10.3E\n",L+1,rnorm);
+            if (rnorm < tolerance) llast = last = 1;
+            L++;
+        }
 
-             }
+        zero_arr(x, dimen);
+        for (i = 0; i <= L; i++)
+            for (I = 0; I < dimen; I++) x[I] += alpha[i] * Bmat[i][I];
 
-           if (L+1>dimen) {
-               printer->Printf("POPLE: Too many vectors in expansion space.\n");
-               return 1;
-             }
+        /* Need to backtransform x to orginal basis x = D^(-1/2) x */
+        for (I = 0; I < dimen; I++) x[I] /= dvec[I];
+    }
+    free_block(Bmat);
+    free(alpha);
+    free_block(M);
+    free_block(Mtmp);
+    free(n);
+    free(dvec);
+    free_block(Ab);
+    free(r);
+    free(b);
+    free(dotprod);
 
-           /* place residual in b vector space */
-           if (L+1>= maxdimen) {
-               printer->Printf(
-                 "POPLE (LIBQT): Number of expansion vectors exceeds"
-                       " maxdimen (%d)\n", L+1);
-               return 1;
-             }
-           for (i=0; i<dimen; i++) Bmat[L+1][i] = Ab[L][i];
-           /*
-              for (i=0; i<dimen; i++) Bmat[L+1][i] = r[i];
-              for (i=0; i<dimen; i++) Bmat[L+1][i] = r[i]/(dvec[i]*dvec[i]);
-           */
-
-
-           /* Schmidt orthonormalize new b vec to expansion space */
-           for (j=0; j<=L; j++) {
-               // dot_arr(Bmat[j], Bmat[L+1], dimen, &(dotprod[j]));
-               dotprod[j] = C_DDOT(dimen, Bmat[j], 1, Bmat[L+1], 1);
-               for (I=0; I<dimen; I++)
-                   Bmat[L+1][I] -= dotprod[j] * Bmat[j][I];
-             }
-
-           /* Normalize new expansion vector */
-           // dot_arr(Bmat[L+1], Bmat[L+1], dimen, &norm);
-           norm = C_DDOT(dimen, Bmat[L+1], 1, Bmat[L+1], 1);
-           norm = sqrt(norm);
-           for (I=0; I<dimen; I++) Bmat[L+1][I] /= norm;
-
-           /* check orthogonality of subspace */
-           if (0) {
-               for (i=0; i<=L+1; i++) {
-                   for (j=0; j<=i; j++) {
-                       // dot_arr(Bmat[i], Bmat[j], dimen, &tval);
-                       tval = C_DDOT(dimen, Bmat[i], 1, Bmat[j], 1);
-                       printer->Printf( "Bvec[%d] * Bvec[%d] = %f\n",i,j,tval);
-                     }
-                 }
-             }
-
-
-           if (rnorm<tolerance) llast = last = 1;
-           L++;
-         }
-
-       zero_arr(x, dimen);
-       for (i=0; i<=L; i++)
-           for (I=0; I<dimen; I++)
-               x[I] += alpha[i]*Bmat[i][I];
-
-       /* Need to backtransform x to orginal basis x = D^(-1/2) x */
-       for (I=0; I<dimen; I++)
-           x[I] /= dvec[I];
-
-     }
-   free_block(Bmat);
-   free(alpha);
-   free_block(M);
-   free_block(Mtmp);
-   free(n);
-   free(dvec);
-   free_block(Ab);
-   free(r);
-   free(b);
-   free(dotprod);
-
-   return 0;
+    return 0;
 }
-
 }

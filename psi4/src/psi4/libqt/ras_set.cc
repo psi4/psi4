@@ -132,334 +132,306 @@ namespace psi {
 ** Returns: 1 for success, 0 otherwise
 ** \ingroup QT
 */
-int ras_set3(int nirreps, int nmo, int *orbspi,
-             int *docc, int *socc, int *frdocc, int *fruocc,
-             int *restrdocc, int *restruocc, int **ras_opi, int *core_guess,
-             int *order, int ras_type, bool is_mcscf, Options& options)
-{
-  int i, irrep, point, tmpi, cnt=0;
-  int errcod, errbad=0;
-  int *used, *offset, **tras;
-  int *tmp_frdocc, *tmp_fruocc;
-  bool parsed_ras1=false, parsed_ras2=false;
-  bool parsed_ras3=false, parsed_ras4=false;
-  bool parsed_frozen_docc=false, parsed_restr_docc=false;
-  bool parsed_frozen_uocc=false, parsed_restr_uocc=false;
+int ras_set3(int nirreps, int nmo, int *orbspi, int *docc, int *socc, int *frdocc, int *fruocc, int *restrdocc,
+             int *restruocc, int **ras_opi, int *core_guess, int *order, int ras_type, bool is_mcscf,
+             Options &options) {
+    int i, irrep, point, tmpi, cnt = 0;
+    int errcod, errbad = 0;
+    int *used, *offset, **tras;
+    int *tmp_frdocc, *tmp_fruocc;
+    bool parsed_ras1 = false, parsed_ras2 = false;
+    bool parsed_ras3 = false, parsed_ras4 = false;
+    bool parsed_frozen_docc = false, parsed_restr_docc = false;
+    bool parsed_frozen_uocc = false, parsed_restr_uocc = false;
 
-  used = init_int_array(nirreps);
-  offset = init_int_array(nirreps);
+    used = init_int_array(nirreps);
+    offset = init_int_array(nirreps);
 
-  // zero the things where guesses shouldn't be coming in
-  for (i=0; i<MAX_RAS_SPACES; i++) {
-    zero_int_array(ras_opi[i], nirreps);
-  }
-  zero_int_array(frdocc, nirreps);
-  zero_int_array(restrdocc, nirreps);
-  zero_int_array(fruocc, nirreps);
-  zero_int_array(restruocc, nirreps);
-
-  zero_int_array(order, nmo);
-
-  // Replace DOCC and SOCC only if they are in input, otherwise just
-  // leave alone the guess provided.
-  if (options["DOCC"].has_changed()) {
-    if (options["DOCC"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", "DOCC",
-        __FILE__, __LINE__);
+    // zero the things where guesses shouldn't be coming in
+    for (i = 0; i < MAX_RAS_SPACES; i++) {
+        zero_int_array(ras_opi[i], nirreps);
     }
-    options.fill_int_array("DOCC", docc);
-  }
-  if (options["SOCC"].has_changed()) {
-    if (options["SOCC"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", "SOCC",
-        __FILE__, __LINE__);
-    }
-    options.fill_int_array("SOCC", socc);
-  }
+    zero_int_array(frdocc, nirreps);
+    zero_int_array(restrdocc, nirreps);
+    zero_int_array(fruocc, nirreps);
+    zero_int_array(restruocc, nirreps);
 
-  // Take FROZEN_DOCC from user input if it is there
-  if (options["FROZEN_DOCC"].has_changed()) {
-    if (options["FROZEN_DOCC"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "FROZEN_DOCC", __FILE__, __LINE__);
-    }
-    options.fill_int_array("FROZEN_DOCC", frdocc);
-    parsed_frozen_docc = true;
-  }
+    zero_int_array(order, nmo);
 
-  // Take RESTRICTED_DOCC from user input if it is there
-  if (options["RESTRICTED_DOCC"].has_changed()) {
-    if (options["RESTRICTED_DOCC"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "RESTRICTED_DOCC", __FILE__, __LINE__);
-    }
-    options.fill_int_array("RESTRICTED_DOCC", restrdocc);
-    parsed_restr_docc = true;
-  }
-
-  // If we weren't given either FROZEN_DOCC *or* RESTRICTED_DOCC, then
-  // we'd better guess something.  Take default from core_guess[], and
-  // put that in either in frdocc (if not an MCSCF) or restrdocc (if an MCSCF)
-  if (!parsed_frozen_docc && !parsed_restr_docc) {
-    if (!is_mcscf) {
-      for (i=0; i<nirreps; i++) {
-        frdocc[i] = core_guess[i];
-      }
-    }
-    else {
-      for (i=0; i<nirreps; i++) {
-        restrdocc[i] = core_guess[i];
-      }
-    }
-  }
-  // at this point, we have FROZEN_DOCC and RESTRICTED_DOCC
-
-  // Change FROZEN_UOCC from zero array if user has it in input.
-  // If no user input detected, we might deduce a
-  // different value based on the values of other spaces (below)
-  if (options["FROZEN_UOCC"].has_changed()) {
-    if (options["FROZEN_UOCC"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "FROZEN_UOCC", __FILE__, __LINE__);
-    }
-    options.fill_int_array("FROZEN_UOCC", fruocc);
-    parsed_frozen_uocc = true;
-  }
-
-  // Change RESTRICTED_UOCC from zero array if user has it in input.
-  // If no user input detected, we might deduce a
-  // different value based on the values of other spaces (below)
-  if (options["RESTRICTED_UOCC"].has_changed()) {
-    if (options["RESTRICTED_UOCC"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "RESTRICTED_UOCC", __FILE__, __LINE__);
-    }
-    options.fill_int_array("RESTRICTED_UOCC", restruocc);
-    parsed_restr_uocc = true;
-  }
-
-  // Now use the parser to get the arrays we require IF they are
-  // present in user input ... otherwise leave them alone (they just got
-  // filled with zeroes above, so that will be the default until we
-  // try do deduce them from other information below).
-  // Set some flags for some of the spaces we have parsed to signal we
-  // don't need to deduce those spaces.
-
-  if (options["RAS1"].has_changed()) {
-    if (options["RAS1"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "RAS1", __FILE__, __LINE__);
-    }
-    options.fill_int_array("RAS1", ras_opi[0]);
-    parsed_ras1 = true;
-  }
-  if (options["RAS2"].has_changed()) {
-    if (options["RAS2"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "RAS2", __FILE__, __LINE__);
-    }
-    options.fill_int_array("RAS2", ras_opi[1]);
-    parsed_ras2 = true;
-  }
-  if (options["RAS3"].has_changed()) {
-    if (options["RAS3"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "RAS3", __FILE__, __LINE__);
-    }
-    options.fill_int_array("RAS3", ras_opi[2]);
-    parsed_ras3 = true;
-  }
-  if (options["RAS4"].has_changed()) {
-    if (options["RAS4"].size() != nirreps) {
-      throw InputException("ras_set3(): Wrong size of array",
-        "RAS4", __FILE__, __LINE__);
-    }
-    options.fill_int_array("RAS4", ras_opi[3]);
-    parsed_ras4 = true;
-  }
-
-   // If the user has not specified RAS 1, we must deduce it.
-   // As of 2004, RAS 1 will not include any frozen core or restricted core
-   // orbitals.
-
-  if (!parsed_ras1) {
-    for (irrep=0; irrep<nirreps; irrep++) {
-      if (ras_type==1) ras_opi[0][irrep] = docc[irrep] + socc[irrep];
-      if (ras_type==0) ras_opi[0][irrep] = docc[irrep];
-      ras_opi[0][irrep] -= (frdocc[irrep] + restrdocc[irrep]);
-    }
-  }
-  // at this point, we now have an array in RAS 1
-
-  // If the user hasn't specified RAS-style keywords, look for ACTIVE.
-  // Assume this always goes after any frozen core or restricted core.
-
-  if (parsed_ras1 || parsed_ras2 || parsed_ras3 || parsed_ras4) {
-    if (options["ACTIVE"].has_changed()) {
-      throw InputException("ras_set3(): RAS and ACTIVE keywords mutually exclusive",
-          "ACTIVE", __FILE__, __LINE__);
-    }
-  }
-
-  // Next we need to provide a guess for RAS 2
-  if (!parsed_ras2) { // we didn't find a RAS keyword so look for "ACTIVE"
-    if (options["ACTIVE"].has_changed()) {
-      if (options["ACTIVE"].size() != nirreps) {
-        throw InputException("ras_set3(): Wrong size of array",
-          "ACTIVE", __FILE__, __LINE__);
-      }
-      options.fill_int_array("ACTIVE", ras_opi[1]); // fill RAS 2 with ACTIVE
-
-      // ACTIVE overrides RAS 1 ... any occupieds not in RAS 2 should
-      // be restricted or frozen core, not RAS 1
-      for (irrep=0; irrep<nirreps; irrep++)
-        ras_opi[0][irrep] = 0;
-
-      // if not MCSCF, default remaining virts to FROZEN_UOCC
-      if (!is_mcscf && !parsed_frozen_uocc) {
-        for (irrep=0; irrep<nirreps; irrep++) {
-          fruocc[irrep] = orbspi[irrep] - frdocc[irrep] -
-                          restrdocc[irrep] - ras_opi[0][irrep] -
-                          ras_opi[1][irrep] - restruocc[irrep];
+    // Replace DOCC and SOCC only if they are in input, otherwise just
+    // leave alone the guess provided.
+    if (options["DOCC"].has_changed()) {
+        if (options["DOCC"].size() != nirreps) {
+            throw InputException("ras_set2(): Wrong size of array", "DOCC", __FILE__, __LINE__);
         }
+        options.fill_int_array("DOCC", docc);
+    }
+    if (options["SOCC"].has_changed()) {
+        if (options["SOCC"].size() != nirreps) {
+            throw InputException("ras_set2(): Wrong size of array", "SOCC", __FILE__, __LINE__);
+        }
+        options.fill_int_array("SOCC", socc);
+    }
+
+    // Take FROZEN_DOCC from user input if it is there
+    if (options["FROZEN_DOCC"].has_changed()) {
+        if (options["FROZEN_DOCC"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "FROZEN_DOCC", __FILE__, __LINE__);
+        }
+        options.fill_int_array("FROZEN_DOCC", frdocc);
+        parsed_frozen_docc = true;
+    }
+
+    // Take RESTRICTED_DOCC from user input if it is there
+    if (options["RESTRICTED_DOCC"].has_changed()) {
+        if (options["RESTRICTED_DOCC"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "RESTRICTED_DOCC", __FILE__, __LINE__);
+        }
+        options.fill_int_array("RESTRICTED_DOCC", restrdocc);
+        parsed_restr_docc = true;
+    }
+
+    // If we weren't given either FROZEN_DOCC *or* RESTRICTED_DOCC, then
+    // we'd better guess something.  Take default from core_guess[], and
+    // put that in either in frdocc (if not an MCSCF) or restrdocc (if an MCSCF)
+    if (!parsed_frozen_docc && !parsed_restr_docc) {
+        if (!is_mcscf) {
+            for (i = 0; i < nirreps; i++) {
+                frdocc[i] = core_guess[i];
+            }
+        } else {
+            for (i = 0; i < nirreps; i++) {
+                restrdocc[i] = core_guess[i];
+            }
+        }
+    }
+    // at this point, we have FROZEN_DOCC and RESTRICTED_DOCC
+
+    // Change FROZEN_UOCC from zero array if user has it in input.
+    // If no user input detected, we might deduce a
+    // different value based on the values of other spaces (below)
+    if (options["FROZEN_UOCC"].has_changed()) {
+        if (options["FROZEN_UOCC"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "FROZEN_UOCC", __FILE__, __LINE__);
+        }
+        options.fill_int_array("FROZEN_UOCC", fruocc);
         parsed_frozen_uocc = true;
-      }
-      // if it is MCSCF, default remaining virts to RESTRICTED_UOCC
-      if (is_mcscf && !parsed_restr_uocc) {
-        for (irrep=0; irrep<nirreps; irrep++) {
-          restruocc[irrep] = orbspi[irrep] - frdocc[irrep] -
-                             restrdocc[irrep] - ras_opi[0][irrep] -
-                             ras_opi[1][irrep] - fruocc[irrep];
+    }
+
+    // Change RESTRICTED_UOCC from zero array if user has it in input.
+    // If no user input detected, we might deduce a
+    // different value based on the values of other spaces (below)
+    if (options["RESTRICTED_UOCC"].has_changed()) {
+        if (options["RESTRICTED_UOCC"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "RESTRICTED_UOCC", __FILE__, __LINE__);
         }
+        options.fill_int_array("RESTRICTED_UOCC", restruocc);
         parsed_restr_uocc = true;
-      }
-
-      // do a quick check
-      for (irrep=0; irrep<nirreps; irrep++) {
-        if (frdocc[irrep]+restrdocc[irrep]+ras_opi[0][irrep]+ras_opi[1][irrep]
-            < docc[irrep] + socc[irrep])
-          outfile->Printf(
-            "ras_set3():Warning:Occupied electrons beyond ACTIVE orbs!\n");
-      }
-    } // end case where we found ACTIVE keyword
-    else { // we didn't find ACTIVE keyword, so we need to determine RAS 2
-      for (irrep=0; irrep<nirreps; irrep++) {
-        if (ras_type==1) ras_opi[1][irrep] = 0;
-        if (ras_type==0) ras_opi[1][irrep] = socc[irrep];
-      }
     }
-  } // at this point, we now have an array in RAS 2
 
-  // Now we need to figure out RAS 3
-  // New for 2015: RAS 4 will not be used unless explicitly specified.
-  if (!parsed_ras3) {
-    for (irrep=0; irrep<nirreps; irrep++) {
-      tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep]
-             + restruocc[irrep] + ras_opi[0][irrep] + ras_opi[1][irrep]
-             + ras_opi[3][irrep];
-      if (tmpi > orbspi[irrep]) {
-        outfile->Printf( "ras_set3(): orbitals don't add up for irrep %d\n",
-            irrep);
-        return(0);
-      }
-      ras_opi[2][irrep] = orbspi[irrep] - tmpi;
-    }
-  } // at this point, we now have an array in RAS 3
+    // Now use the parser to get the arrays we require IF they are
+    // present in user input ... otherwise leave them alone (they just got
+    // filled with zeroes above, so that will be the default until we
+    // try do deduce them from other information below).
+    // Set some flags for some of the spaces we have parsed to signal we
+    // don't need to deduce those spaces.
 
-  // Now if FROZEN_UOCC or RESTRICTED_UOCC have not been set yet, fill
-  // the appropriate one with any unused orbitals (which one depends on
-  // whether or not this is an MCSCF)
-  if (!is_mcscf) { // if not an MCSCF, default into fruocc
-    if (!parsed_frozen_uocc) {
-      for (irrep=0; irrep<nirreps; irrep++) {
-        tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep]
-               + restruocc[irrep] + ras_opi[0][irrep] + ras_opi[1][irrep]
-               + ras_opi[2][irrep] + ras_opi[3][irrep];
-        if (tmpi > orbspi[irrep]) {
-          outfile->Printf( "ras_set3(): orbitals don't add up for irrep %d\n",
-              irrep);
-          return(0);
+    if (options["RAS1"].has_changed()) {
+        if (options["RAS1"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "RAS1", __FILE__, __LINE__);
         }
-        fruocc[irrep] = orbspi[irrep] - tmpi;
-      }
+        options.fill_int_array("RAS1", ras_opi[0]);
+        parsed_ras1 = true;
     }
-  }
-  else { // is an MCSCF, so default into restruocc instead of fruocc
-    if (!parsed_restr_uocc) {
-      for (irrep=0; irrep<nirreps; irrep++) {
-        tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep]
-               + restruocc[irrep] + ras_opi[0][irrep] + ras_opi[1][irrep]
-               + ras_opi[2][irrep] + ras_opi[3][irrep];
-        if (tmpi > orbspi[irrep]) {
-          outfile->Printf( "ras_set3(): orbitals don't add up for irrep %d\n",
-              irrep);
-          return(0);
+    if (options["RAS2"].has_changed()) {
+        if (options["RAS2"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "RAS2", __FILE__, __LINE__);
         }
-        restruocc[irrep] = orbspi[irrep] - tmpi;
-      }
+        options.fill_int_array("RAS2", ras_opi[1]);
+        parsed_ras2 = true;
     }
-  } // should complete fruocc and/or restruocc
-
-  // copy everything to some temporary arrays just to count easier
-  tras = init_int_matrix(MAX_RAS_SPACES+4, nirreps);
-
-  for (irrep=0; irrep<nirreps; irrep++) {
-    tras[0][irrep] = frdocc[irrep];
-    tras[1][irrep] = restrdocc[irrep];
-    tras[MAX_RAS_SPACES+2][irrep] = restruocc[irrep];
-    tras[MAX_RAS_SPACES+3][irrep] = fruocc[irrep];
-  }
-  for (i=0; i<MAX_RAS_SPACES; i++) {
-    for (irrep=0; irrep<nirreps; irrep++) {
-      tras[i+2][irrep] = ras_opi[i][irrep];
-    }
-  }
-
-  // construct the offset array
-  offset[0] = 0;
-  for (irrep=1; irrep<nirreps; irrep++) {
-    offset[irrep] = offset[irrep-1] + orbspi[irrep-1];
-  }
-
-  for (i=0; i<MAX_RAS_SPACES+4; i++) {
-    for (irrep=0; irrep<nirreps; irrep++) {
-      while (tras[i][irrep]) {
-        point = used[irrep] + offset[irrep];
-        // outfile->Printf("%d %d %d %d %d %d %d \n", i, irrep, tras[i][irrep], used[irrep], offset[irrep], point, nmo);
-        if (point < 0 || point >= nmo) {
-          throw PsiException("ras_set2(): Invalid point value",
-            __FILE__, __LINE__);
+    if (options["RAS3"].has_changed()) {
+        if (options["RAS3"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "RAS3", __FILE__, __LINE__);
         }
-        order[point] = cnt++;
-        used[irrep]++;
-        tras[i][irrep]--;
-      }
+        options.fill_int_array("RAS3", ras_opi[2]);
+        parsed_ras3 = true;
     }
-  }
-
-
-  // do a final check
-  for (irrep=0; irrep<nirreps; irrep++) {
-    if (used[irrep] > orbspi[irrep]) {
-      outfile->Printf( "ras_set3(): on final check, used more orbitals");
-      outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
-          used[irrep], orbspi[irrep], irrep);
-      errbad = 1;
+    if (options["RAS4"].has_changed()) {
+        if (options["RAS4"].size() != nirreps) {
+            throw InputException("ras_set3(): Wrong size of array", "RAS4", __FILE__, __LINE__);
+        }
+        options.fill_int_array("RAS4", ras_opi[3]);
+        parsed_ras4 = true;
     }
-    if (used[irrep] < orbspi[irrep]) {
-      outfile->Printf( "ras_set3(): on final check, used fewer orbitals");
-      outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
-          used[irrep], orbspi[irrep], irrep);
-      errbad = 1;
+
+    // If the user has not specified RAS 1, we must deduce it.
+    // As of 2004, RAS 1 will not include any frozen core or restricted core
+    // orbitals.
+
+    if (!parsed_ras1) {
+        for (irrep = 0; irrep < nirreps; irrep++) {
+            if (ras_type == 1) ras_opi[0][irrep] = docc[irrep] + socc[irrep];
+            if (ras_type == 0) ras_opi[0][irrep] = docc[irrep];
+            ras_opi[0][irrep] -= (frdocc[irrep] + restrdocc[irrep]);
+        }
     }
-  }
+    // at this point, we now have an array in RAS 1
 
-  free(used);  free(offset);
-  free_int_matrix(tras);
+    // If the user hasn't specified RAS-style keywords, look for ACTIVE.
+    // Assume this always goes after any frozen core or restricted core.
 
-  return(!errbad);
+    if (parsed_ras1 || parsed_ras2 || parsed_ras3 || parsed_ras4) {
+        if (options["ACTIVE"].has_changed()) {
+            throw InputException("ras_set3(): RAS and ACTIVE keywords mutually exclusive", "ACTIVE", __FILE__,
+                                 __LINE__);
+        }
+    }
+
+    // Next we need to provide a guess for RAS 2
+    if (!parsed_ras2) {  // we didn't find a RAS keyword so look for "ACTIVE"
+        if (options["ACTIVE"].has_changed()) {
+            if (options["ACTIVE"].size() != nirreps) {
+                throw InputException("ras_set3(): Wrong size of array", "ACTIVE", __FILE__, __LINE__);
+            }
+            options.fill_int_array("ACTIVE", ras_opi[1]);  // fill RAS 2 with ACTIVE
+
+            // ACTIVE overrides RAS 1 ... any occupieds not in RAS 2 should
+            // be restricted or frozen core, not RAS 1
+            for (irrep = 0; irrep < nirreps; irrep++) ras_opi[0][irrep] = 0;
+
+            // if not MCSCF, default remaining virts to FROZEN_UOCC
+            if (!is_mcscf && !parsed_frozen_uocc) {
+                for (irrep = 0; irrep < nirreps; irrep++) {
+                    fruocc[irrep] = orbspi[irrep] - frdocc[irrep] - restrdocc[irrep] - ras_opi[0][irrep] -
+                                    ras_opi[1][irrep] - restruocc[irrep];
+                }
+                parsed_frozen_uocc = true;
+            }
+            // if it is MCSCF, default remaining virts to RESTRICTED_UOCC
+            if (is_mcscf && !parsed_restr_uocc) {
+                for (irrep = 0; irrep < nirreps; irrep++) {
+                    restruocc[irrep] = orbspi[irrep] - frdocc[irrep] - restrdocc[irrep] - ras_opi[0][irrep] -
+                                       ras_opi[1][irrep] - fruocc[irrep];
+                }
+                parsed_restr_uocc = true;
+            }
+
+            // do a quick check
+            for (irrep = 0; irrep < nirreps; irrep++) {
+                if (frdocc[irrep] + restrdocc[irrep] + ras_opi[0][irrep] + ras_opi[1][irrep] <
+                    docc[irrep] + socc[irrep])
+                    outfile->Printf("ras_set3():Warning:Occupied electrons beyond ACTIVE orbs!\n");
+            }
+        }       // end case where we found ACTIVE keyword
+        else {  // we didn't find ACTIVE keyword, so we need to determine RAS 2
+            for (irrep = 0; irrep < nirreps; irrep++) {
+                if (ras_type == 1) ras_opi[1][irrep] = 0;
+                if (ras_type == 0) ras_opi[1][irrep] = socc[irrep];
+            }
+        }
+    }  // at this point, we now have an array in RAS 2
+
+    // Now we need to figure out RAS 3
+    // New for 2015: RAS 4 will not be used unless explicitly specified.
+    if (!parsed_ras3) {
+        for (irrep = 0; irrep < nirreps; irrep++) {
+            tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep] + restruocc[irrep] + ras_opi[0][irrep] +
+                   ras_opi[1][irrep] + ras_opi[3][irrep];
+            if (tmpi > orbspi[irrep]) {
+                outfile->Printf("ras_set3(): orbitals don't add up for irrep %d\n", irrep);
+                return (0);
+            }
+            ras_opi[2][irrep] = orbspi[irrep] - tmpi;
+        }
+    }  // at this point, we now have an array in RAS 3
+
+    // Now if FROZEN_UOCC or RESTRICTED_UOCC have not been set yet, fill
+    // the appropriate one with any unused orbitals (which one depends on
+    // whether or not this is an MCSCF)
+    if (!is_mcscf) {  // if not an MCSCF, default into fruocc
+        if (!parsed_frozen_uocc) {
+            for (irrep = 0; irrep < nirreps; irrep++) {
+                tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep] + restruocc[irrep] + ras_opi[0][irrep] +
+                       ras_opi[1][irrep] + ras_opi[2][irrep] + ras_opi[3][irrep];
+                if (tmpi > orbspi[irrep]) {
+                    outfile->Printf("ras_set3(): orbitals don't add up for irrep %d\n", irrep);
+                    return (0);
+                }
+                fruocc[irrep] = orbspi[irrep] - tmpi;
+            }
+        }
+    } else {  // is an MCSCF, so default into restruocc instead of fruocc
+        if (!parsed_restr_uocc) {
+            for (irrep = 0; irrep < nirreps; irrep++) {
+                tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep] + restruocc[irrep] + ras_opi[0][irrep] +
+                       ras_opi[1][irrep] + ras_opi[2][irrep] + ras_opi[3][irrep];
+                if (tmpi > orbspi[irrep]) {
+                    outfile->Printf("ras_set3(): orbitals don't add up for irrep %d\n", irrep);
+                    return (0);
+                }
+                restruocc[irrep] = orbspi[irrep] - tmpi;
+            }
+        }
+    }  // should complete fruocc and/or restruocc
+
+    // copy everything to some temporary arrays just to count easier
+    tras = init_int_matrix(MAX_RAS_SPACES + 4, nirreps);
+
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        tras[0][irrep] = frdocc[irrep];
+        tras[1][irrep] = restrdocc[irrep];
+        tras[MAX_RAS_SPACES + 2][irrep] = restruocc[irrep];
+        tras[MAX_RAS_SPACES + 3][irrep] = fruocc[irrep];
+    }
+    for (i = 0; i < MAX_RAS_SPACES; i++) {
+        for (irrep = 0; irrep < nirreps; irrep++) {
+            tras[i + 2][irrep] = ras_opi[i][irrep];
+        }
+    }
+
+    // construct the offset array
+    offset[0] = 0;
+    for (irrep = 1; irrep < nirreps; irrep++) {
+        offset[irrep] = offset[irrep - 1] + orbspi[irrep - 1];
+    }
+
+    for (i = 0; i < MAX_RAS_SPACES + 4; i++) {
+        for (irrep = 0; irrep < nirreps; irrep++) {
+            while (tras[i][irrep]) {
+                point = used[irrep] + offset[irrep];
+                // outfile->Printf("%d %d %d %d %d %d %d \n", i, irrep, tras[i][irrep], used[irrep], offset[irrep],
+                // point, nmo);
+                if (point < 0 || point >= nmo) {
+                    throw PsiException("ras_set2(): Invalid point value", __FILE__, __LINE__);
+                }
+                order[point] = cnt++;
+                used[irrep]++;
+                tras[i][irrep]--;
+            }
+        }
+    }
+
+    // do a final check
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        if (used[irrep] > orbspi[irrep]) {
+            outfile->Printf("ras_set3(): on final check, used more orbitals");
+            outfile->Printf("   than were available (%d vs %d) for irrep %d\n", used[irrep], orbspi[irrep], irrep);
+            errbad = 1;
+        }
+        if (used[irrep] < orbspi[irrep]) {
+            outfile->Printf("ras_set3(): on final check, used fewer orbitals");
+            outfile->Printf("   than were available (%d vs %d) for irrep %d\n", used[irrep], orbspi[irrep], irrep);
+            errbad = 1;
+        }
+    }
+
+    free(used);
+    free(offset);
+    free_int_matrix(tras);
+
+    return (!errbad);
 }
-
 
 /*!
 ** ras_set(): Deprecated
@@ -497,7 +469,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 ** Returns: 1 for success, 0 otherwise
 ** \ingroup QT
 */
-//int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
+// int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
 //            int *docc, int *socc, int *frdocc, int *fruocc,
 //            int **ras_opi, int *order, int ras_type)
 //{
@@ -677,7 +649,6 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //  return(!errbad);
 //}
 
-
 /*!
 ** ras_set2()
 **
@@ -758,30 +729,30 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //   int parsed_restr_uocc=0;
 //   int *used, *offset, **tras;
 //   int *tmp_frdocc, *tmp_fruocc;
-// 
+//
 //   /* Hoffmann's code never wants FZC or COR lumped in with RAS I,
 //      even if those orbitals need to be transformed also */
 //   if (hoffmann > 0) {
 //     delete_fzdocc = 1;
 //     delete_restrdocc = 1;
 //   }
-// 
+//
 //   used = init_int_array(nirreps);
 //   offset = init_int_array(nirreps);
-// 
+//
 //   /* if we have trouble reading DOCC and SOCC, we'll take them as
 //    * provided to this routine.  Zero out everything else
 //    */
 //   zero_int_array(restrdocc, nirreps);
 //   zero_int_array(restruocc, nirreps);
-// 
+//
 //   for (i=0; i<MAX_RAS_SPACES; i++) {
 //     zero_int_array(ras_opi[i], nirreps);
 //   }
 //   zero_int_array(order, nmo);
-// 
+//
 //   // CDS-TODO: All codes need to provide a guess of frdocc and fruocc now!!
-// 
+//
 //   /*
 //   tmp_frdocc = get_frzcpi();
 //   tmp_fruocc = get_frzvpi();
@@ -792,8 +763,8 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //   free(tmp_frdocc);
 //   free(tmp_fruocc);
 //   */
-// 
-// 
+//
+//
 //   /* replace DOCC and SOCC only if they are in input */
 //   /* this fills existing DOCC and SOCC arrays        */
 //   if (options["DOCC"].has_changed()) {
@@ -810,7 +781,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //     }
 //     options.fill_int_array("SOCC", socc);
 //   }
-// 
+//
 //   /* now use the parser to get the arrays we require */
 //   /* only read it if in input (arrays don't have defaults) */
 //   if (options["RESTRICTED_DOCC"].has_changed()) {
@@ -820,7 +791,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //     }
 //     options.fill_int_array("RESTRICTED_DOCC", restrdocc);
 //   }
-// 
+//
 //   do_ras4=1;
 //   if (options["RAS1"].has_changed()) {
 //     if (options["RAS1"].size() != nirreps) {
@@ -846,8 +817,8 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //     options.fill_int_array("RAS3", ras_opi[2]);
 //   }
 //   else do_ras4 = 0;
-// 
-// 
+//
+//
 //   /*
 //    * If the user has not specified RAS I, we must deduce it.
 //    * As of 2004, RAS I will not include any FZC ("frozen core")
@@ -855,7 +826,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //    * we'll add these back into RAS I later if the user requests it
 //    * by setting delete_fzdocc or delete_rstrdocc = 0.
 //    */
-// 
+//
 //   if (!parsed_ras1) {
 //     for (irrep=0; irrep<nirreps; irrep++) {
 //       if (ras_type==1) ras_opi[0][irrep] = docc[irrep] + socc[irrep];
@@ -863,8 +834,8 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //       ras_opi[0][irrep] -= (frdocc[irrep] + restrdocc[irrep]);
 //     }
 //   }
-// 
-// 
+//
+//
 //   /*
 //    * if the user hasn't specified RAS II, look for ACTIVE (replaces
 //    * VAL_ORB).  Assume this always goes after FZC + COR.
@@ -876,13 +847,13 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //           "ACTIVE", __FILE__, __LINE__);
 //       }
 //       options.fill_int_array("ACTIVE", ras_opi[1]);
-// 
+//
 //       if (parsed_ras1)
 //         outfile->Printf( "ras_set(): Warning: ACTIVE overrides RAS 1\n");
-// 
+//
 //       for (irrep=0; irrep<nirreps; irrep++)
 //         ras_opi[0][irrep] = 0; /* ACTIVE overrides RAS 1 */
-// 
+//
 //       /* default restrict other virs */
 //       if (!options["RESTRICTED_UOCC"].has_changed()) {
 //         for (irrep=0; irrep<nirreps; irrep++) {
@@ -893,7 +864,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //         }
 //         parsed_restr_uocc = 1;
 //       }
-// 
+//
 //       /* do a quick check */
 //       for (irrep=0; irrep<nirreps; irrep++) {
 //         if (frdocc[irrep]+restrdocc[irrep]+ras_opi[0][irrep]+ras_opi[1][irrep]
@@ -909,7 +880,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //       }
 //     }
 //   } /* end looking for "ACTIVE" */
-// 
+//
 //   if (!parsed_restr_uocc) {
 //     // errcod = ip_int_array("RESTRICTED_UOCC",restruocc,nirreps);
 //     if (options["RESTRICTED_UOCC"].has_changed()) {
@@ -920,11 +891,11 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //       options.fill_int_array("RESTRICTED_UOCC", restruocc);
 //     }
 //   }
-// 
+//
 //   /* set up the RAS III or IV array: if RAS IV is used, RAS III must
 //    * be specified and then RAS IV is deduced.
 //    */
-// 
+//
 //   for (irrep=0; irrep<nirreps; irrep++) {
 //     tmpi = frdocc[irrep] + restrdocc[irrep] + fruocc[irrep] + restruocc[irrep]
 //            + ras_opi[0][irrep] + ras_opi[1][irrep];
@@ -937,11 +908,11 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //     if (do_ras4) ras_opi[3][irrep] = orbspi[irrep] - tmpi;
 //     else ras_opi[2][irrep] = orbspi[irrep] - tmpi;
 //   }
-// 
+//
 //   /* copy everything to the temporary RAS arrays: */
 //   /* add subspaces for frozen orbitals            */
 //   tras = init_int_matrix(MAX_RAS_SPACES+4, nirreps);
-// 
+//
 //   /* for usual DETCI, DETCAS, etc */
 //   if (hoffmann==0) {
 //     for (irrep=0; irrep<nirreps; irrep++) {
@@ -984,19 +955,19 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //       tras[MAX_RAS_SPACES+3][irrep] = fruocc[irrep];
 //     }
 //   }
-// 
+//
 //   /* construct the offset array */
 //   offset[0] = 0;
 //   for (irrep=1; irrep<nirreps; irrep++) {
 //     offset[irrep] = offset[irrep-1] + orbspi[irrep-1];
 //   }
-// 
+//
 //   for (i=0; i<MAX_RAS_SPACES+4; i++) {
 //     for (irrep=0; irrep<nirreps; irrep++) {
 //       while (tras[i][irrep]) {
 //         point = used[irrep] + offset[irrep];
-//         // outfile->Printf("%d %d %d %d %d %d %d \n", i, irrep, tras[i][irrep], used[irrep], offset[irrep], point, nmo);
-//         if (point < 0 || point >= nmo) {
+//         // outfile->Printf("%d %d %d %d %d %d %d \n", i, irrep, tras[i][irrep], used[irrep], offset[irrep], point,
+//         nmo); if (point < 0 || point >= nmo) {
 //           throw PsiException("ras_set2(): Invalid point value",
 //             __FILE__, __LINE__);
 //         }
@@ -1006,8 +977,8 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //       }
 //     }
 //   }
-// 
-// 
+//
+//
 //   /* do a final check */
 //   for (irrep=0; irrep<nirreps; irrep++) {
 //     if (used[irrep] > orbspi[irrep]) {
@@ -1023,17 +994,17 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
 //       errbad = 1;
 //     }
 //   }
-// 
+//
 //   /* add back FZC and COR orbitals to RAS I if they are to be included */
 //   for (irrep=0; irrep<nirreps; irrep++) {
 //     if (!delete_restrdocc) ras_opi[0][irrep] += restrdocc[irrep];
 //     if (!delete_fzdocc)    ras_opi[0][irrep] += frdocc[irrep];
 //   }
-// 
+//
 //   free(used);  free(offset);
 //   free_int_matrix(tras);
-// 
+//
 //   return(!errbad);
 // }
 
-}
+}  // namespace psi
