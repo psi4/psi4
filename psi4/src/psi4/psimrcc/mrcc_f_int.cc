@@ -43,15 +43,18 @@ extern FILE* outfile;
 namespace psi {
 namespace psimrcc {
 
+// clang-format off
 /**
  * @brief Computes the contractions
- * \f[ F_{ae} = (1-\delta_{ae})f_{ae} - \frac{1}{2} \sum_m f_{me} t_m^a + \sum_{mf} t_m^f <ma||fe> - \frac{1}{2}
- * \sum_{mnf} \tilde{\tau}_{in}^{af} <mn||ef> \f] \f[ F_{mi} = (1-\delta_{mi})f_{mi} + \frac{1}{2} \sum_e f_{me} t_i^e +
- * \sum_{en} t_n^e <mn||ie> + \frac{1}{2} \sum_{nef} \tilde{\tau}_{in}^{ef} <mn||ef> \f] \f[ F_{me} = f_{me} + \sum_{nf}
- * t_n^f <mn||ef> \f] \f[ F'_{ae} = F_{ae} - \frac{1}{2} \sum_m t_m^a F_{me} \f] \f[ F'_{mi} = F_{mi} + \frac{1}{2}
- * \sum_e t_i^e F_{me} \f] as described in J. Phys. Chem. vol. 94, pg. 4334 (1991). See J. Phys. Chem. vol. 127, 024102
- * (2007) supplementary material for the spin-factored equations.
+ * \f[ F_{ae} = (1-\delta_{ae})f_{ae} - \frac{1}{2} \sum_m f_{me} t_m^a + \sum_{mf} t_m^f <ma||fe> - \frac{1}{2} \sum_{mnf} \tilde{\tau}_{in}^{af} <mn||ef> \f]
+ * \f[ F_{mi} = (1-\delta_{mi})f_{mi} + \frac{1}{2} \sum_e f_{me} t_i^e + \sum_{en} t_n^e <mn||ie> + \frac{1}{2} \sum_{nef} \tilde{\tau}_{in}^{ef} <mn||ef> \f]
+ * \f[ F_{me} = f_{me} + \sum_{nf} t_n^f <mn||ef> \f]
+ * \f[ F'_{ae} = F_{ae} - \frac{1}{2} \sum_m t_m^a F_{me} \f]
+ * \f[ F'_{mi} = F_{mi} + \frac{1}{2} \sum_e t_i^e F_{me} \f]
+ * as described in J. Phys. Chem. vol. 94, pg. 4334 (1991).
+ * See J. Phys. Chem. vol. 127, 024102 (2007) supplementary material for the spin-factored equations.
  */
+// clang-format on
 void CCMRCC::build_F_intermediates() {
     build_F_ae_intermediates();
     build_F_AE_intermediates();
