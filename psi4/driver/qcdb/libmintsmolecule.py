@@ -36,8 +36,9 @@ import collections
 
 import numpy as np
 
-from .periodictable import *
-from .physconst import *
+import qcelemental as qcel
+
+from . import periodictable
 from .vecutil import *
 from .exceptions import *
 from .libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
@@ -97,7 +98,7 @@ class LibmintsMolecule(object):
         # The units used to define the geometry
         self.PYunits = 'Angstrom'
         # The conversion factor to take input units to Bohr
-        self.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
+        self.PYinput_units_to_au = 1.0 / qcel.constants.bohr2angstroms
         # Whether this molecule has at least one zmatrix entry
         self.zmat = False  # TODO None?
         # Whether this molecule has at least one Cartesian entry
@@ -264,7 +265,7 @@ class LibmintsMolecule(object):
         """
         if units == 'Angstrom':
             self.PYunits = units
-            self.PYinput_units_to_au = 1.0 / psi_bohr2angstroms
+            self.PYinput_units_to_au = 1.0 / qcel.constants.bohr2angstroms
         elif units == 'Bohr':
             self.PYunits = units
             self.PYinput_units_to_au = 1.0
@@ -382,7 +383,7 @@ class LibmintsMolecule(object):
         if math.fabs(self.atoms[atom].Z() - int(self.atoms[atom].Z())) > 0.0:
             print("""WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n""")
             # TODO outfile
-        return z2mass[int(self.atoms[atom].Z())]
+        return periodictable.z2mass[int(self.atoms[atom].Z())]
 
     def set_mass(self, atom, mass):
         """Set the mass of a particular atom (good for isotopic substitutions).
@@ -814,7 +815,7 @@ class LibmintsMolecule(object):
 
             for i in range(self.natom()):
                 text += """      %3s%-7s """ % ("" if self.Z(i) else "Gh(", self.symbol(i) + ("" if self.Z(i) else ")"))
-                text += ("""  %17.12f""" * 3).format(*self.xyz(i) * psi_bohr2angstroms)
+                text += ("""  %17.12f""" * 3).format(*self.xyz(i) * qcel.constants.bohr2angstroms)
                 text += "\n"
             text += "\n"
         else:
@@ -1243,7 +1244,7 @@ class LibmintsMolecule(object):
 
         """
         distm = distance_matrix(self.geometry(np_out=True), self.geometry(np_out=True))
-        distm *= psi_bohr2angstroms
+        distm *= qcel.constants.bohr2angstroms
 
         text = "        Interatomic Distances (Angstroms)\n\n          "
         for i in range(self.natom()):
@@ -1278,7 +1279,7 @@ class LibmintsMolecule(object):
         for i in range(self.natom()):
             for j in range(i + 1, self.natom()):
                 eij = sub(self.xyz(j), self.xyz(i))
-                dist = norm(eij) * psi_bohr2angstroms
+                dist = norm(eij) * qcel.constants.bohr2angstroms
                 text += "        Distance %d to %d %-8.3lf\n" % (i + 1, j + 1, dist)
         text += "\n\n"
         return text
@@ -1750,10 +1751,10 @@ class LibmintsMolecule(object):
         evals = sorted(evals)
         evals = np.asarray(evals)
 
-        im_amuA = psi_bohr2angstroms * psi_bohr2angstroms
-        im_ghz = psi_h * psi_na * 1e14 / (8 * math.pi * math.pi * psi_bohr2angstroms * psi_bohr2angstroms)
+        im_amuA = qcel.constants.bohr2angstroms * qcel.constants.bohr2angstroms
+        im_ghz = qcel.constants.h * qcel.constants.na * 1e14 / (8 * math.pi * math.pi * qcel.constants.bohr2angstroms * qcel.constants.bohr2angstroms)
         im_mhz = im_ghz * 1000.
-        im_cm = im_ghz * 1.e7 / psi_c
+        im_cm = im_ghz * 1.e7 / qcel.constants.c
 
         rc_moi = {}
         rc_moi['u a0^2'] = evals
@@ -1902,7 +1903,7 @@ class LibmintsMolecule(object):
          H    1.680398000000   -0.373741000000    0.758561000000
 
         """
-        factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
+        factor = 1.0 if self.PYunits == 'Angstrom' else qcel.constants.bohr2angstroms
 
         N = self.natom()
         if not save_ghosts:

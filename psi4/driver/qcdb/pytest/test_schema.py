@@ -8,8 +8,9 @@ import numpy as np
 from utils import *
 from addons import *
 
+#import qcelemental as qcel
+
 import qcdb
-from qcdb.physconst import psi_bohr2angstroms
 
 
 def test_1():
