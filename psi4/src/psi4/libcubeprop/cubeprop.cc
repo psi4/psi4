@@ -171,58 +171,28 @@ void CubeProperties::raw_compute_properties() {
                 indsa0.push_back(nalpha_);
                 labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_])).symbol() + "_LUMO");
-            } else if (nalpha_ - nbeta_ == 1) {
-                int orb_index = nalpha_;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_LUMO");
-                orb_index = nbeta_ + 1;
-                indsb0.push_back(orb_index);
-                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_LUMO");
-                orb_index = nalpha_ - 1;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_SOMO");
-                orb_index = nbeta_;
-                indsb0.push_back(orb_index);
-                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_SOMO");
-                orb_index = nalpha_ - 2;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_DOMO");
-                orb_index = nbeta_ - 1;
-                indsb0.push_back(orb_index);
-                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_DOMO");
-            } else if (nalpha_ - nbeta_ == 2) {
-                int orb_index = nalpha_;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_LUMO");
-                orb_index = nbeta_ + 2;
-                indsb0.push_back(orb_index);
-                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_LUMO");
-                orb_index = nalpha_ - 1;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_SOMO");
-                orb_index = nalpha_ - 2;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_SOMO");
-                orb_index = nalpha_ - 3;
-                indsa0.push_back(orb_index);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_DOMO");
-                orb_index = nbeta_ - 1;
-                indsb0.push_back(orb_index);
-                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_DOMO");
             } else {
-                throw PSIEXCEPTION(task + "is not implemented for high spin systems");
+                int orb_index = nalpha_;
+                indsa0.push_back(orb_index);
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_LUMO");
+                indsb0.push_back(orb_index);
+                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_LUMO");
+                for (int i = 1; i <= nalpha_ - nbeta_; i++) {
+                    orb_index = nalpha_ - i;
+                    indsa0.push_back(orb_index);
+                    labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_SOMO");
+                }
+                orb_index = nbeta_ - 1;
+                indsa0.push_back(orb_index);
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_DOMO");
+                orb_index = nbeta_ - 1;
+                indsb0.push_back(orb_index);
+                labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_DOMO");
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0, labelsa, "Psi_a");
             if (indsb0.size()) compute_orbitals(Cb_, indsb0, labelsb, "Psi_b");
