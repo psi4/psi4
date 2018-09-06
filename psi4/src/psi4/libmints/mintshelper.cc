@@ -430,7 +430,7 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
 
 // Loop it
 #pragma omp parallel for schedule(guided) num_threads(nthread)
-    for (size_t MU = 0; MU < bs1->nshell(); ++MU) {
+    for (long MU = 0; MU < bs1->nshell(); ++MU) {
         const size_t num_mu = bs1->shell(MU).nfunction();
         const size_t index_mu = bs1->shell(MU).function_index();
 
@@ -503,7 +503,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
     double **Dp = D->pointer();
 
 #pragma omp parallel for schedule(guided) num_threads(nthread)
-    for (size_t P = 0; P < basisset_->nshell(); P++) {
+    for (long P = 0; P < basisset_->nshell(); P++) {
         size_t rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -1721,7 +1721,7 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
     double **Dp = D->pointer();
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_)
-    for (size_t PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+    for (long PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
         size_t P = PQ_pairs[PQ].first;
         size_t Q = PQ_pairs[PQ].second;
 

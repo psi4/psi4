@@ -1198,7 +1198,7 @@ void Matrix::apply_denominator(const Matrix *const plus) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
 #pragma omp parallel for simd
-            for (size_t ij = 0; ij < size; ++ij) {
+            for (long ij = 0; ij < size; ++ij) {
                 lhs[ij] /= rhs[ij];
             }
         }
