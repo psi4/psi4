@@ -33,7 +33,7 @@ import numpy as np
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
-from psi4.driver import constants
+from psi4.driver import psifiles as psif
 
 from .sapt_util import print_sapt_var
 
@@ -256,8 +256,8 @@ def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, ca
     core.set_local_option("SAPT", "SAPT_QUIET", True)
 
     if core.get_option('SCF', 'REFERENCE') == 'RHF':
-        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     core.IO.set_default_namespace('dimer')
 

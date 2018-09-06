@@ -42,7 +42,7 @@ import numpy as np
 from psi4 import extras
 from psi4.driver import p4util
 from psi4.driver import qcdb
-from psi4.driver import constants
+from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
 # never import driver, wrappers, or aliases into this file
@@ -3375,8 +3375,8 @@ def run_sapt(name, **kwargs):
     core.set_global_option('DF_INTS_IO', df_ints_io)
 
     if core.get_option('SCF', 'REFERENCE') == 'RHF':
-        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     core.IO.set_default_namespace('dimer')
     core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
