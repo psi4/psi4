@@ -524,7 +524,7 @@ void DiskDFJK::initialize_JK_core() {
 //                             whether or not functions have been screened.
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-    for (size_t mn_block_idx = 0; mn_block_idx < mn_blocks.size(); mn_block_idx++) {
+    for (long mn_block_idx = 0; mn_block_idx < mn_blocks.size(); mn_block_idx++) {
 #ifdef _OPENMP
         const int rank = omp_get_thread_num();
 #else
@@ -1492,7 +1492,7 @@ void DiskDFJK::initialize_wK_disk() {
         timer_on("JK: (Q|mn)^R");
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (size_t QMN = 0L; QMN < (Qstop - Qstart) * (size_t)npairs; QMN++) {
+        for (long QMN = 0; QMN < (Qstop - Qstart) * (size_t)npairs; QMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -1615,7 +1615,7 @@ void DiskDFJK::rebuild_wK_disk() {
         timer_on("JK: (Q|mn)^R");
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (size_t QMN = 0L; QMN < (Qstop - Qstart) * (size_t)npairs; QMN++) {
+        for (long QMN = 0; QMN < (Qstop - Qstart) * (size_t)npairs; QMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();

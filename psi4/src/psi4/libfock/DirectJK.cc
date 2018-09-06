@@ -256,7 +256,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     // ==> Master Task Loop <== //
 
     #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+: computed_shells)
-    for (size_t task = 0L; task < ntask_pair2; task++) {
+    for (long task = 0; task < ntask_pair2; task++) {
 
         size_t task1 = task / ntask_pair;
         size_t task2 = task % ntask_pair;

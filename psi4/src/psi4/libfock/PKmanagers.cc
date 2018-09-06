@@ -216,7 +216,7 @@ void PKManager::compute_integrals(bool wK) {
 
     size_t nshqu = 0;
 #pragma omp parallel for num_threads(nthreads_) schedule(dynamic) reduction(+ : nshqu)
-    for (size_t i = 0; i < ntasks_; ++i) {
+    for (long i = 0; i < ntasks_; ++i) {
         // We need to get the list of shell quartets for each task
         int thread = 0;
 #ifdef _OPENMP
@@ -1056,7 +1056,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
     // We avoid having one more branch in the loop by moving it outside
     if (!wK) {
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads())
-        for (size_t i = 0; i < npairs; ++i) {
+        for (long i = 0; i < npairs; ++i) {
             int PP = sh_pairs[i].first;
             int QQ = sh_pairs[i].second;
             int thread = 0;
@@ -1095,7 +1095,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
         write();
     } else {
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads())
-        for (size_t i = 0; i < npairs; ++i) {
+        for (long i = 0; i < npairs; ++i) {
             int PP = sh_pairs[i].first;
             int QQ = sh_pairs[i].second;
             int thread = 0;

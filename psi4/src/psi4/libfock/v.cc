@@ -248,7 +248,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     vv10_tmp_cache.resize(nlgrid.blocks().size());
 
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
+    for (long Q = 0; Q < nlgrid.blocks().size(); Q++) {
 // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -311,7 +311,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
 
 // => Compute the kernel <=
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
+    for (long Q = 0; Q < nlgrid.blocks().size(); Q++) {
 // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -460,7 +460,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 
 // Traverse the blocks of points
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+    for (long Q = 0; Q < grid_->blocks().size(); Q++) {
 // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -707,7 +707,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
 // Traverse the blocks of points
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+    for (long Q = 0; Q < grid_->blocks().size(); Q++) {
 // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -942,7 +942,7 @@ SharedMatrix RV::compute_gradient() {
 
 // Traverse the blocks of points
 #pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+    for (long Q = 0; Q < grid_->blocks().size(); Q++) {
 // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -1809,7 +1809,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
 // Traverse the blocks of points
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+    for (long Q = 0; Q < grid_->blocks().size(); Q++) {
 // Get thread info
 #ifdef _OPENMP
         rank = omp_get_thread_num();
