@@ -468,7 +468,9 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         for (long i = 0; i < osize; i++) {
             for (size_t a = 0; a < nvir; a++) {
                 double val = ampp[i + shift_i][a];
+#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
+#endif
                 for (size_t Q = 0; Q < naux; Q++) {
                     tmpp[i * nvir + a][Q] *= val;
                 }
