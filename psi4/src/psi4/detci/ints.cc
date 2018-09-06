@@ -542,7 +542,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
         SharedMatrix J = jk_->J()[D_tasks];
         SharedMatrix half_trans = Matrix::triplet(Crot, J, Cact, true, false, false);
 #pragma omp parallel for schedule(static)
-        for (size_t p = 0; p < nrot; p++) {
+        for (long p = 0; p < nrot; p++) {
             for (size_t q = 0; q < nact; q++) {
                 casscf_ints->set(p * nact + q, i * nact + j, half_trans->get(p, q));
                 casscf_ints->set(p * nact + q, j * nact + i, half_trans->get(p, q));
