@@ -32,7 +32,7 @@ from datetime import datetime
 
 import numpy as np
 
-from psi4.driver import constants
+from psi4.driver import psifiles as psif
 from psi4.driver.p4util.util import compare_values, success
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
@@ -132,7 +132,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
         if reference == 'RHF':
             PSIF_MO_FZC = 'MO-basis Frozen-Core Operator'
             moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
-            moH.load(core.IO.shared_object(), constants.PSIF_OEI)
+            moH.load(core.IO.shared_object(), psif.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
             MO_FZC = moH.get_block(mo_slice, mo_slice)
             offset = 0
@@ -153,7 +153,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
         else:
             PSIF_MO_A_FZC = 'MO-basis Alpha Frozen-Core Oper'
             moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
-            moH_A.load(core.IO.shared_object(), constants.PSIF_OEI)
+            moH_A.load(core.IO.shared_object(), psif.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
             MO_FZC_A = moH_A.get_block(mo_slice, mo_slice)
             offset = 0
@@ -167,7 +167,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 offset += block.shape[0]
             PSIF_MO_B_FZC = 'MO-basis Beta Frozen-Core Oper'
             moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
-            moH_B.load(core.IO.shared_object(), constants.PSIF_OEI)
+            moH_B.load(core.IO.shared_object(), psif.PSIF_OEI)
             mo_slice = core.Slice(frzcpi, active_mopi)
             MO_FZC_B = moH_B.get_block(mo_slice, mo_slice)
             offset = 0

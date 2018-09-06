@@ -35,7 +35,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from psi4.driver import p4util
-from psi4.driver.constants import *
 
 
 def collect_displaced_matrix_data(db, signature, row_dim):

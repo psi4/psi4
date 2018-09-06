@@ -39,7 +39,7 @@ from psi4 import core
 from psi4.driver import qcdb
 from psi4.driver import p4util
 from psi4.driver import driver_util
-from psi4.driver import constants
+from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
 
@@ -1480,7 +1480,7 @@ def cbs(func, label, **kwargs):
     core.print_out(instructions)
 
     psioh = core.IOManager.shared_object()
-    psioh.set_specific_retention(constants.PSIF_SCF_MOS, True)
+    psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
     # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
     #   needs to be communicated to optimize() so reset by that optstash
     core.set_local_option('SCF', 'GUESS_PERSIST', True)
@@ -1542,7 +1542,7 @@ def cbs(func, label, **kwargs):
                 mce['f_gradient'] = mc['f_gradient']
                 mce['f_hessian'] = mc['f_hessian']
 
-    psioh.set_specific_retention(constants.PSIF_SCF_MOS, False)
+    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
     # Build string of title banner
     cbsbanners = ''

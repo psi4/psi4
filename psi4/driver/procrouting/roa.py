@@ -31,7 +31,6 @@ import shelve
 
 from psi4 import core
 from psi4.driver.p4util import *
-from psi4.driver.constants import *
 from . import findif_response_utils
 
 

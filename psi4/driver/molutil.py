@@ -32,7 +32,7 @@ from __future__ import absolute_import
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util import constants, filter_comments
+from psi4.driver.p4util import filter_comments
 from psi4.driver import qcdb
 from psi4.driver.p4util.exceptions import *
 
