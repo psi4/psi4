@@ -464,7 +464,11 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         dfh_->fill_tensor(ovQ_tensor_name, tmp, {bcount, bcount + osize});
         size_t shift_i = block * bsize;
 
+#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp parallel for collapse(2)
+#else
+#pragma omp parallel for
+#endif
         for (long i = 0; i < osize; i++) {
             for (size_t a = 0; a < nvir; a++) {
                 double val = ampp[i + shift_i][a];
