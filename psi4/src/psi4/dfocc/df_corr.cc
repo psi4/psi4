@@ -1764,7 +1764,7 @@ void DFOCC::cd_aob_cints() {
         int c0 = pair_to_idx1->get(pivot);
         int d0 = pair_to_idx2->get(pivot);
 #pragma omp parallel for
-        for (size_t i = 0; i < n; i++) {
+        for (long i = 0; i < n; i++) {
             int a0 = pair_to_idx1->get(i);
             int b0 = pair_to_idx2->get(i);
             int ab = (a0 * dim2) + b0;
@@ -1812,7 +1812,7 @@ void DFOCC::cd_aob_cints() {
     // Form L
     U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
 #pragma omp parallel for
-    for (size_t P = 0; P < Q; P++) {
+    for (long P = 0; P < Q; P++) {
         int PP = static_cast<int>(P);
         for (size_t i = 0; i < n; i++) {
             int ii = static_cast<int>(i);
@@ -1977,7 +1977,7 @@ for(size_t i = 0; i < n; i++) {
 }
 */
 #pragma omp parallel for
-        for (size_t i = 0; i < n; i++) {
+        for (long i = 0; i < n; i++) {
             double sum = 0.0;
             for (int P = 0; P < naux; ++P) {
                 sum += bQ->get(P, i) * bQ->get(P, pivot);
@@ -2021,7 +2021,7 @@ for(size_t i = 0; i < n; i++) {
     // Form L
     U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
 #pragma omp parallel for
-    for (size_t P = 0; P < Q; P++) {
+    for (long P = 0; P < Q; P++) {
         int PP = static_cast<int>(P);
         for (size_t i = 0; i < n; i++) {
             int ii = static_cast<int>(i);
@@ -2160,7 +2160,7 @@ void DFOCC::cd_abcd_xints() {
         int c0 = pair_to_idx1->get(pivot);
         int d0 = pair_to_idx2->get(pivot);
 #pragma omp parallel for
-        for (size_t i = 0; i < n; i++) {
+        for (long i = 0; i < n; i++) {
             int a0 = pair_to_idx1->get(i);
             int b0 = pair_to_idx2->get(i);
             int ac = (a0 * dim2) + c0;
@@ -2208,7 +2208,7 @@ void DFOCC::cd_abcd_xints() {
     // Form L
     U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
 #pragma omp parallel for
-    for (size_t P = 0; P < Q; P++) {
+    for (long P = 0; P < Q; P++) {
         int PP = static_cast<int>(P);
         for (size_t i = 0; i < n; i++) {
             int ii = static_cast<int>(i);
