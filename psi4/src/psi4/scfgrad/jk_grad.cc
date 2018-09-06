@@ -2252,7 +2252,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
     double** Dbp = Db_->pointer();
 
 #pragma omp parallel for num_threads(nthreads) schedule(dynamic)
-    for (size_t index = 0L; index < npairs2; index++) {
+    for (long int index = 0L; index < npairs2; index++) {
 
         size_t PQ = index / npairs;
         size_t RS = index % npairs;
@@ -2501,7 +2501,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vect
     double** Dbp = Db_->pointer();
 
 #pragma omp parallel for num_threads(nthreads) schedule(dynamic)
-    for (size_t index = 0L; index < npairs2; index++) {
+    for (long int index = 0L; index < npairs2; index++) {
 
         size_t PQ = index / npairs;
         size_t RS = index % npairs;
