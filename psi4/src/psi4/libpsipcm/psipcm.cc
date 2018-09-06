@@ -136,7 +136,7 @@ std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver
             pcmsolver_delete);
     }
 }
-}
+}  // namespace detail
 
 PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared_ptr<BasisSet> basisset)
     : pcmsolver_parsed_fname_(pcmsolver_parsed_fname), pcm_print_(print_level), basisset_(basisset) {
@@ -373,6 +373,6 @@ SharedMatrix PCM::compute_V(const SharedVector &ASC) const {
         return V_pcm_cart;
     }
 }
-}  // psi namespace
+}  // namespace psi
 
 #endif

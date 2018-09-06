@@ -36,17 +36,13 @@
 typedef int F_INT;
 typedef int F_BOOL;
 
-namespace psi{
-
+namespace psi {
 
 class IntegralFactory;
 class AOShellCombinationsIterator;
 
-class ERDTwoElectronInt : public TwoBodyAOInt
-{
-
-
-protected:
+class ERDTwoElectronInt : public TwoBodyAOInt {
+   protected:
     /// The list of renormalized contraction coefficients for center 1
     double *new_cc_1_;
     /// The list of renormalized contraction coefficients for center 2
@@ -124,23 +120,23 @@ protected:
     bool same_bs_;
 
     void normalize_basis();
-public:
-    ERDTwoElectronInt(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+
+   public:
+    ERDTwoElectronInt(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     virtual ~ERDTwoElectronInt();
     void compute_scratch_size();
-    virtual size_t compute_shell(const psi::AOShellCombinationsIterator&);
+    virtual size_t compute_shell(const psi::AOShellCombinationsIterator &);
     virtual size_t compute_shell(int, int, int, int);
     virtual size_t compute_shell_deriv1(int, int, int, int);
     virtual size_t compute_shell_deriv2(int, int, int, int);
 };
 
-class ERDERI : public ERDTwoElectronInt
-{
-public:
-    ERDERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+class ERDERI : public ERDTwoElectronInt {
+   public:
+    ERDERI(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     virtual ~ERDERI();
 };
 
-}//Namespace
-#endif // USING_erd
-#endif // header guard
+}  // namespace psi
+#endif  // USING_erd
+#endif  // header guard

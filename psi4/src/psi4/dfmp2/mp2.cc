@@ -3388,5 +3388,5 @@ void RODFMP2::print_header() {
     outfile->Printf("\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf("\t --------------------------------------------------------\n\n");
 }
-}
-}
+}  // namespace dfmp2
+}  // namespace psi

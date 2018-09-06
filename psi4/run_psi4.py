@@ -104,11 +104,12 @@ lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PY
 
 if args["inplace"]:
     if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
-        raise ImportError("Cannot run inplace from a installed directory.")
+        raise ImportError("Cannot run inplace from an installed directory.")
 
-    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
+    import sysconfig
+    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core" + sysconfig.get_config_var("SO")
     if not os.path.isfile(core_location):
-        raise ImportError("A compiled Psi4 core.so needs to be symlinked to the %s folder" % os.path.dirname(__file__))
+        raise ImportError("A compiled Psi4 core{} needs to be symlinked to the {} folder".format(sysconfig.get_config_var("SO"), os.path.dirname(__file__)))
 
     lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):

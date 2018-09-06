@@ -32,13 +32,17 @@ import re
 import struct
 from collections import defaultdict
 from decimal import Decimal
+
+import numpy as np
+
 from .pdict import PreservingDict
 from .periodictable import *
 from .physconst import *
 from .exceptions import *
 from .molecule import Molecule
-from .orient import OrientMols
 from .options import conv_float2negexp
+from .hessparse import load_hessian
+from .align import B787
 
 
 def harvest_output(outtext):
@@ -181,6 +185,19 @@ def harvest_outfile_pass(outtext):
             Decimal(mobj.group(2)) + Decimal(mobj.group(3)) + Decimal(mobj.group(4))
         psivar['MP2 TOTAL ENERGY'] = mobj.group(6)
 
+    mobj = re.search(
+        r'^\s+' + r'(?:S-MBPT\(2\))' + r'\s+' + r'(?P<sgl>' + NUMBER + r')' + r'\s+' + NUMBER + r'\s*' +
+        r'^\s+' + r'(?:D-MBPT\(2\))' + r'\s+' + r'(?P<dbl>' + NUMBER + r')' + r'\s+' +
+                                                r'(?P<mp2tot>' + NUMBER + r')' + r'\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        print('matched mp2ro2')
+        #psivar['MP2 SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(1)) + Decimal(mobj.group(2))
+        #psivar['MP2 OPPOSITE-SPIN CORRELATION ENERGY'] = mobj.group(3)
+        psivar['MP2 SINGLES ENERGY'] = mobj.group('sgl')
+        psivar['MP2 CORRELATION ENERGY'] = Decimal(mobj.group('sgl')) + Decimal(mobj.group('dbl'))
+        psivar['MP2 TOTAL ENERGY'] = mobj.group('mp2tot')
+
     # Process MP3
     mobj = re.search(
         r'^\s+' + r'(?:D-MBPT\(2\))' + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*' +
@@ -305,6 +322,19 @@ def harvest_outfile_pass(outtext):
         psivar['%s CORRELATION ENERGY' % (mobj.group('iterCC'))] = mobj.group(3)
         psivar['%s TOTAL ENERGY' % (mobj.group('iterCC'))] = mobj.group(4)
 
+    mobj = re.search(
+        r'^\s+' + r'(?:\d+)' + r'\s+' + r'(?P<corl>' + NUMBER + r')\s+' +
+                  NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*' +
+        r'^\s*' +
+        r'^\s*' + r'(?:\w+ iterations converged .*?)' +
+        r'^\s*' +
+        r'^\s*' + r'(?:Total (?P<iterCC>\w+) energy:)' + r'\s+' + r'(?P<tot>' + NUMBER + ')\s*$',
+        outtext, re.MULTILINE | re.DOTALL)
+    if mobj:
+        print('matched ncc cc iter')
+        psivar['{} CORRELATION ENERGY'.format(mobj.group('iterCC'))] = mobj.group('corl')
+        psivar['{} TOTAL ENERGY'.format(mobj.group('iterCC'))] = mobj.group('tot')
+
     # Process CC(T)
     mobj = re.search(
         r'^\s+' + r'(?:E\(SCF\))' + r'\s+=\s+' + NUMBER + r'\s+a\.u\.\s*' +
@@ -320,6 +350,17 @@ def harvest_outfile_pass(outtext):
         psivar['(T) CORRECTION ENERGY'] = Decimal(mobj.group(3)) - Decimal(mobj.group(2))
         psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(3)) - Decimal(mobj.group(1))
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(3)
+
+    mobj = re.search(
+        r'^\s+' + r'(?:E\(CCSD\))' + r'\s+=\s+' + NUMBER + r'\s*' +
+        r'(?:.*?)' +
+        r'^\s+' + r'(?:E\(CCSD\(T\)\))' + r'\s+=\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE | re.DOTALL)
+    if mobj:
+        print('matched ccsd(t) vcc v2')
+        psivar['CCSD TOTAL ENERGY'] = mobj.group(1)
+        psivar['(T) CORRECTION ENERGY'] = Decimal(mobj.group(2)) - Decimal(mobj.group(1))
+        psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(2)
 
     mobj = re.search(
         r'^\s+' + r'(?:E\(SCF\))' + r'\s+=\s*' + NUMBER + r'\s+a\.u\.\s*' +
@@ -368,6 +409,17 @@ def harvest_outfile_pass(outtext):
         psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(2)) - psivar['SCF TOTAL ENERGY']
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(2)
 
+    mobj = re.search(
+        r'^\s+' + r'(?:CCSD\(T\) contribution:)\s+' + r'(?P<tcorr>' + NUMBER + ')' + r'\s*'
+        r'^\s*' + r'(?:CCSD\[T\] contribution:)\s+' + r'(?P<bkttcorr>' + NUMBER + ')' + r'\s*'
+        r'^\s*' + r'(?:Total CCSD\(T\) energy:)\s+' + r'(?P<ttot>' + NUMBER + ')' + r'\s*$',
+        outtext, re.MULTILINE | re.DOTALL)
+    if mobj:
+        print('matched ccsd(t) ncc')
+        psivar['(T) CORRECTION ENERGY'] = mobj.group('tcorr')
+        psivar['[T] CORRECTION ENERGY'] = mobj.group('bkttcorr')
+        psivar['CCSD(T) TOTAL ENERGY'] = mobj.group('ttot')
+
     # Process SCS-CC
     mobj = re.search(
         r'^\s+' + r'(?P<fullCC>(?P<iterCC>CC(?:\w+))(?:\(T\))?)' + r'\s+(?:energy will be calculated.)\s*' +
@@ -386,7 +438,7 @@ def harvest_outfile_pass(outtext):
     mobj = re.search(
         r'^\s+' + r'(?P<fullCC>(?P<iterCC>CC(?:\w+))(?:\(T\))?)' + r'\s+(?:energy will be calculated.)\s*' +
         r'(?:.*?)' +
-        r'^\s+' + r'Amplitude equations converged in' + r'\s*\d+\s*' + r'iterations.\s*' +
+        r'^\s+' + r'Amplitude equations converged in' + r'\s*\d+\s*' + r'iterations.' +
         r'(?:.*?)' +
         r'^\s+' + r'The AA contribution to the correlation energy is:\s+' + NUMBER + r'\s+a.u.\s*' +
         r'^\s+' + r'The BB contribution to the correlation energy is:\s+' + NUMBER + r'\s+a.u.\s*' +
@@ -439,7 +491,7 @@ def harvest_outfile_pass(outtext):
             lline = line.split()
             molxyz += '%s %16s %16s %16s\n' % (lline[0], lline[-3], lline[-2], lline[-1])
         # Rather a dinky Molecule as no ghost, charge, or multiplicity
-        psivar_coord = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+        psivar_coord = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     # Process atom geometry
     mobj = re.search(
@@ -450,7 +502,7 @@ def harvest_outfile_pass(outtext):
         print('matched atom')
         # Dinky Molecule
         molxyz = '1 bohr\n\n%s 0.0 0.0 0.0\n' % (mobj.group(1))
-        psivar_coord = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+        psivar_coord = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     # Process error codes
     mobj = re.search(
@@ -524,7 +576,9 @@ def harvest(p4Mol, c4out, **largs):
         grdMol, grdGrad = None, None
 
     if 'FCMFINAL' in largs:
-        fcmHess = harvest_FCM(largs['FCMFINAL'])
+        fcmHess = load_hessian(largs['FCMFINAL'], dtype='fcmfinal')
+        if np.count_nonzero(fcmHess) == 0:
+            fcmHess = None
     else:
         fcmHess = None
 
@@ -564,19 +618,41 @@ def harvest(p4Mol, c4out, **largs):
 
     # Set up array reorientation object
     if p4Mol and grdMol:
-        p4c4 = OrientMols(p4Mol, grdMol)
-        oriCoord = p4c4.transform_coordinates2(grdMol)
-        oriGrad = p4c4.transform_gradient(grdGrad)
-        oriDip = None if dipolDip is None else p4c4.transform_vector(dipolDip)
+        rgeom, _, _, _, runiq = p4Mol.to_arrays(dummy=True, ghost_as_dummy=True)
+        cgeom, _, _, _, cuniq = grdMol.to_arrays(dummy=True, ghost_as_dummy=True)
+        rmsd, mill = B787(cgeom=cgeom, rgeom=rgeom, cuniq=cuniq, runiq=runiq, atoms_map=False, mols_align=True, verbose=0)
+
+        oriCoord = mill.align_coordinates(grdMol.full_geometry(np_out=True))
+        oriGrad = mill.align_gradient(np.array(grdGrad))
+        if dipolDip is None:
+            oriDip = None
+        else:
+            oriDip = mill.align_vector(np.array(dipolDip))
+
+        if fcmHess is None:
+            oriHess = None
+        else:
+            oriHess = mill.align_hessian(np.array(fcmHess))
+
     elif p4Mol and outMol:
-        p4c4 = OrientMols(p4Mol, outMol)
-        oriCoord = p4c4.transform_coordinates2(outMol)
+        # TODO watch out - haven't seen atom_map=False yet
+        rgeom, _, _, _, runiq = p4Mol.to_arrays(dummy=True, ghost_as_dummy=True)
+        cgeom, _, _, _, cuniq = outMol.to_arrays(dummy=True, ghost_as_dummy=True)
+        rmsd, mill = B787(cgeom=cgeom, rgeom=rgeom, cuniq=cuniq, runiq=runiq, atoms_map=True, mols_align=True, verbose=0)
+
+        oriCoord = mill.align_coordinates(outMol.full_geometry(np_out=True))
         oriGrad = None
-        oriDip = None if dipolDip is None else p4c4.transform_vector(dipolDip)
+        oriHess = None  # I don't think we ever get FCMFINAL w/o GRAD
+        if dipolDip is None:
+            oriDip = None
+        else:
+            oriDip = mill.align_vector(np.array(dipolDip))
+
     elif outMol:
         oriCoord = None
         oriGrad = None
         oriDip = None if dipolDip is None else dipolDip
+        oriHess = None
 
 #    print p4c4
 #    print '    <<<   [4] C4-ORI-MOL   >>>'
@@ -595,17 +671,22 @@ def harvest(p4Mol, c4out, **largs):
 
     retMol = None if p4Mol else grdMol
 
-    if oriDip:
+    if oriDip is not None:
         outPsivar['CURRENT DIPOLE X'] = str(oriDip[0] * psi_dipmom_au2debye)
         outPsivar['CURRENT DIPOLE Y'] = str(oriDip[1] * psi_dipmom_au2debye)
         outPsivar['CURRENT DIPOLE Z'] = str(oriDip[2] * psi_dipmom_au2debye)
 
-    if oriGrad:
+    if oriGrad is not None:
         retGrad = oriGrad
-    elif grdGrad:
+    elif grdGrad is not None:
         retGrad = grdGrad
     else:
         retGrad = None
+
+    if oriHess is not None:
+        retHess = oriHess
+    else:
+        retHess = None
 
     return outPsivar, retGrad, retMol
 
@@ -629,7 +710,7 @@ def harvest_GRD(grd):
         molxyz += '%s %16s %16s %16s\n' % (el, mline[-3], mline[-2], mline[-1])
         lline = grd[at + 1 + Nat].split()
         grad.append([float(lline[-3]), float(lline[-2]), float(lline[-1])])
-    mol = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+    mol = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     return mol, grad
 
@@ -676,7 +757,7 @@ def harvest_zmat(zmat):
                 isBohr = ' bohr'
 
     molxyz = '%d%s\n%d %d\n' % (Nat, isBohr, charge, mult) + molxyz
-    mol = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+    mol = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     return mol
 
@@ -877,7 +958,7 @@ def muster_modelchem(name, dertype):
     elif lowername == 'c4-ccsdt(q)':
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDT(Q)'
         options['CFOUR']['CFOUR_CC_PROGRAM']['value'] = 'NCC'
- 
+
     elif lowername == 'c4-ccsdtq':
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDTQ'
         options['CFOUR']['CFOUR_CC_PROGRAM']['value'] = 'NCC'
@@ -1050,17 +1131,21 @@ def backtransform(chgeMol, permMol, chgeGrad=None, chgeDip=None):
     orientation embodied by *permMol*. Currently for vpt2.
 
     """
-    # Set up array reorientation object
-    p4c4 = OrientMols(permMol, chgeMol)  # opposite than usual
-    oriCoord = p4c4.transform_coordinates2(chgeMol)
+    # Set up array reorientation object -- opposite than usual
+    # OrienMols --> B787 untested, particularly atommap
+    rgeom, _, _, _, runiq = permMol.to_arrays(dummy=True, ghost_as_dummy=True)
+    cgeom, _, _, _, cuniq = chgeMol.to_arrays(dummy=True, ghost_as_dummy=True)
+    rmsd, mill = B787(cgeom=cgeom, rgeom=rgeom, cuniq=cuniq, runiq=runiq, atoms_map=True, mols_align=True, verbose=0)
+
+    oriCoord = mill.align_coordinates(chgeMol.full_geometry(np_out=False))
     p4Elem = []
     for at in range(chgeMol.natom()):
         p4Elem.append(chgeMol.Z(at))
-    oriElem = p4c4.transform_elementlist(p4Elem)
-    oriElemMap = p4c4.Catommap
+    oriElem = mill.align_atoms(np.array(p4Elem))
+    oriElemMap = mill.atommap
 
-    oriGrad = None if chgeGrad is None else p4c4.transform_gradient(chgeGrad)
-    oriDip = None if chgeDip is None else p4c4.transform_vector(chgeDip)
+    oriGrad = None if chgeGrad is None else mill.align_gradient(np.array(chgeGrad))
+    oriDip = None if chgeDip is None else mill.align_vector(np.array(chgeDip))
 
     if chgeGrad and chgeDip:
         return oriElemMap, oriElem, oriCoord, oriGrad, oriDip
@@ -1131,5 +1216,6 @@ def jajo2mol(jajodic):
         posn *= 3
         molxyz += '%s %21.15f %21.15f %21.15f\n' % (el, coord[posn], coord[posn + 1], coord[posn + 2])
     mol = Molecule.init_with_xyz(molxyz, no_com=True, no_reorient=True, contentsNotFilename=True)
+    mol = Molecule.from_string(molxyz, dtype='xyz+', fix_com=True, fix_orientation=True)
 
     return mol

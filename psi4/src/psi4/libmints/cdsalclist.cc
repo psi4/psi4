@@ -55,7 +55,7 @@ static char direction(int xyz) {
             return '?';
     }
 }
-}
+}  // namespace
 
 namespace psi {
 
@@ -84,7 +84,8 @@ void CdSalcWRTAtom::print() const {
     }
 }
 
-CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool project_out_translations, bool project_out_rotations)
+CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool project_out_translations,
+                       bool project_out_rotations)
     : molecule_(mol),
       needed_irreps_(needed_irreps),
       project_out_translations_(project_out_translations),
@@ -461,4 +462,4 @@ molecule_->inertia_tensor()->print();
     return constraints_ortho;
 }
 */
-}
+}  // namespace psi

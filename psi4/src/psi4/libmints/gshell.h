@@ -37,21 +37,11 @@ namespace psi {
 
 class Vector3;
 
-enum PrimitiveType {
-    Normalized,
-    Unnormalized
-};
+enum PrimitiveType { Normalized, Unnormalized };
 
-enum GaussianType {
-    Cartesian = 0,
-    Pure = 1
-};
+enum GaussianType { Cartesian = 0, Pure = 1 };
 
-enum ShellType {
-    Gaussian = 0,
-    ECPType1 = 1,
-    ECPType2 = 2
-};
+enum ShellType { Gaussian = 0, ECPType1 = 1, ECPType2 = 2 };
 
 /*! \ingroup MINTS
  *  \class ShellInfo
@@ -59,9 +49,8 @@ enum ShellType {
  *         slower data structures, which are easier to construct. These are used to build the
  *         basis set, which builds more efficient pointer-based GaussianShell objects.
  */
-class ShellInfo
-{
-protected:
+class ShellInfo {
+   protected:
     /// Angular momentum
     int l_;
     /// Flag for pure angular momentum
@@ -97,21 +86,18 @@ protected:
     void contraction_normalization();
 
     /** Lookup array that when you index the angular momentum it returns the lowercase letter corresponding to it. */
-    static const char *amtypes;
+    static const char* amtypes;
     /** Lookup array that when you index the angular momentum it returns the uppercase letter corresponding to it. */
-    static const char *AMTYPES;
+    static const char* AMTYPES;
 
-public:
+   public:
     /** Constructor; use this version for ECP basis sets.
      *  @param am Angular momentum.
      *  @param e An array of exponent values.
      *  @param n An array of r exponents for ECPs.
      *  @param c An array of contraction coefficients.
      */
-    ShellInfo(int am,
-              const std::vector<double>& c,
-              const std::vector<double>& e,
-              const std::vector<int>& n);
+    ShellInfo(int am, const std::vector<double>& c, const std::vector<double>& e, const std::vector<int>& n);
 
     /** Constructor; use this version for regular Gaussian basis sets.
      *  @param e An array of exponent values.
@@ -120,10 +106,7 @@ public:
      *  @param c An array of contraction coefficients.
      *  @param pt Is the shell already normalized?
      */
-    ShellInfo(int am,
-              const std::vector<double>& c,
-              const std::vector<double>& e,
-              GaussianType pure,
+    ShellInfo(int am, const std::vector<double>& c, const std::vector<double>& e, GaussianType pure,
               PrimitiveType pt = Normalized);
 
     /** Handles calling primitive_normalization and contraction_normalization for you. */
@@ -137,25 +120,25 @@ public:
     /// Total number of basis functions
     int nfunction() const;
     /// Total number of functions if this shell was Cartesian
-    int ncartesian() const          { return ncartesian_; }
+    int ncartesian() const { return ncartesian_; }
     /// The angular momentum of the given contraction
-    int am() const                  { return l_; }
+    int am() const { return l_; }
     /// The character symbol for the angular momentum of the given contraction
-    char amchar() const             { return amtypes[l_]; }
+    char amchar() const { return amtypes[l_]; }
     /// The character symbol for the angular momentum of the given contraction (upper case)
-    char AMCHAR() const             { return AMTYPES[l_]; }
+    char AMCHAR() const { return AMTYPES[l_]; }
     /// Returns true if contraction is Cartesian
-    bool is_cartesian() const       { return !puream_; }
+    bool is_cartesian() const { return !puream_; }
     /// Returns true if contraction is pure
-    bool is_pure() const            { return puream_; }
+    bool is_pure() const { return puream_; }
     /// Returns the exponent of the given primitive
-    double exp(int prim) const      { return exp_[prim]; }
+    double exp(int prim) const { return exp_[prim]; }
     /// Return coefficient of pi'th primitive
-    double coef(int pi) const       { return coef_[pi]; }
+    double coef(int pi) const { return coef_[pi]; }
     /// Return r exponent for pi'th ECP primitive
-    int nval(int pi) const          { return n_[pi]; }
+    int nval(int pi) const { return n_[pi]; }
     /// Return ERD normalized coefficient of pi'th primitive
-    double erd_coef(int pi) const       { return erd_coef_[pi]; }
+    double erd_coef(int pi) const { return erd_coef_[pi]; }
     /// Return unnormalized coefficient of pi'th primitive
     double original_coef(int pi) const { return original_coef_[pi]; }
     /// Returns the exponent of the given primitive
@@ -171,24 +154,19 @@ public:
     /// Normalize the angular momentum component
     static double normalize(int l, int m, int n);
 
-    ///True if two ShellInfo instances are exactly equal
-    bool operator==(const ShellInfo& RHS)const;
+    /// True if two ShellInfo instances are exactly equal
+    bool operator==(const ShellInfo& RHS) const;
 
-    ///True if any part of the two ShellInfo instances is unequal
-    bool operator!=(const ShellInfo& RHS)const
-    {
-        return !(*this==RHS);
-    }
+    /// True if any part of the two ShellInfo instances is unequal
+    bool operator!=(const ShellInfo& RHS) const { return !(*this == RHS); }
 };
-
 
 /*! \ingroup MINTS
  *  \class GaussianShell
  *  \brief Gaussian orbital shell.
  */
-class GaussianShell
-{
-protected:
+class GaussianShell {
+   protected:
     /// Angular momentum
     int l_;
     /// Flag for pure angular momentum
@@ -209,7 +187,7 @@ protected:
     /// Atom number this shell goes to. Needed when indexing integral derivatives.
     int nc_;
     /// Atomic coordinates of this center
-    const double *center_;
+    const double* center_;
     /// First basis function in this shell
     int start_;
 
@@ -232,11 +210,11 @@ protected:
     void contraction_normalization();
 
     /** Lookup array that when you index the angular momentum it returns the lowercase letter corresponding to it. */
-    static const char *amtypes;
+    static const char* amtypes;
     /** Lookup array that when you index the angular momentum it returns the uppercase letter corresponding to it. */
-    static const char *AMTYPES;
+    static const char* AMTYPES;
 
-public:
+   public:
     /** Constructor; Use this version for regular Gaussian basis sets.
      *  @param shelltype The type of shell this structure describes
      *  @param nprimitive The number of primitives in this shell.
@@ -246,20 +224,14 @@ public:
      *  @param c An array of normalized contraction coefficients.
      *  @param ec An array of ERD normalized contraction coefficients.
      *  @param e An array of exponent values.
-     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
+     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning
+     * BasisSet molecule_. Used in integral derivatives for indexing.
      *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
-     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
+     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in
+     * matrices.
      */
-    GaussianShell(ShellType shelltype,
-                  int am,
-                  int nprimitive,
-                  const double *oc,
-                  const double *c, const double *ec,
-                  const double *e,
-                  GaussianType pure,
-                  int nc,
-                  const double* center,
-                  int start);
+    GaussianShell(ShellType shelltype, int am, int nprimitive, const double* oc, const double* c, const double* ec,
+                  const double* e, GaussianType pure, int nc, const double* center, int start);
 
     /** Constructor; use this version for ECPs.
      *  @param shelltype The type of shell this structure describes
@@ -268,18 +240,13 @@ public:
      *  @param oc An array of contraction coefficients.
      *  @param e An array of exponent values.
      *  @param n An array of r exponent values for ECPs.
-     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
+     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning
+     * BasisSet molecule_. Used in integral derivatives for indexing.
      *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
      */
-    GaussianShell(ShellType shelltype,
-                  int am,
-                  int nprimitive,
-                  const double *c,
-                  const double *e,
-                  const int *n,
-                  int nc,
+    GaussianShell(ShellType shelltype, int am, int nprimitive, const double* c, const double* e, const int* n, int nc,
                   const double* center);
-    ///Builds and empty GShell
+    /// Builds and empty GShell
     GaussianShell() {}
 
     /// The type of shell this object encodes information for.
@@ -289,33 +256,33 @@ public:
     /// Total number of basis functions
     int nfunction() const;
     /// Total number of functions if this shell was Cartesian
-    int ncartesian() const          { return ncartesian_; }
+    int ncartesian() const { return ncartesian_; }
     /// The angular momentum of the given contraction
-    int am() const                  { return l_; }
+    int am() const { return l_; }
     /// The character symbol for the angular momentum of the given contraction
-    char amchar() const             { return amtypes[l_]; }
+    char amchar() const { return amtypes[l_]; }
     /// The character symbol for the angular momentum of the given contraction (upper case)
-    char AMCHAR() const             { return AMTYPES[l_]; }
+    char AMCHAR() const { return AMTYPES[l_]; }
     /// Returns true if contraction is Cartesian
-    bool is_cartesian() const       { return !puream_; }
+    bool is_cartesian() const { return !puream_; }
     /// Returns true if contraction is pure
-    bool is_pure() const            { return puream_; }
+    bool is_pure() const { return puream_; }
 
     /// Returns the center of the Molecule this shell is on
     const double* center() const;
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
-    int ncenter() const             { return nc_; }
+    int ncenter() const { return nc_; }
     /// Returns the first basis function in this shell
     int start() const { return start_; }
 
     /// Returns the exponent of the given primitive
-    double exp(int prim) const      { return exp_[prim]; }
+    double exp(int prim) const { return exp_[prim]; }
     /// Return coefficient of pi'th primitive
-    double coef(int pi) const       { return coef_[pi]; }
+    double coef(int pi) const { return coef_[pi]; }
     /// Return unnormalized coefficient of pi'th primitive
     double original_coef(int pi) const { return original_coef_[pi]; }
     /// Return the pi'th r exponent for ECPs
-    int nval(int pi) const          { return n_[pi]; }
+    int nval(int pi) const { return n_[pi]; }
     /// Return unnormalized coefficient of pi'th primitive
     double erd_coef(int pi) const { return erd_coef_[pi]; }
     /// Returns the exponents
@@ -331,11 +298,11 @@ public:
     void print(std::string out) const;
 
     /// Basis function index where this shell starts.
-    int function_index() const      { return start_; }
-    void set_function_index(int i)  { start_ = i; }
+    int function_index() const { return start_; }
+    void set_function_index(int i) { start_ = i; }
     double evaluate(double r, int l) const;
 };
 
-}
+}  // namespace psi
 
 #endif

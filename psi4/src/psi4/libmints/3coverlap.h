@@ -33,7 +33,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libpsi4util/exception.h"
 
-
 namespace psi {
 
 class BasisSet;
@@ -43,9 +42,8 @@ class GaussianShell;
     \class ThreeCenterOverlapInt
     \brief Three center overlap integral.
  */
-class ThreeCenterOverlapInt
-{
-protected:
+class ThreeCenterOverlapInt {
+   protected:
     ObaraSaikaThreeCenterRecursion overlap_recur_;
 
     std::shared_ptr<BasisSet> bs1_;
@@ -53,27 +51,21 @@ protected:
     std::shared_ptr<BasisSet> bs3_;
 
     /// Buffer to hold the source integrals.
-    double *buffer_;
+    double* buffer_;
 
     /// Buffer for spherical harmonics
-    double *temp_;
+    double* temp_;
 
     /// Vector of Sphericaltransforms
     std::vector<SphericalTransform> st_;
 
-    void compute_pair(const GaussianShell& s1,
-                      const GaussianShell& s2,
-                      const GaussianShell& s3);
+    void compute_pair(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3);
 
-public:
-    ThreeCenterOverlapInt(std::vector<SphericalTransform> st,
-                          std::shared_ptr<BasisSet> bs1,
-                          std::shared_ptr<BasisSet> bs2,
-                          std::shared_ptr<BasisSet> bs3);
+   public:
+    ThreeCenterOverlapInt(std::vector<SphericalTransform> st, std::shared_ptr<BasisSet> bs1,
+                          std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3);
 
-    ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1,
-                          std::shared_ptr<BasisSet> bs2,
-                          std::shared_ptr<BasisSet> bs3);
+    ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3);
 
     virtual ~ThreeCenterOverlapInt();
 
@@ -87,22 +79,18 @@ public:
     std::shared_ptr<BasisSet> basis3();
 
     /// Buffer where the integrals are placed.
-    const double *buffer() const { return buffer_; }
+    const double* buffer() const { return buffer_; }
 
     /// Compute the integrals of the form (a|c|b).
     virtual void compute_shell(int, int, int);
 
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(const GaussianShell&,
-                      const GaussianShell&,
-                      const GaussianShell&);
+    void normalize_am(const GaussianShell&, const GaussianShell&, const GaussianShell&);
 
     /// Perform pure (spherical) transform.
-    void pure_transform(const GaussianShell&,
-                        const GaussianShell&,
-                        const GaussianShell&);
+    void pure_transform(const GaussianShell&, const GaussianShell&, const GaussianShell&);
 };
 
-}
+}  // namespace psi
 
 #endif

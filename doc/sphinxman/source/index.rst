@@ -59,8 +59,13 @@ Programmers' Manual
 .. toctree::
    :maxdepth: 2
 
-   contributing
-   programming
+   prog_intro
+   prog_newcode
+   prog_corelibs
+   add_tests
+   prog_debug_profile
+   documentation
+   psipep
    manage_index
    psi4api
 

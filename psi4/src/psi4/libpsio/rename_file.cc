@@ -41,33 +41,31 @@
 namespace psi {
 
 void PSIO::rename_file(size_t old_unit, size_t new_unit) {
-  char*old_name,*new_name;
-  /* Get the file name prefix */
-  get_filename(old_unit, &old_name);
-  get_filename(new_unit, &new_name);
+    char *old_name, *new_name;
+    /* Get the file name prefix */
+    get_filename(old_unit, &old_name);
+    get_filename(new_unit, &new_name);
 
-  /* Get the path */
-  std::string sold_path = PSIOManager::shared_object()->get_file_path(old_unit).c_str();
-  std::string snew_path = PSIOManager::shared_object()->get_file_path(new_unit).c_str();
-  const char* old_path = sold_path.c_str();
-  const char* new_path = snew_path.c_str();
+    /* Get the path */
+    std::string sold_path = PSIOManager::shared_object()->get_file_path(old_unit).c_str();
+    std::string snew_path = PSIOManager::shared_object()->get_file_path(new_unit).c_str();
+    const char* old_path = sold_path.c_str();
+    const char* new_path = snew_path.c_str();
 
-  /* build the full path */
-  char*old_full_path =
-      (char*)malloc((strlen(old_path)+strlen(old_name)+80)*sizeof(char));
-  char*new_full_path =
-      (char*)malloc((strlen(new_path)+strlen(new_name)+80)*sizeof(char));
+    /* build the full path */
+    char* old_full_path = (char*)malloc((strlen(old_path) + strlen(old_name) + 80) * sizeof(char));
+    char* new_full_path = (char*)malloc((strlen(new_path) + strlen(new_name) + 80) * sizeof(char));
 
-  sprintf(old_full_path, "%s%s.%zu", old_path, old_name, old_unit);
-  sprintf(new_full_path, "%s%s.%zu", new_path, new_name, new_unit);
+    sprintf(old_full_path, "%s%s.%zu", old_path, old_name, old_unit);
+    sprintf(new_full_path, "%s%s.%zu", new_path, new_name, new_unit);
 
-  /* move the file */
-  rename(old_full_path, new_full_path);
+    /* move the file */
+    rename(old_full_path, new_full_path);
 
-  free(old_name);
-  free(new_name);
-  free(old_full_path);
-  free(new_full_path);
+    free(old_name);
+    free(new_name);
+    free(old_full_path);
+    free(new_full_path);
 }
 
-}
+}  // namespace psi

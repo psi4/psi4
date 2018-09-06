@@ -56,7 +56,6 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -68,29 +67,22 @@ using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
 
-SymmetryOperation::SymmetryOperation() : bits_(0)
-{
-    zero();
-}
+SymmetryOperation::SymmetryOperation() : bits_(0) { zero(); }
 
-SymmetryOperation::SymmetryOperation(const SymmetryOperation &so)
-    : bits_(so.bits_)
-{
-    for (int i=0; i<3; i++) {
-        for (int j=0; j<3; j++) {
+SymmetryOperation::SymmetryOperation(const SymmetryOperation& so) : bits_(so.bits_) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
             d[i][j] = so.d[i][j];
         }
     }
 }
 
-SymmetryOperation::~SymmetryOperation()
-{
-}
+SymmetryOperation::~SymmetryOperation() {}
 
-SymmetryOperation & SymmetryOperation::operator = (SymmetryOperation const & so) // Assignment operator
+SymmetryOperation& SymmetryOperation::operator=(SymmetryOperation const& so)  // Assignment operator
 {
-    for (int i=0; i<3; i++) {
-        for (int j=0; j<3; j++) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
             d[i][j] = so.d[i][j];
         }
     }
@@ -98,8 +90,7 @@ SymmetryOperation & SymmetryOperation::operator = (SymmetryOperation const & so)
     return *this;
 }
 
-void SymmetryOperation::analyze_d()
-{
+void SymmetryOperation::analyze_d() {
 #define EQUAL(x, y) (fabs((x) - (y)) < 1.0e-5)
 
     if (EQUAL(d[0][0], 1.0) && EQUAL(d[1][1], 1.0) && EQUAL(d[2][2], 1.0))
@@ -120,44 +111,37 @@ void SymmetryOperation::analyze_d()
         bits_ = SymmOps::i;
 }
 
-SymmetryOperation
-SymmetryOperation::operate(const SymmetryOperation& r) const
-{
+SymmetryOperation SymmetryOperation::operate(const SymmetryOperation& r) const {
     SymmetryOperation ret;
-    for (int i=0; i < 3; i++)
-        for (int j=0; j < 3; j++) {
-            double t=0;
-            for (int k=0; k < 3; k++)
-                t += r.d[i][k]*d[k][j];
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++) {
+            double t = 0;
+            for (int k = 0; k < 3; k++) t += r.d[i][k] * d[k][j];
             ret.d[i][j] = t;
         }
     ret.analyze_d();
     return ret;
 }
 
-SymmetryOperation
-SymmetryOperation::transform(const SymmetryOperation& r) const
-{
-    int i,j,k;
-    SymmetryOperation ret,foo;
+SymmetryOperation SymmetryOperation::transform(const SymmetryOperation& r) const {
+    int i, j, k;
+    SymmetryOperation ret, foo;
 
     // foo = r * d
-    for (i=0; i < 3; i++) {
-        for (j=0; j < 3; j++) {
-            double t=0;
-            for (k=0; k < 3; k++)
-                t += r.d[i][k] * d[k][j];
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            double t = 0;
+            for (k = 0; k < 3; k++) t += r.d[i][k] * d[k][j];
             foo.d[i][j] = t;
         }
     }
 
     // ret = (r*d)*r~ = foo*r~
-    for (i=0; i < 3; i++) {
-        for (j=0; j < 3; j++) {
-            double t=0;
-            for (k=0; k < 3; k++)
-                t += foo.d[i][k]*r.d[j][k];
-            ret.d[i][j]=t;
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            double t = 0;
+            for (k = 0; k < 3; k++) t += foo.d[i][k] * r.d[j][k];
+            ret.d[i][j] = t;
         }
     }
 
@@ -166,17 +150,13 @@ SymmetryOperation::transform(const SymmetryOperation& r) const
 }
 
 // Clockwise rotation by 2pi/n degrees
-void
-SymmetryOperation::rotation(int n)
-{
-    double theta = (n) ? 2.0*M_PI/n : 2.0*M_PI;
+void SymmetryOperation::rotation(int n) {
+    double theta = (n) ? 2.0 * M_PI / n : 2.0 * M_PI;
     rotation(theta);
 }
 
 // Clockwise rotation by theta degrees
-void
-SymmetryOperation::rotation(double theta)
-{
+void SymmetryOperation::rotation(double theta) {
     zero();
 
     double ctheta = cos(theta);
@@ -191,11 +171,9 @@ SymmetryOperation::rotation(double theta)
     analyze_d();
 }
 
-void
-SymmetryOperation::transpose()
-{
-    for (int i=1; i<3; i++) {
-        for (int j=0; j<i; j++) {
+void SymmetryOperation::transpose() {
+    for (int i = 1; i < 3; i++) {
+        for (int j = 0; j < i; j++) {
             double tmp = d[i][j];
             d[i][j] = d[j][i];
             d[j][i] = tmp;
@@ -204,25 +182,22 @@ SymmetryOperation::transpose()
     analyze_d();
 }
 
-void
-SymmetryOperation::print(std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   printer->Printf( "        1          2          3\n");
-    printer->Printf( "  1  ");
-    printer->Printf( "%10.7f ", d[0][0]);
-    printer->Printf( "%10.7f ", d[0][1]);
-    printer->Printf( "%10.7f \n", d[0][2]);
-    printer->Printf( "  2  ");
-    printer->Printf( "%10.7f ", d[1][0]);
-    printer->Printf( "%10.7f ", d[1][1]);
-    printer->Printf( "%10.7f \n", d[1][2]);
-    printer->Printf( "  3  ");
-    printer->Printf( "%10.7f ", d[2][0]);
-    printer->Printf( "%10.7f ", d[2][1]);
-    printer->Printf( "%10.7f \n", d[2][2]);
-    outfile->Printf( "bits_ = %d\n", bits_);
+void SymmetryOperation::print(std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("        1          2          3\n");
+    printer->Printf("  1  ");
+    printer->Printf("%10.7f ", d[0][0]);
+    printer->Printf("%10.7f ", d[0][1]);
+    printer->Printf("%10.7f \n", d[0][2]);
+    printer->Printf("  2  ");
+    printer->Printf("%10.7f ", d[1][0]);
+    printer->Printf("%10.7f ", d[1][1]);
+    printer->Printf("%10.7f \n", d[1][2]);
+    printer->Printf("  3  ");
+    printer->Printf("%10.7f ", d[2][0]);
+    printer->Printf("%10.7f ", d[2][1]);
+    printer->Printf("%10.7f \n", d[2][2]);
+    outfile->Printf("bits_ = %d\n", bits_);
 }
 
 /////////////////////////////////////////////////////////////////////////////

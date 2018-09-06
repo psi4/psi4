@@ -38,9 +38,9 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-#define MAX0(a,b) (((a)>(b)) ? (a) : (b))
-#define MIN0(a,b) (((a)<(b)) ? (a) : (b))
-#define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
+#define MAX0(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN0(a, b) (((a) < (b)) ? (a) : (b))
+#define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 
 /*!
 ** iwl_buf_wrt_mat()
@@ -70,12 +70,9 @@ namespace psi {
 ** Revised 6/27/96 by CDS for new format
 ** \ingroup IWL
 */
-void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
-    int sfirst, int slast, int *reorder, int reorder_offset,
-    int printflag, int *ioff, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out));
+void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast, int sfirst, int slast, int *reorder,
+                       int reorder_offset, int printflag, int *ioff, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;
@@ -85,25 +82,25 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
     lblptr = labels_;
     valptr = values_;
 
-    ij = INDEX(ptr,qtr);
+    ij = INDEX(ptr, qtr);
 
-    for (r=rfirst,R=0; r <= rlast; r++,R++) {
+    for (r = rfirst, R = 0; r <= rlast; r++, R++) {
         rtr = reorder[r] - reorder_offset;
 
-        for (s=sfirst,S=0; s <= slast && s <= r; s++,S++) {
+        for (s = sfirst, S = 0; s <= slast && s <= r; s++, S++) {
             str = reorder[s] - reorder_offset;
 
-            kl = INDEX(rtr,str);
+            kl = INDEX(rtr, str);
 
             value = mat[R][S];
 
             if (ij >= kl && std::fabs(value) > cutoff_) {
                 idx = 4 * idx_;
-                lblptr[idx++] = (Label) MAX0(ptr,qtr);
-                lblptr[idx++] = (Label) MIN0(ptr,qtr);
-                lblptr[idx++] = (Label) MAX0(rtr,str);
-                lblptr[idx++] = (Label) MIN0(rtr,str);
-                valptr[idx_] = (Value) value;
+                lblptr[idx++] = (Label)MAX0(ptr, qtr);
+                lblptr[idx++] = (Label)MIN0(ptr, qtr);
+                lblptr[idx++] = (Label)MAX0(rtr, str);
+                lblptr[idx++] = (Label)MIN0(rtr, str);
+                valptr[idx_] = (Value)value;
 
                 idx_++;
 
@@ -114,13 +111,10 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
                     idx_ = 0;
                 }
 
-                if (printflag)
-                    printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
-                    ptr, qtr, rtr, str, ij, kl, value);
+                if (printflag) printer->Printf(">%d %d %d %d [%d] [%d] = %20.10f\n", ptr, qtr, rtr, str, ij, kl, value);
 
             } /* end if (std::fabs(value) > Buf->cutoff) ... */
-        } /* end loop over s */
-    } /* end loop over r */
+        }     /* end loop over s */
+    }         /* end loop over r */
 }
-
 }

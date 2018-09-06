@@ -44,7 +44,6 @@ from .qcformat import *
 from . import cfour
 from . import jajo
 from . import orca
-from .orient import OrientMols
 from .dbwrap import Database, DB4  #DatabaseWrapper, ReactionDatum, Reagent, Reaction
 from .libmintspointgrp import SymmetryOperation, PointGroup
 from .libmintsbasisset import BasisSet
@@ -55,6 +54,7 @@ from . import vib
 from .vib import compare_vibinfos
 from . import molparse
 from . import hessparse
+from . import gradparse
 
 # Load items that are useful to access from an input file
 from .psiutil import *

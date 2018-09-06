@@ -38,14 +38,11 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-
 using namespace psi;
 
 namespace psi {
 
-Localizer::Localizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) :
-    primary_(primary), C_(C)
-{
+Localizer::Localizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) : primary_(primary), C_(C) {
     if (C->nirrep() != 1) {
         throw PSIEXCEPTION("Localizer: C matrix is not C1");
     }
@@ -54,11 +51,8 @@ Localizer::Localizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> 
     }
     common_init();
 }
-Localizer::~Localizer()
-{
-}
-void Localizer::common_init()
-{
+Localizer::~Localizer() {}
+void Localizer::common_init() {
     print_ = 0;
     debug_ = 0;
     bench_ = 0;
@@ -66,15 +60,15 @@ void Localizer::common_init()
     maxiter_ = 50;
     converged_ = false;
 }
-std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C, Options& options)
-{
+std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared_ptr<BasisSet> primary,
+                                            std::shared_ptr<Matrix> C, Options& options) {
     std::shared_ptr<Localizer> local;
 
     if (type == "BOYS") {
-        BoysLocalizer* l = new BoysLocalizer(primary,C);
+        BoysLocalizer* l = new BoysLocalizer(primary, C);
         local = std::shared_ptr<Localizer>(l);
     } else if (type == "PIPEK_MEZEY") {
-        PMLocalizer* l = new PMLocalizer(primary,C);
+        PMLocalizer* l = new PMLocalizer(primary, C);
         local = std::shared_ptr<Localizer>(l);
     } else {
         throw PSIEXCEPTION("Localizer: Unrecognized localization algorithm");
@@ -88,16 +82,15 @@ std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared
 
     return local;
 }
-std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C)
-{
+std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared_ptr<BasisSet> primary,
+                                            std::shared_ptr<Matrix> C) {
     return Localizer::build(type, primary, C, Process::environment.options);
 }
-std::shared_ptr<Localizer> Localizer::build(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C, Options& options)
-{
+std::shared_ptr<Localizer> Localizer::build(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C,
+                                            Options& options) {
     return Localizer::build(options.get_str("LOCAL_TYPE"), primary, C, options);
 }
-std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc)
-{
+std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc) {
     if (!L_ || !U_) {
         throw PSIEXCEPTION("Localizer: run compute() first");
     }
@@ -114,7 +107,7 @@ std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc)
 
     std::vector<std::pair<double, int> > order;
     for (int i = 0; i < nmo; i++) {
-        order.push_back(std::pair<double, int>(Fp[i][i],i));
+        order.push_back(std::pair<double, int>(Fp[i][i], i));
     }
     std::sort(order.begin(), order.end());
 
@@ -123,7 +116,7 @@ std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc)
     double** F2p = Fl2->pointer();
     for (int i = 0; i < nmo; i++) {
         for (int j = 0; j < nmo; j++) {
-             Fp[i][j] = F2p[order[i].second][order[j].second];
+            Fp[i][j] = F2p[order[i].second][order[j].second];
         }
     }
 
@@ -134,34 +127,25 @@ std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc)
     U2->copy(U_);
     double** U2p = U2->pointer();
     for (int i = 0; i < nmo; i++) {
-        C_DCOPY(nso,&L2p[0][order[i].second],nmo,&Lp[0][i],nmo);
-        C_DCOPY(nmo,&U2p[0][order[i].second],nmo,&Up[0][i],nmo);
+        C_DCOPY(nso, &L2p[0][order[i].second], nmo, &Lp[0][i], nmo);
+        C_DCOPY(nmo, &U2p[0][order[i].second], nmo, &Up[0][i], nmo);
     }
 
     return Fl;
 }
 
-BoysLocalizer::BoysLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) :
-    Localizer(primary,C)
-{
+BoysLocalizer::BoysLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) : Localizer(primary, C) {
     common_init();
 }
-BoysLocalizer::~BoysLocalizer()
-{
+BoysLocalizer::~BoysLocalizer() {}
+void BoysLocalizer::common_init() {}
+void BoysLocalizer::print_header() const {
+    outfile->Printf("  ==> Boys Localizer <==\n\n");
+    outfile->Printf("    Convergence = %11.3E\n", convergence_);
+    outfile->Printf("    Maxiter     = %11d\n", maxiter_);
+    outfile->Printf("\n");
 }
-void BoysLocalizer::common_init()
-{
-}
-void BoysLocalizer::print_header() const
-{
-    outfile->Printf( "  ==> Boys Localizer <==\n\n");
-    outfile->Printf( "    Convergence = %11.3E\n", convergence_);
-    outfile->Printf( "    Maxiter     = %11d\n", maxiter_);
-    outfile->Printf( "\n");
-
-}
-void BoysLocalizer::localize()
-{
+void BoysLocalizer::localize() {
     print_header();
 
     // => Sizing <= //
@@ -182,19 +166,21 @@ void BoysLocalizer::localize()
     fact.reset();
 
     std::vector<std::shared_ptr<Matrix> > Dmo;
-    auto T = std::make_shared<Matrix>("T",nso,nmo);
+    auto T = std::make_shared<Matrix>("T", nso, nmo);
     for (int xyz = 0; xyz < 3; xyz++) {
         Dmo.push_back(std::make_shared<Matrix>("D", nmo, nmo));
-        C_DGEMM('N','N',nso,nmo,nso,1.0,D[xyz]->pointer()[0],nso,C_->pointer()[0],nmo,0.0,T->pointer()[0],nmo);
-        C_DGEMM('T','N',nmo,nmo,nso,1.0,C_->pointer()[0],nmo,T->pointer()[0],nmo,0.0,Dmo[xyz]->pointer()[0],nmo);
+        C_DGEMM('N', 'N', nso, nmo, nso, 1.0, D[xyz]->pointer()[0], nso, C_->pointer()[0], nmo, 0.0, T->pointer()[0],
+                nmo);
+        C_DGEMM('T', 'N', nmo, nmo, nso, 1.0, C_->pointer()[0], nmo, T->pointer()[0], nmo, 0.0, Dmo[xyz]->pointer()[0],
+                nmo);
     }
     D.clear();
     T.reset();
 
     // => Targets <= //
 
-    L_ = std::make_shared<Matrix>("L",nso,nmo);
-    U_ = std::make_shared<Matrix>("U",nmo,nmo);
+    L_ = std::make_shared<Matrix>("L", nso, nmo);
+    U_ = std::make_shared<Matrix>("U", nmo, nmo);
     L_->copy(C_);
     U_->identity();
     converged_ = false;
@@ -219,20 +205,19 @@ void BoysLocalizer::localize()
 
     double metric = 0.0;
     for (int xyz = 0; xyz < 3; xyz++) {
-        metric += C_DDOT(nmo,Dp[xyz][0],nmo+1,Dp[xyz][0],nmo+1);
+        metric += C_DDOT(nmo, Dp[xyz][0], nmo + 1, Dp[xyz][0], nmo + 1);
     }
     double old_metric = metric;
 
     // => Iteration Print <= //
-    outfile->Printf( "    Iteration %24s %14s\n", "Metric", "Residual");
-    outfile->Printf( "    @Boys %4d %24.16E %14s\n", 0, metric, "-");
+    outfile->Printf("    Iteration %24s %14s\n", "Metric", "Residual");
+    outfile->Printf("    @Boys %4d %24.16E %14s\n", 0, metric, "-");
 
     // ==> Master Loop <== //
 
     double Ad, Ao, a, b, c, Hd, Ho, theta, cc, ss;
 
     for (int iter = 1; iter <= maxiter_; iter++) {
-
         // => Random Permutation <= //
 
         std::vector<int> order;
@@ -249,9 +234,8 @@ void BoysLocalizer::localize()
 
         // => Jacobi sweep <= //
 
-        for (int i2 = 0; i2 < nmo-1; i2++) {
-            for (int j2 = i2+1; j2 < nmo; j2++) {
-
+        for (int i2 = 0; i2 < nmo - 1; i2++) {
+            for (int j2 = i2 + 1; j2 < nmo; j2++) {
                 int i = order2[i2];
                 int j = order2[j2];
 
@@ -278,7 +262,8 @@ void BoysLocalizer::localize()
                 // Check for trivial (maximal) rotation, which might be better with theta = pi/4
                 if (std::fabs(theta) < 1.0E-8) {
                     double O0 = 0.0;
-                    double O1 = 0.0;;
+                    double O1 = 0.0;
+                    ;
                     for (int xyz = 0; xyz < 3; xyz++) {
                         double** Ak = Dp[xyz];
                         O0 += Ak[i][j] * Ak[i][j];
@@ -287,7 +272,7 @@ void BoysLocalizer::localize()
                     if (O1 < O0) {
                         theta = M_PI / 4.0;
                         if (debug_ > 3) {
-                            outfile->Printf( "@Break\n");
+                            outfile->Printf("@Break\n");
                         }
                     }
                 }
@@ -297,8 +282,8 @@ void BoysLocalizer::localize()
                 ss = sin(theta);
 
                 if (debug_ > 3) {
-                    outfile->Printf( "@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j,theta);
-                    outfile->Printf( "@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
+                    outfile->Printf("@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j, theta);
+                    outfile->Printf("@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
                 }
 
                 // > Apply the rotation < //
@@ -306,12 +291,12 @@ void BoysLocalizer::localize()
                 // rows and columns of A^k
                 for (int xyz = 0; xyz < 3; xyz++) {
                     double** Ak = Dp[xyz];
-                    C_DROT(nmo,&Ak[i][0],1,&Ak[j][0],1,cc,ss);
-                    C_DROT(nmo,&Ak[0][i],nmo,&Ak[0][j],nmo,cc,ss);
+                    C_DROT(nmo, &Ak[i][0], 1, &Ak[j][0], 1, cc, ss);
+                    C_DROT(nmo, &Ak[0][i], nmo, &Ak[0][j], nmo, cc, ss);
                 }
 
                 // Q
-                C_DROT(nmo,Up[i],1,Up[j],1,cc,ss);
+                C_DROT(nmo, Up[i], 1, Up[j], 1, cc, ss);
             }
         }
 
@@ -319,7 +304,7 @@ void BoysLocalizer::localize()
 
         metric = 0.0;
         for (int xyz = 0; xyz < 3; xyz++) {
-            metric += C_DDOT(nmo,Dp[xyz][0],nmo+1,Dp[xyz][0],nmo+1);
+            metric += C_DDOT(nmo, Dp[xyz][0], nmo + 1, Dp[xyz][0], nmo + 1);
         }
 
         double conv = std::fabs(metric - old_metric) / std::fabs(old_metric);
@@ -327,7 +312,7 @@ void BoysLocalizer::localize()
 
         // => Iteration Print <= //
 
-        outfile->Printf( "    @Boys %4d %24.16E %14.6E\n", iter, metric, conv);
+        outfile->Printf("    @Boys %4d %24.16E %14.6E\n", iter, metric, conv);
 
         // => Convergence Check <= //
 
@@ -335,54 +320,44 @@ void BoysLocalizer::localize()
             converged_ = true;
             break;
         }
-
     }
 
-    outfile->Printf( "\n");
+    outfile->Printf("\n");
     if (converged_) {
-        outfile->Printf( "    Boys Localizer converged.\n\n");
+        outfile->Printf("    Boys Localizer converged.\n\n");
     } else {
-        outfile->Printf( "    Boys Localizer failed.\n\n");
+        outfile->Printf("    Boys Localizer failed.\n\n");
     }
 
     U_->transpose_this();
-    C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Up[0],nmo,0.0,Lp[0],nmo);
+    C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, Up[0], nmo, 0.0, Lp[0], nmo);
 }
 
-PMLocalizer::PMLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) :
-    Localizer(primary,C)
-{
+PMLocalizer::PMLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) : Localizer(primary, C) {
     common_init();
 }
-PMLocalizer::~PMLocalizer()
-{
+PMLocalizer::~PMLocalizer() {}
+void PMLocalizer::common_init() {}
+void PMLocalizer::print_header() const {
+    outfile->Printf("  ==> Pipek-Mezey Localizer <==\n\n");
+    outfile->Printf("    Convergence = %11.3E\n", convergence_);
+    outfile->Printf("    Maxiter     = %11d\n", maxiter_);
+    outfile->Printf("\n");
 }
-void PMLocalizer::common_init()
-{
-}
-void PMLocalizer::print_header() const
-{
-    outfile->Printf( "  ==> Pipek-Mezey Localizer <==\n\n");
-    outfile->Printf( "    Convergence = %11.3E\n", convergence_);
-    outfile->Printf( "    Maxiter     = %11d\n", maxiter_);
-    outfile->Printf( "\n");
-
-}
-void PMLocalizer::localize()
-{
+void PMLocalizer::localize() {
     print_header();
 
     // => Sizing <= //
 
     int nso = C_->rowspi()[0];
     int nmo = C_->colspi()[0];
-    int nA  = primary_->molecule()->natom();
+    int nA = primary_->molecule()->natom();
 
     // => Overlap Integrals <= //
 
     auto fact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
-    auto S = std::make_shared<Matrix>("S",nso,nso);
+    auto S = std::make_shared<Matrix>("S", nso, nso);
     Sint->compute(S);
     Sint.reset();
     fact.reset();
@@ -390,8 +365,8 @@ void PMLocalizer::localize()
 
     // => Targets <= //
 
-    L_ = std::make_shared<Matrix>("L",nso,nmo);
-    U_ = std::make_shared<Matrix>("U",nmo,nmo);
+    L_ = std::make_shared<Matrix>("L", nso, nmo);
+    U_ = std::make_shared<Matrix>("U", nmo, nmo);
     L_->copy(C_);
     U_->identity();
     converged_ = false;
@@ -405,9 +380,9 @@ void PMLocalizer::localize()
 
     // => LS product (avoids GEMV) <= //
 
-    auto LS = std::make_shared<Matrix>("LS",nso,nmo);
+    auto LS = std::make_shared<Matrix>("LS", nso, nmo);
     double** LSp = LS->pointer();
-    C_DGEMM('N','N',nso,nmo,nso,1.0,Sp[0],nso,Lp[0],nmo,0.0,LSp[0],nmo);
+    C_DGEMM('N', 'N', nso, nmo, nso, 1.0, Sp[0], nso, Lp[0], nmo, 0.0, LSp[0], nmo);
 
     // => Starting functions on each atomic center <= //
 
@@ -427,28 +402,26 @@ void PMLocalizer::localize()
 
     // => Metric <= //
 
-
     double metric = 0.0;
     for (int i = 0; i < nmo; i++) {
         for (int A = 0; A < nA; A++) {
-            int nm = Astarts[A+1] - Astarts[A];
+            int nm = Astarts[A + 1] - Astarts[A];
             int off = Astarts[A];
-            double PA = C_DDOT(nm,&LSp[off][i],nmo,&Lp[off][i],nmo);
+            double PA = C_DDOT(nm, &LSp[off][i], nmo, &Lp[off][i], nmo);
             metric += PA * PA;
         }
     }
     double old_metric = metric;
 
     // => Iteration Print <= //
-    outfile->Printf( "    Iteration %24s %14s\n", "Metric", "Residual");
-    outfile->Printf( "    @PM %4d %24.16E %14s\n", 0, metric, "-");
+    outfile->Printf("    Iteration %24s %14s\n", "Metric", "Residual");
+    outfile->Printf("    @PM %4d %24.16E %14s\n", 0, metric, "-");
 
     // ==> Master Loop <== //
 
     double Aii, Ajj, Aij, Ad, Ao, a, b, c, Hd, Ho, theta, cc, ss;
 
     for (int iter = 1; iter <= maxiter_; iter++) {
-
         // => Random Permutation <= //
 
         std::vector<int> order;
@@ -465,9 +438,8 @@ void PMLocalizer::localize()
 
         // => Jacobi sweep <= //
 
-        for (int i2 = 0; i2 < nmo-1; i2++) {
-            for (int j2 = i2+1; j2 < nmo; j2++) {
-
+        for (int i2 = 0; i2 < nmo - 1; i2++) {
+            for (int j2 = i2 + 1; j2 < nmo; j2++) {
                 int i = order2[i2];
                 int j = order2[j2];
 
@@ -478,14 +450,12 @@ void PMLocalizer::localize()
                 b = 0.0;
                 c = 0.0;
                 for (int A = 0; A < nA; A++) {
-
-                    int nm = Astarts[A+1] - Astarts[A];
+                    int nm = Astarts[A + 1] - Astarts[A];
                     int off = Astarts[A];
-                    Aii = C_DDOT(nm,&LSp[off][i],nmo,&Lp[off][i],nmo);
-                    Ajj = C_DDOT(nm,&LSp[off][j],nmo,&Lp[off][j],nmo);
-                    Aij = 0.5 * C_DDOT(nm,&LSp[off][i],nmo,&Lp[off][j],nmo) +
-                          0.5 * C_DDOT(nm,&LSp[off][j],nmo,&Lp[off][i],nmo);
-
+                    Aii = C_DDOT(nm, &LSp[off][i], nmo, &Lp[off][i], nmo);
+                    Ajj = C_DDOT(nm, &LSp[off][j], nmo, &Lp[off][j], nmo);
+                    Aij = 0.5 * C_DDOT(nm, &LSp[off][i], nmo, &Lp[off][j], nmo) +
+                          0.5 * C_DDOT(nm, &LSp[off][j], nmo, &Lp[off][i], nmo);
 
                     Ad = (Aii - Ajj);
                     Ao = 2.0 * Aij;
@@ -502,21 +472,22 @@ void PMLocalizer::localize()
                 // Check for trivial (maximal) rotation, which might be better with theta = pi/4
                 if (std::fabs(theta) < 1.0E-8) {
                     double O0 = 0.0;
-                    double O1 = 0.0;;
+                    double O1 = 0.0;
+                    ;
                     for (int A = 0; A < nA; A++) {
-                        int nm = Astarts[A+1] - Astarts[A];
+                        int nm = Astarts[A + 1] - Astarts[A];
                         int off = Astarts[A];
-                        Aii = C_DDOT(nm,&LSp[off][i],nmo,&Lp[off][i],nmo);
-                        Ajj = C_DDOT(nm,&LSp[off][j],nmo,&Lp[off][j],nmo);
-                        Aij = 0.5 * C_DDOT(nm,&LSp[off][i],nmo,&Lp[off][j],nmo) +
-                              0.5 * C_DDOT(nm,&LSp[off][j],nmo,&Lp[off][i],nmo);
+                        Aii = C_DDOT(nm, &LSp[off][i], nmo, &Lp[off][i], nmo);
+                        Ajj = C_DDOT(nm, &LSp[off][j], nmo, &Lp[off][j], nmo);
+                        Aij = 0.5 * C_DDOT(nm, &LSp[off][i], nmo, &Lp[off][j], nmo) +
+                              0.5 * C_DDOT(nm, &LSp[off][j], nmo, &Lp[off][i], nmo);
                         O0 += Aij * Aij;
                         O1 += 0.25 * (Ajj - Aii) * (Ajj - Aii);
                     }
                     if (O1 < O0) {
                         theta = M_PI / 4.0;
                         if (debug_ > 3) {
-                            outfile->Printf( "@Break\n");
+                            outfile->Printf("@Break\n");
                         }
                     }
                 }
@@ -526,18 +497,18 @@ void PMLocalizer::localize()
                 ss = sin(theta);
 
                 if (debug_ > 3) {
-                    outfile->Printf( "@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j,theta);
-                    outfile->Printf( "@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
+                    outfile->Printf("@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j, theta);
+                    outfile->Printf("@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
                 }
 
                 // > Apply the rotation < //
 
                 // columns of LS and L
-                C_DROT(nso,&LSp[0][i],nmo,&LSp[0][j],nmo,cc,ss);
-                C_DROT(nso,&Lp[0][i],nmo,&Lp[0][j],nmo,cc,ss);
+                C_DROT(nso, &LSp[0][i], nmo, &LSp[0][j], nmo, cc, ss);
+                C_DROT(nso, &Lp[0][i], nmo, &Lp[0][j], nmo, cc, ss);
 
                 // Q
-                C_DROT(nmo,Up[i],1,Up[j],1,cc,ss);
+                C_DROT(nmo, Up[i], 1, Up[j], 1, cc, ss);
             }
         }
 
@@ -546,9 +517,9 @@ void PMLocalizer::localize()
         metric = 0.0;
         for (int i = 0; i < nmo; i++) {
             for (int A = 0; A < nA; A++) {
-                int nm = Astarts[A+1] - Astarts[A];
+                int nm = Astarts[A + 1] - Astarts[A];
                 int off = Astarts[A];
-                double PA = C_DDOT(nm,&LSp[off][i],nmo,&Lp[off][i],nmo);
+                double PA = C_DDOT(nm, &LSp[off][i], nmo, &Lp[off][i], nmo);
                 metric += PA * PA;
             }
         }
@@ -558,7 +529,7 @@ void PMLocalizer::localize()
 
         // => Iteration Print <= //
 
-        outfile->Printf( "    @PM %4d %24.16E %14.6E\n", iter, metric, conv);
+        outfile->Printf("    @PM %4d %24.16E %14.6E\n", iter, metric, conv);
 
         // => Convergence Check <= //
 
@@ -566,17 +537,16 @@ void PMLocalizer::localize()
             converged_ = true;
             break;
         }
-
     }
 
-    outfile->Printf( "\n");
+    outfile->Printf("\n");
     if (converged_) {
-        outfile->Printf( "    PM Localizer converged.\n\n");
+        outfile->Printf("    PM Localizer converged.\n\n");
     } else {
-        outfile->Printf( "    PM Localizer failed.\n\n");
+        outfile->Printf("    PM Localizer failed.\n\n");
     }
 
     U_->transpose_this();
 }
 
-} // Namespace psi
+}  // Namespace psi

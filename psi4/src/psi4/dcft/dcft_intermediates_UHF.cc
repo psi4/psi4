@@ -401,8 +401,8 @@ void DCFTSolver::compute_F_intermediate() {
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     /*
-    * F_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
-    */
+     * F_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
+     */
     global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Lambda <OO|VV>");
@@ -3508,5 +3508,5 @@ void DCFTSolver::compute_N_intermediate() {
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
-}
-}  // Namespaces
+}  // namespace dcft
+}  // namespace psi

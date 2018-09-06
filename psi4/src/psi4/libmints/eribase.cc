@@ -63,8 +63,7 @@ unsigned char ntypes[] = {1, ERI_1DER_NTYPE, ERI_2DER_NTYPE};
  * @param source_ The destination for the integrals.
  * @param size Total number of integrals computed.
  */
-static void handle_reordering1(PermutedOrder permutation, Libderiv_t &libderiv_, double *source_, size_t size)
-{
+static void handle_reordering1(PermutedOrder permutation, Libderiv_t &libderiv_, double *source_, size_t size) {
     switch (permutation) {
         case ABCD:
             // Ax
@@ -265,19 +264,17 @@ static void handle_reordering1(PermutedOrder permutation, Libderiv_t &libderiv_,
 
         default:
             throw PSIEXCEPTION("Illegal permutation in handle_reordering code");
-
     }
 }
 
 /**
-     * @brief Takes care of the changing the results buffer for any reordering done for libderiv.
-     * @param permutation How the shells were permuted to satisfy Libint angular momentum requirements.
-     * @param libderiv_ The libderiv buffer that contains the integrals
-     * @param source_ The destination for the integrals.
-     * @param size Total number of integrals computed.
-     */
-static void handle_reordering12(PermutedOrder permutation, Libderiv_t &libderiv_, double *source_, size_t size)
-{
+ * @brief Takes care of the changing the results buffer for any reordering done for libderiv.
+ * @param permutation How the shells were permuted to satisfy Libint angular momentum requirements.
+ * @param libderiv_ The libderiv buffer that contains the integrals
+ * @param source_ The destination for the integrals.
+ * @param size Total number of integrals computed.
+ */
+static void handle_reordering12(PermutedOrder permutation, Libderiv_t &libderiv_, double *source_, size_t size) {
     switch (permutation) {
         case ABCD:
             // Ax
@@ -1649,27 +1646,24 @@ static void handle_reordering12(PermutedOrder permutation, Libderiv_t &libderiv_
 }
 
 /**
-     * @brief Fills the primitive data structure used by libint/libderiv with information from the ShellPairs
-     * @param PrimQuartet The structure to hold the data.
-     * @param fjt Object used to compute the fundamental integrals.
-     * @param p12 ShellPair data structure for the left
-     * @param p34 ShellPair data structure for the right
-     * @param am Total angular momentum of this quartet
-     * @param nprim1 Number of primitives on center 1
-     * @param nprim2 Number of primitives on center 2
-     * @param nprim3 Number of primitives on center 3
-     * @param nprim4 Number of primitives on center 4
-     * @param sh1eqsh2 Is the shell on center 1 identical to that on center 2?
-     * @param sh3eqsh4 Is the shell on center 3 identical to that on center 4?
-     * @param deriv_lvl Derivitive level of the integral
-     * @return The total number of primitive combinations found. This is passed to libint/libderiv.
-     */
-static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
-                                  const ShellPair *p12, const ShellPair *p34,
-                                  int am,
-                                  int nprim1, int nprim2, int nprim3, int nprim4,
-                                  bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl)
-{
+ * @brief Fills the primitive data structure used by libint/libderiv with information from the ShellPairs
+ * @param PrimQuartet The structure to hold the data.
+ * @param fjt Object used to compute the fundamental integrals.
+ * @param p12 ShellPair data structure for the left
+ * @param p34 ShellPair data structure for the right
+ * @param am Total angular momentum of this quartet
+ * @param nprim1 Number of primitives on center 1
+ * @param nprim2 Number of primitives on center 2
+ * @param nprim3 Number of primitives on center 3
+ * @param nprim4 Number of primitives on center 4
+ * @param sh1eqsh2 Is the shell on center 1 identical to that on center 2?
+ * @param sh3eqsh4 Is the shell on center 3 identical to that on center 4?
+ * @param deriv_lvl Derivitive level of the integral
+ * @return The total number of primitive combinations found. This is passed to libint/libderiv.
+ */
+static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const ShellPair *p12, const ShellPair *p34, int am,
+                                  int nprim1, int nprim2, int nprim3, int nprim4, bool sh1eqsh2, bool sh3eqsh4,
+                                  int deriv_lvl) {
     double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
     double a1, a2, a3, a4;
     int p1, p2, p3, p4, i;
@@ -1776,8 +1770,7 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
                     fjt->set_rho(rho);
                     F = fjt->values(am + deriv_lvl, T);
 
-                    for (i = 0; i <= am + deriv_lvl; ++i)
-                        PrimQuartet[nprim].F[i] = F[i] * coef1;
+                    for (i = 0; i <= am + deriv_lvl; ++i) PrimQuartet[nprim].F[i] = F[i] * coef1;
 
                     nprim++;
                 }
@@ -1787,42 +1780,52 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
     return nprim;
 }
 
-} // end namespace
+}  // end namespace
 
 TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-        : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs)
-{
+    : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
     init_libint_base();
-    if (deriv_)
-        init_libderiv_base();
+    if (deriv_) init_libderiv_base();
 
     // Figure out some information to initialize libint/libderiv with
     // 1. Maximum angular momentum
     int max_am = MAX(MAX(basis1()->max_am(), basis2()->max_am()), MAX(basis3()->max_am(), basis4()->max_am()));
     // 2. Maximum number of primitive combinations
-    int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() * basis4()->max_nprimitive();
+    int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() *
+                    basis4()->max_nprimitive();
     // 3. Maximum Cartesian class size
-    max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] * ioff[basis4()->max_am() + 1];
+    max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] *
+                ioff[basis4()->max_am() + 1];
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
-        outfile->Printf("ERROR: ERI - Libint cannot handle angular momentum this high (%d).\n"
-                                "       Rebuild Libint with MAX_AM_ERI at least %d.\n", max_am, max_am);
-        throw LimitExceeded<int>("ERI - Libint cannot handle angular momentum this high.\n"
-                                         "Rebuild Libint with MAX_AM_ERI at least (actual).\n", LIBINT_MAX_AM - 1, max_am, __FILE__, __LINE__);
+        outfile->Printf(
+            "ERROR: ERI - Libint cannot handle angular momentum this high (%d).\n"
+            "       Rebuild Libint with MAX_AM_ERI at least %d.\n",
+            max_am, max_am);
+        throw LimitExceeded<int>(
+            "ERI - Libint cannot handle angular momentum this high.\n"
+            "Rebuild Libint with MAX_AM_ERI at least (actual).\n",
+            LIBINT_MAX_AM - 1, max_am, __FILE__, __LINE__);
     } else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
-        outfile->Printf("ERROR: ERI - Libint cannot handle angular momentum this high (%d) for first derivatives.\n"
-                                "     Rebuild Libint with MAX_AM_ERI at least %d.\n", max_am, max_am + 1);
-        throw LimitExceeded<int>("ERI - Libint cannot handle angular momentum this high.\n"
-                                         "Rebuild Libint with MAX_AM_ERI at least (actual + 1).\n",
-                                 LIBDERIV_MAX_AM1 - 1, max_am, __FILE__, __LINE__);
+        outfile->Printf(
+            "ERROR: ERI - Libint cannot handle angular momentum this high (%d) for first derivatives.\n"
+            "     Rebuild Libint with MAX_AM_ERI at least %d.\n",
+            max_am, max_am + 1);
+        throw LimitExceeded<int>(
+            "ERI - Libint cannot handle angular momentum this high.\n"
+            "Rebuild Libint with MAX_AM_ERI at least (actual + 1).\n",
+            LIBDERIV_MAX_AM1 - 1, max_am, __FILE__, __LINE__);
     } else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
-        outfile->Printf("ERROR: ERI - Libint cannot handle angular momentum this high (%d) for second derivatives.\n"
-                                "       Reconfigure Libint with MAX_AM_ERI at least %d\n", max_am, max_am + 2);
-        throw LimitExceeded<int>("ERI - Libint cannot handle angular momentum this high.\n"
-                                         "Rebuild Libint with MAX_AM_ERI at least (actual + 2).\n",
-                                 LIBDERIV_MAX_AM12 - 1, max_am, __FILE__, __LINE__);
+        outfile->Printf(
+            "ERROR: ERI - Libint cannot handle angular momentum this high (%d) for second derivatives.\n"
+            "       Reconfigure Libint with MAX_AM_ERI at least %d\n",
+            max_am, max_am + 2);
+        throw LimitExceeded<int>(
+            "ERI - Libint cannot handle angular momentum this high.\n"
+            "Rebuild Libint with MAX_AM_ERI at least (actual + 2).\n",
+            LIBDERIV_MAX_AM12 - 1, max_am, __FILE__, __LINE__);
     } else if (deriv_ > 2) {
         outfile->Printf("ERROR: ERI - Cannot compute higher than second derivatives.");
         throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
@@ -1836,19 +1839,17 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
             init_libderiv1(&libderiv_, max_am, max_nprim, max_cart_);
         else if (deriv_ == 2)
             init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
-    }
-    catch (std::bad_alloc &e) {
+    } catch (std::bad_alloc &e) {
         outfile->Printf("Error allocating memory for libint/libderiv.\n");
         exit(EXIT_FAILURE);
     }
-    size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
-                  INT_NCART(basis3()->max_am()) * INT_NCART(basis4()->max_am());
+    size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) * INT_NCART(basis3()->max_am()) *
+                  INT_NCART(basis4()->max_am());
 
     // Used in pure_transform
     try {
         tformbuf_ = new double[size];
-    }
-    catch (std::bad_alloc &e) {
+    } catch (std::bad_alloc &e) {
         outfile->Printf("Error allocating tformbuf_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
@@ -1860,8 +1861,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
     try {
         target_full_ = new double[size];
         target_ = target_full_;
-    }
-    catch (std::bad_alloc &e) {
+    } catch (std::bad_alloc &e) {
         outfile->Printf("Error allocating target_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
@@ -1870,8 +1870,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
     try {
         source_full_ = new double[size];
         source_ = source_full_;
-    }
-    catch (std::bad_alloc &e) {
+    } catch (std::bad_alloc &e) {
         outfile->Printf("Error allocating source_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
@@ -1893,20 +1892,17 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
     TwoBodyAOInt::create_blocks();
 }
 
-TwoElectronInt::~TwoElectronInt()
-{
+TwoElectronInt::~TwoElectronInt() {
     delete[] tformbuf_;
     delete[] target_full_;
     delete[] source_full_;
     free_libint(&libint_);
-    if (deriv_)
-        free_libderiv(&libderiv_);
+    if (deriv_) free_libderiv(&libderiv_);
     free_shell_pairs12();
-    free_shell_pairs34();       // This shouldn't do anything, but this might change in the future
+    free_shell_pairs34();  // This shouldn't do anything, but this might change in the future
 }
 
-void TwoElectronInt::init_shell_pairs12()
-{
+void TwoElectronInt::init_shell_pairs12() {
     ShellPair *sp;
     Vector3 P, PA, PB, AB, A, B;
     int i, j, si, sj, np_i, np_j;
@@ -1923,8 +1919,7 @@ void TwoElectronInt::init_shell_pairs12()
 
     // Allocate shell pair memory
     pairs12_ = new ShellPair *[basis1()->nshell()];
-    for (i = 0; i < basis1()->nshell(); ++i)
-        pairs12_[i] = new ShellPair[basis2()->nshell()];
+    for (i = 0; i < basis1()->nshell(); ++i) pairs12_[i] = new ShellPair[basis2()->nshell()];
 
     // Loop over all shell pairs (si, sj) and create primitive pairs pairs
     for (si = 0; si < basis1()->nshell(); ++si) {
@@ -2035,8 +2030,7 @@ void TwoElectronInt::init_shell_pairs12()
     }
 }
 
-void TwoElectronInt::init_shell_pairs34()
-{
+void TwoElectronInt::init_shell_pairs34() {
     // If basis1 == basis3 && basis2 == basis4, then we don't need to do anything except use the pointer
     // of pairs12_.
     if (use_shell_pairs_ == true) {
@@ -2153,14 +2147,12 @@ void TwoElectronInt::init_shell_pairs34()
 #endif
 }
 
-void TwoElectronInt::free_shell_pairs12()
-{
+void TwoElectronInt::free_shell_pairs12() {
     int i, si, sj;
     ShellPair *sp;
     int np_i;
 
-    if (!use_shell_pairs_)
-        return;
+    if (!use_shell_pairs_) return;
 
     delete[] stack12_;
     for (si = 0; si < basis1()->nshell(); ++si) {
@@ -2172,34 +2164,28 @@ void TwoElectronInt::free_shell_pairs12()
             delete[] sp->overlap;
 
             if (sp->P != nullptr) {
-                for (i = 0; i < np_i; ++i)
-                    delete[] sp->P[i];
+                for (i = 0; i < np_i; ++i) delete[] sp->P[i];
                 delete[] sp->P;
             }
             if (sp->PA != nullptr) {
-                for (i = 0; i < np_i; ++i)
-                    delete[] sp->PA[i];
+                for (i = 0; i < np_i; ++i) delete[] sp->PA[i];
                 delete[] sp->PA;
             }
             if (sp->PB != nullptr) {
-                for (i = 0; i < np_i; ++i)
-                    delete[] sp->PB[i];
+                for (i = 0; i < np_i; ++i) delete[] sp->PB[i];
                 delete[] sp->PB;
             }
         }
     }
 
-    for (si = 0; si < basis1()->nshell(); ++si)
-        delete[] pairs12_[si];
+    for (si = 0; si < basis1()->nshell(); ++si) delete[] pairs12_[si];
     delete[] pairs12_;
 }
 
-void TwoElectronInt::free_shell_pairs34()
-{
-}
+void TwoElectronInt::free_shell_pairs34() {}
 
-size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSet> &bs1, const std::shared_ptr<BasisSet> &bs2)
-{
+size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSet> &bs1,
+                                                   const std::shared_ptr<BasisSet> &bs2) {
     int i, j, np_i, np_j;
     size_t mem = 0;
 
@@ -2213,13 +2199,11 @@ size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSe
     return mem;
 }
 
-size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter)
-{
+size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
     return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
 }
 
-size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
-{
+size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 #ifdef MINTS_TIMER
     timer_on("ERI::compute_shell");
 #endif
@@ -2245,19 +2229,19 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     am4 = original_bs4_->shell(sh4).am();
     temp = am1 + am2 + am3 + am4;
 
-    //c1 = original_bs1_->shell(sh1).ncenter();
-    //c2 = original_bs1_->shell(sh2).ncenter();
-    //c3 = original_bs1_->shell(sh3).ncenter();
-    //c4 = original_bs1_->shell(sh4).ncenter();
+    // c1 = original_bs1_->shell(sh1).ncenter();
+    // c2 = original_bs1_->shell(sh2).ncenter();
+    // c3 = original_bs1_->shell(sh3).ncenter();
+    // c4 = original_bs1_->shell(sh4).ncenter();
 
     // TODO: Check this!
-//	if (c1 == c2 && c1 == c3 && c1 && c4 && temp % 2 != 0) {
-//#ifdef MINTS_TIMER
-//		timer_off("reorder");
-//		timer_off("ERI::compute_shell");
-//#endif
-//		return 0;
-//	}
+    //	if (c1 == c2 && c1 == c3 && c1 && c4 && temp % 2 != 0) {
+    //#ifdef MINTS_TIMER
+    //		timer_off("reorder");
+    //		timer_off("ERI::compute_shell");
+    //#endif
+    //		return 0;
+    //	}
 
     int n1, n2, n3, n4;
 
@@ -2371,8 +2355,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     return ncomputed;
 }
 
-size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
-{
+size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4) {
 #ifdef MINTS_TIMER
     timer_on("setup");
 #endif
@@ -2386,7 +2369,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     int am2 = s2.am();
     int am3 = s3.am();
     int am4 = s4.am();
-    int am = am1 + am2 + am3 + am4; // total am
+    int am = am1 + am2 + am3 + am4;  // total am
     int nprim1;
     int nprim2;
     int nprim3;
@@ -2445,7 +2428,8 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
 
-        nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 0);
+        nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2,
+                                    sh3 == sh4, 0);
     } else {
         const double *a1s = s1.exps();
         const double *a2s = s2.exps();
@@ -2585,10 +2569,9 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     } else {
         // Handle (ss|ss)
         double temp = 0.0;
-        for (size_t i = 0; i < nprim; ++i)
-            temp += (double) libint_.PrimQuartet[i].F[0];
+        for (size_t i = 0; i < nprim; ++i) temp += (double)libint_.PrimQuartet[i].F[0];
         source_[0] = temp;
-//        outfile->Printf( "s-functions = %8.5f\n", temp);
+        //        outfile->Printf( "s-functions = %8.5f\n", temp);
     }
 
 #ifdef MINTS_TIMER
@@ -2598,18 +2581,16 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // The following two functions time themselves.
 
     // Normalize the integrals for angular momentum
-    //normalize_am(s1, s2, s3, s4);
+    // normalize_am(s1, s2, s3, s4);
 
     // Transform the integrals into pure angular momentum
-    if (!force_cartesian_)
-        pure_transform(sh1, sh2, sh3, sh4, 1);
+    if (!force_cartesian_) pure_transform(sh1, sh2, sh3, sh4, 1);
 
     // Results are in source_
     return size;
 }
 
-size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
-{
+size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4) {
     if (deriv_ < 1) {
         outfile->Printf("ERROR - ERI: ERI object not initialized to handle derivatives.\n");
         abort();
@@ -2728,7 +2709,7 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     }
 
     // s1, s2, s3, s4 contain the shells to do in libderiv order
-    compute_quartet_deriv1(s1, s2, s3, s4);    // compute 9 sets of integral derivatives
+    compute_quartet_deriv1(s1, s2, s3, s4);  // compute 9 sets of integral derivatives
 
     // Need both sizes because source_ is in cartesians and target_ might be in pure am
     size_t size = n1 * n2 * n3 * n4;
@@ -2745,8 +2726,7 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     return size;
 }
 
-size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
-{
+size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4) {
     const GaussianShell &s1 = bs1_->shell(sh1);
     const GaussianShell &s2 = bs2_->shell(sh2);
     const GaussianShell &s3 = bs3_->shell(sh3);
@@ -2757,7 +2737,7 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
     int am3 = s3.am();
     int am4 = s4.am();
 
-    int am = am1 + am2 + am3 + am4; // total am
+    int am = am1 + am2 + am3 + am4;  // total am
 
     int nprim1 = s1.nprimitive();
     int nprim2 = s2.nprimitive();
@@ -2811,7 +2791,8 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
 
-        nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 1);
+        nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4,
+                                    sh1 == sh2, sh3 == sh4, 1);
     } else {
         for (int p1 = 0; p1 < nprim1; ++p1) {
             double a1 = s1.exp(p1);
@@ -2842,7 +2823,6 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
                     double a3 = s3.exp(p3);
                     double c3 = s3.coef(p3);
                     for (int p4 = 0; p4 < nprim4; ++p4) {
-
                         double a4 = s4.exp(p4);
                         double c4 = s4.coef(p4);
                         double eta = a3 + a4;
@@ -2956,17 +2936,14 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
     handle_reordering1(permuted_order_, libderiv_, source_, size);
 
     // Transform the integrals to the spherical basis
-    if (!force_cartesian_)
-        pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
+    if (!force_cartesian_) pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
 
     // Results are in source_
     return size;
 }
 
-size_t TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
-{
-    if (deriv_ < 2)
-        throw PSIEXCEPTION("ERROR - ERI: ERI object not initialized to handle second derivatives.\n");
+size_t TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4) {
+    if (deriv_ < 2) throw PSIEXCEPTION("ERROR - ERI: ERI object not initialized to handle second derivatives.\n");
 
     // Need to ensure the ordering asked by the user is valid for libderiv.
     // compute_quartet_deriv2 does NOT check this. SEGFAULTS will likely occur
@@ -3093,8 +3070,7 @@ size_t TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
     return size;
 }
 
-size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
-{
+size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4) {
     const GaussianShell &s1 = bs1_->shell(sh1);
     const GaussianShell &s2 = bs2_->shell(sh2);
     const GaussianShell &s3 = bs3_->shell(sh3);
@@ -3156,7 +3132,8 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
 
-        nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 2);
+        nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4,
+                                    sh1 == sh2, sh3 == sh4, 2);
     } else {
         for (int p1 = 0; p1 < nprim1; ++p1) {
             double a1 = s1.exp(p1);
@@ -3187,7 +3164,6 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
                     double a3 = s3.exp(p3);
                     double c3 = s3.coef(p3);
                     for (int p4 = 0; p4 < nprim4; ++p4) {
-
                         double a4 = s4.exp(p4);
                         double c4 = s4.coef(p4);
                         double nu = a3 + a4;
@@ -3275,8 +3251,7 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
     handle_reordering12(permuted_order_, libderiv_, source_, size);
 
     // Transform the integrals to the spherical basis
-    if (!force_cartesian_)
-        pure_transform(sh1, sh2, sh3, sh4, ERI_2DER_NTYPE);
+    if (!force_cartesian_) pure_transform(sh1, sh2, sh3, sh4, ERI_2DER_NTYPE);
 
     // Results are in source_
     return size;

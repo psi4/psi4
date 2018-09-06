@@ -26,6 +26,7 @@ matrix:
         - clang-3.6
         - libhdf5-serial-dev
         - gfortran
+        - g++-4.9
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
@@ -143,7 +144,7 @@ install:
 - conda info -a
 - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
 - source activate p4env
-- conda install dftd3 gcp resp snsmp2 pybind11=2.2.3 -c psi4/label/dev
+- conda install dftd3 gcp resp snsmp2 pylibefp pybind11=2.2.3 -c psi4/label/dev
 - conda list
 before_script:
 - python -V
@@ -181,10 +182,10 @@ before_script:
 - cd build
 - ../.scripts/travis_build.sh
 script:
-- ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+- ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
-- ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 --test
+- ./stage/bin/psi4 --test
 
 # safelist
 branches:
@@ -193,4 +194,3 @@ branches:
   - 1.2.x
   - 1.1.x
   - 1.0.x
-  - scfitertopy

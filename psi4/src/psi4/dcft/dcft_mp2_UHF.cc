@@ -41,15 +41,14 @@
 
 #include <vector>
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 
 /**
  * Computes the Hartree-Fock energy and then the MP2 energy as an initial guess.
  * This code is responible for initializing the integral transformation too.
  */
-void
-DCFTSolver::mp2_guess()
-{
+void DCFTSolver::mp2_guess() {
     dcft_timer_on("DCFTSolver::mp2_guess()");
 
     dpdbuf4 I, D;
@@ -63,123 +62,120 @@ DCFTSolver::mp2_guess()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
 
-    outfile->Printf( "\n\n\tTransforming two-electron integrals (transformation type: unrestricted)...\n");
+    outfile->Printf("\n\n\tTransforming two-electron integrals (transformation type: unrestricted)...\n");
     transform_integrals();
 
     std::string guess = options_.get_str("DCFT_GUESS");
 
     if (guess == "MP2") {
-        outfile->Printf( "\tComputing MP2 amplitude guess...\n\n");
+        outfile->Printf("\tComputing MP2 amplitude guess...\n\n");
 
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
         /*
-        * L_ijab = <ij||ab> / D_ijab
-        */
+         * L_ijab = <ij||ab> / D_ijab
+         */
 
         // L_IJAB = <IJ||AB> / D_IJAB
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                      ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 1,
+                               "MO Ints <OO|VV>");
         global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "Lambda <OO|VV>");
         global_dpd_->buf4_close(&I);
-        global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                               "Lambda <OO|VV>");
+        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+                               "D <OO|VV>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&D);
 
         // L_IjAb = <Ij|Ab> / D_IjAb
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "MO Ints <Oo|Vv>");
         global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "Lambda <Oo|Vv>");
         global_dpd_->buf4_close(&I);
-        global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "Lambda <Oo|Vv>");
+        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "D <Oo|Vv>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&D);
 
         // L_ijab = <ij||ab> / D_ijab
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                      ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 1,
+                               "MO Ints <oo|vv>");
         global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "Lambda <oo|vv>");
         global_dpd_->buf4_close(&I);
-        global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                               "Lambda <oo|vv>");
+        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+                               "D <oo|vv>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&D);
 
-
         /*
-     * E = 1/4 L_IJAB <IJ||AB>
-     *        +L_IjAb <Ij|Ab>
-     *    +1/4 L_ijab <ij||ab>
-     */
+         * E = 1/4 L_IJAB <IJ||AB>
+         *        +L_IjAb <Ij|Ab>
+         *    +1/4 L_ijab <ij||ab>
+         */
         dpdbuf4 L;
         // Alpha - Alpha
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
+                               "MO Ints <OO|VV>");
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                               "Lambda <OO|VV>");
         double eAA = 0.25 * global_dpd_->buf4_dot(&L, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
 
         // Alpha - Beta
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "MO Ints <Oo|Vv>");
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               "Lambda <Oo|Vv>");
         double eAB = global_dpd_->buf4_dot(&L, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
 
         // Beta - Beta
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 1,
+                               "MO Ints <oo|vv>");
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                               "Lambda <oo|vv>");
         double eBB = 0.25 * global_dpd_->buf4_dot(&L, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
 
         new_total_energy_ = scf_energy_ + eAA + eAB + eBB;
-        outfile->Printf( "\t*Total Hartree-Fock energy        = %20.15f\n", scf_energy_);
-        outfile->Printf( "\t Alpha - Alpha MP2 energy         = %20.15f\n", eAA);
-        outfile->Printf( "\t Alpha - Beta  MP2 energy         = %20.15f\n", eAB);
-        outfile->Printf( "\t Beta  - Beta  MP2 energy         = %20.15f\n", eBB);
-        outfile->Printf( "\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
-        outfile->Printf( "\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
+        outfile->Printf("\t*Total Hartree-Fock energy        = %20.15f\n", scf_energy_);
+        outfile->Printf("\t Alpha - Alpha MP2 energy         = %20.15f\n", eAA);
+        outfile->Printf("\t Alpha - Beta  MP2 energy         = %20.15f\n", eAB);
+        outfile->Printf("\t Beta  - Beta  MP2 energy         = %20.15f\n", eBB);
+        outfile->Printf("\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
+        outfile->Printf("\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
 
         Process::environment.globals["MP2 TOTAL ENERGY"] = new_total_energy_;
         Process::environment.globals["MP2 CORRELATION ENERGY"] = eAA + eAB + eBB;
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
-    }
-    else if(guess == "CC" || guess == "BCC"){
-        outfile->Printf( "\tReading existing coupled cluster amplitudes\n\n");
+    } else if (guess == "CC" || guess == "BCC") {
+        outfile->Printf("\tReading existing coupled cluster amplitudes\n\n");
         psio_->open(PSIF_CC_TAMPS, PSIO_OPEN_OLD);
         dpdbuf4 T2;
         // Copy the AA amplitudes from CCEnergy
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O>O]-"), ID("[V>V]-"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "tIJAB");
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+                               "tIJAB");
         global_dpd_->buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <OO|VV>");
         global_dpd_->buf4_close(&T2);
         // Copy the AB amplitudes from CCEnergy
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "tIjAb");
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "tIjAb");
         global_dpd_->buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <Oo|Vv>");
         global_dpd_->buf4_close(&T2);
         // Copy the BB amplitudes from CCEnergy
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[o>o]-"), ID("[v>v]-"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "tijab");
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+                               "tijab");
         global_dpd_->buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <oo|vv>");
         global_dpd_->buf4_close(&T2);
         psio_->close(PSIF_CC_TAMPS, 1);
@@ -188,5 +184,5 @@ DCFTSolver::mp2_guess()
     dcft_timer_off("DCFTSolver::mp2_guess()");
 }
 
-
-}} // Namespaces
+}  // namespace dcft
+}  // namespace psi

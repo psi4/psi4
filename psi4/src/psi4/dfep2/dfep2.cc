@@ -200,7 +200,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
 
     // safety check
     dfh_->clear_spaces();
-    
+
     // add spaces
     dfh_->add_space("i", AO_Cocc_);
     dfh_->add_space("a", AO_Cvir_);
@@ -505,5 +505,5 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
 
     return ret;
 }
-}
-}
+}  // namespace dfep2
+}  // namespace psi

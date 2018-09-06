@@ -390,6 +390,7 @@ rst_prolog = """
 
 extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'),
             'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', ''),
+            'srcsamplepy': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.py', ''),
             'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', ''),
             'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
             'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),

@@ -59,9 +59,9 @@ PSI_API int schmidt_add(double **A, int rows, int cols, double *v);
 void normalize(double **A, int rows, int cols);
 double invert_matrix(double **a, double **y, int N, std::string out_fname);
 void solve_2x2_pep(double **H, double S, double *evals, double **evecs);
-void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
+PSI_API void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps);
-void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
+PSI_API void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
       int *frozen_uocc, int *order_alpha, int *order_beta,
       int *orbspi, int nirreps);
 // int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,

@@ -26,18 +26,11 @@
 .. # @END LICENSE
 .. #
 
-.. _`sec:contributing`:
+.. include:: autodoc_abbr_options_c.rst
 
-================================================
-Contributions: Intro to Programming in |PSIfour|
-================================================
+.. _`sec:code_of_conduct`:
 
-.. toctree::
-   FAQ <prog_faq>
-   plugins
-   documentation
-   psipep
-   style_c
-
-..   bestpractices_py
+===========================
+Community Code of Conduct
+===========================
 

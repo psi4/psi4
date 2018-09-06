@@ -68,7 +68,11 @@ double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options &options)
-  : options_(options), basisset_(basis), molecule_(molecule), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
+    : options_(options),
+      basisset_(basis),
+      molecule_(molecule),
+      dipole_field_strength_{{0.0, 0.0, 0.0}},
+      PCM_enabled_(false) {
     common_init();
 }
 
@@ -76,11 +80,13 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     : options_(Process::environment.options),
       basisset_(basis),
       molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
+      dipole_field_strength_{{0.0, 0.0, 0.0}},
+      PCM_enabled_(false) {
     common_init();
 }
 
-Wavefunction::Wavefunction(Options &options) : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
+Wavefunction::Wavefunction(Options &options)
+    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
 
 Wavefunction::~Wavefunction() {}
 
@@ -151,7 +157,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     PCM_enabled_ = other->PCM_enabled_;
 #ifdef USING_PCMSolver
     if (PCM_enabled_) {
-      PCM_ = other->PCM_;
+        PCM_ = other->PCM_;
     }
 #endif
 }
@@ -239,7 +245,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     PCM_enabled_ = other->PCM_enabled_;
 #ifdef USING_PCMSolver
     if (PCM_enabled_) {
-      PCM_ = std::make_shared<PCM>(other->PCM_.get());
+        PCM_ = std::make_shared<PCM>(other->PCM_.get());
     }
 #endif
 }
@@ -347,7 +353,7 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->PCM_enabled_ = PCM_enabled_;
 #ifdef USING_PCMSolver
     if (wfn->PCM_enabled_) {
-      wfn->PCM_ = std::make_shared<PCM>(PCM_.get());
+        wfn->PCM_ = std::make_shared<PCM>(PCM_.get());
     }
 #endif
 
@@ -600,8 +606,10 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
 
 void Wavefunction::force_doccpi(const Dimension &doccpi) {
     for (int h = 0; h < nirrep_; h++) {
-        if((soccpi_[h] + doccpi[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION("Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed the total number of molecular orbitals.");
+        if ((soccpi_[h] + doccpi[h]) > nmopi_[h]) {
+            throw PSIEXCEPTION(
+                "Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
+                "the total number of molecular orbitals.");
         }
         doccpi_[h] = doccpi[h];
         nalphapi_[h] = doccpi_[h] + soccpi_[h];
@@ -612,12 +620,16 @@ void Wavefunction::force_doccpi(const Dimension &doccpi) {
 }
 
 void Wavefunction::force_soccpi(const Dimension &soccpi) {
-    if(same_a_b_dens_) {
-       throw PSIEXCEPTION("Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this Wavefunction."); 
+    if (same_a_b_dens_) {
+        throw PSIEXCEPTION(
+            "Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this "
+            "Wavefunction.");
     }
     for (int h = 0; h < nirrep_; h++) {
-        if((soccpi[h] + doccpi_[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION("Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed the total number of molecular orbitals.");
+        if ((soccpi[h] + doccpi_[h]) > nmopi_[h]) {
+            throw PSIEXCEPTION(
+                "Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
+                "the total number of molecular orbitals.");
         }
         soccpi_[h] = soccpi[h];
         nalphapi_[h] = doccpi_[h] + soccpi_[h];
@@ -1203,40 +1215,35 @@ void Wavefunction::set_hessian(SharedMatrix &hess) { hessian_ = hess; }
 
 SharedVector Wavefunction::frequencies() const { return frequencies_; }
 
-void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs) {
-    frequencies_ = freqs;
-}
+void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs) { frequencies_ = freqs; }
 
 void Wavefunction::save() const {}
 
-std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const
-{
+std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
-    
+
     int n = molecule_->natom();
     std::shared_ptr<Vector> v_vector(new Vector(n));
-    for (int i = 0; i < n; ++i)
-        v_vector->set(i, (*v)[i]);
+    for (int i = 0; i < n; ++i) v_vector->set(i, (*v)[i]);
     return v_vector;
 }
 
-std::vector<SharedVector> Wavefunction::get_mo_extents() const
-{
+std::vector<SharedVector> Wavefunction::get_mo_extents() const {
     std::vector<SharedVector> m = mo_extents();
-    
+
     int n = nmo_;
     std::vector<SharedVector> mo_vectors;
-    mo_vectors.push_back(SharedVector(new Vector("<x^2>" , basisset_->nbf())));
-    mo_vectors.push_back(SharedVector(new Vector("<y^2>" , basisset_->nbf())));
-    mo_vectors.push_back(SharedVector(new Vector("<z^2>" , basisset_->nbf())));
-    mo_vectors.push_back(SharedVector(new Vector("<r^2>" , basisset_->nbf())));
-    for (int i = 0; i<n; i++) {
-        mo_vectors[0]->set(0,i,m[0]->get(0,i));
-        mo_vectors[1]->set(0,i,m[1]->get(0,i));
-        mo_vectors[2]->set(0,i,m[2]->get(0,i));
-        mo_vectors[3]->set(0,i,m[3]->get(0,i));
+    mo_vectors.push_back(SharedVector(new Vector("<x^2>", basisset_->nbf())));
+    mo_vectors.push_back(SharedVector(new Vector("<y^2>", basisset_->nbf())));
+    mo_vectors.push_back(SharedVector(new Vector("<z^2>", basisset_->nbf())));
+    mo_vectors.push_back(SharedVector(new Vector("<r^2>", basisset_->nbf())));
+    for (int i = 0; i < n; i++) {
+        mo_vectors[0]->set(0, i, m[0]->get(0, i));
+        mo_vectors[1]->set(0, i, m[1]->get(0, i));
+        mo_vectors[2]->set(0, i, m[2]->get(0, i));
+        mo_vectors[3]->set(0, i, m[3]->get(0, i));
     }
-    
+
     return mo_vectors;
 }
 
@@ -1251,12 +1258,10 @@ std::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     return q_vector;
 }
 
-std::vector<std::vector< std::tuple<double, int, int> >> Wavefunction::get_no_occupations() const
-{
-    
-    std::vector<std::vector< std::tuple<double, int, int> >> nos = no_occupations();
+std::vector<std::vector<std::tuple<double, int, int>>> Wavefunction::get_no_occupations() const {
+    std::vector<std::vector<std::tuple<double, int, int>>> nos = no_occupations();
     int nfsym = nos.size();
-    std::vector<std::vector< std::tuple<double, int, int> >> no_occs;
+    std::vector<std::vector<std::tuple<double, int, int>>> no_occs;
     if (nfsym == 3) {
         no_occs.push_back(nos[0]);
         no_occs.push_back(nos[1]);
@@ -1264,12 +1269,11 @@ std::vector<std::vector< std::tuple<double, int, int> >> Wavefunction::get_no_oc
     } else {
         no_occs.push_back(nos[0]);
     }
-    
+
     return no_occs;
 }
 
-double Wavefunction::get_variable(std::string label)
-{
+double Wavefunction::get_variable(std::string label) {
     std::string uc_label = label;
 
     if (variables_.count(uc_label) == 0) {
@@ -1286,6 +1290,9 @@ SharedMatrix Wavefunction::get_array(std::string label) {
     }
 }
 
-void Wavefunction::set_PCM(const std::shared_ptr<PCM> & pcm) { PCM_ = pcm; PCM_enabled_ = true; }
+void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
+    PCM_ = pcm;
+    PCM_enabled_ = true;
+}
 
 std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }

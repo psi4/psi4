@@ -37,11 +37,11 @@
 
 #define ID(x) _ints->DPD_ID(x)
 
-#define DEBUG_         false
-#define ANGL_TOL_      50.0
-#define CUTOFF_DENS_   1e-6
+#define DEBUG_ false
+#define ANGL_TOL_ 50.0
+#define CUTOFF_DENS_ 1e-6
 
-namespace psi{
+namespace psi {
 
 class Options;
 class Matrix;
@@ -50,25 +50,25 @@ class IntegralTransform;
 typedef std::shared_ptr<Matrix> SharedMatrix;
 typedef std::shared_ptr<Vector> SharedVector;
 
-namespace adc{
+namespace adc {
 
-struct pole{
-    int    iter;              // Iterated time
-    double iter_value;        // Converged value of the excitation energy
-    double ps_value;          // Pseudo-pertirbative value of the excitation energy
-    double osc_strength;      // Oscillator strength
-    double renorm_factor;     // Residue of the propagator, which is identical to the squared norm of the singly excited vector
-    double rot_angle;         // Rotation angle from corresponding CIS vector
+struct pole {
+    int iter;              // Iterated time
+    double iter_value;     // Converged value of the excitation energy
+    double ps_value;       // Pseudo-pertirbative value of the excitation energy
+    double osc_strength;   // Oscillator strength
+    double renorm_factor;  // Residue of the propagator, which is identical to the squared norm of the singly excited
+                           // vector
+    double rot_angle;      // Rotation angle from corresponding CIS vector
 };
 
-class ADCWfn: public Wavefunction
-{
-public:
-    ADCWfn(SharedWavefunction ref_wfn, Options& options);
+class ADCWfn : public Wavefunction {
+   public:
+    ADCWfn(SharedWavefunction ref_wfn, Options &options);
     ~ADCWfn();
     double compute_energy();
 
-protected:
+   protected:
     void init();
     void release_mem();
     void rhf_prepare_tensors();
@@ -128,7 +128,7 @@ protected:
     // Guesses for the correlated excitation energies, which are given as CIS/ADC(1) energies
     SharedVector omega_guess_;
 };
-
-}}
+}
+}
 
 #endif

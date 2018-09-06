@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cstdio>
@@ -36,12 +36,13 @@
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/structs.h"
 
-namespace psi { namespace detci {
+namespace psi {
+namespace detci {
 
 /*
 ** calc_d2()
 **
-** Function calculates a block of the denominators for the Davidson 
+** Function calculates a block of the denominators for the Davidson
 ** algorithm correction vector d.
 **
 ** Parameters:
@@ -53,23 +54,22 @@ namespace psi { namespace detci {
 **
 ** Returns: sum of squares of coefficients
 */
-double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
-{
-   int i;
-   double norm = 0.0, tval, tval2;
+double calc_d2(double *target, double lambda, double *Hd, int size, int precon) {
+    int i;
+    double norm = 0.0, tval, tval2;
 
-   for (i=0; i<size; i++) {
-      tval = lambda - Hd[i];
-      if (precon == PRECON_LANCZOS) tval = 1.0;
+    for (i = 0; i < size; i++) {
+        tval = lambda - Hd[i];
+        if (precon == PRECON_LANCZOS) tval = 1.0;
 
-      if (std::fabs(tval) > HD_MIN){ 
-         tval2 = (target[i] /= tval);
-         norm += tval2 * tval2;
-      }
-      else target[i] = 0.0;
-   }
+        if (std::fabs(tval) > HD_MIN) {
+            tval2 = (target[i] /= tval);
+            norm += tval2 * tval2;
+        } else
+            target[i] = 0.0;
+    }
 
-   return(norm);
+    return (norm);
 }
 
 /*
@@ -83,27 +83,25 @@ double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
 **    energy  = energy
 **    Hd      = Diagonal Hamiltonian block
 **    size    = size of block
-**    sign1   = sign1*E + sign2*Hd 
-**    sign2   = sign1*E + sign2*Hd 
+**    sign1   = sign1*E + sign2*Hd
+**    sign2   = sign1*E + sign2*Hd
 **
 ** Returns: sum of squares of coefficients
 */
-double calc_mpn_vec(double *target, double energy, double *Hd, int size, double
-        sign1, double sign2, int precon)
-{
-   int i;
-   double norm = 0.0, tval, tval2;
+double calc_mpn_vec(double *target, double energy, double *Hd, int size, double sign1, double sign2, int precon) {
+    int i;
+    double norm = 0.0, tval, tval2;
 
-   for (i=0; i<size; i++) {
-      tval = sign1*energy + sign2*Hd[i];
-      if (precon==1) 
-        tval2 = (target[i] /= tval);
-      else if (precon==0) 
-        tval2 = (target[i] *= tval);
-      norm += tval2 * tval2;
-      }
-   return(norm);
-
+    for (i = 0; i < size; i++) {
+        tval = sign1 * energy + sign2 * Hd[i];
+        if (precon == 1)
+            tval2 = (target[i] /= tval);
+        else if (precon == 0)
+            tval2 = (target[i] *= tval);
+        norm += tval2 * tval2;
+    }
+    return (norm);
 }
 
-}} // namespace psi::detci
+}  // namespace detci
+}  // namespace psi

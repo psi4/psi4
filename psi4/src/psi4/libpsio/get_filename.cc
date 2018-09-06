@@ -41,60 +41,59 @@
 namespace psi {
 
 void PSIO::get_filename(size_t unit, char **name, bool remove_namespace) {
-  std::string kval;
-  std::string dot(".");
-  std::string ns = dot + pid_;
-  ns += (default_namespace_ == "" || remove_namespace) ? "" : dot + default_namespace_;
-  //std::string path = PSIOManager::shared_object()->get_file_path(unit);
-  //printf("%s %s: %d\n", path.c_str(), ns.c_str(), unit);
-  //*name = strdup((path + ns).c_str());
-  //return;
+    std::string kval;
+    std::string dot(".");
+    std::string ns = dot + pid_;
+    ns += (default_namespace_ == "" || remove_namespace) ? "" : dot + default_namespace_;
+    // std::string path = PSIOManager::shared_object()->get_file_path(unit);
+    // printf("%s %s: %d\n", path.c_str(), ns.c_str(), unit);
+    //*name = strdup((path + ns).c_str());
+    // return;
 
-  kval = filecfg_kwd("PSI", "NAME", unit);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("PSI", "NAME", -1);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("DEFAULT", "NAME", unit);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("DEFAULT", "NAME", -1);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
+    kval = filecfg_kwd("PSI", "NAME", unit);
+    if (!kval.empty()) {
+        kval = kval + ns;
+        *name = strdup(kval.c_str());
+        return;
+    }
+    kval = filecfg_kwd("PSI", "NAME", -1);
+    if (!kval.empty()) {
+        kval = kval + ns;
+        *name = strdup(kval.c_str());
+        return;
+    }
+    kval = filecfg_kwd("DEFAULT", "NAME", unit);
+    if (!kval.empty()) {
+        kval = kval + ns;
+        *name = strdup(kval.c_str());
+        return;
+    }
+    kval = filecfg_kwd("DEFAULT", "NAME", -1);
+    if (!kval.empty()) {
+        kval = kval + ns;
+        *name = strdup(kval.c_str());
+        return;
+    }
 
-
-  // assume that the default has been provided already
-  abort();
+    // assume that the default has been provided already
+    abort();
 }
 
 int psio_get_filename_default(char **name) {
-  std::string kval;
-  kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
-  if (!kval.empty()) {
-    *name = strdup(kval.c_str());
-    return (1);
-  }
-  kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
-  if (!kval.empty()) {
-    *name = strdup(kval.c_str());
-    return (1);
-  }
+    std::string kval;
+    kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
+    if (!kval.empty()) {
+        *name = strdup(kval.c_str());
+        return (1);
+    }
+    kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
+    if (!kval.empty()) {
+        *name = strdup(kval.c_str());
+        return (1);
+    }
 
-  // assume that the default has been provided already
-  abort();
+    // assume that the default has been provided already
+    abort();
 }
 
-}
+}  // namespace psi

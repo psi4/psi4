@@ -30,13 +30,16 @@
 
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
 
 using namespace psi;
 
 void export_oeprop(py::module &m) {
-    py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring")
-        .def("set_title", &OEProp::set_title, "docstring");
+    py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
+
+    py::class_<TaskListComputer, std::shared_ptr<TaskListComputer> >(m, "TaskListComputer", "docstring")
+        .def("set_title", &TaskListComputer::set_title, "docstring");
 
     //     def(init<std::shared_ptr<Wavefunction> >()).
     //     def("print_header", pure_virtual(&Prop::print_header)).
@@ -48,7 +51,13 @@ void export_oeprop(py::module &m) {
     //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
 
-    py::class_<OEProp, std::shared_ptr<OEProp>, Prop>(m, "OEProp", "docstring")
+    py::class_<ESPPropCalc, std::shared_ptr<ESPPropCalc>, Prop>(
+        m, "ESPPropCalc", "ESPPropCalc gives access to routines calculating the ESP on a grid")
+        .def(py::init<std::shared_ptr<Wavefunction> >())
+        .def("compute_esp_over_grid_in_memory", &ESPPropCalc::compute_esp_over_grid_in_memory,
+             "Computes ESP on specified grid Nx3 (as SharedMatrix)");
+
+    py::class_<OEProp, std::shared_ptr<OEProp>, TaskListComputer>(m, "OEProp", "docstring")
         .
         // TODO had no_init but init member present
         def(py::init<std::shared_ptr<Wavefunction> >())
@@ -66,8 +75,7 @@ void export_oeprop(py::module &m) {
         .def("Vvals", &OEProp::Vvals, "The electrostatic potential (in a.u.) at each grid point")
         .def("Exvals", &OEProp::Exvals, "The x component of the field (in a.u.) at each grid point")
         .def("Eyvals", &OEProp::Eyvals, "The y component of the field (in a.u.) at each grid point")
-        .def("Ezvals", &OEProp::Ezvals,
-             "The z component of the field (in a.u.) at each grid point");
+        .def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point");
 
     // class_<GridProp, std::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").

@@ -147,7 +147,7 @@ Miscellaneous
 -------------
 
 #. :ref:`faq:writepsi4`
-
+#. :ref:`faq:psi4logos`
 
 
 .. #. :ref:`faq:getversion`

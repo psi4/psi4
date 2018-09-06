@@ -43,53 +43,41 @@ namespace filesystem {
  * \brief Class for manipulating paths.
  *
  */
-class path
-{
-protected:
+class path {
+   protected:
     std::vector<std::string> path_;
     bool absolute_;
 
-    static std::vector<std::string> tokenize(const std::string &string, const std::string &delim)
-    {
+    static std::vector<std::string> tokenize(const std::string &string, const std::string &delim) {
         std::string::size_type lastPos = 0, pos = string.find_first_of(delim, lastPos);
         std::vector<std::string> tokens;
 
         while (lastPos != std::string::npos) {
-            if (pos != lastPos)
-                tokens.push_back(string.substr(lastPos, pos - lastPos));
+            if (pos != lastPos) tokens.push_back(string.substr(lastPos, pos - lastPos));
             lastPos = pos;
-            if (lastPos == std::string::npos || lastPos + 1 == string.length())
-                break;
+            if (lastPos == std::string::npos || lastPos + 1 == string.length()) break;
             pos = string.find_first_of(delim, ++lastPos);
         }
 
         return tokens;
     }
 
-public:
+   public:
+    path() : absolute_(false) {}
 
-    path() : absolute_(false)
-    {}
+    path(const path &path) : path_(path.path_), absolute_(path.absolute_) {}
 
-    path(const path &path) : path_(path.path_), absolute_(path.absolute_)
-    {}
+    path(path &&path) : path_(std::move(path.path_)), absolute_(path.absolute_) {}
 
-    path(path &&path) : path_(std::move(path.path_)), absolute_(path.absolute_)
-    {}
-
-    path(const std::string &string)
-    { set(string); }
+    path(const std::string &string) { set(string); }
 
     void set(const std::string &str);
 
-    size_t length() const
-    { return path_.size(); }
+    size_t length() const { return path_.size(); }
 
-    bool empty() const
-    { return path_.empty(); }
+    bool empty() const { return path_.empty(); }
 
-    bool is_absolute() const
-    { return absolute_; }
+    bool is_absolute() const { return absolute_; }
 
     path make_absolute() const;
 
@@ -119,18 +107,16 @@ public:
 
     path &operator=(path &&path);
 
-    bool operator==(const path &p) const
-    { return path_ == p.path_; }
+    bool operator==(const path &p) const { return path_ == p.path_; }
 
-    bool operator!=(const path &p) const
-    { return path_ != p.path_; }
+    bool operator!=(const path &p) const { return path_ != p.path_; }
 
     static path getcwd();
 };
 
 bool create_directory(const path &p);
 
-} // filesystem
-} // psi
+}  // filesystem
+}  // psi
 
-#endif //PSI4_CORE_PATH_H
+#endif  // PSI4_CORE_PATH_H

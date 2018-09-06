@@ -1066,8 +1066,15 @@ class Molecule(LibmintsMolecule):
         return ar
 
     @staticmethod
-    def _raw_to_arrays(self):
+    def _raw_to_arrays(self, dummy=False, ghost_as_dummy=False):
         """Exports coordinate info into NumPy arrays.
+
+        Parameters
+        ----------
+        dummy : bool, optional
+            Whether or not to include dummy atoms in returned arrays.
+        ghost_as_dummy : bool, optional
+            Whether or not to treat ghost atoms as dummies.
 
         Returns
         -------
@@ -1086,17 +1093,31 @@ class Molecule(LibmintsMolecule):
 
         """
         self.update_geometry()
-        if isinstance(self, Molecule):
-            # normal qcdb.Molecule
-            geom = self.geometry(np_out=True)
+
+        if dummy:
+            if isinstance(self, Molecule):
+                # normal qcdb.Molecule
+                geom = self.full_geometry(np_out=True)
+            else:
+                # psi4.core.Molecule
+                geom = np.array(self.full_geometry())
+            mass = np.asarray([(0. if (ghost_as_dummy and self.fZ(at) == 0) else self.fmass(at)) for at in range(self.nallatom())])
+            elem = np.asarray(['X' if (ghost_as_dummy and self.fZ(at) == 0) else self.fsymbol(at) for at in range(self.nallatom())])
+            elez = np.asarray([0 if (ghost_as_dummy and self.fZ(at) == 0) else self.fZ(at) for at in range(self.nallatom())])
+            uniq = np.asarray(
+                [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.nallatom())])
         else:
-            # psi4.core.Molecule
-            geom = np.array(self.geometry())
-        mass = np.asarray([self.mass(at) for at in range(self.natom())])
-        elem = np.asarray([self.symbol(at) for at in range(self.natom())])
-        elez = np.asarray([self.Z(at) for at in range(self.natom())])
-        uniq = np.asarray(
-            [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
+            if isinstance(self, Molecule):
+                # normal qcdb.Molecule
+                geom = self.geometry(np_out=True)
+            else:
+                # psi4.core.Molecule
+                geom = np.array(self.geometry())
+            mass = np.asarray([self.mass(at) for at in range(self.natom())])
+            elem = np.asarray([self.symbol(at) for at in range(self.natom())])
+            elez = np.asarray([self.Z(at) for at in range(self.natom())])
+            uniq = np.asarray(
+                [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
 
         return geom, mass, elem, elez, uniq
 
@@ -1467,7 +1488,7 @@ class Molecule(LibmintsMolecule):
         except ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
-            print('Have you been meddling with chgmult?')
+            print("""Following warning is harmless if you've altered chgmult through `set_molecular_change` or `set_multiplicity`. Such alterations are an expert feature. Specifying in the original molecule string is preferred.""")
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
             validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
@@ -1548,7 +1569,9 @@ class Molecule(LibmintsMolecule):
         self.fix_com(molrec['fix_com'])
         self.fix_orientation(molrec['fix_orientation'])
         if 'fix_symmetry' in molrec:
-            self.reset_point_group(molrec['fix_symmetry'])
+            # Save the user-specified symmetry, but don't set it as the point group
+            # That step occurs in update_geometry, after the atoms are added
+            self.PYsymmetry_from_input = molrec['fix_symmetry'].lower()
 
         ## hack to prevent update_geometry termination upon no atoms
         #if nat == 0:

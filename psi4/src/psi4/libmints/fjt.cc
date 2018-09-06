@@ -254,58 +254,55 @@ double* Taylor_Fjt::values(int l, double T) {
             /*--- Taylor interpolation ---*/
             F_[j] = F_row[0]
 #if TAYLOR_INTERPOLATION_ORDER > 0
-                    +
-                    h * (F_row[1]
+                    + h * (F_row[1]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 1
-                         +
-                         oon[2] * h *
-                             (F_row[2]
+                           + oon[2] * h *
+                                 (F_row[2]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 2
-                              +
-                              oon[3] * h *
-                                  (F_row[3]
+                                  + oon[3] * h *
+                                        (F_row[3]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 3
-                                   +
-                                   oon[4] * h * (F_row[4]
+                                         + oon[4] * h *
+                                               (F_row[4]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 4
-                                                 +
-                                                 oon[5] * h * (F_row[5]
+                                                + oon[5] * h *
+                                                      (F_row[5]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 5
-                                                               +
-                                                               oon[6] * h * (F_row[6]
+                                                       + oon[6] * h *
+                                                             (F_row[6]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 6
-                                                                             +
-                                                                             oon[7] * h * (F_row[7]
+                                                              + oon[7] * h *
+                                                                    (F_row[7]
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 7
-                                                                                           + oon[8] * h * (F_row[8])
+                                                                     + oon[8] * h * (F_row[8])
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 6
-                                                                                               )
+                                                                         )
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 5
-                                                                                 )
+                                                                  )
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 4
-                                                                   )
+                                                           )
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 3
-                                                     )
+                                                    )
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 2
-                                       )
+                                             )
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 1
-                                  )
+                                      )
 #endif
 #if TAYLOR_INTERPOLATION_ORDER > 0
-                             )
+                          )
 #endif
                 ;
         }  // interpolation for F_j(T), jrecur<=j<=l
@@ -443,7 +440,7 @@ double* FJT::values(int J, double wval) {
 
     /* Compute an index into the table. */
     /* The test is needed to avoid floating point exceptions for
-   * large values of wval. */
+     * large values of wval. */
     if (wval > wval_infinity) {
         itable = itable_infinity;
     } else {

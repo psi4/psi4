@@ -63,7 +63,7 @@ return_wfn=True)`` as the frequencies can be accessed through
 info through ``psi4.core.Wavefunction.frequency_analysis``
 (note no parentheses). Examples of using this data
 structure can be found :srcsample:`fd-freq-gradient` and
-:srcsample:`python/vibanalysis`. Formatted printing of vibrational
+:srcsamplepy:`python/vibanalysis`. Formatted printing of vibrational
 results is available through :py:func:`qcdb.vib.print_vibs`.
 
 .. _`table:frequency_analysis`:

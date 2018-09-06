@@ -58,6 +58,8 @@ def format_option_for_cfour(opt, val):
             if opt == 'CFOUR_ESTATE_SYM':
                 # [3, 1, 0, 2] --> 3/1/0/2
                 text += '/'.join(map(str, val))
+            elif opt == 'CFOUR_DROPMO':
+                text += ','.join(map(str, val))
             else:
                 # [3, 1, 0, 2] --> 3-1-0-2
                 text += '-'.join(map(str, val))

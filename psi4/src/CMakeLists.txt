@@ -30,7 +30,7 @@ set(sources_list
 add_library(core SHARED ${sources_list})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
-target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_OPTION})
+target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd plugin qt ${POST_LIBRARY_OPTION})
 if(TARGET ambit::ambit)
     target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} ambit_interface ${POST_LIBRARY_OPTION})
 endif()
@@ -46,7 +46,9 @@ target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PRIVATE tgt::lapack)  # OpenMP flags to core.cc
 target_link_libraries(core PUBLIC pybind11::module)
-target_link_libraries(core PRIVATE Threads::Threads)
+if(MSVC)
+    target_link_libraries(core PRIVATE Ws2_32)
+endif()
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
@@ -54,6 +56,10 @@ if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   target_compile_definitions(core PRIVATE -DINTEL_Fortran_ENABLED)
 endif()
 
+if(MSVC)
+    # Increase the number of addressable sections
+    target_compile_options(core PRIVATE "/bigobj")
+endif()
 
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
@@ -64,14 +70,14 @@ install(TARGETS core
         EXPORT "psi4Targets"
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 install(EXPORT "psi4Targets"
         NAMESPACE "psi4::"
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
 # <<<  RPATH  >>>
 
-set(_full_path_staged_libdir "${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(_full_path_staged_libdir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 file(RELATIVE_PATH _rel ${_full_path_staged_libdir}${PYMOD_INSTALL_LIBDIR}/psi4
                         ${_full_path_staged_libdir})
 if(APPLE)
@@ -120,7 +126,6 @@ message(STATUS "Psi4 rpath: ${psi4_RPATH}")
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
                            EXPORT_NAME core
-                           SUFFIX ".so"  # for python module
-                           #SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+                           SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
                            INSTALL_RPATH "${psi4_RPATH}"
                            BUILD_WITH_INSTALL_RPATH ON)

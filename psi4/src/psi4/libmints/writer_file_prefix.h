@@ -37,4 +37,4 @@ std::string get_writer_file_prefix(const std::string& molecule_name);
 
 }
 
-#endif // WRITER_FILE_PREFIX_H
+#endif  // WRITER_FILE_PREFIX_H

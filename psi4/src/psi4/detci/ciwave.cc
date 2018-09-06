@@ -780,5 +780,5 @@ void CIWavefunction::semicanonical_orbs() {
     set_orbitals("ROT", Cnew);
     Cb_ = Ca_;
 }
-}
-}  // End Psi and CIWavefunction spaces
+}  // namespace detci
+}  // namespace psi

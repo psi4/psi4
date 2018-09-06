@@ -136,4 +136,4 @@ int psio_init(void) {
 }
 
 int psio_state() { return _default_psio_lib_->state(); }
-}
+}  // namespace psi

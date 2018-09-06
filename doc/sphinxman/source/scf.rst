@@ -290,9 +290,9 @@ section, and may be overridden by the :ref:`symmetry <sec:moleculeKeywords>` fla
     symmetry c1
     } 
 
-or by the ``set_point_group`` Python molecule attribute::
+or by the ``reset_point_group`` Python molecule attribute::
 
-    h.set_point_group('c2v') 
+    h.reset_point_group('c2v')
 
 During the SCF procedure, the occupation of orbitals is typically determined by
 the Aufbau principal across all spatial symmetries. This may result in the

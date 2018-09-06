@@ -35,10 +35,10 @@
 ;
 using namespace psi;
 
-EFPMultipolePotentialInt::EFPMultipolePotentialInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv) :
-    OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
-    mvi_recur_(bs1->max_am(), bs2->max_am())
-{
+EFPMultipolePotentialInt::EFPMultipolePotentialInt(std::vector<SphericalTransform> &spherical_transforms,
+                                                   std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                                   int nderiv)
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mvi_recur_(bs1->max_am(), bs2->max_am()) {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
@@ -46,22 +46,15 @@ EFPMultipolePotentialInt::EFPMultipolePotentialInt(std::vector<SphericalTransfor
     int maxnao2 = INT_NCART(maxam2);
 
     if (nderiv == 0) {
-        buffer_ = new double[20*maxnao1*maxnao2];
+        buffer_ = new double[20 * maxnao1 * maxnao2];
         set_chunks(20);
-    }
-    else
-        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with deriv > 0",  __FILE__, __LINE__);
+    } else
+        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with deriv > 0", __FILE__, __LINE__);
 }
 
-EFPMultipolePotentialInt::~EFPMultipolePotentialInt()
-{
-    delete[] buffer_;
-}
+EFPMultipolePotentialInt::~EFPMultipolePotentialInt() { delete[] buffer_; }
 
-
-void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
-                                         const GaussianShell& s2)
-{
+void EFPMultipolePotentialInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {
     int ao12;
     int am1 = s1.am();
     int am2 = s2.am();
@@ -83,7 +76,7 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
     int jxm = jym * jym;
 
     // Not sure if these are needed.
-    int size =  INT_NCART(am1) * INT_NCART(am2);
+    int size = INT_NCART(am1) * INT_NCART(am2);
 
     // compute intermediates
     double AB2 = 0.0;
@@ -93,16 +86,16 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
 
     memset(buffer_, 0, 20 * size * sizeof(double));
 
-    double ***q   = mvi_recur_.q();
-    double ***x   = mvi_recur_.x();
-    double ***y   = mvi_recur_.y();
-    double ***z   = mvi_recur_.z();
-    double ***xx  = mvi_recur_.xx();
-    double ***yy  = mvi_recur_.yy();
-    double ***zz  = mvi_recur_.zz();
-    double ***xy  = mvi_recur_.xy();
-    double ***xz  = mvi_recur_.xz();
-    double ***yz  = mvi_recur_.yz();
+    double ***q = mvi_recur_.q();
+    double ***x = mvi_recur_.x();
+    double ***y = mvi_recur_.y();
+    double ***z = mvi_recur_.z();
+    double ***xx = mvi_recur_.xx();
+    double ***yy = mvi_recur_.yy();
+    double ***zz = mvi_recur_.zz();
+    double ***xy = mvi_recur_.xy();
+    double ***xz = mvi_recur_.xz();
+    double ***yz = mvi_recur_.yz();
     double ***xxx = mvi_recur_.xxx();
     double ***yyy = mvi_recur_.yyy();
     double ***zzz = mvi_recur_.zzz();
@@ -118,10 +111,10 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
     double Cy = origin_[1];
     double Cz = origin_[2];
 
-    for (int p1=0; p1<nprim1; ++p1) {
+    for (int p1 = 0; p1 < nprim1; ++p1) {
         double a1 = s1.exp(p1);
         double c1 = s1.coef(p1);
-        for (int p2=0; p2<nprim2; ++p2) {
+        for (int p2 = 0; p2 < nprim2; ++p2) {
             double a2 = s2.exp(p2);
             double c2 = s2.coef(p2);
             double gamma = a1 + a2;
@@ -130,9 +123,9 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
             double PA[3], PB[3];
             double P[3];
 
-            P[0] = (a1*A[0] + a2*B[0])*oog;
-            P[1] = (a1*A[1] + a2*B[1])*oog;
-            P[2] = (a1*A[2] + a2*B[2])*oog;
+            P[0] = (a1 * A[0] + a2 * B[0]) * oog;
+            P[1] = (a1 * A[1] + a2 * B[1]) * oog;
+            P[2] = (a1 * A[2] + a2 * B[2]) * oog;
             PA[0] = P[0] - A[0];
             PA[1] = P[1] - A[1];
             PA[2] = P[2] - A[2];
@@ -140,7 +133,7 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
             PB[1] = P[1] - B[1];
             PB[2] = P[2] - B[2];
 
-            double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
+            double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
             double PC[3];
 
             PC[0] = P[0] - Cx;
@@ -168,16 +161,16 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
                             int iind = l1 * ixm + m1 * iym + n1 * izm;
                             int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
-                            buffer_[ao12 + 0 * size]  += q[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 1 * size]  += x[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 2 * size]  += y[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 3 * size]  += z[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 4 * size]  += xx[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 5 * size]  += yy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 6 * size]  += zz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 7 * size]  += xy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 8 * size]  += xz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 9 * size]  += yz[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 0 * size] += q[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 1 * size] += x[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 2 * size] += y[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 3 * size] += z[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 4 * size] += xx[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 5 * size] += yy[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 6 * size] += zz[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 7 * size] += xy[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 8 * size] += xz[iind][jind][0] * over_pf;
+                            buffer_[ao12 + 9 * size] += yz[iind][jind][0] * over_pf;
                             buffer_[ao12 + 10 * size] += xxx[iind][jind][0] * over_pf;
                             buffer_[ao12 + 11 * size] += yyy[iind][jind][0] * over_pf;
                             buffer_[ao12 + 12 * size] += zzz[iind][jind][0] * over_pf;

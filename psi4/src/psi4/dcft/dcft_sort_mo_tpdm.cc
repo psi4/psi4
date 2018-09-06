@@ -41,20 +41,20 @@
 #include "dcft.h"
 #include "defines.h"
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 
 /** Presort TPDM (MO) for closed-shell odc-12
-   ** In open-shell cases, TPDM (MO) is presorted by IntegralTransform::presort_mo_tpdm_restricted(),
-   ** where AA (or BB) and AB contribution are treated differently.
-   ** However, in closed-shell odc-12, AA, AB, and BB contribution are all saved in PSIF_MO_TPDM,
-   ** where all values are treated as in AA matrix (which causes problems).
-   ** Thus, we presort TPDM (MO) here and turn off IntegralTransform::presort_mo_tpdm_restricted().
-   */
-void DCFTSolver::presort_mo_tpdm_AB()
-{
+ ** In open-shell cases, TPDM (MO) is presorted by IntegralTransform::presort_mo_tpdm_restricted(),
+ ** where AA (or BB) and AB contribution are treated differently.
+ ** However, in closed-shell odc-12, AA, AB, and BB contribution are all saved in PSIF_MO_TPDM,
+ ** where all values are treated as in AA matrix (which causes problems).
+ ** Thus, we presort TPDM (MO) here and turn off IntegralTransform::presort_mo_tpdm_restricted().
+ */
+void DCFTSolver::presort_mo_tpdm_AB() {
     int currentActiveDPD = psi::dpd_default;
 
-    if(print_){
+    if (print_) {
         outfile->Printf("\tPre-Presorting MO-basis TPDM: AB.\n\n");
     }
 
@@ -66,69 +66,64 @@ void DCFTSolver::presort_mo_tpdm_AB()
     size_t memoryd = Process::environment.get_memory() / sizeof(double);
 
     int nump = 0, numq = 0;
-    for(int h = 0; h < nirrep_; ++h){
+    for (int h = 0; h < nirrep_; ++h) {
         nump += I.params->ppi[h];
         numq += I.params->qpi[h];
     }
     int **bucketMap = init_int_matrix(nump, numq);
 
     /* Room for one bucket to begin with */
-    int **bucketOffset = (int **) malloc(sizeof(int *));
+    int **bucketOffset = (int **)malloc(sizeof(int *));
     bucketOffset[0] = init_int_array(nirrep_);
-    int **bucketRowDim = (int **) malloc(sizeof(int *));
+    int **bucketRowDim = (int **)malloc(sizeof(int *));
     bucketRowDim[0] = init_int_array(nirrep_);
-    int **bucketSize = (int **) malloc(sizeof(int *));
+    int **bucketSize = (int **)malloc(sizeof(int *));
     bucketSize[0] = init_int_array(nirrep_);
 
     /* Figure out how many passes we need and where each p,q goes */
     int nBuckets = 1;
     size_t coreLeft = memoryd;
     psio_address next;
-    for(int h = 0; h < nirrep_; ++h){
-        size_t rowLength = (size_t) I.params->coltot[h^(I.my_irrep)];
-        for(int row=0; row < I.params->rowtot[h]; ++row) {
-            if(coreLeft >= rowLength){
+    for (int h = 0; h < nirrep_; ++h) {
+        size_t rowLength = (size_t)I.params->coltot[h ^ (I.my_irrep)];
+        for (int row = 0; row < I.params->rowtot[h]; ++row) {
+            if (coreLeft >= rowLength) {
                 coreLeft -= rowLength;
-                bucketRowDim[nBuckets-1][h]++;
-                bucketSize[nBuckets-1][h] += rowLength;
+                bucketRowDim[nBuckets - 1][h]++;
+                bucketSize[nBuckets - 1][h] += rowLength;
             } else {
                 nBuckets++;
                 coreLeft = memoryd - rowLength;
                 /* Make room for another bucket */
 
-		int **p;
+                int **p;
 
-		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
-						nBuckets * sizeof(int *)));
-		if(p == nullptr) {
-		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		} else {
-		  bucketOffset = p;
-		}
-                bucketOffset[nBuckets-1] = init_int_array(nirrep_);
-                bucketOffset[nBuckets-1][h] = row;
+                p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset), nBuckets * sizeof(int *)));
+                if (p == nullptr) {
+                    throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                } else {
+                    bucketOffset = p;
+                }
+                bucketOffset[nBuckets - 1] = init_int_array(nirrep_);
+                bucketOffset[nBuckets - 1][h] = row;
 
+                p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim), nBuckets * sizeof(int *)));
+                if (p == nullptr) {
+                    throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                } else {
+                    bucketRowDim = p;
+                }
+                bucketRowDim[nBuckets - 1] = init_int_array(nirrep_);
+                bucketRowDim[nBuckets - 1][h] = 1;
 
-		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
-						nBuckets * sizeof(int *)));
-		if(p == nullptr) {
-		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		} else {
-		  bucketRowDim = p;
-		}
-		bucketRowDim[nBuckets-1] = init_int_array(nirrep_);
-		bucketRowDim[nBuckets-1][h] = 1;
-
-
-		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
-						nBuckets * sizeof(int *)));
-		if(p == nullptr) {
-		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		} else {
-		  bucketSize = p;
-		}
-                bucketSize[nBuckets-1] = init_int_array(nirrep_);
-                bucketSize[nBuckets-1][h] = rowLength;
+                p = static_cast<int **>(realloc(static_cast<void *>(bucketSize), nBuckets * sizeof(int *)));
+                if (p == nullptr) {
+                    throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                } else {
+                    bucketSize = p;
+                }
+                bucketSize[nBuckets - 1] = init_int_array(nirrep_);
+                bucketSize[nBuckets - 1][h] = rowLength;
             }
             int p = I.params->roworb[h][row][0];
             int q = I.params->roworb[h][row][1];
@@ -136,16 +131,15 @@ void DCFTSolver::presort_mo_tpdm_AB()
         }
     }
 
-    if(print_) {
-        outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-
+    if (print_) {
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
     }
 
     next = PSIO_ZERO;
 
-    for(int n=0; n < nBuckets; ++n) { /* nbuckets = number of passes */
+    for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
-        for(int h=0; h < nirrep_; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
@@ -156,26 +150,26 @@ void DCFTSolver::presort_mo_tpdm_AB()
         Value *valptr = iwl->values();
         int lastbuf;
         /* Now run through the IWL buffers */
-        do{
+        do {
             iwl->fetch();
             lastbuf = iwl->last_buffer();
-            for(int index = 0; index < iwl->buffer_count(); ++index){
-                int labelIndex = 4*index;
-                int p = _ints->alpha_corr_to_pitzer()[std::abs((int) lblptr[labelIndex++])];
-                int q = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
-                int r = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
-                int s = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
-                double value = (double) valptr[index];
+            for (int index = 0; index < iwl->buffer_count(); ++index) {
+                int labelIndex = 4 * index;
+                int p = _ints->alpha_corr_to_pitzer()[std::abs((int)lblptr[labelIndex++])];
+                int q = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
+                int r = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
+                int s = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
+                double value = (double)valptr[index];
                 dpdFiller(p, q, r, s, value);
-            } /* end loop through current buffer */
-        } while(!lastbuf); /* end loop over reading buffers */
+            }               /* end loop through current buffer */
+        } while (!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
         delete iwl;
 
-        for(int h=0; h < nirrep_; ++h) {
-            if(bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *) I.matrix[h][0],
-                bucketSize[n][h]*((long int) sizeof(double)), next, &next);
+        for (int h = 0; h < nirrep_; ++h) {
+            if (bucketSize[n][h])
+                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                             next, &next);
             free_block(I.matrix[h]);
         }
     } /* end loop over buckets/passes */
@@ -186,7 +180,7 @@ void DCFTSolver::presort_mo_tpdm_AB()
 
     free_int_matrix(bucketMap);
 
-    for(int n=0; n < nBuckets; ++n) {
+    for (int n = 0; n < nBuckets; ++n) {
         free(bucketOffset[n]);
         free(bucketRowDim[n]);
         free(bucketSize[n]);
@@ -201,11 +195,10 @@ void DCFTSolver::presort_mo_tpdm_AB()
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
 
-void DCFTSolver::presort_mo_tpdm_AA()
-{
+void DCFTSolver::presort_mo_tpdm_AA() {
     int currentActiveDPD = psi::dpd_default;
 
-    if(print_){
+    if (print_) {
         outfile->Printf("\tPre-Presorting MO-basis TPDM: AA and BB.\n\n");
     }
 
@@ -214,8 +207,8 @@ void DCFTSolver::presort_mo_tpdm_AA()
 
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_OLD);
 
-    global_dpd_->buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ID("[A>=A]+"), ID("[A>=A]+"),
-                           ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
+    global_dpd_->buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ID("[A>=A]+"), ID("[A>=A]+"), ID("[A>=A]+"), ID("[A>=A]+"), 0,
+                           "MO TPDM (AA|AA)");
     global_dpd_->buf4_copy(&Ibuf, PSIF_TPDM_PRESORT, "MO TPDM (AA|AA) TEMP");
     global_dpd_->buf4_close(&Ibuf);
 
@@ -224,69 +217,64 @@ void DCFTSolver::presort_mo_tpdm_AA()
     size_t memoryd = Process::environment.get_memory() / sizeof(double);
 
     int nump = 0, numq = 0;
-    for(int h = 0; h < nirrep_; ++h){
+    for (int h = 0; h < nirrep_; ++h) {
         nump += I.params->ppi[h];
         numq += I.params->qpi[h];
     }
     int **bucketMap = init_int_matrix(nump, numq);
 
     /* Room for one bucket to begin with */
-    int **bucketOffset = (int **) malloc(sizeof(int *));
+    int **bucketOffset = (int **)malloc(sizeof(int *));
     bucketOffset[0] = init_int_array(nirrep_);
-    int **bucketRowDim = (int **) malloc(sizeof(int *));
+    int **bucketRowDim = (int **)malloc(sizeof(int *));
     bucketRowDim[0] = init_int_array(nirrep_);
-    int **bucketSize = (int **) malloc(sizeof(int *));
+    int **bucketSize = (int **)malloc(sizeof(int *));
     bucketSize[0] = init_int_array(nirrep_);
 
     /* Figure out how many passes we need and where each p,q goes */
     int nBuckets = 1;
     size_t coreLeft = memoryd;
     psio_address next;
-    for(int h = 0; h < nirrep_; ++h){
-        size_t rowLength = (size_t) I.params->coltot[h^(I.my_irrep)];
-        for(int row=0; row < I.params->rowtot[h]; ++row) {
-            if(coreLeft >= rowLength){
+    for (int h = 0; h < nirrep_; ++h) {
+        size_t rowLength = (size_t)I.params->coltot[h ^ (I.my_irrep)];
+        for (int row = 0; row < I.params->rowtot[h]; ++row) {
+            if (coreLeft >= rowLength) {
                 coreLeft -= rowLength;
-                bucketRowDim[nBuckets-1][h]++;
-                bucketSize[nBuckets-1][h] += rowLength;
+                bucketRowDim[nBuckets - 1][h]++;
+                bucketSize[nBuckets - 1][h] += rowLength;
             } else {
                 nBuckets++;
                 coreLeft = memoryd - rowLength;
                 /* Make room for another bucket */
 
-		int **p;
+                int **p;
 
-		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
-						nBuckets * sizeof(int *)));
-		if(p == nullptr) {
-		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		} else {
-		  bucketOffset = p;
-		}
-                bucketOffset[nBuckets-1] = init_int_array(nirrep_);
-                bucketOffset[nBuckets-1][h] = row;
+                p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset), nBuckets * sizeof(int *)));
+                if (p == nullptr) {
+                    throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                } else {
+                    bucketOffset = p;
+                }
+                bucketOffset[nBuckets - 1] = init_int_array(nirrep_);
+                bucketOffset[nBuckets - 1][h] = row;
 
+                p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim), nBuckets * sizeof(int *)));
+                if (p == nullptr) {
+                    throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                } else {
+                    bucketRowDim = p;
+                }
+                bucketRowDim[nBuckets - 1] = init_int_array(nirrep_);
+                bucketRowDim[nBuckets - 1][h] = 1;
 
-		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
-						nBuckets * sizeof(int *)));
-		if(p == nullptr) {
-		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		} else {
-		  bucketRowDim = p;
-		}
-		bucketRowDim[nBuckets-1] = init_int_array(nirrep_);
-		bucketRowDim[nBuckets-1][h] = 1;
-
-
-		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
-						nBuckets * sizeof(int *)));
-		if(p == nullptr) {
-		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		} else {
-		  bucketSize = p;
-		}
-                bucketSize[nBuckets-1] = init_int_array(nirrep_);
-                bucketSize[nBuckets-1][h] = rowLength;
+                p = static_cast<int **>(realloc(static_cast<void *>(bucketSize), nBuckets * sizeof(int *)));
+                if (p == nullptr) {
+                    throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+                } else {
+                    bucketSize = p;
+                }
+                bucketSize[nBuckets - 1] = init_int_array(nirrep_);
+                bucketSize[nBuckets - 1][h] = rowLength;
             }
             int p = I.params->roworb[h][row][0];
             int q = I.params->roworb[h][row][1];
@@ -294,18 +282,17 @@ void DCFTSolver::presort_mo_tpdm_AA()
         }
     }
 
-    if(print_) {
-        outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-
+    if (print_) {
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
     }
 
     next = PSIO_ZERO;
 
     outfile->Printf("\tnbuckets = %d\n\n", nBuckets);
 
-    for(int n=0; n < nBuckets; ++n) { /* nbuckets = number of passes */
+    for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
-        for(int h=0; h < nirrep_; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
@@ -316,31 +303,30 @@ void DCFTSolver::presort_mo_tpdm_AA()
         Value *valptr = iwl->values();
         int lastbuf;
         /* Now run through the IWL buffers */
-        do{
+        do {
             iwl->fetch();
             lastbuf = iwl->last_buffer();
-            for(int index = 0; index < iwl->buffer_count(); ++index){
-                int labelIndex = 4*index;
-                int p = _ints->alpha_corr_to_pitzer()[std::abs((int) lblptr[labelIndex++])];
-                int q = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
-                int r = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
-                int s = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
-                double value = (double) valptr[index];
+            for (int index = 0; index < iwl->buffer_count(); ++index) {
+                int labelIndex = 4 * index;
+                int p = _ints->alpha_corr_to_pitzer()[std::abs((int)lblptr[labelIndex++])];
+                int q = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
+                int r = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
+                int s = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
+                double value = (double)valptr[index];
                 dpdFiller(p, q, r, s, value);
 
-            } /* end loop through current buffer */
-        } while(!lastbuf); /* end loop over reading buffers */
+            }               /* end loop through current buffer */
+        } while (!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
         delete iwl;
 
-        for(int h=0; h < nirrep_; ++h) {
-            if(bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *) I.matrix[h][0],
-                bucketSize[n][h]*((long int) sizeof(double)), next, &next);
+        for (int h = 0; h < nirrep_; ++h) {
+            if (bucketSize[n][h])
+                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                             next, &next);
             free_block(I.matrix[h]);
         }
     } /* end loop over buckets/passes */
-
 
     /* Get rid of the input integral file */
     psio_->open(PSIF_MO_TPDM, PSIO_OPEN_OLD);
@@ -348,7 +334,7 @@ void DCFTSolver::presort_mo_tpdm_AA()
 
     free_int_matrix(bucketMap);
 
-    for(int n=0; n < nBuckets; ++n) {
+    for (int n = 0; n < nBuckets; ++n) {
         free(bucketOffset[n]);
         free(bucketRowDim[n]);
         free(bucketSize[n]);
@@ -361,10 +347,10 @@ void DCFTSolver::presort_mo_tpdm_AA()
 
     global_dpd_->file4_close(&I);
 
-    global_dpd_->buf4_init(&Itot, PSIF_TPDM_PRESORT, 0, ID("[A>=A]+"), ID("[A>=A]+"),
-                           ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    global_dpd_->buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ID("[A>=A]+"), ID("[A>=A]+"),
-                           ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO TPDM (AA|AA) TEMP");
+    global_dpd_->buf4_init(&Itot, PSIF_TPDM_PRESORT, 0, ID("[A>=A]+"), ID("[A>=A]+"), ID("[A>=A]+"), ID("[A>=A]+"), 0,
+                           "MO TPDM (AA|AA)");
+    global_dpd_->buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ID("[A>=A]+"), ID("[A>=A]+"), ID("[A>=A]+"), ID("[A>=A]+"), 0,
+                           "MO TPDM (AA|AA) TEMP");
     global_dpd_->buf4_axpy(&Ibuf, &Itot, 1.0);
     global_dpd_->buf4_close(&Ibuf);
     global_dpd_->buf4_close(&Itot);
@@ -372,4 +358,5 @@ void DCFTSolver::presort_mo_tpdm_AA()
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
 
-}}
+}  // namespace dcft
+}  // namespace psi

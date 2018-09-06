@@ -1189,17 +1189,19 @@ class LibmintsMolecule(object):
         else:
             return geom.tolist()
 
-    def full_geometry(self):
+    def full_geometry(self, np_out=False):
         """Returns the full (dummies included) geometry in Bohr as a N X 3 array.
 
         >>> print H2OH2O.full_geometry()
         [[-2.930978460188563, -0.21641143673806384, 0.0], [-3.655219780069251, 1.4409218455037016, 0.0], [-1.1332252981904638, 0.0769345303220403, 0.0], [0.0, 0.0, 0.0], [2.5523113582286716, 0.21064588230662976, 0.0], [3.175492014248769, -0.7062681346308132, -1.4334725450878665], [3.175492014248769, -0.7062681346308132, 1.4334725450878665]]
 
         """
-        geom = []
-        for at in range(self.nallatom()):
-            geom.append([self.fx(at), self.fy(at), self.fz(at)])
-        return geom
+        geom = np.asarray([self.full_atoms[at].compute() for at in range(self.nallatom())])
+        geom *= self.input_units_to_au()
+        if np_out:
+            return geom
+        else:
+            return geom.tolist()
 
     def set_geometry(self, geom):
         """Sets the geometry, given a N X 3 array of coordinates *geom* in Bohr.
@@ -3219,7 +3221,6 @@ def compute_atom_map(mol, tol=0.05):
                 np3[ii] = 0
                 for jj in range(3):
                     np3[ii] += so[ii][jj] * ac[jj]
-
             atom_map[i][g] = mol.atom_at_position(np3, tol)
             if atom_map[i][g] < 0:
                 print("""  Molecule:\n""")

@@ -52,18 +52,17 @@ class SphericalTransform;
  *  \class OneBodyInt
  *  \brief Basis class for all one-electron integrals.
  */
-class OneBodyAOInt
-{
-protected:
+class OneBodyAOInt {
+   protected:
     std::shared_ptr<BasisSet> bs1_;
     std::shared_ptr<BasisSet> bs2_;
     std::vector<SphericalTransform>& spherical_transforms_;
 
     Vector3 origin_;
 
-    double *buffer_;
-    double *target_;
-    double *tformbuf_;
+    double* buffer_;
+    double* target_;
+    double* tformbuf_;
 
     /// Whether we want to always generate Cartesian integrals;
     bool force_cartesian_;
@@ -76,19 +75,20 @@ protected:
 
     int buffer_size_;
 
-    OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv=0);
+    OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                 int deriv = 0);
 
     virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
     virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
     virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2);
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
-    void pure_transform(const GaussianShell&, const GaussianShell&, int=1);
+    void pure_transform(const GaussianShell&, const GaussianShell&, int = 1);
 
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(const GaussianShell&, const GaussianShell&, int nchunk=1);
+    void normalize_am(const GaussianShell&, const GaussianShell&, int nchunk = 1);
 
-public:
+   public:
     virtual ~OneBodyAOInt();
 
     /// Basis set on center one.
@@ -105,7 +105,7 @@ public:
     void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
     /// Buffer where the integrals are placed.
-    const double *buffer() const;
+    const double* buffer() const;
 
     /// Compute the integrals between basis function in the given shell pair.
     void compute_shell(int, int);
@@ -118,7 +118,7 @@ public:
     /*! @} */
 
     /// Computes all integrals and stores them in result by default this method throws
-    virtual void compute(std::vector<SharedMatrix > &result);
+    virtual void compute(std::vector<SharedMatrix>& result);
 
     /// Does the method provide first derivatives?
     virtual bool has_deriv1() { return false; }
@@ -130,10 +130,10 @@ public:
     int deriv() const { return deriv_; }
 
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<SharedMatrix > &result);
+    virtual void compute_deriv1(std::vector<SharedMatrix>& result);
 
     /// Computes the second derivatives and stores them in result
-    virtual void compute_deriv2(std::vector<SharedMatrix > &result);
+    virtual void compute_deriv2(std::vector<SharedMatrix>& result);
 
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);
@@ -154,6 +154,6 @@ public:
 };
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
-}
+}  // namespace psi
 
 #endif
