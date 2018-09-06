@@ -244,6 +244,7 @@ double DFCoupledCluster::compute_energy() {
         free(Qvv);
     }
 
+
     // free remaining memory
     free(Fia);
     free(Fai);

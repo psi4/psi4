@@ -112,9 +112,9 @@ void FrozenNO::ComputeNaturalOrbitals() {
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     std::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
-    std::shared_ptr<IntegralTransform> ints =
-        std::make_shared<IntegralTransform>(wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
-                                            IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::OccAndVir, false);
+    std::shared_ptr<IntegralTransform> ints = std::make_shared<IntegralTransform>(
+        wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
+        IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::OccAndVir, false);
     ints->set_dpd_id(0);
     ints->set_keep_iwl_so_ints(true);
     ints->set_keep_dpd_so_ints(true);

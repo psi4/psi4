@@ -85,7 +85,7 @@ class SADGuess {
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
 };
-}
-}
+}  // namespace scf
+}  // namespace psi
 
 #endif

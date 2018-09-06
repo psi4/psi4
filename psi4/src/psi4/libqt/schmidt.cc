@@ -57,56 +57,57 @@ namespace psi {
 ** Returns: none
 ** \ingroup QT
 */
-void schmidt(double **A, int rows, int cols, std::string)
-{
-   double RValue;
-   for(size_t i=0;i<cols;++i){
-      // dot_arr(A[i],A[i],cols,&RValue);
-      RValue = C_DDOT(cols, A[i], 1, A[i], 1);
-      RValue=sqrt(RValue);
-      for(size_t I=0;I<cols;++I)A[i][I]/=RValue;
-      for(size_t j=i+1;j<cols;++j){
-         // dot_arr(A[i],A[j],cols,&RValue);
-         RValue = C_DDOT(cols, A[i], 1, A[j], 1);
-         for(size_t I=0;I<cols;++I)A[j][I]-=RValue*A[i][I];
-      }
-   }
-
+void schmidt(double **A, int rows, int cols, std::string) {
+    double RValue;
+    for (size_t i = 0; i < cols; ++i) {
+        // dot_arr(A[i],A[i],cols,&RValue);
+        RValue = C_DDOT(cols, A[i], 1, A[i], 1);
+        RValue = sqrt(RValue);
+        for (size_t I = 0; I < cols; ++I) A[i][I] /= RValue;
+        for (size_t j = i + 1; j < cols; ++j) {
+            // dot_arr(A[i],A[j],cols,&RValue);
+            RValue = C_DDOT(cols, A[i], 1, A[j], 1);
+            for (size_t I = 0; I < cols; ++I) A[j][I] -= RValue * A[i][I];
+        }
+    }
 }
 
-
-
 #ifdef STANDALONE
-main()
-{
-   std::string out_fname ;
-   double **mat, **mat_copy, **mat_x_mat ;
-   void schmidt(double **A, int rows, int cols) ;
+main() {
+    std::string out_fname;
+    double **mat, **mat_copy, **mat_x_mat;
+    void schmidt(double **A, int rows, int cols);
 
-   mat = init_matrix(3, 3) ;
-   mat_copy = init_matrix(3, 3) ;
-   mat_x_mat = init_matrix(3, 3) ;
-   mat[0][0] = 1.0 ; mat[0][1] = 0.0 ; mat[0][2] = 1.0 ;
-   mat[1][0] = 1.0 ; mat[1][1] = -1.0 ; mat[1][2] = 0.0 ;
-   mat[2][0] = 0.0 ; mat[2][1] = 0.0 ; mat[2][2] = 0.5 ;
+    mat = init_matrix(3, 3);
+    mat_copy = init_matrix(3, 3);
+    mat_x_mat = init_matrix(3, 3);
+    mat[0][0] = 1.0;
+    mat[0][1] = 0.0;
+    mat[0][2] = 1.0;
+    mat[1][0] = 1.0;
+    mat[1][1] = -1.0;
+    mat[1][2] = 0.0;
+    mat[2][0] = 0.0;
+    mat[2][1] = 0.0;
+    mat[2][2] = 0.5;
 
-   ffile(&outfile, "output.dat", 0) ;
-   outfile->Printf( "Matrix before Gram-Schmidt process\n") ;
-   print_mat(mat,3,3,outfile) ;
-   schmidt(mat,3,3) ;
-   outfile->Printf( "\nMatrix after Gram-Schmidt process\n") ;
-   print_mat(mat,3,3,outfile) ;
+    ffile(&outfile, "output.dat", 0);
+    outfile->Printf("Matrix before Gram-Schmidt process\n");
+    print_mat(mat, 3, 3, outfile);
+    schmidt(mat, 3, 3);
+    outfile->Printf("\nMatrix after Gram-Schmidt process\n");
+    print_mat(mat, 3, 3, outfile);
 
-   outfile->Printf( "\nTest A * A = \n") ;
+    outfile->Printf("\nTest A * A = \n");
 
-   C_DGEMM('N', 'T', 3, 3, 3, 1.0, mat, 3, mat, 3, 0.0, mat_x_mat, 3);
-   //mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
-   print_mat(mat_x_mat,3,3,outfile) ;
+    C_DGEMM('N', 'T', 3, 3, 3, 1.0, mat, 3, mat, 3, 0.0, mat_x_mat, 3);
+    // mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
+    print_mat(mat_x_mat, 3, 3, outfile);
 
-   free_matrix(mat,3) ;
-   free_matrix(mat_copy,3) ;
-   free_matrix(mat_x_mat,3) ;
+    free_matrix(mat, 3);
+    free_matrix(mat_copy, 3);
+    free_matrix(mat_x_mat, 3);
 }
 #endif
 
-}
+}  // namespace psi

@@ -193,6 +193,7 @@ double CoupledCluster::compute_energy() {
         status = CCSDIterations();
         timer_off("FNOCC: CCSD");
 
+
         // ccsd energy
         if (isccsd) {
             Process::environment.globals["CCSD CORRELATION ENERGY"] = eccsd;
