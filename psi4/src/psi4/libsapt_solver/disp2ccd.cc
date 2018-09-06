@@ -1375,7 +1375,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
         double **Vp = mo2no->pointer();
         double **T1 = block_matrix(occA * occA, virA * virA2);
 #pragma omp parallel for
-        for (size_t ij = 0L; ij < occA * occA; ij++) {
+        for (long ij = 0L; ij < occA * occA; ij++) {
             C_DGEMM('N', 'N', virA, virA2, virA2, 1.0, Vp[0], virA2, t2AARR[ij], virA2, 0.0, T1[ij], virA2);
         }
         free_block(t2AARR);

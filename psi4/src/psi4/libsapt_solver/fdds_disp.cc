@@ -98,7 +98,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     double** metricp = metric_->pointer();
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-    for (size_t MU = 0; MU < auxiliary_->nshell(); ++MU) {
+    for (long MU = 0; MU < auxiliary_->nshell(); ++MU) {
         size_t nummu = auxiliary_->shell(MU).nfunction();
 
         size_t thread = 0;
@@ -234,7 +234,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
 
 // Do the contraction
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-    for (size_t Rshell = 0; Rshell < auxiliary_->nshell(); Rshell++) {
+    for (long Rshell = 0; Rshell < auxiliary_->nshell(); Rshell++) {
         size_t thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
@@ -324,7 +324,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-    for (size_t PQi = 0; PQi < aux_pairs.size(); PQi++) {
+    for (long PQi = 0; PQi < aux_pairs.size(); PQi++) {
         size_t thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
@@ -418,7 +418,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     double* evirp = eps_vir->pointer();
 
 #pragma omp parallel for
-    for (size_t i = 0; i < nocc; i++) {
+    for (long i = 0; i < nocc; i++) {
         for (size_t a = 0; a < nvir; a++) {
             double val = -1.0 * (eoccp[i] - evirp[a]);
             double tmp = 4.0 * val / (val * val + omega * omega);
@@ -465,7 +465,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         size_t shift_i = block * bsize;
 
 #pragma omp parallel for collapse(2)
-        for (size_t i = 0; i < osize; i++) {
+        for (long i = 0; i < osize; i++) {
             for (size_t a = 0; a < nvir; a++) {
                 double val = ampp[i + shift_i][a];
 #pragma omp simd
