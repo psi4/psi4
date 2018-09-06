@@ -175,10 +175,10 @@ void CubeProperties::raw_compute_properties() {
                 int orb_index = nalpha_;
                 indsa0.push_back(orb_index);
                 labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_LUMO");
+                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_LVMO");
                 indsb0.push_back(orb_index);
                 labelsb.push_back(std::to_string(std::get<1>(info_b_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_LUMO");
+                                  ct.gamma(std::get<2>(info_b_[orb_index])).symbol() + "_LVMO");
                 for (int i = 1; i <= nalpha_ - nbeta_; i++) {
                     orb_index = nalpha_ - i;
                     indsa0.push_back(orb_index);

@@ -113,8 +113,9 @@ FRONTIER_ORBITALS
     Produces cube representations of the frontier molecular orbitals. For closed shell
     species, the highest occupied (HOMO) and the lowest unoccupied (LUMO) alpha orbitals (ie. 
     :math:`\psi_{\alpha}(\mathbf{r})`) are printed, while for open shell species a total 
-    of 6 orbitals is printed (:math:`\alpha` and :math:`\beta` pairs for the highest 
-    doubly-occupied (DOMO), the singly occupied (SOMO), and the lowest unoccupied (LUMO)).
+    of :math:`(4 + M_s)` orbitals are printed (:math:`\alpha` and :math:`\beta` 
+    spin for both lowest virtual (LVMO) and highest doubly occupied
+    orbitals (DOMO), along with all :math:`\alpha` singly occupied (SOMO) orbitals).
 DENSITY
     This task can be used to obtain the alpha and beta electron densities,
     :math:`\rho_\alpha(\mathbf{r})` and :math:`\rho_\beta(\mathbf{r})`, together
