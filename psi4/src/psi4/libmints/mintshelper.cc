@@ -530,7 +530,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
                     Px += perm * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
-#pragma omp atomic update
+#pragma omp atomic
             outp[aP][0] += Px;
 
             // Py
@@ -540,7 +540,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
                     Py += perm * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
-#pragma omp atomic update
+#pragma omp atomic
             outp[aP][1] += Py;
 
             // Pz
@@ -550,7 +550,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
                     Pz += perm * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
-#pragma omp atomic update
+#pragma omp atomic
             outp[aP][2] += Pz;
 
             // Qx
@@ -560,7 +560,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
                     Qx += perm * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
-#pragma omp atomic update
+#pragma omp atomic
             outp[aQ][0] += Qx;
 
             // Qy
@@ -570,7 +570,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
                     Qy += perm * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
-#pragma omp atomic update
+#pragma omp atomic
             outp[aQ][1] += Qy;
 
             // Qz
@@ -580,7 +580,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
                     Qz += perm * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
-#pragma omp atomic update
+#pragma omp atomic
             outp[aQ][2] += Qz;
         }
     }
