@@ -29,9 +29,11 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from collections import defaultdict
+
+import qcelemental as qcel
+
 from .pdict import PreservingDict
 from .molecule import Molecule
-from .physconst import *
 
 
 def harvest(p4Mol, orca_out, **largs):
@@ -229,7 +231,7 @@ def harvest_dipole(lines, psivar):
         # Dipole x, y, z are the last items 6 lines down in the dipole block
         dipole_str_list = lines[dipole_start + 6].split()[-3:]
         # Convert the dipole to debye
-        dipole = [float(i)*psi_dipmom_au2debye for i in dipole_str_list]
+        dipole = [float(i)*qcel.constants.dipmom_au2debye for i in dipole_str_list]
         psivar['CURRENT DIPOLE X'] = dipole[0]
         psivar['CURRENT DIPOLE Y'] = dipole[1]
         psivar['CURRENT DIPOLE Z'] = dipole[2]

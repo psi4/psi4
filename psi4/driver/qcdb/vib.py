@@ -35,7 +35,8 @@ import collections
 
 import numpy as np
 
-from .physconst import *
+import qcelemental as qcel
+
 from .psiutil import *
 from .util import *
 from .libmintsmolecule import compute_atom_map
@@ -435,7 +436,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
 
     idx = np.argsort(pre_force_constant_au)
     pre_force_constant_au = pre_force_constant_au[idx]
-    uconv_cm_1 = np.sqrt(psi_na * psi_hartree2J * 1.0e19) / (2 * np.pi * psi_c * psi_bohr2angstroms)
+    uconv_cm_1 = np.sqrt(qcel.constants.na * qcel.constants.hartree2J * 1.0e19) / (2 * np.pi * qcel.constants.c * qcel.constants.bohr2angstroms)
     pre_frequency_cm_1 = np.lib.scimath.sqrt(pre_force_constant_au) * uconv_cm_1
 
     pre_lowfreq = np.where(np.real(pre_frequency_cm_1) < 100.0)[0]
@@ -512,8 +513,8 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
         text.append('  Note that "Vibration"s include {} un-projected rotation-like and translation-like modes.'.format(nrt_expected))
 
     # general conversion factors, LAB II.11
-    uconv_K = (psi_h * psi_na * 1.0e21) / (8 * np.pi * np.pi * psi_c)
-    uconv_S = np.sqrt((psi_c * (2 * np.pi * psi_bohr2angstroms)**2) / (psi_h * psi_na * 1.0e21))
+    uconv_K = (qcel.constants.h * qcel.constants.na * 1.0e21) / (8 * np.pi * np.pi * qcel.constants.c)
+    uconv_S = np.sqrt((qcel.constants.c * (2 * np.pi * qcel.constants.bohr2angstroms)**2) / (qcel.constants.h * qcel.constants.na * 1.0e21))
 
     # normco & reduced mass, LAB II.14 & II.15
     wL = np.einsum('i,ij->ij', sqrtmmminv, qL)
@@ -526,7 +527,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
     vibinfo['x'] = QCAspect('normal mode', 'a0', xL, 'normalized un-mass-weighted')
 
     # force constants, LAB II.16 (real compensates for earlier sqrt)
-    uconv_mdyne_a = (0.1 * (2 * np.pi * psi_c)**2) / psi_na
+    uconv_mdyne_a = (0.1 * (2 * np.pi * qcel.constants.c)**2) / qcel.constants.na
     force_constant_mdyne_a = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_mdyne_a
     vibinfo['k'] = QCAspect('force constant', 'mDyne/A', force_constant_mdyne_a, '')
 
@@ -552,7 +553,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, project_trans=Tr
 
     # characteristic vibrational temperature, RAK thermo & https://en.wikipedia.org/wiki/Vibrational_temperature
     #   (imag freq zeroed)
-    uconv_K = 100 * psi_h * psi_c / psi_kb
+    uconv_K = 100 * qcel.constants.h * qcel.constants.c / qcel.constants.kb
     vib_temperature_K = frequency_cm_1.real * uconv_K
     vibinfo['theta_vib'] = QCAspect('char temp', 'K', vib_temperature_K, '')
 
@@ -789,9 +790,9 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     sm[('S', 'elec')] = math.log(q_elec)
 
     # translational
-    beta = 1 / (psi_kb * T)
-    q_trans = (2.0 * np.pi * molecular_mass * psi_amu2kg / (beta * psi_h * psi_h))**1.5 * psi_na / (beta * P)
-    sm[('S', 'trans')] = 5 / 2 + math.log(q_trans / psi_na)
+    beta = 1 / (qcel.constants.kb * T)
+    q_trans = (2.0 * np.pi * molecular_mass * qcel.constants.amu2kg / (beta * qcel.constants.h * qcel.constants.h))**1.5 * qcel.constants.na / (beta * P)
+    sm[('S', 'trans')] = 5 / 2 + math.log(q_trans / qcel.constants.na)
     sm[('Cv', 'trans')] = 3 / 2
     sm[('Cp', 'trans')] = 5 / 2
     sm[('E', 'trans')] = 3 / 2 * T
@@ -801,13 +802,13 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     if rotor_type == "RT_ATOM":
         pass
     elif rotor_type == "RT_LINEAR":
-        q_rot = 1. / (beta * sigma * 100 * psi_c * psi_h * rot_const[1])
+        q_rot = 1. / (beta * sigma * 100 * qcel.constants.c * qcel.constants.h * rot_const[1])
         sm[('S', 'rot')] = 1.0 + math.log(q_rot)
         sm[('Cv', 'rot')] = 1
         sm[('Cp', 'rot')] = 1
         sm[('E', 'rot')] = T
     else:
-        phi_A, phi_B, phi_C = rot_const * 100 * psi_c * psi_h / psi_kb
+        phi_A, phi_B, phi_C = rot_const * 100 * qcel.constants.c * qcel.constants.h / qcel.constants.kb
         q_rot = math.sqrt(math.pi) * T**1.5 / (sigma * math.sqrt(phi_A * phi_B * phi_C))
         sm[('S', 'rot')] = 3 / 2 + math.log(q_rot)
         sm[('Cv', 'rot')] = 3 / 2
@@ -840,7 +841,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     sm[('E', 'vib')] = sm[('ZPE', 'vib')] + np.sum(rT * T / np.expm1(rT))
     sm[('H', 'vib')] = sm[('E', 'vib')]
 
-    assert (abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * psi_R * psi_hartree2wavenumbers * 0.001 / psi_hartree2kJmol) < 0.1)
+    assert (abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * qcel.constants.R * qcel.constants.hartree2wavenumbers * 0.001 / qcel.constants.hartree2kJmol) < 0.1)
 
     #real_vibs = np.ma.masked_where(vibinfo['omega'].data.imag > vibinfo['omega'].data.real, vibinfo['omega'].data)
 
@@ -853,7 +854,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
         # terms above are unitless (S, Cv, Cp) or in units of temperature (ZPE, E, H, G) as expressions are divided by R.
         # R [Eh/K], computed as below, slightly diff in 7th sigfig from 3.1668114e-6 (k_B in [Eh/K])
         #    value listed https://en.wikipedia.org/wiki/Boltzmann_constant
-        uconv_R_EhK = psi_R / psi_hartree2kJmol
+        uconv_R_EhK = qcel.constants.R / qcel.constants.hartree2kJmol
         for piece in ['S', 'Cv', 'Cp']:
             sm[(piece, term)] *= uconv_R_EhK  # [mEh/K] <-- []
         for piece in ['ZPE', 'E', 'H', 'G']:
@@ -887,7 +888,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     # display
     format_S_Cv_Cp = """\n  {:19} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
     format_ZPE_E_H_G = """\n  {:19} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
-    uconv = np.asarray([psi_hartree2kcalmol, psi_hartree2kJmol, 1.])
+    uconv = np.asarray([qcel.constants.hartree2kcalmol, qcel.constants.hartree2kJmol, 1.])
 
     # TODO rot_const, rotor_type
     text = ''
@@ -923,7 +924,7 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     for term in terms:
         text += format_ZPE_E_H_G.format(terms[term] + ' ZPE', *sm[('ZPE', term)] * uconv)
         if term in ['vib', 'corr']:
-            text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * psi_hartree2wavenumbers)
+            text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * qcel.constants.hartree2wavenumbers)
     text += """\n  Total ZPE, Electronic energy at 0 [K]                             {:15.8f} [Eh]""".format(
         sm[('ZPE', 'tot')])
 

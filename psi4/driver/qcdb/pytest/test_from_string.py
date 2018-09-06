@@ -8,8 +8,9 @@ import numpy as np
 from utils import *
 from addons import *
 
+import qcelemental as qcel
+
 import qcdb
-from qcdb.physconst import psi_bohr2angstroms
 
 
 subject1 = """O 0 0   0
@@ -328,8 +329,8 @@ fullans5b['efp']['fragment_files'] = ['c6h6', 'c6h6']
 def test_psi4_efp_5a():
     subject = subject5
 
-    hintsans = [[(val / psi_bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
-                [(val / psi_bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
+    hintsans = [[(val / qcel.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
+                [(val / qcel.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
     hintsans[0][4] = 1.534222
     fullans = copy.deepcopy(fullans5b)
     fullans['efp']['units'] = 'Angstrom'

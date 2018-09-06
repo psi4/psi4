@@ -3,6 +3,8 @@ from utils import *
 
 import collections
 
+import qcelemental as qcel
+
 import qcdb
 
 data = collections.defaultdict(dict)
@@ -1010,7 +1012,7 @@ def mol_tester(lbl, molstr, pg, sigma, refgeomang, isbohr=False, iso=False):
     if isbohr:
         geom_now = symmol.full_geometry()
     else:
-        geom_now = qcdb.mscale(symmol.full_geometry(), qcdb.psi_bohr2angstroms)
+        geom_now = qcdb.mscale(symmol.full_geometry(), qcel.constants.bohr2angstroms)
     if refgeomang:
         assert compare_matrices(refgeomang, geom_now, 6, pg + " orientation")
 

@@ -30,8 +30,9 @@ import json
 
 import numpy as np
 
+import qcelemental as qcel
+
 from ..util import unnp
-from ..physconst import psi_bohr2angstroms
 from ..exceptions import *
 from .to_string import formula_generator
 
@@ -64,9 +65,9 @@ def to_schema(molrec, dtype, units='Angstrom', return_type='json'):
         if 'input_units_to_au' in molrec:
             factor = molrec['input_units_to_au']
         else:
-            factor = 1. / psi_bohr2angstroms
+            factor = 1. / qcel.constants.bohr2angstroms
     elif molrec['units'] == 'Bohr' and units == 'Angstrom':
-        factor = psi_bohr2angstroms
+        factor = qcel.constants.bohr2angstroms
     elif molrec['units'] == 'Bohr' and units == 'Bohr':
         factor = 1.
     else:

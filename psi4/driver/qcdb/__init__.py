@@ -58,6 +58,5 @@ from . import gradparse
 
 # Load items that are useful to access from an input file
 from .psiutil import *
-from .physconst import *
 
 from .util import *
