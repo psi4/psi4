@@ -378,8 +378,11 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
 
             psio_->read(unit_, "EP2 I_ovvE Integrals", (char*)I_ovvEp[0], (sizeof(double) * ib_size * nvir * nvir * nE),
                         ovvE_addr, &ovvE_addr);
-
-#pragma omp parallel for schedule(dynamic, 1) collapse(2) num_threads(num_threads_)
+#if _OPENMP >= 201307 // OpenMP 4.0 or newer
+#pragma omp parallel for schedule(dynamic, 1) num_threads(num_threads_) collapse(2)
+#else
+#pragma omp parallel for schedule(dynamic, 1) num_threads(num_threads_)
+#endif
             for (long i = 0; i < ib_size; i++) {
                 for (size_t a = 0; a < nvir; a++) {
                     int rank = 0;
@@ -419,7 +422,11 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
             psio_->read(unit_, "EP2 I_vooE Integrals", (char*)I_vooEp[0], sizeof(double) * ab_size * nocc * nocc * nE,
                         vooE_addr, &vooE_addr);
 
-#pragma omp parallel for schedule(dynamic, 1) collapse(2) num_threads(num_threads_)
+#if _OPENMP >= 201307 // OpenMP 4.0 or newer
+#pragma omp parallel for schedule(dynamic, 1) num_threads(num_threads_) collapse(2)
+#else
+#pragma omp parallel for schedule(dynamic, 1) num_threads(num_threads_)
+#endif
             for (long a = 0; a < ab_size; a++) {
                 for (size_t i = 0; i < nocc; i++) {
                     int rank = 0;
