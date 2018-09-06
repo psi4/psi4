@@ -92,7 +92,7 @@ class ROHF : public HF {
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };
-}
-}
+}  // namespace scf
+}  // namespace psi
 
 #endif

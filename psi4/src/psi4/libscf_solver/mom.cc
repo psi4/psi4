@@ -759,5 +759,5 @@ void HF::MOM() {
     }
     Cb_old_->copy(Cb_);
 }
-}
-}
+}  // namespace scf
+}  // namespace psi
