@@ -634,7 +634,9 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             const double pow43 = 4.0 / 3.0;
             double denx;
 
-            # pragma omp simd
+            #if _OPENMP >= 201307 // OpenMP 4.0 or newer
+            #pragma omp simd
+            #endif
             for (size_t i = 0; i < npoints; i++){
 
                 if (rho[i] < 1.e-16) {
@@ -729,7 +731,9 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
 
     // Eh, worth a shot
-    # pragma omp simd
+    #if _OPENMP >= 201307 // OpenMP 4.0 or newer
+    #pragma omp simd
+    #endif
     for (size_t i = 0; i < npoints; i++) {
         if (rhop[i] < rho_thresh) continue;
 
@@ -850,7 +854,9 @@ double SuperFunctional::compute_vv10_kernel(
             size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
 
             // Interior Kernel
-            # pragma omp simd reduction(+: phi, U, W)
+            #if _OPENMP >= 201307 // OpenMP 4.0 or newer
+            #pragma omp simd reduction(+: phi, U, W)
+            #endif
             for (size_t j = 0; j < r_npoints; j++) {
                 // if (r_rho[i] < 1.e-8) continue;
 
