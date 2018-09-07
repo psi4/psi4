@@ -350,8 +350,9 @@ class BlockOPoints {
 
 protected:
     /// number of points in this block
-    int npoints_;
-    int local_nbf_;
+    size_t index_;
+    size_t npoints_;
+    size_t local_nbf_;
 
     /// Data holders if requested
     SharedVector xvec_;
@@ -387,7 +388,7 @@ protected:
 public:
     BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
                  std::shared_ptr<BasisExtents> extents);
-    BlockOPoints(int npoints, double* x, double* y, double* z, double* w,
+    BlockOPoints(size_t index, size_t npoints, double* x, double* y, double* z, double* w,
         std::shared_ptr<BasisExtents> extents);
     virtual ~BlockOPoints();
 
@@ -395,9 +396,11 @@ public:
     void refresh() { populate(); }
 
     /// Number of grid points
-    int npoints() const { return npoints_; }
+    size_t npoints() const { return npoints_; }
     /// Number of basis functions in the block
-    int local_nbf() const { return local_nbf_; }
+    size_t local_nbf() const { return local_nbf_; }
+    /// Index of the block block
+    size_t index() const { return index_; }
     /// Print a trace of this BlockOPoints
     void print(std::string out_fname = "outfile", int print = 2);
 

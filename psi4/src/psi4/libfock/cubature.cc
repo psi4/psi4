@@ -3839,7 +3839,8 @@ void BasisExtents::print(std::string out)
 }
 BlockOPoints::BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
                            std::shared_ptr<BasisExtents> extents)
-    : npoints_(x->dimpi().sum()),
+    : index_(0),
+      npoints_(x->dimpi().sum()),
       xvec_(x),
       yvec_(y),
       zvec_(z),
@@ -3852,9 +3853,9 @@ BlockOPoints::BlockOPoints(SharedVector x, SharedVector y, SharedVector z, Share
     bound();
     populate();
 }
-BlockOPoints::BlockOPoints(int npoints, double *x, double *y, double *z, double *w,
+BlockOPoints::BlockOPoints(size_t index, size_t npoints, double *x, double *y, double *z, double *w,
                            std::shared_ptr<BasisExtents> extents)
-    : npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents) {
+    : index_(index), npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents) {
     bound();
     populate();
 }
@@ -4268,9 +4269,9 @@ void NaiveGridBlocker::block()
     ::memcpy((void*)index_,(void*)index_ref_, sizeof(int)*npoints_);
 
     blocks_.clear();
-    for (int Q = 0; Q < npoints_; Q += max_points_) {
-        int n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
-        blocks_.push_back(std::make_shared<BlockOPoints>(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_));
+    for (size_t Q = 0; Q < npoints_; Q += max_points_) {
+        size_t n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
+        blocks_.push_back(std::make_shared<BlockOPoints>(Q, n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_));
     }
 }
 OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
@@ -4470,26 +4471,28 @@ void OctreeGridBlocker::block()
         if (block.size()) unique_block++;
     }
 
-
     blocks_.clear();
     index = 0;
     max_points_ = 0;
     for (size_t A = 0; A < completed_tree.size(); A++) {
-        std::vector<int> block = completed_tree[A];
-        if (!block.size()) continue;
-        blocks_.push_back(std::make_shared<BlockOPoints>(block.size(),&x_[index],&y_[index],&z_[index],&w_[index],extents_));
-        if ((size_t)max_points_ < block.size()) {
-            max_points_ = block.size();
-        }
-        index += block.size();
+      std::vector<int> block = completed_tree[A];
+      if (!block.size()) continue;
+      blocks_.push_back(std::make_shared<BlockOPoints>(A, block.size(), &x_[index],
+                                                       &y_[index], &z_[index],
+                                                       &w_[index], extents_));
+      if ((size_t)max_points_ < block.size()) {
+        max_points_ = block.size();
+      }
+      index += block.size();
     }
 
     max_functions_ = 0;
     collocation_size_ = 0;
     for (size_t A = 0; A < blocks_.size(); A++) {
         collocation_size_ += blocks_[A]->local_nbf() * blocks_[A]->npoints();
-        if ((size_t)max_functions_ < blocks_[A]->local_nbf())
+        if ((size_t)max_functions_ < blocks_[A]->local_nbf()){
             max_functions_ = blocks_[A]->local_nbf();
+        }
     }
 
     if (bench_) {
