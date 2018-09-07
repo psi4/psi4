@@ -5,7 +5,7 @@ if(${ENABLE_snsmp2})
     endif()
 
     if(${snsmp2_FOUND})
-        message(STATUS "${Cyan}Found snsnp2${ColourReset}: ${PY_snsmp2} (found version ${snsmp2_VERSION})")
+        message(STATUS "${Cyan}Found snsmp2${ColourReset}: ${PY_snsmp2} (found version ${snsmp2_VERSION})")
         add_library(snsmp2_external INTERFACE)  # dummy
 
     else()
