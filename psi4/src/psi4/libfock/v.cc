@@ -368,6 +368,8 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     return vv10_e;
 }
 SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
+
+    /* Not yet finished, missing several components*/
     timer_on("V: VV10");
     timer_on("Setup");
 
@@ -462,10 +464,10 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
             // Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_x[0][ml], max_functions);
             // Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_y[0][ml], max_functions);
             Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions);
-            printf("Value %d %16.15lf\n", A, C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions));
+            // printf("Value %d %16.15lf\n", A, C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions));
         }
 
-        printf("--\n");
+        // printf("--\n");
 
 
         parallel_timer_off("V_xc gradient", rank);
@@ -749,6 +751,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         double* rho_a = pworker->point_value("RHO_A")->pointer();
         double* v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
         double* rho_k = R_rho_k[rank]->pointer();
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // GGA
         double* rho_k_x;
@@ -792,9 +795,9 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             parallel_timer_on("Derivative Properties", rank);
             // Rho_a = D^k_xy phi_xa phi_ya
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dx_localp[0], max_functions, 0.0,
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 0.0,
                     Tp[0], max_functions);
-            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dx_localp[0], max_functions, 1.0,
+            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 1.0,
                     Tp[0], max_functions);
 
             for (int P = 0; P < npoints; P++) {
@@ -856,7 +859,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             // Put it all together
             // parallel_timer_on("LSDA", rank);
-            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions, 0.0,
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0,
                     Vx_localp[0], max_functions);
             // parallel_timer_off("LSDA", rank);
 
@@ -1124,6 +1127,7 @@ SharedMatrix RV::compute_hessian() {
         double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
         double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         for (int P = 0; P < npoints; P++) {
             std::fill(Up[P], Up[P] + nlocal, 0.0);
@@ -1139,7 +1143,7 @@ SharedMatrix RV::compute_hessian() {
          */
 
         // T = ɸ D
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dp[0], max_functions, 0.0, Tp[0],
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, Tp[0],
                 max_functions);
 
         // Compute rho, to filter out small values
@@ -1158,16 +1162,16 @@ SharedMatrix RV::compute_hessian() {
         }
 
         for (int ml = 0; ml < nlocal; ml++) {
-            pTx[ml] = C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_x[0][ml], max_functions);
-            pTy[ml] = C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_y[0][ml], max_functions);
-            pTz[ml] = C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions);
+            pTx[ml] = C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
+            pTy[ml] = C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
+            pTz[ml] = C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
         }
 
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
-            double mx = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], max_functions);
-            double my = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], max_functions);
-            double mz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], max_functions);
+            double mx = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
+            double my = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
+            double mz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
             for (int nl = 0; nl < nlocal; nl++) {
                 int B = primary_->function_to_center(function_map[nl]);
                 Hp[3 * A + 0][3 * B + 0] += mx * pTx[nl];
@@ -1193,12 +1197,12 @@ SharedMatrix RV::compute_hessian() {
         }
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
-            double Txx = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xx[0][ml], max_functions);
-            double Txy = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-            double Txz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-            double Tyy = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_yy[0][ml], max_functions);
-            double Tyz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-            double Tzz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_zz[0][ml], max_functions);
+            double Txx = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xx[0][ml], coll_funcs);
+            double Txy = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+            double Txz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
+            double Tyy = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_yy[0][ml], coll_funcs);
+            double Tyz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
+            double Tzz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_zz[0][ml], coll_funcs);
             Hp[3 * A + 0][3 * A + 0] += Txx;
             Hp[3 * A + 0][3 * A + 1] += Txy;
             Hp[3 * A + 0][3 * A + 2] += Txz;
@@ -1216,11 +1220,11 @@ SharedMatrix RV::compute_hessian() {
          *                            ∂ ρ
          */
         // T = ɸ_x D
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_x[0], max_functions, Dp[0], max_functions, 0.0, pTx2[0],
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_x[0], coll_funcs, Dp[0], max_functions, 0.0, pTx2[0],
                 max_functions);
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_y[0], max_functions, Dp[0], max_functions, 0.0, pTy2[0],
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_y[0], coll_funcs, Dp[0], max_functions, 0.0, pTy2[0],
                 max_functions);
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_z[0], max_functions, Dp[0], max_functions, 0.0, pTz2[0],
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_z[0], coll_funcs, Dp[0], max_functions, 0.0, pTz2[0],
                 max_functions);
         // x derivatives
         for (int P = 0; P < npoints; P++) {
@@ -1392,6 +1396,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         double* zk = vals["V"]->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
         double* v_rho_b = vals["V_RHO_B"]->pointer();
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // => Quadrature values <= //
         functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
@@ -1453,9 +1458,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
 
         // timer_on("V: LSDA");
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tap[0], max_functions, 0.0, Va2p[0],
+        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tap[0], max_functions, 0.0, Va2p[0],
                 max_functions);
-        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tbp[0], max_functions, 0.0, Vb2p[0],
+        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tbp[0], max_functions, 0.0, Vb2p[0],
                 max_functions);
 
         // Symmetrization (V is Hermitian)
@@ -1498,7 +1503,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                         std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                         C_DAXPY(nlocal, v_taup[P] * w[P], phiw[P], 1, Tap[P], 1);
                     }
-                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tap[0], max_functions, 1.0,
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], coll_funcs, Tap[0], max_functions, 1.0,
                             V2p[0], max_functions);
                 }
             }
@@ -1708,6 +1713,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         double* v2_rho2_aa = vals["V_RHO_A_RHO_A"]->pointer();
         double* v2_rho2_ab = vals["V_RHO_A_RHO_B"]->pointer();
         double* v2_rho2_bb = vals["V_RHO_B_RHO_B"]->pointer();
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         double* rho_ak = R_rho_ak[rank]->pointer();
         double* rho_bk = R_rho_bk[rank]->pointer();
@@ -1774,15 +1780,15 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             // Rho_a = D^k_xy phi_xa phi_ya
             // Alpha
             parallel_timer_on("Derivative Properties", rank);
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dax_localp[0], max_functions, 0.0,
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dax_localp[0], max_functions, 0.0,
                     Tap[0], max_functions);
-            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dax_localp[0], max_functions, 1.0,
+            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dax_localp[0], max_functions, 1.0,
                     Tap[0], max_functions);
 
             // Beta
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dbx_localp[0], max_functions, 0.0,
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dbx_localp[0], max_functions, 0.0,
                     Tbp[0], max_functions);
-            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dbx_localp[0], max_functions, 1.0,
+            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dbx_localp[0], max_functions, 1.0,
                     Tbp[0], max_functions);
 
             for (int P = 0; P < npoints; P++) {
@@ -1987,9 +1993,9 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             }
 
             // Put it all together
-            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tap[0], max_functions, 0.0,
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tap[0], max_functions, 0.0,
                     Vax_localp[0], max_functions);
-            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tbp[0], max_functions, 0.0,
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tbp[0], max_functions, 0.0,
                     Vbx_localp[0], max_functions);
 
             // Symmetrization (V is *always* Hermitian)
@@ -2145,6 +2151,7 @@ SharedMatrix UV::compute_gradient() {
         double* zk = vals["V"]->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
         double* v_rho_b = vals["V_RHO_B"]->pointer();
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // => Quadrature values <= //
         functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
@@ -2207,12 +2214,12 @@ SharedMatrix UV::compute_gradient() {
 
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
-            Gp[A][0] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_x[0][ml], max_functions);
-            Gp[A][1] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_y[0][ml], max_functions);
-            Gp[A][2] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_z[0][ml], max_functions);
-            Gp[A][0] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_x[0][ml], max_functions);
-            Gp[A][1] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_y[0][ml], max_functions);
-            Gp[A][2] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_z[0][ml], max_functions);
+            Gp[A][0] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
+            Gp[A][1] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
+            Gp[A][2] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
+            Gp[A][0] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
+            Gp[A][1] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
+            Gp[A][2] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
         }
 
         // => GGA Contribution (Term 2) <= //
@@ -2233,9 +2240,9 @@ SharedMatrix UV::compute_gradient() {
             double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
             double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
 
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dap[0], max_functions, 0.0, Uap[0],
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dap[0], max_functions, 0.0, Uap[0],
                     max_functions);
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dbp[0], max_functions, 0.0, Ubp[0],
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dbp[0], max_functions, 0.0, Ubp[0],
                     max_functions);
 
             // x
@@ -2249,12 +2256,12 @@ SharedMatrix UV::compute_gradient() {
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xx[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-                Gp[A][0] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xx[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
+                Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xx[0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
+                Gp[A][0] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xx[0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
             }
 
             // y
@@ -2268,12 +2275,12 @@ SharedMatrix UV::compute_gradient() {
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_yy[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-                Gp[A][0] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_yy[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_yz[0][ml], max_functions);
+                Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_yy[0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
+                Gp[A][0] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_yy[0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
             }
 
             // z
@@ -2287,12 +2294,12 @@ SharedMatrix UV::compute_gradient() {
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_zz[0][ml], max_functions);
-                Gp[A][0] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_zz[0][ml], max_functions);
+                Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_zz[0][ml], coll_funcs);
+                Gp[A][0] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_zz[0][ml], coll_funcs);
             }
         }
 
@@ -2335,7 +2342,7 @@ SharedMatrix UV::compute_gradient() {
                 double* v_tau = v_tau_s[s];
                 for (int i = 0; i < 3; i++) {
                     double*** phi_j = phi_ij[i];
-                    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], max_functions, Ds[s][0], max_functions,
+                    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Ds[s][0], max_functions,
                             0.0, Uap[0], max_functions);
                     for (int P = 0; P < npoints; P++) {
                         std::fill(Tap[P], Tap[P] + nlocal, 0.0);
@@ -2343,9 +2350,9 @@ SharedMatrix UV::compute_gradient() {
                     }
                     for (int ml = 0; ml < nlocal; ml++) {
                         int A = primary_->function_to_center(function_map[ml]);
-                        Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_j[0][0][ml], max_functions);
-                        Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_j[1][0][ml], max_functions);
-                        Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_j[2][0][ml], max_functions);
+                        Gp[A][0] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_j[0][0][ml], coll_funcs);
+                        Gp[A][1] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_j[1][0][ml], coll_funcs);
+                        Gp[A][2] += C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_j[2][0][ml], coll_funcs);
                     }
                 }
             }

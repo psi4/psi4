@@ -99,8 +99,9 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
     // Points data
     double** phi = pworker->basis_value("PHI")->pointer();
     double* rho_a = pworker->point_value("RHO_A")->pointer();
+    size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
-    // Fine for now, but not true once we start caching
+    // V2 Temporary
     int max_functions = V->ncol();
     double** V2p = V->pointer();
 
@@ -132,7 +133,7 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
     }
 
     // Collect V terms
-    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions, 0.0, V2p[0],
+    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, V2p[0],
             max_functions);
 
     for (int m = 0; m < nlocal; m++) {
@@ -160,7 +161,7 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
             }
-            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tp[0], max_functions, 1.0, V2p[0],
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], coll_funcs, Tp[0], max_functions, 1.0, V2p[0],
                     max_functions);
         }
         // parallel_timer_off("Meta", rank);
@@ -194,6 +195,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
     double** phi_y = pworker->basis_value("PHI_Y")->pointer();
     double** phi_z = pworker->basis_value("PHI_Z")->pointer();
     double* rho_a = pworker->point_value("RHO_A")->pointer();
+    size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
     // => LSDA Contribution <= //
     double* v_rho_a = fworker->value("V_RHO_A")->pointer();
@@ -222,9 +224,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
 
     for (int ml = 0; ml < nlocal; ml++) {
         int A = primary->function_to_center(function_map[ml]);
-        Gp[A][0] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], max_functions);
-        Gp[A][1] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], max_functions);
-        Gp[A][2] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], max_functions);
+        Gp[A][0] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
+        Gp[A][1] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
+        Gp[A][2] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
     }
 
     // => GGA Contribution (Term 2) <= //
@@ -240,7 +242,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         double* rho_az = pworker->point_value("RHO_AZ")->pointer();
         double* v_gamma_aa = fworker->value("V_GAMMA_AA")->pointer();
 
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dp[0], max_functions, 0.0, Up[0],
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, Up[0],
                 max_functions);
 
         // x
@@ -250,9 +252,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         }
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary->function_to_center(function_map[ml]);
-            Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xx[0][ml], max_functions);
-            Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
+            Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xx[0][ml], coll_funcs);
+            Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
         }
 
         // y
@@ -262,9 +264,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         }
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary->function_to_center(function_map[ml]);
-            Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
-            Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yy[0][ml], max_functions);
-            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yz[0][ml], max_functions);
+            Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+            Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yy[0][ml], coll_funcs);
+            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
         }
 
         // z
@@ -274,9 +276,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         }
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary->function_to_center(function_map[ml]);
-            Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
-            Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yz[0][ml], max_functions);
-            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_zz[0][ml], max_functions);
+            Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
+            Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
+            Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_zz[0][ml], coll_funcs);
         }
     }
 
@@ -308,7 +310,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
 
         for (int i = 0; i < 3; i++) {
             double*** phi_j = phi_ij[i];
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], max_functions, Dp[0], max_functions, 0.0,
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dp[0], max_functions, 0.0,
                     Up[0], max_functions);
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
@@ -316,9 +318,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[0][0][ml], max_functions);
-                Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[1][0][ml], max_functions);
-                Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[2][0][ml], max_functions);
+                Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[0][0][ml], coll_funcs);
+                Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[1][0][ml], coll_funcs);
+                Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_j[2][0][ml], coll_funcs);
             }
         }
     }

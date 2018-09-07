@@ -122,9 +122,10 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     // => Build LSDA quantities <= //
     double** phip = basis_values_["PHI"]->pointer();
     double* rhoap = point_values_["RHO_A"]->pointer();
+    size_t coll_funcs = basis_values_["PHI"]->ncol();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
-    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], nglobal, D2p[0], nglobal, 0.0, Tp[0], nglobal);
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], coll_funcs, D2p[0], nglobal, 0.0, Tp[0], nglobal);
     for (int P = 0; P < npoints; P++) {
         rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tp[P], 1);
     }
@@ -168,7 +169,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
 
         for (int x = 0; x < 3; x++) {
             double** phic = phi[x];
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, D2p[0], nglobal, 0.0, Tp[0], nglobal);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], coll_funcs, D2p[0], nglobal, 0.0, Tp[0], nglobal);
             for (int P = 0; P < npoints; P++) {
                 taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
             }
@@ -257,8 +258,9 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
 
     double** phip = basis_values_["PHI"]->pointer();
     double** psiap = orbital_values_["PSI_A"]->pointer();
+    size_t coll_funcs = basis_values_["PHI"]->ncol();
 
-    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0], max_points_);
+    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], coll_funcs, 0.0, psiap[0], max_points_);
 }
 
 void RKSFunctions::print(std::string out, int print) const {
@@ -387,13 +389,14 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     double** phip = basis_values_["PHI"]->pointer();
     double* rhoap = point_values_["RHO_A"]->pointer();
     double* rhobp = point_values_["RHO_B"]->pointer();
+    size_t coll_funcs = basis_values_["PHI"]->ncol();
 
-    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], nglobal, Da2p[0], nglobal, 0.0, Tap[0], nglobal);
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], coll_funcs, Da2p[0], nglobal, 0.0, Tap[0], nglobal);
     for (int P = 0; P < npoints; P++) {
         rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tap[P], 1);
     }
 
-    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], nglobal, Db2p[0], nglobal, 0.0, Tbp[0], nglobal);
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], coll_funcs, Db2p[0], nglobal, 0.0, Tbp[0], nglobal);
     for (int P = 0; P < npoints; P++) {
         rhobp[P] = C_DDOT(nlocal, phip[P], 1, Tbp[P], 1);
     }
@@ -467,7 +470,7 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
                 double** Dc = D[t];
                 double** Tc = T[t];
                 double* tauc = tau[t];
-                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, Dc[0], nglobal, 0.0, Tc[0], nglobal);
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], coll_funcs, Dc[0], nglobal, 0.0, Tc[0], nglobal);
                 for (int P = 0; P < npoints; P++) {
                     tauc[P] += 0.5 * C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
                 }
@@ -524,9 +527,10 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     double** phip = basis_values_["PHI"]->pointer();
     double** psiap = orbital_values_["PSI_A"]->pointer();
     double** psibp = orbital_values_["PSI_B"]->pointer();
+    size_t coll_funcs = basis_values_["PHI"]->ncol();
 
-    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0], max_points_);
-    C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], nglobal, 0.0, psibp[0], max_points_);
+    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], coll_funcs, 0.0, psiap[0], max_points_);
+    C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], coll_funcs, 0.0, psibp[0], max_points_);
 }
 
 void UKSFunctions::print(std::string out, int print) const {
