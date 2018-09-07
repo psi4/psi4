@@ -69,7 +69,9 @@ double DFCoupledCluster::compute_energy() {
 
     // WriteBanner();
     AllocateMemory();
+    timer_on("FNOCC: CCSD");
     status = CCSDIterations();
+    timer_off("FNOCC: CCSD");
 
     // free some memory!
     free(Fij);
@@ -211,10 +213,15 @@ double DFCoupledCluster::compute_energy() {
         tstart();
 
         ccmethod = 0;
-        if (isLowMemory)
+        if (isLowMemory) {
+            timer_on("FNOCC: triples");
             status = lowmemory_triples();
-        else
+            timer_off("FNOCC: triples");
+        } else {
+            timer_on("FNOCC: triples");
             status = triples();
+            timer_off("FNOCC: triples");
+        }
 
         if (status == Failure) {
             throw PsiException("Whoops, the (T) correction died.", __FILE__, __LINE__);
@@ -236,6 +243,7 @@ double DFCoupledCluster::compute_energy() {
         free(Qov);
         free(Qvv);
     }
+
 
     // free remaining memory
     free(Fia);
