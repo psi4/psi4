@@ -34,6 +34,7 @@
 
 #include <cstdio>
 #include <map>
+#include <unordered_map>
 #include <tuple>
 #include <vector>
 #include <string>
@@ -77,7 +78,7 @@ public:
 
     // => Accessors <= //
 
-    SharedMatrix basis_value(const std::string& key);
+    SharedMatrix basis_value(const std::string& key) { return basis_values_[key]; }
     std::map<std::string, SharedMatrix>& basis_values() { return basis_values_; }
 
     int max_functions() const { return max_functions_; }
@@ -145,6 +146,17 @@ public:
 class RKSFunctions : public PointFunctions {
 
 protected:
+    // => Indices <= //
+
+    /// The index of the current referenced block.
+    size_t block_index_;
+
+    // Contains a map to the cache the global basis_values
+    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> *cache_map_ = nullptr;
+
+    // Contains a pointer to the current map to use for basis_values
+    std::map<std::string, SharedMatrix> *current_basis_map_ = nullptr;
+
     // => Pointers <= //
 
     /// Density matrix, AO
@@ -175,6 +187,7 @@ public:
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
+    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map) { cache_map_ = &cache_map; }
 
     void compute_points(std::shared_ptr<BlockOPoints> block);
 
@@ -186,11 +199,27 @@ public:
     void compute_orbitals(std::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
+    size_t block_index(void) { return block_index_; }
+
+    // => Accessors <= //
+    SharedMatrix basis_value(const std::string& key) { return (*current_basis_map_)[key]; }
+    std::map<std::string, SharedMatrix>& basis_values() { return (*current_basis_map_); }
 };
 
 class UKSFunctions : public PointFunctions {
 
 protected:
+    // => Indices <= //
+
+    /// The index of the current referenced block.
+    size_t block_index_;
+
+    // Contains a map to the cache the global basis_values
+    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> *cache_map_ = nullptr;
+
+    // Contains a pointer to the current map to use for basis_values
+    std::map<std::string, SharedMatrix> *current_basis_map_ = nullptr;
+
     // => Pointers <= //
 
     /// Density matrix, AO
@@ -231,6 +260,7 @@ public:
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
+    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map) { cache_map_ = &cache_map; }
 
     void compute_points(std::shared_ptr<BlockOPoints> block);
 
@@ -242,6 +272,11 @@ public:
     void compute_orbitals(std::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
+    size_t block_index(void) { return block_index_; }
+
+    // => Accessors <= //
+    SharedMatrix basis_value(const std::string& key) { return (*current_basis_map_)[key]; }
+    std::map<std::string, SharedMatrix>& basis_values() { return (*current_basis_map_); }
 };
 
 

@@ -45,6 +45,7 @@ namespace psi {
 RKSFunctions::RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : PointFunctions(primary, max_points, max_functions) {
     set_ansatz(0);
+    current_basis_map_ = &basis_values_;
 }
 RKSFunctions::~RKSFunctions() {}
 std::vector<SharedMatrix> RKSFunctions::scratch() {
@@ -92,6 +93,8 @@ void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/) 
 void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     if (!D_AO_) throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
+    block_index_ = block->index();
+
     // => Build basis function values <= //
     BasisFunctions::compute_functions(block);
 
@@ -120,9 +123,9 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     }
 
     // => Build LSDA quantities <= //
-    double** phip = basis_values_["PHI"]->pointer();
-    double* rhoap = point_values_["RHO_A"]->pointer();
-    size_t coll_funcs = basis_values_["PHI"]->ncol();
+    double** phip = basis_value("PHI")->pointer();
+    double* rhoap = point_value("RHO_A")->pointer();
+    size_t coll_funcs = basis_value("PHI")->ncol();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], coll_funcs, D2p[0], nglobal, 0.0, Tp[0], nglobal);
@@ -133,13 +136,13 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     // => Build GGA quantities <= //
     // Rho^l_a = D_xy phi_xa phi^l_ya
     if (ansatz_ >= 1) {
-        double** phixp = basis_values_["PHI_X"]->pointer();
-        double** phiyp = basis_values_["PHI_Y"]->pointer();
-        double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* rhoaxp = point_values_["RHO_AX"]->pointer();
-        double* rhoayp = point_values_["RHO_AY"]->pointer();
-        double* rhoazp = point_values_["RHO_AZ"]->pointer();
-        double* gammaaap = point_values_["GAMMA_AA"]->pointer();
+        double** phixp = basis_value("PHI_X")->pointer();
+        double** phiyp = basis_value("PHI_Y")->pointer();
+        double** phizp = basis_value("PHI_Z")->pointer();
+        double* rhoaxp = point_value("RHO_AX")->pointer();
+        double* rhoayp = point_value("RHO_AY")->pointer();
+        double* rhoazp = point_value("RHO_AZ")->pointer();
+        double* gammaaap = point_value("GAMMA_AA")->pointer();
 
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
@@ -155,10 +158,10 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
-        double** phixp = basis_values_["PHI_X"]->pointer();
-        double** phiyp = basis_values_["PHI_Y"]->pointer();
-        double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* taup = point_values_["TAU_A"]->pointer();
+        double** phixp = basis_value("PHI_X")->pointer();
+        double** phiyp = basis_value("PHI_Y")->pointer();
+        double** phizp = basis_value("PHI_Z")->pointer();
+        double* taup = point_value("TAU_A")->pointer();
 
         std::fill(taup, taup + npoints, 0.0);
 
@@ -176,12 +179,12 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
         }
 
         // Kinetic terms
-        // double** phixxp = basis_values_["PHI_XX"]->pointer();
-        // double** phixyp = basis_values_["PHI_XY"]->pointer();
-        // double** phixzp = basis_values_["PHI_XZ"]->pointer();
-        // double** phiyyp = basis_values_["PHI_YY"]->pointer();
-        // double** phiyzp = basis_values_["PHI_YZ"]->pointer();
-        // double** phizzp = basis_values_["PHI_ZZ"]->pointer();
+        // double** phixxp = basis_value("PHI_XX")->pointer();
+        // double** phixyp = basis_value("PHI_XY")->pointer();
+        // double** phixzp = basis_value("PHI_XZ")->pointer();
+        // double** phiyyp = basis_value("PHI_YY")->pointer();
+        // double** phiyzp = basis_value("PHI_YZ")->pointer();
+        // double** phizzp = basis_value("PHI_ZZ")->pointer();
 
         // double* rhoxxp = point_values_["RHO_XX"]->pointer();
         // double* rhoyyp = point_values_["RHO_YY"]->pointer();
@@ -197,17 +200,17 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
         // }
 
         // // Cross terms phi^x_a D_ab phi^x_b
-        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phixp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phixp[0],coll_funcs,D2p[0],nglobal,0.0,Tp[0],nglobal);
         // for (int P = 0; P < npoints; P++) {
         //      rhoxxp[P] += 2.0 * C_DDOT(nlocal,phixp[P],1,Tp[P],1);
         // }
 
-        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phiyp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phiyp[0],coll_funcs,D2p[0],nglobal,0.0,Tp[0],nglobal);
         // for (int P = 0; P < npoints; P++) {
         //      rhoyyp[P] += 2.0 * C_DDOT(nlocal,phiyp[P],1,Tp[P],1);
         // }
 
-        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phizp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phizp[0],coll_funcs,D2p[0],nglobal,0.0,Tp[0],nglobal);
         // for (int P = 0; P < npoints; P++) {
         //      rhozzp[P] += 2.0 * C_DDOT(nlocal,phizp[P],1,Tp[P],1);
         // }
@@ -225,7 +228,7 @@ void RKSFunctions::set_Cs(SharedMatrix C_AO) {
     C_AO_ = C_AO;
     C_local_ = std::make_shared<Matrix>("C local", max_functions_, C_AO_->colspi()[0]);
     orbital_values_["PSI_A"] = std::make_shared<Matrix>("PSI_A", C_AO_->colspi()[0], max_points_);
-    orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
+    orbital_values_["PSI_B"] = orbital_value("PSI_A");
 }
 void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
@@ -256,9 +259,9 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
 
     // => Build orbitals <= //
 
-    double** phip = basis_values_["PHI"]->pointer();
-    double** psiap = orbital_values_["PSI_A"]->pointer();
-    size_t coll_funcs = basis_values_["PHI"]->ncol();
+    double** phip = basis_value("PHI")->pointer();
+    double** psiap = orbital_value("PSI_A")->pointer();
+    size_t coll_funcs = basis_value("PHI")->ncol();
 
     C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], coll_funcs, 0.0, psiap[0], max_points_);
 }
@@ -292,6 +295,7 @@ void RKSFunctions::print(std::string out, int print) const {
 UKSFunctions::UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : PointFunctions(primary, max_points, max_functions) {
     set_ansatz(0);
+    current_basis_map_ = &basis_values_;
 }
 UKSFunctions::~UKSFunctions() {}
 std::vector<SharedMatrix> UKSFunctions::scratch() {
@@ -350,6 +354,8 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO) {
 void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     if (!Da_AO_) throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
 
+    block_index_ = block->index();
+
     // => Build basis function values <= //
     // timer_on("Functions: Points");
     BasisFunctions::compute_functions(block);
@@ -386,10 +392,10 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     }
 
     // => Build LSDA quantities <= //
-    double** phip = basis_values_["PHI"]->pointer();
-    double* rhoap = point_values_["RHO_A"]->pointer();
-    double* rhobp = point_values_["RHO_B"]->pointer();
-    size_t coll_funcs = basis_values_["PHI"]->ncol();
+    double** phip = basis_value("PHI")->pointer();
+    double* rhoap = point_value("RHO_A")->pointer();
+    double* rhobp = point_value("RHO_B")->pointer();
+    size_t coll_funcs = basis_value("PHI")->ncol();
 
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], coll_funcs, Da2p[0], nglobal, 0.0, Tap[0], nglobal);
     for (int P = 0; P < npoints; P++) {
@@ -403,18 +409,18 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
 
     // => Build GGA quantities <= //
     if (ansatz_ >= 1) {
-        double** phixp = basis_values_["PHI_X"]->pointer();
-        double** phiyp = basis_values_["PHI_Y"]->pointer();
-        double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* rhoaxp = point_values_["RHO_AX"]->pointer();
-        double* rhoayp = point_values_["RHO_AY"]->pointer();
-        double* rhoazp = point_values_["RHO_AZ"]->pointer();
-        double* rhobxp = point_values_["RHO_BX"]->pointer();
-        double* rhobyp = point_values_["RHO_BY"]->pointer();
-        double* rhobzp = point_values_["RHO_BZ"]->pointer();
-        double* gammaaap = point_values_["GAMMA_AA"]->pointer();
-        double* gammaabp = point_values_["GAMMA_AB"]->pointer();
-        double* gammabbp = point_values_["GAMMA_BB"]->pointer();
+        double** phixp = basis_value("PHI_X")->pointer();
+        double** phiyp = basis_value("PHI_Y")->pointer();
+        double** phizp = basis_value("PHI_Z")->pointer();
+        double* rhoaxp = point_value("RHO_AX")->pointer();
+        double* rhoayp = point_value("RHO_AY")->pointer();
+        double* rhoazp = point_value("RHO_AZ")->pointer();
+        double* rhobxp = point_value("RHO_BX")->pointer();
+        double* rhobyp = point_value("RHO_BY")->pointer();
+        double* rhobzp = point_value("RHO_BZ")->pointer();
+        double* gammaaap = point_value("GAMMA_AA")->pointer();
+        double* gammaabp = point_value("GAMMA_AB")->pointer();
+        double* gammabbp = point_value("GAMMA_BB")->pointer();
 
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
@@ -438,11 +444,11 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
-        double** phixp = basis_values_["PHI_X"]->pointer();
-        double** phiyp = basis_values_["PHI_Y"]->pointer();
-        double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* tauap = point_values_["TAU_A"]->pointer();
-        double* taubp = point_values_["TAU_B"]->pointer();
+        double** phixp = basis_value("PHI_X")->pointer();
+        double** phiyp = basis_value("PHI_Y")->pointer();
+        double** phizp = basis_value("PHI_Z")->pointer();
+        double* tauap = point_value("TAU_A")->pointer();
+        double* taubp = point_value("TAU_B")->pointer();
 
         std::fill(tauap, tauap + npoints, 0.0);
         std::fill(taubp, taubp + npoints, 0.0);
@@ -524,10 +530,10 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
 
     // => Build orbitals <= //
 
-    double** phip = basis_values_["PHI"]->pointer();
-    double** psiap = orbital_values_["PSI_A"]->pointer();
-    double** psibp = orbital_values_["PSI_B"]->pointer();
-    size_t coll_funcs = basis_values_["PHI"]->ncol();
+    double** phip = basis_value("PHI")->pointer();
+    double** psiap = orbital_value("PSI_A")->pointer();
+    double** psibp = orbital_value("PSI_B")->pointer();
+    size_t coll_funcs = basis_value("PHI")->ncol();
 
     C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], coll_funcs, 0.0, psiap[0], max_points_);
     C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], coll_funcs, 0.0, psibp[0], max_points_);
@@ -620,11 +626,9 @@ void BasisFunctions::allocate() {
 
     if (deriv_ >= 3) throw PSIEXCEPTION("BasisFunctions: Only up to Hessians are currently supported");
 }
-SharedMatrix BasisFunctions::basis_value(const std::string& key) { return basis_values_[key]; }
 void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
-    // Pull out data
-    int nso = max_functions_;
 
+    //Pull out data
     int npoints = block->npoints();
     double* x = block->x();
     double* y = block->y();
@@ -643,15 +647,15 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
 
     if (deriv_ >= 0) {
         tmpp = basis_temps_["PHI"]->pointer()[0];
-        valuesp = basis_values_["PHI"]->pointer()[0];
+        valuesp = basis_value("PHI")->pointer()[0];
     }
     if (deriv_ >= 1) {
         tmp_xp = basis_temps_["PHI_X"]->pointer()[0];
         tmp_yp = basis_temps_["PHI_Y"]->pointer()[0];
         tmp_zp = basis_temps_["PHI_Z"]->pointer()[0];
-        values_xp = basis_values_["PHI_X"]->pointer()[0];
-        values_yp = basis_values_["PHI_Y"]->pointer()[0];
-        values_zp = basis_values_["PHI_Z"]->pointer()[0];
+        values_xp = basis_value("PHI_X")->pointer()[0];
+        values_yp = basis_value("PHI_Y")->pointer()[0];
+        values_zp = basis_value("PHI_Z")->pointer()[0];
     }
     if (deriv_ >= 2) {
         tmp_xxp = basis_temps_["PHI_XX"]->pointer()[0];
@@ -660,12 +664,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         tmp_yyp = basis_temps_["PHI_YY"]->pointer()[0];
         tmp_yzp = basis_temps_["PHI_YZ"]->pointer()[0];
         tmp_zzp = basis_temps_["PHI_ZZ"]->pointer()[0];
-        values_xxp = basis_values_["PHI_XX"]->pointer()[0];
-        values_xyp = basis_values_["PHI_XY"]->pointer()[0];
-        values_xzp = basis_values_["PHI_XZ"]->pointer()[0];
-        values_yyp = basis_values_["PHI_YY"]->pointer()[0];
-        values_yzp = basis_values_["PHI_YZ"]->pointer()[0];
-        values_zzp = basis_values_["PHI_ZZ"]->pointer()[0];
+        values_xxp = basis_value("PHI_XX")->pointer()[0];
+        values_xyp = basis_value("PHI_XY")->pointer()[0];
+        values_xzp = basis_value("PHI_XZ")->pointer()[0];
+        values_yyp = basis_value("PHI_YY")->pointer()[0];
+        values_yzp = basis_value("PHI_YZ")->pointer()[0];
+        values_zzp = basis_value("PHI_ZZ")->pointer()[0];
     }
 
     int nvals = 0;
@@ -721,6 +725,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     }
 
     // GG spits it out tranpose of what we need
+    int nso = max_functions_;
     gg_fast_transpose(nso, npoints, tmpp, valuesp);
     if (deriv_ >= 1) {
         gg_fast_transpose(nso, npoints, tmp_xp, values_xp);
