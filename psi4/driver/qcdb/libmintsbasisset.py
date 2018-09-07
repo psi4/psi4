@@ -35,10 +35,11 @@ import hashlib
 import itertools
 import collections
 
+import qcelemental as qcel
+
 from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
-from . import periodictable
 from .libmintsgshell import ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis, corresponding_zeta
@@ -1278,7 +1279,7 @@ class BasisSet(object):
         for uA in range(self.molecule.nunique()):
             A = self.molecule.unique(uA)
             if not numbersonly:
-                text += """%s\n""" % (periodictable.z2element[self.molecule.Z(A)])
+                text += """%s\n""" % (qcel.periodictable.to_element(self.molecule.Z(A)))
             first_shell = self.center_to_shell[A]
             n_shell = self.center_to_nshell[A]
 
