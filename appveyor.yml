@@ -76,11 +76,10 @@ test_script:
   #     fsapt-terms sapt-dft1 sapt1 tu5-sapt
   #     json-v11-energy
   #     molden1 molden2
-  #     mp2-module mpn-bh
-  #     pywrap-alias pywrap-cbs1 pywrap-db1
+  #     pywrap-alias pywrap-db1
   #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|casscf-semi|casscf-fzc-sp|casscf-sa-sp|casscf-sp|ci-multi|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|molden1|molden2|mp2-module|mpn-bh|pywrap-alias|pywrap-cbs1|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|tu5-sapt|cc-module|json-v11-energy)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|casscf-semi|casscf-fzc-sp|casscf-sa-sp|casscf-sp|ci-multi|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|molden1|molden2|pywrap-alias|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|tu5-sapt|cc-module|json-v11-energy)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
@@ -89,7 +88,7 @@ after_test:
   # Run failling tests, but their results are ignored
   # TODO fix the tests
   - ctest --build-config %CONFIGURATION%
-          --tests-regex "^(casscf-fzc-sp|casscf-sa-sp|casscf-semi|casscf-sp|ci-multi|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|molden1|molden2|mp2-module|mpn-bh|pywrap-alias|pywrap-cbs1|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|tu5-sapt|cc-module|json-v11-energy)$"
+          --tests-regex "^(casscf-fzc-sp|casscf-sa-sp|casscf-semi|casscf-sp|ci-multi|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|molden1|molden2|pywrap-alias|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|tu5-sapt|cc-module|json-v11-energy)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
   - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0

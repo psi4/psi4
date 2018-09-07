@@ -598,7 +598,7 @@ void CubicScalarGrid::compute_density(std::shared_ptr<Matrix> D, const std::stri
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
     comment << " [e/a0^3]. Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
-            << "," << isocontour_range.second << ")";
+            << "," << isocontour_range.second << ")." << ecp_header();
     // Write to disk
     write_gen_file(v, name, type, comment.str());
     delete[] v;
@@ -649,6 +649,34 @@ void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vec
     }
     free_block(v);
 }
+void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
+                                         const std::string& label, const bool square, const std::string& type) {
+    auto C2 = std::make_shared<Matrix>(primary_->nbf(), indices.size());
+    double** Cp = C->pointer();
+    double** C2p = C2->pointer();
+    for (int k = 0; k < indices.size(); k++) {
+        C_DCOPY(primary_->nbf(), &Cp[0][indices[k]], C->colspi()[0], &C2p[0][k], C2->colspi()[0]);
+    }
+    auto v_t = std::make_shared<Matrix>(indices.size(), npoints_);
+    double** v_tp = v_t->pointer();
+    auto v = std::make_shared<Vector>(npoints_);
+    double* vp = v->pointer();
+    add_orbitals(&v_tp[0], C2);
+    for (int i = 0; i < npoints_; i++) {
+         if (square) {
+             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i))*(v_t->get(0,i) + v_t->get(1,i)));
+         } else {
+             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i)));
+         }
+    }
+    std::pair<double, double> isocontour_range = compute_isocontour_range(&vp[0], 2.0);
+    double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
+    std::stringstream comment;
+    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
+            << "," << isocontour_range.second << ")";
+    // Write to disk
+    write_gen_file(&vp[0], label, type, comment.str());
+}
 void CubicScalarGrid::compute_LOL(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type) {
     double* v = new double[npoints_];
     memset(v, '\0', npoints_ * sizeof(double));
@@ -694,5 +722,23 @@ std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2, 
         if (sum > cumulative_threshold) break;
     }
     return std::make_pair(positive_isocontour, negative_isocontour);
+}
+std::string CubicScalarGrid::ecp_header() {
+    std::stringstream ecp_head;
+    ecp_head.str("");
+    if (primary_->has_ECP()) {
+        ecp_head << " Total core: " << primary_->n_ecp_core() << " [e] from 1-indexed atoms (";
+        std::stringstream ecp_atoms;
+        std::stringstream ecp_ncore;
+        for (int A = 0; A < mol_->natom(); A++) {
+            if (primary_->n_ecp_core(mol_->label(A)) > 0) {
+                ecp_atoms << A+1 << "[" << mol_->symbol(A) << "], ";
+                ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
+            }
+        }
+        ecp_head << ecp_atoms.str().substr(0,ecp_atoms.str().length()-2) << ") electrons (" 
+                 << ecp_ncore.str().substr(0,ecp_ncore.str().length()-2) << ").";
+    }
+    return ecp_head.str();
 }
 }

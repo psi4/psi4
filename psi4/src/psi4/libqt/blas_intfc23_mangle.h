@@ -42,30 +42,30 @@
 
 #ifdef USE_FCMANGLE_H
 #include "FCMangle.h"
-#define F_DGBMV  FC_GLOBAL(dgbmv , DGBMV )  
-#define F_DGEMM  FC_GLOBAL(dgemm , DGEMM )
-#define F_DGEMV  FC_GLOBAL(dgemv , DGEMV )       
-#define F_DGER   FC_GLOBAL(dger  , DGER  )       
-#define F_DSBMV  FC_GLOBAL(dsbmv , DSBMV )       
-#define F_DSPMV  FC_GLOBAL(dspmv , DSPMV )       
-#define F_DSPR   FC_GLOBAL(dspr  , DSPR  )       
-#define F_DSPR2  FC_GLOBAL(dspr2 , DSPR2 )       
-#define F_DSYMM  FC_GLOBAL(dsymm , DSYMM )       
-#define F_DSYMV  FC_GLOBAL(dsymv , DSYMV )       
-#define F_DSYR   FC_GLOBAL(dsyr  , DSYR  )       
-#define F_DSYR2  FC_GLOBAL(dsyr2 , DSYR2 )       
+#define F_DGBMV FC_GLOBAL(dgbmv, DGBMV)
+#define F_DGEMM FC_GLOBAL(dgemm, DGEMM)
+#define F_DGEMV FC_GLOBAL(dgemv, DGEMV)
+#define F_DGER FC_GLOBAL(dger, DGER)
+#define F_DSBMV FC_GLOBAL(dsbmv, DSBMV)
+#define F_DSPMV FC_GLOBAL(dspmv, DSPMV)
+#define F_DSPR FC_GLOBAL(dspr, DSPR)
+#define F_DSPR2 FC_GLOBAL(dspr2, DSPR2)
+#define F_DSYMM FC_GLOBAL(dsymm, DSYMM)
+#define F_DSYMV FC_GLOBAL(dsymv, DSYMV)
+#define F_DSYR FC_GLOBAL(dsyr, DSYR)
+#define F_DSYR2 FC_GLOBAL(dsyr2, DSYR2)
 #define F_DSYR2K FC_GLOBAL(dsyr2k, DSYR2K)
-#define F_DSYRK  FC_GLOBAL(dsyrk , DSYRK )        
-#define F_DTBMV  FC_GLOBAL(dtbmv , DTBMV )       
-#define F_DTBSV  FC_GLOBAL(dtbsv , DTBSV )       
-#define F_DTPMV  FC_GLOBAL(dtpmv , DTPMV )       
-#define F_DTPSV  FC_GLOBAL(dtpsv , DTPSV )       
-#define F_DTRMM  FC_GLOBAL(dtrmm , DTRMM )       
-#define F_DTRMV  FC_GLOBAL(dtrmv , DTRMV )       
-#define F_DTRSM  FC_GLOBAL(dtrsm , DTRSM )       
-#define F_DTRSV  FC_GLOBAL(dtrsv , DTRSV )       
-#else // USE_FCMANGLE_H
-#if FC_SYMBOL==2
+#define F_DSYRK FC_GLOBAL(dsyrk, DSYRK)
+#define F_DTBMV FC_GLOBAL(dtbmv, DTBMV)
+#define F_DTBSV FC_GLOBAL(dtbsv, DTBSV)
+#define F_DTPMV FC_GLOBAL(dtpmv, DTPMV)
+#define F_DTPSV FC_GLOBAL(dtpsv, DTPSV)
+#define F_DTRMM FC_GLOBAL(dtrmm, DTRMM)
+#define F_DTRMV FC_GLOBAL(dtrmv, DTRMV)
+#define F_DTRSM FC_GLOBAL(dtrsm, DTRSM)
+#define F_DTRSV FC_GLOBAL(dtrsv, DTRSV)
+#else  // USE_FCMANGLE_H
+#if FC_SYMBOL == 2
 #define F_DGBMV dgbmv_
 #define F_DGEMM dgemm_
 #define F_DGEMV dgemv_
@@ -88,7 +88,7 @@
 #define F_DTRMV dtrmv_
 #define F_DTRSM dtrsm_
 #define F_DTRSV dtrsv_
-#elif FC_SYMBOL==1
+#elif FC_SYMBOL == 1
 #define F_DGBMV dgbmv
 #define F_DGEMM dgemm
 #define F_DGEMV dgemv
@@ -111,7 +111,7 @@
 #define F_DTRMV dtrmv
 #define F_DTRSM dtrsm
 #define F_DTRSV dtrsv
-#elif FC_SYMBOL==3
+#elif FC_SYMBOL == 3
 #define F_DGBMV DGBMV
 #define F_DGEMM DGEMM
 #define F_DGEMV DGEMV
@@ -134,7 +134,7 @@
 #define F_DTRMV DTRMV
 #define F_DTRSM DTRSM
 #define F_DTRSV DTRSV
-#elif FC_SYMBOL==4
+#elif FC_SYMBOL == 4
 #define F_DGBMV DGBMV_
 #define F_DGEMM DGEMM_
 #define F_DGEMV DGEMV_
@@ -160,4 +160,4 @@
 #endif
 #endif
 
-#endif 
+#endif

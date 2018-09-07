@@ -78,13 +78,20 @@ class TestComparisonError(PsiException):
 
 
 class ConvergenceError(PsiException):
-    """Error called for problems with converging and iterative method. Prints
-    error message *msg* to standard output stream and output file.
+    """Error called for problems with converging and iterative method.
+
+    Parameters
+    ----------
+    eqn_description : str
+        Type of QC routine that has failed (e.g., SCF)
+    iteration : int
+        What iteration we failed on
 
     """
-    def __init__(self, eqn_description, maxit):
-        msg = "Could not converge %s in %d iterations." % (eqn_description, maxit)
+    def __init__(self, eqn_description, iteration):
+        msg = "Could not converge %s in %d iterations." % (eqn_description, iteration)
         PsiException.__init__(self, msg)
+        self.iteration = iteration
         self.message = msg
         core.print_out('\nPsiException: %s\n\n' % (msg))
 
@@ -92,8 +99,28 @@ class ConvergenceError(PsiException):
 class OptimizationConvergenceError(ConvergenceError):
     """Error called for problems with geometry optimizer."""
 
-    def __init__(self, eqn_description, maxit, wfn):
-        ConvergenceError.__init__(self, eqn_description, maxit)
+    def __init__(self, eqn_description, iteration, wfn):
+        ConvergenceError.__init__(self, eqn_description, iteration)
+        self.wfn = wfn
+
+
+class SCFConvergenceError(ConvergenceError):
+    """Error called for problems with SCF iterations.
+
+    Parameters
+    ----------
+    wfn : psi4.core.Wavefunction
+        Wavefunction at time of exception
+    e_conv : float
+        Change in energy for last iteration
+    d_conv : float
+        RMS change in density for last iteration
+
+    """
+    def __init__(self, eqn_description, iteration, wfn, e_conv, d_conv):
+        ConvergenceError.__init__(self, eqn_description, iteration)
+        self.e_conv = e_conv
+        self.d_conv = d_conv
         self.wfn = wfn
 
 
