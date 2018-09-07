@@ -68,6 +68,7 @@ void VBase::common_init() {
     v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
     vv10_rho_cutoff_ = options_.get_double("DFT_VV10_RHO_CUTOFF");
     grac_initialized_ = false;
+    cache_map_order = 0;
     num_threads_ = 1;
 #ifdef _OPENMP
     num_threads_ = omp_get_max_threads();
@@ -201,7 +202,39 @@ void VBase::print_header() const {
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
+void VBase::build_cache_map(void){
 
+    int rank = 0;
+    #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+        // Get thread info
+        #ifdef _OPENMP
+                rank = omp_get_thread_num();
+        #endif
+
+        // Compute a collocation block
+        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
+        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        pworker->compute_functions(block);
+
+        std::map<std::string, SharedMatrix> collocation_map;
+        for (auto& kv : pworker->basis_values()) {
+            auto coll = std::make_shared<Matrix>(kv.second->name(), block->npoints(), block->local_nbf());
+
+            double** sourcep = kv.second->pointer();
+            double** collp = coll->pointer();
+            for (size_t i = 0; i < block->npoints(); i++){
+                for (size_t j = 0; j < block->local_nbf(); j++){
+                    collp[i][j] = sourcep[i][j];
+                }
+            }
+            collocation_map[kv.first] = coll;
+        }
+
+        cache_map_[block->index()] = collocation_map;
+    }
+
+}
 void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std::map<std::string, SharedVector>>& vv10_cache, std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz) {
 
     // Densities should be set by the calling functional
@@ -315,7 +348,8 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
         V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
     }
 
-// => Compute the kernel <=
+    // => Compute the kernel <=
+    // -11.948063
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
 // Get thread info
@@ -497,8 +531,11 @@ void RV::initialize() {
         // Need a points worker per thread
         auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
         point_tmp->set_ansatz(functional_->ansatz());
+        point_tmp->set_cache_map(&cache_map_);
         point_workers_.push_back(point_tmp);
     }
+
+    build_cache_map();
 }
 void RV::finalize() { VBase::finalize(); }
 void RV::print_header() const { VBase::print_header(); }

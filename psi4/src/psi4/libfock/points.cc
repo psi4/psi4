@@ -96,7 +96,14 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block) {
     block_index_ = block->index();
 
     // => Build basis function values <= //
-    BasisFunctions::compute_functions(block);
+    // BasisFunctions::compute_functions(block);
+    if (cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())){
+        // printf("Cache hit\n");
+        current_basis_map_ = &(*cache_map_)[block->index()];
+    } else {
+        current_basis_map_ = &basis_values_;
+        BasisFunctions::compute_functions(block);
+    }
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -237,7 +244,14 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     // => Build basis function values <= //
 
     // timer_on("Functions: Points");
-    BasisFunctions::compute_functions(block);
+
+    // If block is cache skip compute
+    if (cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())){
+        current_basis_map_ = &(*cache_map_)[block->index()];
+    } else {
+        current_basis_map_ = &basis_values_;
+        BasisFunctions::compute_functions(block);
+    }
     // timer_off("Functions: Points");
 
     // => Global information <= //
@@ -647,15 +661,15 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
 
     if (deriv_ >= 0) {
         tmpp = basis_temps_["PHI"]->pointer()[0];
-        valuesp = basis_value("PHI")->pointer()[0];
+        valuesp = basis_values_["PHI"]->pointer()[0];
     }
     if (deriv_ >= 1) {
         tmp_xp = basis_temps_["PHI_X"]->pointer()[0];
         tmp_yp = basis_temps_["PHI_Y"]->pointer()[0];
         tmp_zp = basis_temps_["PHI_Z"]->pointer()[0];
-        values_xp = basis_value("PHI_X")->pointer()[0];
-        values_yp = basis_value("PHI_Y")->pointer()[0];
-        values_zp = basis_value("PHI_Z")->pointer()[0];
+        values_xp = basis_values_["PHI_X"]->pointer()[0];
+        values_yp = basis_values_["PHI_Y"]->pointer()[0];
+        values_zp = basis_values_["PHI_Z"]->pointer()[0];
     }
     if (deriv_ >= 2) {
         tmp_xxp = basis_temps_["PHI_XX"]->pointer()[0];
@@ -664,12 +678,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         tmp_yyp = basis_temps_["PHI_YY"]->pointer()[0];
         tmp_yzp = basis_temps_["PHI_YZ"]->pointer()[0];
         tmp_zzp = basis_temps_["PHI_ZZ"]->pointer()[0];
-        values_xxp = basis_value("PHI_XX")->pointer()[0];
-        values_xyp = basis_value("PHI_XY")->pointer()[0];
-        values_xzp = basis_value("PHI_XZ")->pointer()[0];
-        values_yyp = basis_value("PHI_YY")->pointer()[0];
-        values_yzp = basis_value("PHI_YZ")->pointer()[0];
-        values_zzp = basis_value("PHI_ZZ")->pointer()[0];
+        values_xxp = basis_values_["PHI_XX"]->pointer()[0];
+        values_xyp = basis_values_["PHI_XY"]->pointer()[0];
+        values_xzp = basis_values_["PHI_XZ"]->pointer()[0];
+        values_yyp = basis_values_["PHI_YY"]->pointer()[0];
+        values_yzp = basis_values_["PHI_YZ"]->pointer()[0];
+        values_zzp = basis_values_["PHI_ZZ"]->pointer()[0];
     }
 
     int nvals = 0;

@@ -97,6 +97,17 @@ public:
 class PointFunctions : public BasisFunctions {
 
 protected:
+    // => Indices <= //
+
+    /// The index of the current referenced block.
+    size_t block_index_;
+
+    // Contains a map to the cache the global basis_values
+    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> *cache_map_ = nullptr;
+
+    // Contains a pointer to the current map to use for basis_values
+    std::map<std::string, SharedMatrix> *current_basis_map_ = nullptr;
+
     /// Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
     int ansatz_;
     /// Map of value names to Vectors containing values
@@ -113,6 +124,9 @@ public:
     PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~PointFunctions();
 
+    // => Setters <= //
+    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
+
     // => Computers <= //
 
     virtual void compute_points(std::shared_ptr<BlockOPoints> block) = 0;
@@ -121,6 +135,9 @@ public:
 
     std::shared_ptr<Vector> point_value(const std::string& key);
     std::map<std::string, SharedVector>& point_values() { return point_values_; }
+
+    SharedMatrix basis_value(const std::string& key) { return (*current_basis_map_)[key]; }
+    std::map<std::string, SharedMatrix>& basis_values() { return (*current_basis_map_); }
 
     virtual std::vector<SharedMatrix> scratch() = 0;
     virtual std::vector<SharedMatrix> D_scratch() = 0;
@@ -146,17 +163,6 @@ public:
 class RKSFunctions : public PointFunctions {
 
 protected:
-    // => Indices <= //
-
-    /// The index of the current referenced block.
-    size_t block_index_;
-
-    // Contains a map to the cache the global basis_values
-    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> *cache_map_ = nullptr;
-
-    // Contains a pointer to the current map to use for basis_values
-    std::map<std::string, SharedMatrix> *current_basis_map_ = nullptr;
-
     // => Pointers <= //
 
     /// Density matrix, AO
@@ -187,7 +193,6 @@ public:
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
-    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map) { cache_map_ = &cache_map; }
 
     void compute_points(std::shared_ptr<BlockOPoints> block);
 
@@ -200,26 +205,11 @@ public:
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
     size_t block_index(void) { return block_index_; }
-
-    // => Accessors <= //
-    SharedMatrix basis_value(const std::string& key) { return (*current_basis_map_)[key]; }
-    std::map<std::string, SharedMatrix>& basis_values() { return (*current_basis_map_); }
 };
 
 class UKSFunctions : public PointFunctions {
 
 protected:
-    // => Indices <= //
-
-    /// The index of the current referenced block.
-    size_t block_index_;
-
-    // Contains a map to the cache the global basis_values
-    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> *cache_map_ = nullptr;
-
-    // Contains a pointer to the current map to use for basis_values
-    std::map<std::string, SharedMatrix> *current_basis_map_ = nullptr;
-
     // => Pointers <= //
 
     /// Density matrix, AO
@@ -260,7 +250,7 @@ public:
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
-    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map) { cache_map_ = &cache_map; }
+    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
 
     void compute_points(std::shared_ptr<BlockOPoints> block);
 
@@ -273,10 +263,6 @@ public:
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
     size_t block_index(void) { return block_index_; }
-
-    // => Accessors <= //
-    SharedMatrix basis_value(const std::string& key) { return (*current_basis_map_)[key]; }
-    std::map<std::string, SharedMatrix>& basis_values() { return (*current_basis_map_); }
 };
 
 

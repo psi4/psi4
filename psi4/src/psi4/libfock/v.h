@@ -32,6 +32,7 @@
 #include "psi4/pragma.h"
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <string>
 
 namespace psi {
@@ -80,6 +81,9 @@ protected:
     std::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration
     std::map<std::string, double> quad_values_;
+    // Caches collocation grids
+    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map_;
+    int cache_map_deriv_;
 
     /// AO2USO matrix (if not C1)
     SharedMatrix AO2USO_;
@@ -103,6 +107,9 @@ protected:
 
     /// Set things up
     void common_init();
+
+    /// Creates a collocation cache map based on available memory
+    void build_cache_map();
 public:
      VBase(std::shared_ptr<SuperFunctional> functional,
            std::shared_ptr<BasisSet> primary, Options& options);
