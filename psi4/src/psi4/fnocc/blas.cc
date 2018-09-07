@@ -26,78 +26,78 @@
  * @END LICENSE
  */
 
-#include"blas.h"
-#include<stdlib.h>
+#include "blas.h"
+#include <stdlib.h>
 
 #include "psi4/pragma.h"
 
-namespace psi { namespace fnocc{
+namespace psi {
+namespace fnocc {
 
 // position in a symmetric packed matrix
-long int Position(long int i,long int j){
-  if (i<j){
-    return ((j*(j+1))>>1)+i;
-  }
-  return ((i*(i+1))>>1)+j;
+long int Position(long int i, long int j) {
+    if (i < j) {
+        return ((j * (j + 1)) >> 1) + i;
+    }
+    return ((i * (i + 1)) >> 1) + j;
 }
 
 /**
  * fortran-ordered dgemv
  */
-void PSI_API F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,integer lda,
-            doublereal*X,integer incx,doublereal beta,doublereal*Y,integer incy){
-    DGEMV(trans,m,n,alpha,A,lda,X,incx,beta,Y,incy);
+void PSI_API F_DGEMV(char trans, integer m, integer n, doublereal alpha, doublereal* A, integer lda, doublereal* X,
+                     integer incx, doublereal beta, doublereal* Y, integer incy) {
+    DGEMV(trans, m, n, alpha, A, lda, X, incx, beta, Y, incy);
 }
 /**
  * fortran-ordered dgemm
  */
-void PSI_API F_DGEMM(char transa,char transb, integer m, integer n, integer k,
-            doublereal alpha,doublereal*A,integer lda,doublereal*B,integer ldb,
-            doublereal beta,doublereal*C,integer ldc){
-    DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+void PSI_API F_DGEMM(char transa, char transb, integer m, integer n, integer k, doublereal alpha, doublereal* A,
+                     integer lda, doublereal* B, integer ldb, doublereal beta, doublereal* C, integer ldc) {
+    DGEMM(transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 }
 
 /**
  *  Diagonalize a real symmetric matrix
  */
-void Diagonalize(integer N,doublereal*A,doublereal*W){
-  char JOBZ = 'V';
-  char UPLO = 'U';
-  integer LDA = N;
-  integer LWORK = 3*N-1;
-  doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal));
-  integer INFO=0;
-  DSYEV(JOBZ,UPLO,N,A,LDA,W,WORK,LWORK,INFO);
-  free(WORK);
+void Diagonalize(integer N, doublereal* A, doublereal* W) {
+    char JOBZ = 'V';
+    char UPLO = 'U';
+    integer LDA = N;
+    integer LWORK = 3 * N - 1;
+    doublereal* WORK = (doublereal*)malloc(LWORK * sizeof(doublereal));
+    integer INFO = 0;
+    DSYEV(JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO);
+    free(WORK);
 }
-void Diagonalize2(integer N,doublereal*AP,doublereal*W,doublereal*Z){
-  char JOBZ = 'V';
-  char UPLO = 'U';
-  integer LDZ = N;
-  doublereal*WORK=(doublereal*)malloc(3*N*sizeof(doublereal));
-  integer INFO=0;
-  DSPEV(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
-  free(WORK);
+void Diagonalize2(integer N, doublereal* AP, doublereal* W, doublereal* Z) {
+    char JOBZ = 'V';
+    char UPLO = 'U';
+    integer LDZ = N;
+    doublereal* WORK = (doublereal*)malloc(3 * N * sizeof(doublereal));
+    integer INFO = 0;
+    DSPEV(JOBZ, UPLO, N, AP, W, Z, LDZ, WORK, INFO);
+    free(WORK);
 }
 
 /**
  *  General SVD
  */
-void SVD(integer M,integer N,doublereal*A,doublereal*U,doublereal*VT,doublereal*S){
-  char JOBU    = 'S'; // all M columns of U are returned in array U
-  char JOBVT   = 'A'; // all N rows of V**T are returned in the array VT
-  integer LDA  = M;
-  integer LDU  = M;
-  integer LDVT = N;
+void SVD(integer M, integer N, doublereal* A, doublereal* U, doublereal* VT, doublereal* S) {
+    char JOBU = 'S';   // all M columns of U are returned in array U
+    char JOBVT = 'A';  // all N rows of V**T are returned in the array VT
+    integer LDA = M;
+    integer LDU = M;
+    integer LDVT = N;
 
-  integer min = ( M < N ) ? M : N;
-  integer max = ( M < N ) ? N : M;
-  integer LWORK = ( 3 * min + max > 5 * min ) ? (3 * min + max) : (5 * min);
-  doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal));
+    integer min = (M < N) ? M : N;
+    integer max = (M < N) ? N : M;
+    integer LWORK = (3 * min + max > 5 * min) ? (3 * min + max) : (5 * min);
+    doublereal* WORK = (doublereal*)malloc(LWORK * sizeof(doublereal));
 
-  integer INFO=0;
-  DGESVD(JOBU,JOBVT,M,N,A,LDA,S,U,LDU,VT,LDVT,WORK,LWORK,INFO);
-  free(WORK);
+    integer INFO = 0;
+    DGESVD(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, INFO);
+    free(WORK);
 }
-
-}}
+}
+}

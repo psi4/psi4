@@ -69,9 +69,9 @@ void CoupledCluster::MP2() {
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    std::shared_ptr<IntegralTransform> ints =
-        std::make_shared<IntegralTransform>(wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::IWLOnly,
-                                            IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None, false);
+    std::shared_ptr<IntegralTransform> ints = std::make_shared<IntegralTransform>(
+        wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::IWLOnly,
+        IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None, false);
     ints->set_keep_dpd_so_ints(1);
     ints->set_keep_iwl_so_ints(1);
     ints->initialize();

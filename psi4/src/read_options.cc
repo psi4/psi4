@@ -207,12 +207,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str_i("CUBEPROP_FILEPATH", ".");
 
   /*- Properties to compute. Valid tasks include:
-      ``DENSITY`` - Da, Db, Dt, Ds
-      ``ESP`` - Dt, ESP
-      ``ORBITALS`` - Psi_a_N, Psi_b_N
-      ``BASIS_FUNCTIONS`` - Phi_N
-      ``LOL`` - LOLa, LOLb
-      ``ELF`` - ELFa, ELFb
+      ``DENSITY`` - Da, Db, Dt, Ds;
+      ``ESP`` - Dt, ESP;
+      ``ORBITALS`` - Psi_a_N, Psi_b_N;
+      ``BASIS_FUNCTIONS`` - Phi_N;
+      ``LOL`` - LOLa, LOLb;
+      ``ELF`` - ELFa, ELFb;
+      ``FRONTIER_ORBITALS`` - Psi_a_N_HOMO + Psi_a_N_LUMO;
+      ``DUAL_DESCRIPTOR`` - DUAL_N_HOMO-M_LUMO. 
   -*/
   options.add("CUBEPROP_TASKS", new ArrayType());
   /*- List of orbital indices for which cube files are generated (1-based,

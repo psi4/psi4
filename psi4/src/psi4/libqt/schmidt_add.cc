@@ -61,28 +61,26 @@ namespace psi {
 ** Returns: 1 if a vector is added to A, 0 otherwise
 ** \ingroup QT
 */
-PSI_API int schmidt_add(double **A, int rows, int cols, double *v)
-{
-   double dotval, normval ;
-   int i, I ;
+PSI_API int schmidt_add(double **A, int rows, int cols, double *v) {
+    double dotval, normval;
+    int i, I;
 
-   for (i=0; i<rows; i++) {
-      // dot_arr(A[i], v, cols, &dotval) ;
-      dotval = C_DDOT(cols, A[i], 1, v, 1);
-      for (I=0; I<cols; I++) v[I] -= dotval * A[i][I] ;
-      }
+    for (i = 0; i < rows; i++) {
+        // dot_arr(A[i], v, cols, &dotval) ;
+        dotval = C_DDOT(cols, A[i], 1, v, 1);
+        for (I = 0; I < cols; I++) v[I] -= dotval * A[i][I];
+    }
 
-   // dot_arr(v, v, cols, &normval) ;
-   normval = C_DDOT(cols, v, 1, v, 1);
-   normval = sqrt(normval) ;
+    // dot_arr(v, v, cols, &normval) ;
+    normval = C_DDOT(cols, v, 1, v, 1);
+    normval = sqrt(normval);
 
-   if (normval < NORM_TOL)
-      return(0) ;
-   else {
-      if (A[rows] == nullptr) A[rows] = init_array(cols) ;
-      for (I=0; I<cols; I++) A[rows][I] = v[I] / normval ;
-      return(1) ;
-      }
+    if (normval < NORM_TOL)
+        return (0);
+    else {
+        if (A[rows] == nullptr) A[rows] = init_array(cols);
+        for (I = 0; I < cols; I++) A[rows][I] = v[I] / normval;
+        return (1);
+    }
 }
-
 }
