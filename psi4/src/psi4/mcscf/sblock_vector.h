@@ -33,52 +33,54 @@
 
 #include "block_vector.h"
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
 // Smart version of BlockVector
-class SBlockVector
-{
-public:
-  SBlockVector();
-  SBlockVector(std::string label, int nirreps, int*& rows_size);
-  SBlockVector(std::string label, int nirreps, vecint& rows_size);
-  ~SBlockVector() {if(block_vector_)
-                     if(block_vector_->subtract_reference())
-                          block_vector_ = 0;}
+class SBlockVector {
+   public:
+    SBlockVector();
+    SBlockVector(std::string label, int nirreps, int*& rows_size);
+    SBlockVector(std::string label, int nirreps, vecint& rows_size);
+    ~SBlockVector() {
+        if (block_vector_)
+            if (block_vector_->subtract_reference()) block_vector_ = 0;
+    }
 
-  // Manual allocation
-  void allocate(std::string label, int nirreps, int*& rows_size);
-  void allocate(std::string label, int nirreps, vecint& rows_size);
+    // Manual allocation
+    void allocate(std::string label, int nirreps, int*& rows_size);
+    void allocate(std::string label, int nirreps, vecint& rows_size);
 
-  void subtract_reference(){
-      if(block_vector_){
-          if(block_vector_->subtract_reference())
-              block_vector_ = 0;
-      }
-  }
+    void subtract_reference() {
+        if (block_vector_) {
+            if (block_vector_->subtract_reference()) block_vector_ = 0;
+        }
+    }
 
-  // Copy constructor and assignment operator
-  SBlockVector            (const   SBlockVector& src);
-  SBlockVector& operator= (const   SBlockVector& src);
+    // Copy constructor and assignment operator
+    SBlockVector(const SBlockVector& src);
+    SBlockVector& operator=(const SBlockVector& src);
 
-  // Allow access to the implementation object
-  const BlockVector* operator-> () const {return block_vector_;}
-  BlockVector*       operator-> ()       {return block_vector_;}
+    // Allow access to the implementation object
+    const BlockVector* operator->() const { return block_vector_; }
+    BlockVector* operator->() { return block_vector_; }
 
-  // Access the implementation object
-  BlockVector* getBlockVector() {return block_vector_;}
+    // Access the implementation object
+    BlockVector* getBlockVector() { return block_vector_; }
 
-  // Checking functions
-  bool is_allocated() {return (block_vector_);}
-  void check(const char* cstr);
+    // Checking functions
+    bool is_allocated() { return (block_vector_); }
+    void check(const char* cstr);
 
-  void copy(SBlockVector& source);
-private:
-  SBlockVector(BlockVector* block_vector);
+    void copy(SBlockVector& source);
 
-  BlockVector* block_vector_;
+   private:
+    SBlockVector(BlockVector* block_vector);
+
+    BlockVector* block_vector_;
 };
 
-}}
+}  // namespace mcscf
+}  // namespace psi
 
-#endif // _psi_src_lib_libmemtrix_sblock_vector_h_
+#endif  // _psi_src_lib_libmemtrix_sblock_vector_h_

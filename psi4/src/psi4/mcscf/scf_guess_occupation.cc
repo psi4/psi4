@@ -39,50 +39,50 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
-void SCF::guess_occupation()
-{
-  if(moinfo_scf->get_guess_occupation()){
-    // Assumes the eigenvalues of some Fock operator
-    // are in the SBlockVector epsilon
-    std::vector<std::pair<double, int> > evals;
+void SCF::guess_occupation() {
+    if (moinfo_scf->get_guess_occupation()) {
+        // Assumes the eigenvalues of some Fock operator
+        // are in the SBlockVector epsilon
+        std::vector<std::pair<double, int> > evals;
 
-    for(int h = 0; h < nirreps; ++h)
-      for(int i = 0; i < sopi[h]; ++i)
-        evals.push_back( std::make_pair(epsilon->get(h,i),h) );
+        for (int h = 0; h < nirreps; ++h)
+            for (int i = 0; i < sopi[h]; ++i) evals.push_back(std::make_pair(epsilon->get(h, i), h));
 
-    // Sort the eigenvalues by energy
-    sort(evals.begin(),evals.end());
+        // Sort the eigenvalues by energy
+        sort(evals.begin(), evals.end());
 
-    int ndocc = std::min(moinfo_scf->get_nael(),moinfo_scf->get_nbel()) - (reference == tcscf ? 1 : 0);
-    int nactv = std::abs(moinfo_scf->get_nael()-moinfo_scf->get_nbel()) + (reference == tcscf ? 2 : 0);
+        int ndocc = std::min(moinfo_scf->get_nael(), moinfo_scf->get_nbel()) - (reference == tcscf ? 1 : 0);
+        int nactv = std::abs(moinfo_scf->get_nael() - moinfo_scf->get_nbel()) + (reference == tcscf ? 2 : 0);
 
-    std::vector<int> new_docc;
-    std::vector<int> new_actv;
-    for(int h = 0; h < nirreps; ++h){
-      new_docc.push_back(0);
-      new_actv.push_back(0);
+        std::vector<int> new_docc;
+        std::vector<int> new_actv;
+        for (int h = 0; h < nirreps; ++h) {
+            new_docc.push_back(0);
+            new_actv.push_back(0);
+        }
+        for (int i = 0; i < ndocc; ++i) {
+            new_docc[evals[i].second]++;
+        }
+        for (int i = ndocc; i < ndocc + nactv; ++i) {
+            new_actv[evals[i].second]++;
+        }
+
+        if ((new_docc != docc) || (new_actv != actv)) {
+            outfile->Printf("\n\n  Occupation changed");
+            outfile->Printf("\n  docc = (");
+            for (int h = 0; h < nirreps; ++h) outfile->Printf(" %d", new_docc[h]);
+            outfile->Printf(" )");
+            outfile->Printf("\n  actv = (");
+            for (int h = 0; h < nirreps; ++h) outfile->Printf(" %d", new_actv[h]);
+            outfile->Printf(" )\n");
+        }
+        docc = new_docc;
+        actv = new_actv;
     }
-    for(int i = 0; i < ndocc; ++i){
-      new_docc[evals[i].second]++;
-    }
-    for(int i = ndocc; i < ndocc + nactv; ++i){
-      new_actv[evals[i].second]++;
-    }
-
-    if((new_docc != docc) || (new_actv != actv)){
-      outfile->Printf("\n\n  Occupation changed");
-      outfile->Printf("\n  docc = (");
-      for(int h = 0; h < nirreps; ++h)  outfile->Printf(" %d",new_docc[h]);
-      outfile->Printf(" )");
-      outfile->Printf("\n  actv = (");
-      for(int h = 0; h < nirreps; ++h)  outfile->Printf(" %d",new_actv[h]);
-      outfile->Printf(" )\n");
-    }
-    docc = new_docc;
-    actv = new_actv;
-  }
 }
 
-}} // End namespace
+}  // namespace mcscf
+}  // namespace psi

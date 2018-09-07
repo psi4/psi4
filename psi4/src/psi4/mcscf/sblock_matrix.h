@@ -35,68 +35,69 @@
 #include "block_matrix.h"
 #include "sblock_vector.h"
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
 // Smart version of BlockMatrix
-class SBlockMatrix
-{
-public:
-  SBlockMatrix();
-  SBlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size);
-  SBlockMatrix(std::string label, int nirreps, int*& rows_size, int*& cols_size);
-  SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size);
-  ~SBlockMatrix() { if(block_matrix_)
-                        if(block_matrix_->subtract_reference())
-                            block_matrix_ = 0;}
+class SBlockMatrix {
+   public:
+    SBlockMatrix();
+    SBlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size);
+    SBlockMatrix(std::string label, int nirreps, int*& rows_size, int*& cols_size);
+    SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size);
+    ~SBlockMatrix() {
+        if (block_matrix_)
+            if (block_matrix_->subtract_reference()) block_matrix_ = 0;
+    }
 
-  // Manual allocation
-  void allocate(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size);
-  void allocate(std::string label, int nirreps, int*& rows_size, int*& cols_size);
-  void allocate(std::string label, int nirreps, vecint& rows_size, vecint& cols_size);
+    // Manual allocation
+    void allocate(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size);
+    void allocate(std::string label, int nirreps, int*& rows_size, int*& cols_size);
+    void allocate(std::string label, int nirreps, vecint& rows_size, vecint& cols_size);
 
-  void subtract_reference(){
-      if(block_matrix_){
-          if(block_matrix_->subtract_reference())
-              block_matrix_ = 0;
-      }
-  }
+    void subtract_reference() {
+        if (block_matrix_) {
+            if (block_matrix_->subtract_reference()) block_matrix_ = 0;
+        }
+    }
 
-  // Copy constructor and assignment operator
-  SBlockMatrix             (SBlockMatrix& src);
-  SBlockMatrix& operator=  (SBlockMatrix& src);
-  SBlockMatrix& operator+= (SBlockMatrix& src);
-  SBlockMatrix& operator-= (SBlockMatrix& src);
+    // Copy constructor and assignment operator
+    SBlockMatrix(SBlockMatrix& src);
+    SBlockMatrix& operator=(SBlockMatrix& src);
+    SBlockMatrix& operator+=(SBlockMatrix& src);
+    SBlockMatrix& operator-=(SBlockMatrix& src);
 
-  // Allow access to the implementation object functions
-  const BlockMatrix* operator-> () const {return block_matrix_;}
-  BlockMatrix*       operator-> ()       {return block_matrix_;}
+    // Allow access to the implementation object functions
+    const BlockMatrix* operator->() const { return block_matrix_; }
+    BlockMatrix* operator->() { return block_matrix_; }
 
-  // Copy the implementation object
-//   void copy(SBlockMatrix& src);
+    // Copy the implementation object
+    //   void copy(SBlockMatrix& src);
 
-  // Access the implementation object
-  BlockMatrix* getBlockMatrix() {return block_matrix_;}
+    // Access the implementation object
+    BlockMatrix* getBlockMatrix() { return block_matrix_; }
 
-  //Operations
-  void multiply(bool transpose_A, bool transpose_B, SBlockMatrix& A, SBlockMatrix& B);
-  void diagonalize(SBlockMatrix& eigenmatrix,SBlockVector& eigenvalues);
-  void transpose() {block_matrix_->transpose();}
-  void scale(double factor) {block_matrix_->scale(factor);}
-  friend double dot(SBlockMatrix& A,SBlockMatrix& B);
+    // Operations
+    void multiply(bool transpose_A, bool transpose_B, SBlockMatrix& A, SBlockMatrix& B);
+    void diagonalize(SBlockMatrix& eigenmatrix, SBlockVector& eigenvalues);
+    void transpose() { block_matrix_->transpose(); }
+    void scale(double factor) { block_matrix_->scale(factor); }
+    friend double dot(SBlockMatrix& A, SBlockMatrix& B);
 
-  // Checking functions
-  bool is_allocated() {return (block_matrix_);}
-  void check(const char* cstr);
+    // Checking functions
+    bool is_allocated() { return (block_matrix_); }
+    void check(const char* cstr);
 
-private:
-  SBlockMatrix(BlockMatrix* block_matrix);
+   private:
+    SBlockMatrix(BlockMatrix* block_matrix);
 
-  BlockMatrix* block_matrix_;
+    BlockMatrix* block_matrix_;
 };
 
-}}
+}  // namespace mcscf
+}  // namespace psi
 
-#endif // _psi_src_lib_libmemtrix_sblock_matrix_h_
+#endif  // _psi_src_lib_libmemtrix_sblock_matrix_h_
 
 /*
   SBlockMatrix(std::string label_, int nirreps_, int*& block_size_);
