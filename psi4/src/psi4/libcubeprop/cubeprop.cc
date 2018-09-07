@@ -254,4 +254,4 @@ void CubeProperties::compute_basis_functions(const std::vector<int>& indices, co
 }
 void CubeProperties::compute_LOL(std::shared_ptr<Matrix> D, const std::string& key) { grid_->compute_LOL(D, key); }
 void CubeProperties::compute_ELF(std::shared_ptr<Matrix> D, const std::string& key) { grid_->compute_ELF(D, key); }
-}
+}  // namespace psi

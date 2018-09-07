@@ -286,7 +286,8 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const 
 
     // Atoms of molecule (Z, Q?, x, y, z)
     for (int A = 0; A < mol_->natom(); A++) {
-        fprintf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int)mol_->true_atomic_number(A), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
+        fprintf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int)mol_->true_atomic_number(A), 0.0, mol_->x(A), mol_->y(A),
+                mol_->z(A));
     }
 
     // Data, striped (x, y, z)
@@ -741,4 +742,4 @@ std::string CubicScalarGrid::ecp_header() {
     }
     return ecp_head.str();
 }
-}
+}  // namespace psi
