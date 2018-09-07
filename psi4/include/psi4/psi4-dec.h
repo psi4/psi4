@@ -33,22 +33,22 @@
 #include <string>
 #include <memory>
 
-///This is all defined in python.cc initialize
+/// This is all defined in python.cc initialize
 namespace psi {
 
-    class PsiOutStream;
-    extern PSI_API std::shared_ptr<PsiOutStream> outfile;
-    extern std::string outfile_name;
+class PsiOutStream;
+extern PSI_API std::shared_ptr<PsiOutStream> outfile;
+extern std::string outfile_name;
 
-    extern char *psi_file_prefix;
-    extern std::string restart_id; // Does not have a default
+extern char *psi_file_prefix;
+extern std::string restart_id;  // Does not have a default
 
-    enum PsiReturnType {Success, Failure, Balk, EndLoop};
+enum PsiReturnType { Success, Failure, Balk, EndLoop };
 
-    // Very useful regex for matching floating point numbers
-    #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+// Very useful regex for matching floating point numbers
+#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-    void die_if_not_converged();
+void die_if_not_converged();
 
-}//End namespace psi
+}  // End namespace psi
 #endif
