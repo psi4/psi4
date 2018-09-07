@@ -113,7 +113,10 @@ if os.path.isfile(infile):
     pyexitcode = backtick(exelist)
 elif os.path.isfile(infile.replace(".dat", ".py")):
     infile = infile.replace(".dat", ".py")
-    os.environ["PYTHONPATH"] = psilibdir
+    if "PYTHONPATH" in os.environ:
+        os.environ["PYTHONPATH"] += os.pathsep + psilibdir
+    else:
+        os.environ["PYTHONPATH"] = psilibdir
     outfile = os.path.dirname(infile) + os.path.sep + outfile
     pyexitcode = backtick(["python", infile, " > ", outfile])
 else:

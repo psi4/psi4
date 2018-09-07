@@ -1,0 +1,30 @@
+if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcelemental}))
+    include(FindPythonModule)
+    find_python_module(qcelemental) # ATLEAST 1.0.0 QUIET)
+endif()
+
+if(${qcelemental_FOUND})
+    message(STATUS "${Cyan}Found qcelemental${ColourReset}: ${PY_qcelemental} (found version ${qcelemental_VERSION})")
+    add_library(qcelemental_external INTERFACE)  # dummy
+
+else()
+    if(${CMAKE_INSIST_FIND_PACKAGE_qcelemental})
+        message(FATAL_ERROR "Suitable qcelemental could not be externally located as user insists")
+    endif()
+
+    include(ExternalProject)
+    message(STATUS "Suitable qcelemental could not be located, ${Magenta}Building qcelemental${ColourReset} instead.")
+
+    ExternalProject_Add(qcelemental_external
+        BUILD_ALWAYS 1
+        GIT_REPOSITORY https://github.com/qcdb/qcelemental
+        GIT_TAG master #a70c56f  # v1.0 + 13
+        CONFIGURE_COMMAND ""
+        UPDATE_COMMAND ""
+        BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
+        BUILD_IN_SOURCE 1
+        INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
+                                                      --record=record.txt
+                                                      --single-version-externally-managed
+                                                      --install-lib=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR})
+endif()
