@@ -1044,7 +1044,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
 
     bool convert = mol->units() == Molecule::Angstrom;
 
-#pragma openmp parallel for
+#pragma omp parallel for
     for (int i = 0; i < number_of_grid_points; ++i) {
         Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
         if (convert) origin /= pc_bohr2angstroms;
@@ -1054,10 +1054,10 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
         double Velec = Dtot->vector_dot(ints);
         double Vnuc = 0.0;
         int natom = mol->natom();
-        for (int i = 0; i < natom; i++) {
-            Vector3 dR = origin - mol->xyz(i);
+        for (int iat = 0; iat < natom; iat++) {
+            Vector3 dR = origin - mol->xyz(iat);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
         }
         double Vtot = Velec + Vnuc;
         (*output)[i] = Vtot;
