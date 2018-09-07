@@ -108,7 +108,7 @@ class CUHF : public HF {
 
     std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };
-}
-}
+}  // namespace scf
+}  // namespace psi
 
 #endif

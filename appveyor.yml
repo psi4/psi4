@@ -19,7 +19,6 @@ install:
                  networkx
                  ninja
                  numpy
-                 pthreads-win32
                  pybind11
                  pytest
   - conda clean --all
@@ -105,3 +104,8 @@ artifacts:
     name: psi4
   - path: build\tests
     name: tests
+
+branches:
+  only:
+    - master
+    # - 1.3.x

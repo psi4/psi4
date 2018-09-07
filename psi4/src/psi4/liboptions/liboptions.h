@@ -37,7 +37,7 @@
 #endif
 
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
+#include "psi4/libpsi4util/libpsi4util.h"  // Needed for Ref counting, string splitting, and conversions
 
 #include <memory>
 #include <string>
@@ -53,18 +53,16 @@ class DataTypeException : public PsiException {
 
 class IndexException : public PsiException {
    public:
-    IndexException(const std::string& message)
-        : PSIEXCEPTION(message + " is not a valid option.") {}
+    IndexException(const std::string& message) : PSIEXCEPTION(message + " is not a valid option.") {}
     IndexException(const std::string& message, const std::string& module)
         : PSIEXCEPTION(message + " is not a valid option for module " + module) {}
 };
 
 class DuplicateKeyException : public PsiException {
    public:
-    DuplicateKeyException(const std::string& key, const std::string& type1,
-                          const std::string& type2, const char* lfile, int lline)
-        : PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2,
-                       lfile, lline) {}
+    DuplicateKeyException(const std::string& key, const std::string& type1, const std::string& type2, const char* lfile,
+                          int lline)
+        : PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, lfile, lline) {}
 };
 
 class OptionsException : public PsiException {
@@ -414,16 +412,11 @@ class PSI_API Options {
     void set_global_array_string(std::string key, std::string val, DataType* entry);
     void set_global_array_int(std::string key, int val, DataType* entry);
     DataType* set_global_array_array(std::string key, DataType* entry);
-    DataType* set_local_array_entry(const std::string& module, const std::string& key,
-                                    DataType* entry, DataType* loc);
-    void set_local_array_double(const std::string& module, const std::string& key, double val,
-                                DataType* entry);
-    void set_local_array_string(const std::string& module, const std::string& key, std::string val,
-                                DataType* entry);
-    void set_local_array_int(const std::string& module, const std::string& key, int val,
-                             DataType* entry);
-    DataType* set_local_array_array(const std::string& module, const std::string& key,
-                                    DataType* entry);
+    DataType* set_local_array_entry(const std::string& module, const std::string& key, DataType* entry, DataType* loc);
+    void set_local_array_double(const std::string& module, const std::string& key, double val, DataType* entry);
+    void set_local_array_string(const std::string& module, const std::string& key, std::string val, DataType* entry);
+    void set_local_array_int(const std::string& module, const std::string& key, int val, DataType* entry);
+    DataType* set_local_array_array(const std::string& module, const std::string& key, DataType* entry);
 
     void clear(void);
 
@@ -466,5 +459,5 @@ class PSI_API Options {
     void print_globals();
     std::vector<std::string> list_globals();
 };
-}
+}  // namespace psi
 #endif

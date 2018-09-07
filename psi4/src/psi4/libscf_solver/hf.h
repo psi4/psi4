@@ -410,7 +410,7 @@ class HF : public Wavefunction {
     void clear_external_potentials() { external_potentials_.clear(); }
     void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
 };
-}
-}  // Namespaces
+}  // namespace scf
+}  // namespace psi
 
 #endif

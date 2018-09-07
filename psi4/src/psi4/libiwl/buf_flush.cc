@@ -37,8 +37,7 @@
 
 namespace psi {
 
-void IWL::flush(int lastbuf)
-{
+void IWL::flush(int lastbuf) {
     int idx;
     Label *lblptr;
     Value *valptr;
@@ -58,8 +57,10 @@ void IWL::flush(int lastbuf)
         idx_++;
     }
 
-    if (lastbuf) lastbuf_ = 1;
-    else lastbuf_ = 0;
+    if (lastbuf)
+        lastbuf_ = 1;
+    else
+        lastbuf_ = 0;
 
     put();
     idx_ = 0;
@@ -76,32 +77,32 @@ void IWL::flush(int lastbuf)
 ** David Sherrill, March 1995
 ** \ingroup IWL
 */
-void iwl_buf_flush(struct iwlbuf *Buf, int lastbuf)
-{
-  int idx;
-  Label *lblptr;
-  Value *valptr;
+void iwl_buf_flush(struct iwlbuf *Buf, int lastbuf) {
+    int idx;
+    Label *lblptr;
+    Value *valptr;
 
-  Buf->inbuf = Buf->idx;
-  lblptr = Buf->labels;
-  valptr = Buf->values;
+    Buf->inbuf = Buf->idx;
+    lblptr = Buf->labels;
+    valptr = Buf->values;
 
-  idx = 4 * Buf->idx;
+    idx = 4 * Buf->idx;
 
-  while (Buf->idx < Buf->ints_per_buf) {
-    lblptr[idx++] = 0;
-    lblptr[idx++] = 0;
-    lblptr[idx++] = 0;
-    lblptr[idx++] = 0;
-    valptr[Buf->idx] = 0.0;
-    Buf->idx++;
-  }
+    while (Buf->idx < Buf->ints_per_buf) {
+        lblptr[idx++] = 0;
+        lblptr[idx++] = 0;
+        lblptr[idx++] = 0;
+        lblptr[idx++] = 0;
+        valptr[Buf->idx] = 0.0;
+        Buf->idx++;
+    }
 
-  if (lastbuf) Buf->lastbuf = 1;
-  else Buf->lastbuf = 0;
+    if (lastbuf)
+        Buf->lastbuf = 1;
+    else
+        Buf->lastbuf = 0;
 
-  iwl_buf_put(Buf);
-  Buf->idx = 0;
+    iwl_buf_put(Buf);
+    Buf->idx = 0;
 }
-
 }

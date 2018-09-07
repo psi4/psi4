@@ -382,10 +382,10 @@ void USAPT0::print_trailer() {
             if (coupled_ind_) {
                 Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,r"];
                 Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,r"];
-            } // We always compute uncoupled induction in this routine
+            }  // We always compute uncoupled induction in this routine
             Process::environment.globals["SAPT IND20,U ENERGY"] = energies_["Ind20,u"];
             Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = energies_["Exch-Ind20,u"];
-            
+
             Process::environment.globals["SAPT HF TOTAL ENERGY"] = energies_["HF"];
             // Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
 
@@ -446,11 +446,11 @@ void USAPT0::fock_terms() {
     if (jk_memory < 0L) {
         throw PSIEXCEPTION("Too little static memory for USAPT::fock_terms");
     }
-    
+
     std::shared_ptr<JK> jk = JK::build_JK(primary_, jkfit_, options_, false, (size_t)jk_memory);
 
     jk->set_memory((size_t)jk_memory);
-    
+
     // ==> Generalized Fock Source Terms [Elst/Exch] <== //
 
     // => Steric Interaction Density Terms (T) <= //

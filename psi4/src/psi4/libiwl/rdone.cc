@@ -39,19 +39,17 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints,
-    int ntri, int erase, int printflg, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out));
+void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints, int ntri, int erase, int printflg,
+                   std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int nmo;
 
     psio->open(itap, PSIO_OPEN_OLD);
-    psio->read_entry(itap, label, (char *) ints, ntri*sizeof(double));
+    psio->read_entry(itap, label, (char *)ints, ntri * sizeof(double));
     psio->close(itap, !erase);
 
     if (printflg) {
-        nmo = (int) (sqrt((double) (1 + 8 * ntri)) - 1)/2;
+        nmo = (int)(sqrt((double)(1 + 8 * ntri)) - 1) / 2;
         print_array(ints, nmo, out);
     }
 }
@@ -79,23 +77,19 @@ void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints,
 **   \param out    = file pointer for output of ints or error messages
 ** \ingroup IWL
 */
-int iwl_rdone(int itap, const char *label, double *ints, int ntri, int erase,
-              int printflg,std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out));
-  int nmo;
+int iwl_rdone(int itap, const char *label, double *ints, int ntri, int erase, int printflg, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int nmo;
 
-  psio_open(itap, PSIO_OPEN_OLD);
-  psio_read_entry(itap, label, (char *) ints, ntri*sizeof(double));
-  psio_close(itap, !erase);
+    psio_open(itap, PSIO_OPEN_OLD);
+    psio_read_entry(itap, label, (char *)ints, ntri * sizeof(double));
+    psio_close(itap, !erase);
 
-  if (printflg) {
-    nmo = (int) (sqrt((double) (1 + 8 * ntri)) - 1)/2;
-    print_array(ints, nmo, out);
-  }
+    if (printflg) {
+        nmo = (int)(sqrt((double)(1 + 8 * ntri)) - 1) / 2;
+        print_array(ints, nmo, out);
+    }
 
-  return(1);
+    return (1);
 }
-
 }

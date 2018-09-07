@@ -38,11 +38,8 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
-    std::string out, int dirac)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out));
+void IWL::write_value(int p, int q, int r, int s, double value, int printflag, std::string out, int dirac) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
 
     int idx;
     Label *lblptr;
@@ -53,19 +50,18 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 
     if (std::fabs(value) > cutoff_) {
         idx = 4 * idx_;
-        if(dirac) {
-            lblptr[idx++] = (Label) p;
-            lblptr[idx++] = (Label) r;
-            lblptr[idx++] = (Label) q;
-            lblptr[idx++] = (Label) s;
+        if (dirac) {
+            lblptr[idx++] = (Label)p;
+            lblptr[idx++] = (Label)r;
+            lblptr[idx++] = (Label)q;
+            lblptr[idx++] = (Label)s;
+        } else {
+            lblptr[idx++] = (Label)p;
+            lblptr[idx++] = (Label)q;
+            lblptr[idx++] = (Label)r;
+            lblptr[idx++] = (Label)s;
         }
-        else {
-            lblptr[idx++] = (Label) p;
-            lblptr[idx++] = (Label) q;
-            lblptr[idx++] = (Label) r;
-            lblptr[idx++] = (Label) s;
-        }
-        valptr[idx_] = (Value) value;
+        valptr[idx_] = (Value)value;
 
         idx_++;
 
@@ -77,13 +73,10 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
         }
 
         if (printflag) {
-            if(dirac) {
-                printer->Printf( ">%d %d %d %d = %20.10f\n",
-                    p, r, q, s, value);
-            }
-            else {
-                printer->Printf( ">%d %d %d %d = %20.10f\n",
-                    p, q, r, s, value);
+            if (dirac) {
+                printer->Printf(">%d %d %d %d = %20.10f\n", p, r, q, s, value);
+            } else {
+                printer->Printf(">%d %d %d %d = %20.10f\n", p, q, r, s, value);
             }
         }
     }
@@ -105,54 +98,47 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 ** Daniel Crawford, Novemeber 1995
 ** \ingroup IWL
 */
-void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
-                     double value, int printflag, std::string out, int dirac)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out));
-  int idx;
-  Label *lblptr;
-  Value *valptr;
+void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s, double value, int printflag, std::string out,
+                     int dirac) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int idx;
+    Label *lblptr;
+    Value *valptr;
 
-  lblptr = Buf->labels;
-  valptr = Buf->values;
+    lblptr = Buf->labels;
+    valptr = Buf->values;
 
-  if (std::fabs(value) > Buf->cutoff) {
-    idx = 4 * Buf->idx;
-    if(dirac) {
-      lblptr[idx++] = (Label) p;
-      lblptr[idx++] = (Label) r;
-      lblptr[idx++] = (Label) q;
-      lblptr[idx++] = (Label) s;
+    if (std::fabs(value) > Buf->cutoff) {
+        idx = 4 * Buf->idx;
+        if (dirac) {
+            lblptr[idx++] = (Label)p;
+            lblptr[idx++] = (Label)r;
+            lblptr[idx++] = (Label)q;
+            lblptr[idx++] = (Label)s;
+        } else {
+            lblptr[idx++] = (Label)p;
+            lblptr[idx++] = (Label)q;
+            lblptr[idx++] = (Label)r;
+            lblptr[idx++] = (Label)s;
+        }
+        valptr[Buf->idx] = (Value)value;
+
+        Buf->idx++;
+
+        if (Buf->idx == Buf->ints_per_buf) {
+            Buf->lastbuf = 0;
+            Buf->inbuf = Buf->idx;
+            iwl_buf_put(Buf);
+            Buf->idx = 0;
+        }
+
+        if (printflag) {
+            if (dirac) {
+                printer->Printf(">%d %d %d %d = %20.10f\n", p, r, q, s, value);
+            } else {
+                printer->Printf(">%d %d %d %d = %20.10f\n", p, q, r, s, value);
+            }
+        }
     }
-    else {
-      lblptr[idx++] = (Label) p;
-      lblptr[idx++] = (Label) q;
-      lblptr[idx++] = (Label) r;
-      lblptr[idx++] = (Label) s;
-    }
-    valptr[Buf->idx] = (Value) value;
-
-    Buf->idx++;
-
-    if (Buf->idx == Buf->ints_per_buf) {
-      Buf->lastbuf = 0;
-      Buf->inbuf = Buf->idx;
-      iwl_buf_put(Buf);
-      Buf->idx = 0;
-    }
-
-    if (printflag) {
-      if(dirac) {
-	printer->Printf( ">%d %d %d %d = %20.10f\n",
-		p, r, q, s, value);
-      }
-      else {
-	printer->Printf( ">%d %d %d %d = %20.10f\n",
-		p, q, r, s, value);
-      }
-    }
-  }
 }
-
 }
