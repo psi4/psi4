@@ -129,7 +129,7 @@ public:
 
     // => Computers <= //
 
-    virtual void compute_points(std::shared_ptr<BlockOPoints> block) = 0;
+    virtual void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) = 0;
 
     // => Accessors <= //
 
@@ -155,7 +155,7 @@ public:
     std::shared_ptr<Matrix> orbital_value(const std::string& key);
     std::map<std::string, SharedMatrix>& orbital_values() { return orbital_values_; }
 
-    virtual void compute_orbitals(std::shared_ptr<BlockOPoints> block) = 0;
+    virtual void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true) = 0;
     virtual void set_Cs(SharedMatrix Cocc) = 0;
     virtual void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) = 0;
 };
@@ -194,14 +194,14 @@ public:
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
 
-    void compute_points(std::shared_ptr<BlockOPoints> block);
+    void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
 
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
     void print(std::string out_fname = "outfile", int print = 2) const;
 
-    void compute_orbitals(std::shared_ptr<BlockOPoints> block);
+    void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
     size_t block_index(void) { return block_index_; }
@@ -252,14 +252,14 @@ public:
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
     void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
 
-    void compute_points(std::shared_ptr<BlockOPoints> block);
+    void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
 
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
     void print(std::string out_fname = "outfile", int print = 2) const;
 
-    void compute_orbitals(std::shared_ptr<BlockOPoints> block);
+    void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
     size_t block_index(void) { return block_index_; }

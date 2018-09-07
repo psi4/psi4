@@ -68,7 +68,7 @@ void VBase::common_init() {
     v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
     vv10_rho_cutoff_ = options_.get_double("DFT_VV10_RHO_CUTOFF");
     grac_initialized_ = false;
-    cache_map_order = 0;
+    cache_map_deriv_ = -1;
     num_threads_ = 1;
 #ifdef _OPENMP
     num_threads_ = omp_get_max_threads();
@@ -204,6 +204,8 @@ size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
 void VBase::build_cache_map(void){
 
+    cache_map_.clear();
+    cache_map_deriv_ = point_workers_[0]->deriv();
     int rank = 0;
     #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
@@ -593,7 +595,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 
         // Compute Rho, Phi, etc
         parallel_timer_on("Properties", rank);
-        pworker->compute_points(block);
+        pworker->compute_points(block, false);
         parallel_timer_off("Properties", rank);
 
         // Compute functional values
@@ -1332,12 +1334,16 @@ void UV::initialize() {
         // Need a points worker per thread
         std::shared_ptr<PointFunctions> point_tmp = std::make_shared<UKSFunctions>(primary_, max_points, max_functions);
         point_tmp->set_ansatz(functional_->ansatz());
+        point_tmp->set_cache_map(&cache_map_);
         point_workers_.push_back(point_tmp);
     }
+
+    build_cache_map();
 }
 void UV::finalize() { VBase::finalize(); }
 void UV::print_header() const { VBase::print_header(); }
 void UV::compute_V(std::vector<SharedMatrix> ret) {
+    timer_on("UV: Form V");
     if ((D_AO_.size() != 2) || (ret.size() != 2)) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
     }
@@ -1414,7 +1420,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         int nlocal = function_map.size();
 
         parallel_timer_on("Properties", rank);
-        pworker->compute_points(block);
+        pworker->compute_points(block, false);
         parallel_timer_off("Properties", rank);
 
         parallel_timer_on("Functional", rank);
@@ -1616,6 +1622,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n", quad_values_["RHO_BX"],
                         quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
+    timer_off("UV: Form V");
 }
 void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
     timer_on("UV: Form Vx");
