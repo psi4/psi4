@@ -30,7 +30,8 @@ import re
 
 import numpy as np
 
-from .. import periodictable
+import qcelemental as qcel
+
 from ..exceptions import *
 from . import regex
 
@@ -179,23 +180,18 @@ def reconcile_nucleus(A=None,
     def offer_element_symbol(e):
         """Given an element, what can be suggested and asserted about Z, A, mass?"""
 
-        try:
-            _Z = periodictable.el2z[e.upper()]
-        except KeyError as err:
-            raise ValidationError('Invalid element: {}'.format(e))
+        _Z = qcel.periodictable.to_Z(e)
         offer_atomic_number(_Z)
 
     def offer_atomic_number(z):
         """Given an atomic number, what can be suggested and asserted about Z, A, mass?"""
 
         z = int(z)
-        if z not in periodictable.z2el:
-            raise ValidationError('Invalid element: {}'.format(z))
 
-        z_symbol = periodictable.z2el[z]
-        z_mass = periodictable.z2mass[z]
+        z_symbol = qcel.periodictable.to_E(z)
+        z_mass = qcel.periodictable.to_mass(z)
         re_eliso = re.compile(z_symbol + '[0-9]{1,3}')  # lone symbol (val equals most common isotope) will not match
-        z_a2mass = {int(k[len(z_symbol):]): v for k, v in periodictable.eliso2mass.items() if re_eliso.match(k)}
+        z_a2mass = {int(k[len(z_symbol):]): float(v) for k, v in qcel.periodictable._eliso2mass.items() if re_eliso.match(k)}
         z_a2mass_min = min(z_a2mass.keys())
         z_a2mass_max = max(z_a2mass.keys())
         z_mass2a = {v: k for k, v in z_a2mass.items()}
@@ -228,11 +224,8 @@ def reconcile_nucleus(A=None,
         """Given a mass number and element, what can be suggested and asserted about A, mass?"""
 
         a = int(a)
-        a_eliso = periodictable.z2el[z] + str(a)
-        try:
-            a_mass = periodictable.eliso2mass[a_eliso]
-        except KeyError as err:
-            raise ValidationError('Invalid nuclide: {}'.format(a_eliso))
+        a_eliso = qcel.periodictable.to_E(z) + str(a)
+        a_mass = qcel.periodictable.to_mass(a_eliso)
 
         A_exact.append(a)
         A_range.append(lambda x, a=a: x == a)
@@ -247,13 +240,13 @@ def reconcile_nucleus(A=None,
 
         m = float(m)
         m_a = int(round(m, 0))
-        m_eliso = periodictable.z2el[z] + str(m_a)
+        m_eliso = qcel.periodictable.to_E(z) + str(m_a)
 
         try:
-            if abs(periodictable.eliso2mass[m_eliso] - m) > mtol:
+            if abs(qcel.periodictable.to_mass(m_eliso) - m) > mtol:
                 # only offer A if known nuclide. C@12.4 != 12C
                 m_a = -1
-        except KeyError:
+        except qcel.NotAnElementError:
             m_a = -1
 
         A_exact.append(m_a)
@@ -309,7 +302,7 @@ def reconcile_nucleus(A=None,
             offer_element_symbol(lbl_E)
 
     Z_final = reconcile(Z_exact, Z_range, 'atomic number')
-    E_final = periodictable.z2el[Z_final].capitalize()
+    E_final = qcel.periodictable.to_E(Z_final)
 
     # <<< collect more evidence for A/m, then reconcile them
 

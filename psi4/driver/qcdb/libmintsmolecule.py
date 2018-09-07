@@ -38,7 +38,6 @@ import numpy as np
 
 import qcelemental as qcel
 
-from . import periodictable
 from .vecutil import *
 from .exceptions import *
 from .libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
@@ -383,7 +382,7 @@ class LibmintsMolecule(object):
         if math.fabs(self.atoms[atom].Z() - int(self.atoms[atom].Z())) > 0.0:
             print("""WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n""")
             # TODO outfile
-        return periodictable.z2mass[int(self.atoms[atom].Z())]
+        return qcel.periodictable.to_mass(int(self.atoms[atom].Z()))
 
     def set_mass(self, atom, mass):
         """Set the mass of a particular atom (good for isotopic substitutions).

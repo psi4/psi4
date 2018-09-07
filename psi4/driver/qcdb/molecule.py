@@ -278,11 +278,10 @@ class Molecule(LibmintsMolecule):
                     fileAtom = xyzM.match(text[4 + i]).group(4).upper()
 
                     # Check that the atom symbol is valid
-                    if not fileAtom in periodictable.el2z:
-                        raise ValidationError('Illegal atom symbol in geometry specification: %s' % (fileAtom))
+                    z = qcel.periodictable.to_Z(fileAtom)
 
                     # Add it to the molecule.
-                    instance.add_atom(periodictable.el2z[fileAtom], fileX, fileY, fileZ, fileAtom, periodictable.el2mass[fileAtom], periodictable.el2z[fileAtom])
+                    instance.add_atom(z, fileX, fileY, fileZ, fileAtom, qcel.periodictable.to_mass(fileAtom), z)
 
                 else:
                     raise ValidationError("Molecule::init_with_mol2: Malformed atom information line %d." % (i + 5))
@@ -1439,7 +1438,7 @@ class Molecule(LibmintsMolecule):
         molrec['geom'] = geom.reshape((-1))
 
         molrec['elea'] = np.array([self.mass_number(at) for at in range(nat)])
-        molrec['elez'] = np.array([periodictable.el2z[self.symbol(at).upper()] for at in range(nat)])
+        molrec['elez'] = np.array([qcel.periodictable.to_Z(self.symbol(at)) for at in range(nat)])
         molrec['elem'] = np.array([self.symbol(at).capitalize() for at in range(nat)])
         molrec['mass'] = np.array([self.mass(at) for at in range(nat)])
         molrec['real'] = np.array([bool(self.Z(at)) for at in range(nat)])

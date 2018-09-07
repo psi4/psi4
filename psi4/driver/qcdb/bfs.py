@@ -36,8 +36,6 @@ import numpy as np
 
 import qcelemental as qcel
 
-from . import periodictable
-
 
 def BFS(geom, elem, seed_atoms=None, bond_threshold=1.20):
     """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
@@ -155,7 +153,7 @@ def _get_covalent_radii(elem):
     try:
         caps = [el.capitalize() for el in elem]
     except AttributeError:
-        caps = [periodictable.z2el[z].capitalize() for z in elem]
+        caps = [qcel.periodictable.to_E(z) for z in elem]
 
     covrad = np.fromiter((covalent_radii_lookup[caps[at]] for at in range(nat)), dtype=np.float, count=nat)
     return np.divide(covrad, qcel.constants.bohr2angstroms)

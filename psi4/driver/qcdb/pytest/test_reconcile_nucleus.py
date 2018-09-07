@@ -1,12 +1,13 @@
 import pytest
 
 import qcdb
+import qcelemental as qcel
 
-co_dominant = (59, 27, 'Co', 58.933195048, True, '')
-co_dominant_mine = (59, 27, 'Co', 58.933195048, True, '_mine')
+co_dominant = (59, 27, 'Co', 58.93319429, True, '')
+co_dominant_mine = (59, 27, 'Co', 58.93319429, True, '_mine')
 co_dominant_shortmass = (59, 27, 'Co', 58.933, True, '')
-co60 = (60, 27, 'Co', 59.933817059, True, '')
-co60ghost = (60, 27, 'Co', 59.933817059, False, '')
+co60 = (60, 27, 'Co', 59.93381630, True, '')
+co60ghost = (60, 27, 'Co', 59.93381630, False, '')
 co_unspecified = (-1, 27, 'Co', 60.6, True, '')
 
 
@@ -23,7 +24,7 @@ def test_reconcile_nucleus_3():
 
 
 def test_reconcile_nucleus_4():
-    assert co_dominant == qcdb.molparse.reconcile_nucleus(E='cO', mass=58.933195048)
+    assert co_dominant == qcdb.molparse.reconcile_nucleus(E='cO', mass=58.93319429)
 
 
 def test_reconcile_nucleus_5():
@@ -31,7 +32,7 @@ def test_reconcile_nucleus_5():
 
 
 def test_reconcile_nucleus_6():
-    assert co_dominant == qcdb.molparse.reconcile_nucleus(A=59, E='cO', mass=58.933195048)
+    assert co_dominant == qcdb.molparse.reconcile_nucleus(A=59, E='cO', mass=58.93319429)
 
 
 def test_reconcile_nucleus_7():
@@ -43,17 +44,17 @@ def test_reconcile_nucleus_8():
 
 
 def test_reconcile_nucleus_9():
-    assert co_dominant == qcdb.molparse.reconcile_nucleus(label='co@58.933195048')
+    assert co_dominant == qcdb.molparse.reconcile_nucleus(label='co@58.93319429')
 
 
 def test_reconcile_nucleus_10():
     assert co_dominant == qcdb.molparse.reconcile_nucleus(
-        A=59, Z=27, E='cO', mass=58.933195048, label='co@58.933195048')
+        A=59, Z=27, E='cO', mass=58.93319429, label='co@58.93319429')
 
 
 def test_reconcile_nucleus_11():
     assert co_dominant == qcdb.molparse.reconcile_nucleus(
-        A=59, Z=27, E='cO', mass=58.933195048, label='27@58.933195048')
+        A=59, Z=27, E='cO', mass=58.93319429, label='27@58.93319429')
 
 
 def test_reconcile_nucleus_12():
@@ -65,7 +66,7 @@ def test_reconcile_nucleus_13():
 
 
 def test_reconcile_nucleus_14():
-    assert co_dominant_mine == qcdb.molparse.reconcile_nucleus(label='co_mIne@58.933195048')
+    assert co_dominant_mine == qcdb.molparse.reconcile_nucleus(label='co_mIne@58.93319429')
 
 
 def test_reconcile_nucleus_15():
@@ -99,11 +100,11 @@ def test_reconcile_nucleus_21():
 
 
 def test_reconcile_nucleus_22():
-    assert co60 == qcdb.molparse.reconcile_nucleus(Z=27, mass=59.933817059)
+    assert co60 == qcdb.molparse.reconcile_nucleus(Z=27, mass=59.93381630)
 
 
 def test_reconcile_nucleus_23():
-    assert co60 == qcdb.molparse.reconcile_nucleus(A=60, Z=27, mass=59.933817059)
+    assert co60 == qcdb.molparse.reconcile_nucleus(A=60, Z=27, mass=59.93381630)
 
 
 def test_reconcile_nucleus_24():
@@ -111,11 +112,11 @@ def test_reconcile_nucleus_24():
 
 
 def test_reconcile_nucleus_25():
-    assert co60 == qcdb.molparse.reconcile_nucleus(label='27', mass=59.933817059)
+    assert co60 == qcdb.molparse.reconcile_nucleus(label='27', mass=59.93381630)
 
 
 def test_reconcile_nucleus_26():
-    assert co60 == qcdb.molparse.reconcile_nucleus(label='Co', mass=59.933817059)
+    assert co60 == qcdb.molparse.reconcile_nucleus(label='Co', mass=59.93381630)
 
 
 def test_reconcile_nucleus_27():
@@ -127,7 +128,7 @@ def test_reconcile_nucleus_28():
 
 
 def test_reconcile_nucleus_29():
-    assert co60ghost == qcdb.molparse.reconcile_nucleus(A=60, Z=27, mass=59.933817059, real=0)
+    assert co60ghost == qcdb.molparse.reconcile_nucleus(A=60, Z=27, mass=59.93381630, real=0)
 
 
 def test_reconcile_nucleus_30():
@@ -135,11 +136,11 @@ def test_reconcile_nucleus_30():
 
 
 def test_reconcile_nucleus_31():
-    assert co60ghost == qcdb.molparse.reconcile_nucleus(label='Gh(27)', mass=59.933817059)
+    assert co60ghost == qcdb.molparse.reconcile_nucleus(label='Gh(27)', mass=59.93381630)
 
 
 def test_reconcile_nucleus_32():
-    assert co60ghost == qcdb.molparse.reconcile_nucleus(label='@Co', mass=59.933817059)
+    assert co60ghost == qcdb.molparse.reconcile_nucleus(label='@Co', mass=59.93381630)
 
 
 def test_reconcile_nucleus_33():
@@ -168,7 +169,7 @@ def test_reconcile_nucleus_38():
 
 
 def test_reconcile_nucleus_39():
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcel.NotAnElementError):
         qcdb.molparse.reconcile_nucleus(A=80, Z=27)
 
 
@@ -187,7 +188,7 @@ def test_reconcile_nucleus_42():
 
 
 def test_reconcile_nucleus_43():
-    with pytest.raises(qcdb.ValidationError):
+    with pytest.raises(qcel.NotAnElementError):
         qcdb.molparse.reconcile_nucleus(Z=-27, mass=200, nonphysical=True)
 
 
