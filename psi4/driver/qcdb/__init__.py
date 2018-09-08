@@ -35,6 +35,8 @@ from __future__ import division
 __version__ = '0.4'
 __author__ = 'Lori A. Burns'
 
+from qcelemental import constants, periodictable
+
 # Load Python modules
 import sys
 from .molecule import Molecule, compute_atom_map
