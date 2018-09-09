@@ -728,18 +728,18 @@ def _process_cbs_kwargs(kwargs):
             metadata.append({})
             if "wfn" in item:
                 metadata[-1]["wfn"] = item.pop("wfn")
-                metadata[-1]["basis"] = _expand_bracketed_basis(item.pop("basis"))
+                metadata[-1]["basis"] = _expand_bracketed_basis(item.pop("basis").lower())
                 metadata[-1]["scheme"] = item.pop("scheme",
-                                                  _get_default_xtpl(len(metadata[-1]["basis"][1]), "hf")) 
+                                                  _get_default_xtpl(len(metadata[-1]["basis"][1]), "scf")) 
             else:
                 metadata[-1]["wfn_hi"] = item.get("wfn_hi")
                 metadata[-1]["wfn_lo"] = item.pop("wfn_lo", metadata[-2].get("wfn", 
                                                             metadata[-2].get("wfn_hi")))
-                metadata[-1]["basis_hi"] = _expand_bracketed_basis(item.get("basis_hi"))
+                metadata[-1]["basis_hi"] = _expand_bracketed_basis(item.get("basis_hi").lower())
                 metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.pop("basis_lo", 
-                                                                   item.pop("basis_hi")))
+                                                                   item.pop("basis_hi")).lower())
                 metadata[-1]["scheme"] = item.pop("scheme",
-                                                  _get_default_xtpl(len(metadata[-1]["basis_hi"][1]), "corl"))
+                                                  _get_default_xtpl(len(metadata[-1]["basis_hi"][1]),"corl"))
             metadata[-1]["alpha"] = item.pop("alpha", None)
             metadata[-1]["options"] = item.pop("options", False)
     else:

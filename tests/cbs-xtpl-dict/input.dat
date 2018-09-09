@@ -1,0 +1,59 @@
+#! Extrapolated water energies
+import numpy as np
+
+nucenergy_ref =   8.801465529972    #TEST
+scf_dz_ref    = -76.0213974638      #TEST
+scf_adtz_ref  = -76.059124724830    #TEST
+mp2_addz_ref  = -76.261216702741    #TEST
+mp2_atz_ref   = -76.341088480148    #TEST
+mp2_adtz_ref  = -76.3667778886      #TEST
+cbs_ref       = -76.371589026502    #TEST
+ae_ref        = -76.356547268183    #TEST
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Use DF to save some time
+set {
+    scf_type      df
+    mp2_type      df
+    cc_type       df
+    e_convergence 7
+    reference     rhf
+}
+
+h2o.update_geometry()
+compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+# SCF TESTS
+scf_dz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pVDZ"}])
+compare_values(scf_dz_ref, scf_dz, 6, "SCF/DZ Energy Check")  #TEST
+
+scf_adtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pV[2T]Z"}])
+compare_values(scf_adtz_ref, scf_adtz, 6, "SCF/a[DT]Z Energy Check")  #TEST
+
+
+# MP2 TESTS
+mp2_atz = energy(cbs, cbs_metadata = [{"wfn": "mp2", "basis": "aug-cc-pVTZ"}])
+compare_values(mp2_atz_ref, mp2_atz, 6, "MP2/aTZ Energy Check")  #TEST
+
+mp2_adtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pvtz"},
+                                       {"wfn_hi": "mp2", "basis_hi": "aug-cc-pv[dt]z"}])
+compare_values(mp2_adtz_ref, mp2_adtz, 6, "MP2/a[DT]Z Energy Check")  #TEST
+
+# D:CCSD(T) TESTS
+
+cbs_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                      {"wfn_hi": "mp2", "basis_hi": "cc-pv[dt]z"},
+                                      {"wfn_hi": "ccsd(t)", "basis_hi": "cc-pvdz"}])
+compare_values(cbs_ref, cbs_dtz, 6, "MP2/[DT]Z + D:CCSD(T)/DZ Energy Check")  #TEST
+
+ae_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                      {"wfn_hi": "mp2", "basis_hi": "cc-pv[dt]z"},
+                                      {"wfn_hi": "mp2", "basis_hi": "cc-pvdz",
+                                       "options": {"freeze_core": "True"}}])
+compare_values(ae_ref, ae_dtz, 6, "MP2/[DT]Z + D:(AE-FC)MP2/DZ Energy Check")  #TEST
+

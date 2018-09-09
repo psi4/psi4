@@ -37,8 +37,8 @@ set(py3_fail_list pywrap-freq-e-sowreap
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
-                  cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c cc13d cc14 cc15 cc16
-                  cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28
+                  cbs-xtpl-wrapper cbs-xtpl-dict cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c 
+                  cc13d cc14 cc15 cc16 cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
                   cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
