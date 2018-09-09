@@ -24,6 +24,8 @@ install:
                  pybind11
                  pytest
                  python=3.6
+                 pip
+                 setuptools
   - conda clean --all
   - activate %CONDA_ENV%
   - conda list
