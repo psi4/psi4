@@ -703,6 +703,94 @@ def return_energy_components():
 
 VARH = return_energy_components()
 
+def _get_default_xtpl(nbasis, xtpl_type):
+    if nbasis == 1:
+        return xtpl_highest_1
+    elif xtpl_type ==  "scf":
+        if nbasis == 2:
+            return scf_xtpl_helgaker_2
+        elif nbasis == 3:
+            return scf_xtpl_helgaker_3
+        else:
+            raise ValidationError("Wrong number of basis sets supplied to scf_xtpl: %d" % nbasis)
+    elif xtpl_type ==  "corl":
+        if nbasis == 2:
+            return corl_xtpl_helgaker_2
+        else:
+            raise ValidationError("Wrong number of basis sets supplied to corl_xtpl: %d" % nbasis)
+            
+
+def _process_cbs_kwargs(kwargs):
+    metadata = []
+    if "cbs_metadata" in kwargs:
+        cbs_metadata = kwargs.pop("cbs_metadata")
+        for item in cbs_metadata:
+            metadata.append({})
+            if "wfn" in item:
+                metadata[-1]["wfn"] = item.pop("wfn")
+                metadata[-1]["basis"] = _expand_bracketed_basis(item.pop("basis"))
+                metadata[-1]["scheme"] = item.pop("scheme",
+                                                  _get_default_xtpl(len(metadata[-1]["basis"][1]), "scf")) 
+            else:
+                metadata[-1]["wfn_hi"] = item.get("wfn_hi")
+                metadata[-1]["wfn_lo"] = item.pop("wfn_lo", metadata[-2].get("wfn", 
+                                                            metadata[-2].get("wfn_hi")))
+                metadata[-1]["basis_hi"] = _expand_bracketed_basis(item.get("basis_hi"))
+                metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.pop("basis_lo", 
+                                                                   item.pop("basis_hi")))
+                metadata[-1]["scheme"] = item.pop("scheme",
+                                                  _get_default_xtpl(len(metadata[-1]["basis_hi"][1]), "corl"))
+            metadata[-1]["alpha"] = item.pop("alpha", None)
+            metadata[-1]["options"] = item.pop("options", None)
+    else:
+        scf = {}
+        corl = {}
+        delta = {}
+        delta2 = {}
+        corl["wfn_hi"] = kwargs.get("corl_wfn", False)
+        if corl["wfn_hi"] and corl["wfn_hi"].startswith("c4-"):
+            default_scf = "c4-scf"
+        else:
+            default_scf = "scf"
+        scf["wfn"] = kwargs.get("scf_wfn", default_scf)
+        if "scf_basis" in kwargs:
+            scf["basis"] = _expand_bracketed_basis(kwargs.get("scf_basis"))
+        if "corl_basis" in kwargs:
+            corl["basis_hi"] = _expand_bracketed_basis(kwargs.get("corl_basis"))
+            corl["basis_lo"] = corl["basis_hi"]
+            if "basis" not in scf:
+                scf["basis"] = ([corl["basis_hi"][0][-1]],[corl["basis_hi"][1][-1]])
+        scf["scheme"] = kwargs.get("scf_scheme", _get_default_xtpl(len(scf["basis"][1]), "scf"))
+        scf["alpha"] = kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None))
+        metadata.append(scf)
+        if corl["wfn_hi"]:
+            corl["wfn_lo"] = kwargs.get("corl_scheme_lesser", default_scf)
+            corl["scheme"] = kwargs.get("corl_scheme", _get_default_xtpl(len(corl["basis_hi"][1]), "corl"))
+            corl["alpha"] = kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None))
+            metadata.append(corl)
+        delta["wfn_hi"] = kwargs.get("delta_wfn", False)
+        if delta["wfn_hi"] and corl["wfn_hi"]:
+            delta["wfn_lo"] = kwargs.get("delta_wfn_lesser", corl["wfn_hi"])
+            delta["basis_hi"] = _expand_bracketed_basis(kwargs.get("delta_basis"))
+            delta["basis_lo"] = delta["basis_hi"]
+            delta["scheme"] = kwargs.get("delta_scheme", _get_default_xtpl(len(delta["basis_hi"][1]), "corl"))
+            delta["alpha"] = kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None))
+            metadata.append(delta)
+        elif delta["wfn_hi"]:
+            raise ValidationError("Delta function supplied without corl_wfn defined.")
+        delta2["wfn_hi"] = kwargs.get("delta2_wfn", False)
+        if delta2["wfn_hi"] and delta["wfn_hi"] and corl["wfn_hi"]:
+            delta2["wfn_lo"] = kwargs.get("delta2_wfn_lesser", delta["wfn_hi"])
+            delta2["basis_hi"] = _expand_bracketed_basis(kwargs.get("delta2_basis"))
+            delta2["basis_lo"] = delta2["basis_hi"]
+            delta2["scheme"] = kwargs.get("delta2_scheme", _get_default_xtpl(len(delta2["basis_hi"][1]), "corl"))
+            delta2["alpha"] = kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None))
+            metadata.append(delta2)
+        elif delta2["wfn_hi"]:
+            raise ValidationError("Delta2 function supplied without delta_wfn or corl_wfn defined.")
+    return metadata
+        
+            
 
 ###################################
 ##  Start of Complete Basis Set  ##
@@ -1084,15 +1172,11 @@ def cbs(func, label, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    metadata = _process_cbs_kwargs(kwargs)
+    # print(metadata)
     return_wfn = kwargs.pop('return_wfn', False)
     verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
-    cbs_alpha = {
-        'scf': kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None)),
-        'corl': kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None)),
-        'delta': kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None)),
-        'delta2': kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None)),
-    }
 
     # Establish function to call (only energy makes sense for cbs)
     if ptype not in ['energy', 'gradient', 'hessian']:
@@ -1105,14 +1189,6 @@ def cbs(func, label, **kwargs):
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
 
-    do_scf = True
-    do_corl = False
-    do_delta = False
-    do_delta2 = False
-    do_delta3 = False
-    do_delta4 = False
-    do_delta5 = False
-
     user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
 
     # Make sure the molecule the user provided is the active one
@@ -1121,233 +1197,20 @@ def cbs(func, label, **kwargs):
     molstr = molecule.create_psi4_string_from_molecule()
     natom = molecule.natom()
 
-    # Establish method for correlation energy
-    cbs_corl_wfn = kwargs.pop('corl_wfn', '').lower()
-    if cbs_corl_wfn:
-        do_corl = True
+    if metadata[0]["wfn"] not in VARH.keys():
+            raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[0]["wfn"]))
 
-    # Establish method for reference energy
-    if do_corl and cbs_corl_wfn.startswith('c4-'):
-        default_scf = 'c4-hf'
-    else:
-        default_scf = 'hf'
-    cbs_scf_wfn = kwargs.pop('scf_wfn', default_scf).lower()
+    if len(metadata) > 1 and metadata[1]["wfn_hi"] and metadata[1]["wfn_hi"] not in VARH.keys():
+            raise ValidationError("""Requested higher CORL method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[1]["wfn_hi"]))
+    if len(metadata) > 1 and metadata[1]["wfn_lo"] and metadata[1]["wfn_lo"] not in VARH.keys():
+            raise ValidationError("""Requested lesser CORL method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[1]["wfn_lo"]))
 
-    if do_scf:
-        if cbs_scf_wfn not in VARH.keys():
-            raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_scf_wfn))
-
-    # ... resume correlation logic
-    if do_corl:
-        if cbs_corl_wfn not in VARH.keys():
-            raise ValidationError("""Requested CORL method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_corl_wfn))
-
-        cbs_corl_wfn_lesser = kwargs.get('corl_wfn_lesser', cbs_scf_wfn).lower()
-        if cbs_corl_wfn_lesser not in VARH.keys():
-            raise ValidationError("""Requested CORL method lesser '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta_wfn_lesser))
-
-    # Establish method for delta correction energy
-    if 'delta_wfn' in kwargs:
-        do_delta = True
-        cbs_delta_wfn = kwargs['delta_wfn'].lower()
-        if cbs_delta_wfn not in VARH.keys():
-            raise ValidationError("""Requested DELTA method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta_wfn))
-
-        cbs_delta_wfn_lesser = kwargs.get('delta_wfn_lesser', cbs_corl_wfn).lower()
-        if cbs_delta_wfn_lesser not in VARH.keys():
-            raise ValidationError("""Requested DELTA method lesser '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta_wfn_lesser))
-
-    # Establish method for second delta correction energy
-    if 'delta2_wfn' in kwargs:
-        do_delta2 = True
-        cbs_delta2_wfn = kwargs['delta2_wfn'].lower()
-        if cbs_delta2_wfn not in VARH.keys():
-            raise ValidationError("""Requested DELTA2 method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta2_wfn))
-
-        cbs_delta2_wfn_lesser = kwargs.get('delta2_wfn_lesser', cbs_delta_wfn).lower()
-        if cbs_delta2_wfn_lesser not in VARH.keys():
-            raise ValidationError("""Requested DELTA2 method lesser '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta2_wfn_lesser))
-
-#    # Establish method for third delta correction energy
-#    if 'delta3_wfn' in kwargs:
-#        do_delta3 = True
-#        cbs_delta3_wfn = kwargs['delta3_wfn'].lower()
-#        if cbs_delta3_wfn not in VARH.keys():
-#            raise ValidationError("""Requested DELTA3 method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta3_wfn))
-#
-#        cbs_delta3_wfn_lesser = kwargs.get('delta3_wfn_lesser', cbs_delta2_wfn).lower()
-#        if not (cbs_delta3_wfn_lesser in VARH.keys()):
-#            raise ValidationError("""Requested DELTA3 method lesser '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_delta3_wfn_lesser))
-#
-#    # Establish method for fourth delta correction energy
-#    if 'delta4_wfn' in kwargs:
-#        do_delta4 = True
-#        cbs_delta4_wfn = kwargs['delta4_wfn'].lower()
-#        if not (cbs_delta4_wfn in VARH.keys()):
-#            raise ValidationError('Requested DELTA4 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta4_wfn))
-#
-#        if 'delta4_wfn_lesser' in kwargs:
-#            cbs_delta4_wfn_lesser = kwargs['delta4_wfn_lesser'].lower()
-#        else:
-#            cbs_delta4_wfn_lesser = cbs_delta3_wfn
-#        if not (cbs_delta4_wfn_lesser in VARH.keys()):
-#            raise ValidationError('Requested DELTA4 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta4_wfn_lesser))
-#
-#    # Establish method for fifth delta correction energy
-#    if 'delta5_wfn' in kwargs:
-#        do_delta5 = True
-#        cbs_delta5_wfn = kwargs['delta5_wfn'].lower()
-#        if not (cbs_delta5_wfn in VARH.keys()):
-#            raise ValidationError('Requested DELTA5 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta5_wfn))
-#
-#        if 'delta5_wfn_lesser' in kwargs:
-#            cbs_delta5_wfn_lesser = kwargs['delta5_wfn_lesser'].lower()
-#        else:
-#            cbs_delta5_wfn_lesser = cbs_delta4_wfn
-#        if not (cbs_delta5_wfn_lesser in VARH.keys()):
-#            raise ValidationError('Requested DELTA5 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta5_wfn_lesser))
-
-    # Check that user isn't skipping steps in scf + corl + delta + delta2 sequence
-    if   do_scf and not do_corl and not do_delta and not do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
-        pass
-    elif do_scf and do_corl and not do_delta and not do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
-        pass
-    elif do_scf and do_corl and do_delta and not do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
-        pass
-    elif do_scf and do_corl and do_delta and do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
-        pass
-    #elif do_scf and do_corl and do_delta and do_delta2 and do_delta3 and not do_delta4 and not do_delta5:
-    #    pass
-    #elif do_scf and do_corl and do_delta and do_delta2 and do_delta3 and do_delta4 and not do_delta5:
-    #    pass
-    #elif do_scf and do_corl and do_delta and do_delta2 and do_delta3 and do_delta4 and do_delta5:
-    #    pass
-    else:
-        raise ValidationError('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) + delta3 (%s) + delta4 (%s) + delta5 (%s) not valid. These steps are cummulative.' %
-            (do_scf, do_corl, do_delta, do_delta2, do_delta3, do_delta4, do_delta5))
-
-    # Establish list of valid basis sets for correlation energy
-    if do_corl:
-        if 'corl_basis' in kwargs:
-            BSTC, ZETC = _expand_bracketed_basis(kwargs['corl_basis'].lower(), molecule=molstr)
-        else:
-            raise ValidationError("""CORL basis sets through keyword '%s' are required.""" % ('corl_basis'))
-
-    # Establish list of valid basis sets for scf energy
-    if 'scf_basis' in kwargs:
-        BSTR, ZETR = _expand_bracketed_basis(kwargs['scf_basis'].lower(), molecule=molstr)
-    elif do_corl:
-        BSTR = BSTC[:]
-        ZETR = ZETC[:]
-    else:
-        raise ValidationError("""SCF basis sets through keyword '%s' are required. Or perhaps you forgot the '%s'.""" % ('scf_basis', 'corl_wfn'))
-
-    # Establish list of valid basis sets for delta correction energy
-    if do_delta:
-        if 'delta_basis' in kwargs:
-            BSTD, ZETD = _expand_bracketed_basis(kwargs['delta_basis'].lower(), molecule=molstr)
-        else:
-            raise ValidationError("""DELTA basis sets through keyword '%s' are required.""" % ('delta_basis'))
-
-    # Establish list of valid basis sets for second delta correction energy
-    if do_delta2:
-        if 'delta2_basis' in kwargs:
-            BSTD2, ZETD2 = _expand_bracketed_basis(kwargs['delta2_basis'].lower(), molecule=molstr)
-        else:
-            raise ValidationError("""DELTA2 basis sets through keyword '%s' are required.""" % ('delta2_basis'))
-
-#    # Establish list of valid basis sets for third delta correction energy
-#    if do_delta3:
-#        if 'delta3_basis' in kwargs:
-#            BSTD3, ZETD3 = validate_bracketed_basis(kwargs['delta3_basis'].lower())
-#        else:
-#            raise ValidationError('DELTA3 basis sets through keyword \'%s\' are required.' % ('delta3_basis'))
-#
-#    # Establish list of valid basis sets for fourth delta correction energy
-#    if do_delta4:
-#        if 'delta4_basis' in kwargs:
-#            BSTD4, ZETD4 = validate_bracketed_basis(kwargs['delta4_basis'].lower())
-#        else:
-#            raise ValidationError('DELTA4 basis sets through keyword \'%s\' are required.' % ('delta4_basis'))
-#
-#    # Establish list of valid basis sets for fifth delta correction energy
-#    if do_delta5:
-#        if 'delta5_basis' in kwargs:
-#            BSTD5, ZETD5 = validate_bracketed_basis(kwargs['delta5_basis'].lower())
-#        else:
-#            raise ValidationError('DELTA5 basis sets through keyword \'%s\' are required.' % ('delta5_basis'))
-
-    # Establish treatment for scf energy (validity check useless since python will catch it long before here)
-    if (len(BSTR) == 3) and ('scf_basis' in kwargs):
-        cbs_scf_scheme = scf_xtpl_helgaker_3
-    elif (len(BSTR) == 2) and ('scf_basis' in kwargs):
-        cbs_scf_scheme = scf_xtpl_helgaker_2
-    elif (len(BSTR) == 1) and ('scf_basis' in kwargs):
-        cbs_scf_scheme = xtpl_highest_1
-    elif 'scf_basis' in kwargs:
-        raise ValidationError("""SCF basis sets of number %d cannot be handled.""" % (len(BSTR)))
-    elif do_corl:
-        cbs_scf_scheme = xtpl_highest_1
-        BSTR = [BSTC[-1]]
-        ZETR = [ZETC[-1]]
-    if 'scf_scheme' in kwargs:
-        cbs_scf_scheme = kwargs['scf_scheme']
-
-    # Establish treatment for correlation energy
-    if do_corl:
-        if len(BSTC) == 2:
-            cbs_corl_scheme = corl_xtpl_helgaker_2
-        elif len(BSTC) > 2:
-            raise ValidationError("""Cannot extrapolate correlation with %d basis sets. Use highest 2.""" % (len(BSTC)))
-        else:
-            cbs_corl_scheme = xtpl_highest_1
-        if 'corl_scheme' in kwargs:
-            cbs_corl_scheme = kwargs['corl_scheme']
-
-    # Establish treatment for delta correction energy
-    if do_delta:
-        if len(BSTD) == 2:
-            cbs_delta_scheme = corl_xtpl_helgaker_2
-        else:
-            cbs_delta_scheme = xtpl_highest_1
-        if 'delta_scheme' in kwargs:
-            cbs_delta_scheme = kwargs['delta_scheme']
-
-    # Establish treatment for delta2 correction energy
-    if do_delta2:
-        if len(BSTD2) == 2:
-            cbs_delta2_scheme = corl_xtpl_helgaker_2
-        else:
-            cbs_delta2_scheme = xtpl_highest_1
-        if 'delta2_scheme' in kwargs:
-            cbs_delta2_scheme = kwargs['delta2_scheme']
-
-#    # Establish treatment for delta3 correction energy
-#    if do_delta3:
-#        if len(BSTD3) == 2:
-#            cbs_delta3_scheme = corl_xtpl_helgaker_2
-#        else:
-#            cbs_delta3_scheme = xtpl_highest_1
-#        if 'delta3_scheme' in kwargs:
-#            cbs_delta3_scheme = kwargs['delta3_scheme']
-#
-#    # Establish treatment for delta4 correction energy
-#    if do_delta4:
-#        if len(BSTD4) == 2:
-#            cbs_delta4_scheme = corl_xtpl_helgaker_2
-#        else:
-#            cbs_delta4_scheme = xtpl_highest_1
-#        if 'delta4_scheme' in kwargs:
-#            cbs_delta4_scheme = kwargs['delta4_scheme']
-#
-#    # Establish treatment for delta5 correction energy
-#    if do_delta5:
-#        if len(BSTD5) == 2:
-#            cbs_delta5_scheme = corl_xtpl_helgaker_2
-#        else:
-#            cbs_delta5_scheme = xtpl_highest_1
-#        if 'delta5_scheme' in kwargs:
-#            cbs_delta5_scheme = kwargs['delta5_scheme']
+    if len(metadata) > 2:
+        for delta in metadata[2:]:
+            if delta["wfn_hi"] not in VARH.keys():
+                raise ValidationError("""Requested higher DELTA method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["wfn_hi"]))
+            if delta["wfn_lo"] not in VARH.keys():
+                raise ValidationError("""Requested lesser DELTA method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["wfn_lo"]))
 
     # Build string of title banner
     cbsbanners = ''
@@ -1357,74 +1220,37 @@ def cbs(func, label, **kwargs):
     exec(cbsbanners)
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
-    d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian']
+    d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 
+                'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian',
+                'd_alpha', 'd_options']
     f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian']
     GRAND_NEED = []
     MODELCHEM = []
-    if do_scf:
-        NEED = _expand_scheme_orders(cbs_scf_scheme, BSTR, ZETR, cbs_scf_wfn, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['scf', cbs_scf_scheme,
-            _contract_bracketed_basis(BSTR), cbs_scf_wfn, NEED, +1, 0.0, None, None])))
-
-    if do_corl:
-        NEED = _expand_scheme_orders(cbs_corl_scheme, BSTC, ZETC, cbs_corl_wfn, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['corl', cbs_corl_scheme,
-            _contract_bracketed_basis(BSTC), cbs_corl_wfn, NEED, +1, 0.0, None, None])))
-
-        NEED = _expand_scheme_orders(cbs_corl_scheme, BSTC, ZETC, cbs_corl_wfn_lesser, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['corl', cbs_corl_scheme,
-            _contract_bracketed_basis(BSTC), cbs_corl_wfn_lesser, NEED, -1, 0.0, None, None])))
-
-    if do_delta:
-        NEED = _expand_scheme_orders(cbs_delta_scheme, BSTD, ZETD, cbs_delta_wfn, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme,
-            _contract_bracketed_basis(BSTD), cbs_delta_wfn, NEED, +1, 0.0, None, None])))
-
-        NEED = _expand_scheme_orders(cbs_delta_scheme, BSTD, ZETD, cbs_delta_wfn_lesser, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme,
-            _contract_bracketed_basis(BSTD), cbs_delta_wfn_lesser, NEED, -1, 0.0, None, None])))
-
-    if do_delta2:
-        NEED = _expand_scheme_orders(cbs_delta2_scheme, BSTD2, ZETD2, cbs_delta2_wfn, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme,
-            _contract_bracketed_basis(BSTD2), cbs_delta2_wfn, NEED, +1, 0.0, None, None])))
-
-        NEED = _expand_scheme_orders(cbs_delta2_scheme, BSTD2, ZETD2, cbs_delta2_wfn_lesser, natom)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme,
-            _contract_bracketed_basis(BSTD2), cbs_delta2_wfn_lesser, NEED, -1, 0.0, None, None])))
-
-#    if do_delta3:
-#        NEED = call_function_in_1st_argument(cbs_delta3_scheme,
-#            mode='requisition', basisname=BSTD3, basiszeta=ZETD3, wfnname=cbs_delta3_wfn)
-#        GRAND_NEED.append(dict(zip(d_fields, ['delta3', cbs_delta3_scheme,
-#            reconstitute_bracketed_basis(NEED), cbs_delta3_wfn, NEED, +1, 0.0])))
-#
-#        NEED = call_function_in_1st_argument(cbs_delta3_scheme,
-#            mode='requisition', basisname=BSTD3, basiszeta=ZETD3, wfnname=cbs_delta3_wfn_lesser)
-#        GRAND_NEED.append(dict(zip(d_fields, ['delta3', cbs_delta3_scheme,
-#            reconstitute_bracketed_basis(NEED), cbs_delta3_wfn_lesser, NEED, -1, 0.0])))
-#
-#    if do_delta4:
-#        NEED = call_function_in_1st_argument(cbs_delta4_scheme,
-#            mode='requisition', basisname=BSTD4, basiszeta=ZETD4, wfnname=cbs_delta4_wfn)
-#        GRAND_NEED.append(dict(zip(d_fields, ['delta4', cbs_delta4_scheme,
-#            reconstitute_bracketed_basis(NEED), cbs_delta4_wfn, NEED, +1, 0.0])))
-#
-#        NEED = call_function_in_1st_argument(cbs_delta4_scheme,
-#            mode='requisition', basisname=BSTD4, basiszeta=ZETD4, wfnname=cbs_delta4_wfn_lesser)
-#        GRAND_NEED.append(dict(zip(d_fields, ['delta4', cbs_delta4_scheme,
-#            reconstitute_bracketed_basis(NEED), cbs_delta4_wfn_lesser, NEED, -1, 0.0])))
-#
-#    if do_delta5:
-#        NEED = call_function_in_1st_argument(cbs_delta5_scheme,
-#            mode='requisition', basisname=BSTD5, basiszeta=ZETD5, wfnname=cbs_delta5_wfn)
-#        GRAND_NEED.append(dict(zip(d_fields, ['delta5', cbs_delta5_scheme,
-#            reconstitute_bracketed_basis(NEED), cbs_delta5_wfn, NEED, +1, 0.0])))
-#
-#        NEED = call_function_in_1st_argument(cbs_delta5_scheme,
-#            mode='requisition', basisname=BSTD5, basiszeta=ZETD5, wfnname=cbs_delta5_wfn_lesser)
-#        GRAND_NEED.append(dict(zip(d_fields, ['delta5', cbs_delta5_scheme,
-#            reconstitute_bracketed_basis(NEED), cbs_delta5_wfn_lesser, NEED, -1, 0.0])))
+    
+    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], 
+                                 metadata[0]["basis"][1], metadata[0]["wfn"], natom)
+    GRAND_NEED.append(dict(zip(d_fields, ['scf', metadata[0]["scheme"],
+                               _contract_bracketed_basis(metadata[0]["basis"][0]), 
+                               metadata[0]["wfn"], NEED, +1, 0.0, None, None,
+                               metadata[0]["alpha"], None])))
+    if len(metadata) > 1:
+        dc = 0
+        ds = "corl"
+        for delta in metadata[1:]:
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_hi"][0], delta["basis_hi"][1],
+                                         delta["wfn_hi"], natom)
+            GRAND_NEED.append(dict(zip(d_fields, ['{0:s}'.format(ds), delta["scheme"],
+                                       _contract_bracketed_basis(delta["basis_hi"][0]),
+                                       delta["wfn_hi"], NEED, +1, 0.0, None, None,
+                                       delta["alpha"], None])))
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1],
+                                         delta["wfn_lo"], natom)
+            GRAND_NEED.append(dict(zip(d_fields, ['{0:s}'.format(ds), delta["scheme"],
+                                       _contract_bracketed_basis(delta["basis_lo"][0]),
+                                       delta["wfn_lo"], NEED, -1, 0.0, None, None,
+                                       delta["alpha"], None])))
+            dc += 1
+            ds = "delta{0:d}".format(dc)
 
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].items():
@@ -1574,7 +1400,7 @@ def cbs(func, label, **kwargs):
     finalhessian = core.Matrix(3 * natom, 3 * natom)
 
     for stage in GRAND_NEED:
-        hiloargs = {'alpha': cbs_alpha[stage['d_stage']]}
+        hiloargs = {'alpha': stage['d_alpha']} #cbs_alpha[stage['d_stage']]}
 
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
         stage['d_energy'] = stage['d_scheme'](**hiloargs)
@@ -1623,35 +1449,25 @@ def cbs(func, label, **kwargs):
     tables += table_delimit
     tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]', 'Scheme')
     tables += table_delimit
-    if do_scf:
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[0]['d_stage'],
-                                                                      GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '',
-                                                                      GRAND_NEED[0]['d_energy'],
-                                                                      GRAND_NEED[0]['d_scheme'].__name__)
-    if do_corl:
+    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[0]['d_stage'],
+                                                                  GRAND_NEED[0]['d_wfn'], '/', 
+                                                                  GRAND_NEED[0]['d_basis'], '',
+                                                                  GRAND_NEED[0]['d_energy'],
+                                                                  GRAND_NEED[0]['d_scheme'].__name__)
+    if len(metadata) > 1:
         tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[1]['d_stage'],
                                                                       GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
                                                                       GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'],
                                                                       GRAND_NEED[1]['d_scheme'].__name__)
-    if do_delta:
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[3]['d_stage'],
-                                                                      GRAND_NEED[3]['d_wfn'] + ' - ' + GRAND_NEED[4]['d_wfn'], '/', GRAND_NEED[3]['d_basis'], '',
-                                                                      GRAND_NEED[3]['d_energy'] - GRAND_NEED[4]['d_energy'],
-                                                                      GRAND_NEED[3]['d_scheme'].__name__)
-    if do_delta2:
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[5]['d_stage'],
-                                                                      GRAND_NEED[5]['d_wfn'] + ' - ' + GRAND_NEED[6]['d_wfn'], '/', GRAND_NEED[5]['d_basis'], '',
-                                                                      GRAND_NEED[5]['d_energy'] - GRAND_NEED[6]['d_energy'],
-                                                                      GRAND_NEED[5]['d_scheme'].__name__)
-#    if do_delta3:
-#        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[6]['d_stage'], GRAND_NEED[6]['d_wfn'] + ' - ' + GRAND_NEED[7]['d_wfn'],
-#                  '/', GRAND_NEED[6]['d_basis'], '', GRAND_NEED[6]['d_energy'] - GRAND_NEED[7]['d_energy'], GRAND_NEED[6]['d_scheme'].__name__)
-#    if do_delta4:
-#        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[8]['d_stage'], GRAND_NEED[8]['d_wfn'] + ' - ' + GRAND_NEED[9]['d_wfn'],
-#                  '/', GRAND_NEED[8]['d_basis'], '', GRAND_NEED[8]['d_energy'] - GRAND_NEED[9]['d_energy'], GRAND_NEED[8]['d_scheme'].__name__)
-#    if do_delta5:
-#        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[10]['d_stage'], GRAND_NEED[10]['d_wfn'] + ' - ' + GRAND_NEED[11]['d_wfn'],
-#                  '/', GRAND_NEED[10]['d_basis'], '', GRAND_NEED[10]['d_energy'] - GRAND_NEED[11]['d_energy'], GRAND_NEED[10]['d_scheme'].__name__)
+    if len(metadata) > 2:
+        dc = 3
+        for delta in metadata[2:]:            
+            tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[dc]['d_stage'],
+                                                                      GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc+1]['d_wfn'], '/', GRAND_NEED[dc]['d_basis'], '',
+                                                                      GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc+1]['d_energy'],
+                                                                      GRAND_NEED[dc]['d_scheme'].__name__)
+            dc += 2
+    
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
     tables += table_delimit
 
