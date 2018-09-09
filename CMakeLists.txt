@@ -190,6 +190,7 @@ ExternalProject_Add(psi4-core
            pcmsolver_external
            pybind11_external
            pylibefp_external
+           qcelemental_external
            simint_external
            libxc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4

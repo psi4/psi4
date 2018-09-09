@@ -1,5 +1,4 @@
 foreach(dir pasture
-            qcelemental
             gpu_dfcc
             snsmp2
             v2rdm_casscf
