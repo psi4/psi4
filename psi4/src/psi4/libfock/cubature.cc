@@ -4205,7 +4205,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const
     printer->Printf("    Total Blocks           = %14zu\n", blocks_.size());
     printer->Printf("    Max Points             = %14d\n", max_points_);
     printer->Printf("    Max Functions          = %14d\n", max_functions_);
-    printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
+    // printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
 
 }

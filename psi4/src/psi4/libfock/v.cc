@@ -202,13 +202,38 @@ void VBase::print_header() const {
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
-void VBase::build_cache_map(void){
+void VBase::build_collocation_cache(size_t memory){
+
+    // Figure out many blocks to skip
+
+    size_t collocation_size = grid_->collocation_size();
+    if (functional_->ansatz() == 1){
+        collocation_size *= 4; // For gradients
+    }
+    if (functional_->ansatz() == 2){
+        collocation_size *= 10; // For gradients and Hessians
+    }
+
+    // Figure out stride as closest whole number to amount we need
+    size_t stride = (size_t) (1.0 / ((double)memory / collocation_size));
+
+    // More memory than needed
+    if (stride == 0){
+        stride = 1;
+    }
+
+    // Effectively zero blocks saved.
+    if (stride > grid_->blocks().size()) {
+        return;
+    }
 
     cache_map_.clear();
     cache_map_deriv_ = point_workers_[0]->deriv();
     int rank = 0;
+    size_t saved_size = 0;
+    size_t ncomputed = 0;
     #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+    for (size_t Q = 0; Q < grid_->blocks().size(); Q+=stride) {
         // Get thread info
         #ifdef _OPENMP
                 rank = omp_get_thread_num();
@@ -219,21 +244,31 @@ void VBase::build_cache_map(void){
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         pworker->compute_functions(block);
 
+        size_t nrows = block->npoints();
+        size_t ncols = block->local_nbf();
         std::map<std::string, SharedMatrix> collocation_map;
         for (auto& kv : pworker->basis_values()) {
-            auto coll = std::make_shared<Matrix>(kv.second->name(), block->npoints(), block->local_nbf());
+            auto coll = std::make_shared<Matrix>(kv.second->name(), nrows, ncols);
 
             double** sourcep = kv.second->pointer();
             double** collp = coll->pointer();
-            for (size_t i = 0; i < block->npoints(); i++){
-                for (size_t j = 0; j < block->local_nbf(); j++){
+            for (size_t i = 0; i < nrows; i++){
+                for (size_t j = 0; j < ncols; j++){
                     collp[i][j] = sourcep[i][j];
                 }
             }
             collocation_map[kv.first] = coll;
-        }
 
+            saved_size += nrows * ncols;
+        }
+        ncomputed++;
         cache_map_[block->index()] = collocation_map;
+    }
+
+    size_t mib_saved = (size_t)(8 * (double)saved_size / 1024.0 / 1024.0);
+    double fraction = (double) ncomputed / grid_->blocks().size() * 100;
+    if (print_) {
+        outfile->Printf("  Cached %.1lf%% of DFT collocation blocks in %d MiB.\n\n", fraction, mib_saved);
     }
 
 }
@@ -537,7 +572,6 @@ void RV::initialize() {
         point_workers_.push_back(point_tmp);
     }
 
-    build_cache_map();
 }
 void RV::finalize() { VBase::finalize(); }
 void RV::print_header() const { VBase::print_header(); }
@@ -1338,7 +1372,6 @@ void UV::initialize() {
         point_workers_.push_back(point_tmp);
     }
 
-    build_cache_map();
 }
 void UV::finalize() { VBase::finalize(); }
 void UV::print_header() const { VBase::print_header(); }

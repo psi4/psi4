@@ -108,8 +108,7 @@ protected:
     /// Set things up
     void common_init();
 
-    /// Creates a collocation cache map based on available memory
-    void build_cache_map();
+
 public:
      VBase(std::shared_ptr<SuperFunctional> functional,
            std::shared_ptr<BasisSet> primary, Options& options);
@@ -127,6 +126,10 @@ public:
     std::shared_ptr<BlockOPoints> get_block(int block);
     size_t nblocks();
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
+
+    // Creates a collocation cache map based on stride
+    void build_collocation_cache(size_t memory);
+    void clear_collocation_cache(void) { cache_map_.clear(); }
 
     // Set the D matrix, get it back if needed
     void set_D(std::vector<SharedMatrix> Dvec);

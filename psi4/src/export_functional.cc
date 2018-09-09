@@ -164,6 +164,10 @@ void export_functional(py::module &m) {
         .def("nblocks", &VBase::nblocks, "Total number of blocks.")
         .def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.")
 
+
+
+        .def("build_collocation_cache", &VBase::build_collocation_cache, "Constructs a collocation cache to prevent recomputation.")
+        .def("clear_collocation_cache", &VBase::clear_collocation_cache, "Clears the collocation cache.")
         .def("set_D", &VBase::set_D, "Sets the internal density.")
         .def("Dao", &VBase::set_D, "Returns internal AO density.")
         .def("compute_V", &VBase::compute_V, "doctsring")

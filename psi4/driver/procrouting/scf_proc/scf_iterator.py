@@ -105,11 +105,45 @@ def scf_initialize(self):
     """Specialized initialization, compute integrals and does everything to prepare for iterations"""
 
     # Figure out memory distributions
+
+    # Get memory in terms of doubles
     total_memory = (core.get_memory() / 8) * core.get_global_option("SCF_MEM_SAFETY_FACTOR")
+
+    # Figure out how large the DFT collocation matrices are
+    vbase = self.V_potential()
+    collocation_size = vbase.grid().collocation_size()
+    if vbase.functional().ansatz() == 1:
+        collocation_size *= 4 # First derivs
+    elif vbase.functional().ansatz() == 2:
+        collocation_size *= 10 # Second derivs
+
+    # Change allocation for collocation matrices based on DFT type
+    scf_type = core.get_global_option('SCF_TYPE').upper()
+    nbf = self.get_basisset("ORBITAL").nbf()
+    naux = self.get_basisset("DF_BASIS_SCF").nbf()
+    if "DIRECT" == scf_type:
+        jk_size = total_memory * 0.1
+    elif scf_type.endswith('DF'):
+        jk_size = naux * nbf * nbf
+    else:
+        jk_size = nbf ** 4
+
+    # Give remaining to collocation
+    if total_memory > jk_size:
+        collocation_memory = total_memory - jk_size
+    # Give up to 10% to collocation
+    elif (total_memory * 0.1) > collocation_size:
+        collocation_memory = collocation_size
+    else:
+        collocation_memory = total_memory * 0.1
+
+    if collocation_memory > collocation_size:
+        collocation_memory = collocation_size
 
     # Set constants
     self.iteration_ = 0
-    self.memory_jk_ = int(total_memory)
+    self.memory_jk_ = int(total_memory - collocation_memory)
+    self.memory_collocation_ = int(collocation_memory)
 
     # Print out initial docc/socc/etc data
     if core.get_option('SCF', "PRINT") > 0:
@@ -138,6 +172,7 @@ def scf_initialize(self):
 
         mints.one_electron_integrals()
         self.initialize_jk(self.memory_jk_)
+        self.V_potential().build_collocation_cache(self.memory_collocation_)
 
         core.timer_on("HF: Form core H")
         self.form_H()
@@ -515,6 +550,7 @@ def scf_finalize_energy(self):
         core.set_variable(k, v)
 
     self.finalize()
+    self.V_potential().clear_collocation_cache()
 
     core.print_out("\nComputation Completed\n")
 
