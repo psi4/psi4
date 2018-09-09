@@ -730,7 +730,7 @@ def _process_cbs_kwargs(kwargs):
                 metadata[-1]["wfn"] = item.pop("wfn")
                 metadata[-1]["basis"] = _expand_bracketed_basis(item.pop("basis"))
                 metadata[-1]["scheme"] = item.pop("scheme",
-                                                  _get_default_xtpl(len(metadata[-1]["basis"][1]), "scf")) 
+                                                  _get_default_xtpl(len(metadata[-1]["basis"][1]), "hf")) 
             else:
                 metadata[-1]["wfn_hi"] = item.get("wfn_hi")
                 metadata[-1]["wfn_lo"] = item.pop("wfn_lo", metadata[-2].get("wfn", 
@@ -741,7 +741,7 @@ def _process_cbs_kwargs(kwargs):
                 metadata[-1]["scheme"] = item.pop("scheme",
                                                   _get_default_xtpl(len(metadata[-1]["basis_hi"][1]), "corl"))
             metadata[-1]["alpha"] = item.pop("alpha", None)
-            metadata[-1]["options"] = item.pop("options", None)
+            metadata[-1]["options"] = item.pop("options", False)
     else:
         scf = {}
         corl = {}
@@ -749,9 +749,9 @@ def _process_cbs_kwargs(kwargs):
         delta2 = {}
         corl["wfn_hi"] = kwargs.get("corl_wfn", False)
         if corl["wfn_hi"] and corl["wfn_hi"].startswith("c4-"):
-            default_scf = "c4-scf"
+            default_scf = "c4-hf"
         else:
-            default_scf = "scf"
+            default_scf = "hf"
         scf["wfn"] = kwargs.get("scf_wfn", default_scf)
         if "scf_basis" in kwargs:
             scf["basis"] = _expand_bracketed_basis(kwargs.get("scf_basis"))
@@ -762,11 +762,13 @@ def _process_cbs_kwargs(kwargs):
                 scf["basis"] = ([corl["basis_hi"][0][-1]],[corl["basis_hi"][1][-1]])
         scf["scheme"] = kwargs.get("scf_scheme", _get_default_xtpl(len(scf["basis"][1]), "scf"))
         scf["alpha"] = kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None))
+        scf["options"] = False
         metadata.append(scf)
         if corl["wfn_hi"]:
             corl["wfn_lo"] = kwargs.get("corl_scheme_lesser", default_scf)
             corl["scheme"] = kwargs.get("corl_scheme", _get_default_xtpl(len(corl["basis_hi"][1]), "corl"))
             corl["alpha"] = kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None))
+            corl["options"] = False
             metadata.append(corl)
         delta["wfn_hi"] = kwargs.get("delta_wfn", False)
         if delta["wfn_hi"] and corl["wfn_hi"]:
@@ -775,6 +777,7 @@ def _process_cbs_kwargs(kwargs):
             delta["basis_lo"] = delta["basis_hi"]
             delta["scheme"] = kwargs.get("delta_scheme", _get_default_xtpl(len(delta["basis_hi"][1]), "corl"))
             delta["alpha"] = kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None))
+            delta["options"] = False
             metadata.append(delta)
         elif delta["wfn_hi"]:
             raise ValidationError("Delta function supplied without corl_wfn defined.")
@@ -785,6 +788,7 @@ def _process_cbs_kwargs(kwargs):
             delta2["basis_lo"] = delta2["basis_hi"]
             delta2["scheme"] = kwargs.get("delta2_scheme", _get_default_xtpl(len(delta2["basis_hi"][1]), "corl"))
             delta2["alpha"] = kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None))
+            delta2["options"] = False
             metadata.append(delta2)
         elif delta2["wfn_hi"]:
             raise ValidationError("Delta2 function supplied without delta_wfn or corl_wfn defined.")
@@ -1173,7 +1177,6 @@ def cbs(func, label, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
     metadata = _process_cbs_kwargs(kwargs)
-    # print(metadata)
     return_wfn = kwargs.pop('return_wfn', False)
     verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
@@ -1221,34 +1224,30 @@ def cbs(func, label, **kwargs):
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
     d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 
-                'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian',
-                'd_alpha', 'd_options']
-    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian']
+                'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha']
+    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     GRAND_NEED = []
     MODELCHEM = []
     
     NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], 
-                                 metadata[0]["basis"][1], metadata[0]["wfn"], natom)
+                                 metadata[0]["basis"][1], metadata[0]["wfn"], metadata[0]["options"], natom)
     GRAND_NEED.append(dict(zip(d_fields, ['scf', metadata[0]["scheme"],
                                _contract_bracketed_basis(metadata[0]["basis"][0]), 
-                               metadata[0]["wfn"], NEED, +1, 0.0, None, None,
-                               metadata[0]["alpha"], None])))
+                               metadata[0]["wfn"], NEED, +1, 0.0, None, None, metadata[0]["alpha"]])))
     if len(metadata) > 1:
         dc = 0
         ds = "corl"
         for delta in metadata[1:]:
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_hi"][0], delta["basis_hi"][1],
-                                         delta["wfn_hi"], natom)
+                                         delta["wfn_hi"], delta["options"], natom)
             GRAND_NEED.append(dict(zip(d_fields, ['{0:s}'.format(ds), delta["scheme"],
                                        _contract_bracketed_basis(delta["basis_hi"][0]),
-                                       delta["wfn_hi"], NEED, +1, 0.0, None, None,
-                                       delta["alpha"], None])))
+                                       delta["wfn_hi"], NEED, +1, 0.0, None, None, delta["alpha"]])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1],
-                                         delta["wfn_lo"], natom)
+                                         delta["wfn_lo"], False, natom)
             GRAND_NEED.append(dict(zip(d_fields, ['{0:s}'.format(ds), delta["scheme"],
                                        _contract_bracketed_basis(delta["basis_lo"][0]),
-                                       delta["wfn_lo"], NEED, -1, 0.0, None, None,
-                                       delta["alpha"], None])))
+                                       delta["wfn_lo"], NEED, -1, 0.0, None, None, delta["alpha"]])))
             dc += 1
             ds = "delta{0:d}".format(dc)
 
@@ -1264,13 +1263,15 @@ def cbs(func, label, **kwargs):
     instructions += """    Naive listing of computations required.\n"""
     for mc in JOBS:
         instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
 
     #     Remove duplicate modelchem portion listings
     for mc in MODELCHEM:
         dups = -1
         for indx_job, job in enumerate(JOBS):
-            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
+            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
+               (job['f_options'] == mc['f_options']):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1288,7 +1289,8 @@ def cbs(func, label, **kwargs):
     instructions += """\n    Enlightened listing of computations required.\n"""
     for mc in JOBS:
         instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
 
     #     Expand listings to all that will be obtained
     JOBS_EXT = []
@@ -1297,12 +1299,14 @@ def cbs(func, label, **kwargs):
             JOBS_EXT.append(dict(zip(f_fields, [wfn, job['f_basis'], job['f_zeta'],
                                                 0.0,
                                                 core.Matrix(natom, 3),
-                                                core.Matrix(3 * natom, 3 * natom)])))
+                                                core.Matrix(3 * natom, 3 * natom),
+                                                job['f_options']])))
 
     instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
     for mc in JOBS_EXT:
         instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
     core.print_out(instructions)
 
     psioh = core.IOManager.shared_object()
@@ -1320,7 +1324,7 @@ def cbs(func, label, **kwargs):
         cbsbanners = ''
         cbsbanners += """core.print_out('\\n')\n"""
         cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
-            (mc['f_wfn'].upper(), mc['f_basis'].upper(), addlremark[ptype])
+            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), addlremark[ptype])
         cbsbanners += """core.print_out('\\n')\n\n"""
         exec(cbsbanners)
 
@@ -1330,7 +1334,15 @@ def cbs(func, label, **kwargs):
         commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
             (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
         exec(commands)
-
+        
+        # Stash and set options if any
+        if mc["f_options"]:
+            optionstash = p4util.OptionsState(list(mc["f_options"]))
+            for k, v, in mc["f_options"].items():
+                core.set_global_option(k.upper(), v)
+        else:
+            optionstash = False
+        
         # Make energy(), etc. call
         response = func(molecule=molecule, **kwargs)
         if ptype == 'energy':
@@ -1349,11 +1361,16 @@ def cbs(func, label, **kwargs):
         if verbose > 1:
             core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
 
+        # Restore modified options
+        if optionstash:
+            optionstash.restore()
+        
         # Fill in energies for subsumed methods
         if ptype == 'energy':
             for wfn in VARH[mc['f_wfn']]:
                 for job in JOBS_EXT:
-                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']):
+                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+                       (mc['f_options'] == job['f_options']):
                         job['f_energy'] = core.get_variable(VARH[wfn][wfn])
 
         if verbose > 1:
@@ -1363,7 +1380,8 @@ def cbs(func, label, **kwargs):
 
         # Copy data from 'run' to 'obtained' table
         for mce in JOBS_EXT:
-            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']):
+            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
+               (mc['f_options'] == mce['f_options']):
                 mce['f_energy'] = mc['f_energy']
                 mce['f_gradient'] = mc['f_gradient']
                 mce['f_hessian'] = mc['f_hessian']
@@ -1389,7 +1407,8 @@ def cbs(func, label, **kwargs):
                      ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
                      (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or
                      (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn']))) and
-                     (lvl[1]['f_basis'] == job['f_basis'])):
+                     (lvl[1]['f_basis'] == job['f_basis']) and
+                     (lvl[1]['f_options'] == job['f_options'])):
                     lvl[1]['f_energy'] = job['f_energy']
                     lvl[1]['f_gradient'] = job['f_gradient']
                     lvl[1]['f_hessian'] = job['f_hessian']
@@ -1400,7 +1419,7 @@ def cbs(func, label, **kwargs):
     finalhessian = core.Matrix(3 * natom, 3 * natom)
 
     for stage in GRAND_NEED:
-        hiloargs = {'alpha': stage['d_alpha']} #cbs_alpha[stage['d_stage']]}
+        hiloargs = {'alpha': stage['d_alpha']}
 
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
         stage['d_energy'] = stage['d_scheme'](**hiloargs)
@@ -1433,7 +1452,8 @@ def cbs(func, label, **kwargs):
             if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
                 star = '*'
         tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('', job['f_wfn'],
-                  '/', job['f_basis'], star, job['f_energy'], VARH[job['f_wfn']][job['f_wfn']])
+                  '/', job['f_basis'] + " + options"*bool(job['f_options']), star, 
+                  job['f_energy'], VARH[job['f_wfn']][job['f_wfn']])
     tables += table_delimit
 
     tables += """\n   ==> %s <==\n\n""" % ('Stages')
@@ -1515,7 +1535,7 @@ _lmh_labels = {1: ['HI'],
                5: ['LO', 'MD', 'M2', 'M3', 'HI']}
 
 
-def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, natom):
+def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom):
     """Check that the length of *basiszeta* array matches the implied degree of
     extrapolation in *scheme* name. Return a dictionary of same length as
     basiszeta, with *basisname* and *basiszeta* distributed therein.
@@ -1526,13 +1546,14 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, natom):
     if int(scheme.__name__.split('_')[-1]) != Nxtpl:
         raise ValidationError("""Call to '%s' not valid with '%s' basis sets.""" % (scheme.__name__, len(basiszeta)))
 
-    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian']
+    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     NEED = {}
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(zip(f_fields, [wfnname, basisname[idx], basiszeta[idx],
                                                             0.0,
                                                             core.Matrix(natom, 3),
-                                                            core.Matrix(3 * natom, 3 * natom)]))
+                                                            core.Matrix(3 * natom, 3 * natom),
+                                                            options]))
     return NEED
 
 
