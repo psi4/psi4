@@ -4193,19 +4193,19 @@ void MolecularGrid::print(std::string out, int /*print*/) const
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Molecular Quadrature <=\n\n");
-    printer->Printf("    Radial Scheme       = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
-    printer->Printf("    Pruning Scheme      = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
-    printer->Printf("    Nuclear Scheme      = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
+    printer->Printf("    Radial Scheme          = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
+    printer->Printf("    Pruning Scheme         = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
+    printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
-    printer->Printf("    BS radius alpha     = %14g\n", options_.bs_radius_alpha);
-    printer->Printf("    Pruning alpha       = %14g\n", options_.pruning_alpha);
-    printer->Printf("    Radial Points       = %14d\n", options_.nradpts);
-    printer->Printf("    Spherical Points    = %14d\n", options_.nangpts);
-    printer->Printf("    Total Points        = %14d\n", npoints_);
-    printer->Printf("    Total Blocks        = %14zu\n", blocks_.size());
-    printer->Printf("    Max Points          = %14d\n", max_points_);
-    printer->Printf("    Max Functions       = %14d\n", max_functions_);
-    // printer->Printf("    Collocation Size [MiB] = %14.3f\n", max_functions_);
+    printer->Printf("    BS radius alpha        = %14g\n", options_.bs_radius_alpha);
+    printer->Printf("    Pruning alpha          = %14g\n", options_.pruning_alpha);
+    printer->Printf("    Radial Points          = %14d\n", options_.nradpts);
+    printer->Printf("    Spherical Points       = %14d\n", options_.nangpts);
+    printer->Printf("    Total Points           = %14d\n", npoints_);
+    printer->Printf("    Total Blocks           = %14zu\n", blocks_.size());
+    printer->Printf("    Max Points             = %14d\n", max_points_);
+    printer->Printf("    Max Functions          = %14d\n", max_functions_);
+    printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
 
 }

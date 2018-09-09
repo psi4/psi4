@@ -79,7 +79,7 @@ def scf_compute_energy(self):
         # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
             self.diis_manager().reset_subspace()
-        self.integrals()
+        self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
 
@@ -104,13 +104,20 @@ def scf_compute_energy(self):
 def scf_initialize(self):
     """Specialized initialization, compute integrals and does everything to prepare for iterations"""
 
-    self.iteration_ = 0
-    efp_enabled = hasattr(self.molecule(), 'EFP')
+    # Figure out memory distributions
+    total_memory = (core.get_memory() / 8) * core.get_global_option("SCF_MEM_SAFETY_FACTOR")
 
+    # Set constants
+    self.iteration_ = 0
+    self.memory_jk_ = int(total_memory)
+
+    # Print out initial docc/socc/etc data
     if core.get_option('SCF', "PRINT") > 0:
         core.print_out("  ==> Pre-Iterations <==\n\n")
         self.print_preiterations()
 
+    # Initialize EFP
+    efp_enabled = hasattr(self.molecule(), 'EFP')
     if efp_enabled:
         # EFP: Set QM system, options, and callback. Display efp geom in [A]
         efpobj = self.molecule().EFP
@@ -123,13 +130,14 @@ def scf_initialize(self):
 
         efpobj.set_electron_density_field_fn(field_fn)
 
+    # Initilize all integratals and perform the first guess
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
         if core.get_global_option('RELATIVISTIC') in ['X2C', 'DKH']:
             mints.set_rel_basisset(self.get_basisset('BASIS_RELATIVISTIC'))
 
         mints.one_electron_integrals()
-        self.integrals()
+        self.initialize_jk(self.memory_jk_)
 
         core.timer_on("HF: Form core H")
         self.form_H()
@@ -556,7 +564,7 @@ def scf_print_energies(self):
 
     self.set_variable('SCF ITERATIONS', self.iteration_)
 
-
+# Bind functions to core.HF class
 core.HF.initialize = scf_initialize
 core.HF.iterations = scf_iterate
 core.HF.compute_energy = scf_compute_energy

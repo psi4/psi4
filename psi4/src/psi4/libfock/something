@@ -1,0 +1,19 @@
+something
+
+HF: Form G                          :     37.767u      1.633s     22.959w     26 calls
+| RV: Form V                        :     15.167u      0.517s      9.239w     11 calls
+| | Properties                      :      7.733u      0.383s      4.842w   7722 calls
+| | Properties                      :      1.633u      0.333s      0.931w   7722 calls
+| | Functional                      :      5.550u      0.050s      3.279w   7722 calls
+| | V_xc                            :      1.667u      0.050s      1.021w   7722 calls
+| JK: D                             :      0.000u      0.000s      0.000w     26 calls
+| JK: USO2AO                        :      0.000u      0.000s      0.001w     26 calls
+| JK: JK                            :      0.000u      0.000s      0.007w     26 calls
+| | DFH: compute_JK()               :      0.000u      0.000s      0.007w     26 calls
+| | | DFH: Grabbing AOs             :      0.000u      0.000s      0.000w     26 calls
+| | | DFH: compute_J                :      0.000u      0.000s      0.006w     26 calls
+| JK: AO2USO                        :      0.000u      0.000s      0.001w     26 calls
+| UV: Form V                        :     22.583u      1.117s     13.702w     15 calls
+| | Properties                      :     12.333u      0.883s      7.756w  10530 calls
+| | Functional                      :      5.617u      0.033s      3.217w  10530 calls
+| | V_xc                            :      4.400u      0.117s      2.567w  10530 calls

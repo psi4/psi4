@@ -155,6 +155,8 @@ public:
     int max_points() const { return max_points_; }
     /// Maximum number of funtions in a block
     int max_functions() const { return max_functions_; }
+    /// Total collocation size of all blocks
+    size_t collocation_size() { return collocation_size_; }
 
     /// The x points. You do not own this
     double* x() const { return x_; }
@@ -399,7 +401,7 @@ public:
     size_t npoints() const { return npoints_; }
     /// Number of basis functions in the block
     size_t local_nbf() const { return local_nbf_; }
-    /// Index of the block block
+    /// Index of the currently owned block
     size_t index() const { return index_; }
     /// Print a trace of this BlockOPoints
     void print(std::string out_fname = "outfile", int print = 2);

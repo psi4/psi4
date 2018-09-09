@@ -260,6 +260,8 @@ void export_functional(py::module &m) {
              "Returns the maximum number of points in a block.")
         .def("max_functions", &MolecularGrid::max_functions,
              "Returns the maximum number of functions in a block.")
+        .def("collocation_size", &MolecularGrid::collocation_size,
+            "Returns the total collocation size of all blocks.")
         .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
 
     py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
