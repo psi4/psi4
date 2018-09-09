@@ -72,7 +72,7 @@ def scf_compute_energy(self):
             try:
                 self.iterations()
             except SCFConvergenceError:
-                self.finalize() 
+                self.finalize()
                 raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
         core.print_out("\n  DF guess converged.\n\n")
 
@@ -111,11 +111,15 @@ def scf_initialize(self):
 
     # Figure out how large the DFT collocation matrices are
     vbase = self.V_potential()
-    collocation_size = vbase.grid().collocation_size()
-    if vbase.functional().ansatz() == 1:
-        collocation_size *= 4 # First derivs
-    elif vbase.functional().ansatz() == 2:
-        collocation_size *= 10 # Second derivs
+    if vbase:
+        collocation_size = vbase.grid().collocation_size()
+        if vbase.functional().ansatz() == 1:
+            collocation_size *= 4 # First derivs
+        elif vbase.functional().ansatz() == 2:
+            collocation_size *= 10 # Second derivs
+    else:
+        collocation_size = 0
+
 
     # Change allocation for collocation matrices based on DFT type
     scf_type = core.get_global_option('SCF_TYPE').upper()
@@ -172,7 +176,8 @@ def scf_initialize(self):
 
         mints.one_electron_integrals()
         self.initialize_jk(self.memory_jk_)
-        self.V_potential().build_collocation_cache(self.memory_collocation_)
+        if self.V_potential():
+            self.V_potential().build_collocation_cache(self.memory_collocation_)
 
         core.timer_on("HF: Form core H")
         self.form_H()
@@ -550,7 +555,8 @@ def scf_finalize_energy(self):
         core.set_variable(k, v)
 
     self.finalize()
-    self.V_potential().clear_collocation_cache()
+    if self.V_potential():
+        self.V_potential().clear_collocation_cache()
 
     core.print_out("\nComputation Completed\n")
 
