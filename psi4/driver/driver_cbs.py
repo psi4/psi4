@@ -723,25 +723,25 @@ def _get_default_xtpl(nbasis, xtpl_type):
 def _process_cbs_kwargs(kwargs):
     metadata = []
     if "cbs_metadata" in kwargs:
-        cbs_metadata = kwargs.pop("cbs_metadata")
+        cbs_metadata = kwargs.get("cbs_metadata")
         for item in cbs_metadata:
             metadata.append({})
             if "wfn" in item:
-                metadata[-1]["wfn"] = item.pop("wfn")
-                metadata[-1]["basis"] = _expand_bracketed_basis(item.pop("basis").lower())
-                metadata[-1]["scheme"] = item.pop("scheme",
+                metadata[-1]["wfn"] = item.get("wfn")
+                metadata[-1]["basis"] = _expand_bracketed_basis(item.get("basis").lower())
+                metadata[-1]["scheme"] = item.get("scheme",
                                                   _get_default_xtpl(len(metadata[-1]["basis"][1]), "scf")) 
             else:
                 metadata[-1]["wfn_hi"] = item.get("wfn_hi")
-                metadata[-1]["wfn_lo"] = item.pop("wfn_lo", metadata[-2].get("wfn", 
+                metadata[-1]["wfn_lo"] = item.get("wfn_lo", metadata[-2].get("wfn", 
                                                             metadata[-2].get("wfn_hi")))
                 metadata[-1]["basis_hi"] = _expand_bracketed_basis(item.get("basis_hi").lower())
-                metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.pop("basis_lo", 
-                                                                   item.pop("basis_hi")).lower())
-                metadata[-1]["scheme"] = item.pop("scheme",
+                metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", 
+                                                                   item.get("basis_hi")).lower())
+                metadata[-1]["scheme"] = item.get("scheme",
                                                   _get_default_xtpl(len(metadata[-1]["basis_hi"][1]),"corl"))
-            metadata[-1]["alpha"] = item.pop("alpha", None)
-            metadata[-1]["options"] = item.pop("options", False)
+            metadata[-1]["alpha"] = item.get("alpha", None)
+            metadata[-1]["options"] = item.get("options", False)
     else:
         scf = {}
         corl = {}
@@ -1581,13 +1581,16 @@ complete_basis_set = cbs
 
 
 def _cbs_wrapper_methods(**kwargs):
-    cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
-    cbs_method_kwargs += ['delta%d_wfn' % x for x in range(2, 6)]
-
     cbs_methods = []
-    for method in cbs_method_kwargs:
-        if method in kwargs:
-            cbs_methods.append(kwargs[method])
+    if "cbs_metadata" in kwargs:
+        for item in kwargs["cbs_metadata"]:
+            cbs_methods.append(item.get("wfn", item.get("wfn_hi")))
+    else:
+        cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
+        cbs_method_kwargs += ['delta%d_wfn' % x for x in range(2, 6)]
+        for method in cbs_method_kwargs:
+            if method in kwargs:
+                cbs_methods.append(kwargs[method])
     return cbs_methods
 
 
