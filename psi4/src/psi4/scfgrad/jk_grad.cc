@@ -156,7 +156,7 @@ void DFJKGrad::print_header() const
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    OpenMP threads:    %11d\n", omp_num_threads_);
         outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
-        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
         outfile->Printf( "    Fitting Condition: %11.0E\n\n", condition_);
 
