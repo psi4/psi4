@@ -48,6 +48,7 @@ def multi_level(func, **kwargs):
     from psi4.driver.driver_nbody import nbody_gufunc
     from psi4.driver.driver_nbody import _print_nbody_energy
 
+    kwargs['multilevel_call'] = 0
     ptype = kwargs['ptype']
     return_wfn = kwargs.get('return_wfn', False)
     kwargs['return_wfn'] = True
@@ -70,6 +71,7 @@ def multi_level(func, **kwargs):
         hessian_result = np.zeros((natoms * 3, natoms * 3))
 
     for n in sorted(levels)[::-1]:
+        kwargs['multilevel_call'] += 1
         kwargs_copy = kwargs.copy()
         kwargs_copy['max_nbody'] = n
         energy_bsse_dict = {b: 0 for b in kwargs['bsse_type']}
@@ -102,10 +104,12 @@ def multi_level(func, **kwargs):
 
     if supersystem:
         # Super system recovers higher order effects at a lower level
+        kwargs['multilevel_call'] += 1
         kwargs_copy = kwargs.copy()
         kwargs_copy.pop('bsse_type')
         kwargs_copy.pop('ptype')
         ret, wfn_super = func(supersystem, **kwargs_copy)
+        core.clean()
         kwargs_copy = kwargs.copy()
         kwargs_copy['bsse_type'] = 'nocp'
         kwargs_copy['max_nbody'] = max(levels)
@@ -129,7 +133,7 @@ def multi_level(func, **kwargs):
 
     is_embedded = kwargs.get('embedding_charges', False) or kwargs.get('charge_method', False)
     for b in kwargs['bsse_type']:
-        _print_nbody_energy(energy_body_dict[b], '%s-corrected multi-level many-body expansion' % b.upper(),
+        _print_nbody_energy(energy_body_dict[b], '%s-corrected multilevel many-body expansion' % b.upper(),
                             is_embedded)
 
     if not kwargs['return_total_data']:

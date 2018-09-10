@@ -470,7 +470,7 @@ def compute_nbody_components(func, method_string, metadata):
             ghost = list(set(pair[1]) - set(pair[0]))
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
-            current_mol.set_name("%i_%i" % (count, num))
+            current_mol.set_name("%i_%i_%i" % (kwargs.get('multilevel_call', 0), count, num))
             if metadata['embedding_charges']: driver_nbody_helper.electrostatic_embedding(metadata, pair=pair)
             # Save energies info
             ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
