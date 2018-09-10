@@ -120,6 +120,7 @@ def multi_level(func, **kwargs):
             gradient_result += np.array(wfn_super.gradient()) - np.array(wfn.get_array('GRADIENT ' + str(max(levels))))
         if ptype == 'hessian':
             hessian_result += np.array(wfn_super.hessian()) - np.array(wfn.get_array('HESSIAN ' + str(max(levels))))
+        levels['supersystem'] = supersystem
 
     for b in kwargs['bsse_type']:
         for n in energy_body_contribution[b]:
