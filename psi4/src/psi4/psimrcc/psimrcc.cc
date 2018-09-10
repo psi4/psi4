@@ -31,7 +31,7 @@
  *  @file psimrcc.cpp
  *  @ingroup (PSIMRCC)
  *  @brief Contains main() and global variables
-*/
+ */
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmoinfo/libmoinfo.h"
@@ -118,5 +118,5 @@ void transform_integrals() {
     //   CCTransform transf;
     //   transf.read_so_integrals();
 }
-}
-} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi

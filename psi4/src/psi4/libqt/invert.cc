@@ -64,42 +64,38 @@ namespace psi {
 ** Note: The original matrix is modified by invert_matrix()
 ** \ingroup QT
 */
-double invert_matrix(double **a, double **y, int N, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   double  d, *col, *colptr;
-   int i, j;
-   int *indx ;
+double invert_matrix(double **a, double **y, int N, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    double d, *col, *colptr;
+    int i, j;
+    int *indx;
 
-   col = init_array(N) ;
-   indx = init_int_array(N) ;
+    col = init_array(N);
+    indx = init_int_array(N);
 
-   ludcmp(a,N,indx,&d) ;
-   for (j=0; j<N; j++) d *= a[j][j];
+    ludcmp(a, N, indx, &d);
+    for (j = 0; j < N; j++) d *= a[j][j];
 
-   /* outfile->Printf("detH0 in invert = %lf\n", std::fabs(d));
-    */
+    /* outfile->Printf("detH0 in invert = %lf\n", std::fabs(d));
+     */
 
     if (std::fabs(d) < SMALL_DET) {
-      printer->Printf("Warning (invert_matrix): Determinant is %g\n", d);
-      printf("Warning (invert_matrix): Determinant is %g\n", d);
+        printer->Printf("Warning (invert_matrix): Determinant is %g\n", d);
+        printf("Warning (invert_matrix): Determinant is %g\n", d);
+    }
 
-      }
+    for (j = 0; j < N; j++) {
+        memset(col, '\0', sizeof(double) * N);
+        col[j] = 1.0;
+        lubksb(a, N, indx, col);
+        colptr = col;
+        for (i = 0; i < N; i++) y[i][j] = *colptr++;
+    }
 
-   for (j=0; j<N; j++) {
-       memset(col, '\0', sizeof(double)*N);
-       col[j] = 1.0 ;
-       lubksb(a,N,indx,col) ;
-       colptr = col;
-       for (i=0; i<N; i++) y[i][j] = *colptr++;
-       }
+    free(col);
+    free(indx);
 
-   free(col);
-   free(indx);
-
-   d = std::fabs(d);
-   return(d);
+    d = std::fabs(d);
+    return (d);
 }
-
 }

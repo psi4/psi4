@@ -56,42 +56,45 @@ namespace psi {
 ** \ingroup QT
 */
 
-void normalize(double **A, int rows, int cols)
-{
-  double normval;
-  int i, j;
+void normalize(double **A, int rows, int cols) {
+    double normval;
+    int i, j;
 
-  /* divide each row by the square root of its norm */
-  for (i=0; i<rows; i++) {
-    //dot_arr(A[i], A[i], cols, &normval);
-    normval = C_DDOT(cols, A[i], 1, A[i], 1);
-    normval = sqrt(normval);
-    for (j=0; j<cols; j++) A[i][j] /= normval;
-  }
-
+    /* divide each row by the square root of its norm */
+    for (i = 0; i < rows; i++) {
+        // dot_arr(A[i], A[i], cols, &normval);
+        normval = C_DDOT(cols, A[i], 1, A[i], 1);
+        normval = sqrt(normval);
+        for (j = 0; j < cols; j++) A[i][j] /= normval;
+    }
 }
 
 #ifdef STANDALONE
-main()
-{
-std::string out_fname ;
-double **mat ;
-void normalize(double **A, int rows, int cols) ;
+main() {
+    std::string out_fname;
+    double **mat;
+    void normalize(double **A, int rows, int cols);
 
-   mat = init_matrix(3, 3) ;
-   mat[0][0] = 1.0 ; mat[0][1] = 0.0 ; mat[0][2] = 1.0 ;
-   mat[1][0] = 1.0 ; mat[1][1] = -1.0 ; mat[1][2] = 0.0 ;
-   mat[2][0] = 0.0 ; mat[2][1] = 0.0 ; mat[2][2] = 0.5 ;
+    mat = init_matrix(3, 3);
+    mat[0][0] = 1.0;
+    mat[0][1] = 0.0;
+    mat[0][2] = 1.0;
+    mat[1][0] = 1.0;
+    mat[1][1] = -1.0;
+    mat[1][2] = 0.0;
+    mat[2][0] = 0.0;
+    mat[2][1] = 0.0;
+    mat[2][2] = 0.5;
 
-   ffile(&outfile, "output.dat", 0) ;
-   outfile->Printf( "Matrix before normalization process\n") ;
-   print_mat(mat,3,3,outfile) ;
-   normalize(mat,3,3) ;
-   outfile->Printf( "\nMatrix after normalization process\n") ;
-   print_mat(mat,3,3,outfile) ;
+    ffile(&outfile, "output.dat", 0);
+    outfile->Printf("Matrix before normalization process\n");
+    print_mat(mat, 3, 3, outfile);
+    normalize(mat, 3, 3);
+    outfile->Printf("\nMatrix after normalization process\n");
+    print_mat(mat, 3, 3, outfile);
 
-   free_matrix(mat,3) ;
+    free_matrix(mat, 3);
 }
 #endif
 
-}
+}  // namespace psi

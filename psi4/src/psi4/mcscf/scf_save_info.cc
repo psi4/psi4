@@ -44,47 +44,44 @@
 #include <cstdio>
 #include <cmath>
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
-void SCF::save_info()
-{
+void SCF::save_info() {
     // No projection of MOs, just yet
     nmo_ = nso_;
 
     // figure out how many frozen orbitals per irrep
     int nfrzc = basisset_->n_frozen_core();
     intvec frz;
-    for(int h = 0; h < nirreps; ++h) frz.push_back(0);
+    for (int h = 0; h < nirreps; ++h) frz.push_back(0);
     std::vector<std::pair<double, int> > sorted_evals;
-    for(int h = 0; h < nirreps; ++h)
-      for(int i = 0; i < sopi[h]; ++i)
-        sorted_evals.push_back( std::make_pair(epsilon->get(h,i),h) );
-    sort(sorted_evals.begin(),sorted_evals.end());
-    for(int i = 0; i < nfrzc; ++i)
-      frz[sorted_evals[i].second]++;
+    for (int h = 0; h < nirreps; ++h)
+        for (int i = 0; i < sopi[h]; ++i) sorted_evals.push_back(std::make_pair(epsilon->get(h, i), h));
+    sort(sorted_evals.begin(), sorted_evals.end());
+    for (int i = 0; i < nfrzc; ++i) frz[sorted_evals[i].second]++;
 
-    for(int h = 0; h < nirreps; ++h){
+    for (int h = 0; h < nirreps; ++h) {
         doccpi_[h] = docc[h];
         soccpi_[h] = actv[h];
-        nmopi_[h]  = nsopi_[h];
+        nmopi_[h] = nsopi_[h];
         frzcpi_[h] = frz[h];
         frzvpi_[h] = 0;
     }
     // Save the eigenvectors after rotating them
-    if(options_.get_double("ROTATE_MO_ANGLE") != 0.0){
+    if (options_.get_double("ROTATE_MO_ANGLE") != 0.0) {
         double mo_rotate_angle = options_.get_double("ROTATE_MO_ANGLE");
-        int p = options_.get_int("ROTATE_MO_P") -1;  // P, Q and IRREPS are one-based
-        int q = options_.get_int("ROTATE_MO_Q") -1;
+        int p = options_.get_int("ROTATE_MO_P") - 1;  // P, Q and IRREPS are one-based
+        int q = options_.get_int("ROTATE_MO_Q") - 1;
         int h = options_.get_int("ROTATE_MO_IRREP") - 1;
 
-        outfile->Printf("\n\n  Rotating MOs %d and %d of irrep %d by %lf degrees",
-                        p,q,h,mo_rotate_angle);
+        outfile->Printf("\n\n  Rotating MOs %d and %d of irrep %d by %lf degrees", p, q, h, mo_rotate_angle);
         double angle = mo_rotate_angle * acos(-1.0) / 180.0;
-        for(int i = 0; i < sopi[h]; ++i){
-            double Cp = cos(angle) * C->get(h,i,p) + sin(angle) * C->get(h,i,q);
-            double Cq = cos(angle) * C->get(h,i,q) - sin(angle) * C->get(h,i,p);
-            C->set(h,i,p,Cp);
-            C->set(h,i,q,Cq);
+        for (int i = 0; i < sopi[h]; ++i) {
+            double Cp = cos(angle) * C->get(h, i, p) + sin(angle) * C->get(h, i, q);
+            double Cq = cos(angle) * C->get(h, i, q) - sin(angle) * C->get(h, i, p);
+            C->set(h, i, p, Cp);
+            C->set(h, i, q, Cq);
         }
     }
 
@@ -93,10 +90,10 @@ void SCF::save_info()
     Cb_ = Ca_;
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
-    for(int h = 0; h < nirreps; ++h){
-        for(int so = 0; so < nsopi_[h]; ++so){
+    for (int h = 0; h < nirreps; ++h) {
+        for (int so = 0; so < nsopi_[h]; ++so) {
             epsilon_a_->set(h, so, epsilon->get(h, so));
-            for(int mo = 0; mo < nmopi_[h]; ++mo){
+            for (int mo = 0; mo < nmopi_[h]; ++mo) {
                 Ca_->set(h, so, mo, C->get(h, so, mo));
             }
         }
@@ -109,7 +106,7 @@ void SCF::save_info()
     cleanup();
 
     return;
-
 }
 
-}} /* End Namespaces */
+}  // namespace mcscf
+}  // namespace psi

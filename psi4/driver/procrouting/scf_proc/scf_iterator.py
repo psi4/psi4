@@ -34,7 +34,7 @@ import numpy as np
 
 from psi4.driver import p4util
 from psi4.driver import constants
-from psi4.driver.p4util.exceptions import ConvergenceError, ValidationError
+from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
 from psi4 import core
 
 from .efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
@@ -71,8 +71,9 @@ def scf_compute_energy(self):
             self.initialize()
             try:
                 self.iterations()
-            except ConvergenceError:
-                raise ConvergenceError("""SCF DF preiterations""", self.iteration_)
+            except SCFConvergenceError:
+                self.finalize() 
+                raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
         core.print_out("\n  DF guess converged.\n\n")
 
         # reset the DIIS & JK objects in prep for DIRECT
@@ -84,7 +85,7 @@ def scf_compute_energy(self):
 
     try:
         self.iterations()
-    except ConvergenceError as e:
+    except SCFConvergenceError as e:
         if core.get_option("SCF", "FAIL_ON_MAXITER"):
             core.print_out("  Failed to converge.\n")
             # energy = 0.0
@@ -355,7 +356,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
             break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
-            raise ConvergenceError("""SCF iterations""", self.iteration_)
+            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Drms)
 
 
 def scf_finalize_energy(self):

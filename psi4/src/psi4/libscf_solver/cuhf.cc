@@ -403,5 +403,5 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
-}
-}
+}  // namespace scf
+}  // namespace psi

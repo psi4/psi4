@@ -29,52 +29,54 @@
 #ifndef _psi_src_lib_libmemtrix_matrix_base_h_
 #define _psi_src_lib_libmemtrix_matrix_base_h_
 
-#include <cstring> // for size_t
+#include <cstring>  // for size_t
 
 #include "psi4/libpsi4util/memory_manager.h"
 #include "vector_base.h"
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
-class MatrixBase
-{
-public:
-  MatrixBase();
-  MatrixBase(size_t rows, size_t cols);
-  ~MatrixBase();
+class MatrixBase {
+   public:
+    MatrixBase();
+    MatrixBase(size_t rows, size_t cols);
+    ~MatrixBase();
 
-  //Inlines
-  size_t  get_rows()                  {return(rows_);}
-  size_t  get_cols()                  {return(cols_);}
-  size_t  get_elements()              {return(elements_);}
-  void    set(size_t i, size_t j, double value) {matrix_[i][j]  = value;}
-  void    add(size_t i, size_t j, double value) {matrix_[i][j] += value;}
-  double  get(size_t i, size_t j)               {return(matrix_[i][j]);}
-  double** get_matrix()                   {return(matrix_);}
+    // Inlines
+    size_t get_rows() { return (rows_); }
+    size_t get_cols() { return (cols_); }
+    size_t get_elements() { return (elements_); }
+    void set(size_t i, size_t j, double value) { matrix_[i][j] = value; }
+    void add(size_t i, size_t j, double value) { matrix_[i][j] += value; }
+    double get(size_t i, size_t j) { return (matrix_[i][j]); }
+    double** get_matrix() { return (matrix_); }
 
-  void    multiply(bool transpose_A, bool transpose_B, MatrixBase* A, MatrixBase* B);
-  void    diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues);
-  void    print();
-  void    zero();
-  void    zero_diagonal();
-  void    scale(double factor);
-  void    transpose();
-  MatrixBase& operator+=(const MatrixBase& rhs);
-  MatrixBase& operator-=(const MatrixBase& rhs);
-  friend double dot(MatrixBase* A, MatrixBase* B);
-private:
-  // Matrix size
-  size_t  rows_;
-  size_t  cols_;
-  size_t  elements_;
+    void multiply(bool transpose_A, bool transpose_B, MatrixBase* A, MatrixBase* B);
+    void diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues);
+    void print();
+    void zero();
+    void zero_diagonal();
+    void scale(double factor);
+    void transpose();
+    MatrixBase& operator+=(const MatrixBase& rhs);
+    MatrixBase& operator-=(const MatrixBase& rhs);
+    friend double dot(MatrixBase* A, MatrixBase* B);
 
-  // Matrix data
-  double** matrix_;
+   private:
+    // Matrix size
+    size_t rows_;
+    size_t cols_;
+    size_t elements_;
+
+    // Matrix data
+    double** matrix_;
 };
 
-}}
+}  // namespace mcscf
+}  // namespace psi
 
-#endif // _psi_src_lib_libmemtrix_matrix_base_h_
+#endif  // _psi_src_lib_libmemtrix_matrix_base_h_
 
 /*
 

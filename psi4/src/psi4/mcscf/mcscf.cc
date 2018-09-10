@@ -33,7 +33,7 @@
  *  @defgroup MCSCF MCSCF is a code for SCF/MCSCF computations
  *  @ingroup MCSCF
  *  @brief Contains main() and global variables
-*/
+ */
 
 // Standard libraries
 #include <iostream>
@@ -125,5 +125,5 @@ void init_psi(Options& options_) {
  * Close psi by calling psio_done() and psi_stop()
  */
 void close_psi(Options& options_) { outfile->Printf("\n\n  MCSCF Execution Completed.\n\n"); }
-}
-} /* End Namespaces */
+}  // namespace mcscf
+}  // namespace psi

@@ -45,7 +45,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   cc9 cc9a cdomp2-1 cdomp2-2 cepa0-grad1 cepa0-grad2 cepa1
                   cepa2 cepa3 cepa4 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
-                  ci-property cubeprop decontract dcft-grad1 dcft-grad2
+                  ci-property cubeprop cubeprop-frontier decontract dcft-grad1 dcft-grad2
                   dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6
                   dcft7 dcft8 dcft9 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp
                   dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 dfccsd-t-grad1
