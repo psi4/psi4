@@ -48,7 +48,6 @@ def multi_level(func, **kwargs):
     from psi4.driver.driver_nbody import nbody_gufunc
     from psi4.driver.driver_nbody import _print_nbody_energy
 
-    kwargs['multilevel_call'] = 0
     ptype = kwargs['ptype']
     return_wfn = kwargs.get('return_wfn', False)
     kwargs['return_wfn'] = True
@@ -70,8 +69,12 @@ def multi_level(func, **kwargs):
     if ptype == 'hessian':
         hessian_result = np.zeros((natoms * 3, natoms * 3))
 
+    if kwargs.get('charge_method', False) and not kwargs.get('embedding_charges', False):
+        kwargs['embedding_charges'] = compute_charges(kwargs['charge_method'],
+                                      kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), molecule)
+
     for n in sorted(levels)[::-1]:
-        kwargs['multilevel_call'] += 1
+        molecule.set_name('%i' %n)
         kwargs_copy = kwargs.copy()
         kwargs_copy['max_nbody'] = n
         energy_bsse_dict = {b: 0 for b in kwargs['bsse_type']}
@@ -104,7 +107,7 @@ def multi_level(func, **kwargs):
 
     if supersystem:
         # Super system recovers higher order effects at a lower level
-        kwargs['multilevel_call'] += 1
+        molecule.set_name('supersystem')
         kwargs_copy = kwargs.copy()
         kwargs_copy.pop('bsse_type')
         kwargs_copy.pop('ptype')
@@ -161,17 +164,22 @@ def multi_level(func, **kwargs):
         return ptype_result
 
 
-def compute_charges(charge_method, charge_type, metadata):
+def compute_charges(charge_method, charge_type, molecule):
     """
     Compute charges for nbody fragments
     """
     from psi4.driver.driver import energy
     from psi4.driver.p4util.util import oeprop
-    metadata['embedding_charges'] = {}
-    for i in range(1, metadata['molecule'].nfragments() + 1):
-        e, wfn = energy(charge_method, molecule=metadata['molecule'].extract_subsets([i]), return_wfn=True)
+
+    charges = {}
+    molecule = molecule.clone()
+    for i in range(1, molecule.nfragments() + 1):
+        molecule.set_name('charges%i' %i)
+        e, wfn = energy(charge_method, molecule=molecule.extract_subsets([i]), return_wfn=True)
         oeprop(wfn, charge_type)
-        metadata['embedding_charges'][i] = wfn.atomic_point_charges().np
+        charges[i] = wfn.atomic_point_charges().np
+
+    return charges
 
 
 def electrostatic_embedding(metadata, pair):
@@ -180,6 +188,7 @@ def electrostatic_embedding(metadata, pair):
     """
     from psi4.driver import qmmm
     from psi4.driver import constants
+
     if not metadata['return_total_data']:
         raise Exception('Cannot return interaction data when using embedding scheme.')
     # Add embedding point charges

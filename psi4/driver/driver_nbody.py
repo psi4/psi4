@@ -195,7 +195,7 @@ def nbody_gufunc(func, method_string, **kwargs):
     :type charge_method: string
     :param charge_method: ``scf/6-31g`` || ``b3lyp/6-31g*`` || etc
 
-        Method to compute point charges for monomers. Overrides embedding_charges if both are provided.
+        Method to compute point charges for monomers. Overridden by embedding_charges if both are provided.
 
     :type charge_type: string
     :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES`` 
@@ -407,6 +407,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         'vmfc_compute': vmfc_compute_list,
         'vmfc_levels': vmfc_level_list
     }
+
     return metadata
 
 
@@ -457,9 +458,9 @@ def compute_nbody_components(func, method_string, metadata):
     gradients_dict = {}
     ptype_dict = {}
     intermediates_dict = {}
-    if kwargs.get('charge_method', False):
-        driver_nbody_helper.compute_charges(kwargs['charge_method'],
-                                            kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), metadata)
+    if kwargs.get('charge_method', False) and not metadata['embedding_charges']:
+        metadata['embedding_charges'] = driver_nbody_helper.compute_charges(kwargs['charge_method'],
+                                            kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), molecule)
     for count, n in enumerate(compute_list.keys()):
         core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         total = len(compute_list[n])
@@ -470,7 +471,7 @@ def compute_nbody_components(func, method_string, metadata):
             ghost = list(set(pair[1]) - set(pair[0]))
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
-            current_mol.set_name("%i_%i_%i" % (kwargs.get('multilevel_call', 0), count, num))
+            current_mol.set_name("%s_%i_%i" % (current_mol.name(), count, num))
             if metadata['embedding_charges']: driver_nbody_helper.electrostatic_embedding(metadata, pair=pair)
             # Save energies info
             ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
