@@ -1096,12 +1096,15 @@ def cbs(func, label, **kwargs):
         
         Other supported arguments for the first dictionary are:
         
-        * ```scheme```: scf extrapolation scheme, by default it is worked out from the number of basis sets
-        (1 - 3) supplied as ```basis```.
+        * ```scheme```: scf extrapolation scheme function, by default it is worked out from the number of 
+        basis sets (1 - 3) supplied as ```basis```.
         * ```alpha```: alpha for the above scheme, if the default is to be overriden
         * ```options```: if special options are required for a step, they should be entered as a dict here.
         This is helpful for calculating all electron corrections in otherwise frozen core calculations, or
         relativistic (DKH) Hamiltionian corrections for otherwise 2-component Hamiltonians.
+        * ```treatment```: treat extrapolation stage as ```scf``` or ```corl```, by default only the first
+        stage is ```scf``` and every later one is ```corl```.
+        * ```stage```: tag for the stage used in tables.
         
         The next items in the ```cbs_metadata``` array extrapolate correlation. All of the above parameters
         are available, with only the ```wfn``` and ```basis``` keywords required. Other supported parameters
