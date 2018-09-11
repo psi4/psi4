@@ -825,15 +825,14 @@ def cbs(func, label, **kwargs):
 
        - No way to tell function to boost fitting basis size for all calculations.
 
-       - No way to extrapolate def2 family basis sets
-
        - Need to add more extrapolation schemes
 
     As represented in the equation below, a CBS energy method is defined in several
-    sequential stages (scf, corl, delta, delta2, delta3, delta4, delta5) covering treatment
+    sequential stages (scf, corl, delta1, delta2, ... ) covering treatment
     of the reference total energy, the correlation energy, a delta correction to the
     correlation energy, and a second delta correction, etc.. Each is activated by its
-    stage_wfn keyword and is only allowed if all preceding stages are active.
+    stage_wfn keyword, or as a field in the ```cbs_metadata``` array, and is only 
+    allowed if all preceding stages are active.
 
     .. include:: ../cbs_eqn.rst
 
@@ -936,42 +935,6 @@ def cbs(func, label, **kwargs):
         Indicates the inferior energy method for which a second delta correction
         to the correlation energy is to be obtained.
 
-    :type delta3_wfn: string
-    :param delta3_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
-
-        Indicates the (superior) energy method for which a third delta correction
-        to the correlation energy is to be obtained.
-
-    :type delta3_wfn_lesser: string
-    :param delta3_wfn_lesser: |dl| ``delta2_wfn`` |dr| || ``'ccsd(t)'`` || etc.
-
-        Indicates the inferior energy method for which a third delta correction
-        to the correlation energy is to be obtained.
-
-    :type delta4_wfn: string
-    :param delta4_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
-
-        Indicates the (superior) energy method for which a fourth delta correction
-        to the correlation energy is to be obtained.
-
-    :type delta4_wfn_lesser: string
-    :param delta4_wfn_lesser: |dl| ``delta3_wfn`` |dr| || ``'ccsd(t)'`` || etc.
-
-        Indicates the inferior energy method for which a fourth delta correction
-        to the correlation energy is to be obtained.
-
-    :type delta5_wfn: string
-    :param delta5_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
-
-        Indicates the (superior) energy method for which a fifth delta correction
-        to the correlation energy is to be obtained.
-
-    :type delta5_wfn_lesser: string
-    :param delta5_wfn_lesser: |dl| ``delta4_wfn`` |dr| || ``'ccsd(t)'`` || etc.
-
-        Indicates the inferior energy method for which a fifth delta correction
-        to the correlation energy is to be obtained.
-
     * Basis Sets
         Currently, the basis set set through ``set`` commands have no influence
         on a cbs calculation.
@@ -998,24 +961,6 @@ def cbs(func, label, **kwargs):
     :param delta2_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the second delta correction
-        to the correlation energy.
-
-    :type delta3_basis: :ref:`basis string <apdx:basisElement>`
-    :param delta3_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
-
-        Indicates the sequence of basis sets employed for the third delta correction
-        to the correlation energy.
-
-    :type delta4_basis: :ref:`basis string <apdx:basisElement>`
-    :param delta4_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
-
-        Indicates the sequence of basis sets employed for the fourth delta correction
-        to the correlation energy.
-
-    :type delta5_basis: :ref:`basis string <apdx:basisElement>`
-    :param delta5_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
-
-        Indicates the sequence of basis sets employed for the fifth delta correction
         to the correlation energy.
 
     * Schemes
@@ -1083,30 +1028,6 @@ def cbs(func, label, **kwargs):
            * xtpl_highest_1
            * corl_xtpl_helgaker_2
 
-    :type delta3_scheme: function
-    :param delta3_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
-
-        Indicates the basis set extrapolation scheme to be applied to the third delta correction
-        to the correlation energy.
-        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta3_basis`` and :py:func:`~xtpl_highest_1` otherwise.
-
-    :type delta4_scheme: function
-    :param delta4_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
-
-        Indicates the basis set extrapolation scheme to be applied to the fourth delta correction
-        to the correlation energy.
-        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta4_basis`` and :py:func:`~xtpl_highest_1` otherwise.
-
-    :type delta5_scheme: function
-    :param delta5_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
-
-        Indicates the basis set extrapolation scheme to be applied to the fifth delta correction
-        to the correlation energy.
-        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta5_basis`` and :py:func:`~xtpl_highest_1` otherwise.
-
     :type scf_alpha: float
 
         Overrides the default \alpha parameter used in the listed SCF extrapolation procedures.
@@ -1141,6 +1062,38 @@ def cbs(func, label, **kwargs):
 
            * :py:func:`corl_xtpl_helgaker_2`
 
+    * Combined interface
+    
+    :type cbs_metadata: array of dicts
+        
+        This is the interface to which all of the above calls are internally translated. The first item in
+        the array is always defining the SCF contribution to the total energy. The required items in the 
+        dictionary are:
+        
+        * ```wfn```: typically ```HF```, which is subsumed in correlated methods anyway.
+        * ```basis```: basis set, can be in a bracketed form (eg. ```cc-pv[tq]z```)
+        
+        Other supported arguments for the first dictionary are:
+        
+        * ```scheme```: scf extrapolation scheme, by default it is worked out from the number of basis sets
+        (1 - 3) supplied as ```basis```.
+        * ```alpha```: alpha for the above scheme, if the default is to be overriden
+        * ```options```: if special options are required for a step, they should be entered as a dict here.
+        This is helpful for calculating all electron corrections in otherwise frozen core calculations, or
+        relativistic (DKH) Hamiltionian corrections for otherwise 2-component Hamiltonians.
+        
+        The next items in the ```cbs_metadata``` array extrapolate correlation. All of the above parameters
+        are available, with only the ```wfn``` and ```basis``` keywords required. Other supported parameters
+        are:
+        
+        * ```wfn_lo```: the lower method from which the delta correction is to be calculated. By default, it
+        is set to ```wfn``` from the previous field in the ```cbs_metadata``` array.
+        * ```basis_lo```: basis set to be used for the delta correction. By default, it is the same as the
+        ```basis``` specified above.
+    
+
+    * Others
+    
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
 
@@ -1168,10 +1121,13 @@ def cbs(func, label, **kwargs):
     >>> # [6] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
     >>> cbs(name='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
 
-    >>> # [7] cbs() coupled with database()
+    >>> # [7] a Q5-zeta MP2 calculation, corrected by CCSD(T) at the TQ-zeta extrapolated level, and all-electron CCSD(T) correlation at T-zeta level
+    >>> energy(cbs_params=[{"wfn": "hf", "basis": "cc-pv5z"}, {"wfn": "mp2", "basis": "cc-pv[q5]z"}, {"wfn": "ccsd(t)", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvtz", "options": {"freeze_core": "False"}}])
+
+    >>> # [8] cbs() coupled with database()
     >>> TODO database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
-    >>> # [8] cbs() coupled with optimize()
+    >>> # [9] cbs() coupled with optimize()
     >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
 
     """
