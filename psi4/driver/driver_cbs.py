@@ -727,19 +727,32 @@ def _process_cbs_kwargs(kwargs):
         for item in cbs_metadata:
             metadata.append({})
             if "wfn" in item:
-                metadata[-1]["wfn"] = item.get("wfn")
-                metadata[-1]["basis"] = _expand_bracketed_basis(item.get("basis").lower())
-                metadata[-1]["scheme"] = item.get("scheme",
-                                                  _get_default_xtpl(len(metadata[-1]["basis"][1]), "scf")) 
-            else:
-                metadata[-1]["wfn_hi"] = item.get("wfn_hi")
-                metadata[-1]["wfn_lo"] = item.get("wfn_lo", metadata[-2].get("wfn", 
-                                                            metadata[-2].get("wfn_hi")))
-                metadata[-1]["basis_hi"] = _expand_bracketed_basis(item.get("basis_hi").lower())
-                metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", 
-                                                                   item.get("basis_hi")).lower())
-                metadata[-1]["scheme"] = item.get("scheme",
-                                                  _get_default_xtpl(len(metadata[-1]["basis_hi"][1]),"corl"))
+                if "wfn" not in item:
+                    raise ValidationError("Wavefunction type has to be supplied for every stage.")
+                else:
+                    metadata[-1]["wfn"] = item.get("wfn")
+                if "basis" not in item:
+                    raise ValidationError("Basis set has to be supplied for every stage.")
+                else:
+                    metadata[-1]["basis"] = _expand_bracketed_basis(item.get("basis").lower())
+                metadata[-1]["treatment"] = item.get("treatment", "scf" if len(metadata) == 1 else "corl")
+                metadata[-1]["scheme"] = item.get("scheme", _get_default_xtpl(len(metadata[-1]["basis"][1]),
+                                                                                 metadata[-1]["treatment"])) 
+                if len(metadata) > 1:
+                    metadata[-1]["wfn_lo"] = item.get("wfn_lo", metadata[-2].get("wfn"))
+                    metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", 
+                                                                       item.get("basis")).lower())
+                    if len(metadata[-1]["basis"][0]) != len(metadata[-1]["basis_lo"][0]):
+                        raise ValidationError("""Number of basis sets inconsistent 
+                                             between high ({0:d}) and low ({1:d}) levels.""".format(len(metadata[-1]["basis"][0]),len(metadata[-1]["basis_lo"][0])))
+                metadata[-1]["stage"] = item.get("stage", None)
+                if metadata[-1]["stage"] == None:
+                    if len(metadata) == 1:
+                        metadata[-1]["stage"] = "scf"
+                    elif len(metadata) == 2:
+                        metadata[-1]["stage"] = "corl"
+                    else:
+                        metadata[-1]["stage"] = "delta{0:d}".format(len(metadata) - 2)
             metadata[-1]["alpha"] = item.get("alpha", None)
             metadata[-1]["options"] = item.get("options", False)
     else:
@@ -747,8 +760,8 @@ def _process_cbs_kwargs(kwargs):
         corl = {}
         delta = {}
         delta2 = {}
-        corl["wfn_hi"] = kwargs.get("corl_wfn", False)
-        if corl["wfn_hi"] and corl["wfn_hi"].startswith("c4-"):
+        corl["wfn"] = kwargs.get("corl_wfn", False)
+        if corl["wfn"] and corl["wfn"].startswith("c4-"):
             default_scf = "c4-hf"
         else:
             default_scf = "hf"
@@ -756,41 +769,49 @@ def _process_cbs_kwargs(kwargs):
         if "scf_basis" in kwargs:
             scf["basis"] = _expand_bracketed_basis(kwargs.get("scf_basis"))
         if "corl_basis" in kwargs:
-            corl["basis_hi"] = _expand_bracketed_basis(kwargs.get("corl_basis"))
-            corl["basis_lo"] = corl["basis_hi"]
+            corl["basis"] = _expand_bracketed_basis(kwargs.get("corl_basis"))
+            corl["basis_lo"] = corl["basis"]
             if "basis" not in scf:
-                scf["basis"] = ([corl["basis_hi"][0][-1]],[corl["basis_hi"][1][-1]])
+                scf["basis"] = ([corl["basis"][0][-1]],[corl["basis"][1][-1]])
         scf["scheme"] = kwargs.get("scf_scheme", _get_default_xtpl(len(scf["basis"][1]), "scf"))
         scf["alpha"] = kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None))
         scf["options"] = False
+        scf["treatment"] = "scf"
+        scf["stage"] = "scf"
         metadata.append(scf)
-        if corl["wfn_hi"]:
+        if corl["wfn"]:
             corl["wfn_lo"] = kwargs.get("corl_scheme_lesser", default_scf)
-            corl["scheme"] = kwargs.get("corl_scheme", _get_default_xtpl(len(corl["basis_hi"][1]), "corl"))
+            corl["scheme"] = kwargs.get("corl_scheme", _get_default_xtpl(len(corl["basis"][1]), "corl"))
             corl["alpha"] = kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None))
             corl["options"] = False
+            corl["treatment"] = "corl"
+            corl["stage"] = "corl"
             metadata.append(corl)
-        delta["wfn_hi"] = kwargs.get("delta_wfn", False)
-        if delta["wfn_hi"] and corl["wfn_hi"]:
-            delta["wfn_lo"] = kwargs.get("delta_wfn_lesser", corl["wfn_hi"])
-            delta["basis_hi"] = _expand_bracketed_basis(kwargs.get("delta_basis"))
-            delta["basis_lo"] = delta["basis_hi"]
-            delta["scheme"] = kwargs.get("delta_scheme", _get_default_xtpl(len(delta["basis_hi"][1]), "corl"))
+        delta["wfn"] = kwargs.get("delta_wfn", False)
+        if delta["wfn"] and corl["wfn"]:
+            delta["wfn_lo"] = kwargs.get("delta_wfn_lesser", corl["wfn"])
+            delta["basis"] = _expand_bracketed_basis(kwargs.get("delta_basis"))
+            delta["basis_lo"] = delta["basis"]
+            delta["scheme"] = kwargs.get("delta_scheme", _get_default_xtpl(len(delta["basis"][1]), "corl"))
             delta["alpha"] = kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None))
             delta["options"] = False
+            delta["treatment"] = "corl"
+            delta["stage"] = "delta1"
             metadata.append(delta)
-        elif delta["wfn_hi"]:
+        elif delta["wfn"]:
             raise ValidationError("Delta function supplied without corl_wfn defined.")
-        delta2["wfn_hi"] = kwargs.get("delta2_wfn", False)
-        if delta2["wfn_hi"] and delta["wfn_hi"] and corl["wfn_hi"]:
-            delta2["wfn_lo"] = kwargs.get("delta2_wfn_lesser", delta["wfn_hi"])
-            delta2["basis_hi"] = _expand_bracketed_basis(kwargs.get("delta2_basis"))
-            delta2["basis_lo"] = delta2["basis_hi"]
-            delta2["scheme"] = kwargs.get("delta2_scheme", _get_default_xtpl(len(delta2["basis_hi"][1]), "corl"))
+        delta2["wfn"] = kwargs.get("delta2_wfn", False)
+        if delta2["wfn"] and delta["wfn"] and corl["wfn"]:
+            delta2["wfn_lo"] = kwargs.get("delta2_wfn_lesser", delta["wfn"])
+            delta2["basis"] = _expand_bracketed_basis(kwargs.get("delta2_basis"))
+            delta2["basis_lo"] = delta2["basis"]
+            delta2["scheme"] = kwargs.get("delta2_scheme", _get_default_xtpl(len(delta2["basis"][1]), "corl"))
             delta2["alpha"] = kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None))
             delta2["options"] = False
+            delta2["treatment"] = "corl"
+            delta2["stage"] = "delta2"
             metadata.append(delta2)
-        elif delta2["wfn_hi"]:
+        elif delta2["wfn"]:
             raise ValidationError("Delta2 function supplied without delta_wfn or corl_wfn defined.")
     return metadata
         
@@ -1159,17 +1180,12 @@ def cbs(func, label, **kwargs):
     if metadata[0]["wfn"] not in VARH.keys():
             raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[0]["wfn"]))
 
-    if len(metadata) > 1 and metadata[1]["wfn_hi"] and metadata[1]["wfn_hi"] not in VARH.keys():
-            raise ValidationError("""Requested higher CORL method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[1]["wfn_hi"]))
-    if len(metadata) > 1 and metadata[1]["wfn_lo"] and metadata[1]["wfn_lo"] not in VARH.keys():
-            raise ValidationError("""Requested lesser CORL method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[1]["wfn_lo"]))
-
-    if len(metadata) > 2:
-        for delta in metadata[2:]:
-            if delta["wfn_hi"] not in VARH.keys():
-                raise ValidationError("""Requested higher DELTA method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["wfn_hi"]))
+    if len(metadata) > 1:
+        for delta in metadata[1:]:
+            if delta["wfn"] not in VARH.keys():
+                raise ValidationError("""Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["treatment"], delta["wfn"]))
             if delta["wfn_lo"] not in VARH.keys():
-                raise ValidationError("""Requested lesser DELTA method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["wfn_lo"]))
+                raise ValidationError("""Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["treatment"], delta["wfn_lo"]))
 
     # Build string of title banner
     cbsbanners = ''
@@ -1191,21 +1207,17 @@ def cbs(func, label, **kwargs):
                                _contract_bracketed_basis(metadata[0]["basis"][0]), 
                                metadata[0]["wfn"], NEED, +1, 0.0, None, None, metadata[0]["alpha"]])))
     if len(metadata) > 1:
-        dc = 0
-        ds = "corl"
         for delta in metadata[1:]:
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_hi"][0], delta["basis_hi"][1],
-                                         delta["wfn_hi"], delta["options"], natom)
-            GRAND_NEED.append(dict(zip(d_fields, ['{0:s}'.format(ds), delta["scheme"],
-                                       _contract_bracketed_basis(delta["basis_hi"][0]),
-                                       delta["wfn_hi"], NEED, +1, 0.0, None, None, delta["alpha"]])))
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1],
+                                         delta["wfn"], delta["options"], natom)
+            GRAND_NEED.append(dict(zip(d_fields, [delta["stage"], delta["scheme"],
+                                       _contract_bracketed_basis(delta["basis"][0]),
+                                       delta["wfn"], NEED, +1, 0.0, None, None, delta["alpha"]])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1],
                                          delta["wfn_lo"], False, natom)
-            GRAND_NEED.append(dict(zip(d_fields, ['{0:s}'.format(ds), delta["scheme"],
+            GRAND_NEED.append(dict(zip(d_fields, [delta["stage"], delta["scheme"],
                                        _contract_bracketed_basis(delta["basis_lo"][0]),
                                        delta["wfn_lo"], NEED, -1, 0.0, None, None, delta["alpha"]])))
-            dc += 1
-            ds = "delta{0:d}".format(dc)
 
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].items():
@@ -1540,7 +1552,7 @@ def _cbs_wrapper_methods(**kwargs):
     cbs_methods = []
     if "cbs_metadata" in kwargs:
         for item in kwargs["cbs_metadata"]:
-            cbs_methods.append(item.get("wfn", item.get("wfn_hi")))
+            cbs_methods.append(item.get("wfn"))
     else:
         cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
         cbs_method_kwargs += ['delta%d_wfn' % x for x in range(2, 6)]
