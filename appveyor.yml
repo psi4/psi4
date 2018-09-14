@@ -14,6 +14,7 @@ install:
   - conda create --channel conda-forge
                  --name %CONDA_ENV%
                  deepdiff
+                 intel-openmp=2018.0.3
                  mkl-devel=2018.0.3
                  mpmath
                  networkx
