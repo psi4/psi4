@@ -596,7 +596,7 @@ void PKMgrDisk::batch_sizing() {
     for (int p = 0; p <= nbf(); ++p) {
         for (int q = 0; q <= p; ++q) {
             pq = INDEX2(p, q);
-            if (batch_pq_max_[nb] == pq) {
+            if (nb < batch_pq_max_.size() && batch_pq_max_[nb] == pq) {
                 ind_for_pq_[pq] = std::make_pair(p, q);
                 ++nb;
             }
