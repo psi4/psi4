@@ -14,7 +14,7 @@ install:
   - conda create --channel conda-forge
                  --name %CONDA_ENV%
                  deepdiff
-                 mkl-devel
+                 mkl-devel=2018.0.3
                  mpmath
                  networkx
                  ninja
