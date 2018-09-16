@@ -2189,8 +2189,6 @@ void DFOCC::ccsdl_canonic_triples_disk() {
 
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
-    // Full set of ijk used here
-    Nijk = naoccA * naoccA * naoccA;
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
 
     // Malloc Eijk
