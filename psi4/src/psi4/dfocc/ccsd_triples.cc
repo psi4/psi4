@@ -30,6 +30,7 @@
 #include "defines.h"
 #include "dfocc.h"
 
+#include <ctime>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -1656,7 +1657,9 @@ void DFOCC::ccsd_canonic_triples_grad2() {
     outfile->Printf("\tnthreads: %i \n", nthreads);
 
     // Find number of unique ijk combinations (i>=j>=k)
-    Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
+    // Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
+    // Full set of ijk used here
+    Nijk = naoccA * naoccA * naoccA;
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
 
     // Memory: 2*O^2V^2 + 4*V^3 + O^3V + V^2N + V^3/2
@@ -1735,6 +1738,10 @@ void DFOCC::ccsd_canonic_triples_grad2() {
     Mijam = SharedTensor2d(new Tensor2d("M <IJ|AM>", naoccA, naoccA, navirA, naoccA));
     Mijab = SharedTensor2d(new Tensor2d("M <IJ|AB>", naoccA, naoccA, navirA, navirA));
     Miabd = SharedTensor2d(new Tensor2d("M[I] <AB|D>", navirA * navirA, navirA));
+
+    time_t stop,start = time(nullptr);
+    int ind,pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
+    ind=pct10=pct20=pct30=pct40=pct50=pct60=pct70=pct80=pct90=0;
 
     // main loop
     E_t = 0.0;
@@ -2098,6 +2105,26 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 Miabd->contract(false, true, navirA * navirA, navirA, navirA, V, T, 0,
                                 (j * naoccA * navirA * navirA) + (k * navirA * navirA), 1.0, 1.0);
 
+
+                int print = 0;
+                stop = time(nullptr);
+                ind+=1;
+                if ((double)ind/Nijk >= 0.1 && !pct10){      pct10 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.2 && !pct20){ pct20 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.3 && !pct30){ pct30 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.4 && !pct40){ pct40 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.5 && !pct50){ pct50 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.6 && !pct60){ pct60 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.7 && !pct70){ pct70 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.8 && !pct80){ pct80 = 1; print=1;}
+                else if ((double)ind/Nijk >= 0.9 && !pct90){ pct90 = 1; print=1;}
+                if (print){
+                    outfile->Printf("              %3.1lf  %8d s\n",100.0*ind/Nijk,(int)stop-(int)start);
+
+                }
+
+
+
             }  // k
         }      // j
         Miabd->mywrite(PSIF_DFOCC_MIABC, true);
@@ -2162,6 +2189,8 @@ void DFOCC::ccsdl_canonic_triples_disk() {
 
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
+    // Full set of ijk used here
+    Nijk = naoccA * naoccA * naoccA;
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
 
     // Malloc Eijk
