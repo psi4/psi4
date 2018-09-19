@@ -33,161 +33,156 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include <algorithm>
 
-namespace psi{
+namespace psi {
 
-    namespace psimrcc{
+namespace psimrcc {
 
-typedef std::vector<std::string>            strvec;
-typedef std::vector<std::pair<int,int> >    intpairvec;
+typedef std::vector<std::string> strvec;
+typedef std::vector<std::pair<int, int> > intpairvec;
 
 bool is_number(const std::string& str);
 double get_number(const std::string& str);
 bool is_operation(const std::string& str);
 
 // Parsing Algorithm
-int CCBLAS::parse(std::string& str){
+int CCBLAS::parse(std::string& str) {
+    int noperations_added = 0;
+    // Split the operation
+    strvec split_str = split(str);
 
-  int noperations_added = 0;
-  // Split the operation
-  strvec split_str = split(str);
+    // Define the allowed operations
+    strvec allowed_assignments = split("= += >= +>=");
 
-  // Define the allowed operations
-  strvec allowed_assignments = split("= += >= +>=");
+    // Store the A Matrix
+    CCMatrix* A_Matrix = get_Matrix(split_str[0], str);
+    // Check the assigment operator
+    std::string assignment(split_str[1]);
+    strvec::iterator strveciter(find(allowed_assignments.begin(), allowed_assignments.end(), assignment));
+    if (strveciter == allowed_assignments.end())
+        outfile->Printf("\n\nCCBLAS::parse() %s is not a proper assigment\n\nin the expression:\n\t%s\n\n",
+                        assignment.c_str(), str.c_str());
 
-  // Store the A Matrix
-  CCMatrix* A_Matrix = get_Matrix(split_str[0],str);
-  // Check the assigment operator
-  std::string assignment(split_str[1]);
-  strvec::iterator strveciter(find(allowed_assignments.begin(),allowed_assignments.end(),assignment));
-  if(strveciter==allowed_assignments.end())
-    outfile->Printf("\n\nCCBLAS::parse() %s is not a proper assigment\n\nin the expression:\n\t%s\n\n",assignment.c_str(),str.c_str());
+    // Eliminate the first two strings and store the rest of the terms
+    strvec::iterator iter = split_str.begin();
+    iter = split_str.erase(iter, iter + 2);
+    std::string reindexing;
+    std::string operation;
+    CCMatrix* B_Matrix;
+    CCMatrix* C_Matrix;
 
-  // Eliminate the first two strings and store the rest of the terms
-  strvec::iterator iter = split_str.begin();
-  iter=split_str.erase(iter,iter+2);
-  std::string   reindexing;
-  std::string   operation;
-  CCMatrix*     B_Matrix;
-  CCMatrix*     C_Matrix;
-
-  while(iter!=split_str.end()){
-    double factor=1.0;
-    C_Matrix = nullptr;
-    B_Matrix = nullptr;
-    // Read the reindexing
-    if(iter->find("#")!=std::string::npos){
-      reindexing = *iter;
-      reindexing = reindexing.substr(1,reindexing.size()-2);
-      ++iter;
-    }
-    // Read a product of numerical factors
-    while((iter!=split_str.end()) && get_factor(*iter,factor))
-      ++iter;
-    operation="add_factor";
-    // Read the first matrix
-    if(iter!=split_str.end()){
-      B_Matrix = get_Matrix(*iter,str);
-      ++iter;
-      // And eventually an operation and a matrix
-      if(iter!=split_str.end()){
-        if(is_operation(*iter)){
-          // Check operation
-          operation = *iter;
-          ++iter;
-          if(iter!=split_str.end()){
-            C_Matrix = get_Matrix(*iter,str);
+    while (iter != split_str.end()) {
+        double factor = 1.0;
+        C_Matrix = nullptr;
+        B_Matrix = nullptr;
+        // Read the reindexing
+        if (iter->find("#") != std::string::npos) {
+            reindexing = *iter;
+            reindexing = reindexing.substr(1, reindexing.size() - 2);
             ++iter;
-          }
-        }else{
-          operation="plus";
         }
-      }else{ // When you reach the end
-        operation="plus";
-      }
+        // Read a product of numerical factors
+        while ((iter != split_str.end()) && get_factor(*iter, factor)) ++iter;
+        operation = "add_factor";
+        // Read the first matrix
+        if (iter != split_str.end()) {
+            B_Matrix = get_Matrix(*iter, str);
+            ++iter;
+            // And eventually an operation and a matrix
+            if (iter != split_str.end()) {
+                if (is_operation(*iter)) {
+                    // Check operation
+                    operation = *iter;
+                    ++iter;
+                    if (iter != split_str.end()) {
+                        C_Matrix = get_Matrix(*iter, str);
+                        ++iter;
+                    }
+                } else {
+                    operation = "plus";
+                }
+            } else {  // When you reach the end
+                operation = "plus";
+            }
+        }
+        if (noperations_added && assignment[0] != '+') assignment = "+" + assignment;
+        CCOperation op(factor, assignment, reindexing, operation, A_Matrix, B_Matrix, C_Matrix, work[0], buffer[0]);
+        operations.push_back(op);
+        noperations_added++;
+        DEBUGGING(5, op.print();)
     }
-    if(noperations_added && assignment[0]!='+')
-      assignment= "+" + assignment;
-    CCOperation op(factor,assignment,reindexing,operation,A_Matrix,B_Matrix,C_Matrix,work[0],buffer[0]);
-    operations.push_back(op);
-    noperations_added++;
-    DEBUGGING(5,
-      op.print();
-    )
-  }
-  return(noperations_added);
+    return (noperations_added);
 }
 
-bool CCBLAS::get_factor(const std::string& str,double& factor)
-{
-  if(is_number(str)){
-    factor *= get_number(str);
-    return true;
-  }
-  if(str=="-"){
-    factor *= -1.0;
-    return true;
-  }
-  if(str=="+"){
-    factor *= 1.0;
-    return true;
-  }
-  if(str.substr(0,6)=="factor"){
-    factor = get_scalar(str);
-    return true;
-  }
-  return false;
-}
-
-bool is_number(const std::string& str){
-  // Is the string str a number?
-  static const std::string numbers = "1234567890.-+/e";
-  bool numeric = true;
-  for(int i=0;i<str.size();i++)
-      if(numbers.find(str[i])==std::string::npos) numeric = false;
-  // In case we have only a symbol (ex. "+")
-  if((str.size()==1) && !isdigit(str[0])) numeric = false;
-  return(numeric);
-}
-
-double get_number(const std::string& str){
-  double value = 1.0;
-  bool fraction = false;
-  size_t fraction_sign;
-  for(int i=0;i<str.size();i++)
-    if(str[i]=='/'){
-      fraction = true;
-      fraction_sign = i;
+bool CCBLAS::get_factor(const std::string& str, double& factor) {
+    if (is_number(str)) {
+        factor *= get_number(str);
+        return true;
     }
-  if(fraction){
-    std::string numerator   = str.substr(0,fraction_sign);
-    std::string denominator = str.substr(fraction_sign+1,str.size()-fraction_sign-1);
-    std::string unsigned_numerator = find_and_replace(numerator,"-","");
-    if(unsigned_numerator.size() * denominator.size()!=0){
-      value=to_double(numerator)/to_double(denominator);
-    }else{
-      outfile->Printf("\n\nSolve couldn't parse the numerical factor %s\n\n",str.c_str());
-      outfile->Printf("\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
-
-      exit(1);
+    if (str == "-") {
+        factor *= -1.0;
+        return true;
     }
-
-  }else{
-    value=to_double(str);
-  }
-  return(value);
+    if (str == "+") {
+        factor *= 1.0;
+        return true;
+    }
+    if (str.substr(0, 6) == "factor") {
+        factor = get_scalar(str);
+        return true;
+    }
+    return false;
 }
 
-bool is_operation(const std::string& str){
-  // Is the string str a number?
-  strvec allowed_operations = split(". @ / * X");
-  bool operation = false;
-  for(int i=0;i<allowed_operations.size();i++)
-      if(str.find(allowed_operations[i])!=std::string::npos) operation = true;
-  return(operation);
+bool is_number(const std::string& str) {
+    // Is the string str a number?
+    static const std::string numbers = "1234567890.-+/e";
+    bool numeric = true;
+    for (int i = 0; i < str.size(); i++)
+        if (numbers.find(str[i]) == std::string::npos) numeric = false;
+    // In case we have only a symbol (ex. "+")
+    if ((str.size() == 1) && !isdigit(str[0])) numeric = false;
+    return (numeric);
 }
 
+double get_number(const std::string& str) {
+    double value = 1.0;
+    bool fraction = false;
+    size_t fraction_sign;
+    for (int i = 0; i < str.size(); i++)
+        if (str[i] == '/') {
+            fraction = true;
+            fraction_sign = i;
+        }
+    if (fraction) {
+        std::string numerator = str.substr(0, fraction_sign);
+        std::string denominator = str.substr(fraction_sign + 1, str.size() - fraction_sign - 1);
+        std::string unsigned_numerator = find_and_replace(numerator, "-", "");
+        if (unsigned_numerator.size() * denominator.size() != 0) {
+            value = to_double(numerator) / to_double(denominator);
+        } else {
+            outfile->Printf("\n\nSolve couldn't parse the numerical factor %s\n\n", str.c_str());
+            outfile->Printf("\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
 
-// void split_index(const std::string& str,std::string& t2_label, int*& t2_indices,std::string& first_t1_label, int*& first_t1_indices,std::string& second_t1_label, int*& second_t1_indices)
+            exit(1);
+        }
+
+    } else {
+        value = to_double(str);
+    }
+    return (value);
+}
+
+bool is_operation(const std::string& str) {
+    // Is the string str a number?
+    strvec allowed_operations = split(". @ / * X");
+    bool operation = false;
+    for (int i = 0; i < allowed_operations.size(); i++)
+        if (str.find(allowed_operations[i]) != std::string::npos) operation = true;
+    return (operation);
+}
+
+// void split_index(const std::string& str,std::string& t2_label, int*& t2_indices,std::string& first_t1_label, int*&
+// first_t1_indices,std::string& second_t1_label, int*& second_t1_indices)
 // {
 //   size_t opening = str.find_first_of("[");
 //   string index_str = str.substr(opening,8);
@@ -200,7 +195,8 @@ bool is_operation(const std::string& str){
 //   std::vector<char> labels;
 //   int index=0;
 //   for(int i=0;i<index_str.size();i++){
-//     if(index_str[i]=='o' || index_str[i]=='O' || index_str[i]=='v' || index_str[i]=='V') labels.push_back(index_str[i]);
+//     if(index_str[i]=='o' || index_str[i]=='O' || index_str[i]=='v' || index_str[i]=='V')
+//     labels.push_back(index_str[i]);
 //
 //     if(index_str[i]=='o') pairs.push_back(make_pair(0,index++));
 //     if(index_str[i]=='O') pairs.push_back(make_pair(1,index++));
@@ -240,7 +236,5 @@ bool is_operation(const std::string& str){
 // //   }
 // }
 
-
-
-
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi

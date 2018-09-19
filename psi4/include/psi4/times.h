@@ -40,9 +40,7 @@ static void times(struct tms *time) {
     time->tms_utime = 0;
 }
 #define _SC_CLK_TCK 0
-static long sysconf(int name) {
-    return (long)name;
-}
+static long sysconf(int name) { return (long)name; }
 #else
 #include <sys/times.h>
 #include <unistd.h>

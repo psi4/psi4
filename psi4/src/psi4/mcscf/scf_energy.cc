@@ -38,86 +38,85 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
 extern MemoryManager* memory_manager;
 
-double SCF::energy(int cycle,double old_energy)
-{
-  double electronic_energy = 0.0;
+double SCF::energy(int cycle, double old_energy) {
+    double electronic_energy = 0.0;
 
-  T  = H;
-  T += Fc;
-  electronic_energy += dot(Dc,T);
+    T = H;
+    T += Fc;
+    electronic_energy += dot(Dc, T);
 
-  if(reference == rohf){
-    T  = H;
-    T.scale(0.5);
-    T += Fo;
-    electronic_energy += dot(Do,T);
-  }
-
-  total_energy = electronic_energy + moinfo_scf->get_nuclear_energy();
-
-  if(reference == tcscf){
-//     SBlockMatrix Dtc_sum("Dtc sum",nirreps,sopi,sopi);
-//
-//     // Compute diagonal elements of H
-//     for(int I = 0 ; I < nci; ++I){
-//       Dtc_sum  = Dc;
-//       Dtc_sum += Dtc[I];
-//       construct_G(Dtc_sum,G,"PK");
-//       T  = H;
-//       T.scale(2.0);
-//       T += G;
-//       H_tcscf[I][I] = dot(Dtc_sum,T) + moinfo_scf->get_nuclear_energy();
-//     }
-//
-//     // Compute off-diagonal elements of H
-//     for(int I = 0 ; I < nci; ++I){
-//       for(int J = I + 1; J < nci; ++J){
-//         construct_G(Dtc[I],G,"K");
-//         H_tcscf[I][J] = H_tcscf[J][I] = - dot(Dtc[J],G);
-//       }
-//     }
-
-//     outfile->Printf("\n  Hamiltonian");
-//     for(int I = 0 ; I < nci; ++I){
-//       outfile->Printf("\n    ");
-//       for(int J = 0 ; J < nci; ++J)
-//         outfile->Printf(" %11.8f ",H_tcscf[I][J]);
-//     }
-
-
-    // Compute the CI gradient
-    norm_ci_grad = 0.0;
-    for(int I = 0 ; I < nci; ++I){
-      ci_grad[I] = 0.0;
-      for(int J = 0; J < nci; ++J){
-        ci_grad[I] += H_tcscf[I][J] * ci[J];
-      }
-      ci_grad[I] -= old_energy * ci[I];
-      norm_ci_grad += std::fabs(ci_grad[I]);
+    if (reference == rohf) {
+        T = H;
+        T.scale(0.5);
+        T += Fo;
+        electronic_energy += dot(Do, T);
     }
 
-    double*  eigenvalues;
-    double** eigenvectors;
-    allocate1(double,eigenvalues,nci);
-    allocate2(double,eigenvectors,nci,nci);
+    total_energy = electronic_energy + moinfo_scf->get_nuclear_energy();
 
-    sq_rsp(nci,nci,H_tcscf,eigenvalues,1,eigenvectors,1.0e-14);
+    if (reference == tcscf) {
+        //     SBlockMatrix Dtc_sum("Dtc sum",nirreps,sopi,sopi);
+        //
+        //     // Compute diagonal elements of H
+        //     for(int I = 0 ; I < nci; ++I){
+        //       Dtc_sum  = Dc;
+        //       Dtc_sum += Dtc[I];
+        //       construct_G(Dtc_sum,G,"PK");
+        //       T  = H;
+        //       T.scale(2.0);
+        //       T += G;
+        //       H_tcscf[I][I] = dot(Dtc_sum,T) + moinfo_scf->get_nuclear_energy();
+        //     }
+        //
+        //     // Compute off-diagonal elements of H
+        //     for(int I = 0 ; I < nci; ++I){
+        //       for(int J = I + 1; J < nci; ++J){
+        //         construct_G(Dtc[I],G,"K");
+        //         H_tcscf[I][J] = H_tcscf[J][I] = - dot(Dtc[J],G);
+        //       }
+        //     }
 
-    total_energy = eigenvalues[root];
+        //     outfile->Printf("\n  Hamiltonian");
+        //     for(int I = 0 ; I < nci; ++I){
+        //       outfile->Printf("\n    ");
+        //       for(int J = 0 ; J < nci; ++J)
+        //         outfile->Printf(" %11.8f ",H_tcscf[I][J]);
+        //     }
 
-    if(std::fabs(old_energy - total_energy) < 1.0e-5){
-    for(int I = 0 ; I < nci; ++I)
-      ci[I] = eigenvectors[I][root];
+        // Compute the CI gradient
+        norm_ci_grad = 0.0;
+        for (int I = 0; I < nci; ++I) {
+            ci_grad[I] = 0.0;
+            for (int J = 0; J < nci; ++J) {
+                ci_grad[I] += H_tcscf[I][J] * ci[J];
+            }
+            ci_grad[I] -= old_energy * ci[I];
+            norm_ci_grad += std::fabs(ci_grad[I]);
+        }
+
+        double* eigenvalues;
+        double** eigenvectors;
+        allocate1(double, eigenvalues, nci);
+        allocate2(double, eigenvectors, nci, nci);
+
+        sq_rsp(nci, nci, H_tcscf, eigenvalues, 1, eigenvectors, 1.0e-14);
+
+        total_energy = eigenvalues[root];
+
+        if (std::fabs(old_energy - total_energy) < 1.0e-5) {
+            for (int I = 0; I < nci; ++I) ci[I] = eigenvectors[I][root];
+        }
+        release1(eigenvalues);
+        release2(eigenvectors);
     }
-    release1(eigenvalues);
-    release2(eigenvectors);
-  }
 
-  return(total_energy);
+    return (total_energy);
 }
 
-}} /* End Namespaces */
+}  // namespace mcscf
+}  // namespace psi

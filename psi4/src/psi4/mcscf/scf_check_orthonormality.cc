@@ -33,31 +33,30 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
-void SCF::check_orthonormality()
-{
-  SBlockMatrix CSC("CSC",nirreps,sopi,sopi);
-  transform(S,CSC,C);
+void SCF::check_orthonormality() {
+    SBlockMatrix CSC("CSC", nirreps, sopi, sopi);
+    transform(S, CSC, C);
 
-  double    diagonal = 0.0;
-  for(int h = 0; h < nirreps; ++h)
-    for(int i = 0; i < sopi[h]; ++i)
-      diagonal += std::fabs(CSC->get(h,i,i));
+    double diagonal = 0.0;
+    for (int h = 0; h < nirreps; ++h)
+        for (int i = 0; i < sopi[h]; ++i) diagonal += std::fabs(CSC->get(h, i, i));
 
-  double offdiagonal = 0.0;
-  for(int h = 0; h < nirreps; ++h)
-    for(int i = 0; i < sopi[h]; ++i)
-      for(int j = i + 1; j < sopi[h]; ++j)
-        offdiagonal += std::fabs(CSC->get(h,i,j));
+    double offdiagonal = 0.0;
+    for (int h = 0; h < nirreps; ++h)
+        for (int i = 0; i < sopi[h]; ++i)
+            for (int j = i + 1; j < sopi[h]; ++j) offdiagonal += std::fabs(CSC->get(h, i, j));
 
-  if((offdiagonal > 1.0e-8) || ((diagonal-double(nso)) > 1.0e-8)){
-    outfile->Printf("\n\n  Warning: CSC has an orthonormality index of %lf",offdiagonal);
-    outfile->Printf("\n  Trace(CSC) - nso = %lf",diagonal-nso);
-    outfile->Printf("      Sum_i>j (CSC)ij  = %lf",offdiagonal);
-  }else{
-    outfile->Printf("\n  MOs orthonormality check passed.");
-  }
+    if ((offdiagonal > 1.0e-8) || ((diagonal - double(nso)) > 1.0e-8)) {
+        outfile->Printf("\n\n  Warning: CSC has an orthonormality index of %lf", offdiagonal);
+        outfile->Printf("\n  Trace(CSC) - nso = %lf", diagonal - nso);
+        outfile->Printf("      Sum_i>j (CSC)ij  = %lf", offdiagonal);
+    } else {
+        outfile->Printf("\n  MOs orthonormality check passed.");
+    }
 }
 
-}} // End namespace
+}  // namespace mcscf
+}  // namespace psi
