@@ -59,7 +59,8 @@ void PSIO::rename_file(size_t old_unit, size_t new_unit) {
     sprintf(old_full_path, "%s%s.%zu", old_path, old_name, old_unit);
     sprintf(new_full_path, "%s%s.%zu", new_path, new_name, new_unit);
 
-    /* move the file */
+  /* move the file */
+    remove(new_full_path); // On Windows, if the new path exist, it has to be remove, otherwise "rename" fails
     rename(old_full_path, new_full_path);
 
     free(old_name);

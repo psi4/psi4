@@ -39,19 +39,20 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi {
+namespace ccresponse {
 
-void cc2_sort_X(const char *pert, int irrep, double omega)
-{
-  dpdbuf4 X;
-  char lbl[32];
+void cc2_sort_X(const char *pert, int irrep, double omega) {
+    dpdbuf4 X;
+    char lbl[32];
 
-  sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-  global_dpd_->buf4_init(&X, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-  sprintf(lbl, "X_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
-  global_dpd_->buf4_scmcopy(&X, PSIF_CC_LR, lbl, 2);
-  global_dpd_->buf4_sort_axpy(&X, PSIF_CC_LR, pqsr, 0, 5, lbl, -1);
-  global_dpd_->buf4_close(&X);
+    sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&X, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    sprintf(lbl, "X_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
+    global_dpd_->buf4_scmcopy(&X, PSIF_CC_LR, lbl, 2);
+    global_dpd_->buf4_sort_axpy(&X, PSIF_CC_LR, pqsr, 0, 5, lbl, -1);
+    global_dpd_->buf4_close(&X);
 }
 
-}} // namespace psi::ccresponse
+}  // namespace ccresponse
+}  // namespace psi
