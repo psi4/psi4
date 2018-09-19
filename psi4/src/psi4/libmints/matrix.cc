@@ -339,7 +339,7 @@ void Matrix::copy(const Matrix *cp) {
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h ^ symmetry_] != 0)
             memmove(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]),
-                   rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double));
+                    rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double));
     }
 }
 
@@ -2845,33 +2845,32 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
     global_dpd_->file2_mat_close(outFile);
 }
 
-void Matrix::write_to_dpdbuf4(dpdbuf4 *outBuf)
-{
-    if(outBuf->params->nirreps != nirrep_) {
+void Matrix::write_to_dpdbuf4(dpdbuf4 *outBuf) {
+    if (outBuf->params->nirreps != nirrep_) {
         char *str = new char[100];
-        sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdbuf4 has %d.",
-                nirrep_, outBuf->params->nirreps);
+        sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdbuf4 has %d.", nirrep_,
+                outBuf->params->nirreps);
         throw SanityCheckError(str, __FILE__, __LINE__);
     }
 
-    for(int h = 0; h < nirrep_; ++h){
+    for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(outBuf, h);
 
-        if(outBuf->params->rowtot[h] != rowspi_[h]){
+        if (outBuf->params->rowtot[h] != rowspi_[h]) {
             char *str = new char[100];
-            sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdbuf4 has %d.",
-                    h, rowspi_[h], outBuf->params->rowtot[h]);
+            sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdbuf4 has %d.", h,
+                    rowspi_[h], outBuf->params->rowtot[h]);
             throw SanityCheckError(str, __FILE__, __LINE__);
         }
-        if(outBuf->params->coltot[h] != colspi_[h]){
+        if (outBuf->params->coltot[h] != colspi_[h]) {
             char *str = new char[100];
-            sprintf(str, "Column count mismatch for irrep %d.  Matrix class has %d columns, but dpdbuf4 has %d.",
-                    h, colspi_[h], outBuf->params->coltot[h]);
+            sprintf(str, "Column count mismatch for irrep %d.  Matrix class has %d columns, but dpdbuf4 has %d.", h,
+                    colspi_[h], outBuf->params->coltot[h]);
             throw SanityCheckError(str, __FILE__, __LINE__);
         }
 
-        for(int row = 0; row < rowspi_[h]; ++row){
-            for(int col = 0; col < colspi_[h]; ++col){
+        for (int row = 0; row < rowspi_[h]; ++row) {
+            for (int col = 0; col < colspi_[h]; ++col) {
                 outBuf->matrix[h][row][col] = matrix_[h][row][col];
             }
         }
