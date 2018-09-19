@@ -37,7 +37,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "psi4/libciomr/libciomr.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 namespace ccenergy {

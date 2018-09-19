@@ -37,7 +37,7 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"

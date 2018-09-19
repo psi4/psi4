@@ -31,7 +31,7 @@
     \brief Enter brief description of file here
 */
 #include "Params.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"

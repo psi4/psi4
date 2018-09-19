@@ -44,7 +44,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/basisset.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 namespace ccenergy {

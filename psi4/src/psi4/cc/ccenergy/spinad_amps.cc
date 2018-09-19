@@ -36,7 +36,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 #include "Params.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 namespace ccenergy {

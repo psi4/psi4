@@ -35,7 +35,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 

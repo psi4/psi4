@@ -40,7 +40,7 @@
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 namespace ccenergy {

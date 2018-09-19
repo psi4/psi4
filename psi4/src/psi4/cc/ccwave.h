@@ -30,9 +30,10 @@
 #define CCWAVE_H
 
 #include "psi4/libmints/wavefunction.h"
-#include "MOInfo.h"
-#include "Params.h"
-#include "Local.h"
+
+#include "ccenergy/MOInfo.h"
+#include "ccenergy/Params.h"
+#include "ccenergy/Local.h"
 
 namespace psi {
 class Options;

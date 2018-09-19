@@ -36,7 +36,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "Params.h"
-#include "ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 namespace ccenergy {

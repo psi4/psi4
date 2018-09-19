@@ -46,7 +46,7 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/cc/ccenergy/ccwave.h"
+#include "psi4/cc/ccwave.h"
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
