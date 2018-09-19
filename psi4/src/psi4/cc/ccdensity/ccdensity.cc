@@ -58,25 +58,25 @@ namespace psi {
 class Molecule;
 namespace ccdensity {
 
-void init_io(void);
-void title(void);
+void init_io();
+void title();
 void get_moinfo(std::shared_ptr<Wavefunction> wfn);
-void get_frozen(void);
+void get_frozen();
 void get_params(Options &options);
-void exit_io(void);
+void exit_io();
 void onepdm(struct RHO_Params);
 void sortone(struct RHO_Params);
-void twopdm(void);
+void twopdm();
 void energy(struct RHO_Params);
-// void resort_tei(void);
-// void resort_gamma(void);
+// void resort_tei();
+// void resort_gamma();
 void lag(struct RHO_Params rho_params);
-void build_X(void);
-void build_A(void);
-void build_Z(void);
-void relax_I(void);
+void build_X();
+void build_A();
+void build_Z();
+void relax_I();
 void relax_D(struct RHO_Params rho_params);
-void sortI(void);
+void sortI();
 void fold(struct RHO_Params rho_params);
 void deanti(struct RHO_Params rho_params);
 void add_ref_RHF(struct iwlbuf *);
@@ -88,45 +88,45 @@ void dump_RHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_ROHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *, struct RHO_Params rho_params);
 void kinetic(std::shared_ptr<Wavefunction> wfn);
-void probable(void);
+void probable();
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
 void cachedone_rhf(int **cachelist);
 void cachedone_uhf(int **cachelist);
 void setup_LR(struct RHO_Params);
-void G_build(void);
+void G_build();
 void x_oe_intermediates(struct RHO_Params);
 void x_onepdm(struct RHO_Params);
-void x_te_intermediates(void);
-void x_Gijkl(void);
-void x_Gabcd(void);
-void x_Gibja(void);
-void x_Gijka(void);
-void x_Gijab(void);
-void x_Gciab(void);
-void V_build_x(void);
-void x_xi1(void);
-void x_xi_zero(void);
-void x_xi2(void);
-void x_xi_oe_intermediates(void);
-// void G_norm(void);
+void x_te_intermediates();
+void x_Gijkl();
+void x_Gabcd();
+void x_Gibja();
+void x_Gijka();
+void x_Gijab();
+void x_Gciab();
+void V_build_x();
+void x_xi1();
+void x_xi_zero();
+void x_xi2();
+void x_xi_oe_intermediates();
+// void G_norm();
 void zero_onepdm(struct RHO_Params rho_params);
-void zero_twopdm(void);
+void zero_twopdm();
 void get_rho_params(Options &options);
 void get_td_params(Options &options);
 void td_setup(struct TD_Params S);
 void tdensity(struct TD_Params S);
-void td_print(void);
+void td_print();
 void oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
 void rotational_strength(MintsHelper &mints, struct TD_Params *S);
 void ael(struct RHO_Params *rho_params);
-void cleanup(void);
-void td_cleanup(void);
+void cleanup();
+void td_cleanup();
 void x_oe_intermediates_rhf(struct RHO_Params rho_params);
-void x_te_intermediates_rhf(void);
-void x_xi_intermediates(void);
-void V_build(void);
-void V_cc2(void);
+void x_te_intermediates_rhf();
+void x_xi_intermediates();
+void V_build();
+void V_cc2();
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
 void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
@@ -544,7 +544,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 }
 
 // must be fixed with options for excited state densities
-void init_io(void) {
+void init_io() {
     int i, num_unparsed;
     char *argv_unparsed[100];
 
@@ -596,7 +596,7 @@ void init_io(void) {
     psio_open(PSIF_EOM_TMP0, PSIO_OPEN_NEW);
 }
 
-void title(void) {
+void title() {
     outfile->Printf("\n");
     outfile->Printf("\t\t\t**************************\n");
     outfile->Printf("\t\t\t*                        *\n");
@@ -606,7 +606,7 @@ void title(void) {
     outfile->Printf("\n");
 }
 
-void exit_io(void) {
+void exit_io() {
     int i;
 
     /* delete temporary EOM files */

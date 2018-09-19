@@ -231,7 +231,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
 }
 
 /* Frees memory allocated in get_moinfo() and dumps out the energy. */
-void cleanup(void) {
+void cleanup() {
     int i, h;
 
     if (params.ref == 0 || params.ref == 1) {

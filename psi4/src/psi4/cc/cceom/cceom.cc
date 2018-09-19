@@ -53,22 +53,22 @@
 namespace psi {
 namespace cceom {
 
-void init_io(void);
+void init_io();
 void get_moinfo(std::shared_ptr<Wavefunction>);
-void cleanup(void);
-void exit_io(void);
-void diag(void);
+void cleanup();
+void exit_io();
+void diag();
 void get_params(Options &);
 void get_eom_params(std::shared_ptr<Wavefunction>, Options &);
-void form_dpd_dp(void);
+void form_dpd_dp();
 int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
-void sort_amps(void);
-void hbar_norms(void);
+void sort_amps();
+void hbar_norms();
 
 /* local correlation functions */
-void local_init(void);
-void local_done(void);
+void local_init();
+void local_done();
 
 }  // namespace cceom
 }  // namespace psi
@@ -135,12 +135,12 @@ PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
     return Success;
 }
 
-void init_io(void) {
+void init_io() {
     tstart();
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void exit_io(void) {
+void exit_io() {
     int i;
     for (i = PSIF_CC_MIN; i <= PSIF_CC_DIIS_AMP; i++) psio_close(i, 1);
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0);
@@ -148,7 +148,7 @@ void exit_io(void) {
     tstop();
 }
 
-void form_dpd_dp(void) {
+void form_dpd_dp() {
     int h, h0, h1, cnt, nirreps;
     nirreps = moinfo.nirreps;
 

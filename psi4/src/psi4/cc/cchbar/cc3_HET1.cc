@@ -47,11 +47,11 @@ namespace cchbar {
  *
  */
 
-void HET1_Wmbej(void);
-void purge_HET1_Wmbej(void);
-void HET1_Wabef(void);
+void HET1_Wmbej();
+void purge_HET1_Wmbej();
+void HET1_Wabef();
 
-void cc3_HET1(void) {
+void cc3_HET1() {
     HET1_Wmbej();
 
     if (params.ref == 1) purge_HET1_Wmbej();
@@ -61,7 +61,7 @@ void cc3_HET1(void) {
     return;
 }
 
-void HET1_Wmbej(void) {
+void HET1_Wmbej() {
     dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ, WmBEj, WMbeJ;
     dpdbuf4 D, C, F, E, X, Y, t2, W, Z;
     dpdfile2 tIA, tia;
@@ -610,7 +610,7 @@ void HET1_Wmbej(void) {
 }
 
 /* Purge Wmbej matrix elements for ROHF */
-void purge_HET1_Wmbej(void) {
+void purge_HET1_Wmbej() {
     dpdfile4 W;
     int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;

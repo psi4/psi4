@@ -41,7 +41,7 @@
 namespace psi {
 namespace cctriples {
 
-double ET_BBB(void) {
+double ET_BBB() {
     int cnt;
     int h, nirreps;
     int Gi, Gj, Gk, Ga, Gb, Gc, Ge, Gm;

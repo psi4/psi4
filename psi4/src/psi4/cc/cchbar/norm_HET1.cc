@@ -41,7 +41,7 @@
 namespace psi {
 namespace cchbar {
 
-void norm_HET1(void) {
+void norm_HET1() {
     int i;
     double dot;
     dpdfile2 F;

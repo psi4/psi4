@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccenergy {
 
-double CCEnergyWavefunction::mp2_energy(void) {
+double CCEnergyWavefunction::mp2_energy() {
     /* Note that if we reach this point and ref=1 (ROHF), then we aren't using
      * semicanonical orbitals and so we can't compute a non-iterative MBPT(2)
      * energy */
@@ -53,7 +53,7 @@ double CCEnergyWavefunction::mp2_energy(void) {
         return 0.0;
 }
 
-double CCEnergyWavefunction::rhf_mp2_energy(void) {
+double CCEnergyWavefunction::rhf_mp2_energy() {
     double T2_energy, T1_energy;
     dpdfile2 F, T1, D1;
     dpdbuf4 T2, D;
@@ -104,7 +104,7 @@ double CCEnergyWavefunction::rhf_mp2_energy(void) {
     return (T2_energy + T1_energy);
 }
 
-double CCEnergyWavefunction::uhf_mp2_energy(void) {
+double CCEnergyWavefunction::uhf_mp2_energy() {
     double E2AA, E2BB, E2AB, T1A, T1B;
     dpdbuf4 T2, D;
     dpdfile2 T1, F, D1;

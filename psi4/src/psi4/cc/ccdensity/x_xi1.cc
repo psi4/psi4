@@ -41,15 +41,15 @@
 namespace psi {
 namespace ccdensity {
 
-void x_xi1_rohf(void);
+void x_xi1_rohf();
 extern void x_xi_check(char *term_lbl);
-extern void x_xi1_connected(void);
-extern void x_xi1_uhf(void);
-extern void x_xi1_rhf(void);
+extern void x_xi1_connected();
+extern void x_xi1_uhf();
+extern void x_xi1_rhf();
 
 /* compute xi_1 amplitudes for zeta equations */
 
-void x_xi1(void) {
+void x_xi1() {
     if (params.ref == 0)
         x_xi1_rhf();
     else if (params.ref == 1)
@@ -58,7 +58,7 @@ void x_xi1(void) {
         x_xi1_uhf();
 }
 
-void x_xi1_rohf(void) {
+void x_xi1_rohf() {
     dpdfile2 L1, XIA, Xia, I1, R1, F1, Z1A, Z1B;
     int L_irr, R_irr, G_irr;
     dpdbuf4 D, R2, L2, H2, I2;
@@ -662,7 +662,7 @@ void x_xi1_rohf(void) {
     return;
 }
 
-void x_xi_zero(void) {
+void x_xi_zero() {
     dpdfile2 XIA, Xia;
     dpdbuf4 XIJAB, Xijab, XIjAb;
     int G_irr;

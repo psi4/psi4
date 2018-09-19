@@ -47,7 +47,7 @@ namespace cceom {
  cceom_density is written
 */
 
-void sort_amps(void) {
+void sort_amps() {
     dpdbuf4 R2;
     int R_irr;
 

@@ -45,7 +45,7 @@ namespace ccdensity {
 
 #define _hartree2nm 0.02194746313710
 
-void td_print(void) {
+void td_print() {
     int i;
 
     outfile->Printf("\n\t                   Ground State -> Excited State Transitions\n");

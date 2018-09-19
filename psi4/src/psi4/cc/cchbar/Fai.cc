@@ -50,7 +50,7 @@ void Fme_for_Fai();
 void Fae_for_Fai();
 void Fmi_for_Fai();
 
-void Fai_build(void) {
+void Fai_build() {
     dpdfile2 newtIA, newtia, tIA, tia, fIA, fia;
     dpdfile2 FAE, Fae, FMI, Fmi, FME, Fme;
     dpdfile2 dIA, dia;
@@ -414,7 +414,7 @@ void Fai_build(void) {
     }
 }
 
-void Fae_for_Fai(void) {
+void Fae_for_Fai() {
     int h, a, e, nirreps;
     int ma, fe, ef, m, f, M, A, Gm, Ga, Ge, Gf, Gma, nrows, ncols;
     double *X;
@@ -699,7 +699,7 @@ void Fae_for_Fai(void) {
     }
 }
 
-void Fme_for_Fai(void) {
+void Fme_for_Fai() {
     dpdfile2 FME, Fme, fIA, fia, tIA, tia;
     dpdbuf4 D_anti, D;
 
@@ -793,7 +793,7 @@ void Fme_for_Fai(void) {
     }
 }
 
-void Fmi_for_Fai(void) {
+void Fmi_for_Fai() {
     int h, m, i;
     dpdfile2 FMI, Fmi, FMIt, Fmit, fIJ, fij, fIA, fia;
     dpdfile2 tIA, tia, FME, Fme;

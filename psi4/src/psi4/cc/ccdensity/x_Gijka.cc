@@ -41,13 +41,13 @@
 namespace psi {
 namespace ccdensity {
 
-void x_Gijka_rohf(void);
-void x_Gijka_6_rohf(void);
-void x_Gijka_7_rohf(void);
-void x_Gijka_8_rohf(void);
-extern void x_Gijka_uhf(void);
+void x_Gijka_rohf();
+void x_Gijka_6_rohf();
+void x_Gijka_7_rohf();
+void x_Gijka_8_rohf();
+extern void x_Gijka_uhf();
 
-void x_Gijka(void) {
+void x_Gijka() {
     if (params.ref == 0 || params.ref == 1)
         x_Gijka_rohf();
     else
@@ -58,7 +58,7 @@ void x_Gijka(void) {
 /* This function computes the non-R0 parts of the 2pdm density matrix
    Gijka = 0.5 *(rho_kaij + rho_Gijka) */
 
-void x_Gijka_rohf(void) {
+void x_Gijka_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -325,7 +325,7 @@ void x_Gijka_rohf(void) {
    rho_ijka -= P(ij) lke rie tja or
    rho_ijka -= P(ij) LR1_OO(k,i) T(j,a) */
 
-void x_Gijka_6_rohf(void) {
+void x_Gijka_6_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -490,7 +490,7 @@ void x_Gijka_6_rohf(void) {
 /* This function computes
    Gijka -= P(ij) LT_OO(k,i) * R(j,a) */
 
-void x_Gijka_7_rohf(void) {
+void x_Gijka_7_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -657,7 +657,7 @@ void x_Gijka_7_rohf(void) {
 /* term 8, +P(ij) Lkmfe rimae tjf */
 /* term 9, +P(ij) Lkmfe rimae tjf */
 
-void x_Gijka_8_rohf(void) {
+void x_Gijka_8_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;

@@ -61,7 +61,7 @@ void twostack_insert(struct twostack *stack, double value, int i, int j, int a, 
 void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out_fname);
 void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out_fname);
 
-void CCEnergyWavefunction::amp_write(void) {
+void CCEnergyWavefunction::amp_write() {
     dpdfile2 T1;
     dpdbuf4 T2;
 

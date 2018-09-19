@@ -45,7 +45,7 @@ namespace ccdensity {
 /* Dijkl = 0.5 Lklef * Rijef + P(ij) Lklef * Rie * tjf */
 /* Dijkl = R2L2_OOOO + P(ij) Lklef * Rie * tjf */
 
-void x_Gijkl(void) {
+void x_Gijkl() {
     dpdfile2 R1, T1;
     dpdbuf4 L2, I2, GIJKL, Gijkl, GIjKl;
     int L_irr, R_irr, G_irr;

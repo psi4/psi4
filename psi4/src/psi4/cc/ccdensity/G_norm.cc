@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void G_norm(void) {
+void G_norm() {
     dpdfile2 G1;
     dpdbuf4 G;
     double value, value1, dot_IA, dot_ia, dot_AI, dot_ai;

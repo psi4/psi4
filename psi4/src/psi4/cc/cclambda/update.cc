@@ -39,7 +39,7 @@
 namespace psi {
 namespace cclambda {
 
-void update(void) { outfile->Printf("\t%4d      %20.15f    %4.3e\n", moinfo.iter, moinfo.lcc, moinfo.conv); }
+void update() { outfile->Printf("\t%4d      %20.15f    %4.3e\n", moinfo.iter, moinfo.lcc, moinfo.conv); }
 
 }  // namespace cclambda
 }  // namespace psi

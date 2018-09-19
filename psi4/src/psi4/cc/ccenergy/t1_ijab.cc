@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::t1_ijab(void) {
+void CCEnergyWavefunction::t1_ijab() {
     int h, ij, ab, i, j, a, b, I, J, A, B;
     int Isym, Jsym, Asym, Bsym;
     int nirreps;

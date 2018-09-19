@@ -65,7 +65,7 @@ namespace cchbar {
 ** TDC, revised June 2002
 */
 
-void F_build(void) {
+void F_build() {
     int h, e, a, m;
     dpdfile2 Faet, FAEt, Fmit, FMIt;
     dpdfile2 Fae, FAE, FMI, Fmi;

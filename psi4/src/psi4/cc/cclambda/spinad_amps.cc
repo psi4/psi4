@@ -51,7 +51,7 @@ namespace cclambda {
 **
 */
 
-void spinad_amps(void) {
+void spinad_amps() {
     dpdfile2 T1;
     dpdbuf4 T2;
 

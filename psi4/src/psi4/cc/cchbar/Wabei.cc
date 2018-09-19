@@ -61,15 +61,15 @@ namespace cchbar {
 **  [cf. Gauss and Stanton, JCP 103, 3561-3577 (1995)]
 */
 
-void Wabei_RHF(void);
-void Wabei_ROHF(void);
-void WABEI_UHF(void);
-void Wabei_UHF(void);
-void WAbEi_UHF(void);
-void WaBeI_UHF(void);
+void Wabei_RHF();
+void Wabei_ROHF();
+void WABEI_UHF();
+void Wabei_UHF();
+void WAbEi_UHF();
+void WaBeI_UHF();
 void Wabei_UHF_sort_ints();
 
-void Wabei_build(void) {
+void Wabei_build() {
     if (params.ref == 0)
         Wabei_RHF();
     else if (params.ref == 1)
@@ -83,7 +83,7 @@ void Wabei_build(void) {
     }
 }
 
-void Wabei_UHF_sort_ints(void) {
+void Wabei_UHF_sort_ints() {
     dpdbuf4 F, B;
     // required in WABEI
     global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 21, 5, 21, 5, 1, "F <AI|BC>");

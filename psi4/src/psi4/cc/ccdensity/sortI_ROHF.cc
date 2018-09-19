@@ -53,7 +53,7 @@ namespace ccdensity {
 ** my sortone.c code here, so don't let some of the variable names
 ** confuse you. */
 
-void sortI_ROHF(void) {
+void sortI_ROHF() {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
     int *occpi, *virtpi, *occ_off, *vir_off;

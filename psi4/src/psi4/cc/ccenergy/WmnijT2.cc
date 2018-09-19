@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::WmnijT2(void) {
+void CCEnergyWavefunction::WmnijT2() {
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 WMNIJ, Wmnij, WMnIj;
     dpdbuf4 tauIJAB, tauijab, tauIjAb;

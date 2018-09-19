@@ -54,7 +54,7 @@ struct onestack {
 
 void stack_insert(struct onestack *stack, double value, int i, int a, int level, int stacklen);
 
-void local_guess(void) {
+void local_guess() {
     int nso, nocc, nvir, nroot, i, ii, ij, a, m;
     double *T1bar, *T1tilde;
     double fii, value, norm;

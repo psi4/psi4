@@ -64,7 +64,7 @@ namespace cchbar {
 ** TDC, June 2002
 */
 
-void cc2_Zmbej_build(void) {
+void cc2_Zmbej_build() {
     dpdbuf4 ZMBEJ, Zmbej, ZMbEj, ZmBeJ, ZmBEj, ZMbeJ;
     dpdbuf4 tIAJB, tjAIb, tiajb, tIAjb, tiaJB, tIbjA;
     dpdbuf4 D, C, F, E, X, Y, Y1, t2, W, Z;

@@ -42,11 +42,11 @@
 namespace psi {
 namespace ccdensity {
 
-void distribute(void);
+void distribute();
 
 int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int perm_qs, int perm_prqs, int keep);
 
-void resort_tei(void) {
+void resort_tei() {
     double tolerance;
     dpdfile4 A, B, C, D, E, F;
 

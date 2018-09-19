@@ -47,17 +47,17 @@ namespace cchbar {
 /* function to compute matrix element <Phi_ij^ab|Hbar|0> which equals zero as long as the
 T amplitudes were determined by ccenergy with the same H */
 
-void DT2(void), FaetT2(void), FmitT2(void), WmnijT2(void), WmbejT2(void);
-void BT2(void), ZT2(void), FT2(void), ET2(void), CT2(void), dijabT2(void);
-void BT2_AO(void);
-void Z_build(void);
+void DT2(), FaetT2(void), FmitT2(void), WmnijT2(void), WmbejT2(void);
+void BT2(), ZT2(void), FT2(void), ET2(void), CT2(void), dijabT2(void);
+void BT2_AO();
+void Z_build();
 void status(const char *, std::string);
-void FT2_CC2(void);
-void Wmnij_for_Wabij(void);
-void Wmbej_for_Wabij(void);
-void purge_Wabij(void);
+void FT2_CC2();
+void Wmnij_for_Wabij();
+void Wmbej_for_Wabij();
+void purge_Wabij();
 
-void Wabij_build(void) {
+void Wabij_build() {
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     double dotval;
 
@@ -144,7 +144,7 @@ void Wabij_build(void) {
     }
 }
 
-void DT2(void) {
+void DT2() {
     dpdbuf4 D;
     if (params.ref == 0) { /*** RHF ***/
         global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
@@ -171,7 +171,7 @@ void DT2(void) {
     }
 }
 
-void FaetT2(void) {
+void FaetT2() {
     dpdfile2 FAEt, Faet;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 tIJAB, tijab, tIjAb;
@@ -247,7 +247,7 @@ void FaetT2(void) {
     }
 }
 
-void FmitT2(void) {
+void FmitT2() {
     dpdfile2 FMIt, Fmit;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 tIJAB, tijab, tIjAb;
@@ -325,7 +325,7 @@ void FmitT2(void) {
     }
 }
 
-void WmnijT2(void) {
+void WmnijT2() {
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 WMNIJ, Wmnij, WMnIj;
     dpdbuf4 tauIJAB, tauijab, tauIjAb;
@@ -389,7 +389,7 @@ void WmnijT2(void) {
     }
 }
 
-void BT2(void) {
+void BT2() {
     int h;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 B_anti, B;
@@ -491,7 +491,7 @@ void BT2(void) {
     }
 }
 
-void ZT2(void) {
+void ZT2() {
     dpdbuf4 ZIJMA, ZIJAM, Zijma, Zijam, ZIjMa, ZIjAm, Z;
     dpdbuf4 newtIJAB, newtijab, newtIjAb, T2;
     dpdfile2 tIA, tia, T1;
@@ -580,7 +580,7 @@ void ZT2(void) {
     }
 }
 
-void Z_build(void) {
+void Z_build() {
     dpdbuf4 ZIJMA, Zijma, ZIjMa, ZIjmA, ZIjAm, ZMaIj, ZmAIj, Z;
     dpdbuf4 tauIJAB, tauijab, tauIjAb, tauIjbA, F_anti, F, tau;
     int Gmb, Gij, mb, nrows, ncols;
@@ -676,7 +676,7 @@ void Z_build(void) {
     timer_off("Z");
 }
 
-void FT2(void) {
+void FT2() {
     dpdfile2 tIA, tia, t1;
     dpdbuf4 newtIJAB, newtijab, newtIjAb, t2, t2a, t2b;
     dpdbuf4 F_anti, F;
@@ -812,7 +812,7 @@ void FT2(void) {
     }
 }
 
-void ET2(void) {
+void ET2() {
     dpdfile2 tIA, tia;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 E, t2, t2a, t2b;
@@ -919,7 +919,7 @@ void ET2(void) {
     }
 }
 
-void WmbejT2(void) {
+void WmbejT2() {
     dpdbuf4 T2new, T2, W, T2B, W1, W2, Z;
 
     if (params.ref == 0) { /** RHF **/
@@ -1283,7 +1283,7 @@ void WmbejT2(void) {
     } /*** UHF ***/
 }
 
-void CT2(void) {
+void CT2() {
     dpdfile2 tIA, tia;
     dpdbuf4 Y, C, D, T2new, T2;
 
@@ -1642,7 +1642,7 @@ void CT2(void) {
     } /*** UHF ***/
 }
 
-void Wmnij_for_Wabij(void) {
+void Wmnij_for_Wabij() {
     dpdbuf4 A_anti, A;
     dpdbuf4 WMNIJ, Wmnij, WMnIj, W;
     dpdfile2 tIA, tia;
@@ -1805,7 +1805,7 @@ void Wmnij_for_Wabij(void) {
     timer_off("Wmnij");
 }
 
-void Wmbej_for_Wabij(void) {
+void Wmbej_for_Wabij() {
     dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ, WmBEj, WMbeJ, W;
     dpdbuf4 C, D, E, F, X, tIAjb, tiaJB, t2, Y, Z;
     dpdfile2 tIA, tia;
@@ -2391,7 +2391,7 @@ void Wmbej_for_Wabij(void) {
     timer_off("X->Wmbej");
 }
 
-void purge_Wabij(void) {
+void purge_Wabij() {
     dpdfile4 W;
     int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;

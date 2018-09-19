@@ -36,13 +36,13 @@
 namespace psi {
 namespace ccdensity {
 
-void V_build(void);
-void Gijkl(void);
-void Gabcd(void);
-void Gibja(void);
-void Gijka(void);
-void Gciab(void);
-void Gijab(void);
+void V_build();
+void Gijkl();
+void Gabcd();
+void Gibja();
+void Gijka();
+void Gciab();
+void Gijab();
 
 /* twopdm(): Computes all contributions to the two-particle density
 ** matrix for CC-like wave functions.
@@ -58,7 +58,7 @@ void Gijab(void);
 ** TDC, July 2002
 */
 
-void twopdm(void) {
+void twopdm() {
     /*  V_build(); */
     Gijkl();
     Gabcd();

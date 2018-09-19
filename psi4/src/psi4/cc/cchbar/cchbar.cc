@@ -55,35 +55,35 @@ namespace psi {
 namespace cchbar {
 
 void init_io();
-void title(void);
+void title();
 void get_moinfo(std::shared_ptr<Wavefunction> ref_wfn, Options &);
 void get_params(Options &);
-void exit_io(void);
-void F_build(void);
-void Wmbej_build(void);
-void Wmnie_build(void);
-void Wmbij_build(void);
-void Wabij_build(void);
-void Wamef_build(void);
-void Wabei_build(void);
-void cc2_Zmbej_build(void);
-void cc2_Wmbej_build(void);
-void cc2_Wmbij_build(void);
-void cc2_Wabei_build(void);
-void purge(void);
-void cleanup(void);
+void exit_io();
+void F_build();
+void Wmbej_build();
+void Wmnie_build();
+void Wmbij_build();
+void Wabij_build();
+void Wamef_build();
+void Wabei_build();
+void cc2_Zmbej_build();
+void cc2_Wmbej_build();
+void cc2_Wmbij_build();
+void cc2_Wabei_build();
+void purge();
+void cleanup();
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
 void cachedone_uhf(int **cachelist);
 void cachedone_rhf(int **cachelist);
-void sort_amps(void);
-void tau_build(void);
-void taut_build(void);
+void sort_amps();
+void tau_build();
+void taut_build();
 void status(const char *, std::string);
-void cc3_HET1(void);
-void Fai_build(void);
-void reference(void);
-void norm_HET1(void);
+void cc3_HET1();
+void Fai_build();
+void reference();
+void norm_HET1();
 
 using namespace psi;
 
@@ -193,7 +193,7 @@ void init_io() {
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void title(void) {
+void title() {
     outfile->Printf("\n");
     outfile->Printf("\t\t\t**************************\n");
     outfile->Printf("\t\t\t*                        *\n");
@@ -203,7 +203,7 @@ void title(void) {
     outfile->Printf("\n");
 }
 
-void exit_io(void) {
+void exit_io() {
     /* Close all dpd data files here */
     for (int i = PSIF_CC_MIN; i < PSIF_CC_TMP; ++i) psio_close(i, 1);
     for (int i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; ++i) psio_close(i, 0); /* get rid of TMP files */

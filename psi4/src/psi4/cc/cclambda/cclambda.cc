@@ -58,22 +58,22 @@
 namespace psi {
 namespace cclambda {
 
-void init_io(void);
-void title(void);
+void init_io();
+void title();
 void get_moinfo(std::shared_ptr<Wavefunction> wfn);
 void get_params(Options &options);
-void cleanup(void);
+void cleanup();
 void init_amps(struct L_Params L_params);
 double pseudoenergy(struct L_Params L_params);
-void exit_io(void);
+void exit_io();
 void G_build(int L_irr);
 void L1_build(struct L_Params L_params);
 void L2_build(struct L_Params L_params);
 void sort_amps(int L_irr);
 void Lsave(int L_irr);
 void Lnorm(struct L_Params L_params);
-void Lmag(void);
-void update(void);
+void Lmag();
+void update();
 int converged(int L_irr);
 void diis(int iter, int L_irr);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -91,23 +91,23 @@ void L_zero(int irrep);
 void c_clean(dpdfile2 *LIA, dpdfile2 *Lia, dpdbuf4 *LIJAB, dpdbuf4 *Lijab, dpdbuf4 *LIjAb);
 void L_clean(struct L_Params pL_params);
 void zeta_norm(struct L_Params pL_params);
-void spinad_amps(void);
+void spinad_amps();
 void status(const char *, std::string);
-void hbar_extra(void);
+void hbar_extra();
 void ortho_Rs(struct L_Params *pL_params, int current_L);
 
 void cc2_L1_build(struct L_Params L_params);
 void cc2_L2_build(struct L_Params L_params);
 void cc2_Gai_build(int L_irr);
-void cc2_hbar_extra(void);
+void cc2_hbar_extra();
 
-void cc3_t3z(void);
-void cc3_t3x(void);
-void cc3_l3l2(void);
-void cc3_l3l1(void);
+void cc3_t3z();
+void cc3_t3x();
+void cc3_l3l2();
+void cc3_l3l1();
 
-void local_init(void);
-void local_done(void);
+void local_init();
+void local_done();
 
 }  // namespace cclambda
 }  // namespace psi
@@ -350,7 +350,7 @@ double CCLambdaWavefunction::compute_energy() {
 }
 
 // must be fixed with options later for excited states
-void init_io(void) {
+void init_io() {
     int i, num_unparsed;
     char *lbl, *argv_unparsed[100];
 
@@ -374,7 +374,7 @@ void init_io(void) {
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void title(void) {
+void title() {
     outfile->Printf("\n");
     outfile->Printf("\t\t\t**************************\n");
     outfile->Printf("\t\t\t*        CCLAMBDA        *\n");
@@ -382,7 +382,7 @@ void title(void) {
     outfile->Printf("\n");
 }
 
-void exit_io(void) {
+void exit_io() {
     int i;
 
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) {

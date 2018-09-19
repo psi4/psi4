@@ -42,10 +42,10 @@ namespace psi {
 namespace ccdensity {
 
 /* computes non R0 parts of EOM CCSD Gijab */
-void x_Gijab_uhf_2(void);
-void x_Gijab_uhf_3(void);
+void x_Gijab_uhf_2();
+void x_Gijab_uhf_3();
 
-void x_Gijab_uhf(void) {
+void x_Gijab_uhf() {
     int h, nirreps, II;
     int R_irr, L_irr, G_irr;
     double value, tval;
@@ -1016,7 +1016,7 @@ void x_Gijab_uhf(void) {
    P(ij) P(ab) [ Z(i,a) * T(j,b) ]
  */
 
-void x_Gijab_uhf_2(void) {
+void x_Gijab_uhf_2() {
     int h, nirreps, row, col;
     int i, j, a, b;
     int I1, I2, I3, I4, J1, J2, J3, J4, A1, A2, A3, A4, B1, B2, B3, B4;
@@ -1289,7 +1289,7 @@ void x_Gijab_uhf_2(void) {
    Z(i,a) += Lme Tma Tie ; term 19
  */
 
-void x_Gijab_uhf_3(void) {
+void x_Gijab_uhf_3() {
     int h, nirreps, row, col;
     int i, j, a, b;
     int I1, I2, I3, I4, J1, J2, J3, J4, A1, A2, A3, A4, B1, B2, B3, B4;

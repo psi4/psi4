@@ -44,7 +44,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::init_amps(void) {
+void CCEnergyWavefunction::init_amps() {
     dpdfile2 tIA, tia, fIA, fia, dIA, dia;
     dpdbuf4 tIJAB, tijab, tIjAb, D, dIJAB, dijab, dIjAb;
 

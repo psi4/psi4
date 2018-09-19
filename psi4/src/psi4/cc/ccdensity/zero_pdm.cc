@@ -105,7 +105,7 @@ void zero_onepdm(struct RHO_Params rho_params) {
     }
 }
 
-void zero_twopdm(void) {
+void zero_twopdm() {
     dpdbuf4 G;
     int G_irr;
     G_irr = params.G_irr;

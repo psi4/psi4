@@ -41,14 +41,14 @@
 namespace psi {
 namespace ccdensity {
 
-void x_Gijka_6_uhf(void);
-void x_Gijka_7_uhf(void);
-void x_Gijka_8_uhf(void);
+void x_Gijka_6_uhf();
+void x_Gijka_7_uhf();
+void x_Gijka_8_uhf();
 
 /* This function computes the non-R0 parts of the 2pdm density matrix
    Gijka = 0.5 *(rho_kaij + rho_Gijka) */
 
-void x_Gijka_uhf(void) {
+void x_Gijka_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -315,7 +315,7 @@ void x_Gijka_uhf(void) {
    rho_ijka -= P(ij) Lke Rie Tja + P(ij) Lmkef Rmief Tja or
    rho_ijka -= P(ij) LR_OO(k,i) T(j,a) */
 
-void x_Gijka_6_uhf(void) {
+void x_Gijka_6_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -480,7 +480,7 @@ void x_Gijka_6_uhf(void) {
 /* This function computes
    Gijka -= P(ij) Lke Tie Rja + Lmkef Tmief Rja or
          -= P(ij) LT_OO(k,i) * R(j,a) */
-void x_Gijka_7_uhf(void) {
+void x_Gijka_7_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -647,7 +647,7 @@ void x_Gijka_7_uhf(void) {
 /* term 8, +P(ij) Lkmfe Rimae Tjf */
 /* term 9, +P(ij) Lkmfe Timae Rjf */
 
-void x_Gijka_8_uhf(void) {
+void x_Gijka_8_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;

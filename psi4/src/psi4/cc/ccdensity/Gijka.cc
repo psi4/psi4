@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void Gijka(void) {
+void Gijka() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     double value;
     dpdfile2 L1, T1, g;

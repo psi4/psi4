@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void V_build(void) {
+void V_build() {
     dpdbuf4 V, L, T;
     int G_irr;
     G_irr = params.G_irr;

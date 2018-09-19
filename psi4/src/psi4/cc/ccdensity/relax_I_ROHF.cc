@@ -46,7 +46,7 @@ namespace ccdensity {
 ** equations.  I *think* the following code is general enough to deal
 ** with both RHF and ROHF cases. */
 
-void relax_I_ROHF(void) {
+void relax_I_ROHF() {
     dpdfile2 I, D, f;
     dpdbuf4 E;
     int h, nirreps, i, j, e, *occpi, *virtpi, *openpi;

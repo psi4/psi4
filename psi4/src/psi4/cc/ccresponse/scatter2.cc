@@ -66,7 +66,7 @@ namespace ccresponse {
 std::vector<SharedMatrix> compute_tensor_deriv(std::vector<SharedMatrix> tensor_list, const double disp_size);
 
 /* Computes all the ROA data using all the tensors */
-void scatter2(void) {
+void scatter2() {
     printf("Scattering FUN-ction.\n");
 
     //* Put Python Lists of Lists (the various Tensors) into Vectors of Matrices

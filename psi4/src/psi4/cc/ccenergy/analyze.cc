@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::analyze(void) {
+void CCEnergyWavefunction::analyze() {
     int nirreps, h, i, j, a, b, ij, ab, u, v;
     int position, num_div, tot1, tot2, nvir, nso, nocc;
     double width, max, min, value, value2;

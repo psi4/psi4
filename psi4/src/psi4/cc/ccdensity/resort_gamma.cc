@@ -46,7 +46,7 @@ namespace ccdensity {
 ** all orbitals.
 */
 
-void resort_gamma(void) {
+void resort_gamma() {
     int h, nirreps, row, col, nfzc, nfzv;
     int i, j, k, l, I, J, K, L, ij, kl, ib, ja, ci;
     int a, b, c, d, A, B, C, D, ab, cd;

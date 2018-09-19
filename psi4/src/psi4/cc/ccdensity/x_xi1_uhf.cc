@@ -42,9 +42,9 @@ namespace psi {
 namespace ccdensity {
 
 extern void x_xi_check(char *term_lbl);
-extern void x_xi1_connected(void);
+extern void x_xi1_connected();
 
-void x_xi1_uhf(void) {
+void x_xi1_uhf() {
     dpdfile2 L1, XIA, Xia, I1, R1, F1, Z1A, Z1B;
     int L_irr, R_irr, G_irr;
     dpdbuf4 D, R2, L2, H2, I2;

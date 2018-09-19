@@ -41,7 +41,7 @@ namespace ccenergy {
 
 void local_filter_T2(dpdbuf4 *T2);
 
-void CCEnergyWavefunction::dijabT2(void) {
+void CCEnergyWavefunction::dijabT2() {
     dpdbuf4 newtIJAB, newtijab, newtIjAb, tIjAb;
     dpdbuf4 dIJAB, dijab, dIjAb;
 

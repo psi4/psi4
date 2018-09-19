@@ -41,22 +41,22 @@
 namespace psi {
 namespace ccdensity {
 
-void x_Gciab_rohf(void);
-void x_Gciab_6(void);
-void x_Gciab_7(void);
-void x_Gciab_8_rohf(void);
-extern void x_Gciab_uhf(void);
+void x_Gciab_rohf();
+void x_Gciab_6();
+void x_Gciab_7();
+void x_Gciab_8_rohf();
+extern void x_Gciab_uhf();
 
 /* This function computes the non-R0 parts of the 2pdm density matrix
    Gciab = 0.5 *(rho_abci + rho_ciab) */
-void x_Gciab(void) {
+void x_Gciab() {
     if (params.ref == 0 || params.ref == 1)
         x_Gciab_rohf();
     else
         x_Gciab_uhf();
 }
 
-void x_Gciab_rohf(void) {
+void x_Gciab_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -466,7 +466,7 @@ void x_Gciab_rohf(void) {
    rho_ciab += P(ab) LR1_VV(c,a) T(i,b)
 */
 
-void x_Gciab_6(void) {
+void x_Gciab_6() {
     int h, nirreps, c, i, a, b, C, I, A, B, Csym, Isym, Asym, Bsym, row, col;
     int AA, BB, AAsym, BBsym;
     int L_irr, R_irr, G_irr;
@@ -647,7 +647,7 @@ void x_Gciab_6(void) {
    rho_ciab += P(ab) LT_VV(c,a) R(i,b)
 */
 
-void x_Gciab_7(void) {
+void x_Gciab_7() {
     int h, nirreps, c, i, a, b, C, I, A, B, Csym, Isym, Asym, Bsym, row, col;
     int AA, BB, AAsym, BBsym;
     int L_irr, R_irr, G_irr;
@@ -829,7 +829,7 @@ void x_Gciab_7(void) {
    term 9, +P(AB) LMNCE TINAE RMB
 */
 
-void x_Gciab_8_rohf(void) {
+void x_Gciab_8_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;

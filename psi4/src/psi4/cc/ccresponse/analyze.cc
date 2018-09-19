@@ -45,8 +45,8 @@
 namespace psi {
 namespace ccresponse {
 
-double **Build_R(void);
-double **Build_U(void);
+double **Build_R();
+double **Build_U();
 
 void analyze(const char *pert, int irrep, double omega) {
     int nirreps, h, i, j, a, b, ij, ab, u, v;
