@@ -41,639 +41,635 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
-
-double ET_AAA(void)
-{
-  int cnt;
-  int h, nirreps;
-  int Gi, Gj, Gk, Ga, Gb, Gc, Ge, Gm;
-  int Gji, Gij, Gjk, Gik, Gbc, Gac, Gba;
-  int I, J, K, A, B, C, E, M;
-  int i, j, k, a, b, c, e, m;
-  int ij, ji, ik, jk, bc, ac, ba;
-  int im, jm, km, ma, mb, mc;
-  int ae, be, ce, ke, ie, je;
-  int *occpi, *virtpi, *occ_off, *vir_off;
-  double value_c, value_d, denom, ET_AAA;
-  double t_ijae, t_ijbe, t_ijce, t_jkae, t_jkbe, t_jkce, t_ikae, t_ikbe, t_ikce;
-  double F_kebc, F_keac, F_keba, F_iebc, F_ieac, F_ieba, F_jebc, F_jeac, F_jeba;
-  double t_imbc, t_imac, t_imba, t_jmbc, t_jmac, t_jmba, t_kmbc, t_kmac, t_kmba;
-  double E_jkma, E_jkmb, E_jkmc, E_ikma, E_ikmb, E_ikmc, E_jima, E_jimb, E_jimc;
-  double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
-  double D_jkbc, D_jkac, D_jkba, D_ikbc, D_ikac, D_ikba, D_jibc, D_jiac, D_jiba;
-  dpdbuf4 T2, Fints, Eints, Dints;
-  dpdfile2 fIJ, fAB, T1;
-
-  nirreps = moinfo.nirreps;
-  occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-  occ_off = moinfo.occ_off;
-  vir_off = moinfo.vir_off;
-
-  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  global_dpd_->file2_mat_init(&fIJ);
-  global_dpd_->file2_mat_init(&fAB);
-  global_dpd_->file2_mat_rd(&fIJ);
-  global_dpd_->file2_mat_rd(&fAB);
-
-  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  global_dpd_->file2_mat_init(&T1);
-  global_dpd_->file2_mat_rd(&T1);
-
-  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-  global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
-  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-  for(h=0; h < nirreps; h++) {
-    global_dpd_->buf4_mat_irrep_init(&T2, h);
-    global_dpd_->buf4_mat_irrep_rd(&T2, h);
-
-    global_dpd_->buf4_mat_irrep_init(&Fints, h);
-    global_dpd_->buf4_mat_irrep_rd(&Fints, h);
-
-    global_dpd_->buf4_mat_irrep_init(&Eints, h);
-    global_dpd_->buf4_mat_irrep_rd(&Eints, h);
-
-    global_dpd_->buf4_mat_irrep_init(&Dints, h);
-    global_dpd_->buf4_mat_irrep_rd(&Dints, h);
-  }
-
-  cnt = 0;
-  ET_AAA = 0.0;
-
-  for(Gi=0; Gi < nirreps; Gi++) {
-    for(Gj=0; Gj < nirreps; Gj++) {
-      Gij = Gji = Gi ^ Gj;
-      for(Gk=0; Gk < nirreps; Gk++) {
-	Gjk = Gj ^ Gk;
-	Gik = Gi ^ Gk;
-
-	for(Ga=0; Ga < nirreps; Ga++) {
-	  for(Gb=0; Gb < nirreps; Gb++) {
-	    Gc = Gi ^ Gj ^ Gk ^ Ga ^ Gb;
-
-	    Gbc = Gb^Gc;
-	    Gac = Ga^Gc;
-	    Gba = Gb^Ga;
-
-	    for(i=0; i < occpi[Gi]; i++) {
-	      I = occ_off[Gi] + i;
-	      for(j=0; j < occpi[Gj]; j++) {
-		J = occ_off[Gj] + j;
-		for(k=0; k < occpi[Gk]; k++) {
-		  K = occ_off[Gk] + k;
-
-		  ij = T2.params->rowidx[I][J];
-		  ji = T2.params->rowidx[J][I];
-		  jk = T2.params->rowidx[J][K];
-		  ik = T2.params->rowidx[I][K];
-
-		  for(a=0; a < virtpi[Ga]; a++) {
-		    A = vir_off[Ga] + a;
-		    for(b=0; b < virtpi[Gb]; b++) {
-		      B = vir_off[Gb] + b;
-		      for(c=0; c < virtpi[Gc]; c++) {
-			C = vir_off[Gc] + c;
-
-			bc = Fints.params->colidx[B][C];
-			ac = Fints.params->colidx[A][C];
-			ba = Fints.params->colidx[B][A];
-
-			value_c = 0.0;
-
-			/** <ov||vv> --> connected triples **/
+namespace psi {
+namespace cctriples {
+
+double ET_AAA(void) {
+    int cnt;
+    int h, nirreps;
+    int Gi, Gj, Gk, Ga, Gb, Gc, Ge, Gm;
+    int Gji, Gij, Gjk, Gik, Gbc, Gac, Gba;
+    int I, J, K, A, B, C, E, M;
+    int i, j, k, a, b, c, e, m;
+    int ij, ji, ik, jk, bc, ac, ba;
+    int im, jm, km, ma, mb, mc;
+    int ae, be, ce, ke, ie, je;
+    int *occpi, *virtpi, *occ_off, *vir_off;
+    double value_c, value_d, denom, ET_AAA;
+    double t_ijae, t_ijbe, t_ijce, t_jkae, t_jkbe, t_jkce, t_ikae, t_ikbe, t_ikce;
+    double F_kebc, F_keac, F_keba, F_iebc, F_ieac, F_ieba, F_jebc, F_jeac, F_jeba;
+    double t_imbc, t_imac, t_imba, t_jmbc, t_jmac, t_jmba, t_kmbc, t_kmac, t_kmba;
+    double E_jkma, E_jkmb, E_jkmc, E_ikma, E_ikmb, E_ikmc, E_jima, E_jimb, E_jimc;
+    double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
+    double D_jkbc, D_jkac, D_jkba, D_ikbc, D_ikac, D_ikba, D_jibc, D_jiac, D_jiba;
+    dpdbuf4 T2, Fints, Eints, Dints;
+    dpdfile2 fIJ, fAB, T1;
+
+    nirreps = moinfo.nirreps;
+    occpi = moinfo.occpi;
+    virtpi = moinfo.virtpi;
+    occ_off = moinfo.occ_off;
+    vir_off = moinfo.vir_off;
+
+    global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_mat_init(&fIJ);
+    global_dpd_->file2_mat_init(&fAB);
+    global_dpd_->file2_mat_rd(&fIJ);
+    global_dpd_->file2_mat_rd(&fAB);
+
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
+
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
+    global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+    global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+    for (h = 0; h < nirreps; h++) {
+        global_dpd_->buf4_mat_irrep_init(&T2, h);
+        global_dpd_->buf4_mat_irrep_rd(&T2, h);
+
+        global_dpd_->buf4_mat_irrep_init(&Fints, h);
+        global_dpd_->buf4_mat_irrep_rd(&Fints, h);
+
+        global_dpd_->buf4_mat_irrep_init(&Eints, h);
+        global_dpd_->buf4_mat_irrep_rd(&Eints, h);
+
+        global_dpd_->buf4_mat_irrep_init(&Dints, h);
+        global_dpd_->buf4_mat_irrep_rd(&Dints, h);
+    }
+
+    cnt = 0;
+    ET_AAA = 0.0;
+
+    for (Gi = 0; Gi < nirreps; Gi++) {
+        for (Gj = 0; Gj < nirreps; Gj++) {
+            Gij = Gji = Gi ^ Gj;
+            for (Gk = 0; Gk < nirreps; Gk++) {
+                Gjk = Gj ^ Gk;
+                Gik = Gi ^ Gk;
+
+                for (Ga = 0; Ga < nirreps; Ga++) {
+                    for (Gb = 0; Gb < nirreps; Gb++) {
+                        Gc = Gi ^ Gj ^ Gk ^ Ga ^ Gb;
+
+                        Gbc = Gb ^ Gc;
+                        Gac = Ga ^ Gc;
+                        Gba = Gb ^ Ga;
+
+                        for (i = 0; i < occpi[Gi]; i++) {
+                            I = occ_off[Gi] + i;
+                            for (j = 0; j < occpi[Gj]; j++) {
+                                J = occ_off[Gj] + j;
+                                for (k = 0; k < occpi[Gk]; k++) {
+                                    K = occ_off[Gk] + k;
+
+                                    ij = T2.params->rowidx[I][J];
+                                    ji = T2.params->rowidx[J][I];
+                                    jk = T2.params->rowidx[J][K];
+                                    ik = T2.params->rowidx[I][K];
+
+                                    for (a = 0; a < virtpi[Ga]; a++) {
+                                        A = vir_off[Ga] + a;
+                                        for (b = 0; b < virtpi[Gb]; b++) {
+                                            B = vir_off[Gb] + b;
+                                            for (c = 0; c < virtpi[Gc]; c++) {
+                                                C = vir_off[Gc] + c;
+
+                                                bc = Fints.params->colidx[B][C];
+                                                ac = Fints.params->colidx[A][C];
+                                                ba = Fints.params->colidx[B][A];
+
+                                                value_c = 0.0;
 
-                        /* -t_jkae * F_iebc */
-			Ge = Gj ^ Gk ^ Ga;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                /** <ov||vv> --> connected triples **/
 
-                          ae = T2.params->colidx[A][E];
-                          ie = Fints.params->rowidx[I][E];
+                                                /* -t_jkae * F_iebc */
+                                                Ge = Gj ^ Gk ^ Ga;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_jkae = F_iebc = 0.0;
+                                                    ae = T2.params->colidx[A][E];
+                                                    ie = Fints.params->rowidx[I][E];
 
-                          if(T2.params->rowtot[Gjk] && T2.params->coltot[Gjk])
-			    t_jkae = T2.matrix[Gjk][jk][ae];
+                                                    t_jkae = F_iebc = 0.0;
 
-                          if(Fints.params->rowtot[Gbc] && Fints.params->coltot[Gbc])
-			    F_iebc = Fints.matrix[Gbc][ie][bc];
+                                                    if (T2.params->rowtot[Gjk] && T2.params->coltot[Gjk])
+                                                        t_jkae = T2.matrix[Gjk][jk][ae];
 
-                          value_c -= t_jkae * F_iebc;
-			}
+                                                    if (Fints.params->rowtot[Gbc] && Fints.params->coltot[Gbc])
+                                                        F_iebc = Fints.matrix[Gbc][ie][bc];
 
-                        /* +t_jkbe * F_ieac */
-			Ge = Gj ^ Gk ^ Gb;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c -= t_jkae * F_iebc;
+                                                }
 
-                          be = T2.params->colidx[B][E];
-                          ie = Fints.params->rowidx[I][E];
+                                                /* +t_jkbe * F_ieac */
+                                                Ge = Gj ^ Gk ^ Gb;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_jkbe = F_ieac = 0.0;
+                                                    be = T2.params->colidx[B][E];
+                                                    ie = Fints.params->rowidx[I][E];
 
-                          if(T2.params->rowtot[Gjk] && T2.params->coltot[Gjk])
-			    t_jkbe = T2.matrix[Gjk][jk][be];
+                                                    t_jkbe = F_ieac = 0.0;
 
-                          if(Fints.params->rowtot[Gac] && Fints.params->coltot[Gac])
-			    F_ieac = Fints.matrix[Gac][ie][ac];
+                                                    if (T2.params->rowtot[Gjk] && T2.params->coltot[Gjk])
+                                                        t_jkbe = T2.matrix[Gjk][jk][be];
 
-                          value_c += t_jkbe * F_ieac;
-			}
+                                                    if (Fints.params->rowtot[Gac] && Fints.params->coltot[Gac])
+                                                        F_ieac = Fints.matrix[Gac][ie][ac];
 
-                        /* +t_jkce * F_ieba */
-			Ge = Gj ^ Gk ^ Gc;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c += t_jkbe * F_ieac;
+                                                }
 
-                          ce = T2.params->colidx[C][E];
-                          ie = Fints.params->rowidx[I][E];
+                                                /* +t_jkce * F_ieba */
+                                                Ge = Gj ^ Gk ^ Gc;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_jkce = F_ieba = 0.0;
+                                                    ce = T2.params->colidx[C][E];
+                                                    ie = Fints.params->rowidx[I][E];
 
-                          if(T2.params->rowtot[Gjk] && T2.params->coltot[Gjk])
-			    t_jkce = T2.matrix[Gjk][jk][ce];
+                                                    t_jkce = F_ieba = 0.0;
 
-                          if(Fints.params->rowtot[Gba] && Fints.params->coltot[Gba])
-			    F_ieba = Fints.matrix[Gba][ie][ba];
+                                                    if (T2.params->rowtot[Gjk] && T2.params->coltot[Gjk])
+                                                        t_jkce = T2.matrix[Gjk][jk][ce];
 
-                          value_c += t_jkce * F_ieba;
-			}
+                                                    if (Fints.params->rowtot[Gba] && Fints.params->coltot[Gba])
+                                                        F_ieba = Fints.matrix[Gba][ie][ba];
 
-                        /* +t_ikae * F_jebc */
-			Ge = Gi ^ Gk ^ Ga;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c += t_jkce * F_ieba;
+                                                }
 
-                          ae = T2.params->colidx[A][E];
-                          je = Fints.params->rowidx[J][E];
+                                                /* +t_ikae * F_jebc */
+                                                Ge = Gi ^ Gk ^ Ga;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_ikae = F_jebc = 0.0;
+                                                    ae = T2.params->colidx[A][E];
+                                                    je = Fints.params->rowidx[J][E];
 
-                          if(T2.params->rowtot[Gik] && T2.params->coltot[Gik])
-			    t_ikae = T2.matrix[Gik][ik][ae];
+                                                    t_ikae = F_jebc = 0.0;
 
-                          if(Fints.params->rowtot[Gbc] && Fints.params->coltot[Gbc])
-			    F_jebc = Fints.matrix[Gbc][je][bc];
+                                                    if (T2.params->rowtot[Gik] && T2.params->coltot[Gik])
+                                                        t_ikae = T2.matrix[Gik][ik][ae];
 
-                          value_c += t_ikae * F_jebc;
-			}
+                                                    if (Fints.params->rowtot[Gbc] && Fints.params->coltot[Gbc])
+                                                        F_jebc = Fints.matrix[Gbc][je][bc];
 
-                        /* -t_ikbe * F_jeac */
-			Ge = Gi ^ Gk ^ Gb;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c += t_ikae * F_jebc;
+                                                }
 
-                          be = T2.params->colidx[B][E];
-                          je = Fints.params->rowidx[J][E];
+                                                /* -t_ikbe * F_jeac */
+                                                Ge = Gi ^ Gk ^ Gb;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_ikbe = F_jeac = 0.0;
+                                                    be = T2.params->colidx[B][E];
+                                                    je = Fints.params->rowidx[J][E];
 
-                          if(T2.params->rowtot[Gik] && T2.params->coltot[Gik])
-			    t_ikbe = T2.matrix[Gik][ik][be];
+                                                    t_ikbe = F_jeac = 0.0;
 
-                          if(Fints.params->rowtot[Gac] && Fints.params->coltot[Gac])
-			    F_jeac = Fints.matrix[Gac][je][ac];
+                                                    if (T2.params->rowtot[Gik] && T2.params->coltot[Gik])
+                                                        t_ikbe = T2.matrix[Gik][ik][be];
 
-                          value_c -= t_ikbe * F_jeac;
-			}
+                                                    if (Fints.params->rowtot[Gac] && Fints.params->coltot[Gac])
+                                                        F_jeac = Fints.matrix[Gac][je][ac];
 
-                        /* -t_ikce * F_jeba */
-			Ge = Gi ^ Gk ^ Gc;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c -= t_ikbe * F_jeac;
+                                                }
 
-                          ce = T2.params->colidx[C][E];
-                          je = Fints.params->rowidx[J][E];
+                                                /* -t_ikce * F_jeba */
+                                                Ge = Gi ^ Gk ^ Gc;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_ikce = F_jeba = 0.0;
+                                                    ce = T2.params->colidx[C][E];
+                                                    je = Fints.params->rowidx[J][E];
 
-                          if(T2.params->rowtot[Gik] && T2.params->coltot[Gik])
-			    t_ikce = T2.matrix[Gik][ik][ce];
+                                                    t_ikce = F_jeba = 0.0;
 
-                          if(Fints.params->rowtot[Gba] && Fints.params->coltot[Gba])
-			    F_jeba = Fints.matrix[Gba][je][ba];
+                                                    if (T2.params->rowtot[Gik] && T2.params->coltot[Gik])
+                                                        t_ikce = T2.matrix[Gik][ik][ce];
 
-                          value_c -= t_ikce * F_jeba;
-			}
+                                                    if (Fints.params->rowtot[Gba] && Fints.params->coltot[Gba])
+                                                        F_jeba = Fints.matrix[Gba][je][ba];
 
-                        /* -t_ijae * F_kebc */
-			Ge = Gi ^ Gj ^ Ga;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c -= t_ikce * F_jeba;
+                                                }
 
-			  ae = T2.params->colidx[A][E];
-			  ke = Fints.params->rowidx[K][E];
+                                                /* -t_ijae * F_kebc */
+                                                Ge = Gi ^ Gj ^ Ga;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_ijae = F_kebc = 0.0;
+                                                    ae = T2.params->colidx[A][E];
+                                                    ke = Fints.params->rowidx[K][E];
 
-                          if(T2.params->rowtot[Gij] && T2.params->coltot[Gij])
-			    t_ijae = T2.matrix[Gij][ij][ae];
+                                                    t_ijae = F_kebc = 0.0;
 
-                          if(Fints.params->rowtot[Gbc] && Fints.params->coltot[Gbc])
-			    F_kebc = Fints.matrix[Gbc][ke][bc];
+                                                    if (T2.params->rowtot[Gij] && T2.params->coltot[Gij])
+                                                        t_ijae = T2.matrix[Gij][ij][ae];
 
-                          value_c -= t_ijae * F_kebc;
-			}
+                                                    if (Fints.params->rowtot[Gbc] && Fints.params->coltot[Gbc])
+                                                        F_kebc = Fints.matrix[Gbc][ke][bc];
 
-                        /* +t_ijbe * F_keac */
-			Ge = Gi ^ Gj ^ Gb;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c -= t_ijae * F_kebc;
+                                                }
 
-                          be = T2.params->colidx[B][E];
-                          ke = Fints.params->rowidx[K][E];
+                                                /* +t_ijbe * F_keac */
+                                                Ge = Gi ^ Gj ^ Gb;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_ijbe = F_keac = 0.0;
+                                                    be = T2.params->colidx[B][E];
+                                                    ke = Fints.params->rowidx[K][E];
 
-                          if(T2.params->rowtot[Gij] && T2.params->coltot[Gij])
-			    t_ijbe = T2.matrix[Gij][ij][be];
+                                                    t_ijbe = F_keac = 0.0;
 
-                          if(Fints.params->rowtot[Gac] && Fints.params->coltot[Gac])
-			    F_keac = Fints.matrix[Gac][ke][ac];
+                                                    if (T2.params->rowtot[Gij] && T2.params->coltot[Gij])
+                                                        t_ijbe = T2.matrix[Gij][ij][be];
 
-                          value_c += t_ijbe * F_keac;
-			}
+                                                    if (Fints.params->rowtot[Gac] && Fints.params->coltot[Gac])
+                                                        F_keac = Fints.matrix[Gac][ke][ac];
 
-                        /* +t_ijce * F_keba */
-			Ge = Gi ^ Gj ^ Gc;
-			for(e=0; e < virtpi[Ge]; e++) {
-                          E = vir_off[Ge] + e;
+                                                    value_c += t_ijbe * F_keac;
+                                                }
 
-                          ce = T2.params->colidx[C][E];
-                          ke = Fints.params->rowidx[K][E];
+                                                /* +t_ijce * F_keba */
+                                                Ge = Gi ^ Gj ^ Gc;
+                                                for (e = 0; e < virtpi[Ge]; e++) {
+                                                    E = vir_off[Ge] + e;
 
-                          t_ijce = F_keba = 0.0;
+                                                    ce = T2.params->colidx[C][E];
+                                                    ke = Fints.params->rowidx[K][E];
 
-                          if(T2.params->rowtot[Gij] && T2.params->coltot[Gij])
-			    t_ijce = T2.matrix[Gij][ij][ce];
+                                                    t_ijce = F_keba = 0.0;
 
-                          if(Fints.params->rowtot[Gba] && Fints.params->coltot[Gba])
-			    F_keba = Fints.matrix[Gba][ke][ba];
+                                                    if (T2.params->rowtot[Gij] && T2.params->coltot[Gij])
+                                                        t_ijce = T2.matrix[Gij][ij][ce];
 
-                          value_c += t_ijce * F_keba;
-			}
+                                                    if (Fints.params->rowtot[Gba] && Fints.params->coltot[Gba])
+                                                        F_keba = Fints.matrix[Gba][ke][ba];
 
-			/** <oo||ov> --> connected triples **/
+                                                    value_c += t_ijce * F_keba;
+                                                }
 
-                        /* -t_imbc * E_jkma */
-			Gm = Gi ^ Gb ^ Gc;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                /** <oo||ov> --> connected triples **/
 
-                          im = T2.params->rowidx[I][M];
-                          ma = Eints.params->colidx[M][A];
+                                                /* -t_imbc * E_jkma */
+                                                Gm = Gi ^ Gb ^ Gc;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_imbc = E_jkma = 0.0;
+                                                    im = T2.params->rowidx[I][M];
+                                                    ma = Eints.params->colidx[M][A];
 
-                          if(T2.params->rowtot[Gbc] && T2.params->coltot[Gbc])
-			    t_imbc = T2.matrix[Gbc][im][bc];
+                                                    t_imbc = E_jkma = 0.0;
 
-                          if(Eints.params->rowtot[Gjk] && Eints.params->coltot[Gjk])
-			    E_jkma = Eints.matrix[Gjk][jk][ma];
+                                                    if (T2.params->rowtot[Gbc] && T2.params->coltot[Gbc])
+                                                        t_imbc = T2.matrix[Gbc][im][bc];
 
-                          value_c -= t_imbc * E_jkma;
-			}
+                                                    if (Eints.params->rowtot[Gjk] && Eints.params->coltot[Gjk])
+                                                        E_jkma = Eints.matrix[Gjk][jk][ma];
 
-                        /* +t_imac * E_jkmb */
-			Gm = Gi ^ Ga ^ Gc;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c -= t_imbc * E_jkma;
+                                                }
 
-                          im = T2.params->rowidx[I][M];
-                          mb = Eints.params->colidx[M][B];
+                                                /* +t_imac * E_jkmb */
+                                                Gm = Gi ^ Ga ^ Gc;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_imac = E_jkmb = 0.0;
+                                                    im = T2.params->rowidx[I][M];
+                                                    mb = Eints.params->colidx[M][B];
 
-                          if(T2.params->rowtot[Gac] && T2.params->coltot[Gac])
-			    t_imac = T2.matrix[Gac][im][ac];
+                                                    t_imac = E_jkmb = 0.0;
 
-                          if(Eints.params->rowtot[Gjk] && Eints.params->coltot[Gjk])
-			    E_jkmb = Eints.matrix[Gjk][jk][mb];
+                                                    if (T2.params->rowtot[Gac] && T2.params->coltot[Gac])
+                                                        t_imac = T2.matrix[Gac][im][ac];
 
-                          value_c += t_imac * E_jkmb;
-			}
+                                                    if (Eints.params->rowtot[Gjk] && Eints.params->coltot[Gjk])
+                                                        E_jkmb = Eints.matrix[Gjk][jk][mb];
 
-                        /* +t_imba * E_jkmc */
-			Gm = Gi ^ Gb ^ Ga;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c += t_imac * E_jkmb;
+                                                }
 
-                          im = T2.params->rowidx[I][M];
-                          mc = Eints.params->colidx[M][C];
+                                                /* +t_imba * E_jkmc */
+                                                Gm = Gi ^ Gb ^ Ga;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_imba = E_jkmc = 0.0;
+                                                    im = T2.params->rowidx[I][M];
+                                                    mc = Eints.params->colidx[M][C];
 
-                          if(T2.params->rowtot[Gba] && T2.params->coltot[Gba])
-			    t_imba = T2.matrix[Gba][im][ba];
+                                                    t_imba = E_jkmc = 0.0;
 
-                          if(Eints.params->rowtot[Gjk] && Eints.params->coltot[Gjk])
-			    E_jkmc = Eints.matrix[Gjk][jk][mc];
+                                                    if (T2.params->rowtot[Gba] && T2.params->coltot[Gba])
+                                                        t_imba = T2.matrix[Gba][im][ba];
 
-                          value_c += t_imba * E_jkmc;
-			}
+                                                    if (Eints.params->rowtot[Gjk] && Eints.params->coltot[Gjk])
+                                                        E_jkmc = Eints.matrix[Gjk][jk][mc];
 
-                        /* +t_jmbc * E_ikma */
-			Gm = Gj ^ Gb ^ Gc;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c += t_imba * E_jkmc;
+                                                }
 
-                          jm = T2.params->rowidx[J][M];
-                          ma = Eints.params->colidx[M][A];
+                                                /* +t_jmbc * E_ikma */
+                                                Gm = Gj ^ Gb ^ Gc;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_jmbc = E_ikma = 0.0;
+                                                    jm = T2.params->rowidx[J][M];
+                                                    ma = Eints.params->colidx[M][A];
 
-                          if(T2.params->rowtot[Gbc] && T2.params->coltot[Gbc])
-			    t_jmbc = T2.matrix[Gbc][jm][bc];
+                                                    t_jmbc = E_ikma = 0.0;
 
-                          if(Eints.params->rowtot[Gik] && Eints.params->coltot[Gik])
-			    E_ikma = Eints.matrix[Gik][ik][ma];
+                                                    if (T2.params->rowtot[Gbc] && T2.params->coltot[Gbc])
+                                                        t_jmbc = T2.matrix[Gbc][jm][bc];
 
-                          value_c += t_jmbc * E_ikma;
-			}
+                                                    if (Eints.params->rowtot[Gik] && Eints.params->coltot[Gik])
+                                                        E_ikma = Eints.matrix[Gik][ik][ma];
 
-                        /* -t_jmac * E_ikmb */
-			Gm = Gj ^ Ga ^ Gc;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c += t_jmbc * E_ikma;
+                                                }
 
-                          jm = T2.params->rowidx[J][M];
-                          mb = Eints.params->colidx[M][B];
+                                                /* -t_jmac * E_ikmb */
+                                                Gm = Gj ^ Ga ^ Gc;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_jmac = E_ikmb = 0.0;
+                                                    jm = T2.params->rowidx[J][M];
+                                                    mb = Eints.params->colidx[M][B];
 
-                          if(T2.params->rowtot[Gac] && T2.params->coltot[Gac])
-			    t_jmac = T2.matrix[Gac][jm][ac];
+                                                    t_jmac = E_ikmb = 0.0;
 
-                          if(Eints.params->rowtot[Gik] && Eints.params->coltot[Gik])
-			    E_ikmb = Eints.matrix[Gik][ik][mb];
+                                                    if (T2.params->rowtot[Gac] && T2.params->coltot[Gac])
+                                                        t_jmac = T2.matrix[Gac][jm][ac];
 
-                          value_c -= t_jmac * E_ikmb;
-			}
+                                                    if (Eints.params->rowtot[Gik] && Eints.params->coltot[Gik])
+                                                        E_ikmb = Eints.matrix[Gik][ik][mb];
 
-                        /* -t_jmba * E_ikmc */
-			Gm = Gj ^ Gb ^ Ga;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c -= t_jmac * E_ikmb;
+                                                }
 
-                          jm = T2.params->rowidx[J][M];
-                          mc = Eints.params->colidx[M][C];
+                                                /* -t_jmba * E_ikmc */
+                                                Gm = Gj ^ Gb ^ Ga;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_jmba = E_ikmc = 0.0;
+                                                    jm = T2.params->rowidx[J][M];
+                                                    mc = Eints.params->colidx[M][C];
 
-                          if(T2.params->rowtot[Gba] && T2.params->coltot[Gba])
-			    t_jmba = T2.matrix[Gba][jm][ba];
+                                                    t_jmba = E_ikmc = 0.0;
 
-                          if(Eints.params->rowtot[Gik] && Eints.params->coltot[Gik])
-			    E_ikmc = Eints.matrix[Gik][ik][mc];
+                                                    if (T2.params->rowtot[Gba] && T2.params->coltot[Gba])
+                                                        t_jmba = T2.matrix[Gba][jm][ba];
 
-                          value_c -= t_jmba * E_ikmc;
-			}
+                                                    if (Eints.params->rowtot[Gik] && Eints.params->coltot[Gik])
+                                                        E_ikmc = Eints.matrix[Gik][ik][mc];
 
-                        /* +t_kmbc * E_jima */
-			Gm = Gk ^ Gb ^ Gc;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c -= t_jmba * E_ikmc;
+                                                }
 
-                          km = T2.params->rowidx[K][M];
-                          ma = Eints.params->colidx[M][A];
+                                                /* +t_kmbc * E_jima */
+                                                Gm = Gk ^ Gb ^ Gc;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_kmbc = E_jima = 0.0;
+                                                    km = T2.params->rowidx[K][M];
+                                                    ma = Eints.params->colidx[M][A];
 
-                          if(T2.params->rowtot[Gbc] && T2.params->coltot[Gbc])
-			    t_kmbc = T2.matrix[Gbc][km][bc];
+                                                    t_kmbc = E_jima = 0.0;
 
-                          if(Eints.params->rowtot[Gji] && Eints.params->coltot[Gji])
-			    E_jima = Eints.matrix[Gji][ji][ma];
+                                                    if (T2.params->rowtot[Gbc] && T2.params->coltot[Gbc])
+                                                        t_kmbc = T2.matrix[Gbc][km][bc];
 
-                          value_c += t_kmbc * E_jima;
-			}
+                                                    if (Eints.params->rowtot[Gji] && Eints.params->coltot[Gji])
+                                                        E_jima = Eints.matrix[Gji][ji][ma];
 
-                        /* -t_kmac * E_jimb */
-			Gm = Gk ^ Ga ^ Gc;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c += t_kmbc * E_jima;
+                                                }
 
-                          km = T2.params->rowidx[K][M];
-                          mb = Eints.params->colidx[M][B];
+                                                /* -t_kmac * E_jimb */
+                                                Gm = Gk ^ Ga ^ Gc;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_kmac = E_jimb = 0.0;
+                                                    km = T2.params->rowidx[K][M];
+                                                    mb = Eints.params->colidx[M][B];
 
-                          if(T2.params->rowtot[Gac] && T2.params->coltot[Gac])
-			    t_kmac = T2.matrix[Gac][km][ac];
+                                                    t_kmac = E_jimb = 0.0;
 
-                          if(Eints.params->rowtot[Gji] && Eints.params->coltot[Gji])
-			    E_jimb = Eints.matrix[Gji][ji][mb];
+                                                    if (T2.params->rowtot[Gac] && T2.params->coltot[Gac])
+                                                        t_kmac = T2.matrix[Gac][km][ac];
 
-                          value_c -= t_kmac * E_jimb;
-			}
+                                                    if (Eints.params->rowtot[Gji] && Eints.params->coltot[Gji])
+                                                        E_jimb = Eints.matrix[Gji][ji][mb];
 
-                        /* -t_kmba * E_jimc */
-			Gm = Gk ^ Gb ^ Ga;
-			for(m=0; m < occpi[Gm]; m++) {
-                          M = occ_off[Gm] + m;
+                                                    value_c -= t_kmac * E_jimb;
+                                                }
 
-                          km = T2.params->rowidx[K][M];
-                          mc = Eints.params->colidx[M][C];
+                                                /* -t_kmba * E_jimc */
+                                                Gm = Gk ^ Gb ^ Ga;
+                                                for (m = 0; m < occpi[Gm]; m++) {
+                                                    M = occ_off[Gm] + m;
 
-                          t_kmba = E_jimc = 0.0;
+                                                    km = T2.params->rowidx[K][M];
+                                                    mc = Eints.params->colidx[M][C];
 
-                          if(T2.params->rowtot[Gba] && T2.params->coltot[Gba])
-			    t_kmba = T2.matrix[Gba][km][ba];
+                                                    t_kmba = E_jimc = 0.0;
 
-                          if(Eints.params->rowtot[Gji] && Eints.params->coltot[Gji])
-			    E_jimc = Eints.matrix[Gji][ji][mc];
+                                                    if (T2.params->rowtot[Gba] && T2.params->coltot[Gba])
+                                                        t_kmba = T2.matrix[Gba][km][ba];
 
-                          value_c -= t_kmba * E_jimc;
-			}
+                                                    if (Eints.params->rowtot[Gji] && Eints.params->coltot[Gji])
+                                                        E_jimc = Eints.matrix[Gji][ji][mc];
 
-			/** disconnected triples **/
+                                                    value_c -= t_kmba * E_jimc;
+                                                }
 
-			value_d = 0.0;
+                                                /** disconnected triples **/
 
-                        /* +t_ia * D_jkbc */
-			if(Gi == Ga && Gjk == Gbc) {
-			  t_ia = D_jkbc = 0.0;
+                                                value_d = 0.0;
 
-                          if(T1.params->rowtot[Gi] && T1.params->coltot[Gi])
-			    t_ia = T1.matrix[Gi][i][a];
+                                                /* +t_ia * D_jkbc */
+                                                if (Gi == Ga && Gjk == Gbc) {
+                                                    t_ia = D_jkbc = 0.0;
 
-                          if(Dints.params->rowtot[Gjk] && Dints.params->coltot[Gjk])
-			    D_jkbc = Dints.matrix[Gjk][jk][bc];
+                                                    if (T1.params->rowtot[Gi] && T1.params->coltot[Gi])
+                                                        t_ia = T1.matrix[Gi][i][a];
 
-                          value_d += t_ia * D_jkbc;
-			}
+                                                    if (Dints.params->rowtot[Gjk] && Dints.params->coltot[Gjk])
+                                                        D_jkbc = Dints.matrix[Gjk][jk][bc];
 
-			/* -t_ib * D_jkac */
-			if(Gi == Gb && Gjk == Gac) {
-			  t_ib = D_jkac = 0.0;
+                                                    value_d += t_ia * D_jkbc;
+                                                }
 
-                          if(T1.params->rowtot[Gi] && T1.params->coltot[Gi])
-			    t_ib = T1.matrix[Gi][i][b];
+                                                /* -t_ib * D_jkac */
+                                                if (Gi == Gb && Gjk == Gac) {
+                                                    t_ib = D_jkac = 0.0;
 
-                          if(Dints.params->rowtot[Gjk] && Dints.params->coltot[Gjk])
-			    D_jkac = Dints.matrix[Gjk][jk][ac];
+                                                    if (T1.params->rowtot[Gi] && T1.params->coltot[Gi])
+                                                        t_ib = T1.matrix[Gi][i][b];
 
-                          value_d -= t_ib * D_jkac;
-			}
+                                                    if (Dints.params->rowtot[Gjk] && Dints.params->coltot[Gjk])
+                                                        D_jkac = Dints.matrix[Gjk][jk][ac];
 
-			/* -t_ic * D_jkba */
-			if(Gi == Gc && Gjk == Gba) {
-			  t_ic = D_jkba = 0.0;
+                                                    value_d -= t_ib * D_jkac;
+                                                }
 
-                          if(T1.params->rowtot[Gi] && T1.params->coltot[Gi])
-			    t_ic = T1.matrix[Gi][i][c];
+                                                /* -t_ic * D_jkba */
+                                                if (Gi == Gc && Gjk == Gba) {
+                                                    t_ic = D_jkba = 0.0;
 
-                          if(Dints.params->rowtot[Gjk] && Dints.params->coltot[Gjk])
-			    D_jkba = Dints.matrix[Gjk][jk][ba];
+                                                    if (T1.params->rowtot[Gi] && T1.params->coltot[Gi])
+                                                        t_ic = T1.matrix[Gi][i][c];
 
-                          value_d -= t_ic * D_jkba;
-			}
+                                                    if (Dints.params->rowtot[Gjk] && Dints.params->coltot[Gjk])
+                                                        D_jkba = Dints.matrix[Gjk][jk][ba];
 
-                        /* -t_ja * D_ikbc */
-			if(Gj == Ga && Gik == Gbc) {
-			  t_ja = D_ikbc = 0.0;
+                                                    value_d -= t_ic * D_jkba;
+                                                }
 
-                          if(T1.params->rowtot[Gj] && T1.params->coltot[Gj])
-			    t_ja = T1.matrix[Gj][j][a];
+                                                /* -t_ja * D_ikbc */
+                                                if (Gj == Ga && Gik == Gbc) {
+                                                    t_ja = D_ikbc = 0.0;
 
-                          if(Dints.params->rowtot[Gik] && Dints.params->coltot[Gik])
-			    D_ikbc = Dints.matrix[Gik][ik][bc];
+                                                    if (T1.params->rowtot[Gj] && T1.params->coltot[Gj])
+                                                        t_ja = T1.matrix[Gj][j][a];
 
-                          value_d -= t_ja * D_ikbc;
-			}
+                                                    if (Dints.params->rowtot[Gik] && Dints.params->coltot[Gik])
+                                                        D_ikbc = Dints.matrix[Gik][ik][bc];
 
-			/* +t_jb * D_ikac */
-			if(Gj == Gb && Gik == Gac) {
-			  t_jb = D_ikac = 0.0;
+                                                    value_d -= t_ja * D_ikbc;
+                                                }
 
-                          if(T1.params->rowtot[Gj] && T1.params->coltot[Gj])
-			    t_jb = T1.matrix[Gj][j][b];
+                                                /* +t_jb * D_ikac */
+                                                if (Gj == Gb && Gik == Gac) {
+                                                    t_jb = D_ikac = 0.0;
 
-                          if(Dints.params->rowtot[Gik] && Dints.params->coltot[Gik])
-			    D_ikac = Dints.matrix[Gik][ik][ac];
+                                                    if (T1.params->rowtot[Gj] && T1.params->coltot[Gj])
+                                                        t_jb = T1.matrix[Gj][j][b];
 
-                          value_d += t_jb * D_ikac;
-			}
+                                                    if (Dints.params->rowtot[Gik] && Dints.params->coltot[Gik])
+                                                        D_ikac = Dints.matrix[Gik][ik][ac];
 
-			/* +t_jc * D_ikba */
-			if(Gj == Gc && Gik == Gba) {
-			  t_jc = D_ikba = 0.0;
+                                                    value_d += t_jb * D_ikac;
+                                                }
 
-                          if(T1.params->rowtot[Gj] && T1.params->coltot[Gj])
-			    t_jc = T1.matrix[Gj][j][c];
+                                                /* +t_jc * D_ikba */
+                                                if (Gj == Gc && Gik == Gba) {
+                                                    t_jc = D_ikba = 0.0;
 
-                          if(Dints.params->rowtot[Gik] && Dints.params->coltot[Gik])
-			    D_ikba = Dints.matrix[Gik][ik][ba];
+                                                    if (T1.params->rowtot[Gj] && T1.params->coltot[Gj])
+                                                        t_jc = T1.matrix[Gj][j][c];
 
-                          value_d += t_jc * D_ikba;
-			}
+                                                    if (Dints.params->rowtot[Gik] && Dints.params->coltot[Gik])
+                                                        D_ikba = Dints.matrix[Gik][ik][ba];
 
-                        /* -t_ka * D_jibc */
-			if(Gk == Ga && Gji == Gbc) {
-			  t_ka = D_jibc = 0.0;
+                                                    value_d += t_jc * D_ikba;
+                                                }
 
-                          if(T1.params->rowtot[Gk] && T1.params->coltot[Gk])
-			    t_ka = T1.matrix[Gk][k][a];
+                                                /* -t_ka * D_jibc */
+                                                if (Gk == Ga && Gji == Gbc) {
+                                                    t_ka = D_jibc = 0.0;
 
-                          if(Dints.params->rowtot[Gji] && Dints.params->coltot[Gji])
-			    D_jibc = Dints.matrix[Gji][ji][bc];
+                                                    if (T1.params->rowtot[Gk] && T1.params->coltot[Gk])
+                                                        t_ka = T1.matrix[Gk][k][a];
 
-                          value_d -= t_ka * D_jibc;
-			}
+                                                    if (Dints.params->rowtot[Gji] && Dints.params->coltot[Gji])
+                                                        D_jibc = Dints.matrix[Gji][ji][bc];
 
-			/* +t_kb * D_jiac */
-			if(Gk == Gb && Gji == Gac) {
-			  t_kb = D_jiac = 0.0;
+                                                    value_d -= t_ka * D_jibc;
+                                                }
 
-                          if(T1.params->rowtot[Gk] && T1.params->coltot[Gk])
-			    t_kb = T1.matrix[Gk][k][b];
+                                                /* +t_kb * D_jiac */
+                                                if (Gk == Gb && Gji == Gac) {
+                                                    t_kb = D_jiac = 0.0;
 
-                          if(Dints.params->rowtot[Gji] && Dints.params->coltot[Gji])
-			    D_jiac = Dints.matrix[Gji][ji][ac];
+                                                    if (T1.params->rowtot[Gk] && T1.params->coltot[Gk])
+                                                        t_kb = T1.matrix[Gk][k][b];
 
-                          value_d += t_kb * D_jiac;
-			}
+                                                    if (Dints.params->rowtot[Gji] && Dints.params->coltot[Gji])
+                                                        D_jiac = Dints.matrix[Gji][ji][ac];
 
-			/* +t_kc * D_jiba */
-			if(Gk == Gc && Gji == Gba) {
-			  t_kc = D_jiba = 0.0;
+                                                    value_d += t_kb * D_jiac;
+                                                }
 
-                          if(T1.params->rowtot[Gk] && T1.params->coltot[Gk])
-			    t_kc = T1.matrix[Gk][k][c];
+                                                /* +t_kc * D_jiba */
+                                                if (Gk == Gc && Gji == Gba) {
+                                                    t_kc = D_jiba = 0.0;
 
-                          if(Dints.params->rowtot[Gji] && Dints.params->coltot[Gji])
-			    D_jiba = Dints.matrix[Gji][ji][ba];
+                                                    if (T1.params->rowtot[Gk] && T1.params->coltot[Gk])
+                                                        t_kc = T1.matrix[Gk][k][c];
 
-                          value_d += t_kc * D_jiba;
-			}
+                                                    if (Dints.params->rowtot[Gji] && Dints.params->coltot[Gji])
+                                                        D_jiba = Dints.matrix[Gji][ji][ba];
 
-			/*
-			if(std::fabs(value_c) > 1e-7) {
-			  cnt++;
-			  outfile->Printf( "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
-			}
-			*/
+                                                    value_d += t_kc * D_jiba;
+                                                }
 
-			/* Compute the Fock denominator */
-			denom = 0.0;
-			if(fIJ.params->rowtot[Gi])
-			  denom += fIJ.matrix[Gi][i][i];
-			if(fIJ.params->rowtot[Gj])
-			  denom += fIJ.matrix[Gj][j][j];
-			if(fIJ.params->rowtot[Gk])
-			  denom += fIJ.matrix[Gk][k][k];
-			if(fAB.params->rowtot[Ga])
-			  denom -= fAB.matrix[Ga][a][a];
-			if(fAB.params->rowtot[Gb])
-			  denom -= fAB.matrix[Gb][b][b];
-			if(fAB.params->rowtot[Gc])
-			  denom -= fAB.matrix[Gc][c][c];
+                                                /*
+                                                if(std::fabs(value_c) > 1e-7) {
+                                                  cnt++;
+                                                  outfile->Printf( "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C,
+                                                value_c);
+                                                }
+                                                */
 
-			ET_AAA += (value_d + value_c) * value_c / denom;
+                                                /* Compute the Fock denominator */
+                                                denom = 0.0;
+                                                if (fIJ.params->rowtot[Gi]) denom += fIJ.matrix[Gi][i][i];
+                                                if (fIJ.params->rowtot[Gj]) denom += fIJ.matrix[Gj][j][j];
+                                                if (fIJ.params->rowtot[Gk]) denom += fIJ.matrix[Gk][k][k];
+                                                if (fAB.params->rowtot[Ga]) denom -= fAB.matrix[Ga][a][a];
+                                                if (fAB.params->rowtot[Gb]) denom -= fAB.matrix[Gb][b][b];
+                                                if (fAB.params->rowtot[Gc]) denom -= fAB.matrix[Gc][c][c];
 
+                                                ET_AAA += (value_d + value_c) * value_c / denom;
 
-		      } /* c */
-		    } /* b */
-		  } /* a */
+                                            } /* c */
+                                        }     /* b */
+                                    }         /* a */
 
-		} /* k */
-	      } /* j */
-	    } /* i */
+                                } /* k */
+                            }     /* j */
+                        }         /* i */
 
-	  } /* Gb */
-	} /* Ga */
+                    } /* Gb */
+                }     /* Ga */
 
-      } /* Gk */
-    } /* Gj */
-  } /* Gi */
+            } /* Gk */
+        }     /* Gj */
+    }         /* Gi */
 
-  /*  outfile->Printf( "cnt = %d\n", cnt); */
-  ET_AAA /= 36.0;
-  /*  outfile->Printf( "ET_AAA = %20.14f\n", ET_AAA); */
+    /*  outfile->Printf( "cnt = %d\n", cnt); */
+    ET_AAA /= 36.0;
+    /*  outfile->Printf( "ET_AAA = %20.14f\n", ET_AAA); */
 
-  for(h=0; h < nirreps; h++) {
-    global_dpd_->buf4_mat_irrep_close(&T2, h);
-    global_dpd_->buf4_mat_irrep_close(&Fints, h);
-    global_dpd_->buf4_mat_irrep_close(&Eints, h);
-    global_dpd_->buf4_mat_irrep_close(&Dints, h);
-  }
+    for (h = 0; h < nirreps; h++) {
+        global_dpd_->buf4_mat_irrep_close(&T2, h);
+        global_dpd_->buf4_mat_irrep_close(&Fints, h);
+        global_dpd_->buf4_mat_irrep_close(&Eints, h);
+        global_dpd_->buf4_mat_irrep_close(&Dints, h);
+    }
 
-  global_dpd_->buf4_close(&T2);
-  global_dpd_->buf4_close(&Fints);
-  global_dpd_->buf4_close(&Eints);
-  global_dpd_->buf4_close(&Dints);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&Fints);
+    global_dpd_->buf4_close(&Eints);
+    global_dpd_->buf4_close(&Dints);
 
-  global_dpd_->file2_mat_close(&T1);
-  global_dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
-  global_dpd_->file2_mat_close(&fIJ);
-  global_dpd_->file2_mat_close(&fAB);
-  global_dpd_->file2_close(&fIJ);
-  global_dpd_->file2_close(&fAB);
+    global_dpd_->file2_mat_close(&fIJ);
+    global_dpd_->file2_mat_close(&fAB);
+    global_dpd_->file2_close(&fIJ);
+    global_dpd_->file2_close(&fAB);
 
-  return ET_AAA;
+    return ET_AAA;
 }
 
-}} // namespace psi::CCTRIPLES
+}  // namespace cctriples
+}  // namespace psi
