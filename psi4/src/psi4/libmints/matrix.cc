@@ -238,22 +238,20 @@ Matrix::Matrix(dpdfile2 *inFile)
     global_dpd_->file2_mat_close(inFile);
 }
 
-Matrix::Matrix(dpdbuf4 *inBuf)
-    : name_("None"), rowspi_(inBuf->params->nirreps), colspi_(inBuf->params->nirreps)
-{
-    matrix_ = NULL;
-    symmetry_ = 0; //inBuf->my_irrep;
+Matrix::Matrix(dpdbuf4 *inBuf) : name_("None"), rowspi_(inBuf->params->nirreps), colspi_(inBuf->params->nirreps) {
+    matrix_ = nullptr;
+    symmetry_ = inBuf->file.my_irrep;
     nirrep_ = inBuf->params->nirreps;
-    for (int i=0; i<nirrep_; ++i) {
+    for (int i = 0; i < nirrep_; ++i) {
         rowspi_[i] = inBuf->params->rowtot[i];
         colspi_[i] = inBuf->params->coltot[i];
     }
     alloc();
-    for (int i=0; i<nirrep_; ++i) {
+    for (int i = 0; i < nirrep_; ++i) {
         global_dpd_->buf4_mat_irrep_init(inBuf, i);
         global_dpd_->buf4_mat_irrep_rd(inBuf, i);
-        for(int row = 0; row < rowspi_[i]; ++row){
-            for(int col = 0; col < colspi_[i]; ++col){
+        for (int row = 0; row < rowspi_[i]; ++row) {
+            for (int col = 0; col < colspi_[i]; ++col) {
                 matrix_[i][row][col] = inBuf->matrix[i][row][col];
             }
         }
