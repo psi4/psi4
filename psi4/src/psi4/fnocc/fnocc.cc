@@ -32,6 +32,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 namespace fnocc {
@@ -63,17 +64,25 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
         ints->set_dpd_id(0);
         ints->set_keep_iwl_so_ints(true);
         ints->set_keep_dpd_so_ints(true);
+        timer_on("FNOCC: Initializing Integrals");
         ints->initialize();
+        timer_off("FNOCC: Initializing Integrals");
+        timer_on("FNOCC: Two Elec Int Trans.");
         ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+        timer_off("FNOCC: Two Elec Int Trans.");
         tstop();
 
         if (!options.get_bool("RUN_CEPA")) {
             auto ccsd = std::make_shared<CoupledCluster>(wfn, options);
+            timer_on("FNOCC: CC energy");
             ccsd->compute_energy();
+            timer_off("FNOCC: CC energy");
             return ccsd;
         } else {
             auto cepa = std::make_shared<CoupledPair>(wfn, options);
+            timer_on("FNOCC: CEPA energy");
             cepa->compute_energy();
+            timer_off("FNOCC: CEPA energy");
             return cepa;
         }
 
@@ -104,10 +113,14 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
 #ifdef GPUCC
         auto ccsd = std::make_shared<GPUDFCoupledCluster>(wfn, options);
+        timer_on("FNOCC: CC energy");
         ccsd->compute_energy();
+        timer_off("FNOCC: CC energy");
 #else
         auto ccsd = std::make_shared<DFCoupledCluster>(wfn, options);
+        timer_on("FNOCC: CC energy");
         ccsd->compute_energy();
+        timer_off("FNOCC: CC energy");
 #endif
 
         tstop();

@@ -38,74 +38,62 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
-void SCF::print_eigenvectors_and_MO()
-{
-  typedef std::vector<std::pair<double, std::string> >::iterator vecstr_it;
+void SCF::print_eigenvectors_and_MO() {
+    typedef std::vector<std::pair<double, std::string> >::iterator vecstr_it;
 
-  // Assumes the eigenvalues of some Fock operator
-  // are in the SBlockVector epsilon
-  std::vector<std::pair<double, std::string> > docc_evals;
-  std::vector<std::pair<double, std::string> > actv_evals;
-  std::vector<std::pair<double, std::string> > virt_evals;
+    // Assumes the eigenvalues of some Fock operator
+    // are in the SBlockVector epsilon
+    std::vector<std::pair<double, std::string> > docc_evals;
+    std::vector<std::pair<double, std::string> > actv_evals;
+    std::vector<std::pair<double, std::string> > virt_evals;
 
-  for(int h = 0; h < nirreps; ++h)
-    for(int i = 0; i < docc[h]; ++i)
-      docc_evals.push_back(
-        std::make_pair(epsilon->get(h,i),moinfo_scf->get_irr_labs(h))
-      );
-  for(int h = 0; h < nirreps; ++h)
-    for(int i = docc[h]; i < docc[h] + actv[h]; ++i)
-      actv_evals.push_back(
-        std::make_pair(epsilon->get(h,i),moinfo_scf->get_irr_labs(h))
-      );
-  for(int h = 0; h < nirreps; ++h)
-    for(int i = docc[h] + actv[h]; i < sopi[h]; ++i)
-      virt_evals.push_back(
-        std::make_pair(epsilon->get(h,i),moinfo_scf->get_irr_labs(h))
-      );
+    for (int h = 0; h < nirreps; ++h)
+        for (int i = 0; i < docc[h]; ++i)
+            docc_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_labs(h)));
+    for (int h = 0; h < nirreps; ++h)
+        for (int i = docc[h]; i < docc[h] + actv[h]; ++i)
+            actv_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_labs(h)));
+    for (int h = 0; h < nirreps; ++h)
+        for (int i = docc[h] + actv[h]; i < sopi[h]; ++i)
+            virt_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_labs(h)));
 
-  sort(docc_evals.begin(),docc_evals.end());
-  sort(actv_evals.begin(),actv_evals.end());
-  sort(virt_evals.begin(),virt_evals.end());
+    sort(docc_evals.begin(), docc_evals.end());
+    sort(actv_evals.begin(), actv_evals.end());
+    sort(virt_evals.begin(), virt_evals.end());
 
+    outfile->Printf("\n\n  =========================================================================");
+    outfile->Printf("\n  Eigenvalues (Eh)");
+    outfile->Printf("\n  -------------------------------------------------------------------------");
 
-  outfile->Printf("\n\n  =========================================================================");
-  outfile->Printf("\n  Eigenvalues (Eh)");
-  outfile->Printf("\n  -------------------------------------------------------------------------");
-
-  int print_nrows = 3;
-  outfile->Printf("\n  Doubly occupied orbitals");
-  int printed     = 0;
-  int mo          = 1;
-  for(vecstr_it it = docc_evals.begin(); it!= docc_evals.end(); ++it){
-    outfile->Printf("%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
-                                       mo++,
-                                       it->first,
-                                       it->second.c_str());
-  }
-
-  if(!actv_evals.empty()){
-    outfile->Printf("\n  Active orbitals");
-    printed     = 0;
-    for(vecstr_it it = actv_evals.begin(); it!= actv_evals.end(); ++it){
-      outfile->Printf("%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
-                                        mo++,
-                                        it->first,
-                                        it->second.c_str());
+    int print_nrows = 3;
+    outfile->Printf("\n  Doubly occupied orbitals");
+    int printed = 0;
+    int mo = 1;
+    for (vecstr_it it = docc_evals.begin(); it != docc_evals.end(); ++it) {
+        outfile->Printf("%s  %5d %13.6f %3s", printed++ % print_nrows == 0 ? "\n" : "", mo++, it->first,
+                        it->second.c_str());
     }
-  }
 
-  outfile->Printf("\n  Unoccupied orbitals");
-  printed     = 0;
-  for(vecstr_it it = virt_evals.begin(); it!= virt_evals.end(); ++it){
-    outfile->Printf("%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
-                                       mo++,
-                                       it->first,
-                                       it->second.c_str());
-  }
-  outfile->Printf("\n  =========================================================================\n");
+    if (!actv_evals.empty()) {
+        outfile->Printf("\n  Active orbitals");
+        printed = 0;
+        for (vecstr_it it = actv_evals.begin(); it != actv_evals.end(); ++it) {
+            outfile->Printf("%s  %5d %13.6f %3s", printed++ % print_nrows == 0 ? "\n" : "", mo++, it->first,
+                            it->second.c_str());
+        }
+    }
+
+    outfile->Printf("\n  Unoccupied orbitals");
+    printed = 0;
+    for (vecstr_it it = virt_evals.begin(); it != virt_evals.end(); ++it) {
+        outfile->Printf("%s  %5d %13.6f %3s", printed++ % print_nrows == 0 ? "\n" : "", mo++, it->first,
+                        it->second.c_str());
+    }
+    outfile->Printf("\n  =========================================================================\n");
 }
 
-}} // End namespace
+}  // namespace mcscf
+}  // namespace psi

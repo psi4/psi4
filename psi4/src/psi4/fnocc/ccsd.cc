@@ -189,7 +189,10 @@ double CoupledCluster::compute_energy() {
 
     // CCSD or QCISD
     if (!options_.get_bool("RUN_MP3") && !options_.get_bool("RUN_MP4")) {
+        timer_on("FNOCC: CCSD");
         status = CCSDIterations();
+        timer_off("FNOCC: CCSD");
+
 
         // ccsd energy
         if (isccsd) {
@@ -278,19 +281,27 @@ double CoupledCluster::compute_energy() {
         // triples
         if (isLowMemory) {
             if (do_cc) {
+                timer_on("FNOCC: triples");
                 status = lowmemory_triples();
+                timer_off("FNOCC: triples");
             }
             if (do_mp) {
                 ccmethod = 2;
+                timer_on("FNOCC: triples");
                 status = lowmemory_triples();
+                timer_off("FNOCC: triples");
             }
         } else {
             if (do_cc) {
+                timer_on("FNOCC: triples");
                 status = triples();
+                timer_off("FNOCC: triples");
             }
             if (do_mp) {
                 ccmethod = 2;
+                timer_on("FNOCC: triples");
                 status = triples();
+                timer_off("FNOCC: triples");
             }
         }
         if (status == Failure) {

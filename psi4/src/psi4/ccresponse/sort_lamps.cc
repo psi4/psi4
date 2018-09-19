@@ -37,17 +37,18 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi {
+namespace ccresponse {
 
-void sort_lamps(void)
-{
-  dpdbuf4 L;
+void sort_lamps(void) {
+    dpdbuf4 L;
 
-  /* RAK fixing this for new cclambda, assuming A1 ground lambda? */
-  global_dpd_->buf4_init(&L, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
-  global_dpd_->buf4_scmcopy(&L, PSIF_CC_LAMPS, "2 LIjAb - LIjBa", 2);
-  global_dpd_->buf4_sort_axpy(&L, PSIF_CC_LAMPS, pqsr, 0, 5, "2 LIjAb - LIjBa", -1);
-  global_dpd_->buf4_close(&L);
+    /* RAK fixing this for new cclambda, assuming A1 ground lambda? */
+    global_dpd_->buf4_init(&L, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
+    global_dpd_->buf4_scmcopy(&L, PSIF_CC_LAMPS, "2 LIjAb - LIjBa", 2);
+    global_dpd_->buf4_sort_axpy(&L, PSIF_CC_LAMPS, pqsr, 0, 5, "2 LIjAb - LIjBa", -1);
+    global_dpd_->buf4_close(&L);
 }
 
-}} // namespace psi::ccresponse
+}  // namespace ccresponse
+}  // namespace psi

@@ -50,7 +50,8 @@
 #include <cstdlib>
 #include <string>
 
-namespace psi { namespace cceom {
+namespace psi {
+namespace cceom {
 
 void init_io(void);
 void get_moinfo(std::shared_ptr<Wavefunction>);
@@ -69,103 +70,102 @@ void hbar_norms(void);
 void local_init(void);
 void local_done(void);
 
-}} // namespace psi::cceom
+}  // namespace cceom
+}  // namespace psi
 
-namespace psi { namespace cceom {
+namespace psi {
+namespace cceom {
 
-PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
-{
-  int i, h, done=0, *cachefiles, **cachelist;
-  init_io();
-  outfile->Printf("\n\t**********************************************************\n");
-  outfile->Printf("\t*  CCEOM: An Equation of Motion Coupled Cluster Program  *\n");
-  outfile->Printf("\t**********************************************************\n");
+PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
+    int i, h, done = 0, *cachefiles, **cachelist;
+    init_io();
+    outfile->Printf("\n\t**********************************************************\n");
+    outfile->Printf("\t*  CCEOM: An Equation of Motion Coupled Cluster Program  *\n");
+    outfile->Printf("\t**********************************************************\n");
 
-  get_moinfo(ref_wfn);
+    get_moinfo(ref_wfn);
 
-  get_params(options);
-  get_eom_params(ref_wfn, options);
+    get_params(options);
+    get_eom_params(ref_wfn, options);
 #ifdef TIME_CCEOM
-  timer_on("CCEOM");
+    timer_on("CCEOM");
 #endif
 
-  form_dpd_dp();
+    form_dpd_dp();
 
-  cachefiles = init_int_array(PSIO_MAXUNIT);
+    cachefiles = init_int_array(PSIO_MAXUNIT);
 
-  if (params.ref == 2) { /* UHF */
-    cachelist = cacheprep_uhf(params.cachelev, cachefiles);
-    /* cachelist = init_int_matrix(32,32); */
+    if (params.ref == 2) { /* UHF */
+        cachelist = cacheprep_uhf(params.cachelev, cachefiles);
+        /* cachelist = init_int_matrix(32,32); */
 
-    std::vector<int*> spaces;
-    spaces.push_back(moinfo.aoccpi);
-    spaces.push_back(moinfo.aocc_sym);
-    spaces.push_back(moinfo.avirtpi);
-    spaces.push_back(moinfo.avir_sym);
-    spaces.push_back(moinfo.boccpi);
-    spaces.push_back(moinfo.bocc_sym);
-    spaces.push_back(moinfo.bvirtpi);
-    spaces.push_back(moinfo.bvir_sym);
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
-  }
-  else { /* RHF or ROHF */
-    cachelist = cacheprep_rhf(params.cachelev, cachefiles);
-    /* cachelist = init_int_matrix(12,12); */
+        std::vector<int *> spaces;
+        spaces.push_back(moinfo.aoccpi);
+        spaces.push_back(moinfo.aocc_sym);
+        spaces.push_back(moinfo.avirtpi);
+        spaces.push_back(moinfo.avir_sym);
+        spaces.push_back(moinfo.boccpi);
+        spaces.push_back(moinfo.bocc_sym);
+        spaces.push_back(moinfo.bvirtpi);
+        spaces.push_back(moinfo.bvir_sym);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+    } else { /* RHF or ROHF */
+        cachelist = cacheprep_rhf(params.cachelev, cachefiles);
+        /* cachelist = init_int_matrix(12,12); */
 
-    std::vector<int*> spaces;
-    spaces.push_back(moinfo.occpi);
-    spaces.push_back(moinfo.occ_sym);
-    spaces.push_back(moinfo.virtpi);
-    spaces.push_back(moinfo.vir_sym);
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
-  }
+        std::vector<int *> spaces;
+        spaces.push_back(moinfo.occpi);
+        spaces.push_back(moinfo.occ_sym);
+        spaces.push_back(moinfo.virtpi);
+        spaces.push_back(moinfo.vir_sym);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
+    }
 
-  if(params.local) local_init();
+    if (params.local) local_init();
 
-  diag();
+    diag();
 
-  dpd_close(0);
-  if(params.local) local_done();
-  cleanup();
+    dpd_close(0);
+    if (params.local) local_done();
+    cleanup();
 #ifdef TIME_CCEOM
-  timer_off("CCEOM");
+    timer_off("CCEOM");
 #endif
-  exit_io();
-  return Success;
+    exit_io();
+    return Success;
 }
 
-void init_io(void)
-{
-  tstart();
-  for(int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
+void init_io(void) {
+    tstart();
+    for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void exit_io(void)
-{
-  int i;
-  for(i=PSIF_CC_MIN; i <= PSIF_CC_DIIS_AMP; i++) psio_close(i,1);
-  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0);
-  for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
-  tstop();
+void exit_io(void) {
+    int i;
+    for (i = PSIF_CC_MIN; i <= PSIF_CC_DIIS_AMP; i++) psio_close(i, 1);
+    for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0);
+    for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
+    tstop();
 }
 
 void form_dpd_dp(void) {
-  int h, h0, h1, cnt, nirreps;
-  nirreps = moinfo.nirreps;
+    int h, h0, h1, cnt, nirreps;
+    nirreps = moinfo.nirreps;
 
-  dpd_dp = (int ***) malloc(nirreps * sizeof(int **));
-  for(h=0; h < nirreps; h++) {
-      dpd_dp[h] = init_int_matrix(nirreps,2);
-      cnt=0;
-      for(h0=0; h0 < nirreps; h0++) {
-          for(h1=0; h1 < nirreps; h1++) {
-              if((h0^h1)==h) {
-                  dpd_dp[h][cnt][0] = h0;
-                  dpd_dp[h][cnt++][1] = h1;
+    dpd_dp = (int ***)malloc(nirreps * sizeof(int **));
+    for (h = 0; h < nirreps; h++) {
+        dpd_dp[h] = init_int_matrix(nirreps, 2);
+        cnt = 0;
+        for (h0 = 0; h0 < nirreps; h0++) {
+            for (h1 = 0; h1 < nirreps; h1++) {
+                if ((h0 ^ h1) == h) {
+                    dpd_dp[h][cnt][0] = h0;
+                    dpd_dp[h][cnt++][1] = h1;
                 }
             }
         }
     }
 }
 
-}} // namespace psi::cceom
+}  // namespace cceom
+}  // namespace psi

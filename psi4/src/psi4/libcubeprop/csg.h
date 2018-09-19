@@ -198,6 +198,6 @@ class CubicScalarGrid {
     std::string ecp_header();
 };
 
-}  // End namespace
+}  // namespace psi
 
 #endif

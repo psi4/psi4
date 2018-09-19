@@ -485,7 +485,9 @@ void DFCoupledCluster::CCResidual() {
         start = omp_get_wtime();
     }
 
+    timer_on("FNOCC: Vabcd1");
     Vabcd1();
+    timer_off("FNOCC: Vabcd1");
     if (timer) {
         outfile->Printf("        A2 =      t(c,d,i,j) (ac|bd)                                    %6.2lf\n",
                         omp_get_wtime() - start);

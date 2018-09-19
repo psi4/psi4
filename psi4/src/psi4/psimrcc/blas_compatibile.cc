@@ -35,121 +35,114 @@
 #include "index.h"
 #include "matrix.h"
 
+namespace psi {
 
-namespace psi{
+namespace psimrcc {
 
-    namespace psimrcc{
+bool CCOperation::compatible_dot() {
+    //
+    //  Here we are doing the following check:
+    //            --------------
+    //           |              |
+    //   A = B[B_l][B_r] . C[C_l][C_r]
+    //               |               |
+    //                ---------------
+    //
+    bool same = false;
 
-bool CCOperation::compatible_dot()
-{
-  //
-  //  Here we are doing the following check:
-  //            --------------
-  //           |              |
-  //   A = B[B_l][B_r] . C[C_l][C_r]
-  //               |               |
-  //                ---------------
-  //
-  bool same = false;
+    int A_left = A_Matrix->get_left()->get_ntuples();
+    int A_right = A_Matrix->get_right()->get_ntuples();
+    int B_left = B_Matrix->get_left()->get_ntuples();
+    int B_right = B_Matrix->get_right()->get_ntuples();
+    int C_left = C_Matrix->get_left()->get_ntuples();
+    int C_right = C_Matrix->get_right()->get_ntuples();
 
-  int A_left   = A_Matrix->get_left()->get_ntuples();
-  int A_right  = A_Matrix->get_right()->get_ntuples();
-  int B_left   = B_Matrix->get_left()->get_ntuples();
-  int B_right  = B_Matrix->get_right()->get_ntuples();
-  int C_left   = C_Matrix->get_left()->get_ntuples();
-  int C_right  = C_Matrix->get_right()->get_ntuples();
+    if ((A_left == 1) && (B_left == C_left) && (A_right == 1) && (B_right == C_right)) same = true;
+    if (!same) {
+        outfile->Printf("\n\nSolve couldn't perform the operation ");
+        print_operation();
 
-  if((A_left==1) && (B_left==C_left) && (A_right==1) && (B_right==C_right))
-    same = true;
-  if(!same){
-    outfile->Printf("\n\nSolve couldn't perform the operation ");
-    print_operation();
-
-    exit(1);
-  }
-  return(same);
-}
-
-bool CCOperation::compatible_element_by_element()
-{
-  //
-  //  Here we are doing the following check:
-  //            ---------------------------
-  //           |             |             |
-  //   A[A_l][A_r] = B[B_l][B_r] / C[C_l][C_r]
-  //      |             |             |
-  //       ---------------------------
-  //
-  bool same = false;
-
-  int A_left   = A_Matrix->get_left()->get_ntuples();
-  int A_right  = A_Matrix->get_right()->get_ntuples();
-  int B_left   = B_Matrix->get_left()->get_ntuples();
-  int B_right  = B_Matrix->get_right()->get_ntuples();
-
-  // First case: We are comparing A and B
-  if(C_Matrix==nullptr){
-    if((A_left==B_left) && (A_right==B_right))
-      same = true;
-  }else{
-  // Second case: We are comparing A, B, and C
-    int C_left   = C_Matrix->get_left()->get_ntuples();
-    int C_right  = C_Matrix->get_right()->get_ntuples();
-    if((A_left==B_left) && (B_left==C_left) && (A_right==B_right) && (B_right==C_right))
-      same = true;
-    if((B_left!=C_left) || (B_right!=C_right)){
-      outfile->Printf("\n\nSolve couldn't perform the operation ");
-      print_operation();
-
-      exit(1);
+        exit(1);
     }
-  }
-  return(same);
+    return (same);
 }
 
-bool CCOperation::compatible_contract()
-{
-  //
-  //  Here we are doing the following check:
-  //            -----------------------------
-  //           |                             |
-  //   A[A_l][A_r] = B[B_i][B_c] 2@1 C[C_c][C_i]
-  //      |             |    |          |
-  //       -------------      ----------
-  //
-  bool same = false;
+bool CCOperation::compatible_element_by_element() {
+    //
+    //  Here we are doing the following check:
+    //            ---------------------------
+    //           |             |             |
+    //   A[A_l][A_r] = B[B_l][B_r] / C[C_l][C_r]
+    //      |             |             |
+    //       ---------------------------
+    //
+    bool same = false;
 
-  int A_left   = A_Matrix->get_left()->get_ntuples();
-  int A_right  = A_Matrix->get_right()->get_ntuples();
-  int B_contracted;
-  int B_index;
-  int C_contracted;
-  int C_index;
+    int A_left = A_Matrix->get_left()->get_ntuples();
+    int A_right = A_Matrix->get_right()->get_ntuples();
+    int B_left = B_Matrix->get_left()->get_ntuples();
+    int B_right = B_Matrix->get_right()->get_ntuples();
 
-  if(operation[0]=='1'){
-    B_contracted   = B_Matrix->get_left()->get_ntuples();
-    B_index        = B_Matrix->get_right()->get_ntuples();
-  } else{
-    B_contracted   = B_Matrix->get_right()->get_ntuples();
-    B_index        = B_Matrix->get_left()->get_ntuples();
-  }
-  if(operation[2]=='1'){
-    C_contracted   = C_Matrix->get_left()->get_ntuples();
-    C_index        = C_Matrix->get_right()->get_ntuples();
-  } else{
-    C_contracted   = C_Matrix->get_right()->get_ntuples();
-    C_index        = C_Matrix->get_left()->get_ntuples();
-  }
+    // First case: We are comparing A and B
+    if (C_Matrix == nullptr) {
+        if ((A_left == B_left) && (A_right == B_right)) same = true;
+    } else {
+        // Second case: We are comparing A, B, and C
+        int C_left = C_Matrix->get_left()->get_ntuples();
+        int C_right = C_Matrix->get_right()->get_ntuples();
+        if ((A_left == B_left) && (B_left == C_left) && (A_right == B_right) && (B_right == C_right)) same = true;
+        if ((B_left != C_left) || (B_right != C_right)) {
+            outfile->Printf("\n\nSolve couldn't perform the operation ");
+            print_operation();
 
-  if((B_contracted==C_contracted) && (A_left==B_index) && (A_right==C_index))
-    same = true;
-  if(B_contracted!=C_contracted){
-    outfile->Printf("\n\nSolve couldn't perform the operation ");
-    print_operation();
-
-    exit(1);
-  }
-  return(same);
+            exit(1);
+        }
+    }
+    return (same);
 }
 
-}} /* End Namespaces */
+bool CCOperation::compatible_contract() {
+    //
+    //  Here we are doing the following check:
+    //            -----------------------------
+    //           |                             |
+    //   A[A_l][A_r] = B[B_i][B_c] 2@1 C[C_c][C_i]
+    //      |             |    |          |
+    //       -------------      ----------
+    //
+    bool same = false;
+
+    int A_left = A_Matrix->get_left()->get_ntuples();
+    int A_right = A_Matrix->get_right()->get_ntuples();
+    int B_contracted;
+    int B_index;
+    int C_contracted;
+    int C_index;
+
+    if (operation[0] == '1') {
+        B_contracted = B_Matrix->get_left()->get_ntuples();
+        B_index = B_Matrix->get_right()->get_ntuples();
+    } else {
+        B_contracted = B_Matrix->get_right()->get_ntuples();
+        B_index = B_Matrix->get_left()->get_ntuples();
+    }
+    if (operation[2] == '1') {
+        C_contracted = C_Matrix->get_left()->get_ntuples();
+        C_index = C_Matrix->get_right()->get_ntuples();
+    } else {
+        C_contracted = C_Matrix->get_right()->get_ntuples();
+        C_index = C_Matrix->get_left()->get_ntuples();
+    }
+
+    if ((B_contracted == C_contracted) && (A_left == B_index) && (A_right == C_index)) same = true;
+    if (B_contracted != C_contracted) {
+        outfile->Printf("\n\nSolve couldn't perform the operation ");
+        print_operation();
+
+        exit(1);
+    }
+    return (same);
+}
+
+}  // namespace psimrcc
+}  // namespace psi
