@@ -28,17 +28,18 @@
 
 #include "psi4/libdpd/dpd.h"
 
-namespace psi { namespace cctransort {
+namespace psi {
+namespace cctransort {
 
-void f_sort(int reference)
-{
-  dpdbuf4 F;
+void f_sort(int reference) {
+    dpdbuf4 F;
 
-  if(reference == 2) {  /*** UHF ***/
-    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 28, 26, 28, 26, 0, "F <Ab|Ci>");
-    global_dpd_->buf4_sort_ooc(&F, PSIF_CC_FINTS, spqr, 27, 29, "F <iA|bC>");
-    global_dpd_->buf4_close(&F);
-  }
+    if (reference == 2) { /*** UHF ***/
+        global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 28, 26, 28, 26, 0, "F <Ab|Ci>");
+        global_dpd_->buf4_sort_ooc(&F, PSIF_CC_FINTS, spqr, 27, 29, "F <iA|bC>");
+        global_dpd_->buf4_close(&F);
+    }
 }
 
-}} // namespace psi::cctransort
+}  // namespace cctransort
+}  // namespace psi

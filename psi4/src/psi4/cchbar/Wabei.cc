@@ -39,7 +39,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cchbar {
+namespace psi {
+namespace cchbar {
 
 /* Wabei(): Computes all contributions to the Wabei HBAR matrix
 ** elements, whose spin-orbital definition is:
@@ -68,44 +69,45 @@ void WAbEi_UHF(void);
 void WaBeI_UHF(void);
 void Wabei_UHF_sort_ints();
 
-void Wabei_build(void)
-{
-  if(params.ref == 0) Wabei_RHF();
-  else if(params.ref == 1) Wabei_ROHF();
-  else if(params.ref == 2) {
-    Wabei_UHF_sort_ints();
-    WABEI_UHF();
-    Wabei_UHF();
-    WAbEi_UHF();
-    WaBeI_UHF();
-  }
+void Wabei_build(void) {
+    if (params.ref == 0)
+        Wabei_RHF();
+    else if (params.ref == 1)
+        Wabei_ROHF();
+    else if (params.ref == 2) {
+        Wabei_UHF_sort_ints();
+        WABEI_UHF();
+        Wabei_UHF();
+        WAbEi_UHF();
+        WaBeI_UHF();
+    }
 }
 
-void Wabei_UHF_sort_ints(void){
+void Wabei_UHF_sort_ints(void) {
+    dpdbuf4 F, B;
+    // required in WABEI
+    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 21, 5, 21, 5, 1, "F <AI|BC>");
+    global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, prqs, 5, 20, "F <AI||BC> (AB,IC)");
+    global_dpd_->buf4_close(&F);
 
-  dpdbuf4 F, B;
-  //required in WABEI
-  global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 21, 5, 21, 5, 1 , "F <AI|BC>");
-  global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, prqs, 5, 20, "F <AI||BC> (AB,IC)");
-  global_dpd_->buf4_close(&F);
+    // required in Wabei
+    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 31, 15, 31, 15, 1, "F <ai|bc>");
+    global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, prqs, 15, 30, "F <ai||bc> (ab,ic)");
+    global_dpd_->buf4_close(&F);
 
-  // required in Wabei
-  global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 31, 15, 31, 15, 1 , "F <ai|bc>");
-  global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, prqs, 15, 30, "F <ai||bc> (ab,ic)");
-  global_dpd_->buf4_close(&F);
+    // required in WAbEi
+    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 24, 28, 24, 28, 0, "F <Ia|Bc>");
+    global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, qrps, 29, 24, "F <Ia|Bc> (aB,Ic)");
+    global_dpd_->buf4_close(&F);
 
-  // required in WAbEi
-  global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 24, 28, 24, 28, 0 , "F <Ia|Bc>");
-  global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, qrps, 29,24, "F <Ia|Bc> (aB,Ic)");
-  global_dpd_->buf4_close(&F);
-
-  // required in WaBeI
-  global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
-  global_dpd_->buf4_sort(&B,PSIF_CC_BINTS, qpsr,29,29,"B <aB|cD>");
-  global_dpd_->buf4_close(&B);
-  global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 27, 29, 27, 29, 0 , "F <iA|bC>");
-  global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, qrps, 28,27, "F <iA|bC> (Ab,iC)");
-  global_dpd_->buf4_close(&F);
+    // required in WaBeI
+    global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
+    global_dpd_->buf4_sort(&B, PSIF_CC_BINTS, qpsr, 29, 29, "B <aB|cD>");
+    global_dpd_->buf4_close(&B);
+    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 27, 29, 27, 29, 0, "F <iA|bC>");
+    global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, qrps, 28, 27, "F <iA|bC> (Ab,iC)");
+    global_dpd_->buf4_close(&F);
 }
 
-}} // namespace psi::cchbar
+}  // namespace cchbar
+}  // namespace psi

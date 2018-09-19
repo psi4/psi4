@@ -135,8 +135,7 @@ void polar(void) {
         std::string omega_nm_rd;
         if (params.omega[i] == 0.0) {
             omega_nm_rd = "INF ";
-        }
-        else {
+        } else {
             /* make sure omega in nm is rounded */
             omega_nm_rd = std::to_string(std::lround(omega_nm));
         }
