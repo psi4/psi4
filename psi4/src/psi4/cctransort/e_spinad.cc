@@ -28,16 +28,17 @@
 
 #include "psi4/libdpd/dpd.h"
 
-namespace psi { namespace cctransort {
+namespace psi {
+namespace cctransort {
 
-void e_spinad(void)
-{
-  dpdbuf4 E;
+void e_spinad(void) {
+    dpdbuf4 E;
 
-  global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
-  global_dpd_->buf4_scmcopy(&E, PSIF_CC_EINTS, "E 2<ai|jk> - <ai|kj>", 2);
-  global_dpd_->buf4_sort_axpy(&E, PSIF_CC_EINTS, pqsr, 11, 0, "E 2<ai|jk> - <ai|kj>", -1);
-  global_dpd_->buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
+    global_dpd_->buf4_scmcopy(&E, PSIF_CC_EINTS, "E 2<ai|jk> - <ai|kj>", 2);
+    global_dpd_->buf4_sort_axpy(&E, PSIF_CC_EINTS, pqsr, 11, 0, "E 2<ai|jk> - <ai|kj>", -1);
+    global_dpd_->buf4_close(&E);
 }
 
-}} // namespace psi::cctranssort
+}  // namespace cctransort
+}  // namespace psi

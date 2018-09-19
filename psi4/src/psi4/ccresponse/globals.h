@@ -50,6 +50,6 @@ EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 EXTERN struct Local local;
 
-#define MIN0(a,b) (((a)<(b)) ? (a) : (b))
-
-}} // namespace psi::ccresponse
+#define MIN0(a, b) (((a) < (b)) ? (a) : (b))
+}
+}  // namespace psi
