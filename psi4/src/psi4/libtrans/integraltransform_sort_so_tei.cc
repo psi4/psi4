@@ -190,7 +190,6 @@ void IntegralTransform::presort_so_tei() {
     double *aFzcOp = init_array(nTriSo_);
     double *aD = init_array(nTriSo_);
     double *aFock = init_array(nTriSo_);
-    double *aoH = init_array(nTriSo_);
     double *bFzcD = aFzcD;
     double *bFzcOp = aFzcOp;
     double *bD = aD;
@@ -239,7 +238,7 @@ void IntegralTransform::presort_so_tei() {
     */
 
     // H_->print();
-    aoH = H_->to_lower_triangle();
+    double *aoH = H_->to_lower_triangle();
     for (int pq = 0; pq < nTriSo_; ++pq) {
         aFzcOp[pq] = aoH[pq];
         aFock[pq] = aoH[pq];
@@ -522,7 +521,6 @@ void IntegralTransform::presort_so_tei() {
     free(aFzcD);
     free(aFzcOp);
     free(aD);
-    free(aoH);
     free(aFock);
     if (transformationType_ != TransformationType::Restricted) {
         free(bFzcD);
@@ -530,6 +528,7 @@ void IntegralTransform::presort_so_tei() {
         free(bD);
         free(bFock);
     }
+    delete[] aoH;
 
     dpd_set_default(currentActiveDPD);
 
