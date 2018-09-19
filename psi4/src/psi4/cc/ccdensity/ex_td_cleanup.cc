@@ -39,32 +39,33 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
-void ex_td_cleanup(void)
-{
-  /*
-   *  Clean out these files between computing x_ltd and x_rtd,
-   *  because LHS and RHS eigenvectors change (get swapped).
-   */
+void ex_td_cleanup(void) {
+    /*
+     *  Clean out these files between computing x_ltd and x_rtd,
+     *  because LHS and RHS eigenvectors change (get swapped).
+     */
 
-  psio_close(PSIF_CC_TMP,0);
-  psio_close(PSIF_EOM_TMP,0);
-  psio_close(PSIF_EOM_TMP0,0);
-  psio_close(PSIF_EOM_TMP1,0);
-  psio_close(PSIF_CC_GLG,0);
-  psio_close(PSIF_CC_GL,0);
-  psio_close(PSIF_CC_GR,0);
+    psio_close(PSIF_CC_TMP, 0);
+    psio_close(PSIF_EOM_TMP, 0);
+    psio_close(PSIF_EOM_TMP0, 0);
+    psio_close(PSIF_EOM_TMP1, 0);
+    psio_close(PSIF_CC_GLG, 0);
+    psio_close(PSIF_CC_GL, 0);
+    psio_close(PSIF_CC_GR, 0);
 
-  psio_open(PSIF_CC_TMP,PSIO_OPEN_NEW);
-  psio_open(PSIF_EOM_TMP,PSIO_OPEN_NEW);
-  psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
-  psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
-  psio_open(PSIF_CC_GLG,PSIO_OPEN_NEW);
-  psio_open(PSIF_CC_GL,PSIO_OPEN_NEW);
-  psio_open(PSIF_CC_GR,PSIO_OPEN_NEW);
+    psio_open(PSIF_CC_TMP, PSIO_OPEN_NEW);
+    psio_open(PSIF_EOM_TMP, PSIO_OPEN_NEW);
+    psio_open(PSIF_EOM_TMP0, PSIO_OPEN_NEW);
+    psio_open(PSIF_EOM_TMP1, PSIO_OPEN_NEW);
+    psio_open(PSIF_CC_GLG, PSIO_OPEN_NEW);
+    psio_open(PSIF_CC_GL, PSIO_OPEN_NEW);
+    psio_open(PSIF_CC_GR, PSIO_OPEN_NEW);
 
-  return;
+    return;
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

@@ -47,117 +47,116 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
-void get_params( Options& options)
-{
-  int errcod, tol;
-  std::string junk;
+void get_params(Options& options) {
+    int errcod, tol;
+    std::string junk;
 
-  params.wfn  = options.get_str("WFN");
+    params.wfn = options.get_str("WFN");
 
-  //junk = options.get_str("REFERENCE");
-  //if(junk == "RHF") params.ref = 0;
-  //else if(junk == "ROHF") params.ref = 1;
-  //else if(junk == "UHF") params.ref = 2;
-  //else {
-  //  printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
-  //  throw PsiException("ccdensity: error", __FILE__, __LINE__);
-  //}
-  
-  psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *) &(params.ref),
-                    sizeof(int));
+    // junk = options.get_str("REFERENCE");
+    // if(junk == "RHF") params.ref = 0;
+    // else if(junk == "ROHF") params.ref = 1;
+    // else if(junk == "UHF") params.ref = 2;
+    // else {
+    //  printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
+    //  throw PsiException("ccdensity: error", __FILE__, __LINE__);
+    //}
 
-  params.onepdm = options.get_bool("ONEPDM");
-  params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");
+    psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char*)&(params.ref), sizeof(int));
 
-  params.calc_xi = options.get_bool("XI");
-  if(params.calc_xi) {
-    params.ground = 0;
-    params.restart = 0;
-  }
+    params.onepdm = options.get_bool("ONEPDM");
+    params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");
 
-  params.use_zeta = options.get_bool("ZETA");
-  if(params.use_zeta) {
-    params.ground = 0;
-    params.restart = 1;
-  }
+    params.calc_xi = options.get_bool("XI");
+    if (params.calc_xi) {
+        params.ground = 0;
+        params.restart = 0;
+    }
 
-  /* For EOM-CCSD Zeta calcs to use ROHF refs for now */
-  if(params.wfn == "EOM_CCSD" && params.ref==0 && params.use_zeta) params.ref = 1;
+    params.use_zeta = options.get_bool("ZETA");
+    if (params.use_zeta) {
+        params.ground = 0;
+        params.restart = 1;
+    }
 
-  params.tolerance = 1e-14;
-  params.tolerance = options.get_double("INTS_TOLERANCE");
+    /* For EOM-CCSD Zeta calcs to use ROHF refs for now */
+    if (params.wfn == "EOM_CCSD" && params.ref == 0 && params.use_zeta) params.ref = 1;
 
-  params.memory = Process::environment.get_memory();
-  //fndcor(&(params.memory),infile,outfile);
+    params.tolerance = 1e-14;
+    params.tolerance = options.get_double("INTS_TOLERANCE");
 
-//  params.cachelev = 2;
-  params.cachelev = options.get_int("CACHELEVEL");
+    params.memory = Process::environment.get_memory();
+    // fndcor(&(params.memory),infile,outfile);
 
-  //params.aobasis = 0;
-  params.aobasis = options.get_bool("AO_BASIS");
+    //  params.cachelev = 2;
+    params.cachelev = options.get_int("CACHELEVEL");
 
-  params.ael = 0;
-  params.ael = options.get_bool("AEL");
+    // params.aobasis = 0;
+    params.aobasis = options.get_bool("AO_BASIS");
 
-  params.gauge = options.get_str("GAUGE");
-  if( params.gauge != "LENGTH" && params.gauge != "VELOCITY") {
-    printf("Invalid choice of gauge: %s\n", params.gauge.c_str());
-    throw PsiException("ccdensity: error", __FILE__, __LINE__);
-  }
+    params.ael = 0;
+    params.ael = options.get_bool("AEL");
 
-  /*** determine DERTYPE from input */
-  params.dertype = 0;
-  junk = options.get_str("DERTYPE");
-  if(junk == "NONE") params.dertype = 0;
-  else if(junk == "FIRST") params.dertype = 1;
-  else if(junk == "RESPONSE") params.dertype = 3;
-  else {
-    printf("Invalid value of input keyword DERTYPE: %s\n", junk.c_str() );
-    throw PsiException("ccdensity: error", __FILE__, __LINE__);
-  }
+    params.gauge = options.get_str("GAUGE");
+    if (params.gauge != "LENGTH" && params.gauge != "VELOCITY") {
+        printf("Invalid choice of gauge: %s\n", params.gauge.c_str());
+        throw PsiException("ccdensity: error", __FILE__, __LINE__);
+    }
 
-  if ( (params.dertype == 1) || params.wfn == "CCSD_MVD")
-    params.relax_opdm = 1;  /* default for gradients, or MVD correction */
-  else
-    params.relax_opdm = 0;  /* otherwise, default is relax_opdm off */
+    /*** determine DERTYPE from input */
+    params.dertype = 0;
+    junk = options.get_str("DERTYPE");
+    if (junk == "NONE")
+        params.dertype = 0;
+    else if (junk == "FIRST")
+        params.dertype = 1;
+    else if (junk == "RESPONSE")
+        params.dertype = 3;
+    else {
+        printf("Invalid value of input keyword DERTYPE: %s\n", junk.c_str());
+        throw PsiException("ccdensity: error", __FILE__, __LINE__);
+    }
 
-  if(params.transition)
-    params.relax_opdm = 0;
+    if ((params.dertype == 1) || params.wfn == "CCSD_MVD")
+        params.relax_opdm = 1; /* default for gradients, or MVD correction */
+    else
+        params.relax_opdm = 0; /* otherwise, default is relax_opdm off */
 
-  if(options["OPDM_RELAX"].has_changed())
-    params.relax_opdm = options.get_bool("OPDM_RELAX");
-  if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
-    outfile->Printf("\tTurning orbital relaxation off since only onepdm is requested.\n");
-    params.relax_opdm = 0;
-  }
+    if (params.transition) params.relax_opdm = 0;
 
-  if ( params.wfn == "EOM_CCSD" && (params.dertype == 0) )
-    params.connect_xi = 0;
-  else
-    params.connect_xi = 1;
-  if(options["XI_CONNECT"].has_changed())
-    params.connect_xi = options.get_bool("XI_CONNECT");
+    if (options["OPDM_RELAX"].has_changed()) params.relax_opdm = options.get_bool("OPDM_RELAX");
+    if ((params.onepdm) && (params.relax_opdm)) { /* can't do relaxation without twopdm */
+        outfile->Printf("\tTurning orbital relaxation off since only onepdm is requested.\n");
+        params.relax_opdm = 0;
+    }
 
-  params.write_nos = options.get_bool("WRITE_NOS");
-  params.debug_ = options.get_int("DEBUG");
+    if (params.wfn == "EOM_CCSD" && (params.dertype == 0))
+        params.connect_xi = 0;
+    else
+        params.connect_xi = 1;
+    if (options["XI_CONNECT"].has_changed()) params.connect_xi = options.get_bool("XI_CONNECT");
 
-  outfile->Printf( "\n\tInput parameters:\n");
-  outfile->Printf( "\t-----------------\n");
-  outfile->Printf( "\tWave function    = %6s\n", params.wfn.c_str() );
-  outfile->Printf( "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  outfile->Printf( "\tDertype          = %d\n", params.dertype);
-  outfile->Printf( "\tTolerance        = %3.1e\n", params.tolerance);
-  outfile->Printf( "\tCache Level      = %1d\n", params.cachelev);
-  outfile->Printf( "\tAO Basis         = %s\n", params.aobasis ? "Yes" : "No");
-  outfile->Printf( "\tOPDM Only        = %s\n", params.onepdm ? "Yes" : "No");
-  outfile->Printf( "\tRelax OPDM       = %s\n", params.relax_opdm ? "Yes" : "No");
-  outfile->Printf( "\tCompute Xi       = %s\n", (params.calc_xi) ? "Yes" : "No");
-  outfile->Printf( "\tUse Zeta         = %s\n", (params.use_zeta) ? "Yes" : "No");
-  outfile->Printf( "\tXi connected     = %s\n", (params.connect_xi) ? "Yes" : "No");
-  outfile->Printf( "\tCompute NO       = %s\n", (params.write_nos) ? "Yes" : "No");
+    params.write_nos = options.get_bool("WRITE_NOS");
+    params.debug_ = options.get_int("DEBUG");
+
+    outfile->Printf("\n\tInput parameters:\n");
+    outfile->Printf("\t-----------------\n");
+    outfile->Printf("\tWave function    = %6s\n", params.wfn.c_str());
+    outfile->Printf("\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+    outfile->Printf("\tDertype          = %d\n", params.dertype);
+    outfile->Printf("\tTolerance        = %3.1e\n", params.tolerance);
+    outfile->Printf("\tCache Level      = %1d\n", params.cachelev);
+    outfile->Printf("\tAO Basis         = %s\n", params.aobasis ? "Yes" : "No");
+    outfile->Printf("\tOPDM Only        = %s\n", params.onepdm ? "Yes" : "No");
+    outfile->Printf("\tRelax OPDM       = %s\n", params.relax_opdm ? "Yes" : "No");
+    outfile->Printf("\tCompute Xi       = %s\n", (params.calc_xi) ? "Yes" : "No");
+    outfile->Printf("\tUse Zeta         = %s\n", (params.use_zeta) ? "Yes" : "No");
+    outfile->Printf("\tXi connected     = %s\n", (params.connect_xi) ? "Yes" : "No");
+    outfile->Printf("\tCompute NO       = %s\n", (params.write_nos) ? "Yes" : "No");
 }
 
-
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi
