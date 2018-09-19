@@ -34,22 +34,23 @@
 namespace psi {
 class Wavefunction;
 class Options;
-}
+}  // namespace psi
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
-class CCLambdaWavefunction : public Wavefunction
-{
-public:
+class CCLambdaWavefunction : public Wavefunction {
+   public:
     CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CCLambdaWavefunction();
 
     double compute_energy();
 
-private:
+   private:
     void init();
 };
 
-}}
+}  // namespace cclambda
+}  // namespace psi
 
-#endif // CCLAMBDA_H
+#endif  // CCLAMBDA_H

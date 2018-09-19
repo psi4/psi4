@@ -38,7 +38,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
 /* spinad_amps(): For RHF references, build the T2 AA and BB amplitudes from
 ** the existing T2 AB amplitudes and copy the existing T1 A amplitudes
@@ -50,23 +51,22 @@ namespace psi { namespace cclambda {
 **
 */
 
-void spinad_amps(void)
-{
-  dpdfile2 T1;
-  dpdbuf4 T2;
+void spinad_amps(void) {
+    dpdfile2 T1;
+    dpdbuf4 T2;
 
-  if(params.ref == 0) { /** RHF **/
+    if (params.ref == 0) { /** RHF **/
 
-    global_dpd_->file2_init(&T1, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
-    global_dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
-    global_dpd_->file2_close(&T1);
+        global_dpd_->file2_init(&T1, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
+        global_dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
+        global_dpd_->file2_close(&T1);
 
-    global_dpd_->buf4_init(&T2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "LIjAb");
-    global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIJAB");
-    global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "Lijab");
-    global_dpd_->buf4_close(&T2);
-
-  }
+        global_dpd_->buf4_init(&T2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "LIjAb");
+        global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIJAB");
+        global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "Lijab");
+        global_dpd_->buf4_close(&T2);
+    }
 }
 
-}} // namespace psi::cclambda
+}  // namespace cclambda
+}  // namespace psi

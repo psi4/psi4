@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include "MOInfo.h"
@@ -36,13 +36,10 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
-void update(void)
-{
-  outfile->Printf("\t%4d      %20.15f    %4.3e\n",moinfo.iter,moinfo.lcc,
-	  moinfo.conv);
-  
-}
+void update(void) { outfile->Printf("\t%4d      %20.15f    %4.3e\n", moinfo.iter, moinfo.lcc, moinfo.conv); }
 
-}} // namespace psi::cclambda
+}  // namespace cclambda
+}  // namespace psi

@@ -37,58 +37,56 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
-void Lsave(int L_irr)
-{
-  dpdfile2 L1;
-  dpdbuf4 L2;
+void Lsave(int L_irr) {
+    dpdfile2 L1;
+    dpdbuf4 L2;
 
-  if(params.ref == 0 || params.ref == 1) { /** ROHF **/
+    if (params.ref == 0 || params.ref == 1) { /** ROHF **/
 
-    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
-    global_dpd_->file2_close(&L1);
+        global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+        global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
+        global_dpd_->file2_close(&L1);
 
-    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
-    global_dpd_->file2_close(&L1);
+        global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+        global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
+        global_dpd_->file2_close(&L1);
 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
-    global_dpd_->buf4_close(&L2);
+        global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+        global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
+        global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
-    global_dpd_->buf4_close(&L2);
+        global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+        global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
+        global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
-    global_dpd_->buf4_close(&L2);
-  }
-  else if(params.ref == 2) { /** UHF **/
-    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
-    global_dpd_->file2_close(&L1);
+        global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+        global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
+        global_dpd_->buf4_close(&L2);
+    } else if (params.ref == 2) { /** UHF **/
+        global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+        global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
+        global_dpd_->file2_close(&L1);
 
-    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
-    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
-    global_dpd_->file2_close(&L1);
+        global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
+        global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
+        global_dpd_->file2_close(&L1);
 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
-    global_dpd_->buf4_close(&L2);
+        global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+        global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
+        global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
-    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
-    global_dpd_->buf4_close(&L2);
+        global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+        global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
+        global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
-    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
-    global_dpd_->buf4_close(&L2);
-
-  }
+        global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+        global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
+        global_dpd_->buf4_close(&L2);
+    }
 }
 
-
-}} // namespace psi::cclambda
+}  // namespace cclambda
+}  // namespace psi
