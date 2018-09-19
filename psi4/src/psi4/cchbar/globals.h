@@ -48,5 +48,5 @@ namespace cchbar {
 
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
-
-}} // namespace psi::cchbar
+}
+}  // namespace psi

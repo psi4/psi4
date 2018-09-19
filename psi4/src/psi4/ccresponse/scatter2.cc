@@ -59,68 +59,65 @@
  *  -HM
  */
 
-
-namespace psi { namespace ccresponse {
+namespace psi {
+namespace ccresponse {
 
 /* Prototype the tensor derivative function */
-std::vector < SharedMatrix > compute_tensor_deriv(std::vector < SharedMatrix > tensor_list, const double disp_size);
+std::vector<SharedMatrix> compute_tensor_deriv(std::vector<SharedMatrix> tensor_list, const double disp_size);
 
 /* Computes all the ROA data using all the tensors */
-void scatter2(void)
-{
-	printf("Scattering FUN-ction.\n");
+void scatter2(void) {
+    printf("Scattering FUN-ction.\n");
 
-	//* Put Python Lists of Lists (the various Tensors) into Vectors of Matrices
-	//* --> This means that the scatter function will need to take python lists as arguments.
+    //* Put Python Lists of Lists (the various Tensors) into Vectors of Matrices
+    //* --> This means that the scatter function will need to take python lists as arguments.
 
-	//* Compute Derivatives of Tensors (perhaps using the function defined below, but it's
-	//*  								really just a suggestion).
+    //* Compute Derivatives of Tensors (perhaps using the function defined below, but it's
+    //*  								really just a suggestion).
 
-	//* Adapt TDC's roa.c Code
-	 /*
-	  *  This will involve aquiring other pieces of needed data (like the reference geomertry
-	  *  number of atoms, etc) using PSI4 style objects, probably.
-      *
-      *  Also, the Hessian matrix and dipole moment derivatives are needed as well,
-	  *  which for now can just be read in from files in the top level roa job directory,
-	  *  either by python then fed into the "scatter" function, or simply just read in by
-      *  the "scatter" function.
-	  *
-	  */
-
+    //* Adapt TDC's roa.c Code
+    /*
+     *  This will involve aquiring other pieces of needed data (like the reference geomertry
+     *  number of atoms, etc) using PSI4 style objects, probably.
+     *
+     *  Also, the Hessian matrix and dipole moment derivatives are needed as well,
+     *  which for now can just be read in from files in the top level roa job directory,
+     *  either by python then fed into the "scatter" function, or simply just read in by
+     *  the "scatter" function.
+     *
+     */
 }
 
 /* Computes tensor derivatives */
-std::vector < SharedMatrix > compute_tensor_deriv(std::vector < SharedMatrix > tensor_list, const double disp_size)
-{
-	/* Set up the Vector of Atom_Coord Derivative Tensors */
-	std::vector < SharedMatrix > der_tensors;
+std::vector<SharedMatrix> compute_tensor_deriv(std::vector<SharedMatrix> tensor_list, const double disp_size) {
+    /* Set up the Vector of Atom_Coord Derivative Tensors */
+    std::vector<SharedMatrix> der_tensors;
 
-	/* Set up a temporary matrix. This convolutedly grabs the
- 	*  appropriate size.  Polarizability and Opt. Rotation tensors are 3x3,
- 	*  but the Dipole/Quad. is 3x9, I think.
- 	*/
-	Matrix temp;
-	//temp.copy(tensor_list.get(0));
-	temp = tensor_list.get(0);
+    /* Set up a temporary matrix. This convolutedly grabs the
+     *  appropriate size.  Polarizability and Opt. Rotation tensors are 3x3,
+     *  but the Dipole/Quad. is 3x9, I think.
+     */
+    Matrix temp;
+    // temp.copy(tensor_list.get(0));
+    temp = tensor_list.get(0);
 
-	/* Take the derivatives --> ("atom_x_+" - "atom_x_-")/(2.0*disp_size) */
-	int ntensors = tensor_list.size();
-	double gfactor = 1/(2.0 * disp_size);
+    /* Take the derivatives --> ("atom_x_+" - "atom_x_-")/(2.0*disp_size) */
+    int ntensors = tensor_list.size();
+    double gfactor = 1 / (2.0 * disp_size);
 
-	for(int i=0; i < ntensors; ++i)  {
-	  int p = i*2;
-	  int m = i*2 + 1;
-	  //printf("p=%d, m=%d\n",pgeom,mgeom);
-	  //temp.copy((tensor_list.get(p)->subtract(tensor_list.get(m)));
-	  temp.zero();
-	  temp.copy(tensor_list.get(p))
-	  temp.subtract(tensor_list.get(m));
-	  temp.scale(gfactor);
-	  der_tensors.push_back(temp);
-	}
+    for (int i = 0; i < ntensors; ++i) {
+        int p = i * 2;
+        int m = i * 2 + 1;
+        // printf("p=%d, m=%d\n",pgeom,mgeom);
+        // temp.copy((tensor_list.get(p)->subtract(tensor_list.get(m)));
+        temp.zero();
+        temp.copy(tensor_list.get(p)) temp.subtract(tensor_list.get(m));
+        temp.scale(gfactor);
+        der_tensors.push_back(temp);
+    }
 
-	return der_tensors;
+    return der_tensors;
 }
 
-}} // namespace psi::ccresponse
+}  // namespace ccresponse
+}  // namespace psi

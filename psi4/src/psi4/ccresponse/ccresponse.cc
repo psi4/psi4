@@ -51,7 +51,8 @@
 #include "Local.h"
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi {
+namespace ccresponse {
 
 /* Max length of ioff array */
 #define IOFF_MAX 32641
@@ -61,7 +62,7 @@ void init_io(void);
 void init_ioff(void);
 void title(void);
 void get_moinfo(std::shared_ptr<Wavefunction>);
-void get_params(std::shared_ptr<Wavefunction>, Options&);
+void get_params(std::shared_ptr<Wavefunction>, Options &);
 void cleanup(void);
 void exit_io(void);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -82,123 +83,118 @@ void roa(void);
 
 void preppert(std::shared_ptr<BasisSet> primary);
 
-PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
-{
-  int **cachelist, *cachefiles;
+PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
+    int **cachelist, *cachefiles;
 
-  init_io();
-  init_ioff();
-  title();
-  get_moinfo(ref_wfn);
-  get_params(ref_wfn, options);
+    init_io();
+    init_ioff();
+    title();
+    get_moinfo(ref_wfn);
+    get_params(ref_wfn, options);
 
-  timer_on("ccresponse");
+    timer_on("ccresponse");
 
-  cachefiles = init_int_array(PSIO_MAXUNIT);
+    cachefiles = init_int_array(PSIO_MAXUNIT);
 
-  if(params.ref == 2) { /*** UHF references ***/
-    cachelist = cacheprep_uhf(params.cachelev, cachefiles);
+    if (params.ref == 2) { /*** UHF references ***/
+        cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    std::vector<int*> spaces;
-    spaces.push_back(moinfo.aoccpi);
-    spaces.push_back(moinfo.aocc_sym);
-    spaces.push_back(moinfo.avirtpi);
-    spaces.push_back(moinfo.avir_sym);
-    spaces.push_back(moinfo.boccpi);
-    spaces.push_back(moinfo.bocc_sym);
-    spaces.push_back(moinfo.bvirtpi);
-    spaces.push_back(moinfo.bvir_sym);
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
-  }
-  else { /*** RHF/ROHF references ***/
-    cachelist = cacheprep_rhf(params.cachelev, cachefiles);
+        std::vector<int *> spaces;
+        spaces.push_back(moinfo.aoccpi);
+        spaces.push_back(moinfo.aocc_sym);
+        spaces.push_back(moinfo.avirtpi);
+        spaces.push_back(moinfo.avir_sym);
+        spaces.push_back(moinfo.boccpi);
+        spaces.push_back(moinfo.bocc_sym);
+        spaces.push_back(moinfo.bvirtpi);
+        spaces.push_back(moinfo.bvir_sym);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+    } else { /*** RHF/ROHF references ***/
+        cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-    std::vector<int*> spaces;
-    spaces.push_back(moinfo.occpi);
-    spaces.push_back(moinfo.occ_sym);
-    spaces.push_back(moinfo.virtpi);
-    spaces.push_back(moinfo.vir_sym);
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
-  }
+        std::vector<int *> spaces;
+        spaces.push_back(moinfo.occpi);
+        spaces.push_back(moinfo.occ_sym);
+        spaces.push_back(moinfo.virtpi);
+        spaces.push_back(moinfo.vir_sym);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
+    }
 
-  if(params.local) local_init();
+    if (params.local) local_init();
 
-  if (params.wfn == "CC2") {
-    cc2_hbar_extra();
-  }
-  else {
-    hbar_extra();
- }
+    if (params.wfn == "CC2") {
+        cc2_hbar_extra();
+    } else {
+        hbar_extra();
+    }
 
-  sort_lamps(); /* should be removed sometime - provided by cclambda */
-  if(params.wfn != "CC2") lambda_residuals(); /* don't do this for CC2 */
+    sort_lamps();                                /* should be removed sometime - provided by cclambda */
+    if (params.wfn != "CC2") lambda_residuals(); /* don't do this for CC2 */
 
-  preppert(ref_wfn->basisset());
+    preppert(ref_wfn->basisset());
 
-  if(params.prop == "POLARIZABILITY") polar();
-  if(params.prop == "ROTATION") optrot(ref_wfn->molecule());
-  if(params.prop == "ROA_TENSOR") roa();
+    if (params.prop == "POLARIZABILITY") polar();
+    if (params.prop == "ROTATION") optrot(ref_wfn->molecule());
+    if (params.prop == "ROA_TENSOR") roa();
 
-  if(params.local) local_done();
+    if (params.local) local_done();
 
-  dpd_close(0);
+    dpd_close(0);
 
-  if(params.ref == 2) cachedone_uhf(cachelist);
-  else cachedone_rhf(cachelist);
-  free(cachefiles);
+    if (params.ref == 2)
+        cachedone_uhf(cachelist);
+    else
+        cachedone_rhf(cachelist);
+    free(cachefiles);
 
-  cleanup();
+    cleanup();
 
-  timer_off("ccresponse");
+    timer_off("ccresponse");
 
-  exit_io();
+    exit_io();
 
-  return PsiReturnType::Success;
+    return PsiReturnType::Success;
 }
 
-void init_io(void)
-{
-  int i;
+void init_io(void) {
+    int i;
 
-  tstart();
+    tstart();
 
-  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
+    for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 
-  /* Clear out DIIS TOC Entries */
-  psio_close(PSIF_CC_DIIS_AMP, 0);
-  psio_close(PSIF_CC_DIIS_ERR, 0);
+    /* Clear out DIIS TOC Entries */
+    psio_close(PSIF_CC_DIIS_AMP, 0);
+    psio_close(PSIF_CC_DIIS_ERR, 0);
 
-  psio_open(PSIF_CC_DIIS_AMP, 0);
-  psio_open(PSIF_CC_DIIS_ERR, 0);
+    psio_open(PSIF_CC_DIIS_AMP, 0);
+    psio_open(PSIF_CC_DIIS_ERR, 0);
 }
 
-void title(void)
-{
-  outfile->Printf( "\t\t\t**************************\n");
-  outfile->Printf( "\t\t\t*                        *\n");
-  outfile->Printf( "\t\t\t*       ccresponse       *\n");
-  outfile->Printf( "\t\t\t*                        *\n");
-  outfile->Printf( "\t\t\t**************************\n");
+void title(void) {
+    outfile->Printf("\t\t\t**************************\n");
+    outfile->Printf("\t\t\t*                        *\n");
+    outfile->Printf("\t\t\t*       ccresponse       *\n");
+    outfile->Printf("\t\t\t*                        *\n");
+    outfile->Printf("\t\t\t**************************\n");
 }
 
-void exit_io(void)
-{
-  int i;
+void exit_io(void) {
+    int i;
 
-  /* Close all dpd data files here */
-  for(i=PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i,1);
-  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
-  for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
+    /* Close all dpd data files here */
+    for (i = PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i, 1);
+    for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* get rid of TMP files */
+    for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
 
-  tstop();
+    tstop();
 }
 
-void init_ioff(void)
-{
-  int i;
-  ioff = init_int_array(IOFF_MAX);
-  ioff[0] = 0;
-  for(i=1; i < IOFF_MAX; i++) ioff[i] = ioff[i-1] + i;
+void init_ioff(void) {
+    int i;
+    ioff = init_int_array(IOFF_MAX);
+    ioff[0] = 0;
+    for (i = 1; i < IOFF_MAX; i++) ioff[i] = ioff[i - 1] + i;
 }
-
-}} // namespace psi::ccresponse
+}
+}  // namespace psi
