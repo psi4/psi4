@@ -81,29 +81,29 @@ matrix:
       - NAME='gcc'
       - VERSION='4.9'
 
-  - os: linux
-    compiler: gcc
-    addons: &4
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - python-numpy
-        - cmake
-        - cmake-data
-        - libhdf5-serial-dev
-        - liblapack-dev
-        - g++-6
-        - gcc-6
-        - gfortran-6
-    env:
-      - CXX_COMPILER='g++-6'
-      - PYTHON_VER='3.5'
-      - C_COMPILER='gcc-6'
-      - Fortran_COMPILER='gfortran-6'
-      - BUILD_TYPE='release'
-      - NAME='gcc'
-      - VERSION=6
+#  - os: linux
+#    compiler: gcc
+#    addons: &4
+#      apt:
+#        sources:
+#        - ubuntu-toolchain-r-test
+#        packages:
+#        - python-numpy
+#        - cmake
+#        - cmake-data
+#        - libhdf5-serial-dev
+#        - liblapack-dev
+#        - g++-6
+#        - gcc-6
+#        - gfortran-6
+#    env:
+#      - CXX_COMPILER='g++-6'
+#      - PYTHON_VER='3.5'
+#      - C_COMPILER='gcc-6'
+#      - Fortran_COMPILER='gfortran-6'
+#      - BUILD_TYPE='release'
+#      - NAME='gcc'
+#      - VERSION=6
 
 #  - os: linux
 #    compiler: gcc
