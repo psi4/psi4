@@ -51,6 +51,10 @@
 #define F_DASUM FC_GLOBAL(dasum, DASUM)
 #define F_DNRM2 FC_GLOBAL(dnrm2, DNRM2)
 #define F_IDAMAX FC_GLOBAL(idamax, IDAMAX)
+#define F_SAXPY FC_GLOBAL(saxpy, SAXPY)
+#define F_SCOPY FC_GLOBAL(scopy, SCOPY)
+#define F_SDOT FC_GLOBAL(sdot, SDOT)
+#define F_SSCAL FC_GLOBAL(sscal, SSCAL)
 #else  // USE_FCMANGLE_H
 #if FC_SYMBOL == 2
 #define F_DSWAP dswap_
@@ -62,6 +66,10 @@
 #define F_DASUM dasum_
 #define F_DNRM2 dnrm2_
 #define F_IDAMAX idamax_
+#define F_SDOT sdot_
+#define F_SSCAL sscal_
+#define F_SCOPT scopy_
+#define F_SAXPY saxpy_
 #elif FC_SYMBOL == 1
 #define F_DSWAP dswap
 #define F_DAXPY daxpy
@@ -72,6 +80,10 @@
 #define F_DASUM dasum
 #define F_DNRM2 dnrm2
 #define F_IDAMAX idamax
+#define F_SDOT sdot
+#define F_SSCAL sscal
+#define F_SCOPT scopy
+#define F_SAXPY saxpy
 #elif FC_SYMBOL == 3
 #define F_DSWAP DSWAP
 #define F_DAXPY DAXPY
@@ -82,6 +94,10 @@
 #define F_DASUM DASUM
 #define F_DNRM2 DNRM2
 #define F_IDAMAX IDAMAX
+#define F_SDOT SDOT
+#define F_SSCAL SSCAL
+#define F_SCOPT SCOPY
+#define F_SAXPY SAXPy
 #elif FC_SYMBOL == 4
 #define F_DSWAP DSWAP_
 #define F_DAXPY DAXPY_
@@ -89,6 +105,10 @@
 #define F_DROT DROT_
 #define F_DSCAL DSCAL_
 #define F_DDOT DDOT_
+#define F_SDOT SDOT_
+#define F_SSCAL SSCAL_
+#define F_SCOPT SCOPY_
+#define F_SAXPY SAXPY_
 #define F_DASUM DASUM_
 #define F_DNRM2 DNRM2_
 #define F_IDAMAX IDAMAX_

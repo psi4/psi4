@@ -14,6 +14,7 @@ df_ref.cc                 kappa_orb_resp_pcg.cc     t2_1st_sc.cc
 dfocc.cc                  main.cc
 diagonal_mohess_oo.cc     manager.cc
 diagonal_mohess_vo.cc     manager_cd.cc             tensors.cc
+tensors_float.cc
 diis.cc                   mograd.cc                 update_mo.cc
 tpdm_tilde.cc             back_trans.cc
 oei_grad.cc               tei_grad_ref.cc           tei_grad_corr.cc
@@ -36,7 +37,7 @@ ccd_opdm.cc               ccd_tpdm.cc               ccsd_triples.cc
 mp3_W_intr.cc             t2_2nd_sc.cc              t2_2nd_gen.cc
 omp3_opdm.cc              omp3_tpdm.cc              mp3_pdm_3index_intr.cc
 lccd_iterations.cc        olccd_tpdm.cc             lccd_W_intr.cc
-lccd_pdm_3index_intr.cc   lccd_t2_amps.cc
+lccd_pdm_3index_intr.cc   lccd_t2_amps.cc           
 # arrays.cc olddf.cc t2_1st_scs_gen.cc t2_1st_scs_sc.cc z_vector_cg.cc
 # combine_ref_sep_tpdm.cc conv_mo_tei_ref.cc
 )

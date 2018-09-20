@@ -113,6 +113,11 @@ double C_DNRM2(size_t n, double* X, int inc_x);
 double C_DASUM(size_t n, double* X, int inc_x);
 size_t C_IDAMAX(size_t n, double* X, int inc_x);
 
+void C_SSCAL(size_t len, float alpha, float* vec, int inc);
+void C_SCOPY(size_t length, float* x, int inc_x, float* y, int inc_y);
+void C_SAXPY(size_t length, float a, float* x, int inc_x, float* y, int inc_y);
+double C_SDOT(size_t n, float* X, int inc_x, float* Y, int inc_y);
+
 // BLAS 2 Double routines
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx,
              double beta, double* y, int incy);
