@@ -1521,8 +1521,9 @@ std::pair<size_t, size_t> DFHelper::identify_order() {
         bool on = false;
         size_t st = 0;
         std::string str = sorted_spaces_[i].first;
-        std::list<std::string>::iterator itr, end;
-        for (itr = needs.begin(), end = needs.end(); itr != end; ++itr) {
+
+        auto itr = needs.begin();
+        while (itr != needs.end()) {
             op = 0;
             op = (!(std::get<0>(transf_[*itr]).compare(str)) ? 1 : op);
             op = (!(std::get<1>(transf_[*itr]).compare(str)) ? 2 : op);
@@ -1539,9 +1540,9 @@ std::pair<size_t, size_t> DFHelper::identify_order() {
                 largest = (largest < small ? small : largest);
                 order_.push_back(*itr);
                 st++;
-                needs.erase(itr);
-                itr--;
-            }
+                itr = needs.erase(itr);
+            } else
+                itr++;
         }
         if (st > 0) {
             strides_.push_back(st);

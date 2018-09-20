@@ -73,17 +73,14 @@ test_script:
   #     casscf-fzc-sp casscf-sa-sp casscf-semi casscf-sp rasscf-sp
   #     ci-property
   #     cubeprop
-  #     dfcasscf-fzc-sp dfcasscf-sa-sp dfcasscf-sp dfrasscf-sp
-  #     dfep2-1 dfep2-2
-  #     fsapt2 fsapt-terms sapt-dft1 sapt1 sapt8 tu5-sapt
+  #     dfcasscf-fzc-sp
+  #     fsapt-terms sapt-dft1 sapt1 tu5-sapt
   #     json-v11-energy
   #     molden1 molden2
-  #     psi4numpy-dfmp2
-  #     python-3-index-transforms
   #     pywrap-db1
   #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|casscf-semi|casscf-fzc-sp|casscf-sa-sp|casscf-sp|ci-property|cubeprop|dfcasscf-fzc-sp|dfcasscf-sa-sp|dfcasscf-sp|dfrasscf-sp|fsapt2|fsapt-terms|molden1|molden2|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|sapt8|dfep2-1|dfep2-2|tu5-sapt|psi4numpy-dfmp2|python-3-index-transforms|json-v11-energy)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|casscf-semi|casscf-fzc-sp|casscf-sa-sp|casscf-sp|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|molden1|molden2|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|tu5-sapt|json-v11-energy)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
@@ -92,7 +89,7 @@ after_test:
   # Run failling tests, but their results are ignored
   # TODO fix the tests
   - ctest --build-config %CONFIGURATION%
-          --tests-regex "^(casscf-fzc-sp|casscf-sa-sp|casscf-semi|casscf-sp|ci-property|cubeprop|fcasscf-fzc-sp|dfcasscf-sa-sp|dfcasscf-sp|dfrasscf-sp|fsapt2|fsapt-terms|molden1|molden2|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|sapt8|dfep2-1|dfep2-2|tu5-sapt|psi4numpy-dfmp2|python-3-index-transforms|json-v11-energy)$"
+          --tests-regex "^(casscf-fzc-sp|casscf-sa-sp|casscf-semi|casscf-sp|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|molden1|molden2|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|tu5-sapt|json-v11-energy)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
   - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
