@@ -40,9 +40,6 @@
 
 #include <cmath>
 
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
-
 using namespace psi;
 
 /**

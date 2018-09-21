@@ -37,8 +37,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#define EXTERN
-#include "dpd.gbl"
 #include "psi4/psi4-dec.h"
 namespace psi {
 
