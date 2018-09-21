@@ -99,6 +99,8 @@ int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);
 void free_3d_array(double*** A, int p, int q);
 double*** init_3d_array(int p, int q, int r);
+void free_3d_array(float*** A, int p, int q);
+float*** init_3d_array_float(int p, int q, int r);
 
 #define MAX_RAS_SPACES 4
 
@@ -116,7 +118,8 @@ size_t C_IDAMAX(size_t n, double* X, int inc_x);
 void C_SSCAL(size_t len, float alpha, float* vec, int inc);
 void C_SCOPY(size_t length, float* x, int inc_x, float* y, int inc_y);
 void C_SAXPY(size_t length, float a, float* x, int inc_x, float* y, int inc_y);
-double C_SDOT(size_t n, float* X, int inc_x, float* Y, int inc_y);
+float C_SDOT(size_t n, float* X, int inc_x, float* Y, int inc_y);
+float C_SNRM2(size_t n, float* X, int inc_x);
 
 // BLAS 2 Double routines
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx,
@@ -140,6 +143,29 @@ void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double
 void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
              int ldb);
 
+
+void C_SGBMV(char trans, int m, int n, int kl, int ku, float alpha, float* a, int lda, float* x, int incx,
+             float beta, float* y, int incy);
+PSI_API void C_SGEMV(char trans, int m, int n, float alpha, float* a, int lda, float* x, int incx, float beta,
+                     float* y, int incy);
+PSI_API void C_SGER(int m, int n, float alpha, float* x, int incx, float* y, int incy, float* a, int lda);
+void C_SSBMV(char uplo, int n, int k, float alpha, float* a, int lda, float* x, int incx, float beta, float* y,
+             int incy);
+void C_SSPMV(char uplo, int n, float alpha, float* ap, float* x, int incx, float beta, float* y, int incy);
+void C_SSPR(char uplo, int n, float alpha, float* x, int incx, float* ap);
+void C_SSPR2(char uplo, int n, float alpha, float* x, int incx, float* y, int incy, float* ap);
+void C_SSYMV(char uplo, int n, float alpha, float* a, int lda, float* x, int incx, float beta, float* y, int incy);
+void C_SSYR(char uplo, int n, float alpha, float* x, int incx, float* a, int lda);
+void C_SSYR2(char uplo, int n, float alpha, float* x, int incx, float* y, int incy, float* a, int lda);
+void C_STBMV(char uplo, char trans, char diag, int n, int k, float* a, int lda, float* x, int incx);
+void C_STBSV(char uplo, char trans, char diag, int n, int k, float* a, int lda, float* x, int incx);
+void C_STPMV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
+void C_STPSV(char uplo, char trans, char diag, int n, float* ap, float* x, int incx);
+void C_STRMV(char uplo, char trans, char diag, int n, float* a, int lda, float* x, int incx);
+void C_STRSM(char side, char uplo, char transa, char diag, int m, int n, float alpha, float* a, int lda, float* b,
+             int ldb);
+
+
 // BLAS 3 Double routines
 PSI_API void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b,
                      int ldb, double beta, double* c, int ldc);
@@ -151,6 +177,19 @@ void C_DSYRK(char uplo, char trans, int n, int k, double alpha, double* a, int l
 void C_DSYR2K(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta,
               double* c, int ldc);
 void C_DTRSV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
+
+
+
+PSI_API void C_SGEMM(char transa, char transb, int m, int n, int k, float alpha, float* a, int lda, float* b,
+                     int ldb, float beta, float* c, int ldc);
+void C_SSYMM(char side, char uplo, int m, int n, float alpha, float* a, int lda, float* b, int ldb, float beta,
+             float* c, int ldc);
+void C_STRMM(char side, char uplo, char transa, char diag, int m, int n, float alpha, float* a, int lda, float* b,
+             int ldb);
+void C_SSYRK(char uplo, char trans, int n, int k, float alpha, float* a, int lda, float beta, float* c, int ldc);
+void C_SSYR2K(char uplo, char trans, int n, int k, float alpha, float* a, int lda, float* b, int ldb, float beta,
+              double* c, int ldc);
+void C_STRSV(char uplo, char trans, char diag, int n, float* a, int lda, float* x, int incx);
 
 // LAPACK 3.2 Double routines
 // Sorry guys, I know its rather epic

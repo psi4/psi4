@@ -64,6 +64,30 @@ extern void F_DTRMM(char*, char*, char*, char*, int*, int*, double*, double*, in
 extern void F_DTRMV(char*, char*, char*, int*, double*, int*, double*, int*);
 extern void F_DTRSM(char*, char*, char*, char*, int*, int*, double*, double*, int*, double*, int*);
 extern void F_DTRSV(char*, char*, char*, int*, double*, int*, double*, int*);
+
+
+extern void F_SGBMV(char*, int*, int*, int*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SGEMM(char*, char*, int*, int*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SGEMV(char*, int*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SGER(int*, int*, float*, float*, int*, float*, int*, float*, int*);
+extern void F_SSBMV(char*, int*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SSPMV(char*, int*, float*, float*, float*, int*, float*, float*, int*);
+extern void F_SSPR(char*, int*, float*, float*, int*, float*);
+extern void F_SSPR2(char*, int*, float*, float*, int*, float*, int*, float*);
+extern void F_SSYMM(char*, char*, int*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SSYMV(char*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SSYR(char*, int*, float*, float*, int*, float*, int*);
+extern void F_SSYR2(char*, int*, float*, float*, int*, float*, int*, float*, int*);
+extern void F_SSYR2K(char*, char*, int*, int*, float*, float*, int*, float*, int*, float*, float*, int*);
+extern void F_SSYRK(char*, char*, int*, int*, float*, float*, int*, float*, float*, int*);
+extern void F_STBMV(char*, char*, char*, int*, int*, float*, int*, float*, int*);
+extern void F_STBSV(char*, char*, char*, int*, int*, float*, int*, float*, int*);
+extern void F_STPMV(char*, char*, char*, int*, float*, float*, int*);
+extern void F_STPSV(char*, char*, char*, int*, float*, float*, int*);
+extern void F_STRMM(char*, char*, char*, char*, int*, int*, float*, float*, int*, float*, int*);
+extern void F_STRMV(char*, char*, char*, int*, float*, int*, float*, int*);
+extern void F_STRSM(char*, char*, char*, char*, int*, int*, float*, float*, int*, float*, int*);
+extern void F_STRSV(char*, char*, char*, int*, float*, int*, float*, int*);
 }
 
 namespace psi {
@@ -198,6 +222,17 @@ void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, 
     ::F_DGBMV(&trans, &n, &m, &ku, &kl, &alpha, a, &lda, x, &incx, &beta, y, &incy);
 }
 
+void C_SGBMV(char trans, int m, int n, int kl, int ku, float alpha, float* a, int lda, float* x, int incx,
+             float beta, float* y, int incy) {
+    if (m == 0 || n == 0) return;
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_DGBMV trans argument is invalid.");
+    ::F_SGBMV(&trans, &n, &m, &ku, &kl, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+}
 /**
  *  Purpose
  *  =======
@@ -327,6 +362,12 @@ PSI_API void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha
     ::F_DGEMM(&transb, &transa, &n, &m, &k, &alpha, b, &ldb, a, &lda, &beta, c, &ldc);
 }
 
+PSI_API void C_SGEMM(char transa, char transb, int m, int n, int k, float alpha, float* a, int lda, float* b,
+                     int ldb, float beta, float* c, int ldc) {
+    if (m == 0 || n == 0 || k == 0) return;
+    ::F_SGEMM(&transb, &transa, &n, &m, &k, &alpha, b, &ldb, a, &lda, &beta, c, &ldc);
+}
+
 /**
  *  Purpose
  *  =======
@@ -432,6 +473,19 @@ PSI_API void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda,
         throw std::invalid_argument("C_DGEMV trans argument is invalid.");
     ::F_DGEMV(&trans, &n, &m, &alpha, a, &lda, x, &incx, &beta, y, &incy);
 }
+
+PSI_API void C_SGEMV(char trans, int m, int n, float alpha, float* a, int lda, float* x, int incx, float beta,
+                     float* y, int incy) {
+    if (m == 0 || n == 0) return;
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_SGEMV trans argument is invalid.");
+    ::F_SGEMV(&trans, &n, &m, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+}
+
 
 /**
  *  Purpose
@@ -646,6 +700,19 @@ void C_DSBMV(char uplo, int n, int k, double alpha, double* a, int lda, double* 
     ::F_DSBMV(&uplo, &n, &k, &alpha, a, &lda, x, &incx, &beta, y, &incy);
 }
 
+void C_SSBMV(char uplo, int n, int k, float alpha, float* a, int lda, float* x, int incx, float beta, float* y,
+             int incy) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_DSBMV uplo argument is invalid.");
+    ::F_SSBMV(&uplo, &n, &k, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+}
+
+
 /**
  *  Purpose
  *  =======
@@ -746,6 +813,18 @@ void C_DSPMV(char uplo, int n, double alpha, double* ap, double* x, int incx, do
     ::F_DSPMV(&uplo, &n, &alpha, ap, x, &incx, &beta, y, &incy);
 }
 
+
+void C_SSPMV(char uplo, int n, float alpha, float* ap, float* x, int incx, float beta, float* y, int incy) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_DSPMV uplo argument is invalid.");
+    ::F_SSPMV(&uplo, &n, &alpha, ap, x, &incx, &beta, y, &incy);
+}
+
 /**
  *  Purpose
  *  =======
@@ -832,6 +911,19 @@ void C_DSPR(char uplo, int n, double alpha, double* x, int incx, double* ap) {
         throw std::invalid_argument("C_DSPR uplo argument is invalid.");
     ::F_DSPR(&uplo, &n, &alpha, x, &incx, ap);
 }
+
+
+void C_SSPR(char uplo, int n, float alpha, float* x, int incx, float* ap) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_DSPR uplo argument is invalid.");
+    ::F_SSPR(&uplo, &n, &alpha, x, &incx, ap);
+}
+
 
 /**
  *  Purpose
@@ -930,6 +1022,18 @@ void C_DSPR2(char uplo, int n, double alpha, double* x, int incx, double* y, int
         throw std::invalid_argument("C_DSPR2 uplo argument is invalid.");
     ::F_DSPR2(&uplo, &n, &alpha, x, &incx, y, &incy, ap);
 }
+
+void C_SSPR2(char uplo, int n, float alpha, float* x, int incx, float* y, int incy, float* ap) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSPR2 uplo argument is invalid.");
+    ::F_SSPR2(&uplo, &n, &alpha, x, &incx, y, &incy, ap);
+}
+
 
 /**
  *  Purpose
@@ -1076,6 +1180,25 @@ void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int ld
     ::F_DSYMM(&side, &uplo, &n, &m, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
 }
 
+void C_SSYMM(char side, char uplo, int m, int n, float alpha, float* a, int lda, float* b, int ldb, float beta,
+             float* c, int ldc) {
+    if (m == 0 || n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSYMM uplo argument is invalid.");
+    if (side == 'L' || side == 'L')
+        side = 'R';
+    else if (side == 'R' || side == 'r')
+        side = 'L';
+    else
+        throw std::invalid_argument("C_SSYMM side argument is invalid.");
+    ::F_SSYMM(&side, &uplo, &n, &m, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+}
+
+
 /**
  *  Purpose
  *  =======
@@ -1180,6 +1303,20 @@ void C_DSYMV(char uplo, int n, double alpha, double* a, int lda, double* x, int 
     ::F_DSYMV(&uplo, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
 }
 
+
+void C_SSYMV(char uplo, int n, float alpha, float* a, int lda, float* x, int incx, float beta, float* y,
+             int incy) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSYMV uplo argument is invalid.");
+    ::F_SSYMV(&uplo, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+}
+
+
 /**
  *  Purpose
  *  =======
@@ -1269,6 +1406,19 @@ void C_DSYR(char uplo, int n, double alpha, double* x, int incx, double* a, int 
         throw std::invalid_argument("C_DSYR uplo argument is invalid.");
     ::F_DSYR(&uplo, &n, &alpha, x, &incx, a, &lda);
 }
+
+
+void C_SSYR(char uplo, int n, float alpha, float* x, int incx, float* a, int lda) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSYR uplo argument is invalid.");
+    ::F_SSYR(&uplo, &n, &alpha, x, &incx, a, &lda);
+}
+
 
 /**
  *  Purpose
@@ -1370,6 +1520,19 @@ void C_DSYR2(char uplo, int n, double alpha, double* x, int incx, double* y, int
         throw std::invalid_argument("C_DSYR2 uplo argument is invalid.");
     ::F_DSYR2(&uplo, &n, &alpha, x, &incx, y, &incy, a, &lda);
 }
+
+
+void C_SSYR2(char uplo, int n, float alpha, float* x, int incx, float* y, int incy, float* a, int lda) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSYR2 uplo argument is invalid.");
+    ::F_SSYR2(&uplo, &n, &alpha, x, &incx, y, &incy, a, &lda);
+}
+
 
 /**
  *  Purpose
@@ -1520,6 +1683,26 @@ void C_DSYR2K(char uplo, char trans, int n, int k, double alpha, double* a, int 
     ::F_DSYR2K(&uplo, &trans, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
 }
 
+
+void C_SSYR2K(char uplo, char trans, int n, int k, float alpha, float* a, int lda, float* b, int ldb, float beta,
+              float* c, int ldc) {
+    if (n == 0 || k == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSYR2K uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_SSYR2K trans argument is invalid.");
+
+    ::F_SSYR2K(&uplo, &trans, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+}
+
 /**
  *  Purpose
  *  =======
@@ -1647,6 +1830,25 @@ void C_DSYRK(char uplo, char trans, int n, int k, double alpha, double* a, int l
         throw std::invalid_argument("C_DSYRK trans argument is invalid.");
 
     ::F_DSYRK(&uplo, &trans, &n, &k, &alpha, a, &lda, &beta, c, &ldc);
+}
+
+
+void C_SSYRK(char uplo, char trans, int n, int k, float alpha, float* a, int lda, float beta, float* c, int ldc) {
+    if (n == 0 || k == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_SSYRK uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_SSYRK trans argument is invalid.");
+
+    ::F_SSYRK(&uplo, &trans, &n, &k, &alpha, a, &lda, &beta, c, &ldc);
 }
 
 /**
@@ -1796,6 +1998,25 @@ void C_DTBMV(char uplo, char trans, char diag, int n, int k, double* a, int lda,
         throw std::invalid_argument("C_DTBMV trans argument is invalid.");
     ::F_DTBMV(&uplo, &trans, &diag, &n, &k, a, &lda, x, &incx);
 }
+
+
+void C_STBMV(char uplo, char trans, char diag, int n, int k, float* a, int lda, float* x, int incx) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STBMV uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_STBMV trans argument is invalid.");
+    ::F_STBMV(&uplo, &trans, &diag, &n, &k, a, &lda, x, &incx);
+}
+
 
 /**
  *  Purpose
@@ -1949,6 +2170,24 @@ void C_DTBSV(char uplo, char trans, char diag, int n, int k, double* a, int lda,
     ::F_DTBSV(&uplo, &trans, &diag, &n, &k, a, &lda, x, &incx);
 }
 
+
+void C_STBSV(char uplo, char trans, char diag, int n, int k, float* a, int lda, float* x, int incx) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STBSV uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_STBSV trans argument is invalid.");
+    ::F_STBSV(&uplo, &trans, &diag, &n, &k, a, &lda, x, &incx);
+}
+
 /**
  *  Purpose
  *  =======
@@ -2056,6 +2295,24 @@ void C_DTPMV(char uplo, char trans, char diag, int n, double* ap, double* x, int
         throw std::invalid_argument("C_DTPMV trans argument is invalid.");
     ::F_DTPMV(&uplo, &trans, &diag, &n, ap, x, &incx);
 }
+
+void C_STPMV(char uplo, char trans, char diag, int n, float* ap, float* x, int incx) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STPMV uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_STPMV trans argument is invalid.");
+    ::F_STPMV(&uplo, &trans, &diag, &n, ap, x, &incx);
+}
+
 
 /**
  *  Purpose
@@ -2167,6 +2424,25 @@ void C_DTPSV(char uplo, char trans, char diag, int n, double* ap, double* x, int
         throw std::invalid_argument("C_DTPSV trans argument is invalid.");
     ::F_DTPSV(&uplo, &trans, &diag, &n, ap, x, &incx);
 }
+
+
+void C_STPSV(char uplo, char trans, char diag, int n, float* ap, float* x, int incx) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STPSV uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_STPSV trans argument is invalid.");
+    ::F_STPSV(&uplo, &trans, &diag, &n, ap, x, &incx);
+}
+
 
 /**
  *  Purpose
@@ -2305,6 +2581,25 @@ void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double 
     ::F_DTRMM(&side, &uplo, &transa, &diag, &n, &m, &alpha, a, &lda, b, &ldb);
 }
 
+
+void C_STRMM(char side, char uplo, char transa, char diag, int m, int n, float alpha, float* a, int lda, float* b,
+             int ldb) {
+    if (m == 0 || n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STRMM uplo argument is invalid.");
+    if (side == 'L' || side == 'L')
+        side = 'R';
+    else if (side == 'R' || side == 'r')
+        side = 'L';
+    else
+        throw std::invalid_argument("C_STRMM side argument is invalid.");
+    ::F_STRMM(&side, &uplo, &transa, &diag, &n, &m, &alpha, a, &lda, b, &ldb);
+}
+
 /**
  *  Purpose
  *  =======
@@ -2415,6 +2710,24 @@ void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double
         throw std::invalid_argument("C_DTRMV trans argument is invalid.");
     ::F_DTRMV(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
 }
+
+void C_STRMV(char uplo, char trans, char diag, int n, float* a, int lda, float* x, int incx) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STRMV uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_STRMV trans argument is invalid.");
+    ::F_STRMV(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
+}
+
 
 /**
  *  Purpose
@@ -2556,6 +2869,25 @@ void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double 
     ::F_DTRSM(&side, &uplo, &transa, &diag, &n, &m, &alpha, a, &lda, b, &ldb);
 }
 
+void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, float alpha, float* a, int lda, float* b,
+             int ldb) {
+    if (m == 0 || n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STRSM uplo argument is invalid.");
+    if (side == 'L' || side == 'L')
+        side = 'R';
+    else if (side == 'R' || side == 'r')
+        side = 'L';
+    else
+        throw std::invalid_argument("C_STRSM side argument is invalid.");
+    ::F_STRSM(&side, &uplo, &transa, &diag, &n, &m, &alpha, a, &lda, b, &ldb);
+}
+
+
 /**
  *  Purpose
  *  =======
@@ -2669,5 +3001,23 @@ void C_DTRSV(char uplo, char trans, char diag, int n, double* a, int lda, double
         throw std::invalid_argument("C_DTRSV trans argument is invalid.");
     ::F_DTRSV(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
 }
+
+void C_STRSV(char uplo, char trans, char diag, int n, float* a, int lda, float* x, int incx) {
+    if (n == 0) return;
+    if (uplo == 'U' || uplo == 'u')
+        uplo = 'L';
+    else if (uplo == 'L' || uplo == 'l')
+        uplo = 'U';
+    else
+        throw std::invalid_argument("C_STRSV uplo argument is invalid.");
+    if (trans == 'N' || trans == 'n')
+        trans = 'T';
+    else if (trans == 'T' || trans == 't')
+        trans = 'N';
+    else
+        throw std::invalid_argument("C_STRSV trans argument is invalid.");
+    ::F_STRSV(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
+}
+
 
 }  // namespace psi

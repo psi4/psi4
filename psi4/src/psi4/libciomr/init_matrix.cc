@@ -123,6 +123,37 @@ double **init_matrix(size_t n, size_t m) {
     **/
 }
 
+
+float **init_matrix_float(size_t n, size_t m) {
+    float **A = nullptr;
+    float *B = nullptr;
+    size_t i;
+
+    if (!m || !n) return (static_cast<float **>(0));
+
+    if ((A = new float *[n]) == nullptr) {
+        outfile->Printf("block_matrix: trouble allocating memory \n");
+        outfile->Printf("n = %ld\n", n);
+        exit(PSI_RETURN_FAILURE);
+    }
+
+    if ((B = new float[n * m]) == nullptr) {
+        outfile->Printf("block_matrix: trouble allocating memory \n");
+        outfile->Printf("m = %ld\n", m);
+        exit(PSI_RETURN_FAILURE);
+    }
+
+    // bzero is not in the C standard, use memset instead.
+    // bzero(B, m*n*(size_t)sizeof(double));
+    memset(static_cast<void *>(B), 0, m * n * sizeof(float));
+
+    for (i = 0; i < n; i++) {
+        A[i] = &(B[i * m]);
+    }
+
+    return (A);
+}
+
 /**
 *  WARNING: Psi 3 init/free_matrix routines deprecated
 *  by Robert Parrish, robparrish@gmail.com
@@ -160,4 +191,24 @@ void free_matrix(double **array, size_t /*size*/) {
     free(array);
   **/
 }
+
+void free_matrix(float **array, size_t /*size*/) {
+    if (array == nullptr) return;
+    delete[] array[0];
+    delete[] array;
+    // <<<<<<<<<<<<<<<<<<<<<
+    // BEGIN DEPRECATED CODE
+    // <<<<<<<<<<<<<<<<<<<<<
+
+    /**
+    size_t i;
+
+    for (i=0; i < size ; i++) {
+      free(array[i]);
+    }
+
+    free(array);
+  **/
+}
+
 }

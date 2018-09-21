@@ -216,24 +216,24 @@ float Tensor1f::dot(const SharedTensor1f &y) {
     return value;
 }  //
 
-void Tensor1f::gbmv(bool transa, const SharedTensor2f &a, const SharedTensor1f &b, float alpha, float beta) {
-    char ta = transa ? 't' : 'n';
-    int m, n, k, kl, ku, incx, incy, lda;
+// void Tensor1f::gbmv(bool transa, const SharedTensor2f &a, const SharedTensor1f &b, float alpha, float beta) {
+//     char ta = transa ? 't' : 'n';
+//     int m, n, k, kl, ku, incx, incy, lda;
 
-    m = a->dim1_;
-    n = a->dim2_;
-    k = b->dim1_;
-    kl = m - 1;  // # of subdiagonal of matrix A, at most kl = m - 1
-    ku = n - 1;  // # of superdiagonal of matrix A, at most ku = n - 1
-    lda = kl + ku + 1;
-    incx = 1;  // increments in elements of b vector
-    incy = 1;  // increments in elements of A1d_
+//     m = a->dim1_;
+//     n = a->dim2_;
+//     k = b->dim1_;
+//     kl = m - 1;  // # of subdiagonal of matrix A, at most kl = m - 1
+//     ku = n - 1;  // # of superdiagonal of matrix A, at most ku = n - 1
+//     lda = kl + ku + 1;
+//     incx = 1;  // increments in elements of b vector
+//     incy = 1;  // increments in elements of A1d_
 
-    // A1d_ = alpha * A * b + beta, where A is a band matrix
-    if (m && n) {
-        C_SGBMV(ta, m, n, kl, ku, alpha, &(a->A2d_[0][0]), lda, b->A1d_, incx, beta, A1d_, incy);
-    }
-}  //
+//     // A1d_ = alpha * A * b + beta, where A is a band matrix
+//     if (m && n) {
+//         C_SGBMV(ta, m, n, kl, ku, alpha, &(a->A2d_[0][0]), lda, b->A1d_, incx, beta, A1d_, incy);
+//     }
+// }  //
 
 void Tensor1f::gemv(bool transa, const SharedTensor2f &a, const SharedTensor1f &b, float alpha, float beta) {
     char ta = transa ? 't' : 'n';
@@ -523,7 +523,7 @@ Tensor2f::Tensor2f(std::string name, int d1, int d2, int d3, int d4) {
 
     // memalloc
     if (A2d_) release();
-    A2d_ = block_matrix(dim1_, dim2_);
+    A2d_ = block_matrix_float   (dim1_, dim2_);
     zero();
 
     // row idx
@@ -578,7 +578,7 @@ Tensor2f::Tensor2f(std::string name, int d1, int d2, int d3) {
 
     // memalloc
     if (A2d_) release();
-    A2d_ = block_matrix(dim1_, dim2_);
+    A2d_ = block_matrix_float   (dim1_, dim2_);
     zero();
 
     // col idx
@@ -603,14 +603,14 @@ Tensor2f::~Tensor2f() { release(); }  //
 
 void Tensor2f::memalloc() {
     if (A2d_) release();
-    A2d_ = block_matrix(dim1_, dim2_);
+    A2d_ = block_matrix_float   (dim1_, dim2_);
     zero();
 }  //
 
 void Tensor2f::release() {
     // if (!A2d_) return;
-    // free_block(A2d_);
-    if (A2d_) free_block(A2d_);
+    // free_block_float(A2d_);
+    if (A2d_) free_block_float(A2d_);
     if (row_idx_) free_int_matrix(row_idx_);
     if (col_idx_) free_int_matrix(col_idx_);
     if (row2d1_) delete[] row2d1_;
@@ -631,7 +631,7 @@ void Tensor2f::init(int d1, int d2) {
     dim1_ = d1;
     dim2_ = d2;
     if (A2d_) release();
-    A2d_ = block_matrix(dim1_, dim2_);
+    A2d_ = block_matrix_float   (dim1_, dim2_);
 }  //
 
 void Tensor2f::init(std::string name, int d1, int d2) {
@@ -639,7 +639,7 @@ void Tensor2f::init(std::string name, int d1, int d2) {
     dim2_ = d2;
     name_ = name;
     if (A2d_) release();
-    A2d_ = block_matrix(dim1_, dim2_);
+    A2d_ = block_matrix_float   (dim1_, dim2_);
 }  //
 
 void Tensor2f::zero() { memset(A2d_[0], 0, sizeof(float) * dim1_ * dim2_); }  //
@@ -1472,7 +1472,7 @@ void Tensor2f::gemv(bool transa, const SharedTensor2f &a, const SharedTensor1f &
     incy = 1;  // increments in elements of A2d_
 
     if (m && n) {
-        C_DGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, b->A1d_, incx, beta, &(A2d_[0][0]), incy);
+        C_SGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, b->A1d_, incx, beta, &(A2d_[0][0]), incy);
     }
 }  //
 
@@ -1487,24 +1487,24 @@ void Tensor2f::gemv(bool transa, const SharedTensor2f &a, const SharedTensor2f &
     incy = 1;  // increments in elements of A2d_
 
     if (m && n) {
-        C_DGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), incx, beta, &(A2d_[0][0]), incy);
+        C_SGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), incx, beta, &(A2d_[0][0]), incy);
     }
 }  //
 
-void Tensor2f::davidson(int n_eigval, const SharedTensor2f &eigvectors, const SharedTensor1f &eigvalues, float cutoff,
-                        int print) {
-    david(A2d_, dim1_, n_eigval, eigvalues->A1d_, eigvectors->A2d_, cutoff, print);
+// void Tensor2f::davidson(int n_eigval, const SharedTensor2f &eigvectors, const SharedTensor1f &eigvalues, float cutoff,
+//                         int print) {
+//     david(A2d_, dim1_, n_eigval, eigvalues->A1d_, eigvectors->A2d_, cutoff, print);
 
-}  //
+// }  //
 
 void Tensor2f::add(const SharedTensor2f &a) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
-    C_DAXPY(length, 1.0, a->A2d_[0], 1, A2d_[0], 1);
+    C_SAXPY(length, 1.0, a->A2d_[0], 1, A2d_[0], 1);
 }  //
 
 void Tensor2f::add(float **a) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
-    C_DAXPY(length, 1.0, a[0], 1, A2d_[0], 1);
+    C_SAXPY(length, 1.0, a[0], 1, A2d_[0], 1);
 }  //
 
 void Tensor2f::add(float alpha, const SharedTensor2f &Adum) {
@@ -1518,39 +1518,39 @@ void Tensor2f::add(int i, int j, float value) { A2d_[i][j] += value; }  //
 
 void Tensor2f::subtract(const SharedTensor2f &a) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
-    C_DAXPY(length, -1.0, a->A2d_[0], 1, A2d_[0], 1);
+    C_SAXPY(length, -1.0, a->A2d_[0], 1, A2d_[0], 1);
 }  //
 
 void Tensor2f::subtract(int i, int j, float value) { A2d_[i][j] -= value; }  //
 
 void Tensor2f::axpy(float **a, float alpha) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
-    C_DAXPY(length, alpha, a[0], 1, A2d_[0], 1);
+    C_SAXPY(length, alpha, a[0], 1, A2d_[0], 1);
 }  //
 
 void Tensor2f::axpy(const SharedTensor2f &a, float alpha) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
-    C_DAXPY(length, alpha, a->A2d_[0], 1, A2d_[0], 1);
+    C_SAXPY(length, alpha, a->A2d_[0], 1, A2d_[0], 1);
 }  //
 
 void Tensor2f::axpy(size_t length, int inc_a, const SharedTensor2f &a, int inc_2d, float alpha) {
-    C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
+    C_SAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
 }  //
 
 void Tensor2f::axpy(size_t length, int start_a, int inc_a, const SharedTensor2f &A, int start_2d, int inc_2d,
                     float alpha) {
-    C_DAXPY(length, alpha, A->A2d_[0] + start_a, inc_a, A2d_[0] + start_2d, inc_2d);
+    C_SAXPY(length, alpha, A->A2d_[0] + start_a, inc_a, A2d_[0] + start_2d, inc_2d);
 }  //
 
 float Tensor2f::norm() {
     float value = 0.0;
     size_t length = (size_t)dim1_ * (size_t)dim2_;
-    value = C_DNRM2(length, A2d_[0], 1);
+    value = C_SNRM2(length, A2d_[0], 1);
     return value;
 }  //
 
 float **Tensor2f::transpose2() {
-    float **temp = block_matrix(dim2_, dim1_);
+    float **temp = block_matrix_float   (dim2_, dim1_);
     memset(temp[0], 0, sizeof(float) * dim1_ * dim2_);
 #pragma omp parallel for
     for (int i = 0; i < dim2_; ++i) {
@@ -1599,7 +1599,7 @@ void Tensor2f::copy(float **a) {
     // if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
     size_t length;
     length = (size_t)dim1_ * (size_t)dim2_;
-    C_DCOPY(length, a[0], 1, A2d_[0], 1);
+    C_SCOPY(length, a[0], 1, A2d_[0], 1);
 }
 
 void Tensor2f::copy(const SharedTensor2f &Adum) {
@@ -1619,12 +1619,12 @@ void Tensor2f::copy(const SharedTensor2f &Adum) {
     length = (size_t)dim1_ * (size_t)dim2_;
     if (dim1_ != 0 && dim2_ != 0) {
         // memcpy(A2d_[0], Adum->A2d_[0], dim1_ * dim2_ * sizeof(float));
-        C_DCOPY(length, Adum->A2d_[0], 1, A2d_[0], 1);
+        C_SCOPY(length, Adum->A2d_[0], 1, A2d_[0], 1);
     }
 }  //
 
 void Tensor2f::copy(size_t length, const SharedTensor2f &A, int inc_a, int inc_2d) {
-    C_DCOPY(length, A->A2d_[0], inc_a, A2d_[0], inc_2d);
+    C_SCOPY(length, A->A2d_[0], inc_a, A2d_[0], inc_2d);
 }  //
 
 void Tensor2f::copy(const SharedTensor2f &A, int start) {
@@ -1660,95 +1660,95 @@ void Tensor2f::pcopy(const SharedTensor2f &A, int dim_copy, int dim_skip, int st
 }  //
 
 
-void Tensor2f::double2float(const SharedTensor2d &D,const SharedTensor2f &F ) {
-    // std:copy_n() ??
-    for (int i = 0; i < dim1_ * dim2_; i += 1) {
-        F->A2d_[i]=static_cast<float>(D->A2d_[i]);
-        }
-}  //
+// void Tensor2f::double2float(const SharedTensor2d &D,const SharedTensor2f &F ) {
+//     // std:copy_n() ??
+//     for (int i = 0; i < dim1_ * dim2_; i += 1) {
+//         F->A2d_[i]=static_cast<float>(D->A2d_[i]);
+//         }
+// }  //
 
 
 
-void Tensor2f::diagonalize(const SharedTensor2f &eigvectors, const SharedTensor1f &eigvalues, float cutoff) {
-    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
+// void Tensor2f::diagonalize(const SharedTensor2f &eigvectors, const SharedTensor1f &eigvalues, float cutoff) {
+//     sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
 
-}  //
+// }  //
 
-void Tensor2f::cdsyev(char jobz, char uplo, const SharedTensor2f &eigvectors, const SharedTensor1f &eigvalues) {
-    if (dim1_) {
-        int lwork = 3 * dim2_;
-        float **work = block_matrix(dim1_, lwork);
-        memset(work[0], 0.0, sizeof(float) * dim1_ * lwork);
-        C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
-        free_block(work);
-    }
-}  //
+// void Tensor2f::cdsyev(char jobz, char uplo, const SharedTensor2f &eigvectors, const SharedTensor1f &eigvalues) {
+//     if (dim1_) {
+//         int lwork = 3 * dim2_;
+//         float **work = block_matrix_float   (dim1_, lwork);
+//         memset(work[0], 0.0, sizeof(float) * dim1_ * lwork);
+//         C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
+//         free_block_float(work);
+//     }
+// }  //
 
-void Tensor2f::cdgesv(const SharedTensor1f &Xvec) {
-    if (dim1_) {
-        int errcod;
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        delete[] ipiv;
-    }
-}  //
+// void Tensor2f::cdgesv(const SharedTensor1f &Xvec) {
+//     if (dim1_) {
+//         int errcod;
+//         int *ipiv = new int[dim1_];
+//         memset(ipiv, 0, sizeof(int) * dim1_);
+//         errcod = 0;
+//         errcod = C_SGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
+//         delete[] ipiv;
+//     }
+// }  //
 
-void Tensor2f::cdgesv(const SharedTensor1f &Xvec, int errcod) {
-    if (dim1_) {
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        delete[] ipiv;
-    }
-}  //
+// void Tensor2f::cdgesv(const SharedTensor1f &Xvec, int errcod) {
+//     if (dim1_) {
+//         int *ipiv = new int[dim1_];
+//         memset(ipiv, 0, sizeof(int) * dim1_);
+//         errcod = 0;
+//         errcod = C_SGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
+//         delete[] ipiv;
+//     }
+// }  //
 
-void Tensor2f::cdgesv(float *Xvec) {
-    if (dim1_) {
-        int errcod;
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        delete[] ipiv;
-    }
-}  //
+// void Tensor2f::cdgesv(float *Xvec) {
+//     if (dim1_) {
+//         int errcod;
+//         int *ipiv = new int[dim1_];
+//         memset(ipiv, 0, sizeof(int) * dim1_);
+//         errcod = 0;
+//         errcod = C_SGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
+//         delete[] ipiv;
+//     }
+// }  //
 
-void Tensor2f::cdgesv(float *Xvec, int errcod) {
-    if (dim1_) {
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        delete[] ipiv;
-    }
-}  //
+// void Tensor2f::cdgesv(float *Xvec, int errcod) {
+//     if (dim1_) {
+//         int *ipiv = new int[dim1_];
+//         memset(ipiv, 0, sizeof(int) * dim1_);
+//         errcod = 0;
+//         errcod = C_SGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
+//         delete[] ipiv;
+//     }
+// }  //
 
-void Tensor2f::lineq_flin(const SharedTensor1f &Xvec, float *det) {
-    if (dim1_) {
-        flin(A2d_, Xvec->A1d_, dim1_, 1, det);
-    }
-}  //
+// void Tensor2f::lineq_flin(const SharedTensor1f &Xvec, float *det) {
+//     if (dim1_) {
+//         flin(A2d_, Xvec->A1d_, dim1_, 1, det);
+//     }
+// }  //
 
-void Tensor2f::lineq_flin(float *Xvec, float *det) {
-    if (dim1_) {
-        flin(A2d_, Xvec, dim1_, 1, det);
-    }
-}  //
+// void Tensor2f::lineq_flin(float *Xvec, float *det) {
+//     if (dim1_) {
+//         flin(A2d_, Xvec, dim1_, 1, det);
+//     }
+// }  //
 
-void Tensor2f::lineq_pople(const SharedTensor1f &Xvec, int num_vecs, float cutoff) {
-    if (dim1_) {
-        pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
-    }
-}  //
+// void Tensor2f::lineq_pople(const SharedTensor1f &Xvec, int num_vecs, float cutoff) {
+//     if (dim1_) {
+//         pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
+//     }
+// }  //
 
-void Tensor2f::lineq_pople(float *Xvec, int num_vecs, float cutoff) {
-    if (dim1_) {
-        pople(A2d_, Xvec, dim1_, num_vecs, cutoff, "outfile", 0);
-    }
-}  //
+// void Tensor2f::lineq_pople(float *Xvec, int num_vecs, float cutoff) {
+//     if (dim1_) {
+//         pople(A2d_, Xvec, dim1_, num_vecs, cutoff, "outfile", 0);
+//     }
+// }  //
 
 void Tensor2f::level_shift(float value) {
 #pragma omp parallel for
@@ -1776,12 +1776,12 @@ void Tensor2f::scale(float a) {
     // size_t size;
     size_t size;
     size = (size_t)dim1_ * (size_t)dim2_;
-    if (size) C_DSCAL(size, a, &(A2d_[0][0]), 1);
+    if (size) C_SSCAL(size, a, &(A2d_[0][0]), 1);
 }  //
 
-void Tensor2f::scale_row(int m, float a) { C_DSCAL((size_t)dim1_, a, &(A2d_[m][0]), 1); }  //
+void Tensor2f::scale_row(int m, float a) { C_SSCAL((size_t)dim1_, a, &(A2d_[m][0]), 1); }  //
 
-void Tensor2f::scale_column(int n, float a) { C_DSCAL((size_t)dim2_, a, &(A2d_[0][n]), dim1_); }  //
+void Tensor2f::scale_column(int n, float a) { C_SSCAL((size_t)dim2_, a, &(A2d_[0][n]), dim1_); }  //
 
 void Tensor2f::identity() {
     zero();
@@ -2229,37 +2229,37 @@ void Tensor2f::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
 
 }  //
 
-bool Tensor2f::read(PSIO *psio, int itap, const char *label, int dim) {
-    int ntri = 0.5 * dim * (dim + 1);
-    float *mybuffer = init_array(ntri);
-    memset(mybuffer, 0, sizeof(float) * ntri);
-    IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, "outfile");
+// bool Tensor2f::read(PSIO *psio, int itap, const char *label, int dim) {
+//     int ntri = 0.5 * dim * (dim + 1);
+//     float *mybuffer = init_array(ntri);
+//     memset(mybuffer, 0, sizeof(float) * ntri);
+//     IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, "outfile");
 
-    float **Asq = block_matrix(dim, dim);
-    memset(Asq[0], 0, sizeof(float) * dim * dim);
-    tri_to_sq(mybuffer, Asq, dim);
-    free(mybuffer);
+//     float **Asq = block_matrix_float    (dim, dim);
+//     memset(Asq[0], 0, sizeof(float) * dim * dim);
+//     tri_to_sq(mybuffer, Asq, dim);
+//     free(mybuffer);
 
-    set(Asq);
-    free_block(Asq);
-    return true;
-}  //
+//     set(Asq);
+//     free_block_float(Asq);
+//     return true;
+// }  //
 
-bool Tensor2f::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim) {
-    int ntri = 0.5 * dim * (dim + 1);
-    float *mybuffer = init_array(ntri);
-    memset(mybuffer, 0, sizeof(float) * ntri);
-    IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, "outfile");
+// bool Tensor2f::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim) {
+//     int ntri = 0.5 * dim * (dim + 1);
+//     float *mybuffer = init_array(ntri);
+//     memset(mybuffer, 0, sizeof(float) * ntri);
+//     IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, "outfile");
 
-    float **Asq = block_matrix(dim, dim);
-    memset(Asq[0], 0, sizeof(float) * dim * dim);
-    tri_to_sq(mybuffer, Asq, dim);
-    free(mybuffer);
+//     float **Asq = block_matrix_float    (dim, dim);
+//     memset(Asq[0], 0, sizeof(float) * dim * dim);
+//     tri_to_sq(mybuffer, Asq, dim);
+//     free(mybuffer);
 
-    set(Asq);
-    free_block(Asq);
-    return true;
-}  //
+//     set(Asq);
+//     free_block_float(Asq);
+//     return true;
+// }  //
 
 void Tensor2f::save(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     write(psio, fileno);
@@ -2393,24 +2393,24 @@ void Tensor2f::myread(int fileno, size_t start) {
 
 }  //
 
-float **Tensor2f::to_block_matrix() {
-    float **temp = block_matrix(dim1_, dim2_);
+float **Tensor2f::to_block_matrix () {
+    float **temp = block_matrix_float   (dim1_, dim2_);
     // memcpy(&(temp[0][0]), &(A2d_[0][0]), dim1_ * dim2_ * sizeof(float));
     size_t length;
     length = (size_t)dim1_ * (size_t)dim2_;
-    C_DCOPY(length, A2d_[0], 1, temp[0], 1);
+    C_SCOPY(length, A2d_[0], 1, temp[0], 1);
     return temp;
 }  //
 
-float *Tensor2f::to_lower_triangle() {
-    if (dim1_ != dim2_) return NULL;
-    int ntri = 0.5 * dim1_ * (dim1_ + 1);
-    float *tri = new float[ntri];
-    float **temp = to_block_matrix();
-    sq_to_tri(temp, tri, dim1_);
-    free_block(temp);
-    return tri;
-}  //
+// float *Tensor2f::to_lower_triangle() {
+//     if (dim1_ != dim2_) return NULL;
+//     int ntri = 0.5 * dim1_ * (dim1_ + 1);
+//     float *tri = new float[ntri];
+//     float **temp = to_block_matrix    ();
+//     sq_to_tri(temp, tri, dim1_);
+//     free_block_float(temp);
+//     return tri;
+// }  //
 
 void Tensor2f::to_shared_matrix(SharedMatrix A) {
 #pragma omp parallel for
@@ -2471,11 +2471,11 @@ void Tensor2f::mgs() {
 
 }  //
 
-void Tensor2f::gs() {
-    if (dim1_ != 0 && dim2_ != 0) {
-        schmidt(A2d_, dim1_, dim2_, "outfile");
-    }
-}  //
+// void Tensor2f::gs() {
+//     if (dim1_ != 0 && dim2_ != 0) {
+//         schmidt(A2d_, dim1_, dim2_, "outfile");
+//     }
+// }  //
 
 float *Tensor2f::row_vector(int n) {
     float *temp = new float[dim2_];
@@ -3962,7 +3962,7 @@ void Tensor2f::set_column(const SharedTensor2f &A, int n) {
     /*
       size_t length;
       length = (size_t)dim1_ * (size_t)dim2_;
-      C_DCOPY(length, A->A2d_[0], 1, &(A2d_[0][n]), 1);
+      C_SCOPY(length, A->A2d_[0], 1, &(A2d_[0][n]), 1);
     */
 }  //
 
@@ -3988,7 +3988,7 @@ void Tensor2f::get_column(const SharedTensor2f &A, int n) {
     /*
       size_t length;
       length = (size_t)dim1_ * (size_t)dim2_;
-      C_DCOPY(length, &(A->A2d_[0][n]), 1, A2d_[0], 1);
+      C_SCOPY(length, &(A->A2d_[0][n]), 1, A2d_[0], 1);
     */
 }  //
 
@@ -6410,7 +6410,7 @@ Tensor3f::~Tensor3f() { release(); }  //
 
 void Tensor3f::memalloc() {
     if (A3d_) release();
-    A3d_ = init_3d_array(dim1_, dim2_, dim3_);
+    A3d_ = init_3d_array_float(dim1_, dim2_, dim3_);
     zero();
 }  //
 

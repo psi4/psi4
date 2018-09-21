@@ -83,6 +83,7 @@ extern void F_SSCAL(int *n, float *alpha, float *vec, int *inc);
 extern void F_SAXPY(int *length, float *a, float *x, int *inc_x, float *y, int *inc_y);
 extern void F_SCOPY(int *length, float *x, int *inc_x, float *y, int *inc_y);
 extern double F_SDOT(int *n, float *x, int *incx, float *y, int *incy);
+extern double F_SNRM2(int *n, float *x, int *incx);
 }
 
 namespace psi {
@@ -361,6 +362,23 @@ double PSI_API C_DNRM2(size_t length, double *x, int inc_x) {
 
     return reg;
 }
+
+float PSI_API C_SNRM2(size_t length, float *x, int inc_x) {
+    if (length == 0) return 0.0;
+
+    float reg = 0.0;
+
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        float *x_s = &x[block * inc_x * (size_t)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        reg += ::F_SNRM2(&length_s, x_s, &inc_x);
+    }
+
+    return reg;
+}
+
 /*!
  * This function returns the sum of the absolute value of this vector.
  *

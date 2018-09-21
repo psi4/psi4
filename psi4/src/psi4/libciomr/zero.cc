@@ -47,6 +47,7 @@ namespace psi {
 ** \ingroup CIOMR
 */
 void zero_arr(double *a, int size) { memset(a, 0, sizeof(double) * size); }
+void zero_arr(float *a, int size) { memset(a, 0, sizeof(float) * size); }
 
 /*!
 ** zero_mat(): zero out a matrix 'a' with n rows and m columns
@@ -64,4 +65,11 @@ void zero_mat(double **a, int n, int m) {
         memset(a[i], 0, sizeof(double) * m);
     }
 }
+void zero_mat(float **a, int n, int m) {
+    int i;
+    
+    for (i = 0; i < n; i++) {
+        memset(a[i], 0, sizeof(float) * m);
+    }   
+}  
 }

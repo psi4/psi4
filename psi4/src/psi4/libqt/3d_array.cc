@@ -67,6 +67,25 @@ double ***init_3d_array(int p, int q, int r) {
     return A;
 }
 
+float ***init_3d_array_float(int p, int q, int r) {
+    float ***A;
+    int i, j, k;
+
+    A = (float ***)malloc(p * sizeof(float **));
+    for (i = 0; i < p; i++) {
+        A[i] = (float **)malloc(q * sizeof(float *));
+        for (j = 0; j < q; j++) {
+            A[i][j] = (float *)malloc(r * sizeof(float));
+            for (k = 0; k < r; k++) {
+                A[i][j][k] = 0.0;
+            }
+        }
+    }
+
+    return A;
+}
+
+
 /*!
 ** free_3d_array(): Free a (non-contiguous) 3D array
 **
@@ -88,5 +107,17 @@ void free_3d_array(double ***A, int p, int q) {
 
     free(A);
 }
+
+void free_3d_array(float ***A, int p, int q) {
+    int i, j;
+
+    for (i = 0; i < p; i++)
+        for (j = 0; j < q; j++) free(A[i][j]);
+
+    for (i = 0; i < p; i++) free(A[i]);
+
+    free(A);
+}
+
 
 }  // namespace psi
