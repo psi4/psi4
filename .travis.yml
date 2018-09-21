@@ -98,7 +98,7 @@ matrix:
         - gfortran-6
     env:
       - CXX_COMPILER='g++-6'
-      - PYTHON_VER='3.5'
+      - PYTHON_VER='3.6'
       - C_COMPILER='gcc-6'
       - Fortran_COMPILER='gfortran-6'
       - BUILD_TYPE='release'
