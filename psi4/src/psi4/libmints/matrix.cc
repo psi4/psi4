@@ -318,7 +318,7 @@ void Matrix::copy(const Matrix *cp) {
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h ^ symmetry_] != 0)
             memmove(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]),
-                   rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double));
+                    rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double));
     }
 }
 
@@ -1198,7 +1198,7 @@ void Matrix::apply_denominator(const Matrix *const plus) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
 
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
+#if _OPENMP >= 201307  // OpenMP 4.0 or newer
 #pragma omp parallel for simd
 #else
 #pragma omp parallel for
@@ -2552,7 +2552,7 @@ void Matrix::zero_row(int h, int i) {
     if (i >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::zero_row: index is out of bounds.");
     }
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
+#if _OPENMP >= 201307  // OpenMP 4.0 or newer
 #pragma omp parallel for simd
 #else
 #pragma omp parallel for
