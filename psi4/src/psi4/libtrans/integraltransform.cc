@@ -38,10 +38,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
 
-;
 using namespace psi;
 
 IntegralTransform::IntegralTransform(std::shared_ptr<Wavefunction> wfn, SpaceVec spaces,

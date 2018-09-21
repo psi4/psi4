@@ -29,23 +29,20 @@
 #include "mospace.h"
 #include "integraltransform.h"
 
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/matrix.h"
+#include "psi4/libdpd/dpd.h"
 #include "psi4/libiwl/iwl.hpp"
-#include "psi4/libqt/qt.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
 
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
-
 using namespace psi;
-;
 
 void IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2) {
     check_initialized();

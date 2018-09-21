@@ -1,3 +1,0 @@
-set(sources_list cc3_t3z.cc local.cc WejabL2.cc status.cc check_sum.cc hbar_extra.cc WefabL2.cc cc2_Gai.cc Lmag.cc cc2_fmiL2.cc cache.cc spinad_amps.cc FmiL2.cc Lsave.cc WabeiL1.cc L3_AAB.cc overlap.cc cc2_L2.cc Lnorm.cc get_params.cc check_ortho.cc L3_AAA.cc G.cc converged.cc sort_amps.cc L1FL2.cc projections.cc overlap_LAMPS.cc ortho_Rs.cc cclambda.cc cc3_l3l1.cc diis.cc halftrans.cc init_amps.cc cc3_l3l2.cc L1.cc get_moinfo.cc cc2_hbar_extra.cc update.cc GL2.cc WijmbL2.cc FaeL2.cc c_clean.cc pseudoenergy.cc BL2_AO.cc WmbejL2.cc cc2_faeL2.cc cc2_L1.cc DL2.cc cc3_t3x.cc denom.cc Lamp_write.cc dijabL2.cc WijmnL2.cc L2.cc )
-psi4_add_module(bin cclambda sources_list mints)
-
