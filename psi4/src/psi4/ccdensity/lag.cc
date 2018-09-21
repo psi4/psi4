@@ -37,7 +37,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* lag(): Build the orbital Lagrangian, I'pq, defined in spin-orbitals
 ** as:
@@ -76,206 +77,203 @@ void Iab(struct RHO_Params rho_params);
 void Iai(struct RHO_Params rho_params);
 void Iia(struct RHO_Params rho_params);
 
-void lag(struct RHO_Params rho_params)
-{
-  int h, nirreps, i, j, a, b;
-  int *occpi, *virtpi, *openpi;
-  dpdfile2 I;
+void lag(struct RHO_Params rho_params) {
+    int h, nirreps, i, j, a, b;
+    int *occpi, *virtpi, *openpi;
+    dpdfile2 I;
 
-  Iij(rho_params);
-  Iab(rho_params);
-  Iai(rho_params);
-  Iia(rho_params);
+    Iij(rho_params);
+    Iab(rho_params);
+    Iai(rho_params);
+    Iia(rho_params);
 
-  /* Multiply all I'pq components by -1/2 for compatibility with the
-     final gradient expression */
+    /* Multiply all I'pq components by -1/2 for compatibility with the
+       final gradient expression */
 
-  if(params.ref == 0) { /** RHF **/
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-  }
-  else if(params.ref == 1) { /** ROHF **/
+    if (params.ref == 0) { /** RHF **/
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+    } else if (params.ref == 1) { /** ROHF **/
 
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-  }
-  else if(params.ref == 2) { /** UHF **/
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+    } else if (params.ref == 2) { /** UHF **/
 
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 2, 2, "I'ij");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 3, 3, "I'ab");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I'ia");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 3, 2, "I'ai");
-    global_dpd_->file2_scm(&I, -0.5);
-    global_dpd_->file2_close(&I);
-
-  }
-
-  /* Now go through all terms involving open-shell orbitals and force
-     the appropriate spin cases to zero. */
-
-  if(params.ref == 1) { /** ROHF **/
-    nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi; virtpi = moinfo.virtpi; openpi = moinfo.openpi;
-
-
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
-    global_dpd_->file2_mat_init(&I);
-    global_dpd_->file2_mat_rd(&I);
-    for(h=0; h < nirreps; h++) {
-      for(i=(occpi[h]-openpi[h]); i < occpi[h]; i++) {
-	for(j=(occpi[h]-openpi[h]); j < occpi[h]; j++) {
-	  I.matrix[h][i][j] = 0.0;
-	}
-      }
-      for(i=(occpi[h]-openpi[h]); i < occpi[h]; i++) {
-	for(j=0; j < occpi[h]; j++) {
-	  I.matrix[h][i][j] = 0.0;
-	}
-      }
-      for(i=0; i < occpi[h]; i++) {
-	for(j=(occpi[h]-openpi[h]); j < occpi[h]; j++) {
-	  I.matrix[h][i][j] = 0.0;
-	}
-      }
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 2, 2, "I'ij");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 3, 3, "I'ab");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I'ia");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 3, 2, "I'ai");
+        global_dpd_->file2_scm(&I, -0.5);
+        global_dpd_->file2_close(&I);
     }
-    global_dpd_->file2_mat_wrt(&I);
-    global_dpd_->file2_mat_close(&I);
-    global_dpd_->file2_close(&I);
 
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-    global_dpd_->file2_mat_init(&I);
-    global_dpd_->file2_mat_rd(&I);
-    for(h=0; h < nirreps; h++) {
-      for(a=(virtpi[h]-openpi[h]); a < virtpi[h]; a++) {
-	for(b=(virtpi[h]-openpi[h]); b < virtpi[h]; b++) {
-	  I.matrix[h][a][b] = 0.0;
-	}
-      }
-      for(a=(virtpi[h]-openpi[h]); a < virtpi[h]; a++) {
-	for(b=0; b < virtpi[h]; b++) {
-	  I.matrix[h][a][b] = 0.0;
-	}
-      }
-      for(a=0; a < virtpi[h]; a++) {
-	for(b=(virtpi[h]-openpi[h]); b < virtpi[h]; b++) {
-	  I.matrix[h][a][b] = 0.0;
-	}
-      }
+    /* Now go through all terms involving open-shell orbitals and force
+       the appropriate spin cases to zero. */
+
+    if (params.ref == 1) { /** ROHF **/
+        nirreps = moinfo.nirreps;
+        occpi = moinfo.occpi;
+        virtpi = moinfo.virtpi;
+        openpi = moinfo.openpi;
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
+        global_dpd_->file2_mat_init(&I);
+        global_dpd_->file2_mat_rd(&I);
+        for (h = 0; h < nirreps; h++) {
+            for (i = (occpi[h] - openpi[h]); i < occpi[h]; i++) {
+                for (j = (occpi[h] - openpi[h]); j < occpi[h]; j++) {
+                    I.matrix[h][i][j] = 0.0;
+                }
+            }
+            for (i = (occpi[h] - openpi[h]); i < occpi[h]; i++) {
+                for (j = 0; j < occpi[h]; j++) {
+                    I.matrix[h][i][j] = 0.0;
+                }
+            }
+            for (i = 0; i < occpi[h]; i++) {
+                for (j = (occpi[h] - openpi[h]); j < occpi[h]; j++) {
+                    I.matrix[h][i][j] = 0.0;
+                }
+            }
+        }
+        global_dpd_->file2_mat_wrt(&I);
+        global_dpd_->file2_mat_close(&I);
+        global_dpd_->file2_close(&I);
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+        global_dpd_->file2_mat_init(&I);
+        global_dpd_->file2_mat_rd(&I);
+        for (h = 0; h < nirreps; h++) {
+            for (a = (virtpi[h] - openpi[h]); a < virtpi[h]; a++) {
+                for (b = (virtpi[h] - openpi[h]); b < virtpi[h]; b++) {
+                    I.matrix[h][a][b] = 0.0;
+                }
+            }
+            for (a = (virtpi[h] - openpi[h]); a < virtpi[h]; a++) {
+                for (b = 0; b < virtpi[h]; b++) {
+                    I.matrix[h][a][b] = 0.0;
+                }
+            }
+            for (a = 0; a < virtpi[h]; a++) {
+                for (b = (virtpi[h] - openpi[h]); b < virtpi[h]; b++) {
+                    I.matrix[h][a][b] = 0.0;
+                }
+            }
+        }
+        global_dpd_->file2_mat_wrt(&I);
+        global_dpd_->file2_mat_close(&I);
+        global_dpd_->file2_close(&I);
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
+        global_dpd_->file2_close(&I);
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
+        global_dpd_->file2_mat_init(&I);
+        global_dpd_->file2_mat_rd(&I);
+        for (h = 0; h < nirreps; h++) {
+            for (a = (virtpi[h] - openpi[h]); a < virtpi[h]; a++) {
+                for (i = 0; i < occpi[h]; i++) {
+                    I.matrix[h][a][i] = 0.0;
+                }
+            }
+        }
+        global_dpd_->file2_mat_wrt(&I);
+        global_dpd_->file2_mat_close(&I);
+        global_dpd_->file2_close(&I);
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
+        global_dpd_->file2_mat_init(&I);
+        global_dpd_->file2_mat_rd(&I);
+        for (h = 0; h < nirreps; h++) {
+            for (a = 0; a < virtpi[h]; a++) {
+                for (i = (occpi[h] - openpi[h]); i < occpi[h]; i++) {
+                    I.matrix[h][a][i] = 0.0;
+                }
+            }
+        }
+        global_dpd_->file2_mat_wrt(&I);
+        global_dpd_->file2_mat_close(&I);
+        global_dpd_->file2_close(&I);
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+        global_dpd_->file2_mat_init(&I);
+        global_dpd_->file2_mat_rd(&I);
+        for (h = 0; h < nirreps; h++) {
+            for (i = 0; i < occpi[h]; i++) {
+                for (a = (virtpi[h] - openpi[h]); a < virtpi[h]; a++) {
+                    I.matrix[h][i][a] = 0.0;
+                }
+            }
+        }
+        global_dpd_->file2_mat_wrt(&I);
+        global_dpd_->file2_mat_close(&I);
+        global_dpd_->file2_close(&I);
+
+        global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
+        global_dpd_->file2_mat_init(&I);
+        global_dpd_->file2_mat_rd(&I);
+        for (h = 0; h < nirreps; h++) {
+            for (i = (occpi[h] - openpi[h]); i < occpi[h]; i++) {
+                for (a = 0; a < virtpi[h]; a++) {
+                    I.matrix[h][i][a] = 0.0;
+                }
+            }
+        }
+        global_dpd_->file2_mat_wrt(&I);
+        global_dpd_->file2_mat_close(&I);
+        global_dpd_->file2_close(&I);
     }
-    global_dpd_->file2_mat_wrt(&I);
-    global_dpd_->file2_mat_close(&I);
-    global_dpd_->file2_close(&I);
-
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
-    global_dpd_->file2_close(&I);
-
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
-    global_dpd_->file2_mat_init(&I);
-    global_dpd_->file2_mat_rd(&I);
-    for(h=0; h < nirreps; h++) {
-      for(a=(virtpi[h]-openpi[h]); a < virtpi[h]; a++) {
-	for(i=0; i < occpi[h]; i++) {
-	  I.matrix[h][a][i] = 0.0;
-	}
-      }
-    }
-    global_dpd_->file2_mat_wrt(&I);
-    global_dpd_->file2_mat_close(&I);
-    global_dpd_->file2_close(&I);
-
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
-    global_dpd_->file2_mat_init(&I);
-    global_dpd_->file2_mat_rd(&I);
-    for(h=0; h < nirreps; h++) {
-      for(a=0; a < virtpi[h]; a++) {
-	for(i=(occpi[h] - openpi[h]); i < occpi[h]; i++) {
-	  I.matrix[h][a][i] = 0.0;
-	}
-      }
-    }
-    global_dpd_->file2_mat_wrt(&I);
-    global_dpd_->file2_mat_close(&I);
-    global_dpd_->file2_close(&I);
-
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
-    global_dpd_->file2_mat_init(&I);
-    global_dpd_->file2_mat_rd(&I);
-    for(h=0; h < nirreps; h++) {
-      for(i=0; i < occpi[h]; i++) {
-	for(a=(virtpi[h] - openpi[h]); a < virtpi[h]; a++) {
-	  I.matrix[h][i][a] = 0.0;
-	}
-      }
-    }
-    global_dpd_->file2_mat_wrt(&I);
-    global_dpd_->file2_mat_close(&I);
-    global_dpd_->file2_close(&I);
-
-    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
-    global_dpd_->file2_mat_init(&I);
-    global_dpd_->file2_mat_rd(&I);
-    for(h=0; h < nirreps; h++) {
-      for(i=(occpi[h] - openpi[h]); i < occpi[h]; i++) {
-	for(a=0; a < virtpi[h]; a++) {
-	  I.matrix[h][i][a] = 0.0;
-	}
-      }
-    }
-    global_dpd_->file2_mat_wrt(&I);
-    global_dpd_->file2_mat_close(&I);
-    global_dpd_->file2_close(&I);
-
-  }
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

@@ -37,7 +37,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* relax_D(): Add the orbital-response contributions to the Dia block
 ** of the one-electron density matrix:
@@ -48,91 +49,86 @@ namespace psi { namespace ccdensity {
 **
 ** */
 
-void relax_D(struct RHO_Params rho_params)
-{
-  dpdfile2 D1, D2, I1, I2;
+void relax_D(struct RHO_Params rho_params) {
+    dpdfile2 D1, D2, I1, I2;
 
-  if(params.ref == 0) {
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
+    if (params.ref == 0) {
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
-    /* Add the contributions of dependent pairs (i,j) and (a,b) to the density due 
-     * to the use of canonical perturbed orbitals:  
-     * Dij += (I'ij - I'ji)/(fii - fjj) :  Dab += (I'ab - I'ba)/(faa - fbb)  */
-    if (params.wfn == "CCSD_T" && params.dertype ==1){
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-    global_dpd_->file2_init(&I1, PSIF_CC_TMP, 0, 0, 0, "delta_I/delta_f_IJ");
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-    global_dpd_->file2_init(&I2, PSIF_CC_TMP, 0, 1, 1, "delta_I/delta_f_AB");
-    global_dpd_->file2_axpy(&I1, &D1, 1.0, 0);
-    global_dpd_->file2_axpy(&I2, &D2, 1.0, 0);
-    global_dpd_->file2_close(&D1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&I1);
-    global_dpd_->file2_close(&I2);
-   }
- }
-  else if(params.ref == 1) {
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
+        /* Add the contributions of dependent pairs (i,j) and (a,b) to the density due
+         * to the use of canonical perturbed orbitals:
+         * Dij += (I'ij - I'ji)/(fii - fjj) :  Dab += (I'ab - I'ba)/(faa - fbb)  */
+        if (params.wfn == "CCSD_T" && params.dertype == 1) {
+            global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+            global_dpd_->file2_init(&I1, PSIF_CC_TMP, 0, 0, 0, "delta_I/delta_f_IJ");
+            global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+            global_dpd_->file2_init(&I2, PSIF_CC_TMP, 0, 1, 1, "delta_I/delta_f_AB");
+            global_dpd_->file2_axpy(&I1, &D1, 1.0, 0);
+            global_dpd_->file2_axpy(&I2, &D2, 1.0, 0);
+            global_dpd_->file2_close(&D1);
+            global_dpd_->file2_close(&D2);
+            global_dpd_->file2_close(&I1);
+            global_dpd_->file2_close(&I2);
+        }
+    } else if (params.ref == 1) {
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
-  }
-  else if(params.ref == 2) {
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
+    } else if (params.ref == 2) {
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
 
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
-
-    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
-    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    global_dpd_->file2_close(&D2);
-    global_dpd_->file2_close(&D1);
-
-
-  }
+        global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
+        global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+        global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+        global_dpd_->file2_close(&D2);
+        global_dpd_->file2_close(&D1);
+    }
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

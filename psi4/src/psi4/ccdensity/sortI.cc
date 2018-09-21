@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include "MOInfo.h"
 #include "Params.h"
@@ -36,7 +36,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* SORTI(): Place all the components of the Lagrangian into a large
 ** matrix, I (moinfo.I), which we also symmetrize by computing Ipq =
@@ -51,11 +52,14 @@ void sortI_RHF(void);
 void sortI_ROHF(void);
 void sortI_UHF(void);
 
-void sortI(void)
-{
-  if(params.ref == 0) sortI_RHF();
-  else if(params.ref == 1) sortI_ROHF();
-  else if(params.ref == 2) sortI_UHF();
+void sortI(void) {
+    if (params.ref == 0)
+        sortI_RHF();
+    else if (params.ref == 1)
+        sortI_ROHF();
+    else if (params.ref == 2)
+        sortI_UHF();
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi
