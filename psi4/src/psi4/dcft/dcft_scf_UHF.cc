@@ -994,14 +994,14 @@ void DCFTSolver::process_so_ints() {
         soOffset += nsopi_[h];
     }
 
-    delete[] Ta;
-    delete[] Tb;
-    delete[] Va;
-    delete[] Vb;
-    delete[] Da;
-    delete[] Db;
-    delete[] Ga;
-    delete[] Gb;
+    free(Ta);
+    free(Tb);
+    free(Va);
+    free(Vb);
+    free(Da);
+    free(Db);
+    free(Ga);
+    free(Gb);
 
     dcft_timer_off("DCFTSolver::process_so_ints");
 }

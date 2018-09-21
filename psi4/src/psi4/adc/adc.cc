@@ -155,10 +155,10 @@ ADCWfn::~ADCWfn() {}
 void ADCWfn::release_mem() {
     free(poles_);
     delete _ints;
-    delete aocce_;
-    delete avire_;
-    delete bocce_;
-    delete bvire_;
+    delete[] aocce_;
+    delete[] avire_;
+    delete[] bocce_;
+    delete[] bvire_;
 
     // omega_guess_.reset();
 }

@@ -468,10 +468,10 @@ void DCFTSolver::process_so_ints_RHF() {
     Fb_->copy(Fa_);
     g_tau_b_->copy(g_tau_a_);
 
-    delete[] Ta;
-    delete[] Va;
-    delete[] Da;
-    delete[] Ga;
+    free(Ta);
+    free(Va);
+    free(Da);
+    free(Ga);
 
     dcft_timer_off("DCFTSolver::process_so_ints");
 }
