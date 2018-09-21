@@ -45,7 +45,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#include "psi4/cclambda/cclambda.h"
+#include "cclambda.h"
 #define EXTERN
 #include "globals.h"
 

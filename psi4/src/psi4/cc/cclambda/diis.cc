@@ -38,7 +38,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/cclambda/cclambda.h"
+#include "cclambda.h"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"

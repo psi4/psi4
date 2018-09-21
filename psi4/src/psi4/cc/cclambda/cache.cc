@@ -35,7 +35,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/cclambda/cclambda.h"
+#include "cclambda.h"
 
 namespace psi {
 extern FILE *outfile;

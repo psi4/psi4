@@ -67,9 +67,6 @@ void x_xi1_rohf(void) {
     R_irr = params.R_irr;
     G_irr = params.G_irr;
 
-    /*  dpd_buf4_init(&H2, CC_HBAR, 0, 2, 10, 2, 10, 0, "WMNIE");
-      dpd_buf4_print(&H2,outfile,1);
-      dpd_buf4_close(&H2); */
 
 #ifdef DEBUG_XI
     x_xi_check("begin xi1");

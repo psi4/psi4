@@ -42,7 +42,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/cclambda/cclambda.h"
+#include "cclambda.h"
 
 #include "MOInfo.h"
 #include "Params.h"

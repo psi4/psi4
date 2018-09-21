@@ -30,7 +30,7 @@
 #define CCLAMBDA_H
 
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/ccenergy/ccwave.h"
+#include "psi4/cc/ccwave.h"
 
 namespace psi {
 class Wavefunction;

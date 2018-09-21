@@ -38,7 +38,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/cclambda/cclambda.h"
+#include "cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
