@@ -1,15 +1,50 @@
-foreach (dir_name libpsi4util liboptions libciomr libpsio libqt
-         libiwl libtrans libdpd libmints libdisp
-         libfunctional libdiis libscf_solver libfock lib3index
-         libcubeprop libmoinfo libplugin libsapt_solver libpsipcm libfilesystem)
-    add_subdirectory(${dir_name})
+foreach(dir_name
+  lib3index
+  libciomr
+  libcubeprop
+  libdiis
+  libdisp
+  libdpd
+  libfilesystem
+  libfock
+  libfunctional
+  libiwl
+  libmints
+  libmoinfo
+  liboptions
+  libplugin
+  libpsi4util
+  libpsio
+  libpsipcm
+  libqt
+  libsapt_solver
+  libscf_solver
+  libtrans
+  )
+  add_subdirectory(${dir_name})
 endforeach ()
 
-foreach (dir_name adc ccdensity ccenergy cceom cchbar cclambda ccresponse
-         cctransort cctriples dcft detci dfmp2 dfep2
-         dfocc fisapt fnocc mcscf mrcc
-         occ optking psimrcc sapt scfgrad
-         gdma_interface dmrg ambit_interface
-        )
-    add_subdirectory(${dir_name})
+foreach(dir_name
+  adc
+  ambit_interface
+  cc
+  cctransort
+  dcft
+  detci
+  dfep2
+  dfmp2
+  dfocc
+  dmrg
+  fisapt
+  fnocc
+  gdma_interface
+  mcscf
+  mrcc
+  occ
+  optking
+  psimrcc
+  sapt
+  scfgrad
+  )
+  add_subdirectory(${dir_name})
 endforeach ()
