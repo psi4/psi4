@@ -287,7 +287,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             deanti(rho_params[i]);
         }
 
-
         if (params.ref == 0) { /** RHF **/
 
             iwl_buf_init(&OutBuf, PSIF_MO_TPDM, params.tolerance, 0, 0);

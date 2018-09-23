@@ -482,8 +482,10 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
 
     } /* end loop over states_vec */
 
-    if (transp_tmp != nullptr) free_block(transp_tmp);
-    if (transp_tmp2 != nullptr) free_block(transp_tmp2);
+    if (transp_tmp) free(transp_tmp[0]);
+    free(transp_tmp);
+    if (transp_tmp2) free(transp_tmp2[0]);
+    free(transp_tmp2);
 
     scratch_a.reset();
     scratch_b.reset();

@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <psi4/libdpd/dpd.h>
@@ -38,65 +38,65 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
-void V_cc2(void)
-{
-  dpdbuf4 V, L, T;
-  int G_irr;
-  G_irr = params.G_irr;
+void V_cc2(void) {
+    dpdbuf4 V, L, T;
+    int G_irr;
+    G_irr = params.G_irr;
 
-  if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
-    
-    global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
-    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
-    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
-    global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&T);
-    global_dpd_->buf4_close(&V);
+    if (params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
 
-    global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "Vmnij");
-    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_ijab");
-    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "Lijab");
-    global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&T);
-    global_dpd_->buf4_close(&V);
+        global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
+        global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
+        global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
+        global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&T);
+        global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 0, 0, 0, 0, 0, "VMnIj");
-    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "t1_IjAb");
-    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 0, 5, 0, 5, 0, "LIjAb");
-    global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&T);
-    global_dpd_->buf4_close(&V);
-  }
-  else if(params.ref == 2) { /** UHF **/
-    global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
-    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
-    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
-    global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&T);
-    global_dpd_->buf4_close(&V);
+        global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "Vmnij");
+        global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_ijab");
+        global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "Lijab");
+        global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&T);
+        global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 12, 12, 12, 12, 0, "Vmnij");
-    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "t1_ijab");
-    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 12, 17, 12, 17, 0, "Lijab");
-    global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&T);
-    global_dpd_->buf4_close(&V);
+        global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 0, 0, 0, 0, 0, "VMnIj");
+        global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "t1_IjAb");
+        global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 0, 5, 0, 5, 0, "LIjAb");
+        global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&T);
+        global_dpd_->buf4_close(&V);
+    } else if (params.ref == 2) { /** UHF **/
+        global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
+        global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
+        global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
+        global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&T);
+        global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 22, 22, 22, 22, 0, "VMnIj");
-    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "t1_IjAb");
-    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 22, 28, 22, 28, 0, "LIjAb");
-    global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&T);
-    global_dpd_->buf4_close(&V);
-  }
+        global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 12, 12, 12, 12, 0, "Vmnij");
+        global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "t1_ijab");
+        global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 12, 17, 12, 17, 0, "Lijab");
+        global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&T);
+        global_dpd_->buf4_close(&V);
+
+        global_dpd_->buf4_init(&V, PSIF_CC_MISC, G_irr, 22, 22, 22, 22, 0, "VMnIj");
+        global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "t1_IjAb");
+        global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 22, 28, 22, 28, 0, "LIjAb");
+        global_dpd_->contract444(&T, &L, &V, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&T);
+        global_dpd_->buf4_close(&V);
+    }
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

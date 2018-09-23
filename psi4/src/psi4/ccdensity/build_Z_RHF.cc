@@ -41,7 +41,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* build_Z_RHF():  Solve the orbital Z-vector equations for RHF refs:
 **
@@ -53,54 +54,50 @@ namespace psi { namespace ccdensity {
 **
 */
 
-void build_Z_RHF(void)
-{
-  dpdbuf4 A;
-  dpdfile2 X1, D;
-  double *X;
-  int h, nirreps, a, i, count;
+void build_Z_RHF(void) {
+    dpdbuf4 A;
+    dpdfile2 X1, D;
+    double *X;
+    int h, nirreps, a, i, count;
 
-  nirreps = moinfo.nirreps;
+    nirreps = moinfo.nirreps;
 
-  /* Grab only irrep 0 of the orbital Hessian */
-  global_dpd_->buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
-  global_dpd_->buf4_mat_irrep_init(&A, 0);
-  global_dpd_->buf4_mat_irrep_rd(&A, 0);
+    /* Grab only irrep 0 of the orbital Hessian */
+    global_dpd_->buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+    global_dpd_->buf4_mat_irrep_init(&A, 0);
+    global_dpd_->buf4_mat_irrep_rd(&A, 0);
 
-  /* Place all the elements of the orbital rotation gradient, X into a
-     linear array, Z */
-  global_dpd_->file2_init(&X1, PSIF_CC_OEI, 0, 1, 0, "XAI");
-  global_dpd_->file2_mat_init(&X1);
-  global_dpd_->file2_mat_rd(&X1);
-  X = init_array(A.params->rowtot[0]);
-  for(h=0,count=0; h < nirreps; h++)
-    for(a=0; a < X1.params->rowtot[h]; a++)
-      for(i=0; i < X1.params->coltot[h]; i++)
-	X[count++] = -X1.matrix[h][a][i];
+    /* Place all the elements of the orbital rotation gradient, X into a
+       linear array, Z */
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, 0, 1, 0, "XAI");
+    global_dpd_->file2_mat_init(&X1);
+    global_dpd_->file2_mat_rd(&X1);
+    X = init_array(A.params->rowtot[0]);
+    for (h = 0, count = 0; h < nirreps; h++)
+        for (a = 0; a < X1.params->rowtot[h]; a++)
+            for (i = 0; i < X1.params->coltot[h]; i++) X[count++] = -X1.matrix[h][a][i];
 
-  global_dpd_->file2_mat_close(&X1);
-  global_dpd_->file2_close(&X1);
+    global_dpd_->file2_mat_close(&X1);
+    global_dpd_->file2_close(&X1);
 
-  /* Trying out Matt's Pople code --- way to go, Matt! */
-  pople(A.matrix[0], X, A.params->rowtot[0], 1, 1e-12, "outfile", 0);
+    /* Trying out Matt's Pople code --- way to go, Matt! */
+    pople(A.matrix[0], X, A.params->rowtot[0], 1, 1e-12, "outfile", 0);
 
-  /* Build the orbital component of Dai */
-  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-  global_dpd_->file2_mat_init(&D);
-  for(h=0,count=0; h < nirreps; h++)
-    for(a=0; a < D.params->rowtot[h]; a++)
-      for(i=0; i < D.params->coltot[h]; i++)
-	D.matrix[h][a][i] = X[count++];
-  global_dpd_->file2_mat_wrt(&D);
-  global_dpd_->file2_mat_close(&D);
-  global_dpd_->file2_close(&D);
+    /* Build the orbital component of Dai */
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+    global_dpd_->file2_mat_init(&D);
+    for (h = 0, count = 0; h < nirreps; h++)
+        for (a = 0; a < D.params->rowtot[h]; a++)
+            for (i = 0; i < D.params->coltot[h]; i++) D.matrix[h][a][i] = X[count++];
+    global_dpd_->file2_mat_wrt(&D);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&D);
 
-  free(X);
+    free(X);
 
-  global_dpd_->buf4_mat_irrep_close(&A, 0);
-  global_dpd_->buf4_close(&A);
+    global_dpd_->buf4_mat_irrep_close(&A, 0);
+    global_dpd_->buf4_close(&A);
 }
 
-
-
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi
