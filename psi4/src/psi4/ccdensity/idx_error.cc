@@ -40,20 +40,15 @@
 namespace psi {
 namespace ccdensity {
 
-void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
-               int pq_sym, int rs_sym, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-  printer->Printf( "\n\tDPD Parameter Error in %s\n", message);
-  printer->Printf(
-          "\t-------------------------------------------------\n");
-  printer->Printf(
-          "\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
-  printer->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
-          pq,rs,pq_sym,rs_sym);
-  throw PsiException("ccdensity: error", __FILE__, __LINE__);
+void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs, int pq_sym, int rs_sym,
+               std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("\n\tDPD Parameter Error in %s\n", message);
+    printer->Printf("\t-------------------------------------------------\n");
+    printer->Printf("\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
+    printer->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p, q, r, s, pq, rs, pq_sym, rs_sym);
+    throw PsiException("ccdensity: error", __FILE__, __LINE__);
 }
 
-
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

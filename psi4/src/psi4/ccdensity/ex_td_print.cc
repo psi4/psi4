@@ -39,31 +39,28 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 #include "psi4/physconst.h"
 
 #define _hartree2nm 0.02194746313710
 
-void ex_td_print(std::vector<struct XTD_Params> xtd_list)
-{
-  int i;
+void ex_td_print(std::vector<struct XTD_Params> xtd_list) {
+    int i;
 
-  outfile->Printf("\n\t                   Excited State -> Excited State Transitions\n");
-  outfile->Printf("\n\t                        Excitation Energy          OS       RS        RS     Einstein A\n");
-  outfile->Printf("\tTransition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
-  for(i=0; i<xtd_list.size(); i++) {
-    //outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
-    outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
-            xtd_list[i].root1+1,moinfo.labels[xtd_list[i].irrep1].c_str(),
-            xtd_list[i].root2+1,moinfo.labels[xtd_list[i].irrep2].c_str(),
-            xtd_list[i].cceom_energy*pc_hartree2ev,
-            xtd_list[i].cceom_energy*pc_hartree2wavenumbers,
-            1/(xtd_list[i].cceom_energy*_hartree2nm),
-            xtd_list[i].cceom_energy,xtd_list[i].OS,
-            xtd_list[i].RS_length,xtd_list[i].RS_velocity,
-            xtd_list[i].einstein_a);
-  }
-  outfile->Printf("\n");
+    outfile->Printf("\n\t                   Excited State -> Excited State Transitions\n");
+    outfile->Printf("\n\t                        Excitation Energy          OS       RS        RS     Einstein A\n");
+    outfile->Printf("\tTransition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
+    for (i = 0; i < xtd_list.size(); i++) {
+        // outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
+        outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
+                        xtd_list[i].root1 + 1, moinfo.labels[xtd_list[i].irrep1].c_str(), xtd_list[i].root2 + 1,
+                        moinfo.labels[xtd_list[i].irrep2].c_str(), xtd_list[i].cceom_energy * pc_hartree2ev,
+                        xtd_list[i].cceom_energy * pc_hartree2wavenumbers, 1 / (xtd_list[i].cceom_energy * _hartree2nm),
+                        xtd_list[i].cceom_energy, xtd_list[i].OS, xtd_list[i].RS_length, xtd_list[i].RS_velocity,
+                        xtd_list[i].einstein_a);
+    }
+    outfile->Printf("\n");
 }
-
-}} // namespace psi::ccdensity
+}
+}  // namespace psi
