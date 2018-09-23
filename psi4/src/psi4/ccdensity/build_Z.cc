@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include "MOInfo.h"
 #include "Params.h"
@@ -36,7 +36,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* build_Z():  Solve the orbital Z-vector equations:
 **
@@ -44,7 +45,7 @@ namespace psi { namespace ccdensity {
 **
 ** where A(AI,EM) is the orbital Hessian computed in build_A(), X(A,I)
 ** is the orbital rotation gradient computed in build_X(), and
-** D(orb)(E,M) is the final Z-vector we want. 
+** D(orb)(E,M) is the final Z-vector we want.
 **
 */
 
@@ -52,13 +53,14 @@ void build_Z_RHF(void);
 void build_Z_ROHF(void);
 void build_Z_UHF(void);
 
-void build_Z(void)
-{
-  if(params.ref == 0) build_Z_RHF();
-  else if(params.ref == 1) build_Z_ROHF();
-  else if(params.ref == 2) build_Z_UHF();
+void build_Z(void) {
+    if (params.ref == 0)
+        build_Z_RHF();
+    else if (params.ref == 1)
+        build_Z_ROHF();
+    else if (params.ref == 2)
+        build_Z_UHF();
 }
 
-
-
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

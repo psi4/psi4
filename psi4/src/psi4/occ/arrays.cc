@@ -565,7 +565,7 @@ void Array2d::cdgesv(Array1d* Xvec)
 	memset(ipiv,0,sizeof(int)*dim1_);
 	errcod=0;
 	errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-	delete [] ipiv;
+	free(ipiv);
       }
 }//
 
@@ -576,7 +576,7 @@ void Array2d::cdgesv(Array1d* Xvec, int errcod)
 	memset(ipiv,0,sizeof(int)*dim1_);
 	errcod=0;
 	errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-	delete [] ipiv;
+	free(ipiv);
       }
 }//
 
@@ -588,7 +588,7 @@ void Array2d::cdgesv(double* Xvec)
 	memset(ipiv,0,sizeof(int)*dim1_);
 	errcod=0;
 	errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-	delete [] ipiv;
+	free(ipiv);
       }
 }//
 
@@ -599,7 +599,7 @@ void Array2d::cdgesv(double* Xvec, int errcod)
 	memset(ipiv,0,sizeof(int)*dim1_);
 	errcod=0;
 	errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-	delete [] ipiv;
+	free(ipiv);
       }
 }//
 

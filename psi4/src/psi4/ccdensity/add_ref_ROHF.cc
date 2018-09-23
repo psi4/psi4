@@ -38,52 +38,53 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
-void add_ref_ROHF(struct iwlbuf *OutBuf)
-{
-  int i,j;
-  int nfzc, nclsd, nopen;
+void add_ref_ROHF(struct iwlbuf *OutBuf) {
+    int i, j;
+    int nfzc, nclsd, nopen;
 
-  nfzc = moinfo.nfzc;
-  nclsd = moinfo.nclsd;
-  nopen = moinfo.nopen;
+    nfzc = moinfo.nfzc;
+    nclsd = moinfo.nclsd;
+    nopen = moinfo.nopen;
 
-  /*** One-electron component ***/
-  // NB: We're also storing alpha and beta densities for examining NOs
-  for(i=0; i < (nfzc + nclsd); i++) {
-      moinfo.opdm[i][i] += 2.0;
-      moinfo.opdm_a[i][i] += 1.0;
-      moinfo.opdm_b[i][i] += 1.0;
-  }
-
-  for(i=nfzc + nclsd; i < (nfzc + nclsd + nopen); i++) {
-      moinfo.opdm[i][i] += 1.0;
-      moinfo.opdm_a[i][i] += 1.0;
-  }
-
-  /*** Two-electron component ***/
-
-  /* docc-docc */
-  for(i=0; i < (nfzc + nclsd); i++) {
-      iwl_buf_wrt_val(OutBuf, i, i, i, i, 1.0, 0, "outfile", 0);
-      for(j=0; j < i; j++) {
-	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 2.0, 0, "outfile", 0);
-	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-1.0, 0, "outfile", 0);
-	}
+    /*** One-electron component ***/
+    // NB: We're also storing alpha and beta densities for examining NOs
+    for (i = 0; i < (nfzc + nclsd); i++) {
+        moinfo.opdm[i][i] += 2.0;
+        moinfo.opdm_a[i][i] += 1.0;
+        moinfo.opdm_b[i][i] += 1.0;
     }
 
-  /* socc-docc && socc-socc*/
-  for(i=(nfzc + nclsd); i < (nfzc + nclsd + nopen); i++) {
-      for(j=0; j < (nfzc + nclsd); j++) {
-	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 1.0, 0, "outfile", 0);
-	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-0.5, 0, "outfile", 0);
-	}
-      for(j=(nfzc + nclsd); j < i; j++) {
-	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 0.5, 0, "outfile", 0);
-	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-0.5, 0, "outfile", 0);
-	}
+    for (i = nfzc + nclsd; i < (nfzc + nclsd + nopen); i++) {
+        moinfo.opdm[i][i] += 1.0;
+        moinfo.opdm_a[i][i] += 1.0;
+    }
+
+    /*** Two-electron component ***/
+
+    /* docc-docc */
+    for (i = 0; i < (nfzc + nclsd); i++) {
+        iwl_buf_wrt_val(OutBuf, i, i, i, i, 1.0, 0, "outfile", 0);
+        for (j = 0; j < i; j++) {
+            iwl_buf_wrt_val(OutBuf, i, i, j, j, 2.0, 0, "outfile", 0);
+            iwl_buf_wrt_val(OutBuf, i, j, j, i, -1.0, 0, "outfile", 0);
+        }
+    }
+
+    /* socc-docc && socc-socc*/
+    for (i = (nfzc + nclsd); i < (nfzc + nclsd + nopen); i++) {
+        for (j = 0; j < (nfzc + nclsd); j++) {
+            iwl_buf_wrt_val(OutBuf, i, i, j, j, 1.0, 0, "outfile", 0);
+            iwl_buf_wrt_val(OutBuf, i, j, j, i, -0.5, 0, "outfile", 0);
+        }
+        for (j = (nfzc + nclsd); j < i; j++) {
+            iwl_buf_wrt_val(OutBuf, i, i, j, j, 0.5, 0, "outfile", 0);
+            iwl_buf_wrt_val(OutBuf, i, j, j, i, -0.5, 0, "outfile", 0);
+        }
     }
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi
