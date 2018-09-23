@@ -38,7 +38,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 void ltdensity_rohf(struct TD_Params S);
 void ltdensity_uhf(struct TD_Params S);
@@ -50,22 +51,20 @@ void sort_rtd_rohf(struct TD_Params S);
 void sort_rtd_uhf(struct TD_Params S);
 
 void tdensity(struct TD_Params S) {
+    if (params.ref == 0 || params.ref == 1) {
+        ltdensity_rohf(S);
+        sort_ltd_rohf(S);
+        rtdensity(S);
+        sort_rtd_rohf(S);
+    } else if (params.ref == 2) {
+        ltdensity_uhf(S);
+        sort_ltd_uhf(S);
+        rtdensity(S);
+        sort_rtd_uhf(S);
+    }
 
-  if(params.ref == 0 || params.ref == 1) {
-    ltdensity_rohf(S);
-    sort_ltd_rohf(S);
-    rtdensity(S);
-    sort_rtd_rohf(S);
-  }
-  else if(params.ref == 2) {
-    ltdensity_uhf(S);
-    sort_ltd_uhf(S);
-    rtdensity(S);
-    sort_rtd_uhf(S);
-  }
-
-  return;
+    return;
 }
 
-
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

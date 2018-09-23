@@ -410,8 +410,10 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
 
     // Ivec->buf_unlock();
     // Jvec->buf_unlock();
-    if (transp_tmp != nullptr) free_block(transp_tmp);
-    if (transp_tmp2 != nullptr) free_block(transp_tmp2);
+    if (transp_tmp) free(transp_tmp[0]);
+    free(transp_tmp);
+    if (transp_tmp2) free(transp_tmp2[0]);
+    free(transp_tmp2);
 
     std::vector<int> nshape{nact, nact, nact, nact};
     tpdm_aam->set_numpy_shape(nshape);

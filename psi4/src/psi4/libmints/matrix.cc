@@ -1197,8 +1197,13 @@ void Matrix::apply_denominator(const Matrix *const plus) {
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
+
+#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp parallel for simd
-            for (size_t ij = 0; ij < size; ++ij) {
+#else
+#pragma omp parallel for
+#endif
+            for (long ij = 0; ij < size; ++ij) {
                 lhs[ij] /= rhs[ij];
             }
         }
@@ -2547,7 +2552,11 @@ void Matrix::zero_row(int h, int i) {
     if (i >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::zero_row: index is out of bounds.");
     }
+#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp parallel for simd
+#else
+#pragma omp parallel for
+#endif
     for (int m = 0; m < colspi_[h]; ++m) {
         matrix_[h][i][m] = 0.0;
     }

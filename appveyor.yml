@@ -67,7 +67,10 @@ test_script:
   # Skipped long tests (not enough time to run all of them):
   #     cbs-delta-energy cbs-xtpl-gradien
   #     dfmp2-ecp fnocc2
-  #     psimrcc-sp1 pywrap-all
+  #     mp2-module
+  #     scf5
+  #     psimrcc-sp1
+  #     pywrap-all pywrap-cbs1
   #
   # Failling tests:
   #     ci-property

@@ -366,7 +366,7 @@ void DFOCC::ccsd_manager_cd() {
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -476,13 +476,13 @@ void DFOCC::ccsd_manager_cd() {
 
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB = naocc2BB * nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
-        cost_ampAB = nocc2AB * nvir2AB;
+        cost_ampAB = naocc2AB * nvir2AB;
         cost_ampAB /= 1024.0 * 1024.0;
         cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
@@ -671,7 +671,7 @@ void DFOCC::ccsd_t_manager_cd() {
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -813,13 +813,13 @@ void DFOCC::ccsd_t_manager_cd() {
 
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB = naocc2BB * nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
-        cost_ampAB = nocc2AB * nvir2AB;
+        cost_ampAB = naocc2AB * nvir2AB;
         cost_ampAB /= 1024.0 * 1024.0;
         cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
@@ -1036,7 +1036,7 @@ void DFOCC::ccsdl_t_manager_cd() {
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -1185,10 +1185,10 @@ void DFOCC::ccsdl_t_manager_cd() {
 
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB = naocc2BB * nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
         cost_ampAB = nocc2AB * nvir2AB;
@@ -1378,7 +1378,7 @@ void DFOCC::ccd_manager_cd() {
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -1468,10 +1468,10 @@ void DFOCC::ccd_manager_cd() {
     else if (reference_ == "UNRESTRICTED") {
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA = naocc2AA * nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB = naocc2BB * nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
         cost_ampAB = nocc2AB * nvir2AB;
@@ -1661,7 +1661,7 @@ void DFOCC::omp3_manager_cd() {
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = nocc2AA * nvir2AA;
+    cost_ampAA = naocc2AA * nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -1947,7 +1947,7 @@ void DFOCC::mp3_manager_cd() {
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = nocc2AA * nvir2AA;
+    cost_ampAA = naocc2AA * nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2158,7 +2158,7 @@ void DFOCC::omp2_5_manager_cd() {
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = nocc2AA * nvir2AA;
+    cost_ampAA = naocc2AA * nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2442,7 +2442,7 @@ void DFOCC::mp2_5_manager_cd() {
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = nocc2AA * nvir2AA;
+    cost_ampAA = naocc2AA * nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2627,7 +2627,7 @@ void DFOCC::olccd_manager_cd() {
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = nocc2AA * nvir2AA;
+    cost_ampAA = naocc2AA * nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2888,7 +2888,7 @@ void DFOCC::lccd_manager_cd() {
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = nocc2AA * nvir2AA;
+    cost_ampAA = naocc2AA * nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
