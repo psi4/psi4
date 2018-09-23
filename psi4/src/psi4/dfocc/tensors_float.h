@@ -197,7 +197,7 @@ class Tensor2f {
     void copy(const SharedTensor2f &Adum);
     void copy(size_t length, const SharedTensor2f &A, int inc_a, int inc_2d);
     void copy(const SharedTensor2f &A, int start);
-    void double2float(const SharedTensor2d &D,const SharedTensor2f &F );
+    void double2float(const SharedTensor2d &D );
     // partial copy
     void pcopy(const SharedTensor2f &A, int dim_copy, int dim_skip);
     void pcopy(const SharedTensor2f &A, int dim_copy, int dim_skip, int start);

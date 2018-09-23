@@ -519,6 +519,7 @@ class DFOCC : public Wavefunction {
 
     // CCSD(T)
     void ccsd_canonic_triples();
+    void ccsd_canonic_triples_float();
     void ccsd_canonic_triples_hm();
     void ccsd_canonic_triples_disk();
     void ccsd_t_manager();
@@ -863,6 +864,7 @@ class DFOCC : public Wavefunction {
     bool t2_incore;
     bool do_ppl_hm;
     bool do_triples_hm;
+    bool do_float;
 
     double **C_pitzerA;
     double **C_pitzerB;

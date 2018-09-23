@@ -27,6 +27,7 @@
  */
 
 // Latest revision on April 38, 2013.
+#include <algorithm>
 #include <stdio.h>
 #include <fstream>
 #include <cmath>
@@ -1660,12 +1661,14 @@ void Tensor2f::pcopy(const SharedTensor2f &A, int dim_copy, int dim_skip, int st
 }  //
 
 
-// void Tensor2f::double2float(const SharedTensor2d &D,const SharedTensor2f &F ) {
-//     // std:copy_n() ??
-//     for (int i = 0; i < dim1_ * dim2_; i += 1) {
-//         F->A2d_[i]=static_cast<float>(D->A2d_[i]);
-//         }
-// }  //
+void Tensor2f::double2float(const SharedTensor2d &D ) {
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
+    for (int i = 0; i < length ; i += 1) {
+        // A2d_[i]=static_cast<float>(D->A2d_[i]);
+        // A2d_[i]=(float)(D->A2d_[i]);
+        }
+}  //
 
 
 

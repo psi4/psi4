@@ -1180,9 +1180,13 @@ void DFOCC::ccsd_t_manager() {
                 ccsd_canonic_triples();
         } else if (triples_iabc_type_ == "INCORE")
             ccsd_canonic_triples_hm();
-        else if (triples_iabc_type_ == "DIRECT")
-            ccsd_canonic_triples();
-        else if (triples_iabc_type_ == "DISK")
+         else if (triples_iabc_type_ == "DIRECT") {
+            if(do_float) { 
+              outfile->Printf("\t (T) in FP32 \n");
+              ccsd_canonic_triples_float();
+            } else
+              ccsd_canonic_triples();
+        } else if (triples_iabc_type_ == "DISK")
             ccsd_canonic_triples_disk();
     }
     timer_off("(T)");
