@@ -91,19 +91,40 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         xc_functional_->info->family == XC_FAMILY_HYB_MGGA) {
         /* Range separation? */
         int rangesep = 0;
-        if (xc_functional_->info->flags & XC_FLAGS_HYB_CAM) rangesep++;
-        if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) rangesep++;
-        if (xc_functional_->info->flags & XC_FLAGS_HYB_LC) rangesep++;
-        if (xc_functional_->info->flags & XC_FLAGS_HYB_LCY) rangesep++;
-        if (rangesep) {
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
+            outfile->Printf("Functional '%d' is a HYB_CAMY functional which is not supported in Psi4\n", xc_name.c_str());
+            throw PSIEXCEPTION("HYB_CAMY functionals not supported in Psi4 at present");
+        }
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_LC ) {
+            outfile->Printf("Functional '%d' is a HYB_LC functional which is not supported in Psi4\n", xc_name.c_str());
+            throw PSIEXCEPTION("HYB_LC functionals not supported in Psi4 at present");
+        }
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_LCY) {
+            outfile->Printf("Functional '%d' is a HYB_LCY functional which is not supported in Psi4\n", xc_name.c_str());
+            throw PSIEXCEPTION("HYB_LCY functionals not supported in Psi4 at present");
+        }
+        if (xc_functional_->info->flags & XC_FLAGS_HYB_CAM) {
             lrc_ = true;
-
-            // SR      = LibXC_ALPHA + LibXC_BETA = psi4.set_x_alpha
-            // LR      = LibXC_ALPHA              = psi4.set_x_alpha + psi4.set_x_beta
-            // LR - SR =             - LibXC_BETA =                    psi4.set_x_beta
-
             double alpha, beta;
             xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
+
+            /*
+              The values alpha and beta have a different meaning in psi4 and libxc.
+
+              In libxc, alpha is the contribution from full exact
+              exchange, and beta is the contribution from short-range
+              exchange, yielding alpha exact exchange in the long
+              range, and alpha+beta in the short range.
+
+              In Psi4, alpha is the amount of exchange in the short
+              range, while beta is the difference between the amount
+              of exchange in the long range and in the short
+              range. This means
+
+              SR      = LibXC_ALPHA + LibXC_BETA = Psi4_ALPHA
+              LR      = LibXC_ALPHA              = Psi4_ALPHA + Psi4_BETA
+              LR - SR =             - LibXC_BETA =              Psi4_BETA
+            */
 
             global_exch_ = alpha + beta;
             lr_exch_ = -1.0 * beta;
@@ -200,9 +221,11 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
     if (functional == "XC_HYB_CAM_COEF") {
         double omega, alpha, beta;
         xc_hyb_cam_coef(xc_functional_.get(), &omega, &alpha, &beta);
+        // LibXC and Psi4 conventions for alpha and beta differ, see
+        // above for full description
         params["OMEGA"] = omega;
         params["ALPHA"] = alpha + beta;
-        params["BETA"] = -1.0 * beta;
+        params["BETA"] = -beta;
     }
     else if (functional == "XC_NLC_COEF") {
         double nlc_b, nlc_c;
