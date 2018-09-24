@@ -44,7 +44,7 @@ funcs.append({
     },
     "x_hf": {
         "alpha": 0.25,
-        "beta": 1.0,
+        "beta": 0.75,
         "omega": 0.3
     },
     "c_functionals": {
