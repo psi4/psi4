@@ -33,6 +33,7 @@ import os
 import copy
 import uuid
 import json
+import atexit
 
 import psi4
 from psi4.driver import driver
@@ -98,7 +99,7 @@ def run_json(json_data, clean=True):
     if return_output:
         with open(outfile, 'r') as f:
             json_data["raw_output"] = f.read()
-        os.unlink(outfile)
+        atexit.register(os.unlink, outfile)
 
     return json_data
 
