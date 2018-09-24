@@ -36,42 +36,41 @@
 #include "Params.h"
 #include "ccwave.h"
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
+void CCEnergyWavefunction::cc2_t2_build(void) {
+    DT2();
 
-void CCEnergyWavefunction::cc2_t2_build(void)
-{
-
-  DT2();
-
-  if((params_.ref == 0) || params_.t2_coupled) { /** RHF or ROHF with coupled T2's **/
+    if ((params_.ref == 0) || params_.t2_coupled) { /** RHF or ROHF with coupled T2's **/
 #ifdef TIME_CCENERGY
-    timer_on("fT2", "outfile");
+        timer_on("fT2", "outfile");
 #endif
-    cc2_faeT2(); cc2_fmiT2();
-    if(params_.print & 2) status("f -> T2", "outfile");
+        cc2_faeT2();
+        cc2_fmiT2();
+        if (params_.print & 2) status("f -> T2", "outfile");
 #ifdef TIME_CCENERGY
-    timer_off("fT2", "outfile");
+        timer_off("fT2", "outfile");
 #endif
-  }
-
-#ifdef TIME_CCENERGY
-  timer_on("WmbijT2", "outfile");
-#endif
-  cc2_WmbijT2();
-  if(params_.print & 2) status("Wmbij -> T2", "outfile");
-#ifdef TIME_CCENERGY
-  timer_off("WmbijT2", "outfile");
-#endif
+    }
 
 #ifdef TIME_CCENERGY
-  timer_on("WabeiT2", "outfile");
+    timer_on("WmbijT2", "outfile");
 #endif
-  cc2_WabeiT2();
-  if(params_.print & 2) status("Wabei -> T2", "outfile");
+    cc2_WmbijT2();
+    if (params_.print & 2) status("Wmbij -> T2", "outfile");
 #ifdef TIME_CCENERGY
-  timer_off("WabeiT2", "outfile");
+    timer_off("WmbijT2", "outfile");
 #endif
 
+#ifdef TIME_CCENERGY
+    timer_on("WabeiT2", "outfile");
+#endif
+    cc2_WabeiT2();
+    if (params_.print & 2) status("Wabei -> T2", "outfile");
+#ifdef TIME_CCENERGY
+    timer_off("WabeiT2", "outfile");
+#endif
 }
-}} // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi

@@ -39,12 +39,12 @@
 
 #include <cstdio>
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
 void CCEnergyWavefunction::update(void) {
-    outfile->Printf("  %4d      %20.15f    %4.3e    %7.6f    %7.6f    %7.6f    %7.6f\n",
-                    moinfo_.iter, moinfo_.ecc, moinfo_.conv, moinfo_.t1diag, moinfo_.d1diag,
-                    moinfo_.new_d1diag, moinfo_.d2diag);
+    outfile->Printf("  %4d      %20.15f    %4.3e    %7.6f    %7.6f    %7.6f    %7.6f\n", moinfo_.iter, moinfo_.ecc,
+                    moinfo_.conv, moinfo_.t1diag, moinfo_.d1diag, moinfo_.new_d1diag, moinfo_.d2diag);
 }
-}
-}  // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi
