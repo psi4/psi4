@@ -326,9 +326,6 @@ void CIWavefunction::setup_mcscf_ints() {
     std::vector<int> rot_orbitals(CalcInfo_->num_rot_orbs, 0);
     std::vector<int> act_orbitals(CalcInfo_->num_ci_orbs, 0);
 
-    // Indices *should* be zero, DPD does not use it
-    std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
-
     int act_orbnum = 0;
     int rot_orbnum = 0;
     for (int h = 0, rn = 0, an = 0; h < CalcInfo_->nirreps; h++) {
@@ -348,8 +345,8 @@ void CIWavefunction::setup_mcscf_ints() {
         rot_orbnum += CalcInfo_->frozen_uocc[h];
     }
 
-    rot_space_ = std::make_shared<MOSpace>('R', rot_orbitals, indices);
-    act_space_ = std::make_shared<MOSpace>('X', act_orbitals, indices);
+    rot_space_ = std::make_shared<MOSpace>('R', rot_orbitals, std::vector<int>());
+    act_space_ = std::make_shared<MOSpace>('X', act_orbitals, std::vector<int>());
     spaces.push_back(rot_space_);
     spaces.push_back(act_space_);
 
