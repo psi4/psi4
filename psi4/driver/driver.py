@@ -1280,14 +1280,17 @@ def hessian(name, **kwargs):
     else:
         gradient_type = 'conventional'
 
-    if gradient_type != 'conventional':
-        raise ValidationError("Hessian: Does not yet support more advanced input or custom functions.")
+    #if gradient_type != 'conventional':
+    #    raise ValidationError("Hessian: Does not yet support more advanced input or custom functions.")
 
     lowername = name.lower()
 
     # Check if this is a CBS extrapolation
+    print("hessian()")
+    print(lowername)
+    print(kwargs)
     if "/" in lowername:
-        return driver_cbs._cbs_gufunc('hessian', lowername, **kwargs)
+        return driver_cbs._cbs_gufunc(hessian, lowername, **kwargs, ptype="hessian")
 
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -1746,18 +1749,19 @@ def frequency(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-
-    # Bounce (someday) if name is function
-    if hasattr(name, '__call__'):
-        raise ValidationError("Frequency: Cannot use custom function")
-
-    lowername = name.lower()
-
-    if "/" in lowername:
-        return driver_cbs._cbs_gufunc(frequency, name, ptype='frequency', **kwargs)
-
-    if kwargs.get('bsse_type', None) is not None:
-        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
+ 
+    # Let hessian() handle this!
+    # # Bounce (someday) if name is function
+    # if hasattr(name, '__call__'):
+    #     raise ValidationError("Frequency: Cannot use custom function")
+    # 
+    # lowername = name.lower()
+    # 
+    # if "/" in lowername:
+    #     return driver_cbs._cbs_gufunc(frequency, name, ptype='frequency', **kwargs)
+    # 
+    # if kwargs.get('bsse_type', None) is not None:
+    #     raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
 
     return_wfn = kwargs.pop('return_wfn', False)
 
@@ -1771,7 +1775,8 @@ def frequency(name, **kwargs):
     molecule.update_geometry()
 
     # Compute the hessian
-    H, wfn = hessian(lowername, return_wfn=True, molecule=molecule, **kwargs)
+    print(name)
+    H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
 
     # S/R: Quit after getting new displacements
     if freq_mode == 'sow':

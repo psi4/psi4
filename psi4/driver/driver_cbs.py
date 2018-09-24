@@ -1315,7 +1315,11 @@ def cbs(func, label, **kwargs):
             optionstash = False
         
         # Make energy(), etc. call
+        print("Running func(molecule=molecule, **kwargs)")
+        print(func.__name__)
+        print(kwargs)
         response = func(molecule=molecule, **kwargs)
+        print("Back")
         if ptype == 'energy':
             mc['f_energy'] = response
         elif ptype == 'gradient':
@@ -1348,7 +1352,7 @@ def cbs(func, label, **kwargs):
             core.print_variables()
         core.clean_variables()
         core.clean()
-
+    
         # Copy data from 'run' to 'obtained' table
         for mce in JOBS_EXT:
             if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
@@ -1488,6 +1492,7 @@ def cbs(func, label, **kwargs):
             finalquantity.print_out()
     elif ptype == 'hessian':
         finalquantity = finalhessian
+        wfn.set_gradient(finalgradient)
         wfn.set_hessian(finalquantity)
         if finalquantity.rows(0) < 20:
             core.print_out('CURRENT HESSIAN')
@@ -1650,6 +1655,9 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['return_wfn'] = True
     cbs_kwargs['molecule'] = molecule
     cbs_kwargs['verbose'] = cbs_verbose
+    
+    if user_dertype != None:
+        cbs_kwargs['dertype'] = user_dertype
 
     # Find method and basis
     if method_list[0] in ['scf', 'hf', 'c4-scf', 'c4-hf']:
@@ -1668,7 +1676,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         cbs_kwargs['delta_basis'] = basis_list[1]
         if 'delta_scheme' in kwargs:
             cbs_kwargs['delta_scheme'] = kwargs['delta_scheme']
-
+    print("cbs_gufunc()")
+    print(func)
+    print(label)
+    print(cbs_kwargs)
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
     if return_wfn:
