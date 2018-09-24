@@ -98,7 +98,7 @@ void export_functional(py::module &m) {
         .def("set_x_omega", &SuperFunctional::set_x_omega, "Sets the range-seperation exchange parameter.")
         .def("set_c_omega", &SuperFunctional::set_c_omega, "Sets the range-seperation correlation parameter.")
         .def("set_x_alpha", &SuperFunctional::set_x_alpha, "Sets the amount of exact global HF exchange.")
-        .def("set_x_beta", &SuperFunctional::set_x_beta, "Sets the additional amount of exact HF exchange at long range.")
+        .def("set_x_beta", &SuperFunctional::set_x_beta, "Sets how much more long-range exchange than short-range exchange.")
         .def("set_c_alpha", &SuperFunctional::set_c_alpha, "Sets the amount of MP2 correlation.")
         .def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "Sets the amount of SS MP2 correlation.")
         .def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "Sets the amount of OS MP2 correlation.")
