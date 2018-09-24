@@ -39,7 +39,7 @@ class Options;
 
 namespace psi { namespace cclambda {
 
-class CCLambdaWavefunction : public psi::ccenergy::CCEnergyWavefunction
+class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction
 {
 public:
     CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
