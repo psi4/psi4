@@ -36,21 +36,18 @@
 
 namespace psi {
 
-int DPD::file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int row)
-{
+int DPD::file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int row) {
     int coltot, my_irrep;
 
-    if(File->incore) return 0;  /* Don't do this if the file is in core */
+    if (File->incore) return 0; /* Don't do this if the file is in core */
 
     my_irrep = File->my_irrep;
 
-    coltot = File->params->coltot[irrep^my_irrep];
+    coltot = File->params->coltot[irrep ^ my_irrep];
 
-    if(coltot)
-        zero_arr(File->matrix[irrep][0], coltot);
+    if (coltot) zero_arr(File->matrix[irrep][0], coltot);
 
     return 0;
-
 }
 
-}
+}  // namespace psi

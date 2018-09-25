@@ -96,10 +96,9 @@
 
 namespace psi {
 
-void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
-                 dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB,
-                 int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega)
-{
+void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
+                 dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                 double omega) {
     int h;
     int i, j, k;
     int ij, ji, ik, ki, jk, kj;
@@ -112,7 +111,7 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
     int Gil, Gjl, Gkl;
     int a, b, c, A, B, C;
     int ab;
-    int cd, bd, ad,dc;
+    int cd, bd, ad, dc;
     int id, jd, kd;
     int la, lb, lc;
     int il, jl, kl;
@@ -123,8 +122,8 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
 
     GC = T2->file.my_irrep;
     /* F and E are assumed to have same irrep */
-    GF = GE =  F->file.my_irrep;
-    GX3 = GC^GF;
+    GF = GE = F->file.my_irrep;
+    GX3 = GC ^ GF;
 
     i = I - occ_off[Gi];
     j = J - occ_off[Gj];
@@ -143,25 +142,24 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
     ki = T2->params->rowidx[K][I];
 
     dijk = 0.0;
-    if(fIJ->params->rowtot[Gi]) dijk += fIJ->matrix[Gi][i][i];
-    if(fIJ->params->rowtot[Gj]) dijk += fIJ->matrix[Gj][j][j];
-    if(fIJ->params->rowtot[Gk]) dijk += fIJ->matrix[Gk][k][k];
+    if (fIJ->params->rowtot[Gi]) dijk += fIJ->matrix[Gi][i][i];
+    if (fIJ->params->rowtot[Gj]) dijk += fIJ->matrix[Gj][j][j];
+    if (fIJ->params->rowtot[Gk]) dijk += fIJ->matrix[Gk][k][k];
 
-    W2 = (double ***) malloc(nirreps * sizeof(double **));
+    W2 = (double ***)malloc(nirreps * sizeof(double **));
 
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
 
         W2[Gab] = dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
 
-        if(F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W1[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
+        if (F->params->coltot[Gab] && virtpi[Gc]) {
+            ::memset(W1[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
         }
     }
 
     /***** do terms that are (ab,c) and don't need sorted *****/
-    for(Gd=0; Gd < nirreps; Gd++) {
-
+    for (Gd = 0; Gd < nirreps; Gd++) {
         /* term 1F */
         /* +t_JkDc * F_IDAB */
         Gid = Gi ^ Gd;
@@ -171,52 +169,50 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         cd = T2->col_offset[Gjk][Gc];
         id = F->row_offset[Gid][I];
 
-        F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
+        F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid ^ GF]);
         buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
-        nrows = F->params->coltot[Gid^GF];
+        nrows = F->params->coltot[Gid ^ GF];
         ncols = virtpi[Gc];
         nlinks = virtpi[Gd];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows,
-                    &(T2->matrix[Gjk][kj][cd]), nlinks, 1.0, W1[Gab][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows, &(T2->matrix[Gjk][kj][cd]), nlinks,
+                    1.0, W1[Gab][0], ncols);
 
-        free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
+        free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid ^ GF]);
     }
 
-    for(Gl=0; Gl < nirreps; Gl++) {
-
+    for (Gl = 0; Gl < nirreps; Gl++) {
         /* term 1E */
         /* -t_ILAB * E_JkLc */
         Gil = Gi ^ Gl;
-        Gab = Gil ^ GC ;
+        Gab = Gil ^ GC;
         Gc = Gjk ^ Gl ^ GE;
 
         lc = E->col_offset[Gjk][Gl];
         il = T2->row_offset[Gil][I];
 
-        nrows = T2->params->coltot[Gil^GC];
+        nrows = T2->params->coltot[Gil ^ GC];
         ncols = virtpi[Gc];
         nlinks = occpi[Gl];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows,
-                    &(E->matrix[Gjk][jk][lc]), ncols, 1.0, W1[Gab][0], ncols);
-
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows, &(E->matrix[Gjk][jk][lc]), ncols,
+                    1.0, W1[Gab][0], ncols);
     }
 
     /***** Do terms (ba,c) that need bac sorts *****/
 
     /* zero out W2 memory */
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        if(F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
+        if (F->params->coltot[Gab] && virtpi[Gc]) {
+            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
         }
     }
 
-    for(Gd=0; Gd < nirreps; Gd++) {
+    for (Gd = 0; Gd < nirreps; Gd++) {
         /* term 6F */
         /* + F_JdBa * t_IkDc */
         Gjd = Gj ^ Gd;
@@ -226,21 +222,21 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         cd = T2->col_offset[Gik][Gc];
         jd = F->row_offset[Gjd][J];
 
-        F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
+        F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd ^ GF]);
         buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
-        nrows = F->params->coltot[Gjd^GF];
+        nrows = F->params->coltot[Gjd ^ GF];
         ncols = virtpi[Gc];
         nlinks = virtpi[Gd];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows,
-                    &(T2->matrix[Gik][ki][cd]), nlinks, 1.0, W2[Gab][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows, &(T2->matrix[Gik][ki][cd]), nlinks,
+                    1.0, W2[Gab][0], ncols);
 
-        free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
+        free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd ^ GF]);
     }
 
-    for(Gl=0; Gl < nirreps; Gl++) {
+    for (Gl = 0; Gl < nirreps; Gl++) {
         /* term 6E */
         /* +t_JlAb * E_IkLc */
         Gjl = Gj ^ Gl;
@@ -250,31 +246,29 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         lc = E->col_offset[Gik][Gl];
         jl = T2->row_offset[Gjl][J];
 
-        nrows = T2->params->coltot[Gjl^GC];
+        nrows = T2->params->coltot[Gjl ^ GC];
         ncols = virtpi[Gc];
         nlinks = occpi[Gl];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gjl][jl], nrows,
-                    &(E->matrix[Gik][ik][lc]), ncols, 1.0, W2[Gab][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gjl][jl], nrows, &(E->matrix[Gik][ik][lc]), ncols,
+                    1.0, W2[Gab][0], ncols);
     }
 
-    sort_3d(W2, W1, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-            F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
-            vir_off, virtpi, vir_off, F->params->colidx, bac, 1);
-
+    sort_3d(W2, W1, nirreps, Gijk ^ GX3, F->params->coltot, F->params->colidx, F->params->colorb, F->params->rsym,
+            F->params->ssym, vir_off, vir_off, virtpi, vir_off, F->params->colidx, bac, 1);
 
     /***** do (ac,b) terms that require acb sort *****/
 
     /* zero out W2 memory */
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        if(F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
+        if (F->params->coltot[Gab] && virtpi[Gc]) {
+            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
         }
     }
 
-    for(Gd=0; Gd < nirreps; Gd++) {
+    for (Gd = 0; Gd < nirreps; Gd++) {
         /* term 2F */
         /* + F_IdAc * t_JkBd */
         Gid = Gi ^ Gd;
@@ -284,21 +278,21 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         bd = T2->col_offset[Gjk][Gb];
         id = F->row_offset[Gid][I];
 
-        F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
+        F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid ^ GF]);
         buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
-        nrows = F->params->coltot[Gid^GF];
+        nrows = F->params->coltot[Gid ^ GF];
         ncols = virtpi[Gb];
         nlinks = virtpi[Gd];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows,
-                    &(T2->matrix[Gjk][jk][bd]), nlinks, 1.0, W2[Gca][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows, &(T2->matrix[Gjk][jk][bd]), nlinks,
+                    1.0, W2[Gca][0], ncols);
 
-        free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
+        free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid ^ GF]);
     }
 
-    for(Gl=0; Gl < nirreps; Gl++) {
+    for (Gl = 0; Gl < nirreps; Gl++) {
         /* term 2E */
         /* -t_IlAc * E_KjLb */
         Gil = Gi ^ Gl;
@@ -308,32 +302,29 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         lb = E->col_offset[Gjk][Gl];
         il = T2->row_offset[Gil][I];
 
-        nrows = T2->params->coltot[Gil^GC];
+        nrows = T2->params->coltot[Gil ^ GC];
         ncols = virtpi[Gb];
         nlinks = occpi[Gl];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows,
-                    &(E->matrix[Gjk][kj][lb]), ncols, 1.0, W2[Gca][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows, &(E->matrix[Gjk][kj][lb]), ncols,
+                    1.0, W2[Gca][0], ncols);
     }
 
-
-    sort_3d(W2, W1, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-            F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
-            vir_off, virtpi, vir_off, F->params->colidx, acb, 1);
-
+    sort_3d(W2, W1, nirreps, Gijk ^ GX3, F->params->coltot, F->params->colidx, F->params->colorb, F->params->rsym,
+            F->params->ssym, vir_off, vir_off, virtpi, vir_off, F->params->colidx, acb, 1);
 
     /***** do (ca,b) terms that need a bca sort *****/
 
     /* zero out W2 memory */
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        if(F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
+        if (F->params->coltot[Gab] && virtpi[Gc]) {
+            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
         }
     }
 
-    for(Gd=0; Gd < nirreps; Gd++) {
+    for (Gd = 0; Gd < nirreps; Gd++) {
         /* term 3F */
         /* + F_KdCa * t_JiBd */
         Gkd = Gk ^ Gd;
@@ -343,54 +334,52 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         bd = T2->col_offset[Gij][Gb];
         kd = F->row_offset[Gkd][K];
 
-        F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
+        F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd ^ GF]);
         buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
-        nrows = F->params->coltot[Gkd^GF];
+        nrows = F->params->coltot[Gkd ^ GF];
         ncols = virtpi[Gb];
         nlinks = virtpi[Gd];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gkd][0], nrows,
-                    &(T2->matrix[Gij][ji][bd]), nlinks, 1.0, W2[Gca][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, F->matrix[Gkd][0], nrows, &(T2->matrix[Gij][ji][bd]), nlinks,
+                    1.0, W2[Gca][0], ncols);
 
-        free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
+        free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd ^ GF]);
     }
 
-    for(Gl=0; Gl < nirreps; Gl++) {
+    for (Gl = 0; Gl < nirreps; Gl++) {
         /* term 3E */
         /* - t_KlCa * E_IjLb */
         Gkl = Gk ^ Gl;
-        Gca = Gkl ^ GC ;
+        Gca = Gkl ^ GC;
         Gb = Gji ^ Gl ^ GE;
 
         lb = E->col_offset[Gji][Gl];
         kl = T2->row_offset[Gkl][K];
 
-        nrows = T2->params->coltot[Gkl^GC];
+        nrows = T2->params->coltot[Gkl ^ GC];
         ncols = virtpi[Gb];
         nlinks = occpi[Gl];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gkl][kl], nrows,
-                    &(E->matrix[Gji][ij][lb]), ncols, 1.0, W2[Gca][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gkl][kl], nrows, &(E->matrix[Gji][ij][lb]), ncols,
+                    1.0, W2[Gca][0], ncols);
     }
 
-    sort_3d(W2, W1, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-            F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
-            vir_off, virtpi, vir_off, F->params->colidx, bca, 1);
-
+    sort_3d(W2, W1, nirreps, Gijk ^ GX3, F->params->coltot, F->params->colidx, F->params->colorb, F->params->rsym,
+            F->params->ssym, vir_off, vir_off, virtpi, vir_off, F->params->colidx, bca, 1);
 
     /***** do (cb,a) terms that require a cba sort *****/
     /* zero out W2 memory */
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        if(F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
+        if (F->params->coltot[Gab] && virtpi[Gc]) {
+            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
         }
     }
 
-    for(Gd=0; Gd < nirreps; Gd++) {
+    for (Gd = 0; Gd < nirreps; Gd++) {
         /* term 4F */
         /* + F_KdCb * t_IjAd */
         Gkd = Gk ^ Gd;
@@ -400,53 +389,52 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         ad = T2->col_offset[Gij][Ga];
         kd = F->row_offset[Gkd][K];
 
-        F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
+        F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd ^ GF]);
         buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
-        nrows = F->params->coltot[Gkd^GF];
+        nrows = F->params->coltot[Gkd ^ GF];
         ncols = virtpi[Ga];
         nlinks = virtpi[Gd];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gkd][0], nrows,
-                    &(T2->matrix[Gij][ij][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, F->matrix[Gkd][0], nrows, &(T2->matrix[Gij][ij][ad]), nlinks,
+                    1.0, W2[Gcb][0], ncols);
 
-        free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
+        free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd ^ GF]);
     }
 
-    for(Gl=0; Gl < nirreps; Gl++) {
+    for (Gl = 0; Gl < nirreps; Gl++) {
         /* term 4E */
         /*  -t_KlCb * E_JiLa */
         Gkl = Gk ^ Gl;
-        Gcb  = Gkl ^ GC;
+        Gcb = Gkl ^ GC;
         Ga = Gji ^ Gl ^ GE;
 
         la = E->col_offset[Gji][Gl];
         kl = T2->row_offset[Gkl][K];
 
-        nrows = T2->params->coltot[Gkl^GC];
+        nrows = T2->params->coltot[Gkl ^ GC];
         ncols = virtpi[Ga];
         nlinks = occpi[Gl];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gkl][kl], nrows,
-                    &(E->matrix[Gji][ji][la]), ncols, 1.0, W2[Gcb][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gkl][kl], nrows, &(E->matrix[Gji][ji][la]), ncols,
+                    1.0, W2[Gcb][0], ncols);
     }
 
-    sort_3d(W2, W1, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-            F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
-            vir_off, virtpi, vir_off, F->params->colidx, cba, 1);
+    sort_3d(W2, W1, nirreps, Gijk ^ GX3, F->params->coltot, F->params->colidx, F->params->colorb, F->params->rsym,
+            F->params->ssym, vir_off, vir_off, virtpi, vir_off, F->params->colidx, cba, 1);
 
     /***** do (bc,a) terms that require a cab sort *****/
     /* zero out W2 memory */
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        if(F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
+        if (F->params->coltot[Gab] && virtpi[Gc]) {
+            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
         }
     }
 
-    for(Gd=0; Gd < nirreps; Gd++) {
+    for (Gd = 0; Gd < nirreps; Gd++) {
         /* term 5F */
         /* + t_IkAd * F_JdBc */
         Gjd = Gj ^ Gd;
@@ -456,47 +444,46 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
         ad = T2->col_offset[Gik][Ga];
         jd = F->row_offset[Gjd][J];
 
-        F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
+        F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd ^ GF]);
         buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
-        nrows = F->params->coltot[Gjd^GF];
+        nrows = F->params->coltot[Gjd ^ GF];
         ncols = virtpi[Ga];
         nlinks = virtpi[Gd];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows,
-                    &(T2->matrix[Gik][ik][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows, &(T2->matrix[Gik][ik][ad]), nlinks,
+                    1.0, W2[Gcb][0], ncols);
 
-        free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
+        free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd ^ GF]);
     }
 
-    for(Gl=0; Gl < nirreps; Gl++) {
+    for (Gl = 0; Gl < nirreps; Gl++) {
         /* term 5E */
         /* - t_JlBc * E_Kila */
         Gjl = Gj ^ Gl;
-        Gcb  = Gjl ^ GC;
+        Gcb = Gjl ^ GC;
         Ga = Gik ^ Gl ^ GE;
 
         la = E->col_offset[Gik][Gl];
         jl = T2->row_offset[Gjl][J];
 
-        nrows = T2->params->coltot[Gjl^GC];
+        nrows = T2->params->coltot[Gjl ^ GC];
         ncols = virtpi[Ga];
         nlinks = occpi[Gl];
 
-        if(nrows && ncols && nlinks)
-            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gjl][jl], nrows,
-                    &(E->matrix[Gik][ki][la]), ncols, 1.0, W2[Gcb][0], ncols);
+        if (nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gjl][jl], nrows, &(E->matrix[Gik][ki][la]), ncols,
+                    1.0, W2[Gcb][0], ncols);
     }
 
-    sort_3d(W2, W1, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-            F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
-            vir_off, virtpi, vir_off, F->params->colidx, cab, 1);
+    sort_3d(W2, W1, nirreps, Gijk ^ GX3, F->params->coltot, F->params->colidx, F->params->colorb, F->params->rsym,
+            F->params->ssym, vir_off, vir_off, virtpi, vir_off, F->params->colidx, cab, 1);
 
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
 
-        for(ab=0; ab < F->params->coltot[Gab]; ab++) {
+        for (ab = 0; ab < F->params->coltot[Gab]; ab++) {
             A = F->params->colorb[Gab][ab][0];
             B = F->params->colorb[Gab][ab][1];
             Ga = F->params->rsym[A];
@@ -504,27 +491,25 @@ void DPD::T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
             a = A - vir_off[Ga];
             b = B - vir_off[Gb];
 
-            for(c=0; c < virtpi[Gc]; c++) {
+            for (c = 0; c < virtpi[Gc]; c++) {
                 C = vir_off[Gc] + c;
 
                 denom = dijk;
-                if(fAB->params->rowtot[Ga]) denom -= fAB->matrix[Ga][a][a];
-                if(fAB->params->rowtot[Gb]) denom -= fAB->matrix[Gb][b][b];
-                if(fAB->params->rowtot[Gc]) denom -= fAB->matrix[Gc][c][c];
+                if (fAB->params->rowtot[Ga]) denom -= fAB->matrix[Ga][a][a];
+                if (fAB->params->rowtot[Gb]) denom -= fAB->matrix[Gb][b][b];
+                if (fAB->params->rowtot[Gc]) denom -= fAB->matrix[Gc][c][c];
 
                 W1[Gab][ab][c] /= (denom + omega);
 
             } /* c */
-        } /* ab */
-    } /* Gab */
+        }     /* ab */
+    }         /* Gab */
 
-
-    for(Gab=0; Gab < nirreps; Gab++) {
+    for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         free_dpd_block(W2[Gab], F->params->coltot[Gab], virtpi[Gc]);
     }
     free(W2);
-
 }
 
-}
+}  // namespace psi

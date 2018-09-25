@@ -39,11 +39,10 @@ namespace psi {
 ** given dpdfile2.
 */
 
-double DPD::file2_dot_self(dpdfile2 *BufX)
-{
+double DPD::file2_dot_self(dpdfile2 *BufX) {
     int h, nirreps, my_irrep;
     int row, col;
-    double alpha=0.0;
+    double alpha = 0.0;
 
     nirreps = BufX->params->nirreps;
     my_irrep = BufX->my_irrep;
@@ -51,18 +50,15 @@ double DPD::file2_dot_self(dpdfile2 *BufX)
     file2_mat_init(BufX);
     file2_mat_rd(BufX);
 
-    for(h=0; h < nirreps; h++) {
-
-        for(row=0; row < BufX->params->rowtot[h]; row++)
-            for(col=0; col < BufX->params->coltot[h^my_irrep]; col++)
+    for (h = 0; h < nirreps; h++) {
+        for (row = 0; row < BufX->params->rowtot[h]; row++)
+            for (col = 0; col < BufX->params->coltot[h ^ my_irrep]; col++)
                 alpha += BufX->matrix[h][row][col] * BufX->matrix[h][row][col];
-
     }
 
     file2_mat_close(BufX);
 
     return alpha;
-
 }
 
-}
+}  // namespace psi

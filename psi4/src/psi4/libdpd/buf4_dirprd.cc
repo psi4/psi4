@@ -44,22 +44,19 @@ namespace psi {
 **  The results is written to FileB.
 */
 
-int DPD::buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB)
-{
+int DPD::buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB) {
     int h, nirreps, my_irrep;
 
     nirreps = BufA->params->nirreps;
     my_irrep = BufA->file.my_irrep;
 
-    for(h=0; h < nirreps; h++) {
-
+    for (h = 0; h < nirreps; h++) {
         buf4_mat_irrep_init(BufA, h);
         buf4_mat_irrep_init(BufB, h);
         buf4_mat_irrep_rd(BufA, h);
         buf4_mat_irrep_rd(BufB, h);
 
-        dirprd_block(BufA->matrix[h], BufB->matrix[h],
-                     BufA->params->rowtot[h], BufA->params->coltot[h^my_irrep]);
+        dirprd_block(BufA->matrix[h], BufB->matrix[h], BufA->params->rowtot[h], BufA->params->coltot[h ^ my_irrep]);
 
         buf4_mat_irrep_wrt(BufB, h);
         buf4_mat_irrep_close(BufA, h);
@@ -69,4 +66,4 @@ int DPD::buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB)
     return 0;
 }
 
-}
+}  // namespace psi

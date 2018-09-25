@@ -52,8 +52,7 @@ namespace psi {
 **
 */
 
-int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double alpha)
-{
+int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double alpha) {
     int h, row, col, rowtot, coltot, all_buf_irrep;
     int nbuckets, incore, n;
     long int size, memoryd, rows_per_bucket, rows_left;
@@ -61,58 +60,53 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
 
     all_buf_irrep = InBuf->file.my_irrep;
 
-    buf4_init(&OutBuf, outfilenum, InBuf->file.my_irrep, InBuf->params->pqnum,
-              InBuf->params->rsnum, InBuf->params->pqnum,
-              InBuf->params->rsnum, 0, label);
+    buf4_init(&OutBuf, outfilenum, InBuf->file.my_irrep, InBuf->params->pqnum, InBuf->params->rsnum,
+              InBuf->params->pqnum, InBuf->params->rsnum, 0, label);
 
-    for(h=0; h < InBuf->params->nirreps; h++) {
-
+    for (h = 0; h < InBuf->params->nirreps; h++) {
         /* select in-core or out-of-core algorithm */
-        memoryd = dpd_memfree()/2; /* use half the memory for each buf4 */
-        if(InBuf->params->rowtot[h] && InBuf->params->coltot[h^all_buf_irrep]) {
-
-            rows_per_bucket = memoryd/InBuf->params->coltot[h^all_buf_irrep];
+        memoryd = dpd_memfree() / 2; /* use half the memory for each buf4 */
+        if (InBuf->params->rowtot[h] && InBuf->params->coltot[h ^ all_buf_irrep]) {
+            rows_per_bucket = memoryd / InBuf->params->coltot[h ^ all_buf_irrep];
 
             /* enough memory for the whole matrix? */
-            if(rows_per_bucket > InBuf->params->rowtot[h])
-                rows_per_bucket = InBuf->params->rowtot[h];
+            if (rows_per_bucket > InBuf->params->rowtot[h]) rows_per_bucket = InBuf->params->rowtot[h];
 
-            if(!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", "outfile");
+            if (!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", "outfile");
 
-            nbuckets = (int) ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
+            nbuckets = (int)ceil(((double)InBuf->params->rowtot[h]) / ((double)rows_per_bucket));
 
             rows_left = InBuf->params->rowtot[h] % rows_per_bucket;
 
             incore = 1;
-            if(nbuckets > 1) {
+            if (nbuckets > 1) {
                 incore = 0;
 #if DPD_DEBUG
-                outfile->Printf( "buf4_scmcopy: memory information.\n");
-                outfile->Printf( "buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
-                outfile->Printf( "buf4_scmcopy: nbuckets = %d\n", nbuckets);
-                outfile->Printf( "buf4_scmcopy: rows_per_bucket = %d\n", rows_per_bucket);
-                outfile->Printf( "buf4_scmcopy: rows_left = %d\n", rows_left);
-                outfile->Printf( "buf4_scmcopy: out-of-core algorithm used\n");
+                outfile->Printf("buf4_scmcopy: memory information.\n");
+                outfile->Printf("buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
+                outfile->Printf("buf4_scmcopy: nbuckets = %d\n", nbuckets);
+                outfile->Printf("buf4_scmcopy: rows_per_bucket = %d\n", rows_per_bucket);
+                outfile->Printf("buf4_scmcopy: rows_left = %d\n", rows_left);
+                outfile->Printf("buf4_scmcopy: out-of-core algorithm used\n");
 #endif
             }
 
-        }
-        else incore = 1;
+        } else
+            incore = 1;
 
-        if(incore) {
+        if (incore) {
             buf4_mat_irrep_init(InBuf, h);
             buf4_mat_irrep_rd(InBuf, h);
 
             buf4_mat_irrep_init(&OutBuf, h);
 
             rowtot = InBuf->params->rowtot[h];
-            coltot = InBuf->params->coltot[h^all_buf_irrep];
-            size = ((long) rowtot)*((long) coltot);
+            coltot = InBuf->params->coltot[h ^ all_buf_irrep];
+            size = ((long)rowtot) * ((long)coltot);
 
-            if(rowtot && coltot) {
-                memcpy((void *) &(OutBuf.matrix[h][0][0]),
-                        (const void *) &(InBuf->matrix[h][0][0]),
-                        ((long) sizeof(double))*size);
+            if (rowtot && coltot) {
+                memcpy((void *)&(OutBuf.matrix[h][0][0]), (const void *)&(InBuf->matrix[h][0][0]),
+                       ((long)sizeof(double)) * size);
                 C_DSCAL(size, alpha, &(OutBuf.matrix[h][0][0]), 1);
             }
 
@@ -120,36 +114,32 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
 
             buf4_mat_irrep_close(&OutBuf, h);
             buf4_mat_irrep_close(InBuf, h);
-        }
-        else {
-
+        } else {
             buf4_mat_irrep_init_block(InBuf, h, rows_per_bucket);
             buf4_mat_irrep_init_block(&OutBuf, h, rows_per_bucket);
 
-            coltot = InBuf->params->coltot[h^all_buf_irrep];
-            size = ((long) rows_per_bucket)*((long) coltot);
+            coltot = InBuf->params->coltot[h ^ all_buf_irrep];
+            size = ((long)rows_per_bucket) * ((long)coltot);
 
-            for(n=0; n < (rows_left ? nbuckets-1 : nbuckets); n++) {
+            for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
+                buf4_mat_irrep_rd_block(InBuf, h, n * rows_per_bucket, rows_per_bucket);
 
-                buf4_mat_irrep_rd_block(InBuf, h, n*rows_per_bucket, rows_per_bucket);
-
-                memcpy((void *) &(OutBuf.matrix[h][0][0]), (const void *) &(InBuf->matrix[h][0][0]),
-                        ((long) sizeof(double))*size);
+                memcpy((void *)&(OutBuf.matrix[h][0][0]), (const void *)&(InBuf->matrix[h][0][0]),
+                       ((long)sizeof(double)) * size);
                 C_DSCAL(size, alpha, &(OutBuf.matrix[h][0][0]), 1);
 
-                buf4_mat_irrep_wrt_block(&OutBuf, h, n*rows_per_bucket, rows_per_bucket);
+                buf4_mat_irrep_wrt_block(&OutBuf, h, n * rows_per_bucket, rows_per_bucket);
             }
-            if(rows_left) {
+            if (rows_left) {
+                size = ((long)rows_left) * ((long)coltot);
 
-                size = ((long) rows_left) * ((long) coltot);
+                buf4_mat_irrep_rd_block(InBuf, h, n * rows_per_bucket, rows_left);
 
-                buf4_mat_irrep_rd_block(InBuf, h, n*rows_per_bucket, rows_left);
-
-                memcpy((void *) &(OutBuf.matrix[h][0][0]), (const void *) &(InBuf->matrix[h][0][0]),
-                        ((long) sizeof(double))*size);
+                memcpy((void *)&(OutBuf.matrix[h][0][0]), (const void *)&(InBuf->matrix[h][0][0]),
+                       ((long)sizeof(double)) * size);
                 C_DSCAL(size, alpha, &(OutBuf.matrix[h][0][0]), 1);
 
-                buf4_mat_irrep_wrt_block(&OutBuf, h, n*rows_per_bucket, rows_left);
+                buf4_mat_irrep_wrt_block(&OutBuf, h, n * rows_per_bucket, rows_left);
             }
 
             buf4_mat_irrep_close_block(InBuf, h, rows_per_bucket);
@@ -162,4 +152,4 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
     return 0;
 }
 
-}
+}  // namespace psi
