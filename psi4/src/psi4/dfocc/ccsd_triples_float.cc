@@ -124,12 +124,12 @@ void DFOCC::ccsd_canonic_triples_float() {
             }
         }
     }
-    Jd.reset();
+    // Jd.reset();
     
     // B(iaQ)
     L = SharedTensor2f(new Tensor2f("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
     Mf = SharedTensor2f(new Tensor2f("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-    for (long int q = 0; q < navirA; ++q) {;
+    for (long int q = 0; q < nQ; ++q) {;
             for (long int i = 0; i < naoccA; ++i) {
                 for (long int a = 0; a <navirA; ++a) {
                     long int ia = ia_idxAA->get(i, a);
@@ -292,10 +292,14 @@ void DFOCC::ccsd_canonic_triples_float() {
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
                             long int kc = ia_idxAA->get(k, c);
-                            float value = V->get(ab, c) + (t1AF->get(i, a) * J->get(jb, kc)) +
-                                           (t1AF->get(j, b) * J->get(ia, kc)) + (t1AF->get(k, c) * J->get(ia, jb));
-                            float denom = 1 + ((a == b) + (b == c) + (a == c));
-                            double val = static_cast<double>(value)/static_cast<double>(denom);
+                            // float value = V->get(ab, c) + (t1AF->get(i, a) * J->get(jb, kc)) +
+                            //                (t1AF->get(j, b) * J->get(ia, kc)) + (t1AF->get(k, c) * J->get(ia, jb));
+                            // double value = static_cast<double>(V->get(ab, c)) + (t1A->get(i, a) * static_cast<double>(J->get(jb, kc) ) ) +
+                            //                (t1A->get(j, b) * static_cast<double>(J->get(ia, kc))  ) + (t1A->get(k, c) * static_cast<double>(J->get(ia, jb)) );
+                            double value = static_cast<double>(V->get(ab, c)) + (t1A->get(i, a) * Jd->get(jb, kc)) +
+                                    (t1A->get(j, b) * Jd->get(ia, kc)) + (t1A->get(k, c) * Jd->get(ia, jb));
+                            double denom = 1 + ((a == b) + (b == c) + (a == c));
+                            double val = (value/denom);
                             V->set(ab, c, static_cast<float>(val));
                         }
                     }
@@ -306,7 +310,7 @@ void DFOCC::ccsd_canonic_triples_float() {
                 double factor = 2 - ((i == j) + (j == k) + (i == k));
                 
                 // Compute energy
-                float Xvalue, Yvalue, Zvalue;
+                double Xvalue, Yvalue, Zvalue;
 #pragma omp parallel for private(Xvalue, Yvalue, Zvalue) reduction(+ : sum)
                 for (long int a = 0; a < navirA; ++a) {
                     double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
@@ -332,12 +336,12 @@ void DFOCC::ccsd_canonic_triples_float() {
                             Zvalue = V->get(ac, b) + V->get(ba, c) + V->get(cb, a);
                             
                             // contributions to energy
-                            float value = (Yvalue - (2.0 * Zvalue)) * (W->get(ab, c) + W->get(bc, a) + W->get(ca, b));
+                            double value = (Yvalue - (2.0 * Zvalue)) * (W->get(ab, c) + W->get(bc, a) + W->get(ca, b));
                             value += (Zvalue - (2.0 * Yvalue)) * (W->get(ac, b) + W->get(ba, c) + W->get(cb, a));
                             value += 3.0 * Xvalue;
-                            double conv=static_cast<float>(value);
+                            // double conv=static_cast<double>(value);
                             double Dijkabc = Dijkab - FockA->get(c + noccA, c + noccA);
-                            sum += (conv * factor) / Dijkabc;
+                            sum += (value * factor) / Dijkabc;
                             
                         }
                     }
