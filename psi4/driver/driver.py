@@ -1280,17 +1280,15 @@ def hessian(name, **kwargs):
     else:
         gradient_type = 'conventional'
 
-    #if gradient_type != 'conventional':
-    #    raise ValidationError("Hessian: Does not yet support more advanced input or custom functions.")
-
-    lowername = name.lower()
-
     # Check if this is a CBS extrapolation
-    print("hessian()")
-    print(lowername)
-    print(kwargs)
-    if "/" in lowername:
-        return driver_cbs._cbs_gufunc(hessian, lowername, **kwargs, ptype="hessian")
+    if gradient_type == "cbs_gufunc":
+        return driver_cbs._cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")
+    elif gradient_type == "cbs_wrapper":
+        return driver_cbs.cbs(hessian, "cbs", **kwargs, ptype="hessian")
+    elif gradient_type != "conventional":
+        raise ValidationError("Hessian: Does not yet support custom functions.")
+    else:
+        lowername = name.lower()
 
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -1775,7 +1773,6 @@ def frequency(name, **kwargs):
     molecule.update_geometry()
 
     # Compute the hessian
-    print(name)
     H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
 
     # S/R: Quit after getting new displacements

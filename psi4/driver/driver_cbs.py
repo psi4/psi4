@@ -1315,11 +1315,7 @@ def cbs(func, label, **kwargs):
             optionstash = False
         
         # Make energy(), etc. call
-        print("Running func(molecule=molecule, **kwargs)")
-        print(func.__name__)
-        print(kwargs)
         response = func(molecule=molecule, **kwargs)
-        print("Back")
         if ptype == 'energy':
             mc['f_energy'] = response
         elif ptype == 'gradient':
@@ -1676,10 +1672,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         cbs_kwargs['delta_basis'] = basis_list[1]
         if 'delta_scheme' in kwargs:
             cbs_kwargs['delta_scheme'] = kwargs['delta_scheme']
-    print("cbs_gufunc()")
-    print(func)
-    print(label)
-    print(cbs_kwargs)
+    
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
     if return_wfn:
