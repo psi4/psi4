@@ -45,6 +45,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
+#include "psi4/cclambda/cclambda.h"
 #define EXTERN
 #include "globals.h"
 
@@ -64,7 +65,7 @@ namespace psi { namespace cclambda {
 ** TDC, Jan-June 2002
 */
 
-void local_init(void)
+void CCLambdaWavefunction::local_init(void)
 {
   local.nso = moinfo.nso;
   local.nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */
@@ -74,7 +75,7 @@ void local_init(void)
 
 }
 
-void local_done(void)
+void CCLambdaWavefunction::local_done(void)
 {
   outfile->Printf( "\tLocal parameters free.\n");
 }

@@ -32,6 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
+#include "psi4/cclambda/cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -57,9 +58,8 @@ void GmiL2(int L_irr);
 void dijabL2(int L_irr);
 
 void BL2_AO(int L_irr);
-void status(const char *, std::string);
 
-void L2_build(struct L_Params L_params) {
+void CCLambdaWavefunction::L2_build(struct L_Params L_params) {
   dpdbuf4 L2;
   int L_irr;
   L_irr = L_params.irrep;

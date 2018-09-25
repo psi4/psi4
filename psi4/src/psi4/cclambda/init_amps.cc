@@ -32,6 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
+#include "psi4/cclambda/cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -39,7 +40,7 @@
 
 namespace psi { namespace cclambda {
 
-void init_amps(struct L_Params L_params)
+void CCLambdaWavefunction::init_amps(struct L_Params L_params)
 {
   double norm;
   dpdfile2 T1, R1, LIA, Lia, dIA, dia, XIA, Xia;

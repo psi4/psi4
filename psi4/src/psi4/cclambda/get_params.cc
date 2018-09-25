@@ -42,6 +42,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/cclambda/cclambda.h"
 
 #include "MOInfo.h"
 #include "Params.h"
@@ -51,7 +52,7 @@
 
 namespace psi { namespace cclambda {
 
-void get_params(Options& options)
+void CCLambdaWavefunction::get_params(Options& options)
 {
   int errcod, iconv,i,j,k,l,prop_sym,prop_root, excited_method=0;
         int *states_per_irrep, prop_all, lambda_and_Ls = 0;

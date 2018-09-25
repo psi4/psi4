@@ -38,6 +38,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/cclambda/cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -54,7 +55,7 @@ namespace psi { namespace cclambda {
 ** Modified for UHF references by TDC, June 2002.
 */
 
-void get_moinfo(std::shared_ptr<Wavefunction> wfn)
+void CCLambdaWavefunction::get_moinfo(std::shared_ptr<Wavefunction> wfn)
 {
     int i,j, h, p, q, errcod, nactive, nirreps, sym;
     double ***C, ***Ca, ***Cb;
@@ -241,7 +242,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn)
 }
 
 /* Frees memory allocated in get_moinfo() and dumps some info. */
-void cleanup(void)
+void CCLambdaWavefunction::cleanup(void)
 {
     int i, h;
 

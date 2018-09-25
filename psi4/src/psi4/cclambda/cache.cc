@@ -35,6 +35,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/cclambda/cclambda.h"
 
 namespace psi {
 extern FILE* outfile;
@@ -54,7 +55,7 @@ void cache_iajb_uhf(int **cachelist);
 void cache_ijka_uhf(int **cachelist);
 void cache_ijkl_uhf(int **cachelist);
 
-int **cacheprep_uhf(int level, int *cachefiles)
+int **CCLambdaWavefunction::cacheprep_uhf(int level, int *cachefiles)
 {
   int **cachelist;
 
@@ -120,7 +121,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
    }
 }
 
-int **cacheprep_rhf(int level, int *cachefiles)
+int **CCLambdaWavefunction::cacheprep_rhf(int level, int *cachefiles)
 {
   int **cachelist;
 
@@ -745,12 +746,12 @@ void cache_ijkl_uhf(int **cachelist)
   cachelist[23][23] = 1;
 }
 
-void cachedone_uhf(int **cachelist)
+void CCLambdaWavefunction::cachedone_uhf(int **cachelist)
 {
   free_int_matrix(cachelist);
 }
 
-void cachedone_rhf(int **cachelist)
+void CCLambdaWavefunction::cachedone_rhf(int **cachelist)
 {
   free_int_matrix(cachelist);
 }

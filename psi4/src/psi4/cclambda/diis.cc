@@ -38,6 +38,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/cclambda/cclambda.h"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -60,7 +61,7 @@ namespace psi { namespace cclambda {
 ** -TDC  12/22/01
 */
 
-void diis(int iter, int L_irr)
+void CCLambdaWavefunction::diis(int iter, int L_irr)
 {
   int nvector=8;  /* Number of error vectors to keep */
   int h, nirreps;
