@@ -38,7 +38,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
 void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
@@ -46,27 +47,26 @@ void ex_sort_td_rohf(char hand, int Tirrep);
 void ex_sort_td_uhf(char hand, int Tirrep);
 
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U) {
-  // FYI: "Sort" needs to know L or R in order to
-  //       put density in correct place (ltd or rtd)
-  int Tirrep = S.irrep^U.irrep;
-  if(params.ref == 0 || params.ref == 1) {
-    ex_tdensity_rohf(S,U);
-    outfile->Printf( "\t\t***...density has been built...\n");
+    // FYI: "Sort" needs to know L or R in order to
+    //       put density in correct place (ltd or rtd)
+    int Tirrep = S.irrep ^ U.irrep;
+    if (params.ref == 0 || params.ref == 1) {
+        ex_tdensity_rohf(S, U);
+        outfile->Printf("\t\t***...density has been built...\n");
 
-    ex_sort_td_rohf(hand,Tirrep);
-    outfile->Printf( "\t\t***...density has been sorted...\n");
+        ex_sort_td_rohf(hand, Tirrep);
+        outfile->Printf("\t\t***...density has been sorted...\n");
 
-  }
-  else if(params.ref == 2) {
-    ex_tdensity_uhf(S,U);
-    outfile->Printf( "\t\t***...density has been built...\n");
+    } else if (params.ref == 2) {
+        ex_tdensity_uhf(S, U);
+        outfile->Printf("\t\t***...density has been built...\n");
 
-    ex_sort_td_uhf(hand,Tirrep);
-    outfile->Printf( "\t\t***...density has been sorted...\n");
+        ex_sort_td_uhf(hand, Tirrep);
+        outfile->Printf("\t\t***...density has been sorted...\n");
+    }
 
-  }
-
-  return;
+    return;
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

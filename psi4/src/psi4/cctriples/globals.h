@@ -50,5 +50,5 @@ namespace cctriples {
 
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
-
-}} // namespace psi::CCTRIPLES
+}
+}  // namespace psi

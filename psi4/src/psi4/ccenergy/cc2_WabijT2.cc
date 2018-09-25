@@ -36,48 +36,47 @@
 #include "Params.h"
 #include "ccwave.h"
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
-void CCEnergyWavefunction::cc2_WabijT2(void)
-{
-  dpdbuf4 W;
+void CCEnergyWavefunction::cc2_WabijT2(void) {
+    dpdbuf4 W;
 
-  if(params_.ref == 0) { /*** RHF ***/
+    if (params_.ref == 0) { /*** RHF ***/
 
-    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
-    global_dpd_->buf4_close(&W);
+        global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
+        global_dpd_->buf4_close(&W);
 
-  }
+    }
 
-  else if(params_.ref == 1) { /*** ROHF ***/
+    else if (params_.ref == 1) { /*** ROHF ***/
 
-    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 Wabij (i>j,a>b)");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
-    global_dpd_->buf4_close(&W);
+        global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 Wabij (i>j,a>b)");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
+        global_dpd_->buf4_close(&W);
 
-    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
-    global_dpd_->buf4_close(&W);
+        global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
+        global_dpd_->buf4_close(&W);
 
-  }
+    }
 
-  else if(params_.ref == 2) { /*** UHF ***/
+    else if (params_.ref == 2) { /*** UHF ***/
 
-    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 WABIJ (I>J,A>B)");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
-    global_dpd_->buf4_close(&W);
+        global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 WABIJ (I>J,A>B)");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
+        global_dpd_->buf4_close(&W);
 
-    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 12, 17, 12, 17, 0, "CC2 Wabij (i>j,a>b)");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
-    global_dpd_->buf4_close(&W);
+        global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 12, 17, 12, 17, 0, "CC2 Wabij (i>j,a>b)");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
+        global_dpd_->buf4_close(&W);
 
-    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 22, 28, 22, 28, 0, "CC2 WAbIj (Ij,Ab)");
-    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
-    global_dpd_->buf4_close(&W);
-
-  }
-
+        global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 22, 28, 22, 28, 0, "CC2 WAbIj (Ij,Ab)");
+        global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
+        global_dpd_->buf4_close(&W);
+    }
 }
-}} // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi

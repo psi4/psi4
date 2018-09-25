@@ -920,7 +920,7 @@ bool RHF::stability_analysis() {
             for (int i = 0; i < mindim; i++) triplet_eval_sym.push_back(std::make_pair(evals[i], h));
 
             free_block(evecs);
-            delete[] evals;
+            free(evals);
         }
 
         outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");

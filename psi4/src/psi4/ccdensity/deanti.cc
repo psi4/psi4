@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include "MOInfo.h"
 #include "Params.h"
@@ -36,7 +36,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* DEANTI(): Convert the two-particle density from Dirac to Mulliken
 ** ordering.  The original, Fock-adjusted density (see the comments in
@@ -71,11 +72,14 @@ void deanti_RHF(struct RHO_Params rho_params);
 void deanti_ROHF(struct RHO_Params rho_params);
 void deanti_UHF(struct RHO_Params rho_params);
 
-void deanti(struct RHO_Params rho_params)
-{
-  if(params.ref == 0) deanti_RHF(rho_params);
-  else if(params.ref == 1) deanti_ROHF(rho_params);
-  else if(params.ref == 2) deanti_UHF(rho_params);
+void deanti(struct RHO_Params rho_params) {
+    if (params.ref == 0)
+        deanti_RHF(rho_params);
+    else if (params.ref == 1)
+        deanti_ROHF(rho_params);
+    else if (params.ref == 2)
+        deanti_UHF(rho_params);
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

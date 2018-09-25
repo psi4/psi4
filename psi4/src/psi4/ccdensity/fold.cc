@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include "MOInfo.h"
 #include "Params.h"
@@ -36,7 +36,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* FOLD(): Fold the Fock matrix contributions to the energy (or energy
 ** derivative) into the two-particle density matrix.  Here we are
@@ -67,11 +68,14 @@ void fold_RHF(struct RHO_Params rho_params);
 void fold_ROHF(struct RHO_Params rho_params);
 void fold_UHF(struct RHO_Params rho_params);
 
-void fold(struct RHO_Params rho_params)
-{
-  if(params.ref == 0) fold_RHF(rho_params);
-  else if(params.ref == 1) fold_ROHF(rho_params);
-  else if(params.ref == 2) fold_UHF(rho_params);
+void fold(struct RHO_Params rho_params) {
+    if (params.ref == 0)
+        fold_RHF(rho_params);
+    else if (params.ref == 1)
+        fold_ROHF(rho_params);
+    else if (params.ref == 2)
+        fold_UHF(rho_params);
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi
