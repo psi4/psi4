@@ -34,6 +34,8 @@ import copy
 funcs = []
 
 funcs.append({
+    # This should be replaced with a call to libxc's
+    # HYB_GGA_XC_LC_WPBEH_WHS once it's possible
     "name": "wPBE0",
     "alias": ["LC-WPBE0"],
     "x_functionals": {
@@ -58,6 +60,8 @@ funcs.append({
 })
 
 funcs.append({
+    # This should be replaced with a call to libxc's
+    # HYB_GGA_XC_LC_WPBE_WHS once it's possible
     "name": "wPBE",
     "alias": ["LC-WPBE", "LCWPBE"],
     "x_functionals": {
