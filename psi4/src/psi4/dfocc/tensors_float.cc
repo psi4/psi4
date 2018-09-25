@@ -1665,8 +1665,8 @@ void Tensor2f::double2float(const SharedTensor2d &D ) {
     #pragma omp parallel for
     for (int i = 0; i < dim1_; ++i) {
         for (int j = 0; j < dim2_; ++j) {
-            // A2d_[i][j] = static_cast<float>(D->get(i,j));
-            A2d_[i][j] = static_cast<float>(D->A2d_[j][i]);
+            A2d_[i][j] = static_cast<float>(D->get(i,j));
+            // A2d_[i][j] = static_cast<float>(D->A2d_[j][i]);
         }
     }
 

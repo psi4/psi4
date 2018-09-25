@@ -73,14 +73,20 @@ void DFOCC::ccsd_canonic_triples_float() {
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     T = SharedTensor2f(new Tensor2f("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     //TODO convert
-    t2F.double2float(t2);
-     outfile->Printf("DEBUG convert \n");
-    for (long int i = 0; i < naoccA*navirA; ++i) {
-        for (long int j = 0; j < naoccA*navirA; ++i) {
-        T->set(i,j,static_cast<float>(t2->get(i,j)));
+    // t2F.double2float(t2);
+    printf("DEBUG convert \n");
+    for (long int i = 0; i < naoccA; ++i) {
+        for (long int a = 0; a <navirA; ++a) {
+          long int ia = ia_idxAA->get(i, a);
+            for (long int j = 0; j < naoccA; ++j) {
+                for (long int b = 0; b <navirA; ++b) {
+                    long int jb = ia_idxAA->get(j, b);
+                    t2F->set(ia,jb,static_cast<float>(t2->get(ia,jb)));
+                }
+            }
         }
     }
-    outfile->Printf(" DEBUG \n");
+    printf("DEBUG convert done \n");
     T->sort(1324, t2F, 1.0, 0.0);
     t2.reset();
     t2F.reset();
@@ -96,38 +102,41 @@ void DFOCC::ccsd_canonic_triples_float() {
     KD.reset();
     I = SharedTensor2f(new Tensor2f("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
 
-    for (long int i = 0; i < naoccA*naoccA; ++i) {
-        for (long int j = 0; j < navirA*navirA; ++i) {
-        J->set(i,j,static_cast<float>(Jd->get(i,j)));
+    J = SharedTensor2f(new Tensor2f("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    for (long int i = 0; i < naoccA; ++i) {
+        for (long int j = 0; j <naoccA; ++j) {
+          long int ij = ij_idxAA->get(i, j);
+            for (long int a = 0; a < navirA; ++a) {
+                for (long int b = 0; b <navirA; ++b) {
+                    long int ab = ab_idxAA->get(j, b);
+                    J->set(ij,ab,static_cast<float>(Jd->get(ij,ab)));
+                }
+            }
         }
     }
-    outfile->Printf(" DEBUG Jd->J \n");
+    printf(" J done \n");
     I->sort(1324, J, 1.0, 0.0);
     Jd.reset();
 
     // Form (ia|jb)
     Jd = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     Jd->gemm(true, false, M, M, 1.0, 0.0);
-    J.reset();
-    for (long int i = 0; i < naoccA*navirA; ++i) {
-        for (long int j = 0; j < naoccA*navirA; ++i) {
-        J->set(i,j,static_cast<float>(Jd->get(i,j)));
-        }
-    }
     Jd.reset();
     // B(iaQ)
     L = SharedTensor2f(new Tensor2f("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
     Mf = SharedTensor2f(new Tensor2f("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-    for (long int i = 0; i < nQ; ++i) {
-        for (long int j = 0; j < naoccA*navirA; ++i) {
-        Mf->set(i,j,static_cast<float>(M->get(i,j)));
-        }
+    for (long int q = 0; q < navirA; ++q) {;
+            for (long int i = 0; i < naoccA; ++i) {
+                for (long int a = 0; a <navirA; ++a) {
+                    long int ia = ia_idxAA->get(i, a);
+                    Mf->set(q,ia,static_cast<float>(M->get(q,ia)));
+                }
+            }
     }
-    outfile->Printf("DEBUG Jd->J\n");
+    printf(" Mf done\n");
     L = Mf->transpose();
     M.reset();
     Mf.reset();
-
     // malloc W[ijk](abc)
     W = SharedTensor2f(new Tensor2f("W[IJK] <AB|C>", navirA * navirA, navirA));
     V = SharedTensor2f(new Tensor2f("V[IJK] <BA|C>", navirA * navirA, navirA));
@@ -141,10 +150,11 @@ void DFOCC::ccsd_canonic_triples_float() {
     KD->read(psio_, PSIF_DFOCC_INTS);
     //TODO convert KD->K
     for (long int i = 0; i < nQ; ++i) {
-        for (long int j = 0; j < ntri_abAA; ++i) {
+        for (long int j = 0; j < ntri_abAA; ++j) {
         K->set(i,j,static_cast<float>(KD->get(i,j)));
         }
     }
+    printf(" K done\n");
     Jt = SharedTensor2f(new Tensor2f("J[I] <A|B>=C", navirA, ntri_abAA));
 
     // main loop
@@ -156,7 +166,7 @@ void DFOCC::ccsd_canonic_triples_float() {
         // Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i * navirA * nQ, 0, 1.0, 0.0);
         J1->expand23(navirA, navirA, navirA, Jt);
-
+        
         for (long int j = 0; j <= i; ++j) {
             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
@@ -165,6 +175,7 @@ void DFOCC::ccsd_canonic_triples_float() {
             J2->expand23(navirA, navirA, navirA, Jt);
 
             for (long int k = 0; k <= j; ++k) {
+                
                 // Compute J[k](a,bc) = (ka|bc) = \sum(Q) B[k](aQ) * B(Q,bc)
                 Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, k * navirA * nQ, 0, 1.0, 0.0);
                 J3->expand23(navirA, navirA, navirA, Jt);
@@ -269,6 +280,7 @@ void DFOCC::ccsd_canonic_triples_float() {
 
 // V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
 // Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
+                printf("hit \n");
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {
                     long int ia = ia_idxAA->get(i, a);
@@ -277,9 +289,9 @@ void DFOCC::ccsd_canonic_triples_float() {
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
                             long int kc = ia_idxAA->get(k, c);
-                            double value = V->get(ab, c) + (t1A->get(i, a) * J->get(jb, kc)) +
+                            float value = V->get(ab, c) + (t1A->get(i, a) * J->get(jb, kc)) +
                                            (t1A->get(j, b) * J->get(ia, kc)) + (t1A->get(k, c) * J->get(ia, jb));
-                            double denom = 1 + ((a == b) + (b == c) + (a == c));
+                            float denom = 1 + ((a == b) + (b == c) + (a == c));
                             V->set(ab, c, value / denom);
                         }
                     }
@@ -288,9 +300,9 @@ void DFOCC::ccsd_canonic_triples_float() {
                 // Denom
                 double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
                 double factor = 2 - ((i == j) + (j == k) + (i == k));
-
+                printf("hit \n");
                 // Compute energy
-                double Xvalue, Yvalue, Zvalue;
+                float Xvalue, Yvalue, Zvalue;
 #pragma omp parallel for private(Xvalue, Yvalue, Zvalue) reduction(+ : sum)
                 for (long int a = 0; a < navirA; ++a) {
                     double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
@@ -303,7 +315,7 @@ void DFOCC::ccsd_canonic_triples_float() {
                             long int bc = ab_idxAA->get(b, c);
                             long int ca = ab_idxAA->get(c, a);
                             long int cb = ab_idxAA->get(c, b);
-
+                            
                             // X_ijk^abc
                             Xvalue = (W->get(ab, c) * V->get(ab, c)) + (W->get(ac, b) * V->get(ac, b)) +
                                      (W->get(ba, c) * V->get(ba, c)) + (W->get(bc, a) * V->get(bc, a)) +
@@ -314,16 +326,19 @@ void DFOCC::ccsd_canonic_triples_float() {
 
                             // Z_ijk^abc
                             Zvalue = V->get(ac, b) + V->get(ba, c) + V->get(cb, a);
-
+                            
                             // contributions to energy
-                            double value = (Yvalue - (2.0 * Zvalue)) * (W->get(ab, c) + W->get(bc, a) + W->get(ca, b));
+                            float value = (Yvalue - (2.0 * Zvalue)) * (W->get(ab, c) + W->get(bc, a) + W->get(ca, b));
                             value += (Zvalue - (2.0 * Yvalue)) * (W->get(ac, b) + W->get(ba, c) + W->get(cb, a));
                             value += 3.0 * Xvalue;
+                            double conv=static_cast<float>(value);
                             double Dijkabc = Dijkab - FockA->get(c + noccA, c + noccA);
-                            sum += (value * factor) / Dijkabc;
+                            sum += (conv * factor) / Dijkabc;
+                            
                         }
                     }
                 }
+                
 
             }  // k
         }      // j
