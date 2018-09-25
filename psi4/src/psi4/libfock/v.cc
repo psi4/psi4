@@ -439,8 +439,9 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     return vv10_e;
 }
 SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
-
     /* Not yet finished, missing several components*/
+    throw PSIEXCEPTION("V: Cannot compute VV10 gradient contribution.");
+
     timer_on("V: VV10");
     timer_on("Setup");
 
@@ -518,14 +519,8 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
         double** phi_z = pworker->basis_value("PHI_Z")->pointer();
 
-        // double xcontrib = 0.0;
-        // double ycontrib = 0.0;
-        // double zcontrib = 0.0;
-        // for (size_t i = 0; i < npoints; i++){
-        //     xcontrib += x_grid[i];
-        //     ycontrib += y_grid[i];
-        //     zcontrib += z_grid[i];
-        // }
+        // These terms are incorrect until they are able to isolate blocks on a single atom due to
+        // the requirement of the sum to not include blocks on the same atom
         for (int P = 0; P < npoints; P++) {
             std::fill(Tp[P], Tp[P] + nlocal, 0.0);
             C_DAXPY(nlocal, z_grid[P], phi[P], 1, Tp[P], 1);
@@ -980,9 +975,10 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 SharedMatrix RV::compute_gradient() {
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
-    // if (functional_->needs_vv10()) {
-    //     throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
-    // }
+    if (functional_->needs_vv10()) {
+        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
+    }
+
     // How many atoms?
     int natom = primary_->molecule()->natom();
 
@@ -1086,7 +1082,6 @@ SharedMatrix RV::compute_gradient() {
         point_workers_[i]->set_deriv(old_deriv);
     }
     if (functional_->needs_vv10()) {
-        // throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
         G->add(vv10_nlc_gradient(D_AO_[0]));
     }
 

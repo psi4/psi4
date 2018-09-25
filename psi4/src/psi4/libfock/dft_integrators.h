@@ -310,8 +310,8 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
 
         for (int i = 0; i < 3; i++) {
             double*** phi_j = phi_ij[i];
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dp[0], max_functions, 0.0,
-                    Up[0], max_functions);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dp[0], max_functions, 0.0, Up[0],
+                    max_functions);
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, -2.0 * w[P] * (v_tau_a[P]), Up[P], 1, Tp[P], 1);
