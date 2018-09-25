@@ -45,7 +45,7 @@ void DFOCC::ccsd_canonic_triples_float() {
     SharedTensor2d M,Jd,KD;
     SharedTensor2f V, J1, J2, J3, Jt;
     SharedTensor1f Eijk;
-    SharedTensor2f t2F;
+    SharedTensor2f t2F,t1AF;
     long int Nijk;
 
     // Find number of unique ijk combinations (i>=j>=k)
@@ -67,6 +67,13 @@ void DFOCC::ccsd_canonic_triples_float() {
 
     // Memory: 2*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
 
+    // convert singles
+    t1AF = SharedTensor2f(new Tensor2f("T1_1 <I|A>", naoccA, navirA));
+    for (long int i=0; i< naoccA; i++) {
+        for (long int a=0; a<navirA; a++){
+            t1AF->set(i,a,static_cast<float>(t1A->get(i,a)));
+        }
+    }
     // Read t2 amps
     t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2F = SharedTensor2f(new Tensor2f("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
@@ -117,11 +124,25 @@ void DFOCC::ccsd_canonic_triples_float() {
     printf(" J done \n");
     I->sort(1324, J, 1.0, 0.0);
     Jd.reset();
+    J.reset();
 
     // Form (ia|jb)
     Jd = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = SharedTensor2f(new Tensor2f("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     Jd->gemm(true, false, M, M, 1.0, 0.0);
+    for (long int i = 0; i < naoccA; ++i) {
+        for (long int a = 0; a <navirA; ++a) {
+          long int ia = ia_idxAA->get(i, a);
+            for (long int j = 0; j < naoccA; ++j) {
+                for (long int b = 0; b <navirA; ++b) {
+                    long int jb = ia_idxAA->get(j, b);
+                    J->set(ia,jb,static_cast<float>(Jd->get(ia,jb)));
+                }
+            }
+        }
+    }
     Jd.reset();
+    
     // B(iaQ)
     L = SharedTensor2f(new Tensor2f("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
     Mf = SharedTensor2f(new Tensor2f("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
@@ -175,7 +196,7 @@ void DFOCC::ccsd_canonic_triples_float() {
             J2->expand23(navirA, navirA, navirA, Jt);
 
             for (long int k = 0; k <= j; ++k) {
-                
+
                 // Compute J[k](a,bc) = (ka|bc) = \sum(Q) B[k](aQ) * B(Q,bc)
                 Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, k * navirA * nQ, 0, 1.0, 0.0);
                 J3->expand23(navirA, navirA, navirA, Jt);
@@ -206,7 +227,7 @@ void DFOCC::ccsd_canonic_triples_float() {
                                 1.0);
                     }
                 }
-
+                
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+)
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
                 V->contract(false, false, navirA * navirA, navirA, navirA, J2, T, 0,
@@ -280,7 +301,6 @@ void DFOCC::ccsd_canonic_triples_float() {
 
 // V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
 // Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
-                printf("hit \n");
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {
                     long int ia = ia_idxAA->get(i, a);
@@ -289,10 +309,11 @@ void DFOCC::ccsd_canonic_triples_float() {
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
                             long int kc = ia_idxAA->get(k, c);
-                            float value = V->get(ab, c) + (t1A->get(i, a) * J->get(jb, kc)) +
-                                           (t1A->get(j, b) * J->get(ia, kc)) + (t1A->get(k, c) * J->get(ia, jb));
+                            float value = V->get(ab, c) + (t1AF->get(i, a) * J->get(jb, kc)) +
+                                           (t1AF->get(j, b) * J->get(ia, kc)) + (t1AF->get(k, c) * J->get(ia, jb));
                             float denom = 1 + ((a == b) + (b == c) + (a == c));
-                            V->set(ab, c, value / denom);
+                            double val = static_cast<double>(value)/static_cast<double>(denom);
+                            V->set(ab, c, static_cast<float>(val));
                         }
                     }
                 }
@@ -300,7 +321,7 @@ void DFOCC::ccsd_canonic_triples_float() {
                 // Denom
                 double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
                 double factor = 2 - ((i == j) + (j == k) + (i == k));
-                printf("hit \n");
+                
                 // Compute energy
                 float Xvalue, Yvalue, Zvalue;
 #pragma omp parallel for private(Xvalue, Yvalue, Zvalue) reduction(+ : sum)
@@ -338,7 +359,6 @@ void DFOCC::ccsd_canonic_triples_float() {
                         }
                     }
                 }
-                
 
             }  // k
         }      // j
