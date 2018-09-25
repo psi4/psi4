@@ -2832,7 +2832,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do Cholesky decomposition of the ERI tensor -*/
     options.add_bool("CHOLESKY",false);
     /*-  USE FP32 precision for given algorithm -*/
-    options.add_bool("FLOAT",false);
+    options.add_bool("DO_FLOAT",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

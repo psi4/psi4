@@ -316,7 +316,7 @@ double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
  *
  * \ingroup QT
  */
-double PSI_API C_DDOT(size_t length, float *x, int inc_x, float *y, int inc_y) {
+double PSI_API C_SDOT(size_t length, float *x, int inc_x, float *y, int inc_y) {
     if (length == 0) return 0.0;
 
     float reg = 0.0;

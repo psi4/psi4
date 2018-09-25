@@ -105,7 +105,7 @@ void DFOCC::common_init() {
     Wabef_type_ = options_.get_str("PPL_TYPE");
     triples_iabc_type_ = options_.get_str("TRIPLES_IABC_TYPE");
     do_cd = options_.get_str("CHOLESKY");
-    do_float = options_.get_bool("FLOAT");
+    do_float = options_.get_bool("DO_FLOAT");
 
     // title
     title();

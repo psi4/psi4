@@ -1662,12 +1662,20 @@ void Tensor2f::pcopy(const SharedTensor2f &A, int dim_copy, int dim_skip, int st
 
 
 void Tensor2f::double2float(const SharedTensor2d &D ) {
-    size_t length;
-    length = (size_t)dim1_ * (size_t)dim2_;
-    for (int i = 0; i < length ; i += 1) {
-        // A2d_[i]=static_cast<float>(D->A2d_[i]);
-        // A2d_[i]=(float)(D->A2d_[i]);
+    #pragma omp parallel for
+    for (int i = 0; i < dim1_; ++i) {
+        for (int j = 0; j < dim2_; ++j) {
+            // A2d_[i][j] = static_cast<float>(D->get(i,j));
+            A2d_[i][j] = static_cast<float>(D->A2d_[j][i]);
         }
+    }
+
+    // size_t length;
+    // length = (size_t)dim1_ * (size_t)dim2_;
+    // for (int i = 0; i < length ; i += 1) {
+    //      A2d_[i]=static_cast<float>(D->get(i,A2d_[i]);
+        // A2d_[i]=(float)(D->A2d_[i]);
+        // }
 }  //
 
 
