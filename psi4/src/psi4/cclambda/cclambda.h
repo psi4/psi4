@@ -35,19 +35,19 @@
 namespace psi {
 class Wavefunction;
 class Options;
-}
+}  // namespace psi
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
-class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction
-{
-public:
+class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
+   public:
     CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CCLambdaWavefunction();
 
     double compute_energy();
 
-private:
+   private:
     void init();
     void init_io();
     void init_amps(struct L_Params);
@@ -57,7 +57,7 @@ private:
     void cachedone_uhf(int **cachelist);
     void cleanup();
     void denom(struct L_Params);
-    void get_params(psi::Options&);
+    void get_params(psi::Options &);
     void local_init();
     void local_done();
     void exit_io();
@@ -67,13 +67,14 @@ private:
     int converged(int);
     void diis(int, int);
     void sort_amps(int);
-    void status(const char*, std::string);
+    void status(const char *, std::string);
     void update();
 
     void cc2_L2_build(struct L_Params);
     void L2_build(struct L_Params);
 };
 
-}}
+}  // namespace cclambda
+}  // namespace psi
 
-#endif // CCLAMBDA_H
+#endif  // CCLAMBDA_H
