@@ -62,8 +62,8 @@ void BesselFunction::init(int _lMax, int _N, int _order, const double accuracy) 
 }
 
 BesselFunction::~BesselFunction() {
-    free(K);
-    free(C);
+    delete[] K;
+    delete[] C;
 }
 
 // Tabulate the bessel function values

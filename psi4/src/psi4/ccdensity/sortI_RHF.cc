@@ -41,7 +41,8 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi {
+namespace ccdensity {
 
 /* SORTI_RHF(): Place all the components of the RHF Lagrangian into
 ** a large matrix, I (moinfo.I), which we also symmetrize by computing
@@ -59,96 +60,100 @@ namespace psi { namespace ccdensity {
 ** TDC, 2/2008
 */
 
-void sortI_RHF(void)
-{
-  int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
-  int row, col, i, j, I, J, a, b, A, B, p, q;
-  int *occpi, *virtpi, *occ_off, *vir_off;
-  int *occ_sym, *vir_sym, *openpi;
-  int *qt_occ, *qt_vir;
-  double **O, chksum, value;
-  dpdfile2 D;
+void sortI_RHF(void) {
+    int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
+    int row, col, i, j, I, J, a, b, A, B, p, q;
+    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_sym, *vir_sym, *openpi;
+    int *qt_occ, *qt_vir;
+    double **O, chksum, value;
+    dpdfile2 D;
 
-  nmo = moinfo.nmo;
-  nfzc = moinfo.nfzc;
-  nfzv = moinfo.nfzv;
-  nclsd = moinfo.nclsd;
-  nopen = moinfo.nopen;
-  nirreps = moinfo.nirreps;
-  occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-  occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
-  occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
-  openpi = moinfo.openpi;
-  qt_occ = moinfo.qt_occ; qt_vir = moinfo.qt_vir;
+    nmo = moinfo.nmo;
+    nfzc = moinfo.nfzc;
+    nfzv = moinfo.nfzv;
+    nclsd = moinfo.nclsd;
+    nopen = moinfo.nopen;
+    nirreps = moinfo.nirreps;
+    occpi = moinfo.occpi;
+    virtpi = moinfo.virtpi;
+    occ_off = moinfo.occ_off;
+    vir_off = moinfo.vir_off;
+    occ_sym = moinfo.occ_sym;
+    vir_sym = moinfo.vir_sym;
+    openpi = moinfo.openpi;
+    qt_occ = moinfo.qt_occ;
+    qt_vir = moinfo.qt_vir;
 
-  O = block_matrix(nmo,nmo);
+    O = block_matrix(nmo, nmo);
 
-  /* Sort alpha components first */
-  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
-  global_dpd_->file2_mat_init(&D);
-  global_dpd_->file2_mat_rd(&D);
-  for(h=0; h < nirreps; h++) {
-      for(i=0; i < occpi[h]; i++) {
-          I = qt_occ[occ_off[h] + i];
-          for(j=0; j < occpi[h]; j++) {
-              J = qt_occ[occ_off[h] + j];
-              O[I][J] += 2.0 * D.matrix[h][i][j];
+    /* Sort alpha components first */
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
+    global_dpd_->file2_mat_init(&D);
+    global_dpd_->file2_mat_rd(&D);
+    for (h = 0; h < nirreps; h++) {
+        for (i = 0; i < occpi[h]; i++) {
+            I = qt_occ[occ_off[h] + i];
+            for (j = 0; j < occpi[h]; j++) {
+                J = qt_occ[occ_off[h] + j];
+                O[I][J] += 2.0 * D.matrix[h][i][j];
             }
         }
     }
-  global_dpd_->file2_mat_close(&D);
-  global_dpd_->file2_close(&D);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&D);
 
-  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-  global_dpd_->file2_mat_init(&D);
-  global_dpd_->file2_mat_rd(&D);
-  for(h=0; h < nirreps; h++) {
-      for(a=0; a < virtpi[h]; a++) {
-          A = qt_vir[vir_off[h] + a];
-          for(b=0; b < virtpi[h]; b++) {
-              B = qt_vir[vir_off[h] + b];
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+    global_dpd_->file2_mat_init(&D);
+    global_dpd_->file2_mat_rd(&D);
+    for (h = 0; h < nirreps; h++) {
+        for (a = 0; a < virtpi[h]; a++) {
+            A = qt_vir[vir_off[h] + a];
+            for (b = 0; b < virtpi[h]; b++) {
+                B = qt_vir[vir_off[h] + b];
 
-              O[A][B] += 2.0 * D.matrix[h][a][b];
+                O[A][B] += 2.0 * D.matrix[h][a][b];
             }
         }
     }
-  global_dpd_->file2_mat_close(&D);
-  global_dpd_->file2_close(&D);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&D);
 
-  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
-  global_dpd_->file2_mat_init(&D);
-  global_dpd_->file2_mat_rd(&D);
-  for(h=0; h < nirreps; h++) {
-      for(i=0; i < occpi[h]; i++) {
-          I = qt_occ[occ_off[h] + i];
-          for(a=0; a < virtpi[h]; a++) {
-              A = qt_vir[vir_off[h] + a];
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
+    global_dpd_->file2_mat_init(&D);
+    global_dpd_->file2_mat_rd(&D);
+    for (h = 0; h < nirreps; h++) {
+        for (i = 0; i < occpi[h]; i++) {
+            I = qt_occ[occ_off[h] + i];
+            for (a = 0; a < virtpi[h]; a++) {
+                A = qt_vir[vir_off[h] + a];
 
-              O[A][I] += 2.0 * D.matrix[h][i][a];
-	      O[I][A] += 2.0 * D.matrix[h][i][a];
+                O[A][I] += 2.0 * D.matrix[h][i][a];
+                O[I][A] += 2.0 * D.matrix[h][i][a];
             }
         }
     }
-  global_dpd_->file2_mat_close(&D);
-  global_dpd_->file2_close(&D);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&D);
 
-  /* Symmetrize the Lagrangian */
-  for(p=0; p < (nmo-nfzv); p++) {
-      for(q=0; q < p; q++) {
-          value = 0.5*(O[p][q] + O[q][p]);
-          O[p][q] = O[q][p] = value;
+    /* Symmetrize the Lagrangian */
+    for (p = 0; p < (nmo - nfzv); p++) {
+        for (q = 0; q < p; q++) {
+            value = 0.5 * (O[p][q] + O[q][p]);
+            O[p][q] = O[q][p] = value;
         }
     }
 
-  /* Multiply the Lagrangian by -2.0 for the final energy derivative
-     expression */
-  for(p=0; p < (nmo-nfzv); p++) {
-      for(q=0; q < (nmo-nfzv); q++) {
-	  O[p][q] *= -2.0;
-	}
+    /* Multiply the Lagrangian by -2.0 for the final energy derivative
+       expression */
+    for (p = 0; p < (nmo - nfzv); p++) {
+        for (q = 0; q < (nmo - nfzv); q++) {
+            O[p][q] *= -2.0;
+        }
     }
 
-  moinfo.I = O;
+    moinfo.I = O;
 }
 
-}} // namespace psi::ccdensity
+}  // namespace ccdensity
+}  // namespace psi

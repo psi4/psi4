@@ -34,13 +34,12 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "ccwave.h"
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
-void CCEnergyWavefunction::status(const char *s, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-           std::make_shared<PsiOutStream>(out));
-  printer->Printf( "     %-15s...complete\n", s);
-
+void CCEnergyWavefunction::status(const char *s, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("     %-15s...complete\n", s);
 }
-}} // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi
