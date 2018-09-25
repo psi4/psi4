@@ -49,23 +49,8 @@ void DFOCC::ccsd_canonic_triples_float() {
     long int Nijk;
 
     // Find number of unique ijk combinations (i>=j>=k)
-    /*
-    Nijk = 0;
-    for(long int i = 0 ; i < naoccA; ++i){
-        for(long int j = 0 ; j <= i; ++j){
-            for(long int k = 0 ; k <= j; ++k){
-                Nijk++;
-            }
-        }
-    }
-    */
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
-
-    // Malloc Eijk->
-    // Eijk = SharedTensor1d(new Tensor1d("Eijk", Nijk));
-
-    // Memory: 2*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
 
     // convert singles
     t1AF = SharedTensor2f(new Tensor2f("T1_1 <I|A>", naoccA, navirA));
@@ -74,14 +59,13 @@ void DFOCC::ccsd_canonic_triples_float() {
             t1AF->set(i,a,static_cast<float>(t1A->get(i,a)));
         }
     }
-    // Read t2 amps
+
+    // Read t2 amps and convert
     t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2F = SharedTensor2f(new Tensor2f("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     T = SharedTensor2f(new Tensor2f("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    //TODO convert
     // t2F.double2float(t2);
-    printf("DEBUG convert \n");
     for (long int i = 0; i < naoccA; ++i) {
         for (long int a = 0; a <navirA; ++a) {
           long int ia = ia_idxAA->get(i, a);
@@ -93,7 +77,6 @@ void DFOCC::ccsd_canonic_triples_float() {
             }
         }
     }
-    printf("DEBUG convert done \n");
     T->sort(1324, t2F, 1.0, 0.0);
     t2.reset();
     t2F.reset();
@@ -103,20 +86,20 @@ void DFOCC::ccsd_canonic_triples_float() {
     M->read(psio_, PSIF_DFOCC_INTS);
     KD = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
     KD->read(psio_, PSIF_DFOCC_INTS);
-    //TODO convert
     Jd = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
     Jd->gemm(true, false, KD, M, 1.0, 0.0);
     KD.reset();
     I = SharedTensor2f(new Tensor2f("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
 
+    // convert (ij/ka) 
     J = SharedTensor2f(new Tensor2f("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
     for (long int i = 0; i < naoccA; ++i) {
         for (long int j = 0; j <naoccA; ++j) {
           long int ij = ij_idxAA->get(i, j);
-            for (long int a = 0; a < navirA; ++a) {
-                for (long int b = 0; b <navirA; ++b) {
-                    long int ab = ab_idxAA->get(j, b);
-                    J->set(ij,ab,static_cast<float>(Jd->get(ij,ab)));
+            for (long int k = 0; k < naoccA; ++k) {
+                for (long int a = 0; a <navirA; ++a) {
+                    long int ka = ia_idxAA->get(k, a);
+                    J->set(ij,ka,static_cast<float>(Jd->get(ij,ka)));
                 }
             }
         }
