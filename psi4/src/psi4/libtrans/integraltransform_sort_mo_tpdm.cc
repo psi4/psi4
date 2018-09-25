@@ -38,9 +38,6 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/psifiles.h"
 
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
-
 using namespace psi;
 
 /**

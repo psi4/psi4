@@ -36,10 +36,7 @@
 #include <stdio.h>
 #include "psi4/psifiles.h"
 #include "mospace.h"
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
 
-;
 using namespace psi;
 
 /**

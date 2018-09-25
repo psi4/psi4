@@ -41,9 +41,6 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
-
 using namespace psi;
 
 /**
