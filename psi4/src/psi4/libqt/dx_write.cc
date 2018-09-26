@@ -188,7 +188,8 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
     int zsteps = (int)((zmax - zmin) / step_size + 1);
 
     // Prep .dx file
-    auto printer = std::make_shared<PsiOutStream>("density.dx", std::ostream::app);
+    auto mode = std::ostream::app;
+    auto printer = std::make_shared<PsiOutStream>("density.dx", mode);
     printer->Printf("#  Output from Psi4 calculation\n");
     printer->Printf("#  Electronic density (in e/ang^3) for: \n");
     printer->Printf("object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
