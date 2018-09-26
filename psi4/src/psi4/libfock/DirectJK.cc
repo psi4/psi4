@@ -578,7 +578,8 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       auto printer = std::make_shared<PsiOutStream>("bench.dat",std::ostream::app);
+        auto mode = std::ostream::app;
+        auto printer = std::make_shared<PsiOutStream>("bench.dat", mode);
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
