@@ -73,15 +73,12 @@ test_script:
   #     pywrap-all pywrap-cbs1
   #
   # Failling tests:
-  #     ci-property
   #     cubeprop
-  #     dfcasscf-fzc-sp
   #     fsapt-terms sapt-dft1 sapt1 tu5-sapt
   #     pywrap-db1
   #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|pywrap-db1|sapt-dft1|sapt1|tu5-sapt)$"
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|pywrap-db1|sapt-dft1|sapt1|tu5-sapt)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|cubeprop|fsapt-terms|pywrap-db1|sapt-dft1|sapt1|tu5-sapt)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
@@ -90,8 +87,7 @@ after_test:
   # Run failling tests, but their results are ignored
   # TODO fix the tests
   - ctest --build-config %CONFIGURATION%
-          --tests-regex "^(ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|pywrap-db1|sapt-dft1|sapt1|tu5-sapt)$"
-          --tests-regex "^(ci-property|cubeprop|dfcasscf-fzc-sp|fsapt-terms|pywrap-db1|sapt-dft1|sapt1|tu5-sapt)$"
+          --tests-regex "^(cubeprop|fsapt-terms|pywrap-db1|sapt-dft1|sapt1|tu5-sapt)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
   - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
