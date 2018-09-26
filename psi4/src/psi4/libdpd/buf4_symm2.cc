@@ -47,23 +47,22 @@ namespace psi {
 **   dpdbuf4 *Buf1: A pointer to the left dpdbuf4 to be symmetrized.
 **   dpdbuf4 *Buf2: A pointer to the right dpdbuf4 to be symmetrized.  */
 
-int DPD::buf4_symm2(dpdbuf4 *Buf1, dpdbuf4 *Buf2)
-{
+int DPD::buf4_symm2(dpdbuf4 *Buf1, dpdbuf4 *Buf2) {
     int h, row, col, all_buf_irrep;
     double value;
 
     all_buf_irrep = Buf1->file.my_irrep;
 
-    for(h=0; h < Buf1->params->nirreps; h++) {
+    for (h = 0; h < Buf1->params->nirreps; h++) {
         buf4_mat_irrep_init(Buf1, h);
         buf4_mat_irrep_rd(Buf1, h);
 
         buf4_mat_irrep_init(Buf2, h);
         buf4_mat_irrep_rd(Buf2, h);
 
-        for(row=0; row < Buf1->params->rowtot[h]; row++)
-            for(col=0; col < Buf1->params->coltot[h^all_buf_irrep]; col++) {
-                value = 0.5*(Buf1->matrix[h][row][col]+Buf2->matrix[h][col][row]);
+        for (row = 0; row < Buf1->params->rowtot[h]; row++)
+            for (col = 0; col < Buf1->params->coltot[h ^ all_buf_irrep]; col++) {
+                value = 0.5 * (Buf1->matrix[h][row][col] + Buf2->matrix[h][col][row]);
                 Buf1->matrix[h][row][col] = value;
             }
 
@@ -75,5 +74,4 @@ int DPD::buf4_symm2(dpdbuf4 *Buf1, dpdbuf4 *Buf2)
     return 0;
 }
 
-
-}
+}  // namespace psi

@@ -35,33 +35,27 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-int DPD::file4_print(dpdfile4 *File, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   int i, h, my_irrep;
+int DPD::file4_print(dpdfile4 *File, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int i, h, my_irrep;
     dpdparams4 *Params;
 
     my_irrep = File->my_irrep;
     Params = File->params;
 
-    printer->Printf( "\n\tDPD File4: %s\n", File->label);
-    printer->Printf( "\n\tDPD Parameters:\n");
-    printer->Printf(   "\t---------------\n");
-    printer->Printf(   "\tpqnum = %d   rsnum = %d\n",
-            Params->pqnum, Params->rsnum);
-    printer->Printf( "\t   Row and column dimensions for DPD Block:\n");
-    printer->Printf( "\t   ----------------------------------------\n");
-    for(i=0; i < Params->nirreps; i++)
-        printer->Printf(   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
-                Params->rowtot[i], Params->coltot[i^my_irrep]);
+    printer->Printf("\n\tDPD File4: %s\n", File->label);
+    printer->Printf("\n\tDPD Parameters:\n");
+    printer->Printf("\t---------------\n");
+    printer->Printf("\tpqnum = %d   rsnum = %d\n", Params->pqnum, Params->rsnum);
+    printer->Printf("\t   Row and column dimensions for DPD Block:\n");
+    printer->Printf("\t   ----------------------------------------\n");
+    for (i = 0; i < Params->nirreps; i++)
+        printer->Printf("\t   Irrep: %1d row = %5d\tcol = %5d\n", i, Params->rowtot[i], Params->coltot[i ^ my_irrep]);
 
-
-    for(h=0; h < File->params->nirreps; h++) {
-        printer->Printf( "\n\tFile %3d DPD File4: %s\n", File->filenum,
-                File->label);
-        printer->Printf(   "\tMatrix for Irrep %1d\n", h);
-        printer->Printf(   "\t----------------------------------------\n");
+    for (h = 0; h < File->params->nirreps; h++) {
+        printer->Printf("\n\tFile %3d DPD File4: %s\n", File->filenum, File->label);
+        printer->Printf("\tMatrix for Irrep %1d\n", h);
+        printer->Printf("\t----------------------------------------\n");
         file4_mat_irrep_init(File, h);
         file4_mat_irrep_rd(File, h);
         mat4_irrep_print(File->matrix[h], File->params, h, my_irrep, "outfile");
@@ -69,7 +63,6 @@ int DPD::file4_print(dpdfile4 *File, std::string out)
     }
 
     return 0;
-
 }
 
-}
+}  // namespace psi

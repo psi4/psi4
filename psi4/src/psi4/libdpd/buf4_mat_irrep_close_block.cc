@@ -48,26 +48,24 @@ namespace psi {
 **
 */
 
-int DPD::buf4_mat_irrep_close_block(dpdbuf4 *Buf, int irrep, int num_pq)
-{
+int DPD::buf4_mat_irrep_close_block(dpdbuf4 *Buf, int irrep, int num_pq) {
     int h, nirreps, all_buf_irrep;
 
     nirreps = Buf->params->nirreps;
     all_buf_irrep = Buf->file.my_irrep;
 
     /* Free the shift structure for this irrep if used */
-    if(Buf->shift.shift_type) {
-        for(h=0; h < nirreps; h++)
-            if(Buf->shift.rowtot[irrep][h])
-                free(Buf->shift.matrix[irrep][h]);
+    if (Buf->shift.shift_type) {
+        for (h = 0; h < nirreps; h++)
+            if (Buf->shift.rowtot[irrep][h]) free(Buf->shift.matrix[irrep][h]);
         free(Buf->shift.matrix[irrep]);
         Buf->shift.shift_type = 0;
     }
 
-    if(num_pq && Buf->params->coltot[irrep^all_buf_irrep])
-        free_dpd_block(Buf->matrix[irrep], num_pq, Buf->params->coltot[irrep^all_buf_irrep]);
+    if (num_pq && Buf->params->coltot[irrep ^ all_buf_irrep])
+        free_dpd_block(Buf->matrix[irrep], num_pq, Buf->params->coltot[irrep ^ all_buf_irrep]);
 
     return 0;
 }
 
-}
+}  // namespace psi

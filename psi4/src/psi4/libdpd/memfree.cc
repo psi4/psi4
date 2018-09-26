@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** Function to return number of double words available for allocation.
@@ -37,7 +37,4 @@
 #include <cstdio>
 #include "dpd.h"
 
-namespace psi {
-
-
-}
+namespace psi {}

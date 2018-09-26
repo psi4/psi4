@@ -45,33 +45,29 @@ namespace psi {
 **   int print_data: 0 = print buf4 parameters only; 1 = print matrices
 */
 
-int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   int h, i, all_buf_irrep;
+int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int h, i, all_buf_irrep;
     dpdparams4 *Params;
 
     all_buf_irrep = Buf->file.my_irrep;
     Params = Buf->params;
 
-    outfile->Printf( "\n\tDPD Buf4 for file4: %s\n", Buf->file.label);
-    outfile->Printf( "\n\tDPD Parameters:\n");
-    outfile->Printf(   "\t---------------\n");
-    outfile->Printf(   "\tpqnum = %d   rsnum = %d\n",
-            Params->pqnum, Params->rsnum);
-    outfile->Printf( "\t   Row and column dimensions for DPD Block:\n");
-    outfile->Printf( "\t   ----------------------------------------\n");
-    for(i=0; i < Params->nirreps; i++)
-        outfile->Printf(   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
-                Params->rowtot[i], Params->coltot[i^all_buf_irrep]);
+    outfile->Printf("\n\tDPD Buf4 for file4: %s\n", Buf->file.label);
+    outfile->Printf("\n\tDPD Parameters:\n");
+    outfile->Printf("\t---------------\n");
+    outfile->Printf("\tpqnum = %d   rsnum = %d\n", Params->pqnum, Params->rsnum);
+    outfile->Printf("\t   Row and column dimensions for DPD Block:\n");
+    outfile->Printf("\t   ----------------------------------------\n");
+    for (i = 0; i < Params->nirreps; i++)
+        outfile->Printf("\t   Irrep: %1d row = %5d\tcol = %5d\n", i, Params->rowtot[i],
+                        Params->coltot[i ^ all_buf_irrep]);
 
-
-    if(print_data) {
-        for(h=0; h < Buf->params->nirreps; h++) {
-            outfile->Printf( "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum, Buf->file.label);
-            outfile->Printf(   "\tMatrix for Irrep %1d\n", h);
-            outfile->Printf(   "\t----------------------------------------\n");
+    if (print_data) {
+        for (h = 0; h < Buf->params->nirreps; h++) {
+            outfile->Printf("\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum, Buf->file.label);
+            outfile->Printf("\tMatrix for Irrep %1d\n", h);
+            outfile->Printf("\t----------------------------------------\n");
             buf4_mat_irrep_init(Buf, h);
             buf4_mat_irrep_rd(Buf, h);
             mat4_irrep_print(Buf->matrix[h], Buf->params, h, all_buf_irrep, "outfile");
@@ -81,7 +77,6 @@ int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
     }
 
     return 0;
-
 }
 
-}
+}  // namespace psi

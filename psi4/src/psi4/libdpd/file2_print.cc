@@ -42,28 +42,23 @@ namespace psi {
 **   std::string out_fname: The formatted output file stream.
 */
 
-int DPD::file2_print(dpdfile2 *File, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-   int i, my_irrep;
+int DPD::file2_print(dpdfile2 *File, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int i, my_irrep;
     dpdparams2 *Params;
 
     my_irrep = File->my_irrep;
     Params = File->params;
 
-    printer->Printf( "\n\tDPD File2: %s\n", File->label);
-    printer->Printf(   "\tDPD Parameters:\n");
-    printer->Printf(   "\t------------------\n");
-    printer->Printf(   "\tpnum = %d   qnum = %d   irrep = %d \n",
-            Params->pnum, Params->qnum, File->my_irrep);
-    printer->Printf(   "\tIrreps = %1d\n\n", Params->nirreps);
-    printer->Printf( "\t   Row and column dimensions for DPD Block:\n");
-    printer->Printf( "\t   ----------------------------------------\n");
-    for(i=0; i < Params->nirreps; i++)
-        printer->Printf(   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
-                Params->rowtot[i], Params->coltot[i^my_irrep]);
-
+    printer->Printf("\n\tDPD File2: %s\n", File->label);
+    printer->Printf("\tDPD Parameters:\n");
+    printer->Printf("\t------------------\n");
+    printer->Printf("\tpnum = %d   qnum = %d   irrep = %d \n", Params->pnum, Params->qnum, File->my_irrep);
+    printer->Printf("\tIrreps = %1d\n\n", Params->nirreps);
+    printer->Printf("\t   Row and column dimensions for DPD Block:\n");
+    printer->Printf("\t   ----------------------------------------\n");
+    for (i = 0; i < Params->nirreps; i++)
+        printer->Printf("\t   Irrep: %1d row = %5d\tcol = %5d\n", i, Params->rowtot[i], Params->coltot[i ^ my_irrep]);
 
     file2_mat_init(File);
     file2_mat_rd(File);
@@ -71,7 +66,6 @@ int DPD::file2_print(dpdfile2 *File, std::string out)
     file2_mat_close(File);
 
     return 0;
-
 }
 
-}
+}  // namespace psi

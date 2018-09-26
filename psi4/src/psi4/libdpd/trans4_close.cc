@@ -37,8 +37,7 @@
 
 namespace psi {
 
-int DPD::trans4_close(dpdtrans4 *Trans)
-{
+int DPD::trans4_close(dpdtrans4 *Trans) {
     int nirreps;
 
     nirreps = Trans->buf.params->nirreps;
@@ -50,7 +49,6 @@ int DPD::trans4_close(dpdtrans4 *Trans)
     free(Trans->shift.matrix);
 
     return 0;
-
 }
 
-}
+}  // namespace psi

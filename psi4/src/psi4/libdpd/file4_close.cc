@@ -42,16 +42,17 @@ namespace psi {
 **   dpdfile4 *File: A pointer to the file to be closed.
 */
 
-int DPD::file4_close(dpdfile4 *File)
-{
+int DPD::file4_close(dpdfile4 *File) {
     file4_cache_unlock(File);
 
     free(File->lfiles);
 
-    if(!File->incore) free(File->matrix);
-    else File->matrix = nullptr;
+    if (!File->incore)
+        free(File->matrix);
+    else
+        File->matrix = nullptr;
 
     return 0;
 }
 
-}
+}  // namespace psi
