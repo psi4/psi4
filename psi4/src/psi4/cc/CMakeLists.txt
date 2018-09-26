@@ -1,4 +1,4 @@
-add_library(cc STATIC "")
+add_library(cc STATIC ccwave.cc)
 
 # FIXME Remove once done
 list(APPEND _Clang_debug_flags
