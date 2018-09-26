@@ -439,8 +439,9 @@ double **SymBlockMatrix::to_block_matrix()
 
 void SymBlockMatrix::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out_fname,std::ostream::app));
+    auto mode = std::ostream::app;
+    auto printer= out_fname == "outfile" ? outfile
+                                         : std::make_shared<PsiOutStream>(out_fname, mode);
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
@@ -1151,8 +1152,9 @@ double SymBlockVector::trace()
 
 void SymBlockVector::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
-         std::make_shared<PsiOutStream>(out_fname,std::ostream::app));
+    auto mode = std::ostream::app;
+    auto printer= out_fname == "outfile" ? outfile
+                                         : std::make_shared<PsiOutStream>(out_fname, mode);
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {
