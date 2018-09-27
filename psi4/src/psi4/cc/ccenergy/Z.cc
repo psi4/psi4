@@ -45,9 +45,7 @@ void CCEnergyWavefunction::Z_build() {
     dpdbuf4 tauIJAB, tauijab, tauIjAb, tauIjbA, F_anti, F, tau;
     int Gmb, Gij, mb, nrows, ncols;
 
-#ifdef TIME_CCENERGY
     timer_on("Z");
-#endif
 
     if (params_.ref == 0) { /** RHF **/
         /* ZMbIj = <Mb|Ef> * tau(Ij,Ef) */
@@ -158,9 +156,7 @@ void CCEnergyWavefunction::Z_build() {
         global_dpd_->buf4_close(&ZIjAm);
     }
 
-#ifdef TIME_CCENERGY
     timer_off("Z");
-#endif
 }
 
 }  // namespace ccenergy

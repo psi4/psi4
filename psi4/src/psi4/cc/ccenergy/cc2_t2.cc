@@ -35,6 +35,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
 #include "psi4/cc/ccwave.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 namespace ccenergy {
@@ -43,34 +44,22 @@ void CCEnergyWavefunction::cc2_t2_build() {
     DT2();
 
     if ((params_.ref == 0) || params_.t2_coupled) { /** RHF or ROHF with coupled T2's **/
-#ifdef TIME_CCENERGY
-        timer_on("fT2", "outfile");
-#endif
+        timer_on("fT2");
         cc2_faeT2();
         cc2_fmiT2();
         if (params_.print & 2) status("f -> T2", "outfile");
-#ifdef TIME_CCENERGY
-        timer_off("fT2", "outfile");
-#endif
+        timer_off("fT2");
     }
 
-#ifdef TIME_CCENERGY
-    timer_on("WmbijT2", "outfile");
-#endif
+    timer_on("WmbijT2");
     cc2_WmbijT2();
     if (params_.print & 2) status("Wmbij -> T2", "outfile");
-#ifdef TIME_CCENERGY
-    timer_off("WmbijT2", "outfile");
-#endif
+    timer_off("WmbijT2");
 
-#ifdef TIME_CCENERGY
-    timer_on("WabeiT2", "outfile");
-#endif
+    timer_on("WabeiT2");
     cc2_WabeiT2();
     if (params_.print & 2) status("Wabei -> T2", "outfile");
-#ifdef TIME_CCENERGY
-    timer_off("WabeiT2", "outfile");
-#endif
+    timer_off("WabeiT2");
 }
 }  // namespace ccenergy
 }  // namespace psi

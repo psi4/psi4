@@ -60,9 +60,7 @@ void CCEnergyWavefunction::Wmbej_build() {
     dpdfile2 tIA, tia;
     int Gmb, mb, Gj, Ge, Gf, nrows, ncols, nlinks;
 
-#ifdef TIME_CCENERGY
     timer_on("C->Wmbej");
-#endif
 
     /* W(mb,je) <-- <mb||ej> */
 
@@ -118,10 +116,8 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->buf4_close(&C);
     }
 
-#ifdef TIME_CCENERGY
     timer_off("C->Wmbej");
     timer_on("F->Wmbej");
-#endif
 
     if (params_.ref == 0) { /** RHF **/
         global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -264,10 +260,8 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->file2_close(&tia);
     }
 
-#ifdef TIME_CCENERGY
     timer_off("F->Wmbej");
     timer_on("E->Wmbej");
-#endif
 
     if (params_.ref == 0) { /** RHF **/
         global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -364,9 +358,7 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->file2_close(&tia);
     }
 
-#ifdef TIME_CCENERGY
     timer_off("E->Wmbej");
-#endif
 
     /* Convert to (ME,JB) for remaining terms */
 
@@ -432,9 +424,7 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->buf4_close(&W);
     }
 
-#ifdef TIME_CCENERGY
     timer_on("X->Wmbej");
-#endif
 
     if (params_.ref == 0) { /** RHF **/
         global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -767,9 +757,7 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->file2_close(&tia);
     }
 
-#ifdef TIME_CCENERGY
     timer_off("X->Wmbej");
-#endif
 }
 }  // namespace ccenergy
 }  // namespace psi

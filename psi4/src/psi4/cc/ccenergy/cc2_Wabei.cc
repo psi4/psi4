@@ -65,9 +65,7 @@ void CCEnergyWavefunction::cc2_Wabei_build() {
     dpdbuf4 Z, Z1, Z2, Z3;
     dpdbuf4 B, C, D, F, W;
 
-#ifdef TIME_CCENERGY
     timer_on("F->Wabei");
-#endif
     if (params_.ref == 0) { /** RHF **/
         global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
         global_dpd_->buf4_copy(&F, PSIF_CC_TMP0, "CC2 WAbEi (Ei,Ab)");
@@ -113,10 +111,8 @@ void CCEnergyWavefunction::cc2_Wabei_build() {
         global_dpd_->buf4_sort(&F, PSIF_CC_TMP0, psrq, 29, 25, "CC2 WaBeI (aB,eI)");
         global_dpd_->buf4_close(&F);
     }
-#ifdef TIME_CCENERGY
     timer_off("F->Wabei");
     timer_on("B->Wabei");
-#endif
     if (params_.ref == 0) { /** RHF **/
 
         global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -267,10 +263,8 @@ void CCEnergyWavefunction::cc2_Wabei_build() {
         global_dpd_->file2_close(&tIA);
         global_dpd_->file2_close(&tia);
     }
-#ifdef TIME_CCENERGY
     timer_off("B->Wabei");
     timer_on("Wabei_sort");
-#endif
     if (params_.ref == 0) { /* RHF */
 
         global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 5, 11, 5, 11, 0, "CC2 WAbEi");
@@ -316,9 +310,7 @@ void CCEnergyWavefunction::cc2_Wabei_build() {
         global_dpd_->buf4_sort(&W, PSIF_CC2_HET1, rspq, 25, 29, "CC2 WaBeI (eI,aB)");
         global_dpd_->buf4_close(&W);
     }
-#ifdef TIME_CCENERGY
     timer_off("Wabei_sort");
-#endif
 }
 
 void CCEnergyWavefunction::purge_cc2_Wabei() {

@@ -37,6 +37,7 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 namespace ccenergy {
@@ -57,50 +58,34 @@ void CCEnergyWavefunction::t2_build() {
         WmnijT2();
         if (params_.print & 2) status("Wmnij -> T2", "outfile");
 
-#ifdef TIME_CCENERGY
-        timer_on("BT2", "outfile");
-#endif
+        timer_on("BT2");
         if (params_.aobasis == "DISK" || params_.aobasis == "DIRECT")
             BT2_AO();
         else
             BT2();
         if (params_.print & 2) status("<ab||cd> -> T2", "outfile");
-#ifdef TIME_CCENERGY
-        timer_off("BT2", "outfile");
-#endif
+        timer_off("BT2");
 
         ZT2();
         if (params_.print & 2) status("Z -> T2", "outfile");
 
-#ifdef TIME_CCENERGY
-        timer_on("FT2", "outfile");
-#endif
+        timer_on("FT2");
         FT2();
         if (params_.print & 2) status("<ia||bc> -> T2", "outfile");
-#ifdef TIME_CCENERGY
-        timer_off("FT2", "outfile");
-#endif
+        timer_off("FT2");
 
         ET2();
         if (params_.print & 2) status("<ij||ka> -> T2", "outfile");
 
-#ifdef TIME_CCENERGY
-        timer_on("WmbejT2", "outfile");
-#endif
+        timer_on("WmbejT2");
         WmbejT2();
         if (params_.print & 2) status("Wmbej -> T2", "outfile");
-#ifdef TIME_CCENERGY
-        timer_off("WmbejT2", "outfile");
-#endif
+        timer_off("WmbejT2");
 
-#ifdef TIME_CCENERGY
-        timer_on("CT2", "outfile");
-#endif
+        timer_on("CT2");
         CT2();
         if (params_.print & 2) status("<ia||jb> -> T2", "outfile");
-#ifdef TIME_CCENERGY
-        timer_off("CT2", "outfile");
-#endif
+        timer_off("CT2");
     } else { /* For CC2, just include (FT2)c->T2 */
         FT2_CC2();
     }
