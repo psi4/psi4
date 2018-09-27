@@ -36,13 +36,11 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psifiles.h"
+#include "psi4/libdpd/dpd.h"
 
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
 
 using namespace psi;
 

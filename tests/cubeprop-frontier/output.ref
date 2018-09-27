@@ -1,0 +1,532 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.3a1.dev522 
+
+                         Git: Rev {cubeprop_02} 462dfac dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, and R. A. Shaw
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 25 September 2018 03:53PM
+
+    Process ID: 28371
+    Host:       silver
+    PSIDATADIR: /home/kraus/Build/psi4/BUILDS/cubeprop_02/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! ROHF frontier orbitals of CH2(s) and CH2(t).
+
+molecule ch2s {
+0 1
+ C
+ H 1 1.109
+ H 1 1.109 2 109.5
+}
+
+
+molecule ch2t {
+0 3
+ C
+ H 1 1.109
+ H 1 1.109 2 109.5
+}
+
+set basis cc-pvdz
+set df_scf_guess  false
+set scf_type pk
+set cubeprop_tasks ['frontier_orbitals']
+set cubic_grid_overage [1.0,1.0,1.0]
+set e_convergence 9
+set d_convergence 8
+
+set reference rhf
+scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2s)
+cubeprop(scf_wfn)
+
+compare_cubes("CH2s_HOMO.cube.ref","Psi_a_4_3-A1_HOMO.cube", "Comparing singlet HOMO") #TEST
+compare_cubes("CH2s_LUMO.cube.ref","Psi_a_5_1-B1_LUMO.cube", "Comparing singlet LUMO") #TEST
+
+set reference rohf
+scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2t)
+cubeprop(scf_wfn)
+
+compare_cubes("CH2t_3_DOMO.cube.ref","Psi_a_3_1-B2_DOMO.cube", "Comparing triplet DOMO") #TEST
+compare_cubes("CH2t_4_SOMO.cube.ref","Psi_a_4_3-A1_SOMO.cube", "Comparing triplet SOMO") #TEST
+compare_cubes("CH2t_5_SOMO.cube.ref","Psi_a_5_1-B1_SOMO.cube", "Comparing triplet SOMO") #TEST
+compare_cubes("CH2t_6_LVMO.cube.ref","Psi_a_6_4-A1_LVMO.cube", "Comparing triplet LVMO") #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on silver
+*** at Tue Sep 25 15:53:45 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   138 file /home/kraus/Build/psi4/BUILDS/cubeprop_02/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /home/kraus/Build/psi4/BUILDS/cubeprop_02/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.092048881928    12.000000000000
+         H            0.000000000000    -0.905655484674     0.548005133823     1.007825032070
+         H            0.000000000000     0.905655484674     0.548005133823     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     23.84405  B =     10.19660  C =      7.14229 [cm^-1]
+  Rotational constants: A = 714826.76545  B = 305686.32878  C = 214120.49574 [MHz]
+  Nuclear repulsion =    6.018144735471615
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 8
+  Nalpha       = 4
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       0       0       0       0
+     A2         2       2       0       0       0       0
+     B1         4       4       0       0       0       0
+     B2         7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       4       4       4       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.0027737428E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -38.65582694544478   -3.86558e+01   7.42017e-02 
+   @RHF iter   1:   -38.86052820720948   -2.04701e-01   1.12489e-02 
+   @RHF iter   2:   -38.87844308505469   -1.79149e-02   3.14369e-03 DIIS
+   @RHF iter   3:   -38.87971406433608   -1.27098e-03   7.96476e-04 DIIS
+   @RHF iter   4:   -38.87989596803765   -1.81904e-04   1.61926e-04 DIIS
+   @RHF iter   5:   -38.87990662965089   -1.06616e-05   3.74628e-05 DIIS
+   @RHF iter   6:   -38.87990727665009   -6.46999e-07   6.63544e-06 DIIS
+   @RHF iter   7:   -38.87990729224907   -1.55990e-08   9.81781e-07 DIIS
+   @RHF iter   8:   -38.87990729251538   -2.66311e-10   1.09680e-07 DIIS
+   @RHF iter   9:   -38.87990729251819   -2.80664e-12   7.08994e-09 DIIS
+  Energy converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -11.290788     2A1    -0.882683     1B2    -0.572406  
+       3A1    -0.378823  
+
+    Virtual:                                                              
+
+       1B1     0.064060     4A1     0.196757     2B2     0.260124  
+       3B2     0.603450     5A1     0.681761     2B1     0.739419  
+       6A1     0.756155     4B2     0.870234     7A1     1.006905  
+       1A2     1.202682     8A1     1.244692     3B1     1.306537  
+       5B2     1.707221     9A1     1.743231     6B2     1.956697  
+       4B1     1.987971     2A2     2.041984    10A1     2.326737  
+      11A1     2.674199     7B2     2.733871  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    0,    1 ]
+
+  @RHF Final Energy:   -38.87990729251819
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.0181447354716147
+    One-Electron Energy =                 -63.5467036477261047
+    Two-Electron Energy =                  18.6486516197362953
+    Total Energy =                        -38.8799072925181974
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.0275
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.2716
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.7559     Total:     0.7559
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     1.9213     Total:     1.9213
+
+
+*** tstop() called on silver at Tue Sep 25 15:53:45 2018
+Module time:
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+  ==> One Electron Grid Properties (v2.0) <==
+
+  ==> CubicScalarGrid <==
+
+    Filepath     = .
+    Total Points =             5742
+    XYZ Blocking =               10
+    X Points     =               11
+    Y Points     =               29
+    Z Points     =               18
+    X Spacing    =        2.000E-01
+    Y Spacing    =        2.000E-01
+    Z Spacing    =        2.000E-01
+    X Minimum    =       -1.000E+00
+    Y Minimum    =       -2.800E+00
+    Z Minimum    =       -1.269E+00
+    X Maximum    =        1.000E+00
+    Y Maximum    =        2.800E+00
+    Z Maximum    =        2.131E+00
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+	Comparing singlet HOMO............................................PASSED
+	Comparing singlet LUMO............................................PASSED
+
+*** tstart() called on silver
+*** at Tue Sep 25 15:53:46 2018
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   138 file /home/kraus/Build/psi4/BUILDS/cubeprop_02/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /home/kraus/Build/psi4/BUILDS/cubeprop_02/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                             ROHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.092048881928    12.000000000000
+         H            0.000000000000    -0.905655484674     0.548005133823     1.007825032070
+         H            0.000000000000     0.905655484674     0.548005133823     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     23.84405  B =     10.19660  C =      7.14229 [cm^-1]
+  Rotational constants: A = 714826.76545  B = 305686.32878  C = 214120.49574 [MHz]
+  Nuclear repulsion =    6.018144735471615
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       0       0       0       0
+     A2         2       2       0       0       0       0
+     B1         4       4       0       0       0       0
+     B2         7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.0027737428E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @ROHF iter   1:   -38.31215522748297   -3.83122e+01   6.04055e-02 
+   @ROHF iter   2:   -38.82398891220046   -5.11834e-01   2.16900e-02 DIIS
+   @ROHF iter   3:   -38.90723879597603   -8.32499e-02   3.87687e-03 DIIS
+   @ROHF iter   4:   -38.91282792820025   -5.58913e-03   1.33001e-03 DIIS
+   @ROHF iter   5:   -38.91344674925706   -6.18821e-04   1.20539e-04 DIIS
+   @ROHF iter   6:   -38.91345157146102   -4.82220e-06   2.18932e-05 DIIS
+   @ROHF iter   7:   -38.91345173728202   -1.65821e-07   3.53910e-06 DIIS
+   @ROHF iter   8:   -38.91345174133313   -4.05110e-09   7.94518e-07 DIIS
+   @ROHF iter   9:   -38.91345174153425   -2.01126e-10   1.17258e-07 DIIS
+   @ROHF iter  10:   -38.91345174153909   -4.83880e-12   2.25492e-08 DIIS
+   @ROHF iter  11:   -38.91345174153923   -1.35003e-13   4.26041e-09 DIIS
+  Energy converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -11.258762     2A1    -0.848435     1B2    -0.552949  
+
+    Singly Occupied:                                                      
+
+       3A1    -0.184538     1B1    -0.105677  
+
+    Virtual:                                                              
+
+       4A1     0.208685     2B2     0.269223     3B2     0.605585  
+       5A1     0.678849     2B1     0.715392     6A1     0.768029  
+       4B2     0.875513     7A1     1.029225     1A2     1.218264  
+       8A1     1.247876     3B1     1.312860     5B2     1.718740  
+       9A1     1.756525     6B2     1.950447     4B1     2.008248  
+       2A2     2.057406    10A1     2.322467    11A1     2.688610  
+       7B2     2.737387  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     2,    0,    0,    1 ]
+    SOCC [     1,    0,    1,    0 ]
+
+  @ROHF Final Energy:   -38.91345174153923
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.0181447354716147
+    One-Electron Energy =                 -63.6191805785710471
+    Two-Electron Energy =                  18.6875841015602084
+    Total Energy =                        -38.9134517415392196
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.0275
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.7786
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.2489     Total:     0.2489
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.6327     Total:     0.6327
+
+
+*** tstop() called on silver at Tue Sep 25 15:53:46 2018
+Module time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.24 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+  ==> One Electron Grid Properties (v2.0) <==
+
+  ==> CubicScalarGrid <==
+
+    Filepath     = .
+    Total Points =             5742
+    XYZ Blocking =               10
+    X Points     =               11
+    Y Points     =               29
+    Z Points     =               18
+    X Spacing    =        2.000E-01
+    Y Spacing    =        2.000E-01
+    Z Spacing    =        2.000E-01
+    X Minimum    =       -1.000E+00
+    Y Minimum    =       -2.800E+00
+    Z Minimum    =       -1.269E+00
+    X Maximum    =        1.000E+00
+    Y Maximum    =        2.800E+00
+    Z Maximum    =        2.131E+00
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+	Comparing triplet DOMO............................................PASSED
+	Comparing triplet SOMO............................................PASSED
+	Comparing triplet SOMO............................................PASSED
+	Comparing triplet LVMO............................................PASSED
+
+    Psi4 stopped on: Tuesday, 25 September 2018 03:53PM
+    Psi4 wall time for execution: 0:00:01.56
+
+*** Psi4 exiting successfully. Buy a developer a beer!

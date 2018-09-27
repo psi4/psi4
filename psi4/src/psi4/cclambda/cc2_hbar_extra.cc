@@ -38,26 +38,28 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
 void cc2_hbar_extra(void) {
-  dpdbuf4 W1, W2, W;
+    dpdbuf4 W1, W2, W;
 
-  /* CC2 W(ME,jb) + W(Me,Jb) is constructed in CCEOM for EOM_CC2 */
+    /* CC2 W(ME,jb) + W(Me,Jb) is constructed in CCEOM for EOM_CC2 */
 
-  if(params.wfn == "CC2") {
-    if(params.ref == 0) { /** RHF **/
-      /* 2 W(ME,jb) + W(Me,Jb) */
-      global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbeJ (Me,Jb)");
-      global_dpd_->buf4_copy(&W1, PSIF_CC2_HET1, "CC2 2 W(ME,jb) + W(Me,Jb)");
-      global_dpd_->buf4_close(&W1);
-      global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(ME,jb) + W(Me,Jb)");
-      global_dpd_->buf4_init(&W2, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbEj (ME,jb)");
-      global_dpd_->buf4_axpy(&W2, &W1, 2);
-      global_dpd_->buf4_close(&W2);
-      global_dpd_->buf4_close(&W1);
+    if (params.wfn == "CC2") {
+        if (params.ref == 0) { /** RHF **/
+            /* 2 W(ME,jb) + W(Me,Jb) */
+            global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbeJ (Me,Jb)");
+            global_dpd_->buf4_copy(&W1, PSIF_CC2_HET1, "CC2 2 W(ME,jb) + W(Me,Jb)");
+            global_dpd_->buf4_close(&W1);
+            global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(ME,jb) + W(Me,Jb)");
+            global_dpd_->buf4_init(&W2, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbEj (ME,jb)");
+            global_dpd_->buf4_axpy(&W2, &W1, 2);
+            global_dpd_->buf4_close(&W2);
+            global_dpd_->buf4_close(&W1);
+        }
     }
-  }
 }
 
-}} // namespace psi::cclambda
+}  // namespace cclambda
+}  // namespace psi

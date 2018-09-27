@@ -37,8 +37,7 @@
 
 namespace psi {
 
-int DPD::file2_scm(dpdfile2 *InFile, double alpha)
-{
+int DPD::file2_scm(dpdfile2 *InFile, double alpha) {
     int h, nirreps, new_file2, my_irrep;
     int row, col, length;
     double *X;
@@ -48,16 +47,16 @@ int DPD::file2_scm(dpdfile2 *InFile, double alpha)
     file2_mat_init(InFile);
 
     /* Look first for the TOC entry on disk */
-    if(psio_tocscan(InFile->filenum, InFile->label) == nullptr)
+    if (psio_tocscan(InFile->filenum, InFile->label) == nullptr)
         new_file2 = 1;
-    else new_file2 = 0;
+    else
+        new_file2 = 0;
 
-    if(!new_file2) file2_mat_rd(InFile);
+    if (!new_file2) file2_mat_rd(InFile);
 
-    for(h=0; h < nirreps; h++) {
-
-        length = InFile->params->rowtot[h] * InFile->params->coltot[h^my_irrep];
-        if(length) {
+    for (h = 0; h < nirreps; h++) {
+        length = InFile->params->rowtot[h] * InFile->params->coltot[h ^ my_irrep];
+        if (length) {
             X = &(InFile->matrix[h][0][0]);
             C_DSCAL(length, alpha, X, 1);
         }
@@ -69,4 +68,4 @@ int DPD::file2_scm(dpdfile2 *InFile, double alpha)
     return 0;
 }
 
-}
+}  // namespace psi
