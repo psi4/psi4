@@ -67,7 +67,6 @@ void x_xi1_rohf() {
     R_irr = params.R_irr;
     G_irr = params.G_irr;
 
-
 #ifdef DEBUG_XI
     x_xi_check("begin xi1");
 #endif

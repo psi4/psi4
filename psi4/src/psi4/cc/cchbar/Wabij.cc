@@ -47,8 +47,8 @@ namespace cchbar {
 /* function to compute matrix element <Phi_ij^ab|Hbar|0> which equals zero as long as the
 T amplitudes were determined by ccenergy with the same H */
 
-void DT2(), FaetT2(void), FmitT2(void), WmnijT2(void), WmbejT2(void);
-void BT2(), ZT2(void), FT2(void), ET2(void), CT2(void), dijabT2(void);
+void DT2(), FaetT2(), FmitT2(), WmnijT2(), WmbejT2();
+void BT2(), ZT2(), FT2(), ET2(), CT2(), dijabT2();
 void BT2_AO();
 void Z_build();
 void status(const char *, std::string);

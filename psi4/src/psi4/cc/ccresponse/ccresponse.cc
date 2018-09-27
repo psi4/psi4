@@ -92,8 +92,6 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     get_moinfo(ref_wfn);
     get_params(ref_wfn, options);
 
-    timer_on("ccresponse");
-
     cachefiles = init_int_array(PSIO_MAXUNIT);
 
     if (params.ref == 2) { /*** UHF references ***/
@@ -149,8 +147,6 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
 
     cleanup();
 
-    timer_off("ccresponse");
-
     exit_io();
 
     return PsiReturnType::Success;
@@ -159,7 +155,7 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
 void init_io() {
     int i;
 
-    tstart();
+    timer_on("CCResponse");
 
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 
@@ -187,7 +183,7 @@ void exit_io() {
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* get rid of TMP files */
     for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
 
-    tstop();
+    timer_off("CCResponse");
 }
 
 void init_ioff() {
