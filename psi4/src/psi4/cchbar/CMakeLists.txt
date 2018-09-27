@@ -1,2 +1,0 @@
-set(sources_list Wabei_RHF.cc status.cc Wabij.cc cache.cc cc3_HET1.cc Fai.cc get_params.cc reference.cc cchbar.cc sort_amps.cc cc2_Zmbej.cc Wabei_BBBB_UHF.cc Wmbej.cc Wmnie.cc cc2_Wmbej.cc Wamef.cc get_moinfo.cc Wabei_RHF_FT2_a.cc Wmbij.cc F.cc Wabei_ABAB_UHF.cc HET1_Wabef.cc purge.cc tau.cc Wabei.cc norm_HET1.cc cc2_Wmbij.cc Wabei_ROHF.cc taut.cc Wabei_AAAA_UHF.cc cc2_Wabei.cc Wabei_BABA_UHF.cc )
-psi4_add_module(bin cchbar sources_list mints)

@@ -1,2 +1,0 @@
-set(sources_list local.cc lambda_residuals.cc LHX1Y1.cc roa.cc hbar_extra.cc analyze.cc cache.cc cc2_LHX1Y1.cc cc2_X1.cc optrot.cc get_params.cc cc2_sort_X.cc converged.cc X2.cc print_X.cc ccresponse.cc diis.cc X1.cc save_X.cc LHX1Y2.cc compute_X.cc polar.cc linresp.cc cc2_LHX1Y2.cc get_moinfo.cc cc2_hbar_extra.cc HXY.cc amp_write.cc init_X.cc update_X.cc pseudopolar.cc sort_lamps.cc pertbar.cc LHX2Y2.cc denom.cc cc2_X2.cc sort_X.cc sort_pert.cc LCX.cc preppert.cc scatter.cc )
-psi4_add_module(bin ccresponse sources_list mints)
