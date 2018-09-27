@@ -105,6 +105,15 @@ Using ``auto`` reduces and/or avoids:
 *Reference:* Items 2 and 5 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
 
 
+.. _`faq:printmem`:
 
+Prefer `GiB` for memory printing
+--------------------------------
 
+As memory sizes get larger, we should work in giga (requires decimal printing to not round to zero) rather than mega units.
+As it's what we're computing anyways, we should work in 1024-based (mebi, gibi, etc. https://en.wikipedia.org/wiki/Gibibyte) rather than 1000-based units.
+As it's a unit, put it in brackets.
+Note that users can supply MiB, GB, bytes, or whatever; this guideline is for output printing. ::
 
+        outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
+                        (required *  8 / (1024 * 1024 * 1024.0)),

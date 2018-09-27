@@ -47,29 +47,27 @@ namespace psi {
 ** Note that shift information is freed here as well.
 */
 
-int DPD::buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep)
-{
+int DPD::buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep) {
     int h, nirreps, rowtot, coltot, my_irrep;
     long int size;
 
     my_irrep = Buf->file.my_irrep;
     rowtot = Buf->params->rowtot[irrep];
-    coltot = Buf->params->coltot[irrep^my_irrep];
+    coltot = Buf->params->coltot[irrep ^ my_irrep];
 
-    size = ((long) rowtot) * ((long) coltot);
+    size = ((long)rowtot) * ((long)coltot);
 
     nirreps = Buf->params->nirreps;
 
     /* Free the shift structure for this irrep if used */
-    if(Buf->shift.shift_type) {
-        for(h=0; h < nirreps; h++)
-            if(Buf->shift.rowtot[irrep][h])
-                free(Buf->shift.matrix[irrep][h]);
+    if (Buf->shift.shift_type) {
+        for (h = 0; h < nirreps; h++)
+            if (Buf->shift.rowtot[irrep][h]) free(Buf->shift.matrix[irrep][h]);
         free(Buf->shift.matrix[irrep]);
         Buf->shift.shift_type = 0;
     }
 
-    if(size) {
+    if (size) {
         /* If the file member is already in cache and its ordering is the
          same as the buffer, then we just copied the pointer in
          buf4_mat_irrep_init(); don't free! */
@@ -79,13 +77,12 @@ int DPD::buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep)
         //          0;
         //      else
         //          dpd_free_block(Buf->matrix[irrep], rowtot, coltot);
-        if(!(Buf->file.incore && !(Buf->anti) &&
-             (Buf->params->pqnum == Buf->file.params->pqnum) &&
-             (Buf->params->rsnum == Buf->file.params->rsnum)))
+        if (!(Buf->file.incore && !(Buf->anti) && (Buf->params->pqnum == Buf->file.params->pqnum) &&
+              (Buf->params->rsnum == Buf->file.params->rsnum)))
             free_dpd_block(Buf->matrix[irrep], rowtot, coltot);
     }
 
     return 0;
 }
 
-}
+}  // namespace psi

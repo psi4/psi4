@@ -37,8 +37,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#define EXTERN
-#include "dpd.gbl"
 #include "psi4/psi4-dec.h"
 namespace psi {
 
@@ -64,8 +62,7 @@ namespace psi {
 **
 */
 
-int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha)
-{
+int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha) {
     int pq;
     long int length, core, memoryd, core_total, rowtot, coltot, maxrows;
     int h, nirreps, new_buf4, all_buf_irrep;
@@ -81,62 +78,61 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha)
 #endif
 
     /* Look first for the TOC entry on disk */
-    if(psio_tocscan(InBuf->file.filenum, InBuf->file.label) == nullptr)
+    if (psio_tocscan(InBuf->file.filenum, InBuf->file.label) == nullptr)
         new_buf4 = 1;
-    else new_buf4 = 0;
+    else
+        new_buf4 = 0;
 
-    for(h=0; h < nirreps; h++) {
-
+    for (h = 0; h < nirreps; h++) {
         memoryd = dpd_main.memory;
         incore = 1; /* default */
 
         /* Compute the core requirements for the straight contraction */
         core_total = 0;
         /** X terms **/
-        coltot = InBuf->params->coltot[h^all_buf_irrep];
-        if(coltot) {
-            maxrows = DPD_BIGNUM/coltot;
-            if(maxrows < 1) {
-                outfile->Printf( "\nLIBDPD Error: cannot compute even the number of rows in buf4_scm.\n");
+        coltot = InBuf->params->coltot[h ^ all_buf_irrep];
+        if (coltot) {
+            maxrows = DPD_BIGNUM / coltot;
+            if (maxrows < 1) {
+                outfile->Printf("\nLIBDPD Error: cannot compute even the number of rows in buf4_scm.\n");
                 dpd_error("buf4_scm", "outfile");
             }
-        }
-        else maxrows = DPD_BIGNUM;
+        } else
+            maxrows = DPD_BIGNUM;
         rowtot = InBuf->params->rowtot[h];
-        for(; rowtot > maxrows; rowtot -= maxrows) {
-            if(core_total > (core_total + maxrows*coltot)) incore = 0;
-            else core_total += maxrows * coltot;
+        for (; rowtot > maxrows; rowtot -= maxrows) {
+            if (core_total > (core_total + maxrows * coltot))
+                incore = 0;
+            else
+                core_total += maxrows * coltot;
         }
-        if(core_total > (core_total + rowtot*coltot)) incore = 0;
+        if (core_total > (core_total + rowtot * coltot)) incore = 0;
         core_total += rowtot * coltot;
 
-        if(core_total > memoryd) incore = 0;
+        if (core_total > memoryd) incore = 0;
 
-        if(incore) {
-
+        if (incore) {
             buf4_mat_irrep_init(InBuf, h);
 
-            if(!new_buf4) buf4_mat_irrep_rd(InBuf, h);
+            if (!new_buf4) buf4_mat_irrep_rd(InBuf, h);
 
-            length = ((long) InBuf->params->rowtot[h]) * ((long) InBuf->params->coltot[h^all_buf_irrep]);
-            if(length) {
+            length = ((long)InBuf->params->rowtot[h]) * ((long)InBuf->params->coltot[h ^ all_buf_irrep]);
+            if (length) {
                 X = &(InBuf->matrix[h][0][0]);
                 C_DSCAL(length, alpha, X, 1);
             }
 
             buf4_mat_irrep_wrt(InBuf, h);
             buf4_mat_irrep_close(InBuf, h);
-        }
-        else {
-
+        } else {
             buf4_mat_irrep_row_init(InBuf, h);
 
-            for(pq=0; pq < InBuf->params->rowtot[h]; pq++) {
-                if(!new_buf4) buf4_mat_irrep_row_rd(InBuf, h, pq);
+            for (pq = 0; pq < InBuf->params->rowtot[h]; pq++) {
+                if (!new_buf4) buf4_mat_irrep_row_rd(InBuf, h, pq);
 
-                length = InBuf->params->coltot[h^all_buf_irrep];
+                length = InBuf->params->coltot[h ^ all_buf_irrep];
 
-                if(length) {
+                if (length) {
                     X = &(InBuf->matrix[h][0][0]);
                     C_DSCAL(length, alpha, X, 1);
                 }
@@ -153,4 +149,4 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha)
     return 0;
 }
 
-}
+}  // namespace psi

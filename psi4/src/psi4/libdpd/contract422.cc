@@ -54,11 +54,9 @@ namespace psi {
 **   double beta: A prefactor for the target beta * Z.
 */
 
-int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
-                     int trans_Z, double alpha, double beta)
-{
+int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y, int trans_Z, double alpha, double beta) {
     int nirreps, GX, GY, GZ, hxbuf;
-    int row,p,q,r,s, psym, qsym, Gr, Gs, P, Q, R, S, col;
+    int row, p, q, r, s, psym, qsym, Gr, Gs, P, Q, R, S, col;
     double **TMP;
     double value;
 #ifdef DPD_DEBUG
@@ -73,18 +71,27 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
     file2_mat_init(Y);
     file2_mat_rd(Y);
     file2_mat_init(Z);
-    if(std::fabs(beta) > 0.0) file2_mat_rd(Z);
+    if (std::fabs(beta) > 0.0) file2_mat_rd(Z);
 
 #ifdef DPD_DEBUG
-    if(trans_Z) { zrow = Z->params->coltot; zcol = Z->params->rowtot; }
-    else { zrow = Z->params->rowtot; zcol = Z->params->coltot; }
+    if (trans_Z) {
+        zrow = Z->params->coltot;
+        zcol = Z->params->rowtot;
+    } else {
+        zrow = Z->params->rowtot;
+        zcol = Z->params->coltot;
+    }
 
-    if(trans_Y) { yrow = Y->params->coltot; ycol = Y->params->rowtot; }
-    else { yrow = Y->params->rowtot; ycol = Y->params->coltot; }
+    if (trans_Y) {
+        yrow = Y->params->coltot;
+        ycol = Y->params->rowtot;
+    } else {
+        yrow = Y->params->rowtot;
+        ycol = Y->params->coltot;
+    }
 
-    if((zrow != X->params->ppi) || (zcol != X->params->qpi) ||
-            (yrow != X->params->rpi) || (ycol != X->params->spi)) {
-        outfile->Printf( "** Alignment error in contract422 **\n");
+    if ((zrow != X->params->ppi) || (zcol != X->params->qpi) || (yrow != X->params->rpi) || (ycol != X->params->spi)) {
+        outfile->Printf("** Alignment error in contract422 **\n");
         dpd_error("dpd_contract422", "outfile");
     }
 #endif
@@ -94,7 +101,7 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
     buf4_mat_irrep_init(X, hxbuf);
     buf4_mat_irrep_rd(X, hxbuf);
 
-    for(row=0; row < X->params->rowtot[hxbuf]; row++) {
+    for (row = 0; row < X->params->rowtot[hxbuf]; row++) {
         p = X->params->roworb[hxbuf][row][0];
         psym = X->params->psym[p];
         P = p - X->params->poff[psym];
@@ -104,54 +111,50 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
 
         value = 0.0;
 
-        for(Gr=0; Gr < nirreps; Gr++) {
-            Gs = Gr^GY;
+        for (Gr = 0; Gr < nirreps; Gr++) {
+            Gs = Gr ^ GY;
 
-            if(X->params->rpi[Gr] && X->params->spi[Gs]) {
-                if(trans_Y) {
-                    TMP = dpd_block_matrix(X->params->spi[Gs],X->params->rpi[Gr]);
-                }
-                else {
-                    TMP = dpd_block_matrix(X->params->rpi[Gr],X->params->spi[Gs]);
+            if (X->params->rpi[Gr] && X->params->spi[Gs]) {
+                if (trans_Y) {
+                    TMP = dpd_block_matrix(X->params->spi[Gs], X->params->rpi[Gr]);
+                } else {
+                    TMP = dpd_block_matrix(X->params->rpi[Gr], X->params->spi[Gs]);
                 }
             }
 
-            for(r=0; r < X->params->rpi[Gr]; r++) {
+            for (r = 0; r < X->params->rpi[Gr]; r++) {
                 R = X->params->roff[Gr] + r;
-                for(s=0; s < X->params->spi[Gs]; s++) {
+                for (s = 0; s < X->params->spi[Gs]; s++) {
                     S = X->params->soff[Gs] + s;
 
                     col = X->params->colidx[R][S];
 
-                    if(trans_Y)
+                    if (trans_Y)
                         TMP[s][r] = X->matrix[GZ][row][col];
                     else
                         TMP[r][s] = X->matrix[GZ][row][col];
                 }
             }
 
-            if(trans_Y) {
-                value += dot_block(TMP, Y->matrix[Gs], X->params->spi[Gs],
-                                   X->params->rpi[Gr], alpha);
+            if (trans_Y) {
+                value += dot_block(TMP, Y->matrix[Gs], X->params->spi[Gs], X->params->rpi[Gr], alpha);
             } else {
-                value += dot_block(TMP, Y->matrix[Gr], X->params->rpi[Gr],
-                                   X->params->spi[Gs], alpha);
+                value += dot_block(TMP, Y->matrix[Gr], X->params->rpi[Gr], X->params->spi[Gs], alpha);
             }
 
-            if(X->params->rpi[Gr] && X->params->spi[Gs]) {
-                if(trans_Y) {
+            if (X->params->rpi[Gr] && X->params->spi[Gs]) {
+                if (trans_Y) {
                     free_dpd_block(TMP, X->params->spi[Gs], X->params->rpi[Gr]);
                 } else {
-                    free_dpd_block(TMP,X->params->rpi[Gr],X->params->spi[Gs]);
+                    free_dpd_block(TMP, X->params->rpi[Gr], X->params->spi[Gs]);
                 }
             }
         }
 
-        if(trans_Z)
-            Z->matrix[qsym][Q][P] = beta*Z->matrix[qsym][Q][P] + value;
+        if (trans_Z)
+            Z->matrix[qsym][Q][P] = beta * Z->matrix[qsym][Q][P] + value;
         else
-            Z->matrix[psym][P][Q] = beta*Z->matrix[psym][P][Q] + value;
-
+            Z->matrix[psym][P][Q] = beta * Z->matrix[psym][P][Q] + value;
     }
 
     buf4_mat_irrep_close(X, GZ);
@@ -163,4 +166,4 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
     return 0;
 }
 
-}
+}  // namespace psi

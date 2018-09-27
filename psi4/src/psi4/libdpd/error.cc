@@ -36,14 +36,11 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-
-void DPD::dpd_error(const char *caller, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::make_shared<PsiOutStream>(out));
-    printer->Printf( "Error in: %s\n", caller);
+void DPD::dpd_error(const char *caller, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("Error in: %s\n", caller);
     dpd_close(dpd_default);
     exit(PSI_RETURN_FAILURE);
 }
 
-}
+}  // namespace psi
