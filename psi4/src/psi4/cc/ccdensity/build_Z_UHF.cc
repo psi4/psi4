@@ -60,7 +60,7 @@ namespace ccdensity {
 **
 */
 
-void build_Z_UHF(void) {
+void build_Z_UHF() {
     dpdbuf4 A_AA, A_BB, A_AB;
     dpdfile2 X, D;
     double **A, *Z;

@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void ex_td_cleanup(void) {
+void ex_td_cleanup() {
     /*
      *  Clean out these files between computing x_ltd and x_rtd,
      *  because LHS and RHS eigenvectors change (get swapped).

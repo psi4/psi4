@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::Wmnij_build(void) {
+void CCEnergyWavefunction::Wmnij_build() {
     dpdbuf4 A_anti, A;
     dpdbuf4 WMNIJ, Wmnij, WMnIj, W;
     dpdfile2 tIA, tia;

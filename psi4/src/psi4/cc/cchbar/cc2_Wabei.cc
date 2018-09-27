@@ -56,9 +56,9 @@ namespace cchbar {
 ** TDC, Feb 2004
 */
 
-void purge_cc2_Wabei(void);
+void purge_cc2_Wabei();
 
-void cc2_Wabei_build(void) {
+void cc2_Wabei_build() {
     int omit = 0;
     int e, E;
     int Gef, Gab, Gei, Ge, Gf, Gi;
@@ -418,7 +418,7 @@ void cc2_Wabei_build(void) {
     timer_off("Wabei_sort");
 }
 
-void purge_cc2_Wabei(void) {
+void purge_cc2_Wabei() {
     dpdfile4 W;
     int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;

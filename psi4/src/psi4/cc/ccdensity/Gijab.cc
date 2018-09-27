@@ -39,11 +39,11 @@
 namespace psi {
 namespace ccdensity {
 
-void Gijab_RHF(void);
-void Gijab_ROHF(void);
-void Gijab_UHF(void);
+void Gijab_RHF();
+void Gijab_ROHF();
+void Gijab_UHF();
 
-void Gijab(void) {
+void Gijab() {
     if (params.ref == 0)
         Gijab_RHF();
     else if (params.ref == 1)

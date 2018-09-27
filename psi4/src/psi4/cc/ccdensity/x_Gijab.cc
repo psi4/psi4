@@ -43,12 +43,12 @@ namespace ccdensity {
 
 /* computes non R0 parts of EOM CCSD Gijab */
 
-extern void x_Gijab_uhf(void);
-void x_Gijab_rohf(void);
-void x_Gijab_rohf_2(void);
-void x_Gijab_rohf_3(void);
+extern void x_Gijab_uhf();
+void x_Gijab_rohf();
+void x_Gijab_rohf_2();
+void x_Gijab_rohf_3();
 
-void x_Gijab(void) {
+void x_Gijab() {
     if (params.ref == 0 || params.ref == 1)
         x_Gijab_rohf();
     else
@@ -56,7 +56,7 @@ void x_Gijab(void) {
     return;
 }
 
-void x_Gijab_rohf(void) {
+void x_Gijab_rohf() {
     int h, nirreps;
     int R_irr, L_irr, G_irr;
     double value, tval;
@@ -1026,7 +1026,7 @@ void x_Gijab_rohf(void) {
    P(ij) P(ab) [ Z(i,a) * T(j,b) ]
  */
 
-void x_Gijab_rohf_2(void) {
+void x_Gijab_rohf_2() {
     int h, nirreps, row, col;
     int i, j, a, b;
     int I1, I2, I3, I4, J1, J2, J3, J4, A1, A2, A3, A4, B1, B2, B3, B4;
@@ -1299,7 +1299,7 @@ void x_Gijab_rohf_2(void) {
    Z(i,a) += Lme Tma Tie ; term 19
  */
 
-void x_Gijab_rohf_3(void) {
+void x_Gijab_rohf_3() {
     int h, nirreps, row, col;
     int i, j, a, b;
     int I1, I2, I3, I4, J1, J2, J3, J4, A1, A2, A3, A4, B1, B2, B3, B4;

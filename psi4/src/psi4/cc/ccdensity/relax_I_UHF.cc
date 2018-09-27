@@ -45,7 +45,7 @@ namespace ccdensity {
 ** Lagrangian.  These terms arise from the first-order CPHF equations.
 */
 
-void relax_I_UHF(void) {
+void relax_I_UHF() {
     dpdfile2 I, D, f;
     dpdbuf4 E;
     int h, nirreps, i, a;

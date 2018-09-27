@@ -42,16 +42,16 @@
 namespace psi {
 namespace ccdensity {
 
-void x_xi2_4_rohf(void);
-void x_xi2_14(void);
-void x_xi2_rohf(void);
+void x_xi2_4_rohf();
+void x_xi2_14();
+void x_xi2_rohf();
 extern void x_xi_check(char *term_lbl);
-extern void x_xi2_uhf(void);
-extern void x_xi2_rhf(void);
+extern void x_xi2_uhf();
+extern void x_xi2_rhf();
 
 /* compute xi_2 amplitudes for zeta equations */
 
-void x_xi2(void) {
+void x_xi2() {
     if (params.ref == 0)
         x_xi2_rhf();
     else if (params.ref == 1)
@@ -61,7 +61,7 @@ void x_xi2(void) {
     return;
 }
 
-void x_xi2_rohf(void) {
+void x_xi2_rohf() {
     dpdfile2 L1, XIA, Xia, I1, R1, F1, Z1A, Z1B;
     int L_irr, R_irr, G_irr;
     double tval;
@@ -847,7 +847,7 @@ void x_xi2_rohf(void) {
 
 /* compute terms 4 and 6 of xi2 amplitudes */
 /* Xijab += P(ij) P(ab) (Rme Lia + Rmnef Linaf) <mj||eb> */
-void x_xi2_4_rohf(void) {
+void x_xi2_4_rohf() {
     dpdfile2 RIA, Ria, LIA, Lia;
     int L_irr, R_irr, G_irr, nirreps;
     int I, A, M, E, i, a, m, e, h, row, col, Isym, Esym, Asym, Msym;
@@ -1107,7 +1107,7 @@ void x_xi2_4_rohf(void) {
 /* compute term 14 of Xi2 amplitudes for all spin cases */
 /* Xijab += P(ij) P(ab) (Lmjeb Rme) Fia */
 
-void x_xi2_14(void) {
+void x_xi2_14() {
     dpdfile2 IIA, Iia, FME, Fme;
     int L_irr, R_irr, G_irr, nirreps;
     int I, A, J, B, i, a, j, b, h, row, col, Isym, Asym, Jsym, Bsym;

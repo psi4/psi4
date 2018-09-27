@@ -54,7 +54,7 @@ namespace ccresponse {
 ** TDC, 9/10/05
 */
 
-void lambda_residuals(void) {
+void lambda_residuals() {
     dpdbuf4 L2, Z, W;
     dpdfile2 L1, F;
     int h, i, e, m, a, I, E, M, A, Isym, Esym, Msym, Asym;

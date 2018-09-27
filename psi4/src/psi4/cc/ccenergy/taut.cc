@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::taut_build(void) {
+void CCEnergyWavefunction::taut_build() {
     int h, ij, ab, i, j, a, b, I, J, A, B;
     int Isym, Jsym, Asym, Bsym;
     int nirreps;

@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccenergy {
 
-double CCEnergyWavefunction::diagnostic(void) {
+double CCEnergyWavefunction::diagnostic() {
     int h, nirreps, Gi, Ga;
     int i, a, I, A, row, col;
     int num_elec, num_elec_a, num_elec_b;

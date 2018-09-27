@@ -54,7 +54,7 @@ namespace ccdensity {
 ** TDC, January 2003
 */
 
-void build_A_UHF(void) {
+void build_A_UHF() {
     int h, nirreps, row, col;
     int a, i, b, j;
     int A, I, B, J;

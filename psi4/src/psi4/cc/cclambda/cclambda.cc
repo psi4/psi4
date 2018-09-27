@@ -66,7 +66,7 @@ void L2_build(struct L_Params L_params);
 void sort_amps(int L_irr);
 void Lsave(int L_irr);
 void Lnorm(struct L_Params L_params);
-void Lmag(void);
+void Lmag();
 void overlap(int L_irr);
 void overlap_LAMPS(struct L_Params L_params);
 void Lsave_index(struct L_Params L_params);
@@ -77,19 +77,19 @@ void L_zero(int irrep);
 void c_clean(dpdfile2 *LIA, dpdfile2 *Lia, dpdbuf4 *LIJAB, dpdbuf4 *Lijab, dpdbuf4 *LIjAb);
 void L_clean(struct L_Params pL_params);
 void zeta_norm(struct L_Params pL_params);
-void spinad_amps(void);
-void hbar_extra(void);
+void spinad_amps();
+void hbar_extra();
 void ortho_Rs(struct L_Params *pL_params, int current_L);
 
 void cc2_L1_build(struct L_Params L_params);
 void cc2_L2_build(struct L_Params L_params);
 void cc2_Gai_build(int L_irr);
-void cc2_hbar_extra(void);
+void cc2_hbar_extra();
 
-void cc3_t3z(void);
-void cc3_t3x(void);
-void cc3_l3l2(void);
-void cc3_l3l1(void);
+void cc3_t3z();
+void cc3_t3x();
+void cc3_l3l2();
+void cc3_l3l1();
 
 }  // namespace cclambda
 }  // namespace psi
@@ -331,7 +331,7 @@ double CCLambdaWavefunction::compute_energy() {
 }
 
 // must be fixed with options later for excited states
-void CCLambdaWavefunction::init_io(void) {
+void CCLambdaWavefunction::init_io() {
     int i, num_unparsed;
     char *lbl, *argv_unparsed[100];
 
@@ -355,7 +355,7 @@ void CCLambdaWavefunction::init_io(void) {
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void CCLambdaWavefunction::title(void) {
+void CCLambdaWavefunction::title() {
     outfile->Printf("\n");
     outfile->Printf("\t\t\t**************************\n");
     outfile->Printf("\t\t\t*        CCLAMBDA        *\n");
@@ -363,7 +363,7 @@ void CCLambdaWavefunction::title(void) {
     outfile->Printf("\n");
 }
 
-void CCLambdaWavefunction::exit_io(void) {
+void CCLambdaWavefunction::exit_io() {
     int i;
 
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) {

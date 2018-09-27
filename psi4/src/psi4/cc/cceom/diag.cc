@@ -100,8 +100,8 @@ void sigmaDS_full(int index, int irrep);
 void sigmaDD_full(int index, int irrep);
 void sigmaCC3(int i, int C_irr, double omega);
 void diagSS(int irrep);
-void hbar_extra(void);
-void hbar_norms(void);
+void hbar_extra();
+void hbar_norms();
 extern void sort_C(int index, int irrep);
 
 void dgeev_eom(int L, double **G, double *evals, double **alpha);
@@ -110,10 +110,10 @@ double local_G1_dot(dpdfile2 *, dpdfile2 *);
 double local_G2_dot(dpdbuf4 *, dpdbuf4 *);
 void local_filter_T1_nodenom(dpdfile2 *);
 void local_filter_T2_nodenom(dpdbuf4 *);
-void local_guess(void);
+void local_guess();
 
 void read_guess(int);
-void read_guess_init(void);
+void read_guess_init();
 extern double norm_C1_rhf(dpdfile2 *C1A);
 void cc3_HC1(int i, int C_irr); /* compute [H,C1] */
 void cc3_HC1ET1(int i, int C_irr);
@@ -122,7 +122,7 @@ extern void restart_with_root(int i, int C_irr);
 extern void save_C_ccsd(int i, int C_irr);
 extern int follow_root(int L, double **alpha, int C_irr);
 
-void cc2_hbar_extra(void);
+void cc2_hbar_extra();
 void cc2_sigma(int index, int irrep);
 void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int length);
 void amp_write_UHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int length);
@@ -131,7 +131,7 @@ void amp_write_ROHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int
 void overlap(int C_irr, int current);
 void overlap_stash(int C_irr);
 
-void diag(void) {
+void diag() {
     dpdfile2 CME, CME2, Cme, SIA, Sia, RIA, Ria, DIA, Dia, tIA, tia, LIA, Lia;
     dpdbuf4 CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb, RIJAB, Rijab, RIjAb, RIjbA;
     dpdbuf4 CMnEf1, CMnfE1, CMnfE, CMneF, C2;

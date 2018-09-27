@@ -218,7 +218,7 @@ void CCLambdaWavefunction::get_moinfo(std::shared_ptr<Wavefunction> wfn) {
 }
 
 /* Frees memory allocated in get_moinfo() and dumps some info. */
-void CCLambdaWavefunction::cleanup(void) {
+void CCLambdaWavefunction::cleanup() {
     int i, h;
 
     psio_write_entry(PSIF_CC_INFO, "Lambda Pseudoenergy", (char *)&(moinfo.lcc), sizeof(double));

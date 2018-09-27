@@ -41,10 +41,10 @@
 namespace psi {
 namespace ccdensity {
 
-void x_Gibja_rohf(void);
-extern void x_Gibja_uhf(void);
+void x_Gibja_rohf();
+extern void x_Gibja_uhf();
 
-void x_Gibja(void) {
+void x_Gibja() {
     if (params.ref == 0 || params.ref == 1)
         x_Gibja_rohf();
     else
@@ -57,7 +57,7 @@ void x_Gibja(void) {
    and arranged as G(ia,jb) until final sort
 */
 
-void x_Gibja_rohf(void) {
+void x_Gibja_rohf() {
     int h, nirreps, row, col, L_irr, R_irr, G_irr;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
     dpdfile2 L1, T1A, T1B, L1A, L1B, R1A, R1B, I1A, I1B;

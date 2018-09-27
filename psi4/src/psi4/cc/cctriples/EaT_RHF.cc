@@ -73,7 +73,7 @@ struct thread_data {
 
 void EaT_RHF_thread(thread_data *);
 
-double EaT_RHF(void) {
+double EaT_RHF() {
     int i, j, k, I, J, K, Gi, Gj, Gk, h, nirreps, cnt;
     int nijk, nthreads, thread, *ijk_part;
     int *occpi, *virtpi, *occ_off, *vir_off;

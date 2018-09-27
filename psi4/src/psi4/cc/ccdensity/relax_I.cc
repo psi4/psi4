@@ -47,11 +47,11 @@ namespace ccdensity {
 ** with both RHF and ROHF cases.
 ** */
 
-void relax_I_RHF(void);
-void relax_I_ROHF(void);
-void relax_I_UHF(void);
+void relax_I_RHF();
+void relax_I_ROHF();
+void relax_I_UHF();
 
-void relax_I(void) {
+void relax_I() {
     if (params.ref == 0)
         relax_I_RHF();
     else if (params.ref == 1)

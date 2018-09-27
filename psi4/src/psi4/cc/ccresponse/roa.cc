@@ -58,7 +58,7 @@ void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, const char *pert_y,
              int y_irrep, double omega_y);
 
-void roa(void) {
+void roa() {
     double ***tensor_rl, ***tensor_pl, **tensor0, ***tensor_rr;
     double ****tensor_rQ, ***tensor_rQ0, ***tensor_rQ1;
     double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;

@@ -39,7 +39,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::FaetT2(void) {
+void CCEnergyWavefunction::FaetT2() {
     dpdfile2 FAEt, Faet;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 tIJAB, tijab, tIjAb;

@@ -42,11 +42,11 @@ namespace ccdensity {
 /* BUILD_A(): Construct the molecular orbital Hessian, A.
 ** */
 
-void build_A_RHF(void);
-void build_A_ROHF(void);
-void build_A_UHF(void);
+void build_A_RHF();
+void build_A_ROHF();
+void build_A_UHF();
 
-void build_A(void) {
+void build_A() {
     if (params.ref == 0)
         build_A_RHF();
     else if (params.ref == 1)

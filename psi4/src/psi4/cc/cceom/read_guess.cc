@@ -47,7 +47,7 @@ namespace cceom {
 /* counts the number of states and Cs for each irrep based on the orbital numbers given
  * in input -- overrides the "roots_per_irrep" keyword */
 
-void read_guess_init(void) {
+void read_guess_init() {
     int i, a, k, l, spin, errcod, C_irrep;
     int num_vectors, vector_len, this_irrep, useit;
     char lbl[32];

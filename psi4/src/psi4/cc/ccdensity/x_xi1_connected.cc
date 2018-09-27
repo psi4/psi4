@@ -79,7 +79,7 @@ namespace ccdensity {
 
 /* double aug_xi_check(dpdfile2 *HIA, dpdfile2 *Hia); */
 
-void x_xi1_connected(void) {
+void x_xi1_connected() {
     dpdfile2 L1, XIA, Xia, HIA, Hia, I1, R1, F1, IME, Ime;
     int L_irr, R_irr, G_irr;
     dpdbuf4 D, R2, L2, H2, I2;

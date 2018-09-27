@@ -54,7 +54,7 @@ namespace ccenergy {
 ** May 2000
 */
 
-void CCEnergyWavefunction::Wmbej_build(void) {
+void CCEnergyWavefunction::Wmbej_build() {
     dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ, WmBEj, WMbeJ, W;
     dpdbuf4 C, D, E, F, X, tIAjb, tiaJB, t2, Y, Z;
     dpdfile2 tIA, tia;

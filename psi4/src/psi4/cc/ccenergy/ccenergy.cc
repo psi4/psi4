@@ -545,7 +545,7 @@ void CCEnergyWavefunction::init_io() {
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void CCEnergyWavefunction::title(void) {
+void CCEnergyWavefunction::title() {
     outfile->Printf("            **************************\n");
     outfile->Printf("            *                        *\n");
     outfile->Printf("            *        CCENERGY        *\n");
@@ -553,7 +553,7 @@ void CCEnergyWavefunction::title(void) {
     outfile->Printf("            **************************\n");
 }
 
-void CCEnergyWavefunction::exit_io(void) {
+void CCEnergyWavefunction::exit_io() {
     int i;
     for (i = PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i, 1);
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* delete CC_TMP files */
@@ -561,14 +561,14 @@ void CCEnergyWavefunction::exit_io(void) {
     tstop();
 }
 
-void CCEnergyWavefunction::init_ioff(void) {
+void CCEnergyWavefunction::init_ioff() {
     int i;
     ioff_ = init_int_array(IOFF_MAX);
     ioff_[0] = 0;
     for (i = 1; i < IOFF_MAX; i++) ioff_[i] = ioff_[i - 1] + i;
 }
 
-void CCEnergyWavefunction::checkpoint(void) {
+void CCEnergyWavefunction::checkpoint() {
     int i;
 
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
@@ -576,7 +576,7 @@ void CCEnergyWavefunction::checkpoint(void) {
 }
 
 /* just use T's on disk and don't iterate */
-void CCEnergyWavefunction::one_step(void) {
+void CCEnergyWavefunction::one_step() {
     dpdfile2 t1;
     dpdbuf4 t2;
     double tval;

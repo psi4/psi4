@@ -39,7 +39,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::cc2_t2_build(void) {
+void CCEnergyWavefunction::cc2_t2_build() {
     DT2();
 
     if ((params_.ref == 0) || params_.t2_coupled) { /** RHF or ROHF with coupled T2's **/

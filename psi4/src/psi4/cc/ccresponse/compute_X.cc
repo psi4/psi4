@@ -61,8 +61,8 @@ void print_X(const char *pert, int irrep, double omega);
 void update_X(const char *pert, int irrep, double omega);
 void diis(int iter, const char *pert, int irrep, double omega);
 double pseudopolar(const char *pert, int irrep, double omega);
-void cleanup(void);
-void exit_io(void);
+void cleanup();
+void exit_io();
 void amp_write(const char *pert, int irrep, double omega);
 
 void analyze(const char *pert, int irrep, double omega);

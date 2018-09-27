@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::Z_build(void) {
+void CCEnergyWavefunction::Z_build() {
     dpdbuf4 ZIJMA, Zijma, ZIjMa, ZIjmA, ZIjAm, ZMaIj, ZmAIj, Z;
     dpdbuf4 tauIJAB, tauijab, tauIjAb, tauIjbA, F_anti, F, tau;
     int Gmb, Gij, mb, nrows, ncols;

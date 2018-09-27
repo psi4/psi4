@@ -45,7 +45,7 @@ namespace ccdensity {
 
 extern void c_clean_CIJAB(dpdbuf4 *CMNEF);
 
-void x_te_intermediates(void) {
+void x_te_intermediates() {
     dpdfile2 R1, L1;
     dpdbuf4 V, L, R, T2;
     int G_irr, L_irr, R_irr;

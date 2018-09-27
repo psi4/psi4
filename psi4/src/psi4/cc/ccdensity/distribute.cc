@@ -45,7 +45,7 @@ namespace ccdensity {
 void classify(int p, int q, int r, int s, double value, struct iwlbuf *ABuf, struct iwlbuf *BBuf, struct iwlbuf *CBuf,
               struct iwlbuf *DBuf, struct iwlbuf *EBuf, struct iwlbuf *FBuf);
 
-void distribute(void) {
+void distribute() {
     double tolerance;
     struct iwlbuf InBuf;
     struct iwlbuf ABuf, BBuf, CBuf, DBuf, EBuf, FBuf;

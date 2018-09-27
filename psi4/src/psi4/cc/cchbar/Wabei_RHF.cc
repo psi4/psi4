@@ -46,7 +46,7 @@
 namespace psi {
 namespace cchbar {
 
-void build_Z1(void);
+void build_Z1();
 void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta);
 
 /* Wabei_RHF(): Builds the Wabei HBAR matrix elements for CCSD for
@@ -59,7 +59,7 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta);
 ** -TDC, 7/05
 */
 
-void Wabei_RHF(void) {
+void Wabei_RHF() {
     dpdfile2 Fme, T1;
     dpdbuf4 F, W, T2, B, Z, Z1, Z2, D, T, C, F1, F2, W1, W2, Tau;
     double value;
@@ -548,7 +548,7 @@ void Wabei_RHF(void) {
 **
 ** TDC, 7/10/05
 */
-void build_Z1(void) {
+void build_Z1() {
     dpdbuf4 T2, Z1;
     dpdfile2 T1;
     int h, row, col, p, q, r, s, P, Q, R, S, psym, qsym, rsym, ssym;

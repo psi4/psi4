@@ -54,7 +54,7 @@ namespace cchbar {
  ** TDC, March 2004
  */
 
-void Wmbij_build(void) {
+void Wmbij_build() {
     dpdfile2 Fme, T1;
     dpdbuf4 W, E, T2, Wmnij, I, Tau, Z, Z1, Z2, C, D;
 
