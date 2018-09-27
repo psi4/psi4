@@ -33,14 +33,15 @@
 #include <cstdio>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-namespace psi { namespace cclambda {
+#include "psi4/cclambda/cclambda.h"
 
-void status(const char *s, std::string out)
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-           std::make_shared<PsiOutStream>(out));
-  printer->Printf( "     %-15s...complete\n", s);
+namespace psi {
+namespace cclambda {
 
+void CCLambdaWavefunction::status(const char *s, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("     %-15s...complete\n", s);
 }
 
-}} // namespace psi::cclambda
+}  // namespace cclambda
+}  // namespace psi

@@ -36,28 +36,25 @@
 
 namespace psi {
 
-int DPD::file2_copy(dpdfile2 *InFile, int outfilenum, const char *label)
-{
+int DPD::file2_copy(dpdfile2 *InFile, int outfilenum, const char *label) {
     int h, row, col, my_irrep, rowtot, coltot;
     double ***matrix;
     dpdfile2 OutFile;
 
     my_irrep = InFile->my_irrep;
 
-    file2_init(&OutFile, outfilenum, InFile->my_irrep, InFile->params->pnum,
-               InFile->params->qnum, label);
+    file2_init(&OutFile, outfilenum, InFile->my_irrep, InFile->params->pnum, InFile->params->qnum, label);
 
     file2_mat_init(InFile);
     file2_mat_rd(InFile);
     file2_mat_init(&OutFile);
 
-    for(h=0; h < OutFile.params->nirreps; h++) {
+    for (h = 0; h < OutFile.params->nirreps; h++) {
         rowtot = OutFile.params->rowtot[h];
-        coltot = OutFile.params->coltot[h^my_irrep];
-        if(rowtot && coltot)
-            memcpy((void *) &(OutFile.matrix[h][0][0]),
-                    (const void *) &(InFile->matrix[h][0][0]),
-                    sizeof(double)*rowtot*coltot);
+        coltot = OutFile.params->coltot[h ^ my_irrep];
+        if (rowtot && coltot)
+            memcpy((void *)&(OutFile.matrix[h][0][0]), (const void *)&(InFile->matrix[h][0][0]),
+                   sizeof(double) * rowtot * coltot);
     }
 
     file2_mat_wrt(&OutFile);
@@ -68,4 +65,4 @@ int DPD::file2_copy(dpdfile2 *InFile, int outfilenum, const char *label)
     return 0;
 }
 
-}
+}  // namespace psi

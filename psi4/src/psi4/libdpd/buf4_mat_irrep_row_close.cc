@@ -36,15 +36,14 @@
 
 namespace psi {
 
-int DPD::buf4_mat_irrep_row_close(dpdbuf4 *Buf, int irrep)
-{
+int DPD::buf4_mat_irrep_row_close(dpdbuf4 *Buf, int irrep) {
     int all_buf_irrep;
     all_buf_irrep = Buf->file.my_irrep;
 
-    if(Buf->params->coltot[irrep^all_buf_irrep])
-        free_dpd_block(Buf->matrix[irrep], 1, Buf->params->coltot[irrep^all_buf_irrep]);
+    if (Buf->params->coltot[irrep ^ all_buf_irrep])
+        free_dpd_block(Buf->matrix[irrep], 1, Buf->params->coltot[irrep ^ all_buf_irrep]);
 
     return 0;
 }
 
-}
+}  // namespace psi

@@ -53,9 +53,7 @@ namespace psi {
 **   char *label: A string labelling for this buffer.
 */
 
-int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
-                    int rsnum,  const char *label)
-{
+int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum, int rsnum, const char *label) {
     int i;
     int maxrows, rowtot, coltot;
     size_t priority;
@@ -65,56 +63,52 @@ int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
     File->dpdnum = dpd_default;
     File->params = &(dpd_list[dpd_default]->params4[pqnum][rsnum]);
 
-    strcpy(File->label,label);
+    strcpy(File->label, label);
     File->filenum = filenum;
     File->my_irrep = irrep;
 
     this_entry = file4_cache_scan(filenum, irrep, pqnum, rsnum, label, dpd_default);
-    if(this_entry != nullptr) {
+    if (this_entry != nullptr) {
         File->incore = 1;
         File->matrix = this_entry->matrix;
-    }
-    else {
+    } else {
         File->incore = 0;
-        File->matrix = (double ***) malloc(File->params->nirreps*sizeof(double **));
+        File->matrix = (double ***)malloc(File->params->nirreps * sizeof(double **));
     }
 
     /* Construct logical subfile pointers */
-    File->lfiles = (psio_address *) malloc(File->params->nirreps *
-                                           sizeof(psio_address));
+    File->lfiles = (psio_address *)malloc(File->params->nirreps * sizeof(psio_address));
     File->lfiles[0] = PSIO_ZERO;
-    for(i=1; i < File->params->nirreps; i++) {
+    for (i = 1; i < File->params->nirreps; i++) {
+        rowtot = File->params->rowtot[i - 1];
+        coltot = File->params->coltot[(i - 1) ^ irrep];
 
-        rowtot = File->params->rowtot[i-1];
-        coltot = File->params->coltot[(i-1)^irrep];
-
-        if(coltot) {
+        if (coltot) {
             /* number of rows for which we can compute the address offset directly */
-            maxrows = DPD_BIGNUM/(coltot*sizeof(double));
-            if(maxrows < 1) {
-                outfile->Printf( "\nLIBDPD Error: each row of %s is too long to compute an address.\n",
-                        File->label);
+            maxrows = DPD_BIGNUM / (coltot * sizeof(double));
+            if (maxrows < 1) {
+                outfile->Printf("\nLIBDPD Error: each row of %s is too long to compute an address.\n", File->label);
                 dpd_error("dpd_file4_init", "outfile");
             }
-        }
-        else maxrows = DPD_BIGNUM;
+        } else
+            maxrows = DPD_BIGNUM;
 
         /* compute the file offset by increments */
-        irrep_ptr = File->lfiles[i-1];
-        for(; rowtot > maxrows; rowtot -= maxrows)
-            irrep_ptr = psio_get_address(irrep_ptr, maxrows*coltot*sizeof(double));
-        irrep_ptr = psio_get_address(irrep_ptr, rowtot*coltot*sizeof(double));
+        irrep_ptr = File->lfiles[i - 1];
+        for (; rowtot > maxrows; rowtot -= maxrows)
+            irrep_ptr = psio_get_address(irrep_ptr, maxrows * coltot * sizeof(double));
+        irrep_ptr = psio_get_address(irrep_ptr, rowtot * coltot * sizeof(double));
 
         File->lfiles[i] = irrep_ptr;
     }
 
     /* Put this file4 into cache if requested */
-    if(dpd_main.cachefiles[filenum] && dpd_main.cachelist[pqnum][rsnum])
-    {
+    if (dpd_main.cachefiles[filenum] && dpd_main.cachelist[pqnum][rsnum]) {
         /* Get the file4's cache priority */
-        if(dpd_main.cachetype == 1)
+        if (dpd_main.cachetype == 1)
             priority = file4_cache_get_priority(File);
-        else priority = 0;
+        else
+            priority = 0;
 
         file4_cache_add(File, priority);
 
@@ -125,4 +119,4 @@ int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
     return 0;
 }
 
-}
+}  // namespace psi

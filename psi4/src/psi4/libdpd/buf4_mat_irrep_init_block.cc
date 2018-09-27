@@ -47,15 +47,13 @@ namespace psi {
 **
 */
 
-int DPD::buf4_mat_irrep_init_block(dpdbuf4 *Buf, int irrep, int num_pq)
-{
+int DPD::buf4_mat_irrep_init_block(dpdbuf4 *Buf, int irrep, int num_pq) {
     int all_buf_irrep;
     all_buf_irrep = Buf->file.my_irrep;
 
-    Buf->matrix[irrep] = dpd_block_matrix(num_pq,Buf->params->coltot[irrep^all_buf_irrep]);
+    Buf->matrix[irrep] = dpd_block_matrix(num_pq, Buf->params->coltot[irrep ^ all_buf_irrep]);
 
     return 0;
-
 }
 
-}
+}  // namespace psi

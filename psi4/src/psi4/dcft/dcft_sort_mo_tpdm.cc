@@ -36,8 +36,6 @@
 #include "psi4/libtrans/mospace.h"
 #include "psi4/libpsi4util/process.h"
 
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
 #include "dcft.h"
 #include "defines.h"
 
