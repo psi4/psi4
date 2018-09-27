@@ -34,7 +34,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 
-namespace psi { namespace cclambda {
+namespace psi {
+namespace cclambda {
 
 /* halftrans(): Routine to transform the last two indices of a dpdbuf4
 ** between the MO and SO bases.
@@ -56,81 +57,81 @@ namespace psi { namespace cclambda {
 ** double beta:   multiplicative factor for the target
 */
 
-void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps,
-	       int **mo_row, int **so_row, int *mospi, int *sospi, int type, double alpha, double beta)
-{
-  int h, Gc, Gd, cd, pq, ij;
-  double **X;
+void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps, int **mo_row,
+               int **so_row, int *mospi, int *sospi, int type, double alpha, double beta) {
+    int h, Gc, Gd, cd, pq, ij;
+    double **X;
 
-  for(h=0; h < nirreps; h++) {
+    for (h = 0; h < nirreps; h++) {
+        dpd_set_default(dpdnum1);
+        global_dpd_->buf4_mat_irrep_init(Buf1, h);
 
-    dpd_set_default(dpdnum1);
-    global_dpd_->buf4_mat_irrep_init(Buf1, h);
+        dpd_set_default(dpdnum2);
+        global_dpd_->buf4_mat_irrep_init(Buf2, h);
 
-    dpd_set_default(dpdnum2);
-    global_dpd_->buf4_mat_irrep_init(Buf2, h);
+        if (type == 0) { /* alpha * Buf1 --> beta * Buf2 */
+            if (alpha != 0.0) {
+                dpd_set_default(dpdnum1);
+                global_dpd_->buf4_mat_irrep_rd(Buf1, h);
+            }
+            if (beta != 0.0) {
+                dpd_set_default(dpdnum2);
+                global_dpd_->buf4_mat_irrep_rd(Buf2, h);
+            }
+        }
+        if (type == 1) { /* alpha * Buf2 --> beta * Buf1 */
+            if (alpha != 0.0) {
+                dpd_set_default(dpdnum2);
+                global_dpd_->buf4_mat_irrep_rd(Buf2, h);
+            }
+            if (beta != 0.0) {
+                dpd_set_default(dpdnum1);
+                global_dpd_->buf4_mat_irrep_rd(Buf1, h);
+            }
+        }
 
-    if(type==0) { /* alpha * Buf1 --> beta * Buf2 */
-      if(alpha != 0.0) { dpd_set_default(dpdnum1); global_dpd_->buf4_mat_irrep_rd(Buf1, h); }
-      if(beta != 0.0) { dpd_set_default(dpdnum2); global_dpd_->buf4_mat_irrep_rd(Buf2, h); }
+        for (Gc = 0; Gc < nirreps; Gc++) {
+            Gd = h ^ Gc;
+
+            cd = mo_row[h][Gc];
+            pq = so_row[h][Gc];
+
+            if (mospi[Gc] && mospi[Gd] && sospi[Gc] && sospi[Gd]) {
+                if (type == 0) {
+                    X = block_matrix(mospi[Gc], sospi[Gd]);
+
+                    for (ij = 0; ij < Buf1->params->rowtot[h]; ij++) {
+                        C_DGEMM('n', 't', mospi[Gc], sospi[Gd], mospi[Gd], 1.0, &(Buf1->matrix[h][ij][cd]), mospi[Gd],
+                                &(C[Gd][0][0]), mospi[Gd], 0.0, &(X[0][0]), sospi[Gd]);
+
+                        C_DGEMM('n', 'n', sospi[Gc], sospi[Gd], mospi[Gc], alpha, &(C[Gc][0][0]), mospi[Gc], &(X[0][0]),
+                                sospi[Gd], beta, &(Buf2->matrix[h][ij][pq]), sospi[Gd]);
+                    }
+                } else {
+                    X = block_matrix(sospi[Gc], mospi[Gd]);
+
+                    for (ij = 0; ij < Buf1->params->rowtot[h]; ij++) {
+                        C_DGEMM('n', 'n', sospi[Gc], mospi[Gd], sospi[Gd], 1.0, &(Buf2->matrix[h][ij][pq]), sospi[Gd],
+                                &(C[Gd][0][0]), mospi[Gd], 0.0, &(X[0][0]), mospi[Gd]);
+
+                        C_DGEMM('t', 'n', mospi[Gc], mospi[Gd], sospi[Gc], alpha, &(C[Gc][0][0]), mospi[Gc], &(X[0][0]),
+                                mospi[Gd], beta, &(Buf1->matrix[h][ij][cd]), mospi[Gd]);
+                    }
+                }
+
+                free_block(X);
+            }
+        }
+
+        dpd_set_default(dpdnum1);
+        if (type == 1) global_dpd_->buf4_mat_irrep_wrt(Buf1, h);
+        global_dpd_->buf4_mat_irrep_close(Buf1, h);
+
+        dpd_set_default(dpdnum2);
+        if (type == 0) global_dpd_->buf4_mat_irrep_wrt(Buf2, h);
+        global_dpd_->buf4_mat_irrep_close(Buf2, h);
     }
-    if(type==1) { /* alpha * Buf2 --> beta * Buf1 */
-      if(alpha != 0.0) { dpd_set_default(dpdnum2); global_dpd_->buf4_mat_irrep_rd(Buf2, h); }
-      if(beta != 0.0) { dpd_set_default(dpdnum1); global_dpd_->buf4_mat_irrep_rd(Buf1, h); }
-    }
-
-    for(Gc=0; Gc < nirreps; Gc++) {
-      Gd = h^Gc;
-
-      cd = mo_row[h][Gc];
-      pq = so_row[h][Gc];
-
-      if(mospi[Gc] && mospi[Gd] && sospi[Gc] && sospi[Gd]) {
-
-	if(type == 0) {
-	  X = block_matrix(mospi[Gc],sospi[Gd]);
-
-	  for(ij=0; ij < Buf1->params->rowtot[h]; ij++) {
-
-	    C_DGEMM('n','t', mospi[Gc], sospi[Gd], mospi[Gd], 1.0,
-		    &(Buf1->matrix[h][ij][cd]), mospi[Gd], &(C[Gd][0][0]), mospi[Gd],
-		    0.0, &(X[0][0]), sospi[Gd]);
-
-	    C_DGEMM('n','n', sospi[Gc], sospi[Gd], mospi[Gc], alpha,
-		    &(C[Gc][0][0]), mospi[Gc], &(X[0][0]), sospi[Gd],
-		    beta, &(Buf2->matrix[h][ij][pq]), sospi[Gd]);
-	  }
-	}
-	else {
-	  X = block_matrix(sospi[Gc],mospi[Gd]);
-
-	  for(ij=0; ij < Buf1->params->rowtot[h]; ij++) {
-
-	    C_DGEMM('n','n', sospi[Gc], mospi[Gd], sospi[Gd], 1.0,
-		    &(Buf2->matrix[h][ij][pq]), sospi[Gd], &(C[Gd][0][0]), mospi[Gd],
-		    0.0, &(X[0][0]), mospi[Gd]);
-
-	    C_DGEMM('t','n', mospi[Gc], mospi[Gd], sospi[Gc], alpha,
-		    &(C[Gc][0][0]), mospi[Gc], &(X[0][0]), mospi[Gd],
-		    beta, &(Buf1->matrix[h][ij][cd]), mospi[Gd]);
-
-	  }
-	}
-
-	free_block(X);
-      }
-    }
-
-    dpd_set_default(dpdnum1);
-    if(type==1) global_dpd_->buf4_mat_irrep_wrt(Buf1, h);
-    global_dpd_->buf4_mat_irrep_close(Buf1, h);
-
-    dpd_set_default(dpdnum2);
-    if(type==0) global_dpd_->buf4_mat_irrep_wrt(Buf2, h);
-    global_dpd_->buf4_mat_irrep_close(Buf2, h);
-
-  }
-
 }
 
-}} // namespace psi::cclambda
+}  // namespace cclambda
+}  // namespace psi

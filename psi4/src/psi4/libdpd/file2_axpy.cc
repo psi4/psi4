@@ -47,9 +47,7 @@ namespace psi {
  **               FileA
  */
 
-int DPD::file2_axpy(dpdfile2 *FileA, dpdfile2 *FileB, double alpha,
-                    int transA)
-{
+int DPD::file2_axpy(dpdfile2 *FileA, dpdfile2 *FileB, double alpha, int transA) {
     int h, nirreps, my_irrep;
     int row, col;
 
@@ -61,19 +59,16 @@ int DPD::file2_axpy(dpdfile2 *FileA, dpdfile2 *FileB, double alpha,
     file2_mat_rd(FileA);
     file2_mat_rd(FileB);
 
-    for(h=0; h < nirreps; h++) {
+    for (h = 0; h < nirreps; h++) {
+        if (!transA) {
+            for (row = 0; row < FileA->params->rowtot[h]; row++)
+                for (col = 0; col < FileA->params->coltot[h ^ my_irrep]; col++)
+                    FileB->matrix[h][row][col] += alpha * FileA->matrix[h][row][col];
 
-        if(!transA) {
-
-            for(row=0; row < FileA->params->rowtot[h]; row++)
-                for(col=0; col < FileA->params->coltot[h^my_irrep]; col++)
-                    FileB->matrix[h][row][col] += alpha*FileA->matrix[h][row][col];
-
-        }
-        else {
-            for(row=0; row < FileB->params->rowtot[h]; row++)
-                for(col=0; col < FileB->params->coltot[h^my_irrep]; col++)
-                    FileB->matrix[h][row][col] += alpha*FileA->matrix[h^my_irrep][col][row];
+        } else {
+            for (row = 0; row < FileB->params->rowtot[h]; row++)
+                for (col = 0; col < FileB->params->coltot[h ^ my_irrep]; col++)
+                    FileB->matrix[h][row][col] += alpha * FileA->matrix[h ^ my_irrep][col][row];
         }
     }
 
@@ -84,5 +79,4 @@ int DPD::file2_axpy(dpdfile2 *FileA, dpdfile2 *FileB, double alpha,
     return 0;
 }
 
-
-}
+}  // namespace psi

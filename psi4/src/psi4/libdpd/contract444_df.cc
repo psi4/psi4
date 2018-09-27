@@ -39,14 +39,14 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/process.h"
 
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 namespace psi {
 /**
- * @brief contract444_df Forms integrals on the fly from density fitted integrals and contracts them against T amplitudes
+ * @brief contract444_df Forms integrals on the fly from density fitted integrals and contracts them against T
+ * amplitudes
  *
  * The integral tensor should arrive packed, in the order (a>=b|Q), where Q is the auxilliary basis index
  *
@@ -57,13 +57,12 @@ namespace psi {
  * @param beta The prefactor for the existing tensor
  */
 #define PermSym 1
-int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double alpha, double beta)
-{
+int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double alpha, double beta) {
     // Zero out the target buffer
     buf4_scm(tau_out, beta);
 
     // Open up the entire tau matrix
-    for(int h = 0; h < tau_in->params->nirreps; ++h){
+    for (int h = 0; h < tau_in->params->nirreps; ++h) {
         buf4_mat_irrep_init(tau_out, h);
         buf4_mat_irrep_rd(tau_out, h);
         buf4_mat_irrep_init(tau_in, h);
@@ -78,22 +77,22 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
     // Create accumulation buffers
     std::vector<double ***> arrays;
     arrays.push_back(tau_out->matrix);
-    for(int thread = 1; thread < nthreadz; ++thread){
-        double ***arr = new double**[tau_out->params->nirreps];
-        for(int h = 0; h < tau_out->params->nirreps; ++h){
-            if(tau_out->params->rowtot[h] && tau_out->params->coltot[h])
+    for (int thread = 1; thread < nthreadz; ++thread) {
+        double ***arr = new double **[tau_out->params->nirreps];
+        for (int h = 0; h < tau_out->params->nirreps; ++h) {
+            if (tau_out->params->rowtot[h] && tau_out->params->coltot[h])
                 arr[h] = block_matrix(tau_out->params->rowtot[h], tau_out->params->coltot[h]);
         }
         arrays.push_back(arr);
     }
 
-    for(int Gpr = 0; Gpr < B->params->nirreps; ++Gpr){
+    for (int Gpr = 0; Gpr < B->params->nirreps; ++Gpr) {
         buf4_mat_irrep_init(B, Gpr);
         buf4_mat_irrep_rd(B, Gpr);
 
         int **orbs = B->params->roworb[Gpr];
 #pragma omp for
-        for(int pr = 0; pr < B->params->rowtot[Gpr]; ++pr){
+        for (int pr = 0; pr < B->params->rowtot[Gpr]; ++pr) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -106,19 +105,17 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
             int rsym = B->params->qsym[r];
 
             // Scale the diagonals by 0.5, to avoid "if" statements below
-            if(p==r)
-                for(int Q = 0; Q < B->params->coltot[Gpr]; ++Q)
-                    B->matrix[Gpr][pr][Q] *= 0.5;
+            if (p == r)
+                for (int Q = 0; Q < B->params->coltot[Gpr]; ++Q) B->matrix[Gpr][pr][Q] *= 0.5;
 
-            for(int qs = 0; qs < pr; ++qs){
+            for (int qs = 0; qs < pr; ++qs) {
                 int q = orbs[qs][0];
                 int s = orbs[qs][1];
                 int qsym = B->params->psym[q];
                 int ssym = B->params->qsym[s];
 
                 int len = B->params->coltot[Gpr];
-                if(len == 0)
-                    continue;
+                if (len == 0) continue;
 
                 // Build the integral
                 double prqs = alpha * C_DDOT(len, B->matrix[Gpr][pr], 1, B->matrix[Gpr][qs], 1);
@@ -137,7 +134,7 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
                 int sp = tau_out->params->rowidx[s][p];
 
                 len = tau_in->params->coltot[Gpq];
-                if(len){
+                if (len) {
                     // T_pq_ij <- (pr|qs) T_rs_ij
                     C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, arr[Gpq][pq], 1);
                     // T_qp_ij <- (qs|pr) T_sr_ij
@@ -148,7 +145,7 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
                     C_DAXPY(len, prqs, tau_in->matrix[Grs][qp], 1, arr[Grs][sr], 1);
                 }
                 len = tau_in->params->coltot[Grq];
-                if(len){
+                if (len) {
                     // T_rq_ij <- (rp|qs) T_ps_ij
                     C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, arr[Grq][rq], 1);
                     // T_qr_ij <- (qs|rp) T_sp_ij
@@ -159,7 +156,7 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
                     C_DAXPY(len, prqs, tau_in->matrix[Gps][qr], 1, arr[Gps][sp], 1);
                 }
 
-            } // End qs loop
+            }  // End qs loop
 
             // Now, add in the diagonal elements, pr == qs
             int Gpq = 0;
@@ -172,48 +169,45 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
             int ps = tau_out->params->rowidx[p][r];
 
             int len = B->params->coltot[Gpr];
-            if(len == 0)
-                continue;
+            if (len == 0) continue;
 
             // Build the integral
             double prqs = alpha * C_DDOT(len, B->matrix[Gpr][pr], 1, B->matrix[Gpr][pr], 1);
 
             len = tau_in->params->coltot[Gpq];
-            if(len){
+            if (len) {
                 // T_pq_ij <- (pr|qs) T_rs_ij
                 C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, arr[Gpq][pq], 1);
                 // T_rs_ij <- (rp|sq) T_pq_ij
                 C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, arr[Grs][rs], 1);
             }
             len = tau_in->params->coltot[Grq];
-            if(len){
+            if (len) {
                 // T_rq_ij <- (rp|qs) T_ps_ij
                 C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, arr[Grq][rq], 1);
                 // T_ps_ij <- (pr|sq) T_rq_ij
                 C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, arr[Gps][ps], 1);
             }
 
-        } // End pr loop
+        }  // End pr loop
         buf4_mat_irrep_close(B, Gpr);
-    } // End Gpr loop
+    }  // End Gpr loop
 
     // Accumulate the results, and free memory
-    for(int thread = 1; thread < nthreadz; ++thread){
+    for (int thread = 1; thread < nthreadz; ++thread) {
         double ***arr = arrays[thread];
-        for(int h = 0; h < tau_out->params->nirreps; ++h){
-            for(int row = 0; row < tau_out->params->rowtot[h]; ++row)
-                for(int col = 0; col < tau_out->params->coltot[h]; ++col)
+        for (int h = 0; h < tau_out->params->nirreps; ++h) {
+            for (int row = 0; row < tau_out->params->rowtot[h]; ++row)
+                for (int col = 0; col < tau_out->params->coltot[h]; ++col)
                     tau_out->matrix[h][row][col] += arr[h][row][col];
-            if(tau_out->params->rowtot[h] && tau_out->params->coltot[h])
-                free_block(arr[h]);
+            if (tau_out->params->rowtot[h] && tau_out->params->coltot[h]) free_block(arr[h]);
         }
-        delete [] arrays[thread];
+        delete[] arrays[thread];
         arrays.push_back(arr);
     }
 
-
     // Close the B matrix
-    for(int h = 0; h < B->params->nirreps; ++h){
+    for (int h = 0; h < B->params->nirreps; ++h) {
         buf4_mat_irrep_wrt(tau_out, h);
         buf4_mat_irrep_close(tau_out, h);
         buf4_mat_irrep_close(tau_in, h);
@@ -221,6 +215,4 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
 
     return 0;
 }
-
-
 }

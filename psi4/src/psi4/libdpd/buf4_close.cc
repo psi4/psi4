@@ -43,8 +43,7 @@ namespace psi {
 **   dpdbuf4 *Buf: A pointer to the dpdbuf4 to be closed.
 */
 
-int DPD::buf4_close(dpdbuf4 *Buf)
-{
+int DPD::buf4_close(dpdbuf4 *Buf) {
     int nirreps;
 
     nirreps = Buf->params->nirreps;
@@ -64,4 +63,4 @@ int DPD::buf4_close(dpdbuf4 *Buf)
     return 0;
 }
 
-}
+}  // namespace psi

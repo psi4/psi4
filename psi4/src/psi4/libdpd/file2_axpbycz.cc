@@ -46,9 +46,7 @@ namespace psi {
 **   double a, b, c, scalar prefactors
 */
 
-int DPD::file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
-                       double a, double b, double c)
-{
+int DPD::file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC, double a, double b, double c) {
     file2_scm(FileC, c);
 
     file2_axpy(FileB, FileC, b, 0);
@@ -57,5 +55,4 @@ int DPD::file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
     return 0;
 }
 
-
-}
+}  // namespace psi

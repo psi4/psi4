@@ -36,8 +36,7 @@
 
 namespace psi {
 
-double DPD::file2_dot(dpdfile2 *FileA, dpdfile2 *FileB)
-{
+double DPD::file2_dot(dpdfile2 *FileA, dpdfile2 *FileB) {
     int h, nirreps, my_irrep;
     double dot;
 
@@ -51,19 +50,15 @@ double DPD::file2_dot(dpdfile2 *FileA, dpdfile2 *FileB)
     file2_mat_rd(FileA);
     file2_mat_rd(FileB);
 
-    for(h=0; h < nirreps; h++) {
-
-        dot += dot_block(FileA->matrix[h], FileB->matrix[h],
-                         FileA->params->rowtot[h],
-                         FileA->params->coltot[h^my_irrep], 1.0);
-
+    for (h = 0; h < nirreps; h++) {
+        dot += dot_block(FileA->matrix[h], FileB->matrix[h], FileA->params->rowtot[h],
+                         FileA->params->coltot[h ^ my_irrep], 1.0);
     }
 
     file2_mat_close(FileA);
     file2_mat_close(FileB);
 
     return dot;
-
 }
 
-}
+}  // namespace psi
