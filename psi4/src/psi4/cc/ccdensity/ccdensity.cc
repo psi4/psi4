@@ -584,7 +584,7 @@ void init_io() {
       }
     */
 
-    tstart();
+    timer_on("CCDensity");
 
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, PSIO_OPEN_OLD);
     // erase old files
@@ -628,7 +628,7 @@ void exit_io() {
     /* Close all dpd data files here */
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
 
-    tstop();
+    timer_off("CCDensity");
 }
 
 }  // namespace ccdensity
