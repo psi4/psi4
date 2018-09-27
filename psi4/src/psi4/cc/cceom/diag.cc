@@ -148,20 +148,14 @@ void diag() {
     int L_start_iter, L_old;
     char *keyw;
 
-#ifdef TIME_CCEOM
     timer_on("HBAR_EXTRA");
-#endif
     if (params.wfn == "EOM_CC2")
         cc2_hbar_extra();
     else
         hbar_extra(); /* sort hbar matrix elements for sigma equations */
-#ifdef TIME_CCEOM
     timer_off("HBAR_EXTRA");
-#endif
 
-#ifdef EOM_DEBUG
     hbar_norms();
-#endif
 
     //  if(eom_params.guess == "INPUT")
     //    read_guess_init();
@@ -177,9 +171,7 @@ void diag() {
         keep_going = 1;
         num_converged = 0;
         if (eom_params.cs_per_irrep[C_irr] == 0) continue;
-#ifdef TIME_CCEOM
         timer_on("INIT GUESS");
-#endif
         outfile->Printf("Symmetry of excited state: %s\n", moinfo.irr_labs[moinfo.sym ^ C_irr].c_str());
         outfile->Printf("Symmetry of right eigenvector: %s\n", moinfo.irr_labs[C_irr].c_str());
         if (params.eom_ref == 0) outfile->Printf("Seeking states with multiplicity of %d\n", eom_params.mult);
@@ -265,9 +257,7 @@ void diag() {
             }
         }
 
-#ifdef TIME_CCEOM
         timer_off("INIT GUESS");
-#endif
 
 #ifdef EOM_DEBUG
         /* printout initial guesses */
@@ -337,7 +327,6 @@ void diag() {
 #ifdef EOM_DEBUG
                 check_sum("reset", 0, 0);
 #endif
-#ifdef TIME_CCEOM
                 timer_on("SIGMA ALL");
                 if (params.wfn == "EOM_CC2") {
                     timer_on("sigmacc2");
@@ -369,21 +358,6 @@ void diag() {
                     }
                 }
                 timer_off("SIGMA ALL");
-#else
-                if (params.wfn == "EOM_CC2")
-                    cc2_sigma(i, C_irr);
-                else {
-                    sigmaSS(i, C_irr);
-                    sigmaSD(i, C_irr);
-                    sigmaDS(i, C_irr);
-                    sigmaDD(i, C_irr);
-                }
-                if (((params.wfn == "EOM_CC3") && (cc3_stage > 0)) || eom_params.restart_eom_cc3) {
-                    cc3_HC1(i, C_irr);
-                    cc3_HC1ET1(i, C_irr);
-                    sigmaCC3(i, C_irr, cc3_eval);
-                }
-#endif
                 if (params.full_matrix) {
                     sigma00(i, C_irr);
                     sigma0S(i, C_irr);
@@ -428,9 +402,7 @@ void diag() {
                 }
             }
 
-#ifdef TIME_CCEOM
             timer_on("BUILD G");
-#endif /*timing*/
             /* Form G = C'*S matrix */
             G = block_matrix(L, L);
 
@@ -567,9 +539,7 @@ void diag() {
             ignore_G_old = 0;
             already_sigma = L;
 
-#ifdef TIME_CCEOM
             timer_off("BUILD G");
-#endif /* timing */
 #ifdef EOM_DEBUG
             outfile->Printf("The G Matrix\n");
             mat_print(G, L, L, outfile);
@@ -605,9 +575,7 @@ void diag() {
             }
             outfile->Printf("  Root    EOM Energy     Delta E   Res. Norm    Conv?\n");
             for (k = 0; k < eom_params.cs_per_irrep[C_irr]; ++k) {
-#ifdef TIME_CCEOM
                 timer_on("CALC RES");
-#endif /* timing */
 
                 /* rezero residual vector for each root */
                 if (params.full_matrix) {
@@ -758,9 +726,7 @@ void diag() {
                     norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
                 outfile->Printf("Norm of residual vector %d  before precondition %18.13lf\n", k, norm);
 #endif
-#ifdef TIME_CCEOM
                 timer_off("CALC RES");
-#endif          /* timing */
                 /* moved back down 8-06 why was this ever before residual norm?
                     if(params.eom_ref == 0) precondition_RHF(&RIA, &RIjAb, lambda[k]);
                     else precondition(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, lambda[k]); */

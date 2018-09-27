@@ -50,7 +50,6 @@ namespace cceom {
 EXTERN void check_sum(char *term_lbl, int index, int irrep);
 
 // #define EOM_DEBUG (0)
-#define TIME_CCEOM (1)
 
 #define H_IRR (0)
 #define MAX(I, J) ((I > J) ? I : J)
