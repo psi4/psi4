@@ -16,6 +16,8 @@ def set_up():
 def tear_down():
     import os
     import glob
+    import psi4
+    psi4.core.close_outfile()
     patterns = ['cavity.*', 'grid*', 'pytest_output.*h5',
                 'pytest_output.dat',
                 '*pcmsolver.inp', 'PEDRA.OUT*', 'timer.dat']
