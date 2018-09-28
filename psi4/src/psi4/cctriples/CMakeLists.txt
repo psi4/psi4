@@ -1,2 +1,0 @@
-set(sources_list T3_UHF_ABC.cc triples.cc ET_ABB.cc cache.cc ET_RHF.cc count_ijk.cc T3_grad_UHF_AAA.cc ET_AAB.cc transpose_integrals.cc ET_AAA.cc test_abc_loops.cc T3_grad_UHF_AAB.cc ET_UHF_AAB.cc get_moinfo.cc ET_UHF_AAA.cc ET_UHF_ABB.cc T3_UHF_AAB.cc EaT_RHF.cc ET_BBB.cc ET_UHF_BBB.cc T3_UHF_AAA.cc T3_grad_UHF_BBA.cc T3_grad_UHF_BBB.cc T3_grad_RHF.cc )
-psi4_add_module(bin cctriples sources_list mints)
