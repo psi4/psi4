@@ -321,7 +321,7 @@ double CCEnergyWavefunction::compute_energy() {
         if (params_.aobasis != "NONE") dpd_close(1);
         dpd_close(0);
         cleanup();
-        timer_off("CCEnergy");
+        timer_off("ccenergy");
         free(ioff_);
         exit_io();
         return Failure;
@@ -504,7 +504,7 @@ double CCEnergyWavefunction::compute_energy() {
 void CCEnergyWavefunction::init_io() {
     params_.just_energy = 0;
     params_.just_residuals = 0;
-    timer_on("CCEnergy");
+    timer_on("ccenergy");
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
@@ -521,7 +521,7 @@ void CCEnergyWavefunction::exit_io() {
     for (i = PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i, 1);
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* delete CC_TMP files */
     for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
-    timer_off("CCEnergy");
+    timer_off("ccenergy");
 }
 
 void CCEnergyWavefunction::init_ioff() {

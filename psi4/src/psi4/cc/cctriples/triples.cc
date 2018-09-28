@@ -257,7 +257,7 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
 }
 
 void init_io() {
-    timer_on("CCTriples");
+    timer_on("cctriples");
 
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
@@ -273,7 +273,7 @@ void title() {
 void exit_io() {
     int i;
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
-    timer_off("CCTriples");
+    timer_off("cctriples");
 }
 
 }  // namespace cctriples

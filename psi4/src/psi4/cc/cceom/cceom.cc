@@ -130,7 +130,7 @@ PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
 }
 
 void init_io() {
-    timer_on("CCEOM");
+    timer_on("cceom");
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
@@ -139,7 +139,7 @@ void exit_io() {
     for (i = PSIF_CC_MIN; i <= PSIF_CC_DIIS_AMP; i++) psio_close(i, 1);
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0);
     for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
-    timer_off("CCEOM");
+    timer_off("cceom");
 }
 
 void form_dpd_dp() {

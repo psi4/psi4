@@ -188,7 +188,7 @@ PsiReturnType cchbar(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
 }
 
 void init_io() {
-    timer_on("CCHBAR");
+    timer_on("cchbar");
 
     /* Open all dpd data files */
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
@@ -210,7 +210,7 @@ void exit_io() {
     for (int i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; ++i) psio_close(i, 0); /* get rid of TMP files */
     for (int i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; ++i) psio_close(i, 1);
 
-    timer_off("CCHBAR");
+    timer_off("cchbar");
 }
 
 }  // namespace cchbar
