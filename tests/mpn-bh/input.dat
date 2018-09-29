@@ -2,7 +2,7 @@
 #! M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
 # Test MP(10) at its equilibrium geometry
-refnuc      =   2.1101925597355 #TEST
+refnuc      =   2.1101925680    #TEST
 refscf      = -25.1262628711449 #TEST
 refci_10    = -25.2183501083948 #TEST
 refcorr_10  = refci_10 - refscf #TEST
@@ -28,7 +28,7 @@ compare_values(refcorr_10, get_variable("CURRENT CORRELATION ENERGY"), 8, "MP(10
 clean()
 
 # Now test MP(19) at its equilibrium geometry
-refnuc     =   2.1108491172106 #TEST
+refnuc     =   2.1108491255    #TEST
 refscf     = -25.1262688035365 #TEST
 refci_19   = -25.2184321372791 #TEST
 refcorr_19 = refci_19 - refscf #TEST

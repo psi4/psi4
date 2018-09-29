@@ -463,7 +463,7 @@ def _test_scf5():
     #Ensure that the checkpoint file is always nuked
     psi4.core.IOManager.shared_object().set_specific_retention(32,False)
 
-    Eref_nuc      =   30.78849213614545
+    Eref_nuc      =   30.7884922572
     Eref_sing_can = -149.58723684929720
     Eref_sing_df  = -149.58715054487624
     Eref_uhf_can  = -149.67135517240553
@@ -749,7 +749,7 @@ def test_v2rdm_casscf():
 
     psi4.activate(n2)
 
-    n2.r     = 0.5
+    n2.r     = 0.5 * 0.52917721067 / 0.52917720859
     refscf   = -103.04337420425350
     refv2rdm = -103.086205379481
 

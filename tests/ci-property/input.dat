@@ -29,7 +29,7 @@ set {
 
 no3.update_geometry()
 no3.print_out()
-compare_values(115.503632390134896, no3.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(115.5036328441, no3.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',

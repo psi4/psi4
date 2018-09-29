@@ -1,6 +1,6 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 
-nucenergy =   8.80146552997207  #TEST
+nucenergy =   8.8014655646      #TEST
 refenergy = -76.05098620307962  #TEST
 
 molecule h2o {

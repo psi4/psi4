@@ -1,7 +1,7 @@
 #! Water-Argon complex with ECP present; check of energies and forces.
 
-nucenergy =   23.253113522963400  #TEST
-refenergy =  -96.673557940220277  #TEST
+nucenergy =   23.2531136144       #TEST
+refenergy =  -96.67355794046748   #TEST
 
 molecule arwater {
     Ar  0.000000000000     0.000000000000     3.000000000000
