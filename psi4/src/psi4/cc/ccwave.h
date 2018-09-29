@@ -28,7 +28,10 @@
 
 #pragma once
 
+#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <array>
 
@@ -39,7 +42,11 @@
 #include "ccenergy/Params.h"
 #include "ccenergy/Local.h"
 
+#include "ccmoinfo.h"
+#include "ccparams.h"
+
 namespace psi {
+
 class Options;
 struct dpdfile2;
 struct dpdbuf4;
@@ -204,6 +211,9 @@ class CCEnergyWavefunction : public Wavefunction {
 
 namespace cc {
 
+void psio_on();
+void psio_off();
+
 class CCWavefunction final : public Wavefunction {
    public:
     CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
@@ -214,6 +224,18 @@ class CCWavefunction final : public Wavefunction {
 
    private:
     void common_init();
+    void init_io();
+    void init_dpd();
+    void tear_down();
+    void title(std::string &wfn);
+
+    /*! Coupled cluster calculation set up options. Previously in Params */
+    CCParams params_;
+    /*! Coupled cluster calculation MO information. Previously in MOInfo */
+    CCMOInfo moinfo_;
+
+    std::vector<int> cachefiles_;
+    std::map<std::string, DPD> dpd_;
 };
 
 }  // namespace cc

@@ -76,7 +76,7 @@ void denom_rhf(Dimension &openpi);
 void denom_uhf();
 
 PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
-    tstart();
+    timer_on("cctransort");
 
     std::shared_ptr<PSIO> psio(_default_psio_lib_);
     if (!ref) throw PSIEXCEPTION("SCF has not been run yet!");
@@ -375,7 +375,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     // Transformation
 
     outfile->Printf("\tTransforming integrals...\n");
-    std::vector<std::shared_ptr<MOSpace> > transspaces;
+    std::vector<std::shared_ptr<MOSpace>> transspaces;
     transspaces.push_back(MOSpace::occ);
     transspaces.push_back(MOSpace::vir);
 
@@ -772,7 +772,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     for (int i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio->close(i, 0); /* delete CC_TMP files */
     for (int i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio->close(i, 1);
 
-    tstop();
+    timer_off("cctransort");
 
     return Success;
 }
