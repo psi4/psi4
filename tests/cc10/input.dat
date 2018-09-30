@@ -18,7 +18,7 @@ set {
 
 energy('ccsd')
 
-enuc   =  18.91527043470638  #TEST
+enuc   =  18.9152705091      #TEST
 escf   = -92.19555660616889  #TEST
 eccsd  =  -0.28134621116616  #TEST
 etotal = -92.47690281733487  #TEST

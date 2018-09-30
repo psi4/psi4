@@ -39,7 +39,7 @@ set v2rdm_casscf {
 
 activate(n2)
 
-n2.r     = 0.5
+n2.r     = 0.5 * 0.52917721067 / 0.52917720859
 refscf   = -103.04337420425350 # TEST
 refv2rdm = -103.086205379481   # TEST
 

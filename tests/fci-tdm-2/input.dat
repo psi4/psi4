@@ -1,6 +1,6 @@
 #! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
-refnuc   =   4.91953818754668 #TEST
+refnuc   =   4.9195382069     #TEST
 refscf   = -25.94361431841737 #TEST
 refci1   = -26.0272269243438  #TEST
 refcorr1 =  refci1 - refscf   #TEST

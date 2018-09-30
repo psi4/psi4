@@ -72,11 +72,8 @@ test_script:
   #     psimrcc-sp1
   #     pywrap-all pywrap-cbs1
   #
-  # Failling tests:
-  #     cubeprop
-  #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|cubeprop)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
@@ -84,10 +81,10 @@ test_script:
 after_test:
   # Run failling tests, but their results are ignored
   # TODO fix the tests
-  - ctest --build-config %CONFIGURATION%
-          --tests-regex "^(cubeprop)$"
-          --output-on-failure
-          --parallel %NUMBER_OF_PROCESSORS% & exit 0
+  #- ctest --build-config %CONFIGURATION%
+  #        --tests-regex "^()$"
+  #        --output-on-failure
+  #        --parallel %NUMBER_OF_PROCESSORS% & exit 0
   - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
 
 cache:
