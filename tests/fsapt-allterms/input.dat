@@ -52,7 +52,7 @@ energy('fisapt0')
 keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
 
 Eref = {  #TEST
-    'Enuc'  : 474.748080304143684,     #TEST
+    'Enuc'  : 474.7480822,     #TEST
     'Eelst' : -0.002069850948615226,   #TEST
     'Eexch' : 0.006873900478860527,    #TEST
     'Eind'  : -0.0007820179915634428,  #TEST

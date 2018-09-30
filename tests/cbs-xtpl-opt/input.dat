@@ -15,7 +15,7 @@ set {
 }
 
 h2.update_geometry()
-compare_values(0.529177208590000, h2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(0.5291772107, h2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 optimize('SCF/cc-pVDZ')
 compare_values(0.747953788665, h2.R, 4, "[1] SCF/cc-pVDZ Optimized R")  #TEST

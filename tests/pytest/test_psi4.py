@@ -78,7 +78,7 @@ def test_psi4_dfmp2():
     #! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
     #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
-    Enuc = 235.946620315069168
+    Enuc = 235.94662124
     Ecp  = -0.0224119246
 
     formic_dim = psi4.geometry("""
@@ -120,7 +120,7 @@ def test_psi4_sapt():
     #! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
     #! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
-    Eref = [ 85.189064196429101,  -0.00359915058,  0.00362911158,
+    Eref = [ 85.1890645313,  -0.00359915058,  0.00362911158,
              -0.00083137117,      -0.00150542374, -0.00230683391 ]
 
     ethene_ethyne = psi4.geometry("""
@@ -201,7 +201,7 @@ def test_psi4_scfproperty():
         "reference": "uhf"})
 
     ch2.update_geometry()
-    assert psi4.compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+    assert psi4.compare_values(6.6484189450, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
 
     props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
              'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
