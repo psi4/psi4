@@ -63,7 +63,7 @@ namespace cchbar {
 */
 void build_Z1A_BABA();
 
-void WaBeI_UHF(void) {
+void WaBeI_UHF() {
     dpdfile2 Fme, T1;
     dpdbuf4 F, W, T2, B, Z, Z1, Z2, D, T, E, C;
 

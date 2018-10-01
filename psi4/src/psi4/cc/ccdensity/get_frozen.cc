@@ -49,7 +49,7 @@ namespace ccdensity {
 ** TDC, March 2000.
 */
 
-void get_frozen(void) {
+void get_frozen() {
     int i, nfzc;
 
     frozen.nfzc = moinfo.nfzc;

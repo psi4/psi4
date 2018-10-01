@@ -40,7 +40,7 @@
 namespace psi {
 namespace cchbar {
 
-void taut_build(void) {
+void taut_build() {
     int h, ij, ab, i, j, a, b, I, J, A, B;
     int Isym, Jsym, Asym, Bsym;
     int nirreps;

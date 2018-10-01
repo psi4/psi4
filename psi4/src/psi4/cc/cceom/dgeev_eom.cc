@@ -45,7 +45,7 @@
 namespace psi {
 namespace cceom {
 
-void cleanup(void);
+void cleanup();
 
 /* This routine transposes matrices and calls lapack dgeev() in libqt *
  * to diagonalize a square nonsymmetric matrix.  The eigenvalues      *

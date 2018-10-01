@@ -57,130 +57,130 @@ class CCEnergyWavefunction : public Wavefunction {
     /* setup, info and teardown */
     void init();
     void init_io();
-    void init_ioff(void);
-    void exit_io(void);
-    void cleanup(void);
+    void init_ioff();
+    void exit_io();
+    void cleanup();
     void status(const char *, std::string);
-    void title(void);
+    void title();
 
     /* calculation info */
-    void get_moinfo(void);
+    void get_moinfo();
     void get_params(Options &);
 
     /* amplitude handling */
-    void init_amps(void);
-    void sort_amps(void);
-    void tsave(void);
-    void ccdump(void);
-    void spinad_amps(void);
-    void amp_write(void);
-    void checkpoint(void);
+    void init_amps();
+    void sort_amps();
+    void tsave();
+    void ccdump();
+    void spinad_amps();
+    void amp_write();
+    void checkpoint();
 
     /* intermediates */
-    void update(void);
-    void Fae_build(void);
-    void Fmi_build(void);
-    void Fme_build(void);
-    void Wmnij_build(void);
-    void Wmbej_build(void);
-    void purge_Wabei(void);
-    void purge_Wmnij(void);
-    void purge_Wmnie(void);
-    void purge_Wmbij(void);
-    void purge_Wamef(void);
-    void FaetT2(void);
-    void FmitT2(void);
-    void WmnijT2(void);
-    void WmbejT2(void);
-    void BT2(void);
-    void CT2(void);
-    void DT2(void);
-    void ET2(void);
-    void FT2(void);
-    void ZT2(void);
-    void dijabT2(void);
-    void t1_build(void);
-    void tau_build(void);
-    void taut_build(void);
-    void Z_build(void);
-    void Y_build(void);
-    void X_build(void);
-    void t2_build(void);
+    void update();
+    void Fae_build();
+    void Fmi_build();
+    void Fme_build();
+    void Wmnij_build();
+    void Wmbej_build();
+    void purge_Wabei();
+    void purge_Wmnij();
+    void purge_Wmnie();
+    void purge_Wmbij();
+    void purge_Wamef();
+    void FaetT2();
+    void FmitT2();
+    void WmnijT2();
+    void WmbejT2();
+    void BT2();
+    void CT2();
+    void DT2();
+    void ET2();
+    void FT2();
+    void ZT2();
+    void dijabT2();
+    void t1_build();
+    void tau_build();
+    void taut_build();
+    void Z_build();
+    void Y_build();
+    void X_build();
+    void t2_build();
     int converged(double);
 
     /* DPD cache */
-    void init_priority_list(void);
+    void init_priority_list();
     int **cacheprep_uhf(int level, int *cachefiles);
     int **cacheprep_rhf(int level, int *cachefiles);
     void cachedone_rhf(int **cachelist);
     void cachedone_uhf(int **cachelist);
 
     /* Brueckner */
-    int rotate(void);
+    int rotate();
     double **fock_build(double **D);
 
     /* CC2 / CC3 */
-    void cc2_fmiT2(void);
-    void cc2_faeT2(void);
-    void cc2_WmbijT2(void);
-    void cc2_WabeiT2(void);
-    void cc2_WabijT2(void);
-    void cc2_Wmnij_build(void);
-    void cc2_Wmbij_build(void);
-    void cc2_Wabei_build(void);
-    void cc2_t2_build(void);
-    void FT2_CC2(void);
-    void purge_cc2_Wmnij(void);
-    void purge_cc2_Wmbij(void);
-    void purge_cc2_Wabei(void);
-    void t1_ijab(void);
-    void cc3_Wmnie(void);
-    void cc3_Wamef(void);
-    void cc3_Wmnij(void);
-    void cc3_Wmbij(void);
-    void cc3_Wabei(void);
-    void cc3(void);
+    void cc2_fmiT2();
+    void cc2_faeT2();
+    void cc2_WmbijT2();
+    void cc2_WabeiT2();
+    void cc2_WabijT2();
+    void cc2_Wmnij_build();
+    void cc2_Wmbij_build();
+    void cc2_Wabei_build();
+    void cc2_t2_build();
+    void FT2_CC2();
+    void purge_cc2_Wmnij();
+    void purge_cc2_Wmbij();
+    void purge_cc2_Wabei();
+    void t1_ijab();
+    void cc3_Wmnie();
+    void cc3_Wamef();
+    void cc3_Wmnij();
+    void cc3_Wmbij();
+    void cc3_Wabei();
+    void cc3();
 
     /* energies */
-    double energy(void);
-    double mp2_energy(void);
-    double uhf_mp2_energy(void);
-    double rhf_mp2_energy(void);
-    void one_step(void);
-    void denom(void);
+    double energy();
+    double mp2_energy();
+    double uhf_mp2_energy();
+    double rhf_mp2_energy();
+    void one_step();
+    void denom();
     void pair_energies(double **epair_aa, double **epair_ab);
     void print_pair_energies(double *emp2_aa, double *emp2_ab, double *ecc_aa, double *ecc_ab);
 
     void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority);
 
     /* diagnostics */
-    void analyze(void);
-    double diagnostic(void);
-    double d1diag(void);
-    double new_d1diag(void);
-    double new_d1diag_t1_rohf(void);
-    double d2diag(void);
-    double d1diag_t1_rhf(void);
-    double d1diag_t1_rohf(void);
-    double d2diag_rhf(void);
+    void analyze();
+    double diagnostic();
+    double d1diag();
+    double new_d1diag();
+    double new_d1diag_t1_rohf();
+    double d2diag();
+    double d1diag_t1_rhf();
+    double d1diag_t1_rohf();
+    double d2diag_rhf();
 
     /* local correlation */
-    void lmp2(void);
+    void lmp2();
     void local_filter_T1(dpdfile2 *T1);
     void local_filter_T2(dpdbuf4 *T2);
-    void local_init(void);
-    void local_done(void);
+    void local_init();
+    void local_done();
 
     /* AO basis */
-    void BT2_AO(void);
+    void BT2_AO();
     void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2, int nirreps,
                    int **mo_row, int **so_row, int *mospi_left, int *mospi_right, int *sospi, int type, double alpha,
                    double beta);
     int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
 
-    double rhf_energy(void);
-    double uhf_energy(void);
-    double rohf_energy(void);
+    double rhf_energy();
+    double uhf_energy();
+    double rohf_energy();
     void rhf_fock_build(double **fock, double **D);
     void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b);
 

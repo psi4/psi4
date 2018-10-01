@@ -56,7 +56,7 @@ void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, const char *pert_y,
              int y_irrep, double omega_y);
 
-void polar(void) {
+void polar() {
     double ***tensor;
     char **cartcomp, pert[32], pert_x[32], pert_y[32];
     int alpha, beta, i;

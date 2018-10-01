@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void Gijab_RHF(void) {
+void Gijab_RHF() {
     int h, nirreps, i, a, m, e, I, A, M, E, Isym, Asym, Msym, Esym, row, col;
     int j, b, J, B, Jsym, Bsym;
     double value;

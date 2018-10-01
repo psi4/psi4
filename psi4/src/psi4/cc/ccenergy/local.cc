@@ -66,7 +66,7 @@ namespace ccenergy {
 ** TDC, Jan-June 2002
 */
 
-void CCEnergyWavefunction::local_init(void) {
+void CCEnergyWavefunction::local_init() {
     int i, k, ij, nocc;
 
     local_.nso = moinfo_.nso;
@@ -83,7 +83,7 @@ void CCEnergyWavefunction::local_init(void) {
     outfile->Printf("    Localization parameters ready.\n\n");
 }
 
-void CCEnergyWavefunction::local_done(void) { outfile->Printf("    Local parameters free.\n"); }
+void CCEnergyWavefunction::local_done() { outfile->Printf("    Local parameters free.\n"); }
 
 void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
     int i, a, ij, ii;

@@ -44,7 +44,7 @@ namespace ccdensity {
 /* this file is intended to replace x_te_intermediates.c when the density
    code gets spin-adapted */
 
-void x_te_intermediates_rhf(void) {
+void x_te_intermediates_rhf() {
     dpdfile2 R1, L1;
     dpdbuf4 V, L, R, T2;
     int G_irr, L_irr, R_irr;

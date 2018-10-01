@@ -41,7 +41,7 @@
 namespace psi {
 namespace cchbar {
 
-void purge(void) {
+void purge() {
     dpdfile2 FAE, Fmi, FME, Fme;
     dpdfile4 W;
     int *occpi, *virtpi;
@@ -661,7 +661,7 @@ void purge(void) {
 }
 
 /* Purge Wmnie matrix elements */
-void purge_Wmnie(void) {
+void purge_Wmnie() {
     dpdfile4 W;
     int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;

@@ -43,12 +43,12 @@ namespace psi {
 namespace ccdensity {
 
 extern void x_xi_check(char *term_lbl);
-extern void x_xi2_14(void); /* in x_xi2.c */
-void x_xi2_4_uhf(void);     /* in x_xi2.c */
+extern void x_xi2_14(); /* in x_xi2.c */
+void x_xi2_4_uhf();     /* in x_xi2.c */
 
 /* compute UHF xi_2 amplitudes for zeta equations */
 
-void x_xi2_uhf(void) {
+void x_xi2_uhf() {
     dpdfile2 L1, XIA, Xia, I1, R1, F1, Z1A, Z1B;
     int L_irr, R_irr, G_irr;
     double tval;
@@ -839,7 +839,7 @@ void x_xi2_uhf(void) {
 /* compute terms 4 and 6 of xi2 amplitudes */
 /* Xijab += P(ij) P(ab) (Rme Lia + Rmnef Linaf) <mj||eb> */
 /* Xijab += P(ij) P(ab) Z2(me,ia) <mj||eb>(me,jb) */
-void x_xi2_4_uhf(void) {
+void x_xi2_4_uhf() {
     dpdfile2 RIA, Ria, LIA, Lia;
     int L_irr, R_irr, G_irr, nirreps;
     int I, A, M, E, i, a, m, e, h, row, col, Isym, Esym, Asym, Msym;

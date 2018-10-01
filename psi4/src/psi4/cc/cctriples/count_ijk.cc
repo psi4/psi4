@@ -40,7 +40,7 @@
 namespace psi {
 namespace cctriples {
 
-void count_ijk(void) {
+void count_ijk() {
     int nirreps;
     int Gi, Gj, Gk;
     int i, j, k;

@@ -44,7 +44,7 @@ namespace ccdensity {
 /* compute intermediates for excited state pdm that look like
    ground state intermediates, only use GL */
 
-void V_build_x(void) {
+void V_build_x() {
     int L_irr;
     dpdbuf4 V, L, T;
     L_irr = params.L_irr;

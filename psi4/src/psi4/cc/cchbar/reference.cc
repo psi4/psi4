@@ -44,11 +44,11 @@
 namespace psi {
 namespace cchbar {
 
-double rhf_energy(void);
-double rohf_energy(void);
-double uhf_energy(void);
+double rhf_energy();
+double rohf_energy();
+double uhf_energy();
 
-void reference(void) {
+void reference() {
     double energy;
     if (params.ref == 0)
         energy = (rhf_energy());
@@ -61,7 +61,7 @@ void reference(void) {
     outfile->Printf("Reference expectation value computed: %20.15lf\n", energy);
 }
 
-double rhf_energy(void) {
+double rhf_energy() {
     double tauIjAb_energy, tIA_energy;
     dpdfile2 fIA, tIA;
     dpdbuf4 tauIjAb, D, E;
@@ -85,7 +85,7 @@ double rhf_energy(void) {
     return (tauIjAb_energy + tIA_energy);
 }
 
-double rohf_energy(void) {
+double rohf_energy() {
     double tIA_energy, tia_energy, tauIJAB_energy, tauijab_energy, tauIjAb_energy;
     dpdfile2 tIA, tia, fIA, fia;
     dpdbuf4 tauIJAB, tauijab, tauIjAb, D;
@@ -128,7 +128,7 @@ double rohf_energy(void) {
     return (tIA_energy + tia_energy + tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
 
-double uhf_energy(void) {
+double uhf_energy() {
     double E2AA, E2BB, E2AB, T1A, T1B;
     dpdbuf4 T2, D;
     dpdfile2 T1, F;

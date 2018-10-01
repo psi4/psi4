@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccresponse {
 
-void hbar_extra(void) {
+void hbar_extra() {
     dpdfile2 lt;
     dpdbuf4 W1, W2, W;
     dpdbuf4 t2, l2;

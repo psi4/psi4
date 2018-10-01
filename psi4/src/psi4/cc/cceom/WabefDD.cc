@@ -72,11 +72,9 @@ void WabefDD(int i, int C_irr) {
         sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
         sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);
 
-/* SIjAb += <Ab|Ef> CIjEf -- allow out of core algorithm */
+        /* SIjAb += <Ab|Ef> CIjEf -- allow out of core algorithm */
 
-#ifdef TIME_CCEOM
         timer_on("WabefDD Z");
-#endif
 
         if (params.abcd == "OLD") {
             global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
@@ -200,9 +198,7 @@ void WabefDD(int i, int C_irr) {
             timer_off("ABCD:axpy");
         }
 
-#ifdef TIME_CCEOM
         timer_off("WabefDD Z");
-#endif
 
         /* construct XIjMb = CIjEf * <mb|ef> */
         global_dpd_->buf4_init(&X, PSIF_EOM_TMP, C_irr, 10, 0, 10, 0, 0, "WabefDD X(Mb,Ij)");

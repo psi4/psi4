@@ -52,32 +52,32 @@ namespace psi {
 namespace cctriples {
 
 void init_io();
-void title(void);
+void title();
 void get_moinfo(std::shared_ptr<Wavefunction>, Options &);
-void exit_io(void);
-void cleanup(void);
-double ET_RHF(void);
-double EaT_RHF(void);
-double ET_AAA(void);
-double ET_AAB(void);
-double ET_ABB(void);
-double ET_BBB(void);
-double ET_UHF_AAA(void);
-double ET_UHF_BBB(void);
-double ET_UHF_AAB(void);
-double ET_UHF_ABB(void);
-void count_ijk(void);
-void setup(void);
+void exit_io();
+void cleanup();
+double ET_RHF();
+double EaT_RHF();
+double ET_AAA();
+double ET_AAB();
+double ET_ABB();
+double ET_BBB();
+double ET_UHF_AAA();
+double ET_UHF_BBB();
+double ET_UHF_AAB();
+double ET_UHF_ABB();
+void count_ijk();
+void setup();
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
 void cachedone_uhf(int **cachelist);
 void cachedone_rhf(int **cachelist);
 
-void T3_grad_RHF(void);
-double T3_grad_UHF_AAA(void);
-double T3_grad_UHF_BBB(void);
-double T3_grad_UHF_AAB(void);
-double T3_grad_UHF_BBA(void);
+void T3_grad_RHF();
+double T3_grad_UHF_AAA();
+double T3_grad_UHF_BBB();
+double T3_grad_UHF_AAB();
+double T3_grad_UHF_BBA();
 
 void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                     dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
@@ -107,8 +107,6 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
 
     init_io();
     title();
-
-    timer_on("CCtriples");
 
     get_moinfo(reference_wavefunction, options);
     memory = Process::environment.get_memory();
@@ -254,19 +252,17 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
 
     cleanup();
 
-    timer_off("CCtriples");
-
     exit_io();
     return Success;
 }
 
 void init_io() {
-    tstart();
+    timer_on("cctriples");
 
     for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
-void title(void) {
+void title() {
     outfile->Printf("            **************************\n");
     outfile->Printf("            *                        *\n");
     outfile->Printf("            *        CCTRIPLES       *\n");
@@ -274,10 +270,10 @@ void title(void) {
     outfile->Printf("            **************************\n");
 }
 
-void exit_io(void) {
+void exit_io() {
     int i;
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
-    tstop();
+    timer_off("cctriples");
 }
 
 }  // namespace cctriples

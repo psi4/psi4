@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::Fae_build(void) {
+void CCEnergyWavefunction::Fae_build() {
     int h, a, e, nirreps;
     int ma, fe, ef, m, f, M, A, Gm, Ga, Ge, Gf, Gma, nrows, ncols;
     double *X;

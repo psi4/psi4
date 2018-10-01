@@ -74,9 +74,9 @@ namespace cchbar {
 ** RAK, April 2004
 */
 
-void purge_Wmnie(void);
+void purge_Wmnie();
 
-void Wmnie_build(void) {
+void Wmnie_build() {
     dpdbuf4 W, Wmnie, WMNIE, WMnIe, WmNiE, WMniE, WmNIe;
     dpdbuf4 E, Z;
     dpdbuf4 D, D_a;

@@ -40,7 +40,7 @@
 namespace psi {
 namespace cclambda {
 
-void CCLambdaWavefunction::update(void) {
+void CCLambdaWavefunction::update() {
     outfile->Printf("\t%4d      %20.15f    %4.3e\n", moinfo.iter, moinfo.lcc, moinfo.conv);
 }
 

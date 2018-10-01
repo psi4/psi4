@@ -68,7 +68,7 @@ namespace ccdensity {
 ** backtransformation) after all contributions have been accounted
 ** for.  */
 
-void Gibja(void) {
+void Gibja() {
     int h, nirreps, row, col;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
     dpdfile2 T1, L1, T1A, T1B, L1A, L1B;

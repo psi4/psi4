@@ -53,7 +53,7 @@ namespace ccdensity {
 **
 ** */
 
-void build_A_ROHF(void) {
+void build_A_ROHF() {
     int h, nirreps, e, m, a, i, em, ai, E, M, A, I;
     int Esym, Msym, Asym, Isym;
     int *virtpi, *openpi, *occpi, *occ_off, *vir_off;

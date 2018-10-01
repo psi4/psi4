@@ -55,7 +55,7 @@ namespace ccenergy {
  *
  * */
 
-double CCEnergyWavefunction::d1diag_t1_rhf(void) {
+double CCEnergyWavefunction::d1diag_t1_rhf() {
     int h, nirreps, i;
     double **T, **C, *E, max;
     dpdfile2 T1;
@@ -205,7 +205,7 @@ double CCEnergyWavefunction::d1diag_t1_rohf() {
     return max;
 }
 
-double CCEnergyWavefunction::d1diag(void) {
+double CCEnergyWavefunction::d1diag() {
     double norm = 0.0;
 
     if (params_.ref == 0) { /** RHF **/

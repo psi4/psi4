@@ -39,7 +39,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::DT2(void) {
+void CCEnergyWavefunction::DT2() {
     dpdbuf4 D;
 
     if (params_.ref == 0) { /*** RHF ***/

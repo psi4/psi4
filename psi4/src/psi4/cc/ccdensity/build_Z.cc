@@ -49,11 +49,11 @@ namespace ccdensity {
 **
 */
 
-void build_Z_RHF(void);
-void build_Z_ROHF(void);
-void build_Z_UHF(void);
+void build_Z_RHF();
+void build_Z_ROHF();
+void build_Z_UHF();
 
-void build_Z(void) {
+void build_Z() {
     if (params.ref == 0)
         build_Z_RHF();
     else if (params.ref == 1)

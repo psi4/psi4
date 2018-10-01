@@ -42,14 +42,14 @@
 namespace psi {
 namespace ccdensity {
 
-void x_xi2_4_rhf(void);
-extern void x_xi2_14(void);
+void x_xi2_4_rhf();
+extern void x_xi2_14();
 extern void x_xi_check(char *term_lbl);
 extern double norm_C_rhf(dpdfile2 *CME, dpdbuf4 *CMnEf, dpdbuf4 *CMnfE);
 
 /* compute xi_2 amplitudes for RHF wavefunctions for zeta equations */
 
-void x_xi2_rhf(void) {
+void x_xi2_rhf() {
     dpdfile2 L1, XIA, Xia, I1, R1, F1, Z1A, Z1B;
     int L_irr, R_irr, G_irr;
     double tval;
@@ -418,7 +418,7 @@ void x_xi2_rhf(void) {
 
 /* compute terms 4 and 6 of xi2 amplitudes */
 /* Xijab += P(ij) P(ab) (Rme Lia + Rmnef Linaf) <mj||eb> */
-void x_xi2_4_rhf(void) {
+void x_xi2_4_rhf() {
     dpdfile2 RIA, LIA;
     int L_irr, R_irr, G_irr, nirreps;
     int I, A, M, E, i, a, m, e, h, row, col, Isym, Esym, Asym, Msym;

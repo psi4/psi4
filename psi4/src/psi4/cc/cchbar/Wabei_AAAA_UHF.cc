@@ -62,9 +62,9 @@ namespace cchbar {
 ** TDC, June 2002
 */
 
-void build_Z1_AAAA(void);
+void build_Z1_AAAA();
 
-void WABEI_UHF(void) {
+void WABEI_UHF() {
     dpdfile2 FME, T1;
     dpdbuf4 F, W, T2, B, Z, Z1, Z2, D, T, E, C;
 
@@ -283,7 +283,7 @@ void WABEI_UHF(void) {
     global_dpd_->buf4_close(&W);
 }
 
-void build_Z1_AAAA(void) {
+void build_Z1_AAAA() {
     dpdbuf4 T2, Z1, Fint;
     dpdfile2 T1;
     int row, col, h;

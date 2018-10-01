@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::t1_build(void) {
+void CCEnergyWavefunction::t1_build() {
     dpdfile2 newtIA, newtia, tIA, tia, fIA, fia;
     dpdfile2 FAE, Fae, FMI, Fmi, FME, Fme;
     dpdfile2 dIA, dia;

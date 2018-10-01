@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void Gijab_UHF(void) {
+void Gijab_UHF() {
     int h, nirreps, i, a, m, e, I, A, M, E, Isym, Asym, Msym, Esym, row, col;
     int j, b, J, B, Jsym, Bsym;
     double value;
