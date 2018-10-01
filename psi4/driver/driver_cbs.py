@@ -53,25 +53,25 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     
     Parameters
     ----------
-    basisstring: string
+    basisstring : string
         A string containing the basis sets to be expanded.
         A basis set with no paired square brackets is passed through 
-        with zeta level 0 (e.g., '6-31+G(d,p)' is returned as
-        [6-31+G(d,p)] and [0]). A basis set with square brackets is checked
-        for sensible sequence and Dunning-ness and returned as separate basis
-        sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). 
-        Allows out-of-order zeta specification (e.g., [qtd]) and numeral for 
-        number (e.g., [23]). Does not allow skipped zetas (e.g., [dq]), zetas 
+        with zeta level 0 (e.g., ``'6-31+G(d,p)'`` is returned as
+        ``(["6-31+G(d,p)"], [0])``). A basis set with square brackets is checked
+        for sensible sequence and returned as separate basis sets 
+        (e.g., ``'cc-pV[Q5]Z'` is returned as ``(["cc-pVQZ", "cc-pV5Z"], [4, 5])``). 
+        Allows out-of-order zeta specification (e.g., ``[qtd]``) and numeral for 
+        number (e.g., ``[23]``). Does not allow skipped zetas (e.g., ``[dq]``), zetas 
         outside the [2,8] range, non-Dunning, non-Ahlrichs, or non-Jensen sets,
         or non-findable .gbs sets.
-    molecule: qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or psi4.core.Molecule
         This function checks that the basis is valid by trying to build
         the qcdb.BasisSet object for *molecule* or for H2 if None. 
     
     Returns
     -------
     tuple
-        Tuple in the ([basis set names], [basis set zetas]) format.
+        Tuple in the ``([basis set names], [basis set zetas])`` format.
     """
     
     BSET = []
@@ -132,12 +132,12 @@ def _contract_bracketed_basis(basisarray):
     Parameters
     ----------
     basisarray : array 
-        E.g.: [cc-pvqz, cc-pv5z]
+        E.g.: ``["cc-pvqz", "cc-pv5z"]``
     
     Returns
     -------
     string
-        A nicely formatted basis set string, e.g. cc-pv[q5]z for the above example.
+        A nicely formatted basis set string, e.g. ``"cc-pv[q5]z"`` for the above example.
 
     """
     
@@ -170,7 +170,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
     Returns
     -------
     float
-        Returns E_{total}^{\infty} which is equal to valueHI.
+        Returns :math:`E_{total}^{\infty}` which is equal to valueHI.
         
     Notes
     -----
@@ -220,12 +220,12 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
     Returns
     -------
     float
-        Returns E_{total}^{\infty}, see below.
+        Returns :math:`E_{total}^{\infty}`, see below.
         
     Notes
     -----
     The extrapolation is calculated according to [1]_:
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63`
     
     References
     ----------
@@ -320,12 +320,12 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
     Returns
     -------
     float
-        Returns E_{total}^{\infty}, see below.
+        Returns :math:`E_{total}^{\infty}`, see below.
         
     Notes
     -----
     The extrapolation is calculated according to [2]_:
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4`
     
     References
     ----------
@@ -404,7 +404,7 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
     
     Parameters
     ----------
-    functionname : string
+    functionname : str
         Name of the CBS component.
     zLO : int
         Lower zeta level.
@@ -424,8 +424,8 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
         
     Notes
     -----
-    The extrapolation is calculated according to [3]_:
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3
+    The extrapolation is calculated according to [3]_: 
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3`
     
     References
     ----------
@@ -502,10 +502,9 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
     
-
     Parameters
     ----------
-    functionname : string
+    functionname : str
         Name of the CBS component.
     zLO : int
         Lower zeta level.
@@ -525,12 +524,12 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
     Returns
     -------
     float
-        Returns E_{total}^{\infty}, see below.
+        Returns :math:`E_{total}^{\infty}`, see below.
         
     Notes
     -----
     The extrapolation is calculated according to [4]_:
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0`
     
     References
     ----------
@@ -604,7 +603,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
 
     Parameters
     ----------
-    functionname : string
+    functionname : str
         Name of the CBS component.
     zLO : int
         Lower zeta level.
@@ -625,7 +624,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
     Notes
     -----
     The extrapolation is calculated according to [5]_:
-    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}
+    :math:`E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}`
     
     References
     ----------
@@ -901,7 +900,7 @@ def _get_default_xtpl(nbasis, xtpl_type):
     ----------
     nbasis : int
         Number of basis sets
-    xtpl_type : string
+    xtpl_type : str
         Extrapolation type ("scf" or "corl").
     
     Returns
@@ -928,12 +927,12 @@ def _get_default_xtpl(nbasis, xtpl_type):
 
 def _process_cbs_kwargs(kwargs):
     """ A helper function which either translates supplied kwargs into the
-    cbs_metadata format, or validates a provided cbs_metadata array.
+    ``cbs_metadata`` format, or validates a provided cbs_metadata array.
     
     Parameters
     ----------
     kwargs : dict
-        kwargs
+        kwargs containing the CBS function specification.
     
     Returns
     -------
@@ -1131,14 +1130,14 @@ def cbs(func, label, **kwargs):
            * mrccsdt
            * mrccsdt(q)
 
-    :type name: string
+    :type name: str
     :param name: ``'scf'`` || ``'ccsd'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         for the correlation energy, unless only reference step to be performed,
         in which case should be ``'scf'``. Overruled if stage_wfn keywords supplied.
 
-    :type scf_wfn: string
+    :type scf_wfn: str
     :param scf_wfn: |dl| ``'scf'`` |dr| || ``'c4-scf'`` || etc.
 
         Indicates the energy method for which the reference energy is to be
@@ -1146,32 +1145,32 @@ def cbs(func, label, **kwargs):
         can be used to direct lone scf components to run in |PSIfour| or Cfour
         in a mixed-program composite method.
 
-    :type corl_wfn: string
+    :type corl_wfn: str
     :param corl_wfn: ``'mp2'`` || ``'ccsd(t)'`` || etc.
 
         Indicates the energy method for which the correlation energy is to be
         obtained. Can also be specified with ``name`` or as the unlabeled
         first argument to the function.
 
-    :type delta_wfn: string
+    :type delta_wfn: str
     :param delta_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
 
         Indicates the (superior) energy method for which a delta correction
         to the correlation energy is to be obtained.
 
-    :type delta_wfn_lesser: string
+    :type delta_wfn_lesser: str
     :param delta_wfn_lesser: |dl| ``corl_wfn`` |dr| || ``'mp2'`` || etc.
 
         Indicates the inferior energy method for which a delta correction
         to the correlation energy is to be obtained.
 
-    :type delta2_wfn: string
+    :type delta2_wfn: str
     :param delta2_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
 
         Indicates the (superior) energy method for which a second delta correction
         to the correlation energy is to be obtained.
 
-    :type delta2_wfn_lesser: string
+    :type delta2_wfn_lesser: str
     :param delta2_wfn_lesser: |dl| ``delta_wfn`` |dr| || ``'ccsd(t)'`` || etc.
 
         Indicates the inferior energy method for which a second delta correction
@@ -1780,8 +1779,8 @@ def _cbs_wrapper_methods(**kwargs):
     Parameters
     ----------
     kwargs : dict
-        kwargs containing cbs specification either in the cbs_metadata format,
-        or in separate keywords.
+        kwargs containing cbs specification either in the ``cbs_metadata``
+        format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
     
     Returns
     -------
@@ -1803,22 +1802,22 @@ def _cbs_wrapper_methods(**kwargs):
 
 
 def _parse_cbs_gufunc_string(method_name):
-    """ A helper function that parses a "method/basis" input string
+    """ A helper function that parses a ``"method/basis"`` input string
     into separate method and basis components. Also handles delta corrections.
     
     Parameters
     ----------
-    method_name : string
-        A "method/basis" style string defining the calculation.
+    method_name : str
+        A ``"method/basis"`` style string defining the calculation.
     
     Returns
     -------
     tuple
-        Tuple in the (method_list, basis_list) format, where method_list
-        is the list of the component methods and basis_list is the list of
+        Tuple in the ``(method_list, basis_list)`` format, where ``method_list``
+        is the list of the component methods, and ``basis_list`` is the list of
         basis sets forming the extrapolation for each specified method.
-        E.g. "mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz" would return:
-        ([mp2, ccsd(t)], [cc-pv[tq]z, cc-pvtz]).
+        E.g. ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"`` would return:
+        ``(["mp2", "ccsd(t)"], ["cc-pv[tq]z", "cc-pvtz"])``.
     """
     
     method_name_list = re.split( """\+(?=\s*[Dd]:)""", method_name)
@@ -1856,17 +1855,16 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     ----------
     func : function
         Function to be called (energy, gradient, frequency or cbs).
-    total_method_name : string
-        String in a "method/basis" syntax. Simple calls (e.g. "blyp/sto-3g") are
-        bounced out of CBS. More complex calls (e.g. "mp2/cc-pv[tq]z" or 
-        "mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz") are expanded by `_parse_cbs_gufunc_string()` 
+    total_method_name : str
+        String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
+        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or 
+        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()` 
         and pushed through :py:func:`~psi4.cbs`.
     
     Returns
     -------
-    tuple
-        Tuple in the (value, wavefunction) format - wfn is only included if "return_wfn"
-        is specified.
+    tuple or float
+        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
     """
 
     # Catch kwarg issues for all methods

@@ -167,9 +167,15 @@ Extrapolation Schemes
 
 .. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_2
 
+.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_truhlar_2
+
+.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_karton_2
+
 .. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_3
 
 .. autofunction:: psi4.driver.driver_cbs.corl_xtpl_helgaker_2
+
+.. autofunction:: psi4.driver.driver_cbs._get_default_xtpl
 
 Aliases
 ^^^^^^^
@@ -184,4 +190,25 @@ existing examples are below.
 .. autofunction:: psi4.driver.aliases.sherrill_gold_standard
 
 .. autofunction:: psi4.driver.aliases.allen_focal_point
+
+Other helper functions
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: psi4.driver.driver_cbs._expand_bracketed_basis
+
+.. autofunction:: psi4.driver.driver_cbs._contract_bracketed_basis
+
+.. autofunction:: psi4.driver.driver_cbs._process_cbs_kwargs
+
+.. autofunction:: psi4.driver.driver_cbs._expand_scheme_orders
+
+.. autofunction:: psi4.driver.driver_cbs._contract_scheme_orders
+
+.. autofunction:: psi4.driver.driver_cbs._cbs_wrapper_methods
+
+.. autofunction:: psi4.driver.driver_cbs._parse_cbs_gufunc_string
+
+.. autofunction:: psi4.driver.driver_cbs._cbs_gufunc
+
+
 
