@@ -2,7 +2,7 @@
 #! specifying the active space, either with the ACTIVE keyword, or
 #! with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
 
-refnuc   =  15.2403036073920  #TEST
+refnuc   =  15.2403036673     #TEST
 refscf   = -75.3870408916852  #TEST
 refci    = -75.5535266390568  #TEST
 refcorr  = refci - refscf     #TEST

@@ -3,6 +3,8 @@
 #! lowered to account for the different basis sets.
 import psi4
 
+psi4.set_output_file("output.dat", False)
+
 
 bz = psi4.geometry("""
     X

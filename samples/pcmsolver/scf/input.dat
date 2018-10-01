@@ -112,3 +112,4 @@ set pcm_scf_type total
 set reference uhf
 print('CD-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
+

@@ -154,3 +154,4 @@ print('CD-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(cd_totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
 compare_values(cd_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+

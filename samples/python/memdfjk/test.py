@@ -4,6 +4,8 @@ import psi4
 import numpy as np
 import random
 
+psi4.set_output_file("output.dat", False)
+
 mol = psi4.geometry("""
 O
 H 1 1.00

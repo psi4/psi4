@@ -355,8 +355,12 @@ Bibliography
    *Int. J. Quantum Chem.* **25**, 107-129 (1984)
 
 .. [Smith:2016:2197]
-   D. Smith, L. Burns, K. Patkowski, and D. Sherrill,
+   D. G. A. Smith, L. A. Burns, K. Patkowski, and C. D. Sherrill,
    *J. Phys. Chem. Lett.* **7**, 2197-2203 (2016).
+
+.. [Smith:2018:3504]
+   D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer, F. A. Evangelista, A. E. DePrince III, T. D. Crawford, K. Patkowski, and C. D. Sherrill,
+   *J. Chem. Theory Comput.* **14**, 3504 (2018)
 
 .. [Szabo:1982]
    A. Szabo and N. S. Ostlund,

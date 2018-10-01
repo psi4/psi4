@@ -1,7 +1,7 @@
 #! Various gradients for a strained helium dimer and water molecule
 import numpy as np
 
-nucenergy_ref = 9.16819326039
+nucenergy_ref = 9.1681932964
 
 molecule h2o {
   O

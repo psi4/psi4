@@ -1,0 +1,60 @@
+#! SCF STO-3G finite-difference tests
+import numpy
+
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set {
+  basis sto-3g
+  d_convergence 11
+  scf_type pk
+}
+
+# Test frequencies by energies
+set findif { points 3 }
+
+h2o.update_geometry()
+# Psi is forbidden from "fixing" our coordinate axes. That would interfere with the displacements.
+h2o.reinterpret_coordentry(False)
+h2o.fix_orientation(True)
+
+# Displace the h2o molecule to get all displacements for hessian by energies.
+# Set -1 to 1 to get A1 frequencies, to 4 for B2...
+displacements = psi4.driver_findif.hessian_from_energy_geometries(h2o, -1)
+
+ndisp = len(displacements)
+
+print(" %d displacements needed." % ndisp)
+energies = []
+
+for n, displacement in enumerate(displacements):
+  banner("Loading displacement %d of %d" % (n+1, ndisp))
+  print("    displacement %d" % (n+1))
+
+  get_active_molecule().set_geometry(displacement)
+
+  E = energy('scf')
+  energies.append(E)
+
+# Compute the hessian of the h2o molecule from the energies, for all symmetry blocks
+H = driver_findif.compute_hessian_from_energy(h2o, energies, -1)
+
+wfn = core.Wavefunction.build(h2o, core.get_global_option('BASIS'))
+wfn.set_hessian(core.Matrix.from_array(H))
+# Only project out translations and rotations if you know you're not at a stationary point!
+# Have irrep to None if you computed all frequencies, and set it to anything else otherwise 
+vibinfo = vibanal_wfn(wfn, irrep=None, project_trans=True, project_rot=True)
+vibonly = qcdb.vib.filter_nonvib(vibinfo)
+wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
+wfn.frequency_analysis = vibinfo
+
+# Now let's make sure that the frequencies match the analytic ones...
+fd_freqs = wfn.frequencies().to_array()
+anal_freqs = np.array([2170.0460, 4140.0021, 4391.0669])
+
+compare_arrays(anal_freqs, fd_freqs, 1,
+ "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1)")
+

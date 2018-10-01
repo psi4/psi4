@@ -7,7 +7,7 @@ print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-
 #Ensure that the checkpoint file is always nuked
 psi4_io.set_specific_retention(32,False)
 
-Eref_nuc      =   30.78849213614545 #TEST
+Eref_nuc      =   30.7884922572     #TEST
 Eref_sing_can = -149.58723684929720 #TEST
 Eref_sing_df  = -149.58715054487624 #TEST
 Eref_uhf_can  = -149.67135517240553 #TEST

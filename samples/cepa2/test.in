@@ -17,7 +17,7 @@ set {
 }
 energy('acpf')
 
-refnuc     = 8.80146552997      #TEST
+refnuc     =  8.8014655646      #TEST
 refscf     = -76.02141844515494 #TEST
 refacpf    = -0.214525653223    #TEST
 refDipACPF = 1.94427077135      #TEST

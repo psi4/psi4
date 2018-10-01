@@ -10,7 +10,6 @@ nirrep = 4
 
 
 molecule cn {
-0 2
    C
    N 1 R
 

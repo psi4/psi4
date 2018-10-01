@@ -11,6 +11,7 @@ from psi4.driver import qcdb
 # RIFIT     H 14/15   C  56/66      H +9/10   C +16/20
 # JKFIT     H 23/25   C  70/81      H +9/10   C +16/20
 
+psi4.set_output_file("output.dat", False)
 
 mymol = psi4.geometry("""
 C    0.0  0.0 0.0

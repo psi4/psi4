@@ -3,9 +3,11 @@ print_stdout(' Case Study Test of Integrals')
 
 molecule h2o {
   o
-  h 1 1.0
-  h 1 1.0 2 103.1
+  h 1 R
+  h 1 R 2 103.1
 }
+
+h2o.R = 0.52917721067 / 0.52917720859
 
 
 

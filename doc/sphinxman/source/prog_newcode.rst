@@ -35,7 +35,6 @@ Adding New Code to |PSIfour|
 .. toctree::
    prog_ways_to_add
    plugins
-   prog_full_integration 
    proc_py
    prog_style_py
    prog_style_c

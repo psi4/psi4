@@ -1,6 +1,6 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
-refnuc   =   0.705569611453  #TEST
+refnuc   =   0.7055696142    #TEST
 refscf   =  -4.816603103707  #TEST
 refci1   =  -4.883262085443  #TEST
 refcorr1 =  refci1 - refscf  #TEST
