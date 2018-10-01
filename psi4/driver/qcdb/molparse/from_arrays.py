@@ -302,14 +302,14 @@ def from_arrays(geom=None,
         raise ValidationError(
             'Topology domain {} not available for processing. Choose among {}'.format(domain, available_domains))
 
-    if domain == 'qm' and geom is None or geom == []:
+    if domain == 'qm' and (geom is None or np.array(geom).size == 0):
         if missing_enabled_return == 'none':
             return {}
         elif missing_enabled_return == 'minimal':
             geom = []
         else:
             raise ValidationError("""For domain 'qm', `geom` must be provided.""")
-    if domain == 'efp' and geom_hints is None or geom_hints == []:
+    if domain == 'efp' and (geom_hints is None or np.array(geom_hints).size == 0):
         if missing_enabled_return == 'none':
             return {}
         elif missing_enabled_return == 'minimal':

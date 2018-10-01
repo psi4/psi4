@@ -58,16 +58,13 @@ after_build:
 before_test:
   - set PYTHONPATH=%INSTALL_FOLDER%\lib
   - python -c "import sys, psi4; print(sys.path); print(psi4)"
-  #- set PYTHONPATH=%BUILD_FOLDER%\stage\lib
   - dir %BUILD_FOLDER%\stage\lib
   - dir %INSTALL_FOLDER%\lib
   # TODO create psi4.bat and set PATH
   - python %INSTALL_FOLDER%\bin\psi4 --version
-  #- python %BUILD_FOLDER%\stage\bin\psi4 --version
 
 test_script:
   - python %INSTALL_FOLDER%\bin\psi4 %SOURCE_FOLDER%\tests\tu1-h2o-energy\input.dat
-  #- python %BUILD_FOLDER%\stage\bin\psi4 %SOURCE_FOLDER%\tests\tu1-h2o-energy\input.dat
   #
   # Skipped long tests (not enough time to run all of them):
   #     cbs-delta-energy cbs-xtpl-gradien
@@ -94,7 +91,6 @@ after_test:
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
   - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
-  #- python %BUILD_FOLDER%\stage\bin\psi4 --test & exit 0
 
 cache:
   - C:\Miniconda3-x64\pkgs
