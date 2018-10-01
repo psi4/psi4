@@ -54,7 +54,6 @@ from .basislist import *
 from . import align
 from . import vib
 from .vib import compare_vibinfos
-from . import molparse
 from . import hessparse
 from . import gradparse
 

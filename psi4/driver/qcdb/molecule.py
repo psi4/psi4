@@ -41,7 +41,6 @@ import qcelemental as qcel
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
 from .util import unnp
-from . import molparse
 from .bfs import BFS
 
 if sys.version_info >= (3,0):
@@ -58,10 +57,10 @@ class Molecule(LibmintsMolecule):
     `psi4.core.Molecule` itself.
 
     """
+
     def __init__(self,
                  molinit=None,
                  dtype=None,
-
                  geom=None,
                  elea=None,
                  elez=None,
@@ -69,26 +68,21 @@ class Molecule(LibmintsMolecule):
                  mass=None,
                  real=None,
                  elbl=None,
-
                  name=None,
                  units='Angstrom',
                  input_units_to_au=None,
                  fix_com=None,
                  fix_orientation=None,
                  fix_symmetry=None,
-
                  fragment_separators=None,
                  fragment_charges=None,
                  fragment_multiplicities=None,
-
                  molecular_charge=None,
                  molecular_multiplicity=None,
-
                  enable_qm=True,
                  enable_efp=True,
                  missing_enabled_return_qm='none',
                  missing_enabled_return_efp='none',
-
                  missing_enabled_return='error',
                  tooclose=0.1,
                  zero_ghost_fragments=False,
@@ -103,7 +97,7 @@ class Molecule(LibmintsMolecule):
                 molrec = molinit
 
             elif isinstance(molinit, basestring):
-                compound_molrec = molparse.from_string(
+                compound_molrec = qcel.molparse.from_string(
                     molstr=molinit,
                     dtype=dtype,
                     name=name,
@@ -119,7 +113,7 @@ class Molecule(LibmintsMolecule):
                 molrec = compound_molrec['qm']
 
             elif molinit is None and geom is not None:
-                molrec = molparse.from_arrays(
+                molrec = qcel.molparse.from_arrays(
                     geom=geom,
                     elea=elea,
                     elez=elez,
@@ -151,7 +145,6 @@ class Molecule(LibmintsMolecule):
 
         # The comment line
         self.tagline = ""
-
 
     def __str__(self):
         text = """  ==> qcdb Molecule %s <==\n\n""" % (self.name())
@@ -367,7 +360,6 @@ class Molecule(LibmintsMolecule):
 
         nparr = np.array(geo)
         return nparr if npobj else np.array_repr(nparr)
-
 
     def format_molecule_for_psi4(self):
         """Returns string of molecule definition block."""
@@ -1135,66 +1127,60 @@ class Molecule(LibmintsMolecule):
                     missing_enabled_return_qm='none',
                     missing_enabled_return_efp='none',
                     verbose=1):
-        molrec = molparse.from_string(molstr=molstr,
-                                      dtype=dtype,
-                                      name=name,
-                                      fix_com=fix_com,
-                                      fix_orientation=fix_orientation,
-                                      fix_symmetry=fix_symmetry,
-                                      return_processed=False,
-                                      enable_qm=enable_qm,
-                                      enable_efp=enable_efp,
-                                      missing_enabled_return_qm=missing_enabled_return_qm,
-                                      missing_enabled_return_efp=missing_enabled_return_efp,
-                                      verbose=verbose)
+        molrec = qcel.molparse.from_string(
+            molstr=molstr,
+            dtype=dtype,
+            name=name,
+            fix_com=fix_com,
+            fix_orientation=fix_orientation,
+            fix_symmetry=fix_symmetry,
+            return_processed=False,
+            enable_qm=enable_qm,
+            enable_efp=enable_efp,
+            missing_enabled_return_qm=missing_enabled_return_qm,
+            missing_enabled_return_efp=missing_enabled_return_efp,
+            verbose=verbose)
         if return_dict:
             return Molecule.from_dict(molrec['qm']), molrec
         else:
             return Molecule.from_dict(molrec['qm'])
 
-
     @staticmethod
     def from_arrays(geom=None,
-
                     elea=None,
                     elez=None,
                     elem=None,
                     mass=None,
                     real=None,
                     elbl=None,
-
                     name=None,
                     units='Angstrom',
                     input_units_to_au=None,
                     fix_com=False,
                     fix_orientation=False,
                     fix_symmetry=None,
-
                     fragment_separators=None,
                     fragment_charges=None,
                     fragment_multiplicities=None,
-
                     molecular_charge=None,
                     molecular_multiplicity=None,
-
                     missing_enabled_return='error',
                     tooclose=0.1,
                     zero_ghost_fragments=False,
                     nonphysical=False,
                     mtol=1.e-3,
                     verbose=1,
-
                     return_dict=False):
         """Construct Molecule from unvalidated arrays and variables.
 
-        Light wrapper around :py:func:`~qcdb.molparse.from_arrays`
+        Light wrapper around :py:func:`~qcelemental.molparse.from_arrays`
         that is a full-featured constructor to dictionary representa-
         tion of Molecule. This follows one step further to return
         Molecule instance.
 
         Parameters
         ----------
-        See :py:func:`~qcdb.molparse.from_arrays`.
+        See :py:func:`~qcelemental.molparse.from_arrays`.
         return_dict : bool, optional
             Additionally return Molecule dictionary intermediate.
 
@@ -1206,31 +1192,32 @@ class Molecule(LibmintsMolecule):
             Only provided if `return_dict` is True.
 
         """
-        molrec = molparse.from_arrays(geom=geom,
-                                      elea=elea,
-                                      elez=elez,
-                                      elem=elem,
-                                      mass=mass,
-                                      real=real,
-                                      elbl=elbl,
-                                      name=name,
-                                      units=units,
-                                      input_units_to_au=input_units_to_au,
-                                      fix_com=fix_com,
-                                      fix_orientation=fix_orientation,
-                                      fix_symmetry=fix_symmetry,
-                                      fragment_separators=fragment_separators,
-                                      fragment_charges=fragment_charges,
-                                      fragment_multiplicities=fragment_multiplicities,
-                                      molecular_charge=molecular_charge,
-                                      molecular_multiplicity=molecular_multiplicity,
-                                      domain='qm',
-                                      missing_enabled_return=missing_enabled_return,
-                                      tooclose=tooclose,
-                                      zero_ghost_fragments=zero_ghost_fragments,
-                                      nonphysical=nonphysical,
-                                      mtol=mtol,
-                                      verbose=verbose)
+        molrec = qcel.molparse.from_arrays(
+            geom=geom,
+            elea=elea,
+            elez=elez,
+            elem=elem,
+            mass=mass,
+            real=real,
+            elbl=elbl,
+            name=name,
+            units=units,
+            input_units_to_au=input_units_to_au,
+            fix_com=fix_com,
+            fix_orientation=fix_orientation,
+            fix_symmetry=fix_symmetry,
+            fragment_separators=fragment_separators,
+            fragment_charges=fragment_charges,
+            fragment_multiplicities=fragment_multiplicities,
+            molecular_charge=molecular_charge,
+            molecular_multiplicity=molecular_multiplicity,
+            domain='qm',
+            missing_enabled_return=missing_enabled_return,
+            tooclose=tooclose,
+            zero_ghost_fragments=zero_ghost_fragments,
+            nonphysical=nonphysical,
+            mtol=mtol,
+            verbose=verbose)
         if return_dict:
             return Molecule.from_dict(molrec), molrec
         else:
@@ -1240,13 +1227,14 @@ class Molecule(LibmintsMolecule):
         """Format a string representation of QM molecule."""
 
         molrec = self.to_dict(np_out=True)
-        smol = molparse.to_string(molrec,
-                                  dtype=dtype,
-                                  units=units,
-                                  atom_format=atom_format,
-                                  ghost_format=ghost_format,
-                                  width=width,
-                                  prec=prec)
+        smol = qcel.molparse.to_string(
+            molrec,
+            dtype=dtype,
+            units=units,
+            atom_format=atom_format,
+            ghost_format=ghost_format,
+            width=width,
+            prec=prec)
         return smol
 
     @staticmethod
@@ -1300,14 +1288,16 @@ class Molecule(LibmintsMolecule):
         if elbl is not None:
             elbl = reorder(elbl)
 
-        return {'fragment_separators': fragment_separators,
-                'geom': geom,
-                'elea': elea,
-                'elez': elez,
-                'elem': elem,
-                'mass': mass,
-                'real': real,
-                'elbl': elbl}
+        return {
+            'fragment_separators': fragment_separators,
+            'geom': geom,
+            'elea': elea,
+            'elez': elez,
+            'elem': elem,
+            'mass': mass,
+            'real': real,
+            'elbl': elbl
+        }
 
     @staticmethod
     def from_schema(molschema, return_dict=False, verbose=1):
@@ -1346,41 +1336,43 @@ class Molecule(LibmintsMolecule):
             else:
                 frag_pattern = [np.arange(len(ms['symbols']))]
 
-            dcontig = Molecule.contiguize_from_fragment_pattern(frag_pattern,
-                                                                    geom=ms['geometry'],
-                                                                    elea=None,
-                                                                    elez=None,
-                                                                    elem=ms['symbols'],
-                                                                    mass=ms.get('masses', None),
-                                                                    real=ms.get('real', None),
-                                                                    elbl=None,
-                                                                    throw_reorder=True)
+            dcontig = Molecule.contiguize_from_fragment_pattern(
+                frag_pattern,
+                geom=ms['geometry'],
+                elea=None,
+                elez=None,
+                elem=ms['symbols'],
+                mass=ms.get('masses', None),
+                real=ms.get('real', None),
+                elbl=None,
+                throw_reorder=True)
 
-            molrec = molparse.from_arrays(geom=dcontig['geom'],
-                                          elea=None,
-                                          elez=None,
-                                          elem=dcontig['elem'],
-                                          mass=dcontig['mass'],
-                                          real=dcontig['real'],
-                                          elbl=None,
-                                          name=ms.get('name', None),
-                                          units='Bohr',
-                                          input_units_to_au=None,
-                                          fix_com=ms.get('fix_com', None),
-                                          fix_orientation=ms.get('fix_orientation', None),
-                                          fix_symmetry=None,
-                                          fragment_separators=dcontig['fragment_separators'],
-                                          fragment_charges=ms.get('fragment_charges', None),
-                                          fragment_multiplicities=ms.get('fragment_multiplicities', None),
-                                          molecular_charge=ms.get('molecular_charge', None),
-                                          molecular_multiplicity=ms.get('molecular_multiplicity', None),
-                                          domain='qm',
-                                          #missing_enabled_return=missing_enabled_return,
-                                          #tooclose=tooclose,
-                                          #zero_ghost_fragments=zero_ghost_fragments,
-                                          #nonphysical=nonphysical,
-                                          #mtol=mtol,
-                                          verbose=verbose)
+            molrec = qcel.molparse.from_arrays(
+                geom=dcontig['geom'],
+                elea=None,
+                elez=None,
+                elem=dcontig['elem'],
+                mass=dcontig['mass'],
+                real=dcontig['real'],
+                elbl=None,
+                name=ms.get('name', None),
+                units='Bohr',
+                input_units_to_au=None,
+                fix_com=ms.get('fix_com', None),
+                fix_orientation=ms.get('fix_orientation', None),
+                fix_symmetry=None,
+                fragment_separators=dcontig['fragment_separators'],
+                fragment_charges=ms.get('fragment_charges', None),
+                fragment_multiplicities=ms.get('fragment_multiplicities', None),
+                molecular_charge=ms.get('molecular_charge', None),
+                molecular_multiplicity=ms.get('molecular_multiplicity', None),
+                domain='qm',
+                #missing_enabled_return=missing_enabled_return,
+                #tooclose=tooclose,
+                #zero_ghost_fragments=zero_ghost_fragments,
+                #nonphysical=nonphysical,
+                #mtol=mtol,
+                verbose=verbose)
 
         else:
             raise ValidationError("""Schema not recognized""")
@@ -1394,10 +1386,7 @@ class Molecule(LibmintsMolecule):
         """Serializes instance into JSON or YAML according to schema `dtype`."""
 
         molrec = self.to_dict(np_out=True)
-        jymol = molparse.to_schema(molrec,
-                                   dtype=dtype,
-                                   units=units,
-                                   return_type=return_type)
+        jymol = qcel.molparse.to_schema(molrec, dtype=dtype, units=units, return_type=return_type)
         return jymol
 
     @staticmethod
@@ -1485,14 +1474,16 @@ class Molecule(LibmintsMolecule):
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
         try:
-            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
-        except ValidationError as err:
+            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
+        except qcel.ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
-            print("""Following warning is harmless if you've altered chgmult through `set_molecular_change` or `set_multiplicity`. Such alterations are an expert feature. Specifying in the original molecule string is preferred.""")
+            print(
+                """Following warning is harmless if you've altered chgmult through `set_molecular_change` or `set_multiplicity`. Such alterations are an expert feature. Specifying in the original molecule string is preferred."""
+            )
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
-            validated_molrec = molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
+            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
@@ -1508,7 +1499,6 @@ class Molecule(LibmintsMolecule):
         mol = cls()
         mol._internal_from_dict(molrec=molrec, verbose=verbose)
         return mol
-
 
     def _internal_from_dict(self, molrec, verbose=1):
         """Constructs instance from fully validated and defaulted dictionary `molrec`."""
@@ -1534,8 +1524,8 @@ class Molecule(LibmintsMolecule):
                 entry = molrec['geom_unsettled'][iat]
                 label = molrec['elem'][iat] + molrec['elbl'][iat]
                 Z = molrec['elez'][iat] * int(molrec['real'][iat])
-                self.add_unsettled_atom(Z, entry, molrec['elem'][iat], molrec['mass'][iat],
-                                       Z, label, molrec['elea'][iat])
+                self.add_unsettled_atom(Z, entry, molrec['elem'][iat], molrec['mass'][iat], Z, label,
+                                        molrec['elea'][iat])
             for var in molrec['variables']:
                 self.set_geometry_variable(var[0], var[1])
 
@@ -1548,8 +1538,7 @@ class Molecule(LibmintsMolecule):
                 x, y, z = geom[iat]
                 label = molrec['elem'][iat] + molrec['elbl'][iat]
                 Z = molrec['elez'][iat] * int(molrec['real'][iat])
-                self.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat],
-                             Z, label, molrec['elea'][iat])
+                self.add_atom(Z, x, y, z, molrec['elem'][iat], molrec['mass'][iat], Z, label, molrec['elea'][iat])
                 # TODO charge and 2nd elez site
                 # TODO real back to type Ghost?
 
@@ -1654,13 +1643,16 @@ class Molecule(LibmintsMolecule):
             outputs.append((fgeoms, fmasss, felems))
 
         if return_molecules:
-            molrecs = [molparse.from_arrays(geom=cgeom[fr],
-                                            mass=cmass[fr],
-                                            elem=celem[fr],
-                                            elez=celez[fr],
-                                            units='Bohr',
-                                            fix_com=True,
-                                            fix_orientation=True) for fr in frag_pattern]
+            molrecs = [
+                qcel.molparse.from_arrays(
+                    geom=cgeom[fr],
+                    mass=cmass[fr],
+                    elem=celem[fr],
+                    elez=celez[fr],
+                    units='Bohr',
+                    fix_com=True,
+                    fix_orientation=True) for fr in frag_pattern
+            ]
             if isinstance(self, Molecule):
                 ret_mols = [Molecule.from_dict(molrec) for molrec in molrecs]
             else:
@@ -1669,23 +1661,21 @@ class Molecule(LibmintsMolecule):
             outputs.append(ret_mols)
 
         if return_molecule:
-            dcontig = Molecule.contiguize_from_fragment_pattern(frag_pattern,
-                                                                geom=cgeom,
-                                                                elez=celez,
-                                                                elem=celem,
-                                                                mass=cmass)
-            molrec = molparse.from_arrays(geom=dcontig['geom'],
-                                          mass=dcontig['mass'],
-                                          elem=dcontig['elem'],
-                                          elez=dcontig['elez'],
-                                          units='Bohr',
-                                          molecular_charge=self.molecular_charge(),
-                                          # molecular_multiplicity may not be conservable upon fragmentation
-                                          #   potentially could do two passes and try to preserve it
-                                          fix_com=self.com_fixed(),
-                                          fix_orientation=self.orientation_fixed(),
-                                          fix_symmetry=(None if self.symmetry_from_input() == '' else self.symmetry_from_input()),
-                                          fragment_separators=dcontig['fragment_separators'])
+            dcontig = Molecule.contiguize_from_fragment_pattern(
+                frag_pattern, geom=cgeom, elez=celez, elem=celem, mass=cmass)
+            molrec = qcel.molparse.from_arrays(
+                geom=dcontig['geom'],
+                mass=dcontig['mass'],
+                elem=dcontig['elem'],
+                elez=dcontig['elez'],
+                units='Bohr',
+                molecular_charge=self.molecular_charge(),
+                # molecular_multiplicity may not be conservable upon fragmentation
+                #   potentially could do two passes and try to preserve it
+                fix_com=self.com_fixed(),
+                fix_orientation=self.orientation_fixed(),
+                fix_symmetry=(None if self.symmetry_from_input() == '' else self.symmetry_from_input()),
+                fragment_separators=dcontig['fragment_separators'])
             if isinstance(self, Molecule):
                 ret_mol = Molecule.from_dict(molrec)
             else:
@@ -1699,15 +1689,15 @@ class Molecule(LibmintsMolecule):
 
     @staticmethod
     def _raw_B787(concern_mol,
-             ref_mol,
-             do_plot=False,
-             verbose=1,
-             atoms_map=False,
-             run_resorting=False,
-             mols_align=False,
-             run_to_completion=False,
-             uno_cutoff=1.e-3,
-             run_mirror=False):
+                  ref_mol,
+                  do_plot=False,
+                  verbose=1,
+                  atoms_map=False,
+                  run_resorting=False,
+                  mols_align=False,
+                  run_to_completion=False,
+                  uno_cutoff=1.e-3,
+                  run_mirror=False):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
@@ -1777,7 +1767,7 @@ class Molecule(LibmintsMolecule):
             uno_cutoff=uno_cutoff)
 
         ageom, amass, aelem, aelez, auniq = solution.align_system(cgeom, cmass, celem, celez, cuniq, reverse=False)
-        adict = molparse.from_arrays(
+        adict = qcel.molparse.from_arrays(
             geom=ageom,
             mass=amass,
             elem=aelem,
@@ -1809,15 +1799,15 @@ class Molecule(LibmintsMolecule):
 
     @staticmethod
     def _raw_scramble(ref_mol,
-                 do_shift=True,
-                 do_rotate=True,
-                 do_resort=True,
-                 deflection=1.0,
-                 do_mirror=False,
-                 do_plot=False,
-                 run_to_completion=False,
-                 run_resorting=False,
-                 verbose=1):
+                      do_shift=True,
+                      do_rotate=True,
+                      do_resort=True,
+                      deflection=1.0,
+                      do_mirror=False,
+                      do_plot=False,
+                      run_to_completion=False,
+                      run_resorting=False,
+                      verbose=1):
         """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
         checking that the aligner returns the opposite transformation.
 

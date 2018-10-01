@@ -25,11 +25,11 @@
 #
 # @END LICENSE
 #
-
 """Module with utility functions that act on molecule objects."""
 from __future__ import absolute_import
 
 import numpy as np
+import qcelemental as qcel
 
 from psi4 import core
 from psi4.driver.p4util import filter_comments
@@ -75,18 +75,19 @@ def molecule_from_string(cls,
                          missing_enabled_return_qm='none',
                          missing_enabled_return_efp='none',
                          verbose=1):
-    molrec = qcdb.molparse.from_string(molstr=molstr,
-                                       dtype=dtype,
-                                       name=name,
-                                       fix_com=fix_com,
-                                       fix_orientation=fix_orientation,
-                                       fix_symmetry=fix_symmetry,
-                                       return_processed=False,
-                                       enable_qm=enable_qm,
-                                       enable_efp=enable_efp,
-                                       missing_enabled_return_qm=missing_enabled_return_qm,
-                                       missing_enabled_return_efp=missing_enabled_return_efp,
-                                       verbose=verbose)
+    molrec = qcel.molparse.from_string(
+        molstr=molstr,
+        dtype=dtype,
+        name=name,
+        fix_com=fix_com,
+        fix_orientation=fix_orientation,
+        fix_symmetry=fix_symmetry,
+        return_processed=False,
+        enable_qm=enable_qm,
+        enable_efp=enable_efp,
+        missing_enabled_return_qm=missing_enabled_return_qm,
+        missing_enabled_return_efp=missing_enabled_return_efp,
+        verbose=verbose)
     if return_dict:
         return core.Molecule.from_dict(molrec['qm']), molrec
     else:
@@ -102,156 +103,154 @@ def molecule_from_arrays(cls,
                          mass=None,
                          real=None,
                          elbl=None,
-
                          name=None,
                          units='Angstrom',
                          input_units_to_au=None,
                          fix_com=None,
                          fix_orientation=None,
                          fix_symmetry=None,
-
                          fragment_separators=None,
                          fragment_charges=None,
                          fragment_multiplicities=None,
-
                          molecular_charge=None,
                          molecular_multiplicity=None,
-
                          missing_enabled_return='error',
                          tooclose=0.1,
                          zero_ghost_fragments=False,
                          nonphysical=False,
                          mtol=1.e-3,
                          verbose=1,
-
                          return_dict=False):
-        """Construct Molecule from unvalidated arrays and variables.
+    """Construct Molecule from unvalidated arrays and variables.
 
-        Light wrapper around :py:func:`~qcdb.molparse.from_arrays`
-        that is a full-featured constructor to dictionary representa-
-        tion of Molecule. This follows one step further to return
-        Molecule instance.
+    Light wrapper around :py:func:`~qcelemental.molparse.from_arrays`
+    that is a full-featured constructor to dictionary representa-
+    tion of Molecule. This follows one step further to return
+    Molecule instance.
 
-        Parameters
-        ----------
-        See :py:func:`~qcdb.molparse.from_arrays`.
+    Parameters
+    ----------
+    See :py:func:`~qcelemental.molparse.from_arrays`.
 
-        Returns
-        -------
-        :py:class:`psi4.core.Molecule`
+    Returns
+    -------
+    :py:class:`psi4.core.Molecule`
 
-        """
-        molrec = qcdb.molparse.from_arrays(geom=geom,
-                                           elea=elea,
-                                           elez=elez,
-                                           elem=elem,
-                                           mass=mass,
-                                           real=real,
-                                           elbl=elbl,
-                                           name=name,
-                                           units=units,
-                                           input_units_to_au=input_units_to_au,
-                                           fix_com=fix_com,
-                                           fix_orientation=fix_orientation,
-                                           fix_symmetry=fix_symmetry,
-                                           fragment_separators=fragment_separators,
-                                           fragment_charges=fragment_charges,
-                                           fragment_multiplicities=fragment_multiplicities,
-                                           molecular_charge=molecular_charge,
-                                           molecular_multiplicity=molecular_multiplicity,
-                                           domain='qm',
-                                           missing_enabled_return=missing_enabled_return,
-                                           tooclose=tooclose,
-                                           zero_ghost_fragments=zero_ghost_fragments,
-                                           nonphysical=nonphysical,
-                                           mtol=mtol,
-                                           verbose=verbose)
-        if return_dict:
-            return core.Molecule.from_dict(molrec), molrec
-        else:
-            return core.Molecule.from_dict(molrec)
+    """
+    molrec = qcel.molparse.from_arrays(
+        geom=geom,
+        elea=elea,
+        elez=elez,
+        elem=elem,
+        mass=mass,
+        real=real,
+        elbl=elbl,
+        name=name,
+        units=units,
+        input_units_to_au=input_units_to_au,
+        fix_com=fix_com,
+        fix_orientation=fix_orientation,
+        fix_symmetry=fix_symmetry,
+        fragment_separators=fragment_separators,
+        fragment_charges=fragment_charges,
+        fragment_multiplicities=fragment_multiplicities,
+        molecular_charge=molecular_charge,
+        molecular_multiplicity=molecular_multiplicity,
+        domain='qm',
+        missing_enabled_return=missing_enabled_return,
+        tooclose=tooclose,
+        zero_ghost_fragments=zero_ghost_fragments,
+        nonphysical=nonphysical,
+        mtol=mtol,
+        verbose=verbose)
+    if return_dict:
+        return core.Molecule.from_dict(molrec), molrec
+    else:
+        return core.Molecule.from_dict(molrec)
 
 
 @classmethod
 def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
-        """Construct Molecule from non-Psi4 schema.
+    """Construct Molecule from non-Psi4 schema.
 
-        Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
+    Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
 
-        Parameters
-        ----------
-        molschema : dict
-            Dictionary form of Molecule following known schema.
-        return_dict : bool, optional
-            Additionally return Molecule dictionary intermediate.
-        verbose : int, optional
-            Amount of printing.
+    Parameters
+    ----------
+    molschema : dict
+        Dictionary form of Molecule following known schema.
+    return_dict : bool, optional
+        Additionally return Molecule dictionary intermediate.
+    verbose : int, optional
+        Amount of printing.
 
-        Returns
-        -------
-        mol : :py:class:`psi4.core.Molecule`
-        molrec : dict, optional
-            Dictionary representation of instance.
-            Only provided if `return_dict` is True.
+    Returns
+    -------
+    mol : :py:class:`psi4.core.Molecule`
+    molrec : dict, optional
+        Dictionary representation of instance.
+        Only provided if `return_dict` is True.
 
-        """
+    """
 
-        if (molschema.get('schema_name', '').startswith('qc_schema') and
-            (molschema.get('schema_version', '') == 1)):
-            # Lost Fields
-            # -----------
-            # * 'comment'
-            # * 'provenance'
-            ms = molschema['molecule']
+    if (molschema.get('schema_name', '').startswith('qc_schema') and (molschema.get('schema_version', '') == 1)):
+        # Lost Fields
+        # -----------
+        # * 'comment'
+        # * 'provenance'
+        ms = molschema['molecule']
 
-            if 'fragments' in ms:
-                frag_pattern = ms['fragments']
-            else:
-                frag_pattern = [np.arange(len(ms['symbols']))]
-
-            dcontig = qcdb.Molecule.contiguize_from_fragment_pattern(frag_pattern,
-                                                                     geom=ms['geometry'],
-                                                                     elea=None,
-                                                                     elez=None,
-                                                                     elem=ms['symbols'],
-                                                                     mass=ms.get('masses', None),
-                                                                     real=ms.get('real', None),
-                                                                     elbl=None,
-                                                                     throw_reorder=True)
-
-            molrec = qcdb.molparse.from_arrays(geom=dcontig['geom'],
-                                               elea=None,
-                                               elez=None,
-                                               elem=dcontig['elem'],
-                                               mass=dcontig['mass'],
-                                               real=dcontig['real'],
-                                               elbl=None,
-                                               name=ms.get('name', None),
-                                               units='Bohr',
-                                               input_units_to_au=None,
-                                               fix_com=ms.get('fix_com', None),
-                                               fix_orientation=ms.get('fix_orientation', None),
-                                               fix_symmetry=None,
-                                               fragment_separators=dcontig['fragment_separators'],
-                                               fragment_charges=ms.get('fragment_charges', None),
-                                               fragment_multiplicities=ms.get('fragment_multiplicities', None),
-                                               molecular_charge=ms.get('molecular_charge', None),
-                                               molecular_multiplicity=ms.get('molecular_multiplicity', None),
-                                               domain='qm',
-                                               #missing_enabled_return=missing_enabled_return,
-                                               #tooclose=tooclose,
-                                               #zero_ghost_fragments=zero_ghost_fragments,
-                                               #nonphysical=nonphysical,
-                                               #mtol=mtol,
-                                               verbose=verbose)
-
+        if 'fragments' in ms:
+            frag_pattern = ms['fragments']
         else:
-            raise ValidationError("""Schema not recognized, schema_name/schema_version: {}/{} """.format(molschema.get('schema_name', 'NA'), molschema.get('schema_version', 'NA')))
+            frag_pattern = [np.arange(len(ms['symbols']))]
 
-        if return_dict:
-            return core.Molecule.from_dict(molrec), molrec
-        else:
-            return core.Molecule.from_dict(molrec)
+        dcontig = qcdb.Molecule.contiguize_from_fragment_pattern(
+            frag_pattern,
+            geom=ms['geometry'],
+            elea=None,
+            elez=None,
+            elem=ms['symbols'],
+            mass=ms.get('masses', None),
+            real=ms.get('real', None),
+            elbl=None,
+            throw_reorder=True)
+
+        molrec = qcel.molparse.from_arrays(
+            geom=dcontig['geom'],
+            elea=None,
+            elez=None,
+            elem=dcontig['elem'],
+            mass=dcontig['mass'],
+            real=dcontig['real'],
+            elbl=None,
+            name=ms.get('name', None),
+            units='Bohr',
+            input_units_to_au=None,
+            fix_com=ms.get('fix_com', None),
+            fix_orientation=ms.get('fix_orientation', None),
+            fix_symmetry=None,
+            fragment_separators=dcontig['fragment_separators'],
+            fragment_charges=ms.get('fragment_charges', None),
+            fragment_multiplicities=ms.get('fragment_multiplicities', None),
+            molecular_charge=ms.get('molecular_charge', None),
+            molecular_multiplicity=ms.get('molecular_multiplicity', None),
+            domain='qm',
+            #missing_enabled_return=missing_enabled_return,
+            #tooclose=tooclose,
+            #zero_ghost_fragments=zero_ghost_fragments,
+            #nonphysical=nonphysical,
+            #mtol=mtol,
+            verbose=verbose)
+
+    else:
+        raise ValidationError("""Schema not recognized, schema_name/schema_version: {}/{} """.format(
+            molschema.get('schema_name', 'NA'), molschema.get('schema_version', 'NA')))
+
+    if return_dict:
+        return core.Molecule.from_dict(molrec), molrec
+    else:
+        return core.Molecule.from_dict(molrec)
 
 
 def dynamic_variable_bind(cls):
@@ -298,11 +297,8 @@ def geometry(geom, name="default"):
     the string are filtered.
 
     """
-    molrec = qcdb.molparse.from_string(geom,
-                                       enable_qm=True,
-                                       missing_enabled_return_qm='minimal',
-                                       enable_efp=True,
-                                       missing_enabled_return_efp='none')
+    molrec = qcel.molparse.from_string(
+        geom, enable_qm=True, missing_enabled_return_qm='minimal', enable_efp=True, missing_enabled_return_efp='none')
 
     molecule = core.Molecule.from_dict(molrec['qm'])
     molecule.set_name(name)
@@ -311,7 +307,9 @@ def geometry(geom, name="default"):
         try:
             import pylibefp
         except ImportError as e:  # py36 ModuleNotFoundError
-            raise ImportError("""Install pylibefp to use EFP functionality. `conda install pylibefp -c psi4` Or build with `-DENABLE_libefp`""") from e
+            raise ImportError(
+                """Install pylibefp to use EFP functionality. `conda install pylibefp -c psi4` Or build with `-DENABLE_libefp`"""
+            ) from e
         #print('pylibefp (found version {})'.format(pylibefp.__version__))
         efpobj = pylibefp.from_dict(molrec['efp'])
         # pylibefp.core.efp rides along on molecule
