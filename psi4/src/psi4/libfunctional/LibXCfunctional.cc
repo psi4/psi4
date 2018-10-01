@@ -109,17 +109,22 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
 
             /*
-              The values alpha and beta have a different meaning in psi4 and libxc.
+              The values alpha and beta have a different meaning in
+              psi4 and libxc.
 
               In libxc, alpha is the contribution from full exact
-              exchange, and beta is the contribution from short-range
-              exchange, yielding alpha exact exchange in the long
-              range, and alpha+beta in the short range.
+              exchange (at all ranges), and beta is the contribution
+              from short-range only exchange, yielding alpha exact
+              exchange at the long range and alpha+beta in the short
+              range in total.
 
-              In Psi4, alpha is the amount of exchange in the short
-              range, while beta is the difference between the amount
-              of exchange in the long range and in the short
-              range. This means
+              In Psi4, alpha is the amount of exchange at all ranges,
+              while beta is the difference between the amount of
+              exchange in the long range and in the short range,
+              meaning alpha+beta at the long range, and alpha only at
+              the short range.
+
+              These differences amount to the transform
 
               SR      = LibXC_ALPHA + LibXC_BETA = Psi4_ALPHA
               LR      = LibXC_ALPHA              = Psi4_ALPHA + Psi4_BETA
