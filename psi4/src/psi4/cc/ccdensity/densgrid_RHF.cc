@@ -208,7 +208,8 @@ void densgrid_RHF(std::shared_ptr<Wavefunction> wfn, Options &options) {
     int zsteps = (int)((zmax - zmin) / step_size + 1);
 
     // Prep .dx file
-    auto printer = std::make_shared<PsiOutStream>("density.dx", std::ostream::trunc);
+    auto mode = std::ostream::trunc;
+    auto printer = std::make_shared<PsiOutStream>("density.dx", mode);
     printer->Printf("#  Output from Psi4 calculation\n");
     printer->Printf("#  Electronic density (in e/ang^3) for: \n");
     printer->Printf("object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
@@ -255,7 +256,8 @@ void densgrid_RHF(std::shared_ptr<Wavefunction> wfn, Options &options) {
     printer->Printf("\n");
     printer->Printf("end");
 
-    auto printer2 = std::make_shared<PsiOutStream>("molecule.dx", std::ostream::trunc);
+    auto mode2 = std::ostream::trunc;
+    auto printer2 = std::make_shared<PsiOutStream>("molecule.dx", mode2);
 
     printer2->Printf("%d\n", molecule->natom());
     printer2->Printf("Initial atomic coordinates\n");

@@ -694,7 +694,8 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     outfile->Printf("\n");
     // FILE* fort55 = fopen("fort.55", "w");
-    auto printer = std::make_shared<PsiOutStream>("fort.55", std::ostream::trunc);
+    auto mode = std::ostream::trunc;
+    auto printer = std::make_shared<PsiOutStream>("fort.55", mode);
     printer->Printf("%22d%22d\n", nbf, nelectron);
 
     // Print out orbital symmetries
@@ -913,7 +914,8 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     for (int h = 0; h < nirrep; ++h)
         for (int n = 0; n < active_socc[h]; ++n) symm ^= h;
     symm += 1;  // stupid 1 based fortran
-    printer = std::make_shared<PsiOutStream>("fort.56", std::ostream::trunc);
+    auto mode2 = std::ostream::trunc;
+    printer = std::make_shared<PsiOutStream>("fort.56", mode2);
     // FILE* fort56 = fopen("fort.56", "w");
     printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d%6d%6d      0      0%6d     0     0    0.00    0%6lu\n",
                     exlevel,                                         // # 1

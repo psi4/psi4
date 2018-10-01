@@ -189,7 +189,8 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
     // Write Out the Tensor Derivatives to File tender.dat //
     // Outfile derivs("tender.dat", "w");
-    auto derivs = std::make_shared<PsiOutStream>("tender.dat", std::ostream::trunc);
+    auto mode = std::ostream::trunc;
+    auto derivs = std::make_shared<PsiOutStream>("tender.dat", mode);
     derivs->Printf("******************************************************\n");
     derivs->Printf("**********                                  **********\n");
     derivs->Printf("**********        TENSOR DERIVATIVES        **********\n");

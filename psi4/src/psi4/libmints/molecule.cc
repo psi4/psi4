@@ -1246,7 +1246,8 @@ void Molecule::print_out_of_planes() const {
 void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) const {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    auto printer = std::make_shared<PsiOutStream>(filename, std::ostream::trunc);
+    auto mode = std::ostream::trunc;
+    auto printer = std::make_shared<PsiOutStream>(filename, mode);
 
     int N = natom();
     if (!save_ghosts) {
