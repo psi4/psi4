@@ -130,7 +130,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             lr_exch_ = -1.0 * beta;
         }
 
-        if(!lrc) {
+        if(!lrc_) {
             // Global hybrid
             global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
         }
