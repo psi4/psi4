@@ -90,7 +90,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     if (xc_functional_->info->family == XC_FAMILY_HYB_GGA ||
         xc_functional_->info->family == XC_FAMILY_HYB_MGGA) {
         /* Range separation? */
-        int rangesep = 0;
+        lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
             outfile->Printf("Functional '%d' is a HYB_CAMY functional which is not supported in Psi4\n", xc_name.c_str());
             throw PSIEXCEPTION("HYB_CAMY functionals not supported in Psi4 at present");
@@ -128,8 +128,10 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 
             global_exch_ = alpha + beta;
             lr_exch_ = -1.0 * beta;
+        }
 
-        } else {
+        if(!lrc) {
+            // Global hybrid
             global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
         }
     }
