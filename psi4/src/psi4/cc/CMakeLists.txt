@@ -1,7 +1,6 @@
 add_library(cc STATIC
   ccwave.cc
-  ccmoinfo.cc
-  ccparams.cc
+  ccwaveimpl.cc
   )
 
 # FIXME Remove once done

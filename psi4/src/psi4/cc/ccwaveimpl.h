@@ -33,23 +33,100 @@
 #include <vector>
 
 #include "psi4/libmints/dimension.h"
-#include "psi4/libmints/matrix.h"
 
 namespace psi {
 
+class Matrix;
+class Options;
 class Wavefunction;
 
 namespace cc {
 
-enum class Reference;
+enum class Reference { RHF, ROHF, UHF };
+enum class DerivativeType { NONE = 0, FIRST = 1, RESPONSE = 3 };
+enum class CacheType { LRU, LOW };
 
 // FIXME Duplicated from cctransort/pitzer2qt.cc
 std::vector<int> pitzer2qt(std::vector<Dimension>& spaces);
 
-struct CCMOInfo final {
-    CCMOInfo() {}
-    CCMOInfo(std::shared_ptr<Wavefunction> wfn, Reference ref);
+/*! \class CCWavefunctionImpl
+ *  \brief Implementation details for CCWavefunction
+ *  \author Roberto Di Remigio
+ *  \date 2018
+ *
+ *  \note This subsumes Params and MOInfo. See https://herbsutter.com/gotw/_100/
+ *  for details on the PImpl idiom in C++11
+ *
+ *  FIXME
+ *  memory, just_energy, just_residuals have not been ported from Params.h
+ */
+struct CCWavefunctionImpl final {
+    CCWavefunctionImpl(std::shared_ptr<Wavefunction> wfnobj, Options options);
 
+    /*! @{ Coupled cluster calculation parameters, previously in Params.h and Local.h */
+    /*! Which coupled wavefunction? */
+    std::string wfn;
+    /*! Use new triples? */
+    bool newtrips;
+    /*! Use Brueckner? */
+    bool brueckner;
+    /*! Use density-fitting? */
+    bool df;
+    /*! Semicanonical calculation? */
+    bool semicanonical;
+    /*! Reference determinant */
+    Reference ref;
+    /*! Analyze T2 amplitudes? */
+    bool analyze;
+    /*! Derivative type */
+    DerivativeType dertype;
+    /*! Print level */
+    int print;
+    /*! Maximum number of CC iterations */
+    int maxiter;
+    /*! Convergence threshold on the residual */
+    double convergence;
+    /*! Convergence threshold on the energy */
+    double e_convergence;
+    /*! Is this a restart? */
+    bool restart;
+    std::string aobasis;
+    int cachelevel;
+    CacheType cachetype;
+    /*! Number of threads.
+     * TODO This is only used in cc3.cc and can probably be inferred in some other way.
+     */
+    int nthreads;
+    bool diis;
+    bool t2_coupled;
+    std::string prop;
+    std::string abcd;
+    /*! Number of amplitudes to print */
+    int num_amps;
+    double bconv;
+    bool print_mp2_amps;
+    bool print_pair_energies;
+    bool spinadapt_energies;
+    bool t3_Ws_incore;
+    bool scsn;
+    bool scs;
+    bool scscc;
+    double scsmp2_scale_os;
+    double scsmp2_scale_ss;
+    double scscc_scale_os;
+    double scscc_scale_ss;
+    bool local;
+    /*! @{ Local coupled cluster calculation set up options. Previously in Local */
+    double local_cutoff;
+    std::string local_method;
+    std::string local_weakp;
+    double local_cphf_cutoff;
+    bool local_freeze_core;
+    std::string local_pairdef;
+    /*! @}*/
+    /*! @}*/
+
+    /*! @{ Orbital spaces information. Previously in MOInfo.h */
     /*! no. of irreducible representations */
     int nirreps;
     /*! no. of molecular orbitals */
@@ -62,18 +139,12 @@ struct CCMOInfo final {
     int nvirt;
     /*! no. of active orbitals */
     int nactive;
-
-    /*! irrep labels
-     * FIXME this is currently only used for printing
-     * it can probably be trashed.
-     */
+    /*! irrep labels*/
     std::vector<std::string> labels;
-
     /*! Nuclear repulsion energy */
     double enuc;
     /*! SCF energy */
     double escf;
-
     /*! @{ Orbital spaces dimensions */
     /*! no. of MOs per irrep */
     Dimension orbspi;
@@ -188,9 +259,10 @@ struct CCMOInfo final {
     /* UHF beta occupied orbital transformation matrix (for AO-basis B terms) */
     std::shared_ptr<Matrix> Cbo;
     /*! @}*/
-};
+    /*! @}*/
 
-void print_ccmoinfo(const CCMOInfo& info);
+    void print_out(size_t memory, std::string out = "outfile") const;
+};
 
 }  // namespace cc
 }  // namespace psi

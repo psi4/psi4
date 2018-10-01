@@ -42,8 +42,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 
-#include "ccmoinfo.h"
-#include "ccparams.h"
+#include "ccwaveimpl.h"
 
 namespace psi {
 namespace cc {
@@ -58,7 +57,8 @@ void psio_off() {
     for (int i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
 }
 
-CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction) : Wavefunction(Process::environment.options) {
+CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction)
+    : Wavefunction(Process::environment.options), cc_info_(new CCWavefunctionImpl(reference_wavefunction, Process::environment.options)) {
     timer_on("ccwavefunction");
     timer_on("initialization");
     // Copy the wavefuntion then update
@@ -68,7 +68,8 @@ CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunct
     timer_off("initialization");
 }
 
-CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options) : Wavefunction(options) {
+CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction(options), cc_info_(new CCWavefunctionImpl(reference_wavefunction, options)) {
     timer_on("ccwavefunction");
     // Copy the wavefuntion then update
     timer_on("initialization");
@@ -102,14 +103,8 @@ void CCWavefunction::common_init() {
     // Open coupled cluster files
     psio_on();
 
-    // Calculation parameters
-    params_ = CCParams(options_);
-    title(params_.wfn);
-    moinfo_ = CCMOInfo(reference_wavefunction_, params_.ref);
-
     // Print out information
-    print_parameters(params_, memory_);
-    print_ccmoinfo(moinfo_);
+    cc_info_->print_out(this->memory_, "outfile");
 }
 
 void CCWavefunction::init_dpd() {
