@@ -42,7 +42,6 @@ from .vecutil import *
 from .exceptions import *
 from .libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
 from .libmintspointgrp import SymmOps, similar, SymmetryOperation, PointGroup
-from .util import distance_matrix
 
 
 LINEAR_A_TOL = 1.0E-2  # When sin(a) is below this, we consider the angle to be linear
@@ -1242,7 +1241,7 @@ class LibmintsMolecule(object):
           [6]         3.32935     3.86422     2.43843     0.95895     1.51712     0.00000
 
         """
-        distm = distance_matrix(self.geometry(np_out=True), self.geometry(np_out=True))
+        distm = qcel.util.distance_matrix(self.geometry(np_out=True), self.geometry(np_out=True))
         distm *= qcel.constants.bohr2angstroms
 
         text = "        Interatomic Distances (Angstroms)\n\n          "

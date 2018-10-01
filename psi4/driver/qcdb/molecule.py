@@ -40,7 +40,6 @@ import qcelemental as qcel
 
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
-from .util import unnp
 from .bfs import BFS
 
 if sys.version_info >= (3,0):
@@ -1489,7 +1488,7 @@ class Molecule(LibmintsMolecule):
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
 
         if not np_out:
-            validated_molrec = unnp(validated_molrec)
+            validated_molrec = qcel.util.unnp(validated_molrec)
 
         return validated_molrec
 

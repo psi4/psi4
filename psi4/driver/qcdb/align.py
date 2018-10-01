@@ -540,17 +540,17 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
             yield ans
 
     if algo == 'perm':
-        ccdistmat = distance_matrix(cgeom, cgeom)
-        rrdistmat = distance_matrix(rgeom, rgeom)
+        ccdistmat = qcel.util.distance_matrix(cgeom, cgeom)
+        rrdistmat = qcel.util.distance_matrix(rgeom, rgeom)
         algofn = filter_permutative
 
     if algo == 'hung':
-        crdistmat = distance_matrix(cgeom, rgeom)
+        crdistmat = qcel.util.distance_matrix(cgeom, rgeom)
         algofn = filter_hungarian
 
     if algo == 'hunguno':
-        ccdistmat = distance_matrix(cgeom, cgeom)
-        rrdistmat = distance_matrix(rgeom, rgeom)
+        ccdistmat = qcel.util.distance_matrix(cgeom, cgeom)
+        rrdistmat = qcel.util.distance_matrix(rgeom, rgeom)
         # TODO investigate soundness
         with np.errstate(divide='ignore'):
             ccnremat = np.reciprocal(ccdistmat)
