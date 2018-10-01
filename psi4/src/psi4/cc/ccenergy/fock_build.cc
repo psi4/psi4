@@ -50,21 +50,18 @@ namespace ccenergy {
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 
 void CCEnergyWavefunction::rhf_fock_build(double **fock, double **D) {
-    int i, j;
-    int nso, ntri;
-    int lastbuf, idx, p, q, r, s, pq, rs;
+    int lastbuf, p, q, r, s, pq, rs;
     double value;
     Value *valptr;
     Label *lblptr;
     struct iwlbuf InBuf;
 
-    nso = moinfo_.nso;
-    ntri = nso * (nso + 1) / 2;
+    auto nso = moinfo_.nso;
 
-    double **H = H_->to_block_matrix();
+    auto H = H_->to_block_matrix();
 
-    for (i = 0; i < nso; i++) {
-        for (j = 0; j <= i; j++) {
+    for (int i = 0; i < nso; i++) {
+        for (int j = 0; j <= i; j++) {
             fock[i][j] = fock[j][i] = H[i][j];
         }
     }
@@ -76,7 +73,7 @@ void CCEnergyWavefunction::rhf_fock_build(double **fock, double **D) {
         lblptr = InBuf.labels;
         valptr = InBuf.values;
 
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
+        for (int idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
             p = std::abs((int)lblptr[idx++]);
             q = (int)lblptr[idx++];
             r = (int)lblptr[idx++];
@@ -175,30 +172,24 @@ void CCEnergyWavefunction::rhf_fock_build(double **fock, double **D) {
 }
 
 void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b) {
-    int i, j, ij;
-    int nso, ntri, ntei, stat;
-    double *scratch;
-    int lastbuf, idx, p, q, r, s, pq, rs;
+    int lastbuf, p, q, r, s, pq, rs;
     double value;
     Value *valptr;
     Label *lblptr;
     struct iwlbuf InBuf;
-    double **Dt;
 
-    nso = moinfo_.nso;
-    ntri = nso * (nso + 1) / 2;
-    ntei = ntri * (ntri + 1) / 2;
+    auto nso = moinfo_.nso;
 
-    Dt = block_matrix(nso, nso);
-    for (p = 0; p < nso; p++)
-        for (q = 0; q < nso; q++) Dt[p][q] = D_a[p][q] + D_b[p][q];
+    auto Dt = block_matrix(nso, nso);
+    for (int p = 0; p < nso; p++)
+        for (int q = 0; q < nso; q++) Dt[p][q] = D_a[p][q] + D_b[p][q];
 
     /* one-electron contributions */
 
-    double **H = H_->to_block_matrix();
+    auto H = H_->to_block_matrix();
 
-    for (i = 0; i < nso; i++) {
-        for (j = 0; j <= i; j++) {
+    for (int i = 0; i < nso; i++) {
+        for (int j = 0; j <= i; j++) {
             fock_a[i][j] = fock_a[j][i] = H[i][j];
             fock_b[i][j] = fock_b[j][i] = H[i][j];
         }
@@ -210,7 +201,7 @@ void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, doub
         lblptr = InBuf.labels;
         valptr = InBuf.values;
 
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
+        for (int idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
             p = std::abs((int)lblptr[idx++]);
             q = (int)lblptr[idx++];
             r = (int)lblptr[idx++];

@@ -43,8 +43,8 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::Fae_build() {
-    int h, a, e, nirreps;
-    int ma, fe, ef, m, f, M, A, Gm, Ga, Ge, Gf, Gma, nrows, ncols;
+    int a, e, nirreps;
+    int ef, m, f, M, A, Gm, Ga, Ge, Gf, nrows, ncols;
     double *X;
     dpdfile2 tIA, tia;
     dpdfile2 FME, Fme;
@@ -85,8 +85,8 @@ void CCEnergyWavefunction::Fae_build() {
         global_dpd_->file2_mat_rd(&FAE);
 
         /*
-          for(h=0; h < moinfo.nirreps; h++) {
-          for(a=0; a < FAE.params->rowtot[h]; a++)
+          for(int h = 0; h < moinfo.nirreps; h++) {
+          for(int a = 0; a < FAE.params->rowtot[h]; a++)
           FAE.matrix[h][a][a] = 0;
           }
         */
@@ -103,12 +103,12 @@ void CCEnergyWavefunction::Fae_build() {
         global_dpd_->file2_mat_init(&Fae);
         global_dpd_->file2_mat_rd(&Fae);
 
-        for (h = 0; h < moinfo_.nirreps; h++) {
-            for (a = 0; a < FAE.params->rowtot[h]; a++)
-                for (e = 0; e < FAE.params->coltot[h]; e++) FAE.matrix[h][a][e] *= (1 - (a == e));
+        for (int h = 0; h < moinfo_.nirreps; h++) {
+            for (int a = 0; a < FAE.params->rowtot[h]; a++)
+                for (int e = 0; e < FAE.params->coltot[h]; e++) FAE.matrix[h][a][e] *= (1 - (a == e));
 
-            for (a = 0; a < Fae.params->rowtot[h]; a++)
-                for (e = 0; e < Fae.params->coltot[h]; e++) Fae.matrix[h][a][e] *= (1 - (a == e));
+            for (int a = 0; a < Fae.params->rowtot[h]; a++)
+                for (int e = 0; e < Fae.params->coltot[h]; e++) Fae.matrix[h][a][e] *= (1 - (a == e));
         }
 
         global_dpd_->file2_mat_wrt(&FAE);
@@ -127,12 +127,12 @@ void CCEnergyWavefunction::Fae_build() {
         global_dpd_->file2_mat_init(&Fae);
         global_dpd_->file2_mat_rd(&Fae);
 
-        for (h = 0; h < moinfo_.nirreps; h++) {
-            for (a = 0; a < FAE.params->rowtot[h]; a++)
-                for (e = 0; e < FAE.params->coltot[h]; e++) FAE.matrix[h][a][e] *= (1 - (a == e));
+        for (int h = 0; h < moinfo_.nirreps; h++) {
+            for (int a = 0; a < FAE.params->rowtot[h]; a++)
+                for (int e = 0; e < FAE.params->coltot[h]; e++) FAE.matrix[h][a][e] *= (1 - (a == e));
 
-            for (a = 0; a < Fae.params->rowtot[h]; a++)
-                for (e = 0; e < Fae.params->coltot[h]; e++) Fae.matrix[h][a][e] *= (1 - (a == e));
+            for (int a = 0; a < Fae.params->rowtot[h]; a++)
+                for (int e = 0; e < Fae.params->coltot[h]; e++) Fae.matrix[h][a][e] *= (1 - (a == e));
         }
 
         global_dpd_->file2_mat_wrt(&FAE);
@@ -175,11 +175,11 @@ void CCEnergyWavefunction::Fae_build() {
         global_dpd_->file2_mat_init(&tIA);
         global_dpd_->file2_mat_rd(&tIA);
         global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-        for (Gma = 0; Gma < nirreps; Gma++) {
+        for (int Gma = 0; Gma < nirreps; Gma++) {
             global_dpd_->buf4_mat_irrep_row_init(&F, Gma);
             X = init_array(F.params->coltot[Gma]);
 
-            for (ma = 0; ma < F.params->rowtot[Gma]; ma++) {
+            for (int ma = 0; ma < F.params->rowtot[Gma]; ma++) {
                 global_dpd_->buf4_mat_irrep_row_rd(&F, Gma, ma);
                 m = F.params->roworb[Gma][ma][0];
                 a = F.params->roworb[Gma][ma][1];
@@ -192,7 +192,7 @@ void CCEnergyWavefunction::Fae_build() {
                 zero_arr(X, F.params->coltot[Gma]);
 
                 /* build spin-adapted F-integrals for current ma */
-                for (fe = 0; fe < F.params->coltot[Gma]; fe++) {
+                for (int fe = 0; fe < F.params->coltot[Gma]; fe++) {
                     f = F.params->colorb[Gma][fe][0];
                     e = F.params->colorb[Gma][fe][1];
                     ef = F.params->colidx[e][f];

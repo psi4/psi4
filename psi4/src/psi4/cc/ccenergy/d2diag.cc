@@ -50,15 +50,14 @@ namespace ccenergy {
  * */
 
 double CCEnergyWavefunction::d2diag_rhf() {
-    int h, nirreps, i;
-    double **Co, *Eo, max;
+    double **Co, *Eo;
     double **Cv, *Ev;
     dpdbuf4 Tikab, Tjkab;
     dpdbuf4 Tijac, Tijbc;
     dpdfile2 To, Tv;
 
-    nirreps = moinfo_.nirreps;
-    max = 0.0;
+    auto nirreps = moinfo_.nirreps;
+    auto max = 0.0;
 
     global_dpd_->buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_init(&Tjkab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
@@ -86,14 +85,14 @@ double CCEnergyWavefunction::d2diag_rhf() {
     global_dpd_->file2_mat_init(&Tv);
     global_dpd_->file2_mat_rd(&Tv);
 
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         if (To.params->rowtot[h]) {
             // Diagonalize To //
             Eo = init_array(To.params->rowtot[h]);
             Co = block_matrix(To.params->rowtot[h], To.params->rowtot[h]);
             sq_rsp(To.params->rowtot[h], To.params->rowtot[h], To.matrix[h], Eo, 0, Co, 1e-12);
             // Find maximum To eigenvalue //
-            for (i = 0; i < To.params->rowtot[h]; i++) {
+            for (int i = 0; i < To.params->rowtot[h]; i++) {
                 if (Eo[i] > max) max = Eo[i];
             }
             free_block(Co);
@@ -107,7 +106,7 @@ double CCEnergyWavefunction::d2diag_rhf() {
             sq_rsp(Tv.params->rowtot[h], Tv.params->rowtot[h], Tv.matrix[h], Ev, 0, Cv, 1e-12);
 
             // Find maximum Tv eigenvalue //
-            for (i = 0; i < Tv.params->rowtot[h]; i++) {
+            for (int i = 0; i < Tv.params->rowtot[h]; i++) {
                 if (Ev[i] > max) max = Ev[i];
             }
 
@@ -135,7 +134,7 @@ double CCEnergyWavefunction::d2diag_rhf() {
     dpd_buf4_init(&Tijab, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     dpd_buf4_init(&Tjabi, CC_TMP0, 0, 10, 11, 10, 11, 0, "tjAbI");
 
-    for(h=0; h < nirreps; h++) {
+    for(int h = 0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&Tijab, h);
       dpd_buf4_mat_irrep_rd(&Tijab, h);
   //    dpd_buf4_mat_irrep_shift13(&Tijab, h);
@@ -154,7 +153,7 @@ double CCEnergyWavefunction::d2diag_rhf() {
       Co = block_matrix(nrows, nrows);
       sq_rsp(nrows, nrows, To, Eo, 0, Co, 1e-12);
 
-      for(i=0; i < nrows; i++) {
+      for(int i = 0; i < nrows; i++) {
         if(Eo[i] > max) max = Eo[i];
       }
 

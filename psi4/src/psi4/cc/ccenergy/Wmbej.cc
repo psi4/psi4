@@ -56,9 +56,9 @@ namespace ccenergy {
 
 void CCEnergyWavefunction::Wmbej_build() {
     dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ, WmBEj, WMbeJ, W;
-    dpdbuf4 C, D, E, F, X, tIAjb, tiaJB, t2, Y, Z;
+    dpdbuf4 C, D, E, F, t2, Y;
     dpdfile2 tIA, tia;
-    int Gmb, mb, Gj, Ge, Gf, nrows, ncols, nlinks;
+    int Ge, Gf, nrows, ncols, nlinks;
 
     timer_on("C->Wmbej");
 
@@ -151,15 +151,15 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->file2_mat_init(&tIA);
         global_dpd_->file2_mat_rd(&tIA);
 
-        for (Gmb = 0; Gmb < moinfo_.nirreps; Gmb++) {
+        for (int Gmb = 0; Gmb < moinfo_.nirreps; Gmb++) {
             global_dpd_->buf4_mat_irrep_row_init(&W, Gmb);
             global_dpd_->buf4_mat_irrep_row_init(&F, Gmb);
 
-            for (mb = 0; mb < F.params->rowtot[Gmb]; mb++) {
+            for (int mb = 0; mb < F.params->rowtot[Gmb]; mb++) {
                 global_dpd_->buf4_mat_irrep_row_rd(&W, Gmb, mb);
                 global_dpd_->buf4_mat_irrep_row_rd(&F, Gmb, mb);
 
-                for (Gj = 0; Gj < moinfo_.nirreps; Gj++) {
+                for (int Gj = 0; Gj < moinfo_.nirreps; Gj++) {
                     Gf = Gj;       /* T1 is totally symmetric */
                     Ge = Gmb ^ Gf; /* <mb|fe> is totally symmetric */
 

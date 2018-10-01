@@ -41,14 +41,13 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::taut_build() {
-    int h, ij, ab, i, j, a, b, I, J, A, B;
+    int i, j, a, b, I, J, A, B;
     int Isym, Jsym, Asym, Bsym;
-    int nirreps;
-    dpdbuf4 tauIJAB, tauijab, tauIjAb, tauiJaB, tauIjbA;
+    dpdbuf4 tauIJAB, tauijab, tauIjAb;
     dpdbuf4 tIJAB, tijab, tIjAb;
     dpdfile2 tIA, tia;
 
-    nirreps = moinfo_.nirreps;
+    auto nirreps = moinfo_.nirreps;
 
     if (params_.ref == 0) { /*** RHF ***/
 
@@ -62,18 +61,18 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tautIjAb");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
 
-            for (ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {
                 i = tauIjAb.params->roworb[h][ij][0];
                 j = tauIjAb.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tIA.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tIA.params->psym[j];
-                for (ab = 0; ab < tauIjAb.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauIjAb.params->coltot[h]; ab++) {
                     a = tauIjAb.params->colorb[h][ab][0];
                     b = tauIjAb.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -118,18 +117,18 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tautIJAB");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIJAB, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
 
-            for (ij = 0; ij < tauIJAB.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauIJAB.params->rowtot[h]; ij++) {
                 i = tauIJAB.params->roworb[h][ij][0];
                 j = tauIJAB.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tIA.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tIA.params->psym[j];
-                for (ab = 0; ab < tauIJAB.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauIJAB.params->coltot[h]; ab++) {
                     a = tauIJAB.params->colorb[h][ab][0];
                     b = tauIJAB.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -152,18 +151,18 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tautijab");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauijab, h);
             global_dpd_->buf4_mat_irrep_rd(&tauijab, h);
 
-            for (ij = 0; ij < tauijab.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauijab.params->rowtot[h]; ij++) {
                 i = tauijab.params->roworb[h][ij][0];
                 j = tauijab.params->roworb[h][ij][1];
                 I = tia.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tia.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < tauijab.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauijab.params->coltot[h]; ab++) {
                     a = tauijab.params->colorb[h][ab][0];
                     b = tauijab.params->colorb[h][ab][1];
                     A = tia.params->colidx[a];
@@ -186,18 +185,18 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tautIjAb");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
 
-            for (ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {
                 i = tauIjAb.params->roworb[h][ij][0];
                 j = tauIjAb.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < tauIjAb.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauIjAb.params->coltot[h]; ab++) {
                     a = tauIjAb.params->colorb[h][ab][0];
                     b = tauIjAb.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -243,17 +242,17 @@ void CCEnergyWavefunction::taut_build() {
         global_dpd_->file2_mat_rd(&tia);
 
         global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tautIJAB");
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIJAB, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
-            for (ij = 0; ij < tauIJAB.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauIJAB.params->rowtot[h]; ij++) {
                 i = tauIJAB.params->roworb[h][ij][0];
                 j = tauIJAB.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tIA.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tIA.params->psym[j];
-                for (ab = 0; ab < tauIJAB.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauIJAB.params->coltot[h]; ab++) {
                     a = tauIJAB.params->colorb[h][ab][0];
                     b = tauIJAB.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -272,17 +271,17 @@ void CCEnergyWavefunction::taut_build() {
         global_dpd_->buf4_close(&tauIJAB);
 
         global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tautijab");
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauijab, h);
             global_dpd_->buf4_mat_irrep_rd(&tauijab, h);
-            for (ij = 0; ij < tauijab.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauijab.params->rowtot[h]; ij++) {
                 i = tauijab.params->roworb[h][ij][0];
                 j = tauijab.params->roworb[h][ij][1];
                 I = tia.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tia.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < tauijab.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauijab.params->coltot[h]; ab++) {
                     a = tauijab.params->colorb[h][ab][0];
                     b = tauijab.params->colorb[h][ab][1];
                     A = tia.params->colidx[a];
@@ -301,17 +300,17 @@ void CCEnergyWavefunction::taut_build() {
         global_dpd_->buf4_close(&tauijab);
 
         global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tautIjAb");
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
-            for (ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {
                 i = tauIjAb.params->roworb[h][ij][0];
                 j = tauIjAb.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < tauIjAb.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < tauIjAb.params->coltot[h]; ab++) {
                     a = tauIjAb.params->colorb[h][ab][0];
                     b = tauIjAb.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];

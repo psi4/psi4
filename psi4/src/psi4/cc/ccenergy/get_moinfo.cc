@@ -61,7 +61,7 @@ namespace ccenergy {
 */
 
 void CCEnergyWavefunction::get_moinfo() {
-    int i, j, h, p, q, errcod, nactive, nirreps;
+    int j, nactive;
     double ***Co, ***Cv, ***Ca, ***Cb;
     psio_address next;
 
@@ -83,7 +83,7 @@ void CCEnergyWavefunction::get_moinfo() {
     // TODO: figure out why I can't just directly assign doccpi_ here, the same as soccpi_.
     for (int h = 0; h < moinfo_.nirreps; ++h) moinfo_.clsdpi[h] = doccpi_[h];
 
-    nirreps = moinfo_.nirreps;
+    auto nirreps = moinfo_.nirreps;
 
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *)&(params_.ref), sizeof(int));
 
@@ -184,15 +184,15 @@ void CCEnergyWavefunction::get_moinfo() {
 
     /* Build sosym array (for AO-basis BT2) */
     moinfo_.sosym = init_int_array(moinfo_.nso);
-    for (h = 0, q = 0; h < nirreps; h++)
-        for (p = 0; p < moinfo_.sopi[h]; p++) moinfo_.sosym[q++] = h;
+    for (int h = 0, q = 0; h < nirreps; h++)
+        for (int p = 0; p < moinfo_.sopi[h]; p++) moinfo_.sosym[q++] = h;
 
     /* Get the active virtual orbitals */
     if (params_.ref == 0 || params_.ref == 1) { /** RHF/ROHF **/
 
         Co = (double ***)malloc(nirreps * sizeof(double **));
         next = PSIO_ZERO;
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             if (moinfo_.sopi[h] && moinfo_.occpi[h]) {
                 Co[h] = block_matrix(moinfo_.sopi[h], moinfo_.occpi[h]);
                 psio_read(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *)Co[h][0],
@@ -203,7 +203,7 @@ void CCEnergyWavefunction::get_moinfo() {
 
         Cv = (double ***)malloc(nirreps * sizeof(double **));
         next = PSIO_ZERO;
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             if (moinfo_.sopi[h] && moinfo_.virtpi[h]) {
                 Cv[h] = block_matrix(moinfo_.sopi[h], moinfo_.virtpi[h]);
                 psio_read(PSIF_CC_INFO, "RHF/ROHF Active Virtual Orbitals", (char *)Cv[h][0],
@@ -215,7 +215,7 @@ void CCEnergyWavefunction::get_moinfo() {
 
         Ca = (double ***)malloc(nirreps * sizeof(double **));
         next = PSIO_ZERO;
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             if (moinfo_.sopi[h] && moinfo_.avirtpi[h]) {
                 Ca[h] = block_matrix(moinfo_.sopi[h], moinfo_.avirtpi[h]);
                 psio_read(PSIF_CC_INFO, "UHF Active Alpha Virtual Orbs", (char *)Ca[h][0],
@@ -226,7 +226,7 @@ void CCEnergyWavefunction::get_moinfo() {
 
         Cb = (double ***)malloc(nirreps * sizeof(double **));
         next = PSIO_ZERO;
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             if (moinfo_.sopi[h] && moinfo_.bvirtpi[h]) {
                 Cb[h] = block_matrix(moinfo_.sopi[h], moinfo_.bvirtpi[h]);
                 psio_read(PSIF_CC_INFO, "UHF Active Beta Virtual Orbs", (char *)Cb[h][0],
@@ -242,7 +242,7 @@ void CCEnergyWavefunction::get_moinfo() {
         moinfo_.qt2pitzer = init_int_array(moinfo_.nmo);
         reorder_qt(moinfo_.clsdpi, moinfo_.openpi, moinfo_.frdocc, moinfo_.fruocc, moinfo_.pitzer2qt, moinfo_.orbspi,
                    moinfo_.nirreps);
-        for (i = 0; i < moinfo_.nmo; i++) {
+        for (int i = 0; i < moinfo_.nmo; i++) {
             j = moinfo_.pitzer2qt[i];
             moinfo_.qt2pitzer[j] = i;
         }
@@ -253,7 +253,7 @@ void CCEnergyWavefunction::get_moinfo() {
         moinfo_.qt2pitzer_b = init_int_array(moinfo_.nmo);
         reorder_qt_uhf(moinfo_.clsdpi, moinfo_.openpi, moinfo_.frdocc, moinfo_.fruocc, moinfo_.pitzer2qt_a,
                        moinfo_.pitzer2qt_b, moinfo_.orbspi, moinfo_.nirreps);
-        for (i = 0; i < moinfo_.nmo; i++) {
+        for (int i = 0; i < moinfo_.nmo; i++) {
             j = moinfo_.pitzer2qt_a[i];
             moinfo_.qt2pitzer_a[j] = i;
             j = moinfo_.pitzer2qt_b[i];
@@ -262,16 +262,16 @@ void CCEnergyWavefunction::get_moinfo() {
     }
 
     /* Adjust clsdpi array for frozen orbitals */
-    for (i = 0; i < nirreps; i++) moinfo_.clsdpi[i] -= moinfo_.frdocc[i];
+    for (int i = 0; i < nirreps; i++) moinfo_.clsdpi[i] -= moinfo_.frdocc[i];
 
     moinfo_.uoccpi = init_int_array(moinfo_.nirreps);
-    for (i = 0; i < nirreps; i++)
+    for (int i = 0; i < nirreps; i++)
         moinfo_.uoccpi[i] =
             moinfo_.orbspi[i] - moinfo_.clsdpi[i] - moinfo_.openpi[i] - moinfo_.fruocc[i] - moinfo_.frdocc[i];
 
     if (params_.ref == 0) {
         moinfo_.nvirt = 0;
-        for (h = 0; h < nirreps; h++) moinfo_.nvirt += moinfo_.virtpi[h];
+        for (int h = 0; h < nirreps; h++) moinfo_.nvirt += moinfo_.virtpi[h];
     }
 
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *)&(moinfo_.eref), sizeof(double));
@@ -283,9 +283,6 @@ void CCEnergyWavefunction::get_moinfo() {
 
 /* Frees memory allocated in get_moinfo() and dumps out the energy. */
 void CCEnergyWavefunction::cleanup() {
-    int i, h;
-    char *keyw = nullptr;
-
     if (params_.wfn == "CC2" || params_.wfn == "EOM_CC2")
         psio_write_entry(PSIF_CC_INFO, "CC2 Energy", (char *)&(moinfo_.ecc), sizeof(double));
     else if (params_.wfn == "CC3" || params_.wfn == "EOM_CC3")
@@ -294,17 +291,17 @@ void CCEnergyWavefunction::cleanup() {
         psio_write_entry(PSIF_CC_INFO, "CCSD Energy", (char *)&(moinfo_.ecc), sizeof(double));
 
     if (params_.ref == 0 || params_.ref == 1) {
-        for (h = 0; h < moinfo_.nirreps; h++) {
+        for (int h = 0; h < moinfo_.nirreps; h++) {
             if (moinfo_.sopi[h] && moinfo_.occpi[h]) free_block(moinfo_.Co[h]);
             if (moinfo_.sopi[h] && moinfo_.virtpi[h]) free_block(moinfo_.Cv[h]);
         }
         free(moinfo_.Cv);
         free(moinfo_.Co);
     } else if (params_.ref == 2) {
-        for (h = 0; h < moinfo_.nirreps; h++)
+        for (int h = 0; h < moinfo_.nirreps; h++)
             if (moinfo_.sopi[h] && moinfo_.avirtpi[h]) free_block(moinfo_.Cav[h]);
         free(moinfo_.Cav);
-        for (h = 0; h < moinfo_.nirreps; h++)
+        for (int h = 0; h < moinfo_.nirreps; h++)
             if (moinfo_.sopi[h] && moinfo_.bvirtpi[h]) free_block(moinfo_.Cbv[h]);
         free(moinfo_.Cbv);
     }

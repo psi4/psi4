@@ -41,7 +41,7 @@ namespace ccenergy {
 
 void CCEnergyWavefunction::ZT2() {
     dpdbuf4 ZIJMA, ZIJAM, Zijma, Zijam, ZIjMa, ZIjAm, Z;
-    dpdbuf4 newtIJAB, newtijab, newtIjAb, T2;
+    dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdfile2 tIA, tia, T1;
     dpdbuf4 t2, X;
 

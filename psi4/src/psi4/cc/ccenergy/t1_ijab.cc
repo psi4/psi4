@@ -41,13 +41,12 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::t1_ijab() {
-    int h, ij, ab, i, j, a, b, I, J, A, B;
+    int i, j, a, b, I, J, A, B;
     int Isym, Jsym, Asym, Bsym;
-    int nirreps;
     dpdbuf4 t1_IJAB, t1_ijab, t1_IjAb, t1_IjbA;
     dpdfile2 tIA, tia;
 
-    nirreps = moinfo_.nirreps;
+    auto nirreps = moinfo_.nirreps;
 
     if (params_.ref == 0) { /** RHF **/
 
@@ -57,17 +56,17 @@ void CCEnergyWavefunction::t1_ijab() {
 
         global_dpd_->buf4_init(&t1_IjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "t1_IjAb");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_IjAb, h);
 
-            for (ij = 0; ij < t1_IjAb.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_IjAb.params->rowtot[h]; ij++) {
                 i = t1_IjAb.params->roworb[h][ij][0];
                 j = t1_IjAb.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tIA.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tIA.params->psym[j];
-                for (ab = 0; ab < t1_IjAb.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_IjAb.params->coltot[h]; ab++) {
                     a = t1_IjAb.params->colorb[h][ab][0];
                     b = t1_IjAb.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -99,17 +98,17 @@ void CCEnergyWavefunction::t1_ijab() {
 
         global_dpd_->buf4_init(&t1_IJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_IJAB, h);
 
-            for (ij = 0; ij < t1_IJAB.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_IJAB.params->rowtot[h]; ij++) {
                 i = t1_IJAB.params->roworb[h][ij][0];
                 j = t1_IJAB.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tIA.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tIA.params->psym[j];
-                for (ab = 0; ab < t1_IJAB.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_IJAB.params->coltot[h]; ab++) {
                     a = t1_IJAB.params->colorb[h][ab][0];
                     b = t1_IJAB.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -132,17 +131,17 @@ void CCEnergyWavefunction::t1_ijab() {
 
         global_dpd_->buf4_init(&t1_ijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_ijab");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_ijab, h);
 
-            for (ij = 0; ij < t1_ijab.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_ijab.params->rowtot[h]; ij++) {
                 i = t1_ijab.params->roworb[h][ij][0];
                 j = t1_ijab.params->roworb[h][ij][1];
                 I = tia.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tia.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < t1_ijab.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_ijab.params->coltot[h]; ab++) {
                     a = t1_ijab.params->colorb[h][ab][0];
                     b = t1_ijab.params->colorb[h][ab][1];
                     A = tia.params->colidx[a];
@@ -165,17 +164,17 @@ void CCEnergyWavefunction::t1_ijab() {
 
         global_dpd_->buf4_init(&t1_IjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "t1_IjAb");
 
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_IjAb, h);
 
-            for (ij = 0; ij < t1_IjAb.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_IjAb.params->rowtot[h]; ij++) {
                 i = t1_IjAb.params->roworb[h][ij][0];
                 j = t1_IjAb.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < t1_IjAb.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_IjAb.params->coltot[h]; ab++) {
                     a = t1_IjAb.params->colorb[h][ab][0];
                     b = t1_IjAb.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -213,16 +212,16 @@ void CCEnergyWavefunction::t1_ijab() {
         global_dpd_->file2_mat_rd(&tia);
 
         global_dpd_->buf4_init(&t1_IJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_IJAB, h);
-            for (ij = 0; ij < t1_IJAB.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_IJAB.params->rowtot[h]; ij++) {
                 i = t1_IJAB.params->roworb[h][ij][0];
                 j = t1_IJAB.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tIA.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tIA.params->psym[j];
-                for (ab = 0; ab < t1_IJAB.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_IJAB.params->coltot[h]; ab++) {
                     a = t1_IJAB.params->colorb[h][ab][0];
                     b = t1_IJAB.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];
@@ -241,16 +240,16 @@ void CCEnergyWavefunction::t1_ijab() {
         global_dpd_->buf4_close(&t1_IJAB);
 
         global_dpd_->buf4_init(&t1_ijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "t1_ijab");
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_ijab, h);
-            for (ij = 0; ij < t1_ijab.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_ijab.params->rowtot[h]; ij++) {
                 i = t1_ijab.params->roworb[h][ij][0];
                 j = t1_ijab.params->roworb[h][ij][1];
                 I = tia.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tia.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < t1_ijab.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_ijab.params->coltot[h]; ab++) {
                     a = t1_ijab.params->colorb[h][ab][0];
                     b = t1_ijab.params->colorb[h][ab][1];
                     A = tia.params->colidx[a];
@@ -269,16 +268,16 @@ void CCEnergyWavefunction::t1_ijab() {
         global_dpd_->buf4_close(&t1_ijab);
 
         global_dpd_->buf4_init(&t1_IjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "t1_IjAb");
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_init(&t1_IjAb, h);
-            for (ij = 0; ij < t1_IjAb.params->rowtot[h]; ij++) {
+            for (int ij = 0; ij < t1_IjAb.params->rowtot[h]; ij++) {
                 i = t1_IjAb.params->roworb[h][ij][0];
                 j = t1_IjAb.params->roworb[h][ij][1];
                 I = tIA.params->rowidx[i];
                 J = tia.params->rowidx[j];
                 Isym = tIA.params->psym[i];
                 Jsym = tia.params->psym[j];
-                for (ab = 0; ab < t1_IjAb.params->coltot[h]; ab++) {
+                for (int ab = 0; ab < t1_IjAb.params->coltot[h]; ab++) {
                     a = t1_IjAb.params->colorb[h][ab][0];
                     b = t1_IjAb.params->colorb[h][ab][1];
                     A = tIA.params->colidx[a];

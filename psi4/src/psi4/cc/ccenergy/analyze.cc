@@ -43,41 +43,37 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::analyze() {
-    int nirreps, h, i, j, a, b, ij, ab, u, v;
-    int position, num_div, tot1, tot2, nvir, nso, nocc;
-    double width, max, min, value, value2;
-    double *amp_array;
-    double **tmp, **T2trans, **T1trans;
+    double value, value2;
 
     dpdfile2 T1;
-    dpdbuf4 I, T2, D;
+    dpdbuf4 T2;
 
-    nirreps = moinfo_.nirreps;
-    num_div = 500;
-    max = 9;
-    min = 0;
-    width = (max - min) / (num_div);
+    auto num_div = 500;
+    auto max = 9.0;
+    auto min = 0.0;
+    auto width = (max - min) / (num_div);
     auto mode = std::ostream::app;
     auto printer = std::make_shared<PsiOutStream>("tamps.dat", mode);
-    amp_array = init_array(num_div);
+    auto amp_array = init_array(num_div);
 
-    nvir = moinfo_.virtpi[0];
-    nocc = moinfo_.occpi[0];
-    nso = moinfo_.nso;
+    auto nvir = moinfo_.virtpi[0];
+    auto nocc = moinfo_.occpi[0];
+    auto nso = moinfo_.nso;
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_mat_irrep_init(&T2, 0);
     global_dpd_->buf4_mat_irrep_rd(&T2, 0);
-    T2trans = block_matrix(nocc * nocc, nso * nso);
-    tmp = block_matrix(nvir, nso);
-    tot1 = 0;
-    tot2 = 0;
-    for (ij = 0; ij < T2.params->rowtot[0]; ij++) {
+    auto T2trans = block_matrix(nocc * nocc, nso * nso);
+    auto tmp = block_matrix(nvir, nso);
+    auto tot1 = 0;
+    auto tot2 = 0;
+    auto position = 0;
+    for (int ij = 0; ij < T2.params->rowtot[0]; ij++) {
         C_DGEMM('n', 't', nvir, nso, nvir, 1.0, &(T2.matrix[0][ij][0]), nvir, &(moinfo_.Cv[0][0][0]), nvir, 0.0,
                 &(tmp[0][0]), nso);
         C_DGEMM('n', 'n', nso, nso, nvir, 1.0, &(moinfo_.Cv[0][0][0]), nvir, tmp[0], nso, 0.0, T2trans[ij], nso);
 
-        for (ab = 0; ab < nso * nso; ab++) {
+        for (int ab = 0; ab < nso * nso; ab++) {
             value = std::fabs(std::log10(std::fabs(T2trans[ij][ab])));
             tot2++;
             if ((value >= max) && (value <= (max + width))) {
@@ -99,7 +95,7 @@ void CCEnergyWavefunction::analyze() {
     free_block(T2trans);
 
     value2 = 0;
-    for (i = num_div - 1; i >= 0; i--) {
+    for (int i = num_div - 1; i >= 0; i--) {
         value = amp_array[i] / tot1;
         value2 += value;
         printer->Printf("%10.5lf %lf\n", -((i)*width) - min, value);
@@ -120,17 +116,10 @@ void CCEnergyWavefunction::analyze() {
     global_dpd_->file2_print(&T1, "outfile");
     global_dpd_->file2_mat_init(&T1);
     global_dpd_->file2_mat_rd(&T1);
-    /*
-    T1trans = block_matrix(nocc, nso);
-
-    C_DGEMM('n','t', nocc, nso, nvir, 1.0, &(T1.matrix[0][0][0]), nvir,
-            &(moinfo.C[0][0][0]), nvir, 0.0, &(T1trans[0][0]), nso);
-    */
 
     tot1 = tot2 = 0;
-    for (i = 0; i < nocc; i++) {
-        for (a = 0; a < nso; a++) {
-            /*      value = std::fabs(log10(std::fabs(T1trans[i][a]))); */
+    for (int i = 0; i < nocc; i++) {
+        for (int a = 0; a < nso; a++) {
             value = std::log10(std::fabs(T1.matrix[0][i][a]));
             tot2++;
             if ((value >= max) && (value <= (max + width))) {
@@ -146,13 +135,12 @@ void CCEnergyWavefunction::analyze() {
             }
         }
     }
-    /*  free_block(T1trans); */
 
     global_dpd_->file2_mat_close(&T1);
     global_dpd_->file2_close(&T1);
 
     value2 = 0;
-    for (i = num_div - 1; i >= 0; i--) {
+    for (int i = num_div - 1; i >= 0; i--) {
         value = amp_array[i] / tot1;
         value2 += value;
         printer2->Printf("%10.5lf %lf\n", ((i)*width) - min, value);

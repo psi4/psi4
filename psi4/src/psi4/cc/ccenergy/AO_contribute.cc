@@ -46,28 +46,22 @@ namespace psi {
 namespace ccenergy {
 
 int CCEnergyWavefunction::AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO) {
-    int idx, p, q, r, s;
-    double value;
-    Value *valptr;
-    Label *lblptr;
+    int p, q, r, s;
+    double value = 0.0;
     int Gp, Gq, Gr, Gs, Gpr, Gps, Gqr, Gqs, Grp, Gsp, Grq, Gsq;
     int pr, ps, qr, qs, rp, rq, sp, sq, pq, rs;
     int count = 0;
 
-    lblptr = InBuf->labels;
-    valptr = InBuf->values;
+    auto lblptr = InBuf->labels;
+    auto valptr = InBuf->values;
 
-    for (idx = 4 * InBuf->idx; InBuf->idx < InBuf->inbuf; InBuf->idx++) {
+    for (int idx = 4 * InBuf->idx; InBuf->idx < InBuf->inbuf; InBuf->idx++) {
         p = std::abs((int)lblptr[idx++]);
         q = (int)lblptr[idx++];
         r = (int)lblptr[idx++];
         s = (int)lblptr[idx++];
 
         value = (double)valptr[InBuf->idx];
-        /*
-        if(std::fabs(value) > 1e-8)
-            outfile->Printf(stdout, "%d %d %d %d %20.14f\n", p, q, r, s, value);
-        */
         count++;
 
         Gp = tau1_AO->params->psym[p];

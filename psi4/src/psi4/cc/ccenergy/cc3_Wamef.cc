@@ -199,36 +199,28 @@ void CCEnergyWavefunction::cc3_Wamef() {
 }
 
 void CCEnergyWavefunction::purge_Wamef() {
-    dpdfile2 FAE, Fmi, FME, Fme;
     dpdfile4 W;
-    int *occpi, *virtpi;
-    int h, a, b, e, f, i, j, m, n, omit;
-    int A, B, E, F, I, J, M, N;
-    int mn, ei, ma, ef, me, jb, mb, ij, ab;
-    int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
-    int *occ_off, *vir_off;
-    int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int a, e, f, m;
+    int A, E, F, M;
+    int asym, esym, fsym, msym;
 
-    nirreps = moinfo_.nirreps;
-    occpi = moinfo_.occpi;
-    virtpi = moinfo_.virtpi;
-    occ_off = moinfo_.occ_off;
-    vir_off = moinfo_.vir_off;
-    occ_sym = moinfo_.occ_sym;
-    vir_sym = moinfo_.vir_sym;
-    openpi = moinfo_.openpi;
+    auto nirreps = moinfo_.nirreps;
+    auto occpi = moinfo_.occpi;
+    auto virtpi = moinfo_.virtpi;
+    auto occ_off = moinfo_.occ_off;
+    auto vir_off = moinfo_.vir_off;
+    auto openpi = moinfo_.openpi;
 
     /* Purge Wamef matrix elements */
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 11, 7, "CC3 WAMEF (AM,E>F)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ma = 0; ma < W.params->rowtot[h]; ma++) {
+        for (int ma = 0; ma < W.params->rowtot[h]; ma++) {
             a = W.params->roworb[h][ma][0];
             asym = W.params->psym[a];
             A = a - vir_off[asym];
-            for (ef = 0; ef < W.params->coltot[h]; ef++) {
+            for (int ef = 0; ef < W.params->coltot[h]; ef++) {
                 e = W.params->colorb[h][ef][0];
                 f = W.params->colorb[h][ef][1];
                 esym = W.params->rsym[e];
@@ -246,14 +238,14 @@ void CCEnergyWavefunction::purge_Wamef() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 11, 7, "CC3 Wamef (am,e>f)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ma = 0; ma < W.params->rowtot[h]; ma++) {
+        for (int ma = 0; ma < W.params->rowtot[h]; ma++) {
             m = W.params->roworb[h][ma][1];
             msym = W.params->qsym[m];
             M = m - occ_off[msym];
-            for (ef = 0; ef < W.params->coltot[h]; ef++) {
+            for (int ef = 0; ef < W.params->coltot[h]; ef++) {
                 if (M >= (occpi[msym] - openpi[msym])) W.matrix[h][ma][ef] = 0.0;
             }
         }
@@ -263,17 +255,17 @@ void CCEnergyWavefunction::purge_Wamef() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 11, 5, "CC3 WAmEf (Am,Ef)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ma = 0; ma < W.params->rowtot[h]; ma++) {
+        for (int ma = 0; ma < W.params->rowtot[h]; ma++) {
             a = W.params->roworb[h][ma][0];
             m = W.params->roworb[h][ma][1];
             asym = W.params->psym[a];
             msym = W.params->qsym[m];
             M = m - occ_off[msym];
             A = a - vir_off[asym];
-            for (ef = 0; ef < W.params->coltot[h]; ef++) {
+            for (int ef = 0; ef < W.params->coltot[h]; ef++) {
                 e = W.params->colorb[h][ef][0];
                 esym = W.params->rsym[e];
                 E = e - vir_off[esym];
@@ -288,11 +280,11 @@ void CCEnergyWavefunction::purge_Wamef() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 11, 5, "CC3 WaMeF (aM,eF)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ma = 0; ma < W.params->rowtot[h]; ma++) {
-            for (ef = 0; ef < W.params->coltot[h]; ef++) {
+        for (int ma = 0; ma < W.params->rowtot[h]; ma++) {
+            for (int ef = 0; ef < W.params->coltot[h]; ef++) {
                 f = W.params->colorb[h][ef][1];
                 fsym = W.params->ssym[f];
                 F = f - vir_off[fsym];
@@ -303,8 +295,6 @@ void CCEnergyWavefunction::purge_Wamef() {
         global_dpd_->file4_mat_irrep_close(&W, h);
     }
     global_dpd_->file4_close(&W);
-
-    return;
 }
 }  // namespace ccenergy
 }  // namespace psi

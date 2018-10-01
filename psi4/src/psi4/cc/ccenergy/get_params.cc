@@ -52,7 +52,6 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::get_params(Options &options) {
-    int errcod, iconv, forceit;
     std::string cachetype = "";
     std::string junk;
 

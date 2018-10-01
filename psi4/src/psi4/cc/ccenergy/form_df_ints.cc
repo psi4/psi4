@@ -49,8 +49,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *cachefiles,
-                                        dpd_file4_cache_entry *priority) {
+void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *cachefiles) {
     /*
      * Set up the DF tensor machinery
      */
