@@ -49,20 +49,31 @@ zeta_sym2val = {v: k for k, v in zeta_val2sym.items()}
 
 
 def _expand_bracketed_basis(basisstring, molecule=None):
-    r"""Function to transform and validate basis series specification
-    *basisstring* for cbs(). A basis set with no paired square brackets is
-    passed through with zeta level 0 (e.g., '6-31+G(d,p)' is returned as
-    [6-31+G(d,p)] and [0]). A basis set with square brackets is checked
-    for sensible sequence and Dunning-ness and returned as separate basis
-    sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4,
-    5]). This function checks that the basis is valid by trying to build
-    the qcdb.BasisSet object for *molecule* or for H2 if None. Allows
-    out-of-order zeta specification (e.g., [qtd]) and numeral for number
-    (e.g., [23]) but not skipped zetas (e.g., [dq]) or zetas outside [2,
-    8] or non-Dunning or non-Ahlrichs or non-Jensen sets or 
-    non-findable .gbs sets.
-
+    """Function to transform and validate basis series specification for cbs(). 
+    
+    Parameters
+    ----------
+    basisstring: string
+        A string containing the basis sets to be expanded.
+        A basis set with no paired square brackets is passed through 
+        with zeta level 0 (e.g., '6-31+G(d,p)' is returned as
+        [6-31+G(d,p)] and [0]). A basis set with square brackets is checked
+        for sensible sequence and Dunning-ness and returned as separate basis
+        sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). 
+        Allows out-of-order zeta specification (e.g., [qtd]) and numeral for 
+        number (e.g., [23]). Does not allow skipped zetas (e.g., [dq]), zetas 
+        outside the [2,8] range, non-Dunning, non-Ahlrichs, or non-Jensen sets,
+        or non-findable .gbs sets.
+    molecule: qcdb.molecule or psi4.core.Molecule
+        This function checks that the basis is valid by trying to build
+        the qcdb.BasisSet object for *molecule* or for H2 if None. 
+    
+    Returns
+    -------
+    tuple
+        Tuple in the ([basis set names], [basis set zetas]) format.
     """
+    
     BSET = []
     ZSET = []
     legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
@@ -114,11 +125,22 @@ def _expand_bracketed_basis(basisstring, molecule=None):
 
 
 def _contract_bracketed_basis(basisarray):
-    r"""Function to reform a bracketed basis set string from a sequential series
-    of basis sets *basisarray* (e.g, form 'cc-pv[q5]z' from array [cc-pvqz, cc-pv5z]).
-    Used to print a nicely formatted basis set string in the results table.
+    """Function to reform a bracketed basis set string from a sequential series
+    of basis sets. Essentially the inverse of _expand_bracketed_basis(). Used to
+    print a nicely formatted basis set string in the results table.
+    
+    Parameters
+    ----------
+    basisarray : array 
+        E.g.: [cc-pvqz, cc-pv5z]
+    
+    Returns
+    -------
+    string
+        A nicely formatted basis set string, e.g. cc-pv[q5]z for the above example.
 
     """
+    
     if len(basisarray) == 1:
         return basisarray[0]
 
@@ -135,8 +157,24 @@ def _contract_bracketed_basis(basisarray):
 def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
-
-    .. math:: E_{total}^X = E_{total}^X
+    
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zHI : int
+        Zeta-level, only used for printing.
+    valueHI : float
+        Value of the CBS component.
+    
+    Returns
+    -------
+    float
+        Returns E_{total}^{\infty} which is equal to valueHI.
+        
+    Notes
+    -----
+    .. math:: E_{total}^X = E_{total}^{\infty}
 
     """
     if isinstance(valueHI, float):
@@ -161,12 +199,39 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
 
 
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
-    r"""Extrapolation scheme using exponential form for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
-    DOI: 10.1016/S0009-2614(99)00179-7
+    r"""Extrapolation scheme using exponential form for reference energies with two adjacent 
+    zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 1.63`
+    
+    Returns
+    -------
+    float
+        Returns E_{total}^{\infty}, see below.
+        
+    Notes
+    -----
+    The extrapolation is calculated according to [1]_:
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
+    
+    References
+    ----------
+    
+    .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+       DOI: 10.1016/S0009-2614(99)00179-7
 
     """
 
@@ -234,11 +299,39 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 
 
 def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
-    r"""Extrapolation scheme using power form for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
-    Truhlar, Chem. Phys. Lett. 294 (1998) 45-48, DOI: 10.1016/S0009-2614(98)00866-5
-
+    r"""Extrapolation scheme using power form for reference energies with two adjacent 
+    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+    
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 3.4`        
+    
+    Returns
+    -------
+    float
+        Returns E_{total}^{\infty}, see below.
+        
+    Notes
+    -----
+    The extrapolation is calculated according to [2]_:
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4
+    
+    References
+    ----------
+    
+    .. [2] Truhlar, Chem. Phys. Lett. 294 (1998) 45-48, 
+       DOI: 10.1016/S0009-2614(98)00866-5
 
     """
 
@@ -306,11 +399,39 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
 
 
 def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
-    r"""Extrapolation scheme using root-power form for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
-    Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333, DOI: 10.1007/s00214-005-0028-6
-
+    r"""Extrapolation scheme using root-power form for reference energies with two adjacent 
+    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+    
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 6.3`
+    
+    Returns
+    -------
+    float
+        Returns :math:`E_{total}^{\infty}`, see below.
+        
+    Notes
+    -----
+    The extrapolation is calculated according to [3]_:
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3
+    
+    References
+    ----------
+    
+    .. [3] Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333, 
+       DOI: 10.1007/s00214-005-0028-6
 
     """
 
@@ -380,10 +501,43 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
-    DOI: 10.1016/S0009-2614(99)00179-7
+    
 
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zMD : int
+        Intermediate zeta level. Should be equal to zLO + 1.
+    valueMD : float
+        Intermediate value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 2.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Not used.
+    
+    Returns
+    -------
+    float
+        Returns E_{total}^{\infty}, see below.
+        
+    Notes
+    -----
+    The extrapolation is calculated according to [4]_:
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0
+    
+    References
+    ----------
+    
+    .. [4] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+       DOI: 10.1016/S0009-2614(99)00179-7
+
     """
 
     if (type(valueLO) != type(valueMD)) or (type(valueMD) != type(valueHI)):
@@ -447,10 +601,38 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252,
-    DOI: 10.1016/S0009-2614(99)00179-7
 
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 3.0`
+    
+    Returns
+    -------
+    float
+        Returns :math:`E_{total}^{\infty}`, see below.
+        
+    Notes
+    -----
+    The extrapolation is calculated according to [5]_:
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}
+    
+    References
+    ----------
+    
+    .. [5] Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, 
+       Chem. Phys. Lett. 286 (1998) 243-252,
+       DOI: 10.1016/S0009-2614(99)00179-7
 
     """
     if type(valueLO) != type(valueHI):
@@ -526,6 +708,15 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
 
 
 def return_energy_components():
+    """A helper function that describes which energy components are available
+    following a given calculation.
+    
+    Returns
+    -------
+    dict
+        A dictionary in the format: {'method': {'submethod': 'PSI VARIABLE'}}.
+    """
+    
     VARH = {}
     VARH['scf'] = {
                             'scf': 'SCF TOTAL ENERGY'}
@@ -704,6 +895,21 @@ def return_energy_components():
 VARH = return_energy_components()
 
 def _get_default_xtpl(nbasis, xtpl_type):
+    """ A helper function to determine default extrapolation type.
+    
+    Parameters
+    ----------
+    nbasis : int
+        Number of basis sets
+    xtpl_type : string
+        Extrapolation type ("scf" or "corl").
+    
+    Returns
+    -------
+    function
+        Extrapolation function to be used.
+    """
+    
     if nbasis == 1:
         return xtpl_highest_1
     elif xtpl_type ==  "scf":
@@ -721,6 +927,21 @@ def _get_default_xtpl(nbasis, xtpl_type):
             
 
 def _process_cbs_kwargs(kwargs):
+    """ A helper function which either translates supplied kwargs into the
+    cbs_metadata format, or validates a provided cbs_metadata array.
+    
+    Parameters
+    ----------
+    kwargs : dict
+        kwargs
+    
+    Returns
+    -------
+    array
+        Array of dictionaries, with each item consisting of an extrapolation
+        stage. All validation takes place here.
+    """    
+    
     metadata = []
     if "cbs_metadata" in kwargs:
         cbs_metadata = kwargs.get("cbs_metadata")
@@ -1534,7 +1755,7 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
     extracting zetas and values (which one determined by *datakey*) out
     of *needdict* and returning a dictionary whose keys are constructed
     from _lmh_labels.
-
+    
     """
     largs = {}
     largs['functionname'] = needdict['HI']['f_wfn']
@@ -1553,6 +1774,21 @@ complete_basis_set = cbs
 
 
 def _cbs_wrapper_methods(**kwargs):
+    """ A helper function for the driver to enumerate methods used in the 
+    cbs calculation.
+    
+    Parameters
+    ----------
+    kwargs : dict
+        kwargs containing cbs specification either in the cbs_metadata format,
+        or in separate keywords.
+    
+    Returns
+    -------
+    array
+        Array containing method names.
+    """
+    
     cbs_methods = []
     if "cbs_metadata" in kwargs:
         for item in kwargs["cbs_metadata"]:
@@ -1567,6 +1803,24 @@ def _cbs_wrapper_methods(**kwargs):
 
 
 def _parse_cbs_gufunc_string(method_name):
+    """ A helper function that parses a "method/basis" input string
+    into separate method and basis components. Also handles delta corrections.
+    
+    Parameters
+    ----------
+    method_name : string
+        A "method/basis" style string defining the calculation.
+    
+    Returns
+    -------
+    tuple
+        Tuple in the (method_list, basis_list) format, where method_list
+        is the list of the component methods and basis_list is the list of
+        basis sets forming the extrapolation for each specified method.
+        E.g. "mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz" would return:
+        ([mp2, ccsd(t)], [cc-pv[tq]z, cc-pvtz]).
+    """
+    
     method_name_list = re.split( """\+(?=\s*[Dd]:)""", method_name)
     if len(method_name_list) > 2:
         raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
@@ -1594,7 +1848,25 @@ def _parse_cbs_gufunc_string(method_name):
 
 def _cbs_gufunc(func, total_method_name, **kwargs):
     """
-    Text based wrapper of the CBS function.
+    A text based wrapper of the CBS function. Provided to handle "method/basis"
+    specification of the requested calculations. Also handles "simple" (i.e.
+    one-method and one-basis) calls.
+    
+    Parameters
+    ----------
+    func : function
+        Function to be called (energy, gradient, frequency or cbs).
+    total_method_name : string
+        String in a "method/basis" syntax. Simple calls (e.g. "blyp/sto-3g") are
+        bounced out of CBS. More complex calls (e.g. "mp2/cc-pv[tq]z" or 
+        "mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz") are expanded by `_parse_cbs_gufunc_string()` 
+        and pushed through :py:func:`~psi4.cbs`.
+    
+    Returns
+    -------
+    tuple
+        Tuple in the (value, wavefunction) format - wfn is only included if "return_wfn"
+        is specified.
     """
 
     # Catch kwarg issues for all methods
