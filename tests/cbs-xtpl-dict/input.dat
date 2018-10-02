@@ -1,7 +1,7 @@
 #! Extrapolated water energies
 import numpy as np
 
-nucenergy_ref =   8.801465529972    #TEST
+nucenergy_ref =   8.8014655646    #TEST
 scf_dz_ref    = -76.0213974638      #TEST
 scf_adtz_ref  = -76.059124724830    #TEST
 mp2_addz_ref  = -76.261216702741    #TEST
