@@ -256,6 +256,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis);
 
     /// Blank constructor for derived classes
+    Wavefunction(SharedWavefunction reference_wavefunction, Options& options);
+
+    /// Blank constructor for derived classes
     Wavefunction(Options& options);
 
     /**
