@@ -72,8 +72,8 @@ namespace detci {
 
 class CIWavefunction : public Wavefunction {
    public:
-    CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
     CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    explicit CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
     virtual ~CIWavefunction();
 
     double compute_energy();
