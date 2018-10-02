@@ -97,64 +97,64 @@ void CCWavefunction::common_init() {
 }
 
 void CCWavefunction::init_dpd() {
-    // cachefiles_.reserve(PSIO_MAXUNIT);
-    // std::vector<int *> spaces;
-    // std::vector<int *> aospaces;
-    // if (params_.ref == 2) {
-    //    cachelist_ = cacheprep_uhf(params_.cachelev, cachefiles_.data());
-    //    spaces.push_back(moinfo_.aoccpi);
-    //    spaces.push_back(moinfo_.aocc_sym);
-    //    spaces.push_back(moinfo_.avirtpi);
-    //    spaces.push_back(moinfo_.avir_sym);
-    //    spaces.push_back(moinfo_.boccpi);
-    //    spaces.push_back(moinfo_.bocc_sym);
-    //    spaces.push_back(moinfo_.bvirtpi);
-    //    spaces.push_back(moinfo_.bvir_sym);
-    //    if (params_.aobasis != "NONE") {
-    //        aospaces.push_back(moinfo_.aoccpi);
-    //        aospaces.push_back(moinfo_.aocc_sym);
-    //        aospaces.push_back(moinfo_.sopi);
-    //        aospaces.push_back(moinfo_.sosym);
-    //        aospaces.push_back(moinfo_.boccpi);
-    //        aospaces.push_back(moinfo_.bocc_sym);
-    //        aospaces.push_back(moinfo_.sopi);
-    //        aospaces.push_back(moinfo_.sosym);
-    //    }
-    //} else {
-    //    cachelist_ = cacheprep_rhf(params_.cachelev, cachefiles_.data());
-    //    spaces.push_back(moinfo_.occpi);
-    //    spaces.push_back(moinfo_.occ_sym);
-    //    spaces.push_back(moinfo_.virtpi);
-    //    spaces.push_back(moinfo_.vir_sym);
-    //    if (params_.aobasis != "NONE") {
-    //        aospaces.push_back(moinfo_.occpi);
-    //        aospaces.push_back(moinfo_.occ_sym);
-    //        aospaces.push_back(moinfo_.sopi);
-    //        aospaces.push_back(moinfo_.sosym);
-    //    }
-    //}
+    cachefiles_.reserve(PSIO_MAXUNIT);
+    std::vector<std::vector<int>> spaces;
+    std::vector<std::vector<int>> aospaces;
+    if (cc_info_->ref == Reference::UHF) {
+        cachelist_ = cacheprep_uhf(cc_info_->cachelev, cachefiles_.data());
+        spaces.push_back(cc_info_->aoccpi.blocks());
+        spaces.push_back(cc_info_->aocc_sym);
+        spaces.push_back(cc_info_->avirtpi.blocks());
+        spaces.push_back(cc_info_->avir_sym);
+        spaces.push_back(cc_info_->boccpi.blocks());
+        spaces.push_back(cc_info_->bocc_sym);
+        spaces.push_back(cc_info_->bvirtpi.blocks());
+        spaces.push_back(cc_info_->bvir_sym);
+        if (cc_info_->aobasis != "NONE") {
+            aospaces.push_back(cc_info_->aoccpi.blocks());
+            aospaces.push_back(cc_info_->aocc_sym);
+            aospaces.push_back(cc_info_->sopi.blocks());
+            aospaces.push_back(cc_info_->sosym);
+            aospaces.push_back(cc_info_->boccpi.blocks());
+            aospaces.push_back(cc_info_->bocc_sym);
+            aospaces.push_back(cc_info_->sopi.blocks());
+            aospaces.push_back(cc_info_->sosym);
+        }
+    } else {
+        cachelist_ = cacheprep_rhf(cc_info_->cachelev, cachefiles_.data());
+        spaces.push_back(cc_info_->occpi.blocks());
+        spaces.push_back(cc_info_->occ_sym);
+        spaces.push_back(cc_info_->virtpi.blocks());
+        spaces.push_back(cc_info_->vir_sym);
+        if (cc_info_->aobasis != "NONE") {
+            aospaces.push_back(cc_info_->occpi.blocks());
+            aospaces.push_back(cc_info_->occ_sym);
+            aospaces.push_back(cc_info_->sopi.blocks());
+            aospaces.push_back(cc_info_->sosym);
+        }
+    }
 
-    // dpd_["mo"].init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles_.data(), cachelist_,
-    //                cache_priority_list_.data(), spaces.size() / 2, spaces);
+    dpd_["mo"].init(0, cc_info_->nirreps, this->memory_, cc_info_->cachetype, cachefiles_.data(), cachelist_,
+                    cache_priority_list_.data(), spaces.size() / 2, spaces);
 
-    // if (aospaces.size()) {
-    //    dpd_["ao"].init(1, moinfo_.nirreps, params_.memory, 0, cachefiles_.data(), cachelist_, nullptr,
-    //                    aospaces.size() / 2, aospaces);
-    //}
+    if (aospaces.size()) {
+        dpd_["ao"].init(1, cc_info_->nirreps, cc_info_->memory, 0, cachefiles_.data(), cachelist_, nullptr,
+                        aospaces.size() / 2, aospaces);
+    }
 }
 
 void CCWavefunction::tear_down() {
     // Free up cache
-    //    for (auto &&i : dpd_) {
-    //        i.second.file2_cache_close();
-    //        i.second.file4_cache_close();
-    //    }
-    //
-    //    if (params_.ref == 2) {
-    //        cachedone_uhf(cachelist_);
-    //    } else {
-    //        cachedone_rhf(cachelist_);
-    //    }
+    for (auto &&i : dpd_) {
+        i.second.file2_cache_close();
+        i.second.file4_cache_close();
+    }
+
+    if (cc_info_->ref == Reference::UHF) {
+        cachedone_uhf(cachelist_);
+    } else {
+        cachedone_rhf(cachelist_);
+    }
 }
 
 }  // namespace cc

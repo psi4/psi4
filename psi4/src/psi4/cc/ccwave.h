@@ -232,6 +232,7 @@ class CCWavefunction final : public Wavefunction {
     void title(std::string &wfn);
 
     std::vector<int> cachefiles_;
+    int **cachelist_;
     std::map<std::string, DPD> dpd_;
 };
 
