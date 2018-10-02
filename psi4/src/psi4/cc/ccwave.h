@@ -215,8 +215,8 @@ void psio_off();
 
 class CCWavefunction final : public Wavefunction {
    public:
-    CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
     CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    explicit CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
     virtual ~CCWavefunction();
 
     double compute_energy();

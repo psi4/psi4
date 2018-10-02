@@ -57,27 +57,16 @@ void psio_off() {
     for (int i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
 }
 
-CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction)
-    : Wavefunction(Process::environment.options), cc_info_(new CCWavefunctionImpl(reference_wavefunction, Process::environment.options)) {
+CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction{reference_wavefunction, options}, cc_info_{new CCWavefunctionImpl(reference_wavefunction, options)} {
     timer_on("ccwavefunction");
     timer_on("initialization");
-    // Copy the wavefuntion then update
-    shallow_copy(reference_wavefunction);
-    set_reference_wavefunction(reference_wavefunction);
     common_init();
     timer_off("initialization");
 }
 
-CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options), cc_info_(new CCWavefunctionImpl(reference_wavefunction, options)) {
-    timer_on("ccwavefunction");
-    // Copy the wavefuntion then update
-    timer_on("initialization");
-    shallow_copy(reference_wavefunction);
-    set_reference_wavefunction(reference_wavefunction);
-    common_init();
-    timer_off("initialization");
-}
+CCWavefunction::CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction)
+    : CCWavefunction{reference_wavefunction, Process::environment.options} {}
 
 CCWavefunction::~CCWavefunction() {
     // Close coupled cluster files
