@@ -132,7 +132,7 @@ def _contract_bracketed_basis(basisarray):
     Parameters
     ----------
     basisarray : array 
-        E.g.: ``["cc-pvqz", "cc-pv5z"]``
+        Basis set names, differing by zeta level, e.g. ``["cc-pvqz", "cc-pv5z"]``.
     
     Returns
     -------
@@ -900,8 +900,9 @@ def _get_default_xtpl(nbasis, xtpl_type):
     ----------
     nbasis : int
         Number of basis sets
-    xtpl_type : str
-        Extrapolation type ("scf" or "corl").
+    xtpl_type : {'scf', 'corl'}
+        Extrapolation type: 'scf' for the total energy, 'corl' for just the
+        correlation component.
     
     Returns
     -------
@@ -945,36 +946,33 @@ def _process_cbs_kwargs(kwargs):
     if "cbs_metadata" in kwargs:
         cbs_metadata = kwargs.get("cbs_metadata")
         for item in cbs_metadata:
-            metadata.append({})
-            if "wfn" in item:
-                if "wfn" not in item:
-                    raise ValidationError("Wavefunction type has to be supplied for every stage.")
+            stage = {}
+            if "wfn" not in item:
+                raise ValidationError("Wavefunction type has to be supplied for every stage.")
+            stage["wfn"] = item["wfn"]
+            if "basis" not in item:
+                raise ValidationError("Basis set has to be supplied for every stage.")
+            stage["basis"] = _expand_bracketed_basis(item["basis"].lower())
+            stage["treatment"] = item.get("treatment", "scf" if len(metadata) == 0 else "corl")
+            stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"])) 
+            if len(metadata) >= 1:
+                stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn"))
+                stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower())
+                if len(stage["basis"][0]) != len(stage["basis_lo"][0]):
+                    raise ValidationError("""Number of basis sets inconsistent 
+                                             between high ({0:d}) and low ({1:d}) levels.""".format(len(stage["basis"][0]),
+                                                                                                    len(stage["basis_lo"][0])))
+            stage["stage"] = item.get("stage", False)
+            if not stage["stage"]:
+                if len(metadata) == 0:
+                    stage["stage"] = "scf"
+                elif len(metadata) == 1:
+                    stage["stage"] = "corl"
                 else:
-                    metadata[-1]["wfn"] = item.get("wfn")
-                if "basis" not in item:
-                    raise ValidationError("Basis set has to be supplied for every stage.")
-                else:
-                    metadata[-1]["basis"] = _expand_bracketed_basis(item.get("basis").lower())
-                metadata[-1]["treatment"] = item.get("treatment", "scf" if len(metadata) == 1 else "corl")
-                metadata[-1]["scheme"] = item.get("scheme", _get_default_xtpl(len(metadata[-1]["basis"][1]),
-                                                                                 metadata[-1]["treatment"])) 
-                if len(metadata) > 1:
-                    metadata[-1]["wfn_lo"] = item.get("wfn_lo", metadata[-2].get("wfn"))
-                    metadata[-1]["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", 
-                                                                       item.get("basis")).lower())
-                    if len(metadata[-1]["basis"][0]) != len(metadata[-1]["basis_lo"][0]):
-                        raise ValidationError("""Number of basis sets inconsistent 
-                                             between high ({0:d}) and low ({1:d}) levels.""".format(len(metadata[-1]["basis"][0]),len(metadata[-1]["basis_lo"][0])))
-                metadata[-1]["stage"] = item.get("stage", None)
-                if metadata[-1]["stage"] == None:
-                    if len(metadata) == 1:
-                        metadata[-1]["stage"] = "scf"
-                    elif len(metadata) == 2:
-                        metadata[-1]["stage"] = "corl"
-                    else:
-                        metadata[-1]["stage"] = "delta{0:d}".format(len(metadata) - 2)
-            metadata[-1]["alpha"] = item.get("alpha", None)
-            metadata[-1]["options"] = item.get("options", False)
+                    stage["stage"] = "delta{0:d}".format(len(metadata) - 1)
+            stage["alpha"] = item.get("alpha", None)
+            stage["options"] = item.get("options", False)
+            metadata.append(stage)
     else:
         scf = {}
         corl = {}
@@ -1381,9 +1379,9 @@ def cbs(func, label, **kwargs):
     verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
 
-    # Establish function to call (only energy makes sense for cbs)
     if ptype not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling function '%s' instead of 'energy'.""" % ptype)
+        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling 
+                                 function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
 
     optstash = p4util.OptionsState(
         ['BASIS'],
@@ -1907,8 +1905,8 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         else:
             return ptype_value
 
-    # Drop out for props and freqs
-    if ptype in ["properties", "frequency"]:
+    # Drop out for unsupported calls
+    if ptype not in ["energy", "gradient", "hessian"]:
         raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
 
     # Catch kwarg issues for CBS methods only
@@ -1937,7 +1935,9 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         if 'corl_scheme' in kwargs:
             cbs_kwargs['corl_scheme'] = kwargs['corl_scheme']
 
-    if len(method_list) > 1:
+    # "method/basis" syntax only allows for one delta correction 
+    # via "method/basis+D:delta/basis". Maximum length of method_list is 2.
+    if len(method_list) == 2:
         cbs_kwargs['delta_wfn'] = method_list[1]
         cbs_kwargs['delta_basis'] = basis_list[1]
         if 'delta_scheme' in kwargs:
