@@ -52,8 +52,7 @@ std::vector<int> get_pitzer2qt(std::vector<Dimension> &spaces) {
         for (int i = 0; i < spaces.size(); i++) total[h] += spaces[i][h];
     int nmo = total.sum();
 
-    std::vector<int> order(nmo);
-    order.assign(nmo, 0);
+    std::vector<int> order(nmo, 0);
 
     Dimension offset(nirreps);
     offset[0] = 0;

@@ -53,6 +53,11 @@ struct iwlbuf;
 namespace psi {
 namespace ccenergy {
 
+int **cacheprep_uhf(int level, int *cachefiles);
+int **cacheprep_rhf(int level, int *cachefiles);
+void cachedone_rhf(int **cachelist);
+void cachedone_uhf(int **cachelist);
+
 class CCEnergyWavefunction : public Wavefunction {
    public:
     CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
@@ -116,10 +121,6 @@ class CCEnergyWavefunction : public Wavefunction {
 
     /* DPD cache */
     void init_priority_list();
-    int **cacheprep_uhf(int level, int *cachefiles);
-    int **cacheprep_rhf(int level, int *cachefiles);
-    void cachedone_rhf(int **cachelist);
-    void cachedone_uhf(int **cachelist);
 
     /* Brueckner */
     int rotate();
@@ -208,10 +209,15 @@ class CCEnergyWavefunction : public Wavefunction {
 
 namespace cc {
 
+enum class Reference;
+
 struct CCWavefunctionImpl;
 
 void psio_on();
 void psio_off();
+
+int **new_cachelist(Reference ref, int level, std::vector<int> cachefiles);
+void delete_cachelist(int **cachelist);
 
 class CCWavefunction final : public Wavefunction {
    public:
@@ -232,6 +238,7 @@ class CCWavefunction final : public Wavefunction {
     void title(std::string &wfn);
 
     std::vector<int> cachefiles_;
+    std::array<dpd_file4_cache_entry, 113> cache_priority_list_;
     int **cachelist_;
     std::map<std::string, DPD> dpd_;
 };
