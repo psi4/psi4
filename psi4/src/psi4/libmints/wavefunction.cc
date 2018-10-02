@@ -77,11 +77,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 }
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options),
-      basisset_(basis),
-      molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}},
-      PCM_enabled_(false) {
+    : Wavefunction{molecule, basis, Process::environment.options} {
     common_init();
 }
 
