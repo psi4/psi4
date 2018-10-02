@@ -51,19 +51,13 @@ PRAGMA_WARNING_POP
 namespace psi {
 namespace detci {
 
-CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn) : Wavefunction(Process::environment.options) {
-    // Copy the wavefuntion then update
-    shallow_copy(ref_wfn);
-    set_reference_wavefunction(ref_wfn);
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
+    : Wavefunction{ref_wfn, options} {
     common_init();
 }
 
-CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn, Options& options) : Wavefunction(options) {
-    // Copy the wavefuntion then update
-    shallow_copy(ref_wfn);
-    set_reference_wavefunction(ref_wfn);
-    common_init();
-}
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn)
+    : CIWavefunction{ref_wfn, Process::environment.options} {}
 
 CIWavefunction::~CIWavefunction() {
     cleanup_ci();
