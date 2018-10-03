@@ -318,10 +318,12 @@ def dftd3_harvest(jobrec, dftd3rec):
     # OLD WAY
     calcinfo = []
     calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
-    calcinfo.append(QCAspect('{} DISPERSION CORRECTION ENERGY'.format(qcvkey), 'Eh', ene, ''))
+    if qcvkey:
+        calcinfo.append(QCAspect('{} DISPERSION CORRECTION ENERGY'.format(qcvkey), 'Eh', ene, ''))
     if jobrec['driver'] == 'gradient':
         calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
-        calcinfo.append(QCAspect('{} DISPERSION CORRECTION GRADIENT'.format(qcvkey), 'Eh/a0', fullgrad, ''))
+        if qcvkey:
+            calcinfo.append(QCAspect('{} DISPERSION CORRECTION GRADIENT'.format(qcvkey), 'Eh/a0', fullgrad, ''))
     calcinfo = {info.lbl: info for info in calcinfo}
     text += print_variables(calcinfo)
 

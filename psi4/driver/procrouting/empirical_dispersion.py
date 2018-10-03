@@ -186,6 +186,13 @@ class EmpiricalDispersion(object):
         float
             Dispersion energy [Eh].
 
+        Notes
+        -----
+        DISPERSION CORRECTION ENERGY
+            Disp always set. Overridden in SCF finalization, but that only changes for "-3C" methods.
+        self.fctldash + DISPERSION CORRECTION ENERGY
+            Set if `fctldash` nonempty.
+
         """
         if self.engine == 'dftd3':
             jobrec = intf_dftd3.run_dftd3_from_arrays(
@@ -208,8 +215,11 @@ class EmpiricalDispersion(object):
 
             return dashd_part
         else:
-            return self.disp.compute_energy(molecule)
-            # TODO need to set 'DISPERSION CORRECTION ENERGY' and self.fctldash + 'DISPERSION CORRECTION ENERGY' psivars for libdisp?
+            ene = self.disp.compute_energy(molecule)
+            core.set_variable('DISPERSION CORRECTION ENERGY', ene)
+            if self.fctldash:
+                core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(self.fctldash), ene)
+            return ene
 
     def compute_gradient(self, molecule):
         """Compute dispersion gradient based on engine, dispersion level, and parameters in `self`.
