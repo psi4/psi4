@@ -23,6 +23,7 @@ install:
                  numpy
                  pybind11
                  pytest
+                 python=3.6
   - conda clean --all
   - activate %CONDA_ENV%
   - conda list
