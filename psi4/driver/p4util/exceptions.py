@@ -29,8 +29,7 @@
 """Module with non-generic exceptions classes."""
 from __future__ import absolute_import
 
-from psi4 import core
-from psi4 import extras
+from psi4 import core, extras
 
 
 class PsiException(Exception):
@@ -121,6 +120,26 @@ class SCFConvergenceError(ConvergenceError):
         ConvergenceError.__init__(self, eqn_description, iteration)
         self.e_conv = e_conv
         self.d_conv = d_conv
+        self.wfn = wfn
+
+
+class CCConvergenceError(ConvergenceError):
+    """Error called for problems with  CC iterations.
+
+    Parameters
+    ----------
+    wfn : psi4.core.Wavefunction
+        Wavefunction at time of exception
+    e_conv : float
+        Change in energy for last iteration
+    r_conv : float
+        RMS change in residual for last iteration
+
+    """
+    def __init__(self, cc_model, iteration, wfn, e_conv, r_conv):
+        ConvergenceError.__init__(self, cc_model, iteration)
+        self.e_conv = e_conv
+        self.r_conv = r_conv
         self.wfn = wfn
 
 

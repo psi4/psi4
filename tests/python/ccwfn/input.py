@@ -33,3 +33,7 @@ cc_wfn = psi4.core.CCWavefunction(scf_wfn)
 ccsd_e = cc_wfn.compute_energy()
 psi4.core.print_out('CCSD energy {:20.12f}\n'.format(ccsd_e))
 psi4.core.print_variables()
+
+cc_iter = psi4.cc.cc_iterator.CCIteration(0, 15)
+for num in cc_iter:
+    print(num, end=' ')
