@@ -775,11 +775,11 @@ Supported keywords include:
  - `description`: string, description of the method, for printing purposes
 
 The full interface is defined in
-:source:`psi4/driver/procrouting/dft_funcs/dict_builder.py`. All
+:source:`psi4/driver/procrouting/dft/dft_builder.py`. All
 standard functionals provided in |PSIfour| are implemented in the
-``dict_*_funcs.py`` files in the same folder.
+``*_functionals.py`` files in the same folder.
 
-.. literalinclude:: @SFNX_INCLUDE@psi4/driver/procrouting/dft_funcs/dict_builder.py
+.. literalinclude:: @SFNX_INCLUDE@psi4/driver/procrouting/dft/dft_builder.py
    :lines: 29-76
 
 One can also use the ``dft_functional`` keyword argument to use the

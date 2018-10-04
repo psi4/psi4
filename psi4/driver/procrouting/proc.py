@@ -50,7 +50,7 @@ from psi4.driver.molutil import *
 from .roa import *
 from . import proc_util
 from . import empirical_dispersion
-from . import dft_funcs
+from . import dft
 from . import mcscf
 from . import response
 
@@ -999,7 +999,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         modified_disp_params = None
 
     # Figure out functional
-    superfunc, disp_type = dft_funcs.build_superfunctional(name, (reference in ["RKS", "RHF"]))
+    superfunc, disp_type = dft.build_superfunctional(name, (reference in ["RKS", "RHF"]))
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")

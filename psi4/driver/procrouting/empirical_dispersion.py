@@ -77,9 +77,9 @@ class EmpiricalDispersion(object):
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
         See description in `qcdb.intf_dftd3.dashparam.from_arrays`. Used
-        here to "bless" the dispersion definitions attached
-        to the procedures/dft_funcs-defined functional
-        dictionaries as legit, non-custom, and of equal validity to
+        here to "bless" the dispersion definitions attached to
+        the procedures/dft/*_functionals-defined dictionaries
+        as legit, non-custom, and of equal validity to
         `qcdb.intf_dftd3.dashparam.dashcoeff` itself for purposes of
         validating `fctldash`.
     engine : {'libdisp', 'dftd3', 'nl'}
@@ -117,7 +117,7 @@ class EmpiricalDispersion(object):
     """
 
     def __init__(self, name_hint=None, level_hint=None, param_tweaks=None, **kwargs):
-        from .dft_funcs import dashcoeff_supplement
+        from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
 
         resolved = intf_dftd3.from_arrays(

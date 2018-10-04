@@ -38,7 +38,7 @@ dict = {
     "description":  "",       description of the method, printed in output
 
  "xc_functionals":  {         definition of a full XC functional from LibXC
-      "XC_METHOD_NAME": {}      must match a LibXC method, see dict_xc_funcs.py for examples
+      "XC_METHOD_NAME": {}      must match a LibXC method, see libxc_functionals.py for examples
      },                         if present, the x/c_functionals and x_hf/c_mp2 parameters are not read!
 
   "x_functionals":  {          definition of X contributions
@@ -82,20 +82,20 @@ from psi4.driver.qcdb import intf_dftd3
 import copy
 import collections
 
-from . import dict_xc_funcs
-from . import dict_lda_funcs
-from . import dict_gga_funcs
-from . import dict_mgga_funcs
-from . import dict_hyb_funcs
-from . import dict_dh_funcs
+from . import libxc_functionals
+from . import lda_functionals
+from . import gga_functionals
+from . import mgga_functionals
+from . import hyb_functionals
+from . import dh_functionals
 
 dict_functionals = {}
-dict_functionals.update(dict_xc_funcs.functional_list)
-dict_functionals.update(dict_lda_funcs.functional_list)
-dict_functionals.update(dict_gga_funcs.functional_list)
-dict_functionals.update(dict_mgga_funcs.functional_list)
-dict_functionals.update(dict_hyb_funcs.functional_list)
-dict_functionals.update(dict_dh_funcs.functional_list)
+dict_functionals.update(libxc_functionals.functional_list)
+dict_functionals.update(lda_functionals.functional_list)
+dict_functionals.update(gga_functionals.functional_list)
+dict_functionals.update(mgga_functionals.functional_list)
+dict_functionals.update(hyb_functionals.functional_list)
+dict_functionals.update(dh_functionals.functional_list)
 
 
 def get_functional_aliases(functional_dict):
@@ -123,7 +123,7 @@ for functional_name in dict_functionals:
     if "dispersion" in dict_functionals[functional_name]:
         disp = dict_functionals[functional_name]['dispersion']
         dashcoeff_supplement[disp['type']]['definitions'][functional_name] = disp
-        # this is to "bless" dft_funcs dispersion definitions
+        # this is to "bless" dft/*_functionals dispersion definitions
         continue
 
     # else loop through dispersion types in dashparams (also considering aliases)
