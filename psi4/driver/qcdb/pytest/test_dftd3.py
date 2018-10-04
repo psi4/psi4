@@ -31,6 +31,7 @@ db3lypd3bj = {
         'a2': 4.4211,
         'a1': 0.3981
     },
+    'dashparams_citation': '',
     'fctldash': 'b3lyp-d3(bj)'
 }
 
@@ -43,6 +44,7 @@ dpbed3zero = {
         'sr8': 1.0,
         'alpha6': 14.0
     },
+    'dashparams_citation': '',
     'fctldash': 'pbe-d3'
 }
 
@@ -158,8 +160,8 @@ def test_recon_2d():
 
 
 def test_recon_2e():
-    ans = {'dashlevel': 'chg', 'dashparams': {'s6': 4.05}, 'fctldash': 'asdf-d4'}
-    supp = {'chg': {'definitions': {'asdf-d4': {'s6': 4.05}}}}
+    ans = {'dashlevel': 'chg', 'dashparams': {'s6': 4.05}, 'fctldash': 'asdf-d4', 'dashparams_citation': '    mypaper\n'}
+    supp = {'chg': {'definitions': {'asdf-d4': {'params': {'s6': 4.05}, 'citation': '    mypaper\n'}}}}
 
     res = intf_dftd3.from_arrays(name_hint='asdf-d4', level_hint='chg', dashcoeff_supplement=supp)
     print(res)

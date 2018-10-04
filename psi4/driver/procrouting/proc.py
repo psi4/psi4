@@ -1016,17 +1016,18 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     if disp_type:
         if isinstance(name, dict):
+            # user dft_functional={} spec - type for lookup, dict val for param defs,
+            #   name & citation discarded so only param matches to existing defs will print labels
             wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
                 name_hint='',
                 level_hint=disp_type["type"],
-                citation=disp_type["citation"],
                 param_tweaks=disp_type["params"],
                 engine=kwargs.get('engine', None))
         else:
+            # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
             wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
                 name_hint=superfunc.name(),
                 level_hint=disp_type["type"],
-                citation=disp_type["citation"],
                 param_tweaks=modified_disp_params,
                 engine=kwargs.get('engine', None))
 
@@ -1035,12 +1036,12 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         #   ever again sighted, make an issue so this code can accommodate.
 
         wfn._disp_functor.print_out()
-        if (disp_type["type"] == 'nl'):
+        if disp_type["type"] == 'nl':
             del wfn._disp_functor
 
     # Set the DF basis sets
-    if ("DF" in core.get_global_option("SCF_TYPE")) or \
-       (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT")):
+    if (("DF" in core.get_global_option("SCF_TYPE")) or
+            (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT"))):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),

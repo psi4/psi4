@@ -71,7 +71,7 @@ dict = {
      "dispersion":  {          definition of dispersion corrections
                "type": "",       dispersion type - "d2", "d3zero", "d3bj" etc., see empirical_dispersion.py
              "params": {},       parameters for the dispersion correction
-           "citation": "",       special reference for the dispersion correction, appended to output
+           "citation": "",       special reference for the dispersion correction parameters, appended to output
     },
 }
 """
@@ -122,8 +122,7 @@ for functional_name in dict_functionals:
     # if the parent functional is already dispersion corrected, skip to next
     if "dispersion" in dict_functionals[functional_name]:
         disp = dict_functionals[functional_name]['dispersion']
-        dashcoeff_supplement[disp['type']]['definitions'][functional_name] = disp['params']
-        # TODO still needs citation
+        dashcoeff_supplement[disp['type']]['definitions'][functional_name] = disp
         # this is to "bless" dft_funcs dispersion definitions
         continue
 
@@ -134,13 +133,8 @@ for functional_name in dict_functionals:
             if dispersion_functional.lower() in functional_aliases:
                 func = copy.deepcopy(dict_functionals[functional_name])
                 func["name"] += "-" + resolved_dispersion_level
-                func["dispersion"] = dict()
-
-                # we need to pop the citation as the EmpiricalDispersion class only expects dashparams
-                if "citation" in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional]:
-                    func["dispersion"]["citation"] = intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional].pop("citation")
+                func["dispersion"] = copy.deepcopy(intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
                 func["dispersion"]["type"] = resolved_dispersion_level
-                func["dispersion"]["params"] = intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional]
 
                 # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
                 #   all point to the same method (M06-2X-D3ZERO)
@@ -201,6 +195,28 @@ def check_consistency(func_dictionary):
     and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"]:
         raise ValidationError(
             "SCF: Libxc parameters requested for an exchange functional not defined as a component of %s." % (name))
+
+    # 3) checks would be caught at runtime or involve only formatting.
+    #    included here to preempt driver definition problems, if specific fctl not in tests.
+    # 3a) check formatting for citation
+    if "citation" in func_dictionary:
+        cit = func_dictionary["citation"]
+        if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+            raise ValidationError("SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {}".format(cit))
+    if "dispersion" in func_dictionary:
+        disp = func_dictionary["dispersion"]
+    # 3b) check dispersion type present and known
+        if "type" not in disp or disp["type"] not in _dispersion_aliases:
+            raise ValidationError("SCF: Dispersion type ({}) should be among ({})".format(disp['type'], _dispersion_aliases.keys()))
+    # 3c) check dispersion params complete
+        allowed_params = sorted(intf_dftd3.dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
+        if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
+            raise ValidationError("SCF: Dispersion params ({}) must include all ({})".format(list(disp['params'].keys()), allowed_params))
+    # 3d) check formatting for dispersion citation
+        if "citation" in disp:
+            cit = disp["citation"]
+            if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+                raise ValidationError("SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {}".format(cit))
 
 
 def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):

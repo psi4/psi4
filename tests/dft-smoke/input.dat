@@ -65,10 +65,10 @@ pbed2 = {
     "x_functionals": { "GGA_X_PBE": {} },
     "c_functionals": { "GGA_C_PBE": {} },
     "dispersion": {
-        "type": "d2",
+        "type": "d",
         "params": {"s6": 0.75,
+                   "sr6": 1.1,
                    "alpha6": 20.0,
-                   "sr6": 1.1
         }
     }
 }

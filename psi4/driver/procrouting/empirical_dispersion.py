@@ -71,6 +71,10 @@ class EmpiricalDispersion(object):
     dashlevel_citation : str
         Literature reference for dispersion `dashlevel` in general,
         *not necessarily* for `dashparams`.
+    dashparams_citation : str
+        Literature reference for dispersion parameters, if `dashparams`
+        corresponds to a defined, named, untweaked "functional-dashlevel"
+        set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
         See description in `qcdb.intf_dftd3.dashparam.from_arrays`. Used
         here to "bless" the dispersion definitions attached
@@ -127,6 +131,7 @@ class EmpiricalDispersion(object):
         self.description = intf_dftd3.dashcoeff[self.dashlevel]['description']
         self.ordered_params = intf_dftd3.dashcoeff[self.dashlevel]['default'].keys()
         self.dashlevel_citation = intf_dftd3.dashcoeff[self.dashlevel]['citation']
+        self.dashparams_citation = resolved['dashparams_citation']
 
         engine = kwargs.pop('engine', None)
         if engine is None:
@@ -140,38 +145,22 @@ class EmpiricalDispersion(object):
         if self.engine == 'libdisp':
             self.disp = core.Dispersion.build(self.dashlevel, **resolved['dashparams'])
 
-    #    # 5) Override parameters from user input
-    #    # 5a) pop citation if present
-    #    if "citation" in kwargs:
-    #        custom_citation = kwargs.pop("citation")
-    #    else:
-    #        custom_citation = False
-
-    #    if len(kwargs):
-    #        raise Exception("The following parameters in empirical_dispersion.py were not understood for %s dispersion type: %s" %
-    #                        (dtype, ', '.join(kwargs.keys())))
-
-    #    # 6) Process citations
-    #    # 6a) Set default citations for method
-    #    self.description = intf_dftd3.dashcoeff[self.dtype[1:]]['description']
-    #    # 6b) add custom citations if available
-    #    if custom_citation:
-    #        self.citation += "\n    Parametrisation from: \n" + custom_citation
-
     def print_out(self):
         """Format dispersion parameters of `self` for output file."""
 
-        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.fctldash.upper())
-        core.print_out(self.description + "\n")
-
-        # TODO core.print_out(self.citation + "\n\n")
-
-        if self.engine == 'nl':
-            return
-
+        text = []
+        text.append("   => %s: Empirical Dispersion <=" % (self.fctldash.upper() if self.fctldash.upper() else 'Custom'))
+        text.append('')
+        text.append(self.description)
+        text.append(self.dashlevel_citation.rstrip())
+        if self.dashparams_citation:
+            text.append("    Parametrisation from:{}".format(self.dashparams_citation.rstrip()))
+        text.append('')
         for op in self.ordered_params:
-            core.print_out("    %6s = %14.6f\n" % (op, self.dashparams[op]))
-        core.print_out("\n")
+            text.append("    %6s = %14.6f" % (op, self.dashparams[op]))
+        text.append('\n')
+
+        core.print_out('\n'.join(text))
 
     def compute_energy(self, molecule):
         """Compute dispersion energy based on engine, dispersion level, and parameters in `self`.

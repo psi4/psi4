@@ -146,7 +146,7 @@ funcs.append({
         "MGGA_C_TPSS": {}
     },
     "description": '    TPSS Meta-GGA XC Functional\n',
-    "citation": '   J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003\n',
+    "citation": '    J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003\n',
 })
 
 funcs.append({
@@ -158,7 +158,7 @@ funcs.append({
         "MGGA_C_REVTPSS": {}
     },
     "description": '    revised TPSS Meta-GGA XC Functional\n',
-    "citation": '   J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011\n',
+    "citation": '    J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011\n',
 })
 
 funcs.append({
@@ -170,7 +170,7 @@ funcs.append({
         "MGGA_C_PKZB": {}
     },
     "description": '    PKZB Meta-GGA XC Functional\n',
-    "citation": '   J.P. Perdew, S. Kurth, A. Zupan, P. Blaha, Phys. Rev. Lett. 82, 2544, 1999\n',
+    "citation": '    J.P. Perdew, S. Kurth, A. Zupan, P. Blaha, Phys. Rev. Lett. 82, 2544, 1999\n',
 })
 
 funcs.append({

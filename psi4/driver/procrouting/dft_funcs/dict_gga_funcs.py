@@ -166,8 +166,8 @@ funcs.append({
         "GGA_C_P86": {}
     },
     "citation":
-    '   A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' + \
-    '   J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
+    '    A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' + \
+    '    J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',
 })
