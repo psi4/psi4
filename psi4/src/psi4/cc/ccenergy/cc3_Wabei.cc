@@ -54,9 +54,9 @@ namespace ccenergy {
 ** TDC, Feb 2004
 */
 
-void purge_Wabei(void);
+void purge_Wabei();
 
-void CCEnergyWavefunction::cc3_Wabei(void) {
+void CCEnergyWavefunction::cc3_Wabei() {
     int omit = 0;
     dpdfile2 T1, t1, tIA, tia;
     dpdbuf4 Z, Z1, Z2, Z3;
@@ -1032,7 +1032,7 @@ void CCEnergyWavefunction::cc3_Wabei(void) {
     }
 }
 
-void CCEnergyWavefunction::purge_Wabei(void) {
+void CCEnergyWavefunction::purge_Wabei() {
     dpdfile4 W;
     int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;

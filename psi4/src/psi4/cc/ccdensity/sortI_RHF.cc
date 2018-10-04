@@ -60,7 +60,7 @@ namespace ccdensity {
 ** TDC, 2/2008
 */
 
-void sortI_RHF(void) {
+void sortI_RHF() {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
     int *occpi, *virtpi, *occ_off, *vir_off;

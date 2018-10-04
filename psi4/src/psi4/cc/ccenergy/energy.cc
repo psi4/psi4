@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccenergy {
 
-double CCEnergyWavefunction::energy(void) {
+double CCEnergyWavefunction::energy() {
     double e = 0.0;
     if (params_.ref == 0)
         e = rhf_energy();
@@ -53,7 +53,7 @@ double CCEnergyWavefunction::energy(void) {
     return e;
 }
 
-double CCEnergyWavefunction::rhf_energy(void) {
+double CCEnergyWavefunction::rhf_energy() {
     double tauIjAb_energy, tIA_energy;
     dpdfile2 fIA, tIA;
     dpdbuf4 tauIjAb, D, E;
@@ -89,7 +89,7 @@ double CCEnergyWavefunction::rhf_energy(void) {
     return (tauIjAb_energy + tIA_energy);
 }
 
-double CCEnergyWavefunction::rohf_energy(void) {
+double CCEnergyWavefunction::rohf_energy() {
     double tIA_energy, tia_energy, tauIJAB_energy, tauijab_energy, tauIjAb_energy;
     dpdfile2 tIA, tia, fIA, fia;
     dpdbuf4 tauIJAB, tauijab, tauIjAb, D;
@@ -142,7 +142,7 @@ double CCEnergyWavefunction::rohf_energy(void) {
     return (tIA_energy + tia_energy + tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
 
-double CCEnergyWavefunction::uhf_energy(void) {
+double CCEnergyWavefunction::uhf_energy() {
     double E2AA, E2BB, E2AB, T1A, T1B;
     dpdbuf4 T2, D;
     dpdfile2 T1, F;

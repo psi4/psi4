@@ -53,7 +53,7 @@ namespace cchbar {
 ** TDC, March 2004
 */
 
-void Wabei_RHF_FT2_a(void) {
+void Wabei_RHF_FT2_a() {
     int h, nirreps;
     int Gam, Ga, Gm;
     int Gef, Gmf, Ge, Gf, Gae;

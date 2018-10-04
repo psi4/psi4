@@ -295,8 +295,9 @@ double CCMatrix::dot_product(CCMatrix* B_Matrix, CCMatrix* C_Matrix, int h) {
 void CCMatrix::print_dpdmatrix(int irrep, std::string out_fname) {
     int ii, jj, kk, nn, ll;
     int i, j;
-    std::shared_ptr<psi::PsiOutStream> printer(
-        out_fname == "outfile" ? psi::outfile : std::make_shared<psi::PsiOutStream>(out_fname, std::ostream::app));
+    auto mode = std::ostream::app;
+    auto printer = out_fname == "outfile" ? psi::outfile
+                                          : std::make_shared<psi::PsiOutStream>(out_fname, mode);
     double** mat = matrix[irrep];
     int left_offset = left->get_first(irrep);
     int right_offset = right->get_first(irrep);

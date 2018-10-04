@@ -43,7 +43,7 @@ namespace cchbar {
 
 /** Wabei intermediates are stored here as (ei,ab) **/
 
-void Wabei_ROHF(void) {
+void Wabei_ROHF() {
     dpdfile2 Fme, T1;
     dpdbuf4 F, W, T2, B, Z, Z1, Z2, D, T, E, C;
 

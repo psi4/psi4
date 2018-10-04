@@ -4448,7 +4448,8 @@ void OctreeGridBlocker::block()
     int index = 0;
     int unique_block = 0;
     if (bench_) {
-       printer=std::make_shared<PsiOutStream>("finished_blocks.dat",std::ostream::app);
+       auto mode = std::ostream::app;
+       printer = std::make_shared<PsiOutStream>("finished_blocks.dat", mode);
         //outfile->Printf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W");
     }
     for (size_t A = 0; A < completed_tree.size(); A++) {
@@ -4487,7 +4488,8 @@ void OctreeGridBlocker::block()
     }
 
     if (bench_) {
-       printer=std::make_shared<PsiOutStream>("extents.dat",std::ostream::app);
+        auto mode = std::ostream::app;
+        printer = std::make_shared<PsiOutStream>("extents.dat", mode);
         //FILE* fh_extents = fopen("extents.dat","w");
         //outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
         std::shared_ptr<BasisSet> basis = extents_->basis();
@@ -4504,7 +4506,8 @@ void OctreeGridBlocker::block()
         for (int i = 2; i < 20; i++) {
             std::stringstream ss;
             ss << "extents" << i << ".dat";
-            printer=std::make_shared<PsiOutStream>(ss.str(),std::ostream::app);
+            auto mode = std::ostream::app;
+            printer = std::make_shared<PsiOutStream>(ss.str(), mode);
             //FILE* fh_extents = fopen(ss.str().c_str(),"w");
             //outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
             extents_->set_delta(pow(10.0,-i));

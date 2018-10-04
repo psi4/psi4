@@ -50,7 +50,7 @@ namespace ccdensity {
 **  Xai = I'ia - I'ai
 ** */
 
-void build_X(void) {
+void build_X() {
     dpdfile2 X, I, I1, I2, I3, F, F1, X2;
     dpdbuf4 E, Fi;
 

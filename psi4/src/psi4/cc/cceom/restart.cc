@@ -55,9 +55,7 @@ void restart(double **alpha, int L, int num, int C_irr, int ortho, double **alph
     dpdbuf4 C2, CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb;
     double dotval, norm;
 
-#ifdef TIME_CCEOM
     timer_on("RESTART");
-#endif
 
     A_OCC = 0;
     A_VIR = 1;
@@ -359,9 +357,7 @@ void restart(double **alpha, int L, int num, int C_irr, int ortho, double **alph
 
     free_block(alpha_tot);
 
-#ifdef TIME_CCEOM
     timer_off("RESTART");
-#endif
 
     return;
 }

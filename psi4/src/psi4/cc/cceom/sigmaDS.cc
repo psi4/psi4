@@ -50,7 +50,6 @@ void WnmjeDS(int i, int C_irr);
 to a Sigma vector stored at Sigma plus 'i' */
 
 void sigmaDS(int i, int C_irr) {
-#ifdef TIME_CCEOM
     timer_on("WmaijDS");
     WmaijDS(i, C_irr);
     timer_off("WmaijDS");
@@ -63,12 +62,6 @@ void sigmaDS(int i, int C_irr) {
     timer_on("WbmfeDS");
     WbmfeDS(i, C_irr);
     timer_off("WbmfeDS");
-#else
-    WmaijDS(i, C_irr);
-    WabejDS(i, C_irr);
-    WnmjeDS(i, C_irr);
-    WbmfeDS(i, C_irr);
-#endif
 
     return;
 }

@@ -41,15 +41,15 @@
 namespace psi {
 namespace ccdensity {
 
-void x_Gciab_uhf(void);
-extern void x_Gciab_6(void);
-extern void x_Gciab_7(void);
-void x_Gciab_8_uhf(void);
+void x_Gciab_uhf();
+extern void x_Gciab_6();
+extern void x_Gciab_7();
+void x_Gciab_8_uhf();
 
 /* This function computes the non-R0 parts of the 2pdm density matrix
    Gciab = 0.5 *(rho_abci + rho_ciab) */
 
-void x_Gciab_uhf(void) {
+void x_Gciab_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
@@ -473,7 +473,7 @@ void x_Gciab_uhf(void) {
    term 9, +P(AB) LMNCE TINAE RMB
 */
 
-void x_Gciab_8_uhf(void) {
+void x_Gciab_8_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
     int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;

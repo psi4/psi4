@@ -49,9 +49,9 @@ namespace ccenergy {
 ** TDC, Feb 2004
 */
 
-void purge_Wmbij(void);
+void purge_Wmbij();
 
-void CCEnergyWavefunction::cc3_Wmbij(void) {
+void CCEnergyWavefunction::cc3_Wmbij() {
     dpdbuf4 C, D, E, F, W, W1, Z, X, Z1;
     dpdfile2 t1, tia, tIA;
 
@@ -479,7 +479,7 @@ void CCEnergyWavefunction::cc3_Wmbij(void) {
     }
 }
 
-void CCEnergyWavefunction::purge_Wmbij(void) {
+void CCEnergyWavefunction::purge_Wmbij() {
     dpdfile4 W;
     int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;

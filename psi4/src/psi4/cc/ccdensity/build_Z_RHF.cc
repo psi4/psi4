@@ -54,7 +54,7 @@ namespace ccdensity {
 **
 */
 
-void build_Z_RHF(void) {
+void build_Z_RHF() {
     dpdbuf4 A;
     dpdfile2 X1, D;
     double *X;

@@ -73,7 +73,7 @@ struct thread_data {
 
 void EaT_RHF_thread(thread_data *);
 
-double EaT_RHF(void) {
+double EaT_RHF() {
     int i, j, k, I, J, K, Gi, Gj, Gk, h, nirreps, cnt;
     int nijk, nthreads, thread, *ijk_part;
     int *occpi, *virtpi, *occ_off, *vir_off;
@@ -129,7 +129,8 @@ double EaT_RHF(void) {
         global_dpd_->buf4_mat_irrep_init(&Dints, h);
         global_dpd_->buf4_mat_irrep_rd(&Dints, h);
     }
-    auto printer = std::make_shared<PsiOutStream>("ijk.dat", std::ostream::trunc);
+    auto mode = std::ostream::trunc;
+    auto printer = std::make_shared<PsiOutStream>("ijk.dat", mode);
     // ffile(&ijkfile,"ijk.dat", 0);
 
     /* each thread gets its own F buffer to assign memory and read blocks

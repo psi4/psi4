@@ -48,11 +48,11 @@ namespace ccdensity {
 ** my sortone.c code here, so don't let some of the variable names
 ** confuse you. */
 
-void sortI_RHF(void);
-void sortI_ROHF(void);
-void sortI_UHF(void);
+void sortI_RHF();
+void sortI_ROHF();
+void sortI_UHF();
 
-void sortI(void) {
+void sortI() {
     if (params.ref == 0)
         sortI_RHF();
     else if (params.ref == 1)

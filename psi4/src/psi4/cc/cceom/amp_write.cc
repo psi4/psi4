@@ -64,7 +64,7 @@ class R1_amp {
         i = a = Gi = Ga = 0;
         value = 0.0;
     }
-    void zero(void) {
+    void zero() {
         i = a = Gi = Ga = 0;
         value = 0.0;
     }
@@ -83,7 +83,7 @@ class R2_amp {
         i = j = a = b = Gi = Gj = Ga = Gb = 0;
         value = 0.0;
     }
-    void zero(void) {
+    void zero() {
         i = j = a = b = Gi = Gj = Ga = Gb = 0;
         value = 0.0;
     }

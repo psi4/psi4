@@ -46,7 +46,7 @@ namespace ccenergy {
 ** TDC, Feb 2004
 */
 
-void CCEnergyWavefunction::cc2_Wmnij_build(void) {
+void CCEnergyWavefunction::cc2_Wmnij_build() {
     dpdbuf4 A, E, D, Z, W, Z1, X;
     dpdfile2 t1, tIA, tia;
 
@@ -320,7 +320,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void) {
     timer_off("D->Wmnij");
 }
 
-void CCEnergyWavefunction::purge_cc2_Wmnij(void) {
+void CCEnergyWavefunction::purge_cc2_Wmnij() {
     dpdfile2 FAE, Fmi, FME, Fme;
     dpdfile4 W;
     int *occpi, *virtpi;

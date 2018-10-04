@@ -76,7 +76,7 @@ namespace cchbar {
 ** RAK, July 2006
 */
 
-void Wamef_build(void) {
+void Wamef_build() {
     dpdbuf4 Wamef, WAMEF, WAmEf, WaMeF, W;
     dpdbuf4 F, D;
     dpdfile2 tia, tIA;

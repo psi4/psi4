@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void Gciab(void) {
+void Gciab() {
     int h, nirreps, a, b, c, i, A, B, C, I, Asym, Bsym, Csym, Isym, row, col;
     double value;
     dpdfile2 L1, T1, g;

@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void Gijkl(void) {
+void Gijkl() {
     dpdbuf4 V, G;
     int G_irr;
     G_irr = params.G_irr;

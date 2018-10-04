@@ -2841,8 +2841,8 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
     if (symmetry_ && saveLowerTriangle)
         throw PSIEXCEPTION("Matrix::save: Unable to save lower triangle for non-totally symmetric matrix.");
 
-    std::shared_ptr<psi::PsiOutStream> printer =
-        std::make_shared<PsiOutStream>(filename, (append ? std::ostream::app : std::ostream::trunc));
+    auto mode = append ? std::ostream::app : std::ostream::trunc;
+    auto printer = std::make_shared<PsiOutStream>(filename, mode);
     printer->Printf("%s\n", name_.c_str());
     printer->Printf("symmetry %d\n", symmetry_);
 

@@ -47,7 +47,7 @@ namespace ccenergy {
  * Denominators are subsequently applied in denom()
  */
 
-void CCEnergyWavefunction::cc3(void) {
+void CCEnergyWavefunction::cc3() {
     dpdfile2 TIA_new, Tia_new, FME, Fme;
     dpdbuf4 TIJAB_new, Tijab_new, TIjAb_new;
     dpdbuf4 TIJAB, Tijab, TIjAb, TiJaB;

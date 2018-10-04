@@ -51,7 +51,7 @@ namespace ccdensity {
 **
 ** */
 
-void build_A_RHF(void) {
+void build_A_RHF() {
     int h, nirreps, e, m, a, i, em, ai, E, M, A, I;
     int Esym, Msym, Asym, Isym;
     dpdfile2 fIJ, fAB;

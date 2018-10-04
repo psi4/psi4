@@ -41,7 +41,7 @@ namespace ccdensity {
 
 /* build one-electron intermediates for the construction of the xi amplitudes */
 
-void x_xi_intermediates(void) {
+void x_xi_intermediates() {
     dpdfile2 L1, R1, T1, I, LR1, LR2, LT1, LT2;
     dpdbuf4 L2, T2, R2, D, H2, I2;
     int L_irr, R_irr, G_irr;

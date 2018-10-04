@@ -65,7 +65,7 @@ namespace ccresponse {
 ** TDC, Jan-June 2002
 */
 
-void local_init(void) {
+void local_init() {
     local.nso = moinfo.nso;
     local.nocc = moinfo.occpi[0];  /* active doubly occupied orbitals */
     local.nvir = moinfo.virtpi[0]; /* active virtual orbitals */
@@ -73,7 +73,7 @@ void local_init(void) {
     outfile->Printf("\tLocalization parameters ready.\n\n");
 }
 
-void local_done(void) { outfile->Printf("\tLocal parameters free.\n"); }
+void local_done() { outfile->Printf("\tLocal parameters free.\n"); }
 
 void local_filter_T1(dpdfile2 *T1) {
     int i, a, ij, ii;

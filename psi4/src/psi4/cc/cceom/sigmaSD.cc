@@ -49,7 +49,6 @@ void WmnieSD(int i, int C_irr);
 to a Sigma vector stored at Sigma plus 'i' */
 
 void sigmaSD(int i, int C_irr) {
-#ifdef TIME_CCEOM
     timer_on("FSD");
     FSD(i, C_irr);
     timer_off("FSD");
@@ -59,11 +58,6 @@ void sigmaSD(int i, int C_irr) {
     timer_on("WmnieSD");
     WmnieSD(i, C_irr);
     timer_off("WmnieSD");
-#else
-    FSD(i, C_irr);
-    WamefSD(i, C_irr);
-    WmnieSD(i, C_irr);
-#endif
 
     return;
 }

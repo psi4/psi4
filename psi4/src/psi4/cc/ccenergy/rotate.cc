@@ -61,7 +61,7 @@ namespace ccenergy {
 ** TDC, 5/03
 */
 
-int CCEnergyWavefunction::rotate(void) {
+int CCEnergyWavefunction::rotate() {
     int i, a, ii, aa, j, ij, b, p, q, I, J, A, B;
     int h, nirreps, nso, nmo, ntri, stat;
     dpdfile2 T1;

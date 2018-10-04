@@ -71,7 +71,7 @@ namespace cchbar {
  * TDC, 7/04
  */
 
-void HET1_Wabef(void) {
+void HET1_Wabef() {
     dpdbuf4 Bints, Fints, Z, D, W;
     dpdfile2 T1;
     int Gab, nirreps, ab, ba, A, B, Ga, Gb, a, b;

@@ -65,7 +65,7 @@ namespace cceom {
 ** TDC, Jan-June 2002
 */
 
-void local_init(void) {
+void local_init() {
     int i, ij, a;
     int nso, nocc, nvir;
     double **X, **Y;
@@ -172,7 +172,7 @@ void local_init(void) {
     outfile->Printf("\tLocalization parameters ready.\n\n");
 }
 
-void local_done(void) { outfile->Printf("\tLocal parameters free.\n"); }
+void local_done() { outfile->Printf("\tLocal parameters free.\n"); }
 
 void local_filter_T1(dpdfile2 *T1) {
     int i, a, ij, ii;

@@ -43,7 +43,7 @@
 namespace psi {
 namespace cctriples {
 
-double ET_UHF_BBB(void) {
+double ET_UHF_BBB() {
     int cnt;
     int h, nirreps;
     int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
@@ -122,7 +122,8 @@ double ET_UHF_BBB(void) {
                         }
                     }
                 }
-    auto printer = std::make_shared<PsiOutStream>("ijk.dat", std::ostream::trunc);
+    auto mode = std::ostream::trunc;
+    auto printer = std::make_shared<PsiOutStream>("ijk.dat", mode);
     // ffile(&ijkfile,"ijk.dat",0);
     printer->Printf("Spin Case: BBB\n");
     printer->Printf("Number of IJK combintions: %d\n", nijk);

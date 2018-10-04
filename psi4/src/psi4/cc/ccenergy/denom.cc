@@ -41,11 +41,11 @@ namespace psi {
 namespace ccenergy {
 
 void local_filter_T1(dpdfile2 *T1);
-void dijabT2(void);
+void dijabT2();
 
 /* apply denominators to t1 and t2 */
 
-void CCEnergyWavefunction::denom(void) {
+void CCEnergyWavefunction::denom() {
     dpdfile2 newtIA, dIA, tIA, newtia, dia, tia;
 
     if (params_.ref == 0) {

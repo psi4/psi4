@@ -37,7 +37,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::FT2_CC2(void) {
+void CCEnergyWavefunction::FT2_CC2() {
     dpdbuf4 newT2, T2, Z;
     dpdfile2 F;
 

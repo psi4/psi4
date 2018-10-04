@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccresponse {
 
-void sort_lamps(void) {
+void sort_lamps() {
     dpdbuf4 L;
 
     /* RAK fixing this for new cclambda, assuming A1 ground lambda? */

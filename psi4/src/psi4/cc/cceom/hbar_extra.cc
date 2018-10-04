@@ -41,7 +41,7 @@
 namespace psi {
 namespace cceom {
 
-void hbar_extra(void) {
+void hbar_extra() {
     dpdbuf4 W, W1, W2, WAmEf, WmBeJ, WmBEj, WmNIe, WMnIe;
 
     if (params.eom_ref == 2) {

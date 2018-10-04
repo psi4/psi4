@@ -58,28 +58,28 @@ namespace ccresponse {
 #define IOFF_MAX 32641
 
 /* Function prototypes */
-void init_io(void);
-void init_ioff(void);
-void title(void);
+void init_io();
+void init_ioff();
+void title();
 void get_moinfo(std::shared_ptr<Wavefunction>);
 void get_params(std::shared_ptr<Wavefunction>, Options &);
-void cleanup(void);
-void exit_io(void);
+void cleanup();
+void exit_io();
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
 void cachedone_uhf(int **cachelist);
 void cachedone_rhf(int **cachelist);
-void hbar_extra(void);
-void cc2_hbar_extra(void);
-void sort_lamps(void);
-void lambda_residuals(void);
+void hbar_extra();
+void cc2_hbar_extra();
+void sort_lamps();
+void lambda_residuals();
 
-void local_init(void);
-void local_done(void);
+void local_init();
+void local_done();
 
-void polar(void);
+void polar();
 void optrot(std::shared_ptr<Molecule> molecule);
-void roa(void);
+void roa();
 
 void preppert(std::shared_ptr<BasisSet> primary);
 
@@ -91,8 +91,6 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     title();
     get_moinfo(ref_wfn);
     get_params(ref_wfn, options);
-
-    timer_on("ccresponse");
 
     cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -149,17 +147,15 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
 
     cleanup();
 
-    timer_off("ccresponse");
-
     exit_io();
 
     return PsiReturnType::Success;
 }
 
-void init_io(void) {
+void init_io() {
     int i;
 
-    tstart();
+    timer_on("ccresponse");
 
     for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 
@@ -171,7 +167,7 @@ void init_io(void) {
     psio_open(PSIF_CC_DIIS_ERR, 0);
 }
 
-void title(void) {
+void title() {
     outfile->Printf("\t\t\t**************************\n");
     outfile->Printf("\t\t\t*                        *\n");
     outfile->Printf("\t\t\t*       ccresponse       *\n");
@@ -179,7 +175,7 @@ void title(void) {
     outfile->Printf("\t\t\t**************************\n");
 }
 
-void exit_io(void) {
+void exit_io() {
     int i;
 
     /* Close all dpd data files here */
@@ -187,10 +183,10 @@ void exit_io(void) {
     for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* get rid of TMP files */
     for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
 
-    tstop();
+    timer_off("ccresponse");
 }
 
-void init_ioff(void) {
+void init_ioff() {
     int i;
     ioff = init_int_array(IOFF_MAX);
     ioff[0] = 0;

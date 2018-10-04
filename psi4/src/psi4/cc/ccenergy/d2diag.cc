@@ -49,7 +49,7 @@ namespace ccenergy {
  *
  * */
 
-double CCEnergyWavefunction::d2diag_rhf(void) {
+double CCEnergyWavefunction::d2diag_rhf() {
     int h, nirreps, i;
     double **Co, *Eo, max;
     double **Cv, *Ev;
@@ -176,7 +176,7 @@ double CCEnergyWavefunction::d2diag_rhf(void) {
     return max;
 }
 
-double CCEnergyWavefunction::d2diag(void) {
+double CCEnergyWavefunction::d2diag() {
     double norm = 0.0;
 
     if (params_.ref == 0) { /** RHF **/

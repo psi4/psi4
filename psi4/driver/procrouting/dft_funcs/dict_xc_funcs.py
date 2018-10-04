@@ -104,7 +104,7 @@ funcs.append({"name": "BHandHLYP"      , "xc_functionals": {"HYB_GGA_XC_BHANDHLY
 funcs.append({"name": "MB3LYP-RC04"    , "xc_functionals": {"HYB_GGA_XC_MB3LYP_RC04"    : {}}})
 funcs.append({"name": "mPWLYP1M"       , "xc_functionals": {"HYB_GGA_XC_MPWLYP1M"       : {}}})
 funcs.append({"name": "revB3LYP"       , "xc_functionals": {"HYB_GGA_XC_REVB3LYP"       : {}}})
-funcs.append({"name": "CAMY-BLYP"      , "xc_functionals": {"HYB_GGA_XC_CAMY_BLYP"      : {}}})
+#funcs.append({"name": "CAMY-BLYP"      , "xc_functionals": {"HYB_GGA_XC_CAMY_BLYP"      : {}}}) # CAMY range separation not supported by psi4
 funcs.append({"name": "PBE0-13"        , "xc_functionals": {"HYB_GGA_XC_PBE0_13"        : {}}})
 funcs.append({"name": "B3LYPs"         , "xc_functionals": {"HYB_GGA_XC_B3LYPs"         : {}}})
 funcs.append({"name": "wB97"           , "xc_functionals": {"HYB_GGA_XC_WB97"           : {}}})
@@ -112,10 +112,10 @@ funcs.append({"name": "wB97X"          , "xc_functionals": {"HYB_GGA_XC_WB97X"  
 funcs.append({"name": "wB97X-D"        , "xc_functionals": {"HYB_GGA_XC_WB97X_D"        : {}}, "dispersion": {"type": "chg", "params": {"s6": 1.0}}})
 funcs.append({"name": "LRC-wPBEh"      , "xc_functionals": {"HYB_GGA_XC_LRC_WPBEH"      : {}}})
 funcs.append({"name": "wB97X-V"        , "xc_functionals": {"HYB_GGA_XC_WB97X_V"        : {}}, "alias": ["WB97XV"]})
-funcs.append({"name": "LCY-PBE"        , "xc_functionals": {"HYB_GGA_XC_LCY_PBE"        : {}}})
-funcs.append({"name": "LCY-BLYP"       , "xc_functionals": {"HYB_GGA_XC_LCY_BLYP"       : {}}})
+#funcs.append({"name": "LCY-PBE"        , "xc_functionals": {"HYB_GGA_XC_LCY_PBE"        : {}}}) # LCY range separation not supported by psi4
+#funcs.append({"name": "LCY-BLYP"       , "xc_functionals": {"HYB_GGA_XC_LCY_BLYP"       : {}}}) # LCY range separation not supported by psi4
 funcs.append({"name": "LC-VV10"        , "xc_functionals": {"HYB_GGA_XC_LC_VV10"        : {}}})
-funcs.append({"name": "CAMY-B3LYP"     , "xc_functionals": {"HYB_GGA_XC_CAMY_B3LYP"     : {}}})
+#funcs.append({"name": "CAMY-B3LYP"     , "xc_functionals": {"HYB_GGA_XC_CAMY_B3LYP"     : {}}}) # CAMY range separation not supported by psi4
 funcs.append({"name": "HPBEINT"        , "xc_functionals": {"HYB_GGA_XC_HPBEINT"        : {}}})
 funcs.append({"name": "LRC-WPBE"       , "xc_functionals": {"HYB_GGA_XC_LRC_WPBE"       : {}}})
 funcs.append({"name": "B3LYP5"         , "xc_functionals": {"HYB_GGA_XC_B3LYP5"         : {}}})

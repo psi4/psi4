@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::analyze(void) {
+void CCEnergyWavefunction::analyze() {
     int nirreps, h, i, j, a, b, ij, ab, u, v;
     int position, num_div, tot1, tot2, nvir, nso, nocc;
     double width, max, min, value, value2;
@@ -57,7 +57,8 @@ void CCEnergyWavefunction::analyze(void) {
     max = 9;
     min = 0;
     width = (max - min) / (num_div);
-    auto printer = std::make_shared<PsiOutStream>("tamps.dat", std::ostream::app);
+    auto mode = std::ostream::app;
+    auto printer = std::make_shared<PsiOutStream>("tamps.dat", mode);
     amp_array = init_array(num_div);
 
     nvir = moinfo_.virtpi[0];
@@ -111,7 +112,8 @@ void CCEnergyWavefunction::analyze(void) {
     max = 2;
     min = -5;
     width = (max - min) / (num_div);
-    auto printer2 = std::make_shared<PsiOutStream>("t1amps.dat", std::ostream::app);
+    auto mode2 = std::ostream::app;
+    auto printer2 = std::make_shared<PsiOutStream>("t1amps.dat", mode2);
     amp_array = init_array(num_div);
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");

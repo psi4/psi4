@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void Gabcd(void) {
+void Gabcd() {
     dpdbuf4 G, L, T;
     int G_irr;
     G_irr = params.G_irr;

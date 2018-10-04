@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::ET2(void) {
+void CCEnergyWavefunction::ET2() {
     dpdfile2 tIA, tia;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 E, t2, t2a, t2b;

@@ -45,8 +45,8 @@
 namespace psi {
 namespace ccresponse {
 
-double **Build_R(void);
-double **Build_U(void);
+double **Build_R();
+double **Build_U();
 
 void analyze(const char *pert, int irrep, double omega) {
     int nirreps, h, i, j, a, b, ij, ab, u, v;
@@ -66,7 +66,8 @@ void analyze(const char *pert, int irrep, double omega) {
     width = (max - min) / (num_div);
 
     sprintf(lbl, "X_%s_%5.3f", pert, omega);
-    auto printer = std::make_shared<PsiOutStream>(lbl, std::ostream::app);
+    auto mode = std::ostream::app;
+    auto printer = std::make_shared<PsiOutStream>(lbl, mode);
     // ffile(&efile, lbl, 1);
     amp_array = init_array(num_div);
 
@@ -124,7 +125,8 @@ void analyze(const char *pert, int irrep, double omega) {
     width = (max - min) / (num_div);
 
     sprintf(lbl, "X1_%s_%5.3f", pert, omega);
-    auto printer2 = std::make_shared<PsiOutStream>(lbl, std::ostream::app);
+    auto mode2 = std::ostream::app;
+    auto printer2 = std::make_shared<PsiOutStream>(lbl, mode2);
     // ffile(&efile, lbl, 1);
     amp_array = init_array(num_div);
 

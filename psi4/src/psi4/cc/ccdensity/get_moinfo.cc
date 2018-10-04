@@ -249,7 +249,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
 }
 
 /* Frees memory allocated in get_moinfo(). */
-void cleanup(void) {
+void cleanup() {
     int i;
 
     free(moinfo.orbspi);

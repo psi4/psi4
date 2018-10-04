@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void td_cleanup(void) {
+void td_cleanup() {
     psio_close(PSIF_CC_TMP, 0);
     psio_close(PSIF_EOM_TMP, 0);
     psio_close(PSIF_EOM_TMP0, 0);
