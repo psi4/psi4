@@ -926,9 +926,74 @@ def _get_default_xtpl(nbasis, xtpl_type):
             raise ValidationError("Wrong number of basis sets supplied to corl_xtpl: %d" % nbasis)
             
 
+def _validate_cbs_inputs(cbs_metadata):
+    """ A helper function which validates the ``cbs_metadata`` format, 
+    expands basis sets, and provides sensible defaults for optional arguments.
+    
+    Parameters
+    ----------
+    cbs_metadata : array
+        array of dicts containing CBS stage keywords.
+    
+    Returns
+    -------
+    array
+        Array of dictionaries, with each item consisting of an extrapolation
+        stage. All validation takes place here.
+    """   
+        
+    metadata = []
+    for item in cbs_metadata:
+    # 1a) all items must have wfn
+        if "wfn" not in item:
+            raise ValidationError("Stage {d} doesn't have defined level of theory!".format(cbs_metadata.index(item)))
+    # 1b) all items must have basis set
+        if "basis" not in item:
+            raise ValidationError("Stage {d} doesn't have defined basis sets!".format(cbs_metadata.index(item)))
+    # 2a) process required stage parameters and assign defaults
+        stage = {}
+        stage["wfn"] = item["wfn"].lower()
+        stage["basis"] = _expand_bracketed_basis(item["basis"].lower())
+    # 2b) if first item is not HF, generate it
+        if len(metadata) == 0 and stage["wfn"] not in ["hf", "c4-hf", "scf", "c4-scf"]:
+            scf = {}
+            if stage["wfn"].startswith("c4"):
+                scf["wfn"] = "c4-hf"
+            else:
+                scf["wfn"] = "hf"
+            scf["basis"] = ([stage["basis"][0][-1]], [stage["basis"][1][-1]])
+            scf["treatment"] = "scf"
+            scf["stage"] = "scf"
+            scf["scheme"] = _get_default_xtpl(len(scf["basis"][1]), scf["treatment"])
+            scf["alpha"] = None
+            scf["options"] = False
+            metadata.append(scf)
+    # 2c) keep processing current stage
+        stage["treatment"] = item.get("treatment", "scf" if len(metadata) == 0 else "corl")
+        stage["stage"] = item.get("stage", False)
+        if not stage["stage"]:
+            if len(metadata) == 0:
+                stage["stage"] = "scf"
+            elif len(metadata) == 1:
+                stage["stage"] = "corl"
+            else:
+                stage["stage"] = "delta{0:d}".format(len(metadata) - 1)
+        stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"])) 
+        if len(metadata) > 0:
+            stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn")).lower()
+            stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower())
+            if len(stage["basis"][0]) != len(stage["basis_lo"][0]):
+                raise ValidationError("""Number of basis sets inconsistent 
+                                            between high ({0:d}) and low ({1:d}) levels.""".format(len(stage["basis"][0]),
+                                                                                                len(stage["basis_lo"][0])))
+        stage["alpha"] = item.get("alpha", None)
+        stage["options"] = item.get("options", False)
+        metadata.append(stage)
+    return(metadata)
+
 def _process_cbs_kwargs(kwargs):
-    """ A helper function which either translates supplied kwargs into the
-    ``cbs_metadata`` format, or validates a provided cbs_metadata array.
+    """ A helper function which translates supplied kwargs into the
+    ``cbs_metadata`` format and passes it for validation.
     
     Parameters
     ----------
@@ -942,96 +1007,46 @@ def _process_cbs_kwargs(kwargs):
         stage. All validation takes place here.
     """    
     
-    metadata = []
     if "cbs_metadata" in kwargs:
+        # if we passed in a dict, validate it right away
         cbs_metadata = kwargs.get("cbs_metadata")
-        for item in cbs_metadata:
-            stage = {}
-            if "wfn" not in item:
-                raise ValidationError("Wavefunction type has to be supplied for every stage.")
-            stage["wfn"] = item["wfn"]
-            if "basis" not in item:
-                raise ValidationError("Basis set has to be supplied for every stage.")
-            stage["basis"] = _expand_bracketed_basis(item["basis"].lower())
-            stage["treatment"] = item.get("treatment", "scf" if len(metadata) == 0 else "corl")
-            stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"])) 
-            if len(metadata) >= 1:
-                stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn"))
-                stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower())
-                if len(stage["basis"][0]) != len(stage["basis_lo"][0]):
-                    raise ValidationError("""Number of basis sets inconsistent 
-                                             between high ({0:d}) and low ({1:d}) levels.""".format(len(stage["basis"][0]),
-                                                                                                    len(stage["basis_lo"][0])))
-            stage["stage"] = item.get("stage", False)
-            if not stage["stage"]:
-                if len(metadata) == 0:
-                    stage["stage"] = "scf"
-                elif len(metadata) == 1:
-                    stage["stage"] = "corl"
-                else:
-                    stage["stage"] = "delta{0:d}".format(len(metadata) - 1)
-            stage["alpha"] = item.get("alpha", None)
-            stage["options"] = item.get("options", False)
-            metadata.append(stage)
     else:
-        scf = {}
-        corl = {}
-        delta = {}
-        delta2 = {}
-        corl["wfn"] = kwargs.get("corl_wfn", False)
-        if corl["wfn"] and corl["wfn"].startswith("c4-"):
-            default_scf = "c4-hf"
-        else:
-            default_scf = "hf"
-        scf["wfn"] = kwargs.get("scf_wfn", default_scf)
-        if "scf_basis" in kwargs:
-            scf["basis"] = _expand_bracketed_basis(kwargs.get("scf_basis"))
-        if "corl_basis" in kwargs:
-            corl["basis"] = _expand_bracketed_basis(kwargs.get("corl_basis"))
-            corl["basis_lo"] = corl["basis"]
-            if "basis" not in scf:
-                scf["basis"] = ([corl["basis"][0][-1]],[corl["basis"][1][-1]])
-        scf["scheme"] = kwargs.get("scf_scheme", _get_default_xtpl(len(scf["basis"][1]), "scf"))
-        scf["alpha"] = kwargs.get('cbs_scf_alpha', kwargs.get('scf_alpha', None))
-        scf["options"] = False
-        scf["treatment"] = "scf"
-        scf["stage"] = "scf"
-        metadata.append(scf)
-        if corl["wfn"]:
-            corl["wfn_lo"] = kwargs.get("corl_scheme_lesser", default_scf)
-            corl["scheme"] = kwargs.get("corl_scheme", _get_default_xtpl(len(corl["basis"][1]), "corl"))
-            corl["alpha"] = kwargs.get('cbs_corl_alpha', kwargs.get('corl_alpha', None))
-            corl["options"] = False
-            corl["treatment"] = "corl"
-            corl["stage"] = "corl"
-            metadata.append(corl)
-        delta["wfn"] = kwargs.get("delta_wfn", False)
-        if delta["wfn"] and corl["wfn"]:
-            delta["wfn_lo"] = kwargs.get("delta_wfn_lesser", corl["wfn"])
-            delta["basis"] = _expand_bracketed_basis(kwargs.get("delta_basis"))
-            delta["basis_lo"] = delta["basis"]
-            delta["scheme"] = kwargs.get("delta_scheme", _get_default_xtpl(len(delta["basis"][1]), "corl"))
-            delta["alpha"] = kwargs.get('cbs_delta_alpha', kwargs.get('delta_alpha', None))
-            delta["options"] = False
-            delta["treatment"] = "corl"
-            delta["stage"] = "delta1"
-            metadata.append(delta)
-        elif delta["wfn"]:
+        # if we passed in options, check for consecutive correlations first
+        if "delta_wfn" in kwargs and "corl_wfn" not in kwargs:
             raise ValidationError("Delta function supplied without corl_wfn defined.")
-        delta2["wfn"] = kwargs.get("delta2_wfn", False)
-        if delta2["wfn"] and delta["wfn"] and corl["wfn"]:
-            delta2["wfn_lo"] = kwargs.get("delta2_wfn_lesser", delta["wfn"])
-            delta2["basis"] = _expand_bracketed_basis(kwargs.get("delta2_basis"))
-            delta2["basis_lo"] = delta2["basis"]
-            delta2["scheme"] = kwargs.get("delta2_scheme", _get_default_xtpl(len(delta2["basis"][1]), "corl"))
-            delta2["alpha"] = kwargs.get('cbs_delta2_alpha', kwargs.get('delta2_alpha', None))
-            delta2["options"] = False
-            delta2["treatment"] = "corl"
-            delta2["stage"] = "delta2"
-            metadata.append(delta2)
-        elif delta2["wfn"]:
-            raise ValidationError("Delta2 function supplied without delta_wfn or corl_wfn defined.")
-    return metadata
+        if "delta2_wfn" in kwargs and "delta_wfn" not in kwargs:
+            raise ValidationError("Second delta function supplied without delta_wfn defined.")
+        cbs_metadata = []
+        possible_stages = ["scf", "corl"]
+        while len(possible_stages) > 0:
+            sn = possible_stages.pop(0)
+            # either both *_wfn and *_basis have to be specified
+            if "{:s}_wfn".format(sn) in kwargs and "{:s}_basis".format(sn) in kwargs:
+                stage = {"wfn": kwargs["{:s}_wfn".format(sn)], 
+                         "basis": kwargs["{:s}_basis".format(sn)]}
+            # or we're at a scf stage which can be implied with a provided scf_basis
+            elif sn == "scf" and "{:s}_basis".format(sn) in kwargs:
+                stage = {"wfn": "hf", 
+                         "basis": kwargs["{:s}_basis".format(sn)]}
+            # otherwise go to the next possible stage
+            else:
+                continue
+            # if we made it here, stage exists - parse other keywords
+            if "{:s}_scheme".format(sn) in kwargs:
+                stage["scheme"] = kwargs["{:s}_scheme".format(sn)]
+            if "{:s}_wfn_lesser".format(sn) in kwargs:
+                stage["wfn_lo"] = kwargs["{:s}_wfn_lesser".format(sn)]
+            if "cbs_{:s}_alpha".format(sn) in kwargs:
+                stage["alpha"] = kwargs["cbs_{:s}_alpha".format(sn)]
+            elif "{:s}_alpha".format(sn) in kwargs:
+                stage["alpha"] = kwargs["{:s}_alpha".format(sn)]
+            cbs_metadata.append(stage)
+            if sn == "corl":
+                possible_stages.append("delta")
+            elif sn == "delta":
+                possible_stages.append("delta2")
+    
+    return _validate_cbs_inputs(cbs_metadata)
         
             
 

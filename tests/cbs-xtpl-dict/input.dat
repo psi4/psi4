@@ -51,6 +51,11 @@ cbs_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
                                       {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])
 compare_values(cbs_ref, cbs_dtz, 6, "MP2/[DT]Z + D:CCSD(T)/DZ Energy Check")  #TEST
 
+cbs_no_scf = energy(cbs, cbs_metadata=[{"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                       {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])
+compare_values(cbs_ref, cbs_no_scf, 6, "MP2/[DT]Z + D:CCSD(T)/DZ without explicit SCF stage") #TEST
+
+
 # Options test
 set freeze_core True
 
@@ -60,4 +65,5 @@ ae_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
                                        "options": {"freeze_core": "False"}}])
                                        
 compare_values(ae_ref, ae_dtz, 6, "MP2/[DT]Z + D:(AE-FC)MP2/DZ Energy Check")  #TEST
+
 
