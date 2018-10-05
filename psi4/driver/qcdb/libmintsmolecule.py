@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import re
 import copy
@@ -51,7 +49,7 @@ ZERO = 1.0E-14
 NOISY_ZERO = 1.0E-8
 
 
-class LibmintsMolecule(object):
+class LibmintsMolecule():
     """Class to store the elements, coordinates, fragmentation pattern,
     charge, multiplicity of a molecule. Largely replicates psi4's libmints
     Molecule class, developed by Justin M. Turney and Andy M. Simmonett

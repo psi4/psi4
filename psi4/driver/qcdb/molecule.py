@@ -26,11 +26,7 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
 import os
-import sys
 import hashlib
 import collections
 
@@ -41,9 +37,6 @@ import qcelemental as qcel
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
 from .bfs import BFS
-
-if sys.version_info >= (3,0):
-    basestring = str
 
 
 class Molecule(LibmintsMolecule):
@@ -95,7 +88,7 @@ class Molecule(LibmintsMolecule):
             if isinstance(molinit, dict):
                 molrec = molinit
 
-            elif isinstance(molinit, basestring):
+            elif isinstance(molinit, str):
                 compound_molrec = qcel.molparse.from_string(
                     molstr=molinit,
                     dtype=dtype,
@@ -185,7 +178,8 @@ class Molecule(LibmintsMolecule):
         >>> H2O = qcdb.Molecule.init_with_xyz('h2o.xyz')
 
         """
-        raise FeatureDeprecated("""qcdb.Molecule.init_with_xyz. Replace with: qcdb.Molecule.from_string(..., dtype='xyz+')""")
+        raise FeatureDeprecated(
+            """qcdb.Molecule.init_with_xyz. Replace with: qcdb.Molecule.from_string(..., dtype='xyz+')""")
 
     @classmethod
     def init_with_mol2(cls, xyzfilename, no_com=False, no_reorient=False, contentsNotFilename=False):
@@ -214,8 +208,8 @@ class Molecule(LibmintsMolecule):
             try:
                 infile = open(xyzfilename, 'r')
             except IOError:
-                raise ValidationError("""Molecule::init_with_mol2: given filename '%s' does not exist.""" %
-                                      (xyzfilename))
+                raise ValidationError(
+                    """Molecule::init_with_mol2: given filename '%s' does not exist.""" % (xyzfilename))
             if os.stat(xyzfilename).st_size == 0:
                 raise ValidationError("""Molecule::init_with_mol2: given filename '%s' is blank.""" % (xyzfilename))
             text = infile.readlines()
@@ -1057,8 +1051,7 @@ class Molecule(LibmintsMolecule):
 
         return ar
 
-    @staticmethod
-    def _raw_to_arrays(self, dummy=False, ghost_as_dummy=False):
+    def to_arrays(self, dummy=False, ghost_as_dummy=False):
         """Exports coordinate info into NumPy arrays.
 
         Parameters
@@ -1093,11 +1086,16 @@ class Molecule(LibmintsMolecule):
             else:
                 # psi4.core.Molecule
                 geom = np.array(self.full_geometry())
-            mass = np.asarray([(0. if (ghost_as_dummy and self.fZ(at) == 0) else self.fmass(at)) for at in range(self.nallatom())])
-            elem = np.asarray(['X' if (ghost_as_dummy and self.fZ(at) == 0) else self.fsymbol(at) for at in range(self.nallatom())])
-            elez = np.asarray([0 if (ghost_as_dummy and self.fZ(at) == 0) else self.fZ(at) for at in range(self.nallatom())])
-            uniq = np.asarray(
-                [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.nallatom())])
+            mass = np.asarray(
+                [(0. if (ghost_as_dummy and self.fZ(at) == 0) else self.fmass(at)) for at in range(self.nallatom())])
+            elem = np.asarray(
+                ['X' if (ghost_as_dummy and self.fZ(at) == 0) else self.fsymbol(at) for at in range(self.nallatom())])
+            elez = np.asarray(
+                [0 if (ghost_as_dummy and self.fZ(at) == 0) else self.fZ(at) for at in range(self.nallatom())])
+            uniq = np.asarray([
+                hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest()
+                for at in range(self.nallatom())
+            ])
         else:
             if isinstance(self, Molecule):
                 # normal qcdb.Molecule
@@ -1108,8 +1106,9 @@ class Molecule(LibmintsMolecule):
             mass = np.asarray([self.mass(at) for at in range(self.natom())])
             elem = np.asarray([self.symbol(at) for at in range(self.natom())])
             elez = np.asarray([self.Z(at) for at in range(self.natom())])
-            uniq = np.asarray(
-                [hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())])
+            uniq = np.asarray([
+                hashlib.sha1((str(elem[at]) + str(mass[at])).encode('utf-8')).hexdigest() for at in range(self.natom())
+            ])
 
         return geom, mass, elem, elez, uniq
 
@@ -1222,7 +1221,7 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
-    def _raw_to_string(self, dtype, units='Angstrom', atom_format=None, ghost_format=None, width=17, prec=12):
+    def to_string(self, dtype, units='Angstrom', atom_format=None, ghost_format=None, width=17, prec=12):
         """Format a string representation of QM molecule."""
 
         molrec = self.to_dict(np_out=True)
@@ -1322,8 +1321,7 @@ class Molecule(LibmintsMolecule):
 
         """
 
-        if (molschema.get('schema_name', '').startswith('qc_schema') and
-            (molschema.get('schema_version', '') == 1)):
+        if (molschema.get('schema_name', '').startswith('qc_schema') and (molschema.get('schema_version', '') == 1)):
             # Lost Fields
             # -----------
             # * 'comment'
@@ -1374,22 +1372,22 @@ class Molecule(LibmintsMolecule):
                 verbose=verbose)
 
         else:
-            raise ValidationError("""Schema not recognized""")
+            raise ValidationError("""Schema not recognized, schema_name/schema_version: {}/{} """.format(
+                molschema.get('schema_name', '(none)'), molschema.get('schema_version', '(none)')))
 
         if return_dict:
             return Molecule.from_dict(molrec), molrec
         else:
             return Molecule.from_dict(molrec)
 
-    def _raw_to_schema(self, dtype, units='Angstrom', return_type='json'):
+    def to_schema(self, dtype, units='Angstrom', return_type='json'):
         """Serializes instance into JSON or YAML according to schema `dtype`."""
 
         molrec = self.to_dict(np_out=True)
         jymol = qcel.molparse.to_schema(molrec, dtype=dtype, units=units, return_type=return_type)
         return jymol
 
-    @staticmethod
-    def _raw_to_dict(self, force_c1=False, force_units=False, np_out=True):
+    def to_dict(self, force_c1=False, force_units=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
 
         self.update_geometry()
@@ -1569,8 +1567,7 @@ class Molecule(LibmintsMolecule):
         if not unsettled:
             self.update_geometry()
 
-    @staticmethod
-    def _raw_BFS(self,
+    def BFS(self,
             seed_atoms=None,
             bond_threshold=1.20,
             return_arrays=False,
@@ -1686,17 +1683,16 @@ class Molecule(LibmintsMolecule):
         outputs = tuple(outputs)
         return (frag_pattern, ) + outputs[1:]
 
-    @staticmethod
-    def _raw_B787(concern_mol,
-                  ref_mol,
-                  do_plot=False,
-                  verbose=1,
-                  atoms_map=False,
-                  run_resorting=False,
-                  mols_align=False,
-                  run_to_completion=False,
-                  uno_cutoff=1.e-3,
-                  run_mirror=False):
+    def B787(concern_mol,
+             ref_mol,
+             do_plot=False,
+             verbose=1,
+             atoms_map=False,
+             run_resorting=False,
+             mols_align=False,
+             run_to_completion=False,
+             uno_cutoff=1.e-3,
+             run_mirror=False):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
@@ -1796,17 +1792,16 @@ class Molecule(LibmintsMolecule):
 
         return rmsd, solution, amol
 
-    @staticmethod
-    def _raw_scramble(ref_mol,
-                      do_shift=True,
-                      do_rotate=True,
-                      do_resort=True,
-                      deflection=1.0,
-                      do_mirror=False,
-                      do_plot=False,
-                      run_to_completion=False,
-                      run_resorting=False,
-                      verbose=1):
+    def scramble(ref_mol,
+                 do_shift=True,
+                 do_rotate=True,
+                 do_resort=True,
+                 deflection=1.0,
+                 do_mirror=False,
+                 do_plot=False,
+                 run_to_completion=False,
+                 run_resorting=False,
+                 verbose=1):
         """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
         checking that the aligner returns the opposite transformation.
 
@@ -1910,11 +1905,3 @@ from .parker import bond_profile as _parker_bondprofile_yo
 Molecule.bond_profile = _parker_bondprofile_yo
 from .interface_gcp import run_gcp as _gcp_qcdb_yo
 Molecule.run_gcp = _gcp_qcdb_yo
-
-Molecule.to_arrays = Molecule._raw_to_arrays
-Molecule.to_dict = Molecule._raw_to_dict
-Molecule.BFS = Molecule._raw_BFS
-Molecule.B787 = Molecule._raw_B787
-Molecule.scramble = Molecule._raw_scramble
-Molecule.to_string = Molecule._raw_to_string
-Molecule.to_schema = Molecule._raw_to_schema

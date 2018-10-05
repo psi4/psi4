@@ -245,7 +245,7 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
 
     else:
         raise ValidationError("""Schema not recognized, schema_name/schema_version: {}/{} """.format(
-            molschema.get('schema_name', 'NA'), molschema.get('schema_version', 'NA')))
+            molschema.get('schema_name', '(none)'), molschema.get('schema_version', '(none)')))
 
     if return_dict:
         return core.Molecule.from_dict(molrec), molrec
@@ -261,21 +261,16 @@ def dynamic_variable_bind(cls):
     cls.__setattr__ = molecule_set_attr
     cls.__getattr__ = molecule_get_attr
 
-    # for py3-only, all these `cls.fn = qcdb.Molecule._raw_fn` can be
-    #   replaced by `cls.fn = qcdb.Molecule.fn` and in qcdb/molecule.py
-    #   itself, the raw, staticmethod fns can use their official names again
-    #   and not need the append line at bottom of file. what I do for you,
-    #   py2 ...
-    cls.to_arrays = qcdb.Molecule._raw_to_arrays
-    cls.to_dict = qcdb.Molecule._raw_to_dict
-    cls.BFS = qcdb.Molecule._raw_BFS
-    cls.B787 = qcdb.Molecule._raw_B787
-    cls.scramble = qcdb.Molecule._raw_scramble
+    cls.to_arrays = qcdb.Molecule.to_arrays
+    cls.to_dict = qcdb.Molecule.to_dict
+    cls.BFS = qcdb.Molecule.BFS
+    cls.B787 = qcdb.Molecule.B787
+    cls.scramble = qcdb.Molecule.scramble
     cls.from_arrays = molecule_from_arrays
     cls.from_string = molecule_from_string
-    cls.to_string = qcdb.Molecule._raw_to_string
+    cls.to_string = qcdb.Molecule.to_string
     cls.from_schema = molecule_from_schema
-    cls.to_schema = qcdb.Molecule._raw_to_schema
+    cls.to_schema = qcdb.Molecule.to_schema
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
