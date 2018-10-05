@@ -192,60 +192,7 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
         Only provided if `return_dict` is True.
 
     """
-
-    if (molschema.get('schema_name', '').startswith('qc_schema') and (molschema.get('schema_version', '') == 1)):
-        # Lost Fields
-        # -----------
-        # * 'comment'
-        # * 'provenance'
-        ms = molschema['molecule']
-
-        if 'fragments' in ms:
-            frag_pattern = ms['fragments']
-        else:
-            frag_pattern = [np.arange(len(ms['symbols']))]
-
-        dcontig = qcdb.Molecule.contiguize_from_fragment_pattern(
-            frag_pattern,
-            geom=ms['geometry'],
-            elea=None,
-            elez=None,
-            elem=ms['symbols'],
-            mass=ms.get('masses', None),
-            real=ms.get('real', None),
-            elbl=None,
-            throw_reorder=True)
-
-        molrec = qcel.molparse.from_arrays(
-            geom=dcontig['geom'],
-            elea=None,
-            elez=None,
-            elem=dcontig['elem'],
-            mass=dcontig['mass'],
-            real=dcontig['real'],
-            elbl=None,
-            name=ms.get('name', None),
-            units='Bohr',
-            input_units_to_au=None,
-            fix_com=ms.get('fix_com', None),
-            fix_orientation=ms.get('fix_orientation', None),
-            fix_symmetry=None,
-            fragment_separators=dcontig['fragment_separators'],
-            fragment_charges=ms.get('fragment_charges', None),
-            fragment_multiplicities=ms.get('fragment_multiplicities', None),
-            molecular_charge=ms.get('molecular_charge', None),
-            molecular_multiplicity=ms.get('molecular_multiplicity', None),
-            domain='qm',
-            #missing_enabled_return=missing_enabled_return,
-            #tooclose=tooclose,
-            #zero_ghost_fragments=zero_ghost_fragments,
-            #nonphysical=nonphysical,
-            #mtol=mtol,
-            verbose=verbose)
-
-    else:
-        raise ValidationError("""Schema not recognized, schema_name/schema_version: {}/{} """.format(
-            molschema.get('schema_name', '(none)'), molschema.get('schema_version', '(none)')))
+    molrec = qcel.molparse.from_schema(molschema, verbose=verbose)
 
     if return_dict:
         return core.Molecule.from_dict(molrec), molrec
