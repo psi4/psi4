@@ -1,19 +1,18 @@
 <p align="center">
 <!-- Commit -->
-<a href="https://travis-ci.org/psi4/psi4"> <img src="https://travis-ci.org/psi4/psi4.svg?branch=master?logo=travis" /></a>
-<a href="https://ci.appveyor.com/project/loriab/psi4"> <img src="https://img.shields.io/appveyor/ci/psi4/psi4.svg?logo=appveyor" /></a>
+<a href="https://travis-ci.org/psi4/psi4"> <img src="https://img.shields.io/travis/psi4/psi4/master.svg?logo=travis" /></a>
+<a href="https://ci.appveyor.com/project/psi4/psi4"> <img src="https://img.shields.io/appveyor/ci/psi4/psi4.svg?logo=appveyor" /></a>
 <a href="https://codecov.io/gh/psi4/psi4"> <img src="https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg" /></a>
 <a href="https://lgtm.com/projects/g/psi4/psi4/context:python"> <img src="https://img.shields.io/lgtm/grade/python/g/psi4/psi4.svg?logo=lgtm&logoWidth=18" /></a>
 <br>
 <!-- Release -->
-<b> Latest Release </b>
 <a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/release/psi4/psi4.svg" /></a>
 <a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/release-date/psi4/psi4.svg" /></a>
 <a href="https://github.com/psi4/psi4/releases/tag/v1.2"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.2.svg" /></a>
-<br>
+<!--<br>-->
 <!-- PR Activity -->
 <a href="https://github.com/psi4/psi4/graphs/contributors"> <img src="https://img.shields.io/github/commit-activity/y/psi4/psi4.svg" /></a>
-<a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
+<!--<a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>-->
 <a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
 <br>
 <!-- Supported -->
@@ -24,9 +23,8 @@
 <!-- Project/Communication -->
 <a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
-<a href="http://vergil.chemistry.gatech.edu/nu-psicode/install-v1.2rc2.html"> <img src="https://img.shields.io/badge/obtain-latest-green.svg" /></a>
-<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
-<!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
+<a href="http://vergil.chemistry.gatech.edu/nu-psicode/install-v1.2.1.html"> <img src="https://img.shields.io/badge/obtain-latest-green.svg" /></a>
+<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-808493.svg" /></a>
 <!--<a href="https://psi4.slack.com/messages"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg" /></a>
 <a href="mailto:psi4aiqc+slackinvite@gmail.com?subject=request slack invite (incl. who, where, email)"> <img src="https://img.shields.io/badge/dev_chat-invite-808493.svg" /></a> -->
 <a href="https://join.slack.com/t/psi4/shared_invite/enQtNDUyOTYzNTE0NjQ3LWExZDhkY2U4MTM1ZDZlNTBkNjMyMDcxZmFkN2NmYmZkMzliNzY2ZDc2OTBlYTk5ZTA2OGRkNWYxNzJmN2QyYWM"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg?logo=slack" /></a>
@@ -53,9 +51,9 @@ strives to be friendly to both users and developers.
 
 * **Downloading and Installing Psi4** http://psicode.org/psi4manual/master/build_faq.html (for the CMake adept, see [CMakeLists.txt](CMakeLists.txt)
 
-* **Manual**  [http://bit.ly/psi4manual](http://psicode.org/psi4manual/master/index.html) (built nightly from master branch)
+* **Manual**  [http://bit.ly/psi4manual](http://psicode.org/psi4manual/master/index.html) (built nightly from master branch) or http://psicode.org/psi4manual/1.2/index.html (last release)
 
-* **Tutorial** http://psicode.org/psi4manual/master/tutorial.html
+* **Tutorial** http://psicode.org/psi4manual/master/tutorial.html for Psithon (``psi4 job.in``), http://psicode.org/psi4manual/master/psiapi.html for PsiAPI (``python job.py``)
 
 * **Forum** http://forum.psicode.org
 
@@ -63,11 +61,11 @@ strives to be friendly to both users and developers.
 
 * **Github**  https://github.com/psi4/psi4 (authoritative repository)
 
-* **Travis CI build status** [![Build Status](https://travis-ci.org/psi4/psi4.svg?branch=master)](https://travis-ci.org/psi4/psi4)
+* **Continuous Integration Status** [![Build Status](https://travis-ci.org/psi4/psi4.svg?branch=master)](https://travis-ci.org/psi4/psi4) on Linux [![Build Status](https://img.shields.io/appveyor/ci/psi4/psi4.svg)](https://ci.appveyor.com/project/psi4/psi4) on Windows
 
 * **Anaconda**  https://anaconda.org/psi4 (binary available for Linux, Mac, and WSL Windows [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#how-to-install-a-psi4-binary-with-the-psi4conda-installer-download-site)
 
-* **CodeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4) (More like 70% -- we'll get this back soon.)
+* **Coverage** Source code lines covered by running most of the test suite. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
 
 * **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 and follow [GitHub contribution procedure](http://psicode.org/psi4manual/master/build_obtaining.html#faq-githubworkflow))
 
@@ -75,9 +73,9 @@ strives to be friendly to both users and developers.
 
 * **Download Tarball** https://github.com/psi4/psi4/releases 
 
-* **Build Dashboard** https://testboard.org/cdash/index.php?project=Psi
+<!--* **Build Dashboard** https://testboard.org/cdash/index.php?project=Psi
 
-* **YouTube Channel** https://www.youtube.com/psitutorials
+* **YouTube Channel** https://www.youtube.com/psitutorials-->
 
 
 License
