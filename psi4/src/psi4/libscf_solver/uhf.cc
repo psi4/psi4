@@ -168,11 +168,9 @@ void UHF::form_V() {
 }
 void UHF::form_G() {
     if (functional_->needs_xc()) {
-        timer_on("RKS: Form V");
         form_V();
         Ga_->copy(Va_);
         Gb_->copy(Vb_);
-        timer_off("RKS: Form V");
     } else {
         Ga_->zero();
         Gb_->zero();

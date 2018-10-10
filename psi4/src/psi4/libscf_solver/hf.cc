@@ -349,13 +349,10 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     U.reset();
     tmp.reset();
 }
-void HF::integrals() {
+void HF::initialize_jk(size_t effective_memory_doubles) {
     if (print_) outfile->Printf("  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
-    // try {
-    size_t effective_memory =
-        (size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR") * (Process::environment.get_memory() / 8L));
     if (options_.get_str("SCF_TYPE") == "GTFOCK") {
 #ifdef HAVE_JK_FACTORY
         // DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
@@ -371,13 +368,13 @@ void HF::integrals() {
 #endif
     } else {
         jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_, functional_->is_x_lrc(),
-                           effective_memory);
+                           effective_memory_doubles);
     }
 
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
-    jk_->set_memory(effective_memory);
+    jk_->set_memory(effective_memory_doubles);
 
     // DFT sometimes needs custom stuff
     // K matrices

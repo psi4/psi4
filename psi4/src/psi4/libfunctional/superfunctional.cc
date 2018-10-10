@@ -462,6 +462,9 @@ void SuperFunctional::allocate() {
 
     std::vector<std::string> list;
 
+    // Temporaries
+    list.push_back("Q_TMP");
+
     // LSDA
     if (deriv_ >= 0) {
         list.push_back("V");
@@ -586,15 +589,18 @@ void SuperFunctional::allocate() {
     if (needs_vv10_) {
         vv_values_["W0"] = std::make_shared<Vector>("W0", max_points_);
         vv_values_["KAPPA"] = std::make_shared<Vector>("KAPPA", max_points_);
+        vv_values_["GRID_WX"] = std::make_shared<Vector>("W_X_GRID", max_points_);
+        vv_values_["GRID_WY"] = std::make_shared<Vector>("W_Y_GRID", max_points_);
+        vv_values_["GRID_WZ"] = std::make_shared<Vector>("W_Z_GRID", max_points_);
     }
 }
 std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
     const std::map<std::string, SharedVector>& vals, int npoints) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
-    for (std::map<std::string, SharedVector>::const_iterator it = values_.begin();
-         it != values_.end(); ++it) {
-        ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
+    // Zero out values
+    for (auto kv : values_){
+        kv.second->zero();
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
@@ -801,38 +807,45 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
 double SuperFunctional::compute_vv10_kernel(
     const std::map<std::string, SharedVector>& vals,
     const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-    std::shared_ptr<BlockOPoints> block, int npoints) {
+    std::shared_ptr<BlockOPoints> block, int npoints, bool do_grad) {
 
     // Kernel between left (*this) and right (vv10_cache) grids
 
     // Compute the vv10 cache in place
-    double l_thresh = 1.e-12;
-    size_t l_npoints = block->npoints();
+    const double l_thresh = 1.e-12;
+    const size_t l_npoints = block->npoints();
     compute_vv10_cache(vals, block, l_thresh, block->npoints(), true);
 
     // Grab values to update
     double vv10_e = 0.0;
     double* v_rho = values_["V_RHO_A"]->pointer();
     double* v_gamma = values_["V_GAMMA_AA"]->pointer();
+    double* x_grid = vv_values_["GRID_WX"]->pointer();
+    double* y_grid = vv_values_["GRID_WY"]->pointer();
+    double* z_grid = vv_values_["GRID_WZ"]->pointer();
+    std::fill(x_grid, x_grid+l_npoints, 0.0);
+    std::fill(y_grid, y_grid+l_npoints, 0.0);
+    std::fill(z_grid, z_grid+l_npoints, 0.0);
 
     // Constants
     const double vv10_beta = vv10_beta_;
 
     // Get left points
-    double* l_x = block->x();
-    double* l_y = block->y();
-    double* l_z = block->z();
-    double* l_w = block->w();
-    double* l_rho = vals.find("RHO_A")->second->pointer();
-    double* l_gamma = vals.find("GAMMA_AA")->second->pointer();
-    double* l_W0 = vv_values_["W0"]->pointer();
-    double* l_kappa = vv_values_["KAPPA"]->pointer();
+    const double* l_x = block->x();
+    const double* l_y = block->y();
+    const double* l_z = block->z();
+    const double* l_w = block->w();
+    const double* l_rho = vals.find("RHO_A")->second->pointer();
+    const double* l_gamma = vals.find("GAMMA_AA")->second->pointer();
+    const double* l_W0 = vv_values_["W0"]->pointer();
+    const double* l_kappa = vv_values_["KAPPA"]->pointer();
 
     for (size_t i = 0; i < l_npoints; i++){
 
         // Add Phi agnostic quantities
         vv10_e += l_w[i] * l_rho[i] * vv10_beta;
-        v_rho[i] += vv10_beta;
+        v_rho[i] = vv10_beta;
+        v_gamma[i] = 0.0;
 
         if (l_rho[i] < l_thresh) continue;
 
@@ -840,45 +853,78 @@ double SuperFunctional::compute_vv10_kernel(
         double phi = 0.0;
         double U = 0.0;
         double W = 0.0;
+        double xc = 0.0;
+        double yc = 0.0;
+        double zc = 0.0;
         for (auto r_block : vv10_cache){
 
             // Get right points
-            double* r_x = r_block["X"]->pointer();
-            double* r_y = r_block["Y"]->pointer();
-            double* r_z = r_block["Z"]->pointer();
-            double* r_w = r_block["W"]->pointer();
-            double* r_rho = r_block["RHO"]->pointer();
-            double* r_W0 = r_block["W0"]->pointer();
-            double* r_kappa = r_block["KAPPA"]->pointer();
+            const double* r_x = r_block["X"]->pointer();
+            const double* r_y = r_block["Y"]->pointer();
+            const double* r_z = r_block["Z"]->pointer();
+            const double* r_w = r_block["W"]->pointer();
+            const double* r_rho = r_block["RHO"]->pointer();
+            const double* r_W0 = r_block["W0"]->pointer();
+            const double* r_kappa = r_block["KAPPA"]->pointer();
 
-            size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
+            const size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
 
             // Interior Kernel
-            #if _OPENMP >= 201307 // OpenMP 4.0 or newer
-            #pragma omp simd reduction(+: phi, U, W)
-            #endif
-            for (size_t j = 0; j < r_npoints; j++) {
-                // if (r_rho[i] < 1.e-8) continue;
+            if (do_grad){
+                # pragma omp simd reduction(+: phi, U, W, xc, yc, zc)
+                for (size_t j = 0; j < r_npoints; j++) {
 
-                // Distance between grid points
-                const double d_x = l_x[i] - r_x[j];
-                const double d_y = l_y[i] - r_y[j];
-                const double d_z = l_z[i] - r_z[j];
-                const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
+                    // Distance between grid points
+                    const double d_x = l_x[i] - r_x[j];
+                    const double d_y = l_y[i] - r_y[j];
+                    const double d_z = l_z[i] - r_z[j];
+                    const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
 
-                // g/gp values
-                const double g = l_W0[i] * R2 + l_kappa[i];
-                const double gp = r_W0[j] * R2 + r_kappa[j];
-                const double gs = g + gp;
+                    // g/gp values
+                    const double g = l_W0[i] * R2 + l_kappa[i];
+                    const double gp = r_W0[j] * R2 + r_kappa[j];
+                    const double gs = g + gp;
 
-                // Sum the kernel
-                const double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
+                    // Sum the kernel
+                    const double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
 
-                // Dumb question, does FMA do subtraction?
-                phi += phi_kernel;
-                const double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
-                U += tmp_U;
-                W += tmp_U * R2;
+                    // Dumb question, does FMA do subtraction?
+                    phi += phi_kernel;
+                    const double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
+                    U += tmp_U;
+                    W += tmp_U * R2;
+
+                    // Grid contribution
+                    const double Q = -2.0 * phi_kernel * (l_W0[i]/g + r_W0[j]/gp + (l_W0[i] + r_W0[j])/gs);
+                    xc += Q * d_x;
+                    yc += Q * d_y;
+                    zc += Q * d_z;
+                }
+
+            } else {
+                # pragma omp simd reduction(+: phi, U, W)
+                for (size_t j = 0; j < r_npoints; j++) {
+
+                    // Distance between grid points
+                    const double d_x = l_x[i] - r_x[j];
+                    const double d_y = l_y[i] - r_y[j];
+                    const double d_z = l_z[i] - r_z[j];
+                    const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
+
+                    // g/gp values
+                    const double g = l_W0[i] * R2 + l_kappa[i];
+                    const double gp = r_W0[j] * R2 + r_kappa[j];
+                    const double gs = g + gp;
+
+                    // Sum the kernel
+                    const double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
+
+                    // Dumb question, does FMA do subtraction?
+                    phi += phi_kernel;
+                    const double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
+                    U += tmp_U;
+                    W += tmp_U * R2;
+                }
             }
 
         } // End r blocks
@@ -892,6 +938,12 @@ double SuperFunctional::compute_vv10_kernel(
         vv10_e += 0.5 * l_w[i] * l_rho[i] * phi;
         v_rho[i] += phi + l_rho[i] * (kappa_dn * U + w0_drho * W);
         v_gamma[i] += l_rho[i] * w0_dgamma * W;
+        if (do_grad){
+            x_grid[i] += l_rho[i] * l_w[i] * xc;
+            y_grid[i] += l_rho[i] * l_w[i] * yc;
+            z_grid[i] += l_rho[i] * l_w[i] * zc;
+        }
+
     }
 
     // printf("Nact/Ntot Ext %zu / %zu\n", nact, l_npoints);
@@ -910,10 +962,6 @@ void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, Sh
     props["TAU_A"] = tau_a;
     props["TAU_B"] = tau_b;
     compute_functional(props);
-}
-SharedVector SuperFunctional::value(const std::string& key)
-{
-    return values_[key];
 }
 int SuperFunctional::ansatz() const
 {

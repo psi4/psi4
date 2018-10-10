@@ -345,8 +345,8 @@ class HF : public Wavefunction {
     // potentials.  TDC, 5/23/12.
     virtual void form_H();
 
-    /// Do any needed integral setup
-    virtual void integrals();
+    /// Do any needed integral JK setup
+    virtual void initialize_jk(size_t effective_memory_doubles);
 
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();

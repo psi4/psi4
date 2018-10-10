@@ -84,7 +84,7 @@ void DirectJK::print_header() const
         if (do_wK_)
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
-        //outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        //outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
@@ -612,7 +612,7 @@ void DirectJK::print_header() const
         if (do_wK_)
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    OpenMP threads:    %11d\n", omp_nthread_);
-        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }

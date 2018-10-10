@@ -163,7 +163,8 @@ void export_functional(py::module &m) {
         .def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.")
         .def("nblocks", &VBase::nblocks, "Total number of blocks.")
         .def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.")
-
+        .def("build_collocation_cache", &VBase::build_collocation_cache, "Constructs a collocation cache to prevent recomputation.")
+        .def("clear_collocation_cache", &VBase::clear_collocation_cache, "Clears the collocation cache.")
         .def("set_D", &VBase::set_D, "Sets the internal density.")
         .def("Dao", &VBase::set_D, "Returns internal AO density.")
         .def("compute_V", &VBase::compute_V, "doctsring")
@@ -260,6 +261,8 @@ void export_functional(py::module &m) {
              "Returns the maximum number of points in a block.")
         .def("max_functions", &MolecularGrid::max_functions,
              "Returns the maximum number of functions in a block.")
+        .def("collocation_size", &MolecularGrid::collocation_size,
+            "Returns the total collocation size of all blocks.")
         .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
 
     py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")

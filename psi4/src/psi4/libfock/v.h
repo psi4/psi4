@@ -32,6 +32,7 @@
 #include "psi4/pragma.h"
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <string>
 
 namespace psi {
@@ -80,6 +81,9 @@ protected:
     std::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration
     std::map<std::string, double> quad_values_;
+    // Caches collocation grids
+    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map_;
+    int cache_map_deriv_;
 
     /// AO2USO matrix (if not C1)
     SharedMatrix AO2USO_;
@@ -92,10 +96,19 @@ protected:
     bool grac_initialized_;
 
     // VV10 dispersion, return vv10_nlc energy
+    void prepare_vv10_cache(
+        DFTGrid& nlgrid,
+        SharedMatrix D,
+        std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+        std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers,
+        int ansatz=1);
     double vv10_nlc(SharedMatrix D, SharedMatrix ret);
+    SharedMatrix vv10_nlc_gradient(SharedMatrix D);
 
     /// Set things up
     void common_init();
+
+
 public:
      VBase(std::shared_ptr<SuperFunctional> functional,
            std::shared_ptr<BasisSet> primary, Options& options);
@@ -113,6 +126,10 @@ public:
     std::shared_ptr<BlockOPoints> get_block(int block);
     size_t nblocks();
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
+
+    // Creates a collocation cache map based on stride
+    void build_collocation_cache(size_t memory);
+    void clear_collocation_cache(void) { cache_map_.clear(); }
 
     // Set the D matrix, get it back if needed
     void set_D(std::vector<SharedMatrix> Dvec);
