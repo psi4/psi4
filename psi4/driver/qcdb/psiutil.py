@@ -150,7 +150,7 @@ def compare_dicts(expected, computed, tol, label, forgive=None, verbose=1):
     try:
         import deepdiff
     except ImportError:
-        raise ImportError("""Install deepdiff. `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
+        raise ImportError("""Python module deepdiff not found. Solve by installing it: `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
 
     if forgive is None:
         forgive = []

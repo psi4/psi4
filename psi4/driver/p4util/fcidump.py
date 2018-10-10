@@ -320,7 +320,7 @@ def compare_fcidumps(expected, computed, label):
     try:
         from deepdiff import DeepDiff
     except ImportError:
-        raise ImportError("""Install deepdiff. `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
+        raise ImportError("""Python module deepdiff not found. Solve by installing it: `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
 
     # Grab expected header and integrals
     ref_intdump = fcidump_from_file(expected)

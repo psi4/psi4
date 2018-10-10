@@ -511,7 +511,7 @@ def _plausible_atom_orderings(ref, current, rgeom, cgeom, algo='hunguno', verbos
         t00 = time.time()
         # exactly like `scipy.optimize.linear_sum_assignment(cost)` only with extra return
         #    import scipy.optimize
-        #    raise ImportError("Install scipy >=0.17! `conda install scipy` or `pip install scipy`")
+        #    raise ImportError("""Python module scipy >=0.17 not found. Solve by installing it: `conda install scipy` or `pip install scipy`""")
         (row_ind, col_ind), reducedcost = linear_sum_assignment(cost, return_cost=True)
         ptsCR = list(zip(row_ind, col_ind))
         ptsCR = sorted(ptsCR, key=lambda tup: tup[1])
