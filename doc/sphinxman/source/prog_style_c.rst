@@ -54,22 +54,28 @@ readable, especially if ``auto`` is used consistently throughout.
 Prefer ``std::make_shared`` to direct use of ``new``
 ----------------------------------------------------
 
-Using ``std::make_shared``::
+Using ``std::make_shared``:
 
 1. Reduces code verbosity, especially when coupled with ``auto``::
 
-    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));  // Type information written down 3 TIMES!!!
-    std::shared_ptr<Matrix> F = std::make_shared<Matrix>("Fock matrix", nso, nso);  // So much typing...
-    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);  // Much better!!!!
+    // Type information given 3 TIMES!!!
+    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));
+
+    // So much typing...
+    std::shared_ptr<Matrix> F = std::make_shared<Matrix>("Fock matrix", nso, nso);
+
+    // Much better!!!!
+    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);
 
 2. Ensures exception safety and prevents resource leaks. ::
 
 3. Improves efficiency::
 
     // Performs TWO allocations
-    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso)); 
+    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));
+
     // Performs ONE allocation
-    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso); 
+    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);
 
 *Reference:* Item 21 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
 
@@ -117,3 +123,4 @@ Note that users can supply MiB, GB, bytes, or whatever; this guideline is for ou
 
         outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
                         (required *  8 / (1024 * 1024 * 1024.0)),
+

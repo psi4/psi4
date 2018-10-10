@@ -28,14 +28,14 @@
 
 .. _`sec:prog_ways_to_add`:
 
-=====================================================
+======================================================
 Ways to Add Code: Psi4NumPy, Plugins, Full Integration 
-=====================================================
+======================================================
 
 Easier and more rapid development
 ---------------------------------
 
-Fully-featured electronic structure programs are large and complex.
+Fully featured electronic structure programs are large and complex.
 However, the Psi4 ecosystem provides a path for easier and more
 rapid development of new features.
 
