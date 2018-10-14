@@ -129,6 +129,33 @@ def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
     return translations_projection_sound, rotations_projection_sound
 
 
+def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, **kwargs):
+    """A helper function to perform all processing for an individual finite
+       difference computation."""
+
+    # print progress to file and screen
+    core.print_out('\n')
+    p4util.banner('Loading displacement %d of %d' % (n, ndisp))
+    print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
+    sys.stdout.flush()
+
+    # Load in displacement into the active molecule
+    molecule.set_geometry(core.Matrix.from_array(displacement["geometry"]))
+
+    # Perform the derivative calculation
+    derivative, wfn = derivfunc(method, return_wfn=True, molecule=molecule, **kwargs)
+    displacement["energy"] = core.get_variable('CURRENT ENERGY')
+
+    # If we computed a first or higher order derivative, set it.
+    if derivfunc == gradient:
+        displacement["gradient"] = wfn.gradient().to_array()
+
+    # clean may be necessary when changing irreps of displacements
+    core.clean()
+
+    return wfn
+
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -618,20 +645,6 @@ def gradient(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
-    # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
-    opt_mode = kwargs.get('mode', 'continuous').lower()
-    if opt_mode == 'continuous':
-        pass
-    elif opt_mode == 'sow':
-        if dertype == 1:
-            raise ValidationError("""Optimize execution mode 'sow' not valid for analytic gradient calculation.""")
-    elif opt_mode == 'reap':
-        opt_linkage = kwargs.get('linkage', None)
-        if opt_linkage is None:
-            raise ValidationError("""Optimize execution mode 'reap' requires a linkage option.""")
-    else:
-        raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
-
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
         core.print_out("""gradient() will perform analytic gradient computation.\n""")
@@ -653,125 +666,27 @@ def gradient(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        # print("about to generate displacements")
-        displacements = driver_findif.gradient_from_energy_geometries(moleculeclone)
-        # print(displacements)
-        ndisp = len(displacements)
-        # print("generated displacments")
+        findif_meta_dict = driver_findif.gradient_from_energy_geometries(moleculeclone)
+        ndisp = len(findif_meta_dict["displacements"]) + 1
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print(""" %d displacements needed ...""" % (ndisp), end='')
-        energies = []
 
-        # S/R: Write instructions for sow/reap procedure to output file and reap input file
-        if opt_mode == 'sow':
-            instructionsO = """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
-            instructionsO += """    to this output file (which contains no quantum chemical calculations), this job\n"""
-            instructionsO += """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (
-                str(opt_iter))
-            instructionsO += """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
-            instructionsO += """    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO += """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
-            instructionsO += """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
-            instructionsO += """    the optimization wrapper option mode='continuous'.\n\n"""
-            core.print_out(instructionsO)
+        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
+            _process_displacement(energy, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
 
-            instructionsM = """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
-            instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (
-                str(opt_iter))
-            instructionsM += """#       The output file names must be as given below.\n#\n"""
-            for rgt in range(ndisp):
-                pre = 'OPT-' + str(opt_iter) + '-' + str(rgt + 1)
-                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
-            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-            instructionsM += """#         OPT-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM += """#         length and give summary results for the gradient step in its output file.\n#\n"""
-            if opt_iter == 1:
-                instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
-            else:
-                instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in',
-                                                                                       'OPT-master.out')
-            instructionsM += """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
-            instructionsM += """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
-            instructionsM += """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
-            instructionsM += """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
+        wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
+                                    **kwargs)
 
-            with open('OPT-master.in', 'wb') as fmaster:
-                fmaster.write(
-                    '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
-                fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
-                fmaster.write(p4util.format_options_for_input().encode('utf-8'))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, dertype=dertype, **kwargs)
-                fmaster.write(("""retE, retwfn = optimize('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
-                fmaster.write(instructionsM.encode('utf-8'))
-
-        for n, displacement in enumerate(displacements):
-            rfile = 'OPT-%s-%s' % (opt_iter, n + 1)
-
-            # Build string of title banner
-            banners = ''
-            banners += """core.print_out('\\n')\n"""
-            banners += """p4util.banner(' Gradient %d Computation: Displacement %d ')\n""" % (opt_iter, n + 1)
-            banners += """core.print_out('\\n')\n\n"""
-
-            if opt_mode == 'continuous':
-
-                # print progress to file and screen
-                core.print_out('\n')
-                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-                print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
-                sys.stdout.flush()
-
-                # Load in displacement into the active molecule
-                moleculeclone.set_geometry(displacement)
-
-                # Perform the energy calculation
-                E, wfn = energy(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
-                energies.append(core.get_variable('CURRENT ENERGY'))
-
-            # S/R: Write each displaced geometry to an input file
-            elif opt_mode == 'sow':
-                moleculeclone.set_geometry(displacement)
-
-                # S/R: Prepare molecule, options, and kwargs
-                with open('%s.in' % (rfile), 'wb') as freagent:
-                    freagent.write(
-                        '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
-                    freagent.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
-                    freagent.write(p4util.format_options_for_input().encode('utf-8'))
-                    p4util.format_kwargs_for_input(freagent, **kwargs)
-
-                    # S/R: Prepare function call and energy save
-                    freagent.write(
-                        ("""electronic_energy = energy('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
-                    freagent.write(("""core.print_out('\\nGRADIENT RESULT: computation %d for item %d """ %
-                                    (os.getpid(), n + 1)).encode('utf-8'))
-                    freagent.write(
-                        """yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
-
-            # S/R: Read energy from each displaced geometry output file and save in energies array
-            elif opt_mode == 'reap':
-                exec(banners)
-                core.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
-                energies.append(p4util.extract_sowreap_from_output(rfile, 'GRADIENT', n, opt_linkage, True))
-
-        # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
-        if opt_mode == 'sow':
-            optstash.restore()
-            if return_wfn:
-                return (None, None)  # any point to building a dummy wfn here?
-            else:
-                return None
-        elif opt_mode == 'reap':
-            core.set_variable('CURRENT ENERGY', energies[-1])
-            wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
-
-        # Compute the gradient; last item in 'energies' is undisplaced
+        # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = driver_findif.compute_gradient_from_energy(molecule, energies)
+        G = driver_findif.compute_gradient_from_energy(molecule, findif_meta_dict)
         grad_psi_matrix = core.Matrix.from_array(G)
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
+
+        # Explicitly set the current energy..
+        core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
     optstash.restore()
 
@@ -1322,20 +1237,6 @@ def hessian(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
-    # S/R: Mode of operation- whether finite difference freq run in one job or files farmed out
-    freq_mode = kwargs.pop('mode', 'continuous').lower()
-    if freq_mode == 'continuous':
-        pass
-    elif freq_mode == 'sow':
-        if dertype == 2:
-            raise ValidationError("""Frequency execution mode 'sow' not valid for analytic Hessian calculation.""")
-    elif freq_mode == 'reap':
-        freq_linkage = kwargs.get('linkage', None)
-        if freq_linkage is None:
-            raise ValidationError("""Frequency execution mode 'reap' requires a linkage option.""")
-    else:
-        raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
-
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
@@ -1377,12 +1278,6 @@ def hessian(name, **kwargs):
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
         core.set_variable('CURRENT ENERGY', wfn.energy())
-        _hessian_write(wfn)
-
-        if return_wfn:
-            return (wfn.hessian(), wfn)
-        else:
-            return wfn.hessian()
 
     elif dertype == 1:
         core.print_out(
@@ -1392,143 +1287,35 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = driver_findif.hessian_from_gradient_geometries(moleculeclone, irrep)
+        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(moleculeclone, irrep)
         moleculeclone.reinterpret_coordentry(False)
         moleculeclone.fix_orientation(True)
 
         # Record undisplaced symmetry for projection of displaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
-        ndisp = len(displacements)
+        ndisp = len(findif_meta_dict["displacements"]) + 1
+
         print(""" %d displacements needed.""" % ndisp)
-        gradients = []
-        energies = []
 
-        # S/R: Write instructions for sow/reap procedure to output file and reap input file
-        if freq_mode == 'sow':
-            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
-            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
-            instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
-            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
-            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
-            instructionsO += """#    to continue.\n#\n"""
-            instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
-            instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
-            core.print_out(instructionsO)
+        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
+            _process_displacement(gradient, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
 
-            instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
-            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
-            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
-            instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
-            for rgt in range(ndisp):
-                pre = 'FREQ-' + str(rgt + 1)
-                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
-            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-            instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
-            instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
-
-            with open('FREQ-master.in', 'wb') as fmaster:
-                fmaster.write(
-                    '# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
-                fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
-                fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=1, **kwargs)
-                fmaster.write(
-                    ("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
-                fmaster.write(instructionsM.encode('utf-8'))
-            core.print_out(instructionsM)
-
-        for n, displacement in enumerate(displacements):
-            rfile = 'FREQ-%s' % (n + 1)
-
-            # Build string of title banner
-            banners = ''
-            banners += """core.print_out('\\n')\n"""
-            banners += """p4util.banner(' Hessian Computation: Gradient Displacement %d ')\n""" % (n + 1)
-            banners += """core.print_out('\\n')\n\n"""
-
-            if freq_mode == 'continuous':
-
-                # print progress to file and screen
-                core.print_out('\n')
-                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-                print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
-                sys.stdout.flush()
-
-                # Load in displacement into the active molecule (xyz coordinates only)
-                moleculeclone.set_geometry(displacement)
-
-                # Perform the gradient calculation
-                G, wfn = gradient(lowername, molecule=moleculeclone, return_wfn=True, **kwargs)
-                gradients.append(wfn.gradient())
-                energies.append(core.get_variable('CURRENT ENERGY'))
-
-                # clean may be necessary when changing irreps of displacements
-                core.clean()
-
-            # S/R: Write each displaced geometry to an input file
-            elif freq_mode == 'sow':
-                moleculeclone.set_geometry(displacement)
-
-                # S/R: Prepare molecule, options, kwargs, function call and energy save
-                #      forcexyz in molecule writer S/R enforcement of !reinterpret_coordentry above
-                with open('%s.in' % (rfile), 'wb') as freagent:
-                    freagent.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
-                    freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
-                    freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
-                    kwargs['return_wfn'] = True
-                    p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""G, wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
-                    freagent.write(
-                        """core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
-                    freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
-                    freagent.write(
-                        """core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
-                    freagent.write("""yields electronic energy %20.12f\\n' % (get_variable('CURRENT ENERGY')))\n\n""")
-
-            # S/R: Read energy from each displaced geometry output file and save in energies array
-            elif freq_mode == 'reap':
-                exec(banners)
-                core.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
-                pygrad = p4util.extract_sowreap_from_output(
-                    rfile, 'HESSIAN', n, freq_linkage, True, label='electronic gradient')
-                p4mat = core.Matrix.from_list(pygrad)
-                p4mat.print_out()
-                gradients.append(p4mat)
-                energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
-
-        # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
-        if freq_mode == 'sow':
-            optstash.restore()
-            optstash_conv.restore()
-            if return_wfn:
-                return (None, None)
-            else:
-                return None
-        elif freq_mode == 'reap':
-            wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
+        wfn = _process_displacement(gradient, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
+                                    **kwargs)
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = driver_findif.compute_hessian_from_gradient(molecule, gradients, irrep)  # TODO or moleculeclone?
+        H = driver_findif.compute_hessian_from_gradient(molecule, findif_meta_dict, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
-        # The last item in the list is the reference energy, return it
-        core.set_variable('CURRENT ENERGY', energies[-1])
+        # Explicitly set the current energy..
+        core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
         core.set_parent_symmetry('')
         optstash.restore()
         optstash_conv.restore()
-
-        _hessian_write(wfn)
-
-        if return_wfn:
-            return (wfn.hessian(), wfn)
-        else:
-            return wfn.hessian()
 
     else:
         core.print_out("""hessian() will perform frequency computation by finite difference of analytic energies.\n""")
@@ -1542,133 +1329,41 @@ def hessian(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        displacements = driver_findif.hessian_from_energy_geometries(moleculeclone, irrep)
+        findif_meta_dict = driver_findif.hessian_from_energy_geometries(moleculeclone, irrep)
         moleculeclone.fix_orientation(True)
         moleculeclone.reinterpret_coordentry(False)
 
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
-        ndisp = len(displacements)
+        ndisp = len(findif_meta_dict["displacements"]) + 1
 
-        # This version is pretty dependent on the reference geometry being last (as it is now)
         print(' %d displacements needed.' % ndisp)
-        energies = []
 
-        # S/R: Write instructions for sow/reap procedure to output file and reap input file
-        if freq_mode == 'sow':
-            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
-            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
-            instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
-            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
-            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
-            instructionsO += """#    to continue.\n#\n"""
-            instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
-            instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
-            core.print_out(instructionsO)
+        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
+            _process_displacement(energy, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
 
-            instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
-            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
-            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
-            instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
-            for rgt in range(ndisp):
-                pre = 'FREQ-' + str(rgt + 1)
-                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
-            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-            instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
-            instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
-
-            with open('FREQ-master.in', 'wb') as fmaster:
-                fmaster.write(
-                    '# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
-                fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
-                fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=0, **kwargs)
-                fmaster.write(
-                    ("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
-                fmaster.write(instructionsM.encode('utf-8'))
-            core.print_out(instructionsM)
-
-        for n, displacement in enumerate(displacements):
-            rfile = 'FREQ-%s' % (n + 1)
-
-            # Build string of title banner
-            banners = ''
-            banners += """core.print_out('\\n')\n"""
-            banners += """p4util.banner(' Hessian Computation: Energy Displacement %d ')\n""" % (n + 1)
-            banners += """core.print_out('\\n')\n\n"""
-
-            if freq_mode == 'continuous':
-
-                # print progress to file and screen
-                core.print_out('\n')
-                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-                print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
-                sys.stdout.flush()
-
-                # Load in displacement into the active molecule
-                moleculeclone.set_geometry(displacement)
-
-                # Perform the energy calculation
-                E, wfn = energy(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
-                energies.append(core.get_variable('CURRENT ENERGY'))
-
-                # clean may be necessary when changing irreps of displacements
-                core.clean()
-
-            # S/R: Write each displaced geometry to an input file
-            elif freq_mode == 'sow':
-                moleculeclone.set_geometry(displacement)
-
-                # S/R: Prepare molecule, options, kwargs, function call and energy save
-                with open('%s.in' % (rfile), 'wb') as freagent:
-                    freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                    freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
-                    freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
-                    p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (energy.__name__, lowername))
-                    freagent.write(
-                        """core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
-                    freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
-
-            # S/R: Read energy from each displaced geometry output file and save in energies array
-            elif freq_mode == 'reap':
-                exec(banners)
-                core.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
-                energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
-
-        # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
-        if freq_mode == 'sow':
-            optstash.restore()
-            optstash_conv.restore()
-            if return_wfn:
-                return (None, None)
-            else:
-                return None
-        elif freq_mode == 'reap':
-            #    core.set_variable('CURRENT ENERGY', energies[-1])
-            wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
+        wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
+                                    **kwargs)
 
         # Assemble Hessian from energies
-        H = driver_findif.compute_hessian_from_energy(molecule, energies, irrep)
+        H = driver_findif.compute_hessian_from_energy(molecule, findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
-        # The last item in the list is the reference energy, return it
-        core.set_variable('CURRENT ENERGY', energies[-1])
+        # Explicitly set the current energy..
+        core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
         core.set_parent_symmetry('')
         optstash.restore()
         optstash_conv.restore()
 
-        _hessian_write(wfn)
+    _hessian_write(wfn)
 
-        if return_wfn:
-            return (wfn.hessian(), wfn)
-        else:
-            return wfn.hessian()
+    if return_wfn:
+        return (wfn.hessian(), wfn)
+    else:
+        return wfn.hessian()
 
 
 def frequency(name, **kwargs):
