@@ -49,6 +49,10 @@
 #include <ctype.h>
 #include <assert.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace psi;
 
 namespace {
@@ -3543,8 +3547,7 @@ int RadialPruneMgr::GetPrunedNumAngPts(double rho)
 void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
 {
     options_ = opt; // Save a copy
-
-    std::vector<MassPoint> grid; // This is just for the first pass.
+    std::vector<std::vector<MassPoint>> grid(molecule_->natom()); // This is just for the first pass.
 
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
@@ -3555,7 +3558,13 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
     radial_grids_.clear();
     spherical_grids_.clear();
 
+    if (opt.namedGrid == -1) {
+        radial_grids_.resize(molecule_->natom());
+        spherical_grids_.resize(molecule_->natom());
+    }
+
     // Iterate over atoms
+#pragma omp parallel for schedule(static)
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = molecule_->true_atomic_number(A);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
@@ -3566,9 +3575,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
             RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(), wr.data(), alpha);
 
             // RMP: Want this stuff too
-            radial_grids_.push_back(RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha));
+            radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha);
             std::vector<std::shared_ptr<SphericalGrid> > spheres;
-            spherical_grids_.push_back(spheres);
+            spherical_grids_[A] = spheres;
 
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = prune.GetPrunedNumAngPts(r[i]/alpha);
@@ -3576,12 +3585,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
                 spherical_grids_[A].push_back(SphericalGrid::build("Unknown", numAngPts, anggrid));
-
                 for (int j = 0; j < numAngPts; j++) {
                     MassPoint mp = { r[i] * anggrid[j].x, r[i]*anggrid[j].y, r[i]*anggrid[j].z, wr[i]*anggrid[j].w };
                     mp = std_orientation.MoveIntoPosition(mp, A);
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                    grid.push_back(mp);
+                    grid[A].push_back(mp);
                     assert(!std::isnan(mp.w));
                 }
             }
@@ -3593,24 +3601,32 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
             for (int i = 0; i < npts; i++) {
                 MassPoint mp = std_orientation.MoveIntoPosition(sg[i], A);
                 mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                grid.push_back(mp);
+                grid[A].push_back(mp);
                 assert(!std::isnan(mp.w));
             }
         }
     }
 
-    npoints_ = grid.size();
+    npoints_ = 0;
+    for (int i = 0; i < grid.size(); ++i) {
+        npoints_ += grid[i].size();
+    }
     x_ = new double[npoints_];
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
     index_ = new int[npoints_];
-    for (int i = 0; i < npoints_; i++) {
-        x_[i] = grid[i].x;
-        y_[i] = grid[i].y;
-        z_[i] = grid[i].z;
-        w_[i] = grid[i].w;
-        index_[i] = i;
+
+    int grid_vector_index = 0;
+    for (int i = 0; i < grid.size(); i++) {
+        for (int j = 0; j < grid[i].size(); ++j) {
+            x_[grid_vector_index] = grid[i][j].x;
+            y_[grid_vector_index] = grid[i][j].y;
+            z_[grid_vector_index] = grid[i][j].z;
+            w_[grid_vector_index] = grid[i][j].w;
+            index_[i] = grid_vector_index;
+            ++grid_vector_index;
+        }
     }
 }
 
@@ -3621,7 +3637,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
 {
     options_ = opt; // Save a copy
 
-    std::vector<MassPoint> grid; // This is just for the first pass.
+    // std::vector<MassPoint> grid; // This is just for the first pass.
+    std::vector<std::vector<MassPoint>> grid(molecule_->natom()); // This is just for the first pass.
 
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
@@ -3632,7 +3649,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
     radial_grids_.clear();
     spherical_grids_.clear();
 
+    radial_grids_.resize(molecule_->natom());
+    spherical_grids_.resize(molecule_->natom());
+
     // Iterate over atoms
+#pragma omp parallel for schedule(static)
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = molecule_->true_atomic_number(A);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
@@ -3647,9 +3668,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
             }
 
             // RMP: Want this stuff too
-            radial_grids_.push_back(RadialGrid::build("Unknown", rs[A].size(), r.data(), wr.data(), alpha));
+            radial_grids_[A] = RadialGrid::build("Unknown", rs[A].size(), r.data(), wr.data(), alpha);
             std::vector<std::shared_ptr<SphericalGrid> > spheres;
-            spherical_grids_.push_back(spheres);
+            spherical_grids_[A] = spheres;
 
             for (size_t i = 0; i < rs[A].size(); i++) {
                 int numAngPts = LebedevGridMgr::findNPointsByOrder(Ls[A][i]);
@@ -3662,25 +3683,35 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
                     MassPoint mp = { r[i] * anggrid[j].x, r[i]*anggrid[j].y, r[i]*anggrid[j].z, wr[i]*anggrid[j].w };
                     mp = std_orientation.MoveIntoPosition(mp, A);
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                    grid.push_back(mp);
+                    grid[A].push_back(mp);
                     assert(!std::isnan(mp.w));
                 }
             }
     }
 
-    npoints_ = grid.size();
+    npoints_ = 0;
+    for (int i = 0; i < grid.size(); ++i) {
+        npoints_ += grid[i].size();
+    }
     x_ = new double[npoints_];
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
     index_ = new int[npoints_];
-    for (int i = 0; i < npoints_; i++) {
-        x_[i] = grid[i].x;
-        y_[i] = grid[i].y;
-        z_[i] = grid[i].z;
-        w_[i] = grid[i].w;
-        index_[i] = i;
+
+    int grid_vector_index = 0;
+    for (int i = 0; i < grid.size(); i++) {
+        for (int j = 0; j < grid[i].size(); ++j) {
+            x_[grid_vector_index] = grid[i][j].x;
+            y_[grid_vector_index] = grid[i][j].y;
+            z_[grid_vector_index] = grid[i][j].z;
+            w_[grid_vector_index] = grid[i][j].w;
+            index_[i] = grid_vector_index;
+            ++grid_vector_index;
+        }
     }
+
+
 }
 
 
