@@ -213,7 +213,7 @@ program is suppressed; to see it in the output file, set print > 2.
 .. table:: Variants of dispersion corrections
 
    +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
-   | Extension [#f0]_                    | Variant                                                               | Computing Program (engine)      | |scf__dft_dispersion_parameters|                                               |
+   | Extension [#f0]_                    | Variant                                                               | Computing Program (engine)      | |scf__dft_dispersion_parameters| [#f10]_                                       |
    +=====================================+=======================================================================+=================================+================================================================================+
    | -D                                  | alias to -D2                                                          |                                 |                                                                                |
    | -D1                                 | -D1 [#f1]_                                                            | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
@@ -246,6 +246,9 @@ program is suppressed; to see it in the output file, set print > 2.
 .. [#f7] [Chai:2010:6615]_
 .. [#f8] [Pernal:2009:263201]_
 .. [#f9] [Podeszwa:2010:550]_
+
+.. [#f10] Keyword not used for user-defined functionals where the ``dft_dict["dispersion"]["params"]``
+   is easily editable for this purpose. See :ref:`sec:dftdictbuilder`
 
 A few practical examples:
 

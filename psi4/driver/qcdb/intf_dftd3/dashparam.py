@@ -568,6 +568,7 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
             list(param_tweaks.keys()), list(allowed_params), dashleveleff))
 
     # << 3 >> use final dashlevel and disp_params to determine if a defined "fctl-disp" label exists
+    # * plucks any citation for the parameters from definition source
     # * if/elif chooses right label when some fctls have identical param sets
     if ((name_hint is not None) and (dashcoeff_supplement is not None)
             and (name_key in dashcoeff_supplement[dashleveleff]['definitions'])

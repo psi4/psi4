@@ -72,6 +72,7 @@ dict = {
                "type": "",       dispersion type - "d2", "d3zero", "d3bj" etc., see empirical_dispersion.py
              "params": {},       parameters for the dispersion correction
            "citation": "",       special reference for the dispersion correction parameters, appended to output
+                                   (if defined in driver, not if defined in input file)
     },
 }
 """
