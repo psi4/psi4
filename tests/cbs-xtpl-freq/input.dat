@@ -55,9 +55,9 @@ compare_values(wfn_tz.frequencies().get(0), 1753.0273, 2, "SCF/cc-pVTZ Frequency
 compare_values(wfn_tz.frequencies().get(1), 4127.0329, 2, "SCF/cc-pVTZ Frequency 2")            #TEST
 compare_values(wfn_tz.frequencies().get(2), 4227.0130, 2, "SCF/cc-pVTZ Frequency 3")            #TEST
 
-scf_dtz, wfn_dtz = freq('scf/cc-pv[dt]z', return_wfn=True, molecule=h2o_dtz)
-compare_values(wfn_dtz.frequencies().get(0), 1747.7410, 2, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
-compare_values(wfn_dtz.frequencies().get(1), 4130.2255, 2, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
-compare_values(wfn_dtz.frequencies().get(2), 4230.5752, 2, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
+scf_dtz, wfn_dtz = freq('scf/cc-pv[dt]z', return_wfn=True, dertype=1, molecule=h2o_dtz)
+compare_values(wfn_dtz.frequencies().get(0), 1747.7069, 2, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
+compare_values(wfn_dtz.frequencies().get(1), 4130.2408, 2, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
+compare_values(wfn_dtz.frequencies().get(2), 4230.6358, 2, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
 
 
