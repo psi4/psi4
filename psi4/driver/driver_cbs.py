@@ -49,52 +49,54 @@ zeta_sym2val = {v: k for k, v in zeta_val2sym.items()}
 
 
 def _expand_bracketed_basis(basisstring, molecule=None):
-    """Function to transform and validate basis series specification for cbs(). 
-    
+    """Function to transform and validate basis series specification for cbs().
+
     Parameters
     ----------
     basisstring : string
         A string containing the basis sets to be expanded.
-        A basis set with no paired square brackets is passed through 
+        A basis set with no paired square brackets is passed through
         with zeta level 0 (e.g., ``'6-31+G(d,p)'`` is returned as
         ``(["6-31+G(d,p)"], [0])``). A basis set with square brackets is checked
-        for sensible sequence and returned as separate basis sets 
-        (e.g., ``'cc-pV[Q5]Z'` is returned as ``(["cc-pVQZ", "cc-pV5Z"], [4, 5])``). 
-        Allows out-of-order zeta specification (e.g., ``[qtd]``) and numeral for 
-        number (e.g., ``[23]``). Does not allow skipped zetas (e.g., ``[dq]``), zetas 
+        for sensible sequence and returned as separate basis sets
+        (e.g., ``'cc-pV[Q5]Z'` is returned as ``(["cc-pVQZ", "cc-pV5Z"], [4, 5])``).
+        Allows out-of-order zeta specification (e.g., ``[qtd]``) and numeral for
+        number (e.g., ``[23]``). Does not allow skipped zetas (e.g., ``[dq]``), zetas
         outside the [2,8] range, non-Dunning, non-Ahlrichs, or non-Jensen sets,
         or non-findable .gbs sets.
     molecule : qcdb.molecule or psi4.core.Molecule
         This function checks that the basis is valid by trying to build
-        the qcdb.BasisSet object for *molecule* or for H2 if None. 
-    
+        the qcdb.BasisSet object for *molecule* or for H2 if None.
+
     Returns
     -------
     tuple
         Tuple in the ``([basis set names], [basis set zetas])`` format.
     """
-    
+
     BSET = []
     ZSET = []
-    legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
+    legit_compound_basis = re.compile(
+        r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
     pc_basis = re.compile(r'.*pcs+eg-$', re.IGNORECASE)
     def2_basis = re.compile(r'def2-', re.IGNORECASE)
-    
+
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
         # handle def2-svp* basis sets as double-zeta
         if def2_basis.match(basisname.group('pre')):
-            bn_gz = basisname.group('zeta').replace("s","d")
+            bn_gz = basisname.group('zeta').replace("s", "d")
         # handle pc-n basis set polarisation -> zeta conversion
         elif pc_basis.match(basisname.group('pre')):
-            bn_gz = basisname.group('zeta').replace("4","5").replace("3","4").replace("2","3").replace("1","2")
+            bn_gz = basisname.group('zeta').replace("4", "5").replace("3", "4").replace("2", "3").replace("1", "2")
         else:
             bn_gz = basisname.group('zeta')
         # filter out commas and be forgiving of e.g., t5q or 3q
         zetas = [z for z in zeta_values if (z in bn_gz or str(zeta_values.index(z) + 2) in bn_gz)]
         for b in zetas:
             if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
-                raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, zeta_val2sym[zeta_sym2val[b] - 1]))
+                raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" %
+                                      (basisstring, zeta_val2sym[zeta_sym2val[b] - 1]))
             # reassemble def2-svp* properly instead of def2-dzvp*
             if def2_basis.match(basisname.group('pre')) and b == "d":
                 BSET.append(basisname.group('pre') + "s" + basisname.group('post')[1:])
@@ -105,8 +107,9 @@ def _expand_bracketed_basis(basisstring, molecule=None):
                 BSET.append(basisname.group('pre') + b + basisname.group('post'))
             ZSET.append(zeta_values.index(b) + 2)
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
-        raise ValidationError("""Basis series '%s' invalid. Specify a basis series matching"""
-                              """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]'""" % (basisstring))
+        raise ValidationError(
+            """Basis series '%s' invalid. Specify a basis series matching"""
+            """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]'""" % (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -118,7 +121,7 @@ def _expand_bracketed_basis(basisstring, molecule=None):
         try:
             qcdb.BasisSet.pyconstruct(molecule, "BASIS", basis)
         except qcdb.BasisSetNotFound:
-            e=sys.exc_info()[1]
+            e = sys.exc_info()[1]
             raise ValidationError("""Basis set '%s' not available for molecule.""" % (basis))
 
     return (BSET, ZSET)
@@ -128,19 +131,19 @@ def _contract_bracketed_basis(basisarray):
     """Function to reform a bracketed basis set string from a sequential series
     of basis sets. Essentially the inverse of _expand_bracketed_basis(). Used to
     print a nicely formatted basis set string in the results table.
-    
+
     Parameters
     ----------
-    basisarray : array 
+    basisarray : array
         Basis set names, differing by zeta level, e.g. ``["cc-pvqz", "cc-pv5z"]``.
-    
+
     Returns
     -------
     string
         A nicely formatted basis set string, e.g. ``"cc-pv[q5]z"`` for the above example.
 
     """
-    
+
     if len(basisarray) == 1:
         return basisarray[0]
 
@@ -157,7 +160,7 @@ def _contract_bracketed_basis(basisarray):
 def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
-    
+
     Parameters
     ----------
     functionname : string
@@ -166,12 +169,12 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
         Zeta-level, only used for printing.
     valueHI : float
         Value of the CBS component.
-    
+
     Returns
     -------
     float
         Returns :math:`E_{total}^{\infty}` which is equal to valueHI.
-        
+
     Notes
     -----
     .. math:: E_{total}^X = E_{total}^{\infty}
@@ -199,7 +202,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
 
 
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
-    r"""Extrapolation scheme using exponential form for reference energies with two adjacent 
+    r"""Extrapolation scheme using exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
@@ -216,28 +219,28 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         Higher value used for extrapolation.
     alpha : float, optional
         Overrides the default :math:`\alpha = 1.63`
-    
+
     Returns
     -------
     float
         Returns :math:`E_{total}^{\infty}`, see below.
-        
+
     Notes
     -----
     The extrapolation is calculated according to [1]_:
     :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63`
-    
+
     References
     ----------
-    
+
     .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
        DOI: 10.1016/S0009-2614(99)00179-7
 
     """
 
     if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
-                              % (type(valueLO), type(valueHI)))
+        raise ValidationError(
+            "scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
         alpha = 1.63
@@ -252,7 +255,8 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (
+                functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
@@ -279,7 +283,8 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" %
+                           (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
             valueLO.print_out()
@@ -299,9 +304,9 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 
 
 def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
-    r"""Extrapolation scheme using power form for reference energies with two adjacent 
+    r"""Extrapolation scheme using power form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
-    
+
     Parameters
     ----------
     functionname : string
@@ -315,35 +320,35 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
     valueHI : float
         Higher value used for extrapolation.
     alpha : float, optional
-        Overrides the default :math:`\alpha = 3.4`        
-    
+        Overrides the default :math:`\alpha = 3.4`
+
     Returns
     -------
     float
         Returns :math:`E_{total}^{\infty}`, see below.
-        
+
     Notes
     -----
     The extrapolation is calculated according to [2]_:
     :math:`E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4`
-    
+
     References
     ----------
-    
-    .. [2] Truhlar, Chem. Phys. Lett. 294 (1998) 45-48, 
+
+    .. [2] Truhlar, Chem. Phys. Lett. 294 (1998) 45-48,
        DOI: 10.1016/S0009-2614(98)00866-5
 
     """
 
     if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)"
-                              % (type(valueLO), type(valueHI)))
+        raise ValidationError(
+            "scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
         alpha = 3.40
 
-    beta_division = 1 / (zHI ** (-1 * alpha) - zLO ** (-1 * alpha))
-    beta_mult = zHI ** (-1 * alpha)
+    beta_division = 1 / (zHI**(-1 * alpha) - zLO**(-1 * alpha))
+    beta_mult = zHI**(-1 * alpha)
 
     if isinstance(valueLO, float):
         beta = (valueHI - valueLO) * beta_division
@@ -352,7 +357,8 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Truhlar 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Truhlar 2-point power form SCF extrapolation for method: %s <==\n\n""" % (
+                functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
@@ -379,7 +385,8 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
         value.name = 'Truhlar SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Truhlar 2-point power from SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""\n   ==> Truhlar 2-point power from SCF extrapolation for method: %s <==\n\n""" %
+                           (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
             valueLO.print_out()
@@ -399,9 +406,9 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
 
 
 def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
-    r"""Extrapolation scheme using root-power form for reference energies with two adjacent 
+    r"""Extrapolation scheme using root-power form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
-    
+
     Parameters
     ----------
     functionname : str
@@ -416,28 +423,28 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
         Higher value used for extrapolation.
     alpha : float, optional
         Overrides the default :math:`\alpha = 6.3`
-    
+
     Returns
     -------
     float
         Returns :math:`E_{total}^{\infty}`, see below.
-        
+
     Notes
     -----
-    The extrapolation is calculated according to [3]_: 
+    The extrapolation is calculated according to [3]_:
     :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3`
-    
+
     References
     ----------
-    
-    .. [3] Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333, 
+
+    .. [3] Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333,
        DOI: 10.1007/s00214-005-0028-6
 
     """
 
     if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)"
-                              % (type(valueLO), type(valueHI)))
+        raise ValidationError(
+            "scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
         alpha = 6.30
@@ -452,7 +459,8 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Karton 2-point power form SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Karton 2-point power form SCF extrapolation for method: %s <==\n\n""" % (
+                functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
@@ -479,7 +487,8 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
         value.name = 'Karton SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Karton 2-point power from SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""\n   ==> Karton 2-point power from SCF extrapolation for method: %s <==\n\n""" %
+                           (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
             valueLO.print_out()
@@ -501,7 +510,7 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
-    
+
     Parameters
     ----------
     functionname : str
@@ -520,28 +529,28 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         Higher value used for extrapolation.
     alpha : float, optional
         Not used.
-    
+
     Returns
     -------
     float
         Returns :math:`E_{total}^{\infty}`, see below.
-        
+
     Notes
     -----
     The extrapolation is calculated according to [4]_:
     :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0`
-    
+
     References
     ----------
-    
+
     .. [4] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
        DOI: 10.1016/S0009-2614(99)00179-7
 
     """
 
     if (type(valueLO) != type(valueMD)) or (type(valueMD) != type(valueHI)):
-        raise ValidationError("scf_xtpl_helgaker_3: Inputs must be of the same datatype! (%s, %s, %s)"
-                              % (type(valueLO), type(valueMD), type(valueHI)))
+        raise ValidationError("scf_xtpl_helgaker_3: Inputs must be of the same datatype! (%s, %s, %s)" %
+                              (type(valueLO), type(valueMD), type(valueHI)))
 
     if isinstance(valueLO, float):
 
@@ -553,7 +562,8 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (
+                functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   MD-zeta (%s) Energy:               % 16.12f\n""" % (str(zMD), valueMD)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
@@ -561,7 +571,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
             name_str = "%s/(%s,%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zMD].upper(),
-                                                             zeta_val2sym[zHI].upper())
+                                          zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -615,42 +625,43 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
         Higher value used for extrapolation.
     alpha : float, optional
         Overrides the default :math:`\alpha = 3.0`
-    
+
     Returns
     -------
     float
         Returns :math:`E_{total}^{\infty}`, see below.
-        
+
     Notes
     -----
     The extrapolation is calculated according to [5]_:
     :math:`E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}`
-    
+
     References
     ----------
-    
-    .. [5] Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, 
+
+    .. [5] Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson,
        Chem. Phys. Lett. 286 (1998) 243-252,
        DOI: 10.1016/S0009-2614(99)00179-7
 
     """
     if type(valueLO) != type(valueHI):
-        raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
-                              % (type(valueLO), type(valueHI)))
+        raise ValidationError(
+            "corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
         alpha = 3.0
 
     if isinstance(valueLO, float):
-        value = (valueHI * zHI ** alpha - valueLO * zLO ** alpha) / (zHI ** alpha - zLO ** alpha)
-        beta = (valueHI - valueLO) / (zHI ** (-alpha) - zLO ** (-alpha))
+        value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
+        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
 
-#        final = valueSCF + value
+        #        final = valueSCF + value
         final = value
         if verbose:
             # Output string with extrapolation parameters
-            cbsscheme = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (functionname.upper())
-#            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.12f\n""" % (str(zHI), valueSCF)
+            cbsscheme = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (
+                functionname.upper())
+            #            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.12f\n""" % (str(zHI), valueSCF)
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % alpha
@@ -673,17 +684,17 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
 
         beta = valueHI.clone()
         beta.subtract(valueLO)
-        beta.scale(1 / (zHI ** (-alpha) - zLO ** (-alpha)))
+        beta.scale(1 / (zHI**(-alpha) - zLO**(-alpha)))
         beta.name = 'Helgaker Corl (%s, %s) beta' % (zLO, zHI)
 
         value = valueHI.clone()
-        value.scale(zHI ** alpha)
+        value.scale(zHI**alpha)
 
         tmp = valueLO.clone()
-        tmp.scale(zLO ** alpha)
+        tmp.scale(zLO**alpha)
         value.subtract(tmp)
 
-        value.scale(1 / (zHI ** alpha - zLO ** alpha))
+        value.scale(1 / (zHI**alpha - zLO**alpha))
         value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
@@ -699,6 +710,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
             core.print_out("""   Beta Data:\n""")
             beta.print_out()
 
+
 #        value.add(valueSCF)
         return value
 
@@ -709,180 +721,213 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
 def return_energy_components():
     """A helper function that describes which energy components are available
     following a given calculation.
-    
+
     Returns
     -------
     dict
         A dictionary in the format: {'method': {'submethod': 'PSI VARIABLE'}}.
     """
-    
+
+    # yapf: disable
     VARH = {}
-    VARH['scf'] = {
-                            'scf': 'SCF TOTAL ENERGY'}
-    VARH['hf'] = {
-                             'hf': 'HF TOTAL ENERGY'}
+    VARH['scf'] = {'scf': 'SCF TOTAL ENERGY'}
+    VARH['hf'] = {'hf': 'HF TOTAL ENERGY'}
     VARH['mp2'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY'
+    }
     VARH['mp2.5'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY'
+    }
     VARH['mp3'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY'
+    }
     VARH['mp4(sdq)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY',
-                       'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY',
+        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY'
+    }
     VARH['mp4'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY',
-                       'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
-                            'mp4': 'MP4(SDTQ) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY',
+        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
+        'mp4': 'MP4(SDTQ) TOTAL ENERGY'
+    }
     VARH['omp2'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'omp2': 'OMP2 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'omp2': 'OMP2 TOTAL ENERGY'
+    }
     VARH['omp2.5'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                         'omp2.5': 'OMP2.5 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'omp2.5': 'OMP2.5 TOTAL ENERGY'
+    }
     VARH['omp3'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY',
-                           'omp3': 'OMP3 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY',
+        'omp3': 'OMP3 TOTAL ENERGY'
+    }
     VARH['olccd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'olccd': 'OLCCD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'olccd': 'OLCCD TOTAL ENERGY'
+    }
     VARH['lccd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'lccd': 'LCCD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'lccd': 'LCCD TOTAL ENERGY'
+    }
     VARH['lccsd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'lccsd': 'LCCSD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'lccsd': 'LCCSD TOTAL ENERGY'
+    }
     VARH['cepa(0)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'cepa(0)': 'CEPA(0) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'cepa(0)': 'CEPA(0) TOTAL ENERGY'
+    }
     VARH['cepa(1)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'cepa(1)': 'CEPA(1) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'cepa(1)': 'CEPA(1) TOTAL ENERGY'
+    }
     VARH['cepa(3)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'cepa(3)': 'CEPA(3) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'cepa(3)': 'CEPA(3) TOTAL ENERGY'
+    }
     VARH['acpf'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'acpf': 'ACPF TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'acpf': 'ACPF TOTAL ENERGY'
+    }
     VARH['aqcc'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'aqcc': 'AQCC TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'aqcc': 'AQCC TOTAL ENERGY'
+    }
     VARH['qcisd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY',
-                       'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
-                          'qcisd': 'QCISD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY',
+        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
+        'qcisd': 'QCISD TOTAL ENERGY'
+    }
     VARH['cc2'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                            'cc2': 'CC2 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'cc2': 'CC2 TOTAL ENERGY'
+    }
     VARH['ccsd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'ccsd': 'CCSD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'ccsd': 'CCSD TOTAL ENERGY'
+    }
     VARH['bccd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'bccd': 'CCSD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'bccd': 'CCSD TOTAL ENERGY'
+    }
     VARH['cc3'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                            'cc3': 'CC3 TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'cc3': 'CC3 TOTAL ENERGY'
+    }
     VARH['fno-ccsd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                       'fno-ccsd': 'CCSD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'fno-ccsd': 'CCSD TOTAL ENERGY'
+    }
     VARH['fno-ccsd(t)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'ccsd': 'CCSD TOTAL ENERGY',
-                    'fno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'ccsd': 'CCSD TOTAL ENERGY',
+        'fno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'
+    }
     VARH['qcisd(t)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                          'mp2.5': 'MP2.5 TOTAL ENERGY',
-                            'mp3': 'MP3 TOTAL ENERGY',
-                       'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
-                          'qcisd': 'QCISD TOTAL ENERGY',
-                       'qcisd(t)': 'QCISD(T) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mp2.5': 'MP2.5 TOTAL ENERGY',
+        'mp3': 'MP3 TOTAL ENERGY',
+        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
+        'qcisd': 'QCISD TOTAL ENERGY',
+        'qcisd(t)': 'QCISD(T) TOTAL ENERGY'
+    }
     VARH['ccsd(t)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'ccsd': 'CCSD TOTAL ENERGY',
-                        'ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'ccsd': 'CCSD TOTAL ENERGY',
+        'ccsd(t)': 'CCSD(T) TOTAL ENERGY'
+    }
     VARH['bccd(t)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                           'ccsd': 'CCSD TOTAL ENERGY',
-                        'bccd(t)': 'CCSD(T) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'ccsd': 'CCSD TOTAL ENERGY',
+        'bccd(t)': 'CCSD(T) TOTAL ENERGY'
+    }
     VARH['cisd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                           'cisd': 'CISD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'cisd': 'CISD TOTAL ENERGY'
+    }
     VARH['cisdt'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                          'cisdt': 'CISDT TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'cisdt': 'CISDT TOTAL ENERGY'
+    }
     VARH['cisdtq'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                         'cisdtq': 'CISDTQ TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'cisdtq': 'CISDTQ TOTAL ENERGY'
+    }
     VARH['fci'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'fci': 'FCI TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'fci': 'FCI TOTAL ENERGY'
+    }
     VARH['mrccsd'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                         'mrccsd': 'CCSD TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mrccsd': 'CCSD TOTAL ENERGY'
+    }
     VARH['mrccsd(t)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                         'mrccsd': 'CCSD TOTAL ENERGY',
-                      'mrccsd(t)': 'CCSD(T) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mrccsd': 'CCSD TOTAL ENERGY',
+        'mrccsd(t)': 'CCSD(T) TOTAL ENERGY'
+    }
     VARH['mrccsdt'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'mrccsdt': 'CCSDT TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mrccsdt': 'CCSDT TOTAL ENERGY'
+    }
     VARH['mrccsdt(q)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'mrccsdt': 'CCSDT TOTAL ENERGY',
-                     'mrccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'}
+        'hf': 'HF TOTAL ENERGY',
+        'mp2': 'MP2 TOTAL ENERGY',
+        'mrccsdt': 'CCSDT TOTAL ENERGY',
+        'mrccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'
+    }
+    # yapf: enable
 
     for cilevel in range(2, 99):
-        VARH['ci%s' % (str(cilevel))] = {
-                             'hf': 'HF TOTAL ENERGY',
-          'ci%s' % (str(cilevel)): 'CI TOTAL ENERGY'}
+        VARH['ci%s' % (str(cilevel))] = {'hf': 'HF TOTAL ENERGY', 'ci%s' % (str(cilevel)): 'CI TOTAL ENERGY'}
 
     for mplevel in range(5, 99):
         VARH['mp%s' % (str(mplevel))] = {
-                             'hf': 'HF TOTAL ENERGY',
-          'mp%s' % (str(mplevel)): 'MP%s TOTAL ENERGY' % (str(mplevel))}
+            'hf': 'HF TOTAL ENERGY',
+            'mp%s' % (str(mplevel)): 'MP%s TOTAL ENERGY' % (str(mplevel))
+        }
         for mplevel2 in range(2, mplevel):
             VARH['mp%s' % (str(mplevel))]['mp%s' % (str(mplevel2))] = \
                                       'MP%s TOTAL ENERGY' % (str(mplevel2))
@@ -891,11 +936,13 @@ def return_energy_components():
     VARH.update(cfour_psivar_list())
     return VARH
 
+
 VARH = return_energy_components()
+
 
 def _get_default_xtpl(nbasis, xtpl_type):
     """ A helper function to determine default extrapolation type.
-    
+
     Parameters
     ----------
     nbasis : int
@@ -903,48 +950,48 @@ def _get_default_xtpl(nbasis, xtpl_type):
     xtpl_type : {'scf', 'corl'}
         Extrapolation type: 'scf' for the total energy, 'corl' for just the
         correlation component.
-    
+
     Returns
     -------
     function
         Extrapolation function to be used.
     """
-    
+
     if nbasis == 1:
         return xtpl_highest_1
-    elif xtpl_type ==  "scf":
+    elif xtpl_type == "scf":
         if nbasis == 2:
             return scf_xtpl_helgaker_2
         elif nbasis == 3:
             return scf_xtpl_helgaker_3
         else:
             raise ValidationError("Wrong number of basis sets supplied to scf_xtpl: %d" % nbasis)
-    elif xtpl_type ==  "corl":
+    elif xtpl_type == "corl":
         if nbasis == 2:
             return corl_xtpl_helgaker_2
         else:
             raise ValidationError("Wrong number of basis sets supplied to corl_xtpl: %d" % nbasis)
-            
+
 
 def _validate_cbs_inputs(cbs_metadata):
-    """ A helper function which validates the ``cbs_metadata`` format, 
+    """ A helper function which validates the ``cbs_metadata`` format,
     expands basis sets, and provides sensible defaults for optional arguments.
-    
+
     Parameters
     ----------
     cbs_metadata : array
         array of dicts containing CBS stage keywords.
-    
+
     Returns
     -------
     array
         Array of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
-    """   
-        
+    """
+
     metadata = []
     for item in cbs_metadata:
-    # 1a) all items must have wfn
+        # 1a) all items must have wfn
         if "wfn" not in item:
             raise ValidationError("Stage {d} doesn't have defined level of theory!".format(cbs_metadata.index(item)))
     # 1b) all items must have basis set
@@ -954,7 +1001,7 @@ def _validate_cbs_inputs(cbs_metadata):
         stage = {}
         stage["wfn"] = item["wfn"].lower()
         stage["basis"] = _expand_bracketed_basis(item["basis"].lower())
-    # 2b) if first item is not HF, generate it
+        # 2b) if first item is not HF, generate it
         if len(metadata) == 0 and stage["wfn"] not in ["hf", "c4-hf", "scf", "c4-scf"]:
             scf = {}
             if stage["wfn"].startswith("c4"):
@@ -978,35 +1025,36 @@ def _validate_cbs_inputs(cbs_metadata):
                 stage["stage"] = "corl"
             else:
                 stage["stage"] = "delta{0:d}".format(len(metadata) - 1)
-        stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"])) 
+        stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"]))
         if len(metadata) > 0:
             stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn")).lower()
             stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower())
             if len(stage["basis"][0]) != len(stage["basis_lo"][0]):
-                raise ValidationError("""Number of basis sets inconsistent 
-                                            between high ({0:d}) and low ({1:d}) levels.""".format(len(stage["basis"][0]),
-                                                                                                len(stage["basis_lo"][0])))
+                raise ValidationError("""Number of basis sets inconsistent
+                                            between high ({0:d}) and low ({1:d}) levels.""".format(
+                    len(stage["basis"][0]), len(stage["basis_lo"][0])))
         stage["alpha"] = item.get("alpha", None)
         stage["options"] = item.get("options", False)
         metadata.append(stage)
-    return(metadata)
+    return (metadata)
+
 
 def _process_cbs_kwargs(kwargs):
     """ A helper function which translates supplied kwargs into the
     ``cbs_metadata`` format and passes it for validation.
-    
+
     Parameters
     ----------
     kwargs : dict
         kwargs containing the CBS function specification.
-    
+
     Returns
     -------
     array
         Array of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
-    """    
-    
+    """
+
     if "cbs_metadata" in kwargs:
         # if we passed in a dict, validate it right away
         cbs_metadata = kwargs.get("cbs_metadata")
@@ -1022,12 +1070,10 @@ def _process_cbs_kwargs(kwargs):
             sn = possible_stages.pop(0)
             # either both *_wfn and *_basis have to be specified
             if "{:s}_wfn".format(sn) in kwargs and "{:s}_basis".format(sn) in kwargs:
-                stage = {"wfn": kwargs["{:s}_wfn".format(sn)], 
-                         "basis": kwargs["{:s}_basis".format(sn)]}
+                stage = {"wfn": kwargs["{:s}_wfn".format(sn)], "basis": kwargs["{:s}_basis".format(sn)]}
             # or we're at a scf stage which can be implied with a provided scf_basis
             elif sn == "scf" and "{:s}_basis".format(sn) in kwargs:
-                stage = {"wfn": "hf", 
-                         "basis": kwargs["{:s}_basis".format(sn)]}
+                stage = {"wfn": "hf", "basis": kwargs["{:s}_basis".format(sn)]}
             # otherwise go to the next possible stage
             else:
                 continue
@@ -1045,14 +1091,14 @@ def _process_cbs_kwargs(kwargs):
                 possible_stages.append("delta")
             elif sn == "delta":
                 possible_stages.append("delta2")
-    
+
     return _validate_cbs_inputs(cbs_metadata)
-        
-            
+
 
 ###################################
 ##  Start of Complete Basis Set  ##
 ###################################
+
 
 def cbs(func, label, **kwargs):
     r"""Function to define a multistage energy method from combinations of
@@ -1085,7 +1131,7 @@ def cbs(func, label, **kwargs):
     sequential stages (scf, corl, delta1, delta2, ... ) covering treatment
     of the reference total energy, the correlation energy, a delta correction to the
     correlation energy, and a second delta correction, etc.. Each is activated by its
-    stage_wfn keyword, or as a field in the ```cbs_metadata``` array, and is only 
+    stage_wfn keyword, or as a field in the ```cbs_metadata``` array, and is only
     allowed if all preceding stages are active.
 
     .. include:: ../cbs_eqn.rst
@@ -1317,19 +1363,19 @@ def cbs(func, label, **kwargs):
            * :py:func:`corl_xtpl_helgaker_2`
 
     * Combined interface
-    
+
     :type cbs_metadata: array of dicts
-        
+
         This is the interface to which all of the above calls are internally translated. The first item in
-        the array is always defining the SCF contribution to the total energy. The required items in the 
+        the array is always defining the SCF contribution to the total energy. The required items in the
         dictionary are:
-        
+
         * ```wfn```: typically ```HF```, which is subsumed in correlated methods anyway.
         * ```basis```: basis set, can be in a bracketed form (eg. ```cc-pv[tq]z```)
-        
+
         Other supported arguments for the first dictionary are:
-        
-        * ```scheme```: scf extrapolation scheme function, by default it is worked out from the number of 
+
+        * ```scheme```: scf extrapolation scheme function, by default it is worked out from the number of
         basis sets (1 - 3) supplied as ```basis```.
         * ```alpha```: alpha for the above scheme, if the default is to be overriden
         * ```options```: if special options are required for a step, they should be entered as a dict here.
@@ -1338,19 +1384,19 @@ def cbs(func, label, **kwargs):
         * ```treatment```: treat extrapolation stage as ```scf``` or ```corl```, by default only the first
         stage is ```scf``` and every later one is ```corl```.
         * ```stage```: tag for the stage used in tables.
-        
+
         The next items in the ```cbs_metadata``` array extrapolate correlation. All of the above parameters
         are available, with only the ```wfn``` and ```basis``` keywords required. Other supported parameters
         are:
-        
+
         * ```wfn_lo```: the lower method from which the delta correction is to be calculated. By default, it
         is set to ```wfn``` from the previous field in the ```cbs_metadata``` array.
         * ```basis_lo```: basis set to be used for the delta correction. By default, it is the same as the
         ```basis``` specified above.
-    
+
 
     * Others
-    
+
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
 
@@ -1395,13 +1441,10 @@ def cbs(func, label, **kwargs):
     ptype = kwargs.pop('ptype')
 
     if ptype not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling 
+        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
                                  function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
 
-    optstash = p4util.OptionsState(
-        ['BASIS'],
-        ['WFN'],
-        ['WRITER_FILE_LABEL'])
+    optstash = p4util.OptionsState(['BASIS'], ['WFN'], ['WRITER_FILE_LABEL'])
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
 
@@ -1414,14 +1457,20 @@ def cbs(func, label, **kwargs):
     natom = molecule.natom()
 
     if metadata[0]["wfn"] not in VARH.keys():
-            raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (metadata[0]["wfn"]))
+        raise ValidationError(
+            """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+            (metadata[0]["wfn"]))
 
     if len(metadata) > 1:
         for delta in metadata[1:]:
             if delta["wfn"] not in VARH.keys():
-                raise ValidationError("""Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["treatment"], delta["wfn"]))
+                raise ValidationError(
+                    """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                    (delta["treatment"], delta["wfn"]))
             if delta["wfn_lo"] not in VARH.keys():
-                raise ValidationError("""Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (delta["treatment"], delta["wfn_lo"]))
+                raise ValidationError(
+                    """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                    (delta["treatment"], delta["wfn_lo"]))
 
     # Build string of title banner
     cbsbanners = ''
@@ -1431,29 +1480,42 @@ def cbs(func, label, **kwargs):
     exec(cbsbanners)
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
-    d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 
-                'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha']
+    d_fields = [
+        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
+    ]
     f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     GRAND_NEED = []
     MODELCHEM = []
-    
-    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], 
-                                 metadata[0]["basis"][1], metadata[0]["wfn"], metadata[0]["options"], natom)
-    GRAND_NEED.append(dict(zip(d_fields, ['scf', metadata[0]["scheme"],
-                               _contract_bracketed_basis(metadata[0]["basis"][0]), 
-                               metadata[0]["wfn"], NEED, +1, 0.0, None, None, metadata[0]["alpha"]])))
+
+    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
+                                 metadata[0]["wfn"], metadata[0]["options"], natom)
+    GRAND_NEED.append(
+        dict(
+            zip(d_fields, [
+                'scf', metadata[0]["scheme"],
+                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
+                metadata[0]["alpha"]
+            ])))
     if len(metadata) > 1:
         for delta in metadata[1:]:
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1],
-                                         delta["wfn"], delta["options"], natom)
-            GRAND_NEED.append(dict(zip(d_fields, [delta["stage"], delta["scheme"],
-                                       _contract_bracketed_basis(delta["basis"][0]),
-                                       delta["wfn"], NEED, +1, 0.0, None, None, delta["alpha"]])))
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1],
-                                         delta["wfn_lo"], False, natom)
-            GRAND_NEED.append(dict(zip(d_fields, [delta["stage"], delta["scheme"],
-                                       _contract_bracketed_basis(delta["basis_lo"][0]),
-                                       delta["wfn_lo"], NEED, -1, 0.0, None, None, delta["alpha"]])))
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
+                                         delta["options"], natom)
+            GRAND_NEED.append(
+                dict(
+                    zip(d_fields, [
+                        delta["stage"], delta["scheme"],
+                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
+                        delta["alpha"]
+                    ])))
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
+                                         False, natom)
+            GRAND_NEED.append(
+                dict(
+                    zip(d_fields, [
+                        delta["stage"], delta["scheme"],
+                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
+                        delta["alpha"]
+                    ])))
 
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].items():
@@ -1500,11 +1562,13 @@ def cbs(func, label, **kwargs):
     JOBS_EXT = []
     for job in JOBS:
         for wfn in VARH[job['f_wfn']]:
-            JOBS_EXT.append(dict(zip(f_fields, [wfn, job['f_basis'], job['f_zeta'],
-                                                0.0,
-                                                core.Matrix(natom, 3),
-                                                core.Matrix(3 * natom, 3 * natom),
-                                                job['f_options']])))
+            JOBS_EXT.append(
+                dict(
+                    zip(f_fields, [
+                        wfn, job['f_basis'], job['f_zeta'], 0.0,
+                        core.Matrix(natom, 3),
+                        core.Matrix(3 * natom, 3 * natom), job['f_options']
+                    ])))
 
     instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
     for mc in JOBS_EXT:
@@ -1538,7 +1602,7 @@ def cbs(func, label, **kwargs):
         commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
             (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
         exec(commands)
-        
+
         # Stash and set options if any
         if mc["f_options"]:
             optionstash = p4util.OptionsState(list(mc["f_options"]))
@@ -1546,7 +1610,7 @@ def cbs(func, label, **kwargs):
                 core.set_global_option(k.upper(), v)
         else:
             optionstash = False
-        
+
         # Make energy(), etc. call
         response = func(molecule=molecule, **kwargs)
         if ptype == 'energy':
@@ -1568,7 +1632,7 @@ def cbs(func, label, **kwargs):
         # Restore modified options
         if optionstash:
             optionstash.restore()
-        
+
         # Fill in energies for subsumed methods
         if ptype == 'energy':
             for wfn in VARH[mc['f_wfn']]:
@@ -1581,7 +1645,7 @@ def cbs(func, label, **kwargs):
             core.print_variables()
         core.clean_variables()
         core.clean()
-    
+
         # Copy data from 'run' to 'obtained' table
         for mce in JOBS_EXT:
             if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
@@ -1609,10 +1673,8 @@ def cbs(func, label, **kwargs):
                 if (((lvl[1]['f_wfn'] == job['f_wfn']) or
                      ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
                      ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
-                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or
-                     (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn']))) and
-                     (lvl[1]['f_basis'] == job['f_basis']) and
-                     (lvl[1]['f_options'] == job['f_options'])):
+                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
+                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
                     lvl[1]['f_energy'] = job['f_energy']
                     lvl[1]['f_gradient'] = job['f_gradient']
                     lvl[1]['f_hessian'] = job['f_hessian']
@@ -1648,50 +1710,51 @@ def cbs(func, label, **kwargs):
     tables = ''
     tables += """\n   ==> %s <==\n\n""" % ('Components')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]', 'Variable')
+    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]',
+                                                                'Variable')
     tables += table_delimit
     for job in JOBS_EXT:
         star = ''
         for mc in MODELCHEM:
             if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
                 star = '*'
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('', job['f_wfn'],
-                  '/', job['f_basis'] + " + options"*bool(job['f_options']), star, 
-                  job['f_energy'], VARH[job['f_wfn']][job['f_wfn']])
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+            '', job['f_wfn'], '/', job['f_basis'] + " + options" * bool(job['f_options']), star, job['f_energy'],
+            VARH[job['f_wfn']][job['f_wfn']])
     tables += table_delimit
 
     tables += """\n   ==> %s <==\n\n""" % ('Stages')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]', 'Scheme')
+    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]',
+                                                                'Scheme')
     tables += table_delimit
     for stage in GRAND_NEED:
-        tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'],
-                  '/', stage['d_basis'], stage['d_coef'], stage['d_energy'], stage['d_scheme'].__name__)
+        tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'], '/',
+                                                                      stage['d_basis'], stage['d_coef'],
+                                                                      stage['d_energy'], stage['d_scheme'].__name__)
     tables += table_delimit
 
     tables += """\n   ==> %s <==\n\n""" % ('CBS')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]', 'Scheme')
+    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]',
+                                                                'Scheme')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[0]['d_stage'],
-                                                                  GRAND_NEED[0]['d_wfn'], '/', 
-                                                                  GRAND_NEED[0]['d_basis'], '',
-                                                                  GRAND_NEED[0]['d_energy'],
-                                                                  GRAND_NEED[0]['d_scheme'].__name__)
+    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+        GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '', GRAND_NEED[0]['d_energy'],
+        GRAND_NEED[0]['d_scheme'].__name__)
     if len(metadata) > 1:
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[1]['d_stage'],
-                                                                      GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
-                                                                      GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'],
-                                                                      GRAND_NEED[1]['d_scheme'].__name__)
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+            GRAND_NEED[1]['d_stage'], GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
+            GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'], GRAND_NEED[1]['d_scheme'].__name__)
     if len(metadata) > 2:
         dc = 3
-        for delta in metadata[2:]:            
-            tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[dc]['d_stage'],
-                                                                      GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc+1]['d_wfn'], '/', GRAND_NEED[dc]['d_basis'], '',
-                                                                      GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc+1]['d_energy'],
-                                                                      GRAND_NEED[dc]['d_scheme'].__name__)
+        for delta in metadata[2:]:
+            tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+                GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
+                GRAND_NEED[dc]['d_basis'], '', GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
+                GRAND_NEED[dc]['d_scheme'].__name__)
             dc += 2
-    
+
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
     tables += table_delimit
 
@@ -1733,11 +1796,13 @@ def cbs(func, label, **kwargs):
         return finalquantity
 
 
-_lmh_labels = {1: ['HI'],
-               2: ['LO', 'HI'],
-               3: ['LO', 'MD', 'HI'],
-               4: ['LO', 'MD', 'M2', 'HI'],
-               5: ['LO', 'MD', 'M2', 'M3', 'HI']}
+_lmh_labels = {
+    1: ['HI'],
+    2: ['LO', 'HI'],
+    3: ['LO', 'MD', 'HI'],
+    4: ['LO', 'MD', 'M2', 'HI'],
+    5: ['LO', 'MD', 'M2', 'M3', 'HI']
+}
 
 
 def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom):
@@ -1754,11 +1819,12 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     NEED = {}
     for idx in range(Nxtpl):
-        NEED[_lmh_labels[Nxtpl][idx]] = dict(zip(f_fields, [wfnname, basisname[idx], basiszeta[idx],
-                                                            0.0,
-                                                            core.Matrix(natom, 3),
-                                                            core.Matrix(3 * natom, 3 * natom),
-                                                            options]))
+        NEED[_lmh_labels[Nxtpl][idx]] = dict(
+            zip(f_fields, [
+                wfnname, basisname[idx], basiszeta[idx], 0.0,
+                core.Matrix(natom, 3),
+                core.Matrix(3 * natom, 3 * natom), options
+            ]))
     return NEED
 
 
@@ -1767,7 +1833,7 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
     extracting zetas and values (which one determined by *datakey*) out
     of *needdict* and returning a dictionary whose keys are constructed
     from _lmh_labels.
-    
+
     """
     largs = {}
     largs['functionname'] = needdict['HI']['f_wfn']
@@ -1781,26 +1847,27 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
 
     return largs
 
+
 ##  Aliases  ##
 complete_basis_set = cbs
 
 
 def _cbs_wrapper_methods(**kwargs):
-    """ A helper function for the driver to enumerate methods used in the 
+    """ A helper function for the driver to enumerate methods used in the
     cbs calculation.
-    
+
     Parameters
     ----------
     kwargs : dict
         kwargs containing cbs specification either in the ``cbs_metadata``
         format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
-    
+
     Returns
     -------
     array
         Array containing method names.
     """
-    
+
     cbs_methods = []
     if "cbs_metadata" in kwargs:
         for item in kwargs["cbs_metadata"]:
@@ -1817,12 +1884,12 @@ def _cbs_wrapper_methods(**kwargs):
 def _parse_cbs_gufunc_string(method_name):
     """ A helper function that parses a ``"method/basis"`` input string
     into separate method and basis components. Also handles delta corrections.
-    
+
     Parameters
     ----------
     method_name : str
         A ``"method/basis"`` style string defining the calculation.
-    
+
     Returns
     -------
     tuple
@@ -1832,10 +1899,11 @@ def _parse_cbs_gufunc_string(method_name):
         E.g. ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"`` would return:
         ``(["mp2", "ccsd(t)"], ["cc-pv[tq]z", "cc-pvtz"])``.
     """
-    
-    method_name_list = re.split( """\+(?=\s*[Dd]:)""", method_name)
+
+    method_name_list = re.split("""\+(?=\s*[Dd]:)""", method_name)
     if len(method_name_list) > 2:
-        raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
+        raise ValidationError(
+            "CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
 
     method_list = []
     basis_list = []
@@ -1863,17 +1931,17 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     A text based wrapper of the CBS function. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.
     one-method and one-basis) calls.
-    
+
     Parameters
     ----------
     func : function
         Function to be called (energy, gradient, frequency or cbs).
     total_method_name : str
         String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
-        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or 
-        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()` 
+        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
+        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
         and pushed through :py:func:`~psi4.cbs`.
-    
+
     Returns
     -------
     tuple or float
@@ -1934,7 +2002,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['return_wfn'] = True
     cbs_kwargs['molecule'] = molecule
     cbs_kwargs['verbose'] = cbs_verbose
-    
+
     if user_dertype != None:
         cbs_kwargs['dertype'] = user_dertype
 
@@ -1950,14 +2018,14 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         if 'corl_scheme' in kwargs:
             cbs_kwargs['corl_scheme'] = kwargs['corl_scheme']
 
-    # "method/basis" syntax only allows for one delta correction 
+    # "method/basis" syntax only allows for one delta correction
     # via "method/basis+D:delta/basis". Maximum length of method_list is 2.
     if len(method_list) == 2:
         cbs_kwargs['delta_wfn'] = method_list[1]
         cbs_kwargs['delta_basis'] = basis_list[1]
         if 'delta_scheme' in kwargs:
             cbs_kwargs['delta_scheme'] = kwargs['delta_scheme']
-    
+
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
     if return_wfn:

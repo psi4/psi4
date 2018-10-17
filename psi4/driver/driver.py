@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
@@ -50,7 +49,9 @@ from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
+
 # never import wrappers or aliases into this file
+
 
 def _find_derivative_type(ptype, method_name, user_dertype):
     r"""
@@ -105,7 +106,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
 
         raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-            % (method_name, str(dertype), alternatives))
+                              % (method_name, str(dertype), alternatives))
 
     return dertype
 
@@ -121,11 +122,9 @@ def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
     mol = core.get_active_molecule()
     efp_present = hasattr(mol, 'EFP')
 
-    translations_projection_sound = (not core.get_option('SCF', 'EXTERN') and
-                                     not core.get_option('SCF', 'PERTURB_H') and
-                                     not efp_present)
-    rotations_projection_sound = (translations_projection_sound and
-                                  stationary_point)
+    translations_projection_sound = (not core.get_option('SCF', 'EXTERN') and not core.get_option('SCF', 'PERTURB_H')
+                                     and not efp_present)
+    rotations_projection_sound = (translations_projection_sound and stationary_point)
 
     return translations_projection_sound, rotations_projection_sound
 
@@ -425,11 +424,11 @@ def energy(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    
+
     # Bounce to CP if bsse kwarg
     if kwargs.get('bsse_type', None) is not None:
         return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
-    
+
     # Bounce if name is function
     if hasattr(name, '__call__'):
         return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
@@ -555,7 +554,9 @@ def gradient(name, **kwargs):
     if gradient_type == 'custom_function':
         if user_dertype is None:
             dertype = 0
-            core.print_out("\nGradient: Custom function passed in without a defined dertype, assuming fd-energy based gradient.\n")
+            core.print_out(
+                "\nGradient: Custom function passed in without a defined dertype, assuming fd-energy based gradient.\n"
+            )
         else:
             core.print_out("\nGradient: Custom function passed in with a dertype of %d\n" % user_dertype)
             dertype = user_dertype
@@ -666,7 +667,8 @@ def gradient(name, **kwargs):
         if opt_mode == 'sow':
             instructionsO = """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
             instructionsO += """    to this output file (which contains no quantum chemical calculations), this job\n"""
-            instructionsO += """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
+            instructionsO += """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (
+                str(opt_iter))
             instructionsO += """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
             instructionsO += """    These files may look very peculiar since they contain processed and pickled python\n"""
             instructionsO += """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
@@ -675,7 +677,8 @@ def gradient(name, **kwargs):
             core.print_out(instructionsO)
 
             instructionsM = """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
-            instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))
+            instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (
+                str(opt_iter))
             instructionsM += """#       The output file names must be as given below.\n#\n"""
             for rgt in range(ndisp):
                 pre = 'OPT-' + str(opt_iter) + '-' + str(rgt + 1)
@@ -686,14 +689,16 @@ def gradient(name, **kwargs):
             if opt_iter == 1:
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
             else:
-                instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
+                instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in',
+                                                                                       'OPT-master.out')
             instructionsM += """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
             instructionsM += """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
             instructionsM += """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
             instructionsM += """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
 
             with open('OPT-master.in', 'wb') as fmaster:
-                fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write(
+                    '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input().encode('utf-8'))
                 p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, dertype=dertype, **kwargs)
@@ -730,15 +735,19 @@ def gradient(name, **kwargs):
 
                 # S/R: Prepare molecule, options, and kwargs
                 with open('%s.in' % (rfile), 'wb') as freagent:
-                    freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                    freagent.write(
+                        '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                     freagent.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input().encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
 
                     # S/R: Prepare function call and energy save
-                    freagent.write(("""electronic_energy = energy('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
-                    freagent.write(("""core.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1)).encode('utf-8'))
-                    freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
+                    freagent.write(
+                        ("""electronic_energy = energy('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
+                    freagent.write(("""core.print_out('\\nGRADIENT RESULT: computation %d for item %d """ %
+                                    (os.getpid(), n + 1)).encode('utf-8'))
+                    freagent.write(
+                        """yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif opt_mode == 'reap':
@@ -764,13 +773,11 @@ def gradient(name, **kwargs):
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
 
-
     optstash.restore()
 
     if core.get_option('FINDIF', 'GRADIENT_WRITE'):
         filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
-        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD',
-                                     mol=molecule, energy=wfn.energy())
+        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=molecule, energy=wfn.energy())
 
     if return_wfn:
         return (wfn.gradient(), wfn)
@@ -1044,9 +1051,9 @@ def optimize(name, **kwargs):
     return_history = kwargs.pop('return_history', False)
     if return_history:
         # Add wfn once the deep copy issues are worked out
-        step_energies      = []
-        step_gradients     = []
-        step_coordinates   = []
+        step_energies = []
+        step_gradients = []
+        step_coordinates = []
 
     # For CBS wrapper, need to set retention on INTCO file
     if custom_gradient or ('/' in lowername):
@@ -1096,8 +1103,7 @@ def optimize(name, **kwargs):
             raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
                                   """using the last geometry in the output, after """
                                   """carefully making sure all symmetry-dependent """
-                                  """input, such as DOCC, is correct.""" %
-                                  (current_sym, initial_sym))
+                                  """input, such as DOCC, is correct.""" % (current_sym, initial_sym))
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1188,7 +1194,8 @@ def optimize(name, **kwargs):
             # S/R: Clean up opt input file
             if opt_mode == 'reap':
                 with open('OPT-master.in', 'wb') as fmaster:
-                    fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                    fmaster.write(
+                        '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                     fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
 
             # Cleanup binary file 1
@@ -1198,10 +1205,11 @@ def optimize(name, **kwargs):
             optstash.restore()
 
             if return_history:
-                history = { 'energy'        : step_energies ,
-                            'gradient'      : step_gradients ,
-                            'coordinates'   : step_coordinates,
-                          }
+                history = {
+                    'energy': step_energies,
+                    'gradient': step_gradients,
+                    'coordinates': step_coordinates,
+                }
 
             if return_wfn and return_history:
                 return (thisenergy, wfn, history)
@@ -1301,7 +1309,7 @@ def hessian(name, **kwargs):
     optstash = p4util.OptionsState(
         ['FINDIF', 'HESSIAN_WRITE'],
         ['FINDIF', 'FD_PROJECT'],
-        )
+    )
 
     # Allow specification of methods to arbitrary order
     lowername, level = driver_util.parse_arbitrary_order(lowername)
@@ -1339,7 +1347,8 @@ def hessian(name, **kwargs):
         irrep = driver_util.parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
         irrep -= 1  # A1 irrep is externally 1, internally 0
         if dertype == 2:
-            core.print_out("""hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
+            core.print_out(
+                """hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
             dertype = 1
 
     # At stationary point?
@@ -1349,9 +1358,10 @@ def hessian(name, **kwargs):
     else:
         G0 = gradient(lowername, molecule=molecule, **kwargs)
     translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
-    core.print_out('\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'.
-                   format(G0.rms(), '' if translations_projection_sound else 'not ',
-                   '' if rotations_projection_sound else 'not '))
+    core.print_out(
+        '\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'
+        .format(G0.rms(), '' if translations_projection_sound else 'not ',
+                '' if rotations_projection_sound else 'not '))
     if not core.has_option_changed('FINDIF', 'FD_PROJECT'):
         core.set_local_option('FINDIF', 'FD_PROJECT', rotations_projection_sound)
 
@@ -1375,7 +1385,8 @@ def hessian(name, **kwargs):
             return wfn.hessian()
 
     elif dertype == 1:
-        core.print_out("""hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
+        core.print_out(
+            """hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
@@ -1419,11 +1430,13 @@ def hessian(name, **kwargs):
             instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
 
             with open('FREQ-master.in', 'wb') as fmaster:
-                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write(
+                    '# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
                 p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=1, **kwargs)
-                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
+                fmaster.write(
+                    ("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             core.print_out(instructionsM)
 
@@ -1468,16 +1481,19 @@ def hessian(name, **kwargs):
                     kwargs['return_wfn'] = True
                     p4util.format_kwargs_for_input(freagent, **kwargs)
                     freagent.write("""G, wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
-                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write(
+                        """core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
-                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write(
+                        """core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic energy %20.12f\\n' % (get_variable('CURRENT ENERGY')))\n\n""")
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif freq_mode == 'reap':
                 exec(banners)
                 core.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
-                pygrad = p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True, label='electronic gradient')
+                pygrad = p4util.extract_sowreap_from_output(
+                    rfile, 'HESSIAN', n, freq_linkage, True, label='electronic gradient')
                 p4mat = core.Matrix.from_list(pygrad)
                 p4mat.print_out()
                 gradients.append(p4mat)
@@ -1565,11 +1581,13 @@ def hessian(name, **kwargs):
             instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
 
             with open('FREQ-master.in', 'wb') as fmaster:
-                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write(
+                    '# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
                 p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=0, **kwargs)
-                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
+                fmaster.write(
+                    ("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             core.print_out(instructionsM)
 
@@ -1611,7 +1629,8 @@ def hessian(name, **kwargs):
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
                     freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (energy.__name__, lowername))
-                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write(
+                        """core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
@@ -1629,7 +1648,7 @@ def hessian(name, **kwargs):
             else:
                 return None
         elif freq_mode == 'reap':
-        #    core.set_variable('CURRENT ENERGY', energies[-1])
+            #    core.set_variable('CURRENT ENERGY', energies[-1])
             wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
@@ -1747,17 +1766,17 @@ def frequency(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
- 
+
     # Let hessian() handle this!
     # # Bounce (someday) if name is function
     # if hasattr(name, '__call__'):
     #     raise ValidationError("Frequency: Cannot use custom function")
-    # 
+    #
     # lowername = name.lower()
-    # 
+    #
     # if "/" in lowername:
     #     return driver_cbs._cbs_gufunc(frequency, name, ptype='frequency', **kwargs)
-    # 
+    #
     # if kwargs.get('bsse_type', None) is not None:
     #     raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
 
@@ -1837,17 +1856,20 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]
 
-    vibrec = {'molecule': mol.to_dict(np_out=False),
-              'hessian': nmwhess.tolist()}
+    vibrec = {'molecule': mol.to_dict(np_out=False), 'hessian': nmwhess.tolist()}
 
     if molecule is not None:
         molecule.update_geometry()
         if mol.natom() != molecule.natom():
-            raise ValidationError('Impostor molecule trying to be analyzed! natom {} != {}'.format(mol.natom(), molecule.natom()))
+            raise ValidationError('Impostor molecule trying to be analyzed! natom {} != {}'.format(
+                mol.natom(), molecule.natom()))
         if abs(mol.nuclear_repulsion_energy() - molecule.nuclear_repulsion_energy()) > 1.e-6:
-            raise ValidationError('Impostor molecule trying to be analyzed! NRE {} != {}'.format(mol.nuclear_repulsion_energy(), molecule.nuclear_repulsion_energy()))
+            raise ValidationError('Impostor molecule trying to be analyzed! NRE {} != {}'.format(
+                mol.nuclear_repulsion_energy(), molecule.nuclear_repulsion_energy()))
         if not np.allclose(np.asarray(mol.geometry()), np.asarray(molecule.geometry()), atol=1.e-6):
-            core.print_out('Warning: geometry center/orientation mismatch. Normal modes may not be in expected coordinate system.')
+            core.print_out(
+                'Warning: geometry center/orientation mismatch. Normal modes may not be in expected coordinate system.'
+            )
         #    raise ValidationError('Impostor molecule trying to be analyzed! geometry\n{}\n   !=\n{}'.format(
         #        np.asarray(mol.geometry()), np.asarray(molecule.geometry())))
         mol = molecule
@@ -1855,8 +1877,8 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     m = np.asarray([mol.mass(at) for at in range(mol.natom())])
     irrep_labels = mol.irrep_labels()
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, wfn.basisset(), irrep_labels,
-                                                  project_trans=project_trans, project_rot=project_rot)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(
+        nmwhess, geom, m, wfn.basisset(), irrep_labels, project_trans=project_trans, project_rot=project_rot)
     vibrec.update({k: qca.to_dict() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)
@@ -1868,15 +1890,16 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
         rsn = mol.rotational_symmetry_number()
 
     if irrep is None:
-        therminfo, thermtext = qcdb.vib.thermo(vibinfo,
-                                      T=core.get_option("THERMO", "T"),  # 298.15 [K]
-                                      P=core.get_option("THERMO", "P"),  # 101325. [Pa]
-                                      multiplicity=mol.multiplicity(),
-                                      molecular_mass=np.sum(m),
-                                      sigma=rsn,
-                                      rotor_type=mol.rotor_type(),
-                                      rot_const=np.asarray(mol.rotational_constants()),
-                                      E0=core.get_variable('CURRENT ENERGY'))  # someday, wfn.energy()
+        therminfo, thermtext = qcdb.vib.thermo(
+            vibinfo,
+            T=core.get_option("THERMO", "T"),  # 298.15 [K]
+            P=core.get_option("THERMO", "P"),  # 101325. [Pa]
+            multiplicity=mol.multiplicity(),
+            molecular_mass=np.sum(m),
+            sigma=rsn,
+            rotor_type=mol.rotor_type(),
+            rot_const=np.asarray(mol.rotational_constants()),
+            E0=core.get_variable('CURRENT ENERGY'))  # someday, wfn.energy()
         vibrec.update({k: qca.to_dict() for k, qca in therminfo.items()})
 
         core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
