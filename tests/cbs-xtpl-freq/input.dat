@@ -1,12 +1,12 @@
 #! Various gradients for a strained helium dimer and water molecule
 import numpy as np
 
-nucenergy_ref = 9.1681932964
+nucenergy_ref = 9.3008469403
 
 molecule h2o_dz {
-  O
-  H 1 0.96
-  H 1 0.96 2 104.5
+    O       
+    H             1    0.946279
+    H             1    0.946279      2  104.619334
 }
 
 molecule h2o_tz {
@@ -36,12 +36,12 @@ clean()
 
 # reference frequencies: CFOUR v1.0 with:
 # *ACES2(CALC=HF,BASIS=PVDZ,ABCDTYPE=AOBASIS,CC_PROG=ECC,VIB=ANALYTIC,SCF_CONV=10,LINEQ_CONV=10)
-# 1808.8119, 3923.3122, 4020.3029
+# 1775.7236, 4113.8382, 4212.2220
 
 scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, dertype=1, molecule=h2o_dz)
-compare_values(wfn_dz.frequencies().get(0), 1809.2462, 2, "SCF/cc-pVDZ Frequency 1")            #TEST
-compare_values(wfn_dz.frequencies().get(1), 3923.1513, 2, "SCF/cc-pVDZ Frequency 2")            #TEST
-compare_values(wfn_dz.frequencies().get(2), 4020.1774, 2, "SCF/cc-pVDZ Frequency 3")            #TEST
+compare_values(wfn_dz.frequencies().get(0), 1776.1550, 2, "SCF/cc-pVDZ Frequency 1")            #TEST
+compare_values(wfn_dz.frequencies().get(1), 4113.6950, 2, "SCF/cc-pVDZ Frequency 2")            #TEST
+compare_values(wfn_dz.frequencies().get(2), 4212.1246, 2, "SCF/cc-pVDZ Frequency 3")            #TEST
 
 # reference frequencies: G09.D01 with:
 # freq=noraman hf/cc-pvtz
