@@ -36,6 +36,7 @@ void export_psio(py::module &m) {
     py::class_<PSIO, std::shared_ptr<PSIO> >(m, "IO", "docstring")
         .def("state", &PSIO::state, "Return 1 if PSIO library is activated")
         .def("open", &PSIO::open, "Open unit. Status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file should be open", py::arg("unit"), py::arg("status"))
+        .def("exists", &PSIO::exists, "Check if the unit exists.", py::arg("unit"))
         .def("close", &PSIO::close, "Close unit. If keep == 0, will remove the file, else keep it", py::arg("unit"), py::arg("keep"))
         .def("rehash", &PSIO::rehash, "Sync up the object to the file on disk by closing and opening the file, if necessary", py::arg("unit"))
         .def("open_check", &PSIO::open_check, "Return 1 if unit is open", py::arg("unit"))
