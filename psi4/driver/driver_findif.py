@@ -37,6 +37,8 @@ from psi4.driver.p4util import block_diagonal_array
 # _pi at the end of a variable name is short for "per irrep."
 # h is the index of an irrep.
 
+np.set_printoptions(formatter={'float': '{: 0.10f}'.format})
+
 
 def _displace_cart(mol, geom, salc_list, i_m, step_size):
     """Displace a geometry along the specified displacement SALCs.
@@ -61,19 +63,16 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
     label : str
         The label for the displacement in the metadata dictionary.
     """
-    name, label = "", ""
+    label = ""
     # This for loop and tuple unpacking is why the function can handle
     # an arbitrary number of SALCs.
     for salc_index, disp_steps in i_m:
-        # We get rid of the initial ", " later.
-        name += ", Coord: {:d}, Disp: {:d}".format(salc_index, disp_steps)
         for component in salc_list[salc_index]:
-            geom.add(0, component.atom, component.xyz,
-                     disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
+            geom[component.atom, component.xyz] += (
+                disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
         # salc_index is in descending order. We want the label in ascending order, so...
         # ...add the new label part from the left of the string, not the right.
         label = "{:d}: {:d}".format(salc_index, disp_steps) + (", " if label else "") + label
-    geom.name = name[2:]
     return label
 
 
@@ -272,9 +271,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
     data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
 
     # We can finally start generating displacements.
-    ref_geom_temp = mol.geometry()
-    ref_geom = ref_geom_temp.clone()
-    ref_geom.name = "Reference geometry"
+    ref_geom = mol.geometry().clone()
 
     # Now we generate the metadata...
     metadict = {
@@ -286,17 +283,25 @@ def _geom_generator(mol, freq_irrep_only, mode):
         "displacement_space": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
+        # TODO: Hand-coding is bad. Fix this post-QCElemental.
+        "molecule": {
+            "schema_name": "qc_schema_input",
+            "schema_version": 1,
+            "molecule": mol.to_schema(dtype=1, units='Bohr')
+        },
         "displacements": {},
         "reference": {}
     }
 
     def append_geoms(indices, steps):
         """Given a list of indices and a list of steps to displace each, append the corresponding geometry to the list."""
-        new_geom = ref_geom.clone()
+        new_geom = ref_geom.clone().np
         # Next, to make this salc/magnitude composite.
         index_steps = zip(indices, steps)
         label = _displace_cart(mol, new_geom, data["salc_list"], index_steps, data["disp_size"])
-        metadict["displacements"][label] = {"geometry": new_geom}
+        if data["print_lvl"] > 2:
+            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(new_geom)))
+        metadict["displacements"][label] = {"geometry": new_geom.ravel().tolist()}
 
     for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
@@ -315,11 +320,9 @@ def _geom_generator(mol, freq_irrep_only, mode):
                     for val in data["disps"]["off"]:
                         append_geoms((index, index2), val)
 
-    metadict["reference"]["geometry"] = ref_geom
-
     if data["print_lvl"] > 2:
-        for disp in metadict["displacements"].values():
-            disp["geometry"].print_out()
+        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom.np)))
+    metadict["reference"]["geometry"] = ref_geom.np.ravel().tolist()
 
     if data["print_lvl"] > 1:
         core.print_out("\n-------------------------------------------------------------\n")
@@ -327,13 +330,11 @@ def _geom_generator(mol, freq_irrep_only, mode):
     return metadict
 
 
-def compute_gradient_from_energy(mol, metadict):
+def compute_gradient_from_energy(metadict):
     """Compute the gradient by finite difference of energies.
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
-        The molecule to compute the gradient of.
     metadict : dict
         A structured dictionary of data describing the finite difference computation.
         Includes the displacements and their energies.
@@ -343,6 +344,9 @@ def compute_gradient_from_energy(mol, metadict):
     gradient : np.array
         (nat, 3) Cartesian gradient [Eh/a0].
     """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(metadict["molecule"], verbose=0)
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
@@ -430,14 +434,12 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     # Symmetrize our Hessian block.
     # The symmetric structure is lost due to errors in the computation
-    temp_hess = core.Matrix.from_array(H_block)
-    temp_hess.hermitize()
-    H_block = np.array(temp_hess)
+    H_block = (H_block + H_block.T) / 2.0
 
     if print_lvl >= 3:
         core.print_out("\n    Force Constants for irrep {} in mass-weighted, ".format(irrep))
         core.print_out("symmetry-adapted cartesian coordinates.\n")
-        core.Matrix.from_array(H_block).print_out()
+        core.print_out("\n{}\n".format(np.array_str(H_block)))
 
     evals, evects = np.linalg.eigh(H_block)
     # Get our eigenvalues and eigenvectors in descending order.
@@ -449,7 +451,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     if print_lvl >= 2:
         core.print_out("\n    Normal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
-        core.Matrix.from_array(normal_irr).print_out()
+        core.print_out("\n{}\n".format(np.array_str(normal_irr)))
 
     return H_block
 
@@ -484,7 +486,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     if print_lvl >= 3:
         core.print_out("\n    Force constant matrix for all computed irreps in mass-weighted SALCS.\n")
-        core.Matrix.from_array(H).print_out()
+        core.print_out("\n{}\n".format(np.array_str(H)))
 
     # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
     # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
@@ -493,14 +495,14 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     Hx = np.dot(np.dot(B.T, H), B)
     if print_lvl >= 3:
         core.print_out("\n    Force constants in mass-weighted Cartesian coordinates.\n")
-        core.Matrix.from_array(Hx).print_out()
+        core.print_out("\n{}\n".format(np.array_str(Hx)))
 
     # Un-massweight the Hessian.
     Hx = np.transpose(Hx / massweighter) / massweighter
 
     if print_lvl >= 3:
         core.print_out("\n    Force constants in Cartesian coordinates.\n")
-        core.Matrix.from_array(Hx).print_out()
+        core.print_out("\n{}\n".format(np.array_str(Hx)))
 
     if print_lvl:
         core.print_out("\n-------------------------------------------------------------\n")
@@ -508,13 +510,11 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     return Hx
 
 
-def compute_hessian_from_gradient(mol, metadict, freq_irrep_only):
+def compute_hessian_from_gradient(metadict, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
-        The molecule to compute the Hessian of.
     metadict : dict
         A structured dictionary of data describing the finite difference computation.
         Includes the displacements and their gradients.
@@ -527,6 +527,9 @@ def compute_hessian_from_gradient(mol, metadict, freq_irrep_only):
     hessian : np.array
         (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(metadict["molecule"], verbose=0)
 
     displacements = metadict["displacements"]
 
@@ -566,14 +569,16 @@ def compute_hessian_from_gradient(mol, metadict, freq_irrep_only):
     max_disp = (data["num_pts"] - 1) // 2  # The numerator had better be divisible by two.
     for i in data["salc_indices_pi"][0]:
         for n in range(-max_disp, 0):
-            gradients_pi[0].append(displacements["{}: {}".format(i, n)]["gradient"])
+            grad_raw = displacements["{}: {}".format(i, n)]["gradient"]
+            gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
         for n in range(1, max_disp + 1):
-            gradients_pi[0].append(displacements["{}: {}".format(i, n)]["gradient"])
+            grad_raw = displacements["{}: {}".format(i, n)]["gradient"]
+            gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
 
     if data["print_lvl"] >= 3:
         core.print_out("    Symmetric gradients\n")
         for gradient in gradients_pi[0]:
-            core.Matrix.from_array(gradient).print_out()
+            core.print_out("\n{}\n".format(np.array_str(gradient)))
 
     # Asymmetric gradient. There's always SOME operation that transforms a positive
     # into a negative displacement.By doing extra things here, we can find the
@@ -608,7 +613,8 @@ def compute_hessian_from_gradient(mol, metadict, freq_irrep_only):
         def recursive_gradients(i, n):
             """Populate gradients, with step -n, -n+1, ... -1, 1, ... n.
                Positive displacements are computed."""
-            gradients.append(displacements["{}: {}".format(i, -n)]["gradient"])
+            grad_raw = displacements["{}: {}".format(i, -n)]["gradient"]
+            gradients.append(np.reshape(grad_raw, (-1, 3)))
             new_grad = np.zeros((data["n_atom"], 3))
             for atom, image in enumerate(atom_map):
                 atom2 = image[group_op]
@@ -630,7 +636,7 @@ def compute_hessian_from_gradient(mol, metadict, freq_irrep_only):
         core.print_out("    All mass-weighted gradients\n")
         for gradients in gradients_pi:
             for grad in gradients:
-                core.Matrix.from_array(grad).print_out()
+                core.print_out("\n{}\n".format(np.array_str(grad)))
 
     # We have all our gradients generated now!
     # Next, time to get our Hessian.
@@ -678,13 +684,11 @@ def compute_hessian_from_gradient(mol, metadict, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def compute_hessian_from_energy(mol, metadict, freq_irrep_only):
+def compute_hessian_from_energy(metadict, freq_irrep_only):
     """Compute the Hessian by finite difference of energies.
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
-        The molecule to compute the Hessian of.
     metadict : dict
         A structured dictionary of data describing the finite difference computation.
         Includes the displacements and their gradients.
@@ -697,6 +701,9 @@ def compute_hessian_from_energy(mol, metadict, freq_irrep_only):
     hessian : np.array
         (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(metadict["molecule"], verbose=0)
 
     displacements = metadict["displacements"]
     ref_energy = metadict["reference"]["energy"]
@@ -722,8 +729,6 @@ def compute_hessian_from_energy(mol, metadict, freq_irrep_only):
     irrep_lbls = mol.irrep_labels()
     max_disp = (metadict["stencil_size"] - 1) // 2
     e_per_diag = 2 * max_disp
-
-    # TODO: Decide about printing out these energies!
 
     # Unlike in the gradient case, we have no symmetry transformations to worry about.
     # We get to the task directly: assembling the force constants in each irrep block.

@@ -139,8 +139,9 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
     sys.stdout.flush()
 
-    # Load in displacement into the active molecule
-    molecule.set_geometry(core.Matrix.from_array(displacement["geometry"]))
+    # Load in displacement (flat list) into the active molecule
+    geom_array = np.reshape(displacement["geometry"], (-1, 3))
+    molecule.set_geometry(core.Matrix.from_array(geom_array))
 
     # Perform the derivative calculation
     derivative, wfn = derivfunc(method, return_wfn=True, molecule=molecule, **kwargs)
@@ -148,10 +149,10 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
-        displacement["gradient"] = wfn.gradient().to_array()
+        displacement["gradient"] = wfn.gradient().np.ravel().tolist()
 
     # clean may be necessary when changing irreps of displacements
-    core.clean()
+    #core.clean()
 
     return wfn
 
@@ -680,7 +681,7 @@ def gradient(name, **kwargs):
 
         # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = driver_findif.compute_gradient_from_energy(molecule, findif_meta_dict)
+        G = driver_findif.compute_gradient_from_energy(findif_meta_dict)
         grad_psi_matrix = core.Matrix.from_array(G)
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
@@ -1030,7 +1031,8 @@ def optimize(name, **kwargs):
         if (n > 1) and (core.get_option('OPTKING', 'OPT_TYPE') == 'IRC'):
             old_thisenergy = core.get_variable('CURRENT ENERGY')
 
-        # Compute the gradient
+        # Compute the gradient - preserve opt data despite core.clean calls in gradient
+        #core.IOManager.shared_object().set_specific_retention(1, True)
         G, wfn = gradient(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
         thisenergy = core.get_variable('CURRENT ENERGY')
 
@@ -1300,13 +1302,14 @@ def hessian(name, **kwargs):
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
             _process_displacement(gradient, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
+            core.clean()
 
         wfn = _process_displacement(gradient, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
                                     **kwargs)
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = driver_findif.compute_hessian_from_gradient(molecule, findif_meta_dict, irrep)  # TODO or moleculeclone?
+        H = driver_findif.compute_hessian_from_gradient(findif_meta_dict, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
@@ -1342,12 +1345,13 @@ def hessian(name, **kwargs):
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
             _process_displacement(energy, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
+            core.clean()
 
         wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
                                     **kwargs)
 
         # Assemble Hessian from energies
-        H = driver_findif.compute_hessian_from_energy(molecule, findif_meta_dict, irrep)
+        H = driver_findif.compute_hessian_from_energy(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
