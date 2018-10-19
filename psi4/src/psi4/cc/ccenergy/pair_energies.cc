@@ -56,13 +56,10 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
 
     if (params_.ref == 0) { /** RHF **/
 
-        int i, j, ij;
-        int irrep;
-        int nocc_act = 0;
-        int naa, nab;
-        for (irrep = 0; irrep < moinfo_.nirreps; irrep++) nocc_act += moinfo_.clsdpi[irrep];
-        naa = nocc_act * (nocc_act - 1) / 2;
-        nab = nocc_act * nocc_act;
+        auto nocc_act = 0;
+        for (int irrep = 0; irrep < moinfo_.nirreps; irrep++) nocc_act += moinfo_.clsdpi[irrep];
+        auto naa = nocc_act * (nocc_act - 1) / 2;
+        auto nab = nocc_act * nocc_act;
 
         /* Compute alpha-alpha pair energies */
         if (naa) {
@@ -76,23 +73,18 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
             // dpd_buf4_print(&E, outfile, 1);
 
             /* Extract diagonal elements (i.e. pair energies) and print them out nicely */
-            for (irrep = 0; irrep < moinfo_.nirreps; irrep++) {
-                double** block;
+            for (int irrep = 0; irrep < moinfo_.nirreps; irrep++) {
                 dpdparams4* Params = E.params;
-                int p;
-                int np = Params->rowtot[irrep];
 
                 global_dpd_->buf4_mat_irrep_init(&E, irrep);
                 global_dpd_->buf4_mat_irrep_rd(&E, irrep);
-                block = E.matrix[irrep];
+                auto block = E.matrix[irrep];
 
-                for (p = 0; p < np; p++) {
-                    int i, j, ij;
+                for (int p = 0; p < Params->rowtot[irrep]; p++) {
+                    auto i = Params->roworb[irrep][p][0];
+                    auto j = Params->roworb[irrep][p][1];
 
-                    i = Params->roworb[irrep][p][0];
-                    j = Params->roworb[irrep][p][1];
-
-                    ij = (i > j) ? i * (i - 1) / 2 + j : j * (j - 1) / 2 + i;
+                    auto ij = (i > j) ? i * (i - 1) / 2 + j : j * (j - 1) / 2 + i;
                     eaa[ij] = block[p][p];
                 }
                 global_dpd_->buf4_mat_irrep_close(&E, irrep);
@@ -107,7 +99,7 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
 
         /* Compute alpha-beta pair energies */
         if (nab) {
-            double* eab = init_array(nab);
+            auto eab = init_array(nab);
 
             global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
             global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
@@ -117,23 +109,18 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
             // dpd_buf4_print(&E, outfile, 1);
 
             /* Extract diagonal elements (i.e. pair energies) and print them out nicely */
-            for (irrep = 0; irrep < moinfo_.nirreps; irrep++) {
-                double** block;
+            for (int irrep = 0; irrep < moinfo_.nirreps; irrep++) {
                 dpdparams4* Params = E.params;
-                int p;
-                int np = Params->rowtot[irrep];
 
                 global_dpd_->buf4_mat_irrep_init(&E, irrep);
                 global_dpd_->buf4_mat_irrep_rd(&E, irrep);
-                block = E.matrix[irrep];
+                auto block = E.matrix[irrep];
 
-                for (p = 0; p < np; p++) {
-                    int i, j, ij;
+                for (int p = 0; p < Params->rowtot[irrep]; p++) {
+                    auto i = Params->roworb[irrep][p][0];
+                    auto j = Params->roworb[irrep][p][1];
 
-                    i = Params->roworb[irrep][p][0];
-                    j = Params->roworb[irrep][p][1];
-
-                    ij = i * nocc_act + j;
+                    auto ij = i * nocc_act + j;
                     eab[ij] = block[p][p];
                 }
                 global_dpd_->buf4_mat_irrep_close(&E, irrep);
@@ -151,13 +138,10 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
 void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab) {
     if (params_.ref == 0) { /** RHF **/
 
-        int i, j, ij;
-        int irrep;
-        int nocc_act = 0;
-        int naa, nab;
-        for (irrep = 0; irrep < moinfo_.nirreps; irrep++) nocc_act += moinfo_.clsdpi[irrep];
-        naa = nocc_act * (nocc_act - 1) / 2;
-        nab = nocc_act * nocc_act;
+        auto nocc_act = 0;
+        for (int irrep = 0; irrep < moinfo_.nirreps; irrep++) nocc_act += moinfo_.clsdpi[irrep];
+        auto naa = nocc_act * (nocc_act - 1) / 2;
+        auto nab = nocc_act * nocc_act;
 
         if (!params_.spinadapt_energies) {
             double emp2_aa_tot = 0.0;
@@ -169,9 +153,9 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
             outfile->Printf("        i       j         MP2             %s\n", params_.wfn.c_str());
             outfile->Printf("      -----   -----   ------------   ------------\n");
             if (naa) {
-                ij = 0;
-                for (i = 0; i < nocc_act; i++)
-                    for (j = 0; j < i; j++, ij++) {
+                auto ij = 0;
+                for (int i = 0; i < nocc_act; i++)
+                    for (int j = 0; j < i; j++, ij++) {
                         outfile->Printf("      %3d     %3d     %12.9lf   %12.9lf\n", i + 1, j + 1, emp2_aa[ij],
                                         ecc_aa[ij]);
                         emp2_aa_tot += emp2_aa[ij];
@@ -185,9 +169,9 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
             outfile->Printf("        i       j         MP2             %s\n", params_.wfn.c_str());
             outfile->Printf("      -----   -----   ------------   ------------\n");
             if (nab) {
-                ij = 0;
-                for (i = 0; i < nocc_act; i++)
-                    for (j = 0; j < nocc_act; j++, ij++) {
+                auto ij = 0;
+                for (int i = 0; i < nocc_act; i++)
+                    for (int j = 0; j < nocc_act; j++, ij++) {
                         outfile->Printf("      %3d     %3d     %12.9lf   %12.9lf\n", i + 1, j + 1, emp2_ab[ij],
                                         ecc_ab[ij]);
                         emp2_ab_tot += emp2_ab[ij];
@@ -207,9 +191,9 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
             outfile->Printf("    Singlet pair energies\n");
             outfile->Printf("        i       j         MP2             %s\n", params_.wfn.c_str());
             outfile->Printf("      -----   -----   ------------   ------------\n");
-            ij = 0;
-            for (i = 0; i < nocc_act; i++)
-                for (j = 0; j <= i; j++, ij++) {
+            auto ij = 0;
+            for (int i = 0; i < nocc_act; i++)
+                for (int j = 0; j <= i; j++, ij++) {
                     double emp2_s, ecc_s;
                     int ij_ab = i * nocc_act + j;
                     int ij_aa = i * (i - 1) / 2 + j;
@@ -242,9 +226,9 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
             outfile->Printf("        i       j         MP2             %s\n", params_.wfn.c_str());
             outfile->Printf("      -----   -----   ------------   ------------\n");
             if (naa) {
-                ij = 0;
-                for (i = 0; i < nocc_act; i++)
-                    for (j = 0; j < i; j++, ij++) {
+                auto ij = 0;
+                for (int i = 0; i < nocc_act; i++)
+                    for (int j = 0; j < i; j++, ij++) {
                         outfile->Printf("      %3d     %3d     %12.9lf   %12.9lf\n", i + 1, j + 1, 1.5 * emp2_aa[ij],
                                         1.5 * ecc_aa[ij]);
                         emp2_t_tot += 1.5 * emp2_aa[ij];

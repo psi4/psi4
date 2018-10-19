@@ -74,25 +74,22 @@ namespace ccenergy {
 */
 
 void CCEnergyWavefunction::lmp2() {
-    int i, j, k, ij, ab, iter, conv, row, col, nocc, nvir, natom, weak;
-    double energy, rms, weak_pair_energy;
     dpdbuf4 T2, newT2, D;
     dpdfile2 fij, fab;
-    psio_address next;
 
-    nocc = local_.nocc;
-    nvir = local_.nvir;
-    natom = local_.natom;
+    auto nocc = local_.nocc;
+    auto nvir = local_.nvir;
+    auto natom = local_.natom;
 
     local_.domain = (int **)malloc(local_.nocc * sizeof(int *));
-    next = PSIO_ZERO;
-    for (i = 0; i < nocc; i++) {
+    auto next = PSIO_ZERO;
+    for (int i = 0; i < nocc; i++) {
         local_.domain[i] = (int *)malloc(local_.natom * sizeof(int));
         psio_read(PSIF_CC_INFO, "Local Domains", (char *)local_.domain[i], natom * sizeof(int), next, &next);
     }
 
     /* First, turn on all weak pairs for the LMP2 */
-    for (ij = 0; ij < nocc * nocc; ij++) local_.weak_pairs[ij] = 0;
+    for (int ij = 0; ij < nocc * nocc; ij++) local_.weak_pairs[ij] = 0;
 
     /* Clean out diagonal element of occ-occ Fock matrix */
     global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
@@ -102,7 +99,7 @@ void CCEnergyWavefunction::lmp2() {
     global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fIJ (non-diagonal)");
     global_dpd_->file2_mat_init(&fij);
     global_dpd_->file2_mat_rd(&fij);
-    for (i = 0; i < nocc; i++) fij.matrix[0][i][i] = 0.0;
+    for (int i = 0; i < nocc; i++) fij.matrix[0][i][i] = 0.0;
     global_dpd_->file2_mat_wrt(&fij);
     global_dpd_->file2_close(&fij);
 
@@ -124,7 +121,7 @@ void CCEnergyWavefunction::lmp2() {
     /* Compute the LMP2 energy */
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
-    energy = global_dpd_->buf4_dot(&D, &T2);
+    auto energy = global_dpd_->buf4_dot(&D, &T2);
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_close(&D);
 
@@ -132,9 +129,10 @@ void CCEnergyWavefunction::lmp2() {
     outfile->Printf("    --------------------------\n");
     outfile->Printf("    iter = %d    LMP2 Energy = %20.14f\n", 0, energy);
 
-    conv = 0;
-    int lmp2_maxiter = 1000;
-    for (iter = 1; iter < lmp2_maxiter; iter++) {
+    auto conv = 0;
+    auto lmp2_maxiter = 1000;
+    auto rms = 0.0;
+    for (int iter = 1; iter < lmp2_maxiter; iter++) {
         global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
         global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "New LMP2 tIjAb Increment");
         global_dpd_->buf4_close(&D);
@@ -184,9 +182,8 @@ void CCEnergyWavefunction::lmp2() {
         global_dpd_->buf4_mat_irrep_init(&T2, 0);
         global_dpd_->buf4_mat_irrep_rd(&T2, 0);
 
-        rms = 0.0;
-        for (row = 0; row < T2.params->rowtot[0]; row++)
-            for (col = 0; col < T2.params->coltot[0]; col++)
+        for (int row = 0; row < T2.params->rowtot[0]; row++)
+            for (int col = 0; col < T2.params->coltot[0]; col++)
                 rms += (newT2.matrix[0][row][col] - T2.matrix[0][row][col]) *
                        (newT2.matrix[0][row][col] - T2.matrix[0][row][col]);
 
@@ -218,10 +215,10 @@ void CCEnergyWavefunction::lmp2() {
 
     /* Turn off weak pairs again for the LCCSD */
 
-    for (i = 0, ij = 0; i < nocc; i++)
-        for (j = 0; j < nocc; j++, ij++) {
-            weak = 1;
-            for (k = 0; k < natom; k++)
+    for (int i = 0, ij = 0; i < nocc; i++)
+        for (int j = 0; j < nocc; j++, ij++) {
+            auto weak = 1;
+            for (int k = 0; k < natom; k++)
                 if (local_.domain[i][k] && local_.domain[j][k]) weak = 0;
 
             if (weak)
@@ -238,10 +235,10 @@ void CCEnergyWavefunction::lmp2() {
     global_dpd_->buf4_mat_irrep_init(&T2, 0);
     global_dpd_->buf4_mat_irrep_rd(&T2, 0);
 
-    weak_pair_energy = 0.0;
-    for (ij = 0; ij < nocc * nocc; ij++)
+    auto weak_pair_energy = 0.0;
+    for (int ij = 0; ij < nocc * nocc; ij++)
         if (local_.weak_pairs[ij])
-            for (ab = 0; ab < nvir * nvir; ab++) weak_pair_energy += D.matrix[0][ij][ab] * T2.matrix[0][ij][ab];
+            for (int ab = 0; ab < nvir * nvir; ab++) weak_pair_energy += D.matrix[0][ij][ab] * T2.matrix[0][ij][ab];
 
     global_dpd_->buf4_mat_irrep_close(&T2, 0);
     global_dpd_->buf4_close(&T2);
@@ -254,7 +251,7 @@ void CCEnergyWavefunction::lmp2() {
 
     local_.weak_pair_energy = weak_pair_energy;
 
-    for (i = 0; i < nocc; i++) free(local_.domain[i]);
+    for (int i = 0; i < nocc; i++) free(local_.domain[i]);
     free(local_.domain);
 }
 }  // namespace ccenergy

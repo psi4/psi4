@@ -41,7 +41,6 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::Fmi_build() {
-    int h, m, i;
     dpdfile2 FMI, Fmi, FMIt, Fmit, fIJ, fij, fIA, fia;
     dpdfile2 tIA, tia, FME, Fme;
     dpdbuf4 E_anti, E, D_anti, D;
@@ -75,8 +74,8 @@ void CCEnergyWavefunction::Fmi_build() {
         global_dpd_->file2_mat_rd(&FMI);
 
         /*
-        for(h=0; h < moinfo.nirreps; h++) {
-          for(m=0; m < FMI.params->rowtot[h]; m++)
+        for(int h = 0; h < moinfo.nirreps; h++) {
+          for(int m = 0; m < FMI.params->rowtot[h]; m++)
             FMI.matrix[h][m][m] = 0;
         }
         */
@@ -93,10 +92,10 @@ void CCEnergyWavefunction::Fmi_build() {
         global_dpd_->file2_mat_init(&Fmi);
         global_dpd_->file2_mat_rd(&Fmi);
 
-        for (h = 0; h < moinfo_.nirreps; h++) {
-            for (m = 0; m < FMI.params->rowtot[h]; m++) FMI.matrix[h][m][m] = 0;
+        for (int h = 0; h < moinfo_.nirreps; h++) {
+            for (int m = 0; m < FMI.params->rowtot[h]; m++) FMI.matrix[h][m][m] = 0;
 
-            for (m = 0; m < Fmi.params->rowtot[h]; m++) Fmi.matrix[h][m][m] = 0;
+            for (int m = 0; m < Fmi.params->rowtot[h]; m++) Fmi.matrix[h][m][m] = 0;
         }
 
         global_dpd_->file2_mat_wrt(&FMI);
@@ -115,10 +114,10 @@ void CCEnergyWavefunction::Fmi_build() {
         global_dpd_->file2_mat_init(&Fmi);
         global_dpd_->file2_mat_rd(&Fmi);
 
-        for (h = 0; h < moinfo_.nirreps; h++) {
-            for (m = 0; m < FMI.params->rowtot[h]; m++) FMI.matrix[h][m][m] = 0;
+        for (int h = 0; h < moinfo_.nirreps; h++) {
+            for (int m = 0; m < FMI.params->rowtot[h]; m++) FMI.matrix[h][m][m] = 0;
 
-            for (m = 0; m < Fmi.params->rowtot[h]; m++) Fmi.matrix[h][m][m] = 0;
+            for (int m = 0; m < Fmi.params->rowtot[h]; m++) Fmi.matrix[h][m][m] = 0;
         }
 
         global_dpd_->file2_mat_wrt(&FMI);

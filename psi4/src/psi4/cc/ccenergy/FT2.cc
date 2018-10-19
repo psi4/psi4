@@ -46,8 +46,8 @@ void CCEnergyWavefunction::FT2() {
     dpdfile2 tIA, tia, t1;
     dpdbuf4 newtIJAB, newtijab, newtIjAb, t2, t2a, t2b;
     dpdbuf4 F_anti, F;
-    dpdbuf4 Z, X;
-    int Gie, Gij, Gab, nrows, ncols, nlinks, Gi, Ge, Gj, i, I;
+    dpdbuf4 X;
+    int Gij, Gab, nrows, ncols, nlinks, Ge, Gj, I;
 
     if (params_.ref == 0) { /** RHF **/
 
@@ -107,13 +107,13 @@ void CCEnergyWavefunction::FT2() {
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
             global_dpd_->file2_mat_init(&t1);
             global_dpd_->file2_mat_rd(&t1);
-            for (Gie = 0; Gie < moinfo_.nirreps; Gie++) {
+            for (int Gie = 0; Gie < moinfo_.nirreps; Gie++) {
                 Gab = Gie; /* F is totally symmetric */
                 Gij = Gab; /* T2 is totally symmetric */
                 global_dpd_->buf4_mat_irrep_init(&X, Gij);
                 ncols = F.params->coltot[Gie];
 
-                for (Gi = 0; Gi < moinfo_.nirreps; Gi++) {
+                for (int Gi = 0; Gi < moinfo_.nirreps; Gi++) {
                     Gj = Ge = Gi ^ Gie; /* T1 is totally symmetric */
 
                     nlinks = moinfo_.virtpi[Ge];
@@ -121,7 +121,7 @@ void CCEnergyWavefunction::FT2() {
 
                     global_dpd_->buf4_mat_irrep_init_block(&F, Gie, nlinks);
 
-                    for (i = 0; i < moinfo_.occpi[Gi]; i++) {
+                    for (int i = 0; i < moinfo_.occpi[Gi]; i++) {
                         I = F.params->poff[Gi] + i;
                         global_dpd_->buf4_mat_irrep_rd_block(&F, Gie, F.row_offset[Gie][I], nlinks);
 

@@ -41,9 +41,6 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::init_priority_list() {
-    if (!cache_priority_list_)
-        throw PSIEXCEPTION(
-            "Cache priority list must be allocated before calling *CCEnergyWavefunction::init_priority_list().");
     strcpy(cache_priority_list_[0].label, "D <ij||ab> (i>j,a>b)");
     cache_priority_list_[0].filenum = 105;
     cache_priority_list_[0].irrep = 0;

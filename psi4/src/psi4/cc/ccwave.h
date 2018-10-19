@@ -29,7 +29,10 @@
 #ifndef CCWAVE_H
 #define CCWAVE_H
 
+#include <array>
+
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libdpd/dpd.h"
 
 #include "ccenergy/MOInfo.h"
 #include "ccenergy/Params.h"
@@ -37,7 +40,6 @@
 
 namespace psi {
 class Options;
-struct dpd_file4_cache_entry;
 struct dpdfile2;
 struct dpdbuf4;
 struct iwlbuf;
@@ -57,7 +59,6 @@ class CCEnergyWavefunction : public Wavefunction {
     /* setup, info and teardown */
     void init();
     void init_io();
-    void init_ioff();
     void exit_io();
     void cleanup();
     void status(const char *, std::string);
@@ -151,7 +152,7 @@ class CCEnergyWavefunction : public Wavefunction {
     void pair_energies(double **epair_aa, double **epair_ab);
     void print_pair_energies(double *emp2_aa, double *emp2_ab, double *ecc_aa, double *ecc_ab);
 
-    void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority);
+    void form_df_ints(Options &options, int **cachelist, int *cachefiles);
 
     /* diagnostics */
     void analyze();
@@ -192,11 +193,10 @@ class CCEnergyWavefunction : public Wavefunction {
     void diis_invert_B(double **B, double *C, int dimension, double tolerance);
 
     /* member variables */
-    int *ioff_;
     MOInfo moinfo_;
     Params params_;
     Local local_;
-    dpd_file4_cache_entry *cache_priority_list_;
+    std::array<dpd_file4_cache_entry, 113> cache_priority_list_;
 };
 
 }  // namespace ccenergy

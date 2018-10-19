@@ -221,10 +221,9 @@ void CCEnergyWavefunction::cc3_Wmnie() {
 void CCEnergyWavefunction::purge_Wmnie() {
     dpdfile4 W;
     int *occpi, *virtpi;
-    int h, a, b, e, f, i, j, m, n;
-    int A, B, E, F, I, J, M, N;
-    int mn, ei, ma, ef, me, jb, mb, ij, ab;
-    int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
+    int e, i, m, n;
+    int E, I, M, N;
+    int esym, isym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
     int *openpi, nirreps;
@@ -239,14 +238,14 @@ void CCEnergyWavefunction::purge_Wmnie() {
     openpi = moinfo_.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 0, 11, "CC3 WMnIe (Mn,eI)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mn = 0; mn < W.params->rowtot[h]; mn++) {
+        for (int mn = 0; mn < W.params->rowtot[h]; mn++) {
             n = W.params->roworb[h][mn][1];
             nsym = W.params->qsym[n];
             N = n - occ_off[nsym];
-            for (ei = 0; ei < W.params->coltot[h]; ei++) {
+            for (int ei = 0; ei < W.params->coltot[h]; ei++) {
                 if (N >= (occpi[nsym] - openpi[nsym])) W.matrix[h][mn][ei] = 0.0;
             }
         }
@@ -255,11 +254,11 @@ void CCEnergyWavefunction::purge_Wmnie() {
     }
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 2, 11, "CC3 WMNIE (M>N,EI)");
-    for (h = 0; h < W.params->nirreps; h++) {
+    for (int h = 0; h < W.params->nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mn = 0; mn < W.params->rowtot[h]; mn++) {
-            for (ei = 0; ei < W.params->coltot[h]; ei++) {
+        for (int mn = 0; mn < W.params->rowtot[h]; mn++) {
+            for (int ei = 0; ei < W.params->coltot[h]; ei++) {
                 e = W.params->colorb[h][ei][0];
                 esym = W.params->rsym[e];
                 E = e - vir_off[esym];
@@ -271,17 +270,17 @@ void CCEnergyWavefunction::purge_Wmnie() {
     }
     global_dpd_->file4_close(&W);
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 2, 11, "CC3 Wmnie (m>n,ei)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mn = 0; mn < W.params->rowtot[h]; mn++) {
+        for (int mn = 0; mn < W.params->rowtot[h]; mn++) {
             m = W.params->roworb[h][mn][0];
             n = W.params->roworb[h][mn][1];
             msym = W.params->psym[m];
             nsym = W.params->qsym[n];
             M = m - occ_off[msym];
             N = n - occ_off[nsym];
-            for (ei = 0; ei < W.params->coltot[h]; ei++) {
+            for (int ei = 0; ei < W.params->coltot[h]; ei++) {
                 i = W.params->colorb[h][ei][1];
                 isym = W.params->ssym[i];
                 I = i - occ_off[isym];
@@ -296,14 +295,14 @@ void CCEnergyWavefunction::purge_Wmnie() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 0, 11, "CC3 WmNiE (mN,Ei)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mn = 0; mn < W.params->rowtot[h]; mn++) {
+        for (int mn = 0; mn < W.params->rowtot[h]; mn++) {
             m = W.params->roworb[h][mn][0];
             msym = W.params->psym[m];
             M = m - occ_off[msym];
-            for (ei = 0; ei < W.params->coltot[h]; ei++) {
+            for (int ei = 0; ei < W.params->coltot[h]; ei++) {
                 e = W.params->colorb[h][ei][0];
                 i = W.params->colorb[h][ei][1];
                 esym = W.params->rsym[e];
@@ -319,7 +318,6 @@ void CCEnergyWavefunction::purge_Wmnie() {
         global_dpd_->file4_mat_irrep_close(&W, h);
     }
     global_dpd_->file4_close(&W);
-    return;
 }
 
 }  // namespace ccenergy

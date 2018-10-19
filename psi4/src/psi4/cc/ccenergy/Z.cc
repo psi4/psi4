@@ -41,9 +41,8 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::Z_build() {
-    dpdbuf4 ZIJMA, Zijma, ZIjMa, ZIjmA, ZIjAm, ZMaIj, ZmAIj, Z;
+    dpdbuf4 ZIJMA, Zijma, ZIjMa, ZIjmA, ZIjAm, Z;
     dpdbuf4 tauIJAB, tauijab, tauIjAb, tauIjbA, F_anti, F, tau;
-    int Gmb, Gij, mb, nrows, ncols;
 
     timer_on("Z");
 
@@ -54,30 +53,6 @@ void CCEnergyWavefunction::Z_build() {
         global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
         global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
         global_dpd_->contract444(&F, &tau, &Z, 0, 0, 1, 0);
-        /*     for(Gmb=0; Gmb < moinfo.nirreps; Gmb++) { */
-        /*       Gij = Gmb;  /\* tau is totally symmetric *\/ */
-        /*       dpd_buf4_mat_irrep_init(&tau, Gij); */
-        /*       dpd_buf4_mat_irrep_rd(&tau, Gij); */
-
-        /*       dpd_buf4_mat_irrep_init(&Z, Gmb); */
-
-        /*       dpd_buf4_mat_irrep_row_init(&F, Gmb); */
-
-        /*       for(mb=0; mb < F.params->rowtot[Gmb]; mb++) { */
-        /* 	dpd_buf4_mat_irrep_row_rd(&F, Gmb, mb); */
-
-        /* 	nrows = tau.params->rowtot[Gij]; */
-        /* 	ncols = tau.params->coltot[Gij]; */
-        /* 	if(nrows && ncols) */
-        /* 	  C_DGEMV('n',nrows,ncols,1.0,tau.matrix[Gij][0],ncols,F.matrix[Gmb][0],1, */
-        /* 		  0.0,Z.matrix[Gmb][mb],1); */
-        /*       } */
-
-        /*       dpd_buf4_mat_irrep_row_close(&F, Gmb); */
-        /*       dpd_buf4_mat_irrep_wrt(&Z, Gmb); */
-        /*       dpd_buf4_mat_irrep_close(&Z, Gmb); */
-        /*       dpd_buf4_mat_irrep_close(&tau, Gij); */
-        /*     } */
         global_dpd_->buf4_close(&tau);
         global_dpd_->buf4_close(&F);
         global_dpd_->buf4_close(&Z);

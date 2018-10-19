@@ -56,13 +56,12 @@ double CCEnergyWavefunction::energy() {
 double CCEnergyWavefunction::rhf_energy() {
     double tauIjAb_energy, tIA_energy;
     dpdfile2 fIA, tIA;
-    dpdbuf4 tauIjAb, D, E;
+    dpdbuf4 tauIjAb, D;
     dpdbuf4 S;
-    double os_energy, ss_energy, Energy;
+    double os_energy, ss_energy;
 
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    /*   dpd_file2_print(&tIA, outfile); */
     tIA_energy = 2.0 * global_dpd_->file2_dot(&fIA, &tIA);
     global_dpd_->file2_close(&fIA);
     global_dpd_->file2_close(&tIA);
@@ -81,10 +80,6 @@ double CCEnergyWavefunction::rhf_energy() {
     global_dpd_->buf4_close(&S);
     global_dpd_->buf4_close(&tauIjAb);
     global_dpd_->buf4_close(&D);
-
-    /*
-      outfile->Printf( "Two AB Energy = %20.14f\n", tauIjAb_energy);
-    */
 
     return (tauIjAb_energy + tIA_energy);
 }

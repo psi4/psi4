@@ -50,7 +50,7 @@ namespace ccenergy {
 void purge_Wmnij();
 
 void CCEnergyWavefunction::cc3_Wmnij() {
-    dpdbuf4 A, E, D, Z, W, Z1, X;
+    dpdbuf4 A, E, D, Z, W, Z1;
     dpdfile2 t1, tIA, tia;
 
     if (params_.ref == 0) { /** RHF **/
@@ -296,13 +296,11 @@ void CCEnergyWavefunction::cc3_Wmnij() {
 }
 
 void CCEnergyWavefunction::purge_Wmnij() {
-    dpdfile2 FAE, Fmi, FME, Fme;
     dpdfile4 W;
     int *occpi, *virtpi;
-    int h, a, b, e, f, i, j, m, n, omit;
-    int A, B, E, F, I, J, M, N;
-    int mn, ei, ma, ef, me, jb, mb, ij, ab;
-    int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
+    int i, j, m, n;
+    int I, J, M, N;
+    int isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
     int *openpi, nirreps;
@@ -318,17 +316,17 @@ void CCEnergyWavefunction::purge_Wmnij() {
 
     /* Purge Wmnij matrix elements */
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 2, 2, "CC3 Wmnij (m>n,i>j)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mn = 0; mn < W.params->rowtot[h]; mn++) {
+        for (int mn = 0; mn < W.params->rowtot[h]; mn++) {
             m = W.params->roworb[h][mn][0];
             n = W.params->roworb[h][mn][1];
             msym = W.params->psym[m];
             nsym = W.params->qsym[n];
             M = m - occ_off[msym];
             N = n - occ_off[nsym];
-            for (ij = 0; ij < W.params->coltot[h]; ij++) {
+            for (int ij = 0; ij < W.params->coltot[h]; ij++) {
                 i = W.params->colorb[h][ij][0];
                 j = W.params->colorb[h][ij][1];
                 isym = W.params->rsym[i];
@@ -346,14 +344,14 @@ void CCEnergyWavefunction::purge_Wmnij() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 0, 0, "CC3 WMnIj (Mn,Ij)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mn = 0; mn < W.params->rowtot[h]; mn++) {
+        for (int mn = 0; mn < W.params->rowtot[h]; mn++) {
             n = W.params->roworb[h][mn][1];
             nsym = W.params->qsym[n];
             N = n - occ_off[nsym];
-            for (ij = 0; ij < W.params->coltot[h]; ij++) {
+            for (int ij = 0; ij < W.params->coltot[h]; ij++) {
                 j = W.params->colorb[h][ij][1];
                 jsym = W.params->ssym[j];
                 J = j - occ_off[jsym];
