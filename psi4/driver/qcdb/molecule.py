@@ -218,8 +218,8 @@ class Molecule(LibmintsMolecule):
         v2000 = re.compile(r'^((?=[ ]*\d+)[ \d]{3})((?=[ ]*\d+)[ \d]{3})(.*)V2000\s*$')
         vend = re.compile(r'^\s*M\s+END\s*$')
         NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
-        xyzM = re.compile(r'^(?:\s*)' + NUMBER + '(?:\s+)' + NUMBER + '(?:\s+)' + NUMBER +
-                          '(?:\s+)([A-Z](?:[a-z])?)(?:\s+)(.*)', re.IGNORECASE)
+        xyzM = re.compile(r'^(?:\s*)' + NUMBER + r'(?:\s+)' + NUMBER + r'(?:\s+)' + NUMBER +
+                          r'(?:\s+)([A-Z](?:[a-z])?)(?:\s+)(.*)', re.IGNORECASE)
 
         ## now charge and multiplicity
         #   $chargem = 0  ; $multm = 1 ;
