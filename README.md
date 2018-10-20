@@ -49,11 +49,11 @@ strives to be friendly to both users and developers.
 
 * **Anaconda**  https://anaconda.org/psi4 (binary available for Linux, Mac, and WSL Windows [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#how-to-install-a-psi4-binary-with-the-psi4conda-installer-download-site)
 
-* **Coverage** Source code lines covered by running most of the test suite. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
+* **Coverage** Python and C++ source code lines hit by running most of the test suite. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
 
 * **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 and follow [GitHub contribution procedure](http://psicode.org/psi4manual/master/build_obtaining.html#faq-githubworkflow)) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com)
 
-* **Sample Inputs**  http://www.psicode.org/psi4manual/master/testsuite.html (also in share/psi4/samples)
+* **Sample Inputs**  http://www.psicode.org/psi4manual/master/testsuite.html (also in [`samples/`](samples))
 
 * **Download Tarball** https://github.com/psi4/psi4/releases 
 
@@ -90,7 +90,7 @@ COPYING.LESSER file of this repository, and can also be found
 [here](https://www.gnu.org/licenses/lgpl.txt).
 
 
-Citation
+Citation [![doi](https://img.shields.io/badge/doi-10.1021/acs.jctc.7b00174-5077AB.svg)](http://dx.doi.org/10.1021/acs.jctc.7b00174)
 ========
 
 The journal article reference describing Psi4 is:
@@ -101,6 +101,4 @@ R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
 H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
 P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
 F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-J. Chem. Theory Comput. 13(7) 3185--3197 (2017).
-[doi: 10.1021/acs.jctc.7b00174](http://dx.doi.org/10.1021/acs.jctc.7b00174).
-
+J. Chem. Theory Comput. 13(7) 3185&ndash;3197 (2017).
