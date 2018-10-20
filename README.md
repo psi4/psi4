@@ -1,47 +1,31 @@
-<p align="center">
-<!-- Commit -->
-<a href="https://travis-ci.org/psi4/psi4"> <img src="https://img.shields.io/travis/psi4/psi4/master.svg?logo=travis" /></a>
-<a href="https://ci.appveyor.com/project/psi4/psi4"> <img src="https://img.shields.io/appveyor/ci/psi4/psi4.svg?logo=appveyor" /></a>
-<a href="https://codecov.io/gh/psi4/psi4"> <img src="https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg" /></a>
-<a href="https://lgtm.com/projects/g/psi4/psi4/context:python"> <img src="https://img.shields.io/lgtm/grade/python/g/psi4/psi4.svg?logo=lgtm&logoWidth=18" /></a>
-<br>
-<!-- Release -->
-<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/release/psi4/psi4.svg" /></a>
-<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/release-date/psi4/psi4.svg" /></a>
-<a href="https://github.com/psi4/psi4/releases/tag/v1.2"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.2.svg" /></a>
-<!--<br>-->
-<!-- PR Activity -->
-<a href="https://github.com/psi4/psi4/graphs/contributors"> <img src="https://img.shields.io/github/commit-activity/y/psi4/psi4.svg" /></a>
-<!--<a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>-->
-<a href="http://makeapullrequest.com"> <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
-<br>
-<!-- Supported -->
-<a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
-<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%20WSL-orange.svg" /></a>
-<a href="http://psicode.org/psi4manual/master/introduction.html#supported-systems"> <img src="https://img.shields.io/badge/python-3.5%2C%203.6%2C%203.7-blue.svg" /></a>
-<br>
-<!-- Project/Communication -->
-<a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
-<a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
-<a href="http://vergil.chemistry.gatech.edu/nu-psicode/install-v1.2.1.html"> <img src="https://img.shields.io/badge/obtain-latest-green.svg" /></a>
-<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-808493.svg" /></a>
+# <img src="https://github.com/psi4/psi4media/blob/master/logos-psi4/psi4square.png" height=150>
+
+| **Status** | [![Travis build](https://img.shields.io/travis/psi4/psi4/master.svg?logo=linux)](https://travis-ci.org/psi4/psi4) [![Appveyor build](https://img.shields.io/appveyor/ci/psi4/psi4.svg?logo=windows)](https://ci.appveyor.com/project/psi4/psi4) [![Codecov coverage](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4) [![LGTM analysis](https://img.shields.io/lgtm/grade/python/g/psi4/psi4.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psi4/psi4/context:python) |
+| :------ | :------- |
+| **Latest Release** | [![Last release tag](https://img.shields.io/github/release/psi4/psi4.svg)](https://github.com/psi4/psi4/releases)  [![Commits since release](https://img.shields.io/github/commits-since/psi4/psi4/v1.2.svg)](https://github.com/psi4/psi4/releases/tag/v1.2) [![python](https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6-blue.svg)](http://psicode.org/psi4manual/master/introduction.html#supported-systems) |
+| **Communication** | [![User site](https://img.shields.io/badge/home-Psi4-5077AB.svg)](http://www.psicode.org) [![docs latest](https://img.shields.io/badge/docs-latest-5077AB.svg?logo=read%20the%20docs)](http://psicode.org/psi4manual/master/index.html) [![chat on forum](https://img.shields.io/badge/chat-on_forum-808493.svg)](http://forum.psicode.org/) [![dev chat on slack](https://img.shields.io/badge/dev_chat-on_slack-808493.svg?logo=slack)](https://join.slack.com/t/psi4/shared_invite/enQtNDUyOTYzNTE0NjQ3LWExZDhkY2U4MTM1ZDZlNTBkNjMyMDcxZmFkN2NmYmZkMzliNzY2ZDc2OTBlYTk5ZTA2OGRkNWYxNzJmN2QyYWM) |
+| **Foundation** | [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https://opensource.org/licenses/LGPL-3.0) [![platforms](https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%20WSL-orange.svg)](http://psicode.org/psi4manual/master/introduction.html#supported-systems) [![python](https://img.shields.io/badge/python-3.5+-blue.svg)](http://psicode.org/psi4manual/master/introduction.html#supported-systems) |
+| **Installation** | [![obtain latest](https://img.shields.io/badge/obtain-latest-green.svg)](http://vergil.chemistry.gatech.edu/nu-psicode/install-v1.2.1.html) [![Conda](https://img.shields.io/conda/v/psi4/psi4.svg)](https://anaconda.org/psi4/psi4) [![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/latest_release_relative_date.svg)](https://anaconda.org/psi4/psi4) |
+
+<!--  -->
+<!-- [![Last release date](https://img.shields.io/github/release-date/psi4/psi4.svg)](https://github.com/psi4/psi4/releases) -->
+<!-- [![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/version.svg)](https://anaconda.org/psi4/psi4) -->
+
 <!--<a href="https://psi4.slack.com/messages"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg" /></a>
 <a href="mailto:psi4aiqc+slackinvite@gmail.com?subject=request slack invite (incl. who, where, email)"> <img src="https://img.shields.io/badge/dev_chat-invite-808493.svg" /></a> -->
-<a href="https://join.slack.com/t/psi4/shared_invite/enQtNDUyOTYzNTE0NjQ3LWExZDhkY2U4MTM1ZDZlNTBkNjMyMDcxZmFkN2NmYmZkMzliNzY2ZDc2OTBlYTk5ZTA2OGRkNWYxNzJmN2QyYWM"> <img src="https://img.shields.io/badge/dev_chat-on_slack-808493.svg?logo=slack" /></a>
-<br>
-<!-- Obtain -->
-<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
-<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/platforms.svg" /> </a>
-<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/version.svg" /> </a>
-<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/latest_release_relative_date.svg" /> </a>
-<br><br>
-<img src="https://github.com/psi4/psi4media/blob/master/logos-psi4/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
-</p>
+
+<!--[![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/installer/conda.svg)](https://anaconda.org/psi4/psi4) 
+[![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/platforms.svg)](https://anaconda.org/psi4/psi4) -->
+
+<!--
+| **PR Activity** | 
+[![commit activity](https://img.shields.io/github/commit-activity/y/psi4/psi4.svg)](https://github.com/psi4/psi4/graphs/contributors) 
+[![issues-pr-closed](https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg)](https://github.com/psi4/psi4/pulls)
+-->
 
 Psi4 is an open-source suite of *ab initio* quantum chemistry programs
-designed for efficient, high-accuracy simulations of a variety of
-molecular properties. We can routinely perform computations with more
-than 2500 basis functions running serially or on multi-core machines.
+designed for efficient, high-accuracy simulations of
+molecular properties. We routinely perform computations with >2500 basis functions on multi-core machines.
 
 With computationally demanding portions written in C++, exports
 of many C++ classes into Python via Pybind11, and a flexible Python driver, Psi4
@@ -67,7 +51,7 @@ strives to be friendly to both users and developers.
 
 * **Coverage** Source code lines covered by running most of the test suite. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
 
-* **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 and follow [GitHub contribution procedure](http://psicode.org/psi4manual/master/build_obtaining.html#faq-githubworkflow))
+* **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 and follow [GitHub contribution procedure](http://psicode.org/psi4manual/master/build_obtaining.html#faq-githubworkflow)) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com)
 
 * **Sample Inputs**  http://www.psicode.org/psi4manual/master/testsuite.html (also in share/psi4/samples)
 
@@ -78,7 +62,7 @@ strives to be friendly to both users and developers.
 * **YouTube Channel** https://www.youtube.com/psitutorials-->
 
 
-License
+License [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https://opensource.org/licenses/LGPL-3.0)
 =======
 
 Psi4: an open-source quantum chemistry software package
