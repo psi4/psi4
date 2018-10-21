@@ -1251,7 +1251,7 @@ double Matrix::rms() {
     double sum = (double)0.0;
     long terms = 0;
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(+ : sum)
+#pragma omp parallel for reduction(+ : sum, terms)
         for (int i = 0; i < rowspi_[h]; ++i) {
             for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
