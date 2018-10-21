@@ -1151,7 +1151,7 @@ def optimize(name, **kwargs):
             G = core.get_gradient()  # TODO
             core.IOManager.shared_object().set_specific_retention(1, True)
             core.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(hessian_with_method, **kwargs)
+            frequencies(hessian_with_method, molecule=moleculeclone, **kwargs)
             steps_since_last_hessian = 0
             core.set_gradient(G)
             core.set_global_option('CART_HESS_READ', True)
