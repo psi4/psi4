@@ -9,10 +9,12 @@ df_ref = psi4.Matrix.from_list([                                      #TEST
 
 molecule SO2 {
 S
-O 1 1.4
-O 1 1.4 2 119
+O 1 R
+O 1 R 2 119
 symmetry c1
 }
+
+SO2.R = 1.4 * 0.52917721067 / 0.52917720859
 
 set {
     basis cc-pVDZ
