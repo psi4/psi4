@@ -129,10 +129,6 @@ core.Wavefunction.build = pybuild_wavefunction
 def pyread_wavefunction(filename):
     wfn_data = np.load(filename + '.npy').item()
     
-    # reconstruct molecule from dict representation
-    wfn_molecule = wfn_data['molecule']
-    molecule = core.Molecule.from_dict(wfn_molecule)
-
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
     wfn_vector= wfn_data['vector']
@@ -142,10 +138,19 @@ def pyread_wavefunction(filename):
     wfn_boolean = wfn_data['boolean']
     wfn_float = wfn_data['float']
 
-    # rebuilding basis set for now
-    # TODO fix this
-    wfn_basis_set = wfn_data['basis_set']
-    basisset = core.BasisSet.build(molecule)
+    # reconstruct molecule from dictionary representation
+    wfn_molecule = wfn_data['molecule']
+    molecule = core.Molecule.from_dict(wfn_molecule)
+
+    # get basis set name and spherical harmonics boolean
+    basis_name = wfn_string['basisname']
+    if ".gbs" in basis_name:
+        basis_name = basis_name.split('/')[-1].replace('.gbs', '')
+
+    basis_puream = wfn_boolean['basispuream']
+    basisset = core.BasisSet.build(molecule, 'ORBITAL', basis_name, puream=basis_puream)
+    core.print_out('printing type of basis set\n')
+    core.print_out(str(type(basisset)))
 
     # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
     # TODO: Make sure python's 'None' translates sensibly to C++
@@ -174,9 +179,6 @@ def pywrite_wavefunction(wfn, filename):
     # some of the data types have to be made numpy-friendly first
     wfn_data = {
         'molecule' : wfn.molecule().to_dict(),
-        'basis_set' : {
-            'basisset' : wfn.basisset().name() #TODO: actually serialize basis
-            },
         'matrix' : {
             'Ca'       : wfn.Ca().to_array()       if wfn.Ca()       else None,
             'Cb'       : wfn.Cb().to_array()       if wfn.Cb()       else None,
@@ -217,12 +219,14 @@ def pywrite_wavefunction(wfn, filename):
             'nso'    : wfn.nso()
             },
         'string' : {
-            'name' : wfn.name()
+            'name' : wfn.name(),
+            'basisname' : wfn.basisset().name()
             },
         'boolean' : {
             'PCM_enabled'   : wfn.PCM_enabled(),
             'same_a_b_dens' : wfn.same_a_b_dens(),
-            'same_a_b_orbs' : wfn.same_a_b_orbs()
+            'same_a_b_orbs' : wfn.same_a_b_orbs(),
+            'basispuream' : wfn.basisset().has_puream()
             },
         'float' : {
             'energy' : wfn.energy(),

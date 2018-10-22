@@ -256,7 +256,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis);
 
     /// Constructor for a wavefunction deserialized from a file and initialized in the form of maps to all member variables
-    Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, 
+    Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
                                std::map<std::string, std::shared_ptr<Matrix>> matrices,
                                std::map<std::string, std::shared_ptr<Vector>> vectors,
                                std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 

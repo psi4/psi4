@@ -99,11 +99,9 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
                            std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
                            std::map<std::string, float> floats)
     : options_(Process::environment.options),
+      basisset_(basisset),
       molecule_(molecule) {
 
-    //TODO: get basis set working
-    //basisset_ = basisset;
-    
     // set matrices
     Ca_ = matrices["Ca"];
     Cb_ = matrices["Cb"];
@@ -155,6 +153,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     efzc_ = floats["efzc"];
     
     // set PCM??
+    // dipole field strength??
 
 }
 
