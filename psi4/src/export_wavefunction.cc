@@ -31,6 +31,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/extern.h"
@@ -73,6 +74,10 @@ void export_wavefunction(py::module& m) {
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, std::map<std::string, std::shared_ptr<Matrix>>,
+                      std::map<std::string, std::shared_ptr<Vector>>, std::map<std::string, Dimension>,
+                      std::map<std::string, int>, std::map<std::string, std::string>, std::map<std::string, bool>,
+                      std::map<std::string, float>>())
         .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
         .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")

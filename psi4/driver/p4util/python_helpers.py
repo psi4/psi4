@@ -124,6 +124,116 @@ def pybuild_wavefunction(mol, basis=None):
 
 core.Wavefunction.build = pybuild_wavefunction
 
+
+@staticmethod
+def pyread_wavefunction(filename):
+    wfn_data = np.load(filename + '.npy').item()
+    
+    # reconstruct molecule from dict representation
+    wfn_molecule = wfn_data['molecule']
+    molecule = core.Molecule.from_dict(wfn_molecule)
+
+    # variable type specific dictionaries to be passed into C++ constructor
+    wfn_matrix = wfn_data['matrix']
+    wfn_vector= wfn_data['vector']
+    wfn_dimension = wfn_data['dimension']
+    wfn_int = wfn_data['int']
+    wfn_string = wfn_data['string']
+    wfn_boolean = wfn_data['boolean']
+    wfn_float = wfn_data['float']
+
+    # rebuilding basis set for now
+    # TODO fix this
+    wfn_basis_set = wfn_data['basis_set']
+    basisset = core.BasisSet.build(molecule)
+
+    # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
+    # TODO: Make sure python's 'None' translates sensibly to C++
+    for label in wfn_matrix:
+        array = wfn_matrix[label]
+        wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array else None
+    
+    for label in wfn_vector:
+        array = wfn_vector[label]
+        wfn_vector[label] = core.Vector.from_array(array,name=label) if array else None
+
+    for label in wfn_dimension:
+        tup = wfn_dimension[label]
+        wfn_dimension[label] = core.Dimension.from_list(tup,name=label) if tup else None
+
+    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
+                            wfn_string, wfn_boolean, wfn_float)
+    return wfn
+
+core.Wavefunction.from_file = pyread_wavefunction
+
+
+@staticmethod
+def pywrite_wavefunction(wfn, filename):
+    # collect the wavefunction's variables in a dictionary indexed by varaible type
+    # some of the data types have to be made numpy-friendly first
+    wfn_data = {
+        'molecule' : wfn.molecule().to_dict(),
+        'basis_set' : {
+            'basisset' : wfn.basisset().name() #TODO: actually serialize basis
+            },
+        'matrix' : {
+            'Ca'       : wfn.Ca().to_array()       if wfn.Ca()       else None,
+            'Cb'       : wfn.Cb().to_array()       if wfn.Cb()       else None,
+            'Da'       : wfn.Da().to_array()       if wfn.Da()       else None,
+            'Db'       : wfn.Db().to_array()       if wfn.Db()       else None,
+            'Fa'       : wfn.Fa().to_array()       if wfn.Fa()       else None,
+            'Fb'       : wfn.Fb().to_array()       if wfn.Fb()       else None,
+            'H'        : wfn.H().to_array()        if wfn.H()        else None,
+            'S'        : wfn.S().to_array()        if wfn.Ca()       else None,
+            'X'        : wfn.X().to_array()        if wfn.X()        else None,
+            'aotoso'   : wfn.aotoso().to_array()   if wfn.aotoso()   else None,
+            'gradient' : wfn.gradient().to_array() if wfn.gradient() else None,
+            'hessian'  : wfn.hessian().to_array()  if wfn.hessian()  else None
+            },
+        'vector' : {
+            'epsilon_a'            : wfn.epsilon_a().to_array()   if wfn.epsilon_a() else None,
+            'epsilon_b'            : wfn.epsilon_b().to_array()   if wfn.epsilon_b() else None,
+            'frequencies'          : wfn.frequencies().to_array() if wfn.frequencies() else None
+            #'atomic_point_charges' : wfn.atomic_point_charges().to_array() if wfn.atomic_point_charges() else None,
+            #'esp_at_nuclei'        : wfn.esp_at_nuclei().to_array() if wfn.esp_at_nuclei() else None,
+            },
+        'dimension' : {
+            'doccpi'   : wfn.doccpi().to_tuple(),
+            'frzcpi'   : wfn.frzcpi().to_tuple(),  
+            'frzvpi'   : wfn.frzvpi().to_tuple(),  
+            'nalphapi' : wfn.nalphapi().to_tuple(),
+            'nbetapi'  : wfn.nbetapi().to_tuple(), 
+            'nmopi'    : wfn.nmopi().to_tuple(),   
+            'nsopi'    : wfn.nsopi().to_tuple(),   
+            'soccpi'   : wfn.soccpi().to_tuple()  
+            },
+        'int' : { 
+            'nalpha' : wfn.nalpha(),
+            'nbeta'  : wfn.nbeta(),
+            'nfrzc'  : wfn.nfrzc(),
+            'nirrep' : wfn.nirrep(),
+            'nmo'    : wfn.nmo(),
+            'nso'    : wfn.nso()
+            },
+        'string' : {
+            'name' : wfn.name()
+            },
+        'boolean' : {
+            'PCM_enabled'   : wfn.PCM_enabled(),
+            'same_a_b_dens' : wfn.same_a_b_dens(),
+            'same_a_b_orbs' : wfn.same_a_b_orbs()
+            },
+        'float' : {
+            'energy' : wfn.energy(),
+            #'efzc' : wfn.efzc()
+            }
+        }
+
+    np.save(filename,wfn_data)
+
+core.Wavefunction.to_file = pywrite_wavefunction
+
 ## Python JK helps
 
 
