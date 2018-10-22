@@ -35,8 +35,8 @@
             "additionalName": "G. A.",
             "familyName": "Smith",
             "affiliation": "The Molecular Sciences Software Institute",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.20015,
+            "longitude": -80.4106,
             "@id": "https://orcid.org/0000-0001-8626-0900",
             "@id": "https://github.com/dgasmith"
         },
@@ -131,8 +131,8 @@
             "additionalName": "M.",
             "familyName": "James",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0001-5821-6064",
             "@id": "https://github.com/amjames"
         },
@@ -142,8 +142,8 @@
             "additionalName": "R.",
             "familyName": "McAlexander",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://github.com/harls"
         },
         {
@@ -151,8 +151,8 @@
             "givenName": "Ashutosh",
             "familyName": "Kumar",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0001-7589-6030",
             "@id": "https://github.com/ashutoshvt"
         },
@@ -170,8 +170,8 @@
             "givenName": "Xiao",
             "familyName": "Wang",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0003-1402-7522",
             "@id": "https://github.com/xwang862"
         },
@@ -181,8 +181,8 @@
             "additionalName": "P.",
             "familyName": "Pritchard",
             "affiliation": "The Molecular Sciences Software Institute",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.20015,
+            "longitude": -80.4106,
             "@id": "https://github.com/bennybp"
         },
         {
@@ -190,8 +190,8 @@
             "givenName": "Prakash",
             "familyName": "Verma",
             "affiliation": "Department of Chemistry, Emory University",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 33.7915,
+            "longitude": -84.3264,
             "@id": "https://orcid.org/0000-0003-3048-9380",
             "@id": "https://github.com/PrakashVermaQTP"
         },
@@ -232,8 +232,8 @@
             "additionalName": "F.",
             "familyName": "Valeev",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0001-9923-6256",
             "@id": "https://github.com/evaleev"
         },
@@ -243,8 +243,8 @@
             "additionalName": "A.",
             "familyName": "Evangelista",
             "affiliation": "Department of Chemistry, Emory University",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 33.7915,
+            "longitude": -84.3264,
             "@id": "https://orcid.org/0000-0002-7917-6652",
             "@id": "https://github.com/fevangelista"
         },
@@ -265,8 +265,8 @@
             "additionalName": "Daniel",
             "familyName": "Crawford",
             "affiliation": "Department of Chemistry, Virginia Tech",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0002-7961-7016",
             "@id": "https://github.com/lothian"
         },
