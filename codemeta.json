@@ -46,8 +46,8 @@
             "additionalName": "C.",
             "familyName": "Simmonett",
             "affiliation": "National Institutes of Health -- National Heart, Lung and Blood Institute",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 38.999264,
+            "longitude": -77.101852,
             "@id": "https://orcid.org/0000-0002-5921-9272",
             "@id": "https://github.com/andysim"
         },
@@ -57,8 +57,8 @@
             "additionalName": "Eugene",
             "familyName": "DePrince",
             "affiliation": "Department of Chemistry and Biochemistry, Florida State University",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 30.44392,
+            "longitude": -84.3013,
             "@id": "https://orcid.org/0000-0003-1061-2521",
             "@id": "https://github.com/edeprince3"
         },
@@ -201,8 +201,8 @@
             "additionalName": "F.",
             "familyName": "Schaefer",
             "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 33.94797,
+            "longitude": -83.37482,
             "@id": "https://orcid.org/0000-0003-0252-2083"
         },
         {
@@ -254,8 +254,8 @@
             "additionalName": "M.",
             "familyName": "Turney",
             "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 33.94797,
+            "longitude": -83.37482,
             "@id": "https://orcid.org/0000-0003-3659-0711",
             "@id": "https://github.com/jturney"
         },
@@ -339,8 +339,8 @@
             "additionalName": "T.",
             "familyName": "Seidl",
             "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
-            "latitude": ,
-            "longitude":
+            "latitude": 33.94797,
+            "longitude": -83.37482
         },
         {
             "@type": "Person",
@@ -348,8 +348,8 @@
             "additionalName": "L.",
             "familyName": "Janssen",
             "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
-            "latitude": ,
-            "longitude":
+            "latitude": 33.94797,
+            "longitude": -83.37482
         },
         {
             "@type": "Person",
