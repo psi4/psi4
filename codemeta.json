@@ -68,8 +68,8 @@
             "additionalName": "G.",
             "familyName": "Hohenstein",
             "affiliation": "Department of Chemistry and Biochemistry, The City College of New York",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 40.820,
+            "longitude": -73.950,
             "@id": "https://orcid.org/0000-0002-2119-2959",
             "@id": "https://github.com/ehohenstein2"
         },
@@ -99,8 +99,8 @@
             "givenName": "Roberto",
             "familyName": "Di Remigio",
             "affiliation": "Hylleraas Centre for Quantum Molecular Sciences, UiT - The Arctic University of Norway",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 69.682,
+            "longitude": 18.977,
             "@id": "https://orcid.org/0000-0002-5452-9239",
             "@id": "https://github.com/robertodr"
         },
@@ -161,8 +161,8 @@
             "givenName": "Masaaki",
             "familyName": "Saitow",
             "affiliation": "Department of Chemistry and Research Center for Smart Molecules, Rikkyo University, Japan",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 35.7305,
+            "longitude": 139.7018,
             "@id": "https://github.com/msaitow"
         },
         {
@@ -210,8 +210,8 @@
             "givenName": "Konrad",
             "familyName": "Patkowski",
             "affiliation": "Department of Chemistry and Biochemistry, Auburn University",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 32.5997,
+            "longitude": -85.4852,
             "@id": "https://orcid.org/0000-0002-4468-207X",
             "@id": "https://github.com/konpat"
         },
@@ -221,8 +221,8 @@
             "additionalName": "A.",
             "familyName": "King",
             "affiliation": "Department of Chemistry, Bethel University",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 45.057793,
+            "longitude": -93.161380,
             "@id": "https://orcid.org/0000-0002-1173-4187",
             "@id": "https://github.com/psi-rking"
         },
@@ -296,8 +296,8 @@
             "givenName": "Holger",
             "familyName": "Kruse",
             "affiliation": "Institute of Biophysics of the CAS, v.v.i., Czech Republic",
-            "latitude": ,
-            "longitude": ,
+            "latitude": 49.2206,
+            "longitude": 16.580,
             "@id": "https://orcid.org/0000-0002-0560-1513",
             "@id": "https://github.com/hokru"
         },
