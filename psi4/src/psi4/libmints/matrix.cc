@@ -1251,11 +1251,11 @@ double Matrix::rms() {
     double sum = (double)0.0;
     long terms = 0;
     for (int h = 0; h < nirrep_; ++h) {
+        terms += rowspi_[h] * colspi_[h ^ symmetry_];
 #pragma omp parallel for reduction(+ : sum)
         for (int i = 0; i < rowspi_[h]; ++i) {
             for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
-                terms++;
             }
         }
     }
