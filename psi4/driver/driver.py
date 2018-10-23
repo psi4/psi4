@@ -1033,7 +1033,7 @@ def optimize(name, **kwargs):
             old_thisenergy = core.get_variable('CURRENT ENERGY')
 
         # Compute the gradient - preserve opt data despite core.clean calls in gradient
-        #core.IOManager.shared_object().set_specific_retention(1, True)
+        core.IOManager.shared_object().set_specific_retention(1, True)
         G, wfn = gradient(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
         thisenergy = core.get_variable('CURRENT ENERGY')
 
@@ -1099,6 +1099,8 @@ def optimize(name, **kwargs):
             print('Optimizer: Optimization complete!')
             core.print_out('\n    Final optimized geometry and variables:\n')
             moleculeclone.print_in_input_format()
+            # Mark the optimization data as disposable now that the optimization is done.
+            core.IOManager.shared_object().set_specific_retention(1, False)
             # Check if user wants to see the intcos; if so, don't delete them.
             if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
                 if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
@@ -1115,10 +1117,6 @@ def optimize(name, **kwargs):
                     fmaster.write(
                         '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                     fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
-
-            # Cleanup binary file 1
-            if custom_gradient or ('/' in lowername):
-                core.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
 
@@ -1140,6 +1138,8 @@ def optimize(name, **kwargs):
 
         elif optking_rval == core.PsiReturnType.Failure:
             print('Optimizer: Optimization failed!')
+            # Mark the optimization data as disposable now that the optimization is done.
+            core.IOManager.shared_object().set_specific_retention(1, False)
             if (core.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 core.opt_clean()
             molecule.set_geometry(moleculeclone.geometry())
