@@ -152,7 +152,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
         displacement["gradient"] = wfn.gradient().np.ravel().tolist()
 
     # clean may be necessary when changing irreps of displacements
-    #core.clean()
+    core.clean()
 
     return wfn
 
@@ -674,7 +674,8 @@ def gradient(name, **kwargs):
         print(""" %d displacements needed ...""" % (ndisp), end='')
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
-            _process_displacement(energy, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
+            _process_displacement(
+                energy, lowername, moleculeclone, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
                                     **kwargs)
@@ -1301,8 +1302,8 @@ def hessian(name, **kwargs):
         print(""" %d displacements needed.""" % ndisp)
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
-            _process_displacement(gradient, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
-            core.clean()
+            _process_displacement(
+                gradient, lowername, moleculeclone, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         wfn = _process_displacement(gradient, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
                                     **kwargs)
@@ -1344,8 +1345,8 @@ def hessian(name, **kwargs):
         print(' %d displacements needed.' % ndisp)
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
-            _process_displacement(energy, lowername, moleculeclone, displacement, n, ndisp, **kwargs)
-            core.clean()
+            _process_displacement(
+                energy, lowername, moleculeclone, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
                                     **kwargs)
