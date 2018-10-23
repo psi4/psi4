@@ -261,7 +261,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         A descriptor for the finite difference step.
         In future, this can be overriden by step fields for individual displacements.
 
-        units : string
+        units : {'bohr', 'angstrom'}
             The units for the displacement. The code currently assumes "bohr".
         size : float
             The step size for the displacement.
@@ -270,7 +270,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         Number of points to evaluate at for each displacement basis vector. The count
         includes the reference. Psi currently supports 3 and 5.
 
-    displacement_space : string
+    displacement_space : {'CdSalc'}
         A string specifying the vector space in which displacements are performed.
         Currently, only CdSalc is supported.
 
@@ -286,9 +286,9 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     displacements : dict
         A dictionary mapping labels specifying the displacement to data about
-        the geometry. Labels are of the form "A: B, C: D" where A and B index the
-        basis vector in displacement space and are ordered, and C and D index the
-        step magnitude. For instance, "0: 1, 1: -1" specifies displacing +1 in
+        the geometry. Labels are of the form "A: a, B: b" where A and B index the
+        basis vector in displacement space and A < B, and a and b index the step
+        magnitude. For instance, "0: 1, 1: -1" specifies displacing +1 in
         displacement vector 0 and -1 in displacement vector 1. "1: -1, 0: 1" is
         forbidden for breaking ordering. Generalizes to arbitrary numbers of
         simultaneous displacements in the obvious way.
