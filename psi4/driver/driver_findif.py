@@ -47,7 +47,7 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
     ----------
     mol : qcdb.molecule or psi4.core.Molecule
         The molecule to displace
-    geom : psi4.core.Matrix
+    geom : ndarray
         The geometry of the molecule.
     salc_list : psi4.core.CdSalcList
         A list of Cartesian displacement SALCs
@@ -98,7 +98,9 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
          Used so the information is printed only during geometry generation, and not
          during the derivative computation as well.
 
-    :returns: *dict*
+    Returns
+    -------
+    data : dict
         Miscellaneous information required by callers.
     """
 
@@ -243,8 +245,70 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     Returns
     -------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
+    findifrec : dict
+        Dictionary of finite difference data, specified below.
+        The dictionary makes findifrec _extensible_. If you need a new field
+        in the record, just add it.
+        All fields should be present at all times, with two exceptions:
+            1. Fields for computed quantities will not be available until
+               after they are computed.
+            2. Displacement specific overrides for globals will not be
+               available unless the user specified the overrides.
+               (Such overrides are not implemented at time of writing. An example
+               is giving a displacement its own step dict.)
+
+    step : dict
+        A descriptor for the finite difference step.
+        In future, this can be overriden by step fields for individual displacements.
+
+        units : string
+            The units for the displacement. The code currently assumes "bohr".
+        size : float
+            The step size for the displacement.
+
+    stencil_size : int
+        Number of points to evaluate at for each displacement basis vector. The count
+        includes the reference. Psi currently supports 3 and 5.
+
+    displacement_space : string
+        A string specifying the vector space in which displacements are performed.
+        Currently, only CdSalc is supported.
+
+    project_translations : bool
+        Whether translations are to be projected out of the displacements.
+
+    project_rotations : bool
+        Whether rotations are to be projected out of the displacements.
+
+    molecule : dict
+        The reference molecule, in MolSSI schema. See
+        https://molssi-qc-schema.readthedocs.io/en/latest/auto_topology.html
+
+    displacements : dict
+        A dictionary mapping labels specifying the displacement to data about
+        the geometry. Labels are of the form "A: B, C: D" where A and B index the
+        basis vector in displacement space and are ordered, and C and D index the
+        step magnitude. For instance, "0: 1, 1: -1" specifies displacing +1 in
+        displacement vector 0 and -1 in displacement vector 1. "1: -1, 0: 1" is
+        forbidden for breaking ordering. Generalizes to arbitrary numbers of
+        simultaneous displacements in the obvious way.
+
+        The possible geometry data is as follows:
+
+        geometry: list of floats
+            (3 * natom) The molecular geometry as a flat list in bohr. All coordinates
+            are given for one atom before proceeding to the next atom.
+
+        energy: int
+            The last computed electronic energy at the geometry.
+
+        gradient: list of floats
+            (3 * natom) The last computed gradient of energy with respect to changes in
+            geometry at the geometry, as a flat list. All coordinates are given for
+            displacing one atom before proceeding to the next atom.
+
+    reference : dict
+         A geometry data dict, as described above, for the reference geometry.
     """
 
     msg_dict = {
@@ -283,7 +347,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         "displacement_space": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
-        # TODO: Hand-coding is bad. Fix this post-QCElemental.
+        # TODO: Hand-coding schema information is bad. Fix this post-QCElemental.
         "molecule": {
             "schema_name": "qc_schema_input",
             "schema_version": 1,
@@ -335,13 +399,12 @@ def compute_gradient_from_energy(metadict):
 
     Parameters
     ----------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
-        Includes the displacements and their energies.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
 
     Returns
     -------
-    gradient : np.array
+    gradient : ndarray
         (nat, 3) Cartesian gradient [Eh/a0].
     """
 
@@ -412,13 +475,13 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     Parameters
     ---------
-    H_block : np.array
+    H_block : ndarray
         A block of the Hessian for an irrep, in mass-weighted salcs.
         Dimensions # cdsalcs by # cdsalcs.
-    B_block : np.array
+    B_block : ndarray
         A block of the B matrix for an irrep, which transforms CdSalcs to Cartesians.
         Dimensions # cdsalcs by # cartesians.
-    massweighter : np.array
+    massweighter : ndarray
         The mass associated with each atomic coordinate.
         Dimension # cartesians. Due to x, y, z, values appear in groups of three.
     irrep : str
@@ -428,7 +491,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     Returns
     -------
-    H_block : np.array
+    H_block : ndarray
         H_block, but made into an orthogonal array.
     """
 
@@ -462,13 +525,13 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     Parameters
     ---------
-    H_blocks : list of np.array
+    H_blocks : list of ndarray
         A list of blocks of the Hessian per irrep, in mass-weighted salcs.
         Each is dimension # cdsalcs-in-irrep by # cdsalcs-in-irrep.
-    B_blocks : list of np.array
+    B_blocks : list of ndarray
         A block of the B matrix per irrep, which transforms CdSalcs to Cartesians.
         Each is dimensions # cdsalcs-in-irrep by # cartesians.
-    massweighter : np.array
+    massweighter : ndarray
         The mass associated with each atomic coordinate.
         Dimension 3 * natom. Due to x, y, z, values appear in groups of three.
     print_lvl : int
@@ -476,7 +539,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     Returns
     -------
-    Hx : np.array
+    Hx : ndarray
         The Hessian in non-mass weighted cartesians.
     """
 
@@ -515,16 +578,15 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
 
     Parameters
     ----------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
-        Includes the displacements and their gradients.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
 
     Returns
     -------
-    hessian : np.array
+    hessian : ndarray
         (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
 
@@ -689,16 +751,15 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
 
     Parameters
     ----------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
-        Includes the displacements and their gradients.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
 
     Returns
     -------
-    hessian : np.array
+    hessian : ndarray
         (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
 
@@ -799,8 +860,8 @@ def gradient_from_energy_geometries(molecule):
 
     Returns
     -------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
 
     Notes
     -----
@@ -824,8 +885,8 @@ def hessian_from_gradient_geometries(molecule, irrep):
 
     Returns
     -------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     """
     return _geom_generator(molecule, irrep, "2_1")
 
@@ -844,7 +905,7 @@ def hessian_from_energy_geometries(molecule, irrep):
 
     Returns
     -------
-    metadict : dict
-        A structured dictionary of data describing the finite difference computation.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     """
     return _geom_generator(molecule, irrep, "2_0")

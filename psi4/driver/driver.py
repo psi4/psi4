@@ -131,7 +131,29 @@ def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
 
 def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, **kwargs):
     """A helper function to perform all processing for an individual finite
-       difference computation."""
+       difference computation.
+
+       Parameters
+       ----------
+       derivfunc : func
+           The function computing the target derivative.
+       method : str
+          A string specifying the method to be used for the computation.
+       molecule: psi4.core.molecule or qcdb.molecule
+          The molecule for the computation. Geometry setting is handled internally.
+       displacement : dict
+          A dictionary containing the necessary information for the displacement.
+          See driver_findif/_geom_generator.py docstring for details.
+       n : int
+          The number of the displacement being computed, for print purposes.
+       ndisp : int
+           The total number of geometries, for print purposes.
+
+       Returns
+       -------
+       wfn: psi4.core.wfn
+           The wavefunction computed.
+    """
 
     # print progress to file and screen
     core.print_out('\n')
