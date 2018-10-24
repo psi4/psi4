@@ -332,6 +332,11 @@ def _geom_generator(mol, freq_irrep_only, mode):
                 "    Generating geometries for use with {:d}-point formula.\n"
                 "    Displacement size will be {:6.2e}.\n".format(print_msg, data["num_pts"], data["disp_size"]))
 
+    # Genuine support for qcdb molecules would be nice. But that requires qcdb CdSalc tech.
+    # Until then, silently swap the qcdb molecule out for a psi4.core.molecule.
+    if isinstance(mol, molecule.Molecule):
+        mol = core.Molecule.from_dict(mol.to_dict())
+
     data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
 
     # We can finally start generating displacements.
