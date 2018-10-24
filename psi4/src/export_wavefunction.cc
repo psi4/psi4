@@ -95,6 +95,7 @@ void export_wavefunction(py::module& m) {
         .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
         .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
         .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
+        .def("efzc", &Wavefunction::efzc, "Returns the frozen-core energy")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,
@@ -147,6 +148,7 @@ void export_wavefunction(py::module& m) {
         .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
              "Returns the number of doubly occupied orbitals per irrep.")
+        .def("density_fitted", &Wavefunction::density_fitted, "Returns whether this wavefunction was obtained using density fitting or not.")
         .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy,
              "Returns the number of singly occupied orbitals per irrep.")

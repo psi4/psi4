@@ -137,6 +137,8 @@ def pyread_wavefunction(filename):
     wfn_string = wfn_data['string']
     wfn_boolean = wfn_data['boolean']
     wfn_float = wfn_data['float']
+    wfn_floatvar = wfn_data['floatvar']
+    wfn_matrixarr = wfn_data['matrixarr']
 
     # reconstruct molecule from dictionary representation
     wfn_molecule = wfn_data['molecule']
@@ -149,14 +151,13 @@ def pyread_wavefunction(filename):
 
     basis_puream = wfn_boolean['basispuream']
     basisset = core.BasisSet.build(molecule, 'ORBITAL', basis_name, puream=basis_puream)
-    core.print_out('printing type of basis set\n')
-    core.print_out(str(type(basisset)))
 
     # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
-    # TODO: Make sure python's 'None' translates sensibly to C++
     for label in wfn_matrix:
         array = wfn_matrix[label]
-        wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array else None
+        #core.print_out(label + '\n')
+        #core.print_out(str(type(array))+'\n')
+        wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array is not None else None
     
     for label in wfn_vector:
         array = wfn_vector[label]
@@ -166,8 +167,20 @@ def pyread_wavefunction(filename):
         tup = wfn_dimension[label]
         wfn_dimension[label] = core.Dimension.from_list(tup,name=label) if tup else None
 
+    for label in wfn_matrixarr:
+        array = wfn_dimension[label]
+        wfn_dimension[label] = core.Matrix.from_array(array,name=label) if array else None
+
+    # make the wavefunction 
     wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
                             wfn_string, wfn_boolean, wfn_float)
+
+    # some of the wavefunction's variables can be changed directly
+    for k, v in wfn_floatvar.items():
+        wfn.set_variable(k,v)
+    for k, v in wfn_matrixarr.items():
+        wfn.set_array(k,v)
+
     return wfn
 
 core.Wavefunction.from_file = pyread_wavefunction
@@ -216,22 +229,26 @@ def pywrite_wavefunction(wfn, filename):
             'nfrzc'  : wfn.nfrzc(),
             'nirrep' : wfn.nirrep(),
             'nmo'    : wfn.nmo(),
-            'nso'    : wfn.nso()
+            'nso'    : wfn.nso(),
+            'print'  : wfn.get_print(),
             },
         'string' : {
             'name' : wfn.name(),
             'basisname' : wfn.basisset().name()
             },
         'boolean' : {
-            'PCM_enabled'   : wfn.PCM_enabled(),
-            'same_a_b_dens' : wfn.same_a_b_dens(),
-            'same_a_b_orbs' : wfn.same_a_b_orbs(),
-            'basispuream' : wfn.basisset().has_puream()
+            'PCM_enabled'    : wfn.PCM_enabled(),
+            'same_a_b_dens'  : wfn.same_a_b_dens(),
+            'same_a_b_orbs'  : wfn.same_a_b_orbs(),
+            'density_fitted' : wfn.density_fitted(),
+            'basispuream'    : wfn.basisset().has_puream()
             },
         'float' : {
             'energy' : wfn.energy(),
-            #'efzc' : wfn.efzc()
-            }
+            'efzc' : wfn.efzc()
+            },
+        'floatvar' : wfn.variables(),
+        'matrixarr' : {k: v.to_array() for k, v in wfn.arrays().items()}
         }
 
     np.save(filename,wfn_data)

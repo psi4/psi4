@@ -92,6 +92,7 @@ Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &o
     set_reference_wavefunction(reference_wavefunction);
 }
 
+// TODO: pass Options object to constructor instead of relying on globals
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, 
                            std::map<std::string, std::shared_ptr<Matrix>> matrices,
                            std::map<std::string, std::shared_ptr<Vector>> vectors,
@@ -101,6 +102,16 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     : options_(Process::environment.options),
       basisset_(basisset),
       molecule_(molecule) {
+
+
+    // Check the point group of the molecule. If it is not set, set it.
+    if (!molecule_->point_group()) {
+        molecule_->set_point_group(molecule_->find_point_group());
+    }
+
+    // Create an SO basis...we need the point group for this part.
+    integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
     // set matrices
     Ca_ = matrices["Ca"];
@@ -138,6 +149,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nirrep_ = ints["nirrep"];
     nmo_ = ints["nmo"];
     nso_ = ints["nso"];
+    print_ = ints["print"];
     
     // set strings
     name_ = strings["name"];
@@ -146,7 +158,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     PCM_enabled_ = booleans["PCM_enabled"];
     same_a_b_dens_ = booleans["same_a_b_dens"];
     same_a_b_orbs_ = booleans["same_a_b_orbs"];
-    //density fitted??
+    density_fitted_ = booleans["density fitted"];
 
     // set floats
     energy_ = floats["energy"];
