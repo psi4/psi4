@@ -7,7 +7,7 @@ ang = np.array([
 oldbohr = ang / 0.52917720859  # codata2010
 
 h2o = Molecule.from_arrays(geom=oldbohr, elez=[8, 1, 1], units='Bohr', fix_com=True, fix_orientation=True)
-h2o_plus = Molecule.from_arrays(geom=oldbohr, elez=[8, 1, 1], units='Bohr', fix_com=True, fix_orientation=True, molecular_charge=1, molecular_multiplicity=2)
+h2o_plus = Molecule.from_arrays(geom=oldbohr, elez=[8, 1, 1], units='Bohr', fix_com=False, fix_orientation=True, molecular_charge=1, molecular_multiplicity=2)
 
 set {
    basis 6-31G

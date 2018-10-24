@@ -9,7 +9,7 @@ oldang = ang * 0.52917721067 / 0.52917720859
 oldmass = [15.99491461956, 1.00782503207, 1.00782503207]
 
 h2o = Molecule.from_arrays(geom=oldbohr, elez=[8, 1, 1], mass=oldmass, units='Bohr', fix_com=True, fix_orientation=True)
-h2o_plus = Molecule.from_arrays(geom=oldbohr, elez=[8, 1, 1], mass=oldmass, units='Bohr', fix_com=True, fix_orientation=True, molecular_charge=1, molecular_multiplicity=2, fix_symmetry='c1')
+h2o_plus = Molecule.from_arrays(geom=oldbohr, elez=[8, 1, 1], mass=oldmass, units='Bohr', fix_com=False, fix_orientation=True, molecular_charge=1, molecular_multiplicity=2, fix_symmetry='c1')
 
 set {
    basis 6-31G
