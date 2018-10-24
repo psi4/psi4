@@ -69,6 +69,10 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
+
 #include <string>
 
 using namespace psi;
@@ -1558,4 +1562,112 @@ void export_mints(py::module& m) {
              "Returns the number of irreps in the low order group that an irrep \
              from the high order group can be reduced to.")
         .def("group", &CorrelationTable::gamma, "Returns the higher order point group");
+
+    typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
+    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
+        .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
+        .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")
+        .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "Deep copies the internal data.")
+        .def("c1_deep_copy", &Wavefunction::c1_deep_copy,
+             "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
+             "BasisSet *basis",
+             py::arg("basis"))
+        .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "Returns true if the alpha and beta orbitals are the same.")
+        .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
+             "Returns true if the alpha and beta densities are the same.")
+        .def("nfrzc", &Wavefunction::nfrzc, "Number of frozen core electrons.")
+        .def("nalpha", &Wavefunction::nalpha, "Number of Alpha electrons.")
+        .def("nbeta", &Wavefunction::nbeta, "Number of Beta electrons.")
+        .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
+        .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
+        .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
+        .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
+        .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
+        .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,
+             "Returns the requested Alpha Orbital subset.")
+        .def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership,
+             "Returns the requested Beta Orbital subset.")
+        .def("Fa", &Wavefunction::Fa, "Returns the Alpha Fock Matrix.")
+        .def("Fa_subset", &Wavefunction::Fa_subset, "Returns the Alpha Fock Matrix in the requested basis (AO,SO).")
+        .def("Fb", &Wavefunction::Fb, "Returns the Beta Fock Matrix.")
+        .def("Fb_subset", &Wavefunction::Fb_subset, "Returns the Beta Fock Matrix in the requested basis (AO,SO).")
+        .def("Da", &Wavefunction::Da, "Returns the Alpha Density Matrix.")
+        .def("Db", &Wavefunction::Db, "Returns the Beta Density Matrix.")
+        .def("Da_subset", &Wavefunction::Da_subset, py::return_value_policy::take_ownership,
+             "Returns the requested Alpha Density subset.")
+        .def("Db_subset", &Wavefunction::Db_subset, py::return_value_policy::take_ownership,
+             "Returns the requested Beta Density subset.")
+        .def("epsilon_a", &Wavefunction::epsilon_a, "Returns the Alpha Eigenvalues.")
+        .def("epsilon_b", &Wavefunction::epsilon_b, "Returns the Beta Eigenvalues.")
+        .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "Returns the requested Alpha Eigenvalues subset.")
+        .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "Returns the requested Beta Eigenvalues subset.")
+        .def("X", &Wavefunction::X, "Returns the Lagrangian Matrix.")
+        .def("basis_projection", &Wavefunction::basis_projection,
+             "Projects a orbital matrix from one basis to another.")
+        .def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
+        .def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.")
+        .def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.")
+        .def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.")
+        .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
+        .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
+        .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
+        .def("energy", &Wavefunction::reference_energy, "Returns the Wavefunctions energy.")
+        .def("gradient", &Wavefunction::gradient, "Returns the Wavefunctions gradient.")
+        .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunctions gradient.")
+        .def("hessian", &Wavefunction::hessian, "Returns the Wavefunctions Hessian.")
+        .def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunctions Hessian.")
+        .def("frequencies", &Wavefunction::frequencies, "Returns the frequencies of the Hessian.")
+        .def("set_frequencies", &Wavefunction::set_frequencies, "Sets the frequencies of the Hessian.")
+        .def("esp_at_nuclei", &Wavefunction::get_esp_at_nuclei, "returns electrostatic potentials at nuclei")
+        .def("mo_extents", &Wavefunction::get_mo_extents, "returns the wavefunction's electronic orbital extents.")
+        .def("no_occupations", &Wavefunction::get_no_occupations,
+             "returns the natural orbital occupations on the wavefunction.")
+        .def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "Returns the set atomic point charges.")
+        .def("get_dipole_field_strength", &Wavefunction::get_dipole_field_strength,
+             "Returns a vector of length 3, containing the x, y, and z dipole field strengths.")
+        .def("set_name", &Wavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
+        .def("name", &Wavefunction::name, py::return_value_policy::copy,
+             "The level of theory this wavefunction corresponds to.")
+        .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring")
+        .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
+        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
+        .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
+             "Returns the number of doubly occupied orbitals per irrep.")
+        .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
+        .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy,
+             "Returns the number of singly occupied orbitals per irrep.")
+        .def("force_soccpi", &Wavefunction::force_soccpi, "Specialized expert use only. Sets the number of singly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
+        .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
+             "Returns the number of symmetry orbitals per irrep.")
+        .def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy,
+             "Returns the number of molecular orbitals per irrep.")
+        .def("nalphapi", &Wavefunction::nalphapi, py::return_value_policy::copy,
+             "Returns the number of alpha orbitals per irrep.")
+        .def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy,
+             "Returns the number of beta orbitals per irrep.")
+        .def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy,
+             "Returns the number of frozen core orbitals per irrep.")
+        .def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy,
+             "Returns the number of frozen virtual orbitals per irrep.")
+        .def("set_print", &Wavefunction::set_print, "Sets the print level of the Wavefunction.")
+        .def("get_print", &Wavefunction::get_print, "Get the print level of the Wavefunction.")
+        .def("compute_energy", &Wavefunction::compute_energy, "Computes the energy of the Wavefunction.")
+        .def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
+        .def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
+        .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
+        .def("set_variable", &Wavefunction::set_variable, "Sets the requested internal variable.")
+        .def("get_variable", &Wavefunction::get_variable, "Returns the requested internal variable.")
+        .def("variables", &Wavefunction::variables, "Returns the map of all internal variables.")
+        .def("get_array", &Wavefunction::get_array, "Sets the requested internal array.")
+        .def("set_array", &Wavefunction::set_array, "Returns the requested internal array.")
+        .def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.")
+#ifdef USING_PCMSolver
+        .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
+        .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
+#endif
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
+
 }

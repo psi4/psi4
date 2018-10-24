@@ -29,6 +29,16 @@ set(sources_list
 
 add_library(core SHARED ${sources_list})
 
+set(thinmints_sources_list
+        export_blas_lapack.cc
+        export_oeprop.cc
+        export_mints.cc
+        read_options.cc
+        thinmints.cc
+        )
+
+add_library(thinmints SHARED ${thinmints_sources_list})
+
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
 target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd plugin qt ${POST_LIBRARY_OPTION})
 if(TARGET ambit::ambit)
@@ -50,10 +60,17 @@ if(MSVC)
     target_link_libraries(core PRIVATE Ws2_32)
 endif()
 
+target_link_libraries(thinmints PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_OPTION})
+target_link_libraries(thinmints PRIVATE mints)
+target_link_libraries(thinmints PRIVATE ${LIBC_INTERJECT})
+target_link_libraries(thinmints PUBLIC pybind11::module)
+target_link_libraries(thinmints PRIVATE Threads::Threads)
+
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
   # Intel fortran compiler
   target_compile_definitions(core PRIVATE -DINTEL_Fortran_ENABLED)
+  target_compile_definitions(thinmints PRIVATE -DINTEL_Fortran_ENABLED)
 endif()
 
 if(MSVC)
@@ -66,11 +83,17 @@ endif()
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:Libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 target_include_directories(core INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
+target_include_directories(thinmints PRIVATE $<TARGET_PROPERTY:Libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
+target_include_directories(thinmints INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
 install(TARGETS core
         EXPORT "psi4Targets"
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
+install(TARGETS thinmints
+        EXPORT "psi4Targets"
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/thinmints)
 install(EXPORT "psi4Targets"
         NAMESPACE "psi4::"
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
@@ -127,5 +150,13 @@ set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for py
                            OUTPUT_NAME core
                            EXPORT_NAME core
                            SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+                           INSTALL_RPATH "${psi4_RPATH}"
+                           BUILD_WITH_INSTALL_RPATH ON)
+
+set_target_properties(thinmints PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+                           OUTPUT_NAME thinmints
+                           EXPORT_NAME thinmints
+                           SUFFIX ".so"  # for python module
+                           #SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
                            INSTALL_RPATH "${psi4_RPATH}"
                            BUILD_WITH_INSTALL_RPATH ON)
