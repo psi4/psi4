@@ -442,9 +442,9 @@ def compute_gradient_from_energy(metadict):
 
     # Perform the finite difference.
     if metadict["stencil_size"] == 3:
-        g_q = (E[:, 1] - E[:, 0]) / (2.0 * data["disp_size"])
+        g_q = (E[:, 1] - E[:, 0]) / (2.0 * metadict["step"]["size"])
     elif metadict["stencil_size"] == 5:
-        g_q = (E[:, 0] - 8.0 * E[:, 1] + 8.0 * E[:, 2] - E[:, 3]) / (12.0 * data["disp_size"])
+        g_q = (E[:, 0] - 8.0 * E[:, 1] + 8.0 * E[:, 2] - E[:, 3]) / (12.0 * metadict["step"]["size"])
     else:  # This error SHOULD have already been caught, but just in case...
         raise ValidationError("FINDIF: {} is an invalid number of points.".format(metadict["stencil_size"]))
     g_q = np.asarray(g_q)
@@ -633,7 +633,7 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
     # A list of lists of gradients, per irrep
     gradients_pi = [[]]
     # Extract and print the symmetric gradients. These need no additional processing.
-    max_disp = (data["num_pts"] - 1) // 2  # The numerator had better be divisible by two.
+    max_disp = (metadict["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
     for i in data["salc_indices_pi"][0]:
         for n in range(-max_disp, 0):
             grad_raw = displacements["{}: {}".format(i, n)]["gradient"]
@@ -740,10 +740,10 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
         H_pi.append(np.empty([Nindices, Nindices]))
 
         if metadict["stencil_size"] == 3:
-            H_pi[-1] = (grads_adapted[1::2] - grads_adapted[::2]) / (2.0 * data["disp_size"])
+            H_pi[-1] = (grads_adapted[1::2] - grads_adapted[::2]) / (2.0 * metadict["step"]["size"])
         elif metadict["stencil_size"] == 5:
             H_pi[-1] = (grads_adapted[::4] - 8 * grads_adapted[1::4] + 8 * grads_adapted[2::4] - grads_adapted[3::4]
-                        ) / (12.0 * data["disp_size"])
+                        ) / (12.0 * metadict["step"]["size"])
 
         H_pi[-1] = _process_hessian_symmetry_block(H_pi[-1], B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"])
 
@@ -816,14 +816,14 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
                 k = -j if h else j  # Because of the +- displacement trick
                 E[i, max_disp + j - 1] = displacements[key_string.format(k)]["energy"]
         # Now determine all diagonal force constants for this irrep.
-        if data["num_pts"] == 3:
+        if metadict["stencil_size"] == 3:
             diag_fcs = E[:, 0] + E[:, 1]
             diag_fcs -= 2 * ref_energy
-            diag_fcs /= (data["disp_size"]**2)
-        elif data["num_pts"] == 5:
+            diag_fcs /= (metadict["step"]["size"]**2)
+        elif metadict["stencil_size"] == 5:
             diag_fcs = -E[:, 0] + 16 * E[:, 1] + 16 * E[:, 2] - E[:, 3]
             diag_fcs -= 30 * ref_energy
-            diag_fcs /= (12 * data["disp_size"]**2)
+            diag_fcs /= (12 * metadict["step"]["size"]**2)
         H_irr = np.diag(diag_fcs)
 
         # TODO: It's a bit ugly to use the salc indices to grab the off-diagonals but the indices
@@ -838,12 +838,12 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
                 offdiag_en = lambda index: displacements["{j}: {}, {i}: {}".format(i=salc, j=salc2, *data["disps"]["off"][index])]["energy"]
                 if metadict["stencil_size"] == 3:
                     fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] - E[j][1]) / (
-                        2 * data["disp_size"]**2)
+                        2 * metadict["step"]["size"]**2)
                 elif metadict["stencil_size"] == 5:
                     fc = (-offdiag_en(0) - offdiag_en(1) + 9 * offdiag_en(2) - offdiag_en(3) - offdiag_en(4) +
                           9 * offdiag_en(5) - offdiag_en(6) - offdiag_en(7) + E[i][0] - 7 * E[i][1] - 7 * E[i][2] +
                           E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] + 12 * ref_energy) / (
-                              12 * data["disp_size"]**2)
+                              12 * metadict["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
 
