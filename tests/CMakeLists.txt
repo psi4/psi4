@@ -61,7 +61,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump
-                  fd-qcdb fd-freq-energy fd-freq-energy-large fd-freq-gradient
+                  fd-freq-energy fd-freq-energy-large fd-freq-gradient
                   fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
                   fnocc3 fnocc4 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
                   mcscf1 mcscf2 mcscf3
