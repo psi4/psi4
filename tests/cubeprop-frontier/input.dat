@@ -3,17 +3,20 @@
 molecule ch2s {
 0 1
  C
- H 1 1.109
- H 1 1.109 2 109.5
+ H 1 R
+ H 1 R 2 109.5
 }
 
 
 molecule ch2t {
 0 3
  C
- H 1 1.109
- H 1 1.109 2 109.5
+ H 1 R
+ H 1 R 2 109.5
 }
+
+ch2s.R = 1.109 * 0.52917721067 / 0.52917720859
+ch2t.R = 1.109 * 0.52917721067 / 0.52917720859
 
 set basis cc-pvdz
 set df_scf_guess  false

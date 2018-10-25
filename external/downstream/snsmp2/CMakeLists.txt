@@ -5,7 +5,7 @@ if(${ENABLE_snsmp2})
     endif()
 
     if(${snsmp2_FOUND})
-        message(STATUS "${Cyan}Found snsnp2${ColourReset}: ${PY_snsmp2} (found version ${snsmp2_VERSION})")
+        message(STATUS "${Cyan}Found snsmp2${ColourReset}: ${PY_snsmp2} (found version ${snsmp2_VERSION})")
         add_library(snsmp2_external INTERFACE)  # dummy
 
     else()
@@ -17,9 +17,12 @@ if(${ENABLE_snsmp2})
         message(STATUS "Suitable snsmp2 could not be located, ${Magenta}Building snsmp2${ColourReset} instead.")
 
         ExternalProject_Add(snsmp2_external
+            DEPENDS qcelemental_external
             BUILD_ALWAYS 1
-            GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
-            GIT_TAG a70c56f  # v1.0 + 13
+            GIT_REPOSITORY https://github.com/loriab/sns-mp2
+            GIT_TAG a035c27
+            #GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
+            #GIT_TAG a70c56f  # v1.0 + 13
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build

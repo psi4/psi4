@@ -1,22 +1,15 @@
 #! functionals + DFTD3 ionization energies vs. other programs
 
-molecule h2o {
-0 1
-O -2.93097845 -0.21641144  0.
-H -3.65521977  1.44092184  0.
-H -1.13322529  0.07693453  0.
-units bohr
-no_reorient
-}
+ang = np.array([
+  [ -1.551007,  -0.114520,   0.000000],
+  [ -1.934259,   0.762503,   0.000000],
+  [ -0.599677,   0.040712,   0.000000]])
+oldang = ang * 0.52917721067 / 0.52917720859
+oldmass = [15.99491461956, 1.00782503207, 1.00782503207]
 
-molecule h2o_plus {
-1 2
-O -2.93097845 -0.21641144  0.
-H -3.65521977  1.44092184  0.
-H -1.13322529  0.07693453  0.
-units bohr
-no_reorient
-}
+h2o = Molecule.from_arrays(geom=oldang, elez=[8, 1, 1], units='Angstrom', mass=oldmass)
+h2o_plus = Molecule.from_arrays(geom=oldang, elez=[8, 1, 1], units='Angstrom', mass=oldmass, molecular_charge=1, molecular_multiplicity=2)
+
 
 set {
    basis 6-31G

@@ -35,6 +35,8 @@ from __future__ import division
 __version__ = '0.4'
 __author__ = 'Lori A. Burns'
 
+from qcelemental import constants, periodictable
+
 # Load Python modules
 import sys
 from .molecule import Molecule, compute_atom_map
@@ -52,12 +54,10 @@ from .basislist import *
 from . import align
 from . import vib
 from .vib import compare_vibinfos
-from . import molparse
 from . import hessparse
 from . import gradparse
 
 # Load items that are useful to access from an input file
 from .psiutil import *
-from .physconst import *
 
 from .util import *

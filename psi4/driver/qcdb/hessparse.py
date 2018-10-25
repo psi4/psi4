@@ -28,12 +28,13 @@
 
 import numpy as np
 
-from .util import filter_comments
+import qcelemental as qcel
+
 
 def load_hessian(shess, dtype):
 
     # list o'lines w/o comments or blanks
-    shess = filter_comments(shess)
+    shess = qcel.util.filter_comments(shess)
     lhess = list(filter(None, map(str.strip, shess.splitlines())))
 
     if dtype in ['fcmfinal', 'cfour']:

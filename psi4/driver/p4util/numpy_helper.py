@@ -451,7 +451,7 @@ def _from_serial(self, json_data):
         raise ValidationError("_from_json did not recognize type option of %s." % str(json_data["type"]))
 
     for n in range(len(ret.nph)):
-        ret.nph[n].flat[:] = np.fromstring(json_data["data"][n], dtype=np.double)
+        ret.nph[n].flat[:] = np.frombuffer(json_data["data"][n], dtype=np.double)
 
     return ret
 

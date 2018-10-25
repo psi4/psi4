@@ -223,7 +223,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- List of basis function indices for which cube files are generated
   (1-based). All basis functions computed if empty.-*/
   options.add("CUBEPROP_BASIS_FUNCTIONS", new ArrayType());
-  /* Fraction of density captured by adaptive isocontour values */
+  /*- Fraction of density captured by adaptive isocontour values -*/
   options.add_double("CUBEPROP_ISOCONTOUR_THRESHOLD",0.85);
   /*- CubicScalarGrid basis cutoff. !expert -*/
   options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
@@ -233,7 +233,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("CUBIC_GRID_OVERAGE", new ArrayType());
   /*- CubicScalarGrid grid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
-  /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
+  /*- How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc -*/
   options.add_str("PRINT_NOONS","3");
 
   /*- PCM boolean for pcmsolver module -*/
@@ -794,10 +794,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_MCSCF", "");
 
-    /* Cleanup the CI info at the end of a run? */
+    /*- Cleanup the CI info at the end of a run? -*/
     options.add_bool("MCSCF_CI_CLEANUP", true);
 
-    /* Cleanup the DPD MCSCF object at the end of a run? */
+    /*- Cleanup the DPD MCSCF object at the end of a run? -*/
     options.add_bool("MCSCF_DPD_CLEANUP", true);
   }
 
@@ -1709,9 +1709,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
     /*- Step size (Angstrom) for one-particle density matrix values on a grid -*/
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
-    /* Do Write NOs (molden) */
+    /*- Do write natural orbitals (molden) -*/
     options.add_bool("WRITE_NOS",false);
-    /* Reproducing energies from densities ? */
+    /*- Reproducing energies from densities ? -*/
     options.add_int("DEBUG", 0);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {

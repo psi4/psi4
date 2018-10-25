@@ -1,11 +1,11 @@
 #! Test of SFX2C-1e on water uncontracted cc-pVDZ-DK
 #! The reference numbers are from Lan Cheng's implementation in Cfour
 
-ref_nuc_energy =  8.316179709840201 #TEST
-scf_ref_nr_energy  = -76.00770336258013 #TEST 
-scf_ref_rel_energy = -76.059287839660001 #TEST
-ccsd_ref_nr_energy =  -76.280731819537309  #TEST
-ccsd_ref_rel_energy = -76.332592039115724  #TEST
+ref_nuc_energy      =   8.316179709840204  #TEST
+scf_ref_nr_energy   = -76.00770336266790   #TEST
+scf_ref_rel_energy  = -76.059287839227238  #TEST
+ccsd_ref_nr_energy  = -76.280731822408143  #TEST
+ccsd_ref_rel_energy = -76.332592039329910  #TEST
 
 molecule h2o {
 O
@@ -19,6 +19,7 @@ units bohr
 
 set {
   scf_type pk
+  e_convergence 12
 }
 
 basis adecon {

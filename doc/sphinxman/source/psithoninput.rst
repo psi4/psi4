@@ -61,18 +61,17 @@ in the |psirc| file ::
 
 which would make the variable ``UGC`` available in all |PSIfour| input files.
 For convenience, the physical constants used within the |PSIfour| code (which
-are obtained from the 3rd edition of the IUPAC Green
-book [Cohen:GreenBook:2008]_) are also automatically loaded as Psithon
+are obtained from `NIST CODATA 2014
+<https://catalog.data.gov/dataset/nist-codata-fundamental-physical-constants-srd-121>`_
+are also automatically loaded as Psithon
 variables (before |psirc| is loaded, so that the user's |psirc| values can
 override the builtins (in the input file, not in the C++ code).
 
-.. _`table:physconst`:
-
 The physical constants used within |PSIfour|, which are automatically
-made available within all |PSIfour| input files.
+made available within all |PSIfour| input files are in :ref:`table:physconst`.
 
-.. literalinclude:: @SFNX_INCLUDE@psi4/driver/constants/physconst.py
-   :lines: 28-
+.. .. literalinclude:: @SFNX_INCLUDE@psi4/driver/constants/physconst.py
+..    :lines: 28-
 
 In Psithon input files, prepend physical constants with ``psi_`` to
 prevent clashes with user-defined variables (*e.g.*, ``psi_h``). In
@@ -104,8 +103,11 @@ By default, |PSIfour| performs a "sanity check" when parsing Psithon input files
 
     # setting available memory to 2 MB
     set_memory_bytes(2000000)
-    
-Please note that this memory setting only governs the maximal memory usage of the major data structures and actual total memory usage is slightly higher. This is usually a negligible, except when setting tiny memory allowances.
+
+Please note that this memory setting only governs the maximal memory
+usage of the major data structures, and actual total memory usage
+is slightly higher. This is usually a negligible amount, except when
+setting tiny memory allowances.
 
 One convenient way to override the |PSIfour| default memory is to place a
 memory command in the |psirc| file (Sec. :ref:`sec:psirc`). For example,
