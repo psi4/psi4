@@ -202,7 +202,7 @@ void DCFTSolver::init() {
  * Frees up the memory sequestered by the init_moinfo() and read_checkpoint() routines.
  */
 void DCFTSolver::finalize() {
-    psio_->close(PSIF_DCFT_DPD, 1);
+    psio_->close(PSIF_DCFT_DPD, 0);
     delete _ints;
 
     aocc_c_.reset();
