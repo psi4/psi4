@@ -377,14 +377,14 @@ class IrreducibleRepresentation {
     /** This constructor takes as arguments the order of the point group,
      the degeneracy of the irrep, and the Mulliken symbol of the irrep.
      The Mulliken symbol is copied internally. */
-    IrreducibleRepresentation(int, int, const char*, const char* = 0);
+    IrreducibleRepresentation(int, int, const char*, const char* = nullptr);
 
     ~IrreducibleRepresentation();
 
     IrreducibleRepresentation& operator=(const IrreducibleRepresentation&);
 
     /// Initialize the order, degeneracy, and Mulliken symbol of the irrep.
-    void init(int = 0, int = 0, const char* = 0, const char* = 0);
+    void init(int = 0, int = 0, const char* = nullptr, const char* = nullptr);
 
     /// Returns the order of the group.
     int order() const { return g; }

@@ -46,7 +46,7 @@ using namespace psi;
 SOTransform::SOTransform() {
     naoshell_allocated = 0;
     naoshell = 0;
-    aoshell = 0;
+    aoshell = nullptr;
 }
 
 SOTransform::~SOTransform() { delete[] aoshell; }
@@ -92,7 +92,7 @@ void AOTransform::add_transform(int irrep, double coef, int aofunc, int sofunc) 
 
 SOTransformShell::SOTransformShell() {
     nfunc = 0;
-    func = 0;
+    func = nullptr;
 }
 
 SOTransformShell::~SOTransformShell() {

@@ -189,7 +189,7 @@ class MRCCRestrictedReader {
 
    public:
     MRCCRestrictedReader(FILE *ccdensities, const double tolerance, SharedMatrix one_particle)
-        : ccdensities_(ccdensities), tolerance_(tolerance), batch_(0), one_particle_(one_particle) {
+        : ccdensities_(ccdensities), tolerance_(tolerance), batch_(nullptr), one_particle_(one_particle) {
         batch_ = new char[line_length * 1000 + 1];
 
         const Dimension &nmopi = one_particle_->rowspi();

@@ -40,20 +40,20 @@ namespace mcscf {
 
 extern MemoryManager* memory_manager;
 
-BlockVector::BlockVector() : nirreps_(0), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {}
+BlockVector::BlockVector() : nirreps_(0), ref_(0), vector_base_(nullptr), rows_size_(0), rows_offset_(0) {}
 
 BlockVector::BlockVector(std::string label, int nirreps, size_t*& rows_size)
-    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {
+    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(nullptr), rows_size_(0), rows_offset_(0) {
     startup(label, nirreps, rows_size);
 }
 
 BlockVector::BlockVector(std::string label, int nirreps, int*& rows_size)
-    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {
+    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(nullptr), rows_size_(0), rows_offset_(0) {
     startup(label, nirreps, rows_size);
 }
 
 BlockVector::BlockVector(std::string label, int nirreps, vecint& rows_size)
-    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0) {
+    : label_(label), nirreps_(nirreps), ref_(0), vector_base_(nullptr), rows_size_(0), rows_offset_(0) {
     startup(label, nirreps, rows_size);
 }
 

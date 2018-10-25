@@ -429,8 +429,8 @@ SharedMatrix Deriv::compute() {
     SharedVector X_ref_cont_vector;
     double *Xcont = Xcont_vector->pointer();
     double *TPDMcont = TPDMcont_vector->pointer();
-    double *TPDM_ref_cont = 0;
-    double *X_ref_cont = 0;
+    double *TPDM_ref_cont = nullptr;
+    double *X_ref_cont = nullptr;
 
     if (!wfn_) throw("In Deriv: The wavefunction passed in is empty!");
 

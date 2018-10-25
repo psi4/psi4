@@ -479,13 +479,13 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
         if (rowspi_[h] * (size_t)colspi_[h] > 0)
             return &(matrix_[h][0][0]);
         else
-            return 0;
+            return nullptr;
     }
     const double* get_const_pointer(const int& h = 0) const {
         if (rowspi_[h] * (size_t)colspi_[h] > 0)
             return const_cast<const double*>(&(matrix_[h][0][0]));
         else
-            return 0;
+            return nullptr;
     }
 
     size_t size(const int& h = 0) const { return colspi_[h] * (size_t)rowspi_[h]; }
@@ -1024,7 +1024,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      *  \param tol is the tolerance.
      *  \returns A Dimension object tell you how many were removed in each irrep.
      */
-    Dimension schmidt_orthog_columns(SharedMatrix S, double tol, double* res = 0);
+    Dimension schmidt_orthog_columns(SharedMatrix S, double tol, double* res = nullptr);
 
     /*!
      * Project out the row vectors in the matrix provided out of this matrix.

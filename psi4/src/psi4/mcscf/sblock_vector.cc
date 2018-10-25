@@ -38,14 +38,14 @@
 namespace psi {
 namespace mcscf {
 
-SBlockVector::SBlockVector() : block_vector_(0) {}
+SBlockVector::SBlockVector() : block_vector_(nullptr) {}
 
-SBlockVector::SBlockVector(std::string label, int nirreps, int*& rows_size) : block_vector_(0) {
+SBlockVector::SBlockVector(std::string label, int nirreps, int*& rows_size) : block_vector_(nullptr) {
     block_vector_ = new BlockVector(label, nirreps, rows_size);
     block_vector_->add_reference();
 }
 
-SBlockVector::SBlockVector(std::string label, int nirreps, vecint& rows_size) : block_vector_(0) {
+SBlockVector::SBlockVector(std::string label, int nirreps, vecint& rows_size) : block_vector_(nullptr) {
     block_vector_ = new BlockVector(label, nirreps, rows_size);
     block_vector_->add_reference();
 }

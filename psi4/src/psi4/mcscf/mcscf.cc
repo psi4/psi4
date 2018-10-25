@@ -54,11 +54,11 @@
 #include "scf.h"
 
 namespace psi {
-MOInfoSCF* moinfo_scf = 0;
+MOInfoSCF* moinfo_scf = nullptr;
 
 namespace mcscf {
 
-MemoryManager* memory_manager = 0;
+MemoryManager* memory_manager = nullptr;
 
 /**
  * The main function

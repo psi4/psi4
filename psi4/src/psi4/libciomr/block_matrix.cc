@@ -78,7 +78,7 @@ PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
     double *B = nullptr;
     size_t i;
 
-    if (!m || !n) return (static_cast<double **>(0));
+    if (!m || !n) return (static_cast<double **>(nullptr));
 
     A = new double *[n];
     if (A == nullptr) {

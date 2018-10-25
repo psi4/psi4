@@ -81,7 +81,7 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1) {
     force_cartesian_ = false;
-    buffer_ = 0;
+    buffer_ = nullptr;
     natom_ = bs1_->molecule()->natom();
 
     size_t buffsize = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am());

@@ -55,13 +55,13 @@ CCIndex::CCIndex(std::string str)
       greater_than_or_equal(false),
       greater_than(false),
       ntuples(0),
-      tuples(0),
-      one_index_to_tuple_rel_index(0),
-      two_index_to_tuple_rel_index(0),
-      three_index_to_tuple_rel_index(0),
-      one_index_to_irrep(0),
-      two_index_to_irrep(0),
-      three_index_to_irrep(0) {
+      tuples(nullptr),
+      one_index_to_tuple_rel_index(nullptr),
+      two_index_to_tuple_rel_index(nullptr),
+      three_index_to_tuple_rel_index(nullptr),
+      one_index_to_irrep(nullptr),
+      two_index_to_irrep(nullptr),
+      three_index_to_irrep(nullptr) {
     nirreps = moinfo->get_nirreps();
     init();
 }
@@ -147,7 +147,7 @@ void CCIndex::cleanup() {
     if (two_index_to_irrep != 0) release2(two_index_to_irrep);
     if (three_index_to_tuple_rel_index != 0) release3(three_index_to_tuple_rel_index);
     if (three_index_to_irrep != 0) release3(three_index_to_irrep);
-    if (element_irrep != 0) {
+    if (element_irrep != nullptr) {
         for (int i = 0; i < nelements; ++i) release1(element_irrep[i]);
         release1(element_irrep);
     }

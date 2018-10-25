@@ -70,7 +70,7 @@ double **init_matrix(size_t n, size_t m) {
     double *B = nullptr;
     size_t i;
 
-    if (!m || !n) return (static_cast<double **>(0));
+    if (!m || !n) return (static_cast<double **>(nullptr));
 
     //  if ((A = (double **) malloc(n * (size_t)sizeof(double *)))==nullptr) {
     if ((A = new double *[n]) == nullptr) {

@@ -65,11 +65,11 @@ using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
 
-CorrelationTable::CorrelationTable() : n_(0), ngamma_(0), gamma_(0) {}
+CorrelationTable::CorrelationTable() : n_(0), ngamma_(nullptr), gamma_(nullptr) {}
 
 CorrelationTable::CorrelationTable(const std::shared_ptr<PointGroup>& group,
                                    const std::shared_ptr<PointGroup>& subgroup)
-    : n_(0), ngamma_(0), gamma_(0) {
+    : n_(0), ngamma_(nullptr), gamma_(nullptr) {
     int rc = initialize_table(group, subgroup);
     if (rc != 0) {
         // ExEnv::err0()
@@ -104,7 +104,7 @@ int CorrelationTable::initialize_table(const std::shared_ptr<PointGroup>& group,
 
     for (i = 0; i < n_; i++) {
         ngamma_[i] = 0;
-        gamma_[i] = 0;
+        gamma_[i] = nullptr;
     }
 
     // map the ops in the high order to low order groups
