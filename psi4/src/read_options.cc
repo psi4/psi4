@@ -2073,7 +2073,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     /*- Do consider internal rotations? -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
-    /*- Do attempt to force a two configruation solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ ? -*/
+    /*- Do attempt to force a two configuration solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ ? -*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of singly occupied orbitals, per irrep -*/
     options.add("SOCC", new ArrayType());
