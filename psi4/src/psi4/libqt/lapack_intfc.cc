@@ -2616,8 +2616,11 @@ int C_DGEEVX(char balanc, char jobvl, char jobvr, char sense, int n, double* a, 
 int C_DGEGS(char jobvsl, char jobvsr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
             double* beta, double* vsl, int ldvsl, double* vsr, int ldvsr, double* work, int lwork) {
     int info;
-    ::F_DGEGS(&jobvsl, &jobvsr, &n, a, &lda, b, &ldb, alphar, alphai, beta, vsl, &ldvsl, vsr, &ldvsr, work, &lwork,
-              &info);
+    char sort = 'n';
+    int sdim;
+    ::F_DGGES(&jobvsl, &jobvsr, &sort, &n, a, &lda, b, &ldb, &sdim, alphar, alphai, beta, vsl, &ldvsl, vsr, &ldvsr,
+              work, &lwork, &info);
+
     return info;
 }
 
