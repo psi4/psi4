@@ -3450,7 +3450,10 @@ int C_DGELSS(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, dou
 int C_DGELSX(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank,
              double* work) {
     int info;
-    ::F_DGELSX(&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, &rcond, rank, work, &info);
+    // Infer dimension of work array
+    // max( min(M,N)+3*N, 2*min(M,N)+NRHS )
+    int lwork = std::max(std::min(m, n) + 3 * n, 2 * std::min(m, n) + nrhs);
+    ::F_DGELSY(&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, &rcond, rank, work, &lwork, &info);
     return info;
 }
 
