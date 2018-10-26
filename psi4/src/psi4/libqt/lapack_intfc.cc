@@ -6931,8 +6931,10 @@ int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, in
              double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
              double* tau, double* work) {
     int info;
-    ::F_DGGSVP(&jobu, &jobv, &jobq, &m, &p, &n, a, &lda, b, &ldb, &tola, &tolb, k, l, u, &ldu, v, &ldv, q, &ldq, iwork,
-               tau, work, &info);
+    // Infer dimension of work array: max(3*N,M,P)
+    int lwork = std::max(std::max(3*n, m), p);
+    ::F_DGGSVP3(&jobu, &jobv, &jobq, &m, &p, &n, a, &lda, b, &ldb, &tola, &tolb, k, l, u, &ldu, v, &ldv, q, &ldq, iwork,
+               tau, work, &lwork, &info);
     return info;
 }
 
