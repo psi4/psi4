@@ -223,9 +223,6 @@ core.VBase.get_np_xyzw = get_np_xyzw
 
 ## Python other helps
 
-core.Molecule.run_dftd3 = qcdb.interface_dftd3.run_dftd3
-core.Molecule.run_gcp = qcdb.interface_gcp.run_gcp
-
 
 def set_options(options_dict):
     """

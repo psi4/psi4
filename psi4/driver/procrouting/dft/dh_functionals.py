@@ -100,7 +100,9 @@ funcs.append({
     "dispersion": {
         "type": "d2",
         "params": {
-            "s6": 0.35
+            "s6": 0.35,
+            "alpha6": 20.0,
+            "sr6": 1.1
         },
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
@@ -168,7 +170,7 @@ funcs.append({
             "b": 12.00,
             "c": 0.0093,
         },
-        "citation": "    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014\n" 
+        "citation": "    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014\n"
     },
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-BLYP-NL (D3BJ,FC parameters) VV10 SCS Double Hybrid XC Functional\n',
@@ -361,7 +363,9 @@ funcs.append({
     "dispersion": {
         "type": "d2",
         "params": {
-            "s6": 0.29
+            "s6": 0.29,
+            "alpha6": 20.0,
+            "sr6": 1.1
         },
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
@@ -415,7 +419,9 @@ funcs.append({
     "dispersion": {
         "type": "d2",
         "params": {
-            "s6": 0.42
+            "s6": 0.42,
+            "alpha6": 20.0,
+            "sr6": 1.1
         },
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
@@ -512,7 +518,9 @@ funcs.append({
     "dispersion": {
         "type": "d2",
         "params": {
-            "s6": 0.41
+            "s6": 0.41,
+            "alpha6": 20.0,
+            "sr6": 1.1
         },
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n'
     },
@@ -542,7 +550,9 @@ funcs.append({
     "dispersion": {
         "type": "d2",
         "params": {
-            "s6": 0.28
+            "s6": 0.28,
+            "alpha6": 20.0,
+            "sr6": 1.1
         },
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     },
@@ -684,7 +694,9 @@ funcs.append({
     "dispersion": {
         "type": "d2",
         "params": {
-            "s6": 0.32
+            "s6": 0.32,
+            "alpha6": 20.0,
+            "sr6": 1.1
         },
         "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     },

@@ -89,6 +89,7 @@ compare_values(46.450, entropy, 2, 'HDO S')  # molpro default #TEST
 
 psi4.revoke_global_option_changed('rotational_symmetry_number')
 
+set hessian_write on
 vibanal_wfn(wfn, molecule=dto)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'DTO E0')  #TEST
 compare_values(0.016317, get_variable('ZPVE'), 4, 'DTO ZPVE')  #TEST
@@ -96,4 +97,20 @@ compare_values(0.019154, get_variable('thermal energy correction'), 4, 'DTO dE')
 compare_values(0.020098, get_variable('enthalpy correction'), 4, 'DTO dH')  #TEST
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
 compare_values(49.603, entropy, 2, 'DTO S')  # molpro sym=cs #TEST
+
+# A. print all the vib-related info from original `e, wfn = freq()` call
+for k, v in wfn.frequency_analysis.items():
+    print(v)
+
+# B. `set hessian_write on` above wrote all the vib- & thermo-related info from last analysis.
+#    now, print all the vib- & thermo-related info from that file
+with open(core.get_writer_file_prefix(dto.name()) + ".vibrec") as handle:
+    import json
+    jsondata = json.load(handle)
+
+for k, v in jsondata.items():
+    print(k, v)
+compare_values(0.016317, jsondata['ZPE_corr']['data'], 4, 'DTO ZPVE from file')  #TEST
+compare_values(0.020098, jsondata['H_corr']['data'], 4, 'DTO dH from file')  #TEST
+compare_values(298.15, jsondata['T']['data'], 2, 'temp') #TEST
 

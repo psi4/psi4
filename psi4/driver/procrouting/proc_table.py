@@ -35,8 +35,7 @@ from . import sapt
 from . import proc
 from . import interface_cfour
 
-from psi4.driver.procrouting.dft_funcs import functionals
-from psi4.driver.procrouting.dft_funcs import build_superfunctional_from_dictionary
+from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
 
 # never import wrappers or aliases into this file
 

@@ -50,7 +50,7 @@ from psi4.driver.molutil import *
 from .roa import *
 from . import proc_util
 from . import empirical_dispersion
-from . import dft_funcs
+from . import dft
 from . import mcscf
 from . import response
 
@@ -987,17 +987,19 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(name, ref_wfn, reference):
-    """Builds the correct wavefunction from the provided information
-    """
+def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
+    """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
+    provided information, sets relevant auxiliary basis sets on it,
+    and prepares any empirical dispersion.
 
+    """
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
         modified_disp_params = None
 
     # Figure out functional
-    superfunc, disp_type = dft_funcs.build_superfunctional(name, (reference in ["RKS", "RHF"]))
+    superfunc, disp_type = dft.build_superfunctional(name, (reference in ["RKS", "RHF"]))
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -1013,20 +1015,33 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        if isinstance(disp_type, dict):
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(),
-                disp_type["type"], dashparams=disp_type["params"],
-                citation=disp_type["citation"], tuple_params=modified_disp_params)
+        if isinstance(name, dict):
+            # user dft_functional={} spec - type for lookup, dict val for param defs,
+            #   name & citation discarded so only param matches to existing defs will print labels
+            wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint='',
+                level_hint=disp_type["type"],
+                param_tweaks=disp_type["params"],
+                engine=kwargs.get('engine', None))
         else:
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
-                disp_type[0], disp_type[1], tuple_params=modified_disp_params)
+            # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
+            wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint=superfunc.name(),
+                level_hint=disp_type["type"],
+                param_tweaks=modified_disp_params,
+                engine=kwargs.get('engine', None))
+
+        # [Aug 2018] there once was a breed of `disp_type` that quacked
+        #   like a list rather than the more common dict handled above. if
+        #   ever again sighted, make an issue so this code can accommodate.
+
         wfn._disp_functor.print_out()
-        if (disp_type["type"] == 'nl'):
+        if disp_type["type"] == 'nl':
             del wfn._disp_functor
 
     # Set the DF basis sets
-    if ("DF" in core.get_global_option("SCF_TYPE")) or \
-       (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT")):
+    if (("DF" in core.get_global_option("SCF_TYPE")) or
+            (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT"))):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),
@@ -1230,7 +1245,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.print_out("         " + banner.center(58));
         if cast:
             core.print_out("         " + "SCF Castup computation".center(58));
-        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
+        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
@@ -1268,7 +1283,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("\n         ---------------------------------------------------------\n");
         core.print_out("         " + banner.center(58));
 
-    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
+    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]

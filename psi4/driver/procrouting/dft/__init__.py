@@ -26,5 +26,5 @@
 # @END LICENSE
 #
 
-from .superfuncs import *
-from .dict_builder import *
+from .superfunctionals import *
+from .dft_builder import *

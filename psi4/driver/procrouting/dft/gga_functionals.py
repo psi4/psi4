@@ -166,8 +166,8 @@ funcs.append({
         "GGA_C_P86": {}
     },
     "citation":
-    '   A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' + \
-    '   J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
+    '    A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' + \
+    '    J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',
 })
@@ -211,16 +211,28 @@ funcs.append({
     "description": '   SOGGA11 Exchange-Correlation Functional\n',
 })
 
+# dashparam.dashcoeff now defines 'b97' (<-'b97-d') as Grimme's GGA
+#   functional, so one could just define
+#       funcs.append({
+#            "name": "B97",
+#           "xc_functionals": {
+#               "GGA_XC_B97_D": {}
+#           }})
+#   and let the dict_builder fill out -D2, -D3(BJ), etc. Leaving the
+#   explicit definitions below so plain 'b97' isn't further confused.
+
 funcs.append({
-    "name": "B97-D2GR",
+    "name": "B97-D2",
+    "alias": ["B97-D"],
     "xc_functionals": {
         "GGA_XC_B97_D": {}
     },
     "dispersion": {
-        "type": "d2gr",
+        "type": "d2",
         "params": {
             's6': 1.25,
-            'alpha6': 20.0
+            'alpha6': 20.0,
+            'sr6': 1.1
         }
     }
 })
@@ -232,7 +244,7 @@ funcs.append({
         "GGA_XC_B97_D": {}
     },
     "dispersion": {
-        "type": "d3",
+        "type": "d3zero",
         "params": {
             's6': 1.0,
             's8': 0.909,

@@ -5,7 +5,7 @@ def ie(es):
 
 import os
 import sys
-psidatadir = os.environ["PSIDATADIR"]
+psidatadir = psi4.core.get_datadir()
 sys.path.append("""{}/databases""".format(psidatadir))
 qcdbpath = os.path.dirname(os.path.dirname(qcdb.__file__))
 sys.path.append(qcdbpath)

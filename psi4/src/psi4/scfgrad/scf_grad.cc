@@ -362,7 +362,7 @@ SharedMatrix SCFGrad::compute_hessian()
     std::shared_ptr<VBase> potential;
 
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("Missing XC derivates for Hessians");
+        throw PSIEXCEPTION("Missing XC derivatives for Hessians");
         // if (options_.get_str("REFERENCE") == "RKS") {
         //     potential_->set_D({Da_});
         // } else {

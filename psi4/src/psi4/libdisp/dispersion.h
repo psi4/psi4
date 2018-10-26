@@ -76,8 +76,8 @@ class Dispersion {
     Dispersion();
     virtual ~Dispersion();
 
-    static std::shared_ptr<Dispersion> build(const std::string &type, double s6 = 0.0, double p1 = 0.0, double p2 = 0.0,
-                                             double p3 = 0.0);
+    static std::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0, double alpha6 = 0.0,
+                                             double sr6 = 0.0);
 
     std::string name() const { return name_; }
     std::string description() const { return description_; }

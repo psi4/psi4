@@ -33,9 +33,8 @@ import re
 import os
 
 from psi4 import core
-from psi4.driver.qcdb import interface_dftd3 as dftd3
 from psi4.driver.p4util.exceptions import *
-from . import dict_builder
+from . import dft_builder
 
 def build_superfunctional(name, restricted):
     npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS")
@@ -64,10 +63,10 @@ def build_superfunctional(name, restricted):
 
     # Check for supplied dict_func functionals
     elif isinstance(name, dict):
-        sup = dict_builder.build_superfunctional_from_dictionary(name, npoints, deriv, restricted)
+        sup = dft_builder.build_superfunctional_from_dictionary(name, npoints, deriv, restricted)
     # Check for pre-defined dict-based functionals
-    elif name.lower() in dict_builder.functionals:
-        sup = dict_builder.build_superfunctional_from_dictionary(dict_builder.functionals[name.lower()],
+    elif name.lower() in dft_builder.functionals:
+        sup = dft_builder.build_superfunctional_from_dictionary(dft_builder.functionals[name.lower()],
                                                                  npoints, deriv, restricted)
     else:
         raise ValidationError("SCF: Functional (%s) not found!" % name)

@@ -569,6 +569,7 @@ def scf_print_energies(self):
     e2 = self.get_energies('Two-Electron')
     exc = self.get_energies('XC')
     ed = self.get_energies('-D')
+    #self.del_variable('-D Energy')
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
@@ -598,11 +599,20 @@ def scf_print_energies(self):
         self.set_variable('DFT XC ENERGY', exc)
         self.set_variable('DFT VV10 ENERGY', evv10)
         self.set_variable('DFT FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
-        self.set_variable('DFT TOTAL ENERGY', dft_energy)
+        #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
+        self.set_variable('DFT TOTAL ENERGY', dft_energy)  # overwritten later for DH
     else:
         self.set_variable('HF TOTAL ENERGY', hf_energy)
     if hasattr(self, "_disp_functor"):
         self.set_variable('DISPERSION CORRECTION ENERGY', ed)
+    #if abs(ed) > 1.0e-14:
+    #    for pv, pvv in self.variables().items():
+    #        if abs(pvv - ed) < 1.0e-14:
+    #            if pv.endswith('DISPERSION CORRECTION ENERGY') and pv.startswith(self.functional().name()):
+    #                fctl_plus_disp_name = pv.split()[0]
+    #                self.set_variable(fctl_plus_disp_name + ' TOTAL ENERGY', dft_energy)  # overwritten later for DH
+    #else:
+    #    self.set_variable(self.functional().name() + ' TOTAL ENERGY', dft_energy)  # overwritten later for DH
 
     self.set_variable('SCF ITERATIONS', self.iteration_)
 

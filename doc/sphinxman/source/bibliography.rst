@@ -402,3 +402,20 @@ Bibliography
 .. [Martinez-Araya:2015:451]
    Jorge Ignacio Mart\ |i_acute|\ nez-Araya
    *J. Math. Chem.* **53**, 451 (2015).
+
+.. [Hujo:2011:3866]
+   W. Hujo and S. Grimme
+   *J. Chem. Theory Comput.* **7** 3866 (2011).
+
+.. [Chai:2010:6615]
+   J. Chai and M. Head-Gordon
+   *Phys. Chem. Chem. Phys.* **10** 6615 (2008).
+
+.. [Pernal:2009:263201]
+   K. Pernal, R. Podeszwa, K. Patkowski, K. Szalewicz
+   *Phys. Rev. Lett.* **103** 263201 (2009).
+
+.. [Podeszwa:2010:550]
+   R. Podeszwa, K. Pernal, K. Patkowski, K. Szalewicz
+   *J. Phys. Chem. Lett.* **1** 550 (2010).
+

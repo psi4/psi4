@@ -26,12 +26,5 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
-import re
-
-yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
-no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
-der0th = re.compile(r'^(0|none|energy)', re.IGNORECASE)
-der1st = re.compile(r'^(1|first|gradient)', re.IGNORECASE)
-der2nd = re.compile(r'^(2|second|hessian)', re.IGNORECASE)
+from .runner import run_dftd3, run_dftd3_from_arrays
+from .dashparam import dashcoeff, get_dispersion_aliases, from_arrays

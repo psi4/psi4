@@ -2,9 +2,9 @@
 
 # S22-9, B3LYP
 refs = {}  #TEST
-refs['d2gr'] = {}  #TEST
-refs['d2gr']['d'] = -0.00688145  #TEST
-refs['d2gr']['m'] = -0.00165209  #TEST
+refs['d2'] = {}  #TEST
+refs['d2']['d'] = -0.00688145  #TEST
+refs['d2']['m'] = -0.00165209  #TEST
 refs['d3zero'] = {}  #TEST
 refs['d3zero']['d'] = -0.00506399  #TEST
 refs['d3zero']['m'] = -0.00084330  #TEST
@@ -88,7 +88,7 @@ fctl = 'b3lyp'
 der = 0
 hasD3M = True
 try:
-    for dlvl in ['d2gr', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+    for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
         E = eeee.run_dftd3(fctl, dlvl, dertype=der)
         compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
         E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
@@ -113,14 +113,15 @@ set dft_spherical_points 110
 #set scf print 3  # will print dftd3 program output to psi4 output file
 
 print_stdout('  Part II: -D correction from C-side')  #TEST
-energy('b3lyp-d2gr', molecule=eeee)
-compare_values(refs['d2gr']['d'], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+energy('b3lyp-d2', molecule=eeee)
+compare_values(refs['d2']['d'], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
 # single test below fails for mysterious dft reasons
-compare_values(refs['dft']['d'] + refs['d2gr']['d'], get_variable('DFT TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
-#compare_values(refs['dft']['d'] + refs['d2gr']['d'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+compare_values(refs['dft']['d'] + refs['d2']['d'], get_variable('DFT TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+#compare_values(refs['dft']['d'] + refs['d2']['d'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
 
 energy('b3lyp-d3', molecule=mAuncp)
 compare_values(refs['d3zero']['m'], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
+compare_values(refs['d3zero']['m'], get_variable('B3LYP-D3 DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
 compare_values(refs['dft']['muncp'] + refs['d3zero']['m'], get_variable('DFT TOTAL ENERGY'), 5, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
 #compare_values(refs['dft']['muncp'] + refs['d3zero']['m'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
 
@@ -173,7 +174,7 @@ qmAcp.update_geometry()
 qmBcp.update_geometry()
 
 print_stdout('  Part III: -D correction from Py-side on Py-mol')  #TEST
-levels = ['d2gr', 'd3zero', 'd3bj']
+levels = ['d2', 'd3zero', 'd3bj']
 if hasD3M:
     levels.extend(['d3mzero', 'd3mbj'])
 for dlvl in levels:

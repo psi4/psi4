@@ -38,7 +38,7 @@ dict = {
     "description":  "",       description of the method, printed in output
 
  "xc_functionals":  {         definition of a full XC functional from LibXC
-      "XC_METHOD_NAME": {}      must match a LibXC method, see dict_xc_funcs.py for examples
+      "XC_METHOD_NAME": {}      must match a LibXC method, see libxc_functionals.py for examples
      },                         if present, the x/c_functionals and x_hf/c_mp2 parameters are not read!
 
   "x_functionals":  {          definition of X contributions
@@ -71,31 +71,32 @@ dict = {
      "dispersion":  {          definition of dispersion corrections
                "type": "",       dispersion type - "d2", "d3zero", "d3bj" etc., see empirical_dispersion.py
              "params": {},       parameters for the dispersion correction
-           "citation": "",       special reference for the dispersion correction, appended to output
+           "citation": "",       special reference for the dispersion correction parameters, appended to output
+                                   (if defined in driver, not if defined in input file)
     },
 }
 """
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.empirical_dispersion import get_dispersion_aliases
-from psi4.driver.qcdb.dashparam import dashcoeff
+from psi4.driver.qcdb import intf_dftd3
 
 import copy
+import collections
 
-from . import dict_xc_funcs
-from . import dict_lda_funcs
-from . import dict_gga_funcs
-from . import dict_mgga_funcs
-from . import dict_hyb_funcs
-from . import dict_dh_funcs
+from . import libxc_functionals
+from . import lda_functionals
+from . import gga_functionals
+from . import mgga_functionals
+from . import hyb_functionals
+from . import dh_functionals
 
 dict_functionals = {}
-dict_functionals.update(dict_xc_funcs.functional_list)
-dict_functionals.update(dict_lda_funcs.functional_list)
-dict_functionals.update(dict_gga_funcs.functional_list)
-dict_functionals.update(dict_mgga_funcs.functional_list)
-dict_functionals.update(dict_hyb_funcs.functional_list)
-dict_functionals.update(dict_dh_funcs.functional_list)
+dict_functionals.update(libxc_functionals.functional_list)
+dict_functionals.update(lda_functionals.functional_list)
+dict_functionals.update(gga_functionals.functional_list)
+dict_functionals.update(mgga_functionals.functional_list)
+dict_functionals.update(hyb_functionals.functional_list)
+dict_functionals.update(dh_functionals.functional_list)
 
 
 def get_functional_aliases(functional_dict):
@@ -107,10 +108,11 @@ def get_functional_aliases(functional_dict):
     return aliases
 
 
-# alias table for dispersion
-dispersion_names = get_dispersion_aliases()
+_dispersion_aliases = intf_dftd3.get_dispersion_aliases()
 
 functionals = {}
+dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))
+
 for functional_name in dict_functionals:
     functional_aliases = get_functional_aliases(dict_functionals[functional_name])
 
@@ -120,27 +122,25 @@ for functional_name in dict_functionals:
 
     # if the parent functional is already dispersion corrected, skip to next
     if "dispersion" in dict_functionals[functional_name]:
+        disp = dict_functionals[functional_name]['dispersion']
+        dashcoeff_supplement[disp['type']]['definitions'][functional_name] = disp
+        # this is to "bless" dft/*_functionals dispersion definitions
         continue
+
     # else loop through dispersion types in dashparams (also considering aliases)
-    # and build dispersion corrected version (applies also for aliases)
-    for dispersion_name in dispersion_names:
-        dispersion_type = dispersion_names[dispersion_name]
-        for dispersion_functional in dashcoeff[dispersion_type]:
+    #   and build dispersion corrected version (applies also for aliases)
+    for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
+        for dispersion_functional in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions']:
             if dispersion_functional.lower() in functional_aliases:
                 func = copy.deepcopy(dict_functionals[functional_name])
-                func["name"] = func["name"] + "-" + dispersion_type
-                func["dispersion"] = dict()
-
-                # we need to pop the citation as the EmpiricalDispersion class only expects dashparams
-                if "citation" in dashcoeff[dispersion_type][dispersion_functional]:
-                    func["dispersion"]["citation"] = dashcoeff[dispersion_type][dispersion_functional].pop("citation")
-                func["dispersion"]["type"] = dispersion_type
-                func["dispersion"]["params"] = dashcoeff[dispersion_type][dispersion_functional]
+                func["name"] += "-" + resolved_dispersion_level
+                func["dispersion"] = copy.deepcopy(intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
+                func["dispersion"]["type"] = resolved_dispersion_level
 
                 # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
-                # all point to the same method (M06-2X-D3ZERO)
+                #   all point to the same method (M06-2X-D3ZERO)
                 for alias in functional_aliases:
-                    alias = alias + "-" + dispersion_name.lower()
+                    alias += "-" + nominal_dispersion_level.lower()
                     functionals[alias] = func
 
 
@@ -196,6 +196,28 @@ def check_consistency(func_dictionary):
     and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"]:
         raise ValidationError(
             "SCF: Libxc parameters requested for an exchange functional not defined as a component of %s." % (name))
+
+    # 3) checks would be caught at runtime or involve only formatting.
+    #    included here to preempt driver definition problems, if specific fctl not in tests.
+    # 3a) check formatting for citation
+    if "citation" in func_dictionary:
+        cit = func_dictionary["citation"]
+        if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+            raise ValidationError("SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {}".format(cit))
+    if "dispersion" in func_dictionary:
+        disp = func_dictionary["dispersion"]
+    # 3b) check dispersion type present and known
+        if "type" not in disp or disp["type"] not in _dispersion_aliases:
+            raise ValidationError("SCF: Dispersion type ({}) should be among ({})".format(disp['type'], _dispersion_aliases.keys()))
+    # 3c) check dispersion params complete
+        allowed_params = sorted(intf_dftd3.dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
+        if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
+            raise ValidationError("SCF: Dispersion params ({}) must include all ({})".format(list(disp['params'].keys()), allowed_params))
+    # 3d) check formatting for dispersion citation
+        if "citation" in disp:
+            cit = disp["citation"]
+            if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+                raise ValidationError("SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {}".format(cit))
 
 
 def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):

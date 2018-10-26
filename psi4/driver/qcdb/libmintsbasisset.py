@@ -749,15 +749,14 @@ class BasisSet(object):
         # Paths to search for gbs files: here + PSIPATH + library
         try:
             from psi4 import core
-            psidatadir = core.get_datadir()
         except ImportError:
-            pass
+            libraryPath = ''
+        else:
+            psidatadir = core.get_datadir()
+            libraryPath = os.pathsep + os.path.join(os.path.abspath(psidatadir), 'basis')
         #nolongerenvvar psidatadir = os.environ.get('PSIDATADIR', None)
         #nolongerpredicatble psidatadir = __file__ + '/../../..' if psidatadir is None else psidatadir
-        if psidatadir:
-            libraryPath = os.pathsep + os.path.join(os.path.abspath(psidatadir), 'basis')
-        else:
-            libraryPath = ''
+
         basisPath = os.path.abspath('.') + os.pathsep
         basisPath += os.pathsep.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(os.pathsep)])
         basisPath += libraryPath
@@ -834,7 +833,7 @@ class BasisSet(object):
             if verbose >= 2:
                 print("""  Shell Entries: %s""" % (seek['entry']))
                 print("""  Basis Sets: %s""" % (seek['basis']))
-                print("""  File Path: %s""" % (', '.join(map(str, seek['path'].split(':')))))
+                print("""  File Path: %s""" % (', '.join(map(str, seek['path'].split(os.pathsep)))))
                 print("""  Input Blocks: %s\n""" % (', '.join(seek['strings'])))
 
             # Search through paths, bases, entries
