@@ -26,7 +26,7 @@ install:
                  python=3.6
   - conda clean --all
   - activate %CONDA_ENV%
-  - conda install --channel
+  - conda install --channel psi4
                  qcelemental
   - conda list
 
