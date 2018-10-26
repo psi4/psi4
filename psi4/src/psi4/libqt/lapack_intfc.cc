@@ -20212,7 +20212,19 @@ int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int l
  **/
 int C_DTZRQF(int m, int n, double* a, int lda, double* tau) {
     int info;
-    ::F_DTZRQF(&m, &n, a, &lda, tau, &info);
+    // First invoke F_DTZRZF querying for the optimal size of the work array.
+    auto tmp = new double[5];
+    int lwork = -1;
+    ::F_DTZRZF(&m, &n, a, &lda, tau, tmp, &lwork, &info);
+    if (info == 0) {
+        lwork = tmp[0];
+    }
+    delete[] tmp;
+    // Now allocate the work array of the correct size and call F_DTZRZF
+    // to do the real work.
+    auto work = new double[lwork];
+    ::F_DTZRZF(&m, &n, a, &lda, tau, work, &lwork, &info);
+    if (info == 0) delete[] work;
     return info;
 }
 
