@@ -85,6 +85,13 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     common_init();
 }
 
+Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &options)
+    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
+    // Copy the wavefuntion then update
+    shallow_copy(reference_wavefunction);
+    set_reference_wavefunction(reference_wavefunction);
+}
+
 Wavefunction::Wavefunction(Options &options)
     : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
 
