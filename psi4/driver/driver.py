@@ -1767,19 +1767,6 @@ def frequency(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
-    # Let hessian() handle this!
-    # # Bounce (someday) if name is function
-    # if hasattr(name, '__call__'):
-    #     raise ValidationError("Frequency: Cannot use custom function")
-    #
-    # lowername = name.lower()
-    #
-    # if "/" in lowername:
-    #     return driver_cbs._cbs_gufunc(frequency, name, ptype='frequency', **kwargs)
-    #
-    # if kwargs.get('bsse_type', None) is not None:
-    #     raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
-
     return_wfn = kwargs.pop('return_wfn', False)
 
     # are we in sow/reap mode?

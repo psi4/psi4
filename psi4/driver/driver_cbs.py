@@ -134,7 +134,7 @@ def _contract_bracketed_basis(basisarray):
 
     Parameters
     ----------
-    basisarray : array
+    basisarray : list
         Basis set names, differing by zeta level, e.g. ``["cc-pvqz", "cc-pv5z"]``.
 
     Returns
@@ -973,19 +973,21 @@ def _get_default_xtpl(nbasis, xtpl_type):
             raise ValidationError("Wrong number of basis sets supplied to corl_xtpl: %d" % nbasis)
 
 
-def _validate_cbs_inputs(cbs_metadata):
+def _validate_cbs_inputs(cbs_metadata, molecule):
     """ A helper function which validates the ``cbs_metadata`` format,
     expands basis sets, and provides sensible defaults for optional arguments.
 
     Parameters
     ----------
-    cbs_metadata : array
-        array of dicts containing CBS stage keywords.
+    cbs_metadata : list
+        List of dicts containing CBS stage keywords.
+    molecule : qcdb.molecule or psi4.core.Molecule
+        Molecule to be passed to _expand_bracketed_basis()
 
     Returns
     -------
-    array
-        Array of dictionaries, with each item consisting of an extrapolation
+    list
+        Validatet list of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
 
@@ -993,14 +995,14 @@ def _validate_cbs_inputs(cbs_metadata):
     for item in cbs_metadata:
         # 1a) all items must have wfn
         if "wfn" not in item:
-            raise ValidationError("Stage {d} doesn't have defined level of theory!".format(cbs_metadata.index(item)))
+            raise ValidationError("Stage {:d} doesn't have defined level of theory!".format(cbs_metadata.index(item)))
     # 1b) all items must have basis set
         if "basis" not in item:
-            raise ValidationError("Stage {d} doesn't have defined basis sets!".format(cbs_metadata.index(item)))
+            raise ValidationError("Stage {:d} doesn't have defined basis sets!".format(cbs_metadata.index(item)))
     # 2a) process required stage parameters and assign defaults
         stage = {}
         stage["wfn"] = item["wfn"].lower()
-        stage["basis"] = _expand_bracketed_basis(item["basis"].lower())
+        stage["basis"] = _expand_bracketed_basis(item["basis"].lower(), molecule)
         # 2b) if first item is not HF, generate it
         if len(metadata) == 0 and stage["wfn"] not in ["hf", "c4-hf", "scf", "c4-scf"]:
             scf = {}
@@ -1028,7 +1030,7 @@ def _validate_cbs_inputs(cbs_metadata):
         stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"]))
         if len(metadata) > 0:
             stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn")).lower()
-            stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower())
+            stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower(), molecule)
             if len(stage["basis"][0]) != len(stage["basis_lo"][0]):
                 raise ValidationError("""Number of basis sets inconsistent
                                             between high ({0:d}) and low ({1:d}) levels.""".format(
@@ -1050,14 +1052,16 @@ def _process_cbs_kwargs(kwargs):
 
     Returns
     -------
-    array
-        Array of dictionaries, with each item consisting of an extrapolation
+    list
+        List of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
 
+    molecule = kwargs.get('molecule', core.get_active_molecule())
+
     if "cbs_metadata" in kwargs:
         # if we passed in a dict, validate it right away
-        cbs_metadata = kwargs.get("cbs_metadata")
+        cbs_metadata = kwargs["cbs_metadata"]
     else:
         # if we passed in options, check for consecutive correlations first
         if "delta_wfn" in kwargs and "corl_wfn" not in kwargs:
@@ -1092,7 +1096,7 @@ def _process_cbs_kwargs(kwargs):
             elif sn == "delta":
                 possible_stages.append("delta2")
 
-    return _validate_cbs_inputs(cbs_metadata)
+    return _validate_cbs_inputs(cbs_metadata, molecule)
 
 
 ###################################
@@ -1131,7 +1135,7 @@ def cbs(func, label, **kwargs):
     sequential stages (scf, corl, delta1, delta2, ... ) covering treatment
     of the reference total energy, the correlation energy, a delta correction to the
     correlation energy, and a second delta correction, etc.. Each is activated by its
-    stage_wfn keyword, or as a field in the ```cbs_metadata``` array, and is only
+    stage_wfn keyword, or as a field in the ```cbs_metadata``` list, and is only
     allowed if all preceding stages are active.
 
     .. include:: ../cbs_eqn.rst
@@ -1364,7 +1368,7 @@ def cbs(func, label, **kwargs):
 
     * Combined interface
 
-    :type cbs_metadata: array of dicts
+    :type cbs_metadata: list of dicts
 
         This is the interface to which all of the above calls are internally translated. The first item in
         the array is always defining the SCF contribution to the total energy. The required items in the
@@ -1864,8 +1868,8 @@ def _cbs_wrapper_methods(**kwargs):
 
     Returns
     -------
-    array
-        Array containing method names.
+    list
+        List containing method names.
     """
 
     cbs_methods = []
