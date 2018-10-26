@@ -2834,7 +2834,7 @@ int C_DGEGS(char jobvsl, char jobvsr, int n, double* a, int lda, double* b, int 
 int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
             double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork) {
     int info;
-    ::F_DGEGV(&jobvl, &jobvr, &n, a, &lda, b, &ldb, alphar, alphai, beta, vl, &ldvl, vr, &ldvr, work, &lwork, &info);
+    ::F_DGGEV(&jobvl, &jobvr, &n, a, &lda, b, &ldb, alphar, alphai, beta, vl, &ldvl, vr, &ldvr, work, &lwork, &info);
     return info;
 }
 
