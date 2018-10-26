@@ -14,5 +14,5 @@ coverage:
         threshold: 50%
   ignore:
    - "tests/"
-   - "psi4/driver/qcdb/"
+   #- "psi4/driver/qcdb/"
    - "psi4/share/"
