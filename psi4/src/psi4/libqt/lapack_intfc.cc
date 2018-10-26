@@ -35,6 +35,8 @@
 **
 */
 
+#include <algorithm>
+
 #include "qt.h"
 #include "lapack_intfc_mangle.h"
 
@@ -6467,8 +6469,10 @@ int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* 
              int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
              double* work, int* iwork) {
     int info;
-    ::F_DGGSVD(&jobu, &jobv, &jobq, &m, &n, &p, k, l, a, &lda, b, &ldb, alpha, beta, u, &ldu, v, &ldv, q, &ldq, work,
-               iwork, &info);
+    // Infer dimension of work array: max(3*N,M,P)+N
+    int lwork = std::max(std::max(3*n, m), p) + n;
+    ::F_DGGSVD3(&jobu, &jobv, &jobq, &m, &n, &p, k, l, a, &lda, b, &ldb, alpha, beta, u, &ldu, v, &ldv, q, &ldq, work,
+               iwork, &lwork, &info);
     return info;
 }
 
