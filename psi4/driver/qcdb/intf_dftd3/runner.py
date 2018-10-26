@@ -37,10 +37,11 @@ from decimal import Decimal
 
 import numpy as np
 
+import qcelemental as qcel
+
 from .. import __version__
 #from .. import qcvars
-from .. import molparse
-from ..util import update_with_error, parse_dertype
+from ..util import parse_dertype
 from ..pdict import PreservingDict
 from ..exceptions import *
 from ..datastructures import QCAspect, print_variables
@@ -228,7 +229,7 @@ def dftd3_plant(jobrec):
 
     dftd3rec['dftd3par'] = dftd3_coeff_formatter(dftd3rec['dashlevel'], dftd3rec['dashparams'])
 
-    dftd3rec['dftd3_geometry'] = molparse.to_string(jobrec['molecule'], dtype='xyz', units='Angstrom', ghost_format='')
+    dftd3rec['dftd3_geometry'] = qcel.molparse.to_string(jobrec['molecule'], dtype='xyz', units='Angstrom', ghost_format='')
 
     command = ['dftd3', 'dftd3_geometry.xyz']
     if jobrec['driver'] == 'gradient':

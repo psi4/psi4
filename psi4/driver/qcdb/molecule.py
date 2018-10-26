@@ -34,6 +34,7 @@ import numpy as np
 
 import qcelemental as qcel
 
+from .util import parse_dertype
 from .libmintsmolecule import *
 from .psiutil import compare_values, compare_integers, compare_molrecs
 from .bfs import BFS

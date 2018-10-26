@@ -4,6 +4,8 @@ import pprint
 
 import pytest
 
+import qcelemental as qcel
+
 from utils import *
 
 import qcdb
@@ -177,7 +179,7 @@ def test_recon_2e():
 
 
 def test_3():
-    sys = qcdb.molparse.from_string(eneyne)['qm']
+    sys = qcel.molparse.from_string(eneyne)['qm']
 
     res = intf_dftd3.run_dftd3_from_arrays(molrec=sys, name_hint='b3lyp', level_hint='d3bj')
     assert compare_strings('B3LYP-D3(BJ)', compute_key(res['options']), 'key')
