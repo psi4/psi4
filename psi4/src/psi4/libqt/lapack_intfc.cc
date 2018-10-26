@@ -110,8 +110,12 @@ extern int F_DGGQRF(int*, int*, int*, double*, int*, double*, double*, int*, dou
 extern int F_DGGRQF(int*, int*, int*, double*, int*, double*, double*, int*, double*, double*, int*, int*);
 extern int F_DGGSVD(char*, char*, char*, int*, int*, int*, int*, int*, double*, int*, double*, int*, double*, double*,
                     double*, int*, double*, int*, double*, int*, double*, int*, int*);
+extern int F_DGGSVD3(char*, char*, char*, int*, int*, int*, int*, int*, double*, int*, double*, int*, double*, double*,
+                     double*, int*, double*, int*, double*, int*, double*, int*, int*, int*);
 extern int F_DGGSVP(char*, char*, char*, int*, int*, int*, double*, int*, double*, int*, double*, double*, int*, int*,
                     double*, int*, double*, int*, double*, int*, int*, double*, double*, int*);
+extern int F_DGGSVP3(char*, char*, char*, int*, int*, int*, double*, int*, double*, int*, double*, double*, int*, int*,
+                     double*, int*, double*, int*, double*, int*, int*, double*, double*, int*, int*);
 extern int F_DGTCON(char*, int*, double*, double*, double*, double*, int*, double*, double*, double*, int*, int*);
 extern int F_DGTRFS(char*, int*, int*, double*, double*, double*, double*, double*, double*, double*, int*, double*,
                     int*, double*, int*, double*, double*, double*, int*, int*);
@@ -6468,6 +6472,15 @@ int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* 
     return info;
 }
 
+int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
+              int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
+              double* work, int lwork, int* iwork) {
+    int info;
+    ::F_DGGSVD3(&jobu, &jobv, &jobq, &m, &n, &p, k, l, a, &lda, b, &ldb, alpha, beta, u, &ldu, v, &ldv, q, &ldq, work,
+                &lwork, iwork, &info);
+    return info;
+}
+
 /**
  *  Purpose
  *  =======
@@ -6605,6 +6618,15 @@ int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, in
     int info;
     ::F_DGGSVP(&jobu, &jobv, &jobq, &m, &p, &n, a, &lda, b, &ldb, &tola, &tolb, k, l, u, &ldu, v, &ldv, q, &ldq, iwork,
                tau, work, &info);
+    return info;
+}
+
+int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
+              double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
+              double* tau, double* work, int lwork) {
+    int info;
+    ::F_DGGSVP3(&jobu, &jobv, &jobq, &m, &p, &n, a, &lda, b, &ldb, &tola, &tolb, k, l, u, &ldu, v, &ldv, q, &ldq, iwork,
+                tau, work, &lwork, &info);
     return info;
 }
 
