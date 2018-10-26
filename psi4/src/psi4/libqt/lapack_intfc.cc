@@ -3819,7 +3819,8 @@ int C_DGEQP3(int m, int n, double* a, int lda, int* jpvt, double* tau, double* w
  **/
 int C_DGEQPF(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work) {
     int info;
-    ::F_DGEQPF(&m, &n, a, &lda, jpvt, tau, work, &info);
+    int lwork = 3 * n;
+    ::F_DGEQP3(&m, &n, a, &lda, jpvt, tau, work, &lwork, &info);
     return info;
 }
 
