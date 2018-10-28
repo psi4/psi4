@@ -72,6 +72,9 @@ class Molecule(LibmintsMolecule):
                  fragment_multiplicities=None,
                  molecular_charge=None,
                  molecular_multiplicity=None,
+                 comment=None,
+                 provenance=None,
+                 #connectivity=None,
                  enable_qm=True,
                  enable_efp=True,
                  missing_enabled_return_qm='none',
@@ -125,6 +128,9 @@ class Molecule(LibmintsMolecule):
                     fragment_multiplicities=fragment_multiplicities,
                     molecular_charge=molecular_charge,
                     molecular_multiplicity=molecular_multiplicity,
+                    comment=comment,
+                    provenance=provenance,
+                    #connectivity=connectivity,
                     domain='qm',
                     missing_enabled_return=missing_enabled_return,
                     tooclose=tooclose,
@@ -1161,6 +1167,9 @@ class Molecule(LibmintsMolecule):
                     fragment_multiplicities=None,
                     molecular_charge=None,
                     molecular_multiplicity=None,
+                    comment=None,
+                    provenance=None,
+                    #connectivity=None,
                     missing_enabled_return='error',
                     tooclose=0.1,
                     zero_ghost_fragments=False,
@@ -1208,6 +1217,9 @@ class Molecule(LibmintsMolecule):
             fragment_multiplicities=fragment_multiplicities,
             molecular_charge=molecular_charge,
             molecular_multiplicity=molecular_multiplicity,
+            comment=comment,
+            provenance=provenance,
+            #connectivity=connectivity,
             domain='qm',
             missing_enabled_return=missing_enabled_return,
             tooclose=tooclose,
@@ -1349,6 +1361,12 @@ class Molecule(LibmintsMolecule):
         if self.name() not in ['', 'default']:
             molrec['name'] = self.name()
 
+        if self.comment() not in ['', 'default']:
+            molrec['comment'] = self.comment()
+
+        # qcdb does not add prov, so rely upon all qcdb.Mol creation happening in molparse for this to return valid value (not [])
+        molrec['provenance'] = copy.deepcopy(self.provenance())
+
         if force_units == 'Bohr':
             molrec['units'] = 'Bohr'
         elif force_units == 'Angstrom':
@@ -1436,6 +1454,7 @@ class Molecule(LibmintsMolecule):
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
+        validated_molrec['provenance'].pop()
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
 
         if not np_out:
@@ -1461,6 +1480,11 @@ class Molecule(LibmintsMolecule):
 
         if 'name' in molrec:
             self.set_name(molrec['name'])
+
+        if 'comment' in molrec:
+            self.set_comment(molrec['comment'])
+
+        self.set_provenance(copy.deepcopy(molrec['provenance']))
 
         self.set_units(molrec['units'])
         if 'input_units_to_au' in molrec:

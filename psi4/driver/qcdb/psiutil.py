@@ -186,12 +186,6 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
 
     thresh = 10 ** -tol if tol >= 1 else tol
 
-    # TEMP TODO just in case working from qcel head, not 0.1
-    if forgive is None:
-        forgive = ['provenance']
-    if 'provenance' not in forgive:
-        forgive.append('provenance')
-
     # Need to manipulate the dictionaries a bit, so hold values
     xptd = copy.deepcopy(expected)
     cptd = copy.deepcopy(computed)

@@ -87,6 +87,10 @@ class LibmintsMolecule():
 
         # Molecule (or fragment) name
         self.PYname = 'default'
+        # Molecule comment
+        self.PYcomment = ''
+        # Molecule origin
+        self.PYprovenance = []
         # The molecular charge
         self.PYmolecular_charge = 0
         # The multiplicity (defined as 2Ms + 1)
@@ -174,6 +178,42 @@ class LibmintsMolecule():
 
         """
         self.PYname = name
+
+    def comment(self):
+        """Get molecule comment
+
+        >>> print(H2OH2O.comment())
+        I am S22-2
+
+        """
+        return self.PYcomment
+
+    def set_comment(self, comment):
+        """Set molecule comment
+
+        >>> H2OH2O.set_comment('I am S22-2')
+
+        """
+        self.PYcomment = comment
+
+    def provenance(self):
+        """Get molecule provenance
+
+        >>> print(H2OH2O.provenance())
+        [{'creator': 'QCElemental',
+          'routine': 'qcelemental.molparse.from_arrays',
+          'version': 'v0.1.0a+8.g465f4e3'}]
+
+        """
+        return copy.deepcopy(self.PYprovenance)
+
+    def set_provenance(self, provenance):
+        """Set molecule provenance
+
+        >>> H2OH2O.set_provenance('water_dimer')
+
+        """
+        self.PYprovenance = provenance
 
     def natom(self):
         """Number of atoms

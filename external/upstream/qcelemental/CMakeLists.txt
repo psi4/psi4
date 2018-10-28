@@ -20,7 +20,7 @@ else()
     ExternalProject_Add(qcelemental_external
         BUILD_ALWAYS 1
         GIT_REPOSITORY https://github.com/MolSSI/QCElemental
-        GIT_TAG v0.1.2
+        GIT_TAG master  # TODO v0.1.0a
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build

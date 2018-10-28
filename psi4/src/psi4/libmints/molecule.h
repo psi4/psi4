@@ -98,10 +98,15 @@ class PSI_API Molecule {
 
     typedef std::vector<std::shared_ptr<CoordEntry>> EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
+    typedef std::vector<std::map<std::string, std::string>> Provenance;
 
    protected:
     /// Molecule (or fragment) name
     std::string name_;
+    /// Molecule comment
+    std::string comment_;
+    /// Molecule origin
+    Provenance provenance_;
     /// Atom info vector (no knowledge of dummy atoms)
     EntryVector atoms_;
     /// Atom info vector (includes dummy atoms)
@@ -228,6 +233,14 @@ class PSI_API Molecule {
     const std::string& basis_on_atom(int atom) const;
     /// Set molecule name
     void set_name(const std::string& _name) { name_ = _name; }
+    /// Get molecule comment
+    const std::string comment() const { return comment_; }
+    /// Set molecule comment
+    void set_comment(const std::string &_comment) { comment_ = _comment; }
+    /// Get molecule provenance
+    const Provenance provenance() const { return provenance_; }
+    /// Set molecule provenance
+    void set_provenance(const Provenance &_provenance) { provenance_ = _provenance; }
     /// Number of atoms
     int natom() const;
     /// Number of all atoms (includes dummies)
