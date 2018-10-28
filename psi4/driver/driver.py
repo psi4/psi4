@@ -868,17 +868,6 @@ def optimize(name, **kwargs):
         If a nested series of python functions is intended (see :ref:`sec:intercalls`),
         use keyword ``opt_func`` instead of ``func``.
 
-    :type mode: string
-    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
-
-        For a finite difference of energies optimization, indicates whether
-        the calculations required to complete the
-        optimization are to be run in one file (``'continuous'``) or are to be
-        farmed out in an embarrassingly parallel fashion
-        (``'sow'``/``'reap'``). For the latter, run an initial job with
-        ``'sow'`` and follow instructions in its output file. For maximum
-        flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
-
     :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: ``'gradient'`` || ``'energy'``
 
@@ -954,19 +943,15 @@ def optimize(name, **kwargs):
     >>> e, wfn = opt('mp5', return_wfn='yes')
     >>> wfn.gradient().print_out()
 
-    >>> # [3] Forced finite difference hf optimization run in
-    >>> #     embarrassingly parallel fashion
-    >>> optimize('hf', dertype='energy', mode='sow')
-
-    >>> # [4] Can automatically perform complete basis set extrapolations
+    >>> # [3] Can automatically perform complete basis set extrapolations
     >>> optimize('MP2/cc-pV([D,T]+d)Z')
 
-    >>> # [5] Can automatically perform delta corrections that include extrapolations
+    >>> # [4] Can automatically perform delta corrections that include extrapolations
     >>> # even with a user-defined extrapolation formula. See sample inputs named
     >>> # cbs-xtpl* for more examples of this input style
     >>> optimize("MP2/aug-cc-pv([d,t]+d)z + d:ccsd(t)/cc-pvdz", corl_scheme=myxtplfn_2)
 
-    >>> # [6] Get info like geometry, gradient, energy back after an
+    >>> # [5] Get info like geometry, gradient, energy back after an
     >>> #     optimization fails. Note that the energy and gradient
     >>> #     correspond to the last optimization cycle, whereas the
     >>> #     geometry (by default) is the anticipated *next* optimization step.
@@ -1009,11 +994,6 @@ def optimize(name, **kwargs):
     else:
         hessian_with_method = kwargs.get('hessian_with', lowername)
 
-    # are we in sow/reap mode?
-    opt_mode = kwargs.get('mode', 'continuous').lower()
-    if opt_mode not in ['continuous', 'sow', 'reap']:
-        raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
-
     optstash = p4util.OptionsState(
         ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
         ['FINDIF', 'HESSIAN_WRITE'],
@@ -1047,7 +1027,7 @@ def optimize(name, **kwargs):
 
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
-        if (n > 1) and (opt_mode == 'continuous') and (not core.get_option('SCF', 'GUESS_PERSIST')):
+        if (n > 1) and (not core.get_option('SCF', 'GUESS_PERSIST')):
             core.set_local_option('SCF', 'GUESS', 'READ')
 
         # Before computing gradient, save previous molecule and wavefunction if this is an IRC optimization
@@ -1069,21 +1049,7 @@ def optimize(name, **kwargs):
             step_coordinates.append(moleculeclone.geometry())
             step_gradients.append(G.clone())
 
-        # S/R: Quit after getting new displacements or if forming gradient fails
-        if opt_mode == 'sow':
-            return (0.0, None)
-        elif opt_mode == 'reap' and thisenergy == 0.0:
-            return (0.0, None)
-
         core.set_gradient(G)
-
-        # S/R: Move opt data file from last pass into namespace for this pass
-        if opt_mode == 'reap' and n != 0:
-            core.IOManager.shared_object().set_specific_retention(1, True)
-            core.IOManager.shared_object().set_specific_path(1, './')
-            if 'opt_datafile' in kwargs:
-                restartfile = kwargs.pop('opt_datafile')
-                shutil.copy(restartfile, p4util.get_psifile(1))
 
         # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
         # if opt_func.__name__ == 'complete_basis_set':
@@ -1133,13 +1099,6 @@ def optimize(name, **kwargs):
                 postcallback(lowername, wfn=wfn, **kwargs)
             core.clean()
 
-            # S/R: Clean up opt input file
-            if opt_mode == 'reap':
-                with open('OPT-master.in', 'wb') as fmaster:
-                    fmaster.write(
-                        '# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
-                    fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
-
             optstash.restore()
 
             if return_history:
@@ -1172,11 +1131,6 @@ def optimize(name, **kwargs):
 
         core.print_out('\n    Structure for next step:\n')
         moleculeclone.print_in_input_format()
-
-        # S/R: Preserve opt data file for next pass and switch modes to get new displacements
-        if opt_mode == 'reap':
-            kwargs['opt_datafile'] = p4util.get_psifile(1)
-            kwargs['mode'] = 'sow'
 
         n += 1
 
@@ -1429,16 +1383,6 @@ def frequency(name, **kwargs):
         If a nested series of python functions is intended (see :ref:`sec:intercalls`),
         use keyword ``freq_func`` instead of ``func``.
 
-    :type mode: string
-    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
-
-        For a finite difference of energies or gradients frequency, indicates
-        whether the calculations required to complete the frequency are to be run
-        in one file (``'continuous'``) or are to be farmed out in an
-        embarrassingly parallel fashion (``'sow'``/``'reap'``)/ For the latter,
-        run an initial job with ``'sow'`` and follow instructions in its output file.
-        For maximum flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
-
     :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
 
@@ -1491,21 +1435,12 @@ def frequency(name, **kwargs):
 
     return_wfn = kwargs.pop('return_wfn', False)
 
-    # are we in sow/reap mode?
-    freq_mode = kwargs.get('mode', 'continuous').lower()
-    if freq_mode not in ['continuous', 'sow', 'reap']:
-        raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
-
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
     # Compute the hessian
     H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
-
-    # S/R: Quit after getting new displacements
-    if freq_mode == 'sow':
-        return 0.0
 
     # Project final frequencies?
     translations_projection_sound, rotations_projection_sound = _energy_is_invariant(wfn.gradient())
