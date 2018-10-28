@@ -352,12 +352,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         "displacement_space": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
-        # TODO: Hand-coding schema information is bad. Fix this post-QCElemental.
-        "molecule": {
-            "schema_name": "qc_schema_input",
-            "schema_version": 1,
-            "molecule": mol.to_schema(dtype=1, units='Bohr')
-        },
+        "molecule": mol.to_schema(dtype=1, units='Bohr'),
         "displacements": {},
         "reference": {}
     }
