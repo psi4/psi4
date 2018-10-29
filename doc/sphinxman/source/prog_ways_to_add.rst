@@ -37,7 +37,7 @@ Easier and more rapid development
 
 Fully-featured electronic structure programs are large and complex.  However,
 the |PSIfour| ecosystem provides a path for easier and more rapid development
-of new features.  The eariest versions of |PSIfour| were written by merging
+of new features.  The earliest versions of |PSIfour| were written by merging
 individual executables that performed specific tasks into a unified C++
 executable.  By linking this C++ executable against the Python interpreter, the
 individual modules could be called in any sequence, enabling a very diverse
@@ -68,7 +68,7 @@ The :p4numpy:`Psi4NumPy <>` project [Smith:2018:3504]_ is the recommended
 mechanism for developing and prototyping new methods in Psi4.  Because
 :numpy:`NumPy <>` provides such a rich set of features for efficient linear
 algebra, Fourier transforms, and general tensor manipulations, a massive number
-of methods can be easily implemented very easily using that libary.  To
+of methods can be easily implemented very easily using that library.  To
 facilitate this workflow, |PSIfour| exports key quantities such as integrals,
 densities and molecular orbitals in NumPy format.  From this point, the
 programmer can simply call the appropriate |PSIfour| functions to compute the
@@ -85,13 +85,13 @@ Avoiding the need to modify Psi4, using plugins
 
 In the early days when |PSIfour| was still primarily a C++ code, development
 was very cumbersome due to a lengthy build process.  To expedite development, a
-plugin system was developed.  This plugin machinery allows develpers to access
+plugin system was developed.  This plugin machinery allows developers to access
 the classes defined in the innards of |PSIfour|, with only the small plugin
 code requiring recompilation during development.  The resulting lightweight
 code can be maintained and distributed independently of |PSIfour|, making this
 a good strategy for development, especially in cases where tighter integration
 of the new code with existing |PSIfour| machinery is required than that
-afforded by the Numpy based stratege outlined in the :ref:`sec:prog_psi4numpy`
+afforded by the Numpy based strategy outlined in the :ref:`sec:prog_psi4numpy`
 section.  For details about how to write these plugins, see the
 :ref:`sec:plugins` section.
 
@@ -135,6 +135,6 @@ differentiated.
 In SCF, we have a number of sources of external embedding potentials that could
 enter the calculation.  Allowing Python to handle only the details of driving
 the SCF iterations, such as external potentials and convergence acceleration
-methods, but defering to C++ to do the heavy lifting for building and
-diagonalizing the Fock matrix also takes advangate of the two languages'
+methods, but deferring to C++ to do the heavy lifting for building and
+diagonalizing the Fock matrix also takes advantage of the two languages'
 strengths and improves maintainability of the code.
