@@ -34,3 +34,7 @@
 Community Code of Conduct
 ===========================
 
+The |PSIfour| code has evolved in an environment that strongly encourages
+teamwork and inclusivity.  The conduct expected from all contributors have been
+codified in :source:`CODE_OF_CONDUCT.md`, to help us maintain this vibrant
+and productive atmosphere.

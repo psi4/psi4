@@ -124,3 +124,11 @@ Note that users can supply MiB, GB, bytes, or whatever; this guideline is for ou
         outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
                         (required *  8 / (1024 * 1024 * 1024.0)),
 
+Code format
+-----------
+
+The format of the C++ source and headers follows the style prescribed in
+:source:`.clang-format`.  To enforce this style on all files in the current
+directory, simply run ::
+
+    clang-format -i *.h *.cc

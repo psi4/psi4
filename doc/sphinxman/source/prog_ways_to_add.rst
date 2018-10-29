@@ -91,9 +91,9 @@ code requiring recompilation during development.  The resulting lightweight
 code can be maintained and distributed independently of |PSIfour|, making this
 a good strategy for development, especially in cases where tighter integration
 of the new code with existing |PSIfour| machinery is required than that
-afforded by the Numpy based stratege outlined in the :ref:`sec:prog_psi4numpy`.
-For details about how to write these plugins, see the :ref:`sec:plugins`
-section.
+afforded by the Numpy based stratege outlined in the :ref:`sec:prog_psi4numpy`
+section.  For details about how to write these plugins, see the
+:ref:`sec:plugins` section.
 
 .. _`sec:prog_fullintegration`:
 
@@ -117,11 +117,11 @@ are a number of tools in |PSIfour| already to perform tasks like these that are
 required, *e.g.*, for cluster.  In this case, a good design would be to write a
 simple piece of code in the C++ layer that performs the matrix operation on a
 given input, using the I/O routines available in |PSIfour| and the parallelism
-afforded by OpenMP, and to make that code available to the front end **TODO
-link to details of this**.  The Python layer could then be responsible for
-obtaining the input data and calling this C++ code to do the manipulations,
-allowing each language layer to handle the subset of the work that caters to
-their individual strengths.
+afforded by OpenMP, and to make that code available to the front end as
+described in :ref:`sec:prog_tour-exposing`.  The Python layer could then be
+responsible for obtaining the input data and calling this C++ code to do the
+manipulations, allowing each language layer to handle the subset of the work
+that caters to their individual strengths.
 
 A number of concrete examples of this workflow exist in the code already.  For
 finite difference computations of energy derivatives, the logic to determine

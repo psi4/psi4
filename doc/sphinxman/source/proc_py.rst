@@ -38,7 +38,7 @@ Adding Methods to Driver
 
 This is concerned at present with normal methods added first to the
 procedures table in driver.py that associates method names with functions
-to run them located in proc.py .
+to run them located in :source:`psi4/driver/procrouting/proc.py`.
 
 The function should start with a declaration, as below. ``methodname`` is
 never seen by users, so it's good to be specific; if there's lots of
@@ -54,7 +54,8 @@ The function must always take as arguments ``(name, **kwargs)``. ::
 If the function needs to test the identity of ``name`` several times, it
 can be convenient to predefine the lowercase version of the variable. The
 case of all other py-side options (in kwargs) has already been handled by
-:py:func:`~psi4.energy()`, etc. in driver.py and need not be repeated here. ::
+:py:func:`~psi4.energy()`, etc. in :source:`psi4/driver/driver.py` and need not
+be repeated here. ::
 
     # include if convenient
     lowername = name.lower()

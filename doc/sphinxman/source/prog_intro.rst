@@ -37,5 +37,4 @@ Introduction to Programming in |PSIfour|
    prog_conduct
    prog_overview 
    prog_setup
-   prog_tour
    prog_help 

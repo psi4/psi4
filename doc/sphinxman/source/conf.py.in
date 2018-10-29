@@ -389,6 +389,7 @@ rst_prolog = """
 #   :alt: Psi4 Project Logo
 
 extlinks = {'p4numpy' : ('https://github.com/psi4/psi4numpy/', 'Psi4Numpy'),
+            'pybind11' : ('https://github.com/pybind/pybind11', 'PyBind11'),
             'numpy' : ('http://www.numpy.org/', 'Numpy'),
             'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'),
             'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', ''),
