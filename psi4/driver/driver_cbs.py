@@ -1984,6 +1984,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['treatment'] = "scf"
     else:
         # _validate_cbs_inputs will produce scf stage automatically
+        stage = {}
         stage['wfn'] = method_list[0]
         stage['basis'] = basis_list[0]
         if 'corl_scheme' in kwargs:
