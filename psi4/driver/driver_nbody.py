@@ -44,7 +44,7 @@ from psi4.driver import driver_nbody_helper
 
 def nCr(n, r):
     f = math.factorial
-    return f(n) / f(r) / f(n - r)
+    return f(n) // f(r) // f(n - r)
 
 
 ### Begin CBS gufunc data
@@ -181,7 +181,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         otherwise returns interaction data.
 
     :type levels: dict
-    :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'} || {1: 2, 2: 'ccsd(t)', 3: 'mp2'}
+    :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'}`` || ``{1: 2, 2: 'ccsd(t)', 3: 'mp2'}`` || etc
 
         Dictionary of different levels of theory for different levels of expansion
         Note that method_string is not used in this case.
