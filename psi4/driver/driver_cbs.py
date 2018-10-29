@@ -917,7 +917,7 @@ def _get_default_xtpl(nbasis, xtpl_type):
         Extrapolation function to be used.
     """
 
-    if nbasis == 1:
+    if nbasis == 1 and xtpl_type in ["scf", "corl"]:
         return xtpl_highest_1
     elif xtpl_type == "scf":
         if nbasis == 2:
@@ -931,6 +931,8 @@ def _get_default_xtpl(nbasis, xtpl_type):
             return corl_xtpl_helgaker_2
         else:
             raise ValidationError("Wrong number of basis sets supplied to corl_xtpl: %d" % nbasis)
+    else:
+        raise ValidationError("Stage treatment must be 'corl' or 'scf', not '%s'" % xtpl_type)
 
 
 def _validate_cbs_inputs(cbs_metadata, molecule):
