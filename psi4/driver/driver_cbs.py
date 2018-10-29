@@ -116,6 +116,8 @@ def _expand_bracketed_basis(basisstring, molecule=None):
 
     if molecule is None:
         molecule = """\nH\nH 1 1.00\n"""
+    elif isinstance(molecule, core.Molecule):
+        molecule = qcdb.Molecule(molecule.to_dict())
 
     for basis in BSET:
         try:
