@@ -45,7 +45,7 @@ namespace psimrcc {
 extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_), ncols(ncols_), matrix(0) {
+MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_), ncols(ncols_), matrix(nullptr) {
     allocate2(double, matrix, nrows, ncols);
     zero();
 }
@@ -436,7 +436,7 @@ BlockMatrix* IndexMatrix::get_block_matrix(size_t index, int ref) {
     outfile->Printf("\n  Couldn't find element!");
 
     abort();
-    return 0;
+    return nullptr;
 }
 
 void IndexMatrix::print() {

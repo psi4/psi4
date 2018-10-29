@@ -61,7 +61,7 @@ int DPD::trans4_mat_irrep_shift31(dpdtrans4 *Trans, int buf_block) {
     rowtot = Trans->buf.params->coltot[buf_block ^ all_buf_irrep];
     coltot = Trans->buf.params->rowtot[buf_block];
     if (rowtot == 0 || coltot == 0)
-        data = 0;
+        data = nullptr;
     else
         data = Trans->matrix[buf_block][0];
 

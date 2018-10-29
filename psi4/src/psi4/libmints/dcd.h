@@ -75,22 +75,22 @@ class DCD {
      * @param pg the point group of the molecule, in bitwise representation
      */
     DCD(int pg) {
-        C1_operators_ = 0;
-        C2_z_operators_ = 0;
-        C2_y_operators_ = 0;
-        C2_x_operators_ = 0;
-        D2_operators_ = 0;
-        Ci_operators_ = 0;
-        Cs_xy_operators_ = 0;
-        C2h_z_operators_ = 0;
-        Cs_xz_operators_ = 0;
-        C2h_y_operators_ = 0;
-        C2v_x_operators_ = 0;
-        Cs_yz_operators_ = 0;
-        C2h_x_operators_ = 0;
-        C2v_y_operators_ = 0;
-        C2v_z_operators_ = 0;
-        D2h_operators_ = 0;
+        C1_operators_ = nullptr;
+        C2_z_operators_ = nullptr;
+        C2_y_operators_ = nullptr;
+        C2_x_operators_ = nullptr;
+        D2_operators_ = nullptr;
+        Ci_operators_ = nullptr;
+        Cs_xy_operators_ = nullptr;
+        C2h_z_operators_ = nullptr;
+        Cs_xz_operators_ = nullptr;
+        C2h_y_operators_ = nullptr;
+        C2v_x_operators_ = nullptr;
+        Cs_yz_operators_ = nullptr;
+        C2h_x_operators_ = nullptr;
+        C2v_y_operators_ = nullptr;
+        C2v_z_operators_ = nullptr;
+        D2h_operators_ = nullptr;
         if (pg == 0) {  // C1
             nsub_ = 1;
             subgroup_dimensions_ = new int[1];
@@ -1655,22 +1655,22 @@ class DCD {
     }
 
     ~DCD() {
-        if (C1_operators_ != 0) delete[] C1_operators_;
-        if (C2_z_operators_ != 0) delete[] C2_z_operators_;
-        if (C2_y_operators_ != 0) delete[] C2_y_operators_;
-        if (C2_x_operators_ != 0) delete[] C2_x_operators_;
-        if (D2_operators_ != 0) delete[] D2_operators_;
-        if (Ci_operators_ != 0) delete[] Ci_operators_;
-        if (Cs_xy_operators_ != 0) delete[] Cs_xy_operators_;
-        if (C2h_z_operators_ != 0) delete[] C2h_z_operators_;
-        if (Cs_xz_operators_ != 0) delete[] Cs_xz_operators_;
-        if (C2h_y_operators_ != 0) delete[] C2h_y_operators_;
-        if (C2v_x_operators_ != 0) delete[] C2v_x_operators_;
-        if (Cs_yz_operators_ != 0) delete[] Cs_yz_operators_;
-        if (C2h_x_operators_ != 0) delete[] C2h_x_operators_;
-        if (C2v_y_operators_ != 0) delete[] C2v_y_operators_;
-        if (C2v_z_operators_ != 0) delete[] C2v_z_operators_;
-        if (D2h_operators_ != 0) delete[] D2h_operators_;
+        if (C1_operators_ != nullptr) delete[] C1_operators_;
+        if (C2_z_operators_ != nullptr) delete[] C2_z_operators_;
+        if (C2_y_operators_ != nullptr) delete[] C2_y_operators_;
+        if (C2_x_operators_ != nullptr) delete[] C2_x_operators_;
+        if (D2_operators_ != nullptr) delete[] D2_operators_;
+        if (Ci_operators_ != nullptr) delete[] Ci_operators_;
+        if (Cs_xy_operators_ != nullptr) delete[] Cs_xy_operators_;
+        if (C2h_z_operators_ != nullptr) delete[] C2h_z_operators_;
+        if (Cs_xz_operators_ != nullptr) delete[] Cs_xz_operators_;
+        if (C2h_y_operators_ != nullptr) delete[] C2h_y_operators_;
+        if (C2v_x_operators_ != nullptr) delete[] C2v_x_operators_;
+        if (Cs_yz_operators_ != nullptr) delete[] Cs_yz_operators_;
+        if (C2h_x_operators_ != nullptr) delete[] C2h_x_operators_;
+        if (C2v_y_operators_ != nullptr) delete[] C2v_y_operators_;
+        if (C2v_z_operators_ != nullptr) delete[] C2v_z_operators_;
+        if (D2h_operators_ != nullptr) delete[] D2h_operators_;
 
         for (int n = 0; n < nsub_; ++n) delete[] gng_[n];
         delete[] gng_;

@@ -124,16 +124,16 @@ class ObaraSaikaTwoCenterVIRecursion {
     /// Returns the potential integral 3D matrix
     double ***vi() const { return vi_; }
 
-    virtual double ***vx() const { return 0; }
-    virtual double ***vy() const { return 0; }
-    virtual double ***vz() const { return 0; }
+    virtual double ***vx() const { return nullptr; }
+    virtual double ***vy() const { return nullptr; }
+    virtual double ***vz() const { return nullptr; }
 
-    virtual double ***vxx() const { return 0; }
-    virtual double ***vxy() const { return 0; }
-    virtual double ***vxz() const { return 0; }
-    virtual double ***vyy() const { return 0; }
-    virtual double ***vyz() const { return 0; }
-    virtual double ***vzz() const { return 0; }
+    virtual double ***vxx() const { return nullptr; }
+    virtual double ***vxy() const { return nullptr; }
+    virtual double ***vxz() const { return nullptr; }
+    virtual double ***vyy() const { return nullptr; }
+    virtual double ***vyz() const { return nullptr; }
+    virtual double ***vzz() const { return nullptr; }
 
     /// Computes the potential integral 3D matrix using the data provided.
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);

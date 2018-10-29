@@ -66,17 +66,17 @@
 
 using namespace psi;
 
-ShellRotation::ShellRotation(int n) : n_(n), am_(0), r_(0) {
+ShellRotation::ShellRotation(int n) : n_(n), am_(0), r_(nullptr) {
     if (n_) {
         r_ = new double*[n_];
         for (int i = 0; i < n_; ++i) r_[i] = new double[n_];
     }
 }
 
-ShellRotation::ShellRotation(const ShellRotation& other) : n_(0), am_(0), r_(0) { *this = other; }
+ShellRotation::ShellRotation(const ShellRotation& other) : n_(0), am_(0), r_(nullptr) { *this = other; }
 
 ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory* ints, int pure)
-    : n_(0), am_(0), r_(0) {
+    : n_(0), am_(0), r_(nullptr) {
     if (a > 0 && pure)
         init_pure(a, so, ints);
     else
@@ -108,7 +108,7 @@ void ShellRotation::done() {
             if (r_[i]) delete[] r_[i];
         }
         delete[] r_;
-        r_ = 0;
+        r_ = nullptr;
     }
     n_ = 0;
 }

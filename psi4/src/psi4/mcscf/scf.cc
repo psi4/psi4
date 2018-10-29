@@ -76,9 +76,9 @@ void SCF::startup() {
     allocate1(int, pair_offset, nirreps);
     allocate2(int, pair, nso, nso);
     allocate2(int, pair_sym, nso, nso);
-    pairs = 0;
-    PK = 0;
-    K = 0;
+    pairs = nullptr;
+    PK = nullptr;
+    K = nullptr;
 
     if (options_.get_str("REFERENCE") == "RHF") {
         reference = rhf;
