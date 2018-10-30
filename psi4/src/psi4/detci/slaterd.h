@@ -58,7 +58,7 @@
 #ifndef _psi_src_bin_detci_slaterd_h
 #define _psi_src_bin_detci_slaterd_h
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 
 namespace psi {

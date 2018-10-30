@@ -37,9 +37,9 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psifiles.h"
 
-#include <math.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cmath>
+#include <cctype>
+#include <cstdio>
 
 using namespace psi;
 

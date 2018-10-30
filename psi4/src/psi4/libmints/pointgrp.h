@@ -83,9 +83,9 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
 
-#include <string.h>
+#include <cstring>
 #include <cstdio>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <map>
 

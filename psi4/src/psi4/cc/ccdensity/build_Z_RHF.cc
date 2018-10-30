@@ -30,11 +30,11 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <stdlib.h>
+#include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
-#include <math.h>
+#include <cmath>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

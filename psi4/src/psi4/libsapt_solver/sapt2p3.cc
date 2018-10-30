@@ -28,7 +28,7 @@
 
 #include "sapt2p3.h"
 #include "psi4/physconst.h"
-#include <math.h>
+#include <cmath>
 
 namespace psi {
 namespace sapt {

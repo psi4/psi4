@@ -33,7 +33,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/dimension.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <vector>
 #include <array>
 #include <memory>

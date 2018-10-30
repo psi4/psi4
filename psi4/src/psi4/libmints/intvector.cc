@@ -27,7 +27,7 @@
  */
 
 #include <cstdlib>
-#include <string.h>
+#include <cstring>
 #include "psi4/libqt/qt.h"
 #include "matrix.h"
 #include "vector.h"

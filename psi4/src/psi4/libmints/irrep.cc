@@ -78,7 +78,7 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace psi;
 

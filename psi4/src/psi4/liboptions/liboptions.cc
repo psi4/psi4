@@ -36,7 +36,7 @@
 #include <iomanip>
 #include <sstream>
 #include <numeric>
-#include <assert.h>
+#include <cassert>
 
 #include "liboptions.h"
 #include "liboptions_python.h"

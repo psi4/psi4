@@ -30,9 +30,9 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <stdio.h>
+#include <cstdio>
 #include "psi4/libdpd/dpd.h"
-#include <math.h>
+#include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.h"

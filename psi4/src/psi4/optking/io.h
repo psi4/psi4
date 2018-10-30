@@ -36,7 +36,7 @@
 
 #include "package.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 namespace opt {
 

@@ -36,7 +36,7 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS

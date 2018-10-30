@@ -33,7 +33,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 
 #if defined(__GNUC__) || (defined(__ICC) && (__ICC >= 600))
 #define PSI4_CURRENT_FUNCTION __PRETTY_FUNCTION__

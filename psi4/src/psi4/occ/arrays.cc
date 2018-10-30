@@ -34,7 +34,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
 using namespace psi;

@@ -69,7 +69,7 @@ static int SYSTEM_TRUNCATE(const char *path, off_t length) {
 #define PATH_SEPARATOR "/"
 #endif
 #include <sys/stat.h>
-#include <limits.h>
+#include <climits>
 
 namespace psi {
 namespace filesystem {

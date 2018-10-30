@@ -34,7 +34,7 @@
 
 #include <map>
 #include <cstdio>
-#include <stdint.h>
+#include <cstdint>
 
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
