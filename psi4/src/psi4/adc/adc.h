@@ -65,8 +65,8 @@ struct pole {
 class ADCWfn : public Wavefunction {
    public:
     ADCWfn(SharedWavefunction ref_wfn, Options &options);
-    ~ADCWfn();
-    double compute_energy();
+    ~ADCWfn() override;
+    double compute_energy() override;
 
    protected:
     void init();

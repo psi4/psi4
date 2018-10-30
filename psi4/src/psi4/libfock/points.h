@@ -122,7 +122,7 @@ public:
     // => Constructors <= //
 
     PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
-    virtual ~PointFunctions();
+    ~PointFunctions() override;
 
     // => Setters <= //
     void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
@@ -178,7 +178,7 @@ protected:
     /// Build temporary work arrays
     void build_temps();
     /// Allocate registers
-    void allocate();
+    void allocate() override;
 
     // => Orbital Collocation <= //
 
@@ -189,7 +189,7 @@ protected:
 
 public:
     RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
-    virtual ~RKSFunctions();
+    ~RKSFunctions() override;
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
@@ -231,7 +231,7 @@ protected:
     /// Build temporary work arrays
     void build_temps();
     /// Allocate registers
-    void allocate();
+    void allocate() override;
 
     // => Orbital Collocation <= //
 
@@ -246,7 +246,7 @@ protected:
 
 public:
     UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
-    virtual ~UKSFunctions();
+    ~UKSFunctions() override;
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);

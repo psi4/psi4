@@ -123,7 +123,7 @@ class TwoElectronInt : public TwoBodyAOInt {
     //! Constructor. Use an IntegralFactory to create this object.
     TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
 
-    virtual ~TwoElectronInt();
+    ~TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     size_t compute_shell(const AOShellCombinationsIterator&);
@@ -141,48 +141,48 @@ class TwoElectronInt : public TwoBodyAOInt {
 class ERI : public TwoElectronInt {
    public:
     ERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
-    virtual ~ERI();
+    ~ERI() override;
 };
 
 class F12 : public TwoElectronInt {
    public:
     F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
         bool use_shell_pairs = false);
-    virtual ~F12();
+    ~F12() override;
 };
 
 class F12Scaled : public TwoElectronInt {
    public:
     F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
               bool use_shell_pairs = false);
-    virtual ~F12Scaled();
+    ~F12Scaled() override;
 };
 
 class F12Squared : public TwoElectronInt {
    public:
     F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
                bool use_shell_pairs = false);
-    virtual ~F12Squared();
+    ~F12Squared() override;
 };
 
 class F12G12 : public TwoElectronInt {
    public:
     F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
            bool use_shell_pairs = false);
-    virtual ~F12G12();
+    ~F12G12() override;
 };
 
 class F12DoubleCommutator : public TwoElectronInt {
    public:
     F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
                         bool use_shell_pairs = false);
-    virtual ~F12DoubleCommutator();
+    ~F12DoubleCommutator() override;
 };
 
 class ErfERI : public TwoElectronInt {
    public:
     ErfERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
-    virtual ~ErfERI();
+    ~ErfERI() override;
 
     void setOmega(double omega);
 };
@@ -190,7 +190,7 @@ class ErfERI : public TwoElectronInt {
 class ErfComplementERI : public TwoElectronInt {
    public:
     ErfComplementERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
-    virtual ~ErfComplementERI();
+    ~ErfComplementERI() override;
 
     void setOmega(double omega);
 };

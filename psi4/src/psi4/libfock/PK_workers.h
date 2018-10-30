@@ -401,7 +401,7 @@ private:
     /// Internal buffer index
     size_t buf_;
 
-    virtual void initialize_task();
+    void initialize_task() override;
 
 public:
     /// Constructor
@@ -409,7 +409,7 @@ public:
                 std::shared_ptr<AIOHandler> AIO, int target_file,
                 size_t buffer_size, size_t nbuffer);
     /// Destructor
-    ~PKWrkrReord();
+    ~PKWrkrReord() override;
 
     /// Reallocating memory for wK
     /// We make sure the deallocated buffers have been written to disk
@@ -453,7 +453,7 @@ private:
     double* K_bufp_;
     double* wK_bufp_;
 
-    virtual void initialize_task();
+    void initialize_task() override;
 
 public:
     PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
@@ -506,7 +506,7 @@ public:
               size_t buf_size, std::vector< int > &bufforpq,
               std::shared_ptr<std::vector<size_t>> pos);
     /// Destructor
-    ~PKWrkrIWL();
+    ~PKWrkrIWL() override;
 
     /// Preparing for wK pre-sorting to file
     virtual void allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile);
@@ -524,12 +524,12 @@ public:
     /// Inserting a wK value back into a buffer
     virtual void insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l);
     /// Flushing all buffers for current worker
-    virtual void flush();
+    void flush() override;
     /// Flushing all wK buffers for current worker
-    virtual void flush_wK();
+    void flush_wK() override;
 
     /// Functions that are not used here
-    virtual void initialize_task() {
+    void initialize_task() override {
         throw PSIEXCEPTION("initialize_task not implemented for this class\n");
     }
     virtual void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind,

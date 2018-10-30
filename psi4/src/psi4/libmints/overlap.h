@@ -49,19 +49,19 @@ class OverlapInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     /// Computes the overlap between a given shell pair.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
-    void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&) override;
+    void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2) override;
+    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    public:
     /// Constructor, it assumes you are not computing derivatives by default
     OverlapInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
-    virtual ~OverlapInt();
+    ~OverlapInt() override;
 
     /// Does the method provide first derivatives?
-    bool has_deriv1() { return true; }
+    bool has_deriv1() override { return true; }
     /// Does the method provide second derivatives?
-    bool has_deriv2() { return true; }
+    bool has_deriv2() override { return true; }
 };
 
 }  // namespace psi

@@ -49,11 +49,11 @@ class CdSalcList;
  */
 class PotentialInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&) override;
     /// Computes integrals between two shell objects.
     void compute_pair_deriv1_no_charge_term(const GaussianShell&, const GaussianShell&);
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&);
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
+    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    protected:
     /// Recursion object that does the heavy lifting.
@@ -65,7 +65,7 @@ class PotentialInt : public OneBodyAOInt {
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     PotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
-    virtual ~PotentialInt();
+    ~PotentialInt() override;
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix>& result);
@@ -86,7 +86,7 @@ class PotentialInt : public OneBodyAOInt {
     SharedMatrix charge_field() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
-    bool has_deriv1() { return true; }
+    bool has_deriv1() override { return true; }
 };
 
 class PotentialSOInt : public OneBodySOInt {

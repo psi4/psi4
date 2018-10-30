@@ -52,7 +52,7 @@ class CorrelationFactor : public IntegralParameters {
    public:
     CorrelationFactor(size_t nparam);
     CorrelationFactor(std::shared_ptr<Vector> coeff, std::shared_ptr<Vector> exponent);
-    virtual ~CorrelationFactor();
+    ~CorrelationFactor() override;
 
     virtual double slater_exponent() const { return 1.0; }
     void set_params(std::shared_ptr<Vector> coeff, std::shared_ptr<Vector> exponent);
@@ -65,7 +65,7 @@ class FittedSlaterCorrelationFactor : public CorrelationFactor {
     double slater_exponent_;
 
    public:
-    virtual double slater_exponent() const { return slater_exponent_; }
+    double slater_exponent() const override { return slater_exponent_; }
 
     FittedSlaterCorrelationFactor(double exponent);
     double exponent() { return slater_exponent_; }

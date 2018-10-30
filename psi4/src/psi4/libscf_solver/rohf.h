@@ -53,15 +53,15 @@ class ROHF : public HF {
     SharedMatrix moFb_;
 
     void form_initialF();
-    void form_initial_C();
-    double compute_initial_E();
-    virtual void prepare_canonical_orthogonalization();
-    void semicanonicalize();
+    void form_initial_C() override;
+    double compute_initial_E() override;
+    void prepare_canonical_orthogonalization() override;
+    void semicanonicalize() override;
 
     // Second-order convergence code
     void Hx(SharedMatrix x, SharedMatrix ret);
 
-    void format_guess();
+    void format_guess() override;
 
     void common_init();
 
@@ -69,26 +69,26 @@ class ROHF : public HF {
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
          std::shared_ptr<PSIO> psio);
-    virtual ~ROHF();
+    ~ROHF() override;
 
     SharedMatrix moFeff() const { return moFeff_; }
     SharedMatrix moFa() const { return moFa_; }
     SharedMatrix moFb() const { return moFb_; }
 
-    bool diis();
-    void save_density_and_energy();
-    double compute_orbital_gradient(bool save_diis, int max_diis_vectors);
+    bool diis() override;
+    void save_density_and_energy() override;
+    double compute_orbital_gradient(bool save_diis, int max_diis_vectors) override;
 
-    void form_C();
-    void form_D();
-    void form_F();
-    void form_G();
-    double compute_E();
-    void finalize();
+    void form_C() override;
+    void form_D() override;
+    void form_F() override;
+    void form_G() override;
+    double compute_E() override;
+    void finalize() override;
 
-    void damping_update(double);
-    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
-    bool stability_analysis();
+    void damping_update(double) override;
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+    bool stability_analysis() override;
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

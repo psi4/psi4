@@ -36,8 +36,8 @@ namespace sapt {
 
 class SAPT2p : public SAPT2 {
    private:
-    virtual void print_header();
-    virtual void print_results();
+    void print_header() override;
+    void print_results() override;
 
    protected:
     double e_disp21_;
@@ -134,11 +134,11 @@ class SAPT2p : public SAPT2 {
    public:
     SAPT2p(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
            std::shared_ptr<PSIO> psio);
-    virtual ~SAPT2p();
+    ~SAPT2p() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 
-    virtual void amplitudes();
+    void amplitudes() override;
 
     // PT Dispersion
 

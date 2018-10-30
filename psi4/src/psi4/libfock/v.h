@@ -163,17 +163,17 @@ public:
     RV(std::shared_ptr<SuperFunctional> functional,
         std::shared_ptr<BasisSet> primary,
         Options& options);
-    virtual ~RV();
+    ~RV() override;
 
-    virtual void initialize();
-    virtual void finalize();
+    void initialize() override;
+    void finalize() override;
 
     virtual void compute_V(std::vector<SharedMatrix> ret);
     virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
-    virtual SharedMatrix compute_gradient();
-    virtual SharedMatrix compute_hessian();
+    SharedMatrix compute_gradient() override;
+    SharedMatrix compute_hessian() override;
 
-    virtual void print_header() const;
+    void print_header() const override;
 };
 
 class UV : public VBase {
@@ -184,16 +184,16 @@ public:
     UV(std::shared_ptr<SuperFunctional> functional,
         std::shared_ptr<BasisSet> primary,
         Options& options);
-    virtual ~UV();
+    ~UV() override;
 
-    virtual void initialize();
-    virtual void finalize();
+    void initialize() override;
+    void finalize() override;
 
     virtual void compute_V(std::vector<SharedMatrix> ret);
     virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
-    virtual SharedMatrix compute_gradient();
+    SharedMatrix compute_gradient() override;
 
-    virtual void print_header() const;
+    void print_header() const override;
 };
 
 

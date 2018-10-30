@@ -50,25 +50,25 @@ class OOFP : public SIMPLE_COORDINATE {
 
     OOFP(int A_in, int B_in, int C_in, int D_in, bool freeze_in=false);
 
-    ~OOFP() { } // also calls ~SIMPLE_COORDINATE
+    ~OOFP() override { } // also calls ~SIMPLE_COORDINATE
 
-    double value(GeomType geom) const;
+    double value(GeomType geom) const override;
 
     // compute and return array of first derivative (B marix elements)
-    double ** DqDx(GeomType geom) const;
+    double ** DqDx(GeomType geom) const override;
 
     // compute and return array of second derivative (B' matrix elements)
-    double ** Dq2Dx2(GeomType geom) const;
+    double ** Dq2Dx2(GeomType geom) const override;
 
     void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
     void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q, 
       const double dq, const double new_q, int atom_offset=0) const;
-    bool operator==(const SIMPLE_COORDINATE & s2) const;
+    bool operator==(const SIMPLE_COORDINATE & s2) const override;
     std::string get_definition_string(int atom_offset=0) const;
 
-    void fix_oofp_near_180(GeomType geom);
+    void fix_oofp_near_180(GeomType geom) override;
 };
 
 }

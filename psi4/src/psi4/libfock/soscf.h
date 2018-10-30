@@ -284,13 +284,13 @@ public:
     DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFHelper> df, SharedMatrix AOTOSO,
             SharedMatrix H);
 
-    virtual ~DFSOMCSCF();
+    ~DFSOMCSCF() override;
 
 protected:
 
     std::shared_ptr<DFHelper> dfh_;
-    virtual void transform(bool approx_only);
-    virtual void set_act_MO();
+    void transform(bool approx_only) override;
+    void set_act_MO() override;
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 
@@ -311,14 +311,14 @@ public:
      */
     DiskSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<IntegralTransform> ints, SharedMatrix AOTOSO, SharedMatrix H);
 
-    virtual ~DiskSOMCSCF();
+    ~DiskSOMCSCF() override;
 
 protected:
 
     std::shared_ptr<IntegralTransform> ints_;
     std::shared_ptr<PSIO>  psio_;
-    virtual void transform(bool approx_only);
-    virtual void set_act_MO();
+    void transform(bool approx_only) override;
+    void set_act_MO() override;
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 
@@ -340,12 +340,12 @@ public:
      */
     IncoreSOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
-    virtual ~IncoreSOMCSCF();
+    ~IncoreSOMCSCF() override;
     virtual void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
 
 protected:
 
-    virtual void set_act_MO();
+    void set_act_MO() override;
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 

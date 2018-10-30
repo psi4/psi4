@@ -46,8 +46,8 @@ enum ReferenceType { rhf, rohf, uhf, tcscf };
 class SCF : public Wavefunction {
    public:
     explicit SCF(SharedWavefunction ref_wfn, Options& options_, std::shared_ptr<PSIO> psio);
-    ~SCF();
-    double compute_energy();
+    ~SCF() override;
+    double compute_energy() override;
 
    private:
     ReferenceType reference;

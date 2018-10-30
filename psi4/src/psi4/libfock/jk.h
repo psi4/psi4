@@ -536,13 +536,13 @@ class DiskJK : public JK {
     Options& options_;
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return false; }
+    bool C1() const override { return false; }
     /// Setup integrals, files, etc
-    virtual void preiterations();
+    void preiterations() override;
     /// Compute J/K for current C/D
-    virtual void compute_JK();
+    void compute_JK() override;
     /// Delete integrals, files, etc
-    virtual void postiterations();
+    void postiterations() override;
 
     /// Common initialization
     void common_init();
@@ -559,7 +559,7 @@ class DiskJK : public JK {
      */
     DiskJK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
-    virtual ~DiskJK();
+    ~DiskJK() override;
 
     // => Accessors <= //
 
@@ -567,7 +567,7 @@ class DiskJK : public JK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const;
+    void print_header() const override;
 };
 
 /**
@@ -593,13 +593,13 @@ class PSI_API PKJK : public JK {
     std::shared_ptr<pk::PKManager> PKmanager_;
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const;
+    bool C1() const override;
     /// Setup integrals, files, etc
-    virtual void preiterations();
+    void preiterations() override;
     /// Compute J/K for current C/D
-    virtual void compute_JK();
+    void compute_JK() override;
     /// Delete integrals, files, etc
-    virtual void postiterations();
+    void postiterations() override;
 
     /// Common initialization
     void common_init();
@@ -624,7 +624,7 @@ class PSI_API PKJK : public JK {
      */
     PKJK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
-    virtual ~PKJK();
+    ~PKJK() override;
 
     // => Accessors <= //
 
@@ -632,7 +632,7 @@ class PSI_API PKJK : public JK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const;
+    void print_header() const override;
 };
 
 /**
@@ -656,13 +656,13 @@ class DirectJK : public JK {
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return true; }
+    bool C1() const override { return true; }
     /// Setup integrals, files, etc
-    virtual void preiterations();
+    void preiterations() override;
     /// Compute J/K for current C/D
-    virtual void compute_JK();
+    void compute_JK() override;
     /// Delete integrals, files, etc
-    virtual void postiterations();
+    void postiterations() override;
 
     /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
@@ -683,7 +683,7 @@ class DirectJK : public JK {
      */
     DirectJK(std::shared_ptr<BasisSet> primary);
     /// Destructor
-    virtual ~DirectJK();
+    ~DirectJK() override;
 
     // => Knobs <= //
 
@@ -699,7 +699,7 @@ class DirectJK : public JK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const;
+    void print_header() const override;
 };
 
 /** \brief Derived class extending the JK object to GTFock
@@ -723,15 +723,15 @@ class GTFockJK : public JK {
 
    protected:
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return true; }
+    bool C1() const override { return true; }
     /// Setup integrals, files, etc
-    virtual void preiterations() {}
+    void preiterations() override {}
     /// Compute J/K for current C/D
-    virtual void compute_JK();
+    void compute_JK() override;
     /// Delete integrals, files, etc
-    virtual void postiterations() {}
+    void postiterations() override {}
     /// I don't fell the need to further clutter the output...
-    virtual void print_header() const {}
+    void print_header() const override {}
 
    public:
     /** \brief Your public interface to GTFock
@@ -806,13 +806,13 @@ class PSI_API DiskDFJK : public JK {
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return true; }
+    bool C1() const override { return true; }
     /// Setup integrals, files, etc
-    virtual void preiterations();
+    void preiterations() override;
     /// Compute J/K for current C/D
-    virtual void compute_JK();
+    void compute_JK() override;
     /// Delete integrals, files, etc
-    virtual void postiterations();
+    void postiterations() override;
 
     /// Common initialization
     void common_init();
@@ -856,7 +856,7 @@ class PSI_API DiskDFJK : public JK {
     DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
-    virtual ~DiskDFJK();
+    ~DiskDFJK() override;
 
     /**
      * Method to provide (ia|ia) integrals for
@@ -898,7 +898,7 @@ class PSI_API DiskDFJK : public JK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const;
+    void print_header() const override;
 };
 /**
  * Class CDJK
@@ -916,9 +916,9 @@ class CDJK : public DiskDFJK {
     virtual bool is_core() { return true; }
 
     // => J <= //
-    virtual void initialize_JK_core();
-    virtual void initialize_JK_disk();
-    virtual void manage_JK_core();
+    void initialize_JK_core() override;
+    void initialize_JK_disk() override;
+    void manage_JK_core() override;
 
     double cholesky_tolerance_;
 
@@ -928,7 +928,7 @@ class CDJK : public DiskDFJK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const;
+    void print_header() const override;
 
    public:
     // => Constructors < = //
@@ -944,7 +944,7 @@ class CDJK : public DiskDFJK {
     CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance);
 
     /// Destructor
-    virtual ~CDJK();
+    ~CDJK() override;
 };
 
 /**
@@ -974,14 +974,14 @@ class MemDFJK : public JK {
 
     int max_nocc() const;
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return true; }
+    bool C1() const override { return true; }
     /// Setup integrals, files, etc
     /// calls initialize(), JK_blocking
-    virtual void preiterations();
+    void preiterations() override;
     /// Compute J/K for current C/D
-    virtual void compute_JK();
+    void compute_JK() override;
     /// Delete integrals, files, etc
-    virtual void postiterations();
+    void postiterations() override;
 
     /// Common initialization
     void common_init();
@@ -997,7 +997,7 @@ class MemDFJK : public JK {
     MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
-    virtual ~MemDFJK();
+    ~MemDFJK() override;
     
     
     // => Knobs <= //
@@ -1024,7 +1024,7 @@ class MemDFJK : public JK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const;
+    void print_header() const override;
 
     /**
      * Returns the DFHelper object

@@ -43,9 +43,9 @@ namespace cclambda {
 class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
    public:
     CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
-    virtual ~CCLambdaWavefunction();
+    ~CCLambdaWavefunction() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    private:
     void init();

@@ -59,9 +59,9 @@ namespace dcft {
 class DCFTSolver : public Wavefunction {
    public:
     DCFTSolver(SharedWavefunction ref_wfn, Options &options);
-    ~DCFTSolver();
+    ~DCFTSolver() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    protected:
     IntegralTransform *_ints;

@@ -53,11 +53,11 @@ class TracelessQuadrupoleInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     // This the work horse function.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&) override;
 
    public:
     TracelessQuadrupoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    virtual ~TracelessQuadrupoleInt();
+    ~TracelessQuadrupoleInt() override;
 };
 
 }  // namespace psi

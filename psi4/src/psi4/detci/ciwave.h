@@ -74,9 +74,9 @@ class CIWavefunction : public Wavefunction {
    public:
     CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     explicit CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
-    virtual ~CIWavefunction();
+    ~CIWavefunction() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
     /// Simple accessors
     size_t ndet();

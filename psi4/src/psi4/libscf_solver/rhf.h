@@ -46,7 +46,7 @@ class RHF : public HF {
     SharedMatrix K_;
     SharedMatrix wK_;
 
-    double compute_initial_E();
+    double compute_initial_E() override;
 
     void common_init();
 
@@ -54,28 +54,28 @@ class RHF : public HF {
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
         std::shared_ptr<PSIO> psio);
-    virtual ~RHF();
+    ~RHF() override;
 
     virtual SharedMatrix Da() const;
 
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
 
-    bool diis();
-    void save_density_and_energy();
-    double compute_orbital_gradient(bool save_fock, int max_diis_vectors);
+    bool diis() override;
+    void save_density_and_energy() override;
+    double compute_orbital_gradient(bool save_fock, int max_diis_vectors) override;
 
-    void form_C();
-    void form_D();
-    void form_F();
-    void form_G();
-    void form_V();
-    double compute_E();
-    void finalize();
+    void form_C() override;
+    void form_D() override;
+    void form_F() override;
+    void form_G() override;
+    void form_V() override;
+    double compute_E() override;
+    void finalize() override;
 
-    void damping_update(double);
-    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
-    bool stability_analysis();
+    void damping_update(double) override;
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+    bool stability_analysis() override;
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
