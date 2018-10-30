@@ -560,6 +560,28 @@ funcs.append({
     "doi": '10.1021/jz201170d',
 })
 
+funcs.append({
+    "name": "wB97M-D3BJ",
+    "xc_functionals": {
+        "HYB_MGGA_XC_WB97M_V": {}
+    },
+    "dispersion": {
+        "nlc":False,
+        "type": "d3bj",
+        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n',
+        "params": {
+            's6': 1.000,
+            's8': 0.3908,
+            'a1': 0.5660,
+            'a2': 3.1280
+        },
+    },
+    "description": '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n'+
+                '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
+})
+
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
