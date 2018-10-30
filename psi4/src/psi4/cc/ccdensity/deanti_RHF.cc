@@ -40,7 +40,7 @@
 #define EXTERN
 #include "globals.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace psi {
 namespace ccdensity {

@@ -27,7 +27,7 @@
  */
 
 // Latest revision on April 38, 2013.
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
 #include <cmath>
 #include "psi4/libqt/qt.h"

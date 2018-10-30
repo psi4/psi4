@@ -32,11 +32,11 @@
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 #include <regex>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <limits.h>
+#include <climits>
 
 #include "libpsi4util.h"
 

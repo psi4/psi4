@@ -46,8 +46,8 @@
 #include <sstream>
 #include <cstdio>
 #include <limits>
-#include <ctype.h>
-#include <assert.h>
+#include <cctype>
+#include <cassert>
 
 #ifdef _OPENMP
 #include <omp.h>

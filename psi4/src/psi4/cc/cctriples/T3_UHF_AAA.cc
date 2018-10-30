@@ -103,10 +103,10 @@
 ** Modified to return disconnected triples, TDC, Feburary 2008
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"

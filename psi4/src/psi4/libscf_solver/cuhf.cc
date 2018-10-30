@@ -42,9 +42,9 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libdiis/diisentry.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 #include <algorithm>
 #include <vector>
 #include <utility>

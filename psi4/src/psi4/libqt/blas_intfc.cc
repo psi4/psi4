@@ -51,7 +51,7 @@
 */
 
 #include <cstdio>
-#include <limits.h>
+#include <climits>
 #include <cmath>
 
 #include "psi4/pragma.h"

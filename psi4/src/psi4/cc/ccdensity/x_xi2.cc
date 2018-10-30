@@ -32,7 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
-#include "math.h"
+#include <cmath>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

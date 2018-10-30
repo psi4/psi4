@@ -46,7 +46,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <vector>
