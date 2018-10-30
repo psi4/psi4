@@ -699,7 +699,7 @@ void DFFrozenNO::FourIndexIntegrals() {
         }
     }
     iwl->flush(1);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     free(Qmo);

@@ -569,7 +569,7 @@ void iwl_integrals(IWL *iwl, DPDFunctor &dpd, FockFunctor &fock) {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
 }
 
 }  // namespace psi

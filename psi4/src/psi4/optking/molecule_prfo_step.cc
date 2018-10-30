@@ -120,7 +120,7 @@ void MOLECULE::prfo_step() {
 
   // transform gradient
   double *f_q_Hevect_basis = init_array(Nintco);
-  opt_matrix_mult(H_evects, 0, &fq, 1, &f_q_Hevect_basis, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(H_evects, false, &fq, true, &f_q_Hevect_basis, true, Nintco, Nintco, 1, false);
   if (Opt_params.print_lvl >= 2) {
     oprintf_out("\tInternal forces in au,\n");
     oprint_array_out(fq, Nintco);
@@ -237,7 +237,7 @@ void MOLECULE::prfo_step() {
 
   // transform back into original basis.
   // write to old dq pointer ?
-  opt_matrix_mult(H_evects, 1, &rfo_step_Hevect_basis, 1, &dq, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(H_evects, true, &rfo_step_Hevect_basis, true, &dq, true, Nintco, Nintco, 1, false);
 
   if (Opt_params.print_lvl >= 2) {
     oprintf_out( "\nRFO step in original basis\n");

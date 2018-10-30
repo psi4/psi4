@@ -48,7 +48,7 @@ void OCCWave::trans_ints_rhf()
 /********************************************************************************************/
     ints->update_orbitals();
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
-    ints->set_keep_dpd_so_ints(1);
+    ints->set_keep_dpd_so_ints(true);
 
     // Trans (OO|OO)
     timer_on("Trans (OO|OO)");

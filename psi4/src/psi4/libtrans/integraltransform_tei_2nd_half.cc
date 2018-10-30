@@ -208,7 +208,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
     if (useIWL_) {
         iwl->flush(1);
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         // This closes the file too
         delete iwl;
     }
@@ -322,7 +322,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
         if (useIWL_) {
             iwl->flush(1);
-            iwl->set_keep_flag(1);
+            iwl->set_keep_flag(true);
             // This closes the file too
             delete iwl;
         }
@@ -443,7 +443,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
         if (useIWL_) {
             iwl->flush(1);
-            iwl->set_keep_flag(1);
+            iwl->set_keep_flag(true);
             // This closes the file too
             delete iwl;
         }

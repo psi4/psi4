@@ -112,8 +112,8 @@ class IRC_DATA {
 
     IRC_DATA() {
       sphere_step = 0;
-      go = 1;
-      in_min_range = 0;
+      go = true;
+      in_min_range = false;
       step_dist = 0;
       arc_dist = 0;
       line_dist = 0;

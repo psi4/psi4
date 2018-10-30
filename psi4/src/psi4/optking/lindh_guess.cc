@@ -263,7 +263,7 @@ in this set of internals. */
   //oprint_array_out(g_x,3*natom);
 
   double *temp_arr = init_array(Nintco);
-  opt_matrix_mult(B, 0, &g_x, 1, &temp_arr, 1, Nintco, 3*natom, 1, 0);
+  opt_matrix_mult(B, false, &g_x, true, &temp_arr, true, Nintco, 3*natom, 1, false);
   free_array(g_x);
 
   double **G = init_matrix(Nintco, Nintco);
@@ -272,11 +272,11 @@ in this set of internals. */
       for (int j=0; j<Nintco; ++j)
         G[i][j] += B[i][k] * B[j][k];
   free_matrix(B);
-  double **G_inv = symm_matrix_inv(G, Nintco, 1);
+  double **G_inv = symm_matrix_inv(G, Nintco, true);
   free_matrix(G);
 
   double *g_q = init_array(Nintco);
-  opt_matrix_mult(G_inv, 0, &temp_arr, 1, &g_q, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(G_inv, false, &temp_arr, true, &g_q, true, Nintco, Nintco, 1, false);
   free_matrix(G_inv);
   free_array(temp_arr);
   // Done computing g_q

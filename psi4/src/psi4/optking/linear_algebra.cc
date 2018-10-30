@@ -253,8 +253,8 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant) {
   double ** A_temp = init_matrix(dim, dim);
 
   // A^-1 = P^t D^-1 P
-  opt_matrix_mult(A_inv, 0, A_evects, 0, A_temp, 0, dim, dim, dim,0);
-  opt_matrix_mult(A_evects, 1, A_temp, 0, A_inv, 0, dim, dim, dim, 0);
+  opt_matrix_mult(A_inv, false, A_evects, false, A_temp, false, dim, dim, dim,false);
+  opt_matrix_mult(A_evects, true, A_temp, false, A_inv, false, dim, dim, dim, false);
 
   free_matrix(A_temp);
   free_array(evals);

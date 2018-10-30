@@ -163,7 +163,7 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
                 dpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {
@@ -313,7 +313,7 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 aaDpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {
@@ -361,7 +361,7 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 abDpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {
@@ -407,7 +407,7 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 bbDpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {

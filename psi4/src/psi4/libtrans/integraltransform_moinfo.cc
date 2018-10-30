@@ -46,7 +46,7 @@ void IntegralTransform::common_initialize() {
     abIntName_ = "";
     bbIntName_ = "";
 
-    keepHtInts_ = 0;
+    keepHtInts_ = false;
 
     nTriSo_ = nso_ * (nso_ + 1) / 2;
     nTriMo_ = nmo_ * (nmo_ + 1) / 2;
