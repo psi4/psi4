@@ -37,9 +37,9 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-void DPD::file2_cache_init(void) { dpd_main.file2_cache = nullptr; }
+void DPD::file2_cache_init() { dpd_main.file2_cache = nullptr; }
 
-void DPD::file2_cache_close(void) {
+void DPD::file2_cache_close() {
     int dpdnum;
     dpd_file2_cache_entry *this_entry, *next_entry;
     dpdfile2 Outfile;
@@ -83,7 +83,7 @@ dpd_file2_cache_entry *DPD::file2_cache_scan(int filenum, int irrep, int pnum, i
     return (this_entry);
 }
 
-dpd_file2_cache_entry *DPD::dpd_file2_cache_last(void) {
+dpd_file2_cache_entry *DPD::dpd_file2_cache_last() {
     dpd_file2_cache_entry *this_entry;
 
     this_entry = dpd_main.file2_cache;

@@ -677,7 +677,7 @@ void CIWavefunction::get_parameters(Options &options) {
 ** print_parameters(): Function prints the program's running parameters
 **   found in the Parameters structure.
 */
-void CIWavefunction::print_parameters(void) {
+void CIWavefunction::print_parameters() {
     int i;
 
     outfile->Printf("\n");
@@ -896,7 +896,7 @@ void CIWavefunction::print_parameters(void) {
 **   (i.e. fermi level, etc).
 **
 */
-void CIWavefunction::set_ras_parameters(void) {
+void CIWavefunction::set_ras_parameters() {
     int i, j, cnt;
     int errcod;
     int tot_expl_el, nras2alp, nras2bet, betsocc;
@@ -1291,7 +1291,7 @@ std::string _concat_dim(std::string label, size_t spacer1, Dimension dim, size_t
 **   (i.e. fermi level, etc).
 **
 */
-void CIWavefunction::print_ras_parameters(void) {
+void CIWavefunction::print_ras_parameters() {
     outfile->Printf("   ==> CI Orbital and Space information <==\n\n");
 
     // Print out any specific space info

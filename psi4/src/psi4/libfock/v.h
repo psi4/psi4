@@ -129,7 +129,7 @@ public:
 
     // Creates a collocation cache map based on stride
     void build_collocation_cache(size_t memory);
-    void clear_collocation_cache(void) { cache_map_.clear(); }
+    void clear_collocation_cache() { cache_map_.clear(); }
 
     // Set the D matrix, get it back if needed
     void set_D(std::vector<SharedMatrix> Dvec);

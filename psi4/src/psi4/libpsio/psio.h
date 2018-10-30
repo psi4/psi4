@@ -35,16 +35,16 @@
 
 namespace psi {
 
-int psio_init(void);
-int psio_ipv1_config(void);
-int psio_state(void);
-int psio_done(void);
+int psio_init();
+int psio_ipv1_config();
+int psio_state();
+int psio_done();
 void psio_error(size_t unit, size_t errval);
 int psio_open(size_t unit, int status);
 int psio_close(size_t unit, int keep);
-std::string psio_getpid(void);
+std::string psio_getpid();
 
-size_t psio_get_numvols_default(void);
+size_t psio_get_numvols_default();
 int psio_get_volpath_default(size_t volume, char **path);
 int psio_get_filename_default(char **name);
 PSI_API psio_address psio_get_address(psio_address start, size_t shift);

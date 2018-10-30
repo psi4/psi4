@@ -418,7 +418,7 @@ class PSI_API Options {
     void set_local_array_int(const std::string& module, const std::string& key, int val, DataType* entry);
     DataType* set_local_array_array(const std::string& module, const std::string& key, DataType* entry);
 
-    void clear(void);
+    void clear();
 
     bool exists_in_active(std::string key);
 

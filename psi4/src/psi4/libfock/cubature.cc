@@ -144,7 +144,7 @@ private:
     struct GridData {
         int order;
         int npoints;
-        MassPoint const *(*mkGridFn)(void);
+        MassPoint const *(*mkGridFn)();
         MassPoint const *grid;
     };
     static GridData grids_[];

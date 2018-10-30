@@ -49,7 +49,7 @@
 
 namespace psi {
 
-std::string PSIO::getpid(void) {
+std::string PSIO::getpid() {
     std::stringstream ss;
 
     if (psi::restart_id.empty()) {
@@ -60,7 +60,7 @@ std::string PSIO::getpid(void) {
     return ss.str();
 }
 
-std::string psio_getpid(void) {
+std::string psio_getpid() {
     std::stringstream ss;
 
     if (psi::restart_id.empty()) {

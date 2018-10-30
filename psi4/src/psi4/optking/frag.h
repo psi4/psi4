@@ -82,9 +82,9 @@ class FRAG {
   /** Description
     \returns number of atoms.
     */
-  int g_natom(void) const { return natom; };
+  int g_natom() const { return natom; };
 
-  void set_masses(void);
+  void set_masses();
 
   void print_geom(std::string psi_fp, FILE *qc_fp, const int id, bool print_mass = false);
   void print_geom_grad(std::string psi_fp, FILE *qc_fp, const int id, bool print_mass = false);
@@ -98,23 +98,23 @@ class FRAG {
 
   INTCO_TYPE get_simple_type(int simple_index);
 
-  void update_connectivity_by_distances(void);
-  void update_connectivity_by_bonds(void);
+  void update_connectivity_by_distances();
+  void update_connectivity_by_bonds();
 
   void print_connectivity(std::string psi_fp, FILE *qc_fp, const int id, const int offset = 0) const ;
 
   // add simple internals based on connectivity; return number added
-  int add_stre_by_connectivity(void);
-  int add_bend_by_connectivity(void);
-  int add_tors_by_connectivity(void);
-  int add_cartesians(void);
+  int add_stre_by_connectivity();
+  int add_bend_by_connectivity();
+  int add_tors_by_connectivity();
+  int add_cartesians();
 
-  int form_trivial_coord_combinations(void);
+  int form_trivial_coord_combinations();
   void add_trivial_coord_combination(int simple_id);
-  int form_delocalized_coord_combinations(void);
-  int form_natural_coord_combinations(void);
+  int form_delocalized_coord_combinations();
+  int form_natural_coord_combinations();
 
-  int add_simples_by_connectivity(void) {
+  int add_simples_by_connectivity() {
     int n;
     n  = add_stre_by_connectivity();
     n += add_bend_by_connectivity();
@@ -122,7 +122,7 @@ class FRAG {
     return n;
   }
 
-  int add_auxiliary_bonds(void);
+  int add_auxiliary_bonds();
 
   // add connectivity between two atoms; atom numbers are for fragment
   void connect(int i, int j) {
@@ -130,7 +130,7 @@ class FRAG {
   }
 
   // Compute B matrix for only this fragment
-  double ** compute_B(void) const ;
+  double ** compute_B() const ;
 
   // Compute B matrix. Use prevously allocated memory.  Offsets are ideal for molecule.
   void compute_B(double **B_in, int coord_offset, int atom_offset) const ;
@@ -153,20 +153,20 @@ class FRAG {
   void print_B(std::string psi_fp, FILE *qc_fp) const ;
 
   // check nearness to 180 and save value
-  void fix_tors_near_180(void);
+  void fix_tors_near_180();
 
   // check nearness to 180 and save value
-  void fix_oofp_near_180(void);
+  void fix_oofp_near_180();
 
   // Fix bend axes for consistency during displacments
-  void fix_bend_axes(void);
-  void unfix_bend_axes(void);
+  void fix_bend_axes();
+  void unfix_bend_axes();
 
   // check if interior angles of torsion are near 0 or linear
   //bool check_tors_for_bad_angles(void) const;
 
   // return number of intrafragment coordinates
-  int Ncoord(void) const { return coords.index.size(); };
+  int Ncoord() const { return coords.index.size(); };
 
   // The following 2 functions are only used by the B matrix testing routines.
   // return natom in definition of coord # coord_index
@@ -180,8 +180,8 @@ class FRAG {
   }
 
   // return array of atomic numbers
-  double *g_Z(void) const;
-  double *g_Z_pointer(void) { return Z; }
+  double *g_Z() const;
+  double *g_Z_pointer() { return Z; }
 
   //print s vectors to output file
   void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
@@ -190,7 +190,7 @@ class FRAG {
   }
 
   // Get all values.
-  double *coord_values(void) const;
+  double *coord_values() const;
   double *coord_values(GeomType geom) const;
 
   // Get one value.
@@ -210,15 +210,15 @@ class FRAG {
   // utility used by displace
   bool displace_util(double *dq, bool focus_on_constraints);
 
-  double ** g_geom_pointer(void) { return geom; };           // returns pointer
-  double ** g_geom(void) const;                              // returns a copy
-  GeomType g_geom_const_pointer(void) const { return geom;}; // returns const pointer
+  double ** g_geom_pointer() { return geom; };           // returns pointer
+  double ** g_geom() const;                              // returns a copy
+  GeomType g_geom_const_pointer() const { return geom;}; // returns const pointer
 
-  double ** g_grad(void);
-  double ** g_grad_pointer(void) {return grad;};
+  double ** g_grad();
+  double ** g_grad_pointer() {return grad;};
 
-  double * g_geom_array(void);
-  double * g_grad_array(void);
+  double * g_geom_array();
+  double * g_grad_array();
   void set_geom_array(double * geom_array_in);
   void set_geom(double ** geom_in);
   void set_grad(double **grad_in);
@@ -226,22 +226,22 @@ class FRAG {
   void print_geom(std::string psi_fp, FILE *qc_fp); // write cartesian geometry out for next step
   void print_geom_irc(std::string psi_fp, FILE *qc_fp); // write cartesian geometry out for next step
 
-  double ** H_guess(void);
+  double ** H_guess();
   // function to help with Lindh guess hessian
   double Lindh_rho(int A, int B, double RAB) const;
   // function to help with Lindh guess hessian - original constants
-  double **Lindh_guess(void);
-  bool **g_connectivity(void) const;
-  const bool * const * g_connectivity_pointer(void) const;
+  double **Lindh_guess();
+  bool **g_connectivity() const;
+  const bool * const * g_connectivity_pointer() const;
 
   bool read_coord(std::vector<std::string> & tokens, int first_atom_offset);
 
   // return matrix of constraints on coordinates
-  double ** compute_constraints(void) const;
+  double ** compute_constraints() const;
 
   // add any missing hydrogen bonds within the fragment
   // return number added
-  int add_hbonds(void);
+  int add_hbonds();
 
   void simple_add(SIMPLE_COORDINATE * i) {
     coords.simples.push_back(i);
@@ -250,12 +250,12 @@ class FRAG {
   double g_mass(int i) { return mass[i]; }
 
   // relating to frozen fragments
-  bool is_frozen(void) const { return frozen; }
-  void freeze(void)   { frozen = true; }
-  void unfreeze(void) { frozen = false; }
+  bool is_frozen() const { return frozen; }
+  void freeze()   { frozen = true; }
+  void unfreeze() { frozen = false; }
 
   // freeze coords within fragments
-  void freeze_coords(void);
+  void freeze_coords();
 
   /**
    * Compute center of mass of given geometry
@@ -264,7 +264,7 @@ class FRAG {
   /**
    * Compute center of mass of fragment geometry
    */
-  double *com(void) { return (com(geom)); }
+  double *com() { return (com(geom)); }
   /**
    * Compute intertia tensor of given geometry
    */
@@ -272,7 +272,7 @@ class FRAG {
   /**
    * Compute intertia tensor of fragment geometry
    */
-  double **inertia_tensor(void) { return (inertia_tensor(geom)); }
+  double **inertia_tensor() { return (inertia_tensor(geom)); }
   /**
    * Compute principal axes of given geometry
    */
@@ -319,7 +319,7 @@ class FRAG {
   void erase_combo_coord(int index) { coords.erase_combo(index); } ;
 
   /* Are any coordinates present that are not cartesians? */
-  bool is_noncart_present(void) const;
+  bool is_noncart_present() const;
 
 };
 

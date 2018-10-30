@@ -81,7 +81,7 @@ extern int dpd_close(int dpd_num) {
     return 0;
 }
 
-extern long int dpd_memfree(void) {
+extern long int dpd_memfree() {
     return dpd_main.memory - (dpd_main.memused - dpd_main.memcache + dpd_main.memlocked);
 }
 

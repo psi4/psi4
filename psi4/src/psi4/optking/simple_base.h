@@ -72,13 +72,13 @@ class SIMPLE_COORDINATE {
       free_int_array(s_atom);
     }
 
-    INTCO_TYPE g_type(void) const { return s_type; }
-    int g_natom(void) const { return s_natom; }
+    INTCO_TYPE g_type() const { return s_type; }
+    int g_natom() const { return s_natom; }
     int g_atom(int a) const { return s_atom[a]; }
 
-    bool is_frozen(void) { return s_frozen; }
-    void freeze(void)    { s_frozen = true; }
-    void unfreeze(void)  { s_frozen = false; }
+    bool is_frozen() { return s_frozen; }
+    void freeze()    { s_frozen = true; }
+    void unfreeze()  { s_frozen = false; }
 
     // do-nothing function overridden only by torsion class
     virtual void fix_tors_near_180(GeomType) { return; }
@@ -87,19 +87,19 @@ class SIMPLE_COORDINATE {
     virtual void fix_oofp_near_180(GeomType) { return; }
 
     // do-nothing function overridden by stretch class 
-    virtual bool is_hbond(void) const { return false; }
+    virtual bool is_hbond() const { return false; }
 
     // do-nothing function overridden by stretch class 
     virtual void set_hbond(bool) { printf("base_hbond"); return; }
 
     // do-nothing function overridden by stretch class 
-    virtual bool is_inverse_stre(void) const { return false; }
+    virtual bool is_inverse_stre() const { return false; }
 
     // do-nothing function overridden by bend class
-    virtual int g_bend_type(void) const { return -1; }
+    virtual int g_bend_type() const { return -1; }
 
     // do-nothing function overridden by cartesian class
-    virtual int g_xyz(void) const { return 0; }
+    virtual int g_xyz() const { return 0; }
 
     // each internal coordinate type must provide the following virtual functions:
 
@@ -139,10 +139,10 @@ class SIMPLE_COORDINATE {
       s_fixed_eq_val = val;
       s_has_fixed_eq_val = true;
     }
-    double fixed_eq_val(void) {
+    double fixed_eq_val() {
       return s_fixed_eq_val;
     }
-    bool has_fixed_eq_val(void) { return s_has_fixed_eq_val; }
+    bool has_fixed_eq_val() { return s_has_fixed_eq_val; }
 
 };
 

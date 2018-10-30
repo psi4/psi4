@@ -980,7 +980,7 @@ bool empty_parallel() {
 **
 ** \ingroup QT
 */
-void timer_init(void) {
+void timer_init() {
     omp_init_lock(&lock_timer);
     omp_set_lock(&lock_timer);
     extern time_t timer_start;
@@ -999,7 +999,7 @@ void timer_init(void) {
 **
 ** \ingroup QT
 */
-void timer_done(void) {
+void timer_done() {
     extern time_t timer_start, timer_end;
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;

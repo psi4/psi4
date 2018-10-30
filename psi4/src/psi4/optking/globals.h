@@ -54,7 +54,7 @@ namespace opt {
   EXTERN std::string psi_outfile;
   EXTERN FILE *qc_outfile;
 
-  int read_natoms(void);
+  int read_natoms();
 }
 
 

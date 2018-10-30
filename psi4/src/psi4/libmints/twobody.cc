@@ -90,12 +90,12 @@ TwoBodyAOInt *TwoBodyAOInt::clone() const {
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
 
-std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12(void) const { return blocks12_; }
+std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12() const { return blocks12_; }
 
-std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks34(void) const { return blocks34_; }
+std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks34() const { return blocks34_; }
 
 // Expected to be overridden by derived classes
-void TwoBodyAOInt::create_blocks(void) {
+void TwoBodyAOInt::create_blocks() {
     // Default implementation : do no blocking.
     // Each ShellPairBlock will only contain one shell pair
     blocks12_.clear();

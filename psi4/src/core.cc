@@ -90,7 +90,7 @@ extern std::map<std::string, plugin_info> plugins;
 
 namespace opt {
 psi::PsiReturnType optking(psi::Options&);
-void opt_clean(void);
+void opt_clean();
 }
 // Forward declare /src/bin/ methods
 namespace psi {

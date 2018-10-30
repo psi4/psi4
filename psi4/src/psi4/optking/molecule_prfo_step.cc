@@ -53,7 +53,7 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
   return (rfo_t * rfo_g + 0.5 * rfo_t * rfo_t * rfo_h)/(1 + rfo_t*rfo_t);
 }
 
-void MOLECULE::prfo_step(void) {
+void MOLECULE::prfo_step() {
   double **Horig = p_Opt_data->g_H_pointer();
   double *fq = p_Opt_data->g_forces_pointer();
   double *dq = p_Opt_data->g_dq_pointer();

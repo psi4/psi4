@@ -57,7 +57,7 @@ namespace detci {
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 #define TOL 1E-14
 
-void CIWavefunction::form_opdm(void) {
+void CIWavefunction::form_opdm() {
     // if we're trying to follow a root, figure out which one here
     // CDS help: Why is this here and where can we move it?
     if (Parameters_->follow_vec_num > 0) {
