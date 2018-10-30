@@ -194,7 +194,7 @@ funcs.append({
     },
     "dispersion": {
         "type": "d3bj",
-        "vv10": False,
+        "nlc": False,
         "params": {
             's6': 1.0000,
             's8': 0.13840,
