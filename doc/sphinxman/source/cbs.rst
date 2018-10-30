@@ -43,37 +43,41 @@ Complete Basis Set
 
    cbs_eqn
 
-.. codeauthor:: Lori A. Burns and Daniel G. A. Smith
-.. sectionauthor:: Lori A. Burns
+.. codeauthor:: Lori A. Burns, Daniel G. A. Smith and Peter Kraus
+.. sectionauthor:: Lori A. Burns and Peter Kraus
 
 The :py:func:`psi4.cbs` function described below is
 powerful but complicated, requiring many options. For most common
 calculations, a shorthand can be accessed directly though
 :py:func:`psi4.energy`, :py:func:`psi4.gradient`, *etc.* For example,
 a MP2 single-point DT extrapolation can be accessed through the first item
-below more conveniently than the equivalent second item.
+below more conveniently than the equivalent second or third items.
 
 * ``energy('mp2/cc-pv[dt]z')``
 
 * ``energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z')``
 
+* ``energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z"}])``
+
 A CCSD(T) DT coupled-cluster correction atop a TQ MP2 extrapolation
-geometry optimization can be accessed through the first item below more
-conveniently than the equivalent second item.
+geometry optimization can also be accessed through the first item below more
+conveniently than the equivalent second and third items.
 
 * ``optimize('mp2/cc-pv[tq]z + D:ccsd(t)/cc-pvdz')``
 
 * ``optimize(cbs, corl_wfn='mp2', corl_basis='cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='cc-pvdz')``
 
+* ``optimize(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvqz"}, {"wfn": "mp2", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])``
+
 Many examples can be found at :srcsample:`cbs-xtpl-energy`,
 :srcsample:`cbs-xtpl-gradient`, :srcsample:`cbs-xtpl-opt`,
 :srcsample:`cbs-xtpl-freq`, :srcsample:`cbs-xtpl-func`,
-:srcsample:`cbs-xtpl-wrapper`.
+:srcsample:`cbs-xtpl-wrapper`, :srcsample:`cbs-xtpl-dict`.
 
 
-.. autofunction:: psi4.cbs(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, delta3_wfn, delta3_wfn_lesser, delta3_basis, delta3_scheme, delta4_wfn, delta4_wfn_lesser, delta4_basis, delta4_scheme, delta5_wfn, delta5_wfn_lesser, delta5_basis, delta5_scheme])
+.. autofunction:: psi4.cbs(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, cbs_metadata])
 
-.. note:: Presently (May 2016), only two of the five delta possibilities are active. Also, temporarily extrapolations are performed on differences of target and scf total energies, rather than on correlation energies directly. This doesn't affect the extrapolated values of the particular formulas defined here (though it does affect the betas, which are commented out), but it is sloppy and temporary and could affect any user-defined corl extrapolations.
+.. note:: As of October 2018, only two explicit ```deltaN_[wfn,basis,scheme]``` sets of options are active; if more delta functions are required, use the ```cbs_metadata``` interface. Also, temporarily extrapolations are performed on differences of target and scf total energies, rather than on correlation energies directly. This doesn't affect the extrapolated values of the particular formulas defined here (though it does affect the betas, which are commented out), but it is sloppy and temporary and could affect any user-defined corl extrapolations.
 
 .. index::
    pair: cbs(); output
@@ -163,9 +167,15 @@ Extrapolation Schemes
 
 .. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_2
 
+.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_truhlar_2
+
+.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_karton_2
+
 .. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_3
 
 .. autofunction:: psi4.driver.driver_cbs.corl_xtpl_helgaker_2
+
+.. autofunction:: psi4.driver.driver_cbs._get_default_xtpl
 
 Aliases
 ^^^^^^^
@@ -180,4 +190,7 @@ existing examples are below.
 .. autofunction:: psi4.driver.aliases.sherrill_gold_standard
 
 .. autofunction:: psi4.driver.aliases.allen_focal_point
+
+
+
 
