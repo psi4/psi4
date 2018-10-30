@@ -365,7 +365,7 @@ def py_psi_set_global_option_python(key, EXTERN):
     if (key != "EXTERN"):
         raise ValidationError("Options: set_global_option_python does not recognize keyword %s" % key)
 
-    if EXTERN == None:
+    if EXTERN is None:
         core.EXTERN = None
         core.set_global_option("EXTERN", False)
     elif isinstance(EXTERN, core.ExternalPotential):
