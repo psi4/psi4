@@ -581,6 +581,29 @@ funcs.append({
                 '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
 })
 
+funcs.append({
+    "name": "wB97X-D3BJ",
+    "xc_functionals": {
+        "HYB_GGA_XC_WB97X_V": {}
+    },
+    "dispersion": {
+        "nlc":False,
+        "type": "d3bj",
+        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n',
+        "params": {
+            's6': 1.000,
+            's8': 0.2641,
+            'a1': 0.0000,
+            'a2': 5.4959
+        },
+    },
+    "description": '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n'+
+                '    ????\n'
+})
+
+
+
 
 functional_list = {}
 for functional in funcs:
