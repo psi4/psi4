@@ -187,7 +187,7 @@ class PSI_API Molecule {
     Molecule(const Molecule& other);
     virtual ~Molecule();
 
-    Molecule clone(void) {
+    Molecule clone() {
         Molecule new_obj(*this);
         return new_obj;
     }
@@ -383,7 +383,7 @@ class PSI_API Molecule {
     Vector rotational_constants(double tol = FULL_PG_TOL) const;
 
     /// Print the rotational constants
-    void print_rotational_constants(void) const;
+    void print_rotational_constants() const;
     /// Return the rotor type
     RotorType rotor_type(double tol = FULL_PG_TOL) const;
 

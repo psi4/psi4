@@ -87,7 +87,7 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
   return (rfo_t * rfo_g + 0.5 * rfo_t * rfo_t * rfo_h)/(1 + rfo_t*rfo_t);
 }
 
-void MOLECULE::backstep(void) {
+void MOLECULE::backstep() {
 
   oprintf_out("\tRe-doing last optimization step - smaller this time.\n");
   oprintf_out("\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);

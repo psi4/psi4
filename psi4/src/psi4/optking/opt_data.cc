@@ -278,7 +278,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 #endif
 }
 
-void OPT_DATA::summary(void) const {
+void OPT_DATA::summary() const {
   double DE, *f, *dq, max_force, max_disp, rms_force, rms_disp;
 
   oprintf_out( "\n  ==> Optimization Summary <==\n\n");
@@ -647,7 +647,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
 }
 
 // write data to binary file
-void OPT_DATA::write(void) {
+void OPT_DATA::write() {
   opt_io_open(opt::OPT_IO_OPEN_OLD);
 
   oprintf_out("\tWriting optimization data to binary file.\n");
@@ -669,7 +669,7 @@ void OPT_DATA::write(void) {
 
 // Report on performance of last step
 // Eventually might have this function return false to reject a step
-bool OPT_DATA::previous_step_report(void) const {
+bool OPT_DATA::previous_step_report() const {
   oprintf_out(  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
 
   if (steps.size() == 1) {
@@ -723,7 +723,7 @@ bool OPT_DATA::previous_step_report(void) const {
 
 // These functions are a bit out of place, given that the trust radius is not
 // stored inside opt_data.
-void OPT_DATA::increase_trust_radius(void) const {
+void OPT_DATA::increase_trust_radius() const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double max = Opt_params.intrafragment_step_limit_max;
@@ -745,7 +745,7 @@ void OPT_DATA::increase_trust_radius(void) const {
   return;
 }
 
-void OPT_DATA::decrease_trust_radius(void) const {
+void OPT_DATA::decrease_trust_radius() const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double min = Opt_params.intrafragment_step_limit_min;
@@ -764,7 +764,7 @@ void OPT_DATA::decrease_trust_radius(void) const {
   return;
 }
 
-void OPT_DATA::reset_trust_radius(void) const {
+void OPT_DATA::reset_trust_radius() const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAG_STEP_LIMIT";
 

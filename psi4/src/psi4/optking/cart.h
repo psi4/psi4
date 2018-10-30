@@ -54,7 +54,7 @@ class CART : public SIMPLE_COORDINATE {
     // returned matrix is [atom][x,y,z]
     double **DqDx(GeomType geom) const;
 
-    int g_xyz(void) const { return xyz; }
+    int g_xyz() const { return xyz; }
 
     // compute and return array of second derivative (B' matrix elements)
     // returned matrix is order 3N cart by 3N cart

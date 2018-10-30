@@ -80,14 +80,14 @@ class STEP_DATA {
     void read(int istep, int Nintco, int Ncart);
 
     // functions to retrieve data
-    double *g_forces_pointer(void) const { return f_q; }
-    double *g_geom_const_pointer(void) const { return geom; }
-    double *g_dq_pointer(void) const { return dq; }
-    double g_energy(void) const { return energy; }
-    double g_DE_predicted(void) const { return DE_predicted; }
-    double g_dq_norm(void) const { return dq_norm; }
-    double g_dq_gradient(void) const { return dq_gradient; }
-    double g_dq_hessian(void) const { return dq_hessian; }
+    double *g_forces_pointer() const { return f_q; }
+    double *g_geom_const_pointer() const { return geom; }
+    double *g_dq_pointer() const { return dq; }
+    double g_energy() const { return energy; }
+    double g_DE_predicted() const { return DE_predicted; }
+    double g_dq_norm() const { return dq_norm; }
+    double g_dq_gradient() const { return dq_gradient; }
+    double g_dq_hessian() const { return dq_hessian; }
 };
 
 // data for an optimization
@@ -112,7 +112,7 @@ class OPT_DATA {
     ~OPT_DATA();
 
     // write data to binary file
-    void write(void);
+    void write();
 
     // save geometry and energy to current (last) step
     void save_geom_energy(double *geom_in, double energy_in) {
@@ -127,12 +127,12 @@ class OPT_DATA {
     }
 
     // return (pointers) to current-step data
-    int g_iteration(void) const { return iteration; }
-    double **g_H_pointer(void) { return H; }
-    double g_energy(void) const { return steps[steps.size()-1]->g_energy(); }
-    double *g_rfo_eigenvector_pointer(void) const { return rfo_eigenvector; }
+    int g_iteration() const { return iteration; }
+    double **g_H_pointer() { return H; }
+    double g_energy() const { return steps[steps.size()-1]->g_energy(); }
+    double *g_rfo_eigenvector_pointer() const { return rfo_eigenvector; }
     // return dimension of Hessian matrix
-    int Ncoord(void) const { return Nintco; }
+    int Ncoord() const { return Nintco; }
 
     void set_rfo_eigenvector(double *evect_in) {
       for (int i=0; i<Nintco; ++i)
@@ -140,21 +140,21 @@ class OPT_DATA {
     }
 
     // step data
-    double *g_forces_pointer(void) const {
+    double *g_forces_pointer() const {
       return steps[steps.size()-1]->g_forces_pointer();
     }
-    double *g_dq_pointer(void) const {
+    double *g_dq_pointer() const {
       return steps[steps.size()-1]->g_dq_pointer();
     }
     // return energy from the previous step (last entry - 1)
-    double g_last_energy(void) const {
+    double g_last_energy() const {
       if (steps.size() > 1)
         return steps[steps.size()-2]->g_energy();
       else return 0.0;
     }
 
     // return predicted energy change at the previous step (last entry - 1)
-    double g_last_DE_predicted(void) const {
+    double g_last_DE_predicted() const {
       if (steps.size() > 1)
         return steps[steps.size()-2]->g_DE_predicted();
       else return 0.0;
@@ -167,7 +167,7 @@ class OPT_DATA {
     double *g_forces_pointer(int i) const {
       return steps.at(i)->g_forces_pointer();
     }
-    double *g_last_forces_pointer(void) const {
+    double *g_last_forces_pointer() const {
       if (steps.size() > 1)
         return steps.at(steps.size()-2)->g_forces_pointer();
       else return nullptr;
@@ -181,7 +181,7 @@ class OPT_DATA {
     double g_dq_norm(int i) const {
       return steps.at(i)->g_dq_norm();
     }
-    double g_last_dq_norm(void) const {
+    double g_last_dq_norm() const {
       if (steps.size() > 1)
         return steps[steps.size()-2]->g_dq_norm();
       else return 0.0;
@@ -189,7 +189,7 @@ class OPT_DATA {
     double g_dq_gradient(int i) const {
       return steps.at(i)->g_dq_gradient();
     }
-    double g_last_dq_gradient(void) const {
+    double g_last_dq_gradient() const {
       if (steps.size() > 1)
         return steps[steps.size()-2]->g_dq_gradient();
       else return 0.0;
@@ -204,34 +204,34 @@ class OPT_DATA {
     bool conv_check(opt::MOLECULE &) const;
 
     // summarize optimization up til now
-    void summary(void) const;
+    void summary() const;
 
     // perform Hessian update
     void H_update(opt::MOLECULE & mol);
 
     // read in cartesian Hessian
-    double ** read_cartesian_H(void) const;
+    double ** read_cartesian_H() const;
 
     // return number of steps present
-    int nsteps(void) const { return steps.size(); }
+    int nsteps() const { return steps.size(); }
 
-    void decrement_iteration(void) { --iteration; }
+    void decrement_iteration() { --iteration; }
 
-    void increment_consecutive_backsteps(void) { ++consecutive_backsteps; }
-    void reset_consecutive_backsteps(void) {
+    void increment_consecutive_backsteps() { ++consecutive_backsteps; }
+    void reset_consecutive_backsteps() {
       previous_consecutive_backsteps = consecutive_backsteps; // only used in current memory; not saved
       consecutive_backsteps = 0;
     }
-    void restore_previous_consecutive_backsteps(void) {
+    void restore_previous_consecutive_backsteps() {
       consecutive_backsteps = previous_consecutive_backsteps; // for last second aborts after reset has been done
     }
-    int g_consecutive_backsteps(void) { return consecutive_backsteps; }
+    int g_consecutive_backsteps() { return consecutive_backsteps; }
 
-    int g_steps_since_last_H(void) const { return steps_since_last_H; }
-    void reset_steps_since_last_H(void) { steps_since_last_H = 0; }
-    void increment_steps_since_last_H(void) { ++steps_since_last_H; }
+    int g_steps_since_last_H() const { return steps_since_last_H; }
+    void reset_steps_since_last_H() { steps_since_last_H = 0; }
+    void increment_steps_since_last_H() { ++steps_since_last_H; }
 
-    void erase_last_step(void) { // free last step
+    void erase_last_step() { // free last step
       delete steps.back();
       steps.erase(steps.end()-1);
     }
@@ -239,12 +239,12 @@ class OPT_DATA {
       delete steps[i];
       steps.erase(steps.begin() + i);
     }
-    void reset_iteration_to_size(void) {
+    void reset_iteration_to_size() {
       iteration = steps.size() + 1;
     }
-    void increase_trust_radius(void) const;
-    void decrease_trust_radius(void) const;
-    void reset_trust_radius(void) const;
+    void increase_trust_radius() const;
+    void decrease_trust_radius() const;
+    void reset_trust_radius() const;
 
 };
 

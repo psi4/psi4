@@ -204,7 +204,7 @@ public:
     void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
-    size_t block_index(void) { return block_index_; }
+    size_t block_index() { return block_index_; }
 };
 
 class UKSFunctions : public PointFunctions {
@@ -262,7 +262,7 @@ public:
     void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
-    size_t block_index(void) { return block_index_; }
+    size_t block_index() { return block_index_; }
 };
 
 

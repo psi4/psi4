@@ -58,7 +58,7 @@ namespace detci {
 ** computation
 **
 */
-void CIWavefunction::compute_cc(void) { outfile->Printf("compute_cc: Not yet available\n"); }
+void CIWavefunction::compute_cc() { outfile->Printf("compute_cc: Not yet available\n"); }
 
 }  // namespace detci
 }  // namespace psi

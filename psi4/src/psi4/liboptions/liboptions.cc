@@ -684,7 +684,7 @@ DataType* Options::set_local_array_array(const std::string& module, const std::s
     return set_local_array_entry(module, key, new ArrayType(), entry);
 }
 
-void Options::clear(void) {
+void Options::clear() {
     globals_.clear();
     locals_.clear();
 }

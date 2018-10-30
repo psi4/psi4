@@ -429,29 +429,29 @@ class PSI_API DPD {
 
     int mat4_irrep_print(double **matrix, dpdparams4 *Params, int irrep, int my_irrep, std::string out_fname);
 
-    void file2_cache_init(void);
-    void file2_cache_close(void);
+    void file2_cache_init();
+    void file2_cache_close();
     void file2_cache_print(std::string out_fname);
     dpd_file2_cache_entry *file2_cache_scan(int filenum, int irrep, int pnum, int qnum, const char *label, int dpdnum);
-    dpd_file2_cache_entry *dpd_file2_cache_last(void);
+    dpd_file2_cache_entry *dpd_file2_cache_last();
     int file2_cache_add(dpdfile2 *File);
     int file2_cache_del(dpdfile2 *File);
-    int file4_cache_del_low(void);
+    int file4_cache_del_low();
     void file2_cache_dirty(dpdfile2 *File);
 
-    void file4_cache_init(void);
-    void file4_cache_close(void);
+    void file4_cache_init();
+    void file4_cache_close();
     void file4_cache_print(std::string out_fname);
-    void file4_cache_print_screen(void);
+    void file4_cache_print_screen();
     int file4_cache_get_priority(dpdfile4 *File);
 
     dpd_file4_cache_entry *file4_cache_scan(int filenum, int irrep, int pqnum, int rsnum, const char *label,
                                             int dpdnum);
-    dpd_file4_cache_entry *file4_cache_last(void);
+    dpd_file4_cache_entry *file4_cache_last();
     int file4_cache_add(dpdfile4 *File, size_t priority);
     int file4_cache_del(dpdfile4 *File);
-    dpd_file4_cache_entry *file4_cache_find_lru(void);
-    int file4_cache_del_lru(void);
+    dpd_file4_cache_entry *file4_cache_find_lru();
+    int file4_cache_del_lru();
     void file4_cache_dirty(dpdfile4 *File);
     void file4_cache_lock(dpdfile4 *File);
     void file4_cache_unlock(dpdfile4 *File);
@@ -523,7 +523,7 @@ extern PSI_API int dpd_set_default(int dpd_num);
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 extern int dpd_close(int dpd_num);
-extern long int PSI_API dpd_memfree(void);
+extern long int PSI_API dpd_memfree();
 extern void dpd_memset(long int memory);
 
 }  // Namespace psi

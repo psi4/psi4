@@ -74,7 +74,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
 
 // adds the coordinates connecting A2-A1-A0-B0-B1-B2
 // sets D_on to indicate which ones (of the 6) are unusued
-void INTERFRAG::add_coordinates_of_reference_pts(void) {
+void INTERFRAG::add_coordinates_of_reference_pts() {
   STRE *one_stre = nullptr;  // RAB
   BEND *one_bend = nullptr;  // theta_A
   BEND *one_bend2 = nullptr; // theta_B
@@ -281,7 +281,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
   }
 }
 
-int INTERFRAG::Ncoord(void) const {
+int INTERFRAG::Ncoord() const {
   int dim = 0;
   for (int i=0; i<6; ++i)
     if (D_on[i]) ++dim;
@@ -311,7 +311,7 @@ void INTERFRAG::freeze(int index_to_freeze) {
   inter_frag->coords.simples[index_to_freeze]->freeze();
 }
 
-void INTERFRAG::freeze(void) {
+void INTERFRAG::freeze() {
   inter_frag->freeze();
 }
 
@@ -323,7 +323,7 @@ bool INTERFRAG::is_frozen(int J) {
 }
 
 // are all interfragment modes frozen?
-bool INTERFRAG::is_frozen(void) {
+bool INTERFRAG::is_frozen() {
   return inter_frag->is_frozen();
 }
 
@@ -733,7 +733,7 @@ std::string INTERFRAG::get_coord_definition(int coord_index, int off_A, int off_
 }
 
 // Make the initial Hessian guess for interfragment coordinates
-double ** INTERFRAG::H_guess(void) {
+double ** INTERFRAG::H_guess() {
   double **H;
 
   // use formulas from Fischer et al - not designed for interfragment modes
@@ -784,7 +784,7 @@ double ** INTERFRAG::H_guess(void) {
 }
 
 // return matrix with 1's on diagonal for frozen coordinates
-double ** INTERFRAG::compute_constraints(void) const {
+double ** INTERFRAG::compute_constraints() const {
   double **C = init_matrix(Ncoord(), Ncoord());
   int cnt = 0;
   for (int i=0; i<6; ++i) {
@@ -796,7 +796,7 @@ double ** INTERFRAG::compute_constraints(void) const {
   return C;
 }
 
-int INTERFRAG::form_trivial_coord_combinations(void) {
+int INTERFRAG::form_trivial_coord_combinations() {
   inter_frag->coords.clear_combos();
   for (std::size_t s=0; s<inter_frag->coords.simples.size(); ++s) {
     std::vector<int> i1;

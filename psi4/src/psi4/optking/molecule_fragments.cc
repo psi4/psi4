@@ -67,7 +67,7 @@ using namespace v3d;
 //
 // If fragment_mode == MULTI, then this function splits one fragment into more
 // than one, according to the connectivity previously established for the fragment.
-void MOLECULE::fragmentize(void) {
+void MOLECULE::fragmentize() {
   int i, j, xyz;
 
   if (fragments.size() != 1) return;
@@ -289,7 +289,7 @@ void MOLECULE::fragmentize(void) {
 
 // add interfragment coordinates
 // for now, coordinates for fragments in order 1-2-3-
-void MOLECULE::add_interfragment(void) {
+void MOLECULE::add_interfragment() {
   int nA, nB;               // fragment natom
   const double * const * A; // fragment geometries
   const double * const * B;
@@ -531,7 +531,7 @@ void MOLECULE::add_interfragment(void) {
 // Check to see if displacement along any of the interfragment modes breaks
 // the symmetry of the molecule.  If so, freeze it.  This is a hack for now.
 // Will it work?  RAK 3-2012
-void MOLECULE::freeze_interfragment_asymm(void) {
+void MOLECULE::freeze_interfragment_asymm() {
   double **coord_orig = g_geom_2D();
   double disp_size = 0.1;
 

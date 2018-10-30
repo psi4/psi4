@@ -178,7 +178,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
 
 
 // See Gonzalez and Schlegel JCP 2154 (1989).
-void MOLECULE::irc_step(void)
+void MOLECULE::irc_step()
 {
   // Are we at the TS?  at_TS
   bool at_TS = !(p_irc_data->size());

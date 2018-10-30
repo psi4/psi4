@@ -146,7 +146,7 @@ class CIvect {
     void shift(double a, int tvec);
     void copy(SharedCIVector src, int tvec, int ovec);
     void divide(SharedCIVector denom, double min_val, int tvec, int ovec);
-    void zero(void);
+    void zero();
     double vdot(SharedCIVector b, int tvec, int ovec);
     double norm(int tvec);
 
@@ -163,8 +163,8 @@ class CIvect {
     int read(int tvec, int ibuf);
     int write(int tvec, int ibuf);
     void buf_lock(double *a);
-    void buf_unlock(void);
-    double *buf_malloc(void);
+    void buf_unlock();
+    double *buf_malloc();
     void set_nvect(int i);
 
     // Questionable functions and/or should be private
@@ -215,34 +215,34 @@ class CIvect {
     void civ_xeay(double a, CIvect &Y, int xvect, int yvect);
     void civ_xpeay(double a, CIvect &Y, int xvect, int yvect);
     void transp_block(int iblock, double **tmparr);
-    size_t get_max_blk_size(void);
-    double checknorm(void);
+    size_t get_max_blk_size();
+    double checknorm();
     void copy(CIvect &Src, int targetvec, int srcvec);
     void restart_gather(int ivec, int nvec, int nroot, double **alpha, double *buffer1, double *buffer2);
     void gather(int ivec, int nvec, int nroot, double **alpha, CIvect &C);
     void restart_reord_fp(int L);
-    void print_fptrs(void);
+    void print_fptrs();
     double calc_ssq(double *buffer1, double *buffer2, struct stringwr **alplist, struct stringwr **betlist,
                     int vec_num);
-    void h0block_buf_init(void);
+    void h0block_buf_init();
     void h0block_buf_ols(double *norm, double *ovrlap, double *c1norm, double E_est);
     void h0block_buf_precon(double *norm, int root);
     void h0block_gather_vec(int vecode);
     void h0block_gather_multivec(double *vec);
     int check_zero_block(int blocknum);
     void set_zero_block(int blocknum, int value);
-    void set_zero_blocks_all(void);
+    void set_zero_blocks_all();
     void copy_zero_blocks(CIvect &src);
-    void print_zero_blocks(void);
+    void print_zero_blocks();
     void scale_sigma(CIvect &Hd, CIvect &C, struct stringwr **alplist, struct stringwr **betlist, int i, double *buf1,
                      double *buf2);
-    int read_new_first_buf(void);
-    void write_new_first_buf(void);
+    int read_new_first_buf();
+    void write_new_first_buf();
     void set_new_first_buf(int nfb);
-    int read_num_vecs(void);
+    int read_num_vecs();
     void write_num_vecs(int nv);
-    void write_toc(void);
-    void civect_psio_debug(void);
+    void write_toc();
+    void civect_psio_debug();
     void pt_correction(struct stringwr **alplist, struct stringwr **betlist);
     double compute_follow_overlap(int troot, int ncoef, double *coef, int *Iac, int *Iaridx, int *Ibc, int *Ibridx);
 

@@ -59,7 +59,7 @@ void oprint_array_out(double *A, const int x);
 
 void oprint_array_out_precise(double *A, const int x);
 
-void offlush_out(void);
+void offlush_out();
 
 }
 

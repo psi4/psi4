@@ -71,7 +71,7 @@ public:
      */
      SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
-    virtual ~SOMCSCF(void);
+    virtual ~SOMCSCF();
 
     /**
      * Sets the amount of memory (in doubles) available to the program

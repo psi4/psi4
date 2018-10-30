@@ -80,8 +80,8 @@ void dirprd_block(double** A, double** B, int rows, int cols);
 int pople(double** A, double* x, int dimen, int num_vecs, double tolerance, std::string out_fname, int print_lvl);
 void mat_print(double** A, int rows, int cols, std::string out_fname);
 
-void timer_init(void);
-void timer_done(void);
+void timer_init();
+void timer_done();
 void timer_on(const std::string& key);
 void timer_off(const std::string& key);
 void parallel_timer_on(const std::string& key, int thread_rank);

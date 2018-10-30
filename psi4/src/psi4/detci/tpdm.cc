@@ -52,7 +52,7 @@ namespace detci {
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 
 // DGAS this is still awkward, I think the TPDM code can be less general than the OPDM one for now.
-void CIWavefunction::form_tpdm(void) {
+void CIWavefunction::form_tpdm() {
     SharedCIVector Ivec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);
     Ivec->init_io_files(true);
     SharedCIVector Jvec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);

@@ -58,7 +58,7 @@
 #endif
 
 #if defined(OPTKING_PACKAGE_PSI)
-namespace psi { void psiclean(void); }
+namespace psi { void psiclean(); }
 #endif
 
 #if defined(OPTKING_PACKAGE_QCHEM)
@@ -70,11 +70,11 @@ namespace psi { void psiclean(void); }
 #endif
 
 namespace opt {
-  void open_output_dat(void); // open/link outfile to text output
-  void close_output_dat(void);// close above
-  void print_title_out(void); // print header
-  void print_end_out(void);   // print footer
-  void init_ioff(void);
+  void open_output_dat(); // open/link outfile to text output
+  void close_output_dat();// close above
+  void print_title_out(); // print header
+  void print_end_out();   // print footer
+  void init_ioff();
   int INTCO_EXCEPT::dynamic_level = 0;          // initialized only once
   std::vector<int> INTCO_EXCEPT::linear_angles; // static class members must be defined
   //bool INTCO_EXCEPT::already_tried_other_intcos = false;
@@ -585,7 +585,7 @@ OptReturnType optking(void) {
 
 // Standard text output file string (psi) or file pointer (qchem)
 // Interpreted by functions in print.cc
-void open_output_dat(void) {
+void open_output_dat() {
 #if defined (OPTKING_PACKAGE_PSI)
   psi_outfile = "outfile";
 #elif defined (OPTKING_PACKAGE_QCHEM)
@@ -593,13 +593,13 @@ void open_output_dat(void) {
 #endif
 }
 
-void close_output_dat(void) {
+void close_output_dat() {
 #if defined(OPTKING_PACKAGE_QCHEM)
 
 #endif
 }
 
-void print_title_out(void) {
+void print_title_out() {
   oprintf_out( "\n\t\t\t-----------------------------------------\n");
   oprintf_out(   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
   oprintf_out(   "\t\t\t  - R.A. King,  Bethel University        \n");
@@ -607,7 +607,7 @@ void print_title_out(void) {
 
 }
 
-void print_end_out(void) {
+void print_end_out() {
 #if defined (OPTKING_PACKAGE_PSI)
   oprintf_out( "\t\t\t--------------------------\n");
   oprintf_out( "\t\t\t OPTKING Finished Execution \n");
@@ -615,7 +615,7 @@ void print_end_out(void) {
 #endif
 }
 
-void init_ioff(void)
+void init_ioff()
 {
   int i;
   ioff = init_int_array(IOFF_MAX);

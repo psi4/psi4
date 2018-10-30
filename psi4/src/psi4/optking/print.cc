@@ -59,7 +59,7 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
 #endif
 }
 
-void offlush_out(void) {
+void offlush_out() {
 #if defined(OPTKING_PACKAGE_PSI)
   std::shared_ptr<psi::PsiOutStream> printer(psi::outfile);
 #elif defined(OPTKING_PACKAGE_QCHEM)

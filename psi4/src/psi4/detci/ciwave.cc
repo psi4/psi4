@@ -442,7 +442,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) 
 /*
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
-void CIWavefunction::cleanup_ci(void) {
+void CIWavefunction::cleanup_ci() {
     // Make sure we dont double clean
     if (!cleaned_up_ci_) {
         // Free Bendazzoli OV arrays
@@ -475,7 +475,7 @@ void CIWavefunction::cleanup_ci(void) {
         cleaned_up_ci_ = true;
     }
 }
-void CIWavefunction::cleanup_dpd(void) {
+void CIWavefunction::cleanup_dpd() {
     if (ints_init_) {
         ints_.reset();
         ints_init_ = false;

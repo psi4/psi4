@@ -70,17 +70,17 @@ class BEND : public SIMPLE_COORDINATE {
     bool operator==(const SIMPLE_COORDINATE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;
 
-    void make_lb_normal(void)     { _bend_type = 1; }
-    void make_lb_complement(void) { _bend_type = 2; }
+    void make_lb_normal()     { _bend_type = 1; }
+    void make_lb_complement() { _bend_type = 2; }
 
-    bool is_linear_bend(void) const { return ((_bend_type == 1) || (_bend_type == 2)); }
-    bool is_lb_normal(void) const     { return (_bend_type == 1); }
-    bool is_lb_complement(void) const { return (_bend_type == 2); }
+    bool is_linear_bend() const { return ((_bend_type == 1) || (_bend_type == 2)); }
+    bool is_lb_normal() const     { return (_bend_type == 1); }
+    bool is_lb_complement() const { return (_bend_type == 2); }
 
-    int  g_bend_type(void) const { return _bend_type; }
+    int  g_bend_type() const { return _bend_type; }
     void compute_axes(GeomType geom) const;
-    void fix_axes(void)   { axes_fixed = true; }
-    void unfix_axes(void) { axes_fixed = false; }
+    void fix_axes()   { axes_fixed = true; }
+    void unfix_axes() { axes_fixed = false; }
 
 };
 

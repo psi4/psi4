@@ -57,7 +57,7 @@ inline double DE_nr_energy(double step, double grad, double hess) {
   return (step * grad + 0.5 * step * step * hess);
 }
 
-void MOLECULE::nr_step(void) {
+void MOLECULE::nr_step() {
   int Nintco = Ncoord();
   double **H_inv;
 

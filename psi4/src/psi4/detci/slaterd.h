@@ -86,8 +86,8 @@ class SlaterDeterminant {
         if (Occs_[1] != nullptr) free(Occs_[1]);
     }
     void set(size_t nalp, unsigned char* alpoccs, size_t nbet, unsigned char* betoccs);
-    void print(void);
-    void print_config(void);
+    void print();
+    void print_config();
     SlaterDeterminant& operator=(const SlaterDeterminant& s);
     friend int operator==(SlaterDeterminant& s1, SlaterDeterminant& s2);
     friend double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J);

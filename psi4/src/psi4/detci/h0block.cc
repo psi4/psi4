@@ -106,7 +106,7 @@ void CIWavefunction::H0block_init(size_t size) {
     }
 }
 
-void CIWavefunction::H0block_free(void) {
+void CIWavefunction::H0block_free() {
     if (H0block_->osize) {
         free_matrix(H0block_->H0b, H0block_->osize);
         if (Parameters_->precon == PRECON_GEN_DAVIDSON) {
@@ -145,7 +145,7 @@ void CIWavefunction::H0block_free(void) {
     }
 }
 
-void CIWavefunction::H0block_print(void) {
+void CIWavefunction::H0block_print() {
     int i;
 
     outfile->Printf("\nMembers of H0 block:\n\n");
@@ -484,7 +484,7 @@ void CIWavefunction::H0block_pairup(int guess) {
 ** Substantial modifications by David Sherrill, October 1998
 **
 */
-void CIWavefunction::H0block_spin_cpl_chk(void) {
+void CIWavefunction::H0block_spin_cpl_chk() {
     int i, newsize;
     double zero = 1E-13;
     double diff = 0.0, spin_cpl_vals2;
@@ -592,7 +592,7 @@ void CIWavefunction::H0block_spin_cpl_chk(void) {
 **
 ** C. David Sherrill, July 2003
 */
-void CIWavefunction::H0block_filter_setup(void) {
+void CIWavefunction::H0block_filter_setup() {
     int Iac, Ibc, Iaridx, Ibridx;
     int Jac, Jbc, Jaridx, Jbridx;
     int i, found1, found2, replace;

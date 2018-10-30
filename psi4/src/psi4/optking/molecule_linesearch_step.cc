@@ -62,7 +62,7 @@
 
 namespace opt {
 
-void MOLECULE::linesearch_step(void) {
+void MOLECULE::linesearch_step() {
   int dim = Ncoord();
   double *fq = p_Opt_data->g_forces_pointer();
   double *dq = p_Opt_data->g_dq_pointer();

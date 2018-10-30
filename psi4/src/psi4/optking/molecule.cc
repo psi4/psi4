@@ -70,7 +70,7 @@ MOLECULE::MOLECULE(int num_atoms) {
 }
 
 // return vector of reciprocal masses of dimension = num of cartesians
-double * MOLECULE::g_u_vector(void) const {
+double * MOLECULE::g_u_vector() const {
   double *m = g_masses();
   int Natom = g_natom();
 
@@ -86,7 +86,7 @@ double * MOLECULE::g_u_vector(void) const {
 // compute forces in internal coordinates in au
 // forces in internal coordinates, f_q = G_inv B u f_x
 // if u is unit matrix, f_q = (BB^T)^(-1) * B f_x
-void MOLECULE::forces(void) {
+void MOLECULE::forces() {
   double *f_x, *temp_arr, **B, **G, **G_inv;
   int Ncart = 3*g_natom();
   int Nintco = Ncoord();
@@ -154,7 +154,7 @@ void MOLECULE::forces(void) {
 }
 
 // Tell whether there are any fixed equilibrium values
-bool MOLECULE::has_fixed_eq_vals(void) {
+bool MOLECULE::has_fixed_eq_vals() {
   for (std::size_t f=0; f<fragments.size(); ++f)
     for (int i=0; i<fragments[f]->Ncoord(); ++i)
       if (fragments[f]->coord_has_fixed_eq_val(i))
@@ -164,7 +164,7 @@ bool MOLECULE::has_fixed_eq_vals(void) {
 }
 
 // Is any coordinate present that is not a cartesian.
-bool MOLECULE::is_noncart_present(void) const {
+bool MOLECULE::is_noncart_present() const {
 
   if (interfragments.size()) return true;
 
@@ -177,7 +177,7 @@ bool MOLECULE::is_noncart_present(void) const {
 
 // Apply extra forces for internal coordinates with user-defined
 // equilibrium values.
-void MOLECULE::apply_constraint_forces(void) {
+void MOLECULE::apply_constraint_forces() {
   double * f_q = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   int N = Ncoord();
@@ -215,7 +215,7 @@ void MOLECULE::apply_constraint_forces(void) {
 
 // project redundancies (and constraints) out of forces and Hessian matrix
 // add constraints here later
-void MOLECULE::project_f_and_H(void) {
+void MOLECULE::project_f_and_H() {
   int Nintco = Ncoord();
 
   // compute G = B B^t
@@ -412,7 +412,7 @@ std::vector<int> MOLECULE::validate_angles(double const * const dq) {
   return lin_angle;
 }
 
-void MOLECULE::H_guess(void) const {
+void MOLECULE::H_guess() const {
   double **H = p_Opt_data->g_H_pointer();
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
@@ -567,7 +567,7 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   return success;
 }
 
-double *MOLECULE::g_masses(void) const {
+double *MOLECULE::g_masses() const {
   double *u = init_array(g_natom());
   int cnt = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
@@ -576,7 +576,7 @@ double *MOLECULE::g_masses(void) const {
   return u;
 }
 
-double *MOLECULE::g_Z(void) const {
+double *MOLECULE::g_Z() const {
   double *Zs = init_array(g_natom());
   int cnt = 0;
   for (std::size_t f=0; f<fragments.size(); ++f) {
@@ -588,7 +588,7 @@ double *MOLECULE::g_Z(void) const {
 }
 
 // compute B matrix - leave rows for FB coordinates empty
-double ** MOLECULE::compute_B(void) const {
+double ** MOLECULE::compute_B() const {
   double **B = init_matrix(Ncoord(), 3*g_natom());
 
   for (std::size_t f=0; f<fragments.size(); ++f)
@@ -736,7 +736,7 @@ double ** MOLECULE::compute_G(bool use_masses) const {
 }
 
 // Apply strings of atoms for frozen and fixed coordinates;
-bool MOLECULE::apply_input_constraints(void) {
+bool MOLECULE::apply_input_constraints() {
   bool frozen_present = false;
   bool fixed_present = false;
 
@@ -761,7 +761,7 @@ bool MOLECULE::apply_input_constraints(void) {
 }
 
 // Add cartesian coordinates
-int MOLECULE::add_cartesians(void) {
+int MOLECULE::add_cartesians() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->add_cartesians();
@@ -769,21 +769,21 @@ int MOLECULE::add_cartesians(void) {
 }
 
 // freeze all fragments in molecule
-void MOLECULE::freeze_intrafragments(void) {
+void MOLECULE::freeze_intrafragments() {
   oprintf_out("\tSetting all fragments to frozen.\n");
   for (std::size_t f=0; f<fragments.size(); ++f)
     fragments[f]->freeze();
 }
 
 // Freeze all coordinates within fragments
-void MOLECULE::freeze_intrafragment_coords(void) {
+void MOLECULE::freeze_intrafragment_coords() {
   oprintf_out("\tSetting all coordinates within each fragment to frozen.\n");
   for (std::size_t f=0; f<fragments.size(); ++f)
     fragments[f]->freeze_coords();
 }
 
 // Determine trivial coordinate combinations, i.e., don't combine..
-int MOLECULE::form_trivial_coord_combinations(void) {
+int MOLECULE::form_trivial_coord_combinations() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_trivial_coord_combinations();
@@ -793,7 +793,7 @@ int MOLECULE::form_trivial_coord_combinations(void) {
 }
 
 // Determine initial delocalized coordinate coefficients.
-int MOLECULE::form_delocalized_coord_combinations(void) {
+int MOLECULE::form_delocalized_coord_combinations() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_delocalized_coord_combinations();
@@ -852,7 +852,7 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
 
 
 // Determine Pulay natural coordinate combinations.
-int MOLECULE::form_natural_coord_combinations(void) {
+int MOLECULE::form_natural_coord_combinations() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_natural_coord_combinations();
@@ -863,7 +863,7 @@ int MOLECULE::form_natural_coord_combinations(void) {
 // since the beginning of the optimization.  These values are determined
 
 // Compute constraint matrix.
-double ** MOLECULE::compute_constraints(void) {
+double ** MOLECULE::compute_constraints() {
   double **C, **C_frag, **C_inter;
   int i, j;
 
@@ -945,7 +945,7 @@ bool MOLECULE::is_coord_fixed(int coord_index) {
 
 // Add dummy FB fragment which contains no atoms.  Read in the energy
 // and the forces from QChem.  This will only work (maybe:) for QChem
-void MOLECULE::add_fb_fragments(void) {
+void MOLECULE::add_fb_fragments() {
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   // get number of FB fragments
@@ -982,7 +982,7 @@ void MOLECULE::add_fb_fragments(void) {
 }
 
 // from the data in opt_data after that data is read.
-void MOLECULE::update_fb_values(void) {
+void MOLECULE::update_fb_values() {
 
   for (std::size_t i=0; i<fb_fragments.size(); ++i) {
     double *vals = init_array(6);

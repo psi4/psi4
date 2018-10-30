@@ -75,7 +75,7 @@ inline double alpha_table(int perA, int perB);
 using namespace v3d;
 
 // Returns cartesian Lindh guess Hessian for whole system
-double **MOLECULE::Lindh_guess(void) const {
+double **MOLECULE::Lindh_guess() const {
 
   // Build one oprint_matrix_out( fragment that contains ALL the atoms.
   int natom = g_natom();
@@ -96,7 +96,7 @@ double **MOLECULE::Lindh_guess(void) const {
 
 
 // Build cartesian hessian according to model in  Lindh paper.
-double ** FRAG::Lindh_guess(void) {
+double ** FRAG::Lindh_guess() {
 
   // Build distance matrix
   double **R = init_matrix(natom, natom);

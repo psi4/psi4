@@ -48,7 +48,7 @@
 
 namespace opt {
 
-void print_params_out(void);
+void print_params_out();
 
 #if defined(OPTKING_PACKAGE_PSI)
 void set_params(psi::Options & options)
@@ -904,7 +904,7 @@ void set_params(void)
 
 }
 
-void print_params_out(void) {
+void print_params_out() {
 
   oprintf_out( "dynamic level          = %18d\n", Opt_params.dynamic);
   oprintf_out( "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
