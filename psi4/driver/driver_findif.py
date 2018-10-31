@@ -29,15 +29,15 @@
 import numpy as np
 from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import molecule
 from psi4.driver.p4util import block_diagonal_array
+from psi4.driver import qcdb
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
 # _pi at the end of a variable name is short for "per irrep."
 # h is the index of an irrep.
 
-np.set_printoptions(formatter={'float': '{: 0.10f}'.format})
+array_format = {"precision": 10}
 
 
 def _displace_cart(mol, geom, salc_list, i_m, step_size):
@@ -261,12 +261,12 @@ def _geom_generator(mol, freq_irrep_only, mode):
         A descriptor for the finite difference step.
         In future, this can be overriden by step fields for individual displacements.
 
-        units : {'Bohr', 'Angstrom'}
-            The units for the displacement. The code currently assumes "bohr".
+        units : {'Bohr'}
+            The units for the displacement. The code currently assumes "bohr," per MolSSI standards.
         size : float
             The step size for the displacement.
 
-    stencil_size : int
+    stencil_size : {3, 5}
         Number of points to evaluate at for each displacement basis vector. The count
         includes the reference. Psi currently supports 3 and 5.
 
@@ -334,7 +334,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     # Genuine support for qcdb molecules would be nice. But that requires qcdb CdSalc tech.
     # Until then, silently swap the qcdb molecule out for a psi4.core.molecule.
-    if isinstance(mol, molecule.Molecule):
+    if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
     data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
@@ -343,7 +343,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
     ref_geom = mol.geometry().clone()
 
     # Now we generate the metadata...
-    metadict = {
+    findifrec = {
         "step": {
             "units": "bohr",
             "size": data["disp_size"]
@@ -364,8 +364,8 @@ def _geom_generator(mol, freq_irrep_only, mode):
         index_steps = zip(indices, steps)
         label = _displace_cart(mol, new_geom, data["salc_list"], index_steps, data["disp_size"])
         if data["print_lvl"] > 2:
-            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(new_geom)))
-        metadict["displacements"][label] = {"geometry": new_geom.ravel().tolist()}
+            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(new_geom, **array_format)))
+        findifrec["displacements"][label] = {"geometry": new_geom.ravel().tolist()}
 
     for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
@@ -385,16 +385,16 @@ def _geom_generator(mol, freq_irrep_only, mode):
                         append_geoms((index, index2), val)
 
     if data["print_lvl"] > 2:
-        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom.np)))
-    metadict["reference"]["geometry"] = ref_geom.np.ravel().tolist()
+        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom.np, **array_format)))
+    findifrec["reference"]["geometry"] = ref_geom.np.ravel().tolist()
 
     if data["print_lvl"] > 1:
         core.print_out("\n-------------------------------------------------------------\n")
 
-    return metadict
+    return findifrec
 
 
-def compute_gradient_from_energy(metadict):
+def compute_gradient_from_energy(findifrec):
     """Compute the gradient by finite difference of energies.
 
     Parameters
@@ -409,7 +409,7 @@ def compute_gradient_from_energy(metadict):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(metadict["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
@@ -417,7 +417,7 @@ def compute_gradient_from_energy(metadict):
                 "    Energy without displacement: {:15.10f}\n"
                 "    Check energies below for precision!\n"
                 "    Forces are for mass-weighted, symmetry-adapted cartesians (in au).\n".format(
-                    metadict["stencil_size"], metadict["reference"]["energy"]))
+                    findifrec["stencil_size"], findifrec["reference"]["energy"]))
 
     data = _initialize_findif(mol, -1, "1_0", init_string)
     salc_indices = data["salc_indices_pi"][0]
@@ -425,23 +425,23 @@ def compute_gradient_from_energy(metadict):
     # Extract the energies, and turn then into an ndarray for easy manipulating
     # E(i, j) := Energy on displacing the ith SALC we care about in the jth step
     # Steps are ordered, for example, -2, -1, 1, 2
-    max_disp = (metadict["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
     e_per_salc = 2 * max_disp
     E = np.zeros((len(salc_indices), e_per_salc))
 
     for i, salc_index in enumerate(salc_indices):
         for j in range(1, max_disp + 1):
             key_string = "{:d}: {{:d}}".format(salc_index)
-            E[i, max_disp - j] = metadict["displacements"][key_string.format(-j)]["energy"]
-            E[i, max_disp + j - 1] = metadict["displacements"][key_string.format(j)]["energy"]
+            E[i, max_disp - j] = findifrec["displacements"][key_string.format(-j)]["energy"]
+            E[i, max_disp + j - 1] = findifrec["displacements"][key_string.format(j)]["energy"]
 
     # Perform the finite difference.
-    if metadict["stencil_size"] == 3:
-        g_q = (E[:, 1] - E[:, 0]) / (2.0 * metadict["step"]["size"])
-    elif metadict["stencil_size"] == 5:
-        g_q = (E[:, 0] - 8.0 * E[:, 1] + 8.0 * E[:, 2] - E[:, 3]) / (12.0 * metadict["step"]["size"])
+    if findifrec["stencil_size"] == 3:
+        g_q = (E[:, 1] - E[:, 0]) / (2.0 * findifrec["step"]["size"])
+    elif findifrec["stencil_size"] == 5:
+        g_q = (E[:, 0] - 8.0 * E[:, 1] + 8.0 * E[:, 2] - E[:, 3]) / (12.0 * findifrec["step"]["size"])
     else:  # This error SHOULD have already been caught, but just in case...
-        raise ValidationError("FINDIF: {} is an invalid number of points.".format(metadict["stencil_size"]))
+        raise ValidationError("FINDIF: {} is an invalid number of points.".format(findifrec["stencil_size"]))
     g_q = np.asarray(g_q)
 
     if data["print_lvl"]:
@@ -502,7 +502,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
     if print_lvl >= 3:
         core.print_out("\n    Force Constants for irrep {} in mass-weighted, ".format(irrep))
         core.print_out("symmetry-adapted cartesian coordinates.\n")
-        core.print_out("\n{}\n".format(np.array_str(H_block)))
+        core.print_out("\n{}\n".format(np.array_str(H_block, **array_format)))
 
     evals, evects = np.linalg.eigh(H_block)
     # Get our eigenvalues and eigenvectors in descending order.
@@ -514,7 +514,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     if print_lvl >= 2:
         core.print_out("\n    Normal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
-        core.print_out("\n{}\n".format(np.array_str(normal_irr)))
+        core.print_out("\n{}\n".format(np.array_str(normal_irr, **array_format)))
 
     return H_block
 
@@ -549,7 +549,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     if print_lvl >= 3:
         core.print_out("\n    Force constant matrix for all computed irreps in mass-weighted SALCS.\n")
-        core.print_out("\n{}\n".format(np.array_str(H)))
+        core.print_out("\n{}\n".format(np.array_str(H, **array_format)))
 
     # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
     # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
@@ -558,14 +558,14 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     Hx = np.dot(np.dot(B.T, H), B)
     if print_lvl >= 3:
         core.print_out("\n    Force constants in mass-weighted Cartesian coordinates.\n")
-        core.print_out("\n{}\n".format(np.array_str(Hx)))
+        core.print_out("\n{}\n".format(np.array_str(Hx, **array_format)))
 
     # Un-massweight the Hessian.
     Hx = np.transpose(Hx / massweighter) / massweighter
 
     if print_lvl >= 3:
         core.print_out("\n    Force constants in Cartesian coordinates.\n")
-        core.print_out("\n{}\n".format(np.array_str(Hx)))
+        core.print_out("\n{}\n".format(np.array_str(Hx, **array_format)))
 
     if print_lvl:
         core.print_out("\n-------------------------------------------------------------\n")
@@ -573,7 +573,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     return Hx
 
 
-def compute_hessian_from_gradient(metadict, freq_irrep_only):
+def compute_hessian_from_gradient(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
@@ -591,9 +591,9 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(metadict["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
 
-    displacements = metadict["displacements"]
+    displacements = findifrec["displacements"]
 
     def init_string(data):
         return ("  Computing second-derivative from gradients using projected, \n"
@@ -615,7 +615,7 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
 
     # Determine what atoms map to what other atoms under the point group operations.
     # The py-side compute_atom_map will work whether mol is a Py-side or C-side object.
-    atom_map = molecule.compute_atom_map(mol)
+    atom_map = qcdb.compute_atom_map(mol)
     if data["print_lvl"] >= 3:
         core.print_out("    The atom map:\n")
         for atom, sym_image_list in enumerate(atom_map):
@@ -628,7 +628,7 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
     # A list of lists of gradients, per irrep
     gradients_pi = [[]]
     # Extract and print the symmetric gradients. These need no additional processing.
-    max_disp = (metadict["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
     for i in data["salc_indices_pi"][0]:
         for n in range(-max_disp, 0):
             grad_raw = displacements["{}: {}".format(i, n)]["gradient"]
@@ -640,7 +640,7 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
     if data["print_lvl"] >= 3:
         core.print_out("    Symmetric gradients\n")
         for gradient in gradients_pi[0]:
-            core.print_out("\n{}\n".format(np.array_str(gradient)))
+            core.print_out("\n{}\n".format(np.array_str(gradient, **array_format)))
 
     # Asymmetric gradient. There's always SOME operation that transforms a positive
     # into a negative displacement.By doing extra things here, we can find the
@@ -698,7 +698,7 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
         core.print_out("    All mass-weighted gradients\n")
         for gradients in gradients_pi:
             for grad in gradients:
-                core.print_out("\n{}\n".format(np.array_str(grad)))
+                core.print_out("\n{}\n".format(np.array_str(grad, **array_format)))
 
     # We have all our gradients generated now!
     # Next, time to get our Hessian.
@@ -734,11 +734,11 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
 
         H_pi.append(np.empty([Nindices, Nindices]))
 
-        if metadict["stencil_size"] == 3:
-            H_pi[-1] = (grads_adapted[1::2] - grads_adapted[::2]) / (2.0 * metadict["step"]["size"])
-        elif metadict["stencil_size"] == 5:
+        if findifrec["stencil_size"] == 3:
+            H_pi[-1] = (grads_adapted[1::2] - grads_adapted[::2]) / (2.0 * findifrec["step"]["size"])
+        elif findifrec["stencil_size"] == 5:
             H_pi[-1] = (grads_adapted[::4] - 8 * grads_adapted[1::4] + 8 * grads_adapted[2::4] - grads_adapted[3::4]
-                        ) / (12.0 * metadict["step"]["size"])
+                        ) / (12.0 * findifrec["step"]["size"])
 
         H_pi[-1] = _process_hessian_symmetry_block(H_pi[-1], B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"])
 
@@ -746,7 +746,7 @@ def compute_hessian_from_gradient(metadict, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def compute_hessian_from_energy(metadict, freq_irrep_only):
+def compute_hessian_from_energy(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of energies.
 
     Parameters
@@ -764,10 +764,10 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(metadict["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
 
-    displacements = metadict["displacements"]
-    ref_energy = metadict["reference"]["energy"]
+    displacements = findifrec["displacements"]
+    ref_energy = findifrec["reference"]["energy"]
 
     def init_string(data):
         max_label_len = str(max([len(label) for label in displacements]))
@@ -780,7 +780,7 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
                 "    Using {:d}-point formula.\n"
                 "    Energy without displacement: {:15.10f}\n"
                 "    Check energies below for precision!\n{}".format(
-                    len(displacements) + 1, metadict["stencil_size"], ref_energy, out_str))
+                    len(displacements) + 1, findifrec["stencil_size"], ref_energy, out_str))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", init_string)
 
@@ -788,7 +788,7 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
     B_pi = []
     H_pi = []
     irrep_lbls = mol.irrep_labels()
-    max_disp = (metadict["stencil_size"] - 1) // 2
+    max_disp = (findifrec["stencil_size"] - 1) // 2
     e_per_diag = 2 * max_disp
 
     # Unlike in the gradient case, we have no symmetry transformations to worry about.
@@ -811,14 +811,14 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
                 k = -j if h else j  # Because of the +- displacement trick
                 E[i, max_disp + j - 1] = displacements[key_string.format(k)]["energy"]
         # Now determine all diagonal force constants for this irrep.
-        if metadict["stencil_size"] == 3:
+        if findifrec["stencil_size"] == 3:
             diag_fcs = E[:, 0] + E[:, 1]
             diag_fcs -= 2 * ref_energy
-            diag_fcs /= (metadict["step"]["size"]**2)
-        elif metadict["stencil_size"] == 5:
+            diag_fcs /= (findifrec["step"]["size"]**2)
+        elif findifrec["stencil_size"] == 5:
             diag_fcs = -E[:, 0] + 16 * E[:, 1] + 16 * E[:, 2] - E[:, 3]
             diag_fcs -= 30 * ref_energy
-            diag_fcs /= (12 * metadict["step"]["size"]**2)
+            diag_fcs /= (12 * findifrec["step"]["size"]**2)
         H_irr = np.diag(diag_fcs)
 
         # TODO: It's a bit ugly to use the salc indices to grab the off-diagonals but the indices
@@ -830,15 +830,15 @@ def compute_hessian_from_energy(metadict, freq_irrep_only):
         # ...define offdiag_en to do that for us.
         for i, salc in enumerate(salc_indices):
             for j, salc2 in enumerate(salc_indices[:i]):
-                offdiag_en = lambda index: displacements["{j}: {}, {i}: {}".format(i=salc, j=salc2, *data["disps"]["off"][index])]["energy"]
-                if metadict["stencil_size"] == 3:
+                offdiag_en = lambda index: displacements["{l}: {}, {k}: {}".format(k=salc, l=salc2, *data["disps"]["off"][index])]["energy"]
+                if findifrec["stencil_size"] == 3:
                     fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] - E[j][1]) / (
-                        2 * metadict["step"]["size"]**2)
-                elif metadict["stencil_size"] == 5:
+                        2 * findifrec["step"]["size"]**2)
+                elif findifrec["stencil_size"] == 5:
                     fc = (-offdiag_en(0) - offdiag_en(1) + 9 * offdiag_en(2) - offdiag_en(3) - offdiag_en(4) +
                           9 * offdiag_en(5) - offdiag_en(6) - offdiag_en(7) + E[i][0] - 7 * E[i][1] - 7 * E[i][2] +
                           E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] + 12 * ref_energy) / (
-                              12 * metadict["step"]["size"]**2)
+                              12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
 
