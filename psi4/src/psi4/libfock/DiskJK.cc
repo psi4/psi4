@@ -464,7 +464,7 @@ void DiskJK::compute_JK()
             if (K_[N]->symmetry()) K_[N]->transpose_this();
         }
     }
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     if(do_wK_){
@@ -590,7 +590,7 @@ void DiskJK::compute_JK()
         for (size_t N = 0; N < wK_.size(); N++) {
             if (wK_[N]->symmetry()) wK_[N]->transpose_this();
         }
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
     }
 }

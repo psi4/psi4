@@ -442,7 +442,7 @@ void PetiteList::init(double tol) {
     group_ = ct.bits();
 
     // initialize private members
-    c1_ = 0;
+    c1_ = false;
     ng_ = ct.order();
     natom_ = mol.natom();
     nshell_ = gbs.nshell();  // full number of shells
@@ -450,7 +450,7 @@ void PetiteList::init(double tol) {
 
     // if point group is C1, then zero everything
     if (ng_ == 1) {
-        c1_ = 1;
+        c1_ = true;
         nblocks_ = 1;
 
         p1_ = nullptr;

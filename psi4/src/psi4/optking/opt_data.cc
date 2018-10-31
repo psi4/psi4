@@ -109,7 +109,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double *f =  g_forces_pointer();
 
   if (Opt_params.opt_type == OPT_PARAMS::IRC)
-    if (!p_irc_data->go) { return 1; }
+    if (!p_irc_data->go) { return true; }
 
   // Save forces and put back in below.
   double *f_backup;
@@ -120,7 +120,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
   // for IRC only consider forces tangent to the hypersphere search surface
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
-    double **G = mol.compute_G(1);
+    double **G = mol.compute_G(true);
     double **Ginv = symm_matrix_inv(G, Nintco, Nintco); 
     free_matrix(G);
 

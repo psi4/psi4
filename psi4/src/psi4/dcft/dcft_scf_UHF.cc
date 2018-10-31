@@ -891,7 +891,7 @@ void DCFTSolver::process_so_ints() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
     if (buildTensors) {
         if (print_ > 1) {
@@ -1289,7 +1289,7 @@ void DCFTSolver::build_AO_tensors() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
     if (print_ > 1) {
         outfile->Printf("Processed %d SO integrals each for AA, BB, and AB\n", counter);
@@ -1715,7 +1715,7 @@ void DCFTSolver::build_G() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     // Build the Fock matrices from the H and G matrices

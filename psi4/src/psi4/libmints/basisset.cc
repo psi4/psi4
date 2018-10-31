@@ -120,7 +120,7 @@ BasisSet::BasisSet() {
     shell_center_[0] = 0;
     center_to_nshell_[0] = 1;
     center_to_shell_[0] = 0;
-    puream_ = 0;
+    puream_ = false;
     max_am_ = 0;
     max_nprimitive_ = 1;
     xyz_[0] = 0.0;

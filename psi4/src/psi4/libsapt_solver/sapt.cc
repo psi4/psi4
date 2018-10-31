@@ -105,9 +105,9 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 
     // Compare pointers
     if (ribasis_ == elstbasis_) {
-        elst_basis_ = 0;
+        elst_basis_ = false;
     } else {
-        elst_basis_ = 1;
+        elst_basis_ = true;
     }
 
     zero_ = std::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
