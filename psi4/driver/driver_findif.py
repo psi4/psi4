@@ -45,11 +45,11 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
+    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to displace
     geom : ndarray
         The geometry of the molecule.
-    salc_list : psi4.core.CdSalcList
+    salc_list : :py:class:`~psi4.core.CdSalcList`
         A list of Cartesian displacement SALCs
     i_m : iterator of tuples
         An iterator containing tuples. Each tuple has the index of a salc in
@@ -81,7 +81,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
+    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to displace
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -234,7 +234,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
+    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to perform finite difference calculations on.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -261,7 +261,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
         A descriptor for the finite difference step.
         In future, this can be overriden by step fields for individual displacements.
 
-        units : {'bohr', 'angstrom'}
+        units : {'Bohr', 'Angstrom'}
             The units for the displacement. The code currently assumes "bohr".
         size : float
             The step size for the displacement.
@@ -855,7 +855,7 @@ def gradient_from_energy_geometries(molecule):
     
     Parameters
     ----------
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the gradient of.
 
     Returns
@@ -877,7 +877,7 @@ def hessian_from_gradient_geometries(molecule, irrep):
     
     Parameters
     ----------
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the frequencies of.
     irrep : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -897,7 +897,7 @@ def hessian_from_energy_geometries(molecule, irrep):
     
     Parameters
     ----------
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the frequencies of.
     irrep : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all

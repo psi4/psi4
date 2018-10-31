@@ -151,7 +151,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
 
        Returns
        -------
-       wfn: psi4.core.wfn
+       wfn: :py:class:`~psi4.core.Wavefunction`
            The wavefunction computed.
     """
 
