@@ -1007,8 +1007,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      *
      * \returns true if a vector is added, false otherwise
      */
-    bool schmidt_add_row(int h, int rows, Vector& v) throw();
-    bool schmidt_add_row(int h, int rows, double* v) throw();
+    bool schmidt_add_row(int h, int rows, Vector& v) noexcept;
+    bool schmidt_add_row(int h, int rows, double* v) noexcept;
     /// @}
 
     /*! Calls libqt schmidt function */
