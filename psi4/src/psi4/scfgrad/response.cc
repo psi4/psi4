@@ -568,7 +568,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                         PQint->compute_shell_deriv1(P,0,Q,0);
                         const double* buffer = PQint->buffer();
 
-                        double *ptr = const_cast<double*>(buffer);
+                        auto *ptr = const_cast<double*>(buffer);
 
                         if(pert_incore[Pcenter]){
                             // J terms
@@ -687,7 +687,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                                 }
                             }
 
-                            double *ptr = const_cast<double*>(buffer);
+                            auto *ptr = const_cast<double*>(buffer);
 
                             if(pert_incore[Pcenter]){
                                 // J Terms

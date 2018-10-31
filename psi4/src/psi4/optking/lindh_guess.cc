@@ -82,7 +82,7 @@ double **MOLECULE::Lindh_guess() const {
   double **coord_xyz = g_geom_2D();
   double *atomic_numbers = g_Z();
 
-  FRAG * frag = new FRAG(natom, atomic_numbers, coord_xyz);
+  auto * frag = new FRAG(natom, atomic_numbers, coord_xyz);
 
   double **g = g_grad_2D();
   frag->set_grad(g);

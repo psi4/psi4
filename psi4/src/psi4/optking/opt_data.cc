@@ -631,7 +631,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
       opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
       for (int i=0; i<iteration; ++i) {
-        STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+        auto *one_step = new STEP_DATA(Nintco, Ncart);
         one_step->read(i+1, Nintco, Ncart);
         steps.push_back(one_step);
       }
@@ -642,7 +642,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   ++iteration; // increment for current step
   ++steps_since_last_H;
   // create memory for this, current step
-  STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+  auto *one_step = new STEP_DATA(Nintco, Ncart);
   steps.push_back(one_step);
 }
 

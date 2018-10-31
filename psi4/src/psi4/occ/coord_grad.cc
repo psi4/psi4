@@ -182,7 +182,7 @@ if (reference_ == "RESTRICTED") {
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
     const int *alpha_corr_to_pitzer = ints->alpha_corr_to_pitzer();
-    int *alpha_pitzer_to_corr = new int[nmo_];
+    auto *alpha_pitzer_to_corr = new int[nmo_];
     memset(alpha_pitzer_to_corr, 0, nmo_*sizeof(int));
 
     for(int n = 0; n < nmo_; ++n) {
@@ -238,8 +238,8 @@ if (reference_ == "RESTRICTED") {
     psio_->close(PSIF_MO_LAG, 1);
     free_block(a_qt);
 
-    int *aocc_qt = new int[nooA];
-    int *avir_qt = new int[nvoA];
+    auto *aocc_qt = new int[nooA];
+    auto *avir_qt = new int[nvoA];
 
     int aocc_count = 0;
     int avir_count = 0;
@@ -393,7 +393,7 @@ else if (reference_ == "UNRESTRICTED") {
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
     const int *alpha_corr_to_pitzer = ints->alpha_corr_to_pitzer();
-    int *alpha_pitzer_to_corr = new int[nmo_];
+    auto *alpha_pitzer_to_corr = new int[nmo_];
     memset(alpha_pitzer_to_corr, 0, nmo_*sizeof(int));
 
     for(int n = 0; n < nmo_; ++n) {
@@ -402,7 +402,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 
     const int *beta_corr_to_pitzer = ints->beta_corr_to_pitzer();
-    int *beta_pitzer_to_corr = new int[nmo_];
+    auto *beta_pitzer_to_corr = new int[nmo_];
     memset(beta_pitzer_to_corr, 0, nmo_*sizeof(int));
 
     for(int n = 0; n < nmo_; ++n) {
@@ -480,10 +480,10 @@ else if (reference_ == "UNRESTRICTED") {
     free_block(a_qt);
     free_block(b_qt);
 
-    int *aocc_qt = new int[nooA];
-    int *bocc_qt = new int[nooB];
-    int *avir_qt = new int[nvoA];
-    int *bvir_qt = new int[nvoB];
+    auto *aocc_qt = new int[nooA];
+    auto *bocc_qt = new int[nooB];
+    auto *avir_qt = new int[nvoA];
+    auto *bvir_qt = new int[nvoB];
 
     int aocc_count = 0;
     int bocc_count = 0;

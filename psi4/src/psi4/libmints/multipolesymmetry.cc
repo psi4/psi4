@@ -66,7 +66,7 @@ void OperatorSymmetry::common_init() {
         SymmetryOperation so;
         int nirrep = ct.nirrep();
 
-        double *t = new double[ncart];
+        auto *t = new double[ncart];
 
         for (int irrep = 0; irrep < nirrep; ++irrep) {
             IrreducibleRepresentation gamma = ct.gamma(irrep);
@@ -199,7 +199,7 @@ void MultipoleSymmetry::common_init() {
         CharacterTable ct = molecule_->point_group()->char_table();
         int nirrep = ct.nirrep();
 
-        double *t = new double[ncart];
+        auto *t = new double[ncart];
 
         for (int irrep = 0; irrep < nirrep; ++irrep) {
             IrreducibleRepresentation gamma = ct.gamma(irrep);

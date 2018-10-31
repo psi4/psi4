@@ -258,12 +258,12 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
 
 SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
     /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
+    auto* start = new int[nirrep_];
+    auto* end = new int[nirrep_];
 
     orbital_locations(orbital_name, start, end);
 
-    int* spread = new int[nirrep_];
+    auto* spread = new int[nirrep_];
     for (int h = 0; h < nirrep_; h++) {
         spread[h] = end[h] - start[h];
     }
@@ -286,12 +286,12 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
 
 void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix orbitals) {
     /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
+    auto* start = new int[nirrep_];
+    auto* end = new int[nirrep_];
 
     orbital_locations(orbital_name, start, end);
 
-    int* spread = new int[nirrep_];
+    auto* spread = new int[nirrep_];
     for (int h = 0; h < nirrep_; h++) {
         spread[h] = end[h] - start[h];
     }
@@ -311,8 +311,8 @@ void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix 
 
 Dimension CIWavefunction::get_dimension(const std::string& orbital_name) {
     /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
+    auto* start = new int[nirrep_];
+    auto* end = new int[nirrep_];
     orbital_locations(orbital_name, start, end);
 
     Dimension dim = Dimension(nirrep_);

@@ -220,7 +220,7 @@ class MRCCRestrictedReader {
 
         // each line in CCDENSITIES is 45 characters long.
         // read in a batch of 1000 lines; add one for '\0'.
-        char *batch = new char[line_length * 1000 + 1];
+        auto *batch = new char[line_length * 1000 + 1];
 
         double value;
         int p, q, r, s;

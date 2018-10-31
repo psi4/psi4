@@ -78,8 +78,8 @@ if (reference_ == "RESTRICTED") {
 
 
     // Build denominators D_jk^ia = E_j + E_k - E_i - E_a
-    double *aOccEvals = new double [nacooA];
-    double *aVirEvals = new double [nacvoA];
+    auto *aOccEvals = new double [nacooA];
+    auto *aVirEvals = new double [nacvoA];
 
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
@@ -277,10 +277,10 @@ else if (reference_ == "UNRESTRICTED") {
 
 
     // Build denominators D_jk^ia = E_j + E_k - E_i - E_a
-    double *aOccEvals = new double [nacooA];
-    double *bOccEvals = new double [nacooB];
-    double *aVirEvals = new double [nacvoA];
-    double *bVirEvals = new double [nacvoB];
+    auto *aOccEvals = new double [nacooA];
+    auto *bOccEvals = new double [nacooB];
+    auto *aVirEvals = new double [nacvoA];
+    auto *bVirEvals = new double [nacvoB];
 
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep

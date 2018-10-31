@@ -624,7 +624,7 @@ void CIWavefunction::read_dpd_ci_ints() {
     // => Read one electron integrals <= //
     // Build temporary desired arrays
     int nmotri_full = (CalcInfo_->nmo * (CalcInfo_->nmo + 1)) / 2;
-    double* tmp_onel_ints = new double[nmotri_full];
+    auto* tmp_onel_ints = new double[nmotri_full];
 
     // Read one electron integrals
     iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full, 0, (print_ > 4), "outfile");

@@ -209,8 +209,8 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     double *array;
     va_list args;
     va_start(args, numQuantities);
-    double *errorVectorPtr = new double[_errorVectorSize];
-    double *vectorPtr = new double[_vectorSize];
+    auto *errorVectorPtr = new double[_errorVectorSize];
+    auto *vectorPtr = new double[_vectorSize];
     double *arrayPtr = errorVectorPtr;
     for (int i = 0; i < numQuantities; ++i) {
         DIISEntry::InputType type = _componentTypes[i];

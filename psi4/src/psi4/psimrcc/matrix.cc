@@ -150,7 +150,7 @@ void CCMatrix::zero_matrix_block(int h) {
 }
 
 void CCMatrix::zero_two_diagonal() {
-    short* pq = new short[2];
+    auto* pq = new short[2];
     for (int h = 0; h < nirreps; h++)
         for (int i = 0; i < left->get_pairpi(h); i++)
             for (int j = 0; j < right->get_pairpi(h); j++) {
@@ -162,7 +162,7 @@ void CCMatrix::zero_two_diagonal() {
 
 void CCMatrix::zero_non_doubly_occupied() {
     const boolvec& is_act_in_occ = moinfo->get_is_actv_in_occ();
-    short* pq = new short[2];
+    auto* pq = new short[2];
     for (int h = 0; h < nirreps; h++)
         for (int i = 0; i < left->get_pairpi(h); i++)
             for (int j = 0; j < right->get_pairpi(h); j++) {
@@ -175,7 +175,7 @@ void CCMatrix::zero_non_doubly_occupied() {
 
 void CCMatrix::zero_non_external() {
     const boolvec& is_act_in_vir = moinfo->get_is_actv_in_vir();
-    short* pq = new short[2];
+    auto* pq = new short[2];
     for (int h = 0; h < nirreps; h++)
         for (int i = 0; i < left->get_pairpi(h); i++)
             for (int j = 0; j < right->get_pairpi(h); j++) {
@@ -187,7 +187,7 @@ void CCMatrix::zero_non_external() {
 }
 
 void CCMatrix::zero_right_four_diagonal() {
-    short* pqrs = new short[4];
+    auto* pqrs = new short[4];
     for (int h = 0; h < nirreps; h++)
         for (int j = 0; j < right->get_pairpi(h); j++) {
             if (left->get_pairpi(h) > 0) {
@@ -200,7 +200,7 @@ void CCMatrix::zero_right_four_diagonal() {
 }
 
 void CCMatrix::zero_left_four_diagonal() {
-    short* pqrs = new short[4];
+    auto* pqrs = new short[4];
     for (int h = 0; h < nirreps; h++)
         for (int i = 0; i < left->get_pairpi(h); i++) {
             if (right->get_pairpi(h) > 0) {
@@ -239,7 +239,7 @@ void CCMatrix::element_by_element_addition(double factor, CCMatrix* B_Matrix, in
 }
 
 void CCMatrix::tensor_product(std::string& reindexing, double factor, CCMatrix* B_Matrix, CCMatrix* C_Matrix) {
-    short* reindexing_array = new short[4];
+    auto* reindexing_array = new short[4];
 
     intpairvec pairs;
     for (int i = 0; i < reindexing.size(); i++) pairs.push_back(std::make_pair(to_integer(reindexing.substr(i, 1)), i));
@@ -247,9 +247,9 @@ void CCMatrix::tensor_product(std::string& reindexing, double factor, CCMatrix* 
     for (int i = 0; i < reindexing.size(); i++) reindexing_array[i] = pairs[i].second;
 
     // This assumes that the reindexing starts from 1 !!! This can cost you an headache
-    short* pqrs = new short[4];
-    short* pq = new short[2];
-    short* rs = new short[2];
+    auto* pqrs = new short[4];
+    auto* pq = new short[2];
+    auto* rs = new short[2];
     double*** B_matrix = B_Matrix->get_matrix();
     double*** C_matrix = C_Matrix->get_matrix();
     double value;

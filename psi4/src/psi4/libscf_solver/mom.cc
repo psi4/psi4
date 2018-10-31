@@ -606,9 +606,9 @@ void HF::MOM() {
         double* eps = epsilon_a_->pointer(h);
         double** S = S_->pointer(h);
 
-        double* c = new double[nso];
-        double* d = new double[nso];
-        double* p = new double[nmo];
+        auto* c = new double[nso];
+        auto* d = new double[nso];
+        auto* p = new double[nmo];
 
         memset(static_cast<void*>(c), '\0', sizeof(double) * nso);
 
@@ -690,9 +690,9 @@ void HF::MOM() {
         double* eps = epsilon_b_->pointer(h);
         double** S = S_->pointer(h);
 
-        double* c = new double[nso];
-        double* d = new double[nso];
-        double* p = new double[nmo];
+        auto* c = new double[nso];
+        auto* d = new double[nso];
+        auto* p = new double[nmo];
 
         memset(static_cast<void*>(c), '\0', sizeof(double) * nso);
 

@@ -102,7 +102,7 @@ void SADGuess::form_D() {
     // Transform Neutral D from AO to SO basis
     Da_ = std::make_shared<Matrix>("Da SAD", AO2SO_->colspi(), AO2SO_->colspi());
 
-    double* temp = new double[AO2SO_->rowspi()[0] * (size_t)AO2SO_->max_ncol()];
+    auto* temp = new double[AO2SO_->rowspi()[0] * (size_t)AO2SO_->max_ncol()];
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nao = AO2SO_->rowspi()[h];
         int nso = AO2SO_->colspi()[h];
