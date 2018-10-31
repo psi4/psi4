@@ -62,7 +62,7 @@ namespace opt {
 MOLECULE::MOLECULE(int num_atoms) {
 
   if (num_atoms > 0) {
-    FRAG *one_frag = new FRAG(num_atoms);
+    auto *one_frag = new FRAG(num_atoms);
     fragments.push_back(one_frag);
   }
 

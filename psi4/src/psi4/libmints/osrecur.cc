@@ -277,7 +277,7 @@ void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
+    auto *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax + 1));
@@ -1401,7 +1401,7 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax + 1];
+    auto *F = new double[mmax + 1];
 
     // Form Fm(U) from A20
     calculate_f(F, mmax, u);
@@ -1564,7 +1564,7 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
     double tmp = sqrt(zetam) * M_2_SQRTPI;
     // U from A21
     double u = zetam * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax + 1];
+    auto *F = new double[mmax + 1];
 
     // Form Fm(U) from A20
     calculate_f(F, mmax, u);
@@ -1745,7 +1745,7 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax + 1];
+    auto *F = new double[mmax + 1];
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax + 1));
@@ -2068,7 +2068,7 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
+    auto *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax + 1));
@@ -2642,7 +2642,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
+    auto *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax + 1));

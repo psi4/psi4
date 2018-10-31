@@ -53,7 +53,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
     bool ket_sym = s3 == s4;
     bool bra_ket_sym = (s1 == s3) && bra_sym && ket_sym;
 
-    char *label = new char[100];
+    auto *label = new char[100];
 
     // Grab the transformation coefficients
     SharedMatrix c3a = aMOCoefficients_[s3->label()];

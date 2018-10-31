@@ -100,7 +100,7 @@ void mrpt2(SharedWavefunction ref_wfn, Options& options) {
     // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
     IDMRPT2 idmrpt2(ref_wfn, options);
 
-    Updater* updater = dynamic_cast<Updater*>(new MkUpdater(options));
+    auto* updater = dynamic_cast<Updater*>(new MkUpdater(options));
 
     // Compute the initial amplitudes and MP2 energy
     idmrpt2.compute_mrpt2_energy(updater);

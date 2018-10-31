@@ -165,7 +165,7 @@ void SAPT2p::print_header() {
     outfile->Printf("    NVIR B     = %9d\n", nvirB_);
     outfile->Printf("\n");
 
-    long int mem = (long int)memory_;
+    auto mem = (long int)memory_;
     mem /= 8L;
     long int occ = noccA_;
     if (noccB_ > noccA_) occ = noccB_;

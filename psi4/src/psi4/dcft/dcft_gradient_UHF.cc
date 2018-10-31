@@ -3631,7 +3631,7 @@ void DCFTSolver::compute_ewdm_dc() {
     auto b_zia = std::make_shared<Matrix>("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
-    int *alpha_pitzer_to_corr = new int[nmo_];
+    auto *alpha_pitzer_to_corr = new int[nmo_];
     ::memset(alpha_pitzer_to_corr, '\0', nmo_ * sizeof(int));
 
     for (int n = 0; n < nmo_; ++n) {
@@ -3639,7 +3639,7 @@ void DCFTSolver::compute_ewdm_dc() {
     }
 
     const int *beta_corr_to_pitzer = _ints->beta_corr_to_pitzer();
-    int *beta_pitzer_to_corr = new int[nmo_];
+    auto *beta_pitzer_to_corr = new int[nmo_];
     ::memset(beta_pitzer_to_corr, '\0', nmo_ * sizeof(int));
 
     for (int n = 0; n < nmo_; ++n) {
@@ -3909,10 +3909,10 @@ void DCFTSolver::compute_ewdm_dc() {
     psio_->write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
     psio_->close(PSIF_MO_OPDM, 1);
 
-    int *aocc_qt = new int[nalpha_];
-    int *bocc_qt = new int[nbeta_];
-    int *avir_qt = new int[navir_];
-    int *bvir_qt = new int[nbvir_];
+    auto *aocc_qt = new int[nalpha_];
+    auto *bocc_qt = new int[nbeta_];
+    auto *avir_qt = new int[navir_];
+    auto *bvir_qt = new int[nbvir_];
 
     int aocc_count = 0;
     int bocc_count = 0;
@@ -4590,7 +4590,7 @@ void DCFTSolver::compute_ewdm_odc() {
     auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
-    int *alpha_pitzer_to_corr = new int[nmo_];
+    auto *alpha_pitzer_to_corr = new int[nmo_];
     ::memset(alpha_pitzer_to_corr, '\0', nmo_ * sizeof(int));
 
     for (int n = 0; n < nmo_; ++n) {
@@ -4598,7 +4598,7 @@ void DCFTSolver::compute_ewdm_odc() {
     }
 
     const int *beta_corr_to_pitzer = _ints->beta_corr_to_pitzer();
-    int *beta_pitzer_to_corr = new int[nmo_];
+    auto *beta_pitzer_to_corr = new int[nmo_];
     ::memset(beta_pitzer_to_corr, '\0', nmo_ * sizeof(int));
 
     for (int n = 0; n < nmo_; ++n) {
@@ -4780,10 +4780,10 @@ void DCFTSolver::compute_ewdm_odc() {
     psio_->write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
     psio_->close(PSIF_MO_OPDM, 1);
 
-    int *aocc_qt = new int[nalpha_];
-    int *bocc_qt = new int[nbeta_];
-    int *avir_qt = new int[navir_];
-    int *bvir_qt = new int[nbvir_];
+    auto *aocc_qt = new int[nalpha_];
+    auto *bocc_qt = new int[nbeta_];
+    auto *avir_qt = new int[navir_];
+    auto *bvir_qt = new int[nbvir_];
 
     int aocc_count = 0;
     int bocc_count = 0;

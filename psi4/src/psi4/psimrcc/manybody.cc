@@ -134,8 +134,8 @@ void CCManyBody::generate_d3_ijk(double***& d3, bool alpha_i, bool alpha_j, bool
         std::vector<int> bocc = moinfo->get_bocc(reference, AllRefs);
 
         // Build the is_ arrays for reference ref
-        bool* is_aocc = new bool[moinfo->get_nocc()];
-        bool* is_bocc = new bool[moinfo->get_nocc()];
+        auto* is_aocc = new bool[moinfo->get_nocc()];
+        auto* is_bocc = new bool[moinfo->get_nocc()];
         for (int i = 0; i < moinfo->get_nocc(); i++) {
             is_aocc[i] = false;
             is_bocc[i] = false;
@@ -206,8 +206,8 @@ void CCManyBody::generate_d3_abc(double***& d3, bool alpha_a, bool alpha_b, bool
         std::vector<int> bvir = moinfo->get_bvir(reference, AllRefs);
 
         // Build the is_ arrays for reference ref
-        bool* is_avir = new bool[moinfo->get_nvir()];
-        bool* is_bvir = new bool[moinfo->get_nvir()];
+        auto* is_avir = new bool[moinfo->get_nvir()];
+        auto* is_bvir = new bool[moinfo->get_nvir()];
         for (int i = 0; i < moinfo->get_nvir(); i++) {
             is_avir[i] = false;
             is_bvir[i] = false;

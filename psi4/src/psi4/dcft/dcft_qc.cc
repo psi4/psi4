@@ -333,8 +333,8 @@ void DCFTSolver::form_idps() {
     ::memset(lookup_orbitals_, '\0', sizeof(int) * dim_orbitals_);
 
     // Temporary vectors containing gradient value and diagonal part of the Hessian for each IDP
-    double *grad = new double[dim_];
-    double *Hd = new double[dim_];
+    auto *grad = new double[dim_];
+    auto *Hd = new double[dim_];
 
     // Count the number of IDPs for orbital rotations (Alpha spin)
     // The minus sign in the gradient takes into account the sign of the g vector in the N-R equations: dX H = -g
@@ -2072,7 +2072,7 @@ void DCFTSolver::run_davidson() {
         G->diagonalize(Evecs, Evals, ascending);
 
         // Define the eigenvectors to be positive to make sure the phase doesn't change
-        double *ones = new double[b_dim_];
+        auto *ones = new double[b_dim_];
         for (int i = 0; i < b_dim_; ++i) ones[i] = 1.0;
         double **Evecs_p = Evecs->pointer();
         for (int k = 0; k < b_dim_; ++k) {
@@ -2166,8 +2166,8 @@ void DCFTSolver::run_davidson() {
         double value = Evals->get(k);
         outfile->Printf("\t %10.6f \n", value);
         if (value < 0.0) {
-            double *max_values = new double[values_to_print + 1];
-            int *max_values_idp = new int[values_to_print + 1];
+            auto *max_values = new double[values_to_print + 1];
+            auto *max_values_idp = new int[values_to_print + 1];
             int stored = 0;
 
             double norm = 0.0;

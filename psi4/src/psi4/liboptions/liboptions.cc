@@ -632,7 +632,7 @@ DataType* Options::set_global_array_entry(const std::string& key, DataType* entr
         data.assign(entry);
     } else {
         // We're adding to an existing entry
-        ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
+        auto* arrptr(dynamic_cast<ArrayType*>(loc));
         arrptr->assign(entry);
     }
     return entry;
@@ -661,7 +661,7 @@ DataType* Options::set_local_array_entry(const std::string& module, const std::s
         locals_[module][key].assign(entry);
     } else {
         // We're adding to an existing entry
-        ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
+        auto* arrptr(dynamic_cast<ArrayType*>(loc));
         arrptr->assign(entry);
     }
     return entry;

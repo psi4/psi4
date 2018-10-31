@@ -103,8 +103,8 @@ void OCCWave::denominators_rmp2()
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
 
-    double *aOccEvals = new double [nacooA];
-    double *aVirEvals = new double [nacvoA];
+    auto *aOccEvals = new double [nacooA];
+    auto *aVirEvals = new double [nacvoA];
     memset(aOccEvals, 0, sizeof(double)*nacooA);
     memset(aVirEvals, 0, sizeof(double)*nacvoA);
 

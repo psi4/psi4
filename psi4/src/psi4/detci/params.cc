@@ -643,7 +643,7 @@ void CIWavefunction::get_parameters(Options &options) {
     }
     if (junk <= 0.0) {
         std::string str = "Error: AVERAGE WEIGHTS add up to ";
-        char *str2 = new char[25];
+        auto *str2 = new char[25];
         sprintf(str2, "%20.15lf", junk);
         str += str2;
         delete[] str2;

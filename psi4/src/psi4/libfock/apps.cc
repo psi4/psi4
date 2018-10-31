@@ -626,7 +626,7 @@ SharedMatrix RCIS::TDso(SharedMatrix T1, bool singlet)
     // Triplets are zero
     if (!singlet) return D;
 
-    double* temp = new double[C_->max_nrow() * (size_t) T1->max_nrow()];
+    auto* temp = new double[C_->max_nrow() * (size_t) T1->max_nrow()];
 
     int symm = T1->symmetry();
     for (int h = 0; h < T1->nirrep(); h++) {
@@ -658,7 +658,7 @@ SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 
     auto D2 = std::make_shared<Matrix>("TDao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]);
 
-    double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
+    auto* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
     int symm = D->symmetry();
     for (int h = 0; h < D->nirrep(); h++) {
@@ -735,7 +735,7 @@ SharedMatrix RCIS::Dso(SharedMatrix T1, bool diff)
     SharedMatrix D = Dmo(T1,diff);
     auto D2 = std::make_shared<Matrix>("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi());
 
-    double* temp = new double[C_->max_nrow() * C_->max_ncol()];
+    auto* temp = new double[C_->max_nrow() * C_->max_ncol()];
 
     for (int h = 0; h < D->nirrep(); h++) {
 
@@ -762,7 +762,7 @@ SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
     SharedMatrix D = Dso(T1,diff);
     auto D2 = std::make_shared<Matrix>("Dao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]);
 
-    double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
+    auto* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
     for (int h = 0; h < D->nirrep(); h++) {
 

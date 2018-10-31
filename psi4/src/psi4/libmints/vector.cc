@@ -235,7 +235,7 @@ double *Vector::to_block_vector() {
     size_t size = 0;
     for (int h = 0; h < nirrep_; ++h) size += dimpi_[h];
 
-    double *temp = new double[size];
+    auto *temp = new double[size];
     size_t offset = 0;
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < dimpi_[h]; ++i) {

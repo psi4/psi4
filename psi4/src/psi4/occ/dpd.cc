@@ -407,7 +407,7 @@ double *SymBlockMatrix::to_lower_triangle()
     if (sizerow != sizecol)
         return nullptr;
 
-    double *tri = new double[ioff[sizerow]];
+    auto *tri = new double[ioff[sizerow]];
     double **temp = to_block_matrix();
     sq_to_tri(temp, tri, sizerow);
     free_block(temp);

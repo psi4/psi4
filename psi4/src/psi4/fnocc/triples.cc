@@ -45,8 +45,8 @@ namespace psi {
 namespace fnocc {
 
 PsiReturnType CoupledCluster::triples() {
-    char *name = new char[10];
-    char *space = new char[10];
+    auto *name = new char[10];
+    auto *space = new char[10];
     double fac;
     if (ccmethod == 0) {
         sprintf(name, "CCSD");

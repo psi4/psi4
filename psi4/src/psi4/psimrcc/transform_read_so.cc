@@ -63,7 +63,7 @@ void CCTransform::read_oei_so_integrals() {
 
     int nso = moinfo->get_nso();
 
-    double* H = new double[nso * (nso + 1) / 2];
+    auto* H = new double[nso * (nso + 1) / 2];
 
     // Read the kinetic energy integrals
     for (int k = 0; k < nso * (nso + 1) / 2; ++k) H[k] = 0.0;

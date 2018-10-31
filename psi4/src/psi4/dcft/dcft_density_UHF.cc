@@ -1995,7 +1995,7 @@ void DCFTSolver::compute_TPDM_trace() {
     opdm_trace += (aocc_tau_->trace() + bocc_tau_->trace() + avir_tau_->trace() + bvir_tau_->trace());
 
     // Compute deviations from N-representability
-    double N = (double)(nalpha_ + nbeta_);
+    auto N = (double)(nalpha_ + nbeta_);
     double opdm_dev = N - opdm_trace;
     double tpdm_dev = N * (N - 1.0) - tpdm_trace;
 

@@ -142,7 +142,7 @@ void MemoryManager::allocate(const char *type, T **&matrix, size_t size1, size_t
         return;
     } else {
         matrix = new T *[size1];
-        T *vector = new T[size];
+        auto *vector = new T[size];
         for (size_t i = 0; i < size; i++) vector[i] = static_cast<T>(0);      // Zero all the elements
         for (size_t i = 0; i < size1; i++) matrix[i] = &(vector[i * size2]);  // Assign the rows pointers
 
@@ -182,7 +182,7 @@ void MemoryManager::allocate(const char *type, T ***&matrix, size_t size1, size_
     } else {
         matrix = new T **[size1];
         for (size_t i = 0; i < size1; i++) matrix[i] = new T *[size2];
-        T *vector = new T[size];
+        auto *vector = new T[size];
         for (size_t i = 0; i < size; i++) vector[i] = static_cast<T>(0);  // Zero all the elements
         for (size_t i = 0; i < size1; i++)
             for (size_t j = 0; j < size2; j++)

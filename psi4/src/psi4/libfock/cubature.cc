@@ -4711,7 +4711,7 @@ void SphericalGrid::build_angles()
 }
 std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string& scheme, int npoints, const MassPoint* points)
 {
-    SphericalGrid* s = new SphericalGrid();
+    auto* s = new SphericalGrid();
     s->scheme_ = scheme;
     s->order_ = lebedev_mapping_[npoints];
     s->npoints_ = npoints;

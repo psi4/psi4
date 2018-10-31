@@ -192,10 +192,10 @@ void OCCWave::denominators_ump2()
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
 
-    double *aOccEvals = new double [nacooA];
-    double *bOccEvals = new double [nacooB];
-    double *aVirEvals = new double [nacvoA];
-    double *bVirEvals = new double [nacvoB];
+    auto *aOccEvals = new double [nacooA];
+    auto *bOccEvals = new double [nacooB];
+    auto *aVirEvals = new double [nacvoA];
+    auto *bVirEvals = new double [nacvoB];
     memset(aOccEvals, 0, sizeof(double)*nacooA);
     memset(bOccEvals, 0, sizeof(double)*nacooB);
     memset(aVirEvals, 0, sizeof(double)*nacvoA);

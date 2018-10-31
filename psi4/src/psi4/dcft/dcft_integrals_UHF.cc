@@ -585,10 +585,10 @@ void DCFTSolver::build_denominators() {
     dpdbuf4 D;
     dpdfile2 F;
 
-    double *aOccEvals = new double[nalpha_];
-    double *bOccEvals = new double[nbeta_];
-    double *aVirEvals = new double[navir_];
-    double *bVirEvals = new double[nbvir_];
+    auto *aOccEvals = new double[nalpha_];
+    auto *bOccEvals = new double[nbeta_];
+    auto *aVirEvals = new double[navir_];
+    auto *bVirEvals = new double[nbvir_];
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
