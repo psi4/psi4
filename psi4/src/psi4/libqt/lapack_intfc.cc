@@ -6469,10 +6469,15 @@ int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* 
              int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
              double* work, int* iwork) {
     int info;
+#ifdef LAPACK_HAS_DGGSVD3
     // Infer dimension of work array: max(3*N,M,P)+N
-    int lwork = std::max(std::max(3*n, m), p) + n;
+    int lwork = std::max(std::max(3 * n, m), p) + n;
     ::F_DGGSVD3(&jobu, &jobv, &jobq, &m, &n, &p, k, l, a, &lda, b, &ldb, alpha, beta, u, &ldu, v, &ldv, q, &ldq, work,
-               iwork, &lwork, &info);
+                iwork, &lwork, &info);
+#else
+    ::F_DGGSVD(&jobu, &jobv, &jobq, &m, &n, &p, k, l, a, &lda, b, &ldb, alpha, beta, u, &ldu, v, &ldv, q, &ldq, work,
+               iwork, &info);
+#endif
     return info;
 }
 
@@ -6787,6 +6792,7 @@ int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* 
  *
  *  DGGSVD3 replaces the deprecated subroutine DGGSVD.
  **/
+#ifdef LAPACK_HAS_DGGSVD3
 int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
               int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
               double* work, int lwork, int* iwork) {
@@ -6795,6 +6801,7 @@ int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int*
                 &lwork, iwork, &info);
     return info;
 }
+#endif
 
 /**
  *  Purpose
@@ -6931,10 +6938,15 @@ int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, in
              double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
              double* tau, double* work) {
     int info;
+#ifdef LAPACK_HAS_DGGSVP3
     // Infer dimension of work array: max(3*N,M,P)
-    int lwork = std::max(std::max(3*n, m), p);
+    int lwork = std::max(std::max(3 * n, m), p);
     ::F_DGGSVP3(&jobu, &jobv, &jobq, &m, &p, &n, a, &lda, b, &ldb, &tola, &tolb, k, l, u, &ldu, v, &ldv, q, &ldq, iwork,
-               tau, work, &lwork, &info);
+                tau, work, &lwork, &info);
+#else
+    ::F_DGGSVP(&jobu, &jobv, &jobq, &m, &p, &n, a, &lda, b, &ldb, &tola, &tolb, k, l, u, &ldu, v, &ldv, q, &ldq, iwork,
+               tau, work, &info);
+#endif
     return info;
 }
 
@@ -7170,6 +7182,7 @@ int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, in
  *
  * DGGSVP3 replaces the deprecated subroutine DGGSVP.
  **/
+#ifdef LAPACK_HAS_DGGSVP3
 int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
               double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
               double* tau, double* work, int lwork) {
@@ -7178,6 +7191,7 @@ int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, i
                 tau, work, &lwork, &info);
     return info;
 }
+#endif
 
 /**
  *  Purpose
