@@ -1405,29 +1405,30 @@ def scf_helper(name, post_scf=True, **kwargs):
                  scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
                  scf_wfn.occupation_b(), dovirt)
 
-    # Write out orbitals and basis
-    fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-    write_filename = os.path.join(psi_scratch, fname + ".180.npz")
-    data = {}
-    data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
-    data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
+    # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
+    if kwargs.get('write_orbitals', True):
+        fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
+        write_filename = os.path.join(psi_scratch, fname + ".180.npz")
+        data = {}
+        data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
+        data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
 
-    Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
-    data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
+        Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
+        data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
 
-    Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
-    data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
+        Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
+        data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
 
-    data["reference"] = core.get_option('SCF', 'REFERENCE')
-    data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
-    data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
-    data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
-    data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
-    data["symmetry"] = scf_molecule.schoenflies_symbol()
-    data["BasisSet"] = scf_wfn.basisset().name()
-    data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
-    np.savez(write_filename, **data)
-    extras.register_numpy_file(write_filename)
+        data["reference"] = core.get_option('SCF', 'REFERENCE')
+        data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
+        data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
+        data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
+        data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
+        data["symmetry"] = scf_molecule.schoenflies_symbol()
+        data["BasisSet"] = scf_wfn.basisset().name()
+        data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
+        np.savez(write_filename, **data)
+        extras.register_numpy_file(write_filename)
 
     if do_timer:
         core.tstop()

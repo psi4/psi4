@@ -38,20 +38,23 @@ molecule = psi4.get_active_molecule()
 molecule.update_geometry()
 natom = molecule.natom()
 
-displacements = driver_findif.hessian_from_energy_geometries(molecule, -1)
-
 if sow:
-  ndisp = len(displacements)
+  findif_meta_dict = driver_findif.hessian_from_energy_geometries(molecule, irrep)
+
+  with open("manual_findif.json", "w") as f:
+      import json
+      json.dump(findif_meta_dict, f)
+
+  ndisp = len(findif_meta_dict["displacements"]) + 1
   print(" %d displacements needed." % ndisp)
 
   dispdir = "displacements"
   if not os.path.exists(dispdir):
     os.makedirs(dispdir)
 
-  # Loop over displacements
-  for n, disp in enumerate(displacements):
-
-    nm = str(n) + "-disp.in"
+  def write_disp(label, displacement):
+    geom = displacement["geometry"][:]
+    nm = label + ".in"
     disp_input_file = open(nm, "w")
 
     with open("E-input.dat","r") as E_input_file:
@@ -66,29 +69,36 @@ if sow:
           disp_input_file.write("unit au\n")
           for atom in range(natom):
             sym = molecule.symbol(atom)
-            xval = disp.get(atom,0)
-            yval = disp.get(atom,1)
-            zval = disp.get(atom,2)
+            xval = geom.pop(0)
+            yval = geom.pop(0)
+            zval = geom.pop(0)
       
             l = "{:10s}{:20.15f}{:20.15f}{:20.15f}\n".format(sym, xval, yval, zval)
             disp_input_file.write(l)
         else:                           # copy line as is
-          disp_input_file.write(line);
+          disp_input_file.write(line)
       else:
         disp_input_file.write("\n")     # empty line
-  
+
     # Close the input file and move into the displacements directory..
-    E_input_file.close()
     disp_input_file.close()
     shutil.move(nm, dispdir)
+    return
+
+  # Loop over displacements
+  for label, displacement in findif_meta_dict["displacements"].items():
+      write_disp(label, displacement)
+
+  write_disp("reference", findif_meta_dict["reference"])
+
 
 else: # sow=0, means that we are ready to compute the frequencies, run after energy points
 
-  energies = []
+  with open("manual_findif.json") as f:
+      findif_meta_dict = json.load(f)
 
-  for n, disp in enumerate(displacements):
-
-    disp_output_file = str(n) + "-disp.out"
+  def read_disp(label, displacement):
+    disp_output_file = label + ".out"
 
     with open("displacements/" + disp_output_file, "r") as dispOutput:
       dispOutputLines = dispOutput.readlines()
@@ -98,9 +108,14 @@ else: # sow=0, means that we are ready to compute the frequencies, run after ene
       words = line.split();
       if (len(words) >= 4):  # check for empty lines
         if (words[0] == "FD") and (words[1] == "ENERGY") and (words[2] == "="):
-          energies.append(float(words[3]))
-    
-  H = driver_findif.compute_hessian_from_energy(molecule, energies, -1)
+          displacement["energy"] = float(words[3])
+
+  for label, displacement in findif_meta_dict["displacements"].items():
+      read_disp(label, displacement)
+
+  read_disp("reference", findif_meta_dict["reference"])
+
+  H = driver_findif.compute_hessian_from_energy(findif_meta_dict, irrep)
   wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
   wfn.set_hessian(core.Matrix.from_array(H))
   vibinfo = vibanal_wfn(wfn, irrep=None, project_trans=project_trans, project_rot=project_rot)

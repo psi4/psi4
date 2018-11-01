@@ -255,6 +255,12 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
         ageom = mill.align_coordinates(cgeom)
         cptd['geom'] = ageom.reshape((-1))
 
+    # TEMP TODO just in case working from qcel head, not 0.1
+    if forgive is None:
+        forgive = ['provenance']
+    if 'provenance' not in forgive:
+        forgive.append('provenance')
+
     compare_dicts(xptd, cptd, tol, label, forgive=forgive, verbose=verbose)
 
 
