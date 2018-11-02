@@ -32,6 +32,7 @@ from __future__ import print_function
 import os
 import re
 import uuid
+import shutil
 import socket
 import subprocess
 
@@ -278,11 +279,12 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 #    if defmoved is True:
 #        os.rename(defaultfile + '_hide', defaultfile)
 
+    # clean up files and remove scratch directory
     os.chdir('..')
-#    try:
-#        shutil.rmtree(dftd3_tmpdir)
-#    except OSError as e:
-#        ValidationError('Unable to remove dftd3 temporary directory %s' % e)
+    try:
+        shutil.rmtree(gcp_tmpdir)
+    except OSError as err:
+        raise OSError('Unable to remove gcp temporary directory: {}'.format(gcp_tmpdir)) from err
     os.chdir(current_directory)
 
     # return -D & d(-D)/dx

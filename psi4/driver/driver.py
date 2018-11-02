@@ -165,6 +165,9 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     geom_array = np.reshape(displacement["geometry"], (-1, 3))
     molecule.set_geometry(core.Matrix.from_array(geom_array))
 
+    # clean possibly necessary for n=1 if its irrep (unsorted in displacement list) different from initial G0 for freq
+    core.clean()
+
     # Perform the derivative calculation
     derivative, wfn = derivfunc(method, return_wfn=True, molecule=molecule, **kwargs)
     displacement["energy"] = core.get_variable('CURRENT ENERGY')
