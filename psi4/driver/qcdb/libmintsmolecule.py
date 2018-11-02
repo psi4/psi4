@@ -1781,7 +1781,7 @@ class LibmintsMolecule():
         """
         rot_const = self.rotational_constants()
         for i in range(3):
-            if rot_const[i] == None:
+            if rot_const[i] is None:
                 rot_const[i] = 0.0
 
         # Determine degeneracy of rotational constants.

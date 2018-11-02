@@ -305,7 +305,7 @@ def query_yes_no(question, default=True):
     yes = re.compile(r'^(y|yes|true|on|1)', re.IGNORECASE)
     no = re.compile(r'^(n|no|false|off|0)', re.IGNORECASE)
 
-    if default == None:
+    if default is None:
         prompt = " [y/n] "
     elif default == True:
         prompt = " [Y/n] "
