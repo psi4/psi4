@@ -1188,7 +1188,7 @@ def hessian(name, **kwargs):
 
     # Call appropriate wrappers
     if gradient_type == 'nbody_gufunc':
-        return driver_nbody.nbody_gufunc(hessian, name.lower(), ptype='hessian', **kwargs) 
+        return driver_nbody.nbody_gufunc(hessian, name.lower(), ptype='hessian', **kwargs)
     # Check if this is a CBS extrapolation
     elif gradient_type == "cbs_gufunc":
         return driver_cbs._cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")
