@@ -46,7 +46,7 @@ use ``nullptr`` to signal the null pointer. The correct overload/template
 parameter will then be deduced. Using ``nullptr`` also makes the code more
 readable, especially if ``auto`` is used consistently throughout.
 
-*Reference:* Item 8 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
+*Reference:* Item 8 in `[Effective Modern C++] <https://isbnsearch.org/isbn/9781491903995>`_
 
 
 .. _`faq:automakeshared`:
@@ -77,7 +77,7 @@ Using ``std::make_shared``:
     // Performs ONE allocation
     auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);
 
-*Reference:* Item 21 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
+*Reference:* Item 21 in `[Effective Modern C++] <https://isbnsearch.org/isbn/9781491903995>`_
 
 
 .. _`faq:autodecl`:
@@ -108,8 +108,15 @@ Using ``auto`` reduces and/or avoids:
     unsigned sz = v.size();  // might not be correct on some compiler/machines
     auto size = v.size();  // size is ALWAYS of the correct type
 
-*Reference:* Items 2 and 5 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
+*Reference:* Items 2 and 5 in `[Effective Modern C++] <https://isbnsearch.org/isbn/9781491903995>`_
 
+Mark virtual functions in derived classes with override
+-------------------------------------------------------
+
+The ``override`` keyword introduced in C++11 is used to mark a function in a
+derived class and guarantee that it is overloadinga function *with the same
+signature* in the base class.  This behavior is `checked at compile time
+<https://en.cppreference.com/w/cpp/language/override>`_.
 
 .. _`faq:printmem`:
 
