@@ -732,11 +732,12 @@ def assemble_nbody_components(metadata, component_results):
             nbody_dict[var_key] = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
 
     # Compute vmfc ptype
-    if 'vmfc' in metadata['bsse_type_list'] and metadata['ptype'] != 'energy':
-        for n in nbody_range:
-            if n > 1:
-                vmfc_ptype_body_dict[n] = vmfc_ptype_by_level[n-1]
-            vmfc_ptype_body_dict[n] += vmfc_ptype_by_level[n]
+    if 'vmfc' in metadata['bsse_type_list']:
+        if metadata['ptype'] != 'energy':
+            for n in nbody_range:
+                if n > 1:
+                    vmfc_ptype_body_dict[n] = vmfc_ptype_by_level[n-1]
+                vmfc_ptype_body_dict[n] += vmfc_ptype_by_level[n]
 
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)",
                             metadata['embedding_charges'])
