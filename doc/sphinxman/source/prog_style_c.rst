@@ -114,7 +114,7 @@ Mark virtual functions in derived classes with override
 -------------------------------------------------------
 
 The ``override`` keyword introduced in C++11 is used to mark a function in a
-derived class and guarantee that it is overloadinga function *with the same
+derived class and guarantee that it is overloading a function *with the same
 signature* in the base class.  This behavior is `checked at compile time
 <https://en.cppreference.com/w/cpp/language/override>`_.
 
