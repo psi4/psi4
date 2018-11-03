@@ -41,3 +41,7 @@ except psi4.OptimizationConvergenceError as ex:
     wfn = ex.wfn
 
 compare_values(-148.752629, wfn.energy(), 5, "Energy of IRC point after 10 iterations")  #TEST
+
+# clean up scratch since optimization ended abruptly
+psi4_io.set_specific_retention(1, False)
+clean()
