@@ -1853,8 +1853,6 @@ class Molecule(LibmintsMolecule):
 
 # Attach methods to qcdb.Molecule class
 from .parker import xyz2mol as _parker_xyz2mol_yo
-Molecule.format_molecule_for_mol2 = _parker_xyz2mol_yo
-from .parker import bond_profile as _parker_bondprofile_yo
-Molecule.bond_profile = _parker_bondprofile_yo
+Molecule.format_molecule_for_mol = _parker_xyz2mol_yo
 from .interface_gcp import run_gcp as _gcp_qcdb_yo
 Molecule.run_gcp = _gcp_qcdb_yo
