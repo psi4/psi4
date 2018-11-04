@@ -185,7 +185,7 @@ script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
-- ./stage/bin/psi4 --test
+- pytest -v -rws --durations=5 stage/lib/psi4/tests/
 
 # safelist
 branches:

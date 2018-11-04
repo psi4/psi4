@@ -40,6 +40,7 @@ using_resp = pytest.mark.skipif(psi4.addons("resp") is False,
                                 reason="Psi4 not detecting plugin resp. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_resp)")
 
 
+@pytest.mark.smoke
 @using_gdma
 def test_gdma():
     """gdma1"""
@@ -96,6 +97,7 @@ def test_gdma():
     assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
 
 
+@pytest.mark.smoke
 @using_mrcc
 def test_mrcc():
     """mrcc/ccsdt"""
@@ -120,6 +122,7 @@ def test_mrcc():
     assert psi4.compare_values(-76.239133655413, psi4.get_variable("CURRENT ENERGY"), 6, 'CCSDT')
 
 
+@pytest.mark.smoke
 @using_chemps2
 def test_chemps2():
     """chemps2/scf-n2"""
@@ -167,6 +170,7 @@ def test_chemps2():
     assert psi4.compare_values(ref_energy, psi4.get_variable("CURRENT ENERGY"), 6, "DMRG Energy")
 
 
+@pytest.mark.smoke
 @using_dftd3
 def test_dftd3():
     """dftd3/energy"""
@@ -326,6 +330,7 @@ def test_dftd3():
     assert psi4.compare_values(ref_pbe_d2[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
 
 
+@pytest.mark.smoke
 @using_libefp
 def test_libefp():
     """libefp/qchem-qmefp-sp"""
@@ -384,6 +389,7 @@ def test_libefp():
     psi4.core.print_variables()
 
 
+@pytest.mark.smoke
 @using_pcmsolver
 def test_pcmsolver():
     """pcmsolver/scf"""
@@ -625,6 +631,7 @@ def _test_scf5():
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
 
 
+@pytest.mark.smoke
 @using_erd
 def test_erd():
     """erd/scf5"""
@@ -633,6 +640,7 @@ def test_erd():
     _test_scf5()
 
 
+@pytest.mark.smoke
 @using_simint
 def test_simint():
     """simint/scf5"""
@@ -640,6 +648,7 @@ def test_simint():
     psi4.set_options({'integral_package': 'simint'})
     _test_scf5()
 
+@pytest.mark.smoke
 def test_json():
     """json/energy"""
 
@@ -674,6 +683,7 @@ def test_json():
         f.write(json_data["raw_output"])
 
 
+@pytest.mark.smoke
 @using_cfour
 def test_cfour():
     """cfour/sp-rhf-ccsd_t_"""
@@ -707,6 +717,7 @@ def test_cfour():
     assert psi4.compare_values(-0.282969089769, psi4.get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
 
 
+@pytest.mark.smoke
 @using_v2rdm_casscf
 def test_v2rdm_casscf():
     """v2rdm_casscf/tests/v2rdm1"""
@@ -759,6 +770,7 @@ def test_v2rdm_casscf():
     assert psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
 
+@pytest.mark.smoke
 @hardware_nvidia_gpu
 @using_gpu_dfcc
 def test_gpu_dfcc():
@@ -795,6 +807,7 @@ def test_gpu_dfcc():
     
     
     
+@pytest.mark.smoke
 @using_dftd3
 @using_gcp
 def test_grimme_3c():
@@ -822,6 +835,7 @@ def test_grimme_3c():
     ene = psi4.energy('hf3c/', bsse_type='nocp')
     assert psi4.compare_values(-0.00240232, ene, 6, 'S22-16 HF-3c/minix')
 
+@pytest.mark.smoke
 @using_dkh
 def test_dkh():
     """dkh/molpro-2order"""
@@ -906,6 +920,7 @@ def disabled_test_forte():
     assert psi4.compare_values(refacipt2, psi4.get_variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 
 
+@pytest.mark.smoke
 @using_snsmp2
 def test_snsmp2():
     """snsmp2/he-he"""
@@ -922,6 +937,7 @@ def test_snsmp2():
     assert psi4.compare_values(0.00176708227, psi4.get_variable('SNS-MP2 TOTAL ENERGY'), 5, "SNS-MP2 IE [Eh]")
 
 
+@pytest.mark.smoke
 @using_resp
 def test_resp():
     """resp/tests/test_resp_1"""
