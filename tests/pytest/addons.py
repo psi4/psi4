@@ -59,7 +59,7 @@ using_memory_profiler = pytest.mark.skipif(_plugin_import('memory_profiler') is 
                                 reason='Not detecting module memory_profiler. Install package if necessary and add to envvar PYTHONPATH')
 
 using_psi4 = pytest.mark.skipif(False,
-                                reason='Note detecting module psi4. Install package if necessary and add to envvar PYTHONPATH')
+                                reason='Not detecting module psi4. Install package if necessary and add to envvar PYTHONPATH')
 
 #using_scipy = pytest.mark.skipif(_plugin_import('scipy') is False,
 #                                reason='Not detecting module scipy. Install package if necessary and add to envvar PYTHONPATH')
