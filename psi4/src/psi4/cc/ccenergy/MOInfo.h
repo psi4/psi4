@@ -31,8 +31,7 @@
     \brief Enter brief description of file here
 */
 
-#ifndef _psi_src_bin_ccenergy_moinfo_h
-#define _psi_src_bin_ccenergy_moinfo_h
+#pragma once
 
 #include <string>
 #include <vector>
@@ -77,15 +76,15 @@ struct MOInfo {
     int *cc_occ;   /* QT->CC active occupied reordering array */
     int *cc_aocc;  /* QT->CC alpha active occupied reordering array */
     int *cc_bocc;  /* QT->CC beta active occupied reordering array */
-    int *cc_vir;   /* QT->CC active virtiual reordering array */
-    int *cc_avir;  /* QT->CC alpha active virtiual reordering array */
-    int *cc_bvir;  /* QT->CC beta active virtiual reordering array */
+    int *cc_vir;   /* QT->CC active virtual reordering array */
+    int *cc_avir;  /* QT->CC alpha active virtual reordering array */
+    int *cc_bvir;  /* QT->CC beta active virtual reordering array */
     int *qt_occ;   /* CC->QT active occupied reordering array */
     int *qt_aocc;  /* CC->QT alpha active occupied reordering array */
     int *qt_bocc;  /* CC->QT beta active occupied reordering array */
-    int *qt_vir;   /* CC->QT active virtiual reordering array */
-    int *qt_avir;  /* CC->QT alpha active virtiual reordering array */
-    int *qt_bvir;  /* CC->QT beta active virtiual reordering array */
+    int *qt_vir;   /* CC->QT active virtual reordering array */
+    int *qt_avir;  /* CC->QT alpha active virtual reordering array */
+    int *qt_bvir;  /* CC->QT beta active virtual reordering array */
 
     int *pitzer2qt; /* Pitzer -> QT translation array */
     int *qt2pitzer; /* QT -> Pitzer translation array */
@@ -120,5 +119,3 @@ struct MOInfo {
 
 }  // namespace ccenergy
 }  // namespace psi
-
-#endif  //  _psi_src_bin_ccenergy_moinfo_h

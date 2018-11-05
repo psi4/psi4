@@ -26,8 +26,12 @@
  * @END LICENSE
  */
 
-#ifndef CCWAVE_H
-#define CCWAVE_H
+#pragma once
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <array>
 
@@ -39,6 +43,7 @@
 #include "ccenergy/Local.h"
 
 namespace psi {
+
 class Options;
 struct dpdfile2;
 struct dpdbuf4;
@@ -47,6 +52,11 @@ struct iwlbuf;
 
 namespace psi {
 namespace ccenergy {
+
+int **cacheprep_uhf(int level, int *cachefiles);
+int **cacheprep_rhf(int level, int *cachefiles);
+void cachedone_rhf(int **cachelist);
+void cachedone_uhf(int **cachelist);
 
 class CCEnergyWavefunction : public Wavefunction {
    public:
@@ -111,10 +121,6 @@ class CCEnergyWavefunction : public Wavefunction {
 
     /* DPD cache */
     void init_priority_list();
-    int **cacheprep_uhf(int level, int *cachefiles);
-    int **cacheprep_rhf(int level, int *cachefiles);
-    void cachedone_rhf(int **cachelist);
-    void cachedone_uhf(int **cachelist);
 
     /* Brueckner */
     int rotate();
@@ -200,6 +206,42 @@ class CCEnergyWavefunction : public Wavefunction {
 };
 
 }  // namespace ccenergy
-}  // namespace psi
 
-#endif  // CCWAVE_H
+namespace cc {
+
+enum class Reference;
+
+struct CCWavefunctionImpl;
+
+void psio_on();
+void psio_off();
+
+int **new_cachelist(Reference ref, int level, std::vector<int> cachefiles);
+void delete_cachelist(int **cachelist);
+
+class CCWavefunction final : public Wavefunction {
+   public:
+    CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    explicit CCWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
+    virtual ~CCWavefunction();
+
+    double compute_energy();
+
+   private:
+    /*! Coupled cluster calculation set up options and orbital info */
+    std::unique_ptr<CCWavefunctionImpl> cc_info_;
+
+    void common_init();
+    void init_io();
+    void init_dpd();
+    void tear_down();
+    void title(std::string &wfn);
+
+    std::vector<int> cachefiles_;
+    std::array<dpd_file4_cache_entry, 113> cache_priority_list_;
+    int **cachelist_;
+    std::map<std::string, DPD> dpd_;
+};
+
+}  // namespace cc
+}  // namespace psi

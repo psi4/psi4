@@ -25,12 +25,23 @@
 #
 # @END LICENSE
 #
+"""
+The CC iteration functions
+"""
 
-from .proc_table import procedures, hooks, energy_only_methods
-from .proc import scf_helper, scf_wavefunction_factory
-from .empirical_dispersion import EmpiricalDispersion
-from . import dft
-from . import response
-from . import scf_proc
-from . import libcubeprop
-from . import cc
+import numpy as np
+from psi4 import core
+from psi4.driver import constants, p4util
+from psi4.driver.p4util.exceptions import CCConvergenceError, ValidationError
+
+
+class CCIteration(object):
+    def __init__(self, low, high):
+        self.low = low
+        self.high = high
+
+    def __iter__(self):
+        counter = self.low
+        while self.high >= counter:
+            yield counter
+            counter += 1

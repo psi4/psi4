@@ -41,6 +41,8 @@
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
 
+#include "psi4/cc/ccwave.h"
+
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 
@@ -380,4 +382,9 @@ void export_wavefunction(py::module& m) {
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
         .def_buffer([](detci::CIvect& vec) { return vec.array_interface(); });
+
+    /// CCWavefunction functions
+    py::class_<cc::CCWavefunction, std::shared_ptr<cc::CCWavefunction>, Wavefunction>(m, "CCWavefunction",
+                                                                                      "Coupled cluster wavefunction")
+        .def(py::init<std::shared_ptr<Wavefunction>>());
 }
