@@ -164,19 +164,6 @@ PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const py::dict&)
 PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const py::dict&);
 }
 
-// Finite difference functions
-namespace findif {
-std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule>, Options&);
-std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep);
-std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep);
-std::vector<SharedMatrix> atomic_displacements(std::shared_ptr<Molecule>, Options&);
-
-SharedMatrix fd_1_0(std::shared_ptr<Molecule>, Options&, const py::list&);
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
-void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
-}
-
 // CC functions
 namespace cctransort {
 PsiReturnType cctransort(SharedWavefunction, Options&);
@@ -224,7 +211,7 @@ void py_reopen_outfile() {
     if (outfile_name == "stdout") {
         // outfile = stdout;
     } else {
-        auto mode =  std::ostream::app;
+        auto mode = std::ostream::app;
         outfile = std::make_shared<PsiOutStream>(outfile_name, mode);
         if (!outfile) throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }

@@ -36,8 +36,10 @@ from __future__ import absolute_import
 import os
 import re
 import sys
+import copy
 import json
 import shutil
+import logging
 
 import numpy as np
 
@@ -976,15 +978,11 @@ def optimize(name, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
 
     return_history = kwargs.pop('return_history', False)
-    if return_history:
-        # Add wfn once the deep copy issues are worked out
-        step_energies = []
-        step_gradients = []
-        step_coordinates = []
-
-    # For CBS wrapper, need to set retention on INTCO file
-    if custom_gradient or ('/' in lowername):
-        core.IOManager.shared_object().set_specific_retention(1, True)
+    #if return_history:
+    #    # Add wfn once the deep copy issues are worked out
+    #    step_energies = []
+    #    step_gradients = []
+    #    step_coordinates = []
 
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("Optimize: Does not currently support 'bsse_type' arguements")
@@ -996,15 +994,6 @@ def optimize(name, **kwargs):
         raise ValidationError("Optimize: Does not support custom Hessian's yet.")
     else:
         hessian_with_method = kwargs.get('hessian_with', lowername)
-
-    optstash = p4util.OptionsState(
-        ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
-        ['FINDIF', 'HESSIAN_WRITE'],
-        ['OPTKING', 'CART_HESS_READ'],
-        ['SCF', 'GUESS_PERSIST'],  # handle on behalf of cbs()
-        ['SCF', 'GUESS'])
-
-    n = kwargs.get('opt_iter', 1)
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
@@ -1018,26 +1007,134 @@ def optimize(name, **kwargs):
     # Shifting the geometry so need to copy the active molecule
     moleculeclone = molecule.clone()
 
-    psi4_opt_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)['GLOBALS']
-    optking_opt_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)['OPTKING']
+    # Yes, breaks object/custom basis sets. TODO
+    basis = core.get_global_option("BASIS")
 
-    psi4_options = {k:v['value'] for k, v in psi4_opt_options.items()}
-    optking_options = {k:v['value'] for k, v in optking_opt_options.items()}
+    # TODO warning differs in that fix_com/_orientation False
+    optking_schema = moleculeclone.to_schema(dtype=1)
+    # TODO from_JSON_molecule is expecting fragment ranges, not atoms in frags
+    del optking_schema['molecule']['fragments']
 
-    optimize_options = {"PSI4": psi4_options, "OPTKING": optking_options}
+    all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
+    psi4_options = {k: v['value'] for k, v in all_options['GLOBALS'].items()}
+    optking_options = {k: v['value'] for k, v in all_options['OPTKING'].items()}
+    psi4_options.update({'optimizer': optking_options})
+
+    #   optimize_options = {"PSI4": psi4_options, "OPTKING": optking_options}
+#    optimize_options = copy.deepcopy(psi4_options)
+#    optimize_options['optimizer'] = {
+#        'OPTKING': optking_options,
+#        'PSI4': {
+#            psi4_options.update({
+#                'BASIS': basis,
+#                'CALCNAME': lowername,
+#            }),
+#        },
+#    }
+
+    optking_schema.update({
+        'driver': 'optimize',
+        'model': {
+            'method': lowername,
+            'basis': basis,
+        },
+        'keywords': psi4_options,
+    })
+# HARD CODING WORKS
+#        'keywords': {'DIIS': 0, 'E_CONVERGENCE': 1e-10, 'D_CONVERGENCE': 1e-10, 'SCF_TYPE': 'PK', 'GEOM_MAXITER': 2, 'optimizer': {
+#                                                                                                                                    'OPTKING': {},
+#                                                                                                                                    'GEOM_MAXITER': 2,
+#                                                                                                                                    'SCF_TYPE': 'PK',
+#                                                                                                                                    'PSI4': {
+#                                                                                                                                             'BASIS': 'STO-3G',
+#                                                                                                                                             'CALCNAME': 'hf',
+#                                                                                                                                             'DIIS': 0, 'E_CONVERGENCE': 1e-10, 'D_CONVERGENCE': 1e-10, 'SCF_TYPE': 'PK', 'GEOM_MAXITER': 2}}},
+
+    core.clean()
+    core.clean_options()
+
+    #import pprint
+    #print('optking_schema')
+    #pprint.pprint(optking_schema)
+
     import optking
-    optking_json_dict = optking.psi4optwrapper.Psi4Opt(lowername, optimize_options)
-    #good. works 
+    oklog = optking.logger
 
-    #mol = core.Molecule.from_schema(optking_json_dict)
-    #core.set_active_molecule(mol)
-    #need to update geometry of current molecule
+    #ch = logging.StreamHandler(sys.stdout)
+    #ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    #ch.setFormatter(formatter)
+    #oklog.addHandler(ch)
 
-    new_geom = np.asarray(optking_json_dict['molecule']['geometry']).reshape(-1, 3)
-    psi_new_geom = core.Matrix.from_array(new_geom)
-    molecule.set_geometry(psi_new_geom)
+    gof = core.get_output_file()
+    outfile = open(core.get_output_file(), 'a')
+    ch2 = logging.StreamHandler(outfile)
+    ch2.setLevel(logging.INFO)
+    ch2.setFormatter(formatter)
+    oklog.addHandler(ch2)
+
+    core.close_outfile()  # front & rear
+    optking_json_dict = optking.run_json_dict(optking_schema)
+    core.set_output_file(gof, True)  # front & rear
+    oklog.removeHandler(ch2)
+    #pprint.pprint(optking_json_dict)
+
+    try:
+        newgeom = optking_json_dict['return_result']['geometry']
+    except KeyError:
+        # not even close to right error
+        raise ValidationError('optking is kaput')
+
+    p4util.reset_pe_options(all_options)
+
+    # new skeleton wavefunction w/mol, basis, psivars
+    ndarray = np.array(newgeom).reshape(-1, 3)
+    matrix = core.Matrix.from_array(ndarray)
+    molecule.set_geometry(matrix)
     molecule.update_geometry()
-    return optking_json_dict['properties']['return_energy']
+    basisset = core.BasisSet.build(molecule, "ORBITAL", basis)
+    wfn = core.Wavefunction(molecule, basisset)
+
+    optkingfail = optking_json_dict.get('error', None)
+    if optkingfail is not None:
+        geom_maxiter = re.compile(r'Maximum number of steps exceeded: (?P<iteration>\d+)')
+
+        mobj = re.search(geom_maxiter, optkingfail)
+        if mobj:
+            raise OptimizationConvergenceError("""geometry optimization""", int(mobj.group('iteration')), wfn)
+
+        raise PsiException("""Trouble with OptKing: """ + optkingfail)
+
+    thisenergy = optking_json_dict['properties']['return_energy']
+    wfn.set_variable('CURRENT ENERGY', thisenergy)
+    core.set_variable('CURRENT ENERGY', thisenergy)
+    for qcv, val in optking_json_dict['properties']['steps'][-1]['raw_output']['psi4:qcvars'].items():
+        wfn.set_variable(qcv, val)
+        core.set_variable(qcv, val)
+    npgradient = np.array(optking_json_dict['return_result']['gradient']).reshape(-1, 3)
+    thisgradient = core.Matrix.from_array(npgradient)
+    wfn.set_gradient(thisgradient)
+    core.set_gradient(thisgradient)
+    wfn.set_array('CURRENT GRADIENT', thisgradient)
+
+#    p4util.reset_pe_options(all_options)
+
+    #if return_history:
+    #    history = {
+    #        'energy': step_energies,
+    #        'gradient': step_gradients,
+    #        'coordinates': step_coordinates,
+    #    }
+
+    #if return_wfn and return_history:
+    #    return (thisenergy, wfn, history)
+    if return_wfn and not return_history:
+        return (thisenergy, wfn)
+    #elif return_history and not return_wfn:
+    #    return (thisenergy, history)
+    else:
+        return thisenergy
+
 
     #initial_sym = moleculeclone.schoenflies_symbol()
     #while n <= core.get_option('OPTKING', 'GEOM_MAXITER'):
