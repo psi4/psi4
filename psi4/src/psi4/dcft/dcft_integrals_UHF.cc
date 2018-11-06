@@ -359,7 +359,7 @@ void DCFTSolver::sort_OOOV_integrals() {
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O>=O]+"), 0,
                            "MO Ints (VO|OO)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[O,O]"), ID("[O,V]"), "MO Ints (OO|OV)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[O>=O]+"), ID("[O,V]"), "MO Ints (OO|OV)");
     global_dpd_->buf4_close(&I);
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), 0,
@@ -419,7 +419,7 @@ void DCFTSolver::sort_OOOV_integrals() {
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"), ID("[v,o]"), ID("[o>=o]+"), 0,
                            "MO Ints (vo|oo)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[o,o]"), ID("[o,v]"), "MO Ints (oo|ov)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[o>=o]+"), ID("[o,v]"), "MO Ints (oo|ov)");
     global_dpd_->buf4_close(&I);
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"), ID("[v,o]"), ID("[o,o]"), 0,

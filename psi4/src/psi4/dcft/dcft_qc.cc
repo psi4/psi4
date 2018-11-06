@@ -1427,7 +1427,7 @@ void DCFTSolver::compute_sigma_vector_cum_orb() {
     // DI_IJ = (IJ|KC) D_KC
     global_dpd_->file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
     global_dpd_->file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>=O]+"), ID("[O,V]"), 0,
                            "MO Ints (OO|OV)");
     global_dpd_->contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -1459,7 +1459,7 @@ void DCFTSolver::compute_sigma_vector_cum_orb() {
     // DI_ij = (ij|kc) D_kc
     global_dpd_->file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
     global_dpd_->file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o,o]"), ID("[o,v]"), 0,
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o>=o]+"), ID("[o,v]"), 0,
                            "MO Ints (oo|ov)");
     global_dpd_->contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&I);

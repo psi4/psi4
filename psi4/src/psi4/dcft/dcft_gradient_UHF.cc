@@ -1466,7 +1466,7 @@ double DCFTSolver::compute_response_coupling() {
     // zI_IJ = (IJ|KC) z_KC
     global_dpd_->file2_init(&zI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "zI <O|O>");
     global_dpd_->file2_init(&z, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>=O]+"), ID("[O,V]"), 0,
                            "MO Ints (OO|OV)");
     global_dpd_->contract422(&I, &z, &zI, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -1498,7 +1498,7 @@ double DCFTSolver::compute_response_coupling() {
     // zI_ij = (ij|kc) z_kc
     global_dpd_->file2_init(&zI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "zI <o|o>");
     global_dpd_->file2_init(&z, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o,o]"), ID("[o,v]"), 0,
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o>=o]+"), ID("[o,v]"), 0,
                            "MO Ints (oo|ov)");
     global_dpd_->contract422(&I, &z, &zI, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&I);
