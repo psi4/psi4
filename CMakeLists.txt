@@ -86,6 +86,7 @@ option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
+option(ENABLE_libecpint "Enables use of Libecpint library for effective core potentials" ON)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
@@ -186,6 +187,7 @@ ExternalProject_Add(psi4-core
            erd_external
            gau2grid_external
            gdma_external
+           libecpint_external
            libint_external
            pcmsolver_external
            pybind11_external
@@ -220,6 +222,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
+              -DENABLE_libecpint=${ENABLE_libecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_simint=${ENABLE_simint}
