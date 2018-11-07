@@ -40,6 +40,7 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import driver_nbody_helper
 
+from psi4.driver.task_base import BaseTask
 ### Math helper functions
 
 
@@ -427,7 +428,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         basis_tuple = tuple(fragment_range)
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
-                if metadata['max_nbody'] == 1: break
+                if max_nbody == 1: break
                 cp_compute_list[nbody].add((x, basis_tuple))
 
     if 'nocp' in bsse_type_list or metadata['return_total_data']:
@@ -855,6 +856,7 @@ class NBodyComputer:
 
 
     def __init__(self, molecule, driver, **kwargs):
+
         # Initialize dictionaries for easy data passing
         self.metadata = {}
         self.component_results = {}
@@ -917,7 +919,42 @@ class NBodyComputer:
         # core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
 
         # Get compute list
+        print(self.max_nbody, self.max_frag)
         self.compute_list = build_nbody_compute_list(self.bsse_type_list, self.max_nbody, self.max_frag)
+        self.task_list = {}
+        self.results_list = {}
+
+    def build_tasks(self, obj, bsse_type="all", **kwargs):
+
+        import json
+        template = json.dumps(kwargs)
+        compute_list = self.compute_list[bsse_type]
+
+        counter = 0
+        for count, n in enumerate(compute_list):
+            for key, pair in enumerate(compute_list[n]):
+                if pair in self.task_list:
+                    continue
+                data = json.loads(template)
+                ghost = list(set(pair[1]) - set(pair[0]))
+                data["molecule"] = self.molecule.extract_subsets(list(pair[0]), ghost)
+
+                self.task_list[pair] = obj(**data)
+                counter +=1
+
+        return counter
+
+    def compute(self):
+
+        for k, v in self.task_list.items():
+            self.results_list[k] = v.compute()
+            print(self.results_list[k]["return_result"])
+
+    def get_results(self):
+        tmp = {"energy": self.results_list, "ptype": self.driver}
+        nbody_results = assemble_nbody_components(self.dict(), tmp)
+
+        return nbody_results
 
     # # Compute N-Body components
     # component_results = compute_nbody_components(func, method_string, metadata)
