@@ -75,13 +75,13 @@ public:
     RBase(SharedWavefunction ref_wfn, Options& options, bool use_symmetry=true);
     // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
     RBase(bool flag);
-    virtual ~RBase();
+    ~RBase() override;
 
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
 
     // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
-    virtual double compute_energy() { return 0.0; }
+    double compute_energy() override { return 0.0; }
 
     void set_print(int print) { print_ = print; }
 
@@ -159,9 +159,9 @@ protected:
 
 public:
     RCIS(SharedWavefunction ref_wfn, Options& options);
-    virtual ~RCIS();
+    ~RCIS() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 
 };
 
@@ -180,9 +180,9 @@ protected:
 
 public:
     RTDHF(SharedWavefunction ref_wfn, Options& options);
-    virtual ~RTDHF();
+    ~RTDHF() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 
 };
 
@@ -207,10 +207,10 @@ protected:
 
 public:
     RCPHF(SharedWavefunction ref_wfn, Options& options, bool use_symmetry=true);
-    virtual ~RCPHF();
+    ~RCPHF() override;
 
     /// Solve for all perturbations currently in b
-    virtual double compute_energy();
+    double compute_energy() override;
 
     /// Perturbation vector queue, shove tasks onto this guy before compute_energy
     std::map<std::string, SharedMatrix>& b() { return b_; }
@@ -225,37 +225,37 @@ public:
 class RCPKS : public RCPHF {
 
 protected:
-    virtual void print_header();
+    void print_header() override;
 
 public:
     RCPKS(SharedWavefunction ref_wfn, Options& options);
-    virtual ~RCPKS();
+    ~RCPKS() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 };
 
 class RTDA : public RCIS {
 
 protected:
-    virtual void print_header();
+    void print_header() override;
 
 public:
     RTDA(SharedWavefunction ref_wfn, Options& options);
-    virtual ~RTDA();
+    ~RTDA() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 };
 
 class RTDDFT : public RTDHF {
 
 protected:
-    virtual void print_header();
+    void print_header() override;
 
 public:
     RTDDFT(SharedWavefunction ref_wfn, Options& options);
-    virtual ~RTDDFT();
+    ~RTDDFT() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 };
 
 }

@@ -45,9 +45,9 @@ namespace fnocc {
 class CoupledCluster : public Wavefunction {
    public:
     CoupledCluster(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
-    ~CoupledCluster();
+    ~CoupledCluster() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    protected:
     int iter;
@@ -218,9 +218,9 @@ class CoupledCluster : public Wavefunction {
 class PSI_API DFCoupledCluster : public CoupledCluster {
    public:
     DFCoupledCluster(SharedWavefunction ref_wfn, Options &options);
-    ~DFCoupledCluster();
+    ~DFCoupledCluster() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    protected:
     void finalize();
@@ -231,7 +231,7 @@ class PSI_API DFCoupledCluster : public CoupledCluster {
     void WriteBanner();
 
     /// allocate memory
-    virtual void AllocateMemory();
+    void AllocateMemory() override;
 
     /// update t1 amplitudes
     void UpdateT1();
@@ -279,9 +279,9 @@ class PSI_API DFCoupledCluster : public CoupledCluster {
 class CoupledPair : public CoupledCluster {
    public:
     CoupledPair(std::shared_ptr<psi::Wavefunction> wfn, Options &options);
-    ~CoupledPair();
+    ~CoupledPair() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    protected:
     /// coupled pair iterations

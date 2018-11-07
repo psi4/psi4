@@ -145,7 +145,7 @@ public:
 
     RSolver(std::shared_ptr<RHamiltonian> H);
     /// Destructor
-    virtual ~RSolver();
+    ~RSolver() override;
 
     // => Accessors <= //
 
@@ -174,7 +174,7 @@ public:
     /// Reference to underlying RHamiltonian
     USolver(std::shared_ptr<UHamiltonian> H);
     /// Destructor
-    virtual ~USolver();
+    ~USolver() override;
 
     // => Accessors <= //
 
@@ -249,7 +249,7 @@ protected:
 public:
 
     CGRSolver(std::shared_ptr<RHamiltonian> H);
-    virtual ~CGRSolver();
+    ~CGRSolver() override;
 
     /// Static constructor, uses Options object
     static std::shared_ptr<CGRSolver> build_solver(Options& options,
@@ -259,10 +259,10 @@ public:
     std::vector<std::shared_ptr<Vector> >& b() { return b_; }
 
     void print_header() const;
-    size_t memory_estimate();
-    void initialize();
-    void solve();
-    void finalize();
+    size_t memory_estimate() override;
+    void initialize() override;
+    void solve() override;
+    void finalize() override;
 
     void set_shifts(const std::vector<std::vector<double> >& shifts) { shifts_ = shifts; }
     void set_A(SharedMatrix A, const std::vector<std::vector<int> > inds) { A_ = A; A_inds_ = inds; }
@@ -352,7 +352,7 @@ public:
     /// Constructor
     DLRSolver(std::shared_ptr<RHamiltonian> H);
     /// Destructor
-    virtual ~DLRSolver();
+    ~DLRSolver() override;
 
     /// Static constructor, uses Options object
     static std::shared_ptr<DLRSolver> build_solver(Options& options,
@@ -360,11 +360,11 @@ public:
 
     // => Required Methods <= //
 
-    virtual void print_header() const;
-    virtual size_t memory_estimate();
-    virtual void initialize();
-    void solve();
-    void finalize();
+    void print_header() const override;
+    size_t memory_estimate() override;
+    void initialize() override;
+    void solve() override;
+    void finalize() override;
 
     // => Accessors <= //
 
@@ -399,7 +399,7 @@ protected:
     std::string quantity_;
 
     // Find correctors (Like, the most advanced correctors ever)
-    void correctors();
+    void correctors() override;
 
 public:
 
@@ -408,7 +408,7 @@ public:
     /// Constructor
     RayleighRSolver(std::shared_ptr<RHamiltonian> H);
     /// Destructor
-    virtual ~RayleighRSolver();
+    ~RayleighRSolver() override;
 
     /// Static constructor, uses Options object
     static std::shared_ptr<RayleighRSolver> build_solver(Options& options,
@@ -416,9 +416,9 @@ public:
 
     // => Required Methods <= //
 
-    void print_header() const;
-    void initialize();
-    void finalize();
+    void print_header() const override;
+    void initialize() override;
+    void finalize() override;
 
     void set_precondition_maxiter(int maxiter) { precondition_maxiter_ = maxiter; }
     void set_precondition_steps(const std::string& steps) { precondition_steps_ = steps; }
@@ -504,7 +504,7 @@ public:
     /// Constructor
     DLRXSolver(std::shared_ptr<RHamiltonian> H);
     /// Destructor
-    virtual ~DLRXSolver();
+    ~DLRXSolver() override;
 
     /// Static constructor, uses Options object
     static std::shared_ptr<DLRXSolver> build_solver(Options& options,
@@ -512,11 +512,11 @@ public:
 
     // => Required Methods <= //
 
-    void print_header() const;
-    size_t memory_estimate();
-    void initialize();
-    void solve();
-    void finalize();
+    void print_header() const override;
+    size_t memory_estimate() override;
+    void initialize() override;
+    void solve() override;
+    void finalize() override;
 
     // => Accessors <= //
 
@@ -625,7 +625,7 @@ public:
     /// Constructor
     DLUSolver(std::shared_ptr<UHamiltonian> H);
     /// Destructor
-    virtual ~DLUSolver();
+    ~DLUSolver() override;
 
     /// Static constructor, uses Options object
     static std::shared_ptr<DLUSolver> build_solver(Options& options,
@@ -633,11 +633,11 @@ public:
 
     // => Required Methods <= //
 
-    virtual void print_header() const;
-    virtual size_t memory_estimate(){ return 0;};
-    virtual void initialize();
-    void solve();
-    void finalize();
+    void print_header() const override;
+    size_t memory_estimate() override{ return 0;};
+    void initialize() override;
+    void solve() override;
+    void finalize() override;
 
     // => Accessors <= //
 

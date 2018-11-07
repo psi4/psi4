@@ -121,9 +121,9 @@ class SAPT : public Wavefunction {
    public:
     SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
          std::shared_ptr<PSIO> psio);
-    virtual ~SAPT();
+    ~SAPT() override;
 
-    virtual double compute_energy() = 0;
+    double compute_energy() override = 0;
 };
 
 class CPHFDIIS {

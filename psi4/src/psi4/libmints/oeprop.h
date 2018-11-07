@@ -313,7 +313,7 @@ class PopulationAnalysisCalc : public Prop {
    public:
     typedef std::shared_ptr<std::vector<double>> SharedStdVector;
     PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn);
-    virtual ~PopulationAnalysisCalc();
+    ~PopulationAnalysisCalc() override;
     /// Compute Mulliken Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
@@ -361,7 +361,7 @@ class ESPPropCalc : public Prop {
     /// Constructor
     ESPPropCalc(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
-    virtual ~ESPPropCalc();
+    ~ESPPropCalc() override;
 
     std::vector<double> const& Vvals() const { return Vvals_; }
     std::vector<double> const& Exvals() const { return Exvals_; }
@@ -395,7 +395,7 @@ class OEProp : public TaskListComputer {
     /// Common initialization
     void common_init();
     /// Print header and information
-    void print_header();
+    void print_header() override;
 
     // Compute routines
     /// Compute dipole
@@ -441,7 +441,7 @@ class OEProp : public TaskListComputer {
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
-    virtual ~OEProp();
+    ~OEProp() override;
 
     /// Python issue
     void oepy_add(const std::string& task) { add(task); }
@@ -449,7 +449,7 @@ class OEProp : public TaskListComputer {
     void oepy_set_title(const std::string& title) { set_title(title); }
 
     /// Compute and print/save the properties
-    void compute();
+    void compute() override;
 
     std::vector<double> const& Vvals() const { return epc_.Vvals(); }
     std::vector<double> const& Exvals() const { return epc_.Exvals(); }

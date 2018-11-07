@@ -280,7 +280,7 @@ public:
     PKMgrDisk(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
               size_t memory, Options &options);
     /// Destructor for PKMgrDisk, does nothing
-    virtual ~PKMgrDisk() {}
+    ~PKMgrDisk() override {}
 
     /// Setter/Getter functions
     void set_writing(bool tmp) { writing_ = tmp; }
@@ -295,13 +295,13 @@ public:
     std::shared_ptr< PSIO > psio() const { return psio_; }
 
     /// Finalize the PK file formation
-    virtual void finalize_PK();
+    void finalize_PK() override;
 
     /// Initialize sequence for Disk algorithms
-    virtual void initialize();
+    void initialize() override;
     /// Initialize wK PK supermatrix, has to be called after
     /// initialize()
-    virtual void initialize_wK();
+    void initialize_wK() override;
     /// Allocating new buffers for wK integrals
     virtual void allocate_buffers_wK()=0;
     /// Prepare the JK formation for disk algorithms
@@ -311,7 +311,7 @@ public:
     /// Determining the batch sizes
     void batch_sizing();
     /// Printing out the batches
-    virtual void print_batches();
+    void print_batches() override;
 
     /// Opening files for integral storage
     virtual void prestripe_files()=0;
@@ -319,9 +319,9 @@ public:
     virtual void prestripe_files_wK() = 0;
 
     /// Write integrals on disk
-    virtual void write();
+    void write() override;
     /// Write wK integrals on disk
-    virtual void write_wK();
+    void write_wK() override;
 
     /// Opening the PK file
     void open_PK_file();
@@ -333,7 +333,7 @@ public:
                         std::vector<SharedMatrix> K = std::vector<SharedMatrix>());
 
     /// Finalize JK matrix formation
-    virtual void finalize_JK();
+    void finalize_JK() override;
 };
 
 /**
@@ -362,27 +362,27 @@ public:
     PKMgrReorder(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                  size_t memory, Options &options);
     /// Destructor
-    virtual ~PKMgrReorder() {}
+    ~PKMgrReorder() override {}
 
     /// Sequence of operations to form PK for reorder algo
-    virtual void form_PK();
+    void form_PK() override;
     /// Forming PK for wK integrals
-    virtual void form_PK_wK();
+    void form_PK_wK() override;
 
     /// Pre-striping the PK file
-    virtual void prestripe_files();
+    void prestripe_files() override;
     /// Pre-striping PK file for wK integrals
-    virtual void prestripe_files_wK();
+    void prestripe_files_wK() override;
 
     /// Allocating the buffers for each thread
-    virtual void allocate_buffers();
+    void allocate_buffers() override;
     /// De-allocating buffer space for J/K supermatrices and
     /// allocating space for wK. Allows us to use buffers twice as big
-    virtual void allocate_buffers_wK();
+    void allocate_buffers_wK() override;
     /// Finalize PK: synchronize AIO writing, delete thread
     /// buffers, keep PK file open since we are going to
     /// use it immediately
-    virtual void finalize_PK();
+    void finalize_PK() override;
 
 };
 
@@ -419,33 +419,33 @@ public:
     PKMgrYoshimine(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                    size_t memory, Options &options);
     /// Destructor
-    virtual ~PKMgrYoshimine() {}
+    ~PKMgrYoshimine() override {}
 
     /// Pre-striping the IWL pre-sorted bucket files
     //TODO: Optimize the vastly excessive amount of pre-striping for the K file
-    virtual void prestripe_files();
+    void prestripe_files() override;
     /// Pre-striping for IWL wK pre-sorted files
-    virtual void prestripe_files_wK();
+    void prestripe_files_wK() override;
 
     /// Gather all steps to form PK
-    virtual void form_PK();
+    void form_PK() override;
     /// Steps to form the supermatrix for wK
-    virtual void form_PK_wK();
+    void form_PK_wK() override;
 
     /// Allocating the buffers for each thread
-    virtual void allocate_buffers();
+    void allocate_buffers() override;
     /// Allocating buffers for wK integrals
-    virtual void allocate_buffers_wK();
+    void allocate_buffers_wK() override;
 
     /// Computing the integrals
-    virtual void compute_integrals(bool wK = false);
+    void compute_integrals(bool wK = false) override;
     /// computing wK integrals
-    virtual void compute_integrals_wK();
+    void compute_integrals_wK() override;
 
     /// Writing of the last partially filled buffers
-    virtual void write();
+    void write() override;
     /// Writing of the last partially filled buffers for wK
-    virtual void write_wK();
+    void write_wK() override;
 
     /// Reading and sorting integrals to generate PK file
     void sort_ints(bool wK = false);
@@ -488,16 +488,16 @@ public:
     PKMgrInCore(std::shared_ptr<BasisSet> primary, size_t memory,
                 Options &options) : wK_ints_(nullptr), PKManager(primary,memory,options) {}
     /// Destructor for in-core class
-    virtual ~PKMgrInCore() {}
+    ~PKMgrInCore() override {}
 
     /// Initialize sequence for in-core algorithm
-    virtual void initialize();
+    void initialize() override;
     /// Initialize the wK integrals
-    virtual void initialize_wK();
+    void initialize_wK() override;
     /// Sequence of steps to form PK matrix
-    virtual void form_PK();
+    void form_PK() override;
     /// Sequence of steps to form wK PK matrix
-    virtual void form_PK_wK();
+    void form_PK_wK() override;
     /// Steps to prepare JK formation
     virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
                             std::vector<SharedMatrix> Cr);
@@ -506,20 +506,20 @@ public:
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
                         std::vector<SharedMatrix> K = std::vector<SharedMatrix>());
     /// Finalize JK formation
-    virtual void finalize_JK();
+    void finalize_JK() override;
 
     /// No disk write, only finalizes integral arrays
-    virtual void write();
+    void write() override;
     /// Finalize integral arrays for wK
-    virtual void write_wK();
+    void write_wK() override;
 
     /// Printing the algorithm header
-    virtual void print_batches();
+    void print_batches() override;
 
     /// Allocate the buffer threads
-    virtual void allocate_buffers();
+    void allocate_buffers() override;
     /// Finalize PK, i.e. deallocate buffers
-    virtual void finalize_PK();
+    void finalize_PK() override;
 
 };
 

@@ -51,9 +51,9 @@ namespace ccenergy {
 class CCEnergyWavefunction : public Wavefunction {
    public:
     CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
-    virtual ~CCEnergyWavefunction();
+    ~CCEnergyWavefunction() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    private:
     /* setup, info and teardown */

@@ -69,7 +69,7 @@ private:
 public:
 
     LibXCFunctional(std::string xc_name, bool unpolarized);
-    virtual ~LibXCFunctional();
+    ~LibXCFunctional() override;
 
     virtual void compute_functional(const std::map<std::string, SharedVector>& in,
                                     const std::map<std::string, SharedVector>& out, int npoints,

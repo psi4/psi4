@@ -51,9 +51,9 @@ protected:
 
 public:
     SCFGrad(SharedWavefunction ref_wfn, Options& options);
-    virtual ~SCFGrad();
+    ~SCFGrad() override;
 
-    double compute_energy() { throw PSIEXCEPTION("SCFGrad needs a rehash, call Rob."); }
+    double compute_energy() override { throw PSIEXCEPTION("SCFGrad needs a rehash, call Rob."); }
 
     SharedMatrix compute_gradient();
 

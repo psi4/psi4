@@ -38,9 +38,9 @@ namespace fnocc {
 class FrozenNO : public Wavefunction {
    public:
     FrozenNO(std::shared_ptr<Wavefunction> wfn, Options& options);
-    ~FrozenNO();
+    ~FrozenNO() override;
 
-    double compute_energy();
+    double compute_energy() override;
     void ComputeNaturalOrbitals();
 
    protected:
@@ -54,9 +54,9 @@ class FrozenNO : public Wavefunction {
 class PSI_API DFFrozenNO : public FrozenNO {
    public:
     DFFrozenNO(std::shared_ptr<Wavefunction> wfn, Options& options);
-    ~DFFrozenNO();
+    ~DFFrozenNO() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
     /// computes MP2 natural orbitals
     void ComputeNaturalOrbitals();

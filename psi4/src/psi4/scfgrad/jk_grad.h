@@ -195,12 +195,12 @@ protected:
 
 public:
     DFJKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
-    virtual ~DFJKGrad();
+    ~DFJKGrad() override;
 
-    void compute_gradient();
-    void compute_hessian();
+    void compute_gradient() override;
+    void compute_hessian() override;
 
-    void print_header() const;
+    void print_header() const override;
 
     /**
      * Minimum relative eigenvalue to retain in fitting inverse
@@ -245,12 +245,12 @@ protected:
     std::map<std::string, std::shared_ptr<Matrix> > compute2(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints);
 public:
     DirectJKGrad(int deriv, std::shared_ptr<BasisSet> primary);
-    virtual ~DirectJKGrad();
+    ~DirectJKGrad() override;
 
-    void compute_gradient();
-    void compute_hessian();
+    void compute_gradient() override;
+    void compute_hessian() override;
 
-    void print_header() const;
+    void print_header() const override;
 
     /**
      * What number of threads to compute integrals on

@@ -85,11 +85,11 @@ protected:
     SharedMatrix A_;
 public:
     CholeskyMatrix(SharedMatrix A, double delta, size_t memory);
-    virtual ~CholeskyMatrix();
+    ~CholeskyMatrix() override;
 
-    virtual size_t N();
-    virtual void compute_diagonal(double* target);
-    virtual void compute_row(int row, double* target);
+    size_t N() override;
+    void compute_diagonal(double* target) override;
+    void compute_row(int row, double* target) override;
 };
 
 class PSI_API CholeskyERI : public Cholesky {
@@ -100,11 +100,11 @@ protected:
     std::shared_ptr<TwoBodyAOInt> integral_;
 public:
     CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, size_t memory);
-    virtual ~CholeskyERI();
+    ~CholeskyERI() override;
 
-    virtual size_t N();
-    virtual void compute_diagonal(double* target);
-    virtual void compute_row(int row, double* target);
+    size_t N() override;
+    void compute_diagonal(double* target) override;
+    void compute_row(int row, double* target) override;
 };
 
 class CholeskyMP2 : public Cholesky {
@@ -118,11 +118,11 @@ public:
     CholeskyMP2(SharedMatrix Qia, std::shared_ptr<Vector> eps_aocc,
         std::shared_ptr<Vector> eps_avir, bool symmetric,
         double delta, size_t memory);
-    virtual ~CholeskyMP2();
+    ~CholeskyMP2() override;
 
-    virtual size_t N();
-    virtual void compute_diagonal(double* target);
-    virtual void compute_row(int row, double* target);
+    size_t N() override;
+    void compute_diagonal(double* target) override;
+    void compute_row(int row, double* target) override;
 };
 
 class CholeskyDelta : public Cholesky {
@@ -134,11 +134,11 @@ public:
     CholeskyDelta(std::shared_ptr<Vector> eps_aocc,
         std::shared_ptr<Vector> eps_avir,
         double delta, size_t memory);
-    virtual ~CholeskyDelta();
+    ~CholeskyDelta() override;
 
-    virtual size_t N();
-    virtual void compute_diagonal(double* target);
-    virtual void compute_row(int row, double* target);
+    size_t N() override;
+    void compute_diagonal(double* target) override;
+    void compute_row(int row, double* target) override;
 };
 
 class CholeskyLocal : public Cholesky {
@@ -148,11 +148,11 @@ protected:
 public:
     CholeskyLocal(SharedMatrix C,
         double delta, size_t memory);
-    virtual ~CholeskyLocal();
+    ~CholeskyLocal() override;
 
-    virtual size_t N();
-    virtual void compute_diagonal(double* target);
-    virtual void compute_row(int row, double* target);
+    size_t N() override;
+    void compute_diagonal(double* target) override;
+    void compute_row(int row, double* target) override;
 };
 
 } // Namespace psi

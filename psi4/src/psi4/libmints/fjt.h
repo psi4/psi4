@@ -84,9 +84,9 @@ class Taylor_Fjt : public Fjt {
     static const int max_interp_order = 8;
 
     Taylor_Fjt(size_t jmax, double accuracy);
-    virtual ~Taylor_Fjt();
+    ~Taylor_Fjt() override;
     /// Implements Fjt::values()
-    double* values(int J, double T);
+    double* values(int J, double T) override;
 
    private:
     double** grid_;    /* Table of "exact" Fm(T) values. Row index corresponds to
@@ -123,9 +123,9 @@ class FJT : public Fjt {
 
    public:
     FJT(int n);
-    virtual ~FJT();
+    ~FJT() override;
     /// implementation of Fjt::values()
-    double* values(int J, double T);
+    double* values(int J, double T) override;
 };
 
 class GaussianFundamental : public Fjt {
@@ -136,10 +136,10 @@ class GaussianFundamental : public Fjt {
 
    public:
     GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~GaussianFundamental();
+    ~GaussianFundamental() override;
 
-    virtual double* values(int J, double T) = 0;
-    void set_rho(double rho);
+    double* values(int J, double T) override = 0;
+    void set_rho(double rho) override;
 };
 
 /**
@@ -148,8 +148,8 @@ class GaussianFundamental : public Fjt {
 class F12Fundamental : public GaussianFundamental {
    public:
     F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12Fundamental();
-    double* values(int J, double T);
+    ~F12Fundamental() override;
+    double* values(int J, double T) override;
 };
 
 /**
@@ -158,15 +158,15 @@ class F12Fundamental : public GaussianFundamental {
 class F12ScaledFundamental : public GaussianFundamental {
    public:
     F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12ScaledFundamental();
-    double* values(int J, double T);
+    ~F12ScaledFundamental() override;
+    double* values(int J, double T) override;
 };
 
 class F12SquaredFundamental : public GaussianFundamental {
    public:
     F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12SquaredFundamental();
-    double* values(int J, double T);
+    ~F12SquaredFundamental() override;
+    double* values(int J, double T) override;
 };
 
 class F12G12Fundamental : public GaussianFundamental {
@@ -175,15 +175,15 @@ class F12G12Fundamental : public GaussianFundamental {
 
    public:
     F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12G12Fundamental();
-    double* values(int J, double T);
+    ~F12G12Fundamental() override;
+    double* values(int J, double T) override;
 };
 
 class F12DoubleCommutatorFundamental : public GaussianFundamental {
    public:
     F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12DoubleCommutatorFundamental();
-    double* values(int J, double T);
+    ~F12DoubleCommutatorFundamental() override;
+    double* values(int J, double T) override;
 };
 
 class ErfFundamental : public GaussianFundamental {
@@ -193,8 +193,8 @@ class ErfFundamental : public GaussianFundamental {
 
    public:
     ErfFundamental(double omega, int max);
-    virtual ~ErfFundamental();
-    double* values(int J, double T);
+    ~ErfFundamental() override;
+    double* values(int J, double T) override;
     void setOmega(double omega) { omega_ = omega; }
 };
 
@@ -205,8 +205,8 @@ class ErfComplementFundamental : public GaussianFundamental {
 
    public:
     ErfComplementFundamental(double omega, int max);
-    virtual ~ErfComplementFundamental();
-    double* values(int J, double T);
+    ~ErfComplementFundamental() override;
+    double* values(int J, double T) override;
     void setOmega(double omega) { omega_ = omega; }
 };
 

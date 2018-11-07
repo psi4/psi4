@@ -159,13 +159,13 @@ class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursio
 
    public:
     ObaraSaikaTwoCenterVIDerivRecursion(int max_am1, int max_am2);
-    virtual ~ObaraSaikaTwoCenterVIDerivRecursion();
+    ~ObaraSaikaTwoCenterVIDerivRecursion() override;
 
-    double ***vx() const { return vx_; }
-    double ***vy() const { return vy_; }
-    double ***vz() const { return vz_; }
+    double ***vx() const override { return vx_; }
+    double ***vy() const override { return vy_; }
+    double ***vz() const override { return vz_; }
 
-    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+    void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2) override;
 };
 
 /*! \ingroup MINTS
@@ -189,16 +189,16 @@ class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRe
 
    public:
     ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2);
-    virtual ~ObaraSaikaTwoCenterVIDeriv2Recursion();
+    ~ObaraSaikaTwoCenterVIDeriv2Recursion() override;
 
-    double ***vxx() const { return vxx_; }
-    double ***vxy() const { return vxy_; }
-    double ***vxz() const { return vxz_; }
-    double ***vyy() const { return vyy_; }
-    double ***vyz() const { return vyz_; }
-    double ***vzz() const { return vzz_; }
+    double ***vxx() const override { return vxx_; }
+    double ***vxy() const override { return vxy_; }
+    double ***vxz() const override { return vxz_; }
+    double ***vyy() const override { return vyy_; }
+    double ***vyz() const override { return vyz_; }
+    double ***vzz() const override { return vzz_; }
 
-    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+    void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2) override;
 };
 
 /*! \ingroup MINTS
@@ -220,14 +220,14 @@ class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
 
    public:
     ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2);
-    virtual ~ObaraSaikaTwoCenterElectricField();
+    ~ObaraSaikaTwoCenterElectricField() override;
 
     // We could also add the getter for the q_ (potential ints here)
     double ***x() const { return x_; }
     double ***y() const { return y_; }
     double ***z() const { return z_; }
 
-    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+    void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2) override;
 };
 
 /*! \ingroup MINTS
@@ -251,13 +251,13 @@ class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElect
 
    public:
     ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2);
-    virtual ~ObaraSaikaTwoCenterElectricFieldGradient();
+    ~ObaraSaikaTwoCenterElectricFieldGradient() override;
 
     double ***ex() const { return x_; }
     double ***ey() const { return y_; }
     double ***ez() const { return z_; }
 
-    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+    void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2) override;
 };
 
 /*! \ingroup MINTS
