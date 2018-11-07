@@ -45,6 +45,7 @@ zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
 _zeta_sym2val = {v: k for k, v in _zeta_val2sym.items()}
 _addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
+_f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
 _lmh_labels = {
     1: ['HI'],
     2: ['LO', 'HI'],
@@ -1436,11 +1437,7 @@ def cbs(func, label, **kwargs):
         raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
                                  function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
 
-    optstash = p4util.OptionsState(['BASIS'], ['WFN'], ['WRITER_FILE_LABEL'])
-
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
-
-    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
@@ -1463,234 +1460,267 @@ def cbs(func, label, **kwargs):
                     """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
                     (delta["treatment"], delta["wfn_lo"]))
 
-    # Build string of title banner
-    instructions = "\n" + p4util.banner(f" CBS Setup{':' + label if label else ''} ", strNotOutfile=True) + "\n"
-    core.print_out(instructions)
+    metameta = {
+        'kwargs': kwargs,
+        'ptype': ptype,
+        'verbose': verbose,
+        'label': label,
+        'molecule': molecule,
+    }
 
-    # Call schemes for each portion of total energy to 'place orders' for calculations needed
-    d_fields = [
-        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
-    ]
-    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
-    GRAND_NEED = []
-    MODELCHEM = []
+    # Plan CBS jobs
+    GRAND_NEED, MODELCHEM, JOBS = build_cbs_compute(metameta, metadata)
 
-    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
-                                 metadata[0]["wfn"], metadata[0]["options"], natom)
-    GRAND_NEED.append(
-        dict(
-            zip(d_fields, [
-                'scf', metadata[0]["scheme"],
-                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
-                metadata[0]["alpha"]
-            ])))
-    if len(metadata) > 1:
-        for delta in metadata[1:]:
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
-                                         delta["options"], natom)
-            GRAND_NEED.append(
-                dict(
-                    zip(d_fields, [
-                        delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
-                        delta["alpha"]
-                    ])))
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
-                                         delta["options_lo"], natom)
-            GRAND_NEED.append(
-                dict(
-                    zip(d_fields, [
-                        delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
-                        delta["alpha"]
-                    ])))
+    # Compute CBS components
+    JOBS_EXT = compute_cbs_components(func, metameta, JOBS)
 
-    for stage in GRAND_NEED:
-        for lvl in stage['d_need'].items():
-            MODELCHEM.append(lvl[1])
+    # Assemble CBS quantities
+    cbs_results, GRAND_NEED = assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM)
 
-    # Apply chemical reasoning to choose the minimum computations to run
-    JOBS = MODELCHEM[:]
+    finalenergy = cbs_results['energy']
+    finalgradient = cbs_results['gradient']
+    finalhessian = cbs_results['hessian']
 
-    addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
-    instructions = ''
-    instructions += """    Naive listing of computations required.\n"""
-    for mc in JOBS:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+######### PARSE / PREPARE
 
-    #     Remove duplicate modelchem portion listings
-    for mc in MODELCHEM:
-        dups = -1
-        for indx_job, job in enumerate(JOBS):
-            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-               (job['f_options'] == mc['f_options']):
-                dups += 1
-                if dups >= 1:
-                    del JOBS[indx_job]
+#    # Build string of title banner
+#    cbsbanners = ''
+#    cbsbanners += """core.print_out('\\n')\n"""
+#    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
+#    cbsbanners += """core.print_out('\\n')\n\n"""
+#    exec(cbsbanners)
+#
+#    # Call schemes for each portion of total energy to 'place orders' for calculations needed
+#    d_fields = [
+#        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
+#    ]
+#    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
+#    GRAND_NEED = []
+#    MODELCHEM = []
+#
+#    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
+#                                 metadata[0]["wfn"], metadata[0]["options"], natom)
+#    GRAND_NEED.append(
+#        dict(
+#            zip(d_fields, [
+#                'scf', metadata[0]["scheme"],
+#                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
+#                metadata[0]["alpha"]
+#            ])))
+#    if len(metadata) > 1:
+#        for delta in metadata[1:]:
+#            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
+#                                         delta["options"], natom)
+#            GRAND_NEED.append(
+#                dict(
+#                    zip(d_fields, [
+#                        delta["stage"], delta["scheme"],
+#                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
+#                        delta["alpha"]
+#                    ])))
+#            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
+#                                         False, natom)
+#            GRAND_NEED.append(
+#                dict(
+#                    zip(d_fields, [
+#                        delta["stage"], delta["scheme"],
+#                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
+#                        delta["alpha"]
+#                    ])))
+#
+#    for stage in GRAND_NEED:
+#        for lvl in stage['d_need'].items():
+#            MODELCHEM.append(lvl[1])
+#
+#    # Apply chemical reasoning to choose the minimum computations to run
+#    JOBS = MODELCHEM[:]
+#
+#    instructions = ''
+#    instructions += """    Naive listing of computations required.\n"""
+#    for mc in JOBS:
+#        instructions += """   %12s / %-24s for  %s%s\n""" % \
+#            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+#             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+#
+#    #     Remove duplicate modelchem portion listings
+#    for mc in MODELCHEM:
+#        dups = -1
+#        for indx_job, job in enumerate(JOBS):
+#            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
+#               (job['f_options'] == mc['f_options']):
+#                dups += 1
+#                if dups >= 1:
+#                    del JOBS[indx_job]
+#
+#    #     Remove chemically subsumed modelchem portion listings
+#    if ptype == 'energy':
+#        for mc in MODELCHEM:
+#            for wfn in VARH[mc['f_wfn']]:
+#                for indx_job, job in enumerate(JOBS):
+#                    if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
+#                       (mc['f_basis'] == job['f_basis']) and not \
+#                       (mc['f_wfn'] == job['f_wfn']):
+#                        del JOBS[indx_job]
+#
+#    instructions += """\n    Enlightened listing of computations required.\n"""
+#    for mc in JOBS:
+#        instructions += """   %12s / %-24s for  %s%s\n""" % \
+#            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+#             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+#
 
-    #     Remove chemically subsumed modelchem portion listings
-    if ptype == 'energy':
-        for mc in MODELCHEM:
-            for wfn in VARH[mc['f_wfn']]:
-                for indx_job, job in enumerate(JOBS):
-                    if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
-                       (mc['f_basis'] == job['f_basis']) and not \
-                       (mc['f_wfn'] == job['f_wfn']) and \
-                       (not mc['f_options']):
-                        del JOBS[indx_job]
+######### PREPARE / COMPUTE
 
-    instructions += """\n    Enlightened listing of computations required.\n"""
-    for mc in JOBS:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+#    #     Expand listings to all that will be obtained
+#    JOBS_EXT = []
+#    for job in JOBS:
+#        for wfn in VARH[job['f_wfn']]:
+#            JOBS_EXT.append(
+#                dict(
+#                    zip(f_fields, [
+#                        wfn, job['f_basis'], job['f_zeta'], 0.0,
+#                        core.Matrix(natom, 3),
+#                        core.Matrix(3 * natom, 3 * natom), job['f_options']
+#                    ])))
+#
+#    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
+#    for mc in JOBS_EXT:
+#        instructions += """   %12s / %-24s for  %s%s\n""" % \
+#            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+#             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+#    core.print_out(instructions)
+#
+#    #psioh = core.IOManager.shared_object()
+#    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
+#    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+#    #   needs to be communicated to optimize() so reset by that optstash
+#    core.set_local_option('SCF', 'GUESS_PERSIST', True)
+#
+#    Njobs = 0
+#    # Run necessary computations
+#    for mc in JOBS:
+#        kwargs['name'] = mc['f_wfn']
+#
+#        # Build string of title banner
+#        cbsbanners = ''
+#        cbsbanners += """core.print_out('\\n')\n"""
+#        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
+#            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), addlremark[ptype])
+#        cbsbanners += """core.print_out('\\n')\n\n"""
+#        exec(cbsbanners)
+#
+#        # Build string of molecule and commands that are dependent on the database
+#        commands = '\n'
+#        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+#        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+#            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+#        exec(commands)
+#
+#        # Stash and set options if any
+#        if mc["f_options"]:
+#            optionstash = p4util.OptionsState(list(mc["f_options"]))
+#            for k, v, in mc["f_options"].items():
+#                core.set_global_option(k.upper(), v)
+#        else:
+#            optionstash = False
+#
+#        # Make energy(), etc. call
+#        response = func(molecule=molecule, **kwargs)
+#        if ptype == 'energy':
+#            mc['f_energy'] = response
+#        elif ptype == 'gradient':
+#            mc['f_gradient'] = response
+#            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+#            if verbose > 1:
+#                mc['f_gradient'].print_out()
+#        elif ptype == 'hessian':
+#            mc['f_hessian'] = response
+#            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+#            if verbose > 1:
+#                mc['f_hessian'].print_out()
+#        Njobs += 1
+#        if verbose > 1:
+#            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
+#
+#        # Restore modified options
+#        if optionstash:
+#            optionstash.restore()
+#
+#        # Fill in energies for subsumed methods
+#        if ptype == 'energy':
+#            for wfn in VARH[mc['f_wfn']]:
+#                for job in JOBS_EXT:
+#                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+#                       (mc['f_options'] == job['f_options']):
+#                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
+#
+#        if verbose > 1:
+#            core.print_variables()
+#        core.clean_variables()
+#        core.clean()
+#
+#        # Copy data from 'run' to 'obtained' table
+#        for mce in JOBS_EXT:
+#            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
+#               (mc['f_options'] == mce['f_options']):
+#                mce['f_energy'] = mc['f_energy']
+#                mce['f_gradient'] = mc['f_gradient']
+#                mce['f_hessian'] = mc['f_hessian']
+#
+#    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
-    #     Expand listings to all that will be obtained
-    JOBS_EXT = []
-    for job in JOBS:
-        for wfn in VARH[job['f_wfn']]:
-            JOBS_EXT.append(
-                dict(
-                    zip(f_fields, [
-                        wfn, job['f_basis'], job['f_zeta'], 0.0,
-                        core.Matrix(natom, 3),
-                        core.Matrix(3 * natom, 3 * natom), job['f_options']
-                    ])))
+######### COMPUTE / ASSEMBLE
 
-    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
-    for mc in JOBS_EXT:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-    core.print_out(instructions)
+#    # Build string of title banner
+#    cbsbanners = ''
+#    cbsbanners += """core.print_out('\\n')\n"""
+#    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
+#    cbsbanners += """core.print_out('\\n')\n\n"""
+#    exec(cbsbanners)
+#
+#    # Insert obtained energies into the array that stores the cbs stages
+#    for stage in GRAND_NEED:
+#        for lvl in stage['d_need'].items():
+#            MODELCHEM.append(lvl[1])
+#
+#            for job in JOBS_EXT:
+#                # Dont ask
+#                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
+#                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
+#                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
+#                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
+#                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
+#                    lvl[1]['f_energy'] = job['f_energy']
+#                    lvl[1]['f_gradient'] = job['f_gradient']
+#                    lvl[1]['f_hessian'] = job['f_hessian']
+#
+#    # Make xtpl() call
+#    finalenergy = 0.0
+#    finalgradient = core.Matrix(natom, 3)
+#    finalhessian = core.Matrix(3 * natom, 3 * natom)
+#
+#    for stage in GRAND_NEED:
+#        hiloargs = {'alpha': stage['d_alpha']}
+#
+#        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
+#        stage['d_energy'] = stage['d_scheme'](**hiloargs)
+#        finalenergy += stage['d_energy'] * stage['d_coef']
+#
+#        if ptype == 'gradient':
+#            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
+#            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
+#            work = stage['d_gradient'].clone()
+#            work.scale(stage['d_coef'])
+#            finalgradient.add(work)
+#
+#        elif ptype == 'hessian':
+#            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
+#            stage['d_hessian'] = stage['d_scheme'](**hiloargs)
+#            work = stage['d_hessian'].clone()
+#            work.scale(stage['d_coef'])
+#            finalhessian.add(work)
 
-    psioh = core.IOManager.shared_object()
-    psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
-    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
-    #   needs to be communicated to optimize() so reset by that optstash
-    core.set_local_option('SCF', 'GUESS_PERSIST', True)
-
-    Njobs = 0
-    # Run necessary computations
-    for mc in JOBS:
-        kwargs['name'] = mc['f_wfn']
-
-        # Build string of title banner
-        cbsbanners = ''
-        cbsbanners += """core.print_out('\\n')\n"""
-        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
-            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), addlremark[ptype])
-        cbsbanners += """core.print_out('\\n')\n\n"""
-        exec(cbsbanners)
-
-        # Build string of molecule and commands that are dependent on the database
-        commands = '\n'
-        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
-            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower().replace('*', 's'))
-        exec(commands)
-
-        # Stash and set options if any
-        if mc["f_options"]:
-            optionstash = p4util.OptionsState(*[[opt] for opt in list(mc["f_options"])])
-            for k, v, in mc["f_options"].items():
-                core.set_global_option(k.upper(), v)
-        else:
-            optionstash = False
-
-        # Make energy(), etc. call
-        response = func(molecule=molecule, **kwargs)
-        if ptype == 'energy':
-            mc['f_energy'] = response
-        elif ptype == 'gradient':
-            mc['f_gradient'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
-            if verbose > 1:
-                mc['f_gradient'].print_out()
-        elif ptype == 'hessian':
-            mc['f_hessian'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
-            if verbose > 1:
-                mc['f_hessian'].print_out()
-        Njobs += 1
-        if verbose > 1:
-            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
-
-        # Restore modified options
-        if optionstash:
-            optionstash.restore()
-
-        # Fill in energies for subsumed methods
-        if ptype == 'energy':
-            for wfn in VARH[mc['f_wfn']]:
-                for job in JOBS_EXT:
-                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
-                       (mc['f_options'] == job['f_options']):
-                        job['f_energy'] = core.variable(VARH[wfn][wfn])
-
-        if verbose > 1:
-            core.print_variables()
-        core.clean_variables()
-        core.clean()
-
-        # Copy data from 'run' to 'obtained' table
-        for mce in JOBS_EXT:
-            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
-               (mc['f_options'] == mce['f_options']):
-                mce['f_energy'] = mc['f_energy']
-                mce['f_gradient'] = mc['f_gradient']
-                mce['f_hessian'] = mc['f_hessian']
-
-    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
-
-    # Build string of title banner
-    instructions = "\n" + p4util.banner(f" CBS Results{':' + label if label else ''} ", strNotOutfile=True) + "\n"
-    core.print_out(instructions)
-
-
-    # Insert obtained energies into the array that stores the cbs stages
-    for stage in GRAND_NEED:
-        for lvl in stage['d_need'].items():
-            MODELCHEM.append(lvl[1])
-
-            for job in JOBS_EXT:
-                # Dont ask
-                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
-                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
-                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
-                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
-                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
-                    lvl[1]['f_energy'] = job['f_energy']
-                    lvl[1]['f_gradient'] = job['f_gradient']
-                    lvl[1]['f_hessian'] = job['f_hessian']
-
-    # Make xtpl() call
-    finalenergy = 0.0
-    finalgradient = core.Matrix(natom, 3)
-    finalhessian = core.Matrix(3 * natom, 3 * natom)
-
-    for stage in GRAND_NEED:
-        hiloargs = {'alpha': stage['d_alpha']}
-
-        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
-        stage['d_energy'] = stage['d_scheme'](**hiloargs)
-        finalenergy += stage['d_energy'] * stage['d_coef']
-
-        if ptype == 'gradient':
-            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
-            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
-            work = stage['d_gradient'].clone()
-            work.scale(stage['d_coef'])
-            finalgradient.add(work)
-
-        elif ptype == 'hessian':
-            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
-            stage['d_hessian'] = stage['d_scheme'](**hiloargs)
-            work = stage['d_hessian'].clone()
-            work.scale(stage['d_coef'])
-            finalhessian.add(work)
+######### ASSEMBLE / REPORT
 
     # Build string of results table
     table_delimit = '  ' + '-' * 105 + '\n'
@@ -1755,13 +1785,11 @@ def cbs(func, label, **kwargs):
     core.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
     core.set_variable('CURRENT CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
     core.set_variable('CURRENT ENERGY', finalenergy)
-    core.set_variable('CBS NUMBER', Njobs)
+    core.set_variable('CBS NUMBER', len(JOBS))
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(molecule, basis)
-
-    optstash.restore()
 
     if ptype == 'energy':
         finalquantity = finalenergy
@@ -1800,11 +1828,10 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     if int(scheme.__name__.split('_')[-1]) != Nxtpl:
         raise ValidationError("""Call to '%s' not valid with '%s' basis sets.""" % (scheme.__name__, len(basiszeta)))
 
-    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     NEED = {}
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(
-            zip(f_fields, [
+            zip(_f_fields, [
                 wfnname, basisname[idx], basiszeta[idx], 0.0,
                 core.Matrix(natom, 3),
                 core.Matrix(3 * natom, 3 * natom), options
@@ -2022,7 +2049,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['stage'] = "delta1"
         stage['treatment'] = "corl"
         metadata.append(stage)
-        
+
     cbs_kwargs["cbs_metadata"] = metadata
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
@@ -2030,3 +2057,270 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         return (ptype_value, wfn)
     else:
         return ptype_value
+
+
+def build_cbs_compute(metameta, metadata):
+    label = metameta['label']
+    natom = metameta['molecule'].natom()
+    ptype = metameta['ptype']
+
+    # Build string of title banner
+    cbsbanners = ''
+    cbsbanners += """core.print_out('\\n')\n"""
+    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
+    cbsbanners += """core.print_out('\\n')\n\n"""
+    exec(cbsbanners)
+
+    # Call schemes for each portion of total energy to 'place orders' for calculations needed
+    d_fields = [
+        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
+    ]
+    GRAND_NEED = []
+    MODELCHEM = []
+
+    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
+                                 metadata[0]["wfn"], metadata[0]["options"], natom)
+    GRAND_NEED.append(
+        dict(
+            zip(d_fields, [
+                'scf', metadata[0]["scheme"],
+                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
+                metadata[0]["alpha"]
+            ])))
+    if len(metadata) > 1:
+        for delta in metadata[1:]:
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
+                                         delta["options"], natom)
+            GRAND_NEED.append(
+                dict(
+                    zip(d_fields, [
+                        delta["stage"], delta["scheme"],
+                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
+                        delta["alpha"]
+                    ])))
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
+                                         False, natom)
+            GRAND_NEED.append(
+                dict(
+                    zip(d_fields, [
+                        delta["stage"], delta["scheme"],
+                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
+                        delta["alpha"]
+                    ])))
+
+    for stage in GRAND_NEED:
+        for lvl in stage['d_need'].items():
+            MODELCHEM.append(lvl[1])
+
+    # Apply chemical reasoning to choose the minimum computations to run
+    JOBS = MODELCHEM[:]
+
+    instructions = ''
+    instructions += """    Naive listing of computations required.\n"""
+    for mc in JOBS:
+        instructions += """   %12s / %-24s for  %s%s\n""" % \
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+
+    #     Remove duplicate modelchem portion listings
+    for mc in MODELCHEM:
+        dups = -1
+        for indx_job, job in enumerate(JOBS):
+            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
+               (job['f_options'] == mc['f_options']):
+                dups += 1
+                if dups >= 1:
+                    del JOBS[indx_job]
+
+    #     Remove chemically subsumed modelchem portion listings
+    if ptype == 'energy':
+        for mc in MODELCHEM:
+            for wfn in VARH[mc['f_wfn']]:
+                for indx_job, job in enumerate(JOBS):
+                    if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
+                       (mc['f_basis'] == job['f_basis']) and not \
+                       (mc['f_wfn'] == job['f_wfn']):
+                        del JOBS[indx_job]
+
+    instructions += """\n    Enlightened listing of computations required.\n"""
+    for mc in JOBS:
+        instructions += """   %12s / %-24s for  %s%s\n""" % \
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+    core.print_out(instructions)
+
+    return GRAND_NEED, MODELCHEM, JOBS
+
+
+def compute_cbs_components(func, metameta, JOBS):
+    ptype = metameta['ptype']
+    kwargs = metameta['kwargs']
+    molecule = metameta['molecule']
+    natom = molecule.natom()
+    optstash = p4util.OptionsState(['BASIS'], ['WFN'],
+                                   ['WRITER_FILE_LABEL'])
+    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
+    verbose = metameta['verbose']
+
+    psioh = core.IOManager.shared_object()
+    psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
+
+    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+    #   needs to be communicated to optimize() so reset by that optstash
+    core.set_local_option('SCF', 'GUESS_PERSIST', True)
+
+    #     Expand listings to all that will be obtained
+    JOBS_EXT = []
+    for job in JOBS:
+        for wfn in VARH[job['f_wfn']]:
+            JOBS_EXT.append(
+                dict(
+                    zip(_f_fields, [
+                        wfn, job['f_basis'], job['f_zeta'], 0.0,
+                        core.Matrix(natom, 3),
+                        core.Matrix(3 * natom, 3 * natom), job['f_options']
+                    ])))
+
+    instructions = """\n    Full listing of computations to be obtained (required and bonus).\n"""
+    for mc in JOBS_EXT:
+        instructions += """   %12s / %-24s for  %s%s\n""" % \
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+    core.print_out(instructions)
+
+    # Run necessary computations
+    for mc in JOBS:
+        kwargs['name'] = mc['f_wfn']
+
+        # Build string of title banner
+        cbsbanners = ''
+        cbsbanners += """core.print_out('\\n')\n"""
+        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
+            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), _addlremark[ptype])
+        cbsbanners += """core.print_out('\\n')\n\n"""
+        exec(cbsbanners)
+
+        # Build string of molecule and commands that are dependent on the database
+        commands = '\n'
+        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+        exec(commands)
+
+        # Stash and set options if any
+        if mc["f_options"]:
+            optionstash = p4util.OptionsState(list(mc["f_options"]))
+            for k, v, in mc["f_options"].items():
+                core.set_global_option(k.upper(), v)
+        else:
+            optionstash = False
+
+        # Make energy(), etc. call
+        response = func(molecule=molecule, **kwargs)
+        if ptype == 'energy':
+            mc['f_energy'] = response
+        elif ptype == 'gradient':
+            mc['f_gradient'] = response
+            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+            if verbose > 1:
+                mc['f_gradient'].print_out()
+        elif ptype == 'hessian':
+            mc['f_hessian'] = response
+            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+            if verbose > 1:
+                mc['f_hessian'].print_out()
+        if verbose > 1:
+            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
+
+        # Restore modified options
+        if optionstash:
+            optionstash.restore()
+
+        # Fill in energies for subsumed methods
+        if ptype == 'energy':
+            for wfn in VARH[mc['f_wfn']]:
+                for job in JOBS_EXT:
+                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+                       (mc['f_options'] == job['f_options']):
+                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
+
+        if verbose > 1:
+            core.print_variables()
+        core.clean_variables()
+        core.clean()
+
+        # Copy data from 'run' to 'obtained' table
+        for mce in JOBS_EXT:
+            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
+               (mc['f_options'] == mce['f_options']):
+                mce['f_energy'] = mc['f_energy']
+                mce['f_gradient'] = mc['f_gradient']
+                mce['f_hessian'] = mc['f_hessian']
+
+    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
+    optstash.restore()
+
+    return JOBS_EXT
+
+
+def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM):
+    label = metameta['label']
+    natom = metameta['molecule'].natom()
+    ptype = metameta['ptype']
+
+    # Build string of title banner
+    cbsbanners = ''
+    cbsbanners += """core.print_out('\\n')\n"""
+    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
+    cbsbanners += """core.print_out('\\n')\n\n"""
+    exec(cbsbanners)
+
+    # Insert obtained energies into the array that stores the cbs stages
+    for stage in GRAND_NEED:
+        for lvl in stage['d_need'].items():
+            MODELCHEM.append(lvl[1])
+
+            for job in JOBS_EXT:
+                # Dont ask
+                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
+                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
+                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
+                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
+                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
+                    lvl[1]['f_energy'] = job['f_energy']
+                    lvl[1]['f_gradient'] = job['f_gradient']
+                    lvl[1]['f_hessian'] = job['f_hessian']
+
+    # Make xtpl() call
+    finalenergy = 0.0
+    finalgradient = core.Matrix(natom, 3)
+    finalhessian = core.Matrix(3 * natom, 3 * natom)
+
+    for stage in GRAND_NEED:
+        hiloargs = {'alpha': stage['d_alpha']}
+
+        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
+        stage['d_energy'] = stage['d_scheme'](**hiloargs)
+        finalenergy += stage['d_energy'] * stage['d_coef']
+
+        if ptype == 'gradient':
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
+            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
+            work = stage['d_gradient'].clone()
+            work.scale(stage['d_coef'])
+            finalgradient.add(work)
+
+        elif ptype == 'hessian':
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
+            stage['d_hessian'] = stage['d_scheme'](**hiloargs)
+            work = stage['d_hessian'].clone()
+            work.scale(stage['d_coef'])
+            finalhessian.add(work)
+
+    cbs_results = {
+        'energy': finalenergy,
+        'gradient': finalgradient,
+        'hessian': finalhessian,
+    }
+
+    return cbs_results, GRAND_NEED
