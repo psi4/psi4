@@ -189,7 +189,7 @@ if args['plugin_name']:
     sys.exit()
 
 if args["test"]:
-    psi4.test()
+    psi4.test('smoke')
     sys.exit()
 
 if not os.path.isfile(args["input"]):

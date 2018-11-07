@@ -144,7 +144,7 @@ install:
 - conda info -a
 - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
 - source activate p4env
-- conda install dftd3 gcp resp qcelemental pylibefp pybind11=2.2.3 -c psi4/label/dev  # snsmp2
+- conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev  # snsmp2
 - conda list
 before_script:
 - python -V
@@ -185,7 +185,7 @@ script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
-- ./stage/bin/psi4 --test
+- PYTHONPATH=stage/lib/ pytest -v -rws --durations=5 stage/lib/psi4/tests/
 
 # safelist
 branches:
