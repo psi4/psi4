@@ -45,6 +45,7 @@ from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
 from psi4.driver import driver_findif
+from psi4.driver import task_base
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.procrouting import *
