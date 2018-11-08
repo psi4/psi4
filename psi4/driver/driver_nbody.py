@@ -613,7 +613,6 @@ def assemble_nbody_components(metadata, component_results):
             arrays at each N-body level; i.e., ``results['ptype_body_dict'][2]``
             for `ptype` ``'gradient'``is the total 2-body gradient.
     """
-
     nbody_range = range(1, metadata['max_nbody'] + 1)
 
     # Unpack compute list metadata
@@ -692,12 +691,12 @@ def assemble_nbody_components(metadata, component_results):
 
         # Do ptype
         if metadata['driver'] != 'energy':
-            _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], cp_compute_list[n],
+            _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], cp_compute_list[n],
                                     fragment_slice_dict, fragment_size_dict, cp_ptype_by_level[n])
-            _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], nocp_compute_list[n],
+            _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], nocp_compute_list[n],
                                     fragment_slice_dict, fragment_size_dict, nocp_ptype_by_level[n])
             _sum_cluster_ptype_data(
-                metadata['ptype'],
+                metadata['driver'],
                 component_results['ptype'],
                 vmfc_level_list[n],
                 fragment_slice_dict,
@@ -713,7 +712,7 @@ def assemble_nbody_components(metadata, component_results):
     if metadata['driver'] != 'energy':
         # Extract ptype data for monomers in monomer basis for CP total data
         monomer_ptype = np.zeros(arr_shape)
-        _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], monomers_in_monomer_basis,
+        _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], monomers_in_monomer_basis,
                                 fragment_slice_dict, fragment_size_dict, monomer_ptype)
 
     # Compute cp energy and ptype
@@ -844,8 +843,8 @@ def assemble_nbody_components(metadata, component_results):
         else:
             np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
             np_final_ptype -= results['ptype_body_dict'][1]
-
-        results['ret_ptype'] = core.Matrix.from_array(np_final_ptype)
+        results['ptype_body_dict'] = {i: j.tolist() for i, j in results['ptype_body_dict'].items()}
+        results['ret_ptype'] = np_final_ptype.tolist()
     else:
         results['ret_ptype'] = results['ret_energy']
 
@@ -944,9 +943,15 @@ class NBodyComputer(BaseTask):
             print(self.results_list[k]["return_result"])
 
     def get_results(self):
-        energies = {k: v["return_result"] for k, v in self.results_list.items()}
-        tmp = {"energies": energies, "ptype": self.driver}
+        energies = {k: v['properties']["return_energy"] for k, v in self.results_list.items()}
+        ptype = None
+        if self.driver == 'gradient':
+            ptype = {k: np.array(v["return_result"]).reshape((len(v["return_result"])//3, 3))
+                     for k, v in self.results_list.items()}
+        elif self.driver == 'hessian':
+            ptype = {k: np.array(v["return_result"]).reshape((int(np.sqrt(len(v["return_result"]))),
+                     int(np.sqrt(len(v["return_result"]))))) for k, v in self.results_list.items()}
+        tmp = {"energies": energies, "ptype": ptype}
         nbody_results = assemble_nbody_components(self.dict(), tmp)
-
         return nbody_results
 
