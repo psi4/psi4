@@ -1,6 +1,5 @@
 #! A simple hf/cc-pvdz water calculation. The resulting wavefunction is written to a file, and then a new wavefunction is generated from that file. The  member variables of both wavefunctions should be identical in value
 
-memory 40 gb
 
 molecule mol {
 0 1
