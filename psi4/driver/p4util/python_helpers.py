@@ -208,7 +208,7 @@ def pywrite_wavefunction(wfn, filename=None):
             'Fa'       : wfn.Fa().to_array()       if wfn.Fa()       else None,
             'Fb'       : wfn.Fb().to_array()       if wfn.Fb()       else None,
             'H'        : wfn.H().to_array()        if wfn.H()        else None,
-            'S'        : wfn.S().to_array()        if wfn.Ca()       else None,
+            'S'        : wfn.S().to_array()        if wfn.S()       else None,
             'X'        : wfn.X().to_array()        if wfn.X()        else None,
             'aotoso'   : wfn.aotoso().to_array()   if wfn.aotoso()   else None,
             'gradient' : wfn.gradient().to_array() if wfn.gradient() else None,
