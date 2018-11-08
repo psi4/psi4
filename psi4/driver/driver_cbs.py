@@ -29,7 +29,9 @@
 import math
 import re
 import sys
-from typing import Callable, List
+from typing import Any, Callable, Dict, List, Union
+
+import pydantic
 
 import numpy as np
 
@@ -40,6 +42,7 @@ from psi4.driver import driver_util
 from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
+from psi4.driver.task_base import BaseTask, SingleResult
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -2324,3 +2327,99 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM):
     }
 
     return cbs_results, GRAND_NEED
+
+class CBSComputer(BaseTask):
+
+    molecule: Any
+    driver: str = "energy"
+    metadata: Any
+
+    return_wfn: bool = False
+    verbose: int = 0
+
+    grand_need: Any = None
+    modelchem: Any = None
+    compute_list: List[Any] = []
+    task_list: List[Any] = []
+    results_list: List[Any] = []
+
+    def __init__(self, **data):
+        data = p4util.kwargs_lower(data)
+        data["metadata"] = _process_cbs_kwargs(data)
+        BaseTask.__init__(self, **data)
+
+        metameta = {
+            'kwargs': data,
+            'ptype': self.driver,
+            'verbose': self.verbose,
+            'label': None,
+            'molecule': self.molecule,
+        }
+
+        if self.metadata[0]["wfn"] not in VARH.keys():
+            raise ValidationError(
+                """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                (metadata[0]["wfn"]))
+
+        if len(self.metadata) > 1:
+            for delta in self.metadata[1:]:
+                if delta["wfn"] not in VARH.keys():
+                    raise ValidationError(
+                        """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                        (delta["treatment"], delta["wfn"]))
+                if delta["wfn_lo"] not in VARH.keys():
+                    raise ValidationError(
+                        """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                        (delta["treatment"], delta["wfn_lo"]))
+
+        # Plan CBS jobs
+        self.grand_need, self.modelchem, self.compute_list = build_cbs_compute(metameta, self.metadata)
+
+        for job in self.compute_list:
+            task = SingleResult(**{
+                "molecule": self.molecule,
+                "driver": self.driver,
+                "method": job["f_wfn"],
+                "basis": job["f_basis"],
+                "keywords": job["f_options"] or {}
+            })
+            print(task)
+            self.task_list.append(task)
+
+
+    @pydantic.validator('driver')
+    def set_driver(cls, driver):
+        if driver not in ['energy', 'gradient', 'hessian']:
+            raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
+                                     function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % driver)
+        return driver
+
+    @pydantic.validator('molecule')
+    def set_molecule(cls, mol):
+        mol.update_geometry()
+        mol.fix_com(True)
+        mol.fix_orientation(True)
+        return mol
+
+    def plan(self):
+        return [x.plan() for x in self.task_list]
+
+    def compute(self):
+        self.result_list = [x.compute() for x in self.task_list]
+
+    def get_results(self):
+        pass
+
+        # JOBS_EXT should have the energy as the required field
+        # Since we not return full JSON schema this need to be pulled from there
+        # Currently pulled from VARH[mc['f_wfn']]; core.get_variable(VARH[wfn][wfn])
+
+        # cbs_results, self.grand_need = assemble_cbs_components(metameta, JOBS_EXT, self.grand_need, self.modelchem)
+    # Define some quantum chemical knowledge, namely what methods are subsumed in others
+
+    # Make sure the molecule the user provided is the active one
+
+
+
+######## OUTSOURCE
+

@@ -19,7 +19,6 @@ r = SingleResult(**single)
 
 He2 = psi4.geometry("He 0 0 -2\n--\nHe 0 0 2")
 nb = NBodyComputer(molecule=He2, driver="energy", bsse_type=["nocp"])
-nb.common_init()
 
 data = {
     "driver": "energy",
