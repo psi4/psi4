@@ -421,7 +421,7 @@ def compare_wavefunctions(expected, computed, label):
     compare_integers(expected.nmo(), computed.nmo(), 'compare nmo') 
     compare_integers(expected.nso(), computed.nso(), 'compare nso') 
     compare_strings(expected.name(), computed.name(), 'compare name') 
-    compare_values(expected.energy(), computed.energy(), 5, 'compare energy') 
+    compare_values(expected.energy(), computed.energy(), 9, 'compare energy') 
     compare_values(expected.efzc(), computed.efzc(), 9, 'compare frozen core energy') 
     compare_values(expected.get_dipole_field_strength()[0], computed.get_dipole_field_strength()[0], 9, 'compare dipole field strength x') 
     compare_values(expected.get_dipole_field_strength()[1], computed.get_dipole_field_strength()[1], 9, 'compare dipole field strength y') 
