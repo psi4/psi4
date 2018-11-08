@@ -874,6 +874,17 @@ class NBodyComputer(BaseTask):
     results_list: Dict[str, Any] = {}
     compute_dict: Dict[str, Any] = {}
 
+    def __init__(self, **data):
+        BaseTask.__init__(self, **data)
+
+        self.max_frag = self.molecule.nfragments()
+        if self.max_nbody == -1:
+            self.max_nbody = self.molecule.nfragments()
+        else:
+            self.max_nbody = min(self.max_nbody, self.max_frag)
+
+    #     # Get compute list
+        self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
 
     @pydantic.validator('molecule')
     def set_molecule(cls, mol):
@@ -898,19 +909,6 @@ class NBodyComputer(BaseTask):
 
         return bsse_type[0]
 
-
-    def common_init(self):
-
-        print(self.bsse_type)
-        self.max_frag = self.molecule.nfragments()
-        if self.max_nbody == -1:
-            self.max_nbody = self.molecule.nfragments()
-        else:
-            self.max_nbody = min(self.max_nbody, self.max_frag)
-
-    #     # Get compute list
-        self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
-
     def build_tasks(self, obj, bsse_type="all", **kwargs):
 
         import json
@@ -928,7 +926,7 @@ class NBodyComputer(BaseTask):
                 data["molecule"] = self.molecule.extract_subsets(list(pair[0]), ghost)
 
                 self.task_list[pair] = obj(**data)
-                counter +=1
+                counter += 1
 
         return counter
 
@@ -952,45 +950,3 @@ class NBodyComputer(BaseTask):
 
         return nbody_results
 
-    # # Compute N-Body components
-    # component_results = compute_nbody_components(func, method_string, metadata)
-
-    # # Assemble N-Body quantities
-    # nbody_results = assemble_nbody_components(metadata, component_results)
-
-    # # Build wfn and bind variables
-    # wfn = core.Wavefunction.build(metadata['molecule'], 'def2-svp')
-    # dicts = [
-    #     'energies', 'ptype', 'intermediates', 'energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody',
-    #     'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
-    # ]
-    # if metadata['ptype'] == 'gradient':
-    #     wfn.set_gradient(nbody_results['ret_ptype'])
-    #     nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
-    # elif metadata['ptype'] == 'hessian':
-    #     nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
-    #     wfn.set_hessian(nbody_results['ret_ptype'])
-    #     component_results_gradient = component_results.copy()
-    #     component_results_gradient['ptype'] = component_results_gradient['gradients']
-    #     metadata['ptype'] = 'gradient'
-    #     nbody_results_gradient = assemble_nbody_components(metadata, component_results_gradient)
-    #     wfn.set_gradient(nbody_results_gradient['ret_ptype'])
-    #     nbody_results['gradient_body_dict'] = nbody_results_gradient['ptype_body_dict']
-
-    # for r in [component_results, nbody_results]:
-    #     for d in r:
-    #         if d in dicts:
-    #             for var, value in r[d].items():
-    #                 try:
-    #                     wfn.set_variable(str(var), value)
-    #                     core.set_variable(str(var), value)
-    #                 except:
-    #                     wfn.set_array(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
-
-    # core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-    # wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-
-    # if metadata['return_wfn']:
-    #     return (nbody_results['ret_ptype'], wfn)
-    # else:
-    #     return nbody_results['ret_ptype']
