@@ -155,8 +155,6 @@ def pyread_wavefunction(filename):
     # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
     for label in wfn_matrix:
         array = wfn_matrix[label]
-        #core.print_out(label + '\n')
-        #core.print_out(str(type(array))+'\n')
         wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array is not None else None
     
     for label in wfn_vector:
@@ -245,7 +243,10 @@ def pywrite_wavefunction(wfn, filename):
             },
         'float' : {
             'energy' : wfn.energy(),
-            'efzc' : wfn.efzc()
+            'efzc' : wfn.efzc(),
+            'dipole_field_x' : wfn.get_dipole_field_strength()[0],
+            'dipole_field_y' : wfn.get_dipole_field_strength()[1],
+            'dipole_field_z' : wfn.get_dipole_field_strength()[2]
             },
         'floatvar' : wfn.variables(),
         'matrixarr' : {k: v.to_array() for k, v in wfn.arrays().items()}

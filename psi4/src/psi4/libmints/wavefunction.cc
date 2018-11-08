@@ -158,15 +158,14 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     PCM_enabled_ = booleans["PCM_enabled"];
     same_a_b_dens_ = booleans["same_a_b_dens"];
     same_a_b_orbs_ = booleans["same_a_b_orbs"];
-    density_fitted_ = booleans["density fitted"];
+    density_fitted_ = booleans["density_fitted"];
 
     // set floats
     energy_ = floats["energy"];
     efzc_ = floats["efzc"];
-    
-    // set PCM??
-    // dipole field strength??
-
+    dipole_field_strength_[0] = floats["dipole_field_x"];
+    dipole_field_strength_[1] = floats["dipole_field_y"];
+    dipole_field_strength_[2] = floats["dipole_field_z"];
 }
 
 Wavefunction::Wavefunction(Options &options)

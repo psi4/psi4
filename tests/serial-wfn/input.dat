@@ -15,7 +15,7 @@ set {
 }
 
 # get wavefunction
-e, wfn_old = energy('mp2', return_wfn=True)
+e, wfn_old = energy('hf', return_wfn=True)
 
 # write to wavefunction to ile
 Wavefunction.to_file(wfn_old, 'my_wfn')
@@ -23,25 +23,7 @@ Wavefunction.to_file(wfn_old, 'my_wfn')
 # read wavefunction from file
 wfn_new = Wavefunction.from_file('my_wfn')
 
-if wfn_old.Ca():     compare_matrices(wfn_old.Ca(), wfn_new.Ca(), 9, 'compare Ca') #TEST
-if wfn_old.Cb():     compare_matrices(wfn_old.Cb(), wfn_new.Cb(), 9, 'compare Cb') #TEST
-if wfn_old.Da():     compare_matrices(wfn_old.Da(), wfn_new.Da(), 9, 'compare Da') #TEST
-if wfn_old.Db():     compare_matrices(wfn_old.Db(), wfn_new.Db(), 9, 'compare Db') #TEST
-if wfn_old.Fa():     compare_matrices(wfn_old.Fa(), wfn_new.Fa(), 9, 'compare Fa') #TEST
-if wfn_old.Fb():     compare_matrices(wfn_old.Fb(), wfn_new.Fb(), 9, 'compare Fb') #TEST
-if wfn_old.H():      compare_matrices(wfn_old.H(), wfn_new.H(), 9, 'compare H') #TEST
-if wfn_old.S():      compare_matrices(wfn_old.S(), wfn_new.S(), 9, 'compare S') #TEST
-if wfn_old.X():      compare_matrices(wfn_old.X(), wfn_new.X(), 9, 'compare X') #TEST
-if wfn_old.aotoso(): compare_matrices(wfn_old.aotoso(), wfn_new.aotoso(), 5, 'compare aotoso') #TEST
-if wfn_old.epsilon_a():   compare_vectors(wfn_old.epsilon_a(), wfn_new.epsilon_a(), 5, 'compare epsilon_a') #TEST
-if wfn_old.epsilon_b():   compare_vectors(wfn_old.epsilon_b(), wfn_new.epsilon_b(), 5, 'compare epsilon_b') #TEST
-if wfn_old.frequencies(): compare_vectors(wfn_old.frequencies(), wfn_new.frequencies(), 5, 'compare frequencies') #TEST
-compare_integers(wfn_old.nalpha(), wfn_new.nalpha(), 'compare nalpha') #TEST
-compare_integers(wfn_old.nbeta(), wfn_new.nbeta(), 'compare nbeta') #TEST
-compare_integers(wfn_old.nfrzc(), wfn_new.nfrzc(), 'compare nfrzc') #TEST
-compare_integers(wfn_old.nirrep(), wfn_new.nirrep(), 'compare nirrep') #TEST
-compare_integers(wfn_old.nmo(), wfn_new.nmo(), 'compare nirrep') #TEST
-compare_integers(wfn_old.nso(), wfn_new.nso(), 'compare nso') #TEST
-compare_strings(wfn_old.name(), wfn_new.name(), 'compare name') #TEST
-compare_values(wfn_old.energy(), wfn_new.energy(), 5, 'compare energy') #TEST
+compare_wavefunctions(wfn_old, wfn_new, 'Serialization Check')
+
+
 
