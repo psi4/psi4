@@ -126,8 +126,14 @@ core.Wavefunction.build = pybuild_wavefunction
 
 
 @staticmethod
-def pyread_wavefunction(filename):
-    wfn_data = np.load(filename + '.npy').item()
+def pyread_wavefunction(wfn_data):
+
+    # load the wavefunction from file
+    if isinstance(wfn_data, str):
+        wfn_data = np.load(wfn_data + '.npy').item()
+    # otherwise a dictionary was passed in
+    else:
+        pass
     
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
@@ -185,9 +191,13 @@ core.Wavefunction.from_file = pyread_wavefunction
 
 
 @staticmethod
-def pywrite_wavefunction(wfn, filename):
+def pywrite_wavefunction(wfn, filename=None):
     # collect the wavefunction's variables in a dictionary indexed by varaible type
     # some of the data types have to be made numpy-friendly first
+
+    if wfn.basisset().name().startswith("anonymous"):
+        raise ValidationError("Cannot serialize wavefunction with custom basissets.")
+
     wfn_data = {
         'molecule' : wfn.molecule().to_dict(),
         'matrix' : {
@@ -208,8 +218,6 @@ def pywrite_wavefunction(wfn, filename):
             'epsilon_a'            : wfn.epsilon_a().to_array()   if wfn.epsilon_a() else None,
             'epsilon_b'            : wfn.epsilon_b().to_array()   if wfn.epsilon_b() else None,
             'frequencies'          : wfn.frequencies().to_array() if wfn.frequencies() else None
-            #'atomic_point_charges' : wfn.atomic_point_charges().to_array() if wfn.atomic_point_charges() else None,
-            #'esp_at_nuclei'        : wfn.esp_at_nuclei().to_array() if wfn.esp_at_nuclei() else None,
             },
         'dimension' : {
             'doccpi'   : wfn.doccpi().to_tuple(),
@@ -252,7 +260,10 @@ def pywrite_wavefunction(wfn, filename):
         'matrixarr' : {k: v.to_array() for k, v in wfn.arrays().items()}
         }
 
-    np.save(filename,wfn_data)
+    if filename is not None:
+        np.save(filename,wfn_data)
+    else:
+        return wfn_data
 
 core.Wavefunction.to_file = pywrite_wavefunction
 

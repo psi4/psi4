@@ -93,12 +93,12 @@ Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &o
 }
 
 // TODO: pass Options object to constructor instead of relying on globals
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, 
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
                            std::map<std::string, std::shared_ptr<Matrix>> matrices,
                            std::map<std::string, std::shared_ptr<Vector>> vectors,
                            std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 
                            std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
-                           std::map<std::string, float> floats)
+                           std::map<std::string, double> floats)
     : options_(Process::environment.options),
       basisset_(basisset),
       molecule_(molecule) {
