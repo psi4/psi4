@@ -43,6 +43,8 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
 
+#include "psi4/cc/ccwave.h"
+
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
 
@@ -414,4 +416,30 @@ void export_wavefunction(py::module& m) {
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
         .def_buffer([](detci::CIvect& vec) { return vec.array_interface(); });
+
+    py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(
+        m, "CCWavefunction", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
+        .def("get_amplitudes", &ccenergy::CCEnergyWavefunction::get_amplitudes, R"docstring(
+               Get dict of converged T amplitudes
+
+               Returns
+               -------
+               amps : dict (spacestr, SharedMatrix)
+                 `spacestr` is a description of the amplitude set using the conventions for orbital index labels that is used in the CC module.
+
+                 i,j,k -> alpha occupied
+                 I,J,K -> beta occupied
+                 a,b,c -> alpha virtual
+                 A,B,C -> beta virtual
+
+               The following entries are stored in the `amps`, depending on the reference type
+
+               RHF: Tia, TIjAb
+               UHF: Tia, TIA, TIjAb, TIJAB, Tijab
+               ROHF: Tia, TIA, TIjAb, TIJAB, Tijab
+
+               .. warning: Symmetry free calculations only (nirreps > 1 will cause error)
+               .. warning: No checks that the amplitudes will fit in core. Do not use for proteins
+            )docstring");
 }

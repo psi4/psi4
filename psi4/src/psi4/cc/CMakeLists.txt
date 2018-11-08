@@ -7,7 +7,7 @@ list(APPEND _Clang_debug_flags
   "-g3"
   "-Wextra"
   "-Winit-self"
-  "-Woverloaded-virtual"
+  #"-Woverloaded-virtual"
   "-Wuninitialized"
   "-Wmissing-declarations"
   "-Wwrite-strings"
@@ -17,6 +17,10 @@ list(APPEND _Clang_debug_flags
   "-m64"
   "-Qunused-arguments"
   "-fcolor-diagnostics"
+  )
+target_sources(cc
+  PRIVATE
+  amps.cc
   )
 target_compile_options(cc
   PRIVATE

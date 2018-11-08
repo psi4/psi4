@@ -52,8 +52,9 @@ class CCEnergyWavefunction : public Wavefunction {
    public:
     CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     ~CCEnergyWavefunction() override;
-
     double compute_energy() override;
+
+    std::map<std::string, SharedMatrix> get_amplitudes();
 
    private:
     /* setup, info and teardown */
