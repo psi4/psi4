@@ -38,16 +38,20 @@
 
 #pragma once
 
-#include <cstdio>
+#include <cstddef>
 #include <string>
+
 #include "psi4/psi4-dec.h"
-// I think this is forward-declaring class Options -CDS
-namespace psi {
-class Options;
-class Wavefunction;
-}  // namespace psi
+
+#include "blas_level1.h"
+#include "blas_level2.h"
+#include "blas_level3.h"
 
 namespace psi {
+// I think this is forward-declaring class Options -CDS
+class Options;
+class Wavefunction;
+
 void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options, double** D);
 void dx_read(double** V_eff, double* phi_ao, double* phi_so, int nao, int nso, double** u);
 void fill_sym_matrix(double** A, int size);
@@ -100,51 +104,6 @@ void free_3d_array(double*** A, int p, int q);
 double*** init_3d_array(int p, int q, int r);
 
 #define MAX_RAS_SPACES 4
-
-// BLAS 1 Double routines
-void C_DROT(size_t ntot, double* x, int incx, double* y, int incy, double costheta, double sintheta);
-void C_DSWAP(size_t length, double* x, int incx, double* y, int inc_y);
-void C_DSCAL(size_t len, double alpha, double* vec, int inc);
-void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
-void C_DAXPY(size_t length, double a, double* x, int inc_x, double* y, int inc_y);
-double C_DDOT(size_t n, double* X, int inc_x, double* Y, int inc_y);
-double C_DNRM2(size_t n, double* X, int inc_x);
-double C_DASUM(size_t n, double* X, int inc_x);
-size_t C_IDAMAX(size_t n, double* X, int inc_x);
-
-// BLAS 2 Double routines
-void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx,
-             double beta, double* y, int incy);
-PSI_API void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta,
-                     double* y, int incy);
-PSI_API void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
-void C_DSBMV(char uplo, int n, int k, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
-             int incy);
-void C_DSPMV(char uplo, int n, double alpha, double* ap, double* x, int incx, double beta, double* y, int incy);
-void C_DSPR(char uplo, int n, double alpha, double* x, int incx, double* ap);
-void C_DSPR2(char uplo, int n, double alpha, double* x, int incx, double* y, int incy, double* ap);
-void C_DSYMV(char uplo, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);
-void C_DSYR(char uplo, int n, double alpha, double* x, int incx, double* a, int lda);
-void C_DSYR2(char uplo, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
-void C_DTBMV(char uplo, char trans, char diag, int n, int k, double* a, int lda, double* x, int incx);
-void C_DTBSV(char uplo, char trans, char diag, int n, int k, double* a, int lda, double* x, int incx);
-void C_DTPMV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
-void C_DTPSV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
-void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
-void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
-             int ldb);
-
-// BLAS 3 Double routines
-PSI_API void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b,
-                     int ldb, double beta, double* c, int ldc);
-void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int lda, double* b, int ldb, double beta,
-             double* c, int ldc);
-void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
-             int ldb);
-void C_DSYRK(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double beta, double* c, int ldc);
-void C_DSYR2K(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta,
-              double* c, int ldc);
-void C_DTRSV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
 
 // LAPACK 3.2 Double routines
 // Sorry guys, I know its rather epic
