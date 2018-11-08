@@ -68,7 +68,7 @@ class PotentialInt : public OneBodyAOInt {
     ~PotentialInt() override;
 
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<SharedMatrix>& result);
+    void compute_deriv1(std::vector<SharedMatrix>& result) override;
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1_no_charge_term(std::vector<SharedMatrix>& result);
@@ -77,7 +77,7 @@ class PotentialInt : public OneBodyAOInt {
     void compute_shell_deriv1_no_charge_term(int, int);
 
     /// Computes the second derivatives and store them in result
-    virtual void compute_deriv2(std::vector<SharedMatrix>& result);
+    void compute_deriv2(std::vector<SharedMatrix>& result) override;
 
     /// Set the field of charges
     void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
@@ -103,7 +103,7 @@ class PotentialSOInt : public OneBodySOInt {
      * \param result Where the integral derivatives are going.
      * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
      */
-    void compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList& cdsalcs);
+    void compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList& cdsalcs) override;
 };
 
 }  // namespace psi

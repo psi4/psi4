@@ -291,8 +291,8 @@ protected:
     std::shared_ptr<DFHelper> dfh_;
     void transform(bool approx_only) override;
     void set_act_MO() override;
-    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+    SharedMatrix compute_Q(SharedMatrix TPDM) override;
+    SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) override;
 
 }; // DFSOMCSCF class
 
@@ -319,8 +319,8 @@ protected:
     std::shared_ptr<PSIO>  psio_;
     void transform(bool approx_only) override;
     void set_act_MO() override;
-    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+    SharedMatrix compute_Q(SharedMatrix TPDM) override;
+    SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) override;
 
 }; // DiskSOMCSCF class
 
@@ -341,13 +341,13 @@ public:
     IncoreSOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
     ~IncoreSOMCSCF() override;
-    virtual void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
+    void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar) override;
 
 protected:
 
     void set_act_MO() override;
-    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+    SharedMatrix compute_Q(SharedMatrix TPDM) override;
+    SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) override;
 
     bool eri_tensor_set_;
     SharedMatrix mo_aaaa_;

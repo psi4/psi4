@@ -126,16 +126,16 @@ class TwoElectronInt : public TwoBodyAOInt {
     ~TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(const AOShellCombinationsIterator&);
+    size_t compute_shell(const AOShellCombinationsIterator&) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell(int, int, int, int);
+    size_t compute_shell(int, int, int, int) override;
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell_deriv1(int, int, int, int);
+    size_t compute_shell_deriv1(int, int, int, int) override;
 
     /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
-    virtual size_t compute_shell_deriv2(int, int, int, int);
+    size_t compute_shell_deriv2(int, int, int, int) override;
 };
 
 class ERI : public TwoElectronInt {

@@ -168,8 +168,8 @@ public:
     void initialize() override;
     void finalize() override;
 
-    virtual void compute_V(std::vector<SharedMatrix> ret);
-    virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
+    void compute_V(std::vector<SharedMatrix> ret) override;
+    void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     SharedMatrix compute_gradient() override;
     SharedMatrix compute_hessian() override;
 
@@ -189,8 +189,8 @@ public:
     void initialize() override;
     void finalize() override;
 
-    virtual void compute_V(std::vector<SharedMatrix> ret);
-    virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
+    void compute_V(std::vector<SharedMatrix> ret) override;
+    void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     SharedMatrix compute_gradient() override;
 
     void print_header() const override;

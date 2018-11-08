@@ -62,13 +62,13 @@ class BEND : public SIMPLE_COORDINATE {
     // compute and return array of second derivative (B' matrix elements)
     double **Dq2Dx2(GeomType geom) const override;
 
-    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
-    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
+    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const override;
+    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const override;
+    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const override;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
-      const double dq, const double new_q, int atom_offset=0) const;
+      const double dq, const double new_q, int atom_offset=0) const override;
     bool operator==(const SIMPLE_COORDINATE & s2) const override;
-    std::string get_definition_string(int atom_offset=0) const;
+    std::string get_definition_string(int atom_offset=0) const override;
 
     void make_lb_normal()     { _bend_type = 1; }
     void make_lb_complement() { _bend_type = 2; }

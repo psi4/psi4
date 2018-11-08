@@ -190,9 +190,9 @@ public:
     ~MatrixRHamiltonian() override;
 
     void print_header() const override;
-    virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    std::shared_ptr<Vector> diagonal() override;
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 
 };
 
@@ -208,10 +208,10 @@ public:
     ~MatrixUHamiltonian() override;
 
     void print_header() const override;
-    virtual std::pair<std::shared_ptr<Vector>,
-                      std::shared_ptr<Vector> > diagonal();
-    virtual void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
+    std::pair<std::shared_ptr<Vector>,
+                      std::shared_ptr<Vector> > diagonal() override;
+    void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
+                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) override;
 
 };
 
@@ -235,9 +235,9 @@ public:
     ~CISRHamiltonian() override;
 
     void print_header() const override;
-    virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    std::shared_ptr<Vector> diagonal() override;
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 
     virtual std::vector<SharedMatrix > unpack(const std::shared_ptr<Vector>& x);
 
@@ -265,9 +265,9 @@ public:
     ~TDHFRHamiltonian() override;
 
     void print_header() const override;
-    virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    std::shared_ptr<Vector> diagonal() override;
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 
     void set_singlet(bool singlet) { singlet_ = singlet; }
 };
@@ -291,9 +291,9 @@ public:
     ~CPHFRHamiltonian() override;
 
     void print_header() const override;
-    virtual std::shared_ptr<Vector> diagonal();
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    std::shared_ptr<Vector> diagonal() override;
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 
     virtual std::map<std::string, SharedVector> pack(const std::map<std::string, std::shared_ptr<Matrix> >& b);
     virtual std::vector<SharedMatrix > unpack(const std::vector<SharedVector >& x);
@@ -316,8 +316,8 @@ public:
     ~TDARHamiltonian() override;
 
     void print_header() const override;
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 };
 
 class TDDFTRHamiltonian : public TDHFRHamiltonian {
@@ -337,8 +337,8 @@ public:
     ~TDDFTRHamiltonian() override;
 
     void print_header() const override;
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 };
 
 class CPKSRHamiltonian : public CPHFRHamiltonian {
@@ -358,8 +358,8 @@ public:
     ~CPKSRHamiltonian() override;
 
     void print_header() const override;
-    virtual void product(const std::vector<std::shared_ptr<Vector> >& x,
-                               std::vector<std::shared_ptr<Vector> >& b);
+    void product(const std::vector<std::shared_ptr<Vector> >& x,
+                               std::vector<std::shared_ptr<Vector> >& b) override;
 };
 
 // "Hamiltonian" for UHF stability analysis.
@@ -392,10 +392,10 @@ public:
     ~USTABHamiltonian() override;
 
     void print_header() const override;
-    virtual std::pair<std::shared_ptr<Vector>,
-                      std::shared_ptr<Vector> > diagonal();
-    virtual void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b);
+    std::pair<std::shared_ptr<Vector>,
+                      std::shared_ptr<Vector> > diagonal() override;
+    void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
+                               std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) override;
 
 // Working with a pair is annoying, so we define a new function below
     virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack_paired(

@@ -101,7 +101,7 @@ class NumberValue : public CoordValue {
         if (!fixed_) value_ = val;
     }
     CoordValueType type() override { return NumberType; }
-    std::shared_ptr<CoordValue> clone(std::map<std::string, double>& /*map*/) {
+    std::shared_ptr<CoordValue> clone(std::map<std::string, double>& /*map*/) override {
         return std::make_shared<NumberValue>(value_, fixed_);
     }
 };
@@ -128,7 +128,7 @@ class VariableValue : public CoordValue {
         }
     }
     CoordValueType type() override { return VariableType; }
-    std::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+    std::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) override {
         return std::make_shared<VariableValue>(name_, map, negate_, fixed_);
     }
 };
@@ -296,7 +296,7 @@ class CartesianEntry : public CoordEntry {
     void set_coordinates(double x, double y, double z) override;
     CoordEntryType type() override { return CartesianCoord; }
     void print_in_input_format() override;
-    std::string string_in_input_format();
+    std::string string_in_input_format() override;
     void invalidate() override {
         computed_ = false;
         x_->invalidate();
@@ -304,7 +304,7 @@ class CartesianEntry : public CoordEntry {
         z_->invalidate();
     }
     std::shared_ptr<CoordEntry> clone(std::vector<std::shared_ptr<CoordEntry> >& /*atoms*/,
-                                      std::map<std::string, double>& map) {
+                                      std::map<std::string, double>& map) override {
         std::shared_ptr<CoordEntry> temp =
             std::make_shared<CartesianEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, x_->clone(map),
                                              y_->clone(map), z_->clone(map), basissets_, shells_);
@@ -347,11 +347,11 @@ class ZMatrixEntry : public CoordEntry {
     }
     const Vector3& compute() override;
     void print_in_input_format() override;
-    std::string string_in_input_format();
+    std::string string_in_input_format() override;
     void set_coordinates(double x, double y, double z) override;
     CoordEntryType type() override { return ZMatrixCoord; }
     std::shared_ptr<CoordEntry> clone(std::vector<std::shared_ptr<CoordEntry> >& atoms,
-                                      std::map<std::string, double>& map) {
+                                      std::map<std::string, double>& map) override {
         std::shared_ptr<CoordEntry> temp;
         if (rto_ == 0 && ato_ == 0 && dto_ == 0) {
             temp = std::make_shared<ZMatrixEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, basissets_,

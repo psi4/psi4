@@ -191,19 +191,19 @@ public:
     RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~RKSFunctions() override;
 
-    void set_pointers(SharedMatrix Da_occ_AO);
-    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
+    void set_pointers(SharedMatrix Da_occ_AO) override;
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) override;
 
-    void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
+    void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
 
-    std::vector<SharedMatrix> scratch();
-    std::vector<SharedMatrix> D_scratch();
+    std::vector<SharedMatrix> scratch() override;
+    std::vector<SharedMatrix> D_scratch() override;
 
-    void print(std::string out_fname = "outfile", int print = 2) const;
+    void print(std::string out_fname = "outfile", int print = 2) const override;
 
-    void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
-    void set_Cs(SharedMatrix Cocc);
-    void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
+    void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
+    void set_Cs(SharedMatrix Cocc) override;
+    void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) override;
     size_t block_index() { return block_index_; }
 };
 
@@ -248,20 +248,20 @@ public:
     UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~UKSFunctions() override;
 
-    void set_pointers(SharedMatrix Da_occ_AO);
-    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
+    void set_pointers(SharedMatrix Da_occ_AO) override;
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) override;
     void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
 
-    void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
+    void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
 
-    std::vector<SharedMatrix> scratch();
-    std::vector<SharedMatrix> D_scratch();
+    std::vector<SharedMatrix> scratch() override;
+    std::vector<SharedMatrix> D_scratch() override;
 
-    void print(std::string out_fname = "outfile", int print = 2) const;
+    void print(std::string out_fname = "outfile", int print = 2) const override;
 
-    void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true);
-    void set_Cs(SharedMatrix Cocc);
-    void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
+    void compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
+    void set_Cs(SharedMatrix Cocc) override;
+    void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) override;
     size_t block_index() { return block_index_; }
 };
 

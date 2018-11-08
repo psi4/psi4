@@ -864,7 +864,7 @@ class PSI_API DiskDFJK : public JK {
      * Only available in DF-type JK integrals
      * Throws by default
      */
-    virtual SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca);
+    SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca) override;
 
     // => Knobs <= //
 
