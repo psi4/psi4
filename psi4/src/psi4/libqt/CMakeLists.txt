@@ -13,10 +13,11 @@ set(sources_list
   timer.cc
   dx_read.cc
   blas_level1.cc
+  blas_level2.cc
+  blas_level3.cc
   normalize.cc
   newmm_rking.cc
   3d_array.cc
-  blas_intfc23.cc
   reorder_qt.cc
   schmidt.cc
   invert.cc
