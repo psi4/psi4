@@ -507,19 +507,12 @@ def load_basfam_other():
     basis_6311ppg_3df_3pd_.add_rifit('aug-cc-pvtz-ri')
 
     # Peterson's nZaPa-NR basis sets
-    basis_2zapa_nr = BasisFamily('3zapa-nr')
-    basis_3zapa_nr = BasisFamily('3zapa-nr')
-    basis_4zapa_nr = BasisFamily('4zapa-nr')
-    basis_5zapa_nr = BasisFamily('5zapa-nr')
-    basis_6zapa_nr = BasisFamily('6zapa-nr')
-    basis_7zapa_nr = BasisFamily('7zapa-nr')
-
-    basisfamily_list.append(basis_2zapa_nr)
-    basisfamily_list.append(basis_3zapa_nr)
-    basisfamily_list.append(basis_4zapa_nr)
-    basisfamily_list.append(basis_5zapa_nr)
-    basisfamily_list.append(basis_6zapa_nr)
-    basisfamily_list.append(basis_7zapa_nr)
+    basis_2zapa_nr = BasisFamily('3zapa-nr',zeta=2)
+    basis_3zapa_nr = BasisFamily('3zapa-nr',zeta=3)
+    basis_4zapa_nr = BasisFamily('4zapa-nr',zeta=4)
+    basis_5zapa_nr = BasisFamily('5zapa-nr',zeta=5)
+    basis_6zapa_nr = BasisFamily('6zapa-nr',zeta=6)
+    basis_7zapa_nr = BasisFamily('7zapa-nr',zeta=7)
 
     # unverified fitting sets for nZaPa-NR
     # Dunnings zeta+1 to be safe, tested on water dimer
@@ -538,16 +531,19 @@ def load_basfam_other():
     basis_5zapa_nr.add_rifit('aug-cc-pv5z-ri')
     basis_6zapa_nr.add_rifit('aug-cc-pv6z-ri')
 
-    # F12 basis sets
-    basis_cc_pvdz_f12 = BasisFamily('cc-pvdz-f12')
-    basis_cc_pvtz_f12 = BasisFamily('cc-pvtz-f12')
-    basis_cc_pvqz_f12 = BasisFamily('cc-pvqz-f12')
-    # basis_cc_pv5z_f12 = BasisFamily('cc-pV5Z-F12')
+    basisfamily_list.append(basis_2zapa_nr)
+    basisfamily_list.append(basis_3zapa_nr)
+    basisfamily_list.append(basis_4zapa_nr)
+    basisfamily_list.append(basis_5zapa_nr)
+    basisfamily_list.append(basis_6zapa_nr)
+    basisfamily_list.append(basis_7zapa_nr)
 
-    basisfamily_list.append(basis_cc_pvqz_f12)
-    basisfamily_list.append(basis_cc_pvtz_f12)
-    basisfamily_list.append(basis_cc_pvqz_f12)
-    # basisfamily_list.append(basis_cc_pv5z_f12)
+
+    # F12 basis sets
+    basis_cc_pvdz_f12 = BasisFamily('cc-pvdz-f12',zeta=2)
+    basis_cc_pvtz_f12 = BasisFamily('cc-pvtz-f12',zeta=3)
+    basis_cc_pvqz_f12 = BasisFamily('cc-pvqz-f12',zeta=4)
+    # basis_cc_pv5z_f12 = BasisFamily('cc-pV5Z-F12')
 
     # Neese's suggestions is for F12 basis sets is Dunning's zeta+1
     basis_cc_pvdz_f12.add_jkfit('cc-pvtz-jkfit')
@@ -557,3 +553,8 @@ def load_basfam_other():
     basis_cc_pvdz_f12.add_rifit('cc-pvtz-jkfit')
     basis_cc_pvtz_f12.add_rifit('cc-pvqz-jkfit')
     basis_cc_pvqz_f12.add_rifit('cc-pv5z-jkfit')
+
+    basisfamily_list.append(basis_cc_pvqz_f12)
+    basisfamily_list.append(basis_cc_pvtz_f12)
+    basisfamily_list.append(basis_cc_pvqz_f12)
+    # basisfamily_list.append(basis_cc_pv5z_f12)
