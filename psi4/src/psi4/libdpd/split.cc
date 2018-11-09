@@ -31,6 +31,7 @@
     \brief String parsing code for orbital indices, taken from Justin Turney's AMBIT code.
 */
 
+#include <cctype>
 #include <algorithm>
 #include <iterator>
 #include <string>
