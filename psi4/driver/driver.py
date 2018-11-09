@@ -515,6 +515,7 @@ def energy(name, **kwargs):
     >>> energy("MP2/aug-cc-pv([d,t]+d)z + d:ccsd(t)/cc-pvdz", corl_scheme=myxtplfn_2)
 
     """
+    nbody, cbs = None, None
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Bounce to MDI if mdi kwarg
@@ -524,9 +525,13 @@ def energy(name, **kwargs):
 
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
+
     # Bounce to CP if bsse kwarg
     if kwargs.get('bsse_type', None) is not None:
-        return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
+        nbody = driver_nbody.NBodyComputer(molecule=molecule, driver="energy", **kwargs)
 
     # Bounce if name is function
     if hasattr(name, '__call__'):
@@ -540,17 +545,25 @@ def energy(name, **kwargs):
 
     # Bounce to CBS if "method/basis" name
     if "/" in lowername:
-        return driver_cbs._cbs_gufunc(energy, name, ptype='energy', **kwargs)
+        # Change that later when cbs class ic completed
+        cbs = driver_cbs.CBSComputer(molecule=molecule, driver="energy", **kwargs)
 
     _filter_renamed_methods("energy", lowername)
 
+    if nbody is not None or cbs is not None:
+        # Now works for either nbody or cbs
+        ComputeInstance = nbody if nbody is not None else cbs
+        ComputeClass = task_base.SingleResult
+        keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
+        data = {'driver': 'energy', 'method': lowername, 'basis': core.get_global_option('BASIS'), 'keywords': keywords}
+        ComputeInstance.build_tasks(ComputeClass, **data)
+        ComputeInstance.compute()
+
+        return ComputeInstance.get_results()['ret_ptype']
+    
     # Commit to procedures['energy'] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
-
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
 
     #for precallback in hooks['energy']['pre']:
     #    precallback(lowername, **kwargs)
