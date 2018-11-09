@@ -77,7 +77,7 @@ class PSI_API PsiException : public std::runtime_error {
 
     PsiException(const PsiException &copy) noexcept;
 
-    virtual ~PsiException() noexcept;
+    ~PsiException() noexcept override;
 
     PsiException &operator=(const PsiException &other) {
         if (this != &other) {
@@ -92,7 +92,7 @@ class PSI_API PsiException : public std::runtime_error {
     * Override of runtime_error's virtual what method
     * @return Description of exception
     */
-    const char *what() const noexcept;
+    const char *what() const noexcept override;
 
     /**
     * Accessor method
@@ -249,7 +249,7 @@ class MaxIterationsExceeded : public LimitExceeded<T> {
     */
     MaxIterationsExceeded(std::string routine_name, T max, const char *file, int line) noexcept;
 
-    virtual ~MaxIterationsExceeded() noexcept;
+    ~MaxIterationsExceeded() noexcept override;
 };
 
 /**
@@ -280,7 +280,7 @@ class ConvergenceError : public MaxIterationsExceeded<T> {
     */
     double actual_accuracy() const noexcept;
 
-    virtual ~ConvergenceError() noexcept;
+    ~ConvergenceError() noexcept override;
 
    private:
     double desired_acc_;

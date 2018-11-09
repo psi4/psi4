@@ -116,7 +116,7 @@ class DFMP2 : public Wavefunction {
     ~DFMP2() override;
 
     double compute_energy() override;
-    virtual SharedMatrix compute_gradient();
+    SharedMatrix compute_gradient() override;
 };
 
 class RDFMP2 : public DFMP2 {

@@ -258,7 +258,7 @@ public:
     std::vector<std::shared_ptr<Vector> >& x() { return x_; }
     std::vector<std::shared_ptr<Vector> >& b() { return b_; }
 
-    void print_header() const;
+    void print_header() const override;
     size_t memory_estimate() override;
     void initialize() override;
     void solve() override;

@@ -305,8 +305,8 @@ public:
     /// Allocating new buffers for wK integrals
     virtual void allocate_buffers_wK()=0;
     /// Prepare the JK formation for disk algorithms
-    virtual void prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl,
-                            std::vector<SharedMatrix> Cr);
+    void prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl,
+                            std::vector<SharedMatrix> Cr) override;
 
     /// Determining the batch sizes
     void batch_sizing();
@@ -329,8 +329,8 @@ public:
     virtual void close_PK_file(bool keep);
 
     /// Form J from PK supermatrix, shared_ptr() initialized to null
-    virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>());
+    void form_J(std::vector<SharedMatrix> J, std::string exch = "",
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>()) override;
 
     /// Finalize JK matrix formation
     void finalize_JK() override;
@@ -499,12 +499,12 @@ public:
     /// Sequence of steps to form wK PK matrix
     void form_PK_wK() override;
     /// Steps to prepare JK formation
-    virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
-                            std::vector<SharedMatrix> Cr);
+    void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
+                            std::vector<SharedMatrix> Cr) override;
 
     /// Form J matrix, shared_ptr() initializes to null
-    virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>());
+    void form_J(std::vector<SharedMatrix> J, std::string exch = "",
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>()) override;
     /// Finalize JK formation
     void finalize_JK() override;
 

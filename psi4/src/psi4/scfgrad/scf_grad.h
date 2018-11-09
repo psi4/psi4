@@ -55,9 +55,9 @@ public:
 
     double compute_energy() override { throw PSIEXCEPTION("SCFGrad needs a rehash, call Rob."); }
 
-    SharedMatrix compute_gradient();
+    SharedMatrix compute_gradient() override;
 
-    SharedMatrix compute_hessian();
+    SharedMatrix compute_hessian() override;
 
     SharedMatrix rhf_hessian_response();
 };
