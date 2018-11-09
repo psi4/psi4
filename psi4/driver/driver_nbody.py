@@ -930,14 +930,12 @@ class NBodyComputer(BaseTask):
         return counter
 
     def plan(self):
-        ret = {}
+        ret = []
         for k, v in self.task_list.items():
-            ret[k] = v.compute()
-
+            ret.append(v.plan())
         return ret
 
     def compute(self):
-
         for k, v in self.task_list.items():
             self.results_list[k] = v.compute()
             print(self.results_list[k]["return_result"])

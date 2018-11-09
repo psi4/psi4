@@ -2405,7 +2405,7 @@ class CBSComputer(BaseTask):
         return [x.plan() for x in self.task_list]
 
     def compute(self):
-        self.result_list = [x.compute() for x in self.task_list]
+        self.results_list = [x.compute() for x in self.task_list]
 
     def get_results(self):
         pass
