@@ -28,13 +28,15 @@ if(WIN32)
   set(_has_dggsvd3 TRUE)
   set(_has_dggsvp3 TRUE)
 else()
-  include(CheckFortranFunctionExists)
-  set(CMAKE_REQUIRED_LIBRARIES tgt::lapack)
-  # Check whether DGGSVD3 is available
-  check_fortran_function_exists(DGGSVD3 _has_dggsvd3)
-  # Check whether DGGSVP3 is available
-  check_fortran_function_exists(DGGSVP3 _has_dggsvp3)
-  unset(CMAKE_REQUIRED_LIBRARIES)
+  if(Fortran_ENABLED)
+    include(CheckFortranFunctionExists)
+    set(CMAKE_REQUIRED_LIBRARIES tgt::lapk)
+    # Check whether DGGSVD3 is available
+    check_fortran_function_exists(DGGSVD3 _has_dggsvd3)
+    # Check whether DGGSVP3 is available
+    check_fortran_function_exists(DGGSVP3 _has_dggsvp3)
+    unset(CMAKE_REQUIRED_LIBRARIES)
+  endif()
 endif()
 
 psi4_add_module(lib qt sources_list psio ciomr mints)
