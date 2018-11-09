@@ -37,240 +37,185 @@
 
 #include "blas_level2.h"
 
-#include <stdexcept>
-
 #ifdef USING_LAPACK_MKL
-#include "mkl_cblas.h"
+#include <mkl_cblas.h>
 #else
-#include "cblas.h"
+#include <cblas.h>
 #endif
 
+#include "psi4/libpsi4util/exception.h"
+
 namespace psi {
+namespace detail {
+CBLAS_TRANSPOSE dispatch_trans(char trans, std::string func, const char * file, int line) {
+    auto retval = CblasNoTrans;
+    if (trans == 'N' || trans == 'n') {
+        retval = CblasNoTrans;
+    } else if (trans == 'T' || trans == 't') {
+        retval = CblasTrans;
+    } else if (trans == 'C' || trans == 'c') {
+        retval = CblasConjTrans;
+    } else {
+        throw SanityCheckError(func + " trans argument is invalid.", file, line);
+    }
+    return retval;
+}
+
+CBLAS_UPLO dispatch_uplo(char uplo, std::string func, const char * file, int line) {
+    auto retval = CblasUpper;
+    if (uplo == 'U' || uplo == 'u') {
+        retval = CblasUpper;
+    } else if (uplo == 'L' || uplo == 'l') {
+        retval = CblasLower;
+    } else {
+        throw SanityCheckError(func + " uplo argument is invalid.", file, line);
+    }
+    return retval;
+}
+
+CBLAS_DIAG dispatch_diag(char diag, std::string func, const char * file, int line) {
+    auto retval = CblasNonUnit;
+    if (diag == 'N' || diag == 'n') {
+        retval = CblasNonUnit;
+    } else if (diag == 'U' || diag == 'u') {
+        retval = CblasUnit;
+    } else {
+        throw SanityCheckError(func + " diag argument is invalid.", file, line);
+    }
+    return retval;
+}
+
+CBLAS_SIDE dispatch_side(char side, std::string func, const char * file, int line) {
+    auto retval = CblasLeft;
+    if (side == 'L' || side == 'l') {
+        retval = CblasLeft;
+    } else if (side == 'R' || side == 'r') {
+        retval = CblasRight;
+    } else {
+        throw SanityCheckError(func + " side argument is invalid.", file, line);
+    }
+    return retval;
+}
+}  // namespace detail
+
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx,
              double beta, double* y, int incy) {
     if (m == 0 || n == 0) return;
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DGBMV trans argument is invalid.");
-    ::F_DGBMV(&trans, &n, &m, &ku, &kl, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    cblas_dgbmv(CblasRowMajor, TransA, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
 }
 
 void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
              int incy) {
     if (m == 0 || n == 0) return;
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DGEMV trans argument is invalid.");
-    ::F_DGEMV(&trans, &n, &m, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    cblas_dgemv(CblasRowMajor, TransA, m, n, alpha, a, lda, x, incx, beta, y, incy);
 }
 
 void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda) {
     if (m == 0 || n == 0) return;
-    ::F_DGER(&n, &m, &alpha, y, &incy, x, &incx, a, &lda);
+    cblas_dger(CblasRowMajor, m, n, alpha, x, incx, y, incy, a, lda);
 }
 
 void C_DSBMV(char uplo, int n, int k, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
              int incy) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSBMV uplo argument is invalid.");
-    ::F_DSBMV(&uplo, &n, &k, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dsbmv(CblasRowMajor, Uplo, n, k, alpha, a, lda, x, incx, beta, y, incy);
 }
 
 void C_DSPMV(char uplo, int n, double alpha, double* ap, double* x, int incx, double beta, double* y, int incy) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSPMV uplo argument is invalid.");
-    ::F_DSPMV(&uplo, &n, &alpha, ap, x, &incx, &beta, y, &incy);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dspmv(CblasRowMajor, Uplo, n, alpha, ap, x, incx, beta, y, incy);
 }
 
 void C_DSPR(char uplo, int n, double alpha, double* x, int incx, double* ap) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSPR uplo argument is invalid.");
-    ::F_DSPR(&uplo, &n, &alpha, x, &incx, ap);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dspr(CblasRowMajor, Uplo, n, alpha, x, incx, ap);
 }
 
 void C_DSPR2(char uplo, int n, double alpha, double* x, int incx, double* y, int incy, double* ap) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSPR2 uplo argument is invalid.");
-    ::F_DSPR2(&uplo, &n, &alpha, x, &incx, y, &incy, ap);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dspr2(CblasRowMajor, Uplo, n, alpha, x, incx, y, incy, ap);
 }
 
 void C_DSYMV(char uplo, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
              int incy) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSYMV uplo argument is invalid.");
-    ::F_DSYMV(&uplo, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dsymv(CblasRowMajor, Uplo, n, alpha, a, lda, x, incx, beta, y, incy);
 }
 
 void C_DSYR(char uplo, int n, double alpha, double* x, int incx, double* a, int lda) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSYR uplo argument is invalid.");
-    ::F_DSYR(&uplo, &n, &alpha, x, &incx, a, &lda);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dsyr(CblasRowMajor, Uplo, n, alpha, x, incx, a, lda);
 }
 
 void C_DSYR2(char uplo, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DSYR2 uplo argument is invalid.");
-    ::F_DSYR2(&uplo, &n, &alpha, x, &incx, y, &incy, a, &lda);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    cblas_dsyr2(CblasRowMajor, Uplo, n, alpha, x, incx, y, incy, a, lda);
 }
 
 void C_DTBMV(char uplo, char trans, char diag, int n, int k, double* a, int lda, double* x, int incx) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTBMV uplo argument is invalid.");
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DTBMV trans argument is invalid.");
-    ::F_DTBMV(&uplo, &trans, &diag, &n, &k, a, &lda, x, &incx);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtbmv(CblasRowMajor, Uplo, TransA, Diag, n, k, a, lda, x, incx);
 }
 
 void C_DTBSV(char uplo, char trans, char diag, int n, int k, double* a, int lda, double* x, int incx) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTBSV uplo argument is invalid.");
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DTBSV trans argument is invalid.");
-    ::F_DTBSV(&uplo, &trans, &diag, &n, &k, a, &lda, x, &incx);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtbsv(CblasRowMajor, Uplo, TransA, Diag, n, k, a, lda, x, incx);
 }
 
 void C_DTPMV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTPMV uplo argument is invalid.");
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DTPMV trans argument is invalid.");
-    ::F_DTPMV(&uplo, &trans, &diag, &n, ap, x, &incx);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtpmv(CblasRowMajor, Uplo, TransA, Diag, n, ap, x, incx);
 }
 
 void C_DTPSV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTPSV uplo argument is invalid.");
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DTPSV trans argument is invalid.");
-    ::F_DTPSV(&uplo, &trans, &diag, &n, ap, x, &incx);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtpsv(CblasRowMajor, Uplo, TransA, Diag, n, ap, x, incx);
 }
 
 void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTRMV uplo argument is invalid.");
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DTRMV trans argument is invalid.");
-    ::F_DTRMV(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtrmv(CblasRowMajor, Uplo, TransA, Diag, n, a, lda, x, incx);
 }
 
 void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
              int ldb) {
     if (m == 0 || n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTRSM uplo argument is invalid.");
-    if (side == 'L' || side == 'L')
-        side = 'R';
-    else if (side == 'R' || side == 'r')
-        side = 'L';
-    else
-        throw std::invalid_argument("C_DTRSM side argument is invalid.");
-    ::F_DTRSM(&side, &uplo, &transa, &diag, &n, &m, &alpha, a, &lda, b, &ldb);
+    auto Side = detail::dispatch_side(side, __func__, __FILE__, __LINE__);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(transa, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtrsm(CblasRowMajor, Side, Uplo, TransA, Diag, m, n, alpha, a, lda, b, ldb);
 }
 
 void C_DTRSV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx) {
     if (n == 0) return;
-    if (uplo == 'U' || uplo == 'u')
-        uplo = 'L';
-    else if (uplo == 'L' || uplo == 'l')
-        uplo = 'U';
-    else
-        throw std::invalid_argument("C_DTRSV uplo argument is invalid.");
-    if (trans == 'N' || trans == 'n')
-        trans = 'T';
-    else if (trans == 'T' || trans == 't')
-        trans = 'N';
-    else
-        throw std::invalid_argument("C_DTRSV trans argument is invalid.");
-    ::F_DTRSV(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
+    auto Uplo = detail::dispatch_uplo(uplo, __func__, __FILE__, __LINE__);
+    auto TransA = detail::dispatch_trans(trans, __func__, __FILE__, __LINE__);
+    auto Diag = detail::dispatch_diag(diag, __func__, __FILE__, __LINE__);
+    cblas_dtrsv(CblasRowMajor, Uplo, TransA, Diag, n, a, lda, x, incx);
 }
 }  // namespace psi

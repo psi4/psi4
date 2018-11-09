@@ -43,15 +43,15 @@ namespace psi {
  * Swaps a vector with another vector.
  *
  * @param length Specifies the number of elements in vectors x and y.
- * @param x Array, DIMENSION at least (1 + (n-1)*abs(incx)).
+ * @param x Array, DIMENSION at least (1 + (n-1)*abs(inc_x)).
  * @param inc_x Specifies the increment for the elements of x.
- * @param y Array, DIMENSION at least (1 + (n-1)*abs(incy)).
+ * @param y Array, DIMENSION at least (1 + (n-1)*abs(inc_y)).
  * @param inc_y Specifies the increment for the elements of y.
  *
  * @ingroup QT
  */
 PSI_API
-void C_DSWAP(size_t length, double* x, int incx, double* y, int inc_y);
+void C_DSWAP(size_t length, double* x, int inc_x, double* y, int inc_y);
 
 /*!
  * This function performs y = a * x + y.
@@ -89,10 +89,10 @@ void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
 /*!
  * This function scales a vector by a real scalar.
  *
- * \param length length of array
- * \param alpha  scale factor
- * \param vec    vector to scale
- * \param inc    how many places to skip to get to next element in vec
+ * \param len   length of array
+ * \param alpha scale factor
+ * \param vec   vector to scale
+ * \param inc   how many places to skip to get to next element in vec
  *
  * \ingroup QT
  */
@@ -108,13 +108,13 @@ void C_DSCAL(size_t len, double alpha, double* vec, int inc);
  * \param inc_x  how many places to skip to get to the next element of x
  * \param y      vector Y
  * \param inc_y  how many places to skip to get to the next element of y
- * \param costheta
- * \param sintheta
+ * \param costheta cosine
+ * \param sintheta sine
  *
  * \ingroup QT
  */
 PSI_API
-void C_DROT(size_t ntot, double* x, int incx, double* y, int incy, double costheta, double sintheta);
+void C_DROT(size_t ntot, double* x, int inc_x, double* y, int inc_y, double costheta, double sintheta);
 
 /*!
  * This function returns the dot product of two vectors, x and y.
@@ -146,7 +146,7 @@ double C_DDOT(size_t n, double* x, int inc_x, double* y, int inc_y);
  * \ingroup QT
  */
 PSI_API
-double C_DNRM2(size_t n, double* X, int inc_x);
+double C_DNRM2(size_t n, double* x, int inc_x);
 
 /*!
  * This function returns the sum of the absolute value of this vector.

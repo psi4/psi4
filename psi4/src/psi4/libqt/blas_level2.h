@@ -34,9 +34,27 @@
 
 #pragma once
 
+#include <string>
+
+#ifdef USING_LAPACK_MKL
+#include <mkl_cblas.h>
+#else
+#include <cblas.h>
+#endif
+
 #include "psi4/pragma.h"
 
 namespace psi {
+namespace detail {
+CBLAS_TRANSPOSE dispatch_trans(char trans, std::string func, const char * file, int line);
+
+CBLAS_UPLO dispatch_uplo(char uplo, std::string func, const char * file, int line);
+
+CBLAS_DIAG dispatch_diag(char diag, std::string func, const char * file, int line);
+
+CBLAS_SIDE dispatch_side(char side, std::string func, const char * file, int line);
+}  // namespace detail
+
 /**
  *  Purpose
  *  =======

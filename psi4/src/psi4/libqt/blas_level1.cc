@@ -57,9 +57,9 @@
 #include <cmath>
 
 #ifdef USING_LAPACK_MKL
-#include "mkl_cblas.h"
+#include <mkl_cblas.h>
 #else
-#include "cblas.h"
+#include <cblas.h>
 #endif
 
 namespace psi {
