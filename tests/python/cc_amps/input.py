@@ -1,4 +1,5 @@
 import psi4
+import numpy as np
 
 Ne = psi4.geometry("""
 0 1
@@ -9,8 +10,6 @@ psi4.set_options({'basis': 'cc-pvdz', 'freeze_core': 'false'})
 
 _, wfn = psi4.energy('ccsd', return_wfn=True, molecule=Ne)
 amps = wfn.get_amplitudes()
-for k, v in amps.items():
-    print(k, type(v).__name__)
 
 TIjAb = amps['tIjAb'].to_array()
 TIA = amps['tIA'].to_array()
@@ -23,6 +22,7 @@ D = mints.mo_eri(
 D = D.swapaxes(1, 2)
 
 RHF_ccsd_corr_e = 2 * np.einsum("ijab,ijab->", tau_IjAb, D) - np.einsum("ijab,ijba->", tau_IjAb, D)
+print(RHF_ccsd_corr_e)
 psi4.compare_values(RHF_ccsd_corr_e, psi4.get_variable('CCSD CORRELATION ENERGY'), 8, "RHF CCSD CORRELATION ENERGY")
 
 # END RHF
