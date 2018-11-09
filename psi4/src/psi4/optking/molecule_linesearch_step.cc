@@ -40,7 +40,6 @@
     Opt_params.linesearch_static_max = options.get_int("LINESEARCH_STATIC_MAX");
 */
 
-
 #include "molecule.h"
 
 #include <iostream>
@@ -55,113 +54,105 @@
 #include "globals.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
- #include <cmath>
-#elif defined (OPTKING_PACKAGE_QCHEM)
- #include "qcmath.h"
+#include <cmath>
+#elif defined(OPTKING_PACKAGE_QCHEM)
+#include "qcmath.h"
 #endif
 
 namespace opt {
 
 void MOLECULE::linesearch_step(void) {
-  int dim = Ncoord();
-  double *fq = p_Opt_data->g_forces_pointer();
-  double *dq = p_Opt_data->g_dq_pointer();
+    int dim = Ncoord();
+    double *fq = p_Opt_data->g_forces_pointer();
+    double *dq = p_Opt_data->g_dq_pointer();
 
-  for (int i=0; i<dim; ++i)
-    dq[i] = fq[i];
+    for (int i = 0; i < dim; ++i) dq[i] = fq[i];
 
-  // Zero steps for frozen fragment
-  for (std::size_t f=0; f<fragments.size(); ++f) {
-    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
-      for (int i=0; i<fragments[f]->Ncoord(); ++i)
-        dq[ g_coord_offset(f) + i ] = 0.0;
-    }
-  }
-
-  // Find largest change in an internal coordinate
-  double max_dq_orig = 0;
-  for (int i=0; i<dim; ++i) {
-    if (std::abs(dq[i]) > max_dq_orig)
-      max_dq_orig = std::abs(dq[i]);
-  }
-
-  double *dq_orig = init_array(dim);
-  for (int i=0; i<dim; ++i)
-    dq_orig[i] = dq[i];
-
-  double *geom_array_orig = g_geom_array();
-
-  // Number of geometries to generate
-  int Ndisp = Opt_params.linesearch_static_N;
-  double disp_min = Opt_params.linesearch_static_min;
-  double disp_max = Opt_params.linesearch_static_max;
-
-  double step_size =(disp_max - disp_min)/(Ndisp-1);
-
-  for (int igeom=0; igeom<Ndisp; ++igeom) {
-
-    double max_dq = disp_min + step_size*igeom;
-
-    double scale = max_dq/max_dq_orig;
-    for (int i=0; i<dim; ++i)
-      dq[i] = scale * dq_orig[i];
-
-    set_geom_array(geom_array_orig);
-
-    // do displacements for each fragment separately
-    for (std::size_t f=0; f<fragments.size(); ++f) {
-      if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
-        continue;
-      }
-      fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
+    // Zero steps for frozen fragment
+    for (std::size_t f = 0; f < fragments.size(); ++f) {
+        if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+            oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f + 1);
+            for (int i = 0; i < fragments[f]->Ncoord(); ++i) dq[g_coord_offset(f) + i] = 0.0;
+        }
     }
 
-    // do displacements for interfragment coordinates
-    for (std::size_t I=0; I<interfragments.size(); ++I) {
-      if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
-        continue;
-      }
-      interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
-                                          &(fq[g_interfragment_coord_offset(I)]) );
+    // Find largest change in an internal coordinate
+    double max_dq_orig = 0;
+    for (int i = 0; i < dim; ++i) {
+        if (std::abs(dq[i]) > max_dq_orig) max_dq_orig = std::abs(dq[i]);
     }
 
-    // fix rotation matrix for rotations in QCHEM EFP code
-    for (std::size_t I=0; I<fb_fragments.size(); ++I)
-      fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
+    double *dq_orig = init_array(dim);
+    for (int i = 0; i < dim; ++i) dq_orig[i] = dq[i];
 
-    symmetrize_geom(); // now symmetrize the geometry for next step
+    double *geom_array_orig = g_geom_array();
 
-    // Now write out file.
-    oprintf_out("\t Line search structure #%d : maximum coord change %8.4f\n", igeom+1, max_dq);
-    print_geom_out();
+    // Number of geometries to generate
+    int Ndisp = Opt_params.linesearch_static_N;
+    double disp_min = Opt_params.linesearch_static_min;
+    double disp_max = Opt_params.linesearch_static_max;
 
-    std::stringstream geom_string;
-    geom_string << "geom_" << igeom+1;
+    double step_size = (disp_max - disp_min) / (Ndisp - 1);
 
-    double *coord = g_geom_array();
+    for (int igeom = 0; igeom < Ndisp; ++igeom) {
+        double max_dq = disp_min + step_size * igeom;
 
-    FILE *qc_fout = nullptr;
-    std::string psi_fout = "linesearch_geoms.py";
+        double scale = max_dq / max_dq_orig;
+        for (int i = 0; i < dim; ++i) dq[i] = scale * dq_orig[i];
+
+        set_geom_array(geom_array_orig);
+
+        // do displacements for each fragment separately
+        for (std::size_t f = 0; f < fragments.size(); ++f) {
+            if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+                oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f + 1);
+                continue;
+            }
+            fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
+        }
+
+        // do displacements for interfragment coordinates
+        for (std::size_t I = 0; I < interfragments.size(); ++I) {
+            if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+                oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I + 1);
+                continue;
+            }
+            interfragments[I]->orient_fragment(&(dq[g_interfragment_coord_offset(I)]),
+                                               &(fq[g_interfragment_coord_offset(I)]));
+        }
+
+        // fix rotation matrix for rotations in QCHEM EFP code
+        for (std::size_t I = 0; I < fb_fragments.size(); ++I)
+            fb_fragments[I]->displace(I, &(dq[g_fb_fragment_coord_offset(I)]));
+
+        symmetrize_geom();  // now symmetrize the geometry for next step
+
+        // Now write out file.
+        oprintf_out("\t Line search structure #%d : maximum coord change %8.4f\n", igeom + 1, max_dq);
+        print_geom_out();
+
+        std::stringstream geom_string;
+        geom_string << "geom_" << igeom + 1;
+
+        double *coord = g_geom_array();
+
+        FILE *qc_fout = nullptr;
+        std::string psi_fout = "linesearch_geoms.py";
 #if defined(OPTKING_PACKAGE_QCHEM)
-    FILE *qc_fout = fopen("linesearch_geoms.py", "w");
+        FILE *qc_fout = fopen("linesearch_geoms.py", "w");
 #endif
 
-    oprintf(psi_fout, qc_fout, "%s = [ \n", geom_string.str().c_str());
-    for (int i=0; i<g_natom(); ++i)  {
-      for (int xyz=0; xyz<3; ++xyz)
-        oprintf(psi_fout, qc_fout, "%15.10lf,", coord[3*i+xyz]);
-      oprintf(psi_fout, qc_fout,"\n");
+        oprintf(psi_fout, qc_fout, "%s = [ \n", geom_string.str().c_str());
+        for (int i = 0; i < g_natom(); ++i) {
+            for (int xyz = 0; xyz < 3; ++xyz) oprintf(psi_fout, qc_fout, "%15.10lf,", coord[3 * i + xyz]);
+            oprintf(psi_fout, qc_fout, "\n");
+        }
+        oprintf(psi_fout, qc_fout, " ] \n");
     }
-    oprintf(psi_fout, qc_fout, " ] \n");
-
-  }
 #if defined(OPTKING_PACKAGE_QCHEM)
-  fclose(fout);
+    fclose(fout);
 #endif
-  free_array(dq_orig);
+    free_array(dq_orig);
 }
 
-}
+}  // namespace opt

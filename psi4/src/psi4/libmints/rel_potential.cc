@@ -45,9 +45,8 @@ using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
 RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
-                                 std::shared_ptr<BasisSet> bs2, int deriv) :
-        OneBodyAOInt(st, bs1, bs2, deriv)
-{
+                                 std::shared_ptr<BasisSet> bs2, int deriv)
+    : OneBodyAOInt(st, bs1, bs2, deriv) {
     if (deriv == 0)
         potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am() + 2, bs2->max_am() + 2);
     else
@@ -63,18 +62,17 @@ RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, std::share
 
     // Setup the initial field of partial charges
     Zxyz_ = std::make_shared<Matrix>("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4);
-    double **Zxyzp = Zxyz_->pointer();
+    double** Zxyzp = Zxyz_->pointer();
 
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {
-        Zxyzp[A][0] = (double) bs1_->molecule()->Z(A, true);
+        Zxyzp[A][0] = (double)bs1_->molecule()->Z(A, true);
         Zxyzp[A][1] = bs1_->molecule()->x(A);
         Zxyzp[A][2] = bs1_->molecule()->y(A);
         Zxyzp[A][3] = bs1_->molecule()->z(A);
     }
 }
 
-RelPotentialInt::~RelPotentialInt()
-{
+RelPotentialInt::~RelPotentialInt() {
     delete[] buffer_;
     delete potential_recur_;
 }
@@ -84,9 +82,7 @@ RelPotentialInt::~RelPotentialInt()
 */
 
 // The engine only supports segmented basis sets
-void RelPotentialInt::compute_pair(const GaussianShell& s1,
-                                   const GaussianShell& s2)
-{
+void RelPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2) {
     int ao12;
     int am1 = s1.am();
     int am2 = s2.am();
@@ -117,29 +113,29 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
 
     memset(buffer_, 0, s1.ncartesian() * s2.ncartesian() * sizeof(double));
 
-    double ***vi = potential_recur_->vi();
+    double*** vi = potential_recur_->vi();
 
-    double **Zxyzp = Zxyz_->pointer();
+    double** Zxyzp = Zxyz_->pointer();
     int ncharge = Zxyz_->rowspi()[0];
 
 #if RELVDEBUG
-    outfile->Printf("\n s1= %d, s2= %d,  \n\n",nprim1,nprim2);
-    outfile->Printf("\n am1= %d, am2= %d,  \n\n",am1,am2);
+    outfile->Printf("\n s1= %d, s2= %d,  \n\n", nprim1, nprim2);
+    outfile->Printf("\n am1= %d, am2= %d,  \n\n", am1, am2);
     outfile->Printf("izm= %d, jzm= %d\n", izm, jzm);
-    outfile->Printf("iym= %d, jym= %d\n", am1+1, am2+1);
-    outfile->Printf("ixm= %d, jxm= %d\n", (am1+1)*(am1+1), (am2+1)*(am2+1));
+    outfile->Printf("iym= %d, jym= %d\n", am1 + 1, am2 + 1);
+    outfile->Printf("ixm= %d, jxm= %d\n", (am1 + 1) * (am1 + 1), (am2 + 1) * (am2 + 1));
 #endif
 
     for (int p1 = 0; p1 < nprim1; ++p1) {
         double a1 = s1.exp(p1);
 #if RELVDEBUG
-        outfile->Printf("alpha_a=%20.14f\n",a1);
+        outfile->Printf("alpha_a=%20.14f\n", a1);
 #endif
         double c1 = s1.coef(p1);
         for (int p2 = 0; p2 < nprim2; ++p2) {
             double a2 = s2.exp(p2);
 #if RELVDEBUG
-            outfile->Printf("alpha_b=%20.14f\n",a2);
+            outfile->Printf("alpha_b=%20.14f\n", a2);
 #endif
             double c2 = s2.coef(p2);
             double gamma = a1 + a2;
@@ -164,7 +160,7 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
             // molecule)
             for (int atom = 0; atom < ncharge; ++atom) {
 #if RELVDEBUG
-                outfile->Printf("\n atoms=%d \n",atom);
+                outfile->Printf("\n atoms=%d \n", atom);
 #endif
                 double PC[3];
 
@@ -199,77 +195,79 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
                                 Izz = 4.0 * a1 * a2 * vi[iind + izm][jind + jzm][0];
 
 #if RELVDEBUG
-                                outfile->Printf("l1= %d, m1= %d, n1= %d  \n",l1,m1,n1);
-                                outfile->Printf("l2= %d, m2= %d, n2= %d \n",l2,m2,n2);
-                                outfile->Printf("iind =%d, jind= %d \n", iind,jind);
-                                outfile->Printf("Siind+ixm= %d, jind+jxm= %d \n", iind+ixm, jind+jxm);
-                                outfile->Printf("Siind+iym= %d, jind+jym= %d \n", iind+iym, jind+jym);
-                                outfile->Printf("Siind+izm= %d, jind+jzm= %d \n", iind+izm, jind+jzm);
+                                outfile->Printf("l1= %d, m1= %d, n1= %d  \n", l1, m1, n1);
+                                outfile->Printf("l2= %d, m2= %d, n2= %d \n", l2, m2, n2);
+                                outfile->Printf("iind =%d, jind= %d \n", iind, jind);
+                                outfile->Printf("Siind+ixm= %d, jind+jxm= %d \n", iind + ixm, jind + jxm);
+                                outfile->Printf("Siind+iym= %d, jind+jym= %d \n", iind + iym, jind + jym);
+                                outfile->Printf("Siind+izm= %d, jind+jzm= %d \n", iind + izm, jind + jzm);
 #endif
 
                                 // <a+1|V|b-1>, <a-1|V|b+1>, <a-1|V|b-1> terms
                                 if (l1 && l2) {
                                     Ixx += l1 * l2 * vi[iind - ixm][jind - jxm][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind-ixm= %d, jind-jxm= %d \n", iind-ixm, jind-jxm);
+                                    outfile->Printf("iind-ixm= %d, jind-jxm= %d \n", iind - ixm, jind - jxm);
 #endif
                                 }
                                 if (l1) {
                                     Ixx -= 2.0 * l1 * a2 * vi[iind - ixm][jind + jxm][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind-ixm= %d, jind+jxm= %d \n", iind-ixm, jind+jxm);
+                                    outfile->Printf("iind-ixm= %d, jind+jxm= %d \n", iind - ixm, jind + jxm);
 #endif
                                 }
                                 if (l2) {
                                     Ixx -= 2.0 * l2 * a1 * vi[iind + ixm][jind - jxm][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind+ixm= %d, jind-jxm= %d \n", iind+ixm, jind-jxm);
+                                    outfile->Printf("iind+ixm= %d, jind-jxm= %d \n", iind + ixm, jind - jxm);
 #endif
                                 }
                                 if (m1 && m2) {
                                     Iyy += m1 * m2 * vi[iind - iym][jind - jym][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind-iym= %d, jind-jym= %d \n", iind-iym, jind-jym);
+                                    outfile->Printf("iind-iym= %d, jind-jym= %d \n", iind - iym, jind - jym);
 #endif
                                 }
                                 if (m1) {
                                     Iyy -= 2.0 * m1 * a2 * vi[iind - iym][jind + jym][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind-iym= %d, jind+jym= %d \n", iind-iym, jind+jym);
+                                    outfile->Printf("iind-iym= %d, jind+jym= %d \n", iind - iym, jind + jym);
 #endif
                                 }
                                 if (m2) {
                                     Iyy -= 2.0 * m2 * a1 * vi[iind + iym][jind - jym][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind+iym= %d, jind-jym= %d \n", iind+iym, jind-jym);
+                                    outfile->Printf("iind+iym= %d, jind-jym= %d \n", iind + iym, jind - jym);
 #endif
                                 }
 
                                 if (n1 && n2) {
                                     Izz += n1 * n2 * vi[iind - izm][jind - jzm][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind-izm= %d, jind-jzm= %d \n", iind-izm, jind-jzm);
+                                    outfile->Printf("iind-izm= %d, jind-jzm= %d \n", iind - izm, jind - jzm);
 #endif
                                 }
 
                                 if (n1) {
                                     Izz -= 2.0 * n1 * a2 * vi[iind - izm][jind + jzm][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind-izm= %d, jind+jzm= %d \n", iind-izm, jind+jzm);
+                                    outfile->Printf("iind-izm= %d, jind+jzm= %d \n", iind - izm, jind + jzm);
 #endif
                                 }
                                 if (n2) {
                                     Izz -= 2.0 * n2 * a1 * vi[iind + izm][jind - jzm][0];
 #if RELVDEBUG
-                                    outfile->Printf("iind+izm= %d, jind-jzm= %d \n", iind+izm, jind-jzm);
+                                    outfile->Printf("iind+izm= %d, jind-jzm= %d \n", iind + izm, jind - jzm);
 #endif
                                 }
                                 Itotal = Ixx + Iyy + Izz;
                                 buffer_[ao12++] += -Itotal * over_pf * Z;
 #if RELVDEBUG
-                                outfile->Printf("Itota=%20.14f \n",Itotal*over_pf*Z);
-                                outfile->Printf("ao12=%d \n", ao12-1);
-                                outfile->Printf("ao12=%d, vi[%d][%d][0] = %20.14f, over_pf = %20.14f, Z = %f\n", ao12-1, iind+ixm, jind+jxm, vi[iind+ixm][jind+jxm][0], over_pf, Z);
+                                outfile->Printf("Itota=%20.14f \n", Itotal * over_pf * Z);
+                                outfile->Printf("ao12=%d \n", ao12 - 1);
+                                outfile->Printf("ao12=%d, vi[%d][%d][0] = %20.14f, over_pf = %20.14f, Z = %f\n",
+                                                ao12 - 1, iind + ixm, jind + jxm, vi[iind + ixm][jind + jxm][0],
+                                                over_pf, Z);
 #endif
                             }
                         }
@@ -280,41 +278,33 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
     }
 }
 
-void RelPotentialInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&)
-{
+void RelPotentialInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&) {
     throw SanityCheckError("RelPotentialInt::compute_pair_deriv1(): not implemented.", __FILE__, __LINE__);
 }
 
-void RelPotentialInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell&)
-{
+void RelPotentialInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell&) {
     throw SanityCheckError("RelPotentialInt::compute_pair_deriv2(): not implemented.", __FILE__, __LINE__);
 }
 
-void RelPotentialInt::compute_deriv1(std::vector<SharedMatrix>&)
-{
+void RelPotentialInt::compute_deriv1(std::vector<SharedMatrix>&) {
     throw SanityCheckError("RelPotentialInt::compute_deriv1(): not implemented.", __FILE__, __LINE__);
 }
 
-void RelPotentialInt::compute_deriv2(std::vector<SharedMatrix>&)
-{
+void RelPotentialInt::compute_deriv2(std::vector<SharedMatrix>&) {
     throw SanityCheckError("RelPotentialInt::compute_deriv2(): not implemented.", __FILE__, __LINE__);
 }
 
 RelPotentialSOInt::RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& aoint,
                                      const std::shared_ptr<IntegralFactory>& fact)
-        : OneBodySOInt(aoint, fact)
-{
+    : OneBodySOInt(aoint, fact) {
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-RelPotentialSOInt::RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& aoint, const IntegralFactory *fact)
-        : OneBodySOInt(aoint, fact)
-{
+RelPotentialSOInt::RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& aoint, const IntegralFactory* fact)
+    : OneBodySOInt(aoint, fact) {
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-void RelPotentialSOInt::compute_deriv1(std::vector<SharedMatrix>,
-                                       const CdSalcList&)
-{
+void RelPotentialSOInt::compute_deriv1(std::vector<SharedMatrix>, const CdSalcList&) {
     throw SanityCheckError("RelPotentialSOInt::compute_deriv1(): not implemented.", __FILE__, __LINE__);
 }

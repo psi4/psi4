@@ -47,130 +47,124 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
-using SharedMatrix=std::shared_ptr<Matrix>;
+using SharedMatrix = std::shared_ptr<Matrix>;
 namespace findif {
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
-void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
-  int salc_i, int disp_factor, double disp_size) {
+void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList &salclist, int salc_i,
+                   int disp_factor, double disp_size) {
+    geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor));
 
-  geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor));
+    int nc = salclist[salc_i].ncomponent();
 
-  int nc = salclist[salc_i].ncomponent();
+    for (int c = 0; c < nc; ++c) {
+        int a = salclist[salc_i].component(c).atom;
+        int xyz = salclist[salc_i].component(c).xyz;
+        double coef = salclist[salc_i].component(c).coef;
 
-  for (int c=0; c<nc; ++c) {
-    int a          = salclist[salc_i].component(c).atom;
-    int xyz        = salclist[salc_i].component(c).xyz;
-    double coef    = salclist[salc_i].component(c).coef;
+        geom->add(0, a, xyz, disp_factor * disp_size * coef / sqrt(mol->mass(a, false)));
+    }
 
-    geom->add(0, a, xyz, disp_factor * disp_size * coef / sqrt(mol->mass(a, false)));
-  }
-
-  return;
+    return;
 }
 
 // displaces from a reference geometry.
 // geom += salclist[salc_i] * disp_i * disp_size + salclist[salc_j] * disp_j * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
-void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
-  int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size) {
+void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList &salclist, int salc_i, int salc_j,
+                   int disp_factor_i, int disp_factor_j, double disp_size) {
+    geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor_i) +
+                   "Coord: " + to_string(salc_j) + ", Disp: " + to_string(disp_factor_j));
 
-  geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor_i)
-    + "Coord: " + to_string(salc_j) + ", Disp: " + to_string(disp_factor_j));
+    int a, xyz;
+    double coef;
 
-  int a, xyz;
-  double coef;
+    for (int c = 0; c < salclist[salc_i].ncomponent(); ++c) {
+        a = salclist[salc_i].component(c).atom;
+        xyz = salclist[salc_i].component(c).xyz;
+        coef = salclist[salc_i].component(c).coef;
 
-  for (int c=0; c<salclist[salc_i].ncomponent(); ++c) {
-    a    = salclist[salc_i].component(c).atom;
-    xyz  = salclist[salc_i].component(c).xyz;
-    coef = salclist[salc_i].component(c).coef;
+        geom->add(0, a, xyz, disp_factor_i * disp_size * coef / sqrt(mol->mass(a, false)));
+    }
 
-    geom->add(0, a, xyz, disp_factor_i * disp_size * coef / sqrt(mol->mass(a, false)));
-  }
+    for (int c = 0; c < salclist[salc_j].ncomponent(); ++c) {
+        a = salclist[salc_j].component(c).atom;
+        xyz = salclist[salc_j].component(c).xyz;
+        coef = salclist[salc_j].component(c).coef;
 
-  for (int c=0; c<salclist[salc_j].ncomponent(); ++c) {
-    a    = salclist[salc_j].component(c).atom;
-    xyz  = salclist[salc_j].component(c).xyz;
-    coef = salclist[salc_j].component(c).coef;
+        geom->add(0, a, xyz, disp_factor_j * disp_size * coef / sqrt(mol->mass(a, false)));
+    }
 
-    geom->add(0, a, xyz, disp_factor_j * disp_size * coef / sqrt(mol->mass(a, false)));
-  }
-
-  return;
+    return;
 }
 
 // it's assumed columns are cartesian dimensions
 void mass_weight_columns_plus_one_half(std::shared_ptr<Molecule> mol, SharedMatrix B) {
-  double u;
+    double u;
 
-  for (int col=0; col<B->ncol(); ++col) {
-    u = sqrt(mol->mass((col/3), false));
-    for (int row=0; row<B->nrow(); ++row)
-      B->set(row, col, B->get(row,col) * u);
-  }
+    for (int col = 0; col < B->ncol(); ++col) {
+        u = sqrt(mol->mass((col / 3), false));
+        for (int row = 0; row < B->nrow(); ++row) B->set(row, col, B->get(row, col) * u);
+    }
 }
 
 void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size) {
+    geom->add(0, atom, coord, sign * disp_size);
 
-  geom->add(0, atom, coord, sign * disp_size);
-
-  return;
+    return;
 }
 
-std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, Options &options) {
+std::vector<SharedMatrix> atomic_displacements(std::shared_ptr<Molecule> mol, Options &options) {
+    // This is the size in bohr because geometry is in bohr at this point
+    double disp_size = options.get_double("DISP_SIZE");
+    int pts = options.get_int("POINTS");
 
-  // This is the size in bohr because geometry is in bohr at this point
-  double disp_size = options.get_double("DISP_SIZE");
-  int pts = options.get_int("POINTS");
+    int natom = mol->natom();
 
-  int natom = mol->natom();
+    Matrix ref_geom_temp = mol->geometry();
+    SharedMatrix ref_geom(ref_geom_temp.clone());
 
-  Matrix ref_geom_temp = mol->geometry();
-  SharedMatrix ref_geom(ref_geom_temp.clone());
+    std::vector<SharedMatrix> disp_geoms;
 
-  std::vector< SharedMatrix > disp_geoms;
-
-  // Generate displacements
-  if (pts == 3) {
-    for(int atom=0; atom < natom; ++atom) {
-      for(int coord=0; coord < 3; ++coord) {
-        // minus displacement
-        SharedMatrix m_geom(ref_geom->clone());
-        displace_atom(m_geom, atom, coord, -1, disp_size);
-        disp_geoms.push_back(m_geom);
-        // plus displacement
-        SharedMatrix p_geom(ref_geom->clone());
-        displace_atom(p_geom, atom, coord, +1, disp_size);
-        disp_geoms.push_back(p_geom);
-      }
+    // Generate displacements
+    if (pts == 3) {
+        for (int atom = 0; atom < natom; ++atom) {
+            for (int coord = 0; coord < 3; ++coord) {
+                // minus displacement
+                SharedMatrix m_geom(ref_geom->clone());
+                displace_atom(m_geom, atom, coord, -1, disp_size);
+                disp_geoms.push_back(m_geom);
+                // plus displacement
+                SharedMatrix p_geom(ref_geom->clone());
+                displace_atom(p_geom, atom, coord, +1, disp_size);
+                disp_geoms.push_back(p_geom);
+            }
+        }
+    } else if (pts == 5) {
+        for (int atom = 0; atom < natom; ++atom) {
+            for (int coord = 0; coord < 3; ++coord) {
+                // minus displacements
+                SharedMatrix m2_geom(ref_geom->clone());
+                displace_atom(m2_geom, atom, coord, -2, disp_size);
+                disp_geoms.push_back(m2_geom);
+                SharedMatrix m1_geom(ref_geom->clone());
+                displace_atom(m1_geom, atom, coord, -1, disp_size);
+                disp_geoms.push_back(m1_geom);
+                // plus displacements
+                SharedMatrix p1_geom(ref_geom->clone());
+                displace_atom(p1_geom, atom, coord, +1, disp_size);
+                disp_geoms.push_back(p1_geom);
+                SharedMatrix p2_geom(ref_geom->clone());
+                displace_atom(p2_geom, atom, coord, +2, disp_size);
+                disp_geoms.push_back(p2_geom);
+            }
+        }
+    } else {
+        throw PsiException("FINDIF: Number of POINTS not supported", __FILE__, __LINE__);
     }
-  }
-  else if (pts == 5) {
-    for(int atom=0; atom < natom; ++atom) {
-      for(int coord=0; coord < 3; ++coord) {
-        // minus displacements
-        SharedMatrix m2_geom(ref_geom->clone());
-        displace_atom(m2_geom, atom, coord, -2, disp_size);
-        disp_geoms.push_back(m2_geom);
-        SharedMatrix m1_geom(ref_geom->clone());
-        displace_atom(m1_geom, atom, coord, -1, disp_size);
-        disp_geoms.push_back(m1_geom);
-        // plus displacements
-        SharedMatrix p1_geom(ref_geom->clone());
-        displace_atom(p1_geom, atom, coord, +1, disp_size);
-        disp_geoms.push_back(p1_geom);
-        SharedMatrix p2_geom(ref_geom->clone());
-        displace_atom(p2_geom, atom, coord, +2, disp_size);
-        disp_geoms.push_back(p2_geom);
-      }
-    }
-  }
-  else {
-    throw PsiException("FINDIF: Number of POINTS not supported", __FILE__, __LINE__);
-  }
-  return disp_geoms;
+    return disp_geoms;
 }
 
-}}
+}  // namespace findif
+}  // namespace psi

@@ -80,7 +80,7 @@ namespace py = pybind11;
  * @param mol           Psi4 molecule
  * @param py::dict      Python dictionary containing the basis information
  * @param forced_puream Force puream or not
-**/
+ **/
 std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<Molecule>& mol, py::dict& pybs,
                                                          const int forced_puream) {
     std::string key = pybs["key"].cast<std::string>();
@@ -191,10 +191,9 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     return basisset;
 }
 
-bool _has_key(const py::dict &data, const std::string &key) {
+bool _has_key(const py::dict& data, const std::string& key) {
     for (auto item : data) {
-        if (std::string(py::str(item.first)) == key)
-            return true;
+        if (std::string(py::str(item.first)) == key) return true;
     }
     return false;
 }
@@ -205,11 +204,10 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     // * fragment_charges are int, not float
     // * elez are float, not int, b/c Psi4 Z is approx. elez * real
 
-    std::shared_ptr <Molecule> mol(new Molecule);
+    std::shared_ptr<Molecule> mol(new Molecule);
     mol->set_lock_frame(false);
 
-    if (_has_key(molrec, "name"))
-        mol->set_name(molrec["name"].cast<std::string>());
+    if (_has_key(molrec, "name")) mol->set_name(molrec["name"].cast<std::string>());
 
     if (molrec["units"].cast<std::string>() == "Angstrom")
         mol->set_units(Molecule::Angstrom);
@@ -217,78 +215,68 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         mol->set_units(Molecule::Bohr);
     else
         throw PSIEXCEPTION("Invalid geometry units to construct Molecule.");
-    if (_has_key(molrec, "input_units_to_au"))
-        mol->set_input_units_to_au(molrec["input_units_to_au"].cast<double>());
+    if (_has_key(molrec, "input_units_to_au")) mol->set_input_units_to_au(molrec["input_units_to_au"].cast<double>());
 
     mol->set_com_fixed(molrec["fix_com"].cast<bool>());
     mol->set_orientation_fixed(molrec["fix_orientation"].cast<bool>());
-    if (_has_key(molrec, "fix_symmetry"))
-        mol->reset_point_group(molrec["fix_symmetry"].cast<std::string>());
+    if (_has_key(molrec, "fix_symmetry")) mol->reset_point_group(molrec["fix_symmetry"].cast<std::string>());
 
-    std::vector <int> elea = molrec["elea"].cast<std::vector<int>>();
-    std::vector <double> elez = molrec["elez"].cast<std::vector <double>>();
-    std::vector <std::string> elem = molrec["elem"].cast<std::vector <std::string>>();
-    std::vector <double> mass = molrec["mass"].cast<std::vector <double>>();
-    std::vector <int> real = molrec["real"].cast<std::vector <int>>();
-    std::vector <std::string> elbl = molrec["elbl"].cast<std::vector <std::string>>();
+    std::vector<int> elea = molrec["elea"].cast<std::vector<int>>();
+    std::vector<double> elez = molrec["elez"].cast<std::vector<double>>();
+    std::vector<std::string> elem = molrec["elem"].cast<std::vector<std::string>>();
+    std::vector<double> mass = molrec["mass"].cast<std::vector<double>>();
+    std::vector<int> real = molrec["real"].cast<std::vector<int>>();
+    std::vector<std::string> elbl = molrec["elbl"].cast<std::vector<std::string>>();
 
     size_t nat;
     bool unsettled;
     if (_has_key(molrec, "geom_unsettled")) {
-        std::vector <std::vector <std::string>> geom_unsettled = molrec["geom_unsettled"].cast<std::vector <std::vector <std::string>>>();
+        std::vector<std::vector<std::string>> geom_unsettled =
+            molrec["geom_unsettled"].cast<std::vector<std::vector<std::string>>>();
         nat = geom_unsettled.size();
         unsettled = true;
 
-        for (size_t iat=0; iat<nat; ++iat) {
+        for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_unsettled_atom(elez.at(iat) * real.at(iat),
-                                    geom_unsettled.at(iat),
-                                    symbol,
-                                    mass.at(iat),
-                                    elez.at(iat) * real.at(iat),
-                                    symbol + label,
-                                    elea.at(iat));
+            mol->add_unsettled_atom(elez.at(iat) * real.at(iat), geom_unsettled.at(iat), symbol, mass.at(iat),
+                                    elez.at(iat) * real.at(iat), symbol + label, elea.at(iat));
         }
 
-        std::vector <std::pair <std::string, double>> variables = molrec["variables"].cast<std::vector <std::pair <std::string, double>>>();
-        for (size_t iv=0; iv < variables.size(); ++iv)
+        std::vector<std::pair<std::string, double>> variables =
+            molrec["variables"].cast<std::vector<std::pair<std::string, double>>>();
+        for (size_t iv = 0; iv < variables.size(); ++iv)
             mol->set_geometry_variable(variables[iv].first, variables[iv].second);
 
     } else {
-        std::vector <double> geom = molrec["geom"].cast<std::vector <double>>();
+        std::vector<double> geom = molrec["geom"].cast<std::vector<double>>();
         nat = geom.size() / 3;
         unsettled = false;
 
-        for (size_t iat=0; iat<nat; ++iat) {
+        for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_atom(elez.at(iat) * real.at(iat),
-                          geom.at(3*iat), geom.at(3*iat+1), geom.at(3*iat+2),
-                          symbol,
-                          mass.at(iat),
-                          elez.at(iat) * real.at(iat),
-                          symbol + label,
-                          elea.at(iat));
+            mol->add_atom(elez.at(iat) * real.at(iat), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
+                          symbol, mass.at(iat), elez.at(iat) * real.at(iat), symbol + label, elea.at(iat));
         }
     }
 
     std::vector<Molecule::FragmentType> fragment_types;
     std::vector<int> fragment_separators;
-    fragment_separators = molrec["fragment_separators"].cast<std::vector <int>>();
-    std::vector <std::pair <int, int>> fragments;
+    fragment_separators = molrec["fragment_separators"].cast<std::vector<int>>();
+    std::vector<std::pair<int, int>> fragments;
     fragment_separators.insert(fragment_separators.begin(), 0);
     fragment_separators.push_back(nat);
-    for (size_t i=1; i<fragment_separators.size(); ++i) {
-        fragments.push_back(std::make_pair (fragment_separators[i-1], fragment_separators[i]));
+    for (size_t i = 1; i < fragment_separators.size(); ++i) {
+        fragments.push_back(std::make_pair(fragment_separators[i - 1], fragment_separators[i]));
         fragment_types.push_back(Molecule::Real);
     }
 
-    //for (auto item : molrec["fragment_types"]) {
+    // for (auto item : molrec["fragment_types"]) {
     //    if (item.cast<std::string>() == "Real")
     //        fragment_types.push_back(Molecule::Real);
     //    else if (item.cast<std::string>() == "Ghost")
@@ -300,23 +288,18 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     //}
 
     std::vector<int> fragment_charges;
-    for (auto item : molrec["fragment_charges"])
-        fragment_charges.push_back(static_cast<int>(item.cast<double>()));
+    for (auto item : molrec["fragment_charges"]) fragment_charges.push_back(static_cast<int>(item.cast<double>()));
 
-    mol->set_fragment_pattern(fragments,
-                              fragment_types,
-                              fragment_charges,
-                              molrec["fragment_multiplicities"].cast<std::vector <int>>());
+    mol->set_fragment_pattern(fragments, fragment_types, fragment_charges,
+                              molrec["fragment_multiplicities"].cast<std::vector<int>>());
 
     mol->set_molecular_charge(static_cast<int>(molrec["molecular_charge"].cast<double>()));
     mol->set_multiplicity(molrec["molecular_multiplicity"].cast<int>());
 
     // hack to prevent update_geometry termination upon no atoms
-    if (nat == 0)
-        mol->set_lock_frame(true);
+    if (nat == 0) mol->set_lock_frame(true);
 
-    if (!unsettled)
-        mol->update_geometry();
+    if (!unsettled) mol->update_geometry();
     return mol;
 }
 
@@ -400,7 +383,6 @@ void export_mints(py::module& m) {
         .def("set_block", &Vector::set_block, "Set a vector block", py::arg("slice"), py::arg("block"))
         .def("array_interface",
              [](Vector& v) {
-
                  // Build a list of NumPy views, used for the .np and .nph accessors.Vy
                  py::list ret;
 
@@ -464,14 +446,12 @@ void export_mints(py::module& m) {
 
     py::enum_<Molecule::FragmentType>(m, "FragmentType", "Fragment activation status")
         .value("Absent", Molecule::Absent)  // Neglect completely
-        .value("Real", Molecule::Real)  // Include, as normal
-        .value("Ghost", Molecule::Ghost)  // Include, but with ghost atoms
+        .value("Real", Molecule::Real)      // Include, as normal
+        .value("Ghost", Molecule::Ghost)    // Include, but with ghost atoms
         .export_values();
 
-    typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&,
-                                            const SharedMatrix&, double);
-    typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&,
-                                               diagonalize_order);
+    typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
+    typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&, diagonalize_order);
     typedef void (Matrix::*matrix_one)(const SharedMatrix&);
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
@@ -635,7 +615,6 @@ void export_mints(py::module& m) {
              py::arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
         .def("array_interface",
              [](Matrix& m) {
-
                  // Build a list of NumPy views, used for the .np and .nph accessors.Vy
                  py::list ret;
 
@@ -688,14 +667,14 @@ void export_mints(py::module& m) {
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;
-//Something here is wrong. These will not work with py::args defined, not sure why
+    // Something here is wrong. These will not work with py::args defined, not sure why
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
         .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
              "Returns a new matrix object with default dimensions")
-//             "Returns a new matrix object with default dimensions", py::arg("symmetry"));
+        //             "Returns a new matrix object with default dimensions", py::arg("symmetry"));
         .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
              "Returns a new Matrix object named name with default dimensions");
-//              py::arg("name"), py::arg("symmetry"));
+    //              py::arg("name"), py::arg("symmetry"));
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
         m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
@@ -1050,16 +1029,24 @@ void export_mints(py::module& m) {
              "First nuclear derivative T + V + Perturb integrals")
 
         // First and second derivatives of one and two electron integrals in AO and MO basis.
-        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1, "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices")
-        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2, "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
-        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1, "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
-        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2, "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
-        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1, "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
-        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2, "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
-        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1, "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
-        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2, "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices");
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1,
+             "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices")
+        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
+             "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
+             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
+             "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
+             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
+        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
+             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
+             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
+        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
+             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices");
 
-        py::class_<Vector3>(m, "Vector3",
+    py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
                         "and their common operations")
         .def(py::init<double>())
@@ -1187,8 +1174,11 @@ void export_mints(py::module& m) {
         .def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
-        .def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of *atom* (0-indexed), by default ghost atoms return zero nuclear charge", py::arg("atom"), py::arg("zero_ghost") = true)
-        .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy, "Mass number (A) of atom if known, else -1")
+        .def("Z", &Molecule::Z, py::return_value_policy::copy,
+             "Nuclear charge of *atom* (0-indexed), by default ghost atoms return zero nuclear charge", py::arg("atom"),
+             py::arg("zero_ghost") = true)
+        .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy,
+             "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")
         .def("z", &Molecule::z, "z position of atom")
@@ -1201,12 +1191,12 @@ void export_mints(py::module& m) {
              "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg2")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return non-zero mass", py::arg("atom"), py::arg("zero_ghost") = false)
-        .def("set_mass", &Molecule::set_mass, "Sets mass of *atom* (0-indexed) to *mass*", py::arg("atom"), py::arg("mass"))
-        .def("symbol", &Molecule::symbol,
-             "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)")
-        .def("label", &Molecule::label,
-             "Gets the original label of the atom as given in the input file (C2, H4)")
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return non-zero mass",
+             py::arg("atom"), py::arg("zero_ghost") = false)
+        .def("set_mass", &Molecule::set_mass, "Sets mass of *atom* (0-indexed) to *mass*", py::arg("atom"),
+             py::arg("mass"))
+        .def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)")
+        .def("label", &Molecule::label, "Gets the original label of the atom as given in the input file (C2, H4)")
         .def("charge", &Molecule::charge, "Gets charge of atom")
         .def("molecular_charge", &Molecule::molecular_charge, "Gets the molecular charge")
         .def("extract_subsets", &Molecule::py_extract_subsets_1,
@@ -1228,21 +1218,19 @@ void export_mints(py::module& m) {
         .def("set_active_fragment", &Molecule::set_active_fragment, "Sets the specified fragment arg2 to be Real")
         .def("set_ghost_fragments", &Molecule::set_ghost_fragments,
              "Sets the specified list arg2 of fragments to be Ghost")
-        .def("set_ghost_fragment", &Molecule::set_ghost_fragment,
-             "Sets the specified fragment arg2 to be Ghost")
+        .def("set_ghost_fragment", &Molecule::set_ghost_fragment, "Sets the specified fragment arg2 to be Ghost")
         .def("get_fragments", &Molecule::get_fragments,
-              "Returns list of pairs of atom ranges defining each fragment from parent molecule"
-              "(fragments[frag_ind] = <Afirst,Alast+1>)")
+             "Returns list of pairs of atom ranges defining each fragment from parent molecule"
+             "(fragments[frag_ind] = <Afirst,Alast+1>)")
         .def("get_fragment_types",
-            [](Molecule& mol) {
-                const std::string FragmentTypeList [] = {"Absent", "Real", "Ghost"};
-                std::vector<std::string> srt;
-                for (auto item : mol.get_fragment_types())
-                    srt.push_back(FragmentTypeList[item]);
-                return srt; },
+             [](Molecule& mol) {
+                 const std::string FragmentTypeList[] = {"Absent", "Real", "Ghost"};
+                 std::vector<std::string> srt;
+                 for (auto item : mol.get_fragment_types()) srt.push_back(FragmentTypeList[item]);
+                 return srt;
+             },
              "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
-        .def("get_fragment_charges", &Molecule::get_fragment_charges,
-             "Gets the charge of each fragment")
+        .def("get_fragment_charges", &Molecule::get_fragment_charges, "Gets the charge of each fragment")
         .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
              "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
@@ -1253,8 +1241,7 @@ void export_mints(py::module& m) {
              "Prints the molecule in Cartesians in Angstroms to output file")
         .def("print_cluster", &Molecule::print_cluster,
              "Prints the molecule in Cartesians in input units adding fragment separators")
-        .def("rotational_constants",
-                [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
+        .def("rotational_constants", [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
              "Prints the rotational constants of the molecule")
         .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
              py::arg("dipole_field") = std::vector<double>(3, 0.0), "Computes nuclear repulsion energy")
@@ -1272,11 +1259,9 @@ void export_mints(py::module& m) {
         .def("symmetrize", &Molecule::symmetrize_to_abelian_group,
              "Finds the highest point Abelian point group within the specified tolerance, and "
              "forces the geometry to have that symmetry.")
-        .def("inertia_tensor", &Molecule::inertia_tensor,
-             "Returns intertial tensor")
-        .def_static(
-             "create_molecule_from_string", &Molecule::create_molecule_from_string,
-             "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
+        .def("inertia_tensor", &Molecule::inertia_tensor, "Returns intertial tensor")
+        .def_static("create_molecule_from_string", &Molecule::create_molecule_from_string,
+                    "Returns a new Molecule with member data from the geometry string arg1 in psi4 format")
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg2 is in the list, returns true if it is, and returns false if "
              "not")
@@ -1303,31 +1288,34 @@ void export_mints(py::module& m) {
              "Print the out-of-plane angle geometrical parameters to output file")
         .def("irrep_labels", &Molecule::irrep_labels, "Returns Irreducible Representation symmetry labels")
         .def("units",
-            [](Molecule& mol) {
-                const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
-                std::string srt = GeometryUnitsList[mol.units()];
-                return srt; },
-            "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
+             [](Molecule& mol) {
+                 const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
+                 std::string srt = GeometryUnitsList[mol.units()];
+                 return srt;
+             },
+             "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
         .def("set_units", &Molecule::set_units, "Sets units (Angstrom or Bohr) used to define the geometry")
         .def("input_units_to_au", &Molecule::input_units_to_au, "Returns unit conversion to [a0] for geometry")
         .def("set_input_units_to_au", &Molecule::set_input_units_to_au, "Sets unit conversion to [a0] for geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
         .def_static("from_dict", from_dict,
-                    "Returns a new Molecule constructed from python dictionary. In progress: name and capabilities should not be relied upon")
+                    "Returns a new Molecule constructed from python dictionary. In progress: name and capabilities "
+                    "should not be relied upon")
         .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
-            "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
+             "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
         .def("rotor_type",
-            [](Molecule& mol) {
-                const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP", "RT_LINEAR", "RT_ATOM"};
-                std::string srt = RotorTypeList[mol.rotor_type()];
-                return srt; },
-            "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
-        .def("geometry", &Molecule::geometry,
-             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
+             [](Molecule& mol) {
+                 const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP",
+                                                      "RT_LINEAR", "RT_ATOM"};
+                 std::string srt = RotorTypeList[mol.rotor_type()];
+                 return srt;
+             },
+             "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
+        .def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
         .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,
-                     "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
+             "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
         .def("nuclear_repulsion_energy_deriv2", &Molecule::nuclear_repulsion_energy_deriv2,
-                     "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)");
+             "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")
         .def("aotoso", &PetiteList::aotoso, "Return the AO->SO coefficient matrix")

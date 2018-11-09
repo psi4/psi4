@@ -36,26 +36,27 @@
 ;
 using namespace psi;
 
-static void transform2e_1(int, SphericalTransformIter&, double*, double*, int);
-static void transform2e_2(int, SphericalTransformIter&, double*, double*, int, int, int);
-static void transform2e_3(int, SphericalTransformIter&, double*, double*, int, int, int);
-static void transform2e_4(int, SphericalTransformIter&, double*, double*, int, int);
+static void transform2e_1(int, SphericalTransformIter &, double *, double *, int);
+static void transform2e_2(int, SphericalTransformIter &, double *, double *, int, int, int);
+static void transform2e_3(int, SphericalTransformIter &, double *, double *, int, int, int);
+static void transform2e_4(int, SphericalTransformIter &, double *, double *, int, int);
 
-TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
-    integral_(intsfactory),
-    original_bs1_(integral_->basis1()),
-    original_bs2_(integral_->basis2()),
-    original_bs3_(integral_->basis3()),
-    original_bs4_(integral_->basis4()),
-    bs1_(original_bs1_),
-    bs2_(original_bs2_),
-    bs3_(original_bs3_),
-    bs4_(original_bs4_),
-    target_full_(nullptr), target_(nullptr),
-    source_full_(nullptr), source_(nullptr),
-    deriv_(deriv)
-{
-    //outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
+TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
+    : integral_(intsfactory),
+      original_bs1_(integral_->basis1()),
+      original_bs2_(integral_->basis2()),
+      original_bs3_(integral_->basis3()),
+      original_bs4_(integral_->basis4()),
+      bs1_(original_bs1_),
+      bs2_(original_bs2_),
+      bs3_(original_bs3_),
+      bs4_(original_bs4_),
+      target_full_(nullptr),
+      target_(nullptr),
+      source_full_(nullptr),
+      source_(nullptr),
+      deriv_(deriv) {
+    // outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
     //        original_bs1_->name().c_str(),
     //        original_bs2_->name().c_str(),
     //        original_bs3_->name().c_str(),
@@ -66,66 +67,35 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
 }
 
-TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt & rhs)
-    : TwoBodyAOInt(rhs.integral_, rhs.deriv_)
-{
+TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
     blocks12_ = rhs.blocks12_;
     blocks34_ = rhs.blocks34_;
 }
 
-TwoBodyAOInt::~TwoBodyAOInt()
-{
-}
+TwoBodyAOInt::~TwoBodyAOInt() {}
 
-std::shared_ptr<BasisSet> TwoBodyAOInt::basis()
-{
-    return original_bs1_;
-}
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis() { return original_bs1_; }
 
-std::shared_ptr<BasisSet> TwoBodyAOInt::basis1()
-{
-    return original_bs1_;
-}
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis1() { return original_bs1_; }
 
-std::shared_ptr<BasisSet> TwoBodyAOInt::basis2()
-{
-    return original_bs2_;
-}
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis2() { return original_bs2_; }
 
-std::shared_ptr<BasisSet> TwoBodyAOInt::basis3()
-{
-    return original_bs3_;
-}
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis3() { return original_bs3_; }
 
-std::shared_ptr<BasisSet> TwoBodyAOInt::basis4()
-{
-    return original_bs4_;
-}
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis4() { return original_bs4_; }
 
-bool TwoBodyAOInt::cloneable() const
-{
-    return false;
-}
+bool TwoBodyAOInt::cloneable() const { return false; }
 
-TwoBodyAOInt* TwoBodyAOInt::clone() const
-{
+TwoBodyAOInt *TwoBodyAOInt::clone() const {
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
 
-std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12(void) const
-{
-    return blocks12_;
-}
+std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12(void) const { return blocks12_; }
 
-std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks34(void) const
-{
-    return blocks34_;
-}
-
+std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks34(void) const { return blocks34_; }
 
 // Expected to be overridden by derived classes
-void TwoBodyAOInt::create_blocks(void)
-{
+void TwoBodyAOInt::create_blocks(void) {
     // Default implementation : do no blocking.
     // Each ShellPairBlock will only contain one shell pair
     blocks12_.clear();
@@ -136,22 +106,17 @@ void TwoBodyAOInt::create_blocks(void)
     const auto nshell3 = basis3()->nshell();
     const auto nshell4 = basis4()->nshell();
 
-    blocks12_.reserve(nshell1*nshell2);
-    blocks34_.reserve(nshell3*nshell4);
+    blocks12_.reserve(nshell1 * nshell2);
+    blocks34_.reserve(nshell3 * nshell4);
 
-    for(int ishell = 0; ishell < basis1()->nshell(); ishell++)
-    for(int jshell = 0; jshell < basis2()->nshell(); jshell++)
-        blocks12_.push_back({{ishell, jshell}});
+    for (int ishell = 0; ishell < basis1()->nshell(); ishell++)
+        for (int jshell = 0; jshell < basis2()->nshell(); jshell++) blocks12_.push_back({{ishell, jshell}});
 
-    for(int kshell = 0; kshell < basis3()->nshell(); kshell++)
-    for(int lshell = 0; lshell < basis4()->nshell(); lshell++)
-        blocks34_.push_back({{kshell, lshell}});
+    for (int kshell = 0; kshell < basis3()->nshell(); kshell++)
+        for (int lshell = 0; lshell < basis4()->nshell(); lshell++) blocks34_.push_back({{kshell, lshell}});
 }
 
-
-void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34,
-                                        int npair12, int npair34)
-{
+void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
     // Default implementation - go through the blocks and do each quartet
     // one at a time
 
@@ -162,37 +127,28 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34,
     auto vsh12 = blocks12_[shellpair12];
     auto vsh34 = blocks34_[shellpair34];
 
-    for(const auto sh12 : vsh12)
-    {
-        const auto & shell1 = original_bs1_->shell(sh12.first);
-        const auto & shell2 = original_bs2_->shell(sh12.second);
-   
+    for (const auto sh12 : vsh12) {
+        const auto &shell1 = original_bs1_->shell(sh12.first);
+        const auto &shell2 = original_bs2_->shell(sh12.second);
+
         int n1, n2;
-        if (force_cartesian_)
-        {
+        if (force_cartesian_) {
             n1 = shell1.ncartesian();
             n2 = shell2.ncartesian();
-        }
-        else
-        {
+        } else {
             n1 = shell1.nfunction();
             n2 = shell2.nfunction();
         }
 
-
-        for(const auto sh34 : vsh34)
-        {
-            const auto & shell3 = original_bs3_->shell(sh34.first);
-            const auto & shell4 = original_bs4_->shell(sh34.second);
+        for (const auto sh34 : vsh34) {
+            const auto &shell3 = original_bs3_->shell(sh34.first);
+            const auto &shell4 = original_bs4_->shell(sh34.second);
 
             int n3, n4;
-            if (force_cartesian_)
-            {
+            if (force_cartesian_) {
                 n3 = shell3.ncartesian();
                 n4 = shell4.ncartesian();
-            }
-            else
-            {
+            } else {
                 n3 = shell3.nfunction();
                 n4 = shell4.nfunction();
             }
@@ -201,20 +157,19 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34,
 
             // actually compute the eri
             // this will put the results in target_
-            auto ret = compute_shell(sh12.first, sh12.second,
-                                     sh34.first, sh34.second);
+            auto ret = compute_shell(sh12.first, sh12.second, sh34.first, sh34.second);
 
             // advance the target pointer
-            target_ += n1234; 
-            
+            target_ += n1234;
+
             // Since we are only doing one at a time we don't need to
             // move the source_ pointer
         }
     }
 }
 
-void TwoBodyAOInt::normalize_am(std::shared_ptr<GaussianShell> s1, std::shared_ptr<GaussianShell> s2, std::shared_ptr<GaussianShell> s3, std::shared_ptr<GaussianShell> s4, int nchunk)
-{
+void TwoBodyAOInt::normalize_am(std::shared_ptr<GaussianShell> s1, std::shared_ptr<GaussianShell> s2,
+                                std::shared_ptr<GaussianShell> s3, std::shared_ptr<GaussianShell> s4, int nchunk) {
     // Integrals assume this normalization is 1.0.
     return;
 #if 0
@@ -277,24 +232,23 @@ void TwoBodyAOInt::normalize_am(std::shared_ptr<GaussianShell> s1, std::shared_p
 #endif
 }
 
-void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24)
-{
+void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34,
+                                  bool p13p24) {
 #ifdef MINTS_TIMER
     timer_on("Permute target");
 #endif
-    const GaussianShell& s1 = bs1_->shell(sh1);
-    const GaussianShell& s2 = bs2_->shell(sh2);
-    const GaussianShell& s3 = bs3_->shell(sh3);
-    const GaussianShell& s4 = bs4_->shell(sh4);
+    const GaussianShell &s1 = bs1_->shell(sh1);
+    const GaussianShell &s2 = bs2_->shell(sh2);
+    const GaussianShell &s3 = bs3_->shell(sh3);
+    const GaussianShell &s4 = bs4_->shell(sh4);
 
     int nbf1, nbf2, nbf3, nbf4;
-    if(force_cartesian_){
+    if (force_cartesian_) {
         nbf1 = s1.ncartesian();
         nbf2 = s2.ncartesian();
         nbf3 = s3.ncartesian();
         nbf4 = s4.ncartesian();
-    }
-    else{
+    } else {
         nbf1 = s1.nfunction();
         nbf2 = s2.nfunction();
         nbf3 = s3.nfunction();
@@ -331,17 +285,16 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
 #endif
 }
 
-void TwoBodyAOInt::permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf1;
-    int f2=nbf2;
-    int f3=nbf4;
-    int f4=nbf3;
-    for (int bf1=0; bf1<f1; bf1++) {
-        for (int bf2=0; bf2<f2; bf2++) {
-            for (int bf4=0; bf4<f4; bf4++) {
-                for (int bf3=0; bf3<f3; bf3++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf1;
+    int f2 = nbf2;
+    int f3 = nbf4;
+    int f4 = nbf3;
+    for (int bf1 = 0; bf1 < f1; bf1++) {
+        for (int bf2 = 0; bf2 < f2; bf2++) {
+            for (int bf4 = 0; bf4 < f4; bf4++) {
+                for (int bf3 = 0; bf3 < f3; bf3++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -349,17 +302,16 @@ void TwoBodyAOInt::permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf2;
-    int f2=nbf1;
-    int f3=nbf3;
-    int f4=nbf4;
-    for (int bf2=0; bf2<f2; bf2++) {
-        for (int bf1=0; bf1<f1; bf1++) {
-            for (int bf3=0; bf3<f3; bf3++) {
-                for (int bf4=0; bf4<f4; bf4++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf2;
+    int f2 = nbf1;
+    int f3 = nbf3;
+    int f4 = nbf4;
+    for (int bf2 = 0; bf2 < f2; bf2++) {
+        for (int bf1 = 0; bf1 < f1; bf1++) {
+            for (int bf3 = 0; bf3 < f3; bf3++) {
+                for (int bf4 = 0; bf4 < f4; bf4++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -367,17 +319,16 @@ void TwoBodyAOInt::permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf2;
-    int f2=nbf1;
-    int f3=nbf4;
-    int f4=nbf3;
-    for (int bf2=0; bf2<f2; bf2++) {
-        for (int bf1=0; bf1<f1; bf1++) {
-            for (int bf4=0; bf4<f4; bf4++) {
-                for (int bf3=0; bf3<f3; bf3++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf2;
+    int f2 = nbf1;
+    int f3 = nbf4;
+    int f4 = nbf3;
+    for (int bf2 = 0; bf2 < f2; bf2++) {
+        for (int bf1 = 0; bf1 < f1; bf1++) {
+            for (int bf4 = 0; bf4 < f4; bf4++) {
+                for (int bf3 = 0; bf3 < f3; bf3++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -385,17 +336,16 @@ void TwoBodyAOInt::permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::permute_1234_to_3412(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf3;
-    int f2=nbf4;
-    int f3=nbf1;
-    int f4=nbf2;
-    for (int bf3=0; bf3<f3; bf3++) {
-        for (int bf4=0; bf4<f4; bf4++) {
-            for (int bf1=0; bf1<f1; bf1++) {
-                for (int bf2=0; bf2<f2; bf2++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_3412(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf3;
+    int f2 = nbf4;
+    int f3 = nbf1;
+    int f4 = nbf2;
+    for (int bf3 = 0; bf3 < f3; bf3++) {
+        for (int bf4 = 0; bf4 < f4; bf4++) {
+            for (int bf1 = 0; bf1 < f1; bf1++) {
+                for (int bf2 = 0; bf2 < f2; bf2++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -403,17 +353,16 @@ void TwoBodyAOInt::permute_1234_to_3412(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::permute_1234_to_4312(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf4;
-    int f2=nbf3;
-    int f3=nbf1;
-    int f4=nbf2;
-    for (int bf3=0; bf3<f3; bf3++) {
-        for (int bf4=0; bf4<f4; bf4++) {
-            for (int bf2=0; bf2<f2; bf2++) {
-                for (int bf1=0; bf1<f1; bf1++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_4312(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf4;
+    int f2 = nbf3;
+    int f3 = nbf1;
+    int f4 = nbf2;
+    for (int bf3 = 0; bf3 < f3; bf3++) {
+        for (int bf4 = 0; bf4 < f4; bf4++) {
+            for (int bf2 = 0; bf2 < f2; bf2++) {
+                for (int bf1 = 0; bf1 < f1; bf1++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -421,17 +370,16 @@ void TwoBodyAOInt::permute_1234_to_4312(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf3;
-    int f2=nbf4;
-    int f3=nbf2;
-    int f4=nbf1;
-    for (int bf4=0; bf4<f4; bf4++) {
-        for (int bf3=0; bf3<f3; bf3++) {
-            for (int bf1=0; bf1<f1; bf1++) {
-                for (int bf2=0; bf2<f2; bf2++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf3;
+    int f2 = nbf4;
+    int f3 = nbf2;
+    int f4 = nbf1;
+    for (int bf4 = 0; bf4 < f4; bf4++) {
+        for (int bf3 = 0; bf3 < f3; bf3++) {
+            for (int bf1 = 0; bf1 < f1; bf1++) {
+                for (int bf2 = 0; bf2 < f2; bf2++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -439,17 +387,16 @@ void TwoBodyAOInt::permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
-{
-    int f1=nbf4;
-    int f2=nbf3;
-    int f3=nbf2;
-    int f4=nbf1;
-    for (int bf4=0; bf4<f4; bf4++) {
-        for (int bf3=0; bf3<f3; bf3++) {
-            for (int bf2=0; bf2<f2; bf2++) {
-                for (int bf1=0; bf1<f1; bf1++) {
-                    double *t_ptr = t + ((bf1*f2 + bf2)*f3 + bf3)*f4 + bf4;
+void TwoBodyAOInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4) {
+    int f1 = nbf4;
+    int f2 = nbf3;
+    int f3 = nbf2;
+    int f4 = nbf1;
+    for (int bf4 = 0; bf4 < f4; bf4++) {
+        for (int bf3 = 0; bf3 < f3; bf3++) {
+            for (int bf2 = 0; bf2 < f2; bf2++) {
+                for (int bf1 = 0; bf1 < f1; bf1++) {
+                    double *t_ptr = t + ((bf1 * f2 + bf2) * f3 + bf3) * f4 + bf4;
                     *(t_ptr) = *(s++);
                 }
             }
@@ -457,16 +404,14 @@ void TwoBodyAOInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk,
-                                  bool copy_to_source)
-{
+void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk, bool copy_to_source) {
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");
 #endif
-    const GaussianShell& s1 = bs1_->shell(sh1);
-    const GaussianShell& s2 = bs2_->shell(sh2);
-    const GaussianShell& s3 = bs3_->shell(sh3);
-    const GaussianShell& s4 = bs4_->shell(sh4);
+    const GaussianShell &s1 = bs1_->shell(sh1);
+    const GaussianShell &s2 = bs2_->shell(sh2);
+    const GaussianShell &s3 = bs3_->shell(sh3);
+    const GaussianShell &s4 = bs4_->shell(sh4);
 
     // Get the transforms from the basis set
     SphericalTransformIter trans1(*integral()->spherical_transform(s1.am()));
@@ -497,18 +442,18 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
     bool is_pure3 = s3.is_pure();
     bool is_pure4 = s4.is_pure();
 
-    for (int ichunk=0; ichunk < nchunk; ++ichunk) {
+    for (int ichunk = 0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target
         size_t sourcechunkoffset = ichunk * (nao1 * nao2 * nao3 * nao4);
         double *source1, *target1;
         double *source2, *target2;
         double *source3, *target3;
         double *source4, *target4;
-        double *source = source_+sourcechunkoffset;
-        double *target = target_+sourcechunkoffset;
+        double *source = source_ + sourcechunkoffset;
+        double *target = target_ + sourcechunkoffset;
         double *tmpbuf = tformbuf_;
 
-        int transform_index = 8*is_pure1 + 4*is_pure2 + 2*is_pure3 + is_pure4;
+        int transform_index = 8 * is_pure1 + 4 * is_pure2 + 2 * is_pure3 + is_pure4;
         switch (transform_index) {
             case 0:
                 break;
@@ -625,20 +570,20 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
 
         size_t size = nbf1 * nbf2 * nbf3 * nbf4;
         if (is_pure4) {
-            transform2e_4(am4, trans4, source4, target4, nao1*nao2*nao3,nao4);
-//            size *= nbf4;
+            transform2e_4(am4, trans4, source4, target4, nao1 * nao2 * nao3, nao4);
+            //            size *= nbf4;
         }
         if (is_pure3) {
-            transform2e_3(am3, trans3, source3, target3, nao1*nao2,nao3,nbf4);
-//            size *= nbf3;
+            transform2e_3(am3, trans3, source3, target3, nao1 * nao2, nao3, nbf4);
+            //            size *= nbf3;
         }
         if (is_pure2) {
-            transform2e_2(am2, trans2, source2, target2, nao1,nao2,nbf3*nbf4);
-//            size *= nbf2;
+            transform2e_2(am2, trans2, source2, target2, nao1, nao2, nbf3 * nbf4);
+            //            size *= nbf2;
         }
         if (is_pure1) {
-            transform2e_1(am1, trans1, source1, target1, nbf2*nbf3*nbf4);
-//            size *= nbf1;
+            transform2e_1(am1, trans1, source1, target1, nbf2 * nbf3 * nbf4);
+            //            size *= nbf1;
         }
 
         // The permute indices routines depend on the integrals being in source_
@@ -650,63 +595,60 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
 #endif
 }
 
-static void transform2e_1(int am, SphericalTransformIter& sti, double *s, double *t, int njkl)
-{
-    memset(t,0,INT_NPURE(am)*njkl*sizeof(double));
+static void transform2e_1(int am, SphericalTransformIter &sti, double *s, double *t, int njkl) {
+    memset(t, 0, INT_NPURE(am) * njkl * sizeof(double));
 
     for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex()*njkl;
-        double *tptr = t + sti.pureindex()*njkl;
+        double *sptr = s + sti.cartindex() * njkl;
+        double *tptr = t + sti.pureindex() * njkl;
         double coef = sti.coef();
 
-//        outfile->Printf( "2e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+        //        outfile->Printf( "2e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(),
+        //        sti.coef());
 
-        for(int jkl=0; jkl<njkl; jkl++)
-            *(tptr++) += coef * *(sptr++);
+        for (int jkl = 0; jkl < njkl; jkl++) *(tptr++) += coef * *(sptr++);
     }
 }
 
-static void transform2e_2(int am, SphericalTransformIter& sti, double *s, double *t, int ni, int nj, int nkl)
-{
+static void transform2e_2(int am, SphericalTransformIter &sti, double *s, double *t, int ni, int nj, int nkl) {
     int sj = INT_NPURE(am);
-    const int sjkl = nj*nkl;
-    const int tjkl = sj*nkl;
+    const int sjkl = nj * nkl;
+    const int tjkl = sj * nkl;
 
-    memset(t,0,ni*tjkl*sizeof(double));
+    memset(t, 0, ni * tjkl * sizeof(double));
 
     for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex()*nkl;
-        double *tptr = t + sti.pureindex()*nkl;
+        double *sptr = s + sti.cartindex() * nkl;
+        double *tptr = t + sti.pureindex() * nkl;
         double coef = sti.coef();
 
-//        outfile->Printf( "2e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+        //        outfile->Printf( "2e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(),
+        //        sti.coef());
 
-        for(int i=0; i<ni; i++,sptr+=sjkl,tptr+=tjkl) {
-            for(int kl=0; kl<nkl; kl++)
-                tptr[kl] += coef * sptr[kl];
+        for (int i = 0; i < ni; i++, sptr += sjkl, tptr += tjkl) {
+            for (int kl = 0; kl < nkl; kl++) tptr[kl] += coef * sptr[kl];
         }
     }
 }
 
-static void transform2e_3(int am, SphericalTransformIter& sti, double *s, double *t, int nij, int nk, int nl)
-{
+static void transform2e_3(int am, SphericalTransformIter &sti, double *s, double *t, int nij, int nk, int nl) {
     int sk = INT_NPURE(am);
-    const int skl = nk*nl;
-    const int tkl = sk*nl;
+    const int skl = nk * nl;
+    const int tkl = sk * nl;
 
-    memset(t,0,nij*tkl*sizeof(double));
+    memset(t, 0, nij * tkl * sizeof(double));
 
     for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex()*nl;
-        double *tptr = t + sti.pureindex()*nl;
+        double *sptr = s + sti.cartindex() * nl;
+        double *tptr = t + sti.pureindex() * nl;
         // printf("cartindex = %d, pureindex = %d\n", sti.cartindex(), sti.pureindex());
 
-//        outfile->Printf( "2e_3: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+        //        outfile->Printf( "2e_3: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(),
+        //        sti.coef());
 
         double coef = sti.coef();
-        for(int ij=0; ij<nij; ij++,sptr+=skl,tptr+=tkl) {
-            for(int l=0; l<nl; l++)
-                tptr[l] += coef * sptr[l];
+        for (int ij = 0; ij < nij; ij++, sptr += skl, tptr += tkl) {
+            for (int l = 0; l < nl; l++) tptr[l] += coef * sptr[l];
         }
     }
 }
@@ -717,25 +659,25 @@ static void transform2e_3(int am, SphericalTransformIter& sti, double *s, double
 // t => target buffer
 // nijk => how many i, j, k combinations are there?
 // nl => how man l's are there?
-static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double *t, int nijk, int nl)
-{
+static void transform2e_4(int am, SphericalTransformIter &sti, double *s, double *t, int nijk, int nl) {
     // Protect ourselves
     const int sl = nl;
     const int tl = INT_NPURE(am);
 
     // Clear out target memory
-    memset(t, 0, nijk*tl*sizeof(double));
+    memset(t, 0, nijk * tl * sizeof(double));
 
     for (sti.first(); !sti.is_done(); sti.next()) {
         // Starting point in source and target buffers
         double *sptr = s + sti.cartindex();
         double *tptr = t + sti.pureindex();
 
-//        outfile->Printf( "2e_4: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+        //        outfile->Printf( "2e_4: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(),
+        //        sti.coef());
 
         // What's the coefficient we're using
         double coef = sti.coef();
-        for (int ijk=0; ijk<nijk; ++ijk) {
+        for (int ijk = 0; ijk < nijk; ++ijk) {
             // Add contribution of the source to the target
             *(tptr) += coef * *(sptr);
 
@@ -745,4 +687,3 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
         }
     }
 }
-

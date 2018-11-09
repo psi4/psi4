@@ -39,15 +39,13 @@
 namespace opt {
 
 class STRE : public SIMPLE_COORDINATE {
+    bool hbond;         // whether stretch is a hydrogen bond
+    bool inverse_stre;  // whether stretch is really 1/R
 
-    bool hbond; // whether stretch is a hydrogen bond
-    bool inverse_stre; // whether stretch is really 1/R
+   public:
+    STRE(int A_in, int B_in, bool freeze_in = false);
 
-  public:
-
-    STRE(int A_in, int B_in, bool freeze_in=false);
-
-    ~STRE() { } // also calls ~SIMPLE_COORDINATE()
+    ~STRE() {}  // also calls ~SIMPLE_COORDINATE()
 
     double value(GeomType geom) const;
 
@@ -59,21 +57,20 @@ class STRE : public SIMPLE_COORDINATE {
     // returned matrix is order 3N cart by 3N cart
     double **Dq2Dx2(GeomType geom) const;
 
-    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
+    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset = 0) const;
+    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset = 0) const;
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
-    void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
-      const double dq, const double new_q, int atom_offset = 0) const;
-    bool operator==(const SIMPLE_COORDINATE & s2) const;
-    std::string get_definition_string(int atom_offset=0) const;
+    void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q, const double dq,
+                    const double new_q, int atom_offset = 0) const;
+    bool operator==(const SIMPLE_COORDINATE &s2) const;
+    std::string get_definition_string(int atom_offset = 0) const;
 
     void set_hbond(bool val) { hbond = val; }
     bool is_hbond(void) const { return hbond; }
     void make_inverse_stre(void) { inverse_stre = true; }
     bool is_inverse_stre(void) const { return inverse_stre; }
-
 };
 
-}
+}  // namespace opt
 
 #endif

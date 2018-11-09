@@ -39,14 +39,12 @@
 namespace opt {
 
 class CART : public SIMPLE_COORDINATE {
-
     int xyz;  // 0=x, 1=y, 2=z
 
-  public:
+   public:
+    CART(int A_in, int xyz_in, bool freeze_in = false);
 
-    CART(int A_in, int xyz_in, bool freeze_in=false);
-
-    ~CART() { } // also calls ~SIMPLE_COORDINATE()
+    ~CART() {}  // also calls ~SIMPLE_COORDINATE()
 
     double value(GeomType geom) const;
 
@@ -60,16 +58,15 @@ class CART : public SIMPLE_COORDINATE {
     // returned matrix is order 3N cart by 3N cart
     double **Dq2Dx2(GeomType geom) const;
 
-    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
+    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset = 0) const;
+    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset = 0) const;
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
-    void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
-      const double dq, const double new_q, int atom_offset = 0) const;
-    bool operator==(const SIMPLE_COORDINATE & s2) const;
-    std::string get_definition_string(int atom_offset=0) const;
-
+    void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q, const double dq,
+                    const double new_q, int atom_offset = 0) const;
+    bool operator==(const SIMPLE_COORDINATE &s2) const;
+    std::string get_definition_string(int atom_offset = 0) const;
 };
 
-}
+}  // namespace opt
 
 #endif

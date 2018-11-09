@@ -37,24 +37,22 @@
 extern "C" {
 
 // matrix multiplications
-void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool tC,
-  int nr, int nl, int nc, bool add);
+void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool tC, int nr, int nl, int nc, bool add);
 
 // eigenvector/eigenvalues
 bool opt_symm_matrix_eig(double **A, int dim, double *evals);
 
 bool opt_asymm_matrix_eig(double **A, int dim, double *evals);
-
 }
 
 namespace opt {
 
 // invert a symmetric matrix
-double ** symm_matrix_inv(double **A, int dim, bool redundant=true);
+double **symm_matrix_inv(double **A, int dim, bool redundant = true);
 
 // allocate memory and return a copy of a matrix
-double ** matrix_return_copy(double **A, int nr, int nc);
-bool ** matrix_return_copy(bool **A, int nr, int nc);
+double **matrix_return_copy(double **A, int nr, int nc);
+bool **matrix_return_copy(bool **A, int nr, int nc);
 
 void matrix_copy(double **from, double **to, int nr, int nc);
 
@@ -69,6 +67,6 @@ double array_rms(double *v1, int n);
 // Compute matrix ^1/2 or ^-1/2 if inverse=true
 void matrix_root(double **A, int dim, bool inverse);
 
-}
+}  // namespace opt
 
 #endif

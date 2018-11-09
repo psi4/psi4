@@ -37,9 +37,8 @@ class CdSalcList;
 class OneBodyAOInt;
 class IntegralFactory;
 
-class OneBodySOInt
-{
-protected:
+class OneBodySOInt {
+   protected:
     std::shared_ptr<OneBodyAOInt> ob_;
     const IntegralFactory* integral_;
     int deriv_;
@@ -49,11 +48,9 @@ protected:
 
     void common_init();
 
-public:
-    OneBodySOInt(const std::shared_ptr<OneBodyAOInt>&,
-                 const std::shared_ptr<IntegralFactory> &);
-    OneBodySOInt(const std::shared_ptr<OneBodyAOInt>&,
-                 const IntegralFactory*);
+   public:
+    OneBodySOInt(const std::shared_ptr<OneBodyAOInt>&, const std::shared_ptr<IntegralFactory>&);
+    OneBodySOInt(const std::shared_ptr<OneBodyAOInt>&, const IntegralFactory*);
     virtual ~OneBodySOInt();
 
     std::shared_ptr<SOBasisSet> basis() const;
@@ -61,8 +58,8 @@ public:
     std::shared_ptr<SOBasisSet> basis2() const;
 
     /**
-      * Returns the underlying AO integral engine being used.
-      */
+     * Returns the underlying AO integral engine being used.
+     */
     std::shared_ptr<OneBodyAOInt> ob() const;
 
     /**
@@ -79,7 +76,7 @@ public:
      *
      * \param results Where the integrals are going.
      */
-    virtual void compute(std::vector<SharedMatrix > results);
+    virtual void compute(std::vector<SharedMatrix> results);
 
     /**
      * Computes one-electron integral derivative matrices.
@@ -88,11 +85,9 @@ public:
      * \param cdsalcs The Cartesian displacement SALCs that you are interested
      *                in.
      */
-    virtual void compute_deriv1(std::vector<SharedMatrix > result,
-                                const CdSalcList& cdsalcs);
+    virtual void compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList& cdsalcs);
 };
 
-
-} // end namespace
+}  // namespace psi
 
 #endif

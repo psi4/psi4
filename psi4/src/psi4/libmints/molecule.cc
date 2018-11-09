@@ -70,7 +70,7 @@ bool from_string(T &t, const std::string &s, std::ios_base &(*f)(std::ios_base &
     std::istringstream iss(s);
     return !(iss >> f >> t).fail();
 }
-}
+}  // namespace
 
 // used by 'if_to_invert_axis' and 'inertia_tensor'
 #define ZERO 1.0E-14
@@ -219,7 +219,7 @@ Molecule &Molecule::operator=(const Molecule &other) {
 
     // Deep copy the map of variables
     full_atoms_.clear();
-    std::vector<std::shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
+    std::vector<std::shared_ptr<CoordEntry>>::const_iterator iter = other.full_atoms_.begin();
     for (; iter != other.full_atoms_.end(); ++iter) {
         full_atoms_.push_back((*iter)->clone(full_atoms_, geometry_variables_));
     }
@@ -247,14 +247,13 @@ void Molecule::clear() {
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass,
-                        double charge, std::string label, int A) {
+void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass, double charge,
+                        std::string label, int A) {
     lock_frame_ = false;
     set_has_cartesian(true);
     Vector3 temp(x, y, z);
     temp *= input_units_to_au_;
-    if (label == "")
-        label = symbol;
+    if (label == "") label = symbol;
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
@@ -282,35 +281,31 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
         std::shared_ptr<CoordValue> xval(get_coord_value(anchor[0]));
         std::shared_ptr<CoordValue> yval(get_coord_value(anchor[1]));
         std::shared_ptr<CoordValue> zval(get_coord_value(anchor[2]));
-        full_atoms_.push_back(std::make_shared<CartesianEntry>(currentAtom, Z, charge, mass, symbol, label, A,
-                                                                    xval, yval, zval));
+        full_atoms_.push_back(
+            std::make_shared<CartesianEntry>(currentAtom, Z, charge, mass, symbol, label, A, xval, yval, zval));
     } else if (numEntries == 0) {
         // This is the first line of a Z-Matrix
         set_has_zmatrix(true);
-        full_atoms_.push_back(
-            std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A));
+        full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A));
     } else if (numEntries == 2) {
         // This is the second line of a Z-Matrix
         set_has_zmatrix(true);
         rTo = get_anchor_atom(anchor[0], "");
-        if (rTo >= currentAtom)
-            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
+        if (rTo >= currentAtom) throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
         std::shared_ptr<CoordValue> rval(get_coord_value(anchor[1]));
 
         if (full_atoms_[rTo]->symbol() == "X") rval->set_fixed(true);
 
-        full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A,
-                                                             full_atoms_[rTo], rval));
+        full_atoms_.push_back(
+            std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A, full_atoms_[rTo], rval));
 
     } else if (numEntries == 4) {
         // This is the third line of a Z-Matrix
         set_has_zmatrix(true);
         rTo = get_anchor_atom(anchor[0], "");
-        if (rTo >= currentAtom)
-            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
+        if (rTo >= currentAtom) throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
         aTo = get_anchor_atom(anchor[2], "");
-        if (aTo >= currentAtom)
-            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[2]);
+        if (aTo >= currentAtom) throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[2]);
         if (aTo == rTo) throw PSIEXCEPTION("Atom used multiple times on line");
         std::shared_ptr<CoordValue> rval(get_coord_value(anchor[1]));
         std::shared_ptr<CoordValue> aval(get_coord_value(anchor[3]));
@@ -319,20 +314,16 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
         if (full_atoms_[aTo]->symbol() == "X") aval->set_fixed(true);
 
         full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A,
-                                                             full_atoms_[rTo], rval,
-                                                             full_atoms_[aTo], aval));
+                                                             full_atoms_[rTo], rval, full_atoms_[aTo], aval));
     } else if (numEntries == 6) {
         // This is line 4 onwards of a Z-Matrix
         set_has_zmatrix(true);
         rTo = get_anchor_atom(anchor[0], "");
-        if (rTo >= currentAtom)
-            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
+        if (rTo >= currentAtom) throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[0]);
         aTo = get_anchor_atom(anchor[2], "");
-        if (aTo >= currentAtom)
-            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[2]);
+        if (aTo >= currentAtom) throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[2]);
         dTo = get_anchor_atom(anchor[4], "");
-        if (dTo >= currentAtom)
-            throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[4]);
+        if (dTo >= currentAtom) throw PSIEXCEPTION("Error finding defined anchor atom " + anchor[4]);
         if (aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
             throw PSIEXCEPTION("Atom used multiple times on line");
 
@@ -345,19 +336,12 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
         if (full_atoms_[dTo]->symbol() == "X") dval->set_fixed(true);
 
         full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, Z, charge, mass, symbol, label, A,
-                                                             full_atoms_[rTo], rval,
-                                                             full_atoms_[aTo], aval,
+                                                             full_atoms_[rTo], rval, full_atoms_[aTo], aval,
                                                              full_atoms_[dTo], dval));
     } else {
         throw PSIEXCEPTION("Illegal geometry specification (neither Cartesian nor Z-Matrix)");
     }
 }
-
-
-
-
-
-
 
 double Molecule::mass(int atom, bool zero_ghost) const {
     double ret = 0.0;
@@ -459,8 +443,7 @@ double Molecule::pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> mB)
     return V;
 }
 
-double Molecule::nuclear_repulsion_energy(const std::array<double, 3> &dipole_field) const
-{
+double Molecule::nuclear_repulsion_energy(const std::array<double, 3> &dipole_field) const {
     double e = 0.0;
 
     for (int i = 1; i < natom(); ++i) {
@@ -472,19 +455,15 @@ double Molecule::nuclear_repulsion_energy(const std::array<double, 3> &dipole_fi
         }
     }
 
-    if(dipole_field[0] != 0.0 || dipole_field[1] != 0.0 || dipole_field[2] != 0.0){
+    if (dipole_field[0] != 0.0 || dipole_field[1] != 0.0 || dipole_field[2] != 0.0) {
         Vector3 nucdip = nuclear_dipole();
-        e += dipole_field[0]*nucdip[0]
-           + dipole_field[1]*nucdip[1]
-           + dipole_field[2]*nucdip[2];
+        e += dipole_field[0] * nucdip[0] + dipole_field[1] * nucdip[1] + dipole_field[2] * nucdip[2];
     }
 
     return e;
 }
 
-
-Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::array<double, 3> &dipole_field) const
-{
+Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::array<double, 3> &dipole_field) const {
     Matrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
 
     for (int i = 0; i < natom(); ++i) {
@@ -833,7 +812,6 @@ void Molecule::init_with_xyz(const std::string &xyzfilename) {
     update_geometry();
 }
 
-
 void Molecule::set_units(GeometryUnits units) {
     units_ = units;
     input_units_to_au_ = units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
@@ -1048,14 +1026,14 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
 
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-            //mol->fragment_types_.push_back(Real);
+            // mol->fragment_types_.push_back(Real);
             if (std::regex_search(lines[lineNumber - 1], reMatches, efpFileMarker_)) {
 #ifdef USING_libefp
                 fragment_levels.push_back(EFPatom);
                 // Overwrite the overall molecule chgmult written before loop
                 // fragment counting when EFP involved is very messed up.
                 //  All EFP fragments are 0 1 anyways, so just skip
-                //if (mol->fragments_.size() == 1) {
+                // if (mol->fragments_.size() == 1) {
                 //    mol->fragment_multiplicities_.pop_back();
                 //    mol->fragment_charges_.pop_back();
                 //    mol->fragment_multiplicities_.push_back(
@@ -1100,12 +1078,12 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
         exit(EXIT_SUCCESS);
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-    //mol->fragment_types_.push_back(Real);
+    // mol->fragment_types_.push_back(Real);
     if (std::regex_search(lines[lines.size() - 1], reMatches, efpFileMarker_)) {
 #ifdef USING_libefp
         fragment_levels.push_back(EFPatom);
-        //mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
-        //mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
+        // mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
+        // mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
 #else
         outfile->Printf("    EFP fragments detected but are not available.\n");
         throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
@@ -1137,7 +1115,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     // Store coordinates, atom by atom
     for (int currentAtom = 0; currentAtom < mol->fragments_.back().second;) {
         if ((currentAtom == mol->fragments_[currentFragment].first) && (fragment_levels[currentFragment] == EFPatom)) {
-// currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
+            // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
 #ifdef USING_libefp
             size_t efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
@@ -1229,8 +1207,8 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
                 std::shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
                 std::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
                 std::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
-                mol->full_atoms_.push_back(std::make_shared<CartesianEntry>(currentAtom, zVal, charge, atomMass,
-                                                                            atomSym, atomLabel, aVal, xval, yval, zval));
+                mol->full_atoms_.push_back(std::make_shared<CartesianEntry>(
+                    currentAtom, zVal, charge, atomMass, atomSym, atomLabel, aVal, xval, yval, zval));
             } else if (numEntries == 1) {
                 // This is the first line of a Z-Matrix
                 has_zmatrix = true;
@@ -1247,8 +1225,8 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
 
                 if (mol->full_atoms_[rTo]->symbol() == "X") rval->set_fixed(true);
 
-                mol->full_atoms_.push_back(std::make_shared<ZMatrixEntry>(currentAtom, zVal, charge, atomMass, atomSym,
-                                                                          atomLabel, aVal, mol->full_atoms_[rTo], rval));
+                mol->full_atoms_.push_back(std::make_shared<ZMatrixEntry>(
+                    currentAtom, zVal, charge, atomMass, atomSym, atomLabel, aVal, mol->full_atoms_[rTo], rval));
 
                 //                mol->full_atoms_.back()->print_in_input_format();
             } else if (numEntries == 5) {
@@ -1314,8 +1292,7 @@ std::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::strin
     mol->set_has_zmatrix(has_zmatrix);
     mol->set_has_cartesian(has_cart);
 
-    for (size_t i = 0, atom = 0; i < mol->fragments_.size(); ++i)
-        mol->fragment_types_.push_back(Real);
+    for (size_t i = 0, atom = 0; i < mol->fragments_.size(); ++i) mol->fragment_types_.push_back(Real);
 
     if (pubcheminput) mol->symmetrize_to_abelian_group(1.0e-3);
 
@@ -1360,8 +1337,8 @@ std::string Molecule::create_psi4_string_from_molecule() const {
             sprintf(buffer, "    no_reorient\n");
             ss << buffer;
         }
-        //sprintf(buffer, "    %d %d\n    --\n", molecular_charge_, multiplicity_);  // uncomment after py-side mol parsing
-        //ss << buffer;  // uncomment after py-side mol parsing
+        // sprintf(buffer, "    %d %d\n    --\n", molecular_charge_, multiplicity_);  // uncomment after py-side mol
+        // parsing ss << buffer;  // uncomment after py-side mol parsing
 
         // append atoms and coordentries and fragment separators with charge and multiplicity
         int Pfr = 0;
@@ -1451,8 +1428,7 @@ void Molecule::reinterpret_coordentries() {
     if (fragments_.size() < 2) {
         molecular_charge_ = temp_charge;
         multiplicity_ = temp_multiplicity;
-    }
-    else {
+    } else {
         if ((real_frags == fragments_.size()) && ((temp_multiplicity % 2) == (high_spin_multiplicity % 2)))
             // give low-spin a chance, so long as ghost/absent fragments can't be complicating the picture
             multiplicity_ = temp_multiplicity;
@@ -1904,8 +1880,8 @@ std::string Molecule::save_string_xyz_file() const {
     for (int i = 0; i < natom(); i++) {
         Vector3 geom = atoms_[i]->compute();
         if (Z(i, true)) {
-            snprintf(line, 100, "%2s %17.12f %17.12f %17.12f\n", (Z(i, true) ? symbol(i).c_str() : "Gh"), (factor * geom[0]),
-                     (factor * geom[1]), (factor * geom[2]));
+            snprintf(line, 100, "%2s %17.12f %17.12f %17.12f\n", (Z(i, true) ? symbol(i).c_str() : "Gh"),
+                     (factor * geom[0]), (factor * geom[1]), (factor * geom[2]));
             stream << line;
             //            stream << boost::format("%2s %17.12f %17.12f %17.12f\n") % (Z(i) ? symbol(i).c_str() : "Gh") %
             //            (factor * geom[0]) % (factor * geom[1]) % (factor * geom[2]);
@@ -2767,7 +2743,8 @@ void Molecule::form_symmetry_information(double tol) {
             for (int j = 0; j < nunique_; ++j) {
                 int unique = equiv_[j][0];
                 Vector3 aj(xyz(unique));
-                if (np.distance(aj) < tol && Z(unique, true) == Z(i, true) && std::fabs(mass(unique, false) - mass(i, false)) < tol) {
+                if (np.distance(aj) < tol && Z(unique, true) == Z(i, true) &&
+                    std::fabs(mass(unique, false) - mass(i, false)) < tol) {
                     i_is_unique = 0;
                     i_equiv = j;
                     break;
@@ -2841,8 +2818,7 @@ double Molecule::Z(int atom, bool zero_ghost) const {
     if (!zero_ghost && atoms_[atom]->Z() == 0.0) {
         Element_to_Z z_list = Element_to_Z();
         return z_list[atoms_[atom]->symbol()];
-    }
-    else {
+    } else {
         return atoms_[atom]->Z();
     }
 }
@@ -3347,9 +3323,8 @@ std::string Molecule::full_point_group() const {
 
 int Molecule::natom() const { return atoms_.size(); }
 
-void Molecule::set_fragment_pattern(const std::vector<std::pair<int,int>> frag,
-                                    const std::vector<FragmentType> frag_tp,
-                                    const std::vector<int> frag_cg,
+void Molecule::set_fragment_pattern(const std::vector<std::pair<int, int>> frag,
+                                    const std::vector<FragmentType> frag_tp, const std::vector<int> frag_cg,
                                     const std::vector<int> frag_mp) {
     fragments_ = frag;
     fragment_types_ = frag_tp;
@@ -3361,8 +3336,7 @@ int Molecule::rotational_symmetry_number() const {
     int sigma;
     std::string pg = FullPointGroupList[full_pg_];
 
-    if ((pg == "ATOM") || (pg == "C_inf_v") ||
-        (pg == "C1") || (pg == "Ci") || (pg == "Cs"))
+    if ((pg == "ATOM") || (pg == "C_inf_v") || (pg == "C1") || (pg == "Ci") || (pg == "Cs"))
         sigma = 1;
     else if (pg == "D_inf_h")
         sigma = 2;
@@ -3383,4 +3357,4 @@ int Molecule::rotational_symmetry_number() const {
 
     return sigma;
 }
-}
+}  // namespace psi

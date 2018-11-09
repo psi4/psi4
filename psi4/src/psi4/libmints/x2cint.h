@@ -46,9 +46,8 @@ class BasisSet;
  *  \class X2CInt
  *  \brief Computes the 1e-X2C kinetic and potential integrals.
  */
-class X2CInt
-{
-public:
+class X2CInt {
+   public:
     X2CInt();
     ~X2CInt();
 
@@ -59,12 +58,11 @@ public:
      * @param V Shared matrix object that will hold the X2C potential energy integrals.
      * @param options an Options object used to read basis set information.
      */
-    void compute(std::shared_ptr<BasisSet> basis,
-                 std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S,
-                 SharedMatrix T, SharedMatrix V);
+    void compute(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S, SharedMatrix T,
+                 SharedMatrix V);
     /*! @} */
 
-private:
+   private:
     /// The name of the basis set
     std::string basis_;
     /// The name of the basis set
@@ -123,8 +121,7 @@ private:
     SharedVector E_LS_Mat;
 
     /// Setup the basis objects, integral factories, etc.
-    void setup(std::shared_ptr<BasisSet> basis,
-               std::shared_ptr<BasisSet> x2c_basis);
+    void setup(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_basis);
     /// Compute the S, T, V, and W integrals
     void compute_integrals();
     /// Compute the Hamiltonian and overlap matrices of the modified Dirac equation
@@ -145,6 +142,6 @@ private:
     void project();
 };
 
-}
+}  // namespace psi
 
-#endif // _psi_src_lib_libmints_x2cint_h_
+#endif  // _psi_src_lib_libmints_x2cint_h_

@@ -191,6 +191,6 @@ class CubicScalarGrid {
     std::pair<double, double> compute_isocontour_range(double* v2, double exponent);
 };
 
-}  // End namespace
+}  // namespace psi
 
 #endif

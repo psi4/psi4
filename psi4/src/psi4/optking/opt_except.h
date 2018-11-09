@@ -39,72 +39,70 @@ namespace opt {
    coordinates ; if it looks like user error in definition, then
    quit right away.  */
 class INTCO_EXCEPT {
-  private:
-   const char * message;
-   bool really_quit;
+   private:
+    const char *message;
+    bool really_quit;
 
-  public:
-
-    static int dynamic_level; // defined in optking.cc
-    //static bool override_fragment_mode;
+   public:
+    static int dynamic_level;  // defined in optking.cc
+    // static bool override_fragment_mode;
     static std::vector<int> linear_angles;
 
-
-    INTCO_EXCEPT(const char * m) {
-      message = m;
-      really_quit = false;
-      //try_other_intcos = false;
+    INTCO_EXCEPT(const char *m) {
+        message = m;
+        really_quit = false;
+        // try_other_intcos = false;
     }
 
-    INTCO_EXCEPT(const char * m, bool t) {
-      message = m;
-      really_quit = t;
-      //try_other_intcos = t;
+    INTCO_EXCEPT(const char *m, bool t) {
+        message = m;
+        really_quit = t;
+        // try_other_intcos = t;
     }
 
-    INTCO_EXCEPT(const char * m, std::vector<int> l) {
-      message = m;
-      linear_angles = l;
-      really_quit = false;
-      //try_other_intcos = t;
+    INTCO_EXCEPT(const char *m, std::vector<int> l) {
+        message = m;
+        linear_angles = l;
+        really_quit = false;
+        // try_other_intcos = t;
     }
 
     void increment_dynamic_level(void) {
-      if (dynamic_level == 0) // turning 'on' dynamic
-        dynamic_level = 1;
+        if (dynamic_level == 0)  // turning 'on' dynamic
+            dynamic_level = 1;
 
-      dynamic_level += 1;
+        dynamic_level += 1;
     }
 
-    ~INTCO_EXCEPT() {};
+    ~INTCO_EXCEPT(){};
 
-    //bool try_again() { return try_other_intcos; }
+    // bool try_again() { return try_other_intcos; }
     const char *g_message(void) { return message; }
     bool g_really_quit(void) { return really_quit; }
 };
 
 class BAD_STEP_EXCEPT {
-  private:
-   const char * message;
+   private:
+    const char *message;
 
-  public:
-    BAD_STEP_EXCEPT(const char * m) { message = m; }
+   public:
+    BAD_STEP_EXCEPT(const char *m) { message = m; }
 
-    ~BAD_STEP_EXCEPT() {};
+    ~BAD_STEP_EXCEPT(){};
 
     const char *g_message(void) { return message; }
 };
 
 class BROKEN_SYMMETRY_EXCEPT {
-  private:
-    const char * message;
+   private:
+    const char *message;
 
-  public:
-    BROKEN_SYMMETRY_EXCEPT(const char * m) { message = m; }
+   public:
+    BROKEN_SYMMETRY_EXCEPT(const char *m) { message = m; }
 
-    ~BROKEN_SYMMETRY_EXCEPT() {};
+    ~BROKEN_SYMMETRY_EXCEPT(){};
 
     const char *g_message(void) { return message; }
 };
 
-}
+}  // namespace opt

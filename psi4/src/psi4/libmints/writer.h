@@ -29,11 +29,11 @@
 #ifndef WRITER_H
 #define WRITER_H
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libmints/vector.h"
 #include <string>
 #include "typedefs.h"
@@ -106,6 +106,6 @@ class NBOWriter {
 
     void write(const std::string &filename);
 };
-}
+}  // namespace psi
 
 #endif  // WRITER_H

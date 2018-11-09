@@ -107,6 +107,6 @@ class PSI_API CubeProperties {
     /// Compute an ELF grid task (key.cube)
     void compute_ELF(std::shared_ptr<Matrix> D, const std::string& key);
 };
-}
+}  // namespace psi
 
 #endif

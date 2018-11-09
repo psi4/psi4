@@ -43,23 +43,23 @@ class Molecule;
  *  \brief Computes arbitrary-order multipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class MultipoleInt : public OneBodyAOInt
-{
+class MultipoleInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterMIRecursion mi_recur_;
 
     //! Computes the multipole integrals between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell &, const GaussianShell &);
 
     //! Computes the multipole derivative between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&){ throw PSIEXCEPTION("NYI"); }
+    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &) { throw PSIEXCEPTION("NYI"); }
 
     //! The order of multipole moment to compute
     int order_;
-public:
+
+   public:
     //! Constructor. Do not call directly. Use an IntegralFactory.
-    MultipoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>,
-                 std::shared_ptr<BasisSet>, int order, int deriv=0);
+    MultipoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int order,
+                 int deriv = 0);
     //! Virtual destructor
     virtual ~MultipoleInt();
 
@@ -70,5 +70,5 @@ public:
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
 };
 
-}
+}  // namespace psi
 #endif

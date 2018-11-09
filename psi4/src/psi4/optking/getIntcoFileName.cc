@@ -31,43 +31,41 @@
 #include "package.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
-  #include "psi4/psi4-dec.h"
-  #include "psi4/libmints/writer_file_prefix.h"
-  #include "psi4/libmints/molecule.h"
-  #include "psi4/libpsi4util/process.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libmints/writer_file_prefix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libpsi4util/process.h"
 #endif
 
 #if defined(OPTKING_PACKAGE_QCHEM)
- #include "qcsys.h"
- extern void getPrefix(char*& pref);
+#include "qcsys.h"
+extern void getPrefix(char*& pref);
 #endif
 
-const char* getIntcoFileName()
-{
-   static std::string strintco("");
-   if (strintco.empty() ) {
+const char* getIntcoFileName() {
+    static std::string strintco("");
+    if (strintco.empty()) {
 #if defined(OPTKING_PACKAGE_QCHEM)
-      char* pref=nullptr;
-      getPrefix(pref);
-      strintco = std::string(pref) + "intco.dat";
+        char* pref = nullptr;
+        getPrefix(pref);
+        strintco = std::string(pref) + "intco.dat";
 #elif defined(OPTKING_PACKAGE_PSI)
-      strintco = psi::get_writer_file_prefix(psi::Process::environment.legacy_molecule()->name()) + ".intco";
+        strintco = psi::get_writer_file_prefix(psi::Process::environment.legacy_molecule()->name()) + ".intco";
 #endif
-   }
-   return strintco.c_str();
+    }
+    return strintco.c_str();
 }
 
-const char* getOptdataFileName()
-{
-   static std::string stroptdata("");
-   if (stroptdata.empty() ) {
+const char* getOptdataFileName() {
+    static std::string stroptdata("");
+    if (stroptdata.empty()) {
 #if defined(OPTKING_PACKAGE_QCHEM)
-      char* pref=nullptr;
-      getPrefix(pref);
-      stroptdata = std::string(pref) + "opt_data.1";
+        char* pref = nullptr;
+        getPrefix(pref);
+        stroptdata = std::string(pref) + "opt_data.1";
 #elif defined(OPTKING_PACKAGE_PSI)
-      // In PSI, the opt data file is file 1, with the name set by input and io_start
+        // In PSI, the opt data file is file 1, with the name set by input and io_start
 #endif
-   }
-   return stroptdata.c_str();
+    }
+    return stroptdata.c_str();
 }

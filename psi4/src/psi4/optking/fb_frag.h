@@ -54,50 +54,48 @@ space-fixed coordinates of the gradient computed by QChem.
 namespace opt {
 
 class FB_FRAG : public FRAG {
+    // values and forces are provided by QChem, not computed by optking
+    // they will be of dimension 6
+    double *values;
+    double *forces;
 
-  // values and forces are provided by QChem, not computed by optking
-  // they will be of dimension 6
-  double *values;
-  double *forces;
+   public:
+    // we will build a dummy fragment with no atoms
+    FB_FRAG() : FRAG(0) {
+        values = init_array(6);
+        forces = init_array(6);
+    }
 
-  public:
-  // we will build a dummy fragment with no atoms
-  FB_FRAG() : FRAG(0) {
-    values = init_array(6);
-    forces = init_array(6);
-  }
+    ~FB_FRAG() {
+        free_array(values);
+        free_array(forces);
+    }
 
-  ~FB_FRAG() {
-    free_array(values);
-    free_array(forces);
-   }
+    void set_values(double *values_in);
+    void set_forces(double *forces_in);
 
-  void set_values(double * values_in);
-  void set_forces(double * forces_in);
+    double *get_values_pointer(void) const { return values; }
+    double *get_forces_pointer(void) const { return forces; }
 
-  double * get_values_pointer(void) const { return values; }
-  double * get_forces_pointer(void) const { return forces; }
+    // we don't have a valid B matrix for these
+    // add 6 bogus stretches
+    void add_dummy_coords(int ndummy);
 
-  // we don't have a valid B matrix for these
-  // add 6 bogus stretches
-  void add_dummy_coords(int ndummy);
+    // We will assign a value of 0 to these on the first iteration; subsequently, the
+    // values will be calculated as total Delta(q) from the start of the optimization
+    void print_intcos(std::string psi_fp, FILE *qc_fp);
 
-// We will assign a value of 0 to these on the first iteration; subsequently, the
-// values will be calculated as total Delta(q) from the start of the optimization
-  void print_intcos(std::string psi_fp, FILE *qc_fp);
+    /* Add function to return a string definition of FB fragment, if needed
+      // return string of intco definition
+      std::string get_coord_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0);
+    */
 
-/* Add function to return a string definition of FB fragment, if needed
-  // return string of intco definition
-  std::string get_coord_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0);
-*/
+    double **H_guess(void);
 
-  double **H_guess(void);
-
-  // Tell QChem to update rotation matrix and com for FB fragment
-  void displace (int fb_frag_index, double *dq);
-
+    // Tell QChem to update rotation matrix and com for FB fragment
+    void displace(int fb_frag_index, double *dq);
 };
 
-}
+}  // namespace opt
 
 #endif

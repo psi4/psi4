@@ -771,8 +771,8 @@ void EFP::print_out() {
 }
 
 #endif  // USING_libefp
-}
-}  // End namespaces
+}  // namespace efp
+}  // namespace psi
 
 ///*
 // * Get COM for a fragment from libefp coordinates

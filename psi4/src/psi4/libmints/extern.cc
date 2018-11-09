@@ -38,42 +38,31 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 namespace psi {
 
-ExternalPotential::ExternalPotential() :
-        debug_(0), print_(1)
-{
-}
+ExternalPotential::ExternalPotential() : debug_(0), print_(1) {}
 
-ExternalPotential::~ExternalPotential()
-{
-}
+ExternalPotential::~ExternalPotential() {}
 
-void ExternalPotential::clear()
-{
+void ExternalPotential::clear() {
     charges_.clear();
     bases_.clear();
 }
 
-void ExternalPotential::addCharge(double Z, double x, double y, double z)
-{
+void ExternalPotential::addCharge(double Z, double x, double y, double z) {
     charges_.push_back(std::make_tuple(Z, x, y, z));
 }
 
-void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs)
-{
+void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
     bases_.push_back(std::make_pair(basis, coefs));
 }
 
-void ExternalPotential::print(std::string out) const
-{
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::make_shared<PsiOutStream>(out));
+void ExternalPotential::print(std::string out) const {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => External Potential Field: %s <= \n\n", name_.c_str());
 
     // Charges
@@ -81,11 +70,8 @@ void ExternalPotential::print(std::string out) const
         printer->Printf("    > Charges [a.u.] < \n\n");
         printer->Printf("     %10s %10s %10s %10s\n", "Z", "x", "y", "z");
         for (size_t i = 0; i < charges_.size(); i++) {
-            printer->Printf("     %10.5f %10.5f %10.5f %10.5f\n",
-                            std::get<0>(charges_[i]),
-                            std::get<1>(charges_[i]),
-                            std::get<2>(charges_[i]),
-                            std::get<3>(charges_[i]));
+            printer->Printf("     %10.5f %10.5f %10.5f %10.5f\n", std::get<0>(charges_[i]), std::get<1>(charges_[i]),
+                            std::get<2>(charges_[i]), std::get<3>(charges_[i]));
         }
         printer->Printf("\n");
     }
@@ -106,15 +92,13 @@ void ExternalPotential::print(std::string out) const
     }
 }
 
-SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis)
-{
+SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis) {
     int n = basis->nbf();
     auto V = std::make_shared<Matrix>("External Potential", n, n);
     auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
 
     double convfac = 1.0;
-    if (basis->molecule()->units() == Molecule::Angstrom)
-        convfac /= pc_bohr2angstroms;
+    if (basis->molecule()->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Monopoles
     auto V_charge = std::make_shared<Matrix>("External Potential (Charges)", n, n);
@@ -138,7 +122,6 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 
     // Diffuse Bases
     for (size_t ind = 0; ind < bases_.size(); ind++) {
-
         std::shared_ptr<BasisSet> aux = bases_[ind].first;
         SharedVector d = bases_[ind].second;
 
@@ -178,12 +161,9 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     return V;
 }
 
-
-SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt)
-{
+SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt) {
     // This will be easy to implement, I think, but just throw for now.
-    if (bases_.size())
-        throw PSIEXCEPTION("Gradients with blurred external charges are not implemented yet.");
+    if (bases_.size()) throw PSIEXCEPTION("Gradients with blurred external charges are not implemented yet.");
 
     SharedMolecule mol = basis->molecule();
     int natom = mol->natom();
@@ -195,8 +175,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     double **Zxyzp = Zxyz->pointer();
 
     double convfac = 1.0;
-    if (mol->units() == Molecule::Angstrom)
-        convfac /= pc_bohr2angstroms;
+    if (mol->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     for (size_t i = 0; i < charges_.size(); i++) {
         Zxyzp[i][0] = std::get<0>(charges_[i]);
@@ -261,8 +240,8 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 #endif
 
     // Potential derivatives
-    std::vector <std::shared_ptr<PotentialInt>> Vint;
-    std::vector <SharedMatrix> Vtemps;
+    std::vector<std::shared_ptr<PotentialInt> > Vint;
+    std::vector<SharedMatrix> Vtemps;
     for (int t = 0; t < threads; t++) {
         Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1))));
         Vint[t]->set_charge_field(Zxyz);
@@ -271,7 +250,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     }
 
     // Lower Triangle
-    std::vector <std::pair<int, int>> PQ_pairs;
+    std::vector<std::pair<int, int> > PQ_pairs;
     for (int P = 0; P < basis->nshell(); P++) {
         for (int Q = 0; Q <= P; Q++) {
             PQ_pairs.push_back(std::pair<int, int>(P, Q));
@@ -280,7 +259,6 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
 #pragma omp parallel for schedule(dynamic) num_threads(threads)
     for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-
         int P = PQ_pairs[PQ].first;
         int Q = PQ_pairs[PQ].second;
 
@@ -325,25 +303,20 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 #endif
 }
 
-double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
-{
+double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     double E = 0.0;
     double convfac = 1.0;
 
-    if (mol->units() == Molecule::Angstrom)
-        convfac /= pc_bohr2angstroms;
-
+    if (mol->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Nucleus-charge interaction
     for (int A = 0; A < mol->natom(); A++) {
-
         double xA = mol->x(A);
         double yA = mol->y(A);
         double zA = mol->z(A);
         double ZA = mol->Z(A, true);
 
         for (size_t B = 0; B < charges_.size(); B++) {
-
             double ZB = std::get<0>(charges_[B]);
             double xB = convfac * std::get<1>(charges_[B]);
             double yB = convfac * std::get<2>(charges_[B]);
@@ -355,7 +328,6 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
             double R = sqrt(dx * dx + dy * dy + dz * dz);
 
             E += ZA * ZB / R;
-
         }
     }
 
@@ -371,7 +343,6 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
         }
 
         for (size_t ind = 0; ind < bases_.size(); ind++) {
-
             std::shared_ptr<BasisSet> aux = bases_[ind].first;
             SharedVector d = bases_[ind].second;
 
@@ -390,4 +361,4 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol)
     return E;
 }
 
-}
+}  // namespace psi

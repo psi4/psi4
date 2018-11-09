@@ -160,8 +160,8 @@ bool Slice::validate_slice() {
     for (int h = 0, max_h = begin_.n(); h < max_h; h++) {
         if (begin_[h] < 0) {
             valid = false;
-            msg = "Invalid Slice: element " + std::to_string(h) +
-                              " of begin Dimension object is less than zero (" + std::to_string(begin_[h]) + ")";
+            msg = "Invalid Slice: element " + std::to_string(h) + " of begin Dimension object is less than zero (" +
+                  std::to_string(begin_[h]) + ")";
             break;
         }
         if (end_[h] < begin_[h]) {
@@ -178,4 +178,4 @@ bool Slice::validate_slice() {
     }
     return valid;
 }
-}
+}  // namespace psi

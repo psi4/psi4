@@ -40,7 +40,6 @@
 
 namespace psi {
 
-
 /*!
 ** get_writer_file_prefix()
 **
@@ -61,24 +60,21 @@ namespace psi {
 ** \ingroup MINTS
 */
 
-std::string PSI_API get_writer_file_prefix(const std::string& molecule_name)
-{
-    const std::string pid= "." + std::to_string(getpid());
+std::string PSI_API get_writer_file_prefix(const std::string& molecule_name) {
+    const std::string pid = "." + std::to_string(getpid());
     const std::string label = Process::environment.options.get_str("WRITER_FILE_LABEL");
     if (!label.empty()) {
-        return label+pid;
+        return label + pid;
     }
 
     // If no available options WRITER_FILE_LABEL, then we build a default:
     // Get the basename of the output filename, append any active molecule name
     // to it, and return the resulting string
-    std::string prefix=outfile_name.substr(0, outfile_name.find_last_of('.'));
+    std::string prefix = outfile_name.substr(0, outfile_name.find_last_of('.'));
     if (!molecule_name.empty()) {
         prefix += "." + molecule_name;
     }
-    return prefix+pid;
-
+    return prefix + pid;
 }
 
-
-}
+}  // namespace psi

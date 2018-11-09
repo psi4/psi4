@@ -47,22 +47,20 @@ extern "C" {
 
 #define F_DGEMM dgemm_
 
-extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k,
-                    double *alpha, double *A, int *lda, double *B, int *ldb,
-                    double *beta, double *C, int *ldc);
+extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *A, int *lda, double *B,
+                    int *ldb, double *beta, double *C, int *ldc);
 
-void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool tC,
-                     int nr, int nl, int nc, bool add);
+void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool tC, int nr, int nl, int nc, bool add);
 }
 
 namespace psi {
 namespace findif {
 
-int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, int pts,
-        int irrep, int ii, int jj, int disp_i, int disp_j);
+int iE0(std::vector<int> &Ndisp_pi, std::vector<std::vector<int>> &salcs_pi, int pts, int irrep, int ii, int jj,
+        int disp_i, int disp_j);
 
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
-                       const py::list &python_energies, int freq_irrep_only) {
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options, const py::list &python_energies,
+                       int freq_irrep_only) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
     int print_lvl = options.get_int("PRINT");
@@ -74,17 +72,14 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     int Nirrep = salc_list.nirrep();
 
     // build vectors that list indices of salcs for each irrep
-    std::vector <std::vector<int>> salcs_pi;
-    for (int h = 0; h < Nirrep; ++h)
-        salcs_pi.push_back(std::vector<int>());
-    for (int i = 0; i < salc_list.ncd(); ++i)
-        salcs_pi[salc_list[i].irrep()].push_back(i);
+    std::vector<std::vector<int>> salcs_pi;
+    for (int h = 0; h < Nirrep; ++h) salcs_pi.push_back(std::vector<int>());
+    for (int i = 0; i < salc_list.ncd(); ++i) salcs_pi[salc_list[i].irrep()].push_back(i);
 
     // Now remove irreps that are not requested
     if (freq_irrep_only != -1) {
         for (int h = 0; h < Nirrep; ++h)
-            if (h != freq_irrep_only)
-                salcs_pi[h].clear();
+            if (h != freq_irrep_only) salcs_pi[h].clear();
     }
 
     // Determine total num of salcs and where each irrep starts
@@ -118,13 +113,11 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
             Ndisp_pi[h] += 8 * salcs_pi[h].size() * (salcs_pi[h].size() - 1) / 2;
     }
     int Ndisp_all = 0;
-    for (int h = 0; h < Nirrep; ++h)
-        Ndisp_all += Ndisp_pi[h];
+    for (int h = 0; h < Nirrep; ++h) Ndisp_all += Ndisp_pi[h];
 
     // Check number of energies and displacements
     std::vector<double> E;
-    for (int i = 0; i < len(python_energies); ++i)
-        E.push_back(python_energies[i].cast<double>());
+    for (int i = 0; i < len(python_energies); ++i) E.push_back(python_energies[i].cast<double>());
 
     if (print_lvl) {
         outfile->Printf("\n-------------------------------------------------------------\n\n");
@@ -132,10 +125,10 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
         outfile->Printf("  Computing second-derivative from energies using projected, \n");
         outfile->Printf("  symmetry-adapted, cartesian coordinates (fd_freq_0).\n");
 
-        outfile->Printf("\t%d energies passed in, including the reference energy.\n", (int) E.size());
+        outfile->Printf("\t%d energies passed in, including the reference energy.\n", (int)E.size());
     }
 
-    if (E.size() != Ndisp_all + 1) { // last energy is the reference non-displaced energy
+    if (E.size() != Ndisp_all + 1) {  // last energy is the reference non-displaced energy
         throw PsiException("FINDIF: Incorrect number of energies passed in!", __FILE__, __LINE__);
     }
 
@@ -144,90 +137,85 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
         outfile->Printf("\tUsing %d-point formula.\n", pts);
         outfile->Printf("\tEnergy without displacement: %15.10lf\n", energy_ref);
         outfile->Printf("\tCheck energies below for precision!\n");
-        for (int i = 0; i < Ndisp_all + 1; ++i)
-            outfile->Printf("\t%5d : %20.10lf\n", i + 1, E[i]);
+        for (int i = 0; i < Ndisp_all + 1; ++i) outfile->Printf("\t%5d : %20.10lf\n", i + 1, E[i]);
         outfile->Printf("\n");
     }
 
     // Determine the number of translation and rotational coordinates projected out
     // and obtain them.  might be needed for cartesian hessian.
     // SharedMatrix rot_trans_out = salc_list.matrix_projected_out();
-    //int num_projected_out = rot_trans_out->nrow();
+    // int num_projected_out = rot_trans_out->nrow();
 
     std::vector<std::string> irrep_lbls = mol->irrep_labels();
-    double **H_irr[8]; // hessian by irrep block
+    double **H_irr[8];  // hessian by irrep block
 
     for (int h = 0; h < Nirrep; ++h) {
-
         if (salcs_pi[h].size() == 0) continue;
 
         H_irr[h] = block_matrix(salcs_pi[h].size(), salcs_pi[h].size());
 
         // do diagonal displacements
-        for (int i = 0; i < salcs_pi[h].size(); ++i) { // loop over salcs of this irrep
+        for (int i = 0; i < salcs_pi[h].size(); ++i) {  // loop over salcs of this irrep
 
-            if (h == 0) { // symmetric
+            if (h == 0) {  // symmetric
                 if (pts == 3) {
-                    H_irr[h][i][i] = (+E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
-                                      + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-                                      - 2.0 * energy_ref) / (disp_size * disp_size);
+                    H_irr[h][i][i] = (+E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)] +
+                                      E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - 2.0 * energy_ref) /
+                                     (disp_size * disp_size);
                 } else if (pts == 5) {
-                    H_irr[h][i][i] = (
-                                             -1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
-                                             + 16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-                                             + 16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, 1, 0)]
-                                             - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, 2, 0)]
-                                             - 30.0 * energy_ref) / (12.0 * disp_size * disp_size);
+                    H_irr[h][i][i] = (-1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)] +
+                                      16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] +
+                                      16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, 1, 0)] -
+                                      1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, 2, 0)] - 30.0 * energy_ref) /
+                                     (12.0 * disp_size * disp_size);
                 }
             } else {  // asymmetric
                 if (pts == 3)
-                    H_irr[h][i][i] = 2.0 * (E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - energy_ref) /
-                                     (disp_size * disp_size);
+                    H_irr[h][i][i] =
+                        2.0 * (E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - energy_ref) / (disp_size * disp_size);
                 else if (pts == 5)
-                    H_irr[h][i][i] = (
-                                             -2.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
-                                             + 32.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-                                             - 30.0 * energy_ref) / (12.0 * disp_size * disp_size);
+                    H_irr[h][i][i] = (-2.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)] +
+                                      32.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - 30.0 * energy_ref) /
+                                     (12.0 * disp_size * disp_size);
             }
-        } // i, salc_i
+        }  // i, salc_i
 
         // off-diagonal displacements
-        for (int i = 0; i < salcs_pi[h].size(); ++i) { // loop over salcs of this irrep
+        for (int i = 0; i < salcs_pi[h].size(); ++i) {  // loop over salcs of this irrep
 
-            for (int j = 0; j < i; ++j) {        // loop over salcs of this irrep
+            for (int j = 0; j < i; ++j) {  // loop over salcs of this irrep
 
                 if (pts == 3) {
-                    H_irr[h][i][j] = H_irr[h][j][i] = (
-                                                              +E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
-                                                              + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
-                                                              + 2.0 * energy_ref
-                                                              - E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
-                                                              - E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-                                                              - E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +1, 0)]
-                                                              - E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -1, 0)]
-                                                      ) / (2.0 * disp_size * disp_size);
+                    H_irr[h][i][j] = H_irr[h][j][i] =
+                        (+E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)] +
+                         E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)] + 2.0 * energy_ref -
+                         E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)] -
+                         E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] -
+                         E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +1, 0)] -
+                         E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -1, 0)]) /
+                        (2.0 * disp_size * disp_size);
                 } else if (pts == 5) {
-                    H_irr[h][i][j] = H_irr[h][j][i] = (
-                                                              -1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -2)]
-                                                              - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -2, -1)]
-                                                              + 9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
-                                                              - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, -1)]
-                                                              - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, 1)]
-                                                              + 9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
-                                                              - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +2, +1)]
-                                                              - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +2)]
-                                                              + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
-                                                              - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-                                                              - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
-                                                              + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +2, 0)]
-                                                              + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -2, 0)]
-                                                              - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -1, 0)]
-                                                              - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +1, 0)]
-                                                              + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +2, 0)]
-                                                              + 12.0 * energy_ref) / (12.0 * disp_size * disp_size);
+                    H_irr[h][i][j] = H_irr[h][j][i] =
+                        (-1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -2)] -
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -2, -1)] +
+                         9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)] -
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, -1)] -
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, 1)] +
+                         9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)] -
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +2, +1)] -
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +2)] +
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)] -
+                         7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] -
+                         7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)] +
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +2, 0)] +
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -2, 0)] -
+                         7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -1, 0)] -
+                         7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +1, 0)] +
+                         1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +2, 0)] + 12.0 * energy_ref) /
+                        (12.0 * disp_size * disp_size);
                 }
-            } // j, salc_j
-        } // i, salc_i
+            }  // j, salc_j
+        }      // i, salc_i
 
         if (print_lvl >= 3) {
             outfile->Printf("\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h].c_str());
@@ -248,12 +236,10 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
 
         for (int i = 0; i < dim; ++i)
             for (int a = 0; a < Natom; ++a)
-                for (int xyz = 0; xyz < 3; ++xyz)
-                    B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a,false));
+                for (int xyz = 0; xyz < 3; ++xyz) B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a, false));
 
         double **normal_irr = block_matrix(3 * Natom, dim);
-        C_DGEMM('t', 'n', 3 * Natom, dim, dim, 1.0, B_irr[0], 3 * Natom, evects[0],
-                dim, 0, normal_irr[0], dim);
+        C_DGEMM('t', 'n', 3 * Natom, dim, dim, 1.0, B_irr[0], 3 * Natom, evects[0], dim, 0, normal_irr[0], dim);
 
         if (print_lvl >= 3) {
             outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h].c_str());
@@ -265,15 +251,13 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
         free_block(normal_irr);
     }
 
-
     // Build complete hessian for transformation to cartesians
     double **H = block_matrix(Nsalc_all, Nsalc_all);
 
     for (int h = 0; h < Nirrep; ++h)
         for (int i = 0; i < salcs_pi[h].size(); ++i) {
             int start = salc_irr_start[h];
-            for (int j = 0; j <= i; ++j)
-                H[start + i][start + j] = H[start + j][start + i] = H_irr[h][i][j];
+            for (int j = 0; j <= i; ++j) H[start + i][start + j] = H[start + j][start + i] = H_irr[h][i][j];
         }
 
     for (int h = 0; h < Nirrep; ++h)
@@ -291,12 +275,12 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     double **B = B_shared->pointer();
 
     // un mass-weighted below
-    //for (int i=0; i<dim; ++i)
-    //for (int a=0; a<Natom; ++a)
-    //for (int xyz=0; xyz<3; ++xyz)
-    //B[i][3*a+xyz] *= sqrt(mol->mass(a, false));
+    // for (int i=0; i<dim; ++i)
+    // for (int a=0; a<Natom; ++a)
+    // for (int xyz=0; xyz<3; ++xyz)
+    // B[i][3*a+xyz] *= sqrt(mol->mass(a, false));
 
-//  double **Hx = block_matrix(3*Natom, 3*Natom);
+    //  double **Hx = block_matrix(3*Natom, 3*Natom);
     auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
     double **Hx = mat_Hx->pointer();
 
@@ -304,12 +288,10 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
     for (int i = 0; i < dim; ++i)
         for (int j = 0; j < dim; ++j)
             for (int x1 = 0; x1 < 3 * Natom; ++x1)
-                for (int x2 = 0; x2 <= x1; ++x2)
-                    Hx[x1][x2] += B[i][x1] * H[i][j] * B[j][x2];
+                for (int x2 = 0; x2 <= x1; ++x2) Hx[x1][x2] += B[i][x1] * H[i][j] * B[j][x2];
 
     for (int x1 = 0; x1 < 3 * Natom; ++x1)
-        for (int x2 = 0; x2 < x1; ++x2)
-            Hx[x2][x1] = Hx[x1][x2];
+        for (int x2 = 0; x2 < x1; ++x2) Hx[x2][x1] = Hx[x1][x2];
 
     free_block(H);
 
@@ -432,26 +414,26 @@ SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
         mat_print(Hx, 3 * Natom, 3 * Natom, "outfile");
     }
 
-//    // Print a hessian file
-//    if (options.get_bool("HESSIAN_WRITE")) {
-//        std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-//        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
-//        //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-//        printer->Printf("%5d", Natom);
-//        printer->Printf("%5d\n", 6 * Natom);
-//
-//        int cnt = -1;
-//        for (int i = 0; i < 3 * Natom; ++i) {
-//            for (int j = 0; j < 3 * Natom; ++j) {
-//                printer->Printf("%20.10lf", Hx[i][j]);
-//                if (++cnt == 2) {
-//                    printer->Printf("\n");
-//                    cnt = -1;
-//                }
-//            }
-//        }
-//    }
-//  free_block(Hx);
+    //    // Print a hessian file
+    //    if (options.get_bool("HESSIAN_WRITE")) {
+    //        std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
+    //        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
+    //        //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+    //        printer->Printf("%5d", Natom);
+    //        printer->Printf("%5d\n", 6 * Natom);
+    //
+    //        int cnt = -1;
+    //        for (int i = 0; i < 3 * Natom; ++i) {
+    //            for (int j = 0; j < 3 * Natom; ++j) {
+    //                printer->Printf("%20.10lf", Hx[i][j]);
+    //                if (++cnt == 2) {
+    //                    printer->Printf("\n");
+    //                    cnt = -1;
+    //                }
+    //            }
+    //        }
+    //    }
+    //  free_block(Hx);
 
     if (print_lvl) {
         outfile->Printf("\n-------------------------------------------------------------\n");
@@ -469,28 +451,25 @@ It is assumed that ii >= jj .
 For diagonal displacements disp_j=0 and jj is arbitrary/meaningless.
 */
 
-int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, int pts,
-        int irrep, int ii, int jj, int disp_i, int disp_j)
-{
-
+int iE0(std::vector<int> &Ndisp_pi, std::vector<std::vector<int>> &salcs_pi, int pts, int irrep, int ii, int jj,
+        int disp_i, int disp_j) {
     int ndiag_this_irrep;
     int rval = -1;
 
     // compute starting location of displacements for this irrep
     int start_irr = 0;
-    for (int h = 0; h < irrep; ++h)
-        start_irr += Ndisp_pi[h];
+    for (int h = 0; h < irrep; ++h) start_irr += Ndisp_pi[h];
 
     if (pts == 3) {
         if (disp_j == 0) {  // diagonal; all diagonals at beginning of irrep
             if (irrep == 0) {
                 if (disp_i == -1)
-                    rval = 2 * ii;   // f(-1, 0)
+                    rval = 2 * ii;  // f(-1, 0)
                 else if (disp_i == +1)
-                    rval = 2 * ii + 1; // f(+1, 0)
+                    rval = 2 * ii + 1;  // f(+1, 0)
             } else if (disp_i == -1 || disp_i == +1)
-                rval = start_irr + ii;     // f(+1,0) = f(-1, 0)
-        } else {    // off_diagonal
+                rval = start_irr + ii;  // f(+1,0) = f(-1, 0)
+        } else {                        // off_diagonal
             if (irrep == 0)
                 ndiag_this_irrep = 2 * salcs_pi[0].size();
             else
@@ -498,21 +477,29 @@ int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, in
 
             int ij_pair = 2 * ((ii * (ii - 1)) / 2 + jj);
 
-            if (disp_i == +1 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair;
-            else if (disp_i == -1 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair + 1;
+            if (disp_i == +1 && disp_j == +1)
+                rval = start_irr + ndiag_this_irrep + ij_pair;
+            else if (disp_i == -1 && disp_j == -1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 1;
         }
     } else if (pts == 5) {
-        if (disp_j == 0) {   // diagonal
+        if (disp_j == 0) {  // diagonal
             if (irrep == 0) {
-                if (disp_i == -2) rval = start_irr + 4 * ii;     // f(-2, 0)
-                else if (disp_i == -1) rval = start_irr + 4 * ii + 1;   // f(-1, 0)
-                else if (disp_i == 1) rval = start_irr + 4 * ii + 2;   // f(+1, 0)
-                else if (disp_i == 2) rval = start_irr + 4 * ii + 3;   // f(+2, 0)
-            } else { // irrep != 0
-                if (disp_i == -2 || disp_i == 2) rval = start_irr + 2 * ii;     // f(-2, 0)
-                else if (disp_i == -1 || disp_i == 1) rval = start_irr + 2 * ii + 1;   // f(-1, 0)
+                if (disp_i == -2)
+                    rval = start_irr + 4 * ii;  // f(-2, 0)
+                else if (disp_i == -1)
+                    rval = start_irr + 4 * ii + 1;  // f(-1, 0)
+                else if (disp_i == 1)
+                    rval = start_irr + 4 * ii + 2;  // f(+1, 0)
+                else if (disp_i == 2)
+                    rval = start_irr + 4 * ii + 3;  // f(+2, 0)
+            } else {                                // irrep != 0
+                if (disp_i == -2 || disp_i == 2)
+                    rval = start_irr + 2 * ii;  // f(-2, 0)
+                else if (disp_i == -1 || disp_i == 1)
+                    rval = start_irr + 2 * ii + 1;  // f(-1, 0)
             }
-        } else {   //off-diagonal
+        } else {  // off-diagonal
             if (irrep == 0)
                 ndiag_this_irrep = 4 * salcs_pi[0].size();
             else
@@ -520,14 +507,22 @@ int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, in
 
             int ij_pair = 8 * ((ii * (ii - 1)) / 2 + jj);
 
-            if (disp_i == -1 && disp_j == -2) rval = start_irr + ndiag_this_irrep + ij_pair;
-            else if (disp_i == -2 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair + 1;
-            else if (disp_i == -1 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair + 2;
-            else if (disp_i == +1 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair + 3;
-            else if (disp_i == -1 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair + 4;
-            else if (disp_i == +1 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair + 5;
-            else if (disp_i == +2 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair + 6;
-            else if (disp_i == +1 && disp_j == +2) rval = start_irr + ndiag_this_irrep + ij_pair + 7;
+            if (disp_i == -1 && disp_j == -2)
+                rval = start_irr + ndiag_this_irrep + ij_pair;
+            else if (disp_i == -2 && disp_j == -1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 1;
+            else if (disp_i == -1 && disp_j == -1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 2;
+            else if (disp_i == +1 && disp_j == -1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 3;
+            else if (disp_i == -1 && disp_j == +1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 4;
+            else if (disp_i == +1 && disp_j == +1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 5;
+            else if (disp_i == +2 && disp_j == +1)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 6;
+            else if (disp_i == +1 && disp_j == +2)
+                rval = start_irr + ndiag_this_irrep + ij_pair + 7;
         }
     }
 
@@ -535,9 +530,9 @@ int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, in
         outfile->Printf("Problem finding displaced energy.\n");
         throw PsiException("FINDIF: Problem finding displaced energy.", __FILE__, __LINE__);
     }
-    //outfile->Printf("irrep: %d, ii: %d, jj: %d, disp_i: %d, disp_j: %d, rval: %d \n",
+    // outfile->Printf("irrep: %d, ii: %d, jj: %d, disp_i: %d, disp_j: %d, rval: %d \n",
     //  irrep, ii, jj, disp_i, disp_j, rval);
     return rval;
 }
-}
-}
+}  // namespace findif
+}  // namespace psi

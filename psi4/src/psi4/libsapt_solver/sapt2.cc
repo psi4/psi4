@@ -435,7 +435,7 @@ void SAPT2::df_integrals() {
 #endif
     int rank = 0;
 
-    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
+    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthreads];
     const double **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
@@ -1050,5 +1050,5 @@ void SAPT2::natural_orbitalify_df_ints() {
     free_block(C_p_SS);
     free_block(D_p_SS);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

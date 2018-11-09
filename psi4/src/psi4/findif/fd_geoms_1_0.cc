@@ -42,9 +42,7 @@
 namespace psi {
 namespace findif {
 
-std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &options)
-{
-
+std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &options) {
     int print_lvl = options.get_int("PRINT");
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
@@ -57,8 +55,7 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
         outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
     }
 
-    if (pts != 3 && pts != 5)
-        throw PsiException("FINDIF: Invalid number of points!", __FILE__, __LINE__);
+    if (pts != 3 && pts != 5) throw PsiException("FINDIF: Invalid number of points!", __FILE__, __LINE__);
 
     int Natom = mol->natom();
 
@@ -73,8 +70,7 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     int Ndisp = 1;
     if (pts == 3) {
         Ndisp += 2 * Nsalc;
-    }
-    else if (pts == 5) {
+    } else if (pts == 5) {
         Ndisp += 4 * Nsalc;
     }
 
@@ -86,8 +82,7 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     }
 
     if (options.get_int("PRINT") > 1)
-        for (int i = 0; i < cdsalc.ncd(); ++i)
-            cdsalc[i].print();
+        for (int i = 0; i < cdsalc.ncd(); ++i) cdsalc[i].print();
 
     // Get reference geometry
     Matrix ref_geom_temp = mol->geometry();
@@ -100,7 +95,6 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
 
     if (pts == 3) {
         for (int i = 0; i < Nsalc; ++i) {
-
             // - displacement
             SharedMatrix geom_m(ref_geom->clone());
             geom_m->set_name("Displacement - SALC #" + to_string(i + 1));
@@ -112,12 +106,10 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
             geom_p->set_name("Displacement + SALC #" + to_string(i + 1));
             displace_cart(mol, geom_p, cdsalc, i, +1, disp_size);
             disp_geoms.push_back(geom_p);
-
         }
-    } // pts 3
+    }  // pts 3
     else if (pts == 5) {
         for (int i = 0; i < Nsalc; ++i) {
-
             SharedMatrix geom_m2(ref_geom->clone());
             geom_m2->set_name("Displacement - SALC #" + to_string(i + 1) + " * 2");
             displace_cart(mol, geom_m2, cdsalc, i, -2, disp_size);
@@ -137,9 +129,8 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
             geom_p2->set_name("Displacement + SALC #" + to_string(i + 1) + " * 2");
             displace_cart(mol, geom_p2, cdsalc, i, +2, disp_size);
             disp_geoms.push_back(geom_p2);
-
         }
-    } // pts 3
+    }  // pts 3
 
     // put reference geometry list in list
     disp_geoms.push_back(ref_geom);
@@ -151,5 +142,5 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     return disp_geoms;
 }
 
-}
-}
+}  // namespace findif
+}  // namespace psi

@@ -43,9 +43,9 @@
 namespace opt {
 
 // Functions to all printing in either psi or qchem.
-void oprintf(std::string psi_fp, const FILE *qc_fp, const char* format,...);
+void oprintf(std::string psi_fp, const FILE *qc_fp, const char *format, ...);
 
-void oprintf_out(const char* format,...);
+void oprintf_out(const char *format, ...);
 
 void oprint_matrix(const std::string psi_fp, const FILE *qc_fp, double **A, const int x, const int y);
 
@@ -61,6 +61,6 @@ void oprint_array_out_precise(double *A, const int x);
 
 void offlush_out(void);
 
-}
+}  // namespace opt
 
 #endif

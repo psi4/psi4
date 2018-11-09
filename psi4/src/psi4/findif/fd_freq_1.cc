@@ -48,8 +48,8 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
-                       const py::list &grad_list, int freq_irrep_only ) {
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options, const py::list &grad_list,
+                       int freq_irrep_only) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
     int print_lvl = options.get_int("PRINT");
@@ -62,17 +62,14 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     int Nirrep = salc_list.nirrep();
 
     // *** Build vectors that list indices of salcs for each irrep
-    std::vector <std::vector<int>> salcs_pi;
-    for (int h = 0; h < Nirrep; ++h)
-        salcs_pi.push_back(std::vector<int>());
-    for (int i = 0; i < salc_list.ncd(); ++i)
-        salcs_pi[salc_list[i].irrep()].push_back(i);
+    std::vector<std::vector<int>> salcs_pi;
+    for (int h = 0; h < Nirrep; ++h) salcs_pi.push_back(std::vector<int>());
+    for (int i = 0; i < salc_list.ncd(); ++i) salcs_pi[salc_list[i].irrep()].push_back(i);
 
     // Now remove irreps that are not requested
     if (freq_irrep_only != -1) {
         for (int h = 0; h < Nirrep; ++h)
-            if (h != freq_irrep_only)
-                salcs_pi[h].clear();
+            if (h != freq_irrep_only) salcs_pi[h].clear();
     }
 
     // Determine total num of salcs and where each irrep starts
@@ -100,8 +97,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
             Ndisp_pi[h] = 2 * salcs_pi[h].size();
     }
     int Ndisp_all = 0;
-    for (int h = 0; h < Nirrep; ++h)
-        Ndisp_all += Ndisp_pi[h];
+    for (int h = 0; h < Nirrep; ++h) Ndisp_all += Ndisp_pi[h];
 
     if (print_lvl) {
         outfile->Printf("\n-------------------------------------------------------------\n\n");
@@ -115,14 +111,14 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     // We are passing in the reference geometry at the moment, though we are not using
     // its gradient.  Could be removed later.
 
-    if ((int) len(grad_list) != Ndisp_all + 1) { // last gradient is the reference, non-displaced one
-        outfile->Printf("gradients.size() is %d\n", (int) len(grad_list));
+    if ((int)len(grad_list) != Ndisp_all + 1) {  // last gradient is the reference, non-displaced one
+        outfile->Printf("gradients.size() is %d\n", (int)len(grad_list));
         outfile->Printf("Ndisp_all is %d\n", Ndisp_all);
         throw PsiException("FINDIF: Incorrect number of gradients passed in!", __FILE__, __LINE__);
     }
 
     // *** Generate complete list of gradients from unique ones.
-    if (print_lvl){
+    if (print_lvl) {
         outfile->Printf("  Generating complete list of displacements from unique ones.\n\n");
     }
 
@@ -136,30 +132,27 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         outfile->Printf("\tThe atom map:\n");
         for (int i = 0; i < Natom; ++i) {
             outfile->Printf("\t %d : ", i + 1);
-            for (int j = 0; j < order; ++j)
-                outfile->Printf("%4d", atom_map[i][j] + 1);
+            for (int j = 0; j < order; ++j) outfile->Printf("%4d", atom_map[i][j] + 1);
             outfile->Printf("\n");
         }
         outfile->Printf("\n");
     }
 
     // Extract the symmetric gradients.
-    std::vector <SharedMatrix> gradients;
-    for (int i = 0; i < Ndisp_pi[0]; ++i)
-        gradients.push_back(grad_list[i].cast<SharedMatrix>());
+    std::vector<SharedMatrix> gradients;
+    for (int i = 0; i < Ndisp_pi[0]; ++i) gradients.push_back(grad_list[i].cast<SharedMatrix>());
 
     if (print_lvl >= 3) {
         outfile->Printf("\tSymmetric gradients\n");
-        for (int i = 0; i < gradients.size(); ++i)
-            gradients[i]->print();
+        for (int i = 0; i < gradients.size(); ++i) gradients[i]->print();
     }
 
     // Extract the asymmetric gradients, one at a time and determine the gradient of the
     // non-computed displacements.
 
-    int disp_cnt = Ndisp_pi[0]; // step through original list of gradients for non-symmetric ones
+    int disp_cnt = Ndisp_pi[0];  // step through original list of gradients for non-symmetric ones
 
-    for (int h = 1; h < Nirrep; ++h) { // loop over asymmetric irreps
+    for (int h = 1; h < Nirrep; ++h) {  // loop over asymmetric irreps
 
         if (Ndisp_pi[h] == 0) continue;
 
@@ -167,16 +160,14 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
 
         if (print_lvl >= 3) {
             outfile->Printf("Characters for irrep %d\n", h);
-            for (int i = 0; i < order; ++i)
-                outfile->Printf(" %5.1lf", gamma.character(i));
+            for (int i = 0; i < order; ++i) outfile->Printf(" %5.1lf", gamma.character(i));
             outfile->Printf("\n");
         }
 
         // Find operation that takes + to - displacement.
         int op_disp;
         for (op_disp = 0; op_disp < order; ++op_disp)
-            if (gamma.character(op_disp) == -1)
-                break;
+            if (gamma.character(op_disp) == -1) break;
         if (print_lvl) {
             outfile->Printf("\tOperation %d takes plus displacements of irrep %s to minus ones.\n", op_disp + 1,
                             gamma.symbol());
@@ -187,18 +178,17 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
 
         // Loop over coordinates of that irrep.
         for (int coord = 0; coord < salcs_pi[h].size(); ++coord) {
-
             // Read the - displacement and generate the +
             gradients.push_back(grad_list[disp_cnt].cast<SharedMatrix>());
 
             auto new_grad = std::make_shared<Matrix>(Natom, 3);
 
             for (int atom = 0; atom < Natom; ++atom) {
-                int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
+                int atom2 = atom_map[atom][op_disp];  // how this atom transforms under this op.
 
-                for (int xyz2 = 0; xyz2 < 3; ++xyz2) { // target xyz
+                for (int xyz2 = 0; xyz2 < 3; ++xyz2) {  // target xyz
                     double tval = 0.0;
-                    for (int xyz = 0; xyz < 3; ++xyz)   // original xyz
+                    for (int xyz = 0; xyz < 3; ++xyz)  // original xyz
                         tval += so(xyz2, xyz) * gradients.back()->get(atom, xyz);
                     new_grad->set(atom2, xyz2, tval);
                 }
@@ -212,22 +202,22 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
                 auto new_grad2 = std::make_shared<Matrix>(Natom, 3);
 
                 for (int atom = 0; atom < Natom; ++atom) {
-                    int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
+                    int atom2 = atom_map[atom][op_disp];  // how this atom transforms under this op.
 
-                    for (int xyz2 = 0; xyz2 < 3; ++xyz2) { // target xyz
+                    for (int xyz2 = 0; xyz2 < 3; ++xyz2) {  // target xyz
                         double tval = 0.0;
-                        for (int xyz = 0; xyz < 3; ++xyz)   // original xyz
+                        for (int xyz = 0; xyz < 3; ++xyz)  // original xyz
                             tval += so(xyz2, xyz) * gradients.back()->get(atom, xyz);
                         new_grad2->set(atom2, xyz2, tval);
                     }
                 }
                 ++disp_cnt;
 
-                gradients.push_back(new_grad2); // put +1 gradient in list
-            } // end extra gradient for 5-pt. formula
+                gradients.push_back(new_grad2);  // put +1 gradient in list
+            }                                    // end extra gradient for 5-pt. formula
 
-            gradients.push_back(new_grad); // put +1 (3pt.) or +2 (5pt.) gradient in list
-        } // end coord
+            gradients.push_back(new_grad);  // put +1 (3pt.) or +2 (5pt.) gradient in list
+        }                                   // end coord
     }
 
     delete_atom_map(atom_map, mol);
@@ -252,21 +242,18 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     for (int i = 0; i < Ndisp_all; ++i) {
         double **disp = gradients[i]->pointer();
         for (int a = 0; a < Natom; ++a)
-            for (int xyz = 0; xyz < 3; ++xyz)
-                disp[a][xyz] /= sqrt(mol->mass(a, false));
+            for (int xyz = 0; xyz < 3; ++xyz) disp[a][xyz] /= sqrt(mol->mass(a, false));
     }
 
     if (print_lvl >= 3) {
         outfile->Printf("\tAll mass-weighted gradients\n");
-        for (int i = 0; i < gradients.size(); ++i)
-            gradients[i]->print();
+        for (int i = 0; i < gradients.size(); ++i) gradients[i]->print();
     }
 
     std::vector<std::string> irrep_lbls = mol->irrep_labels();
     double **H_irr[8];
 
     for (int h = 0; h < Nirrep; ++h) {
-
         if (salcs_pi[h].size() == 0) continue;
 
         // To store gradients in SALC displacement coordinates.
@@ -283,8 +270,8 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
             for (int salc = 0; salc < salcs_pi[h].size(); ++salc)
                 for (int a = 0; a < Natom; ++a)
                     for (int xyz = 0; xyz < 3; ++xyz)
-                        grads_adapted[disp][salc] += B_irr[salc][3 * a + xyz] *
-                                                     gradients[disp_irr_start[h] + disp]->get(a, xyz);
+                        grads_adapted[disp][salc] +=
+                            B_irr[salc][3 * a + xyz] * gradients[disp_irr_start[h] + disp]->get(a, xyz);
 
         if (print_lvl >= 3) {
             outfile->Printf("Gradients in B-matrix coordinates\n");
@@ -314,20 +301,19 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         //** Construct force constant matrix from finite differences of forces
         H_irr[h] = init_matrix(salcs_pi[h].size(), salcs_pi[h].size());
 
-        if (pts == 3) { // Hij = fj(i+1) - fj(i-1) / (2h)
+        if (pts == 3) {  // Hij = fj(i+1) - fj(i-1) / (2h)
 
             for (int i = 0; i < salcs_pi[h].size(); ++i)
                 for (int j = 0; j < salcs_pi[h].size(); ++j)
                     H_irr[h][i][j] = (grads_adapted[2 * i + 1][j] - grads_adapted[2 * i][j]) / (2.0 * disp_size);
 
-        } else if (pts == 5) { // fj(i-2) - 8fj(i-1) + 8fj(i+1) - fj(i+2) / (12h)
+        } else if (pts == 5) {  // fj(i-2) - 8fj(i-1) + 8fj(i+1) - fj(i+2) / (12h)
 
             for (int i = 0; i < salcs_pi[h].size(); ++i)
                 for (int j = 0; j < salcs_pi[h].size(); ++j)
-                    H_irr[h][i][j] = (1.0 * grads_adapted[4 * i][j] - 8.0 * grads_adapted[4 * i + 1][j]
-                                      + 8.0 * grads_adapted[4 * i + 2][j] - 1.0 * grads_adapted[4 * i + 3][j])
-                                     / (12.0 * disp_size);
-
+                    H_irr[h][i][j] = (1.0 * grads_adapted[4 * i][j] - 8.0 * grads_adapted[4 * i + 1][j] +
+                                      8.0 * grads_adapted[4 * i + 2][j] - 1.0 * grads_adapted[4 * i + 3][j]) /
+                                     (12.0 * disp_size);
         }
 
         if (print_lvl >= 3) {
@@ -346,12 +332,10 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         // Bu^1/2 * evects -> normal mode
         for (int i = 0; i < dim; ++i)
             for (int a = 0; a < Natom; ++a)
-                for (int xyz = 0; xyz < 3; ++xyz)
-                    B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a, false));
+                for (int xyz = 0; xyz < 3; ++xyz) B_irr[i][3 * a + xyz] /= sqrt(mol->mass(a, false));
 
         double **normal_irr = block_matrix(3 * Natom, dim);
-        C_DGEMM('t', 'n', 3 * Natom, dim, dim, 1.0, B_irr[0], 3 * Natom, evects[0],
-                dim, 0, normal_irr[0], dim);
+        C_DGEMM('t', 'n', 3 * Natom, dim, dim, 1.0, B_irr[0], 3 * Natom, evects[0], dim, 0, normal_irr[0], dim);
 
         if (print_lvl >= 2) {
             outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h].c_str());
@@ -363,15 +347,13 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         free_block(normal_irr);
     }
 
-
     // Build complete hessian for transformation to cartesians
     double **H = block_matrix(Nsalc_all, Nsalc_all);
 
     for (int h = 0; h < Nirrep; ++h)
         for (int i = 0; i < salcs_pi[h].size(); ++i) {
             int start = salc_irr_start[h];
-            for (int j = 0; j <= i; ++j)
-                H[start + i][start + j] = H[start + j][start + i] = H_irr[h][i][j];
+            for (int j = 0; j <= i; ++j) H[start + i][start + j] = H[start + j][start + i] = H_irr[h][i][j];
         }
 
     for (int h = 0; h < Nirrep; ++h)
@@ -384,8 +366,8 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     }
 
     // Build Bu^-1/2 matrix for the whole Hessian
-    //SharedMatrix B_shared = salc_list.matrix();
-    //double **B = B_shared->pointer();
+    // SharedMatrix B_shared = salc_list.matrix();
+    // double **B = B_shared->pointer();
 
     // double **Hx = block_matrix(3*Natom, 3*Natom);
     auto mat_Hx = std::make_shared<Matrix>("Hessian", 3 * Natom, 3 * Natom);
@@ -404,8 +386,7 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     }
 
     for (int x1 = 0; x1 < 3 * Natom; ++x1)
-        for (int x2 = 0; x2 < x1; ++x2)
-            Hx[x2][x1] = Hx[x1][x2];
+        for (int x2 = 0; x2 < x1; ++x2) Hx[x2][x1] = Hx[x1][x2];
 
     free_block(H);
 
@@ -424,26 +405,26 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
         mat_print(Hx, 3 * Natom, 3 * Natom, "outfile");
     }
 
-//    // Print a hessian file
-//    if (options.get_bool("HESSIAN_WRITE")) {
-//        std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-//        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
-//        //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-//        printer->Printf("%5d", Natom);
-//        printer->Printf("%5d\n", 6 * Natom);
-//
-//        int cnt = -1;
-//        for (int i = 0; i < 3 * Natom; ++i) {
-//            for (int j = 0; j < 3 * Natom; ++j) {
-//                printer->Printf("%20.10lf", Hx[i][j]);
-//                if (++cnt == 2) {
-//                    printer->Printf("\n");
-//                    cnt = -1;
-//                }
-//            }
-//        }
-//    }
-//  free_block(Hx);
+    //    // Print a hessian file
+    //    if (options.get_bool("HESSIAN_WRITE")) {
+    //        std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
+    //        auto printer = std::make_shared<PsiOutStream>(hess_fname, std::ostream::trunc);
+    //        //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+    //        printer->Printf("%5d", Natom);
+    //        printer->Printf("%5d\n", 6 * Natom);
+    //
+    //        int cnt = -1;
+    //        for (int i = 0; i < 3 * Natom; ++i) {
+    //            for (int j = 0; j < 3 * Natom; ++j) {
+    //                printer->Printf("%20.10lf", Hx[i][j]);
+    //                if (++cnt == 2) {
+    //                    printer->Printf("\n");
+    //                    cnt = -1;
+    //                }
+    //            }
+    //        }
+    //    }
+    //  free_block(Hx);
 
     if (print_lvl) {
         outfile->Printf("\n-------------------------------------------------------------\n");
@@ -452,5 +433,5 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule>mol, Options &options,
     return mat_Hx;
 }
 
-}
-}
+}  // namespace findif
+}  // namespace psi

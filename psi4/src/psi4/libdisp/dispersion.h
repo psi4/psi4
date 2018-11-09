@@ -30,11 +30,11 @@
 #define dispersion_h
 
 /**********************************************************
-* dispersion.h: declarations -D(1-3) for KS-DFT
-* Robert Parrish, robparrish@gmail.com
-* 09/01/2010
-*
-***********************************************************/
+ * dispersion.h: declarations -D(1-3) for KS-DFT
+ * Robert Parrish, robparrish@gmail.com
+ * 09/01/2010
+ *
+ ***********************************************************/
 #include "psi4/psi4-dec.h"
 #include <string>
 
@@ -43,15 +43,13 @@ namespace psi {
 class Molecule;
 
 class Dispersion {
-
-public:
+   public:
     enum C6_type { C6_arit, C6_geom };
     enum C8_type { C8_geom };
     enum Damping_type { Damping_D1, Damping_CHG, Damping_TT };
     enum Spherical_type { Spherical_Das, Spherical_zero };
 
-protected:
-
+   protected:
     std::string name_;
     std::string description_;
     std::string citation_;
@@ -74,22 +72,21 @@ protected:
     const double *A_;
     const double *Beta_;
 
-public:
-
+   public:
     Dispersion();
     virtual ~Dispersion();
 
-    static std::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0,
-        double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
+    static std::shared_ptr<Dispersion> build(const std::string &type, double s6 = 0.0, double p1 = 0.0, double p2 = 0.0,
+                                             double p3 = 0.0);
 
     std::string name() const { return name_; }
     std::string description() const { return description_; }
     std::string citation() const { return citation_; }
     std::string bibtex() const { return bibtex_; }
-    void set_name(const std::string & name) { name_ = name; }
-    void set_description(const std::string & description) { description_ = description; }
-    void set_citation(const std::string & citation) { citation_ = citation; }
-    void set_bibtex(const std::string & bibtex) { bibtex_ = bibtex; }
+    void set_name(const std::string &name) { name_ = name; }
+    void set_description(const std::string &description) { description_ = description; }
+    void set_citation(const std::string &citation) { citation_ = citation; }
+    void set_bibtex(const std::string &bibtex) { bibtex_ = bibtex; }
 
     std::shared_ptr<Vector> set_atom_list(std::shared_ptr<Molecule> mol);
 
@@ -119,6 +116,6 @@ public:
     void py_print() const { print("outfile", 1); }
 };
 
-}
+}  // namespace psi
 
 #endif

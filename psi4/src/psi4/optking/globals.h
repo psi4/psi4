@@ -33,14 +33,14 @@
 #ifndef _opt_globals_h_
 #define _opt_globals_h_
 
-const char* getIntcoFileName();
-#define FILENAME_INTCO_DAT    getIntcoFileName()
+const char *getIntcoFileName();
+#define FILENAME_INTCO_DAT getIntcoFileName()
 
 #include <cstdio>
 
 #include "package.h"
 #if defined(OPTKING_PACKAGE_PSI)
-  #include "psi4/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #endif
 
 #ifdef EXTERN
@@ -51,34 +51,33 @@ const char* getIntcoFileName();
 #endif
 
 namespace opt {
-  EXTERN std::string psi_outfile;
-  EXTERN FILE *qc_outfile;
+EXTERN std::string psi_outfile;
+EXTERN FILE *qc_outfile;
 
-  int read_natoms(void);
-}
-
+int read_natoms(void);
+}  // namespace opt
 
 // symmetric matrix offset lookup array
 #define IOFF_MAX 32641
 namespace opt {
-  EXTERN int *ioff;
+EXTERN int *ioff;
 }
 
 // struct holding options/parameters for optking execution
 #include "opt_params.h"
 namespace opt {
-  EXTERN OPT_PARAMS Opt_params;
+EXTERN OPT_PARAMS Opt_params;
 }
 
 // class for storage and manipulation of optimization step data
 #include "opt_data.h"
 namespace opt {
-  EXTERN OPT_DATA *p_Opt_data;
+EXTERN OPT_DATA *p_Opt_data;
 }
 
 #include "IRC_data.h"
 namespace opt {
-  EXTERN IRC_DATA *p_irc_data;
+EXTERN IRC_DATA *p_irc_data;
 }
 
 #include "opt_except.h"

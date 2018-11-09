@@ -60,7 +60,7 @@ void free_bool_matrix(bool **A);
 double **unit_matrix(long int m);
 void unit_matrix(double **A, long int m);
 
-}
+}  // namespace opt
 
 // C versions for BLAS/LAPACK C functions in global namespace
 extern "C" {
@@ -72,7 +72,6 @@ double **opt_init_matrix(long int m, long int n);
 void opt_free_matrix(double **A);
 
 void opt_matrix_copy(double **A, double **B, long int m, long int n);
-
 }
 
 #endif

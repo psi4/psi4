@@ -39,20 +39,18 @@
 namespace opt {
 
 class BEND : public SIMPLE_COORDINATE {
-
     int _bend_type;  // 0 = ordinary bend
                      // 1 = linear bend - normal
                      // 2 = linear bend - orthogonal complement
 
-    mutable double x[3];       // angle bisector for bend
-    mutable double w[3];       // orthogonal axis for bend
-    bool axes_fixed; // have w and x been fixed for displacements
+    mutable double x[3];  // angle bisector for bend
+    mutable double w[3];  // orthogonal axis for bend
+    bool axes_fixed;      // have w and x been fixed for displacements
 
-  public:
+   public:
+    BEND(int A_in, int B_in, int C_in, bool freeze_in = false);
 
-    BEND(int A_in, int B_in, int C_in, bool freeze_in=false);
-
-    ~BEND() { ; } //calls ~SIMPLE_COORDINATE()
+    ~BEND() { ; }  // calls ~SIMPLE_COORDINATE()
 
     double value(GeomType geom) const;
 
@@ -62,28 +60,27 @@ class BEND : public SIMPLE_COORDINATE {
     // compute and return array of second derivative (B' matrix elements)
     double **Dq2Dx2(GeomType geom) const;
 
-    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
+    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset = 0) const;
+    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset = 0) const;
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
-    void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
-      const double dq, const double new_q, int atom_offset=0) const;
-    bool operator==(const SIMPLE_COORDINATE & s2) const;
-    std::string get_definition_string(int atom_offset=0) const;
+    void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q, const double dq,
+                    const double new_q, int atom_offset = 0) const;
+    bool operator==(const SIMPLE_COORDINATE &s2) const;
+    std::string get_definition_string(int atom_offset = 0) const;
 
-    void make_lb_normal(void)     { _bend_type = 1; }
+    void make_lb_normal(void) { _bend_type = 1; }
     void make_lb_complement(void) { _bend_type = 2; }
 
     bool is_linear_bend(void) const { return ((_bend_type == 1) || (_bend_type == 2)); }
-    bool is_lb_normal(void) const     { return (_bend_type == 1); }
+    bool is_lb_normal(void) const { return (_bend_type == 1); }
     bool is_lb_complement(void) const { return (_bend_type == 2); }
 
-    int  g_bend_type(void) const { return _bend_type; }
+    int g_bend_type(void) const { return _bend_type; }
     void compute_axes(GeomType geom) const;
-    void fix_axes(void)   { axes_fixed = true; }
+    void fix_axes(void) { axes_fixed = true; }
     void unfix_axes(void) { axes_fixed = false; }
-
 };
 
-}
+}  // namespace opt
 
 #endif

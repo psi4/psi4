@@ -30,33 +30,32 @@
 #define _psi_src_lib_libmints_overlap_h_
 
 #include <vector>
-#include "psi4/libmints/onebody.h" // needed because we derive from OneBodyAOInt
+#include "psi4/libmints/onebody.h"  // needed because we derive from OneBodyAOInt
 #include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
-    class BasisSet;
-    class GaussianShell;
-    class SphericalTransform;
+class BasisSet;
+class GaussianShell;
+class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class OverlapInt
  *  \brief This class computes overlap integrals and soon overlap integral derivatives.
  *  Use an IntegralFactory to create this object.
  */
-class OverlapInt : public OneBodyAOInt
-{
+class OverlapInt : public OneBodyAOInt {
     /// Generic Obara Saika recursion object.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     /// Computes the overlap between a given shell pair.
-    void compute_pair(const GaussianShell& , const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&);
     void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
     void compute_pair_deriv2(const GaussianShell&, const GaussianShell&);
 
-public:
+   public:
     /// Constructor, it assumes you are not computing derivatives by default
-    OverlapInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
+    OverlapInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     virtual ~OverlapInt();
 
     /// Does the method provide first derivatives?
@@ -65,6 +64,6 @@ public:
     bool has_deriv2() { return true; }
 };
 
-}
+}  // namespace psi
 
 #endif

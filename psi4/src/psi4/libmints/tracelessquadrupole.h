@@ -30,11 +30,11 @@
 #define _psi_src_lib_libmints_tracelessquadrupole_h_
 
 #include <vector>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
 
@@ -49,17 +49,17 @@ class BasisSet;
  *  \brief Computes quadrupole integrals. At last check this may not be working.
  *  Use an IntegralFactory to create this object.
  */
-class TracelessQuadrupoleInt : public OneBodyAOInt
-{
+class TracelessQuadrupoleInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     // This the work horse function.
     void compute_pair(const GaussianShell&, const GaussianShell&);
-public:
+
+   public:
     TracelessQuadrupoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     virtual ~TracelessQuadrupoleInt();
 };
 
-}
+}  // namespace psi
 
 #endif

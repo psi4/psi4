@@ -45,9 +45,9 @@
 #include "globals.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
- #include <cmath>
-#elif defined (OPTKING_PACKAGE_QCHEM)
- #include "qcmath.h"
+#include <cmath>
+#elif defined(OPTKING_PACKAGE_QCHEM)
+#include "qcmath.h"
 #endif
 
 namespace opt {
@@ -78,88 +78,83 @@ namespace opt {
 //    DE_predicted  : DE_nr_energy or DE_rfo_energy (dq_norm, grad, hessian))
 
 // compute change in energy according to quadratic approximation
-inline double DE_nr_energy(double step, double grad, double hess) {
-  return (step * grad + 0.5 * step * step * hess);
-}
+inline double DE_nr_energy(double step, double grad, double hess) { return (step * grad + 0.5 * step * step * hess); }
 
 // compute change in energy according to RFO approximation
 inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
-  return (rfo_t * rfo_g + 0.5 * rfo_t * rfo_t * rfo_h)/(1 + rfo_t*rfo_t);
+    return (rfo_t * rfo_g + 0.5 * rfo_t * rfo_t * rfo_h) / (1 + rfo_t * rfo_t);
 }
 
 void MOLECULE::backstep(void) {
+    oprintf_out("\tRe-doing last optimization step - smaller this time.\n");
+    oprintf_out("\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps() + 1);
 
-  oprintf_out("\tRe-doing last optimization step - smaller this time.\n");
-  oprintf_out("\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);
+    // Erase data created when opt_data was initialized for this step.
+    p_Opt_data->erase_last_step();
 
-  // Erase data created when opt_data was initialized for this step.
-  p_Opt_data->erase_last_step();
+    p_Opt_data->decrement_iteration();
+    p_Opt_data->increment_consecutive_backsteps();
 
-  p_Opt_data->decrement_iteration();
-  p_Opt_data->increment_consecutive_backsteps();
+    int Nsteps = p_Opt_data->nsteps();
+    int Nintco = Ncoord();
 
-  int Nsteps = p_Opt_data->nsteps();
-  int Nintco = Ncoord();
+    // Put old cartesian geometry into molecule.
+    double *x = p_Opt_data->g_geom_const_pointer(Nsteps - 1);
+    set_geom_array(x);
 
-  // Put old cartesian geometry into molecule.
-  double *x = p_Opt_data->g_geom_const_pointer(Nsteps-1);
-  set_geom_array(x);
+    // Compute newly desired dq.
+    double *dq = p_Opt_data->g_dq_pointer(Nsteps - 1);
+    for (int i = 0; i < Nintco; ++i) dq[i] /= 2;
+    double dq_norm = sqrt(array_dot(dq, dq, Nintco));
 
-  // Compute newly desired dq.
-  double *dq = p_Opt_data->g_dq_pointer(Nsteps-1);
-  for (int i=0; i<Nintco; ++i)
-    dq[i] /= 2;
-  double dq_norm = sqrt(array_dot(dq, dq, Nintco));
+    oprintf_out("\tNorm of target step-size %10.5lf\n", dq_norm);
 
-  oprintf_out("\tNorm of target step-size %10.5lf\n", dq_norm);
+    double *rfo_u = p_Opt_data->g_rfo_eigenvector_pointer();
+    double dq_grad = p_Opt_data->g_dq_gradient(Nsteps - 1);
+    double dq_hess = p_Opt_data->g_dq_hessian(Nsteps - 1);
 
-  double *rfo_u  = p_Opt_data->g_rfo_eigenvector_pointer();
-  double dq_grad = p_Opt_data->g_dq_gradient(Nsteps-1);
-  double dq_hess = p_Opt_data->g_dq_hessian(Nsteps-1);
+    double DE_projected = 0.0;
+    if (Opt_params.step_type == OPT_PARAMS::NR)
+        DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
+    else if (Opt_params.step_type == OPT_PARAMS::RFO)
+        DE_projected = DE_rfo_energy(dq_norm, dq_grad, dq_hess);
+    else if (Opt_params.step_type == OPT_PARAMS::SD)
+        DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
 
-  double DE_projected = 0.0;
-  if (Opt_params.step_type == OPT_PARAMS::NR)
-    DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
-  else if (Opt_params.step_type == OPT_PARAMS::RFO)
-    DE_projected = DE_rfo_energy(dq_norm, dq_grad, dq_hess);
-  else if (Opt_params.step_type == OPT_PARAMS::SD)
-    DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
+    oprintf_out("\tNewly projected energy change : %20.10lf\n", DE_projected);
 
-  oprintf_out( "\tNewly projected energy change : %20.10lf\n", DE_projected);
+    double *fq = p_Opt_data->g_forces_pointer();
 
-  double *fq = p_Opt_data->g_forces_pointer();
-
-  // do displacements for each fragment separately
-  for (std::size_t f=0; f<fragments.size(); ++f) {
-    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
-      continue;
+    // do displacements for each fragment separately
+    for (std::size_t f = 0; f < fragments.size(); ++f) {
+        if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+            oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f + 1);
+            continue;
+        }
+        fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
     }
-    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
-  }
 
-  // do displacements for interfragment coordinates
-  for (std::size_t I=0; I<interfragments.size(); ++I) {
-    if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
-      continue;
+    // do displacements for interfragment coordinates
+    for (std::size_t I = 0; I < interfragments.size(); ++I) {
+        if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+            oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I + 1);
+            continue;
+        }
+        interfragments[I]->orient_fragment(&(dq[g_interfragment_coord_offset(I)]),
+                                           &(fq[g_interfragment_coord_offset(I)]));
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
-                                        &(fq[g_interfragment_coord_offset(I)]) );
-  }
 
 #if defined(OPTKING_PACKAGE_QCHEM)
-  // fix rotation matrix for rotations in QCHEM EFP code
-  for (std::size_t I=0; I<fb_fragments.size(); ++I)
-    fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
+    // fix rotation matrix for rotations in QCHEM EFP code
+    for (std::size_t I = 0; I < fb_fragments.size(); ++I)
+        fb_fragments[I]->displace(I, &(dq[g_fb_fragment_coord_offset(I)]));
 #endif
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+    symmetrize_geom();  // now symmetrize the geometry for next step
 
-  // save values in step data
-  p_Opt_data->save_step_info(DE_projected, rfo_u, dq_norm, dq_grad, dq_hess);
+    // save values in step data
+    p_Opt_data->save_step_info(DE_projected, rfo_u, dq_norm, dq_grad, dq_hess);
 
+}  // end take RFO step
 
-} // end take RFO step
-
-}
+}  // namespace opt

@@ -42,10 +42,7 @@
 namespace psi {
 namespace findif {
 
-std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options,
-                                          int freq_irrep_only)
-{
-
+std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options, int freq_irrep_only) {
     int print_lvl = options.get_int("PRINT");
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
@@ -59,8 +56,7 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
         outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
     }
 
-    if (pts != 3 && pts != 5)
-        throw PsiException("FINDIF: Invalid number of points!", __FILE__, __LINE__);
+    if (pts != 3 && pts != 5) throw PsiException("FINDIF: Invalid number of points!", __FILE__, __LINE__);
 
     // Get SALCS from libmints: all modes with rotations and translations projected out
     bool t_project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
@@ -79,17 +75,14 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
 
     // build vectors that list indices of salcs for each irrep
     std::vector<std::vector<int> > salcs_pi;
-    for (int h = 0; h < Nirrep; ++h)
-        salcs_pi.push_back(std::vector<int>());
-    for (int i = 0; i < Nsalc_all; ++i)
-        salcs_pi[salc_list[i].irrep()].push_back(i);
+    for (int h = 0; h < Nirrep; ++h) salcs_pi.push_back(std::vector<int>());
+    for (int i = 0; i < Nsalc_all; ++i) salcs_pi[salc_list[i].irrep()].push_back(i);
 
     if (print_lvl) {
         outfile->Printf("\tIndex of salcs per irrep:\n");
         for (int h = 0; h < Nirrep; ++h) {
             outfile->Printf("\t %d : ", h + 1);
-            for (int i = 0; i < salcs_pi[h].size(); ++i)
-                outfile->Printf(" %d ", salcs_pi[h][i]);
+            for (int i = 0; i < salcs_pi[h].size(); ++i) outfile->Printf(" %d ", salcs_pi[h][i]);
             outfile->Printf("\n");
         }
     }
@@ -98,8 +91,7 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
 
     if (print_lvl) {
         outfile->Printf("\tNumber of SALC's per irrep:\n");
-        for (int h = 0; h < Nirrep; ++h)
-            outfile->Printf("\t\t Irrep %d: %d\n", h + 1, (int) salcs_pi[h].size());
+        for (int h = 0; h < Nirrep; ++h) outfile->Printf("\t\t Irrep %d: %d\n", h + 1, (int)salcs_pi[h].size());
     }
 
     // Now remove irreps that are not requested
@@ -107,8 +99,7 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
         throw PsiException("FINDIF: Irrep value not in valid range.", __FILE__, __LINE__);
     else if (freq_irrep_only != -1) {
         for (int h = 0; h < Nirrep; ++h)
-            if (h != freq_irrep_only)
-                salcs_pi[h].clear();
+            if (h != freq_irrep_only) salcs_pi[h].clear();
     }
 
     // Determine number of displacements
@@ -129,8 +120,7 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
     }
 
     int Ndisp_all = 0;
-    for (int h = 0; h < Nirrep; ++h)
-        Ndisp_all += Ndisp_pi[h];
+    for (int h = 0; h < Nirrep; ++h) Ndisp_all += Ndisp_pi[h];
 
     if (print_lvl) {
         outfile->Printf("\tNumber of geometries (including reference) is %d.\n", Ndisp_all + 1);
@@ -154,12 +144,12 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
     // to be returned and converted into "matrix_vector" list in python
     std::vector<SharedMatrix> disp_geoms;
 
-    for (int h = 0; h < Nirrep; ++h) { // loop over irreps
+    for (int h = 0; h < Nirrep; ++h) {  // loop over irreps
 
-        for (int i = 0; i < salcs_pi[h].size(); ++i) { // loop over salcs of this irrep
-            int salc_i = salcs_pi[h][i];   // index in cdsalc of this salc
+        for (int i = 0; i < salcs_pi[h].size(); ++i) {  // loop over salcs of this irrep
+            int salc_i = salcs_pi[h][i];                // index in cdsalc of this salc
 
-            if (h == 0) { // symmetric displacements
+            if (h == 0) {  // symmetric displacements
                 if (pts == 3) {
                     SharedMatrix geom1(ref_geom->clone());
                     displace_cart(mol, geom1, salc_list, salc_i, -1, disp_size);
@@ -185,7 +175,7 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
                     displace_cart(mol, geom4, salc_list, salc_i, +2, disp_size);
                     disp_geoms.push_back(geom4);
                 }
-            } else { // h != 0; assymmetric displacements
+            } else {  // h != 0; assymmetric displacements
                 if (pts == 3) {
                     SharedMatrix geom1(ref_geom->clone());
                     displace_cart(mol, geom1, salc_list, salc_i, -1, disp_size);
@@ -200,9 +190,9 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
                     disp_geoms.push_back(geom2);
                 }
             }
-        } // i, salcs of this irrep
+        }  // i, salcs of this irrep
 
-    } // h, irreps
+    }  // h, irreps
 
     // put reference geometry list in list - though we don't need its gradient!
     disp_geoms.push_back(ref_geom);
@@ -220,5 +210,5 @@ std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options
     return disp_geoms;
 }
 
-}
-}
+}  // namespace findif
+}  // namespace psi

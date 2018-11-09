@@ -65,39 +65,26 @@ using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
 
-CorrelationTable::CorrelationTable():
-    n_(0),
-    ngamma_(0),
-    gamma_(0)
-{
-}
+CorrelationTable::CorrelationTable() : n_(0), ngamma_(0), gamma_(0) {}
 
 CorrelationTable::CorrelationTable(const std::shared_ptr<PointGroup>& group,
-    const std::shared_ptr<PointGroup>& subgroup):
-    n_(0),
-    ngamma_(0),
-    gamma_(0)
-{
-    int rc = initialize_table(group,subgroup);
+                                   const std::shared_ptr<PointGroup>& subgroup)
+    : n_(0), ngamma_(0), gamma_(0) {
+    int rc = initialize_table(group, subgroup);
     if (rc != 0) {
         // ExEnv::err0()
         //     << "ERROR: CorrelationTable: " << error(rc) << endl;
         // abort();
-        outfile->Printf( "CorrelationTable error: %s\n", error(rc));
+        outfile->Printf("CorrelationTable error: %s\n", error(rc));
         outfile->Printf("group %s -> subgroup %s\n", group->symbol().c_str(), subgroup->symbol().c_str());
         throw PSIEXCEPTION("ERROR: CorrelationTable");
     }
 }
 
-CorrelationTable::~CorrelationTable()
-{
-    clear();
-}
+CorrelationTable::~CorrelationTable() { clear(); }
 
-int
-    CorrelationTable::initialize_table(const std::shared_ptr<PointGroup>& group,
-    const std::shared_ptr<PointGroup>& subgroup)
-{
+int CorrelationTable::initialize_table(const std::shared_ptr<PointGroup>& group,
+                                       const std::shared_ptr<PointGroup>& subgroup) {
     clear();
 
     group_ = group;
@@ -115,31 +102,31 @@ int
 
     // CAN ONLY HANDLE NONDEGENERATE POINT GROUPS
 
-    for (i=0; i<n_; i++) {
+    for (i = 0; i < n_; i++) {
         ngamma_[i] = 0;
         gamma_[i] = 0;
     }
 
     // map the ops in the high order to low order groups
-    int *so_to_subso = new int[ct.order()];
-    int *subso_to_so = new int[subct.order()];
-    for (i=0; i<subct.order(); i++) subso_to_so[i] = -1;
-    for (i=0; i<ct.order(); i++) {
+    int* so_to_subso = new int[ct.order()];
+    int* subso_to_so = new int[subct.order()];
+    for (i = 0; i < subct.order(); i++) subso_to_so[i] = -1;
+    for (i = 0; i < ct.order(); i++) {
         SymmetryOperation so = ct.symm_operation(i);
         int found = 0;
         so_to_subso[i] = -1;
-        for (j=0; j<subct.order(); j++) {
+        for (j = 0; j < subct.order(); j++) {
             SymmetryOperation subso = subct.symm_operation(j);
             double sumsquare = 0.0;
-            for (k=0; k<3; k++) {
-                for (l=0; l<3; l++) {
-                    double diff = so(k,l)-subso(k,l);
-                    sumsquare += diff*diff;
+            for (k = 0; k < 3; k++) {
+                for (l = 0; l < 3; l++) {
+                    double diff = so(k, l) - subso(k, l);
+                    sumsquare += diff * diff;
                 }
             }
             if (sumsquare < 1.0e-12) {
                 found++;
-                //ExEnv::outn() << scprintf("symmop %d in %s is %d in %s",
+                // ExEnv::outn() << scprintf("symmop %d in %s is %d in %s",
                 //                 i,ct.symbol(),j,subct.symbol()) << endl;
                 so_to_subso[i] = j;
                 subso_to_so[j] = i;
@@ -151,7 +138,7 @@ int
             return -1;
         }
     }
-    for (i=0; i<subct.order(); i++) {
+    for (i = 0; i < subct.order(); i++) {
         if (subso_to_so[i] == -1) {
             delete[] so_to_subso;
             delete[] subso_to_so;
@@ -160,27 +147,27 @@ int
     }
 
     // compute the correlation table
-    for (i=0; i<ct.nirrep(); i++) {
-        for (j=0; j<subct.nirrep(); j++) {
+    for (i = 0; i < ct.nirrep(); i++) {
+        for (j = 0; j < subct.nirrep(); j++) {
             double nmatch = 0.0;
-            for (k=0; k<ct.order(); k++) {
+            for (k = 0; k < ct.order(); k++) {
                 double chr = ct.gamma(i).character(k);
                 if (so_to_subso[k] >= 0) {
                     double subchr = subct.gamma(j).character(so_to_subso[k]);
-                    nmatch += subchr*chr;
+                    nmatch += subchr * chr;
                 }
             }
             nmatch /= subct.order();
-            int inmatch = (int)(nmatch+0.5);
-            if (std::fabs(nmatch-inmatch)>1.0e-6) {
+            int inmatch = (int)(nmatch + 0.5);
+            if (std::fabs(nmatch - inmatch) > 1.0e-6) {
                 delete[] so_to_subso;
                 delete[] subso_to_so;
                 return -4;
             }
             if (inmatch > 0) {
-                int *newgamma = new int[ngamma_[i] + inmatch];
-                memcpy(newgamma,gamma_[i],ngamma_[i]*sizeof(int));
-                for (k=0; k<inmatch; k++) newgamma[ngamma_[i]+k] = j;
+                int* newgamma = new int[ngamma_[i] + inmatch];
+                memcpy(newgamma, gamma_[i], ngamma_[i] * sizeof(int));
+                for (k = 0; k < inmatch; k++) newgamma[ngamma_[i] + k] = j;
                 ngamma_[i] += inmatch;
                 delete[] gamma_[i];
                 gamma_[i] = newgamma;
@@ -191,11 +178,11 @@ int
     delete[] so_to_subso;
     delete[] subso_to_so;
 
-    for (i=0; i<n(); i++) {
+    for (i = 0; i < n(); i++) {
         int degen = ct.gamma(i).degeneracy();
         int subdegen = 0;
-        for (j=0; j<ngamma(i); j++) {
-            subdegen += subct.gamma(gamma(i,j)).degeneracy();
+        for (j = 0; j < ngamma(i); j++) {
+            subdegen += subct.gamma(gamma(i, j)).degeneracy();
         }
         if (degen != subdegen) {
             return -3;
@@ -205,48 +192,32 @@ int
     return 0;
 }
 
-void
-    CorrelationTable::clear()
-{
-    for (int i=0; i<n_; i++) {
+void CorrelationTable::clear() {
+    for (int i = 0; i < n_; i++) {
         delete[] gamma_[i];
     }
     delete[] ngamma_;
     delete[] gamma_;
 }
 
-const char *
-    CorrelationTable::error(int rc)
-{
+const char* CorrelationTable::error(int rc) {
     if (rc == -1) {
         return "too many symop matches";
-    }
-    else if (rc == -2) {
+    } else if (rc == -2) {
         return "not a subgroup or wrong ref frame";
-    }
-    else if (rc == -3) {
+    } else if (rc == -3) {
         return "only groups with non-complex characters supported (degen sum)";
-    }
-    else if (rc == -4) {
+    } else if (rc == -4) {
         return "only groups with non-complex characters supported (nonint nirr)";
-    }
-    else if (rc != 0) {
+    } else if (rc != 0) {
         return "unknown error";
     }
     return "no error";
 }
 
-int
-    CorrelationTable::degen(int i) const
-{
-    return group_->char_table().gamma(i).degeneracy();
-}
+int CorrelationTable::degen(int i) const { return group_->char_table().gamma(i).degeneracy(); }
 
-int
-    CorrelationTable::subdegen(int i) const
-{
-    return subgroup_->char_table().gamma(i).degeneracy();
-}
+int CorrelationTable::subdegen(int i) const { return subgroup_->char_table().gamma(i).degeneracy(); }
 
 // void
 //     CorrelationTable::print(ostream &o) const

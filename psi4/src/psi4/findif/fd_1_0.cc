@@ -45,8 +45,7 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::list &python_energies)
-{
+SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::list &python_energies) {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
     int print_lvl = options.get_int("PRINT");
@@ -72,14 +71,12 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::l
         throw PsiException("FINDIF: Incorrect number of energies passed in!", __FILE__, __LINE__);
 
     double *E = init_array(Ndisp);
-    for (int i = 0; i < Ndisp; ++i)
-        E[i] = python_energies[i].cast<double>();
+    for (int i = 0; i < Ndisp; ++i) E[i] = python_energies[i].cast<double>();
 
     // Compute gradient in mass-weighted symmetry-adapted cartesians in ATOMIC units
     double *g_q = init_array(Nsalc);
     if (pts == 3) {
-        for (int i = 0; i < Nsalc; ++i)
-            g_q[i] = (E[2 * i + 1] - E[2 * i]) / (2.0 * disp_size);
+        for (int i = 0; i < Nsalc; ++i) g_q[i] = (E[2 * i + 1] - E[2 * i]) / (2.0 * disp_size);
     } else if (pts == 5) {
         for (int i = 0; i < Nsalc; ++i)
             g_q[i] = (E[4 * i] - 8.0 * E[4 * i + 1] + 8.0 * E[4 * i + 2] - E[4 * i + 3]) / (12.0 * disp_size);
@@ -111,11 +108,11 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::l
         } else if (pts == 5) {
             cnt = -4;
             outfile->Printf(
-                    "\n\t Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
+                "\n\t Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
             for (int i = 0; i < Nsalc; ++i) {
                 cnt += 4;
-                outfile->Printf("\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
-                                i, E[cnt], E[cnt + 1], E[cnt + 2], E[cnt + 3], g_q[i]);
+                outfile->Printf("\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n", i, E[cnt], E[cnt + 1],
+                                E[cnt + 2], E[cnt + 3], g_q[i]);
             }
             outfile->Printf("\n");
         }
@@ -140,8 +137,7 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::l
     Matrix gradient_matrix("F-D gradient", Natom, 3);
 
     for (int a = 0; a < Natom; ++a)
-        for (int xyz = 0; xyz < 3; ++xyz)
-            gradient_matrix.set(a, xyz, g_cart[3 * a + xyz] * sqrt(mol->mass(a,false)));
+        for (int xyz = 0; xyz < 3; ++xyz) gradient_matrix.set(a, xyz, g_cart[3 * a + xyz] * sqrt(mol->mass(a, false)));
 
     free(g_cart);
 
@@ -161,5 +157,5 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::l
     return sgradient;
 }
 
-}
-}
+}  // namespace findif
+}  // namespace psi

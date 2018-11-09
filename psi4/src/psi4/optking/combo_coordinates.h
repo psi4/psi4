@@ -37,70 +37,66 @@
 #include <vector>
 #include <string>
 
-using std::vector;
 using std::string;
+using std::vector;
 
 namespace opt {
 
 class COMBO_COORDINATES {
+   private:
+    vector<SIMPLE_COORDINATE *> simples;  // collection of simple and/or cartesian coordinates
+    vector<vector<int> > index;           // collection of coordinate index for linear combination
+    vector<vector<double> > coeff;        // collection of coefficients for linear combination
 
-  private:
+   public:
+    friend class FRAG;  // these can all add coordinates
+    friend class FB_FRAG;
+    friend class INTERFRAG;
 
-    vector<SIMPLE_COORDINATE *>  simples;  // collection of simple and/or cartesian coordinates
-    vector<vector<int> >     index;  // collection of coordinate index for linear combination
-    vector<vector<double> >  coeff;  // collection of coefficients for linear combination
+    // Get all values.
+    double *values(GeomType geom) const;
 
-  public:
+    // Get one value.
+    double value(GeomType geom, int lookup) const;
 
-  friend class FRAG;       // these can all add coordinates
-  friend class FB_FRAG;
-  friend class INTERFRAG; 
+    // Fills in a provided B matrix row for one coordinate.
+    // If the desired cartesian column indices/dimension spans the molecule, i.e.,
+    // possibly more than just one fragment, then provide the atom offset.
+    bool DqDx(GeomType geom, int lookup, double *dqdx, int frag_atom_offset = 0) const;
 
-  // Get all values.
-  double *values(GeomType geom) const;
+    // Fills in a B' derivative matrix for one coordinate.
+    // If the desired cartesian indices/dimension spans the molecule, i.e.,
+    // possibly more than just one fragment, then provide the atom offset.
+    bool Dq2Dx2(GeomType geom, int lookup, double **dq2dx2, int frag_atom_offset = 0) const;
 
-  // Get one value.
-  double value(GeomType geom, int lookup) const;
+    // For error message reporting, describe coordinate briefly
+    string get_coord_definition(int lookup, int frag_atom_offset) const;
 
-  // Fills in a provided B matrix row for one coordinate.
-  // If the desired cartesian column indices/dimension spans the molecule, i.e.,
-  // possibly more than just one fragment, then provide the atom offset.
-  bool DqDx(GeomType geom, int lookup, double *dqdx, int frag_atom_offset=0) const;
+    // Clear current combination coordinates. Leave simples in place.
+    void clear_combos(void);
 
-  // Fills in a B' derivative matrix for one coordinate.
-  // If the desired cartesian indices/dimension spans the molecule, i.e.,
-  // possibly more than just one fragment, then provide the atom offset.
-  bool Dq2Dx2(GeomType geom, int lookup, double **dq2dx2, int frag_atom_offset=0) const;
+    // Remove a particular combination coordinate by index.
+    void erase_combo(int cc);
 
-  // For error message reporting, describe coordinate briefly
-  string get_coord_definition(int lookup, int frag_atom_offset) const;
+    // Print s vectors.
+    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
 
-  // Clear current combination coordinates. Leave simples in place.
-  void clear_combos(void);
+    // Print one coordinate
+    void print(std::string psi_fp, FILE *qc_fp, int cc, GeomType geom, int off) const;
 
-  // Remove a particular combination coordinate by index.
-  void erase_combo(int cc);
+    // Function to print the change in a combo coordinate
+    void print_disp(std::string psi_fp, FILE *qc_fp, int lookup, const double q_orig, const double f_q, const double dq,
+                    const double new_q, int atom_offset) const;
 
-  // Print s vectors.
-  void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
+    // Transform vector from simples to combination via linear combination
+    double *transform_simples_to_combo(double *arr_simples) const;
 
-  // Print one coordinate
-  void print(std::string psi_fp, FILE *qc_fp, int cc, GeomType geom, int off) const;
+    // Transform vector from simples to combination via linear combination
+    double **transform_simples_to_combo(double **mat_simples) const;
 
-  // Function to print the change in a combo coordinate
-  void print_disp(std::string psi_fp, FILE *qc_fp, int lookup, const double q_orig, const double f_q,
-    const double dq, const double new_q, int atom_offset) const;
-
-  // Transform vector from simples to combination via linear combination
-  double * transform_simples_to_combo(double *arr_simples) const;
-
-  // Transform vector from simples to combination via linear combination
-  double ** transform_simples_to_combo(double **mat_simples) const;
-
-  int Nsimples(void) const { return simples.size(); }
-
+    int Nsimples(void) const { return simples.size(); }
 };
 
-}
+}  // namespace opt
 
 #endif
