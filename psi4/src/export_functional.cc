@@ -201,7 +201,7 @@ void export_functional(py::module &m) {
         .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
         .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
         .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
-        .def("compute_points", &PointFunctions::compute_points, "docstring")
+        .def("compute_points", &PointFunctions::compute_points, py::arg("block"), py::arg("force_compute") = true, "docstring")
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
