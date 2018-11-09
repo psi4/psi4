@@ -88,7 +88,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   sapt7 sapt8 scf-bz2 scf-ecp scf-guess-read1 scf-upcast-custom-basis scf-guess-read2 scf-bs scf1 scf-occ
-                  scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf-large soscf-ref
+                  scf2 scf3 scf4 scf5 scf6 scf7 scf-property serial-wfn soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2
