@@ -43,7 +43,6 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     std::vector<DPDMOSpace> spaces;
     std::map<std::string, SharedMatrix> amps;
     if (dpd_list[0] == nullptr) {
-        outfile->Printf("Setting up DPD object...");
         if (ref == "UHF") {
             Dimension aoccpi_ = nalphapi_;
             Dimension boccpi_ = nbetapi_;
