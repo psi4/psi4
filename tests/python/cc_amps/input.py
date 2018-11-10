@@ -70,3 +70,51 @@ psi4.compare_values(UHF_ccsd_corr_e, psi4.get_variable("CCSD CORRELATION ENERGY"
 # END UHF
 
 psi4.core.clean()
+
+# ROHF
+
+CN = psi4.geometry("""
+  units bohr
+  0 2
+  C  0.000000000000      0.000000000000      1.195736583480
+  N  0.000000000000      0.000000000000     -1.024692078304
+  symmetry c1
+""")
+
+psi4.set_options({
+    'basis': 'cc-pvdz',
+    'freeze_core': 'false',
+    'reference': 'ROHF',
+    'semicanonical': 'True',
+})
+
+_, wfn = psi4.energy('ccsd', return_wfn=True, molecule=CN)
+amps = wfn.get_amplitudes()
+TIJAB = amps['tIJAB'].to_array()
+Tijab = amps['tijab'].to_array()
+TIjAb = amps['tIjAb'].to_array()
+Tia = amps['tia'].to_array()
+TIA = amps['tIA'].to_array()
+
+tauIJAB = TIJAB + np.einsum('IA,JB->IJAB', TIA, TIA) - np.einsum("IA,JB->IJBA", TIA, TIA)
+tauijab = Tijab + np.einsum('ia,jb->ijab', Tia, Tia) - np.einsum("ia,jb->ijba", Tia, Tia)
+tauIjAb = TIjAb + np.einsum('IA,jb->IjAb', TIA, Tia)
+
+CO = wfn.Ca_subset("AO", "OCC")
+Co = wfn.Cb_subset("AO", "OCC")
+CV = wfn.Ca_subset("AO", "VIR")
+Cv = wfn.Cb_subset("AO", "VIR")
+
+mints = psi4.core.MintsHelper(wfn.basisset())
+
+DAA = mints.mo_eri(CO, CV, CO, CV).to_array().swapaxes(1, 2)
+DBB = mints.mo_eri(Co, Cv, Co, Cv).to_array().swapaxes(1, 2)
+DAB = mints.mo_eri(CO, CV, Co, Cv).to_array().swapaxes(1, 2)
+
+E2AA = 0.5 * np.einsum("IJAB,IJAB->", tauIJAB, DAA)
+E2BB = 0.5 * np.einsum("ijab,ijab->", tauijab, DBB)
+E2AB = np.einsum("IjAb,IjAb->", tauIjAb, DAB)
+
+ROHF_ccsd_corr_e = E2AA + E2BB + E2AB
+psi4.compare_values(ROHF_ccsd_corr_e, psi4.get_variable("CCSD CORRELATION ENERGY"), 8, "ROHF CCSD CORRELATION ENERGY")
+# END ROHF
