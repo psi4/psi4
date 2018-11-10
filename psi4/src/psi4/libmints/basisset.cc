@@ -182,7 +182,10 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
     if (local == "FALSE") {
         return 0;
     } else if (local == "TRUE") {
-        int nfzc = 0;
+        int nfzel = 0;
+        int valence = -1 * mymol->molecular_charge();
+        int lg_delta = 0;
+        int lg_shell = 0;
         // Freeze the number of core electrons corresponding to the
         // nearest previous noble gas atom.  This means that the 4p block
         // will still have 3d electrons active.  Alkali earth atoms will
@@ -193,20 +196,35 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
             if (Z > 0) {
                 // Add ECPs to Z, the number of electrons less ECP-treated electrons
                 double ECP = n_ecp_core(mymol->label(A));
-                if (Z + ECP > 2) nfzc += 1;
-                if (Z + ECP > 10) nfzc += 4;
-                if (Z + ECP > 18) nfzc += 4;
-                if (Z + ECP > 36) nfzc += 9;
-                if (Z + ECP > 54) nfzc += 9;
-                if (Z + ECP > 86) nfzc += 16;
+                int delta = 0;
+                if (Z + ECP > 2)  delta = 2;
+                if (Z + ECP > 10) delta = 10;
+                if (Z + ECP > 18) delta = 18;
+                if (Z + ECP > 36) delta = 36;
+                if (Z + ECP > 54) delta = 54;
+                if (Z + ECP > 86) delta = 86;
                 if (Z + ECP > 108) {
                     throw PSIEXCEPTION("Invalid atomic number");
                 }
-                // If this center has an ECP, some pairs are already frozen
-                if (ECP > 0) nfzc -= ECP / 2;
+                // Keep track of the largest frozen shell, in case its a cationic species
+                if (lg_delta < delta) {
+                    if (delta == 2) lg_shell = 2;
+                    if (delta == 10) lg_shell = 8;
+                    if (delta == 18) lg_shell = 8;
+                    if (delta == 36) lg_shell = 18;
+                    if (delta == 54) lg_shell = 18;
+                    if (delta == 86) lg_shell = 32;
+                    lg_delta = delta;
+                }
+                // If this center has an ECP, some electrons are already frozen
+                if (ECP > 0) delta -= ECP;
+                // Keep track of current valence electrons
+                valence = valence + Z - delta;
+                nfzel += delta;
             }
         }
-        return nfzc;
+        if (valence <= 0) nfzel -= lg_shell;
+        return nfzel/2;
     } else {
         throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
     }
