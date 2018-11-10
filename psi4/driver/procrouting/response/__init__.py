@@ -27,3 +27,4 @@
 #
 
 from . import scf_response
+from . import scf_products
