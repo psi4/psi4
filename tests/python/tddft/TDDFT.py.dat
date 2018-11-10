@@ -1,0 +1,320 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, and R. A. Shaw
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Saturday, 10 November 2018 09:07AM
+
+    Process ID: 56510
+    Host:       Daniels-MacBook-Pro.local
+    PSIDATADIR: /Users/daniel/Gits/psi4ds/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+import psi4
+
+import numpy as np
+from psi4.driver.p4util.solvers import davidson_solver
+from psi4.driver.procrouting.response.scf_products import SCFProducts
+
+mol = psi4.geometry("""
+O     0.0000000000    0.0000000000    2.3054658725
+H     1.7822044879    0.0000000000   -1.0289558751
+H    -1.7822044879    0.0000000000   -1.0289558751
+C     0.0000000000    0.0000000000    0.0000000000
+symmetry c1
+""")
+
+psi4.set_options({"SAVE_JK": True})
+#psi4.set_options({"e_convergence": 1.e-1, "d_convergence": 1.e-1})
+# psi4.set_options({"reference": "uhf"})
+e, wfn = psi4.energy("HF/6-31G", return_wfn=True)
+
+prod = SCFProducts(wfn)
+
+def func(vector):
+    return prod.H2H1_product(vector)
+
+def precon(resid, i, A_w):
+    return resid
+
+nvecs = 5
+guess = np.ones((prod.narot, nvecs))
+davidson_solver(func, precon, guess, no_eigs=nvecs, e_conv=1.e-4)
+# davidson_solver(LHS_Hx_build, precon, guess, no_eigs=nvecs)
+
+
+ #      Excitation              Transition Dipole Moments               Oscillator
+ #       Energies            x               y               z           Strengths
+ # ===============================================================================
+ #      0.04153295      0.00000000     -0.00000000     -0.00000000      0.00000000
+ #      0.16412863      0.03452355     -0.00000000      0.00000000      0.00013041
+ #      0.29748986     -0.00000000      0.00000000     -0.77663165      0.11962201
+ #      0.35309555     -0.00000000      0.00000000      0.00000000      0.00000000
+ #      0.44276860     -0.00000000      0.28396338     -0.00000000      0.02380182
+ #      0.49303352      0.70018316     -0.00000000      0.00000000      0.16114191
+ #      0.50966987     -0.00000000     -0.00000000     -0.99314696      0.33513882
+ #      0.66491116     -0.00000000     -0.64252098      0.00000000      0.18299828
+ #      0.74291752      0.00000000      0.51393832      0.00000000      0.13081916
+ #      0.74604777      0.89621414     -0.00000000     -0.00000000      0.39948361
+ #      0.75917069      0.63465184     -0.00000000      0.00000000      0.20385401
+ #      0.82076192      0.00000000      0.11163179      0.00000000      0.00681870
+ #      0.82465720      0.00000000      0.00000000      1.21612905      0.81309543
+ #      0.84970256     -0.00000000     -0.00000000      0.17496158      0.01734048
+ #      0.85043026     -0.00000000      0.00000000     -0.39907741      0.09029459
+ #      0.86392799     -0.00000000      0.00000000     -0.00000000      0.00000000
+ #      0.87680042      0.41764603      0.00000000     -0.00000000      0.10195915
+ #      0.90307953      0.00000000      0.00000000      0.00000000      0.00000000
+ #      0.90773835      0.48641408      0.00000000     -0.00000000      0.14317978
+ #      0.91469824      0.00000000     -0.37497291      0.00000000      0.08574057
+--------------------------------------------------------------------------
+
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Sat Nov 10 09:07:43 2018
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   117 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 4   entry C          line    87 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     1.145817089499    15.994914619570
+         H            1.782204487900     0.000000000000    -2.188604658101     1.007825032230
+         H           -1.782204487900     0.000000000000    -2.188604658101     1.007825032230
+         C            0.000000000000     0.000000000000    -1.159648783001    12.000000000000
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      2.63309  B =      0.36027  C =      0.31691 [cm^-1]
+  Rotational constants: A =  78938.15956  B =  10800.53373  C =   9500.63149 [MHz]
+  Nuclear repulsion =   16.491105938206246
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 14
+    Number of basis function: 22
+    Number of Cartesian functions: 22
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 4   entry C          line   121 file /Users/daniel/Gits/psi4ds/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         22      22       0       0       0       0
+   -------------------------------------------------------
+    Total      22      22       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 66
+    Number of basis function: 212
+    Number of Cartesian functions: 212
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.1569308114E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:  -112.50867137734377   -1.12509e+02   1.27523e-02 
+   @DF-RHF iter   1:  -112.82341027331843   -3.14739e-01   2.91728e-02 
+   @DF-RHF iter   2:  -107.50216212474899    5.32125e+00   9.08155e-02 DIIS
+   @DF-RHF iter   3:  -112.98466634462525   -5.48250e+00   2.22685e-02 DIIS
+   @DF-RHF iter   4:  -113.17263351418912   -1.87967e-01   1.11724e-02 DIIS
+   @DF-RHF iter   5:  -113.23381411637720   -6.11806e-02   4.18370e-03 DIIS
+   @DF-RHF iter   6:  -113.24334021179894   -9.52610e-03   1.40424e-03 DIIS
+   @DF-RHF iter   7:  -113.24440331979817   -1.06311e-03   3.93708e-04 DIIS
+   @DF-RHF iter   8:  -113.24463573663169   -2.32417e-04   1.81676e-04 DIIS
+   @DF-RHF iter   9:  -113.24474431556897   -1.08579e-04   7.91943e-05 DIIS
+   @DF-RHF iter  10:  -113.24476531063277   -2.09951e-05   4.58985e-05 DIIS
+   @DF-RHF iter  11:  -113.24476994986610   -4.63923e-06   4.25291e-05 DIIS
+   @DF-RHF iter  12:  -113.24479438673251   -2.44369e-05   2.55966e-05 DIIS
+   @DF-RHF iter  13:  -113.24480520372484   -1.08170e-05   1.04150e-05 DIIS
+   @DF-RHF iter  14:  -113.24480588128087   -6.77556e-07   4.66584e-06 DIIS
+   @DF-RHF iter  15:  -113.24480597175368   -9.04728e-08   2.42924e-06 DIIS
+   @DF-RHF iter  16:  -113.24480599477434   -2.30207e-08   1.37771e-06 DIIS
+   @DF-RHF iter  17:  -113.24480600149194   -6.71760e-09   1.00469e-06 DIIS
+   @DF-RHF iter  18:  -113.24480600683268   -5.34074e-09   6.85187e-07 DIIS
+  Energy converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.648574     2A    -11.492685     3A     -1.201791  
+       4A     -0.792647     5A     -0.518971     6A     -0.517564  
+       7A     -0.406688     8A     -0.385868  
+
+    Virtual:                                                              
+
+       9A     -0.041555    10A      0.012424    11A      0.048190  
+      12A      0.096944    13A      0.726290    14A      0.797017  
+      15A      0.804759    16A      0.840245    17A      1.020597  
+      18A      1.028553    19A      1.171889    20A      1.187544  
+      21A      1.231886    22A      1.498962  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     8 ]
+
+  @DF-RHF Final Energy:  -113.24480600683268
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             16.4911059382062462
+    One-Electron Energy =                -187.5422568777643733
+    Two-Electron Energy =                  57.8063449327254375
+    Total Energy =                       -113.2448060068326754
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -4.0980
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0001      Y:     0.0001      Z:     3.2554
+
+  Dipole Moment: [e a0]
+     X:     0.0001      Y:     0.0001      Z:    -0.8425     Total:     0.8425
+
+  Dipole Moment: [D]
+     X:     0.0002      Y:     0.0001      Z:    -2.1415     Total:     2.1415
+
+
+*** tstop() called on Daniels-MacBook-Pro.local at Sat Nov 10 09:07:45 2018
+Module time:
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+Traceback (most recent call last):
+  File "../../../psi4/run_psi4.py", line 272, in <module>
+    exec(content)
+  File "<string>", line 38, in <module>
+  File "/Users/daniel/Gits/psi4ds/psi4/driver/p4util/solvers.py", line 408, in davidson_solver
+    print("    Root {:>5}: |Imag[A_w[{}]]| > 1.0E-10!".format(i))
+
+IndexError: tuple index out of range
+
+Printing out the relevant lines from the Psithon --> Python processed input file:
+        return prod.H2H1_product(vector)
+    def precon(resid, i, A_w):
+        return resid
+    nvecs = 5
+    guess = np.ones((prod.narot, nvecs))
+--> davidson_solver(func, precon, guess, no_eigs=nvecs, e_conv=1.e-4)
+
+    Psi4 stopped on: Saturday, 10 November 2018 09:07AM
+    Psi4 wall time for execution: 0:00:02.27
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.

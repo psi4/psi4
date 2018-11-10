@@ -33,22 +33,26 @@ from psi4.driver.p4util.exceptions import *
 
 
 class SCFProducts:
-    def __init__(self, wfn, omega=0):
+    def __init__(self, wfn):
 
-        if len(wfn.doccpi()) > 1:
+        if len(tuple(wfn.doccpi())) > 1:
             raise ValueError("Can only handle C1 wavefunctions currently.")
 
-        self.omega = omega
-        self.resticted = wfn.same_a_b_dens()
+        self.restricted = wfn.same_a_b_dens()
         if self.restricted is False:
             raise ValueError("Can only handle restricted wavefunctions.")
+
+        self.wfn = wfn
 
         # Grab sizes
         self.nmo = wfn.nmopi().sum()
         self.nalpha = wfn.nalphapi().sum()
         self.navir = self.nmo - self.nalpha
+        self.narot = self.nalpha * self.navir
+
         self.nbeta = wfn.nbetapi().sum()
         self.nbvir = self.nmo - self.nbeta
+        self.nbrot = self.nbeta * self.nbvir
 
         self.alpha_shape = (self.nalpha, self.navir)
         self.beta_shape = (self.nbeta, self.nbvir)
@@ -59,7 +63,7 @@ class SCFProducts:
         self.Cb_occ = wfn.Cb_subset("AO", "OCC")
         self.Cb_vir = wfn.Cb_subset("AO", "VIR")
 
-    def H2_product(vector):
+    def H2_product(self, vector):
         """
         H2 = H2_ai,bj * vector_bj
                           K         K.T
@@ -70,7 +74,7 @@ class SCFProducts:
         ret = self.wfn.onel_Hx([vector])[0]
 
         # Special case for DFT
-        if wfn.functional().needs_xc():
+        if self.wfn.functional().needs_xc():
             Jx, Kx, XCx = self.wfn.twoel_Hx([vector], False, "SO")
             Kx.axpy(-1.0, Kx.transpose())
             Kx.axpy(1.0, XCx)
@@ -84,7 +88,7 @@ class SCFProducts:
         ret = np.array(ret).ravel()
         return ret
 
-    def H1_product(vector):
+    def H1_product(self, vector):
         """
         H1 (Orbital Hessian)
         """
@@ -93,14 +97,14 @@ class SCFProducts:
 
         return ret
 
-    def H2H1_product(vector, omega=None):
+    def H2H1_product(self, vector, omega=None):
         """
         H2 * H1 * x + omega ** 2
         """
         matvec = core.Matrix.from_array(vector.reshape(self.alpha_shape))
-        tmp = np.array(wfn.cphf_Hx([matvec])[0]).ravel()
+        tmp = np.array(self.wfn.cphf_Hx([matvec])[0]).ravel()
 
-        ret = H2_vector(tmp)
+        ret = self.H2_product(tmp)
         if omega is not None:
             ret += vector * (omega**2)
 
