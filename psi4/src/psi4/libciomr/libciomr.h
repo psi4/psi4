@@ -60,6 +60,8 @@ void flin(double **a, double *b, int in, int im, double *det);
 void free_matrix(double **array, size_t size);
 double *init_array(size_t size);
 double **init_matrix(size_t rows, size_t cols);
+float *init_array_float(size_t size);
+float **init_matrix_float(size_t rows, size_t cols);
 
 void lubksb(double **a, int n, int *indx, double *b);
 void ludcmp(double **a, int n, int *indx, double *d);
@@ -67,11 +69,15 @@ void ludcmp(double **a, int n, int *indx, double *d);
 /* Functions under mat_to_arr.c */
 void mat_to_arr(double **a, double *b, int m, int n);
 void arr_to_mat(double **a, double *b, int m, int n);
+//void mat_to_arr(float **a, double *b, int m, int n);
+//void arr_to_mat(float **a, double *b, int m, int n);
 
 // void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
 //            int nr, int nl, int nc, int add) ;
 void print_array(double *a, int m, std::string out);
+void print_array(float *a, int m, std::string out);
 void print_mat(double **a, int rows, int cols, std::string out);
+void print_mat(float **a, int rows, int cols, std::string out);
 
 void rsp(int nm, int n, int nv, double *array, double *evals, int matz, double **evecs, double toler);
 void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
@@ -90,6 +96,8 @@ void tstop();
 /* Functions in zero.c */
 void zero_arr(double *a, int size);
 void zero_mat(double **a, int rows, int cols);
+void zero_arr(float *a, int size);
+void zero_mat(float **a, int rows, int cols);
 
 /* Functions in int_array.c */
 PSI_API int *init_int_array(int size);
@@ -110,6 +118,8 @@ void print_long_int_mat(long int **a, int m, int n, std::string out);
 /* Functions in block_matrix.c */
 PSI_API double **block_matrix(size_t n, size_t m, bool mlock = false);
 void free_block(double **array);
+PSI_API float **block_matrix_float(size_t n, size_t m, bool mlock = false);
+void free_block_float(float **array);
 
 /* Functions in fndcor */
 void fndcor(long int *maxcrb, std::string out_fname);

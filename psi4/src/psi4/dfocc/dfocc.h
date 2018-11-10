@@ -30,6 +30,7 @@
 #define dfocc_h
 
 #include "tensors.h"
+#include "tensors_float.h"
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
@@ -519,6 +520,7 @@ class DFOCC : public Wavefunction {
 
     // CCSD(T)
     void ccsd_canonic_triples();
+    void ccsd_canonic_triples_float();
     void ccsd_canonic_triples_hm();
     void ccsd_canonic_triples_disk();
     void ccsd_t_manager();
@@ -863,6 +865,7 @@ class DFOCC : public Wavefunction {
     bool t2_incore;
     bool do_ppl_hm;
     bool do_triples_hm;
+    bool do_float;
 
     double **C_pitzerA;
     double **C_pitzerB;

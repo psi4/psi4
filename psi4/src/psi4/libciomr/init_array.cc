@@ -61,4 +61,16 @@ double *init_array(size_t size) {
     memset(array, 0, size * (size_t)sizeof(double));
     return (array);
 }
+float *init_array_float(size_t size) {
+    float *array;
+
+    if ((array = (float *)malloc(size * (size_t)sizeof(float))) == nullptr) {
+        outfile->Printf("init_array: trouble allocating memory \n");
+        outfile->Printf("size = %ld\n", size);
+        exit(PSI_RETURN_FAILURE);
+    }
+    memset(array, 0, size * (size_t)sizeof(float));
+    return (array);
+}
+
 }

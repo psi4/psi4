@@ -105,4 +105,62 @@ void print_mat(double **a, int m, int n, std::string out) {
     printer->Printf("\n\n");
     // R.I.P. goto statements - Aug 4th 2010 - MSM
 }
+
+void print_mat(float **a, int m, int n, std::string out) {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    int num_frames = int(n / 10);
+    int num_frames_rem = n % 10;  // adding one for changing 0->1 start
+    int num_frame_counter = 0;
+    // for each frame
+    for (num_frame_counter = 0; num_frame_counter < num_frames; num_frame_counter++) {
+        printer->Printf("\n");
+        for (int j = 10 * num_frame_counter + 1; j < 10 * num_frame_counter + 11; j++) {
+            if (j == 10 * num_frame_counter + 1) {
+                printer->Printf("%18d", j);
+            } else {
+                printer->Printf("        %5d", j);
+            }
+        }
+        printer->Printf("\n\n");
+
+        for (int k = 1; k <= m; ++k) {
+            for (int j = 10 * num_frame_counter + 1; j < 10 * num_frame_counter + 12; j++) {
+                if (j == 10 * num_frame_counter + 1) {
+                    printer->Printf("%5d", k);
+                } else {
+                    printer->Printf(" %12.7f", a[k - 1][j - 2]);
+                }
+            }
+            printer->Printf("\n");
+        }
+    }
+
+    // ALREADY DID THE FULL FRAMES BY THIS POINT
+    // NEED TO TAKE CARE OF THE REMAINDER
+    if (num_frames_rem != 0) {
+        printer->Printf("\n");
+        for (int j = 10 * num_frame_counter + 1; j <= n; j++) {
+            if (j == 10 * num_frame_counter + 1) {
+                printer->Printf("%18d", j);
+            } else {
+                printer->Printf("        %5d", j);
+            }
+        }
+        printer->Printf("\n\n");
+
+        for (int k = 1; k <= m; ++k) {
+            for (int j = 10 * num_frame_counter + 1; j < n + 2; j++) {
+                if (j == 10 * num_frame_counter + 1) {
+                    printer->Printf("%5d", k);
+                } else {
+                    printer->Printf(" %12.7f", a[k - 1][j - 2]);
+                }
+            }
+            printer->Printf("\n");
+        }
+    }
+    printer->Printf("\n\n");
+    // R.I.P. goto statements - Aug 4th 2010 - MSM
+}
+
 }
