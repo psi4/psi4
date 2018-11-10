@@ -28,7 +28,6 @@
 
 import numpy as np
 
-from .util import filter_comments
 
 # TODO: Include gradient loading feature, analagously to hessian loading.
 

@@ -52,27 +52,24 @@
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ciwave.h"
 
-namespace psi { namespace detci {
+namespace psi {
+namespace detci {
 
 SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options);
+}
+}  // namespace psi
 
-}} // namespace psi::detci
+namespace psi {
+namespace detci {
 
+SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options) {
+    auto ciwfn = std::make_shared<CIWavefunction>(ref_wfn, options);
 
-namespace psi { namespace detci {
+    ciwfn->compute_energy();
 
-
-SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options)
-{
-
-   auto ciwfn = std::make_shared<CIWavefunction>(ref_wfn, options);
-
-   ciwfn->compute_energy();
-
-   SharedWavefunction base_ciwfn = static_cast<SharedWavefunction>(ciwfn);
-   return base_ciwfn;
+    SharedWavefunction base_ciwfn = static_cast<SharedWavefunction>(ciwfn);
+    return base_ciwfn;
 }
 
-
-
-}} // namespace psi::detci
+}  // namespace detci
+}  // namespace psi

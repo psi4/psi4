@@ -130,7 +130,7 @@ void MemDFJK::print_header() const {
         outfile->Printf("    wK tasked:          %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
         outfile->Printf("    OpenMP threads:     %11d\n", omp_nthread_);
-        outfile->Printf("    Memory (MB):        %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ * 8L) / (1024L * 1024L));
         outfile->Printf("    Algorithm:          %11s\n", (dfh_->get_AO_core() ? "Core" : "Disk"));
         outfile->Printf("    Schwarz Cutoff:     %11.0E\n", cutoff_);
         outfile->Printf("    Mask sparsity (%%):  %11.4f\n", 100. * dfh_->ao_sparsity());

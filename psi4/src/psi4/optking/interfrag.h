@@ -101,24 +101,24 @@ class INTERFRAG {
   ~INTERFRAG() { delete inter_frag; }
 
   // update location of reference points using fragment member geometries
-  void update_reference_points(void) {
+  void update_reference_points() {
     update_reference_points(A->geom, B->geom);
   }
 
   // update location of reference points using given geometries
   void update_reference_points(GeomType new_geom_A, GeomType new_geom_B);
 
-  int Ncoord(void) const;
+  int Ncoord() const;
 
   // return vector index of fragments in molecule vector
-  int g_A_index(void) const { return A_index; }
-  int g_B_index(void) const { return B_index; }
+  int g_A_index() const { return A_index; }
+  int g_B_index() const { return B_index; }
 
-  int g_ndA(void) const { return ndA; }
-  int g_ndB(void) const { return ndB; }
+  int g_ndA() const { return ndA; }
+  int g_ndB() const { return ndB; }
 
   // compute and return coordinate values - using fragment member geometries
-  double *coord_values(void) {
+  double *coord_values() {
     double *q = coord_values(A->geom, B->geom);
     return q;
   }
@@ -130,33 +130,33 @@ class INTERFRAG {
   void freeze(int J);
 
   // freeze all interfragment coordinates in this set
-  void freeze(void);
+  void freeze();
 
   // is coordinate J frozen?  J runs over only active coordinates.
   bool is_frozen(int J);
 
   // are all of these interfragment coordinates frozen?
-  bool is_frozen(void);
+  bool is_frozen();
 
   // compute and return coordinate values - using given fragment geometries
   double *coord_values(GeomType new_geom_A, GeomType new_geom_B);
 
   // check nearness to 180 and save value
-  void fix_tors_near_180(void) {
+  void fix_tors_near_180() {
     update_reference_points();
     inter_frag->fix_tors_near_180();
   }
 
-  void fix_oofp_near_180(void) {
+  void fix_oofp_near_180() {
     update_reference_points();
     inter_frag->fix_oofp_near_180();
   }
 
-  void fix_bend_axes(void) {
+  void fix_bend_axes() {
     update_reference_points();
     inter_frag->fix_bend_axes();
   }
-  void unfix_bend_axes(void) {
+  void unfix_bend_axes() {
     update_reference_points();
     inter_frag->unfix_bend_axes();
   }
@@ -172,7 +172,7 @@ class INTERFRAG {
   }
 
   // allocate and return B matrix only for this interfragment.
-  double **compute_B(void) {
+  double **compute_B() {
     double **Bout = init_matrix(Ncoord(), 3*g_natom());
     compute_B(A->geom, B->geom, Bout, 0, 0, 0);
     return Bout;
@@ -201,22 +201,22 @@ class INTERFRAG {
   std::string get_coord_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0) const;
 
   // get number of atoms in the two fragments
-  int g_natom(void) const { return (A->g_natom() + B->g_natom()); }
-  int g_natom_A(void) const { return (A->g_natom()); }
-  int g_natom_B(void) const { return (B->g_natom()); }
+  int g_natom() const { return (A->g_natom() + B->g_natom()); }
+  int g_natom_A() const { return (A->g_natom()); }
+  int g_natom_B() const { return (B->g_natom()); }
 
   bool coordinate_on(int i) const { return D_on[i]; }
 
-  double ** H_guess(void); // guess Hessian
+  double ** H_guess(); // guess Hessian
 
   // orient fragments and displace by dq; forces are just for printing
   bool orient_fragment(double *dq, double *f_q=nullptr);
 
-  double ** compute_constraints(void) const;
+  double ** compute_constraints() const;
 
-  void add_coordinates_of_reference_pts(void);
+  void add_coordinates_of_reference_pts();
 
-  int form_trivial_coord_combinations(void);
+  int form_trivial_coord_combinations();
 
 }; // class INTERFRAG
 

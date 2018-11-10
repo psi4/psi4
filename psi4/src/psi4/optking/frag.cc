@@ -94,7 +94,7 @@ FRAG::~FRAG() {
 }
 
 // for now just set default masses - fix later
-void FRAG::set_masses(void) {
+void FRAG::set_masses() {
   int i;
   for (i=0; i<natom; ++i)
     mass[i] = Z_to_mass[(int) Z[i]];
@@ -103,7 +103,7 @@ void FRAG::set_masses(void) {
 
 // automatically determine bond connectivity by comparison of interatomic distance
 //with scale_connectivity * sum of covalent radii
-void FRAG::update_connectivity_by_distances(void) {
+void FRAG::update_connectivity_by_distances() {
   int i, j, *Zint;
   double Rij;
   double scale = Opt_params.scale_connectivity;
@@ -130,7 +130,7 @@ void FRAG::update_connectivity_by_distances(void) {
 }
 
 //build connectivity matrix from the current set of bonds
-void FRAG::update_connectivity_by_bonds(void) {
+void FRAG::update_connectivity_by_bonds() {
   for (int i=0; i<natom; ++i)
     for (int j=0; j<natom; ++j)
       connectivity[i][j] = false;
@@ -146,7 +146,7 @@ void FRAG::update_connectivity_by_bonds(void) {
 
 // automatically add bond stretch coodinates based on connectivity matrix
 // return number of added coordinates
-int FRAG::add_stre_by_connectivity(void) {
+int FRAG::add_stre_by_connectivity() {
   int nadded = 0;
   int i,j;
   for (i=0; i<natom; ++i) {
@@ -168,7 +168,7 @@ int FRAG::add_stre_by_connectivity(void) {
 // Add missing hydrogen bond stretches - return number added
 // defined as [O,N,F,Cl]-H ... [O,N,F,Cl] with distance < 2.3 Angstroms
 // and angle greater than 90 degrees
-int FRAG::add_hbonds(void) {
+int FRAG::add_hbonds() {
   int nadded = 0;
   double dist, ang;
   const double pi = acos(-1);
@@ -223,10 +223,10 @@ int FRAG::add_hbonds(void) {
 }
 
 // Add auxiliary bonds; distance is < 2.5 times sum of covalent radii
-int FRAG::add_auxiliary_bonds(void) {
+int FRAG::add_auxiliary_bonds() {
   int nadded = 0;
 
-  int *Zint = new int [natom];
+  auto *Zint = new int [natom];
   for (int i=0; i<natom; ++i)
     Zint[i] = (int) Z[i];
 
@@ -277,7 +277,7 @@ int FRAG::add_auxiliary_bonds(void) {
 }
 
 // angles for all bonds present; return number added
-int FRAG::add_bend_by_connectivity(void) {
+int FRAG::add_bend_by_connectivity() {
   int nadded = 0;
   double phi;
 
@@ -357,7 +357,7 @@ int FRAG::add_bend_by_connectivity(void) {
 }
 
 // torsions for all bonds present; return number added
-int FRAG::add_tors_by_connectivity(void) {
+int FRAG::add_tors_by_connectivity() {
   int nadded = 0;
   int i,j,k,l;
   double phi;

@@ -33,62 +33,59 @@
 ** C. David Sherrill
 ** Center for Computational Quantum Chemistry
 ** University of Georgia
-** 
+**
 */
 
 #include <cstdio>
 
-namespace psi { namespace detci {
+namespace psi {
+namespace detci {
 
 /*
 ** xey
-** 
+**
 ** Perform the operation X[] = Y[] for vectors 'x' and 'y'
 ** of length 'size'
 **
 */
 void xey(double *x, double *y, int size) {
-   int i;
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] = y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] = y[i];
+    }
 }
 
 /*
 ** xeay
 **
-** Perform the operation X[] = a * Y[] for vectors 'x' and 'y' 
+** Perform the operation X[] = a * Y[] for vectors 'x' and 'y'
 **   (of length 'size') and constant 'a'.
 **
 ** David Sherrill, November 1995
 */
-void xeay(double *x, double a, double *y, int size)
-{
-   int i;
+void xeay(double *x, double a, double *y, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] = a * y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] = a * y[i];
+    }
 }
-
-
 
 /*
 ** xpeay
 **
-** Perform the operation X[] += A * Y[] for vectors 'x' and 'y' 
+** Perform the operation X[] += A * Y[] for vectors 'x' and 'y'
 **   (of length 'size') and constant 'a'.
 **
 ** David Sherrill, November 1995
 */
-void xpeay(double *x, double a, double *y, int size)
-{
-   int i;
+void xpeay(double *x, double a, double *y, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] += a * y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] += a * y[i];
+    }
 }
 
 /*
@@ -99,15 +96,13 @@ void xpeay(double *x, double a, double *y, int size)
 ** David Sherrill, February 1996
 **
 */
-void xeax(double *x, double a, int size)
-{
-   int i;
+void xeax(double *x, double a, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] *= a;
-      }
+    for (i = 0; i < size; i++) {
+        x[i] *= a;
+    }
 }
-
 
 /*
 ** xeaxmy
@@ -117,30 +112,28 @@ void xeax(double *x, double a, int size)
 ** David Sherrill, February 1996
 **
 */
-void xeaxmy(double *x, double *y, double a, int size)
-{
-   int i;
+void xeaxmy(double *x, double *y, double a, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] = x[i] * a - y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] = x[i] * a - y[i];
+    }
 }
 
 /*
 ** xeaxpby
 **
 ** Perform X[] = A * X[] - B * Y[]
-** 
+**
 ** David Sherrill, March 1996
 **
 */
-void xeaxpby(double *x, double *y, double a, double b, int size)
-{
-   int i;
+void xeaxpby(double *x, double *y, double a, double b, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] = a * x[i] + b * y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] = a * x[i] + b * y[i];
+    }
 }
 /*
 ** xexy
@@ -150,13 +143,12 @@ void xeaxpby(double *x, double *y, double a, double b, int size)
 ** Matt Leininger, September 1998
 **
 */
-void xexy(double *x, double *y, int size)
-{
-  int i;
-  
-  for (i=0; i<size; i++) {
-     x[i] *= y[i];
-     }
+void xexy(double *x, double *y, int size) {
+    int i;
+
+    for (i = 0; i < size; i++) {
+        x[i] *= y[i];
+    }
 }
 
 /*
@@ -167,15 +159,14 @@ void xexy(double *x, double *y, int size)
 ** Matt Leininger and Nick Petraco, February 1999
 **
 */
-void xexmy(double *x, double *y, int size)
-{
-   int i;
+void xexmy(double *x, double *y, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] -= y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] -= y[i];
+    }
 }
- 
+
 /*
 ** xpey
 **
@@ -184,13 +175,13 @@ void xexmy(double *x, double *y, int size)
 ** Matt Leininger February 1999
 **
 */
-void xpey(double *x, double *y, int size)
-{
-   int i;
+void xpey(double *x, double *y, int size) {
+    int i;
 
-   for (i=0; i<size; i++) {
-      x[i] += y[i];
-      }
+    for (i = 0; i < size; i++) {
+        x[i] += y[i];
+    }
 }
 
-}} // namespace psi::detci
+}  // namespace detci
+}  // namespace psi

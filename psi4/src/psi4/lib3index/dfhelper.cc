@@ -232,14 +232,13 @@ void DFHelper::AO_core() {
     required += 3 * nao_ * nao_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
-    double fraction_of_memory = 0.8;
-    if (memory_ * fraction_of_memory < required) AO_core_ = false;
+    if (memory_ < required) AO_core_ = false;
 
     if (print_lvl_ > 0) {
-        outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
-                        (required / fraction_of_memory * 8 / (1024 * 1024 * 1024.0)),
+        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
+                        (required *  8 / (1024 * 1024 * 1024.0)),
                         (memory_ * 8 / (1024 * 1024 * 1024.0)));
-        outfile->Printf("%s in-core AOs.\n\n", (memory_ * fraction_of_memory < required) ? "Turning off" : "Using");
+        outfile->Printf("%s in-core AOs.\n\n", (memory_ < required) ? "Turning off" : "Using");
     }
 }
 void DFHelper::print_header() {
@@ -1516,8 +1515,9 @@ std::pair<size_t, size_t> DFHelper::identify_order() {
         bool on = false;
         size_t st = 0;
         std::string str = sorted_spaces_[i].first;
-        std::list<std::string>::iterator itr, end;
-        for (itr = needs.begin(), end = needs.end(); itr != end; ++itr) {
+
+        auto itr = needs.begin();
+        while (itr != needs.end()) {
             op = 0;
             op = (!(std::get<0>(transf_[*itr]).compare(str)) ? 1 : op);
             op = (!(std::get<1>(transf_[*itr]).compare(str)) ? 2 : op);
@@ -1534,9 +1534,9 @@ std::pair<size_t, size_t> DFHelper::identify_order() {
                 largest = (largest < small ? small : largest);
                 order_.push_back(*itr);
                 st++;
-                needs.erase(itr);
-                itr--;
-            }
+                itr = needs.erase(itr);
+            } else
+                itr++;
         }
         if (st > 0) {
             strides_.push_back(st);

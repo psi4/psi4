@@ -29,20 +29,18 @@
 #ifndef SAPT_H
 #define SAPT_H
 
-
 #include "psi4/psifiles.h"
 
 #ifdef _OPENMP
-  #include <omp.h>
-  #include "psi4/libpsi4util/process.h"
+#include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
 #ifdef USING_LAPACK_MKL
-  #include <mkl.h>
+#include <mkl.h>
 #endif
 
-#define INDEX(i,j) ((i>=j) ? (ioff_[i] + j) : (ioff_[j] + i))
-
+#define INDEX(i, j) ((i >= j) ? (ioff_[i] + j) : (ioff_[j] + i))
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -54,104 +52,100 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-
-namespace psi { namespace sapt {
+namespace psi {
+namespace sapt {
 
 class SAPT : public Wavefunction {
+   private:
+    void initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB);
+    void get_denom();
 
-private:
-  void initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB);
-  void get_denom();
+   protected:
+    std::shared_ptr<BasisSet> ribasis_;
+    std::shared_ptr<BasisSet> elstbasis_;
+    std::shared_ptr<BasisSet> zero_;
 
-protected:
-  std::shared_ptr<BasisSet> ribasis_;
-  std::shared_ptr<BasisSet> elstbasis_;
-  std::shared_ptr<BasisSet> zero_;
+    size_t nsoA_;
+    size_t nmoA_;
+    size_t nsoB_;
+    size_t nmoB_;
+    size_t ndf_;
+    size_t noccA_;
+    size_t foccA_;
+    size_t aoccA_;
+    size_t noccB_;
+    size_t foccB_;
+    size_t aoccB_;
+    size_t nvirA_;
+    size_t nvirB_;
+    int NA_;
+    int NB_;
+    int natomsA_;
+    int natomsB_;
 
-  size_t nsoA_;
-  size_t nmoA_;
-  size_t nsoB_;
-  size_t nmoB_;
-  size_t ndf_;
-  size_t noccA_;
-  size_t foccA_;
-  size_t aoccA_;
-  size_t noccB_;
-  size_t foccB_;
-  size_t aoccB_;
-  size_t nvirA_;
-  size_t nvirB_;
-  int NA_;
-  int NB_;
-  int natomsA_;
-  int natomsB_;
+    bool elst_basis_;
 
-  bool elst_basis_;
+    long int mem_;
 
-  long int mem_;
+    // Alpha exponent for exchange scaling
+    double exch_scale_alpha_;
 
-  // Alpha exponent for exchange scaling
-  double exch_scale_alpha_;
+    double enuc_;
+    double eHF_;
+    double schwarz_;
 
-  double enuc_;
-  double eHF_;
-  double schwarz_;
+    double *evalsA_;
+    double *evalsB_;
+    double *diagAA_;
+    double *diagBB_;
 
-  double *evalsA_;
-  double *evalsB_;
-  double *diagAA_;
-  double *diagBB_;
+    double **CA_;
+    double **CB_;
+    double **CHFA_;
+    double **CHFB_;
+    double **sAB_;
+    double **vABB_;
+    double **vBAA_;
+    double **vAAB_;
+    double **vBAB_;
 
-  double **CA_;
-  double **CB_;
-  double **CHFA_;
-  double **CHFB_;
-  double **sAB_;
-  double **vABB_;
-  double **vBAA_;
-  double **vAAB_;
-  double **vBAB_;
+    std::shared_ptr<SAPTDenominator> denom_;
 
-  std::shared_ptr<SAPTDenominator> denom_;
+    size_t nvec_;
 
-  size_t nvec_;
+    double **dAR_;
+    double **dBS_;
 
-  double **dAR_;
-  double **dBS_;
+    void zero_disk(int, const char *, int, int);
 
-  void zero_disk(int, const char *, int, int);
+   public:
+    SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
+         std::shared_ptr<PSIO> psio);
+    ~SAPT() override;
 
-public:
-  SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
-       SharedWavefunction MonomerB, Options& options,
-       std::shared_ptr<PSIO> psio);
-  virtual ~SAPT();
-
-  virtual double compute_energy()=0;
+    double compute_energy() override = 0;
 };
 
 class CPHFDIIS {
+   private:
+    int max_diis_vecs_;
+    size_t vec_length_;
 
-private:
-  int max_diis_vecs_;
-  size_t vec_length_;
+    int curr_vec_;
+    int num_vecs_;
 
-  int curr_vec_;
-  int num_vecs_;
+    double **t_vecs_;
+    double **err_vecs_;
 
-  double **t_vecs_;
-  double **err_vecs_;
+   protected:
+   public:
+    CPHFDIIS(int, int);
+    ~CPHFDIIS();
 
-protected:
-
-public:
-  CPHFDIIS(int, int);
-  ~CPHFDIIS();
-
-  void store_vectors(double *, double *);
-  void get_new_vector(double *);
+    void store_vectors(double *, double *);
+    void get_new_vector(double *);
 };
-
-}}
+}
+}
 
 #endif

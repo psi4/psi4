@@ -45,7 +45,7 @@ void OCCWave::trans_ints_rmp2()
 /********************************************************************************************/
     ints->update_orbitals();
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
-    ints->set_keep_dpd_so_ints(1);
+    ints->set_keep_dpd_so_ints(true);
 
     // Trans (OV|OV)
     timer_on("Trans (OV|OV)");
@@ -103,8 +103,8 @@ void OCCWave::denominators_rmp2()
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
 
-    double *aOccEvals = new double [nacooA];
-    double *aVirEvals = new double [nacvoA];
+    auto *aOccEvals = new double [nacooA];
+    auto *aVirEvals = new double [nacvoA];
     memset(aOccEvals, 0, sizeof(double)*nacooA);
     memset(aVirEvals, 0, sizeof(double)*nacvoA);
 

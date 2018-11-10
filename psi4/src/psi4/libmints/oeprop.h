@@ -45,32 +45,31 @@ class MatrixFactory;
 class BasisSet;
 
 /**
-* The Prop object, base class of OEProp and GridProp objects
-*
-* Word on the street:
-*
-*  Wavefunction is not finalized, so we have no idea what bases
-*  general density matrices/orbital coefficients will be in.
-*  Additionally, there are questions of natural/local/canonical orbitals,
-*  relaxed/unrelaxed OPDM, and possible special densities such as needed
-*  for transition dipoles.
-*
-*  Therefore, the Prop object explicitly stores a mutable set of D/C
-*  matrices in the SO basis, and knows how to transform between them at will
-*  Additionally, while these are initially ripped from the constructor's
-*  wavefunction, substitutions may be made later, to use different orbitals
-*  or densities.
-*/
+ * The Prop object, base class of OEProp and GridProp objects
+ *
+ * Word on the street:
+ *
+ *  Wavefunction is not finalized, so we have no idea what bases
+ *  general density matrices/orbital coefficients will be in.
+ *  Additionally, there are questions of natural/local/canonical orbitals,
+ *  relaxed/unrelaxed OPDM, and possible special densities such as needed
+ *  for transition dipoles.
+ *
+ *  Therefore, the Prop object explicitly stores a mutable set of D/C
+ *  matrices in the SO basis, and knows how to transform between them at will
+ *  Additionally, while these are initially ripped from the constructor's
+ *  wavefunction, substitutions may be made later, to use different orbitals
+ *  or densities.
+ */
 class Prop {
-
-protected:
+   protected:
     /// The wavefunction object this Prop is built around
     std::shared_ptr<Wavefunction> wfn_;
     /// The basisset for this wavefunction
     std::shared_ptr<BasisSet> basisset_;
     /// Is this wavefunction object spin-restricted? (Actually closed-shell, but this is wavefunction's convention)
-    bool same_orbs_; // This allows pointers to be duplicated/computation skipped
-    bool same_dens_; // This allows pointers to be duplicated/computation skipped
+    bool same_orbs_;  // This allows pointers to be duplicated/computation skipped
+    bool same_dens_;  // This allows pointers to be duplicated/computation skipped
     /// The integral factory for this wavefunction's basisset
     std::shared_ptr<IntegralFactory> integral_;
     /// The matrix factory for this wavefunction's basisset (SO)
@@ -80,8 +79,8 @@ protected:
     SharedMatrix AO2USO_;
 
     /**
-    * Internally, data is held in the SO basis in Pitzer order
-    */
+     * Internally, data is held in the SO basis in Pitzer order
+     */
 
     /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
     SharedVector epsilon_a_;
@@ -99,9 +98,7 @@ protected:
     /// Common initialization
     void common_init();
 
-
-public:
-
+   public:
     /// Build a Prop object with C, epsilon, and restricted buit from wfn
     Prop(std::shared_ptr<Wavefunction> wfn);
     /// Virtual destructor
@@ -122,7 +119,8 @@ public:
     // Set beta C matrix, SO/MO pitzer order basis. Throws if restricted
     void set_Cb(SharedMatrix Cb);
 
-    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
+    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do
+    // the adding to Dt  <= //
 
     // TODO Add symmetry is irrep number
     void set_Da_ao(SharedMatrix Da, int symmetry = 0);
@@ -190,7 +188,6 @@ public:
 
     // => Some integral helpers <= //
     SharedMatrix overlap_so();
-
 };
 
 /**
@@ -316,7 +313,7 @@ class PopulationAnalysisCalc : public Prop {
    public:
     typedef std::shared_ptr<std::vector<double>> SharedStdVector;
     PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn);
-    virtual ~PopulationAnalysisCalc();
+    ~PopulationAnalysisCalc() override;
     /// Compute Mulliken Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
@@ -364,7 +361,7 @@ class ESPPropCalc : public Prop {
     /// Constructor
     ESPPropCalc(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
-    virtual ~ESPPropCalc();
+    ~ESPPropCalc() override;
 
     std::vector<double> const& Vvals() const { return Vvals_; }
     std::vector<double> const& Exvals() const { return Exvals_; }
@@ -384,9 +381,9 @@ class ESPPropCalc : public Prop {
 };
 
 /**
-* The OEProp object, computes arbitrary expectation values (scalars)
-* analyses (typically vectors)
-**/
+ * The OEProp object, computes arbitrary expectation values (scalars)
+ * analyses (typically vectors)
+ **/
 class OEProp : public TaskListComputer {
    private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
@@ -398,7 +395,7 @@ class OEProp : public TaskListComputer {
     /// Common initialization
     void common_init();
     /// Print header and information
-    void print_header();
+    void print_header() override;
 
     // Compute routines
     /// Compute dipole
@@ -444,7 +441,7 @@ class OEProp : public TaskListComputer {
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
-    virtual ~OEProp();
+    ~OEProp() override;
 
     /// Python issue
     void oepy_add(const std::string& task) { add(task); }
@@ -452,7 +449,7 @@ class OEProp : public TaskListComputer {
     void oepy_set_title(const std::string& title) { set_title(title); }
 
     /// Compute and print/save the properties
-    void compute();
+    void compute() override;
 
     std::vector<double> const& Vvals() const { return epc_.Vvals(); }
     std::vector<double> const& Exvals() const { return epc_.Exvals(); }
@@ -487,18 +484,18 @@ class OEProp : public TaskListComputer {
 };
 
 /**
-* The GridProp object, contains a cartesian grid and
-* associated point properties
-*
-* The grid is built according to the following rules:
-*  - A unit grid with corners (+/-1,0,0) (and all permutations) is built, with its origin at (0,0,0)
-*  - This unit grid is filled with (n_x, n_y, n_z) subintervals, equally spaced in each dimension
-*  - This unit grid is scaled symmetrically so that its edges measure (l_x, l_y, l_z)
-*  - The grid is translated so that the origin is as (o_x,o_y,o_z)
-**/
-//class GridProp : public Prop {
+ * The GridProp object, contains a cartesian grid and
+ * associated point properties
+ *
+ * The grid is built according to the following rules:
+ *  - A unit grid with corners (+/-1,0,0) (and all permutations) is built, with its origin at (0,0,0)
+ *  - This unit grid is filled with (n_x, n_y, n_z) subintervals, equally spaced in each dimension
+ *  - This unit grid is scaled symmetrically so that its edges measure (l_x, l_y, l_z)
+ *  - The grid is translated so that the origin is as (o_x,o_y,o_z)
+ **/
+// class GridProp : public Prop {
 //
-//protected:
+// protected:
 //    /// The absolute file path where results from this analysis will be stored
 //    std::string filename_;
 //    /// The format for the output (defaults to df3)
@@ -590,7 +587,7 @@ class OEProp : public TaskListComputer {
 //    void write_df3_grid();
 //
 //
-//public:
+// public:
 //    /// Constructor, uses globals
 //    GridProp(std::shared_ptr<Wavefunction> wfn);
 //    /// Constructor, uses globals and Process::environment::reference wavefunction
@@ -655,7 +652,6 @@ class OEProp : public TaskListComputer {
 //
 //};
 
-
-}
+}  // namespace psi
 
 #endif

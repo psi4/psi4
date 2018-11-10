@@ -43,7 +43,8 @@ json_data = {
     ]
   },
   "keywords": {"scf_type": "df",
-               "mp2_type": "df"}
+               "mp2_type": "df",
+               "e_convergence": 9}
 }
 
 # Write expected output

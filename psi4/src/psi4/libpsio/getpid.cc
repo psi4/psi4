@@ -49,28 +49,26 @@
 
 namespace psi {
 
-std::string PSIO::getpid(void) {
-  std::stringstream ss;
+std::string PSIO::getpid() {
+    std::stringstream ss;
 
-  if (psi::restart_id.empty()) {
-    ss << SYSTEM_GETPID();
-  }
-  else
-    ss << psi::restart_id;
+    if (psi::restart_id.empty()) {
+        ss << SYSTEM_GETPID();
+    } else
+        ss << psi::restart_id;
 
-  return ss.str();
+    return ss.str();
 }
 
-std::string psio_getpid(void) {
-  std::stringstream ss;
+std::string psio_getpid() {
+    std::stringstream ss;
 
-  if (psi::restart_id.empty()) {
-    ss << SYSTEM_GETPID();
-  }
-  else
-    ss << psi::restart_id;
+    if (psi::restart_id.empty()) {
+        ss << SYSTEM_GETPID();
+    } else
+        ss << psi::restart_id;
 
-  return ss.str();
+    return ss.str();
 }
 
-}
+}  // namespace psi

@@ -1,5 +1,8 @@
+import pytest
+
 import psi4
 
+@pytest.mark.smoke
 def test_psi4_basic():
     """tu1-h2o-energy"""
     #! Sample HF/cc-pVDZ H2O computation
@@ -16,6 +19,7 @@ def test_psi4_basic():
     assert psi4.compare_values(-76.0266327341067125, psi4.get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')
 
 
+@pytest.mark.smoke
 def test_psi4_cc():
     """cc1"""
     #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
@@ -42,6 +46,7 @@ def test_psi4_cc():
     assert psi4.compare_values(reftotal, psi4.get_variable("Current energy"), 7, "Total energy")
 
 
+@pytest.mark.smoke
 def test_psi4_cas():
     """casscf-sp"""
     #! CASSCF/6-31G** energy point
@@ -73,12 +78,13 @@ def test_psi4_cas():
     assert psi4.compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
 
 
+@pytest.mark.smoke
 def test_psi4_dfmp2():
     """dfmp2-1"""
     #! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
     #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
-    Enuc = 235.946620315069168
+    Enuc = 235.94662124
     Ecp  = -0.0224119246
 
     formic_dim = psi4.geometry("""
@@ -115,12 +121,13 @@ def test_psi4_dfmp2():
     assert psi4.compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")
 
 
+@pytest.mark.smoke
 def test_psi4_sapt():
     """sapt1"""
     #! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
     #! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
-    Eref = [ 85.189064196429101,  -0.00359915058,  0.00362911158,
+    Eref = [ 85.1890645313,  -0.00359915058,  0.00362911158,
              -0.00083137117,      -0.00150542374, -0.00230683391 ]
 
     ethene_ethyne = psi4.geometry("""
@@ -171,6 +178,7 @@ def test_psi4_sapt():
     assert psi4.compare_values(Eref[5], ET, 6, "SAPT0 Etotal")
 
 
+@pytest.mark.smoke
 def test_psi4_scfproperty():
     """scf-property"""
     #! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
@@ -201,7 +209,7 @@ def test_psi4_scfproperty():
         "reference": "uhf"})
 
     ch2.update_geometry()
-    assert psi4.compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+    assert psi4.compare_values(6.6484189450, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
 
     props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
              'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',

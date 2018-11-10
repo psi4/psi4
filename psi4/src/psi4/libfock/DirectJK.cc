@@ -84,7 +84,7 @@ void DirectJK::print_header() const
         if (do_wK_)
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
-        //outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        //outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
@@ -578,7 +578,8 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       auto printer = std::make_shared<PsiOutStream>("bench.dat",std::ostream::app);
+        auto mode = std::ostream::app;
+        auto printer = std::make_shared<PsiOutStream>("bench.dat", mode);
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
@@ -611,7 +612,7 @@ void DirectJK::print_header() const
         if (do_wK_)
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    OpenMP threads:    %11d\n", omp_nthread_);
-        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }

@@ -2,7 +2,7 @@
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
-refnuc      =  0.66147151073750 #TEST
+refnuc      =  0.66147151334    #TEST
 refscf      = -5.71032245823742 #TEST
 refmp2      = -5.76128209224125 #TEST
 refdcftscf  = -5.62714230598082 #TEST

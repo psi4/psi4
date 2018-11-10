@@ -33,14 +33,12 @@
 #include <string>
 #include <vector>
 
+#include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libiwl/iwl.hpp"
-
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
 
 using namespace psi;
 
@@ -166,21 +164,21 @@ void IntegralTransform::transform_oei_unrestricted(const std::shared_ptr<MOSpace
 }
 
 /**
-* Transforms a packed symmetric matrix.
-*
-* @param m - input matrix row dimension
-* @param n - output matrix row dimension
-* @param input - pointer to input integrals (the lower-triangle of a symmetric matrix)
-* @param pointer to output integrals (the lower-triangle of a symmetric matrix)
-* @param C transformation matrix (rectangular, m X n)
-* @param offset - the point in the full list of SOs where we want to start.  This is
-*                 useful for transforming integrals one irrep at a time and in this
-*                 case the offset would correspond to the position of the first
-*                 orbital in the current irrep.
-* @param order - a reordering array to change the order of the output
-* @param backtransform - whether this is a forward or backwards transformation
-* @param scale - the amount of the existing output buffer to mix into the result
-*/
+ * Transforms a packed symmetric matrix.
+ *
+ * @param m - input matrix row dimension
+ * @param n - output matrix row dimension
+ * @param input - pointer to input integrals (the lower-triangle of a symmetric matrix)
+ * @param pointer to output integrals (the lower-triangle of a symmetric matrix)
+ * @param C transformation matrix (rectangular, m X n)
+ * @param offset - the point in the full list of SOs where we want to start.  This is
+ *                 useful for transforming integrals one irrep at a time and in this
+ *                 case the offset would correspond to the position of the first
+ *                 orbital in the current irrep.
+ * @param order - a reordering array to change the order of the output
+ * @param backtransform - whether this is a forward or backwards transformation
+ * @param scale - the amount of the existing output buffer to mix into the result
+ */
 
 void IntegralTransform::trans_one(int m, int n, double *input, double *output, double **C, int offset, int *order,
                                   bool backtransform, double scale) {
@@ -326,7 +324,7 @@ void IntegralTransform::generate_oei() {
                                aFzcOp, bFzcOp, aD, bD, aFock, bFock);
         } /* end loop through current buffer */
     } /* end loop over reading buffers */
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     double *moInts = init_array(nTriMo_);

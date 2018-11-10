@@ -74,11 +74,11 @@ protected:
     // Fully split denominator (w in rows, a in columns)
     SharedMatrix denominator_vir_;
 
-    void decompose();
+    void decompose() override;
 public:
     LaplaceDenominator(std::shared_ptr<Vector> eps_occ_, std::shared_ptr<Vector> eps_vir, double delta);
-    ~LaplaceDenominator();
-    void debug();
+    ~LaplaceDenominator() override;
+    void debug() override;
     SharedMatrix denominator_occ() const { return denominator_occ_; }
     SharedMatrix denominator_vir() const { return denominator_vir_; }
 
@@ -87,11 +87,11 @@ public:
 class CholeskyDenominator : public Denominator {
 
 protected:
-    void decompose();
+    void decompose() override;
 public:
     CholeskyDenominator(std::shared_ptr<Vector> eps_occ_, std::shared_ptr<Vector> eps_vir, double delta);
-    ~CholeskyDenominator();
-    void debug();
+    ~CholeskyDenominator() override;
+    void debug() override;
 
 };
 
@@ -152,15 +152,15 @@ protected:
     // Fully split denominator (w in rows, s in columns) (monomer B)
     SharedMatrix denominator_virB_;
 
-    void decompose();
+    void decompose() override;
     void check_split(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
       SharedMatrix, SharedMatrix);
 public:
     SAPTLaplaceDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
       std::shared_ptr<Vector>, std::shared_ptr<Vector>, double, bool debug = false);
-    ~SAPTLaplaceDenominator();
+    ~SAPTLaplaceDenominator() override;
 
-    void debug();
+    void debug() override;
     SharedMatrix denominator_occA() const { return denominator_occA_; }
     SharedMatrix denominator_virA() const { return denominator_virA_; }
     SharedMatrix denominator_occB() const { return denominator_occB_; }
@@ -171,11 +171,11 @@ public:
 class SAPTCholeskyDenominator : public SAPTDenominator {
 
 protected:
-    void decompose();
+    void decompose() override;
 public:
     SAPTCholeskyDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>,
       std::shared_ptr<Vector>, std::shared_ptr<Vector>, double, bool debug = false);
-    ~SAPTCholeskyDenominator();
+    ~SAPTCholeskyDenominator() override;
 };
 
 class TLaplaceDenominator {

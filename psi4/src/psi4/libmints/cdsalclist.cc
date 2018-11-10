@@ -55,7 +55,7 @@ static char direction(int xyz) {
             return '?';
     }
 }
-}
+}  // namespace
 
 namespace psi {
 
@@ -84,7 +84,8 @@ void CdSalcWRTAtom::print() const {
     }
 }
 
-CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool project_out_translations, bool project_out_rotations)
+CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool project_out_translations,
+                       bool project_out_rotations)
     : molecule_(mol),
       needed_irreps_(needed_irreps),
       project_out_translations_(project_out_translations),
@@ -170,7 +171,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
 
     // constraints_ortho.print();
 
-    double *salc = new double[ncd_];
+    auto *salc = new double[ncd_];
 
     // Obtain handy reference to point group.
     const PointGroup &pg = *molecule_->point_group().get();
@@ -183,7 +184,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     for (int i = 0; i < nirrep_; ++i) dim[i] = ncd_;
 
     Matrix salcs("Requested SALCs", dim, dim);
-    int *salcirrep = new int[ncd_];
+    auto *salcirrep = new int[ncd_];
 
     // We know how many atom_salcs_ we have.
     for (int i = 0; i < natom; ++i) atom_salcs_.push_back(CdSalcWRTAtom());
@@ -461,4 +462,4 @@ molecule_->inertia_tensor()->print();
     return constraints_ortho;
 }
 */
-}
+}  // namespace psi

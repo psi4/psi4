@@ -37,7 +37,7 @@
 #endif
 
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
+#include "psi4/libpsi4util/libpsi4util.h"  // Needed for Ref counting, string splitting, and conversions
 
 #include <memory>
 #include <string>
@@ -53,18 +53,16 @@ class DataTypeException : public PsiException {
 
 class IndexException : public PsiException {
    public:
-    IndexException(const std::string& message)
-        : PSIEXCEPTION(message + " is not a valid option.") {}
+    IndexException(const std::string& message) : PSIEXCEPTION(message + " is not a valid option.") {}
     IndexException(const std::string& message, const std::string& module)
         : PSIEXCEPTION(message + " is not a valid option for module " + module) {}
 };
 
 class DuplicateKeyException : public PsiException {
    public:
-    DuplicateKeyException(const std::string& key, const std::string& type1,
-                          const std::string& type2, const char* lfile, int lline)
-        : PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2,
-                       lfile, lline) {}
+    DuplicateKeyException(const std::string& key, const std::string& type1, const std::string& type2, const char* lfile,
+                          int lline)
+        : PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, lfile, lline) {}
 };
 
 class OptionsException : public PsiException {
@@ -129,18 +127,18 @@ class BooleanDataType : public DataType {
    public:
     BooleanDataType();
     BooleanDataType(bool b);
-    virtual ~BooleanDataType();
+    ~BooleanDataType() override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual std::string to_string() const;
-    virtual int to_integer() const;
-    virtual double to_double() const;
+    std::string to_string() const override;
+    int to_integer() const override;
+    double to_double() const override;
 
-    virtual void assign(bool b);
-    virtual void assign(int i);
-    virtual void assign(double d);
-    virtual void assign(std::string s);
+    void assign(bool b) override;
+    void assign(int i) override;
+    void assign(double d) override;
+    void assign(std::string s) override;
 };
 
 #ifdef __INTEL_COMPILER
@@ -152,18 +150,18 @@ class IntDataType : public DataType {
    public:
     IntDataType();
     IntDataType(int i);
-    virtual ~IntDataType();
+    ~IntDataType() override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual std::string to_string() const;
-    virtual int to_integer() const;
-    virtual double to_double() const;
+    std::string to_string() const override;
+    int to_integer() const override;
+    double to_double() const override;
 
-    virtual void assign(bool b);
-    virtual void assign(int i);
-    virtual void assign(double d);
-    virtual void assign(std::string s);
+    void assign(bool b) override;
+    void assign(int i) override;
+    void assign(double d) override;
+    void assign(std::string s) override;
 };
 
 #ifdef __INTEL_COMPILER
@@ -175,18 +173,18 @@ class DoubleDataType : public DataType {
    public:
     DoubleDataType();
     DoubleDataType(double d);
-    virtual ~DoubleDataType();
+    ~DoubleDataType() override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual std::string to_string() const;
-    virtual int to_integer() const;
-    virtual double to_double() const;
+    std::string to_string() const override;
+    int to_integer() const override;
+    double to_double() const override;
 
-    virtual void assign(bool b);
-    virtual void assign(int i);
-    virtual void assign(double d);
-    virtual void assign(std::string s);
+    void assign(bool b) override;
+    void assign(int i) override;
+    void assign(double d) override;
+    void assign(std::string s) override;
 };
 
 #ifdef __INTEL_COMPILER
@@ -201,20 +199,20 @@ class StringDataType : public DataType {
     StringDataType(std::string s);
     StringDataType(std::string s, std::string c);
 
-    virtual ~StringDataType();
+    ~StringDataType() override;
 
-    virtual void add_choices(std::string str);
+    void add_choices(std::string str) override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual std::string to_string() const;
-    virtual int to_integer() const;
-    virtual double to_double() const;
+    std::string to_string() const override;
+    int to_integer() const override;
+    double to_double() const override;
 
-    virtual void assign(bool b);
-    virtual void assign(int i);
-    virtual void assign(double d);
-    virtual void assign(std::string s);
+    void assign(bool b) override;
+    void assign(int i) override;
+    void assign(double d) override;
+    void assign(std::string s) override;
 };
 
 #ifdef __INTEL_COMPILER
@@ -228,20 +226,20 @@ class IStringDataType : public DataType {
     IStringDataType();
     IStringDataType(std::string s);
     IStringDataType(std::string s, std::string c);
-    virtual ~IStringDataType();
+    ~IStringDataType() override;
 
-    virtual void add_choices(std::string str);
+    void add_choices(std::string str) override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual std::string to_string() const;
-    virtual int to_integer() const;
-    virtual double to_double() const;
+    std::string to_string() const override;
+    int to_integer() const override;
+    double to_double() const override;
 
-    virtual void assign(bool b);
-    virtual void assign(int i);
-    virtual void assign(double d);
-    virtual void assign(std::string s);
+    void assign(bool b) override;
+    void assign(int i) override;
+    void assign(double d) override;
+    void assign(std::string s) override;
 };
 
 class PSI_API Data {
@@ -302,24 +300,24 @@ class PSI_API ArrayType : public DataType {
    public:
     ArrayType();
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual void add(DataType* data);
-    virtual void add(bool b);
-    virtual void add(int i);
-    virtual void add(double d);
-    virtual void add(std::string s, std::string c = "");
-    virtual void assign(DataType* data);
+    void add(DataType* data) override;
+    void add(bool b) override;
+    void add(int i) override;
+    void add(double d) override;
+    void add(std::string s, std::string c = "") override;
+    void assign(DataType* data) override;
 
-    virtual Data& operator[](size_t i);
-    virtual Data& operator[](std::string s);
-    virtual bool is_array() const;
+    Data& operator[](size_t i) override;
+    Data& operator[](std::string s) override;
+    bool is_array() const override;
 
-    virtual size_t size() const;
+    size_t size() const override;
 
-    virtual std::string to_string() const;
+    std::string to_string() const override;
 
-    virtual void reset();
+    void reset() override;
     std::vector<Data> data() { return array_; }
 };
 
@@ -334,22 +332,22 @@ class MapType : public DataType {
    public:
     MapType();
 
-    virtual std::string type() const;
+    std::string type() const override;
 
-    virtual void add(std::string key, DataType* data);
-    virtual void add(std::string key, bool b);
-    virtual void add(std::string key, int i);
-    virtual void add(std::string key, double d);
-    virtual void add(std::string key, std::string s, std::string c = "");
+    void add(std::string key, DataType* data) override;
+    void add(std::string key, bool b) override;
+    void add(std::string key, int i) override;
+    void add(std::string key, double d) override;
+    void add(std::string key, std::string s, std::string c = "") override;
 
-    virtual bool exists(std::string key);
+    bool exists(std::string key) override;
 
-    virtual Data& operator[](std::string s);
-    virtual bool is_array() const;
+    Data& operator[](std::string s) override;
+    bool is_array() const override;
 
-    virtual size_t size() const;
+    size_t size() const override;
 
-    virtual std::string to_string() const;
+    std::string to_string() const override;
 };
 
 class PSI_API Options {
@@ -414,18 +412,13 @@ class PSI_API Options {
     void set_global_array_string(std::string key, std::string val, DataType* entry);
     void set_global_array_int(std::string key, int val, DataType* entry);
     DataType* set_global_array_array(std::string key, DataType* entry);
-    DataType* set_local_array_entry(const std::string& module, const std::string& key,
-                                    DataType* entry, DataType* loc);
-    void set_local_array_double(const std::string& module, const std::string& key, double val,
-                                DataType* entry);
-    void set_local_array_string(const std::string& module, const std::string& key, std::string val,
-                                DataType* entry);
-    void set_local_array_int(const std::string& module, const std::string& key, int val,
-                             DataType* entry);
-    DataType* set_local_array_array(const std::string& module, const std::string& key,
-                                    DataType* entry);
+    DataType* set_local_array_entry(const std::string& module, const std::string& key, DataType* entry, DataType* loc);
+    void set_local_array_double(const std::string& module, const std::string& key, double val, DataType* entry);
+    void set_local_array_string(const std::string& module, const std::string& key, std::string val, DataType* entry);
+    void set_local_array_int(const std::string& module, const std::string& key, int val, DataType* entry);
+    DataType* set_local_array_array(const std::string& module, const std::string& key, DataType* entry);
 
-    void clear(void);
+    void clear();
 
     bool exists_in_active(std::string key);
 
@@ -466,5 +459,5 @@ class PSI_API Options {
     void print_globals();
     std::vector<std::string> list_globals();
 };
-}
+}  // namespace psi
 #endif

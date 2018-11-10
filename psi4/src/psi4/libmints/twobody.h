@@ -48,7 +48,6 @@ enum PermutedOrder { ABCD = 0, BACD = 1, ABDC = 2, BADC = 3, CDAB = 4, CDBA = 5,
 
 typedef std::vector<std::pair<int, int>> ShellPairBlock;
 
-
 class IntegralFactory;
 class AOShellCombinationsIterator;
 class BasisSet;
@@ -58,10 +57,9 @@ class GaussianShell;
  *  \class TwoBodyInt
  *  \brief Two body integral base class.
  */
-class PSI_API TwoBodyAOInt
-{
-protected:
-    const IntegralFactory* integral_;
+class PSI_API TwoBodyAOInt {
+   protected:
+    const IntegralFactory *integral_;
 
     const std::shared_ptr<BasisSet> original_bs1_;
     const std::shared_ptr<BasisSet> original_bs2_;
@@ -72,7 +70,6 @@ protected:
     std::shared_ptr<BasisSet> bs2_;
     std::shared_ptr<BasisSet> bs3_;
     std::shared_ptr<BasisSet> bs4_;
-
 
     /// Buffer to hold the final integrals.
     double *target_full_;
@@ -105,8 +102,7 @@ protected:
      *
      * Default implementation
      */
-    void create_blocks(void);
-
+    void create_blocks();
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -117,17 +113,17 @@ protected:
     void permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
     void permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
 
-//    TwoBodyInt(std::shared_ptr<BasisSet> bs1,
-//               std::shared_ptr<BasisSet> bs2,
-//               std::shared_ptr<BasisSet> bs3,
-//               std::shared_ptr<BasisSet> bs4,
-//               int deriv = 0);
+    //    TwoBodyInt(std::shared_ptr<BasisSet> bs1,
+    //               std::shared_ptr<BasisSet> bs2,
+    //               std::shared_ptr<BasisSet> bs3,
+    //               std::shared_ptr<BasisSet> bs4,
+    //               int deriv = 0);
 
-    TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv=0);
+    TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv = 0);
 
-    TwoBodyAOInt(const TwoBodyAOInt & rhs);
+    TwoBodyAOInt(const TwoBodyAOInt &rhs);
 
-public:
+   public:
     virtual ~TwoBodyAOInt();
 
     /// Basis set on center one
@@ -151,23 +147,22 @@ public:
     const double *buffer() const { return target_full_; }
 
     /// Returns the integral factory used to create this object
-    const IntegralFactory* integral() const { return integral_; }
+    const IntegralFactory *integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell(const AOShellCombinationsIterator&) = 0;
+    virtual size_t compute_shell(const AOShellCombinationsIterator &) = 0;
 
     /// Compute the integrals
     virtual size_t compute_shell(int, int, int, int) = 0;
 
     //! Get optimal blocks of shell pairs for centers 1 & 2
-    std::vector<ShellPairBlock> get_blocks12(void) const;
+    std::vector<ShellPairBlock> get_blocks12() const;
 
     //! Get optimal blocks of shell pairs for centers 3 & 4
-    std::vector<ShellPairBlock> get_blocks34(void) const;
-
+    std::vector<ShellPairBlock> get_blocks34() const;
 
     /*! Compute integrals for two blocks
-     * 
+     *
      * The indices \p shellpair12 and \p shellpair34 refer to the indices
      * in the vectors returned by get_blocks12() and get_blocks34(),
      * respectively.
@@ -178,12 +173,10 @@ public:
      * triangular parts, for example.  A value of -1 means to calculate
      * all that are part of the shell pair batch.
      */
-    virtual void
-    compute_shell_blocks(int shellpair12, int shellpair34,
-                         int npair12 = -1, int npair34 = -1);
+    virtual void compute_shell_blocks(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1);
 
     /// Is the shell zero?
-    virtual int shell_is_zero(int,int,int,int) { return 0; }
+    virtual int shell_is_zero(int, int, int, int) { return 0; }
 
     /// Compute the first derivatives
     virtual size_t compute_shell_deriv1(int, int, int, int) = 0;
@@ -192,14 +185,14 @@ public:
     virtual size_t compute_shell_deriv2(int, int, int, int) = 0;
 
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>,
-                      std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, int nchunk=1);
+    void normalize_am(std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>,
+                      std::shared_ptr<GaussianShell>, int nchunk = 1);
 
     /// Return true if the clone member can be called. By default returns false.
     virtual bool cloneable() const;
 
     /// Returns a clone of this object. By default throws an exception
-    virtual TwoBodyAOInt* clone() const;
+    virtual TwoBodyAOInt *clone() const;
 
     /// Results go back to buffer_
     void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true);
@@ -207,6 +200,6 @@ public:
 
 typedef std::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;
 
-}
+}  // namespace psi
 
 #endif

@@ -229,7 +229,7 @@ public:
     /// close unit. if keep == 0, will remove the file, else keep it
     void close(size_t unit, int keep);
     /// lookup process id
-    std::string getpid(void);
+    std::string getpid();
     /// sync up the object to the file on disk by closing and opening the file, if necessary
     void rehash(size_t unit);
     /// return 1 if unit is open

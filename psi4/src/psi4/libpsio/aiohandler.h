@@ -36,7 +36,7 @@
 namespace psi {
 
 class AIOHandler {
-private:
+   private:
     /// What is the job type?
     std::queue<size_t> job_;
     /// Unique job ID to check for job completion. Should NEVER be 0.
@@ -44,17 +44,17 @@ private:
     /// Unit number argument
     std::queue<size_t> unit_;
     /// Entry Key (80-char) argument
-    std::queue<const char*> key_;
+    std::queue<const char *> key_;
     /// Memory buffer argument
-    std::queue<char*> buffer_;
+    std::queue<char *> buffer_;
     /// Size argument
     std::queue<size_t> size_;
     /// Start address argument
     std::queue<psio_address> start_;
     /// End address pointer argument
-    std::queue<psio_address*> end_;
+    std::queue<psio_address *> end_;
     /// Matrix pointer for discontinuous I/O
-    std::queue<double**> matrix_;
+    std::queue<double **> matrix_;
     /// Size argument for discontinuous I/O
     std::queue<size_t> row_length_;
     /// Size argument for discontinuous I/O
@@ -66,7 +66,7 @@ private:
     /// For IWL: is this the last buffer ?
     std::queue<int> lastbuf_;
     /// For IWL: pointer to current position in file
-    std::queue<size_t*> address_;
+    std::queue<size_t *> address_;
     /// PSIO object this AIO_Handler is built on
     std::shared_ptr<PSIO> psio_;
     /// Thread this AIO_Handler is currently running on
@@ -77,7 +77,8 @@ private:
     size_t uniqueID_;
     /// condition variable to wait for a specific job to finish
     std::condition_variable condition_;
-public:
+
+   public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
     AIOHandler(std::shared_ptr<PSIO> psio);
     /// Destructor
@@ -85,11 +86,9 @@ public:
     /// When called, synchronize will not return until all requested data has been read or written
     void synchronize();
     /// Asynchronous read, same as PSIO::read, but nonblocking
-    size_t read(size_t unit, const char *key, char *buffer, size_t size,
-              psio_address start, psio_address *end);
+    size_t read(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end);
     /// Asynchronous write, same as PSIO::write, but nonblocking
-    size_t write(size_t unit, const char *key, char *buffer, size_t size,
-               psio_address start, psio_address *end);
+    size_t write(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end);
     /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
     size_t read_entry(size_t unit, const char *key, char *buffer, size_t size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
@@ -110,26 +109,25 @@ public:
     ///
     /// These functions are not necessary for psio, but for aio they are.
     ///
-    size_t read_discont(size_t unit, const char *key, double **matrix,
-      size_t row_length, size_t col_length, size_t col_skip, psio_address start);
+    size_t read_discont(size_t unit, const char *key, double **matrix, size_t row_length, size_t col_length,
+                        size_t col_skip, psio_address start);
     /// Same as read_discont, but for writing
-    size_t write_discont(size_t unit, const char *key, double **matrix,
-      size_t row_length, size_t col_length, size_t col_skip, psio_address start);
+    size_t write_discont(size_t unit, const char *key, double **matrix, size_t row_length, size_t col_length,
+                         size_t col_skip, psio_address start);
 
     /// Zero disk
     /// Fills a double precision disk entry with zeros
     /// Total fill size is rows*cols*sizeof(double)
     /// Buffer memory of cols*sizeof(double) is used
-    size_t zero_disk(size_t unit, const char* key, size_t rows, size_t cols);
+    size_t zero_disk(size_t unit, const char *key, size_t rows, size_t cols);
 
     /// Write IWL
     /// Write an IWL buffer, thus containing
     /// IWL_INTS_PER_BUF integrals, 4 labels per integral, plus one
     /// integer indicating whether it is the last buffer and one integer
     /// counting the number of integrals in the current buffer
-    size_t write_iwl(size_t unit, const char* key, size_t nints,
-                            int lastbuf, char* labels, char* values, size_t labsize,
-                            size_t valsize, size_t* address);
+    size_t write_iwl(size_t unit, const char *key, size_t nints, int lastbuf, char *labels, char *values,
+                     size_t labsize, size_t valsize, size_t *address);
     /// Generic function bound to thread internally
     void call_aio();
 
@@ -138,6 +136,6 @@ public:
     void wait_for_job(size_t jobid);
 };
 
-}
+}  // namespace psi
 
-#endif // AIOHANDLER_H
+#endif  // AIOHANDLER_H

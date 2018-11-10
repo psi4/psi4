@@ -178,7 +178,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
 
 
 // See Gonzalez and Schlegel JCP 2154 (1989).
-void MOLECULE::irc_step(void)
+void MOLECULE::irc_step()
 {
   // Are we at the TS?  at_TS
   bool at_TS = !(p_irc_data->size());
@@ -194,14 +194,14 @@ void MOLECULE::irc_step(void)
   int Nintco = Ncoord();
   int Natom = g_natom();
   int Ncart = 3 * Natom;
-  bool answer = 1;
+  bool answer = true;
 
 
   int opt_iter = p_Opt_data->g_iteration() - 1;
   if(opt_iter > 2 && p_irc_data->in_min_range) {
     if(    std::fabs(p_Opt_data->g_energy(opt_iter)     - p_Opt_data->g_energy(opt_iter - 2)) < 0.01e-03
         && std::fabs(p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3)) < 0.01e-03 ) {
-      p_irc_data->go = 0;
+      p_irc_data->go = false;
     }
   }
 
@@ -216,7 +216,7 @@ void MOLECULE::irc_step(void)
       double u_f_q_dot = array_dot(u_f_q, u_f_q_0, Nintco);
 
       if(u_f_q_dot < -0.5) {
-        p_irc_data->in_min_range = 1;
+        p_irc_data->in_min_range = true;
       }
 
       if (u_f_q_dot < -0.7 ||
@@ -231,7 +231,7 @@ void MOLECULE::irc_step(void)
           std::cin >> answer;
         }
         if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer) {
-          p_irc_data->go = 0;
+          p_irc_data->go = false;
         }
       }
 
@@ -240,10 +240,10 @@ void MOLECULE::irc_step(void)
     }
 
   //The G matrix, its square root, and its inverse square root
-  double **G         = compute_G(1);                          //G = BUB^t
+  double **G         = compute_G(true);                          //G = BUB^t
 
   double **rootG_reg = matrix_return_copy(G, Nintco, Nintco); //G^1/2
-  matrix_root(rootG_reg, Nintco, 0);
+  matrix_root(rootG_reg, Nintco, false);
 
   if (Opt_params.print_lvl > 2) {
     oprintf_out( "\n@IRC rootG matrix:\n");
@@ -251,7 +251,7 @@ void MOLECULE::irc_step(void)
   }
 
   double **rootG_inv = matrix_return_copy(G, Nintco, Nintco); //G^-1/2
-  matrix_root(rootG_inv, Nintco, 1);
+  matrix_root(rootG_inv, Nintco, true);
 
   if (Opt_params.print_lvl > 2) {
     oprintf_out( "@IRC G matrix:\n");
@@ -263,9 +263,9 @@ void MOLECULE::irc_step(void)
   double **H_m = init_matrix(Nintco, Nintco);
   double **T = init_matrix(Nintco, Nintco);
   // T = HG^1/2
-  opt_matrix_mult(H, 0, rootG_reg, 0, T, 0, Nintco, Nintco, Nintco, 0);
+  opt_matrix_mult(H, false, rootG_reg, false, T, false, Nintco, Nintco, Nintco, false);
   // H_m = (G^1/2)H(G^1/2) = (G^1/2)T
-  opt_matrix_mult(rootG_reg, 0, T, 0, H_m, 0, Nintco, Nintco, Nintco, 0);
+  opt_matrix_mult(rootG_reg, false, T, false, H_m, false, Nintco, Nintco, Nintco, false);
   free_matrix(T);
 
   if (Opt_params.print_lvl > 2) {
@@ -497,8 +497,8 @@ void MOLECULE::irc_step(void)
   for(int i=0; i<Nintco; i++)
     g_m0[i] = array_dot(rootG_reg[i], g_0, Nintco);
 
-  if(0 && p_irc_data->sphere_step > 1) {
-    if(0)
+  if(false && p_irc_data->sphere_step > 1) {
+    if(false)
       //GS_interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
       GS_interpolation(p_m, p_m0, g_m, g_m0, Nintco);
     else
@@ -638,18 +638,18 @@ void MOLECULE::irc_step(void)
   // Compute (H_m - lambda * I)^(-1)
   for(int i=0; i<Nintco; i++)
     H_m[i][i] -= lambda;
-  double **H_m_lag_inv = symm_matrix_inv(H_m, Nintco, 1);
+  double **H_m_lag_inv = symm_matrix_inv(H_m, Nintco, true);
 
   double *g_lag_p = init_array(Nintco);
   for(int i=0; i<Nintco; i++)
     g_lag_p[i] = lambda * p_m[i] - g_m[i];
 
-  opt_matrix_mult(H_m_lag_inv, 0, &g_lag_p, 1, &dq_m, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(H_m_lag_inv, false, &g_lag_p, true, &dq_m, true, Nintco, Nintco, 1, false);
 
   free_matrix(H_m_lag_inv);
 
 //5. find dq ( = (G^1/2)dq_m) and do displacements
-  opt_matrix_mult(rootG_reg, 0, &dq_m, 1, &dq, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(rootG_reg, false, &dq_m, true, &dq, true, Nintco, Nintco, 1, false);
 
 
   // Do displacements for each fragment separately.

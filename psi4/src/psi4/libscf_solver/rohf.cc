@@ -27,9 +27,9 @@
  */
 
 #include <ctime>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 #include <algorithm>
 #include <vector>
 #include <utility>
@@ -592,7 +592,7 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
     Cr.clear();
 
     // If scf_type is DF we can do some extra JK voodo
-    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || (options_.get_str("SCF_TYPE") == "CD")){
+    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || (options_.get_str("SCF_TYPE") == "CD")) {
         SharedMatrix Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, doccpi_});
         Cdocc->set_name("Cdocc");
 
@@ -980,8 +980,8 @@ void ROHF::form_G() {
 }
 
 bool ROHF::stability_analysis() {
-    if(functional_->needs_xc()) {
-       throw PSIEXCEPTION("Stability analysis not yet supported for XC functionals.");
+    if (functional_->needs_xc()) {
+        throw PSIEXCEPTION("Stability analysis not yet supported for XC functionals.");
     }
     if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
@@ -1053,8 +1053,9 @@ bool ROHF::stability_analysis() {
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
 #define ID(x) ints.DPD_ID(x)
-        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
-                               IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None);
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted,
+                               IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::QTOrder,
+                               IntegralTransform::FrozenOrbitals::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
@@ -1273,7 +1274,7 @@ bool ROHF::stability_analysis() {
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, A.matrix[h][0], npairs, U[0], npairs, 0.0, temp[0], npairs);
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs, temp[0], npairs, 0.0, A.matrix[h][0], npairs);
 
-            double* evals = new double[rank];
+            auto* evals = new double[rank];
             double** evecs = block_matrix(rank, rank);
 
             sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);
@@ -1321,5 +1322,5 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
-}
-}
+}  // namespace scf
+}  // namespace psi

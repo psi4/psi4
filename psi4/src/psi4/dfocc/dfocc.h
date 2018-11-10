@@ -47,9 +47,9 @@ class DFOCC : public Wavefunction {
    public:
     DFOCC(SharedWavefunction ref_wfn, Options &options);
 
-    virtual ~DFOCC();
+    ~DFOCC() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 
    protected:
     void mem_release();

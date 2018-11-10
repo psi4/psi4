@@ -43,8 +43,8 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
 /********************************************************************************************/
         Array2d *Bmat = new Array2d("DIIS B Matrix", nvar, nvar);
         Array1d *Cvec = new Array1d("DIIS C Vector", nvar);
-        Array1d *vrow = new Array1d(dimvec);
-        Array1d *vcol = new Array1d(dimvec);
+        auto *vrow = new Array1d(dimvec);
+        auto *vcol = new Array1d(dimvec);
         Bmat->zero();
         Cvec->zero();
         errvec_new->zero();

@@ -38,32 +38,25 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi {
+namespace mcscf {
 
 extern MemoryManager* memory_manager;
 
-VectorBase::VectorBase(int elements) : elements_(elements),vector_(nullptr)
-{
-  allocate1(double,vector_,elements_);
+VectorBase::VectorBase(int elements) : elements_(elements), vector_(nullptr) { allocate1(double, vector_, elements_); }
+
+VectorBase::~VectorBase() { release1(vector_); }
+
+void VectorBase::print() {
+    outfile->Printf("\n  ");
+    for (size_t i = 0; i < elements_; ++i) {
+        outfile->Printf("%10.6f", vector_[i]);
+    }
 }
 
-VectorBase::~VectorBase()
-{
-  release1(vector_);
+void VectorBase::copy(VectorBase& source) {
+    for (size_t i = 0; i < elements_; ++i) vector_[i] = source.vector_[i];
 }
 
-void VectorBase::print()
-{
-  outfile->Printf("\n  ");
-  for(size_t i = 0 ; i < elements_; ++i){
-    outfile->Printf("%10.6f",vector_[i]);
-  }
-}
-
-void VectorBase::copy(VectorBase& source)
-{
-  for(size_t i = 0 ; i < elements_; ++i)
-    vector_[i] = source.vector_[i];
-}
-
-}}
+}  // namespace mcscf
+}  // namespace psi

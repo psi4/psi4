@@ -60,7 +60,7 @@ bool int_compare(int i, int j) {return i<j;}
 using namespace v3d;
 
 // Determine Pulay simple coordinate combinations.
-int FRAG::form_natural_coord_combinations(void) {
+int FRAG::form_natural_coord_combinations() {
   coords.clear_combos();
 
   int Ns = coords.Nsimples();

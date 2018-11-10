@@ -33,50 +33,44 @@ namespace psi {
 
 class Vector;
 
-class IntegralParameters
-{
-private:
+class IntegralParameters {
+   private:
     size_t nparam_;
-public:
-    IntegralParameters(size_t nparam=0)
-        : nparam_(nparam) { }
+
+   public:
+    IntegralParameters(size_t nparam = 0) : nparam_(nparam) {}
     virtual ~IntegralParameters() {}
 
     size_t nparam() const { return nparam_; }
 };
 
-class CorrelationFactor : public IntegralParameters
-{
-private:
+class CorrelationFactor : public IntegralParameters {
+   private:
     double *coeff_;
     double *exponent_;
 
-public:
+   public:
     CorrelationFactor(size_t nparam);
-    CorrelationFactor(std::shared_ptr<Vector> coeff,
-                      std::shared_ptr<Vector> exponent);
-    virtual ~CorrelationFactor();
+    CorrelationFactor(std::shared_ptr<Vector> coeff, std::shared_ptr<Vector> exponent);
+    ~CorrelationFactor() override;
 
     virtual double slater_exponent() const { return 1.0; }
-    void set_params(std::shared_ptr<Vector> coeff,
-                    std::shared_ptr<Vector> exponent);
+    void set_params(std::shared_ptr<Vector> coeff, std::shared_ptr<Vector> exponent);
     double *exponent() const { return exponent_; }
     double *coeff() const { return coeff_; }
 };
 
-class FittedSlaterCorrelationFactor : public CorrelationFactor
-{
-private:
+class FittedSlaterCorrelationFactor : public CorrelationFactor {
+   private:
     double slater_exponent_;
 
-public:
-
-    virtual double slater_exponent() const { return slater_exponent_; }
+   public:
+    double slater_exponent() const override { return slater_exponent_; }
 
     FittedSlaterCorrelationFactor(double exponent);
-    double exponent(){return slater_exponent_;}
+    double exponent() { return slater_exponent_; }
 };
 
-}
+}  // namespace psi
 
-#endif // INTEGRALPARAMETERS_H
+#endif  // INTEGRALPARAMETERS_H

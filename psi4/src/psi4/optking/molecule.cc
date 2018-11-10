@@ -62,7 +62,7 @@ namespace opt {
 MOLECULE::MOLECULE(int num_atoms) {
 
   if (num_atoms > 0) {
-    FRAG *one_frag = new FRAG(num_atoms);
+    auto *one_frag = new FRAG(num_atoms);
     fragments.push_back(one_frag);
   }
 
@@ -70,7 +70,7 @@ MOLECULE::MOLECULE(int num_atoms) {
 }
 
 // return vector of reciprocal masses of dimension = num of cartesians
-double * MOLECULE::g_u_vector(void) const {
+double * MOLECULE::g_u_vector() const {
   double *m = g_masses();
   int Natom = g_natom();
 
@@ -86,7 +86,7 @@ double * MOLECULE::g_u_vector(void) const {
 // compute forces in internal coordinates in au
 // forces in internal coordinates, f_q = G_inv B u f_x
 // if u is unit matrix, f_q = (BB^T)^(-1) * B f_x
-void MOLECULE::forces(void) {
+void MOLECULE::forces() {
   double *f_x, *temp_arr, **B, **G, **G_inv;
   int Ncart = 3*g_natom();
   int Nintco = Ncoord();
@@ -105,7 +105,7 @@ void MOLECULE::forces(void) {
     oprint_matrix_out(B, Nintco, Ncart);
   }
   temp_arr = init_array(Nintco);
-  opt_matrix_mult(B, 0, &f_x, 1, &temp_arr, 1, Nintco, Ncart, 1, 0);
+  opt_matrix_mult(B, false, &f_x, true, &temp_arr, true, Nintco, Ncart, 1, false);
   free_array(f_x);
 
   // G^-1 = (BuBt)^-1
@@ -116,11 +116,11 @@ void MOLECULE::forces(void) {
         G[i][j] += B[i][k] * /* u[k] * */ B[j][k];
   free_matrix(B);
 
-  G_inv = symm_matrix_inv(G, Nintco, 1);
+  G_inv = symm_matrix_inv(G, Nintco, true);
   free_matrix(G);
 
   double * f_q = p_Opt_data->g_forces_pointer();
-  opt_matrix_mult(G_inv, 0, &temp_arr, 1, &f_q, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(G_inv, false, &temp_arr, true, &f_q, true, Nintco, Nintco, 1, false);
   free_matrix(G_inv);
   free_array(temp_arr);
 
@@ -154,7 +154,7 @@ void MOLECULE::forces(void) {
 }
 
 // Tell whether there are any fixed equilibrium values
-bool MOLECULE::has_fixed_eq_vals(void) {
+bool MOLECULE::has_fixed_eq_vals() {
   for (std::size_t f=0; f<fragments.size(); ++f)
     for (int i=0; i<fragments[f]->Ncoord(); ++i)
       if (fragments[f]->coord_has_fixed_eq_val(i))
@@ -164,7 +164,7 @@ bool MOLECULE::has_fixed_eq_vals(void) {
 }
 
 // Is any coordinate present that is not a cartesian.
-bool MOLECULE::is_noncart_present(void) const {
+bool MOLECULE::is_noncart_present() const {
 
   if (interfragments.size()) return true;
 
@@ -177,7 +177,7 @@ bool MOLECULE::is_noncart_present(void) const {
 
 // Apply extra forces for internal coordinates with user-defined
 // equilibrium values.
-void MOLECULE::apply_constraint_forces(void) {
+void MOLECULE::apply_constraint_forces() {
   double * f_q = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   int N = Ncoord();
@@ -215,7 +215,7 @@ void MOLECULE::apply_constraint_forces(void) {
 
 // project redundancies (and constraints) out of forces and Hessian matrix
 // add constraints here later
-void MOLECULE::project_f_and_H(void) {
+void MOLECULE::project_f_and_H() {
   int Nintco = Ncoord();
 
   // compute G = B B^t
@@ -227,9 +227,9 @@ void MOLECULE::project_f_and_H(void) {
       G[g_fb_fragment_coord_offset(I) + i][g_fb_fragment_coord_offset(I) + i] = 1.0;
 
   // compute P = G G^-1
-  double **G_inv = symm_matrix_inv(G, Nintco, 1);
+  double **G_inv = symm_matrix_inv(G, Nintco, true);
   double **P = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(G, 0, G_inv, 0, P, 0, Nintco, Nintco, Nintco, 0);
+  opt_matrix_mult(G, false, G_inv, false, P, false, Nintco, Nintco, Nintco, false);
   free_matrix(G);
   free_matrix(G_inv);
 
@@ -249,16 +249,16 @@ void MOLECULE::project_f_and_H(void) {
   // P = P' - P' C (CPC)^-1 C P'
   if (constraints_present) {
     double **T = init_matrix(Nintco,Nintco);
-    opt_matrix_mult(P, 0, C, 0,  T, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult(P, false, C, false,  T, false, Nintco, Nintco, Nintco, false);
     double **T2 = init_matrix(Nintco,Nintco);
-    opt_matrix_mult(C, 0, T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
-    double **T3 = symm_matrix_inv(T2, Nintco, 1);
+    opt_matrix_mult(C, false, T, false, T2, false, Nintco, Nintco, Nintco, false);
+    double **T3 = symm_matrix_inv(T2, Nintco, true);
 
-    opt_matrix_mult( C, 0,  P, 0,  T, 0, Nintco, Nintco, Nintco, 0);
-    opt_matrix_mult(T3, 0,  T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult( C, false,  P, false,  T, false, Nintco, Nintco, Nintco, false);
+    opt_matrix_mult(T3, false,  T, false, T2, false, Nintco, Nintco, Nintco, false);
     free_matrix(T);
-    opt_matrix_mult( C, 0, T2, 0, T3, 0, Nintco, Nintco, Nintco, 0);
-    opt_matrix_mult( P, 0, T3, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult( C, false, T2, false, T3, false, Nintco, Nintco, Nintco, false);
+    opt_matrix_mult( P, false, T3, false, T2, false, Nintco, Nintco, Nintco, false);
     free_matrix(T3);
     for (int i=0; i<Nintco; ++i)
       for (int j=0; j<Nintco; ++j)
@@ -273,7 +273,7 @@ void MOLECULE::project_f_and_H(void) {
   double *f_q = p_Opt_data->g_forces_pointer();
   // f_q~ = P f_q
   double * temp_arr = init_array(Nintco);
-  opt_matrix_mult(P, 0, &f_q, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(P, false, &f_q, true, &temp_arr, true, Nintco, Nintco, 1, false);
   array_copy(temp_arr, f_q, Ncoord());
   free_array(temp_arr);
 
@@ -291,8 +291,8 @@ void MOLECULE::project_f_and_H(void) {
 
   double **H = p_Opt_data->g_H_pointer();
   double **temp_mat = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(H, 0, P, 0, temp_mat, 0, Nintco, Nintco, Nintco, 0);
-  opt_matrix_mult(P, 0, temp_mat, 0, H, 0, Nintco, Nintco, Nintco, 0);
+  opt_matrix_mult(H, false, P, false, temp_mat, false, Nintco, Nintco, Nintco, false);
+  opt_matrix_mult(P, false, temp_mat, false, H, false, Nintco, Nintco, Nintco, false);
   free_matrix(temp_mat);
 
   /*for (int i=0; i<Nintco;++i)
@@ -327,7 +327,7 @@ void MOLECULE::project_dq(double *dq) {
 
   //double **G = compute_G(true);
   double **G = init_matrix(Ncart, Ncart);
-  opt_matrix_mult(B, 1, B, 0, G, 0, Ncart, Nintco, Ncart, 0);
+  opt_matrix_mult(B, true, B, false, G, false, Ncart, Nintco, Ncart, false);
 
 /*  will need fixed if this function ever helps
 #if defined (OPTKING_PACKAGE_QCHEM)
@@ -341,20 +341,20 @@ void MOLECULE::project_dq(double *dq) {
   // B dx = dq
   // B^t B dx = B^t dq
   // dx = (B^t B)^-1 B^t dq
-  double **G_inv = symm_matrix_inv(G, Ncart, 1);
+  double **G_inv = symm_matrix_inv(G, Ncart, true);
   free_matrix(G);
 
   double **B_inv = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(G_inv, 0, B, 1, B_inv, 0, Ncart, Ncart, Nintco, 0);
+  opt_matrix_mult(G_inv, false, B, true, B_inv, false, Ncart, Ncart, Nintco, false);
   free_matrix(G_inv);
 
   double **P = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(B, 0, B_inv, 0, P, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(B, false, B_inv, false, P, false, Nintco, Ncart, Nintco, false);
   free_matrix(B);
   free_matrix(B_inv);
 
   double * temp_arr = init_array(Nintco);
-  opt_matrix_mult(P, 0, &dq, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(P, false, &dq, true, &temp_arr, true, Nintco, Nintco, 1, false);
   array_copy(temp_arr, dq, Ncoord());
   free_array(temp_arr);
   free_matrix(P);
@@ -412,7 +412,7 @@ std::vector<int> MOLECULE::validate_angles(double const * const dq) {
   return lin_angle;
 }
 
-void MOLECULE::H_guess(void) const {
+void MOLECULE::H_guess() const {
   double **H = p_Opt_data->g_H_pointer();
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
@@ -494,20 +494,20 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   // compute A = u B^t (B u B^t)^-1 where u=unit matrix and -1 is generalized inverse
   double **B = compute_B();
   double **G = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(B, false, B, true, G, false, Nintco, Ncart, Nintco, false);
 
   double **G_inv = symm_matrix_inv(G, Nintco, true);
   free_matrix(G);
 
   double **A = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(B, 1, G_inv, 0, A, 0, Ncart, Nintco, Nintco, 0);
+  opt_matrix_mult(B, true, G_inv, false, A, false, Ncart, Nintco, Nintco, false);
   free_matrix(G_inv);
   free_matrix(B);
 
   // compute gradient in internal coordinates, A^t g_x = g_q
   double *grad_x = g_grad_array();
   double *grad_q = init_array(Nintco);
-  opt_matrix_mult(A, 1, &grad_x, 1, &grad_q, 1, Nintco, Ncart, 1, 0);
+  opt_matrix_mult(A, true, &grad_x, true, &grad_q, true, Nintco, Ncart, 1, false);
   free_array(grad_x);
 
   // read in cartesian H
@@ -529,11 +529,11 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   free_array(grad_q);
 
   double **temp_mat = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(H_cart, 0, A, 0, temp_mat, 0, Ncart, Ncart, Nintco, 0);
+  opt_matrix_mult(H_cart, false, A, false, temp_mat, false, Ncart, Ncart, Nintco, false);
   //free_matrix(H_cart);
 
   //double **H_int = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(A, 1, temp_mat, 0, H_int, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(A, true, temp_mat, false, H_int, false, Nintco, Ncart, Nintco, false);
   free_matrix(temp_mat);
 
   free_matrix(A);
@@ -567,7 +567,7 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   return success;
 }
 
-double *MOLECULE::g_masses(void) const {
+double *MOLECULE::g_masses() const {
   double *u = init_array(g_natom());
   int cnt = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
@@ -576,7 +576,7 @@ double *MOLECULE::g_masses(void) const {
   return u;
 }
 
-double *MOLECULE::g_Z(void) const {
+double *MOLECULE::g_Z() const {
   double *Zs = init_array(g_natom());
   int cnt = 0;
   for (std::size_t f=0; f<fragments.size(); ++f) {
@@ -588,7 +588,7 @@ double *MOLECULE::g_Z(void) const {
 }
 
 // compute B matrix - leave rows for FB coordinates empty
-double ** MOLECULE::compute_B(void) const {
+double ** MOLECULE::compute_B() const {
   double **B = init_matrix(Ncoord(), 3*g_natom());
 
   for (std::size_t f=0; f<fragments.size(); ++f)
@@ -726,7 +726,7 @@ double ** MOLECULE::compute_G(bool use_masses) const {
     free_array(u);
   }
 
-  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(B, false, B, true, G, false, Nintco, Ncart, Nintco, false);
   free_matrix(B);
 
   //oprintf_out("G matrix\n");
@@ -736,7 +736,7 @@ double ** MOLECULE::compute_G(bool use_masses) const {
 }
 
 // Apply strings of atoms for frozen and fixed coordinates;
-bool MOLECULE::apply_input_constraints(void) {
+bool MOLECULE::apply_input_constraints() {
   bool frozen_present = false;
   bool fixed_present = false;
 
@@ -761,7 +761,7 @@ bool MOLECULE::apply_input_constraints(void) {
 }
 
 // Add cartesian coordinates
-int MOLECULE::add_cartesians(void) {
+int MOLECULE::add_cartesians() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->add_cartesians();
@@ -769,21 +769,21 @@ int MOLECULE::add_cartesians(void) {
 }
 
 // freeze all fragments in molecule
-void MOLECULE::freeze_intrafragments(void) {
+void MOLECULE::freeze_intrafragments() {
   oprintf_out("\tSetting all fragments to frozen.\n");
   for (std::size_t f=0; f<fragments.size(); ++f)
     fragments[f]->freeze();
 }
 
 // Freeze all coordinates within fragments
-void MOLECULE::freeze_intrafragment_coords(void) {
+void MOLECULE::freeze_intrafragment_coords() {
   oprintf_out("\tSetting all coordinates within each fragment to frozen.\n");
   for (std::size_t f=0; f<fragments.size(); ++f)
     fragments[f]->freeze_coords();
 }
 
 // Determine trivial coordinate combinations, i.e., don't combine..
-int MOLECULE::form_trivial_coord_combinations(void) {
+int MOLECULE::form_trivial_coord_combinations() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_trivial_coord_combinations();
@@ -793,7 +793,7 @@ int MOLECULE::form_trivial_coord_combinations(void) {
 }
 
 // Determine initial delocalized coordinate coefficients.
-int MOLECULE::form_delocalized_coord_combinations(void) {
+int MOLECULE::form_delocalized_coord_combinations() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_delocalized_coord_combinations();
@@ -852,7 +852,7 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
 
 
 // Determine Pulay natural coordinate combinations.
-int MOLECULE::form_natural_coord_combinations(void) {
+int MOLECULE::form_natural_coord_combinations() {
   int nadded = 0;
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_natural_coord_combinations();
@@ -863,7 +863,7 @@ int MOLECULE::form_natural_coord_combinations(void) {
 // since the beginning of the optimization.  These values are determined
 
 // Compute constraint matrix.
-double ** MOLECULE::compute_constraints(void) {
+double ** MOLECULE::compute_constraints() {
   double **C, **C_frag, **C_inter;
   int i, j;
 
@@ -945,7 +945,7 @@ bool MOLECULE::is_coord_fixed(int coord_index) {
 
 // Add dummy FB fragment which contains no atoms.  Read in the energy
 // and the forces from QChem.  This will only work (maybe:) for QChem
-void MOLECULE::add_fb_fragments(void) {
+void MOLECULE::add_fb_fragments() {
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   // get number of FB fragments
@@ -982,7 +982,7 @@ void MOLECULE::add_fb_fragments(void) {
 }
 
 // from the data in opt_data after that data is read.
-void MOLECULE::update_fb_values(void) {
+void MOLECULE::update_fb_values() {
 
   for (std::size_t i=0; i<fb_fragments.size(); ++i) {
     double *vals = init_array(6);

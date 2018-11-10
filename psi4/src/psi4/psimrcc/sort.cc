@@ -29,7 +29,7 @@
 /**
  *  @file ccsort.cpp
  *  @ingroup (PSIMRCC)
-*/
+ */
 #include <cmath>
 #include <algorithm>
 
@@ -49,20 +49,20 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace psimrcc{
-extern MOInfo *moinfo;
+namespace psi {
+namespace psimrcc {
+extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
-    fraction_of_memory_for_sorting(0.5),nfzc(0),efzc(0.0),frozen_core(0)
-{
+CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
+    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0), frozen_core(nullptr) {
     init();
 
-    IntegralTransform *ints;
+    IntegralTransform* ints;
     // Use libtrans to generate MO basis integrals in Pitzer order
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
-    if(algorithm == mrpt2_sort){
+    if (algorithm == mrpt2_sort) {
         // For MRPT2 calculations we need integrals of the form (OO|VV) and (OA|OA), where
         // O represents occ+act, V represents act+vir and A is all orbitals.
         std::shared_ptr<MOSpace> aocc;
@@ -72,23 +72,19 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
         std::vector<int> avir_orbs;
         std::vector<int> actv = moinfo->get_actv();
         std::vector<int> mopi = moinfo->get_mopi();
-        std::vector<int> occ  = moinfo->get_occ();
+        std::vector<int> occ = moinfo->get_occ();
         int offset = 0;
-        for(int h = 0; h < nirrep; ++h){
-            for(int i = 0; i < occ[h] + actv[h]; ++i)
-                aocc_orbs.push_back(i + offset);
-            for(int a = occ[h]; a < mopi[h]; ++a)
-                avir_orbs.push_back(a + offset);
+        for (int h = 0; h < nirrep; ++h) {
+            for (int i = 0; i < occ[h] + actv[h]; ++i) aocc_orbs.push_back(i + offset);
+            for (int a = occ[h]; a < mopi[h]; ++a) avir_orbs.push_back(a + offset);
             offset += mopi[h];
         }
         aocc = std::make_shared<MOSpace>('M', aocc_orbs, aocc_orbs);
         avir = std::make_shared<MOSpace>('E', avir_orbs, avir_orbs);
         spaces.push_back(aocc);
         spaces.push_back(avir);
-        ints = new IntegralTransform(ref_wfn, spaces,
-                                     IntegralTransform::TransformationType::Restricted,
-                                     IntegralTransform::OutputType::DPDOnly,
-                                     IntegralTransform::MOOrdering::PitzerOrder,
+        ints = new IntegralTransform(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted,
+                                     IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
                                      IntegralTransform::FrozenOrbitals::None);
         ints->set_keep_dpd_so_ints(true);
         // Only transform the subclasses needed for MRPT2
@@ -96,11 +92,9 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
         ints->set_keep_dpd_so_ints(false);
         ints->transform_tei(aocc, aocc, avir, avir);
         build_integrals_mrpt2(ints);
-    }else{
-        ints = new IntegralTransform(ref_wfn, spaces,
-                                     IntegralTransform::TransformationType::Restricted,
-                                     IntegralTransform::OutputType::IWLOnly,
-                                     IntegralTransform::MOOrdering::PitzerOrder,
+    } else {
+        ints = new IntegralTransform(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted,
+                                     IntegralTransform::OutputType::IWLOnly, IntegralTransform::MOOrdering::PitzerOrder,
                                      IntegralTransform::FrozenOrbitals::None);
         ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
         // Presort the integrals in the CCTransform class
@@ -111,31 +105,25 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
     }
 
     moinfo->set_fzcore_energy(efzc);
-    outfile->Printf("\n\n    Frozen-core energy                     = %20.9f",efzc);
+    outfile->Printf("\n\n    Frozen-core energy                     = %20.9f", efzc);
     delete ints;
-
 }
 
-CCSort::~CCSort()
-{
-    cleanup();
-}
+CCSort::~CCSort() { cleanup(); }
 
 /**
  * Initialize the CCSort class
  */
-void CCSort::init()
-{
+void CCSort::init() {
     // Find the frozen core orbitals in Pitzer ordering
-    nfzc        = moinfo->get_nfocc();
+    nfzc = moinfo->get_nfocc();
     intvec focc = moinfo->get_focc();
     intvec mopi = moinfo->get_mopi();
-    allocate1(int,frozen_core,nfzc);
-    int count1  = 0;
-    int count2  = 0;
-    for(int h = 0; h < moinfo->get_nirreps(); ++h){
-        for(int i = 0; i < focc[h]; ++i)
-            frozen_core[count1++] = count2 + i;
+    allocate1(int, frozen_core, nfzc);
+    int count1 = 0;
+    int count2 = 0;
+    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+        for (int i = 0; i < focc[h]; ++i) frozen_core[count1++] = count2 + i;
         count2 += mopi[h];
     }
 }
@@ -143,9 +131,7 @@ void CCSort::init()
 /**
  * Clean the CCSort class
  */
-void CCSort::cleanup()
-{
-    release1(frozen_core);
-}
+void CCSort::cleanup() { release1(frozen_core); }
 
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi

@@ -43,37 +43,36 @@ class AOShellCombinationsIterator;
 class CorrelationFactor;
 
 /**
-  * \ingroup MINTS
-  * Structure to hold precomputed shell pair information
-  */
+ * \ingroup MINTS
+ * Structure to hold precomputed shell pair information
+ */
 typedef struct ShellPair_typ {
     //! Shells for this information.
     int i, j;
     //! Matrix over primitives with x, y, z coordinate of average Gaussian
-    double ***  P;
+    double*** P;
     //! Distance between shell i and shell j centers
     double AB[3];
     //! Distance between P and shell i center
-    double ***  PA;
+    double*** PA;
     //! Distance between P and shell j center
-    double ***  PB;
+    double*** PB;
     //! Array of alphas for both centers
-    double *  ai, *  aj;
+    double *ai, *aj;
     //! Array of the gammas (ai + aj)
-    double **  gamma;
+    double** gamma;
     //! Contraction coefficients
-    double *  ci, *  cj;
+    double *ci, *cj;
     //! Overlap between primitives on i and j
-    double **  overlap;
+    double** overlap;
 } ShellPair;
 
 /*! \ingroup MINTS
  *  \class ERI
  *  \brief Capable of computing two-electron repulsion integrals.
  */
-class TwoElectronInt : public TwoBodyAOInt
-{
-protected:
+class TwoElectronInt : public TwoBodyAOInt {
+   protected:
     //! Libint object.
     Libint_t libint_;
     //! Libderiv object
@@ -83,7 +82,7 @@ protected:
     int max_cart_;
 
     //! Computes the fundamental
-    Fjt *fjt_;
+    Fjt* fjt_;
 
     //! Computes the ERIs between four shells.
     size_t compute_quartet(int, int, int, int);
@@ -120,86 +119,82 @@ protected:
     //! Were the indices permuted?
     bool p13p24_, p12_, p34_;
 
-
-public:
+   public:
     //! Constructor. Use an IntegralFactory to create this object.
-    TwoElectronInt(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
 
-    virtual ~TwoElectronInt();
-
-    /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(const AOShellCombinationsIterator&);
+    ~TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell(int, int, int, int);
+    size_t compute_shell(const AOShellCombinationsIterator&) override;
+
+    /// Compute ERIs between 4 shells. Result is stored in buffer.
+    size_t compute_shell(int, int, int, int) override;
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell_deriv1(int, int, int, int);
+    size_t compute_shell_deriv1(int, int, int, int) override;
 
     /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
-    virtual size_t compute_shell_deriv2(int, int, int, int);
+    size_t compute_shell_deriv2(int, int, int, int) override;
 };
 
-class ERI : public TwoElectronInt
-{
-public:
-    ERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~ERI();
+class ERI : public TwoElectronInt {
+   public:
+    ERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    ~ERI() override;
 };
 
-class F12 : public TwoElectronInt
-{
-public:
-    F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~F12();
+class F12 : public TwoElectronInt {
+   public:
+    F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+        bool use_shell_pairs = false);
+    ~F12() override;
 };
 
-class F12Scaled : public TwoElectronInt
-{
-public:
-    F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~F12Scaled();
+class F12Scaled : public TwoElectronInt {
+   public:
+    F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+              bool use_shell_pairs = false);
+    ~F12Scaled() override;
 };
 
-class F12Squared : public TwoElectronInt
-{
-public:
-    F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~F12Squared();
+class F12Squared : public TwoElectronInt {
+   public:
+    F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+               bool use_shell_pairs = false);
+    ~F12Squared() override;
 };
 
-class F12G12 : public TwoElectronInt
-{
-public:
-    F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~F12G12();
+class F12G12 : public TwoElectronInt {
+   public:
+    F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+           bool use_shell_pairs = false);
+    ~F12G12() override;
 };
 
-class F12DoubleCommutator : public TwoElectronInt
-{
-public:
-    F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~F12DoubleCommutator();
+class F12DoubleCommutator : public TwoElectronInt {
+   public:
+    F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+                        bool use_shell_pairs = false);
+    ~F12DoubleCommutator() override;
 };
 
-class ErfERI : public TwoElectronInt
-{
-public:
-    ErfERI(double omega, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~ErfERI();
+class ErfERI : public TwoElectronInt {
+   public:
+    ErfERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    ~ErfERI() override;
 
     void setOmega(double omega);
 };
 
-class ErfComplementERI : public TwoElectronInt
-{
-public:
-    ErfComplementERI(double omega, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
-    virtual ~ErfComplementERI();
+class ErfComplementERI : public TwoElectronInt {
+   public:
+    ErfComplementERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    ~ErfComplementERI() override;
 
     void setOmega(double omega);
 };
 
-}
+}  // namespace psi
 
 #endif

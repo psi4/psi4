@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-
 #include "PsiOutStream.h"
 
 #include "psi4/libpsi4util/exception.h"
@@ -84,8 +83,6 @@ void PsiOutStream::Printf(const char* format, ...) {
     va_end(args);
     (*stream_) << buffer_.data() << std::flush;
 }
-void PsiOutStream::Printf(std::string fp) {
-    (*stream_) << fp << std::flush;
-}
+void PsiOutStream::Printf(std::string fp) { (*stream_) << fp << std::flush; }
 
-} // End Psi Namespace
+}  // End Psi Namespace

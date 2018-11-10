@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-
-
 #include "plugin.h"
 
 namespace psi {
@@ -36,17 +34,11 @@ namespace psi {
 
 #include <dlfcn.h>
 
-void plugin_close(const plugin_info& info)
-{
-    dlclose(info.plugin_handle);
-}
+void plugin_close(const plugin_info& info) { dlclose(info.plugin_handle); }
 
 #else
 
-void plugin_close(const plugin_info& info)
-{
-}
+void plugin_close(const plugin_info& info) {}
 
 #endif
-
 }

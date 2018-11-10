@@ -66,38 +66,26 @@
 
 using namespace psi;
 
-ShellRotation::ShellRotation(int n)
-    : n_(n), am_(0), r_(0)
-{
+ShellRotation::ShellRotation(int n) : n_(n), am_(0), r_(nullptr) {
     if (n_) {
         r_ = new double*[n_];
-        for (int i=0; i<n_; ++i)
-            r_[i] = new double[n_];
+        for (int i = 0; i < n_; ++i) r_[i] = new double[n_];
     }
 }
 
-ShellRotation::ShellRotation(const ShellRotation& other)
-    : n_(0), am_(0), r_(0)
-{
-    *this = other;
-}
+ShellRotation::ShellRotation(const ShellRotation& other) : n_(0), am_(0), r_(nullptr) { *this = other; }
 
-ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory* ints, int pure) :
-    n_(0), am_(0), r_(0)
-{
+ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory* ints, int pure)
+    : n_(0), am_(0), r_(nullptr) {
     if (a > 0 && pure)
         init_pure(a, so, ints);
     else
         init(a, so, ints);
 }
 
-ShellRotation::~ShellRotation()
-{
-    done();
-}
+ShellRotation::~ShellRotation() { done(); }
 
-ShellRotation& ShellRotation::operator=(const ShellRotation& other)
-{
+ShellRotation& ShellRotation::operator=(const ShellRotation& other) {
     done();
 
     n_ = other.n_;
@@ -105,29 +93,27 @@ ShellRotation& ShellRotation::operator=(const ShellRotation& other)
 
     if (n_ && other.r_) {
         r_ = new double*[n_];
-        for (int i=0; i<n_; ++i) {
+        for (int i = 0; i < n_; ++i) {
             r_[i] = new double[n_];
-            memcpy(r_[i], other.r_[i], sizeof(double)*n_);
+            memcpy(r_[i], other.r_[i], sizeof(double) * n_);
         }
     }
 
     return *this;
 }
 
-void ShellRotation::done()
-{
+void ShellRotation::done() {
     if (r_) {
-        for (int i=0; i < n_; i++) {
+        for (int i = 0; i < n_; i++) {
             if (r_[i]) delete[] r_[i];
         }
         delete[] r_;
-        r_=0;
+        r_ = nullptr;
     }
-    n_=0;
+    n_ = 0;
 }
 
-void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* ints)
-{
+void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* ints) {
     done();
 
     am_ = a;
@@ -153,19 +139,20 @@ void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* in
 
     for (I.start(); I; I.next()) {
         r_[I.bfn()] = new double[n_];
-        memset(r_[I.bfn()],0,sizeof(double)*n_);
+        memset(r_[I.bfn()], 0, sizeof(double) * n_);
 
         for (J.start(); J; J.next()) {
             double tmp = 1.0;
 
-            for (k=0; k<3; ++k) {
+            for (k = 0; k < 3; ++k) {
                 lI[k] = I.l(k);
             }
 
-            for (k=0; k<am_; ++k) {
-                for (iI=0; lI[iI]==0; iI++);
+            for (k = 0; k < am_; ++k) {
+                for (iI = 0; lI[iI] == 0; iI++)
+                    ;
                 lI[iI]--;
-                double contrib = so(J.axis(k),iI);
+                double contrib = so(J.axis(k), iI);
                 tmp *= contrib;
             }
 
@@ -177,8 +164,7 @@ void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* in
     delete jp;
 }
 
-void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactory *ints)
-{
+void ShellRotation::init_pure(int a, SymmetryOperation& so, const IntegralFactory* ints) {
     if (a < 2) {
         init(a, so, ints);
         return;
@@ -186,11 +172,11 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactor
 
     done();
 
-    am_=a;
+    am_ = a;
 
-    SphericalTransformIter *ip = ints->spherical_transform_iter(am_);
-    SphericalTransformIter *jp = ints->spherical_transform_iter(am_, 1);
-    RedundantCartesianSubIter *kp = ints->redundant_cartesian_sub_iter(am_);
+    SphericalTransformIter* ip = ints->spherical_transform_iter(am_);
+    SphericalTransformIter* jp = ints->spherical_transform_iter(am_, 1);
+    RedundantCartesianSubIter* kp = ints->redundant_cartesian_sub_iter(am_);
 
     SphericalTransformIter& I = *ip;
     SphericalTransformIter& J = *jp;
@@ -198,41 +184,41 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactor
     int lI[3];
     int m, iI;
 
-//    SphericalTransform *st = ints->spherical_transform(am_);
+    //    SphericalTransform *st = ints->spherical_transform(am_);
 
-//    printf("SphericalTransform: am = %d\n", am_);
-//    for (int z=0; z<st->n(); ++z) {
-//        printf("a = %d, b = %d, c = %d\n", st->a(z), st->b(z), st->c(z));
-//    }
+    //    printf("SphericalTransform: am = %d\n", am_);
+    //    for (int z=0; z<st->n(); ++z) {
+    //        printf("a = %d, b = %d, c = %d\n", st->a(z), st->b(z), st->c(z));
+    //    }
     n_ = INT_NPURE(am_);
 
     r_ = new double*[n_];
-    for (m=0; m<n_; ++m) {
+    for (m = 0; m < n_; ++m) {
         r_[m] = new double[n_];
-        memset(r_[m], 0, sizeof(double)*n_);
+        memset(r_[m], 0, sizeof(double) * n_);
     }
 
     for (I.first(); !I.is_done(); I.next()) {
         for (J.first(); !J.is_done(); J.next()) {
-            double coef = I.coef()*J.coef();
+            double coef = I.coef() * J.coef();
             double tmp = 0.0;
-//            outfile->Printf( "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
-//            outfile->Printf( "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
+            //            outfile->Printf( "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
+            //            outfile->Printf( "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
             for (K.start(J.a(), J.b(), J.c()); K; K.next()) {
-//                outfile->Printf( "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
+                //                outfile->Printf( "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
                 double tmp2 = coef;
-                for (m=0; m<3; ++m)
-                    lI[m] = I.l(m);
+                for (m = 0; m < 3; ++m) lI[m] = I.l(m);
 
-                for (m=0; m<am_; ++m) {
-                    for (iI=0; lI[iI] == 0; iI++);
+                for (m = 0; m < am_; ++m) {
+                    for (iI = 0; lI[iI] == 0; iI++)
+                        ;
                     lI[iI]--;
 
                     tmp2 *= so(K.axis(m), iI);
-//                    outfile->Printf( " * so(%d,%d) [=%4.2f]",
-//                            iI,K.axis(m),so(iI,K.axis(m)));
+                    //                    outfile->Printf( " * so(%d,%d) [=%4.2f]",
+                    //                            iI,K.axis(m),so(iI,K.axis(m)));
                 }
-//                outfile->Printf( " = %8.6f\n", tmp2);
+                //                outfile->Printf( " = %8.6f\n", tmp2);
                 tmp += tmp2;
             }
             r_[I.pureindex()][J.pureindex()] += tmp;
@@ -244,8 +230,7 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactor
     delete kp;
 }
 
-ShellRotation ShellRotation::operate(const ShellRotation& rot) const
-{
+ShellRotation ShellRotation::operate(const ShellRotation& rot) const {
     if (n_ != rot.n_) {
         throw PSIEXCEPTION("ShellRotation::operate(): dimensions don't match.");
     }
@@ -253,11 +238,10 @@ ShellRotation ShellRotation::operate(const ShellRotation& rot) const
     ShellRotation ret(n_);
     ret.am_ = am_;
 
-    for (int i=0; i < n_; i++) {
-        for (int j=0; j < n_; j++) {
-            double t=0;
-            for (int k=0; k < n_; k++)
-                t += rot.r_[i][k] * r_[k][j];
+    for (int i = 0; i < n_; i++) {
+        for (int j = 0; j < n_; j++) {
+            double t = 0;
+            for (int k = 0; k < n_; k++) t += rot.r_[i][k] * r_[k][j];
             ret.r_[i][j] = t;
         }
     }
@@ -265,9 +249,8 @@ ShellRotation ShellRotation::operate(const ShellRotation& rot) const
     return ret;
 }
 
-ShellRotation ShellRotation::transform(const ShellRotation& rot) const
-{
-    int i,j,k;
+ShellRotation ShellRotation::transform(const ShellRotation& rot) const {
+    int i, j, k;
 
     if (rot.n_ != n_) {
         throw PSIEXCEPTION("ShellRotation::transform(): dimensions don't match.");
@@ -277,38 +260,33 @@ ShellRotation ShellRotation::transform(const ShellRotation& rot) const
     ret.am_ = foo.am_ = am_;
 
     // foo = r * d
-    for (i=0; i < n_; i++) {
-        for (j=0; j < n_; j++) {
-            double t=0;
-            for (k=0; k < n_; k++)
-                t += rot.r_[i][k] * r_[k][j];
+    for (i = 0; i < n_; i++) {
+        for (j = 0; j < n_; j++) {
+            double t = 0;
+            for (k = 0; k < n_; k++) t += rot.r_[i][k] * r_[k][j];
             foo.r_[i][j] = t;
         }
     }
 
     // ret = (r*d)*r~ = foo*r~
-    for (i=0; i < n_; i++) {
-        for (j=0; j < n_; j++) {
-            double t=0;
-            for (k=0; k < n_; k++)
-                t += foo.r_[i][k]*rot.r_[j][k];
-            ret.r_[i][j]=t;
+    for (i = 0; i < n_; i++) {
+        for (j = 0; j < n_; j++) {
+            double t = 0;
+            for (k = 0; k < n_; k++) t += foo.r_[i][k] * rot.r_[j][k];
+            ret.r_[i][j] = t;
         }
     }
 
     return ret;
 }
 
-double ShellRotation::trace() const
-{
-    double t=0;
-    for (int i=0; i < n_; i++)
-        t += r_[i][i];
+double ShellRotation::trace() const {
+    double t = 0;
+    for (int i = 0; i < n_; i++) t += r_[i][i];
     return t;
 }
 
-void ShellRotation::print() const
-{
-    outfile->Printf( "ShellRotation\n");
+void ShellRotation::print() const {
+    outfile->Printf("ShellRotation\n");
     print_mat(r_, n_, n_, "outfile");
 }

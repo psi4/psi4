@@ -52,35 +52,35 @@ class BEND : public SIMPLE_COORDINATE {
 
     BEND(int A_in, int B_in, int C_in, bool freeze_in=false);
 
-    ~BEND() { ; } //calls ~SIMPLE_COORDINATE()
+    ~BEND() override { ; } //calls ~SIMPLE_COORDINATE()
 
-    double value(GeomType geom) const;
+    double value(GeomType geom) const override;
 
     // compute and return array of first derivative (B marix elements)
-    double **DqDx(GeomType geom) const;
+    double **DqDx(GeomType geom) const override;
 
     // compute and return array of second derivative (B' matrix elements)
-    double **Dq2Dx2(GeomType geom) const;
+    double **Dq2Dx2(GeomType geom) const override;
 
-    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
-    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
+    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const override;
+    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const override;
+    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const override;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
-      const double dq, const double new_q, int atom_offset=0) const;
-    bool operator==(const SIMPLE_COORDINATE & s2) const;
-    std::string get_definition_string(int atom_offset=0) const;
+      const double dq, const double new_q, int atom_offset=0) const override;
+    bool operator==(const SIMPLE_COORDINATE & s2) const override;
+    std::string get_definition_string(int atom_offset=0) const override;
 
-    void make_lb_normal(void)     { _bend_type = 1; }
-    void make_lb_complement(void) { _bend_type = 2; }
+    void make_lb_normal()     { _bend_type = 1; }
+    void make_lb_complement() { _bend_type = 2; }
 
-    bool is_linear_bend(void) const { return ((_bend_type == 1) || (_bend_type == 2)); }
-    bool is_lb_normal(void) const     { return (_bend_type == 1); }
-    bool is_lb_complement(void) const { return (_bend_type == 2); }
+    bool is_linear_bend() const { return ((_bend_type == 1) || (_bend_type == 2)); }
+    bool is_lb_normal() const     { return (_bend_type == 1); }
+    bool is_lb_complement() const { return (_bend_type == 2); }
 
-    int  g_bend_type(void) const { return _bend_type; }
+    int  g_bend_type() const override { return _bend_type; }
     void compute_axes(GeomType geom) const;
-    void fix_axes(void)   { axes_fixed = true; }
-    void unfix_axes(void) { axes_fixed = false; }
+    void fix_axes()   { axes_fixed = true; }
+    void unfix_axes() { axes_fixed = false; }
 
 };
 

@@ -5,26 +5,26 @@
 #! four-virtual case is avoided. 
 #! The computation is then repeated using the DC-12 functional with the same algorithms.
 
-refscf      = -98.190834079292387  #TEST
-refmp2      = -98.202705508819363  #TEST
+refscf      = -98.19083407904691   #TEST
+refmp2      = -98.20270550851      #TEST
 refdcftscf  = -98.164839047679820  #TEST
-refdcft     = -98.2078192401319967 #TEST
+refdcft     = -98.207819239792457  #TEST
 
 # DC-12                               #TEST
 refdcftscfexact = -98.165972603361965 #TEST
-refdcftexact = -98.207614955904603    #TEST
+refdcftexact = -98.207614955568658    #TEST
 
 # ODC-06                              #TEST
 refodc06scf = -98.161561565771748     #TEST
-refodc06    = -98.2086151665222360    #TEST
+refodc06    = -98.208615166162005     #TEST
 
 # ODC-12                              #TEST
 refodc12scf = -98.163060134490195     #TEST
-refodc12    = -98.2083640708414407    #TEST
+refodc12    = -98.208364070486851     #TEST
 
 # ODC-13
 refodc13scf = -98.162361155505053     #TEST
-refodc13    = -98.2084516176586817    #TEST
+refodc13    = -98.208451617301733     #TEST
 
 molecule HF {
 1 2

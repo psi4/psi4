@@ -70,7 +70,7 @@ void DiskJK::print_header() const
         outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         if (do_wK_)
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
@@ -464,7 +464,7 @@ void DiskJK::compute_JK()
             if (K_[N]->symmetry()) K_[N]->transpose_this();
         }
     }
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     if(do_wK_){
@@ -590,7 +590,7 @@ void DiskJK::compute_JK()
         for (size_t N = 0; N < wK_.size(); N++) {
             if (wK_[N]->symmetry()) wK_[N]->transpose_this();
         }
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
     }
 }

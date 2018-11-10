@@ -29,7 +29,8 @@
 #ifndef _psi_src_bin_psimrcc_psimrcc_h_
 #define _psi_src_bin_psimrcc_psimrcc_h_
 
-namespace psi{ namespace psimrcc{
+namespace psi {
+namespace psimrcc {
 
 void run_psimrcc();
 void transform_integrals();
@@ -38,6 +39,7 @@ void mrpt2(SharedWavefunction ref_wfn, Options &options);
 void mrccsd_check();
 void mp2_ccsd(SharedWavefunction ref_wfn, Options &options);
 
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi
 
-#endif // _psi_src_bin_psimrcc_psimrcc_h_
+#endif  // _psi_src_bin_psimrcc_psimrcc_h_

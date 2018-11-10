@@ -8,8 +8,9 @@ import numpy as np
 from utils import *
 from addons import *
 
+import qcelemental as qcel
+
 import qcdb
-from qcdb.physconst import psi_bohr2angstroms
 
 
 subject1 = """O 0 0   0
@@ -54,7 +55,7 @@ fullans1c.update({'fragment_charges': [1.],
 def test_psi4_qm_1a():
     subject = subject1
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans1, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans1a, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -62,7 +63,7 @@ def test_psi4_qm_1a():
 def test_psi4_qm_1b():
     subject = '\n' + '\t' + subject1 + '\n\n'
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans1, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans1a, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -73,7 +74,7 @@ def test_psi4_qm_1c():
     ans.update({'molecular_charge': 1.,
                 'molecular_multiplicity': 1})
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans1c, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -84,7 +85,7 @@ def test_psi4_qm_1d():
     ans.update({'fragment_charges': [1.],
                 'fragment_multiplicities': [1]})
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans1c, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -93,8 +94,8 @@ def test_psi4_qm_1e():
     """duplicate com"""
     subject = subject1 + '\n  nocom'
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 
 subject2 = ["""
@@ -140,7 +141,7 @@ def test_psi4_qm_2a():
                     'fragment_charges': [0., 0., 0.],
                     'fragment_multiplicities': [1, 1, 2]})
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans2, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -158,7 +159,7 @@ def test_psi4_qm_2b():
                     'fragment_charges': [1., 0., 0.],
                     'fragment_multiplicities': [2, 1, 2]})
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -169,8 +170,8 @@ def test_psi4_qm_2c():
     subject.insert(0, '1 3\n1 3')
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_2d():
     """trailing comma"""
@@ -178,8 +179,8 @@ def test_psi4_qm_2d():
     subject.insert(0, 'H 10,10,10,')
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 #def test_psi4_qm_2e():
 #    """empty fragment"""
@@ -187,8 +188,8 @@ def test_psi4_qm_2d():
 #    subject.insert(2, '\n')
 #    subject = '\n--\n'.join(subject)
 #
-#    with pytest.raises(qcdb.MoleculeFormatError):
-#        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+#    with pytest.raises(qcel.MoleculeFormatError):
+#        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_2f():
     """double frag chgmult"""
@@ -196,8 +197,8 @@ def test_psi4_qm_2f():
     subject[1] += '\n 1 2\n 5 6'
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_2g():
     """illegal chars in nucleus"""
@@ -205,16 +206,16 @@ def test_psi4_qm_2g():
     subject[1] = """@Ne_{CN}_O 2 4 6"""
     subject = '\n--\n'.join(subject)
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 def test_psi4_qm_3():
     """psi4/psi4#731"""
     subject = """0 1
 Mg 0 0"""
 
-    with pytest.raises(qcdb.ValidationError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.ValidationError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 subject4 = """pubchem:benzene"""
 
@@ -239,6 +240,9 @@ ans4 = {'geom': [
         'fragment_files': [],
         'geom_hints': [],
         'hint_types': [],
+'molecular_charge': 0.0,
+'name': 'IUPAC benzene',
+
         }
 
 fullans4 = {'geom': np.array([
@@ -269,12 +273,13 @@ fullans4 = {'geom': np.array([
             'molecular_multiplicity': 1,
             'fragment_charges': [0.],
             'fragment_multiplicities': [1],
+'name': 'IUPAC benzene',
             }
 
 def test_psi4_pubchem_4a():
     subject = subject4
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_molrecs(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans4, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -283,8 +288,8 @@ def test_psi4_pubchem_4b():
     """user units potentially contradicting pubchem units"""
     subject = subject4 + '\nunits au'
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 
 def test_psi4_pubchem_4c():
@@ -292,7 +297,7 @@ def test_psi4_pubchem_4c():
 pubchem  : 241
 """
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_molrecs(ans4, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans4, final['qm'], 4, sys._getframe().f_code.co_name + ': full')
 
@@ -328,17 +333,17 @@ fullans5b['efp']['fragment_files'] = ['c6h6', 'c6h6']
 def test_psi4_efp_5a():
     subject = subject5
 
-    hintsans = [[(val / psi_bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
-                [(val / psi_bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
+    hintsans = [[(val / qcel.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
+                [(val / qcel.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
     hintsans[0][4] = 1.534222
     fullans = copy.deepcopy(fullans5b)
     fullans['efp']['units'] = 'Angstrom'
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans5, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp')
 
-    hintsstd = qcdb.util.standardize_efp_angles_units('Angstrom', final['efp']['geom_hints'])
+    hintsstd = qcel.util.standardize_efp_angles_units('Angstrom', final['efp']['geom_hints'])
     final['efp']['geom_hints'] = hintsstd
     fullans['efp']['geom_hints'] = hintsans
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp standardized')
@@ -349,7 +354,7 @@ def test_psi4_efp_5b():
     ans = copy.deepcopy(ans5)
     ans['units'] = 'Bohr'
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans5b['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final efp')
 
@@ -358,8 +363,8 @@ def test_psi4_efp_5c():
     """fix_orientation not mol kw"""
     subject = subject5 + '\nno_com\nfix_orientation\nsymmetry c1'
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 
 def test_psi4_efp_5d():
@@ -371,7 +376,7 @@ def test_psi4_efp_5d():
     ans['fix_orientation'] =  True
     ans['fix_symmetry'] = 'c1'
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans5b['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': final')
 
@@ -380,8 +385,8 @@ def test_psi4_efp_5e():
     """symmetry w/efp"""
     subject = subject5 + 'symmetry cs\nunits a.u.'
 
-    with pytest.raises(qcdb.ValidationError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.ValidationError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 
 subject6 = """
@@ -445,7 +450,7 @@ fullans6 = {'qm': {'geom': np.array([0., 0., 0.118720, -0.753299, 0.0, -0.474880
 def test_psi4_qmefp_6a():
     subject = subject6
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans6, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans6['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
     assert compare_molrecs(fullans6['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
@@ -461,7 +466,7 @@ def test_psi4_qmefp_6b():
     fullans['qm']['units'] = 'Angstrom'
     fullans['efp']['units'] = 'Angstrom'
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
@@ -472,8 +477,8 @@ def test_psi4_qmefp_6c():
 
     subject = subject6.replace('    efp h2O', '0 1\n    efp h2O')
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
 
 @using_pylibefp
@@ -500,12 +505,12 @@ def test_psi4_qmefp_6d():
     fullans['efp']['hint_types'] = ['xyzabc', 'xyzabc']
     fullans['efp']['geom_hints'][1] = [1.093116487139866, 1.9296501432128303, 2.9104336205167156, -1.1053108079381473, 2.0333070957565544, -1.488586877218809]
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True)
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True)
 
     import pylibefp
     efpobj = pylibefp.from_dict(final['efp'])
     efpfinal = efpobj.to_dict()
-    efpfinal = qcdb.molparse.from_arrays(speclabel=False, domain='efp', **efpfinal)
+    efpfinal = qcel.molparse.from_arrays(speclabel=False, domain='efp', **efpfinal)
 
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     assert compare_molrecs(fullans['efp'], efpfinal, 4, sys._getframe().f_code.co_name + ': full efp')
@@ -549,22 +554,22 @@ def test_xyzp_qm_7a():
     """XYZ doesn't fit into psi4 string"""
     subject = subject7
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='psi4')
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True, dtype='psi4')
 
 
 def test_xyzp_qm_7b():
     """XYZ doesn't fit into strict xyz string"""
     subject = subject7
 
-    with pytest.raises(qcdb.MoleculeFormatError):
-        final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz')
+    with pytest.raises(qcel.MoleculeFormatError):
+        final, intermed = qcel.molparse.from_string(subject, return_processed=True, dtype='xyz')
 
 
 def test_xyzp_qm_7c():
     subject = subject7
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz+')
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True, dtype='xyz+')
     assert compare_dicts(ans7, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans7, final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
 
@@ -585,7 +590,7 @@ def test_xyzp_qm_7d():
     fullans['molecular_charge'] = -1.
     fullans['molecular_multiplicity'] = 3
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz+')
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True, dtype='xyz+')
     assert compare_dicts(ans, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans, final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
 
@@ -626,7 +631,7 @@ fullans8 = {'geom': np.array([ 0.,  0.,  0.,  100.,  0.,  0., 2., 4., 6., 0., 1.
 def test_xyzp_qm_8a():
     subject = subject8
 
-    final, intermed = qcdb.molparse.from_string(subject, return_processed=True, dtype='xyz+')
+    final, intermed = qcel.molparse.from_string(subject, return_processed=True, dtype='xyz+')
     assert compare_dicts(ans8, intermed, 4, sys._getframe().f_code.co_name + ': intermediate')
     assert compare_molrecs(fullans8, final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
 
@@ -693,7 +698,7 @@ def test_arrays_10a():
     fullans['qm']['fix_orientation'] = True
     fullans['qm']['fix_symmetry'] = 'c1'
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
 
@@ -709,7 +714,7 @@ def test_arrays_10b():
 
     fullans = {'efp': fullans10efp}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     with pytest.raises(KeyError):
         final['qm']
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
@@ -726,7 +731,7 @@ def test_arrays_10c():
 
     fullans = {'qm': fullans10qm}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     with pytest.raises(KeyError):
         final['efp']
@@ -741,7 +746,7 @@ def test_arrays_10d():
 
     fullans = {'qm': fullans10qm}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     with pytest.raises(KeyError):
         final['efp']
@@ -757,7 +762,7 @@ def test_arrays_10e():
     fullans = {'qm': fullans10qm,
                'efp': blankefp}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
 
@@ -769,8 +774,8 @@ def test_arrays_10f():
                'enable_efp': True,
                'missing_enabled_return_efp': 'error'}
 
-    with pytest.raises(qcdb.ValidationError):
-       qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(qcel.ValidationError):
+       qcel.molparse.from_input_arrays(**subject)
 
 
 def test_arrays_10g():
@@ -782,7 +787,7 @@ def test_arrays_10g():
 
     fullans = {}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     with pytest.raises(KeyError):
         final['qm']
     with pytest.raises(KeyError):
@@ -797,7 +802,7 @@ def test_arrays_10h():
 
     fullans = {'efp': blankefp}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     with pytest.raises(KeyError):
         final['qm']
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
@@ -809,8 +814,8 @@ def test_arrays_10i():
                'enable_efp': True,
                'missing_enabled_return_efp': 'error'}
 
-    with pytest.raises(qcdb.ValidationError):
-        qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(qcel.ValidationError):
+        qcel.molparse.from_input_arrays(**subject)
 
 
 
@@ -822,7 +827,7 @@ def test_arrays_10j():
 
     fullans = {'qm': fullans10qm}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     with pytest.raises(KeyError):
         final['efp']
@@ -838,7 +843,7 @@ def test_arrays_10k():
 
     fullans = {'efp': fullans10efp}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     with pytest.raises(KeyError):
         final['qm']
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
@@ -858,7 +863,7 @@ def test_arrays_10l():
     fullans['qm']['fix_orientation'] = True
     fullans['qm']['fix_symmetry'] = 'c1'
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
 
@@ -870,8 +875,8 @@ def test_arrays_10m():
                'enable_efp': True,
                'missing_enabled_return_qm': 'error'}
 
-    with pytest.raises(qcdb.ValidationError):
-        qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(qcel.ValidationError):
+        qcel.molparse.from_input_arrays(**subject)
 
 
 def test_arrays_10n():
@@ -883,7 +888,7 @@ def test_arrays_10n():
 
     fullans = {'efp': fullans10efp}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     with pytest.raises(KeyError):
         final['qm']
     assert compare_molrecs(fullans['efp'], final['efp'], 4, sys._getframe().f_code.co_name + ': full efp')
@@ -899,7 +904,7 @@ def test_arrays_10o():
 
     fullans = {}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     with pytest.raises(KeyError):
         final['qm']
     with pytest.raises(KeyError):
@@ -915,7 +920,7 @@ def test_arrays_10p():
 
     fullans = {'qm': blankqm}
 
-    final = qcdb.molparse.from_input_arrays(**subject)
+    final = qcel.molparse.from_input_arrays(**subject)
     assert compare_molrecs(fullans['qm'], final['qm'], 4, sys._getframe().f_code.co_name + ': full qm')
     with pytest.raises(KeyError):
         final['efp']
@@ -928,13 +933,13 @@ def test_arrays_10q():
                'enable_efp': False,
                'missing_enabled_return_qm': 'error'}
 
-    with pytest.raises(qcdb.ValidationError):
-        qcdb.molparse.from_input_arrays(**subject)
+    with pytest.raises(qcel.ValidationError):
+        qcel.molparse.from_input_arrays(**subject)
 
 def test_strings_10r():
     subject = ''
 
-    final = qcdb.molparse.from_string(subject, enable_qm=True,
+    final = qcel.molparse.from_string(subject, enable_qm=True,
                                                enable_efp=True,
                                                missing_enabled_return_qm='none',
                                                missing_enabled_return_efp='none')
@@ -948,7 +953,7 @@ def test_strings_10r():
 def test_strings_10s():
     subject = ''
 
-    final = qcdb.molparse.from_string(subject, enable_qm=True,
+    final = qcel.molparse.from_string(subject, enable_qm=True,
                                                enable_efp=True,
                                                missing_enabled_return_qm='minimal',
                                                missing_enabled_return_efp='minimal')
@@ -963,8 +968,9 @@ def test_strings_10s():
 def test_strings_10t():
     subject = ''
 
-    with pytest.raises(qcdb.ValidationError):
-        qcdb.molparse.from_string(subject, enable_qm=True,
+    with pytest.raises(qcel.ValidationError):
+
+        qcel.molparse.from_string(subject, enable_qm=True,
                                            enable_efp=True,
                                            missing_enabled_return_qm='error',
                                            missing_enabled_return_efp='error')

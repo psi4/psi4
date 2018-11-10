@@ -46,7 +46,7 @@ use ``nullptr`` to signal the null pointer. The correct overload/template
 parameter will then be deduced. Using ``nullptr`` also makes the code more
 readable, especially if ``auto`` is used consistently throughout.
 
-*Reference:* Item 8 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
+*Reference:* Item 8 in `[Effective Modern C++] <https://isbnsearch.org/isbn/9781491903995>`_
 
 
 .. _`faq:automakeshared`:
@@ -54,24 +54,30 @@ readable, especially if ``auto`` is used consistently throughout.
 Prefer ``std::make_shared`` to direct use of ``new``
 ----------------------------------------------------
 
-Using ``std::make_shared``::
+Using ``std::make_shared``:
 
 1. Reduces code verbosity, especially when coupled with ``auto``::
 
-    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));  // Type information written down 3 TIMES!!!
-    std::shared_ptr<Matrix> F = std::make_shared<Matrix>("Fock matrix", nso, nso);  // So much typing...
-    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);  // Much better!!!!
+    // Type information given 3 TIMES!!!
+    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));
+
+    // So much typing...
+    std::shared_ptr<Matrix> F = std::make_shared<Matrix>("Fock matrix", nso, nso);
+
+    // Much better!!!!
+    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);
 
 2. Ensures exception safety and prevents resource leaks. ::
 
 3. Improves efficiency::
 
     // Performs TWO allocations
-    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso)); 
-    // Performs ONE allocation
-    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso); 
+    std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));
 
-*Reference:* Item 21 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
+    // Performs ONE allocation
+    auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);
+
+*Reference:* Item 21 in `[Effective Modern C++] <https://isbnsearch.org/isbn/9781491903995>`_
 
 
 .. _`faq:autodecl`:
@@ -102,9 +108,26 @@ Using ``auto`` reduces and/or avoids:
     unsigned sz = v.size();  // might not be correct on some compiler/machines
     auto size = v.size();  // size is ALWAYS of the correct type
 
-*Reference:* Items 2 and 5 in `[Effective Modern C++] <https://edisciplinas.usp.br/pluginfile.php/1995323/mod_resource/content/1/Effective%20Modern%20C%2B%2B%202014.pdf>`_
+*Reference:* Items 2 and 5 in `[Effective Modern C++] <https://isbnsearch.org/isbn/9781491903995>`_
 
+Mark virtual functions in derived classes with override
+-------------------------------------------------------
 
+The ``override`` keyword introduced in C++11 is used to mark a function in a
+derived class and guarantee that it is overloading a function *with the same
+signature* in the base class.  This behavior is `checked at compile time
+<https://en.cppreference.com/w/cpp/language/override>`_.
 
+.. _`faq:printmem`:
 
+Prefer `GiB` for memory printing
+--------------------------------
+
+As memory sizes get larger, we should work in giga (requires decimal printing to not round to zero) rather than mega units.
+As it's what we're computing anyways, we should work in 1024-based (mebi, gibi, etc. https://en.wikipedia.org/wiki/Gibibyte) rather than 1000-based units.
+As it's a unit, put it in brackets.
+Note that users can supply MiB, GB, bytes, or whatever; this guideline is for output printing. ::
+
+        outfile->Printf("  DFHelper Memory: AOs need %.3f [GiB]; user supplied %.3f [GiB]. ",
+                        (required *  8 / (1024 * 1024 * 1024.0)),
 

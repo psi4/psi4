@@ -46,8 +46,8 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/ccenergy/ccwave.h"
-#include "psi4/cclambda/cclambda.h"
+#include "psi4/cc/ccwave.h"
+#include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
@@ -90,7 +90,7 @@ extern std::map<std::string, plugin_info> plugins;
 
 namespace opt {
 psi::PsiReturnType optking(psi::Options&);
-void opt_clean(void);
+void opt_clean();
 }
 // Forward declare /src/bin/ methods
 namespace psi {
@@ -224,14 +224,16 @@ void py_reopen_outfile() {
     if (outfile_name == "stdout") {
         // outfile = stdout;
     } else {
-        outfile = std::make_shared<PsiOutStream>(outfile_name, std::ostream::app);
+        auto mode =  std::ostream::app;
+        outfile = std::make_shared<PsiOutStream>(outfile_name, mode);
         if (!outfile) throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
 }
 
 void py_be_quiet() {
     py_close_outfile();
-    outfile = std::make_shared<PsiOutStream>("/dev/null", std::ostream::app);
+    auto mode = std::ostream::app;
+    outfile = std::make_shared<PsiOutStream>("/dev/null", mode);
     if (!outfile) throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
 
@@ -505,7 +507,7 @@ void py_psi_clean_options() {
     Process::environment.options.set_read_globals(false);
 }
 
-void py_psi_print_out(std::string s) { (*outfile->stream()) << s; }
+void py_psi_print_out(std::string s) { (*outfile->stream()) << s << std::flush; }
 
 /**
  * @return whether key describes a convergence threshold or not
@@ -1219,11 +1221,13 @@ PYBIND11_MODULE(core, core) {
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
-        outfile = std::make_shared<PsiOutStream>(ofname, std::ostream::trunc);
+        auto mode = std::ostream::trunc;
+        outfile = std::make_shared<PsiOutStream>(ofname, mode);
         outfile_name = ofname;
     });
     core.def("set_output_file", [](const std::string ofname, bool append) {
-        outfile = std::make_shared<PsiOutStream>(ofname, (append ? std::ostream::app : std::ostream::trunc));
+        auto mode = append ? std::ostream::app : std::ostream::trunc;
+        outfile = std::make_shared<PsiOutStream>(ofname, mode);
         outfile_name = ofname;
     });
     core.def("get_output_file", []() { return outfile_name; });

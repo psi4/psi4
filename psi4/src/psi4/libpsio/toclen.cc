@@ -51,73 +51,69 @@
 namespace psi {
 
 size_t PSIO::toclen(size_t unit) {
-  size_t len=0;
-  psio_tocentry *this_entry;
+    size_t len = 0;
+    psio_tocentry *this_entry;
 
-  this_entry = psio_unit[unit].toc;
+    this_entry = psio_unit[unit].toc;
 
-  while (this_entry != nullptr) {
-    ++len;
-    this_entry = this_entry->next;
-  }
+    while (this_entry != nullptr) {
+        ++len;
+        this_entry = this_entry->next;
+    }
 
-  return (len);
+    return (len);
 }
 
 size_t PSIO::rd_toclen(size_t unit) {
-  int errcod, stream;
-  psio_ud *this_unit;
-  size_t len;
+    int errcod, stream;
+    psio_ud *this_unit;
+    size_t len;
 
-  this_unit = &(psio_unit[unit]);
+    this_unit = &(psio_unit[unit]);
 
-  /* Seek vol[0] to its beginning */
-  stream = this_unit->vol[0].stream;
+    /* Seek vol[0] to its beginning */
+    stream = this_unit->vol[0].stream;
 
     errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
 
-  if (errcod == -1)
-    psio_error(unit, PSIO_ERROR_LSEEK);
+    if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
 
-  /* Read the value */
+    /* Read the value */
 
-    errcod = SYSTEM_READ(stream, (char *) &len, sizeof(size_t));
+    errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
 
+    if (errcod != sizeof(size_t)) return (0); /* assume that all is well (see comments above) */
 
-  if(errcod != sizeof(size_t)) return(0); /* assume that all is well (see comments above) */
-
-  return(len);
+    return (len);
 }
 
 void PSIO::wt_toclen(size_t unit, size_t len) {
-  int errcod, stream;
-  psio_ud *this_unit;
+    int errcod, stream;
+    psio_ud *this_unit;
 
-  this_unit = &(psio_unit[unit]);
+    this_unit = &(psio_unit[unit]);
 
-  /* Seek vol[0] to its beginning */
-  stream = this_unit->vol[0].stream;
+    /* Seek vol[0] to its beginning */
+    stream = this_unit->vol[0].stream;
 
     errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
 
-  if (errcod == -1) {
-    ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
-    exit(_error_exit_code_);
-  }
+    if (errcod == -1) {
+        ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
+        exit(_error_exit_code_);
+    }
 
-  /* Write the value */
+    /* Write the value */
 
-    errcod = SYSTEM_WRITE(stream, (char *) &len, sizeof(size_t));
+    errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
 
-  if(errcod != sizeof(size_t)) {
-    ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %zu.\n", unit);
-    fflush(stderr);
-    throw PSIEXCEPTION("PSIO Error");
-  }
+    if (errcod != sizeof(size_t)) {
+        ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %zu.\n", unit);
+        fflush(stderr);
+        throw PSIEXCEPTION("PSIO Error");
+    }
 }
 
-size_t psio_rd_toclen(size_t unit) {
-  return _default_psio_lib_->rd_toclen(unit);
-}
+size_t psio_rd_toclen(size_t unit) { return _default_psio_lib_->rd_toclen(unit); }
 
-}
+}  // namespace psi

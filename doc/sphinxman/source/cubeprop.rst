@@ -38,8 +38,8 @@
 Generation of Cube Files |w---w| :py:func:`~psi4.cubeprop`
 ==========================================================
 
-.. codeauthor:: Robert M. Parrish and Francesco A. Evangelista
-.. sectionauthor:: Francesco A. Evangelista
+.. codeauthor:: Robert M. Parrish, Francesco A. Evangelista and Peter Kraus
+.. sectionauthor:: Francesco A. Evangelista and Peter Kraus
 
 .. autofunction:: psi4.cubeprop(wfn)
 
@@ -109,6 +109,13 @@ ORBITALS [Default if  |globals__cubeprop_tasks| is not specified]
     Produces cube representations of the molecular orbitals
     :math:`\psi_q(\mathbf{r})`.  Orbitals are sorted according to increasing
     orbital energy ignoring symmetry.
+FRONTIER_ORBITALS
+    Produces cube representations of the frontier molecular orbitals. For closed shell
+    species, the highest occupied (HOMO) and the lowest unoccupied (LUMO) alpha orbitals (ie. 
+    :math:`\psi_{\alpha}(\mathbf{r})`) are printed, while for open shell species a total 
+    of :math:`(4 + M_s)` orbitals are printed (:math:`\alpha` and :math:`\beta` 
+    spin for both lowest virtual (LVMO) and highest doubly occupied
+    orbitals (DOMO), along with all :math:`\alpha` singly occupied (SOMO) orbitals).
 DENSITY
     This task can be used to obtain the alpha and beta electron densities,
     :math:`\rho_\alpha(\mathbf{r})` and :math:`\rho_\beta(\mathbf{r})`, together
@@ -122,6 +129,14 @@ BASIS_FUNCTIONS
 ESP
     Calculates the total (nuclear + electronic) electrostatic potential
     :math:`V(\mathbf{r})`.
+DUAL_DESCRIPTOR
+    Calculates the dual descriptor from frontier orbitals:
+    :math:`f^2(\mathbf{r})=\rho_{\mathrm{LUMO}}(\mathbf{r})-\rho_{\mathrm{HOMO}}(\mathbf{r})`.
+    The dual descriptor is a good measure of nucleophilicity and electrophilicity,
+    containing information essentially equivalent to both Fukui functions combined. 
+    More details on the dual descriptor itself can be found in [Morell:2005:205]_, 
+    while the current implementation is described in [Martinez-Araya:2015:451]_. 
+    This feature is currently only supported for closed shell systems.
 
 .. note:: The ``ESP`` task requires the user to specify a density-fitting basis
     via the |scf__df_basis_scf| keyword.

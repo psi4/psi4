@@ -14,7 +14,7 @@ set {
 
 nos.update_geometry()
 nos.print_out()
-compare_values(63.696959614277581, nos.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(63.6969598646, nos.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',

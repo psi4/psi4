@@ -27,7 +27,7 @@
  */
 
 // Latest revision on April 38, 2013.
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
 #include <cmath>
 #include "psi4/libqt/qt.h"
@@ -693,7 +693,7 @@ void Tensor2d::print(const char *outfile) {
     int m = dim1_;
     int n = dim2_;
 
-    int num_frames = int(n / 10);
+    auto num_frames = int(n / 10);
     int num_frames_rem = n % 10;  // adding one for changing 0->1 start
     int num_frame_counter = 0;
     // for each frame
@@ -1631,7 +1631,7 @@ void Tensor2d::copy(const SharedTensor2d &A, int start) {
 }  //
 
 void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip) {
-    double *temp = new double[dim_copy];
+    auto *temp = new double[dim_copy];
     int syc = 0;
     // A[m] is getting the pointer to the m-th row of A.
     // A[0]+m is getting the pointer to the m-th element of A.
@@ -1645,7 +1645,7 @@ void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip) {
 }  //
 
 void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start) {
-    double *temp = new double[dim_copy];
+    auto *temp = new double[dim_copy];
     int syc = 0;
     // A[m] is getting the pointer to the m-th row of A.
     // A[0]+m is getting the pointer to the m-th element of A.
@@ -1676,7 +1676,7 @@ void Tensor2d::cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, co
 void Tensor2d::cdgesv(const SharedTensor1d &Xvec) {
     if (dim1_) {
         int errcod;
-        int *ipiv = new int[dim1_];
+        auto *ipiv = new int[dim1_];
         memset(ipiv, 0, sizeof(int) * dim1_);
         errcod = 0;
         errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
@@ -1686,7 +1686,7 @@ void Tensor2d::cdgesv(const SharedTensor1d &Xvec) {
 
 void Tensor2d::cdgesv(const SharedTensor1d &Xvec, int errcod) {
     if (dim1_) {
-        int *ipiv = new int[dim1_];
+        auto *ipiv = new int[dim1_];
         memset(ipiv, 0, sizeof(int) * dim1_);
         errcod = 0;
         errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
@@ -1697,7 +1697,7 @@ void Tensor2d::cdgesv(const SharedTensor1d &Xvec, int errcod) {
 void Tensor2d::cdgesv(double *Xvec) {
     if (dim1_) {
         int errcod;
-        int *ipiv = new int[dim1_];
+        auto *ipiv = new int[dim1_];
         memset(ipiv, 0, sizeof(int) * dim1_);
         errcod = 0;
         errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
@@ -1707,7 +1707,7 @@ void Tensor2d::cdgesv(double *Xvec) {
 
 void Tensor2d::cdgesv(double *Xvec, int errcod) {
     if (dim1_) {
-        int *ipiv = new int[dim1_];
+        auto *ipiv = new int[dim1_];
         memset(ipiv, 0, sizeof(int) * dim1_);
         errcod = 0;
         errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);

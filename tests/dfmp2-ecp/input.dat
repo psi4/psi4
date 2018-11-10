@@ -1,6 +1,6 @@
 #! Ne-Xe dimer MP2 energies with ECP, with electrons correlated then frozen.
 
-refnuc =   45.86202474447                                                                #TEST
+refnuc =   45.862024925                                                                  #TEST
 refall = -457.47320868249                                                                #TEST
 reffzc = -457.38127218548                                                                #TEST
 reffHe = -457.47130951838                                                                #TEST

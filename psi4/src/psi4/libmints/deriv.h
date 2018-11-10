@@ -49,8 +49,7 @@ class SOBasisSet;
 class Molecule;
 class CdSalcList;
 
-class Deriv
-{
+class Deriv {
     const std::shared_ptr<Wavefunction> wfn_;
     std::shared_ptr<IntegralFactory> integral_;
     std::shared_ptr<BasisSet> basis_;
@@ -87,7 +86,8 @@ class Deriv
     SharedMatrix tpdm_ref_contr_;
     /// Final gradient
     SharedMatrix gradient_;
-public:
+
+   public:
     /*!
      * Constructor for derivative object.
      *
@@ -96,10 +96,8 @@ public:
      * \param project_out_translations remove translations from the CdSalcs
      * \param project_out_rotations remove rotations from the CdSalcs
      */
-    Deriv(const std::shared_ptr<Wavefunction>& wave,
-          char needed_irreps=0x1,
-          bool project_out_translations=false,
-          bool project_out_rotations=false);
+    Deriv(const std::shared_ptr<Wavefunction>& wave, char needed_irreps = 0x1, bool project_out_translations = false,
+          bool project_out_rotations = false);
 
     // Is the TPDM already presorted? Default: False
     void set_tpdm_presorted(bool val) { tpdm_presorted_ = val; }
@@ -112,23 +110,15 @@ public:
 
     SharedMatrix compute();
 
-    const SharedMatrix& one_electron() {
-        return opdm_contr_;
-    }
+    const SharedMatrix& one_electron() { return opdm_contr_; }
 
-    const SharedMatrix& lagrangian() {
-        return x_contr_;
-    }
+    const SharedMatrix& lagrangian() { return x_contr_; }
 
-    const SharedMatrix& two_body() {
-        return tpdm_contr_;
-    }
+    const SharedMatrix& two_body() { return tpdm_contr_; }
 
-    const SharedMatrix& gradient() {
-        return gradient_;
-    }
+    const SharedMatrix& gradient() { return gradient_; }
 };
 
-}
+}  // namespace psi
 
 #endif /* DERIV_H_ */

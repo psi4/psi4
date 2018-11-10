@@ -36,16 +36,13 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psifiles.h"
+#include "psi4/libdpd/dpd.h"
 
-#include <math.h>
-#include <ctype.h>
-#include <stdio.h>
-
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
+#include <cmath>
+#include <cctype>
+#include <cstdio>
 
 using namespace psi;
-;
 
 void IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2) {
     check_initialized();
@@ -53,7 +50,7 @@ void IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> 
     // This can be safely called - it returns immediately if the SO ints are already sorted
     presort_so_tei();
 
-    char *label = new char[100];
+    auto *label = new char[100];
 
     // Grab the transformation coefficients
     SharedMatrix c1a = aMOCoefficients_[s1->label()];

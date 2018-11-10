@@ -109,7 +109,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double *f =  g_forces_pointer();
 
   if (Opt_params.opt_type == OPT_PARAMS::IRC)
-    if (!p_irc_data->go) { return 1; }
+    if (!p_irc_data->go) { return true; }
 
   // Save forces and put back in below.
   double *f_backup;
@@ -120,7 +120,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
   // for IRC only consider forces tangent to the hypersphere search surface
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
-    double **G = mol.compute_G(1);
+    double **G = mol.compute_G(true);
     double **Ginv = symm_matrix_inv(G, Nintco, Nintco); 
     free_matrix(G);
 
@@ -278,7 +278,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 #endif
 }
 
-void OPT_DATA::summary(void) const {
+void OPT_DATA::summary() const {
   double DE, *f, *dq, max_force, max_disp, rms_force, rms_disp;
 
   oprintf_out( "\n  ==> Optimization Summary <==\n\n");
@@ -631,7 +631,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
       opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
       for (int i=0; i<iteration; ++i) {
-        STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+        auto *one_step = new STEP_DATA(Nintco, Ncart);
         one_step->read(i+1, Nintco, Ncart);
         steps.push_back(one_step);
       }
@@ -642,12 +642,12 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   ++iteration; // increment for current step
   ++steps_since_last_H;
   // create memory for this, current step
-  STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+  auto *one_step = new STEP_DATA(Nintco, Ncart);
   steps.push_back(one_step);
 }
 
 // write data to binary file
-void OPT_DATA::write(void) {
+void OPT_DATA::write() {
   opt_io_open(opt::OPT_IO_OPEN_OLD);
 
   oprintf_out("\tWriting optimization data to binary file.\n");
@@ -669,7 +669,7 @@ void OPT_DATA::write(void) {
 
 // Report on performance of last step
 // Eventually might have this function return false to reject a step
-bool OPT_DATA::previous_step_report(void) const {
+bool OPT_DATA::previous_step_report() const {
   oprintf_out(  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
 
   if (steps.size() == 1) {
@@ -723,7 +723,7 @@ bool OPT_DATA::previous_step_report(void) const {
 
 // These functions are a bit out of place, given that the trust radius is not
 // stored inside opt_data.
-void OPT_DATA::increase_trust_radius(void) const {
+void OPT_DATA::increase_trust_radius() const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double max = Opt_params.intrafragment_step_limit_max;
@@ -745,7 +745,7 @@ void OPT_DATA::increase_trust_radius(void) const {
   return;
 }
 
-void OPT_DATA::decrease_trust_radius(void) const {
+void OPT_DATA::decrease_trust_radius() const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double min = Opt_params.intrafragment_step_limit_min;
@@ -764,7 +764,7 @@ void OPT_DATA::decrease_trust_radius(void) const {
   return;
 }
 
-void OPT_DATA::reset_trust_radius(void) const {
+void OPT_DATA::reset_trust_radius() const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAG_STEP_LIMIT";
 

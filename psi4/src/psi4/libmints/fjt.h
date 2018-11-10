@@ -62,150 +62,157 @@ class CorrelationFactor;
 
 /// Evaluates the Boys function F_j(T)
 class Fjt {
-public:
+   public:
     Fjt();
     virtual ~Fjt();
     /** Computed F_j(T) for every 0 <= j <= J (total of J+1 doubles).
         The user may read/write these values.
         The values will be overwritten with the next call to this functions.
         The pointer will be invalidated after the call to ~Fjt. */
-    virtual double *values(int J, double T) =0;
-    virtual void set_rho(double /*rho*/) { }
+    virtual double* values(int J, double T) = 0;
+    virtual void set_rho(double /*rho*/) {}
 };
 
 #define TAYLOR_INTERPOLATION_ORDER 6
-#define TAYLOR_INTERPOLATION_AND_RECURSION 0  // compute F_lmax(T) and then iterate down to F_0(T)? Else use interpolation only
+#define TAYLOR_INTERPOLATION_AND_RECURSION \
+    0  // compute F_lmax(T) and then iterate down to F_0(T)? Else use interpolation only
 /// Uses Taylor interpolation of up to 8-th order to compute the Boys function
 class Taylor_Fjt : public Fjt {
     static double relative_zero_;
-public:
+
+   public:
     static const int max_interp_order = 8;
 
     Taylor_Fjt(size_t jmax, double accuracy);
-    virtual ~Taylor_Fjt();
+    ~Taylor_Fjt() override;
     /// Implements Fjt::values()
-    double *values(int J, double T);
-private:
-    double **grid_;            /* Table of "exact" Fm(T) values. Row index corresponds to
-                                  values of T (max_T+1 rows), column index to values
-                                  of m (max_m+1 columns) */
-    double delT_;              /* The step size for T, depends on cutoff */
-    double oodelT_;            /* 1.0 / delT_, see above */
-    double cutoff_;            /* Tolerance cutoff used in all computations of Fm(T) */
-    int interp_order_;         /* Order of (Taylor) interpolation */
-    int max_m_;                /* Maximum value of m in the table, depends on cutoff
-                                  and the number of terms in Taylor interpolation */
-    int max_T_;                /* Maximum index of T in the table, depends on cutoff
-                                  and m */
-    double *T_crit_;           /* Maximum T for each row, depends on cutoff;
-                                  for a given m and T_idx <= max_T_idx[m] use Taylor interpolation,
-                                  for a given m and T_idx > max_T_idx[m] use the asymptotic formula */
-    double *F_;                /* Here computed values of Fj(T) are stored */
+    double* values(int J, double T) override;
+
+   private:
+    double** grid_;    /* Table of "exact" Fm(T) values. Row index corresponds to
+                          values of T (max_T+1 rows), column index to values
+                          of m (max_m+1 columns) */
+    double delT_;      /* The step size for T, depends on cutoff */
+    double oodelT_;    /* 1.0 / delT_, see above */
+    double cutoff_;    /* Tolerance cutoff used in all computations of Fm(T) */
+    int interp_order_; /* Order of (Taylor) interpolation */
+    int max_m_;        /* Maximum value of m in the table, depends on cutoff
+                          and the number of terms in Taylor interpolation */
+    int max_T_;        /* Maximum index of T in the table, depends on cutoff
+                          and m */
+    double* T_crit_;   /* Maximum T for each row, depends on cutoff;
+                          for a given m and T_idx <= max_T_idx[m] use Taylor interpolation,
+                          for a given m and T_idx > max_T_idx[m] use the asymptotic formula */
+    double* F_;        /* Here computed values of Fj(T) are stored */
 };
 
 /// "Old" intv3 code from Curt
 /// Computes F_j(T) using 6-th order Taylor interpolation
-class FJT: public Fjt {
-private:
-    double **gtable;
+class FJT : public Fjt {
+   private:
+    double** gtable;
 
     int maxj;
-    double *denomarray;
+    double* denomarray;
     double wval_infinity;
     int itable_infinity;
 
-    double *int_fjttable;
+    double* int_fjttable;
 
     int ngtable() const { return maxj + 7; }
-public:
+
+   public:
     FJT(int n);
-    virtual ~FJT();
+    ~FJT() override;
     /// implementation of Fjt::values()
-    double *values(int J, double T);
+    double* values(int J, double T) override;
 };
 
 class GaussianFundamental : public Fjt {
-protected:
+   protected:
     std::shared_ptr<CorrelationFactor> cf_;
     double rho_;
     double* value_;
 
-public:
+   public:
     GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~GaussianFundamental();
+    ~GaussianFundamental() override;
 
-    virtual double* values(int J, double T) = 0;
-    void set_rho(double rho);
+    double* values(int J, double T) override = 0;
+    void set_rho(double rho) override;
 };
 
-    /**
-     *  Solves \scp -\gamma r_{12}
-     */
+/**
+ *  Solves \scp -\gamma r_{12}
+ */
 class F12Fundamental : public GaussianFundamental {
-public:
+   public:
     F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12Fundamental();
-    double* values(int J, double T);
+    ~F12Fundamental() override;
+    double* values(int J, double T) override;
 };
 
 /**
  *  Solves \frac{\exp -\gamma r_{12}}{\gamma}.
  */
 class F12ScaledFundamental : public GaussianFundamental {
-public:
+   public:
     F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12ScaledFundamental();
-    double* values(int J, double T);
+    ~F12ScaledFundamental() override;
+    double* values(int J, double T) override;
 };
 
 class F12SquaredFundamental : public GaussianFundamental {
-public:
+   public:
     F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12SquaredFundamental();
-    double* values(int J, double T);
+    ~F12SquaredFundamental() override;
+    double* values(int J, double T) override;
 };
 
 class F12G12Fundamental : public GaussianFundamental {
-private:
+   private:
     std::shared_ptr<FJT> Fm_;
-public:
+
+   public:
     F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12G12Fundamental();
-    double* values(int J, double T);
+    ~F12G12Fundamental() override;
+    double* values(int J, double T) override;
 };
 
 class F12DoubleCommutatorFundamental : public GaussianFundamental {
-public:
+   public:
     F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
-    virtual ~F12DoubleCommutatorFundamental();
-    double* values(int J, double T);
+    ~F12DoubleCommutatorFundamental() override;
+    double* values(int J, double T) override;
 };
 
 class ErfFundamental : public GaussianFundamental {
-private:
+   private:
     double omega_;
     std::shared_ptr<FJT> boys_;
-public:
+
+   public:
     ErfFundamental(double omega, int max);
-    virtual ~ErfFundamental();
-    double* values(int J, double T);
+    ~ErfFundamental() override;
+    double* values(int J, double T) override;
     void setOmega(double omega) { omega_ = omega; }
 };
 
 class ErfComplementFundamental : public GaussianFundamental {
-private:
+   private:
     double omega_;
     std::shared_ptr<FJT> boys_;
-public:
+
+   public:
     ErfComplementFundamental(double omega, int max);
-    virtual ~ErfComplementFundamental();
-    double* values(int J, double T);
+    ~ErfComplementFundamental() override;
+    double* values(int J, double T) override;
     void setOmega(double omega) { omega_ = omega; }
 };
 
-} // end of namespace sc
+}  // namespace psi
 
-#endif // header guard
+#endif  // header guard
 
 // Local Variables:
 // mode: c++

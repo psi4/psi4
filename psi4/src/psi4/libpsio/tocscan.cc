@@ -32,89 +32,80 @@
  */
 
 #include <cstring>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 
-psio_tocentry*PSIO::tocscan(size_t unit, const char *key) {
-  psio_tocentry *this_entry;
+psio_tocentry *PSIO::tocscan(size_t unit, const char *key) {
+    psio_tocentry *this_entry;
 
-  if (key == nullptr)
-    return (nullptr);
+    if (key == nullptr) return (nullptr);
 
-  if ((strlen(key)+1) > PSIO_KEYLEN)
-    psio_error(unit, PSIO_ERROR_KEYLEN);
+    if ((strlen(key) + 1) > PSIO_KEYLEN) psio_error(unit, PSIO_ERROR_KEYLEN);
 
-  bool already_open = open_check(unit);
-  if(!already_open) open(unit, PSIO_OPEN_OLD);
+    bool already_open = open_check(unit);
+    if (!already_open) open(unit, PSIO_OPEN_OLD);
 
-  this_entry = psio_unit[unit].toc;
+    this_entry = psio_unit[unit].toc;
 
-  while (this_entry != nullptr) {
-    if (!strcmp(this_entry->key, key)) {
-      if(!already_open) close(unit, 1); // keep
-      return (this_entry);
+    while (this_entry != nullptr) {
+        if (!strcmp(this_entry->key, key)) {
+            if (!already_open) close(unit, 1);  // keep
+            return (this_entry);
+        }
+        this_entry = this_entry->next;
     }
-    this_entry = this_entry->next;
-  }
 
-  if(!already_open) close(unit, 1); // keep
-  return (nullptr);
+    if (!already_open) close(unit, 1);  // keep
+    return (nullptr);
 }
 
-  /*!
-   ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
-   ** a pointer to the entry or nullptr to the caller.
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
+ ** a pointer to the entry or nullptr to the caller.
+ **
+ ** \ingroup PSIO
+ */
 
-  psio_tocentry *psio_tocscan(size_t unit, const char *key) {
-    return _default_psio_lib_->tocscan(unit, key);
-  }
+psio_tocentry *psio_tocscan(size_t unit, const char *key) { return _default_psio_lib_->tocscan(unit, key); }
 
 bool PSIO::tocentry_exists(size_t unit, const char *key) {
-  psio_tocentry *this_entry;
+    psio_tocentry *this_entry;
 
-  if (key == nullptr)
-    return (true);
+    if (key == nullptr) return (true);
 
-  if ((strlen(key)+1) > PSIO_KEYLEN)
-    psio_error(unit, PSIO_ERROR_KEYLEN);
+    if ((strlen(key) + 1) > PSIO_KEYLEN) psio_error(unit, PSIO_ERROR_KEYLEN);
 
-  bool already_open = open_check(unit);
-  if(!already_open) open(unit, PSIO_OPEN_OLD);
+    bool already_open = open_check(unit);
+    if (!already_open) open(unit, PSIO_OPEN_OLD);
 
-  this_entry = psio_unit[unit].toc;
+    this_entry = psio_unit[unit].toc;
 
-  while (this_entry != nullptr) {
-    if (!strcmp(this_entry->key, key)) {
-      if(!already_open) close(unit, 1); // keep
-      return (true);
+    while (this_entry != nullptr) {
+        if (!strcmp(this_entry->key, key)) {
+            if (!already_open) close(unit, 1);  // keep
+            return (true);
+        }
+        this_entry = this_entry->next;
     }
-    this_entry = this_entry->next;
-  }
 
-  if(!already_open) close(unit, 1); // keep
-  return (false);
+    if (!already_open) close(unit, 1);  // keep
+    return (false);
 }
 
-  /*!
-   ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
-   ** a pointer to the entry or nullptr to the caller.
-   **
-   ** \ingroup PSIO
-   */
+/*!
+ ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
+ ** a pointer to the entry or nullptr to the caller.
+ **
+ ** \ingroup PSIO
+ */
 
-  bool psio_tocentry_exists(size_t unit, const char *key) {
-    return _default_psio_lib_->tocentry_exists(unit, key);
-  }
+bool psio_tocentry_exists(size_t unit, const char *key) { return _default_psio_lib_->tocentry_exists(unit, key); }
 
-
-}
+}  // namespace psi

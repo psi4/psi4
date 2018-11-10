@@ -73,61 +73,59 @@ namespace psi {
 ** \ingroup CIOMR
 */
 
-PSI_API double ** block_matrix(size_t n, size_t m, bool memlock)
-{
-    double **A=nullptr;
-    double *B=nullptr;
+PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
+    double **A = nullptr;
+    double *B = nullptr;
     size_t i;
 
-    if(!m || !n) return(static_cast<double **>(0));
+    if (!m || !n) return (static_cast<double **>(nullptr));
 
-    A = new double*[n];
-    if (A==nullptr) {
+    A = new double *[n];
+    if (A == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("n = %ld\n",n);
+        outfile->Printf("n = %ld\n", n);
         exit(PSI_RETURN_FAILURE);
     }
 
-    B = new double[n*m];
+    B = new double[n * m];
     if (B == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("m = %ld\n",m);
+        outfile->Printf("m = %ld\n", m);
         exit(PSI_RETURN_FAILURE);
     }
-    memset(static_cast<void*>(B), 0, m*n*sizeof(double));
+    memset(static_cast<void *>(B), 0, m * n * sizeof(double));
 
     for (i = 0; i < n; i++) {
-        A[i] = &(B[i*m]);
+        A[i] = &(B[i * m]);
     }
 
 #ifdef _POSIX_MEMLOCK
     if (memlock) {
-
-        char* addr = (char*) B;
-        size_t size = m*n*(size_t)sizeof(double);
+        char *addr = (char *)B;
+        size_t size = m * n * (size_t)sizeof(double);
         size_t page_offset, page_size;
 
         page_size = sysconf(_SC_PAGESIZE);
-        page_offset = (size_t) addr % page_size;
+        page_offset = (size_t)addr % page_size;
 
-        addr -= page_offset;  /* Adjust addr to page boundary */
-        size += page_offset;  /* Adjust size with page_offset */
+        addr -= page_offset; /* Adjust addr to page boundary */
+        size += page_offset; /* Adjust size with page_offset */
 
-        if ( mlock(addr, size) ) {  /* Lock the memory */
+        if (mlock(addr, size)) { /* Lock the memory */
             outfile->Printf("block_matrix: trouble locking memory \n");
             fflush(stderr);
             exit(PSI_RETURN_FAILURE);
         }
 
-        addr = (char*) A;
-        size = n*(size_t)sizeof(double*);
+        addr = (char *)A;
+        size = n * (size_t)sizeof(double *);
 
-        page_offset = (size_t) addr % page_size;
+        page_offset = (size_t)addr % page_size;
 
-        addr -= page_offset;  /* Adjust addr to page boundary */
-        size += page_offset;  /* Adjust size with page_offset */
+        addr -= page_offset; /* Adjust addr to page boundary */
+        size += page_offset; /* Adjust size with page_offset */
 
-        if ( mlock(addr, size) ) {  /* Lock the memory */
+        if (mlock(addr, size)) { /* Lock the memory */
             outfile->Printf("block_matrix: trouble locking memory \n");
             fflush(stderr);
             exit(PSI_RETURN_FAILURE);
@@ -135,9 +133,8 @@ PSI_API double ** block_matrix(size_t n, size_t m, bool memlock)
     }
 #endif
 
-    return(A);
+    return (A);
 }
-
 
 /*!
 ** free_block(): Free a block matrix
@@ -148,11 +145,9 @@ PSI_API double ** block_matrix(size_t n, size_t m, bool memlock)
 **
 ** \ingroup CIOMR
 */
-void PSI_API free_block(double **array)
-{
-    if(array == nullptr) return;
-    delete [] array[0];
-    delete [] array;
+void PSI_API free_block(double **array) {
+    if (array == nullptr) return;
+    delete[] array[0];
+    delete[] array;
 }
-
 }

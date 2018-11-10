@@ -41,8 +41,7 @@ class PSIO;
 namespace dfmp2 {
 
 class CorrGrad {
-
-protected:
+   protected:
     /// Print flag, defaults to 1
     int print_;
     /// Debug flag, defaults to 0
@@ -59,12 +58,12 @@ protected:
     std::shared_ptr<BasisSet> primary_;
 
     /**
-    * Rules:
-    * CC' = D (spin)
-    * LL' - RR' = P (spin)
-    * Da + Db = D
-    * Pa + Pb = P
-    **/
+     * Rules:
+     * CC' = D (spin)
+     * LL' - RR' = P (spin)
+     * Da + Db = D
+     * Pa + Pb = P
+     **/
 
     SharedMatrix Ca_;
     SharedMatrix Cb_;
@@ -84,16 +83,16 @@ protected:
 
     void common_init();
 
-public:
+   public:
     CorrGrad(std::shared_ptr<BasisSet> primary);
     virtual ~CorrGrad();
 
     /**
-    * Static instance constructor, used to get prebuilt DFCorr/DirectCorr objects
-    * using knobs in options.
-    * @param options Options reference, with preset parameters
-    * @return abstract Corr object, tuned in with preset options
-    */
+     * Static instance constructor, used to get prebuilt DFCorr/DirectCorr objects
+     * using knobs in options.
+     * @param options Options reference, with preset parameters
+     * @return abstract Corr object, tuned in with preset options
+     */
     static std::shared_ptr<CorrGrad> build_CorrGrad(std::shared_ptr<BasisSet> primary,
                                                     std::shared_ptr<BasisSet> auxiliary);
 
@@ -149,8 +148,7 @@ public:
 };
 
 class DFCorrGrad : public CorrGrad {
-
-protected:
+   protected:
     std::shared_ptr<BasisSet> auxiliary_;
 
     std::shared_ptr<PSIO> psio_;
@@ -172,7 +170,8 @@ protected:
     void build_Amn_x_terms();
 
     void fitting_helper(SharedMatrix J, size_t file, const std::string& label, size_t naux, size_t nij, size_t memory);
-    void UV_helper(SharedMatrix V, double c, size_t file, const std::string& label, size_t naux, size_t nij, size_t memory);
+    void UV_helper(SharedMatrix V, double c, size_t file, const std::string& label, size_t naux, size_t nij,
+                   size_t memory);
 
     /// File number for Alpha (Q|mn) tensor
     size_t unit_a_;
@@ -181,13 +180,13 @@ protected:
     /// File number for J tensors
     size_t unit_c_;
 
-public:
+   public:
     DFCorrGrad(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
-    virtual ~DFCorrGrad();
+    ~DFCorrGrad() override;
 
-    void compute_gradient();
+    void compute_gradient() override;
 
-    void print_header() const;
+    void print_header() const override;
 
     /**
      * Minimum relative eigenvalue to retain in fitting inverse
@@ -220,5 +219,6 @@ public:
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 };
 
-}} // Namespaces
+}  // namespace dfmp2
+}  // namespace psi
 #endif

@@ -35,10 +35,11 @@ import hashlib
 import itertools
 import collections
 
+import qcelemental as qcel
+
 from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
-from .periodictable import *
 from .libmintsgshell import ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis, corresponding_zeta
@@ -748,15 +749,14 @@ class BasisSet(object):
         # Paths to search for gbs files: here + PSIPATH + library
         try:
             from psi4 import core
-            psidatadir = core.get_datadir()
         except ImportError:
-            pass
+            libraryPath = ''
+        else:
+            psidatadir = core.get_datadir()
+            libraryPath = os.pathsep + os.path.join(os.path.abspath(psidatadir), 'basis')
         #nolongerenvvar psidatadir = os.environ.get('PSIDATADIR', None)
         #nolongerpredicatble psidatadir = __file__ + '/../../..' if psidatadir is None else psidatadir
-        if psidatadir:
-            libraryPath = os.pathsep + os.path.join(os.path.abspath(psidatadir), 'basis')
-        else:
-            libraryPath = ''
+
         basisPath = os.path.abspath('.') + os.pathsep
         basisPath += os.pathsep.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(os.pathsep)])
         basisPath += libraryPath
@@ -833,7 +833,7 @@ class BasisSet(object):
             if verbose >= 2:
                 print("""  Shell Entries: %s""" % (seek['entry']))
                 print("""  Basis Sets: %s""" % (seek['basis']))
-                print("""  File Path: %s""" % (', '.join(map(str, seek['path'].split(':')))))
+                print("""  File Path: %s""" % (', '.join(map(str, seek['path'].split(os.pathsep)))))
                 print("""  Input Blocks: %s\n""" % (', '.join(seek['strings'])))
 
             # Search through paths, bases, entries
@@ -1278,7 +1278,7 @@ class BasisSet(object):
         for uA in range(self.molecule.nunique()):
             A = self.molecule.unique(uA)
             if not numbersonly:
-                text += """%s\n""" % (z2element[self.molecule.Z(A)])
+                text += """%s\n""" % (qcel.periodictable.to_element(self.molecule.Z(A)))
             first_shell = self.center_to_shell[A]
             n_shell = self.center_to_nshell[A]
 

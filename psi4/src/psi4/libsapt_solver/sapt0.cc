@@ -272,7 +272,8 @@ void SAPT0::print_results() {
                         coupled.c_str(), scaled.c_str(), *scal_it * e_exch_ind20_ * 1000.0,
                         *scal_it * e_exch_ind20_ * pc_hartree2kcalmol, *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
         outfile->Printf("      delta HF,%1s (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-                        coupled.c_str(), scaled.c_str(), dHF2 * 1000.0, dHF2 * pc_hartree2kcalmol, dHF2 * pc_hartree2kJmol);
+                        coupled.c_str(), scaled.c_str(), dHF2 * 1000.0, dHF2 * pc_hartree2kcalmol,
+                        dHF2 * pc_hartree2kJmol);
         outfile->Printf("\n    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scaled.c_str(), tot_disp * 1000.0, tot_disp * pc_hartree2kcalmol, tot_disp * pc_hartree2kJmol);
         outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
@@ -322,7 +323,7 @@ void SAPT0::print_results() {
             Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
             Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
 
-            if(no_response_) {
+            if (no_response_) {
                 Process::environment.globals["SAPT IND20,U ENERGY"] = e_ind20_;
                 Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = e_exch_ind20_;
             } else {
@@ -559,7 +560,7 @@ void SAPT0::df_integrals() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();
@@ -1027,7 +1028,7 @@ void SAPT0::df_integrals_aio() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();
@@ -1525,7 +1526,7 @@ void SAPT0::oo_df_integrals() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();

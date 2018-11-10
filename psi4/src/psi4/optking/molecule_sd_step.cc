@@ -57,7 +57,7 @@ inline double DE_quadratic_energy(double step, double grad, double hess) {
   return (step * grad + 0.5 * step * step * hess);
 }
 
-void MOLECULE::sd_step(void) {
+void MOLECULE::sd_step() {
   int dim = Ncoord();
   double *fq = p_Opt_data->g_forces_pointer();
   double *dq = p_Opt_data->g_dq_pointer();

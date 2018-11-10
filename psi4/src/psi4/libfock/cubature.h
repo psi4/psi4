@@ -30,6 +30,7 @@
 #define libmints_cubature_H
 
 #include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
 
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/typedefs.h"
@@ -75,6 +76,8 @@ protected:
     int max_points_;
     /// Maximum number of functions in a block
     int max_functions_;
+    // The total collocation size
+    size_t collocation_size_;
     /// Full x points.
     double* x_;
     /// Full y points.
@@ -153,6 +156,8 @@ public:
     int max_points() const { return max_points_; }
     /// Maximum number of funtions in a block
     int max_functions() const { return max_functions_; }
+    /// Total collocation size of all blocks
+    size_t collocation_size() { return collocation_size_; }
 
     /// The x points. You do not own this
     double* x() const { return x_; }
@@ -191,7 +196,7 @@ public:
     PseudospectralGrid(std::shared_ptr<Molecule> molecule,
                        std::shared_ptr<BasisSet> primary,
                        Options& options);
-    virtual ~PseudospectralGrid();
+    ~PseudospectralGrid() override;
 
 };
 
@@ -211,7 +216,7 @@ public:
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
          std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map,
          Options& options);
-virtual ~DFTGrid();
+~DFTGrid() override;
 };
 
 class RadialGrid {
@@ -348,7 +353,9 @@ class BlockOPoints {
 
 protected:
     /// number of points in this block
-    int npoints_;
+    size_t index_;
+    size_t npoints_;
+    size_t local_nbf_;
 
     /// Data holders if requested
     SharedVector xvec_;
@@ -384,7 +391,7 @@ protected:
 public:
     BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
                  std::shared_ptr<BasisExtents> extents);
-    BlockOPoints(int npoints, double* x, double* y, double* z, double* w,
+    BlockOPoints(size_t index, size_t npoints, double* x, double* y, double* z, double* w,
         std::shared_ptr<BasisExtents> extents);
     virtual ~BlockOPoints();
 
@@ -392,7 +399,11 @@ public:
     void refresh() { populate(); }
 
     /// Number of grid points
-    int npoints() const { return npoints_; }
+    size_t npoints() const { return npoints_; }
+    /// Number of basis functions in the block
+    size_t local_nbf() const { return local_nbf_; }
+    /// Index of the currently owned block
+    size_t index() const { return index_; }
     /// Print a trace of this BlockOPoints
     void print(std::string out_fname = "outfile", int print = 2);
 

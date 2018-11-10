@@ -40,6 +40,7 @@ using_resp = pytest.mark.skipif(psi4.addons("resp") is False,
                                 reason="Psi4 not detecting plugin resp. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_resp)")
 
 
+@pytest.mark.smoke
 @using_gdma
 def test_gdma():
     """gdma1"""
@@ -96,6 +97,7 @@ def test_gdma():
     assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
 
 
+@pytest.mark.smoke
 @using_mrcc
 def test_mrcc():
     """mrcc/ccsdt"""
@@ -120,6 +122,7 @@ def test_mrcc():
     assert psi4.compare_values(-76.239133655413, psi4.get_variable("CURRENT ENERGY"), 6, 'CCSDT')
 
 
+@pytest.mark.smoke
 @using_chemps2
 def test_chemps2():
     """chemps2/scf-n2"""
@@ -167,6 +170,7 @@ def test_chemps2():
     assert psi4.compare_values(ref_energy, psi4.get_variable("CURRENT ENERGY"), 6, "DMRG Energy")
 
 
+@pytest.mark.smoke
 @using_dftd3
 def test_dftd3():
     """dftd3/energy"""
@@ -196,16 +200,16 @@ def test_dftd3():
 
     psi4.print_stdout('  -D correction from Py-side')
     eneyne.update_geometry()
-    E, G = eneyne.run_dftd3('b3lyp', 'd2gr')
+    E, G = eneyne.run_dftd3('b3lyp', 'd2')
     assert psi4.compare_values(ref_d2[0], E, 7, 'Ethene-Ethyne -D2')
     mA = eneyne.extract_subsets(1)
-    E, G = mA.run_dftd3('b3lyp', 'd2gr')
+    E, G = mA.run_dftd3('b3lyp', 'd2')
     assert psi4.compare_values(ref_d2[1], E, 7, 'Ethene -D2')
     mB = eneyne.extract_subsets(2)
-    E, G = mB.run_dftd3('b3lyp', 'd2gr')
+    E, G = mB.run_dftd3('b3lyp', 'd2')
     assert psi4.compare_values(ref_d2[2], E, 7, 'Ethyne -D2')
     #mBcp = eneyne.extract_subsets(2,1)
-    #E, G = mBcp.run_dftd3('b3lyp', 'd2gr')
+    #E, G = mBcp.run_dftd3('b3lyp', 'd2')
     #compare_values(ref_d2[2], E, 7, 'Ethyne(CP) -D2')
 
     E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
@@ -242,16 +246,16 @@ def test_dftd3():
 
     psi4.print_stdout('  -D correction from C-side')
     psi4.activate(mA)
-    #psi4.energy('b3lyp-d2p4')
+    #psi4.energy('b3lyp-d2', engine='libdisp')
     #assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
-    #psi4.energy('b3lyp-d2gr')
+    #psi4.energy('b3lyp-d2')
     #assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
     #psi4.energy('b3lyp-d3zero')
     #assert psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
     psi4.energy('b3lyp-d3bj')
     assert psi4.compare_values(ref_d3bj[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
 
-    psi4.energy('b3lyp-d2')
+    psi4.energy('b3lyp-d2', engine='libdisp')
     assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
     #psi4.energy('b3lyp-d3')
     #assert psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
@@ -263,10 +267,10 @@ def test_dftd3():
     psi4.print_stdout('  non-default -D correction from C-side')
     psi4.activate(mB)
     #psi4.set_options({'dft_dispersion_parameters': [0.75]})
-    #psi4.energy('b3lyp-d2p4')
+    #psi4.energy('b3lyp-d2', engine='libdisp')
     #assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
     #psi4.set_options({'dft_dispersion_parameters': [0.75, 20.0]})
-    #psi4.energy('b3lyp-d2gr')
+    #psi4.energy('b3lyp-d2')
     #assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
     #psi4.set_options({'dft_dispersion_parameters': [1.0,  0.722, 1.217, 14.0]})
     #psi4.energy('b3lyp-d3zero')
@@ -276,7 +280,7 @@ def test_dftd3():
     assert psi4.compare_values(ref_pbe_d3bj[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
 
     psi4.set_options({'dft_dispersion_parameters': [0.75]})
-    psi4.energy('b3lyp-d2')
+    psi4.energy('b3lyp-d2', engine='dftd3')
     assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
     psi4.set_options({'dft_dispersion_parameters': [1.0,  0.722, 1.217, 14.0]})
     psi4.energy('b3lyp-d3')
@@ -291,13 +295,13 @@ def test_dftd3():
 
     psi4.print_stdout('  non-default -D correction from Py-side')
     eneyne.update_geometry()
-    eneyne.run_dftd3('b3lyp', 'd2gr', {'s6': 0.75})
+    eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
     assert psi4.compare_values(ref_pbe_d2[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2')
     mA = eneyne.extract_subsets(1)
-    mA.run_dftd3('b3lyp', 'd2gr', {'s6': 0.75})
+    mA.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
     assert psi4.compare_values(ref_pbe_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2')
     mB = eneyne.extract_subsets(2)
-    mB.run_dftd3('b3lyp', 'd2gr', {'s6': 0.75})
+    mB.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
     assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D2')
 
     eneyne.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
@@ -326,6 +330,7 @@ def test_dftd3():
     assert psi4.compare_values(ref_pbe_d2[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
 
 
+@pytest.mark.smoke
 @using_libefp
 def test_libefp():
     """libefp/qchem-qmefp-sp"""
@@ -384,6 +389,7 @@ def test_libefp():
     psi4.core.print_variables()
 
 
+@pytest.mark.smoke
 @using_pcmsolver
 def test_pcmsolver():
     """pcmsolver/scf"""
@@ -463,7 +469,7 @@ def _test_scf5():
     #Ensure that the checkpoint file is always nuked
     psi4.core.IOManager.shared_object().set_specific_retention(32,False)
 
-    Eref_nuc      =   30.78849213614545
+    Eref_nuc      =   30.7884922572
     Eref_sing_can = -149.58723684929720
     Eref_sing_df  = -149.58715054487624
     Eref_uhf_can  = -149.67135517240553
@@ -625,6 +631,7 @@ def _test_scf5():
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
 
 
+@pytest.mark.smoke
 @using_erd
 def test_erd():
     """erd/scf5"""
@@ -633,6 +640,7 @@ def test_erd():
     _test_scf5()
 
 
+@pytest.mark.smoke
 @using_simint
 def test_simint():
     """simint/scf5"""
@@ -640,6 +648,7 @@ def test_simint():
     psi4.set_options({'integral_package': 'simint'})
     _test_scf5()
 
+@pytest.mark.smoke
 def test_json():
     """json/energy"""
 
@@ -674,6 +683,7 @@ def test_json():
         f.write(json_data["raw_output"])
 
 
+@pytest.mark.smoke
 @using_cfour
 def test_cfour():
     """cfour/sp-rhf-ccsd_t_"""
@@ -707,6 +717,7 @@ def test_cfour():
     assert psi4.compare_values(-0.282969089769, psi4.get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
 
 
+@pytest.mark.smoke
 @using_v2rdm_casscf
 def test_v2rdm_casscf():
     """v2rdm_casscf/tests/v2rdm1"""
@@ -749,7 +760,7 @@ def test_v2rdm_casscf():
 
     psi4.activate(n2)
 
-    n2.r     = 0.5
+    n2.r     = 0.5 * 0.52917721067 / 0.52917720859
     refscf   = -103.04337420425350
     refv2rdm = -103.086205379481
 
@@ -759,6 +770,7 @@ def test_v2rdm_casscf():
     assert psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
 
+@pytest.mark.smoke
 @hardware_nvidia_gpu
 @using_gpu_dfcc
 def test_gpu_dfcc():
@@ -795,6 +807,7 @@ def test_gpu_dfcc():
     
     
     
+@pytest.mark.smoke
 @using_dftd3
 @using_gcp
 def test_grimme_3c():
@@ -822,6 +835,7 @@ def test_grimme_3c():
     ene = psi4.energy('hf3c/', bsse_type='nocp')
     assert psi4.compare_values(-0.00240232, ene, 6, 'S22-16 HF-3c/minix')
 
+@pytest.mark.smoke
 @using_dkh
 def test_dkh():
     """dkh/molpro-2order"""
@@ -906,6 +920,7 @@ def disabled_test_forte():
     assert psi4.compare_values(refacipt2, psi4.get_variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 
 
+@pytest.mark.smoke
 @using_snsmp2
 def test_snsmp2():
     """snsmp2/he-he"""
@@ -922,6 +937,7 @@ def test_snsmp2():
     assert psi4.compare_values(0.00176708227, psi4.get_variable('SNS-MP2 TOTAL ENERGY'), 5, "SNS-MP2 IE [Eh]")
 
 
+@pytest.mark.smoke
 @using_resp
 def test_resp():
     """resp/tests/test_resp_1"""

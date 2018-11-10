@@ -13,33 +13,34 @@ install:
   - conda config --set always_yes yes
   - conda create --channel conda-forge
                  --name %CONDA_ENV%
+                 cmake
                  deepdiff
-                 mkl-devel
+                 intel-openmp=2018.0.3
+                 mkl-devel=2018.0.3
                  mpmath
                  networkx
                  ninja
                  numpy
-                 pthreads-win32
                  pybind11
                  pytest
+                 python=3.6
   - conda clean --all
   - activate %CONDA_ENV%
+  - conda install --channel psi4
+                 qcelemental
   - conda list
 
 before_build:
-  - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
   - set SOURCE_FOLDER=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_FOLDER=%SOURCE_FOLDER%\build
   - set INSTALL_FOLDER=%SOURCE_FOLDER%\install
   - mkdir %BUILD_FOLDER% & cd %BUILD_FOLDER%
-  # TODO fix OpenMP
   - cmake -G Ninja
           -DCMAKE_BUILD_TYPE=%CONFIGURATION%
           -DCMAKE_INSTALL_PREFIX=%INSTALL_FOLDER%
-          -DCMAKE_C_FLAGS="/wd4018 /wd4101 /wd4996"
-          -DCMAKE_CXX_FLAGS="/wd4251 /wd4267"
-          -DENABLE_OPENMP=OFF
+          -DCMAKE_C_COMPILER=clang-cl
+          -DCMAKE_CXX_COMPILER=clang-cl
           -DENABLE_XHOST=OFF
           -DMAX_AM_ERI=5
           %SOURCE_FOLDER%
@@ -57,7 +58,9 @@ after_build:
 
 before_test:
   - set PYTHONPATH=%INSTALL_FOLDER%\lib
-  - python -c "import psi4; print(psi4)"
+  - python -c "import sys, psi4; print(sys.path); print(psi4)"
+  - dir %BUILD_FOLDER%\stage\lib
+  - dir %INSTALL_FOLDER%\lib
   # TODO create psi4.bat and set PATH
   - python %INSTALL_FOLDER%\bin\psi4 --version
 
@@ -67,23 +70,19 @@ test_script:
   # Skipped long tests (not enough time to run all of them):
   #     cbs-delta-energy cbs-xtpl-gradien
   #     dfmp2-ecp fnocc2
-  #     psimrcc-sp1 pywrap-all
+  #     mp2-module
+  #     scf5
+  #     psimrcc-sp1
+  #     pywrap-all pywrap-cbs1
   #
   # Failling tests:
-  #     casscf-fzc-sp casscf-sa-sp casscf-semi casscf-sp rasscf-sp
-  #     cc-module ci-multi ci-property
-  #     cubeprop
-  #     dfcasscf-fzc-sp dfcasscf-sa-sp dfcasscf-sp dfrasscf-sp
-  #     dfep2-1 dfep2-2
-  #     fsapt2 fsapt-terms sapt-dft1 sapt1 sapt8 tu5-sapt
-  #     json-v11-energy
-  #     molden1 molden2
-  #     mp2-module mpn-bh psi4numpy-dfmp2
-  #     python-3-index-transforms
-  #     pywrap-alias pywrap-cbs1 pywrap-db1
+  #     ci-property
+  #
+  # Tests requiring AM > 5:
+  #     opt-full-hess-every
   #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|psimrcc-sp1|pywrap-all|casscf-semi|casscf-fzc-sp|casscf-sa-sp|casscf-sp|ci-multi|ci-property|cubeprop|dfcasscf-fzc-sp|dfcasscf-sa-sp|dfcasscf-sp|dfrasscf-sp|fsapt2|fsapt-terms|molden1|molden2|mp2-module|mpn-bh|pywrap-alias|pywrap-cbs1|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|sapt8|dfep2-1|dfep2-2|tu5-sapt|cc-module|psi4numpy-dfmp2|python-3-index-transforms|json-v11-energy)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|ci-property|opt-full-hess-every)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
@@ -92,7 +91,7 @@ after_test:
   # Run failling tests, but their results are ignored
   # TODO fix the tests
   - ctest --build-config %CONFIGURATION%
-          --tests-regex "^(casscf-fzc-sp|casscf-sa-sp|casscf-semi|casscf-sp|ci-multi|ci-property|cubeprop|fcasscf-fzc-sp|dfcasscf-sa-sp|dfcasscf-sp|dfrasscf-sp|fsapt2|fsapt-terms|molden1|molden2|mp2-module|mpn-bh|pywrap-alias|pywrap-cbs1|pywrap-db1|rasscf-sp|sapt-dft1|sapt1|sapt8|dfep2-1|dfep2-2|tu5-sapt|cc-module|psi4numpy-dfmp2|python-3-index-transforms|json-v11-energy)$"
+          --tests-regex "^(ci-property)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
   - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
@@ -105,3 +104,8 @@ artifacts:
     name: psi4
   - path: build\tests
     name: tests
+
+branches:
+  only:
+    - master
+    # - 1.3.x

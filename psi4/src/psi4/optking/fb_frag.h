@@ -75,8 +75,8 @@ class FB_FRAG : public FRAG {
   void set_values(double * values_in);
   void set_forces(double * forces_in);
 
-  double * get_values_pointer(void) const { return values; }
-  double * get_forces_pointer(void) const { return forces; }
+  double * get_values_pointer() const { return values; }
+  double * get_forces_pointer() const { return forces; }
 
   // we don't have a valid B matrix for these
   // add 6 bogus stretches
@@ -91,7 +91,7 @@ class FB_FRAG : public FRAG {
   std::string get_coord_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0);
 */
 
-  double **H_guess(void);
+  double **H_guess();
 
   // Tell QChem to update rotation matrix and com for FB fragment
   void displace (int fb_frag_index, double *dq);

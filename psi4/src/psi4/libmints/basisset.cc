@@ -77,7 +77,7 @@ std::string to_upper_copy(const std::string &original) {
     std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
     return upper;
 }
-}  // namespace anonmyous
+}  // namespace
 
 // Constructs a zero AO basis set
 BasisSet::BasisSet() {
@@ -120,7 +120,7 @@ BasisSet::BasisSet() {
     shell_center_[0] = 0;
     center_to_nshell_[0] = 1;
     center_to_shell_[0] = 0;
-    puream_ = 0;
+    puream_ = false;
     max_am_ = 0;
     max_nprimitive_ = 1;
     xyz_[0] = 0.0;
@@ -188,7 +188,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // will still have 3d electrons active.  Alkali earth atoms will
         // have one valence electron in this scheme.
         for (int A = 0; A < mymol->natom(); A++) {
-            double Z   = mymol->Z(A);
+            double Z = mymol->Z(A);
             // Exclude ghosted atoms from core-freezing
             if (Z > 0) {
                 // Add ECPs to Z, the number of electrons less ECP-treated electrons
@@ -203,7 +203,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                     throw PSIEXCEPTION("Invalid atomic number");
                 }
                 // If this center has an ECP, some pairs are already frozen
-                if (ECP > 0) nfzc -= ECP/2;
+                if (ECP > 0) nfzc -= ECP / 2;
             }
         }
         return nfzc;

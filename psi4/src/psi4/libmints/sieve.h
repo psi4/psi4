@@ -93,9 +93,7 @@ class BasisSet;
  *
  */
 class PSI_API ERISieve {
-
-protected:
-
+   protected:
     /// Debug flag (defaults to 0)
     int debug_;
 
@@ -124,9 +122,9 @@ protected:
     std::vector<double> shell_pair_values_;
 
     /// Significant unique bra- function pairs, in reduced triangular indexing
-    std::vector<std::pair<int,int> > function_pairs_;
+    std::vector<std::pair<int, int> > function_pairs_;
     /// Significant unique bra- shell pairs, in reduced triangular indexing
-    std::vector<std::pair<int,int> > shell_pairs_;
+    std::vector<std::pair<int, int> > shell_pairs_;
     /// Unique bra- function pair indexing, accessed in triangular order, or -1 for non-significant pair
     std::vector<long int> function_pairs_reverse_;
     /// Unique bra- shell pair indexing, accessed in triangular order, or -1 for non-significant pair
@@ -136,39 +134,38 @@ protected:
     /// Significant shell pairs, indexes by shell
     std::vector<std::vector<int> > function_to_function_;
 
-  ///////////////////////////////////////
-  // adding stuff for QQR sieves
+    ///////////////////////////////////////
+    // adding stuff for QQR sieves
 
-  bool do_qqr_;
+    bool do_qqr_;
 
-  // erfc^{-1}(threshold), used in QQR sieving
-  double erfc_thresh_;
+    // erfc^{-1}(threshold), used in QQR sieving
+    double erfc_thresh_;
 
-  // need an array of extents from the definition
+    // need an array of extents from the definition
 
-  // key: how do I efficiently check integrals? without conditional on which
-  // screening I do
-  //
-  // 1) just a different function called outside - shell_significant_qqr()
+    // key: how do I efficiently check integrals? without conditional on which
+    // screening I do
+    //
+    // 1) just a different function called outside - shell_significant_qqr()
 
-  // integrals() - fills array of extents
+    // integrals() - fills array of extents
 
-  // r_{\mu \nu} in QQR paper (eqn. B2)
-  std::vector<Vector3> contracted_centers_;
+    // r_{\mu \nu} in QQR paper (eqn. B2)
+    std::vector<Vector3> contracted_centers_;
 
-  // ext'_{\mu \nu} (Eqn. B4)
-  // Extents of contracted charge distributions
-  std::vector<double> extents_;
+    // ext'_{\mu \nu} (Eqn. B4)
+    // Extents of contracted charge distributions
+    std::vector<double> extents_;
 
-  ////////////////////////////////////////
+    ////////////////////////////////////////
 
     /// Set initial indexing
     void common_init();
     /// Compute sieve integrals (only done once)
     void integrals();
 
-public:
-
+   public:
     /// Constructor, basis set and first sieve cutoff
     ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0);
     /// Destructor, frees memory
@@ -185,29 +182,27 @@ public:
 
     /// Square of ceiling of shell quartet (MN|RS)
     inline double shell_ceiling2(int M, int N, int R, int S) {
-        return shell_pair_values_[N * (size_t) nshell_ + M] *
-               shell_pair_values_[R * (size_t) nshell_ + S]; }
+        return shell_pair_values_[N * (size_t)nshell_ + M] * shell_pair_values_[R * (size_t)nshell_ + S];
+    }
 
     /// Square of ceiling of integral (mn|rs)
     inline double function_ceiling2(int m, int n, int r, int s) {
-        return function_pair_values_[m * (size_t) nbf_ + n] *
-               function_pair_values_[r * (size_t) nbf_ + s]; }
+        return function_pair_values_[m * (size_t)nbf_ + n] * function_pair_values_[r * (size_t)nbf_ + s];
+    }
 
     /// Is the shell quartet (MN|RS) significant according to sieve? (no restriction on MNRS order)
 
-    //inline bool shell_significant(int M, int N, int R, int S) {
+    // inline bool shell_significant(int M, int N, int R, int S) {
     bool shell_significant(int M, int N, int R, int S) {
-
-      bool schwarz_bound =  shell_pair_values_[N * (size_t) nshell_ + M] *
-                 shell_pair_values_[R * (size_t) nshell_ + S] >= sieve2_;
-      if (do_qqr_ && schwarz_bound) {
-        bool res = shell_significant_qqr(M, N, R, S);
-        //std::cout << "QQR prune: " << res << "\n";
-        return res;
-      }
-      else {
-        return schwarz_bound;
-      }
+        bool schwarz_bound =
+            shell_pair_values_[N * (size_t)nshell_ + M] * shell_pair_values_[R * (size_t)nshell_ + S] >= sieve2_;
+        if (do_qqr_ && schwarz_bound) {
+            bool res = shell_significant_qqr(M, N, R, S);
+            // std::cout << "QQR prune: " << res << "\n";
+            return res;
+        } else {
+            return schwarz_bound;
+        }
     }
 
     // Implements the QQR sieve
@@ -215,25 +210,24 @@ public:
 
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
     inline bool function_significant(int m, int n, int r, int s) {
-        return function_pair_values_[m * (size_t) nbf_ + n] *
-               function_pair_values_[r * (size_t) nbf_ + s] >= sieve2_; }
-
+        return function_pair_values_[m * (size_t)nbf_ + n] * function_pair_values_[r * (size_t)nbf_ + s] >= sieve2_;
+    }
 
     /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
     inline bool shell_pair_significant(int M, int N) {
-        return shell_pair_values_[M * (size_t) nshell_ + N] *
-               max_ >= sieve2_; }
+        return shell_pair_values_[M * (size_t)nshell_ + N] * max_ >= sieve2_;
+    }
 
     /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
     inline bool function_pair_significant(int m, int n) {
-        return function_pair_values_[m * (size_t) nbf_ + n] *
-               max_ >= sieve2_; }
+        return function_pair_values_[m * (size_t)nbf_ + n] * max_ >= sieve2_;
+    }
     // => Indexing [these change after a call to sieve()] <= //
 
     /// Significant unique bra- function pairs, in reduced triangular indexing
-    const std::vector<std::pair<int,int> >& function_pairs() const { return function_pairs_; }
+    const std::vector<std::pair<int, int> >& function_pairs() const { return function_pairs_; }
     /// Significant unique bra- shell pairs, in reduced triangular indexing
-    const std::vector<std::pair<int,int> >& shell_pairs() const { return shell_pairs_; }
+    const std::vector<std::pair<int, int> >& shell_pairs() const { return shell_pairs_; }
     /// Unique bra- function pair indexing, accessed in triangular order, or -1 for non-significant pair
     const std::vector<long int> function_pairs_reverse() const { return function_pairs_reverse_; }
     /// Unique bra- shell pair indexing, accessed in triangular order, or -1 for non-significant pair
@@ -243,20 +237,18 @@ public:
     /// Significant shell pairs, indexes by shell
     const std::vector<std::vector<int> >& shell_to_shell() const { return shell_to_shell_; }
 
-    //void shell_pair_values(std::vector<std::vector<std::pair<double, int> > >& values) const;
+    // void shell_pair_values(std::vector<std::vector<std::pair<double, int> > >& values) const;
 
     // just return the value of the bound for pair m and n
     double shell_pair_value(int m, int n) const;
     // return the vector of
-    std::vector<double> shell_pair_values() { return shell_pair_values_;}
+    std::vector<double> shell_pair_values() { return shell_pair_values_; }
     // return the vector of function pairs
-    std::vector<double> function_pair_values() {return function_pair_values_;}
+    std::vector<double> function_pair_values() { return function_pair_values_; }
 
     /// Set debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
-
 };
 
-
-}
+}  // namespace psi
 #endif

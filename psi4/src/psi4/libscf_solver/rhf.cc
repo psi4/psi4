@@ -829,8 +829,9 @@ bool RHF::stability_analysis() {
         std::vector<std::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
-        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
-                               IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None);
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted,
+                               IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::QTOrder,
+                               IntegralTransform::FrozenOrbitals::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
@@ -919,7 +920,7 @@ bool RHF::stability_analysis() {
             for (int i = 0; i < mindim; i++) triplet_eval_sym.push_back(std::make_pair(evals[i], h));
 
             free_block(evecs);
-            delete[] evals;
+            free(evals);
         }
 
         outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
@@ -962,5 +963,5 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
-}
-}
+}  // namespace scf
+}  // namespace psi

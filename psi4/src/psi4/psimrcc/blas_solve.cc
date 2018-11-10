@@ -34,55 +34,50 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace psimrcc{
-    extern MOInfo *moinfo;
+namespace psi {
+namespace psimrcc {
+extern MOInfo* moinfo;
 
 /**
  * Read and compute an expression
  * @param cstr
  */
-void CCBLAS::solve(const char* cstr)
-{
-  std::string str(cstr);
-  solve(str);
+void CCBLAS::solve(const char* cstr) {
+    std::string str(cstr);
+    solve(str);
 }
 
 /**
  * Read and compute an expression
  * @param str
  */
-void CCBLAS::solve(std::string str)
-{
-  append(str);
-  compute();
+void CCBLAS::solve(std::string str) {
+    append(str);
+    compute();
 }
 
 /**
  * Read and store expressions without computing them
  * @param cstr
  */
-void CCBLAS::append(const char* cstr)
-{
-  std::string str(cstr);
-  append(str);
+void CCBLAS::append(const char* cstr) {
+    std::string str(cstr);
+    append(str);
 }
 
 /**
  * Read and store expressions without computing them
  * @param str
  */
-void CCBLAS::append(std::string str)
-{
-  // Main driver for solving expressions
-  int noperations_added = 0;
-  DEBUGGING(5,
-    outfile->Printf("\n\nYou have requested the following operation :\n\t\"%s\"",str.c_str());
-    outfile->Printf("\n\nCCBLAS::append() has parsed the following:");
-  )
-  std::vector<std::string> names = moinfo->get_matrix_names(str);
-  for(int n=0;n<names.size();n++){
-    noperations_added+=parse(names[n]);
-  }
+void CCBLAS::append(std::string str) {
+    // Main driver for solving expressions
+    int noperations_added = 0;
+    DEBUGGING(5, outfile->Printf("\n\nYou have requested the following operation :\n\t\"%s\"", str.c_str());
+              outfile->Printf("\n\nCCBLAS::append() has parsed the following:");)
+    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    for (int n = 0; n < names.size(); n++) {
+        noperations_added += parse(names[n]);
+    }
 }
 
 /**
@@ -103,152 +98,148 @@ void CCBLAS::append(std::string str)
 /**
  * Flush the operation deque in a memory smart way!
  */
-void CCBLAS::compute()
-{
+void CCBLAS::compute() {
+    //   outfile->Printf("\n\nsmart_compute::size of current deque = %d",operations.size());
+    //
+    //   outfile->Printf("\nsmart_compute::content of the deque:");
+    //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
+    //     outfile->Printf("\n");
+    //     it->print();
+    //   }
 
-//   outfile->Printf("\n\nsmart_compute::size of current deque = %d",operations.size());
-//
-//   outfile->Printf("\nsmart_compute::content of the deque:");
-//   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     outfile->Printf("\n");
-//     it->print();
-//   }
+    //   // Create a map with all the target matrices and how many times they appear
+    //   map<string,int> target_count;
+    //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
+    //     if(it->get_A_Matrix()!=nullptr)
+    //       target_count[it->get_A_Matrix()->get_label()]++;
+    //   }
+    //   // Create a map with all the source matrices and how many times they appear
+    //   map<string,int> source_count;
+    //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
+    //     if(it->get_B_Matrix()!=nullptr)
+    //       source_count[it->get_B_Matrix()->get_label()]++;
+    //     if(it->get_C_Matrix()!=nullptr)
+    //       source_count[it->get_C_Matrix()->get_label()]++;
+    //   }
+    //
+    //   // Create a map with all the intermediates defined as matrices that appear a source and target
+    //     map<string,int> intermediates_count;
+    //   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
+    //     map<string,int>::iterator target_it = target_count.find(it->first);
+    //     map<string,int>::iterator source_it = source_count.find(it->first);
+    //     if( (target_it!=target_count.end()) && (source_it!=source_count.end()))
+    //       intermediates_count[source_it->first]=source_it->second;
+    //   }
+    //
+    //   // Print the map for debugging purposes
+    //   outfile->Printf("\n\nsmart_compute::printing the matrix_count map");
+    //   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
+    //     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
+    //   }
+    //
+    //   // Print the map for debugging purposes
+    //   outfile->Printf("\n\nsmart_compute::printing the target_count map");
+    //   for(map<string,int>::iterator it=target_count.begin();it!=target_count.end();++it){
+    //     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
+    //   }
+    //
+    //   // Print the map for debugging purposes
+    //   outfile->Printf("\n\nsmart_compute::printing the source_count map");
+    //   for(map<string,int>::iterator it=source_count.begin();it!=source_count.end();++it){
+    //     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
+    //   }
+    //
+    //   // Print the map for debugging purposes
+    //   outfile->Printf("\n\nsmart_compute::printing the intermediates_count map");
+    //   for(map<string,int>::iterator it=intermediates_count.begin();it!=intermediates_count.end();++it){
+    //     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
+    //   }
 
-//   // Create a map with all the target matrices and how many times they appear
-//   map<string,int> target_count;
-//   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     if(it->get_A_Matrix()!=nullptr)
-//       target_count[it->get_A_Matrix()->get_label()]++;
-//   }
-//   // Create a map with all the source matrices and how many times they appear
-//   map<string,int> source_count;
-//   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     if(it->get_B_Matrix()!=nullptr)
-//       source_count[it->get_B_Matrix()->get_label()]++;
-//     if(it->get_C_Matrix()!=nullptr)
-//       source_count[it->get_C_Matrix()->get_label()]++;
-//   }
-//
-//   // Create a map with all the intermediates defined as matrices that appear a source and target
-//     map<string,int> intermediates_count;
-//   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
-//     map<string,int>::iterator target_it = target_count.find(it->first);
-//     map<string,int>::iterator source_it = source_count.find(it->first);
-//     if( (target_it!=target_count.end()) && (source_it!=source_count.end()))
-//       intermediates_count[source_it->first]=source_it->second;
-//   }
-//
-//   // Print the map for debugging purposes
-//   outfile->Printf("\n\nsmart_compute::printing the matrix_count map");
-//   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
-//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
-//   }
-//
-//   // Print the map for debugging purposes
-//   outfile->Printf("\n\nsmart_compute::printing the target_count map");
-//   for(map<string,int>::iterator it=target_count.begin();it!=target_count.end();++it){
-//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
-//   }
-//
-//   // Print the map for debugging purposes
-//   outfile->Printf("\n\nsmart_compute::printing the source_count map");
-//   for(map<string,int>::iterator it=source_count.begin();it!=source_count.end();++it){
-//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
-//   }
-//
-//   // Print the map for debugging purposes
-//   outfile->Printf("\n\nsmart_compute::printing the intermediates_count map");
-//   for(map<string,int>::iterator it=intermediates_count.begin();it!=intermediates_count.end();++it){
-//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
-//   }
+    //   map<string,bool> matrix_on_disk;
+    //   map<string,bool> matrix_in_core;
+    //   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
+    //     if(it->first[0]=='<'
+    //     matrix_on_disk[it->first]=false;
+    //     matrix_on_disk[it->first]=false;
+    //   }
 
-//   map<string,bool> matrix_on_disk;
-//   map<string,bool> matrix_in_core;
-//   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
-//     if(it->first[0]=='<'
-//     matrix_on_disk[it->first]=false;
-//     matrix_on_disk[it->first]=false;
-//   }
+    //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
+    //
+    //   }
+    //   static int memory_for_solve = 0;
+    //
+    //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
+    //     int nop = distance(it-operations.begin());
+    //     outfile->Printf("\nI will process operation #%3d",nop);
+    //     int memA=0;
+    //     if(it->get_A_Matrix()!=nullptr){
+    //       memA=it->get_A_Matrix()->get_memory();
+    //     }
+    //   }
 
-//   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//
-//   }
-//   static int memory_for_solve = 0;
-//
-//   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     int nop = distance(it-operations.begin());
-//     outfile->Printf("\nI will process operation #%3d",nop);
-//     int memA=0;
-//     if(it->get_A_Matrix()!=nullptr){
-//       memA=it->get_A_Matrix()->get_memory();
-//     }
-//   }
+    // Create a map with all the required matrices and how many times they appear
 
-  // Create a map with all the required matrices and how many times they appear
-
-  for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-    if(it->get_A_Matrix()!=nullptr){
-      matrices_in_deque[it->get_A_Matrix()]++;
-      matrices_in_deque_target[it->get_A_Matrix()]++;
+    for (OpDeque::iterator it = operations.begin(); it != operations.end(); ++it) {
+        if (it->get_A_Matrix() != nullptr) {
+            matrices_in_deque[it->get_A_Matrix()]++;
+            matrices_in_deque_target[it->get_A_Matrix()]++;
+        }
+        if (it->get_B_Matrix() != nullptr) {
+            matrices_in_deque[it->get_B_Matrix()]++;
+            matrices_in_deque_source[it->get_B_Matrix()]++;
+        }
+        if (it->get_C_Matrix() != nullptr) {
+            matrices_in_deque[it->get_C_Matrix()]++;
+            matrices_in_deque_source[it->get_C_Matrix()]++;
+        }
     }
-    if(it->get_B_Matrix()!=nullptr){
-      matrices_in_deque[it->get_B_Matrix()]++;
-      matrices_in_deque_source[it->get_B_Matrix()]++;
-    }
-    if(it->get_C_Matrix()!=nullptr){
-      matrices_in_deque[it->get_C_Matrix()]++;
-      matrices_in_deque_source[it->get_C_Matrix()]++;
-    }
-  }
-  while(!operations.empty()){
-    // Read the element
-    CCOperation& op = operations.front();
-    // Compute the operation
-    op.compute();
+    while (!operations.empty()) {
+        // Read the element
+        CCOperation& op = operations.front();
+        // Compute the operation
+        op.compute();
 
-    // Decrease the counters for the matrices to be processed
-    if(op.get_A_Matrix()!=nullptr){
-      matrices_in_deque[op.get_A_Matrix()]--;
-      matrices_in_deque_target[op.get_A_Matrix()]--;
+        // Decrease the counters for the matrices to be processed
+        if (op.get_A_Matrix() != nullptr) {
+            matrices_in_deque[op.get_A_Matrix()]--;
+            matrices_in_deque_target[op.get_A_Matrix()]--;
+        }
+        if (op.get_B_Matrix() != nullptr) {
+            matrices_in_deque[op.get_B_Matrix()]--;
+            matrices_in_deque_source[op.get_B_Matrix()]--;
+        }
+        if (op.get_C_Matrix() != nullptr) {
+            matrices_in_deque[op.get_C_Matrix()]--;
+            matrices_in_deque_source[op.get_C_Matrix()]--;
+        }
+        // Eliminate the element
+        operations.pop_front();
     }
-    if(op.get_B_Matrix()!=nullptr){
-      matrices_in_deque[op.get_B_Matrix()]--;
-      matrices_in_deque_source[op.get_B_Matrix()]--;
-    }
-    if(op.get_C_Matrix()!=nullptr){
-      matrices_in_deque[op.get_C_Matrix()]--;
-      matrices_in_deque_source[op.get_C_Matrix()]--;
-    }
-    // Eliminate the element
-    operations.pop_front();
-  }
 }
 
 /**
  * store a zero_two_diagonal operation without executing it
  * @param cstr
  */
-void CCBLAS::append_zero_two_diagonal(const char* cstr)
-{
-  std::string str(cstr);
-  // To zero diagonals of things like "Fae[v][v]{u}"
-  std::vector<std::string> names = moinfo->get_matrix_names(str);
-  for(int n=0;n<names.size();n++){
-    CCMatrix* Matrix = get_Matrix(names[n]);
-    CCOperation op(0.0,"","","zero_two_diagonal",Matrix,nullptr,nullptr,work[0],buffer[0]);
-    operations.push_back(op);
-  }
+void CCBLAS::append_zero_two_diagonal(const char* cstr) {
+    std::string str(cstr);
+    // To zero diagonals of things like "Fae[v][v]{u}"
+    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    for (int n = 0; n < names.size(); n++) {
+        CCMatrix* Matrix = get_Matrix(names[n]);
+        CCOperation op(0.0, "", "", "zero_two_diagonal", Matrix, nullptr, nullptr, work[0], buffer[0]);
+        operations.push_back(op);
+    }
 }
 
 /**
  * store a zero_two_diagonal operation and executing it
  * @param str
  */
-void CCBLAS::solve_zero_two_diagonal(const char* cstr)
-{
-  append_zero_two_diagonal(cstr);
-  compute();
+void CCBLAS::solve_zero_two_diagonal(const char* cstr) {
+    append_zero_two_diagonal(cstr);
+    compute();
 }
 
-
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi

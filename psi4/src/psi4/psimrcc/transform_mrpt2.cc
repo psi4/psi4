@@ -38,10 +38,10 @@
 
 #define CCTRANSFORM_USE_BLAS
 
-#define MAX(i,j) ((i>j) ? i : j)
-#define MIN(i,j) ((i>j) ? j : i)
-#define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-#define four(i,j,k,l) INDEX(INDEX(i,j),INDEX(k,l))
+#define MAX(i, j) ((i > j) ? i : j)
+#define MIN(i, j) ((i > j) ? j : i)
+#define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
+#define four(i, j, k, l) INDEX(INDEX(i, j), INDEX(k, l))
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
@@ -50,14 +50,14 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/psifiles.h"
 
-extern FILE* outfile;
+extern FILE *outfile;
 
-namespace psi{ namespace psimrcc{
+namespace psi {
+namespace psimrcc {
 
 extern MOInfo *moinfo;
 
-void CCTransform::read_integrals_mrpt2(IntegralTransform *ints)
-{
+void CCTransform::read_integrals_mrpt2(IntegralTransform *ints) {
     read_oei_mo_integrals_mrpt2();
     read_tei_mo_integrals_mrpt2(ints);
 }
@@ -65,17 +65,16 @@ void CCTransform::read_integrals_mrpt2(IntegralTransform *ints)
 /**
  * Read the one electron MO integrals from an iwl buffer assuming Pitzer ordering and store them in oei_mo
  */
-void CCTransform::read_oei_mo_integrals_mrpt2()
-{
+void CCTransform::read_oei_mo_integrals_mrpt2() {
     read_oei_so_integrals();
     transform_oei_so_integrals();
 }
 
 /**
- * Read the two electron MO integrals from an iwl buffer assuming Pitzer ordering and store them in the packed array tei_mo
+ * Read the two electron MO integrals from an iwl buffer assuming Pitzer ordering and store them in the packed array
+ * tei_mo
  */
-void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
-{
+void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints) {
 #define ID(x) ints->DPD_ID(x)
     // Read all the (frozen + non-frozen) TEI in Pitzer order
     // and store them in a in-core block-matrix
@@ -87,33 +86,33 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
     std::shared_ptr<PSIO> psio(_default_psio_lib_);
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    std::vector<int> mopi   = moinfo->get_mopi();
+    std::vector<int> mopi = moinfo->get_mopi();
     std::vector<int> doccpi = moinfo->get_docc();
     std::vector<int> foccpi = moinfo->get_focc();
     int nirreps = moinfo->get_nirreps();
     std::vector<int> offsets(nirreps, 0);
     int offset = 0;
-    for(int h = 1; h < nirreps; ++h){
-        offset += mopi[h-1];
+    for (int h = 1; h < nirreps; ++h) {
+        offset += mopi[h - 1];
         offsets[h] = offset;
     }
     size_t elements = 0;
 
     // Loop over the DPD buffers for the two integral classes (exchange and then coulomb).
 
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[M,A]"), ID("[M,A]"),
-                           ID("[M,A]"),  ID("[M,A]"), 0, "MO Ints (MA|MA)");
-    for(int h = 0; h < I.params->nirreps; ++h){
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[M,A]"), ID("[M,A]"), ID("[M,A]"), ID("[M,A]"), 0,
+                           "MO Ints (MA|MA)");
+    for (int h = 0; h < I.params->nirreps; ++h) {
         global_dpd_->buf4_mat_irrep_init(&I, h);
         global_dpd_->buf4_mat_irrep_rd(&I, h);
-        for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
+        for (int pq = 0; pq < I.params->rowtot[h]; ++pq) {
             int p = I.params->roworb[h][pq][0];
             int q = I.params->roworb[h][pq][1];
             int psym = I.params->psym[p];
             int qsym = I.params->qsym[q];
             int prel = p - I.params->poff[psym];
             int qrel = q - I.params->qoff[qsym];
-            for(int rs = 0; rs <= pq; ++rs){
+            for (int rs = 0; rs <= pq; ++rs) {
                 int r = I.params->colorb[h][rs][0];
                 int s = I.params->colorb[h][rs][1];
                 int rsym = I.params->rsym[r];
@@ -124,7 +123,7 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
                 int qidx = offsets[qsym] + qrel;
                 int ridx = offsets[rsym] + rrel;
                 int sidx = offsets[ssym] + srel;
-                integral_map[four(pidx,qidx,ridx,sidx)] = I.matrix[h][pq][rs];
+                integral_map[four(pidx, qidx, ridx, sidx)] = I.matrix[h][pq][rs];
                 ++elements;
             }
         }
@@ -132,19 +131,19 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
     }
     global_dpd_->buf4_close(&I);
 
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[M>=M]+"), ID("[E>=E]+"),
-                           ID("[M>=M]+"),  ID("[E>=E]+"), 0, "MO Ints (MM|EE)");
-    for(int h = 0; h < I.params->nirreps; ++h){
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[M>=M]+"), ID("[E>=E]+"), ID("[M>=M]+"), ID("[E>=E]+"), 0,
+                           "MO Ints (MM|EE)");
+    for (int h = 0; h < I.params->nirreps; ++h) {
         global_dpd_->buf4_mat_irrep_init(&I, h);
         global_dpd_->buf4_mat_irrep_rd(&I, h);
-        for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
+        for (int pq = 0; pq < I.params->rowtot[h]; ++pq) {
             int p = I.params->roworb[h][pq][0];
             int q = I.params->roworb[h][pq][1];
             int psym = I.params->psym[p];
             int qsym = I.params->qsym[q];
             int prel = p - I.params->poff[psym];
             int qrel = q - I.params->qoff[qsym];
-            for(int rs = 0; rs < I.params->coltot[h]; ++rs){
+            for (int rs = 0; rs < I.params->coltot[h]; ++rs) {
                 int r = I.params->colorb[h][rs][0];
                 int s = I.params->colorb[h][rs][1];
                 int rsym = I.params->rsym[r];
@@ -155,7 +154,7 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
                 int qidx = offsets[qsym] + qrel;
                 int ridx = offsets[rsym] + foccpi[rsym] + doccpi[rsym] + rrel;
                 int sidx = offsets[ssym] + foccpi[ssym] + doccpi[ssym] + srel;
-                integral_map[four(pidx,qidx,ridx,sidx)] = I.matrix[h][pq][rs];
+                integral_map[four(pidx, qidx, ridx, sidx)] = I.matrix[h][pq][rs];
                 ++elements;
             }
         }
@@ -168,10 +167,10 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
     outfile->Printf("\n    CCTransform: read %lu non-zero integrals (MRPT2)", elements);
 }
 
-double CCTransform::tei_mrpt2(int p, int q, int r, int s)
-{
+double CCTransform::tei_mrpt2(int p, int q, int r, int s) {
     //   outfile->Printf("\n  (%2d %2d|%2d %2d) = %20.15f",p,q,r,s,integral_map[four(p,q,r,s)]);
-    return(integral_map[four(p,q,r,s)]);
+    return (integral_map[four(p, q, r, s)]);
 }
 
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi

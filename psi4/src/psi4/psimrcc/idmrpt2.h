@@ -38,52 +38,54 @@
 #include "manybody.h"
 #include "psi4/liboptions/liboptions.h"
 
-namespace psi{ namespace psimrcc{
+namespace psi {
+namespace psimrcc {
 
 class Updater;
 
 /**
-	@author Francesco Evangelista <frank@ccc.uga.edu>
+        @author Francesco Evangelista <frank@ccc.uga.edu>
 */
-class IDMRPT2 : public CCManyBody
-{
-public:
-  IDMRPT2(SharedWavefunction ref_wfn, Options &options);
-  virtual ~IDMRPT2();
-  void compute_mrpt2_energy(Updater* updater);
-private:
-  void add_matrices();
-  void read_mrpt2_integrals();
-  void update_amps_mkpt2(Updater* updater);
-  void synchronize_amps();
-  void build_amplitudes();
-  void build_t1_ia_amplitudes();
-  void build_t1_IA_amplitudes();
-  void build_t2_ijab_amplitudes();
-  void build_t2_iJaB_amplitudes();
-  void build_t2_IJAB_amplitudes();
+class IDMRPT2 : public CCManyBody {
+   public:
+    IDMRPT2(SharedWavefunction ref_wfn, Options& options);
+    ~IDMRPT2() override;
+    void compute_mrpt2_energy(Updater* updater);
 
-  void build_Heff_mrpt2_diagonal();
-  void build_Heff_scs_mrpt2_diagonal();
-  void build_Heff_mrpt2_offdiagonal();
-  void build_Heff_uv();
-  void build_Heff_UV();
-  void build_Heff_uVxY();
-  void build_Heff_uvxy();
-  void build_Heff_UVXY();
+   private:
+    void add_matrices();
+    void read_mrpt2_integrals();
+    void update_amps_mkpt2(Updater* updater);
+    void synchronize_amps();
+    void build_amplitudes();
+    void build_t1_ia_amplitudes();
+    void build_t1_IA_amplitudes();
+    void build_t2_ijab_amplitudes();
+    void build_t2_iJaB_amplitudes();
+    void build_t2_IJAB_amplitudes();
 
-  void build_Heff_ijkabc();
-  void build_Heff_ijKabC();
-  void build_Heff_iJKaBC();
-  void build_Heff_IJKABC();
+    void build_Heff_mrpt2_diagonal();
+    void build_Heff_scs_mrpt2_diagonal();
+    void build_Heff_mrpt2_offdiagonal();
+    void build_Heff_uv();
+    void build_Heff_UV();
+    void build_Heff_uVxY();
+    void build_Heff_uvxy();
+    void build_Heff_UVXY();
 
-  void build_F_intermediates();
-  void build_F_ae_intermediates();
-  void build_F_AE_intermediates();
-  void build_F_mi_intermediates();
-  void build_F_MI_intermediates();
+    void build_Heff_ijkabc();
+    void build_Heff_ijKabC();
+    void build_Heff_iJKaBC();
+    void build_Heff_IJKABC();
+
+    void build_F_intermediates();
+    void build_F_ae_intermediates();
+    void build_F_AE_intermediates();
+    void build_F_mi_intermediates();
+    void build_F_MI_intermediates();
 };
 
-}} /* End Namespaces */
+}  // namespace psimrcc
+}  // namespace psi
 
-#endif // _psi_src_bin_psimrcc_idmrpt2_h
+#endif  // _psi_src_bin_psimrcc_idmrpt2_h

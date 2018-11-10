@@ -331,19 +331,19 @@ PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::sh
 }
 
 char *PKWorker::get_label_J(const int batch) {
-    char *label = new char[100];
+    auto *label = new char[100];
     sprintf(label, "J Block (Batch %d)", batch);
     return label;
 }
 
 char *PKWorker::get_label_K(const int batch) {
-    char *label = new char[100];
+    auto *label = new char[100];
     sprintf(label, "K Block (Batch %d)", batch);
     return label;
 }
 
 char *PKWorker::get_label_wK(const int batch) {
-    char *label = new char[100];
+    auto *label = new char[100];
     sprintf(label, "wK Block (Batch %d)", batch);
     return label;
 }

@@ -26,11 +26,12 @@
  * @END LICENSE
  */
 
-///File is stolen from pulsar all thanks to bennyp
+/// File is stolen from pulsar all thanks to bennyp
 
 #ifndef PULSAR_GUARD_PULSAR__PRAGMA_H_
 #define PULSAR_GUARD_PULSAR__PRAGMA_H_
 
+// clang-format off
 #if defined(__ICC) || defined(__INTEL_COMPILER)
 
 // pragmas for Intel
@@ -56,7 +57,7 @@
 #define PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS      _Pragma("warning(disable:1478)")
 #define PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
 
-#elif defined(__clang__)   // Do clang before GNU because clang defines __GNUC__, too.
+#elif defined(__clang__)  // Do clang before GNU because clang defines __GNUC__, too.
 
 #define PRAGMA_WARNING_PUSH                                _Pragma("clang diagnostic push")
 #define PRAGMA_WARNING_POP                                 _Pragma("clang diagnostic pop")
@@ -131,20 +132,21 @@
 #define PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
 
 #endif
+// clang-format on
 
 // The following is adapted from https://gcc.gnu.org/wiki/Visibility the step-by-step guide at the very bottom
 // Visibility macros
 #if defined _WIN32 || defined __CYGWIN__
-#   define PSI_HELPER_SO_EXPORT __declspec(dllexport)
-#   define PSI_HELPER_SO_LOCAL
+#define PSI_HELPER_SO_EXPORT __declspec(dllexport)
+#define PSI_HELPER_SO_LOCAL
 #else
-#   if __GNUC__ >= 4
-#       define PSI_HELPER_SO_EXPORT __attribute__ ((visibility ("default")))
-#       define PSI_HELPER_SO_LOCAL  __attribute__ ((visibility ("hidden")))
-#   else
-#       define PSI_HELPER_SO_EXPORT
-#       define PSI_HELPER_SO_LOCAL
-#   endif
+#if __GNUC__ >= 4
+#define PSI_HELPER_SO_EXPORT __attribute__((visibility("default")))
+#define PSI_HELPER_SO_LOCAL __attribute__((visibility("hidden")))
+#else
+#define PSI_HELPER_SO_EXPORT
+#define PSI_HELPER_SO_LOCAL
+#endif
 #endif
 
 // Use generic helper definitions to define PSI_API and PSI_LOCAL
@@ -152,5 +154,25 @@
 // PSI_LOCAL is used for non-API symbols.
 #define PSI_API PSI_HELPER_SO_EXPORT
 #define PSI_LOCAL PSI_HELPER_SO_LOCAL
+
+// Use in the header file as follows:
+// PSI_DEPRECATED("extremely unsafe, use 'combust' instead!!!") void explode(void);
+// will produce this kind output when compiling:
+//    warning: 'explode' is deprecated: extremely unsafe, use 'combust' instead!!!
+// The macro can similarly be used to deprecate variables.
+// The implementation uses the standard attribute if C++14 available, falling back
+// to compiler extensions if C++11 is used.
+#if __cplusplus >= 201402L
+#define PSI_DEPRECATED(msg) [[deprecated(msg)]]
+#else
+#if defined(__GNUC__) || defined(__clang__)
+#define PSI_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define PSI_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+#pragma message("WARNING: You need to implement PSI_DEPRECATED for this compiler")
+#define PSI_DEPRECATED
+#endif
+#endif
 
 #endif

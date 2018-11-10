@@ -44,35 +44,33 @@
 #include "lapack_intfc_mangle.h"
 
 extern "C" {
-extern int F_DGEEV(char *, char *, int *, double *, int *, double *, double *,
-  double *, int *, double *, int *, double *, int *, int *);
+extern int F_DGEEV(char *, char *, int *, double *, int *, double *, double *, double *, int *, double *, int *,
+                   double *, int *, int *);
 
-extern int F_DGESV(int *, int *, double *, int *, int *, double *, int *, 
-  int *);
+extern int F_DGESV(int *, int *, double *, int *, int *, double *, int *, int *);
 
-extern int F_DGETRF(int *, int *, double *, int *, int*, int *);
+extern int F_DGETRF(int *, int *, double *, int *, int *, int *);
 
 extern int F_DGETRI(int *, double *, int *, int *, double *, int *, int *);
 
-extern int F_DPOTRF(char *, int *, double *, int *, int*);
+extern int F_DPOTRF(char *, int *, double *, int *, int *);
 
-extern int F_DPOTRS(char *, int*, int*,  double *, int *, double *, int *, int *);
+extern int F_DPOTRS(char *, int *, int *, double *, int *, double *, int *, int *);
 
-extern int F_DPOTRI(char *, int *, double *, int *, int*);
+extern int F_DPOTRI(char *, int *, double *, int *, int *);
 
-extern int F_DGESVD(char *, char *, int *, int *, double *, int *, 
-  double *, double *, int *, double *, int *, double *, int *, int *);
+extern int F_DGESVD(char *, char *, int *, int *, double *, int *, double *, double *, int *, double *, int *, double *,
+                    int *, int *);
 
-extern int F_DSYEV(char *, char *, int *, double *, int *, double *, 
-  double *, int *, int *);
+extern int F_DSYEV(char *, char *, int *, double *, int *, double *, double *, int *, int *);
 }
 
 namespace psi {
 /*!
 ** C_DGEEV()
-** 
+**
 ** This function computes the eigenvalues and the left and right
-** right eigenvectors of a real, nonsymmetric matrix A.  For 
+** right eigenvectors of a real, nonsymmetric matrix A.  For
 ** symmetric matrices, refer to C_DSYEV().
 **
 ** \param n = The order of the matrix A.  n >= 0.
@@ -82,15 +80,15 @@ namespace psi {
 **
 ** \param lda = The leading dimension of matrix A.  lda >= max(1,n).
 **
-** \param wr = array of length n containing the real parts of 
+** \param wr = array of length n containing the real parts of
 ** computed eigenvalues.
 **
-** \param wi = array of length n containing the imaginary parts of 
+** \param wi = array of length n containing the imaginary parts of
 ** computed eigenvalues.
 **
 ** \param vl = matrix of dimensions ldvl*n.  The columns store
 ** the left eigenvectors u(j).  If the j-th eigenvalues is real, then
-** u(j) = vl(:,j), the j-th column of vl.  If the j-th and (j+1)-st 
+** u(j) = vl(:,j), the j-th column of vl.  If the j-th and (j+1)-st
 ** eigenvalues form a complex conjugate pair, then u(j) = vl(:,j) +
 ** i*vl(:,j+1) and u(j+1) = vl(:,j) - i*vl(:,j+1).  Note: this is
 ** the Fortran documentation, may need to change cols <-> rows.
@@ -112,7 +110,7 @@ namespace psi {
 ** \param lwork = The dimension of the array work.  lwork >= max(1,3*n),
 ** and if eigenvectors are required (default for this wrapper at present)
 ** then actually lwork >= 4*n.  For good performance, lwork must generally
-** be larger.  If lwork = -1, then a workspace query is assumed.  The 
+** be larger.  If lwork = -1, then a workspace query is assumed.  The
 ** routine only calculates the optimal size of the work array, returns
 ** this value ans the first entry of the work array, and no error
 ** message related to lword is issued by xerbla.
@@ -121,23 +119,20 @@ namespace psi {
 ** info = 0 for successful exit, if info = -i, the ith argument had
 ** an illegal value.  If info = i, the QR algorithm failed to
 ** compute all the eigenvalues, and no eigenvectors have been computed.
-** Elements i+1:n of wr and wi contain eigenvalues which have converged. 
-** 
+** Elements i+1:n of wr and wi contain eigenvalues which have converged.
+**
 ** \ingroup QT
 */
-int C_DGEEV(int n, double **a, int lda,
-  double *wr, double *wi, double **vl, int ldvl, double **vr,
-  int ldvr, double *work, int lwork, int info)
-{
-  char jobvl, jobvr;
-  jobvl = 'V';
-  jobvr = 'V';
-  ::F_DGEEV(&jobvl, &jobvr, &n, &(a[0][0]), &lda, &(wr[0]), &(wi[0]),
-       &(vl[0][0]), &ldvl, &(vr[0][0]), &ldvr, &(work[0]), &lwork, &info);
+int C_DGEEV(int n, double **a, int lda, double *wr, double *wi, double **vl, int ldvl, double **vr, int ldvr,
+            double *work, int lwork, int info) {
+    char jobvl, jobvr;
+    jobvl = 'V';
+    jobvr = 'V';
+    ::F_DGEEV(&jobvl, &jobvr, &n, &(a[0][0]), &lda, &(wr[0]), &(wi[0]), &(vl[0][0]), &ldvl, &(vr[0][0]), &ldvr,
+              &(work[0]), &lwork, &info);
 
-  return info;
+    return info;
 }
-
 
 /*!
 ** C_DGESV()
@@ -168,22 +163,20 @@ int C_DGEEV(int n, double **a, int lda,
 ** \param ldb = The leading dimension of the array B.  ldb >=
 ** max(1,n).
 **
-** Returns: int info. info = 0: successful exit.  info < 0: if info = -i, 
-** the i-th argument had an illegal value.  info > 0: if info = i, 
-** U(i,i) is exactly zero.  The factorization has been completed, but the 
+** Returns: int info. info = 0: successful exit.  info < 0: if info = -i,
+** the i-th argument had an illegal value.  info > 0: if info = i,
+** U(i,i) is exactly zero.  The factorization has been completed, but the
 ** factor U is exactly singular, so the solution could not be computed.
 **
 ** \ingroup QT
 */
-int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb)
-{
-  int info;
+int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb) {
+    int info;
 
-  ::F_DGESV(&n, &nrhs, &(a[0]), &lda, &(ipiv[0]), &(b[0]), &ldb, &info);
+    ::F_DGESV(&n, &nrhs, &(a[0]), &lda, &(ipiv[0]), &(b[0]), &ldb, &info);
 
-  return info;
+    return info;
 }
-
 
 /*!
 ** C_DGETRF(): Compute an LU factorization of a general M-by-N matrix a
@@ -211,15 +204,13 @@ int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb)
 **
 ** \ingroup QT
 */
-int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv)
-{
-  int info;
+int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv) {
+    int info;
 
-  ::F_DGETRF(&ncol, &nrow, &(a[0]), &lda, &(ipiv[0]), &info);
+    ::F_DGETRF(&ncol, &nrow, &(a[0]), &lda, &(ipiv[0]), &info);
 
-  return info;
+    return info;
 }
-
 
 /*!
 ** C_DPOTRF(): Compute an Cholesky factorization of a Hermitian positive definite N-by-N matrix A.
@@ -240,15 +231,14 @@ int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv)
 **
 ** \ingroup QT
 */
-int C_DPOTRF(char uplo, int n,  double *A, int lda)
-{
-  int info;
+int C_DPOTRF(char uplo, int n, double *A, int lda) {
+    int info;
 
-  ::F_DPOTRF(&uplo, &n, &(A[0]), &lda, &info);
+    ::F_DPOTRF(&uplo, &n, &(A[0]), &lda, &info);
 
-  return info;
+    return info;
 }
-/*!  
+/*!
 ** C_DGETRI(): computes the inverse of a matrix using the LU factorization
 ** computed by DGETRF
 **
@@ -257,7 +247,7 @@ int C_DPOTRF(char uplo, int n,  double *A, int lda)
 **
 ** \param n     = order of the matrix a.  n >= 0.
 ** \param a     = array of dimension (n,lda).  On entry, the factors L and U
-**                from the factorization A = P*L*U as computed by DGETRF.  
+**                from the factorization A = P*L*U as computed by DGETRF.
 **                On exit, if info=0, the inverse of hte original matrix A.
 ** \param lda   = the leading dimension of the array a.  lda >= max(1,n).
 ** \param ipiv  = The pivot indices from DGETRF.  For 1<=i<=n, row i of the
@@ -273,19 +263,18 @@ int C_DPOTRF(char uplo, int n,  double *A, int lda)
 **                message related to lwork is issued by xerbla.
 **
 ** Returns: int info.  info=0: successful exit.  info<0: if info=-i, the
-**   i-th argument had an illegal value.  info>0: if info=i, U(i,i) is 
+**   i-th argument had an illegal value.  info>0: if info=i, U(i,i) is
 **   exactly zero; the matrix is singular and its inverse could not be
 **   computed.
 **
 ** \ingroup QT
 */
-int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork)
-{
-  int info;
+int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork) {
+    int info;
 
-  ::F_DGETRI(&n, &(a[0]), &lda, &(ipiv[0]), &(work[0]), &lwork, &info);
+    ::F_DGETRI(&n, &(a[0]), &lda, &(ipiv[0]), &(work[0]), &lwork, &info);
 
-  return info;
+    return info;
 }
 /*!
 ** C_DPOTRI(): Compute inverse of a Hermitian positive deifinite matrix A AFTER a Cholesky
@@ -304,13 +293,12 @@ int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork)
 **
 ** \ingroup QT
 */
-int C_DPOTRI(char uplo, int n,  double *A, int lda)
-{
-  int info;
+int C_DPOTRI(char uplo, int n, double *A, int lda) {
+    int info;
 
-  ::F_DPOTRI(&uplo, &n, &(A[0]), &lda, &info);
+    ::F_DPOTRI(&uplo, &n, &(A[0]), &lda, &info);
 
-  return info;
+    return info;
 }
 /*!
 ** C_DPOTRS(): Solve a Hermitian positive definite matrix Ax = B AFTER a Cholesky
@@ -321,31 +309,28 @@ int C_DPOTRI(char uplo, int n,  double *A, int lda)
 **              uplo = 'L' lower triangle of A is stored
 ** \param n = number of rows and columns of A
 ** \param nrhs = number of vectors to solve in B
-** \param A = matrix to solve 
+** \param A = matrix to solve
 ** \param lda  = leading dimension of a, lda >= max(1,ncol)
-** \param B = (input)forcing vector/(output)solution vector 
+** \param B = (input)forcing vector/(output)solution vector
 ** \param ldb  = leading dimension of b, ldb >= max(1,ncol)
 **
 ** Returns: int info.  info = 0: successful exit.  info < 0: if info=-i,
-**   the ith-argument had an illegal value.  
+**   the ith-argument had an illegal value.
 **
 ** \ingroup QT
 */
-int C_DPOTRS(char uplo, int n,  int nrhs, double *A, int lda, double *B, int ldb)
-{
-  int info;
+int C_DPOTRS(char uplo, int n, int nrhs, double *A, int lda, double *B, int ldb) {
+    int info;
 
+    ::F_DPOTRS(&uplo, &n, &nrhs, &(A[0]), &lda, &(B[0]), &ldb, &info);
 
-  ::F_DPOTRS(&uplo, &n, &nrhs, &(A[0]), &lda, &(B[0]), &ldb, &info);
-
-  return info;
+    return info;
 }
-
 
 /*!
 ** C_DGESVD()
-** This function computes the singular value decomposition (SVD) of a 
-** real mxn matrix A, ** optionally computing the left and/or right 
+** This function computes the singular value decomposition (SVD) of a
+** real mxn matrix A, ** optionally computing the left and/or right
 ** singular vectors.  The SVD is written
 **
 **  A = U * S * transpose(V)
@@ -415,7 +400,7 @@ int C_DPOTRS(char uplo, int n,  int nrhs, double *A, int lda, double *B, int ldb
 **                 assumed, and the value of work[0] upon return
 **                 is the optimal size of the work array.
 **
-** Return value: int info.  
+** Return value: int info.
 **                 If info=0, successful exit.
 **                 If info = -i, the i-th argument had an illegal value.
 **                 If info > 0,  Related to failure in the convergence of
@@ -425,20 +410,17 @@ int C_DPOTRS(char uplo, int n,  int nrhs, double *A, int lda, double *B, int ldb
 ** Interface written by TDC, July 2001, updated April 2004
 ** \ingroup QT
 */
-int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda, 
-  double *s, double *u, int ldu, double *vt, int ldvt, double *work, int lwork)
-{
-  int info;
+int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda, double *s, double *u, int ldu, double *vt,
+             int ldvt, double *work, int lwork) {
+    int info;
 
-  ::F_DGESVD(&jobvt, &jobu, &n, &m, A, &lda, s, vt, &ldvt, u, &ldu, work, 
-    &lwork, &info);
+    ::F_DGESVD(&jobvt, &jobu, &n, &m, A, &lda, s, vt, &ldvt, u, &ldu, work, &lwork, &info);
 
-  return info;
+    return info;
 }
 
-
 /*!
-** C_DSYEV(): Computes all eigenvalues and, optionally, eigenvectors of 
+** C_DSYEV(): Computes all eigenvalues and, optionally, eigenvectors of
 ** a real symmetric matrix A.
 **
 ** These arguments mimic their Fortran counterparts.
@@ -446,28 +428,28 @@ int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda,
 ** \param jobz =   'N' or 'n' = compute eigenvalues only;
 **                 'V' or 'v' = compute both eigenvalues and eigenvectors.
 **
-** \param uplo =   'U' or 'u' = A contains the upper triangular part 
+** \param uplo =   'U' or 'u' = A contains the upper triangular part
 **                 of the matrix;
-**                 'L' or 'l' = A contains the lower triangular part 
+**                 'L' or 'l' = A contains the lower triangular part
 **                 of the matrix.
 **
 ** \param n    =   The order of the matrix A.
 **
-** \param A    =   On entry, the two-dimensional array with dimensions 
+** \param A    =   On entry, the two-dimensional array with dimensions
 **                 n by lda.
-**                 On exit, if jobz = 'V', the columns of the matrix 
-**                 contain the eigenvectors of A, but if jobz = 'N', 
+**                 On exit, if jobz = 'V', the columns of the matrix
+**                 contain the eigenvectors of A, but if jobz = 'N',
 **                 the contents of the matrix are destroyed.
 **
-** \param lda   =  The second dimension of A (i.e., the number of columns 
+** \param lda   =  The second dimension of A (i.e., the number of columns
 **                 allocated for A).
 **
 ** \param w     =  The computed eigenvalues in ascending order.
 **
-** \param work  =  An array of length lwork.  On exit, if the return 
+** \param work  =  An array of length lwork.  On exit, if the return
 **                 value is 0, work[0] contains the optimal value of lwork.
 **
-** \param lwork =  The length of the array work.  A useful value of 
+** \param lwork =  The length of the array work.  A useful value of
 **                 lwork seems to be 3*N.
 **
 ** Returns:  0 = successful exit
@@ -478,14 +460,12 @@ int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda,
 **
 ** \ingroup QT
 */
-int C_DSYEV(char jobz, char uplo, int n, double *A, int lda, double *w, 
-  double *work, int lwork)
-{
-  int info;
+int C_DSYEV(char jobz, char uplo, int n, double *A, int lda, double *w, double *work, int lwork) {
+    int info;
 
-  ::F_DSYEV(&jobz, &uplo, &n, A, &lda, w, work, &lwork, &info);
+    ::F_DSYEV(&jobz, &uplo, &n, A, &lda, w, work, &lwork, &info);
 
-  return info;
+    return info;
 }
 
-}
+}  // namespace psi

@@ -170,7 +170,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // logic for MemDFJK vs DiskDFJK
         if (do_wK || !auxiliary->has_puream() || options["DF_INTS_IO"].has_changed()) {
             return build_JK(primary, auxiliary, options, "DISK_DF");
-            
+
         } else {
 
             // conservative estimate for size of 3-center AOs

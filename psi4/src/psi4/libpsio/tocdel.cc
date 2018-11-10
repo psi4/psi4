@@ -34,11 +34,11 @@
 #include <cstdio>
 #include <unistd.h>
 #include <cstdlib>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -46,28 +46,27 @@
 namespace psi {
 
 bool PSIO::tocdel(size_t unit, const char *key) {
-  psio_tocentry *this_entry = tocscan(unit, key);
+    psio_tocentry *this_entry = tocscan(unit, key);
 
-  if (this_entry == nullptr) return false;
+    if (this_entry == nullptr) return false;
 
-  psio_tocentry *last_entry = this_entry->last;
-  psio_tocentry *next_entry = this_entry->next;
+    psio_tocentry *last_entry = this_entry->last;
+    psio_tocentry *next_entry = this_entry->next;
 
-  if(next_entry == nullptr) last_entry->next = nullptr;
-  else {
-    last_entry->next = next_entry;
-    next_entry->last = last_entry;
-  }
+    if (next_entry == nullptr)
+        last_entry->next = nullptr;
+    else {
+        last_entry->next = next_entry;
+        next_entry->last = last_entry;
+    }
 
-  free(this_entry);
-  psio_ud *this_unit = &(psio_unit[unit]);
-  this_unit->toclen--;
+    free(this_entry);
+    psio_ud *this_unit = &(psio_unit[unit]);
+    this_unit->toclen--;
 
-  return true;
+    return true;
 }
 
-bool psio_tocdel(size_t unit, const char *key) {
-  return _default_psio_lib_->tocdel(unit,key);
-}
+bool psio_tocdel(size_t unit, const char *key) { return _default_psio_lib_->tocdel(unit, key); }
 
-}
+}  // namespace psi

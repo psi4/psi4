@@ -34,13 +34,12 @@
 
 namespace psi {
 
-class OverlapOrthog
-{
-public:
+class OverlapOrthog {
+   public:
     /// An enum for the types of orthogonalization.
     enum OrthogMethod { Symmetric, Canonical, GramSchmidt };
 
-private:
+   private:
     int debug_;
 
     Dimension dim_;
@@ -71,9 +70,7 @@ private:
     double max_orthog_res_;
     /// @}
 
-    void compute_overlap_eig(Matrix& overlap_eigvec,
-                             Vector& isqrt_eigval,
-                             Vector& sqrt_eigval);
+    void compute_overlap_eig(Matrix& overlap_eigvec, Vector& isqrt_eigval, Vector& sqrt_eigval);
     void compute_symmetric_orthog();
     void compute_canonical_orthog();
     void compute_gs_orthog();
@@ -81,11 +78,8 @@ private:
 
     SharedMatrix overlap_;
 
-public:
-    OverlapOrthog(OrthogMethod method,
-                  SharedMatrix overlap,
-                  double lindep_tolerance,
-                  int debug = 0);
+   public:
+    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, double lindep_tolerance, int debug = 0);
 
     double min_orthog_res() const { return min_orthog_res_; }
     double max_orthog_res() const { return max_orthog_res_; }
@@ -119,6 +113,6 @@ public:
     int nlindep();
 };
 
-} // namespace psi
+}  // namespace psi
 
-#endif // ORTHOG_H
+#endif  // ORTHOG_H

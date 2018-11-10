@@ -190,6 +190,7 @@ ExternalProject_Add(psi4-core
            pcmsolver_external
            pybind11_external
            pylibefp_external
+           qcelemental_external
            simint_external
            libxc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
@@ -245,6 +246,7 @@ ExternalProject_Add(psi4-core
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1)
 

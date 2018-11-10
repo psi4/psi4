@@ -44,41 +44,38 @@
 #define PSIO_BIGNUM 10000
 
 namespace psi {
-  /*!
-   ** PSIO_VOLSEEK()
-   **
-   ** \ingroup PSIO
-   */
-  int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols) {
+/*!
+ ** PSIO_VOLSEEK()
+ **
+ ** \ingroup PSIO
+ */
+int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols) {
     int stream, errcod;
     size_t bignum, total_offset;
 
-    bignum = PSIO_BIGNUM*numvols;
+    bignum = PSIO_BIGNUM * numvols;
 
     stream = vol->stream;
 
     /* Set file pointer to beginning of file */
-        errcod = SYSTEM_LSEEK(stream, (size_t) 0, SEEK_SET);
-    if (errcod == -1)
-      return (errcod);
+    errcod = SYSTEM_LSEEK(stream, (size_t)0, SEEK_SET);
+    if (errcod == -1) return (errcod);
 
     /* lseek() through large chunks of the file to avoid offset overflows */
     for (; page > bignum; page -= bignum) {
-      total_offset = PSIO_BIGNUM * PSIO_PAGELEN;
-          errcod = SYSTEM_LSEEK(stream, total_offset, SEEK_CUR);
-      if (errcod == -1)
-        return (errcod);
+        total_offset = PSIO_BIGNUM * PSIO_PAGELEN;
+        errcod = SYSTEM_LSEEK(stream, total_offset, SEEK_CUR);
+        if (errcod == -1) return (errcod);
     }
 
     /* Now compute the final offset including the page-relative term */
-    total_offset = (size_t) page/numvols; /* This should truncate */
+    total_offset = (size_t)page / numvols; /* This should truncate */
     total_offset *= PSIO_PAGELEN;
     total_offset += offset; /* Add the page-relative term */
-        errcod = SYSTEM_LSEEK(stream, total_offset, SEEK_CUR);
-    if (errcod == -1)
-      return (errcod);
+    errcod = SYSTEM_LSEEK(stream, total_offset, SEEK_CUR);
+    if (errcod == -1) return (errcod);
 
     return (0);
-  }
-
 }
+
+}  // namespace psi

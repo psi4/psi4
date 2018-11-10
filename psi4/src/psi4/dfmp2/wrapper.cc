@@ -65,5 +65,5 @@ SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options& options) {
 
     return dfmp2;
 }
-}
-}
+}  // namespace dfmp2
+}  // namespace psi

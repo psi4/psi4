@@ -35,8 +35,8 @@
 #include <algorithm>
 #include <numeric>
 #include <cstdlib>
-#include <string.h>
-#include <math.h>
+#include <cstring>
+#include <cmath>
 
 namespace psi {
 
@@ -217,8 +217,7 @@ void Vector::set_block(const Slice &slice, SharedVector block) {
 void Vector::zero() { std::fill(v_.begin(), v_.end(), 0.0); }
 
 void Vector::print(std::string out, const char *extra) const {
-    std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h;
     if (extra == nullptr) {
         printer->Printf("\n # %s #\n", name_.c_str());
@@ -236,7 +235,7 @@ double *Vector::to_block_vector() {
     size_t size = 0;
     for (int h = 0; h < nirrep_; ++h) size += dimpi_[h];
 
-    double *temp = new double[size];
+    auto *temp = new double[size];
     size_t offset = 0;
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < dimpi_[h]; ++i) {

@@ -67,7 +67,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     nroots = Parameters_->num_roots;
     Process::environment.globals["DETCI AVG DVEC NORM"] = 0.0;
 
-    if (print_){
+    if (print_) {
         outfile->Printf("\n   ==> Starting CI iterations <==\n\n");
     }
 
@@ -82,17 +82,13 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     nucrep = CalcInfo_->enuc;
     edrc = CalcInfo_->edrc;
 
-    if (Parameters_->bendazzoli)
-        outfile->Printf("    Bendazzoli algorithm selected for sigma3\n");
+    if (Parameters_->bendazzoli) outfile->Printf("    Bendazzoli algorithm selected for sigma3\n");
 
     /* Direct Method --- use RSP diagonalization routine */
     if (Parameters_->diag_method == METHOD_RSP) {
-
         double h_size = (double)(8 * size * size);
         if (h_size > (Process::environment.get_memory() * 0.4)) {
-            outfile->Printf(
-                "CIWave::Requsted size of the hamiltonian is %4.2lf GB!\n",
-                h_size / 1E9);
+            outfile->Printf("CIWave::Requsted size of the hamiltonian is %4.2lf GB!\n", h_size / 1E9);
             throw PSIEXCEPTION(
                 "CIWave::hamiltonian: Size is too large for explicit "
                 "hamiltonian build. Increase memory to avoid this error.");
@@ -118,9 +114,9 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         // Write evecs to Dvec
         evals = init_array(nroots);
-        double* tmp_buff = new double[size];
-        double** evecsp = evecs->pointer();
-        double* evals_vp = evals_v->pointer();
+        auto *tmp_buff = new double[size];
+        double **evecsp = evecs->pointer();
+        double *evals_vp = evals_v->pointer();
         for (size_t root = 0; root < nroots; root++) {
             for (size_t i = 0; i < size; i++) {
                 tmp_buff[i] = evecsp[i][root];
@@ -165,17 +161,13 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         /* get the diagonal elements of H into an array Hd */
 
-        Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
-                        CalcInfo_->twoel_ints->pointer(), edrc, CalcInfo_->num_alp_expl,
-                        CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs,
-                        Parameters_->hd_ave);
+        Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(), CalcInfo_->twoel_ints->pointer(), edrc,
+                        CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs, Parameters_->hd_ave);
 
         /* get the biggest elements and put in H0block */
         if (H0block_->size) {
-            Hd.max_abs_vals(H0block_->size, H0block_->alplist,
-                            H0block_->betlist, H0block_->alpidx,
-                            H0block_->betidx, H0block_->H00,
-                            Parameters_->neg_only);
+            Hd.max_abs_vals(H0block_->size, H0block_->alplist, H0block_->betlist, H0block_->alpidx, H0block_->betidx,
+                            H0block_->H00, Parameters_->neg_only);
         }
 
         H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
@@ -191,9 +183,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         if (Parameters_->Ms0) {
             H0block_pairup(0);
             if (H0block_->osize - H0block_->size) {
-                outfile->Printf(
-                    "H0block size reduced by %d to ensure pairing.\n",
-                    (H0block_->osize - H0block_->size));
+                outfile->Printf("H0block size reduced by %d to ensure pairing.\n", (H0block_->osize - H0block_->size));
             }
         }
 
@@ -219,18 +209,18 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         evals = init_array(size);
         for (ii = 0; ii < size; ii++) {
             Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-            I.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs,
-                  CalcInfo_->num_bet_expl, betlist_[Iblist][Ibrel].occs);
+            I.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+                  betlist_[Iblist][Ibrel].occs);
             /* introduce symmetry or other restrictions here */
             for (jj = 0; jj < ii; jj++) {
                 Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
-                J.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs,
-                      CalcInfo_->num_bet_expl, betlist_[Iblist][Ibrel].occs);
+                J.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+                      betlist_[Iblist][Ibrel].occs);
                 H[ii][jj] = H[jj][ii] = matrix_element(&I, &J);
             }
             Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
-            J.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs,
-                  CalcInfo_->num_bet_expl, betlist_[Iblist][Ibrel].occs);
+            J.set(CalcInfo_->num_alp_expl, alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+                  betlist_[Iblist][Ibrel].occs);
             H[jj][jj] = matrix_element(&J, &J) + CalcInfo_->edrc;
         }
 
@@ -272,9 +262,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             for (j = 0, tmpi = 0; Parameters_->Ms0 && j < L && !tmpi; j++) {
                 l = H0block_->pair[j];
                 if (l == -1) {
-                    throw PsiException(
-                        "(diag_h sem_test): unpaired H0block member!", __FILE__,
-                        __LINE__);
+                    throw PsiException("(diag_h sem_test): unpaired H0block member!", __FILE__, __LINE__);
                 }
                 tval = sm_evecs[l][i];
                 if ((int)Parameters_->S % 2) tval = -tval;
@@ -285,8 +273,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             for (j = 0; j < L; j++) sm_evals[j] = sm_evecs[j][i];
 
             Cvec.buf_lock(b[k]);
-            Cvec.init_vals(0, L, H0block_->alplist, H0block_->alpidx,
-                           H0block_->betlist, H0block_->betidx,
+            Cvec.init_vals(0, L, H0block_->alplist, H0block_->alpidx, H0block_->betlist, H0block_->betidx,
                            H0block_->blknum, sm_evals);
             Cvec.buf_unlock();
             k++;
@@ -298,12 +285,10 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         for (i = k; i < Parameters_->num_init_vecs; i++) free(b[i]);
         L = k;
         if (L < Parameters_->num_roots) {
-            throw PsiException("(diag_h sem_test): Ooops! L < num_roots!",
-                               __FILE__, __LINE__);
+            throw PsiException("(diag_h sem_test): Ooops! L < num_roots!", __FILE__, __LINE__);
         }
-        sem_test(H, size, Parameters_->num_roots, L, evecs, evals, b, conv_e,
-                 conv_rms, Parameters_->maxiter, (nucrep + CalcInfo_->edrc), &i,
-                 Parameters_->maxnvect);
+        sem_test(H, size, Parameters_->num_roots, L, evecs, evals, b, conv_e, conv_rms, Parameters_->maxiter,
+                 (nucrep + CalcInfo_->edrc), &i, Parameters_->maxnvect);
 
         outfile->Printf("SEM used %d expansion vectors\n", i);
 
@@ -320,14 +305,12 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             mi_coeff = init_array(Parameters_->nprint);
 
             for (i = 0; i < nroots; i++) {
-                outfile->Printf("\n\n* ROOT %2d CI total energy = %17.13lf\n",
-                                i, evals[i] + nucrep);
+                outfile->Printf("\n\n* ROOT %2d CI total energy = %17.13lf\n", i, evals[i] + nucrep);
                 Cvec.setarray(evecs[i], size);
                 zero_arr(mi_coeff, Parameters_->nprint);
-                Cvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
-                                  mi_ibidx, mi_coeff, Parameters_->neg_only);
-                print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
-                          mi_ibidx, mi_coeff);
+                Cvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff,
+                                  Parameters_->neg_only);
+                print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff);
             }
             free(mi_iac);
             free(mi_ibc);
@@ -348,24 +331,20 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     else {
         /* prepare the H0 block */
 
-        CIvect Hd(Parameters_->icore, 1, 1,
-                  Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_,
-                  H0block_);
+        CIvect Hd(Parameters_->icore, 1, 1, Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_, H0block_);
 
         bool open_old = false;
         if (Parameters_->restart) open_old = true;
         Hd.init_io_files(open_old);
 
         /* get the diagonal elements of H into an array Hd */
-        if (!Parameters_->restart ||
-            (Parameters_->restart && Parameters_->hd_otf)) {
+        if (!Parameters_->restart || (Parameters_->restart && Parameters_->hd_otf)) {
             if (print_ > 1) {
                 outfile->Printf("\n    Forming diagonal elements of H\n");
             }
-            Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
-                            CalcInfo_->twoel_ints->pointer(), edrc,
-                            CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl,
-                            CalcInfo_->num_ci_orbs, Parameters_->hd_ave);
+            Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(), CalcInfo_->twoel_ints->pointer(), edrc,
+                            CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs,
+                            Parameters_->hd_ave);
         } else {
             Hd.read(0, 0);
         }
@@ -377,10 +356,8 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             }
 
             if (!Parameters_->hd_otf)
-                Hd.max_abs_vals(H0block_->size + H0block_->coupling_size,
-                                H0block_->alplist, H0block_->betlist,
-                                H0block_->alpidx, H0block_->betidx,
-                                H0block_->H00, Parameters_->neg_only);
+                Hd.max_abs_vals(H0block_->size + H0block_->coupling_size, H0block_->alplist, H0block_->betlist,
+                                H0block_->alpidx, H0block_->betidx, H0block_->H00, Parameters_->neg_only);
         }
 
         if (Parameters_->hd_otf) psio_close(Parameters_->hd_filenum, 1);
@@ -389,24 +366,21 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         if (Parameters_->filter_guess) H0block_filter_setup();
         if (Parameters_->hd_ave) {
             H0block_spin_cpl_chk();
-            if ((H0block_->osize - H0block_->size) &&
-                print_ > 1) {
+            if ((H0block_->osize - H0block_->size) && print_ > 1) {
                 outfile->Printf(
                     "H0block size reduced by %d to ensure "
                     "completion of spin-coupling sets\n",
                     (H0block_->osize - H0block_->size));
                 H0block_->osize = H0block_->size;
             }
-            if ((H0block_->oguess_size - H0block_->guess_size) &&
-                print_ > 1) {
+            if ((H0block_->oguess_size - H0block_->guess_size) && print_ > 1) {
                 outfile->Printf(
                     "    H0block guess size reduced by %d to ensure "
                     "completion of spin-coupling sets\n",
                     (H0block_->oguess_size - H0block_->guess_size));
                 H0block_->oguess_size = H0block_->guess_size;
             }
-            if ((H0block_->ocoupling_size - H0block_->coupling_size) &&
-                print_ > 1) {
+            if ((H0block_->ocoupling_size - H0block_->coupling_size) && print_ > 1) {
                 outfile->Printf(
                     "    H0block coupling size reduced by %d to ensure "
                     "completion of spin-coupling sets\n",
@@ -419,22 +393,19 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             H0block_pairup(0); /* pairup h0block size */
             H0block_pairup(1); /* pairup guess_size */
             H0block_pairup(2); /* pairup coupling size */
-            if ((H0block_->osize - H0block_->size) &&
-                print_ > 1) {
+            if ((H0block_->osize - H0block_->size) && print_ > 1) {
                 outfile->Printf(
                     "    H0block size reduced by %d to ensure pairing"
                     "and spin-coupling.\n",
                     (H0block_->osize - H0block_->size));
             }
-            if ((H0block_->oguess_size - H0block_->guess_size) &&
-                print_ > 1) {
+            if ((H0block_->oguess_size - H0block_->guess_size) && print_ > 1) {
                 outfile->Printf(
                     "    H0block guess size reduced by %d to "
                     "ensure pairing and spin-coupling.\n",
                     (H0block_->oguess_size - H0block_->guess_size));
             }
-            if ((H0block_->ocoupling_size - H0block_->coupling_size) &&
-                print_ > 1) {
+            if ((H0block_->ocoupling_size - H0block_->coupling_size) && print_ > 1) {
                 outfile->Printf(
                     "    H0block coupling size reduced by %d to "
                     "ensure pairing and spin-coupling.\n",
@@ -469,8 +440,8 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
             evals = init_array(nroots);
 
-            sem_iter(Hd, alplist_, betlist_, evals, conv_e, conv_rms, nucrep,
-                     edrc, nroots, Parameters_->maxiter, Parameters_->maxnvect);
+            sem_iter(Hd, alplist_, betlist_, evals, conv_e, conv_rms, nucrep, edrc, nroots, Parameters_->maxiter,
+                     Parameters_->maxnvect);
         }
 
         /* Mitrushenkov's Olsen Method */
@@ -484,52 +455,42 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
             evals = init_array(nroots);
 
-            mitrush_iter(Hd, alplist_, betlist_, nroots, evals, conv_rms,
-                         conv_e, nucrep, edrc, Parameters_->maxiter,
+            mitrush_iter(Hd, alplist_, betlist_, nroots, evals, conv_rms, conv_e, nucrep, edrc, Parameters_->maxiter,
                          Parameters_->maxnvect);
-
         }
 
     } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 
     // Check convergence
-    if (!Parameters_->diag_h_converged){
-       convergence_death();
-       if (print_){
-           outfile->Printf("\n    Warning! CI diagonalization did not fully converge!\n\n");
-       }
+    if (!Parameters_->diag_h_converged) {
+        convergence_death();
+        if (print_) {
+            outfile->Printf("\n    Warning! CI diagonalization did not fully converge!\n\n");
+        }
     }
-
-
 
     // Write out energy to psivars
     tval = evals[Parameters_->root] + edrc + nucrep;
 
     Process::environment.globals["CURRENT ENERGY"] = tval;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] =
-        tval - CalcInfo_->escf;
+    Process::environment.globals["CURRENT CORRELATION ENERGY"] = tval - CalcInfo_->escf;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = CalcInfo_->escf;
     Process::environment.globals["CI TOTAL ENERGY"] = tval;
-    Process::environment.globals["CI CORRELATION ENERGY"] =
-        tval - CalcInfo_->escf;
+    Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo_->escf;
 
     if (Parameters_->fci) {
         Process::environment.globals["FCI TOTAL ENERGY"] = tval;
-        Process::environment.globals["FCI CORRELATION ENERGY"] =
-            tval - CalcInfo_->escf;
+        Process::environment.globals["FCI CORRELATION ENERGY"] = tval - CalcInfo_->escf;
     } else {
         if (Parameters_->ex_lvl == 2) {
             Process::environment.globals["CISD TOTAL ENERGY"] = tval;
-            Process::environment.globals["CISD CORRELATION ENERGY"] =
-                tval - CalcInfo_->escf;
+            Process::environment.globals["CISD CORRELATION ENERGY"] = tval - CalcInfo_->escf;
         } else if (Parameters_->ex_lvl == 3) {
             Process::environment.globals["CISDT TOTAL ENERGY"] = tval;
-            Process::environment.globals["CISDT CORRELATION ENERGY"] =
-                tval - CalcInfo_->escf;
+            Process::environment.globals["CISDT CORRELATION ENERGY"] = tval - CalcInfo_->escf;
         } else if (Parameters_->ex_lvl == 4) {
             Process::environment.globals["CISDTQ TOTAL ENERGY"] = tval;
-            Process::environment.globals["CISDTQ CORRELATION ENERGY"] =
-                tval - CalcInfo_->escf;
+            Process::environment.globals["CISDTQ CORRELATION ENERGY"] = tval - CalcInfo_->escf;
         } else {
             std::stringstream s;
             s << "CI" << Parameters_->ex_lvl << " TOTAL ENERGY";
@@ -555,12 +516,10 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     if (Parameters_->average_num > 1) {
         tval = 0.0;
         for (i = 0; i < Parameters_->average_num; i++) {
-            tval += Parameters_->average_weights[i] *
-                    (edrc + nucrep + evals[Parameters_->average_states[i]]);
+            tval += Parameters_->average_weights[i] * (edrc + nucrep + evals[Parameters_->average_states[i]]);
         }
         Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
-        Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
-            tval - CalcInfo_->escf;
+        Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] = tval - CalcInfo_->escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] =
             Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"];
     }
@@ -572,15 +531,13 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     } else if (Parameters_->root != 0) {  // follow some specific root != lowest
         std::stringstream s;
         s << "CI ROOT " << Parameters_->root << " TOTAL ENERGY";
-        Process::environment.globals["MCSCF TOTAL ENERGY"] =
-            Process::environment.globals[s.str()];
+        Process::environment.globals["MCSCF TOTAL ENERGY"] = Process::environment.globals[s.str()];
     } else {
-        Process::environment.globals["MCSCF TOTAL ENERGY"] =
-            Process::environment.globals["CI TOTAL ENERGY"];
+        Process::environment.globals["MCSCF TOTAL ENERGY"] = Process::environment.globals["CI TOTAL ENERGY"];
     }
 
     return Parameters_->diag_iters_taken;
 
-
 }  // end CIWave::diag_h
-}}  // namespace psi::detci
+}  // namespace detci
+}  // namespace psi

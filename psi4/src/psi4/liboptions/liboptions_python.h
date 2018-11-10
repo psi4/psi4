@@ -35,15 +35,15 @@
 
 namespace psi {
 
-class PythonDataType : public DataType
-{
+class PythonDataType : public DataType {
     py::object python_object_;
-public:
+
+   public:
     PythonDataType();
     PythonDataType(const py::object& p);
-    virtual ~PythonDataType();
+    ~PythonDataType() override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
     const py::object& to_python() const;
 
@@ -53,6 +53,6 @@ public:
     PRAGMA_WARNING_POP
 };
 
-}
+}  // namespace psi
 
-#endif // _psi_src_lib_liboptions_python_h
+#endif  // _psi_src_lib_liboptions_python_h

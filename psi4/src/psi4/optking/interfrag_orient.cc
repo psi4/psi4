@@ -364,7 +364,7 @@ void rotate_vecs(double *w, double phi, double **v, int num_v) {
   R[2][2] =     cos(phi) + wz*wz*cp;
 
   v_new = init_matrix(num_v,3);
-  opt_matrix_mult(R, 0, v, 1, v_new, 1, 3, 3, num_v, 0);
+  opt_matrix_mult(R, false, v, true, v_new, true, 3, 3, num_v, false);
 
   for (int i=0; i<num_v; ++i)
     for (int j=0; j<3; ++j)

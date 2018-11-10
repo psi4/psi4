@@ -237,7 +237,7 @@ explained below. Note that each deeper level trumps all previous levels.
 ..     export OMP_NUM_THREADS=4
 ..     export MKL_NUM_THREADS=4
 ..
-.. |PSIfour| then detects these value via the API routines in ``<omp.h>`` and
+.. Psi4 then detects these value via the API routines in ``<omp.h>`` and
 .. ``<mkl.h>``, and runs all applicable code with 4 threads.
 
 .. rubric:: (2) The -n Command Line Flag

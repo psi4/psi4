@@ -32,7 +32,8 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/liboptions/liboptions.h"
 
-namespace psi{ namespace adc{
+namespace psi {
+namespace adc {
 
 //
 //  DOV   : Tensors that contain the contribution from a 3h-3p diagram that cannot be
@@ -44,9 +45,7 @@ namespace psi{ namespace adc{
 //  BOOVV : A 2h-2p intermediate.
 //
 
-void
-ADCWfn::rhf_construct_sigma(int irrep, int root)
-{
+void ADCWfn::rhf_construct_sigma(int irrep, int root) {
     bool do_pr = options_.get_bool("PR");
     char lbl[32], ampname[32];
     dpdfile2 B, S, D, E, Bt, C;
@@ -55,7 +54,7 @@ ADCWfn::rhf_construct_sigma(int irrep, int root)
     sprintf(lbl, "S^(%d)_[%d]12", root, irrep);
     global_dpd_->file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
     sprintf(lbl, "B^(%d)_[%d]12", root, irrep);
-    global_dpd_->file2_init(&B, PSIF_ADC,     irrep, ID('O'), ID('V'), lbl);
+    global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
 
     // CIS term and the two 3h-3p diagrams are summed into the sigma vector.
     global_dpd_->buf4_init(&A, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
@@ -63,10 +62,13 @@ ADCWfn::rhf_construct_sigma(int irrep, int root)
     global_dpd_->buf4_close(&A);
 
     // Evaluation of the remaining one 3h-3p diagram
-    if(do_pr) strcpy(ampname, "tilde 2 K1234 - K1243");
-    else      strcpy(ampname, "2 K1234 - K1243");
-    global_dpd_->buf4_init(&K, PSIF_ADC,          0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, ampname);
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints 2 V1234 - V1243");
+    if (do_pr)
+        strcpy(ampname, "tilde 2 K1234 - K1243");
+    else
+        strcpy(ampname, "2 K1234 - K1243");
+    global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, ampname);
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "MO Ints 2 V1234 - V1243");
 
     sprintf(lbl, "DOV_[%d]12", irrep);
     global_dpd_->file2_init(&D, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
@@ -85,22 +87,24 @@ ADCWfn::rhf_construct_sigma(int irrep, int root)
     global_dpd_->file2_close(&E);
 
 #if DEBUG_
-    outfile->Printf( ">> In construction of sigma <<\n");
+    outfile->Printf(">> In construction of sigma <<\n");
     global_dpd_->buf4_print(&K, outfile, 1);
-    //abort();
+// abort();
 #endif
 
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
+                           "MO Ints <OV|VV>");
     sprintf(lbl, "ZOOVV_[%d]1234", irrep);
     global_dpd_->buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
     // ZOVOV_{jiab} <--  \sum_{c} <jc|ab> b_{ic}
-    global_dpd_->contract424(&V, &B, &Z, 1, 1, 1,  1, 0);
+    global_dpd_->contract424(&V, &B, &Z, 1, 1, 1, 1, 0);
     global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0,
+                           "MO Ints <OO|VO>");
     // ZOVOV_{ijab} <-- - \sum_{k} <ij|ak> b_{kb}
     global_dpd_->contract424(&V, &B, &Z, 3, 0, 0, -1, 1);
     global_dpd_->buf4_close(&V);
@@ -110,7 +114,7 @@ ADCWfn::rhf_construct_sigma(int irrep, int root)
     global_dpd_->buf4_scmcopy(&Z, PSIF_ADC_SEM, lbl, 2.0);
     global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, pqsr, ID("[O,O]"), ID("[V,V]"), lbl, -1.0);
     global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qprs, ID("[O,O]"), ID("[V,V]"), lbl, -1.0);
-    global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qpsr, ID("[O,O]"), ID("[V,V]"), lbl,  2.0);
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qpsr, ID("[O,O]"), ID("[V,V]"), lbl, 2.0);
     global_dpd_->buf4_close(&Z);
 
     global_dpd_->buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
@@ -119,19 +123,21 @@ ADCWfn::rhf_construct_sigma(int irrep, int root)
     global_dpd_->buf4_dirprd(&A, &Z);
     global_dpd_->buf4_close(&A);
 
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
+                           "MO Ints <OV|VV>");
     // \sigma_{ia} <-- \sum_{jbc} B_{jicb} <ja|cb>
     global_dpd_->contract442(&Z, &V, &S, 1, 1, 1, 1);
     global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0,
+                           "MO Ints <OO|VO>");
     // \sigma_{ia} <-- - \sum_{jkb} <kj|bi> B_{jkab}
-    global_dpd_->contract442(&V, &Z, &S, 3, 3, -1, 1); //This is genuine
+    global_dpd_->contract442(&V, &Z, &S, 3, 3, -1, 1);  // This is genuine
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_close(&Z);
 
     global_dpd_->file2_close(&S);
     global_dpd_->file2_close(&B);
 }
-
-}} // End Namespaces
+}
+}  // End Namespaces

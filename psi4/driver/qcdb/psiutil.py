@@ -77,7 +77,8 @@ def compare_values(expected, computed, digits, label, passnone=False, verbose=1)
     else:
         thresh = digits
         message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
-    if abs(expected - computed) > thresh:
+    if abs(float(expected) - float(computed)) > thresh:
+        # float cast handles decimal.Decimal vars
         raise TestComparisonError(message)
     if math.isnan(computed):
         message += "\tprobably because the computed value is nan."
@@ -150,7 +151,7 @@ def compare_dicts(expected, computed, tol, label, forgive=None, verbose=1):
     try:
         import deepdiff
     except ImportError:
-        raise ImportError("""Install deepdiff. `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
+        raise ImportError("""Python module deepdiff not found. Solve by installing it: `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
 
     if forgive is None:
         forgive = []
@@ -185,6 +186,12 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
 
     thresh = 10 ** -tol if tol >= 1 else tol
 
+    # TEMP TODO just in case working from qcel head, not 0.1
+    if forgive is None:
+        forgive = ['provenance']
+    if 'provenance' not in forgive:
+        forgive.append('provenance')
+
     # Need to manipulate the dictionaries a bit, so hold values
     xptd = copy.deepcopy(expected)
     cptd = copy.deepcopy(computed)
@@ -214,6 +221,11 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
             dicary['fragment_multiplicities'] = [(m if m is None else int(m)) for m in dicary['fragment_multiplicities']]
         if 'fragment_separators' in dicary:
             dicary['fragment_separators'] = [(s if s is None else int(s)) for s in dicary['fragment_separators']]
+        # forgive generator version changes
+        if 'provenance' in dicary:
+            for prov in dicary['provenance']:
+                prov.pop('version')
+
         return dicary
 
     xptd = massage_dicts(xptd)
@@ -242,6 +254,12 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
             compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
         ageom = mill.align_coordinates(cgeom)
         cptd['geom'] = ageom.reshape((-1))
+
+    # TEMP TODO just in case working from qcel head, not 0.1
+    if forgive is None:
+        forgive = ['provenance']
+    if 'provenance' not in forgive:
+        forgive.append('provenance')
 
     compare_dicts(xptd, cptd, tol, label, forgive=forgive, verbose=verbose)
 
@@ -287,7 +305,7 @@ def query_yes_no(question, default=True):
     yes = re.compile(r'^(y|yes|true|on|1)', re.IGNORECASE)
     no = re.compile(r'^(n|no|false|off|0)', re.IGNORECASE)
 
-    if default == None:
+    if default is None:
         prompt = " [y/n] "
     elif default == True:
         prompt = " [Y/n] "

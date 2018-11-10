@@ -14,6 +14,8 @@
             "additionalName": "M.",
             "familyName": "Parrish",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
             "@id": "https://github.com/robparrish"
         },
         {
@@ -22,6 +24,8 @@
             "additionalName": "A.",
             "familyName": "Burns",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
             "@id": "https://orcid.org/0000-0003-2852-5864",
             "@id": "https://github.com/loriab"
         },
@@ -31,6 +35,8 @@
             "additionalName": "G. A.",
             "familyName": "Smith",
             "affiliation": "The Molecular Sciences Software Institute",
+            "latitude": 37.20015,
+            "longitude": -80.4106,
             "@id": "https://orcid.org/0000-0001-8626-0900",
             "@id": "https://github.com/dgasmith"
         },
@@ -40,6 +46,8 @@
             "additionalName": "C.",
             "familyName": "Simmonett",
             "affiliation": "National Institutes of Health -- National Heart, Lung and Blood Institute",
+            "latitude": 38.999264,
+            "longitude": -77.101852,
             "@id": "https://orcid.org/0000-0002-5921-9272",
             "@id": "https://github.com/andysim"
         },
@@ -49,6 +57,8 @@
             "additionalName": "Eugene",
             "familyName": "DePrince",
             "affiliation": "Department of Chemistry and Biochemistry, Florida State University",
+            "latitude": 30.44392,
+            "longitude": -84.3013,
             "@id": "https://orcid.org/0000-0003-1061-2521",
             "@id": "https://github.com/edeprince3"
         },
@@ -58,6 +68,8 @@
             "additionalName": "G.",
             "familyName": "Hohenstein",
             "affiliation": "Department of Chemistry and Biochemistry, The City College of New York",
+            "latitude": 40.820,
+            "longitude": -73.950,
             "@id": "https://orcid.org/0000-0002-2119-2959",
             "@id": "https://github.com/ehohenstein2"
         },
@@ -66,6 +78,8 @@
             "givenName": "U\u0223ur",
             "familyName": "Bozkaya",
             "affiliation": "Department of Chemistry, Hacettepe University, Turkey",
+            "latitude": 39.867,
+            "longitude": 32.734,
             "@id": "https://orcid.org/0000-0002-5203-2210",
             "@id": "https://github.com/bozkaya"
         },
@@ -74,7 +88,9 @@
             "givenName": "Alexander",
             "additionalName": "Yu.",
             "familyName": "Sokolov",
-            "affiliation": "Division of Chemistry and Chemical Engineering, California Institute of Technology",
+            "affiliation": "Department of Chemistry and Biochemistry, The Ohio State University",
+            "latitude": 40.0023,
+            "longitude": -83.0113,
             "@id": "https://orcid.org/0000-0003-2637-4134",
             "@id": "https://github.com/ssh2"
         },
@@ -83,6 +99,8 @@
             "givenName": "Roberto",
             "familyName": "Di Remigio",
             "affiliation": "Hylleraas Centre for Quantum Molecular Sciences, UiT - The Arctic University of Norway",
+            "latitude": 69.682,
+            "longitude": 18.977,
             "@id": "https://orcid.org/0000-0002-5452-9239",
             "@id": "https://github.com/robertodr"
         },
@@ -92,6 +110,8 @@
             "additionalName": "M.",
             "familyName": "Richard",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
             "@id": "https://github.com/ryanmrichard"
         },
         {
@@ -100,6 +120,8 @@
             "additionalName": "F.",
             "familyName": "Gonthier",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
             "@id": "https://orcid.org/0000-0002-2933-4085",
             "@id": "https://github.com/jgonthier"
         },
@@ -109,6 +131,8 @@
             "additionalName": "M.",
             "familyName": "James",
             "affiliation": "Department of Chemistry, Virginia Tech",
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0001-5821-6064",
             "@id": "https://github.com/amjames"
         },
@@ -118,6 +142,8 @@
             "additionalName": "R.",
             "familyName": "McAlexander",
             "affiliation": "Department of Chemistry, Virginia Tech",
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://github.com/harls"
         },
         {
@@ -125,6 +151,8 @@
             "givenName": "Ashutosh",
             "familyName": "Kumar",
             "affiliation": "Department of Chemistry, Virginia Tech",
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0001-7589-6030",
             "@id": "https://github.com/ashutoshvt"
         },
@@ -133,6 +161,8 @@
             "givenName": "Masaaki",
             "familyName": "Saitow",
             "affiliation": "Department of Chemistry and Research Center for Smart Molecules, Rikkyo University, Japan",
+            "latitude": 35.7305,
+            "longitude": 139.7018,
             "@id": "https://github.com/msaitow"
         },
         {
@@ -140,6 +170,8 @@
             "givenName": "Xiao",
             "familyName": "Wang",
             "affiliation": "Department of Chemistry, Virginia Tech",
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0003-1402-7522",
             "@id": "https://github.com/xwang862"
         },
@@ -149,6 +181,8 @@
             "additionalName": "P.",
             "familyName": "Pritchard",
             "affiliation": "The Molecular Sciences Software Institute",
+            "latitude": 37.20015,
+            "longitude": -80.4106,
             "@id": "https://github.com/bennybp"
         },
         {
@@ -156,6 +190,8 @@
             "givenName": "Prakash",
             "familyName": "Verma",
             "affiliation": "Department of Chemistry, Emory University",
+            "latitude": 33.7915,
+            "longitude": -84.3264,
             "@id": "https://orcid.org/0000-0003-3048-9380",
             "@id": "https://github.com/PrakashVermaQTP"
         },
@@ -165,6 +201,8 @@
             "additionalName": "F.",
             "familyName": "Schaefer",
             "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "latitude": 33.94797,
+            "longitude": -83.37482,
             "@id": "https://orcid.org/0000-0003-0252-2083"
         },
         {
@@ -172,6 +210,8 @@
             "givenName": "Konrad",
             "familyName": "Patkowski",
             "affiliation": "Department of Chemistry and Biochemistry, Auburn University",
+            "latitude": 32.5997,
+            "longitude": -85.4852,
             "@id": "https://orcid.org/0000-0002-4468-207X",
             "@id": "https://github.com/konpat"
         },
@@ -181,6 +221,8 @@
             "additionalName": "A.",
             "familyName": "King",
             "affiliation": "Department of Chemistry, Bethel University",
+            "latitude": 45.057793,
+            "longitude": -93.161380,
             "@id": "https://orcid.org/0000-0002-1173-4187",
             "@id": "https://github.com/psi-rking"
         },
@@ -190,6 +232,8 @@
             "additionalName": "F.",
             "familyName": "Valeev",
             "affiliation": "Department of Chemistry, Virginia Tech",
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0001-9923-6256",
             "@id": "https://github.com/evaleev"
         },
@@ -199,6 +243,8 @@
             "additionalName": "A.",
             "familyName": "Evangelista",
             "affiliation": "Department of Chemistry, Emory University",
+            "latitude": 33.7915,
+            "longitude": -84.3264,
             "@id": "https://orcid.org/0000-0002-7917-6652",
             "@id": "https://github.com/fevangelista"
         },
@@ -208,6 +254,8 @@
             "additionalName": "M.",
             "familyName": "Turney",
             "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "latitude": 33.94797,
+            "longitude": -83.37482,
             "@id": "https://orcid.org/0000-0003-3659-0711",
             "@id": "https://github.com/jturney"
         },
@@ -217,6 +265,8 @@
             "additionalName": "Daniel",
             "familyName": "Crawford",
             "affiliation": "Department of Chemistry, Virginia Tech",
+            "latitude": 37.227,
+            "longitude": -80.425,
             "@id": "https://orcid.org/0000-0002-7961-7016",
             "@id": "https://github.com/lothian"
         },
@@ -226,6 +276,8 @@
             "additionalName": "David",
             "familyName": "Sherrill",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
             "@id": "https://orcid.org/0000-0002-5570-7666",
             "@id": "https://github.com/CDSherrill"
         },
@@ -233,7 +285,9 @@
             "@type": "Person",
             "givenName": "Peter",
             "familyName": "Kraus",
-            "affiliation": "Leibniz University, Hannover, Germany",
+            "affiliation": "Fritz Haber Institute of the Max Planck Society, Berlin, Germany",
+            "latitude": 52.4485,
+            "longitude": 13.2827,
             "@id": "https://orcid.org/0000-0002-4359-5003",
             "@id": "https://github.com/PeterKraus"
         },
@@ -242,6 +296,8 @@
             "givenName": "Holger",
             "familyName": "Kruse",
             "affiliation": "Institute of Biophysics of the CAS, v.v.i., Czech Republic",
+            "latitude": 49.2206,
+            "longitude": 16.580,
             "@id": "https://orcid.org/0000-0002-0560-1513",
             "@id": "https://github.com/hokru"
         },
@@ -251,6 +307,8 @@
             "additionalName": "H.",
             "familyName": "Lechner",
             "affiliation": "Department of Chemistry, Technical University of Munich",
+            "latitude": 48.1497,
+            "longitude": 11.5679,
             "@id": "https://orcid.org/0000-0002-1676-2718",
             "@id": "https://github.com/mhlechner"
         },
@@ -260,6 +318,8 @@
             "additionalName": "C.",
             "familyName": "Schieber",
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
             "@id": "https://github.com/schiebermc"
         },
         {
@@ -268,6 +328,8 @@
             "additionalName": "A.",
             "familyName": "Shaw",
             "affiliation": "University of Sheffield",
+            "latitude": 53.381,
+            "longitude": -1.488,
             "@id": "https://orcid.org/0000-0002-9977-0835",
             "@id": "https://github.com/robashaw"
         },
@@ -276,21 +338,27 @@
             "givenName": "Edward",
             "additionalName": "T.",
             "familyName": "Seidl",
-            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia"
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "latitude": 33.94797,
+            "longitude": -83.37482
         },
         {
             "@type": "Person",
             "givenName": "Curtis",
             "additionalName": "L.",
             "familyName": "Janssen",
-            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia"
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "latitude": 33.94797,
+            "longitude": -83.37482
         },
         {
             "@type": "Person",
             "givenName": "Matthew",
             "additionalName": "L.",
             "familyName": "Leininger",
-            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology"
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965
         }
     ],
     "developmentStatus": "active",

@@ -64,6 +64,9 @@ class PSI_API CubeProperties {
     std::vector<std::tuple<double, int, int> > info_b_;
     /// Auxiliary Basis Set if Any
     std::shared_ptr<BasisSet> auxiliary_;
+    /// Total number of alpha/beta electrons
+    int nalpha_;
+    int nbeta_;
 
     // => Computers <= //
 
@@ -100,6 +103,9 @@ class PSI_API CubeProperties {
     /// Compute an orbital task (key_N.cube, for 0-based indices of C)
     void compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
                           const std::vector<std::string>& labels, const std::string& key);
+    /// Compute a difference task between two indices of matrix C
+    void compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
+                          const std::string& label, bool square);
     /// Compute a basis function task (key_N.cube, for 0-based indices of basisset_)
     void compute_basis_functions(const std::vector<int>& indices, const std::string& key);
     /// Compute a LOL grid task (key.cube)
@@ -110,6 +116,6 @@ class PSI_API CubeProperties {
     /// Returns Orbital Basis Set
     std::shared_ptr<BasisSet> basisset() { return basisset_; }
 };
-}
+}  // namespace psi
 
 #endif

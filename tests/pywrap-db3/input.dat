@@ -1,6 +1,6 @@
 #! Test that Python Molecule class processes geometry like psi4 Molecule class.
 
-ref_nre = 268.617178206572646  #TEST
+ref_nre = 268.6171792624 #TEST
 ref_geom = psi4.Matrix.from_list(
       [[   0.710500000000,    -0.794637665924,    -1.230622098778],
        [   1.421000000000,    -0.794637665924,     0.000000000000],

@@ -40,15 +40,14 @@
 #include <algorithm>
 #include <functional>
 
-namespace psi{ namespace dcft{
+namespace psi {
+namespace dcft {
 /**
  * Forms Tau in the MO basis from the Lambda tensors and transforms it back
  * to the SO basis
  * for RHF reference.
  */
-void
-DCFTSolver::build_tau_RHF()
-{
+void DCFTSolver::build_tau_RHF() {
     dcft_timer_on("DCFTSolver::build_tau()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_VV;
@@ -61,12 +60,10 @@ DCFTSolver::build_tau_RHF()
     global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"), ID("[O,O]"),
+                           ID("[V,V]"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0, _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"), ID("[O,O]"),
+                           ID("[V,V]"), 0, "Lambda <OO|VV>");
 
     /*
      * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
@@ -79,10 +76,10 @@ DCFTSolver::build_tau_RHF()
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                           ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>"); // Lambda <Oo|Vv>
-    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                           ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>"); // Lambda <Oo|Vv>
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
 
     /*
      * Tau_IJ -= 1/2 Lambda_IkAb Lambda_JkAb - 1/2 Lambda_IkaB Lambda_JkaB
@@ -106,14 +103,14 @@ DCFTSolver::build_tau_RHF()
     global_dpd_->file2_mat_rd(&T_OO);
     global_dpd_->file2_mat_rd(&T_VV);
 
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
-            for(int j = 0; j < naoccpi_[h]; ++j){
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int j = 0; j < naoccpi_[h]; ++j) {
                 aocc_tau_->set(h, i, j, T_OO.matrix[h][i][j]);
             }
         }
-        for(int a = 0; a < navirpi_[h]; ++a){
-            for(int b = 0; b < navirpi_[h]; ++b){
+        for (int a = 0; a < navirpi_[h]; ++a) {
+            for (int b = 0; b < navirpi_[h]; ++b) {
                 avir_tau_->set(h, a, b, T_VV.matrix[h][a][b]);
             }
         }
@@ -126,11 +123,9 @@ DCFTSolver::build_tau_RHF()
     global_dpd_->file2_close(&T_VV);
 
     dcft_timer_off("DCFTSolver::build_tau()");
-
 }
 
-void
-DCFTSolver::refine_tau_RHF() {
+void DCFTSolver::refine_tau_RHF() {
     dcft_timer_on("DCFTSolver::refine_tau()");
 
     // Read MO-basis Tau from disk into the memory
@@ -140,7 +135,8 @@ DCFTSolver::refine_tau_RHF() {
 
     auto aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
     auto avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    auto aocc_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto aocc_d =
+        std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
     auto avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
 
     bool converged = false;
@@ -151,8 +147,7 @@ DCFTSolver::refine_tau_RHF() {
     aocc_d->copy(aocc_tau_);
     avir_d->copy(avir_tau_);
 
-    while(!converged && !failed){
-
+    while (!converged && !failed) {
         // Save old tau from previous iteration
         aocc_tau_old->copy(aocc_tau_);
         avir_tau_old->copy(avir_tau_);
@@ -176,12 +171,12 @@ DCFTSolver::refine_tau_RHF() {
         rms *= 2.0;
 
         converged = (rms < cumulant_threshold_);
-        failed    = (++cycle == maxiter_);
+        failed = (++cycle == maxiter_);
 
-        if (print_ > 2) outfile->Printf( "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
-//            if (print_ > 0) outfile->Printf( "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
+        if (print_ > 2) outfile->Printf("\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
+        //            if (print_ > 0) outfile->Printf( "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
 
-    } // end of macroiterations
+    }  // end of macroiterations
 
     // Test the trace of Tau
     // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
@@ -189,7 +184,7 @@ DCFTSolver::refine_tau_RHF() {
 
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
     if (failed) {
-        outfile->Printf( "\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
+        outfile->Printf("\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
         // Set old tau matrices to identity
         aocc_tau_old->identity();
         avir_tau_old->identity();
@@ -210,14 +205,14 @@ DCFTSolver::refine_tau_RHF() {
         aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
         avir_tau_old->diagonalize(avir_evecs, avir_evals);
 
-        for(int h = 0; h < nirrep_; ++h){
-            if(nsopi_[h] == 0) continue;
+        for (int h = 0; h < nirrep_; ++h) {
+            if (nsopi_[h] == 0) continue;
 
             // Alpha occupied
-            for(int p = 0 ; p < naoccpi_[h]; ++p) aocc_tau_->set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_->set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
 
             // Alpha virtual
-            for(int p = 0 ; p < navirpi_[h]; ++p) avir_tau_->set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_->set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
         }
 
         // Back-transform the diagonal Tau to the original basis
@@ -237,14 +232,14 @@ DCFTSolver::refine_tau_RHF() {
     global_dpd_->file2_mat_init(&T_OO);
     global_dpd_->file2_mat_init(&T_VV);
 
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
-            for(int j = 0; j < naoccpi_[h]; ++j){
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int j = 0; j < naoccpi_[h]; ++j) {
                 T_OO.matrix[h][i][j] = aocc_tau_->get(h, i, j);
             }
         }
-        for(int a = 0; a < navirpi_[h]; ++a){
-            for(int b = 0; b < navirpi_[h]; ++b){
+        for (int a = 0; a < navirpi_[h]; ++a) {
+            for (int b = 0; b < navirpi_[h]; ++b) {
                 T_VV.matrix[h][a][b] = avir_tau_->get(h, a, b);
             }
         }
@@ -256,12 +251,9 @@ DCFTSolver::refine_tau_RHF() {
     global_dpd_->file2_close(&T_VV);
 
     dcft_timer_off("DCFTSolver::refine_tau()");
-
 }
 
-void
-DCFTSolver::transform_tau_RHF()
-{
+void DCFTSolver::transform_tau_RHF() {
     dcft_timer_on("DCFTSolver::transform_tau()");
 
     dpdfile2 T_OO, T_VV;
@@ -277,8 +269,8 @@ DCFTSolver::transform_tau_RHF()
     // Zero SO tau arrays before computing it in the MO basis
     tau_so_a_->zero();
 
-    for(int h = 0; h < nirrep_; ++h){
-        if(nsopi_[h] == 0) continue;
+    for (int h = 0; h < nirrep_; ++h) {
+        if (nsopi_[h] == 0) continue;
 
         double **temp = block_matrix(nsopi_[h], nsopi_[h]);
         /*
@@ -290,19 +282,19 @@ DCFTSolver::transform_tau_RHF()
         double **pa_tau_ = tau_so_a_->pointer(h);
 
         // Alpha occupied
-        if(naoccpi_[h] && nsopi_[h]){
-            C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h],
-                    T_OO.matrix[h][0], naoccpi_[h], 0.0, temp[0], nsopi_[h]);
-            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h],
-                    paOccC[0], naoccpi_[h], 1.0, pa_tau_[0], nsopi_[h]);
+        if (naoccpi_[h] && nsopi_[h]) {
+            C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h], T_OO.matrix[h][0],
+                    naoccpi_[h], 0.0, temp[0], nsopi_[h]);
+            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h], paOccC[0], naoccpi_[h], 1.0,
+                    pa_tau_[0], nsopi_[h]);
         }
 
         // Alpha virtual
-        if(navirpi_[h] && nsopi_[h]){
-            C_DGEMM('n', 'n', nsopi_[h], navirpi_[h], navirpi_[h], 1.0, paVirC[0], navirpi_[h],
-                    T_VV.matrix[h][0], navirpi_[h], 0.0, temp[0], nsopi_[h]);
-            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], navirpi_[h], 1.0, temp[0], nsopi_[h],
-                    paVirC[0], navirpi_[h], 1.0, pa_tau_[0], nsopi_[h]);
+        if (navirpi_[h] && nsopi_[h]) {
+            C_DGEMM('n', 'n', nsopi_[h], navirpi_[h], navirpi_[h], 1.0, paVirC[0], navirpi_[h], T_VV.matrix[h][0],
+                    navirpi_[h], 0.0, temp[0], nsopi_[h]);
+            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], navirpi_[h], 1.0, temp[0], nsopi_[h], paVirC[0], navirpi_[h], 1.0,
+                    pa_tau_[0], nsopi_[h]);
         }
 
         free_block(temp);
@@ -315,15 +307,12 @@ DCFTSolver::transform_tau_RHF()
     tau_so_b_->copy(tau_so_a_);
 
     dcft_timer_off("DCFTSolver::transform_tau()");
-
 }
 
 /**
  * Prints the occupation numbers from the OPDM
  */
-void
-DCFTSolver::print_opdm_RHF()
-{
+void DCFTSolver::print_opdm_RHF() {
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
     global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
@@ -336,10 +325,10 @@ DCFTSolver::print_opdm_RHF()
 
     std::vector<std::pair<double, int> > aPairs;
 
-    for(int h = 0; h < nirrep_; ++h){
-        for(int row = 0; row < T_OO.params->coltot[h]; ++row)
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int row = 0; row < T_OO.params->coltot[h]; ++row)
             aPairs.push_back(std::make_pair(1.0 + T_OO.matrix[h][row][row], h));
-        for(int row = 0; row < T_VV.params->coltot[h]; ++row)
+        for (int row = 0; row < T_VV.params->coltot[h]; ++row)
             aPairs.push_back(std::make_pair(T_VV.matrix[h][row][row], h));
     }
 
@@ -355,24 +344,21 @@ DCFTSolver::print_opdm_RHF()
     int *bIrrepCount = init_int_array(nirrep_);
     std::vector<std::string> irrepLabels = molecule_->irrep_labels();
 
-    outfile->Printf( "\n\tOrbital occupations:\n\t\tDoubly occupied orbitals\n\t\t");
+    outfile->Printf("\n\tOrbital occupations:\n\t\tDoubly occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
-        if (count % 4 == 3 && i != nalpha_)
-            outfile->Printf( "\n\t\t");
+        outfile->Printf("%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
+        if (count % 4 == 3 && i != nalpha_) outfile->Printf("\n\t\t");
     }
-    outfile->Printf( "\n\n\t\tVirtual orbitals\n\t\t");
+    outfile->Printf("\n\n\t\tVirtual orbitals\n\t\t");
     for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
-        if (count % 4 == 3 && i != nmo_)
-            outfile->Printf( "\n\t\t");
+        outfile->Printf("%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
+        if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
     }
-    outfile->Printf( "\n\n");
+    outfile->Printf("\n\n");
     free(aIrrepCount);
     free(bIrrepCount);
-
-
 }
-}}// Namespace
+}  // namespace dcft
+}  // namespace psi

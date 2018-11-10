@@ -39,9 +39,7 @@ class PSIO;
 namespace dfmp2 {
 
 class DFMP2 : public Wavefunction {
-
-protected:
-
+   protected:
     // Auxiliary basis
     std::shared_ptr<BasisSet> ribasis_;
     // Gradients map
@@ -113,19 +111,16 @@ protected:
 
     void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
 
-public:
+   public:
     DFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    virtual ~DFMP2();
+    ~DFMP2() override;
 
-    double compute_energy();
-    virtual SharedMatrix compute_gradient();
-
+    double compute_energy() override;
+    SharedMatrix compute_gradient() override;
 };
 
 class RDFMP2 : public DFMP2 {
-
-protected:
-
+   protected:
     SharedMatrix Cfocc_;
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
@@ -139,49 +134,47 @@ protected:
     void common_init();
 
     // Print additional header
-    virtual void print_header();
+    void print_header() override;
     // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
-    virtual void form_Aia();
+    void form_Aia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
-    virtual void form_Qia();
+    void form_Qia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia) and J_QA^-1 (A|ia)
-    virtual void form_Qia_gradient();
+    void form_Qia_gradient() override;
     // Transpose the integrals to (ai|Q)
-    virtual void form_Qia_transpose();
+    void form_Qia_transpose() override;
     // Form the energy contributions
-    virtual void form_energy();
+    void form_energy() override;
     // Form the energy contributions and gradients
-    virtual void form_Pab();
+    void form_Pab() override;
     // Form the energy contributions and gradients
-    virtual void form_Pij();
+    void form_Pij() override;
     // Form the small gamma
-    virtual void form_gamma();
+    void form_gamma() override;
     // Transpose the G
-    virtual void form_G_transpose();
+    void form_G_transpose() override;
     // Form the (A|B)^x contribution to the gradient
-    virtual void form_AB_x_terms();
+    void form_AB_x_terms() override;
     // Form the (A|mn)^x contribution to the gradient
-    virtual void form_Amn_x_terms();
+    void form_Amn_x_terms() override;
     // Form the Lma and Lmi matrices
-    virtual void form_L();
+    void form_L() override;
     // Form the unrelaxed OPDM
-    virtual void form_P();
+    void form_P() override;
     // Form the unrelaxed energy-weighted OPDM
-    virtual void form_W();
+    void form_W() override;
     // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P
-    virtual void form_Z();
+    void form_Z() override;
     // Manage the formation of W and P contributions to the gradient
-    virtual void form_gradient();
+    void form_gradient() override;
 
-public:
+   public:
     RDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    virtual ~RDFMP2();
+    ~RDFMP2() override;
 };
 
 class UDFMP2 : public DFMP2 {
-
-protected:
-
+   protected:
     SharedMatrix Caocc_a_;
     SharedMatrix Cavir_a_;
     SharedMatrix Caocc_b_;
@@ -195,59 +188,58 @@ protected:
     void common_init();
 
     // Print additional header
-    virtual void print_header();
+    void print_header() override;
     // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
-    virtual void form_Aia();
+    void form_Aia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
-    virtual void form_Qia();
+    void form_Qia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia) and J_QA^-1 (A|ia)
-    virtual void form_Qia_gradient();
+    void form_Qia_gradient() override;
     // Transpose the integrals to (ai|Q)
-    virtual void form_Qia_transpose();
+    void form_Qia_transpose() override;
     // Form the energy contributions
-    virtual void form_energy();
+    void form_energy() override;
     // Form the energy contributions and gradients
-    virtual void form_Pab();
+    void form_Pab() override;
     // Form the energy contributions and gradients
-    virtual void form_Pij();
+    void form_Pij() override;
     // Form the small gamma
-    virtual void form_gamma();
+    void form_gamma() override;
     // Transpose the G
-    virtual void form_G_transpose();
+    void form_G_transpose() override;
     // Form the (A|B)^x contribution to the gradient
-    virtual void form_AB_x_terms();
+    void form_AB_x_terms() override;
     // Form the (A|mn)^x contribution to the gradient
-    virtual void form_Amn_x_terms();
+    void form_Amn_x_terms() override;
     // Form the Lma and Lmi matrices
-    virtual void form_L();
+    void form_L() override;
     // Form the unrelaxed OPDM
-    virtual void form_P();
+    void form_P() override;
     // Form the unrelaxed energy-weighted OPDM
-    virtual void form_W();
+    void form_W() override;
     // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P
-    virtual void form_Z();
+    void form_Z() override;
     // Manage the formation of W and P contributions to the gradient
-    virtual void form_gradient();
+    void form_gradient() override;
 
-public:
+   public:
     UDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    virtual ~UDFMP2();
+    ~UDFMP2() override;
 };
 
 class RODFMP2 : public UDFMP2 {
-
-protected:
-
+   protected:
     void common_init();
 
     // Print additional header
-    virtual void print_header();
+    void print_header() override;
 
-public:
+   public:
     RODFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    virtual ~RODFMP2();
+    ~RODFMP2() override;
 };
 
-}}
+}  // namespace dfmp2
+}  // namespace psi
 
 #endif

@@ -161,6 +161,6 @@ class PSI_API MOSpace {
     bool placeholder_;
 };
 
-}  // End namespaces
+}  // namespace psi
 
 #endif  // Header guard

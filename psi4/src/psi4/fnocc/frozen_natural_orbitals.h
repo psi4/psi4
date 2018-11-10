@@ -31,32 +31,32 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
 
-namespace psi{namespace fnocc{
+namespace psi {
+namespace fnocc {
 
 // base class
 class FrozenNO : public Wavefunction {
-  public:
-    FrozenNO(std::shared_ptr<Wavefunction>wfn,Options&options);
-    ~FrozenNO();
+   public:
+    FrozenNO(std::shared_ptr<Wavefunction> wfn, Options& options);
+    ~FrozenNO() override;
 
-    double compute_energy();
+    double compute_energy() override;
     void ComputeNaturalOrbitals();
 
-  protected:
-
+   protected:
     // mp2 energy in full basis
     double emp2;
-    long int nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact,nvirt_no;
+    long int nso, nmo, ndocc, nvirt, nfzc, nfzv, ndoccact, nvirt_no;
 
     void common_init();
 };
 
 class PSI_API DFFrozenNO : public FrozenNO {
-  public:
-    DFFrozenNO(std::shared_ptr<Wavefunction>wfn,Options&options);
-    ~DFFrozenNO();
+   public:
+    DFFrozenNO(std::shared_ptr<Wavefunction> wfn, Options& options);
+    ~DFFrozenNO() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
     /// computes MP2 natural orbitals
     void ComputeNaturalOrbitals();
@@ -67,15 +67,13 @@ class PSI_API DFFrozenNO : public FrozenNO {
     /// generates 4-index eri's from 3-index integrals
     void FourIndexIntegrals();
 
-  protected:
-
-    void ModifyCa(double*Dab);
-    void ModifyCa_occ(double*Dij);
-    void BuildFock(long int nQ,double*Qso,double*F);
-    void TransformQ(long int nQ,double*Qso);
-
+   protected:
+    void ModifyCa(double* Dab);
+    void ModifyCa_occ(double* Dij);
+    void BuildFock(long int nQ, double* Qso, double* F);
+    void TransformQ(long int nQ, double* Qso);
 };
-
-}}
+}
+}
 
 #endif

@@ -32,11 +32,11 @@
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 #include <regex>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <limits.h>
+#include <climits>
 
 #include "libpsi4util.h"
 
@@ -85,8 +85,7 @@ bool opening_square_bracket(char c);
 
 bool closing_square_bracket(char c);
 
-std::vector <std::string> split_indices(const std::string &str)
-{
+std::vector<std::string> split_indices(const std::string &str) {
     // Split a string
     typedef std::string::const_iterator iter;
     strvec splitted_string;
@@ -97,41 +96,26 @@ std::vector <std::string> split_indices(const std::string &str)
         // Find the end of next word
         iter j = std::find_if(i, str.end(), closing_square_bracket);
         // Copy the characters in [i,j]
-        if (i != str.end())
-            splitted_string.push_back(std::string(i, j + 1));
+        if (i != str.end()) splitted_string.push_back(std::string(i, j + 1));
         i = j;
     }
     return (splitted_string);
 }
 
-bool opening_square_bracket(char c)
-{
-    return (c == '[');
-}
+bool opening_square_bracket(char c) { return (c == '['); }
 
-bool closing_square_bracket(char c)
-{
-    return (c == ']');
-}
+bool closing_square_bracket(char c) { return (c == ']'); }
 
-bool space(char c)
-{
-    return isspace(c);
-}
+bool space(char c) { return isspace(c); }
 
-bool not_space(char c)
-{
-    return !isspace(c);
-}
+bool not_space(char c) { return !isspace(c); }
 
-
-std::string find_and_replace(std::string &source, const std::string &target, const std::string &replace)
-{
+std::string find_and_replace(std::string &source, const std::string &target, const std::string &replace) {
     std::string str = source;
-    std::string::size_type pos = 0;   // where we are now
-    std::string::size_type found;     // where the found data is
+    std::string::size_type pos = 0;  // where we are now
+    std::string::size_type found;    // where the found data is
 
-    if (target.size() > 0)   // searching for nothing will cause a loop
+    if (target.size() > 0)  // searching for nothing will cause a loop
     {
         while ((found = str.find(target, pos)) != std::string::npos) {
             str.replace(found, target.size(), replace);
@@ -141,11 +125,11 @@ std::string find_and_replace(std::string &source, const std::string &target, con
     return str;
 }
 
-void trim_spaces(std::string &str)
-{
+void trim_spaces(std::string &str) {
     // Trim Both leading and trailing spaces
-    size_t startpos = str.find_first_not_of(" \t"); // Find the first character position after excluding leading blank spaces
-    size_t endpos = str.find_last_not_of(" \t"); // Find the first character position from reverse af
+    size_t startpos =
+        str.find_first_not_of(" \t");  // Find the first character position after excluding leading blank spaces
+    size_t endpos = str.find_last_not_of(" \t");  // Find the first character position from reverse af
 
     // if all spaces or empty return an empty string
     if ((std::string::npos == startpos) || (std::string::npos == endpos)) {
@@ -156,7 +140,7 @@ void trim_spaces(std::string &str)
 
 size_t edit_distance(const std::string &s1, const std::string &s2) {
     const size_t len1 = s1.size(), len2 = s2.size();
-    std::vector<std::vector<size_t> > d(len1 + 1, std::vector<size_t>(len2 + 1));
+    std::vector<std::vector<size_t>> d(len1 + 1, std::vector<size_t>(len2 + 1));
 
     d[0][0] = 0;
     for (size_t i = 1; i <= len1; ++i) d[i][0] = i;
@@ -175,68 +159,50 @@ size_t edit_distance(const std::string &s1, const std::string &s2) {
  String conversion
  *****************/
 
-void to_lower(std::string &str)
-{
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-}
+void to_lower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
 
-std::string to_lower_copy(const std::string& str)
-{
+std::string to_lower_copy(const std::string &str) {
     std::string cp = str;
     to_lower(cp);
     return cp;
 }
 
-void to_upper(std::string &str)
-{
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-}
+void to_upper(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
 
-std::string to_upper_copy(const std::string& str)
-{
+std::string to_upper_copy(const std::string &str) {
     std::string cp = str;
     to_upper(cp);
     return cp;
 }
 
-double to_double(const std::string str)
-{
-    return std::atof(str.c_str());
-}
+double to_double(const std::string str) { return std::atof(str.c_str()); }
 
-std::string to_string(const int val)
-{
+std::string to_string(const int val) {
     std::stringstream strm;
     strm << val;
     return strm.str();
 }
 
-std::string to_string(const double val)
-{
+std::string to_string(const double val) {
     std::stringstream strm;
     strm << std::setprecision(25) << std::setw(35) << val;
     return strm.str();
 }
 
-int to_integer(const std::string inString)
-{
+int to_integer(const std::string inString) {
     int i = 0;
     char *end;
     i = static_cast<int>(std::strtod(inString.c_str(), &end));
     return i;
 }
 
-std::string add_reference(std::string &str, int reference) {
-    return (str + "{" + to_string(reference) + "}");
-}
+std::string add_reference(std::string &str, int reference) { return (str + "{" + to_string(reference) + "}"); }
 
 void append_reference(std::string &str, int reference) { str += "{" + to_string(reference) + "}"; }
 
-Timer::Timer()
-    : start(std::chrono::high_resolution_clock::now()) {}
+Timer::Timer() : start(std::chrono::high_resolution_clock::now()) {}
 
-double Timer::get()
-{
+double Timer::get() {
     auto duration = std::chrono::high_resolution_clock::now() - start;
     // Convert clock ticks to seconds
     return std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();

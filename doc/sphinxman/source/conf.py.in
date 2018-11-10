@@ -44,9 +44,9 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@/psi4/driver'))  # for qcdb for db
-sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@'))
-#sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/psi4'))
+sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@/psi4/driver'))  # for qcdb for db
+sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@'))
+#sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_LIBDIR@/psi4'))
 #sys.path.insert(0, os.path.abspath('@psi4_SOURCE_DIR@/psi4/driver/'))
 sys.path.insert(0, os.path.abspath('@psi4_SOURCE_DIR@/psi4/share/psi4/databases/'))
 sys.path.insert(0, os.path.abspath('@psi4_SOURCE_DIR@/plugins/'))
@@ -397,10 +397,10 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('http://docs.python.org/3.6', None),
-                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-                       'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
-                       'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/3.7', None),
+                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+                       'matplotlib': ('https://matplotlib.org/', None),
                        #'psi4.core': ('http://psicode.org/psi4manual/master/', None),
                       }
 

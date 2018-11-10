@@ -34,17 +34,17 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <memory>
+PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-void PSIO::change_file_namespace(size_t unit, const std::string & ns1, const std::string & ns2) {
+void PSIO::change_file_namespace(size_t unit, const std::string& ns1, const std::string& ns2) {
     char *old_name, *new_name, *old_fullpath, *new_fullpath;
     _default_psio_lib_->get_filename(unit, &old_name, true);
     _default_psio_lib_->get_filename(unit, &new_name, true);
@@ -52,8 +52,8 @@ void PSIO::change_file_namespace(size_t unit, const std::string & ns1, const std
     std::string tpath = PSIOManager::shared_object()->get_file_path(unit);
     const char* path = tpath.c_str();
 
-    old_fullpath = (char*) malloc( (strlen(path)+strlen(old_name)+80)*sizeof(char));
-    new_fullpath = (char*) malloc( (strlen(path)+strlen(new_name)+80)*sizeof(char));
+    old_fullpath = (char*)malloc((strlen(path) + strlen(old_name) + 80) * sizeof(char));
+    new_fullpath = (char*)malloc((strlen(path) + strlen(new_name) + 80) * sizeof(char));
 
     if (ns1 == "") {
         sprintf(old_fullpath, "%s%s.%zu", path, old_name, unit);
@@ -66,14 +66,14 @@ void PSIO::change_file_namespace(size_t unit, const std::string & ns1, const std
         sprintf(new_fullpath, "%s%s.%s.%zu", path, new_name, ns2.c_str(), unit);
     }
 
-    //printf("%s\n",old_fullpath);
-    //printf("%s\n",new_fullpath);
+    // printf("%s\n",old_fullpath);
+    // printf("%s\n",new_fullpath);
 
     PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath));
-        ::rename(old_fullpath,new_fullpath);
+    ::rename(old_fullpath, new_fullpath);
 
     free(old_fullpath);
     free(new_fullpath);
 }
 
-}
+}  // namespace psi

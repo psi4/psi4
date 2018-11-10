@@ -130,6 +130,7 @@ class Dftd3Error(QcdbException):
         self.msg = msg
         print('\nDftd3Error: %s\n\n' % (msg))
 
+
 class TestComparisonError(QcdbException):
     """Error called when a test case fails due to a failed
     compare_values() call. Prints error message *msg* to standard

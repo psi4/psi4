@@ -2964,5 +2964,5 @@ double DCFTSolver::compute_triples_bbb() {
 
     return ET_bbb;
 }
-}
-}  // End namespaces
+}  // namespace dcft
+}  // namespace psi

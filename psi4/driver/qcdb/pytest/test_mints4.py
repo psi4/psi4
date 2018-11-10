@@ -1,5 +1,7 @@
 from utils import *
 
+import qcelemental as qcel
+
 import qcdb
 
 
@@ -9,7 +11,7 @@ def test_mints4():
     #! to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries
     #! because the former define absolute positions, while the latter are relative.
 
-    refENuc = 268.617178206572646
+    refENuc = 268.6171792624
 
     refGEOM = \
           [[   0.710500000000,    -0.794637665924,    -1.230622098778],
@@ -63,7 +65,7 @@ def test_mints4():
 
     assert compare_values(refENuc, dimer.nuclear_repulsion_energy(), 9, "Bz-H3O+: nuclear repulsion energy")
 
-    geom_now = qcdb.mscale(dimer.geometry(), qcdb.psi_bohr2angstroms)
+    geom_now = qcdb.mscale(dimer.geometry(), qcel.constants.bohr2angstroms)
     assert compare_matrices(refGEOM, geom_now, 6, "Bz-H3O+: geometry and orientation")
 
 
@@ -75,8 +77,7 @@ def test_scf4():
     import math
 
     refENuc = [
-        9.785885838936569, 9.780670106434425, 8.807297255042920, 8.802603095790996, 8.006633868220828,
-        8.002366450719077
+        9.78588587740,  9.780670144878629, 8.807297289661147, 8.802603130390768, 8.006633899691952,  8.002366482173423
     ]
 
     # Define the points on the potential energy surface using standard Python list functions

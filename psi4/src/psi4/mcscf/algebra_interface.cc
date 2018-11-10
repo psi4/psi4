@@ -29,9 +29,9 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "algebra_interface.h"
 
-namespace psi{
+namespace psi {
 
- namespace mcscf{
+namespace mcscf {
 
 /*
 ** C_DGEMM_12()
@@ -42,17 +42,15 @@ namespace psi{
 ** ncb = number of columns in B
 ** ncc = number of columns in C
 */
-void C_DGEMM_12(int m, int n, int k, double alpha,
-           double *A, int nra, double *B, int ncb, double beta, double *C,
-           int ncc)
-{
-  //  the only strange thing we need to do is reverse everything
-  //  since the stride runs differently in C vs. Fortran
+void C_DGEMM_12(int m, int n, int k, double alpha, double *A, int nra, double *B, int ncb, double beta, double *C,
+                int ncc) {
+    //  the only strange thing we need to do is reverse everything
+    //  since the stride runs differently in C vs. Fortran
 
-  /* also, do nothing if a dimension is 0 */
-  if (m == 0 || n == 0 || k == 0) return;
+    /* also, do nothing if a dimension is 0 */
+    if (m == 0 || n == 0 || k == 0) return;
 
-  F_DGEMM("t","t",&n,&m,&k,&alpha,B,&ncb,A,&nra,&beta,C,&ncc);
+    F_DGEMM("t", "t", &n, &m, &k, &alpha, B, &ncb, A, &nra, &beta, C, &ncc);
 }
 
 /*
@@ -64,18 +62,16 @@ void C_DGEMM_12(int m, int n, int k, double alpha,
 ** ncb = number of columns in B
 ** ncc = number of columns in C
 */
-void C_DGEMM_22(int m, int n, int k, double alpha,
-           double *A, int nca, double *B, int ncb, double beta, double *C,
-           int ncc)
-{
-  //  the only strange thing we need to do is reverse everything
-  //  since the stride runs differently in C vs. Fortran
+void C_DGEMM_22(int m, int n, int k, double alpha, double *A, int nca, double *B, int ncb, double beta, double *C,
+                int ncc) {
+    //  the only strange thing we need to do is reverse everything
+    //  since the stride runs differently in C vs. Fortran
 
-  /* also, do nothing if a dimension is 0 */
-  if (m == 0 || n == 0 || k == 0) return;
+    /* also, do nothing if a dimension is 0 */
+    if (m == 0 || n == 0 || k == 0) return;
 
-  F_DGEMM("t","n",&n,&m,&k,&alpha,B,&ncb,A,&nca,&beta,C,&ncc);
+    F_DGEMM("t", "n", &n, &m, &k, &alpha, B, &ncb, A, &nca, &beta, C, &ncc);
 }
 
-
-}} /* End Namespaces */
+}  // namespace mcscf
+}  // namespace psi

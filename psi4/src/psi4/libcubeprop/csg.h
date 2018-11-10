@@ -181,6 +181,10 @@ class CubicScalarGrid {
     void compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
                           const std::vector<std::string>& labels, const std::string& name,
                           const std::string& type = "CUBE");
+    /// Compute a set of orbital-type properties and drop files corresponding to name, index, symmetry label, and type
+    void compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
+                          const std::string& label, bool square = false, const std::string& type = "CUBE");
+    
     /// Compute a LOL-type property and drop a file corresponding to name and type
     void compute_LOL(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
     /// Compute an ELF-type property and drop a file corresponding to name and type (TODO: this seems very unstable)
@@ -189,8 +193,11 @@ class CubicScalarGrid {
     /// Compute the isocountour range that capture a given fraction of a property. Exponent is used
     /// to properly compute the density. E.g. for orbitals exponent = 2, for densities exponent = 1
     std::pair<double, double> compute_isocontour_range(double* v2, double exponent);
+    
+    /// A helper function to construct ECP comment in the cubefile header.
+    std::string ecp_header();
 };
 
-}  // End namespace
+}  // namespace psi
 
 #endif

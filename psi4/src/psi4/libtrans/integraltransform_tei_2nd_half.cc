@@ -36,16 +36,13 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psifiles.h"
+#include "psi4/libdpd/dpd.h"
 
-#include <math.h>
-#include <ctype.h>
-#include <stdio.h>
-
-#define EXTERN
-#include "psi4/libdpd/dpd.gbl"
+#include <cmath>
+#include <cctype>
+#include <cstdio>
 
 using namespace psi;
-;
 
 void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
                                                   const std::shared_ptr<MOSpace> s3,
@@ -56,7 +53,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
     bool ket_sym = s3 == s4;
     bool bra_ket_sym = (s1 == s3) && bra_sym && ket_sym;
 
-    char *label = new char[100];
+    auto *label = new char[100];
 
     // Grab the transformation coefficients
     SharedMatrix c3a = aMOCoefficients_[s3->label()];
@@ -211,7 +208,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
     if (useIWL_) {
         iwl->flush(1);
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         // This closes the file too
         delete iwl;
     }
@@ -325,7 +322,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
         if (useIWL_) {
             iwl->flush(1);
-            iwl->set_keep_flag(1);
+            iwl->set_keep_flag(true);
             // This closes the file too
             delete iwl;
         }
@@ -446,7 +443,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
         if (useIWL_) {
             iwl->flush(1);
-            iwl->set_keep_flag(1);
+            iwl->set_keep_flag(true);
             // This closes the file too
             delete iwl;
         }

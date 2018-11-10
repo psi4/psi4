@@ -45,7 +45,7 @@ void OCCWave::trans_ints_ump2()
 /********************************************************************************************/
     ints->update_orbitals();
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
-    ints->set_keep_dpd_so_ints(1);
+    ints->set_keep_dpd_so_ints(true);
 
     // Trans (OV|OV)
     timer_on("Trans (OV|OV)");
@@ -192,10 +192,10 @@ void OCCWave::denominators_ump2()
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
 
-    double *aOccEvals = new double [nacooA];
-    double *bOccEvals = new double [nacooB];
-    double *aVirEvals = new double [nacvoA];
-    double *bVirEvals = new double [nacvoB];
+    auto *aOccEvals = new double [nacooA];
+    auto *bOccEvals = new double [nacooB];
+    auto *aVirEvals = new double [nacvoA];
+    auto *bVirEvals = new double [nacvoB];
     memset(aOccEvals, 0, sizeof(double)*nacooA);
     memset(bOccEvals, 0, sizeof(double)*nacooB);
     memset(aVirEvals, 0, sizeof(double)*nacvoA);

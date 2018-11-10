@@ -68,28 +68,20 @@
 
 namespace psi {
 
-Prop::Prop(std::shared_ptr<Wavefunction> wfn) : wfn_(wfn)
-{
-    if (wfn_.get() == nullptr)
-        throw PSIEXCEPTION("Prop: Wavefunction is null");
+Prop::Prop(std::shared_ptr<Wavefunction> wfn) : wfn_(wfn) {
+    if (wfn_.get() == nullptr) throw PSIEXCEPTION("Prop: Wavefunction is null");
     set_wavefunction(wfn_);
 }
-Prop::~Prop()
-{
-}
-void Prop::common_init()
-{
-    set_wavefunction(wfn_);
-}
-void Prop::set_wavefunction(std::shared_ptr<Wavefunction> wfn)
-{
+Prop::~Prop() {}
+void Prop::common_init() { set_wavefunction(wfn_); }
+void Prop::set_wavefunction(std::shared_ptr<Wavefunction> wfn) {
     wfn_ = wfn;
 
     basisset_ = wfn_->basisset();
     same_orbs_ = wfn_->same_a_b_orbs();
     same_dens_ = wfn_->same_a_b_dens();
 
-    integral_ = std::make_shared<IntegralFactory>(basisset_,basisset_,basisset_,basisset_);
+    integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
 
     auto pet = std::make_shared<PetiteList>(basisset_, integral_);
     AO2USO_ = pet->aotoso();
@@ -113,8 +105,7 @@ void Prop::set_wavefunction(std::shared_ptr<Wavefunction> wfn)
         Cb_so_ = wfn_->Cb();
     }
 }
-void Prop::set_restricted(bool restricted)
-{
+void Prop::set_restricted(bool restricted) {
     if (restricted == same_orbs_) return;
 
     same_orbs_ = restricted;
@@ -137,47 +128,40 @@ void Prop::set_restricted(bool restricted)
         Cb_so_ = wfn_->Cb();
     }
 }
-void Prop::set_epsilon_a(SharedVector epsilon_a)
-{
+void Prop::set_epsilon_a(SharedVector epsilon_a) {
     epsilon_a_ = epsilon_a;
     if (same_orbs_) {
         epsilon_b_ = epsilon_a_;
     }
 }
-void Prop::set_epsilon_b(SharedVector epsilon_b)
-{
-    if (same_orbs_)
-        throw PSIEXCEPTION("Wavefunction is restricted, setting epsilon_b makes no sense");
+void Prop::set_epsilon_b(SharedVector epsilon_b) {
+    if (same_orbs_) throw PSIEXCEPTION("Wavefunction is restricted, setting epsilon_b makes no sense");
     epsilon_b_ = epsilon_b;
 }
-void Prop::set_Ca(SharedMatrix C)
-{
+void Prop::set_Ca(SharedMatrix C) {
     Ca_so_ = C;
     if (same_orbs_) {
         Cb_so_ = Ca_so_;
     }
 }
-void Prop::set_Cb(SharedMatrix C)
-{
-    if (same_orbs_)
-        throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
+void Prop::set_Cb(SharedMatrix C) {
+    if (same_orbs_) throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
 
     Cb_so_ = C;
 }
-void Prop::set_Da_ao(SharedMatrix D, int symm)
-{
-    Da_so_ = std::make_shared<Matrix>("Da_so", Ca_so_->rowspi(),Ca_so_->rowspi(),symm);
+void Prop::set_Da_ao(SharedMatrix D, int symm) {
+    Da_so_ = std::make_shared<Matrix>("Da_so", Ca_so_->rowspi(), Ca_so_->rowspi(), symm);
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     double* temp_ptr = temp.data();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
-        int nsor = AO2USO_->colspi()[h^symm];
+        int nsor = AO2USO_->colspi()[h ^ symm];
 
         if (!nsol || !nsor) continue;
 
         double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
+        double** Urp = AO2USO_->pointer(h ^ symm);
         double** DAOp = D->pointer();
         double** DSOp = Da_so_->pointer(h);
         C_DGEMM('N', 'N', nao, nsor, nao, 1.0, DAOp[0], nao, Urp[0], nsor, 0.0, temp_ptr, nsor);
@@ -188,46 +172,40 @@ void Prop::set_Da_ao(SharedMatrix D, int symm)
         Db_so_ = Da_so_;
     }
 }
-void Prop::set_Db_ao(SharedMatrix D, int symm)
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
+void Prop::set_Db_ao(SharedMatrix D, int symm) {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
-    Db_so_ = std::make_shared<Matrix>("Db_so", Cb_so_->rowspi(),Cb_so_->rowspi(),symm);
+    Db_so_ = std::make_shared<Matrix>("Db_so", Cb_so_->rowspi(), Cb_so_->rowspi(), symm);
 
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     double* temp_ptr = temp.data();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
-        int nsor = AO2USO_->colspi()[h^symm];
+        int nsor = AO2USO_->colspi()[h ^ symm];
 
         if (!nsol || !nsor) continue;
 
         double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
+        double** Urp = AO2USO_->pointer(h ^ symm);
         double** DAOp = D->pointer();
         double** DSOp = Db_so_->pointer(h);
         C_DGEMM('N', 'N', nao, nsor, nao, 1.0, DAOp[0], nao, Urp[0], nsor, 0.0, temp_ptr, nsor);
         C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp_ptr, nsor, 0.0, DSOp[0], nsor);
     }
 }
-void Prop::set_Da_so(SharedMatrix D)
-{
+void Prop::set_Da_so(SharedMatrix D) {
     Da_so_ = D;
     if (same_dens_) {
         Db_so_ = Da_so_;
     }
 }
-void Prop::set_Db_so(SharedMatrix D)
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
+void Prop::set_Db_so(SharedMatrix D) {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = D;
 }
-void Prop::set_Da_mo(SharedMatrix D)
-{
+void Prop::set_Da_mo(SharedMatrix D) {
     Da_so_ = std::make_shared<Matrix>("Da_so", Ca_so_->rowspi(), Ca_so_->rowspi(), D->symmetry());
 
     int symm = D->symmetry();
@@ -237,14 +215,14 @@ void Prop::set_Da_mo(SharedMatrix D)
     double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
-        int nmor = Ca_so_->colspi()[h^symm];
+        int nmor = Ca_so_->colspi()[h ^ symm];
         int nsol = Ca_so_->rowspi()[h];
-        int nsor = Ca_so_->rowspi()[h^symm];
+        int nsor = Ca_so_->rowspi()[h ^ symm];
         if (!nmol || !nmor || !nsol || !nsor) continue;
         double** Clp = Ca_so_->pointer(h);
-        double** Crp = Ca_so_->pointer(h^symm);
-        double** Dmop = D->pointer(h^symm);
-        double** Dsop = Da_so_->pointer(h^symm);
+        double** Crp = Ca_so_->pointer(h ^ symm);
+        double** Dmop = D->pointer(h ^ symm);
+        double** Dsop = Da_so_->pointer(h ^ symm);
         C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp_ptr, nsor);
         C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
@@ -253,10 +231,8 @@ void Prop::set_Da_mo(SharedMatrix D)
         Db_so_ = Da_so_;
     }
 }
-void Prop::set_Db_mo(SharedMatrix D)
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
+void Prop::set_Db_mo(SharedMatrix D) {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = std::make_shared<Matrix>("Db_so", Cb_so_->rowspi(), Cb_so_->rowspi(), D->symmetry());
 
@@ -267,14 +243,14 @@ void Prop::set_Db_mo(SharedMatrix D)
     double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
-        int nmor = Cb_so_->colspi()[h^symm];
+        int nmor = Cb_so_->colspi()[h ^ symm];
         int nsol = Cb_so_->rowspi()[h];
-        int nsor = Cb_so_->rowspi()[h^symm];
+        int nsor = Cb_so_->rowspi()[h ^ symm];
         if (!nmol || !nmor || !nsol || !nsor) continue;
         double** Clp = Cb_so_->pointer(h);
-        double** Crp = Cb_so_->pointer(h^symm);
-        double** Dmop = D->pointer(h^symm);
-        double** Dsop = Db_so_->pointer(h^symm);
+        double** Crp = Cb_so_->pointer(h ^ symm);
+        double** Dmop = D->pointer(h ^ symm);
+        double** Dsop = Db_so_->pointer(h ^ symm);
         C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp_ptr, nsor);
         C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
@@ -292,16 +268,9 @@ void TaskListComputer::add(std::vector<std::string> props) {
     }
 }
 void TaskListComputer::clear() { tasks_.clear(); }
-SharedVector Prop::epsilon_a()
-{
-    return SharedVector(epsilon_a_->clone());
-}
-SharedVector Prop::epsilon_b()
-{
-    return SharedVector(epsilon_b_->clone());
-}
-SharedMatrix Prop::Da_ao()
-{
+SharedVector Prop::epsilon_a() { return SharedVector(epsilon_a_->clone()); }
+SharedVector Prop::epsilon_b() { return SharedVector(epsilon_b_->clone()); }
+SharedMatrix Prop::Da_ao() {
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     double* temp_ptr = temp.data();
     auto D = std::make_shared<Matrix>("Da (AO basis)", basisset_->nbf(), basisset_->nbf());
@@ -309,21 +278,19 @@ SharedMatrix Prop::Da_ao()
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
-        int nsor = AO2USO_->colspi()[h^symm];
+        int nsor = AO2USO_->colspi()[h ^ symm];
         if (!nsol || !nsor) continue;
         double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
-        double** DSOp = Da_so_->pointer(h^symm);
+        double** Urp = AO2USO_->pointer(h ^ symm);
+        double** DSOp = Da_so_->pointer(h ^ symm);
         double** DAOp = D->pointer();
         C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp_ptr, nao);
         C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp_ptr, nao, 1.0, DAOp[0], nao);
     }
     return D;
 }
-SharedMatrix Prop::Db_ao()
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
+SharedMatrix Prop::Db_ao() {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     double* temp_ptr;
@@ -332,43 +299,24 @@ SharedMatrix Prop::Db_ao()
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
-        int nsor = AO2USO_->colspi()[h^symm];
+        int nsor = AO2USO_->colspi()[h ^ symm];
         if (!nsol || !nsor) continue;
         double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
-        double** DSOp = Db_so_->pointer(h^symm);
+        double** Urp = AO2USO_->pointer(h ^ symm);
+        double** DSOp = Db_so_->pointer(h ^ symm);
         double** DAOp = D->pointer();
         C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp_ptr, nao);
         C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp_ptr, nao, 1.0, DAOp[0], nao);
     }
     return D;
 }
-SharedMatrix Prop::Ca_so()
-{
-    return SharedMatrix(Ca_so_->clone());
-}
-SharedMatrix Prop::Cb_so()
-{
-    return SharedMatrix(Cb_so_->clone());
-}
-SharedMatrix Prop::Ca_ao()
-{
-    return wfn_->Ca_subset("AO");
-}
-SharedMatrix Prop::Cb_ao()
-{
-    return wfn_->Cb_subset("AO");
-}
-SharedMatrix Prop::Da_so()
-{
-    return SharedMatrix(Da_so_->clone());
-}
-SharedMatrix Prop::Db_so()
-{
-    return SharedMatrix(Db_so_->clone());
-}
-SharedMatrix Prop::Da_mo()
-{
+SharedMatrix Prop::Ca_so() { return SharedMatrix(Ca_so_->clone()); }
+SharedMatrix Prop::Cb_so() { return SharedMatrix(Cb_so_->clone()); }
+SharedMatrix Prop::Ca_ao() { return wfn_->Ca_subset("AO"); }
+SharedMatrix Prop::Cb_ao() { return wfn_->Cb_subset("AO"); }
+SharedMatrix Prop::Da_so() { return SharedMatrix(Da_so_->clone()); }
+SharedMatrix Prop::Db_so() { return SharedMatrix(Db_so_->clone()); }
+SharedMatrix Prop::Da_mo() {
     auto D = std::make_shared<Matrix>("Da_mo", Ca_so_->colspi(), Ca_so_->colspi(), Da_so_->symmetry());
 
     int symm = D->symmetry();
@@ -382,14 +330,14 @@ SharedMatrix Prop::Da_mo()
     double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
-        int nmor = Ca_so_->colspi()[h^symm];
+        int nmor = Ca_so_->colspi()[h ^ symm];
         int nsol = Ca_so_->rowspi()[h];
-        int nsor = Ca_so_->rowspi()[h^symm];
+        int nsor = Ca_so_->rowspi()[h ^ symm];
         if (!nmol || !nmor || !nsol || !nsor) continue;
         double** Slp = S->pointer(h);
-        double** Srp = S->pointer(h^symm);
+        double** Srp = S->pointer(h ^ symm);
         double** Clp = Ca_so_->pointer(h);
-        double** Crp = Ca_so_->pointer(h^symm);
+        double** Crp = Ca_so_->pointer(h ^ symm);
         double** Dmop = D->pointer(h);
         double** Dsop = Da_so_->pointer(h);
 
@@ -400,10 +348,8 @@ SharedMatrix Prop::Da_mo()
     }
     return D;
 }
-SharedMatrix Prop::Db_mo()
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
+SharedMatrix Prop::Db_mo() {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     auto D = std::make_shared<Matrix>("Db_mo", Cb_so_->colspi(), Cb_so_->colspi(), Db_so_->symmetry());
 
@@ -419,14 +365,14 @@ SharedMatrix Prop::Db_mo()
     double* temp_ptr = temp.data();
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
-        int nmor = Cb_so_->colspi()[h^symm];
+        int nmor = Cb_so_->colspi()[h ^ symm];
         int nsol = Cb_so_->rowspi()[h];
-        int nsor = Cb_so_->rowspi()[h^symm];
+        int nsor = Cb_so_->rowspi()[h ^ symm];
         if (!nmol || !nmor || !nsol || !nsor) continue;
         double** Slp = S->pointer(h);
-        double** Srp = S->pointer(h^symm);
+        double** Srp = S->pointer(h ^ symm);
         double** Clp = Cb_so_->pointer(h);
-        double** Crp = Cb_so_->pointer(h^symm);
+        double** Crp = Cb_so_->pointer(h ^ symm);
         double** Dmop = D->pointer(h);
         double** Dsop = Db_so_->pointer(h);
 
@@ -437,8 +383,7 @@ SharedMatrix Prop::Db_mo()
     }
     return D;
 }
-SharedMatrix Prop::Dt_so(bool total)
-{
+SharedMatrix Prop::Dt_so(bool total) {
     SharedMatrix Da = Da_so();
     SharedMatrix D(Da->clone());
     if (same_dens_) {
@@ -447,13 +392,14 @@ SharedMatrix Prop::Dt_so(bool total)
     } else {
         D->set_name((total ? "Dt_so" : "Ds_so"));
         SharedMatrix Db = Db_so();
-        if (total) D->add(Db);
-        else D->subtract(Db);
+        if (total)
+            D->add(Db);
+        else
+            D->subtract(Db);
     }
     return D;
 }
-SharedMatrix Prop::Dt_mo(bool total)
-{
+SharedMatrix Prop::Dt_mo(bool total) {
     SharedMatrix Da = Da_mo();
     if (same_dens_) {
         Da->set_name((total ? "Dt_mo" : "Ds_mo"));
@@ -461,44 +407,41 @@ SharedMatrix Prop::Dt_mo(bool total)
     } else {
         Da->set_name((total ? "Dt_mo" : "Ds_mo"));
         SharedMatrix Db = Db_mo();
-        if (total) Da->add(Db);
-        else Da->subtract(Db);
+        if (total)
+            Da->add(Db);
+        else
+            Da->subtract(Db);
     }
     return Da;
 }
-std::pair<SharedMatrix, SharedVector> Prop::Na_mo()
-{
+std::pair<SharedMatrix, SharedVector> Prop::Na_mo() {
     SharedMatrix D = Da_mo();
     auto C = std::make_shared<Matrix>("Na_mo", D->nirrep(), D->rowspi(), D->rowspi());
     auto O = std::make_shared<Vector>("Alpha Occupation", D->rowspi());
 
-    D->diagonalize(C,O,descending);
+    D->diagonalize(C, O, descending);
 
-    return make_pair(C,O);
+    return make_pair(C, O);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Nb_mo()
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
+std::pair<SharedMatrix, SharedVector> Prop::Nb_mo() {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
     SharedMatrix D = Db_mo();
     auto C = std::make_shared<Matrix>("Nb_mo", D->nirrep(), D->rowspi(), D->rowspi());
     auto O = std::make_shared<Vector>("Beta Occupation", D->rowspi());
 
-    D->diagonalize(C,O,descending);
+    D->diagonalize(C, O, descending);
 
-    return make_pair(C,O);
+    return make_pair(C, O);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Na_so()
-{
-    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Na_mo();
+std::pair<SharedMatrix, SharedVector> Prop::Na_so() {
+    std::pair<SharedMatrix, std::shared_ptr<Vector>> pair = Na_mo();
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
     auto N2 = std::make_shared<Matrix>("Na_so", Ca_so_->nirrep(), Ca_so_->rowspi(), Ca_so_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
-
         int nmo = Ca_so_->colspi()[h];
         int nso = Ca_so_->rowspi()[h];
 
@@ -508,23 +451,20 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_so()
         double** Cp = Ca_so_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
+        C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, Np[0], nmo, 0.0, N2p[0], nmo);
     }
-    return make_pair(N2,O);
+    return make_pair(N2, O);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Nb_so()
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
+std::pair<SharedMatrix, SharedVector> Prop::Nb_so() {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
-    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Nb_mo();
+    std::pair<SharedMatrix, std::shared_ptr<Vector>> pair = Nb_mo();
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
     auto N2 = std::make_shared<Matrix>("Nb_so", Cb_so_->nirrep(), Cb_so_->rowspi(), Cb_so_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
-
         int nmo = Cb_so_->colspi()[h];
         int nso = Cb_so_->rowspi()[h];
 
@@ -534,13 +474,12 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_so()
         double** Cp = Cb_so_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
+        C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, Np[0], nmo, 0.0, N2p[0], nmo);
     }
-    return make_pair(N2,O);
+    return make_pair(N2, O);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Na_ao()
-{
-    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Na_so();
+std::pair<SharedMatrix, SharedVector> Prop::Na_ao() {
+    std::pair<SharedMatrix, std::shared_ptr<Vector>> pair = Na_so();
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
@@ -549,9 +488,8 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_ao()
     auto O2 = std::make_shared<Vector>("Alpha Occupation", Ca_so_->ncol());
 
     int offset = 0;
-    std::vector<std::pair<double,int> > index;
+    std::vector<std::pair<double, int>> index;
     for (int h = 0; h < Ca_so_->nirrep(); h++) {
-
         int ncol = Ca_so_->ncol();
         int nmo = Ca_so_->colspi()[h];
         int nso = AO2USO_->colspi()[h];
@@ -560,39 +498,37 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_ao()
         if (!nmo || !nso || !nao) continue;
 
         for (int i = 0; i < nmo; i++) {
-            index.push_back(std::make_pair(O->get(h,i),i+offset));
+            index.push_back(std::make_pair(O->get(h, i), i + offset));
         }
 
         double** Np = N->pointer(h);
         double** Up = AO2USO_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol);
+        C_DGEMM('N', 'N', nao, nmo, nso, 1.0, Up[0], nso, Np[0], nmo, 0.0, &N2p[0][offset], ncol);
 
         offset += nmo;
     }
 
-    std::sort(index.begin(), index.end(), std::greater<std::pair<double,int> >());
+    std::sort(index.begin(), index.end(), std::greater<std::pair<double, int>>());
 
     int nmo = N2->colspi()[0];
     int nao = N2->rowspi()[0];
 
     for (int i = 0; i < nmo; i++) {
         double occ = index[i].first;
-        int ind    = index[i].second;
-        O2->set(i,occ);
+        int ind = index[i].second;
+        O2->set(i, occ);
 
         C_DCOPY(nao, &(N2->pointer()[0][ind]), nmo, &(N3->pointer()[0][i]), nmo);
     }
 
-    return make_pair(N3,O2);
+    return make_pair(N3, O2);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Nb_ao()
-{
-    if (same_dens_)
-        throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
+std::pair<SharedMatrix, SharedVector> Prop::Nb_ao() {
+    if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
-    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Nb_so();
+    std::pair<SharedMatrix, std::shared_ptr<Vector>> pair = Nb_so();
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
@@ -601,9 +537,8 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_ao()
     auto O2 = std::make_shared<Vector>("Beta Occupation", Cb_so_->ncol());
 
     int offset = 0;
-    std::vector<std::pair<double,int> > index;
+    std::vector<std::pair<double, int>> index;
     for (int h = 0; h < Cb_so_->nirrep(); h++) {
-
         int ncol = Cb_so_->ncol();
         int nmo = Cb_so_->colspi()[h];
         int nso = AO2USO_->colspi()[h];
@@ -612,53 +547,50 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_ao()
         if (!nmo || !nso || !nao) continue;
 
         for (int i = 0; i < nmo; i++) {
-            index.push_back(std::make_pair(O->get(h,i),i+offset));
+            index.push_back(std::make_pair(O->get(h, i), i + offset));
         }
 
         double** Np = N->pointer(h);
         double** Up = AO2USO_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol);
+        C_DGEMM('N', 'N', nao, nmo, nso, 1.0, Up[0], nso, Np[0], nmo, 0.0, &N2p[0][offset], ncol);
 
         offset += nmo;
     }
 
-    std::sort(index.begin(), index.end(), std::greater<std::pair<double,int> >());
+    std::sort(index.begin(), index.end(), std::greater<std::pair<double, int>>());
 
     int nmo = N2->colspi()[0];
     int nao = N2->rowspi()[0];
 
     for (int i = 0; i < nmo; i++) {
         double occ = index[i].first;
-        int ind    = index[i].second;
-        O2->set(i,occ);
+        int ind = index[i].second;
+        O2->set(i, occ);
 
         C_DCOPY(nao, &(N2->pointer()[0][ind]), nmo, &(N3->pointer()[0][i]), nmo);
     }
 
-    return make_pair(N3,O2);
+    return make_pair(N3, O2);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Nt_mo()
-{
+std::pair<SharedMatrix, SharedVector> Prop::Nt_mo() {
     SharedMatrix D = Dt_mo();
     auto C = std::make_shared<Matrix>("Nt_mo", D->nirrep(), D->rowspi(), D->rowspi());
     auto O = std::make_shared<Vector>("Total Occupation", D->rowspi());
 
-    D->diagonalize(C,O,descending);
+    D->diagonalize(C, O, descending);
 
-    return make_pair(C,O);
+    return make_pair(C, O);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Nt_so()
-{
-    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Nt_mo();
+std::pair<SharedMatrix, SharedVector> Prop::Nt_so() {
+    std::pair<SharedMatrix, std::shared_ptr<Vector>> pair = Nt_mo();
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
     auto N2 = std::make_shared<Matrix>("Nt_so", Cb_so_->nirrep(), Cb_so_->rowspi(), Cb_so_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
-
         int nmo = Cb_so_->colspi()[h];
         int nso = Cb_so_->rowspi()[h];
 
@@ -668,13 +600,12 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_so()
         double** Cp = Cb_so_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
+        C_DGEMM('N', 'N', nso, nmo, nmo, 1.0, Cp[0], nmo, Np[0], nmo, 0.0, N2p[0], nmo);
     }
-    return make_pair(N2,O);
+    return make_pair(N2, O);
 }
-std::pair<SharedMatrix, SharedVector> Prop::Nt_ao()
-{
-    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Nt_so();
+std::pair<SharedMatrix, SharedVector> Prop::Nt_ao() {
+    std::pair<SharedMatrix, std::shared_ptr<Vector>> pair = Nt_so();
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
@@ -683,9 +614,8 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_ao()
     auto O2 = std::make_shared<Vector>("Total Occupation", Cb_so_->ncol());
 
     int offset = 0;
-    std::vector<std::pair<double,int> > index;
+    std::vector<std::pair<double, int>> index;
     for (int h = 0; h < Cb_so_->nirrep(); h++) {
-
         int ncol = Cb_so_->ncol();
         int nmo = Cb_so_->colspi()[h];
         int nso = AO2USO_->colspi()[h];
@@ -694,36 +624,35 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_ao()
         if (!nmo || !nso || !nao) continue;
 
         for (int i = 0; i < nmo; i++) {
-            index.push_back(std::make_pair(O->get(h,i),i+offset));
+            index.push_back(std::make_pair(O->get(h, i), i + offset));
         }
 
         double** Np = N->pointer(h);
         double** Up = AO2USO_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol);
+        C_DGEMM('N', 'N', nao, nmo, nso, 1.0, Up[0], nso, Np[0], nmo, 0.0, &N2p[0][offset], ncol);
 
         offset += nmo;
     }
 
-    std::sort(index.begin(), index.end(), std::greater<std::pair<double,int> >());
+    std::sort(index.begin(), index.end(), std::greater<std::pair<double, int>>());
 
     int nmo = N2->colspi()[0];
     int nao = N2->rowspi()[0];
 
     for (int i = 0; i < nmo; i++) {
         double occ = index[i].first;
-        int ind    = index[i].second;
-        O2->set(i,occ);
+        int ind = index[i].second;
+        O2->set(i, occ);
 
         C_DCOPY(nao, &(N2->pointer()[0][ind]), nmo, &(N3->pointer()[0][i]), nmo);
     }
 
-    return make_pair(N3,O2);
+    return make_pair(N3, O2);
 }
-SharedMatrix Prop::overlap_so()
-{
-    auto S = std::make_shared<Matrix>("S",Ca_so_->rowspi(),Ca_so_->rowspi());
+SharedMatrix Prop::overlap_so() {
+    auto S = std::make_shared<Matrix>("S", Ca_so_->rowspi(), Ca_so_->rowspi());
     std::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
     Sint->compute(S);
     return S;
@@ -738,7 +667,7 @@ Vector3 OEProp::compute_center(const double* property) const {
     double y = 0.0;
     double z = 0.0;
     double sum = 0.0;
-    for(int atom = 0; atom < natoms; ++atom){
+    for (int atom = 0; atom < natoms; ++atom) {
         Vector3 xyz = mol->xyz(atom);
         double prop = property[atom];
         x += xyz[0] * prop;
@@ -759,9 +688,8 @@ OEProp::OEProp(std::shared_ptr<Wavefunction> wfn)
 }
 OEProp::~OEProp() {}
 
-void OEProp::common_init()
-{
-    Options &options = Process::environment.options;
+void OEProp::common_init() {
+    Options& options = Process::environment.options;
     print_ = options.get_int("PRINT");
 
     // Determine number of NOONs to print; default is 3
@@ -816,34 +744,32 @@ Vector3 OEProp::get_origin_from_environment() const {
 
     std::shared_ptr<Molecule> mol = wfn_->molecule();
     int natoms = mol->natom();
-    if(options["PROPERTIES_ORIGIN"].has_changed()){
+    if (options["PROPERTIES_ORIGIN"].has_changed()) {
         int size = options["PROPERTIES_ORIGIN"].size();
 
-        if(size == 1){
+        if (size == 1) {
             std::vector<double> property(natoms);
             std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
-            if(str == "COM"){
-                for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->mass(atom);
-            }else if(str == "NUCLEAR_CHARGE"){
-                for(int atom = 0; atom < natoms; ++atom)
-                    property[atom] = mol->charge(atom);
-            }else{
+            if (str == "COM") {
+                for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->mass(atom);
+            } else if (str == "NUCLEAR_CHARGE") {
+                for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->charge(atom);
+            } else {
                 throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
             }
             origin = compute_center(property.data());
-        }else if(size == 3){
+        } else if (size == 3) {
             double x = options["PROPERTIES_ORIGIN"][0].to_double();
             double y = options["PROPERTIES_ORIGIN"][1].to_double();
             double z = options["PROPERTIES_ORIGIN"][2].to_double();
             bool convert = mol->units() == Molecule::Angstrom;
-            if(convert){
+            if (convert) {
                 x /= pc_bohr2angstroms;
                 y /= pc_bohr2angstroms;
                 z /= pc_bohr2angstroms;
             }
             origin = Vector3(x, y, z);
-        }else{
+        } else {
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
@@ -853,78 +779,56 @@ Vector3 OEProp::get_origin_from_environment() const {
     return origin;
 }
 
-void OEProp::print_header()
-{
-    outfile->Printf( "\n OEPROP: One-electron properties/analyses.\n");
-    outfile->Printf( "  by Rob Parrish and Justin Turney.\n");
-    outfile->Printf( "  built on LIBMINTS.\n\n");
+void OEProp::print_header() {
+    outfile->Printf("\n OEPROP: One-electron properties/analyses.\n");
+    outfile->Printf("  by Rob Parrish and Justin Turney.\n");
+    outfile->Printf("  built on LIBMINTS.\n\n");
 }
 
 template <class T>
-bool from_string(T& t,
-                 const std::string& s,
-                 std::ios_base& (*f)(std::ios_base&))
-{
+bool from_string(T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&)) {
     std::istringstream iss(s);
     return !(iss >> f >> t).fail();
 }
 
-void OEProp::compute()
-{
-
-    
+void OEProp::compute() {
     if (title_ == "") {
         outfile->Printf("OEProp: No title given, name of density matrix used for the following properties is '%s'\n",
                         mpc_.Da_name().c_str());
     } else {
-        outfile->Printf( "\nProperties computed using the %s density matrix\n\n", title_.c_str());
+        outfile->Printf("\nProperties computed using the %s density matrix\n\n", title_.c_str());
     }
 
     // Search for multipole strings, which are handled separately
     std::set<std::string>::const_iterator iter = tasks_.begin();
     std::regex mpoles("^MULTIPOLE(?:S)?\\s*\\((\\d+)\\)$");
     std::smatch matches;
-    for(; iter !=tasks_.end(); ++iter){
+    for (; iter != tasks_.end(); ++iter) {
         std::string str = *iter;
-        if(std::regex_match(str, matches, mpoles)){
+        if (std::regex_match(str, matches, mpoles)) {
             int order;
-            if(!from_string<int>(order, matches[1], std::dec))
+            if (!from_string<int>(order, matches[1], std::dec))
                 throw PSIEXCEPTION("Problem determining multipole order!  Specify, e.g., MULTIPOLE(5)");
             compute_multipoles(order);
         }
     }
     // print_header();  // Not by default, happens too often -CDS
-    if (tasks_.count("ESP_AT_NUCLEI"))
-        compute_esp_at_nuclei();
-    if (tasks_.count("DIPOLE"))
-        compute_dipole(false);
-    if (tasks_.count("QUADRUPOLE"))
-        compute_quadrupole(false);
-    if (tasks_.count("TRANSITION_DIPOLE"))
-        compute_dipole(true);
-    if (tasks_.count("TRANSITION_QUADRUPOLE"))
-        compute_quadrupole(true);
-    if (tasks_.count("MO_EXTENTS"))
-        compute_mo_extents();
-    if (tasks_.count("MULLIKEN_CHARGES"))
-        compute_mulliken_charges();
-    if (tasks_.count("LOWDIN_CHARGES"))
-        compute_lowdin_charges();
-    if (tasks_.count("MAYER_INDICES"))
-        compute_mayer_indices();
-    if (tasks_.count("WIBERG_LOWDIN_INDICES"))
-        compute_wiberg_lowdin_indices();
-    if (tasks_.count("NO_OCCUPATIONS"))
-        compute_no_occupations();
-    if (tasks_.count("GRID_FIELD"))
-        compute_field_over_grid();
-    if (tasks_.count("GRID_ESP"))
-        compute_esp_over_grid();
+    if (tasks_.count("ESP_AT_NUCLEI")) compute_esp_at_nuclei();
+    if (tasks_.count("DIPOLE")) compute_dipole(false);
+    if (tasks_.count("QUADRUPOLE")) compute_quadrupole(false);
+    if (tasks_.count("TRANSITION_DIPOLE")) compute_dipole(true);
+    if (tasks_.count("TRANSITION_QUADRUPOLE")) compute_quadrupole(true);
+    if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
+    if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
+    if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
+    if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();
+    if (tasks_.count("WIBERG_LOWDIN_INDICES")) compute_wiberg_lowdin_indices();
+    if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
+    if (tasks_.count("GRID_FIELD")) compute_field_over_grid();
+    if (tasks_.count("GRID_ESP")) compute_esp_over_grid();
 }
 
-
-void OEProp::compute_multipoles(int order, bool transition)
-{
+void OEProp::compute_multipoles(int order, bool transition) {
     MultipolePropCalc::MultipoleOutputType mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
     for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
         std::string name;
@@ -948,11 +852,11 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
     SharedMatrix Db;
 
     std::vector<SharedMatrix> mp_ints;
-    MultipoleSymmetry mpsymm (order, mol, integral_, factory_);
+    MultipoleSymmetry mpsymm(order, mol, integral_, factory_);
 
-    if(origin_preserves_symmetry_){
+    if (origin_preserves_symmetry_) {
         // We can use symmetry here
-        std::shared_ptr<OneBodySOInt> sompOBI (integral_->so_multipoles(order));
+        std::shared_ptr<OneBodySOInt> sompOBI(integral_->so_multipoles(order));
         sompOBI->ob()->set_origin(origin_);
         mp_ints = mpsymm.create_matrices("", false);
         sompOBI->compute(mp_ints);
@@ -964,10 +868,10 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
             Da = Da_so_;
             Db = Db_so_;
         }
-    }else{
+    } else {
         // No symmetry
         mp_ints = mpsymm.create_matrices("", true);
-        std::shared_ptr<OneBodyAOInt> aompOBI (integral_->ao_multipoles(order));
+        std::shared_ptr<OneBodyAOInt> aompOBI(integral_->ao_multipoles(order));
         aompOBI->set_origin(origin_);
         aompOBI->compute(mp_ints);
 
@@ -982,8 +886,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
 
     if (verbose) {
         std::vector<SharedMatrix>::iterator iter;
-        for(iter = mp_ints.begin(); iter != mp_ints.end(); ++iter)
-            iter->get()->print();
+        for (iter = mp_ints.begin(); iter != mp_ints.end(); ++iter) iter->get()->print();
     }
 
     SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
@@ -996,18 +899,16 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
     }
     double convfac = pc_dipmom_au2debye;
     int address = 0;
-    for(int l = 1; l <= order; ++l){
+    for (int l = 1; l <= order; ++l) {
         int ncomponents = (l + 1) * (l + 2) / 2;
         std::stringstream ss;
-        if(l > 1)
-            ss << ".ang";
-        if(l > 2)
-            ss << "^" << l-1;
+        if (l > 1) ss << ".ang";
+        if (l > 2) ss << "^" << l - 1;
         std::string exp = ss.str();
         if (print_output) {
             outfile->Printf(" L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
         }
-        for(int component = 0; component < ncomponents; ++component){
+        for (int component = 0; component < ncomponents; ++component) {
             SharedMatrix mpmat = mp_ints[address];
             std::string name = mpmat->name();
             double nuc = transition ? 0.0 : nuclear_contributions->get(address);
@@ -1032,55 +933,41 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
     return mot;
 }
 
-
 /**
  * @brief The GridIterator class:  A class to iterate over a user-provided grid for
  *                                 computing electrostatic properties.
  */
-class GridIterator{
+class GridIterator {
     std::ifstream gridfile_;
     Vector3 gridpoints_;
-public:
-    const Vector3& gridpoints() const {return gridpoints_;}
-    GridIterator(const std::string &filename)
-    {
+
+   public:
+    const Vector3& gridpoints() const { return gridpoints_; }
+    GridIterator(const std::string& filename) {
         gridfile_.open(filename.c_str());
-        if(!gridfile_)
-            throw PSIEXCEPTION("Unable to open the grid.dat file.");
+        if (!gridfile_) throw PSIEXCEPTION("Unable to open the grid.dat file.");
     }
-    void first()
-    {
-        if(!gridfile_)
-            throw PSIEXCEPTION("File not initialized in Griditer::first.");
+    void first() {
+        if (!gridfile_) throw PSIEXCEPTION("File not initialized in Griditer::first.");
         gridfile_.clear();
         gridfile_.seekg(0, std::ios::beg);
         next();
     }
-    void next()
-    {
-        if(!gridfile_)
-            throw PSIEXCEPTION("Griditer::next called before file stream was initialized.");
-        if(!(gridfile_ >> gridpoints_[0])){
-            if(gridfile_.eof()){
+    void next() {
+        if (!gridfile_) throw PSIEXCEPTION("Griditer::next called before file stream was initialized.");
+        if (!(gridfile_ >> gridpoints_[0])) {
+            if (gridfile_.eof()) {
                 // Hitting the end of file is OK in this situation.
                 return;
-            }else{
+            } else {
                 throw PSIEXCEPTION("Problem reading x gridpoint from the grid file.");
             }
         }
-        if(!(gridfile_ >> gridpoints_[1]))
-            throw PSIEXCEPTION("Problem reading y gridpoint from the grid file.");
-        if(!(gridfile_ >> gridpoints_[2]))
-            throw PSIEXCEPTION("Problem reading z gridpoint from the grid file.");
+        if (!(gridfile_ >> gridpoints_[1])) throw PSIEXCEPTION("Problem reading y gridpoint from the grid file.");
+        if (!(gridfile_ >> gridpoints_[2])) throw PSIEXCEPTION("Problem reading z gridpoint from the grid file.");
     }
-    bool last() const
-    {
-        return gridfile_.eof();
-    }
-    ~GridIterator()
-    {
-        gridfile_.close();
-    }
+    bool last() const { return gridfile_.eof(); }
+    ~GridIterator() { gridfile_.close(); }
 };
 
 ESPPropCalc::ESPPropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn) {}
@@ -1101,7 +988,7 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
-    }else{
+    } else {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
@@ -1109,27 +996,24 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     auto ints = std::make_shared<Matrix>("Ex integrals", nbf, nbf);
 
     Vvals_.clear();
-    FILE *gridout = fopen("grid_esp.dat", "w");
-    if(!gridout)
-        throw PSIEXCEPTION("Unable to write to grid_esp.dat");
+    FILE* gridout = fopen("grid_esp.dat", "w");
+    if (!gridout) throw PSIEXCEPTION("Unable to write to grid_esp.dat");
     GridIterator griditer("grid.dat");
-    for(griditer.first(); !griditer.last(); griditer.next()){
+    for (griditer.first(); !griditer.last(); griditer.next()) {
         Vector3 origin(griditer.gridpoints());
-        if(mol->units() == Molecule::Angstrom)
-            origin /= pc_bohr2angstroms;
+        if (mol->units() == Molecule::Angstrom) origin /= pc_bohr2angstroms;
         ints->zero();
         epot->compute(ints, origin);
         double Velec = Dtot->vector_dot(ints);
         double Vnuc = 0.0;
         int natom = mol->natom();
-        for(int i=0; i < natom; i++) {
+        for (int i = 0; i < natom; i++) {
             Vector3 dR = origin - mol->xyz(i);
             double r = dR.norm();
-            if(r > 1.0E-8)
-                Vnuc += mol->Z(i)/r;
+            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
         }
-        Vvals_.push_back(Velec+Vnuc);
-        fprintf(gridout, "%16.10f\n", Velec+Vnuc);
+        Vvals_.push_back(Velec + Vnuc);
+        fprintf(gridout, "%16.10f\n", Velec + Vnuc);
     }
     fclose(gridout);
 }
@@ -1160,7 +1044,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
 
     bool convert = mol->units() == Molecule::Angstrom;
 
-#pragma openmp parallel for
+#pragma omp parallel for
     for (int i = 0; i < number_of_grid_points; ++i) {
         Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
         if (convert) origin /= pc_bohr2angstroms;
@@ -1170,10 +1054,10 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
         double Velec = Dtot->vector_dot(ints);
         double Vnuc = 0.0;
         int natom = mol->natom();
-        for (int i = 0; i < natom; i++) {
-            Vector3 dR = origin - mol->xyz(i);
+        for (int iat = 0; iat < natom; iat++) {
+            Vector3 dR = origin - mol->xyz(iat);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
         }
         double Vtot = Velec + Vnuc;
         (*output)[i] = Vtot;
@@ -1195,7 +1079,7 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
-    }else{
+    } else {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
@@ -1211,26 +1095,23 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
     Eyvals_.clear();
     Ezvals_.clear();
 
-    FILE *gridout = fopen("grid_field.dat", "w");
-    if(!gridout)
-        throw PSIEXCEPTION("Unable to write to grid_field.dat");
+    FILE* gridout = fopen("grid_field.dat", "w");
+    if (!gridout) throw PSIEXCEPTION("Unable to write to grid_field.dat");
     GridIterator griditer("grid.dat");
-    for(griditer.first(); !griditer.last(); griditer.next()){
+    for (griditer.first(); !griditer.last(); griditer.next()) {
         Vector3 origin(griditer.gridpoints());
-        if(mol->units() == Molecule::Angstrom)
-            origin /= pc_bohr2angstroms;
+        if (mol->units() == Molecule::Angstrom) origin /= pc_bohr2angstroms;
         field_ints->set_origin(origin);
-        for (int m=0; m<3; ++m)
-            intmats[m]->zero();
+        for (int m = 0; m < 3; ++m) intmats[m]->zero();
         field_ints->compute(intmats);
         double Ex = Dtot->vector_dot(intmats[0]);
         double Ey = Dtot->vector_dot(intmats[1]);
         double Ez = Dtot->vector_dot(intmats[2]);
         Vector3 nuc = field_ints->nuclear_contribution(origin, mol);
-        Exvals_.push_back(Ex+nuc[0]);
-        Eyvals_.push_back(Ey+nuc[1]);
-        Ezvals_.push_back(Ez+nuc[2]);
-        fprintf(gridout, "%16.10f %16.10f %16.10f\n", Ex+nuc[0], Ey+nuc[1], Ez+nuc[2]);
+        Exvals_.push_back(Ex + nuc[0]);
+        Eyvals_.push_back(Ey + nuc[1]);
+        Ezvals_.push_back(Ez + nuc[2]);
+        fprintf(gridout, "%16.10f %16.10f %16.10f\n", Ex + nuc[0], Ey + nuc[1], Ez + nuc[2]);
     }
     fclose(gridout);
 }
@@ -1258,7 +1139,7 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
-    }else{
+    } else {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
@@ -1269,9 +1150,9 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
         outfile->Printf("   Center     Electrostatic Potential (a.u.)\n");
         outfile->Printf(" ---------------------------------------------\n");
     }
-    for(int atom1 = 0; atom1 < natoms; ++atom1){
+    for (int atom1 = 0; atom1 < natoms; ++atom1) {
         std::stringstream s;
-        s << "ESP AT CENTER " << atom1+1;
+        s << "ESP AT CENTER " << atom1 + 1;
         auto ints = std::make_shared<Matrix>(s.str(), nbf, nbf);
         epot->compute(ints, mol->xyz(atom1));
         if (verbose) {
@@ -1279,15 +1160,14 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
         }
         double elec = Dtot->vector_dot(ints);
         double nuc = 0.0;
-        for(int atom2 = 0; atom2 < natoms; ++atom2){
-            if(atom1 == atom2)
-                continue;
+        for (int atom2 = 0; atom2 < natoms; ++atom2) {
+            if (atom1 == atom2) continue;
             nuc += mol->Z(atom2) / dist[0][atom1][atom2];
         }
         if (print_output) {
             outfile->Printf("  %3d %2s           %16.12f\n", atom1 + 1, mol->label(atom1).c_str(), nuc + elec);
         }
-        (*nesps)[atom1] = nuc+elec;
+        (*nesps)[atom1] = nuc + elec;
     }
     if (print_output) {
         outfile->Printf(" ---------------------------------------------\n");
@@ -1332,12 +1212,9 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
         }
     } else {
         // Don't use symmetry
-        dipole_ints.push_back(SharedMatrix(
-            new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
-        dipole_ints.push_back(SharedMatrix(
-            new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
-        dipole_ints.push_back(SharedMatrix(
-            new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
         std::shared_ptr<OneBodyAOInt> aodOBI(integral_->ao_dipole());
         aodOBI->set_origin(origin_);
         aodOBI->compute(dipole_ints);
@@ -1432,7 +1309,7 @@ SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_o
     SharedMatrix Db;
 
     std::vector<SharedMatrix> qpole_ints;
-    if(origin_preserves_symmetry_){
+    if (origin_preserves_symmetry_) {
         OperatorSymmetry quadsymm(2, mol, integral_, factory_);
         qpole_ints = quadsymm.create_matrices("SO Quadrupole");
         std::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
@@ -1445,7 +1322,7 @@ SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_o
             Da = Da_so_;
             Db = Db_so_;
         }
-    }else{
+    } else {
         qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
         qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
         qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
@@ -1465,8 +1342,7 @@ SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_o
     }
 
     if (verbose)
-        for(int n = 0; n < 6; ++n)
-            qpole_ints[n]->print();
+        for (int n = 0; n < 6; ++n) qpole_ints[n]->print();
 
     // Each multipole integral needs to be dotted with the SO Density
     Vector qe(6);
@@ -1601,19 +1477,21 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     int nmo = Ca->ncol();
 
     if (same_orbs_) {
-
         // Dipoles
-        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        C_DGEMM('T', 'N', nmo, nao, nao, 1.0, Ca->pointer()[0], nmo, ao_Dpole[0]->pointer()[0], nao, 0.0,
+                temp->pointer()[0], nao);
         for (int i = 0; i < nmo; i++) {
-            dipole[0]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+            dipole[0]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
         }
-        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[1]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        C_DGEMM('T', 'N', nmo, nao, nao, 1.0, Ca->pointer()[0], nmo, ao_Dpole[1]->pointer()[0], nao, 0.0,
+                temp->pointer()[0], nao);
         for (int i = 0; i < nmo; i++) {
-            dipole[1]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+            dipole[1]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
         }
-        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[2]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        C_DGEMM('T', 'N', nmo, nao, nao, 1.0, Ca->pointer()[0], nmo, ao_Dpole[2]->pointer()[0], nao, 0.0,
+                temp->pointer()[0], nao);
         for (int i = 0; i < nmo; i++) {
-            dipole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+            dipole[2]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
         }
         // Quadrupoles
 #if 0
@@ -1630,10 +1508,10 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
             quadrupole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
         }
 #else
-        for (int i=0; i<Ca->ncol(); ++i) {
-            double sumx=0.0, sumy=0.0, sumz=0.0;
-            for (int k=0; k<Ca->nrow(); ++k) {
-                for (int l=0; l<Ca->nrow(); ++l) {
+        for (int i = 0; i < Ca->ncol(); ++i) {
+            double sumx = 0.0, sumy = 0.0, sumz = 0.0;
+            for (int k = 0; k < Ca->nrow(); ++k) {
+                for (int l = 0; l < Ca->nrow(); ++l) {
                     double tmp = Ca->get(0, k, i) * Ca->get(0, l, i);
                     sumx += ao_Qpole[0]->get(0, k, l) * tmp;
                     sumy += ao_Qpole[3]->get(0, k, l) * tmp;
@@ -1647,13 +1525,13 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
         }
 #endif
         std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
-        std::vector<std::tuple<double,int,int> > metric;
+        std::vector<std::tuple<double, int, int>> metric;
         for (int h = 0; h < epsilon_a_->nirrep(); h++) {
             for (int i = 0; i < epsilon_a_->dimpi()[h]; i++) {
-                metric.push_back(std::tuple<double,int,int>(epsilon_a_->get(h,i),i,h));
+                metric.push_back(std::tuple<double, int, int>(epsilon_a_->get(h, i), i, h));
             }
         }
-        std::sort(metric.begin(),metric.end());
+        std::sort(metric.begin(), metric.end());
         if (print_output) {
             outfile->Printf("\n  Orbital extents (a.u.):\n");
             outfile->Printf("    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
@@ -1663,9 +1541,7 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
             int n = std::get<1>(metric[i]);
             int h = std::get<2>(metric[i]);
 
-            double xx = quadrupole[0]->get(0, i),
-                   yy = quadrupole[1]->get(0, i),
-                   zz = quadrupole[2]->get(0, i);
+            double xx = quadrupole[0]->get(0, i), yy = quadrupole[1]->get(0, i), zz = quadrupole[2]->get(0, i);
             if (print_output) {
                 outfile->Printf("    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n", i, labels[h].c_str(), n,
                                 std::fabs(quadrupole[0]->get(0, i)), std::fabs(quadrupole[1]->get(0, i)),
@@ -1681,7 +1557,6 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
         }
 
     } else {
-
         // TODO: Both alpha and beta orbitals are reported separately
         // This helps identify symmetry breaking
     }
@@ -1695,8 +1570,7 @@ PopulationAnalysisCalc::PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn
 
 PopulationAnalysisCalc::~PopulationAnalysisCalc() {}
 
-void OEProp::compute_mulliken_charges()
-{
+void OEProp::compute_mulliken_charges() {
     PAC::SharedStdVector Qa, Qb, apcs;
     std::tie(Qa, Qb, apcs) = pac_.compute_mulliken_charges(true);
     wfn_->set_atomic_point_charges(apcs);
@@ -1728,7 +1602,7 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     SharedMatrix Da;
     SharedMatrix Db;
 
-//    Get the Density Matrices for alpha and beta spins
+    //    Get the Density Matrices for alpha and beta spins
     if (same_dens_) {
         Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
         Db = Da;
@@ -1737,24 +1611,24 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
         Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
     }
 
-//    Compute the overlap matrix
+    //    Compute the overlap matrix
 
     std::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    auto S = std::make_shared<Matrix>("S",basisset_->nbf(),basisset_->nbf());
+    auto S = std::make_shared<Matrix>("S", basisset_->nbf(), basisset_->nbf());
     overlap->compute(S);
 
-//    Form the idempotent D*S matrix
+    //    Form the idempotent D*S matrix
 
-    auto PSam = std::make_shared<Matrix>("PSa",basisset_->nbf(),basisset_->nbf());
-    PSam->gemm(false,false,1.0,Da,S,0.0);
-    auto PSbm = std::make_shared<Matrix>("PSb",basisset_->nbf(),basisset_->nbf());
-    PSbm->gemm(false,false,1.0,Db,S,0.0);
+    auto PSam = std::make_shared<Matrix>("PSa", basisset_->nbf(), basisset_->nbf());
+    PSam->gemm(false, false, 1.0, Da, S, 0.0);
+    auto PSbm = std::make_shared<Matrix>("PSb", basisset_->nbf(), basisset_->nbf());
+    PSbm->gemm(false, false, 1.0, Db, S, 0.0);
 
-//     Accumulate registers
+    //     Accumulate registers
 
     for (int mu = 0; mu < basisset_->nbf(); mu++) {
-        PSa[mu] = PSam->get(0,mu,mu);
-        PSb[mu] = PSbm->get(0,mu,mu);
+        PSa[mu] = PSam->get(0, mu, mu);
+        PSb[mu] = PSbm->get(0, mu, mu);
 
         int shell = basisset_->function_to_shell(mu);
         int A = basisset_->shell_to_center(shell);
@@ -1766,7 +1640,7 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
         sumb += PSb[mu];
     }
 
-//    Print out the Mulliken populations and charges
+    //    Print out the Mulliken populations and charges
     if (print_output) {
         outfile->Printf("   Center  Symbol    Alpha    Beta     Spin     Total\n");
     }
@@ -1774,25 +1648,24 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = (*Qa)[A] - (*Qb)[A];
         double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
-        (*apcs)[A]=Qt;
+        (*apcs)[A] = Qt;
         if (print_output) {
             outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
                             (*Qb)[A], Qs, Qt);
         }
-        nuc += (double) mol->Z(A);
-   }
+        nuc += (double)mol->Z(A);
+    }
 
-   if (print_output) {
-       outfile->Printf("\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,
-                       nuc - suma - sumb);
+    if (print_output) {
+        outfile->Printf("\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,
+                        nuc - suma - sumb);
     }
 
     if (print_output) outfile->Printf("\n");
 
     return std::make_tuple(Qa, Qb, apcs);
 }
-void OEProp::compute_lowdin_charges()
-{
+void OEProp::compute_lowdin_charges() {
     PAC::SharedStdVector Qa, Qb, apcs;
     std::tie(Qa, Qb, apcs) = pac_.compute_lowdin_charges(true);
     wfn_->set_atomic_point_charges(apcs);
@@ -1822,13 +1695,13 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 
     SharedMatrix Da;
     SharedMatrix Db;
-    auto evecs = std::make_shared<Matrix>("Eigenvectors of S matrix",basisset_->nbf(),basisset_->nbf());
-    auto temp = std::make_shared<Matrix>("Temporary matrix",basisset_->nbf(),basisset_->nbf());
-    auto SDSa = std::make_shared<Matrix>("S_12 * D * S_12 alpha matrix",basisset_->nbf(),basisset_->nbf());
-    auto SDSb = std::make_shared<Matrix>("S_12 * D * S_12 beta matrix",basisset_->nbf(),basisset_->nbf());
+    auto evecs = std::make_shared<Matrix>("Eigenvectors of S matrix", basisset_->nbf(), basisset_->nbf());
+    auto temp = std::make_shared<Matrix>("Temporary matrix", basisset_->nbf(), basisset_->nbf());
+    auto SDSa = std::make_shared<Matrix>("S_12 * D * S_12 alpha matrix", basisset_->nbf(), basisset_->nbf());
+    auto SDSb = std::make_shared<Matrix>("S_12 * D * S_12 beta matrix", basisset_->nbf(), basisset_->nbf());
     auto evals = std::make_shared<Vector>(basisset_->nbf());
 
-//    Get the Density Matrices for alpha and beta spins
+    //    Get the Density Matrices for alpha and beta spins
     if (same_dens_) {
         Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
         Db = Da;
@@ -1837,24 +1710,24 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
         Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
     }
 
-//    Compute the overlap matrix
+    //    Compute the overlap matrix
 
     std::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    auto S = std::make_shared<Matrix>("S",basisset_->nbf(),basisset_->nbf());
+    auto S = std::make_shared<Matrix>("S", basisset_->nbf(), basisset_->nbf());
     overlap->compute(S);
 
-//    Form the S^(1/2) matrix
+    //    Form the S^(1/2) matrix
 
-    S->power(1.0/2.0);
+    S->power(1.0 / 2.0);
 
-//    Compute the S^(1/2)*D*S^(1/2) matrix
+    //    Compute the S^(1/2)*D*S^(1/2) matrix
 
-    temp->gemm(false,false,1.0,Da,S,0.0);
-    SDSa->gemm(false,false,1.0,S,temp,0.0);
-    temp->gemm(false,false,1.0,Db,S,0.0);
-    SDSb->gemm(false,false,1.0,S,temp,0.0);
+    temp->gemm(false, false, 1.0, Da, S, 0.0);
+    SDSa->gemm(false, false, 1.0, S, temp, 0.0);
+    temp->gemm(false, false, 1.0, Db, S, 0.0);
+    SDSb->gemm(false, false, 1.0, S, temp, 0.0);
 
-//    Accumulate AO populations for each atom
+    //    Accumulate AO populations for each atom
 
     for (int mu = 0; mu < basisset_->nbf(); mu++) {
         int shell = basisset_->function_to_shell(mu);
@@ -1863,11 +1736,11 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
         (*Qa)[A] += SDSa->get(0, mu, mu);
         (*Qb)[A] += SDSb->get(0, mu, mu);
 
-        suma += SDSa->get(0,mu,mu);
-        sumb += SDSb->get(0,mu,mu);
+        suma += SDSa->get(0, mu, mu);
+        sumb += SDSb->get(0, mu, mu);
     }
 
-//    Print out the populations and charges
+    //    Print out the populations and charges
 
     if (print_output) {
         outfile->Printf("   Center  Symbol    Alpha    Beta     Spin     Total\n");
@@ -1876,12 +1749,12 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = (*Qa)[A] - (*Qb)[A];
         double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
-        (*apcs)[A]=Qt;
+        (*apcs)[A] = Qt;
         if (print_output) {
             outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
                             (*Qb)[A], Qs, Qt);
         }
-        nuc += (double) mol->Z(A);
+        nuc += (double)mol->Z(A);
     }
     if (print_output) {
         outfile->Printf("\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,
@@ -1890,8 +1763,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 
     return std::make_tuple(Qa, Qb, apcs);
 }
-void OEProp::compute_mayer_indices()
-{
+void OEProp::compute_mayer_indices() {
     SharedMatrix MBI_total, MBI_alpha, MBI_beta;
     SharedVector MBI_valence;
     std::tie(MBI_total, MBI_alpha, MBI_beta, MBI_valence) = pac_.compute_mayer_indices(true);
@@ -1911,13 +1783,13 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
 
     int nbf = basisset_->nbf();
 
-    SharedMatrix Da;      // Density matrix for alpha spin
-    SharedMatrix Db;      // Density matrix for beta spin
+    SharedMatrix Da;  // Density matrix for alpha spin
+    SharedMatrix Db;  // Density matrix for beta spin
 
-    auto DSa = std::make_shared<Matrix>("D * S alpha matrix",nbf,nbf);
-    auto DSb = std::make_shared<Matrix>("D * S beta matrix",nbf,nbf);
+    auto DSa = std::make_shared<Matrix>("D * S alpha matrix", nbf, nbf);
+    auto DSb = std::make_shared<Matrix>("D * S beta matrix", nbf, nbf);
 
-//    Get the Density Matrices for alpha and beta spins
+    //    Get the Density Matrices for alpha and beta spins
     if (same_dens_) {
         Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
         Db = Da;
@@ -1926,28 +1798,28 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
         Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
     }
 
-//    Compute the overlap matrix
+    //    Compute the overlap matrix
 
     std::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    auto S = std::make_shared<Matrix>("S matrix",nbf,nbf);
+    auto S = std::make_shared<Matrix>("S matrix", nbf, nbf);
     overlap->compute(S);
 
-//    Form the idempotent D*S matrix
+    //    Form the idempotent D*S matrix
 
-    DSa->gemm(false,false,1.0,Da,S,0.0);
-    DSb->gemm(false,false,1.0,Db,S,0.0);
+    DSa->gemm(false, false, 1.0, Da, S, 0.0);
+    DSb->gemm(false, false, 1.0, Db, S, 0.0);
 
-//     Compute Mayer bond indices
+    //     Compute Mayer bond indices
 
     int natom = mol->natom();
 
-    auto MBI_total = std::make_shared<Matrix>(natom,natom);
+    auto MBI_total = std::make_shared<Matrix>(natom, natom);
     SharedMatrix MBI_alpha;
     SharedMatrix MBI_beta;
 
     if (!same_dens_) {
-        MBI_alpha = std::make_shared<Matrix>(natom,natom);
-        MBI_beta = std::make_shared<Matrix>(natom,natom);
+        MBI_alpha = std::make_shared<Matrix>(natom, natom);
+        MBI_beta = std::make_shared<Matrix>(natom, natom);
     }
 
     for (int mu = 0; mu < nbf; mu++) {
@@ -1958,7 +1830,7 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
             int atom_nu = basisset_->shell_to_center(shell_nu);
             if (atom_mu == atom_nu) continue;
 
-            double alpha = DSa->get(0, mu, nu) * DSa->get(0, nu, mu) ;
+            double alpha = DSa->get(0, mu, nu) * DSa->get(0, nu, mu);
             double beta = DSb->get(0, mu, nu) * DSb->get(0, nu, mu);
             MBI_total->add(0, atom_mu, atom_nu, 2 * (alpha + beta));
             MBI_total->add(0, atom_nu, atom_mu, 2 * (alpha + beta));
@@ -1972,7 +1844,7 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
         }
     }
 
-//    Compute valences
+    //    Compute valences
 
     auto MBI_valence = std::make_shared<Vector>(natom);
 
@@ -1983,16 +1855,16 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
         }
     }
 
-//    Print out the bond index matrix and valences
+    //    Print out the bond index matrix and valences
 
-//    Note: The computed Mayer bond indices (MBI) will be different from the MBI values computed using
-//    some other program packages for the unrestricted case. The reason is that these programs left out
-//    the spin density contribution in the MBI equation for the unrestricted wavefunctions. As the result,
-//    the MBI value will be underestimated. For example, the MBI value for the H–H bond of H2+
-//    is calculated to be 0.25 using the NBO program. The equation coded above gives the correct value of 0.5.
-//    For reference, see IJQC 29 (1986) P. 73 and IJQC 29 (1986) P. 477.
+    //    Note: The computed Mayer bond indices (MBI) will be different from the MBI values computed using
+    //    some other program packages for the unrestricted case. The reason is that these programs left out
+    //    the spin density contribution in the MBI equation for the unrestricted wavefunctions. As the result,
+    //    the MBI value will be underestimated. For example, the MBI value for the H–H bond of H2+
+    //    is calculated to be 0.25 using the NBO program. The equation coded above gives the correct value of 0.5.
+    //    For reference, see IJQC 29 (1986) P. 73 and IJQC 29 (1986) P. 477.
 
-//    A nicer output is needed ...
+    //    A nicer output is needed ...
 
     if (print_output) {
         if (same_dens_) {
@@ -2013,8 +1885,7 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
 
     return std::make_tuple(MBI_total, MBI_alpha, MBI_beta, MBI_valence);
 }
-void OEProp::compute_wiberg_lowdin_indices()
-{
+void OEProp::compute_wiberg_lowdin_indices() {
     SharedMatrix WBI_total, WBI_alpha, WBI_beta;
     SharedVector WBI_valence;
     std::tie(WBI_total, WBI_alpha, WBI_beta, WBI_valence) = pac_.compute_wiberg_lowdin_indices(true);
@@ -2035,13 +1906,13 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
 
     SharedMatrix Da;
     SharedMatrix Db;
-    auto evecs = std::make_shared<Matrix>("Eigenvectors of S matrix",nbf,nbf);
-    auto temp = std::make_shared<Matrix>("Temporary matrix",nbf,nbf);
-    auto SDSa = std::make_shared<Matrix>("S_12 * D * S_12 alpha matrix",nbf,nbf);
-    auto SDSb = std::make_shared<Matrix>("S_12 * D * S_12 beta matrix",nbf,nbf);
+    auto evecs = std::make_shared<Matrix>("Eigenvectors of S matrix", nbf, nbf);
+    auto temp = std::make_shared<Matrix>("Temporary matrix", nbf, nbf);
+    auto SDSa = std::make_shared<Matrix>("S_12 * D * S_12 alpha matrix", nbf, nbf);
+    auto SDSb = std::make_shared<Matrix>("S_12 * D * S_12 beta matrix", nbf, nbf);
     auto evals = std::make_shared<Vector>(nbf);
 
-//    Get the Density Matrices for alpha and beta spins
+    //    Get the Density Matrices for alpha and beta spins
     if (same_dens_) {
         Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
         Db = Da;
@@ -2050,37 +1921,37 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
         Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
     }
 
-//    Compute the overlap matrix
+    //    Compute the overlap matrix
 
     std::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    auto S = std::make_shared<Matrix>("S",basisset_->nbf(),basisset_->nbf());
+    auto S = std::make_shared<Matrix>("S", basisset_->nbf(), basisset_->nbf());
     overlap->compute(S);
 
-//    Form the S^(1/2) matrix
+    //    Form the S^(1/2) matrix
 
-    S->diagonalize(evecs,evals);
+    S->diagonalize(evecs, evals);
     S->zero();
-    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(evals->get(0,p)));
+    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(evals->get(0, p)));
     S->back_transform(evecs);
 
-//    Compute the S^(1/2)*D*S^(1/2) matrix
+    //    Compute the S^(1/2)*D*S^(1/2) matrix
 
-    temp->gemm(false,false,1.0,Da,S,0.0);
-    SDSa->gemm(false,false,1.0,S,temp,0.0);
-    temp->gemm(false,false,1.0,Db,S,0.0);
-    SDSb->gemm(false,false,1.0,S,temp,0.0);
+    temp->gemm(false, false, 1.0, Da, S, 0.0);
+    SDSa->gemm(false, false, 1.0, S, temp, 0.0);
+    temp->gemm(false, false, 1.0, Db, S, 0.0);
+    SDSb->gemm(false, false, 1.0, S, temp, 0.0);
 
-//    Compute Wiberg bond indices
+    //    Compute Wiberg bond indices
 
     int natom = mol->natom();
 
-    auto WBI_total = std::make_shared<Matrix>(natom,natom);
+    auto WBI_total = std::make_shared<Matrix>(natom, natom);
     SharedMatrix WBI_alpha;
     SharedMatrix WBI_beta;
 
     if (!same_dens_) {
-        WBI_alpha = std::make_shared<Matrix>(natom,natom);
-        WBI_beta = std::make_shared<Matrix>(natom,natom);
+        WBI_alpha = std::make_shared<Matrix>(natom, natom);
+        WBI_beta = std::make_shared<Matrix>(natom, natom);
     }
 
     for (int mu = 0; mu < nbf; mu++) {
@@ -2091,7 +1962,7 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
             int atom_nu = basisset_->shell_to_center(shell_nu);
             if (atom_mu == atom_nu) continue;
 
-            double alpha = SDSa->get(0, mu, nu) * SDSa->get(0, nu, mu) ;
+            double alpha = SDSa->get(0, mu, nu) * SDSa->get(0, nu, mu);
             double beta = SDSb->get(0, mu, nu) * SDSb->get(0, nu, mu);
             WBI_total->add(0, atom_mu, atom_nu, 2 * (alpha + beta));
             WBI_total->add(0, atom_nu, atom_mu, 2 * (alpha + beta));
@@ -2105,7 +1976,7 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
         }
     }
 
-//    Compute valences
+    //    Compute valences
 
     auto WBI_valence = std::make_shared<Vector>(natom);
 
@@ -2116,8 +1987,8 @@ PopulationAnalysisCalc::compute_wiberg_lowdin_indices(bool print_output) {
         }
     }
 
-//    Print out the bond index matrix
-//    A nicer output is needed ...
+    //    Print out the bond index matrix
+    //    A nicer output is needed ...
     if (print_output) {
         if (same_dens_) {
             WBI_total->print();
@@ -2157,30 +2028,30 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
         SharedVector Oa;
         SharedVector Ob;
         if (same_dens_) {
-            std::pair<SharedMatrix,SharedVector> vals = Na_mo();
+            std::pair<SharedMatrix, SharedVector> vals = Na_mo();
             Oa = vals.second;
             Ob = vals.second;
         } else {
-            std::pair<SharedMatrix,SharedVector> vals = Na_mo();
+            std::pair<SharedMatrix, SharedVector> vals = Na_mo();
             Oa = vals.second;
-            std::pair<SharedMatrix,SharedVector> vals2 = Nb_mo();
+            std::pair<SharedMatrix, SharedVector> vals2 = Nb_mo();
             Ob = vals2.second;
         }
-        std::vector<std::tuple<double, int, int> > metric_a;
+        std::vector<std::tuple<double, int, int>> metric_a;
         for (int h = 0; h < Oa->nirrep(); h++) {
             for (int i = 0; i < Oa->dimpi()[h]; i++) {
-                metric_a.push_back(std::tuple<double,int,int>(Oa->get(h,i), i ,h));
+                metric_a.push_back(std::tuple<double, int, int>(Oa->get(h, i), i, h));
             }
         }
 
         metrics->push_back(metric_a);
 
-        std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double,int,int> >());
+        std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double, int, int>>());
         int offset_a = wfn_->nalpha();
         int start_occ_a = offset_a - max_noon;
         start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
         int stop_vir_a = offset_a + max_noon + 1;
-        stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
+        stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size() : stop_vir_a);
 
         if (print_output) {
             outfile->Printf("  Alpha Occupations:\n");
@@ -2198,22 +2069,22 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
             outfile->Printf("\n");
         }
 
-        std::vector<std::tuple<double, int, int> > metric_b;
+        std::vector<std::tuple<double, int, int>> metric_b;
         for (int h = 0; h < Ob->nirrep(); h++) {
             for (int i = 0; i < Ob->dimpi()[h]; i++) {
-                metric_b.push_back(std::tuple<double,int,int>(Ob->get(h,i), i ,h));
+                metric_b.push_back(std::tuple<double, int, int>(Ob->get(h, i), i, h));
             }
         }
 
         metrics->push_back(metric_b);
 
-        std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double,int,int> >());
+        std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double, int, int>>());
 
         int offset_b = wfn_->nbeta();
         int start_occ_b = offset_b - max_noon;
         start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
         int stop_vir_b = offset_b + max_noon + 1;
-        stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
+        stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size() : stop_vir_b);
 
         if (print_output) {
             outfile->Printf("  Beta Occupations:\n");
@@ -2229,28 +2100,27 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
             }
             outfile->Printf("\n");
         }
-
     }
 
-    std::pair<SharedMatrix,SharedVector> vals = Nt_mo();
+    std::pair<SharedMatrix, SharedVector> vals = Nt_mo();
     SharedVector Ot = vals.second;
 
-    std::vector<std::tuple<double, int, int> > metric;
+    std::vector<std::tuple<double, int, int>> metric;
     for (int h = 0; h < Ot->nirrep(); h++) {
         for (int i = 0; i < Ot->dimpi()[h]; i++) {
-            metric.push_back(std::tuple<double,int,int>(Ot->get(h,i), i ,h));
+            metric.push_back(std::tuple<double, int, int>(Ot->get(h, i), i, h));
         }
     }
 
     metrics->push_back(metric);
 
-    std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
+    std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double, int, int>>());
 
     int offset = wfn_->nbeta();
     int start_occ = offset - max_noon;
     start_occ = (start_occ < 0 ? 0 : start_occ);
     int stop_vir = offset + max_noon + 1;
-    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size()  : stop_vir);
+    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size() : stop_vir);
 
     if (print_output) {
         outfile->Printf("  Total Occupations:\n");
@@ -2266,8 +2136,7 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
         outfile->Printf("\n");
     }
     return metrics;
-    //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-
+    // for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 }
 
 void OEProp::set_wavefunction(std::shared_ptr<Wavefunction> wfn) {
@@ -2342,20 +2211,20 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
     epc_.set_Db_mo(Db);
 }
 
-//GridProp::GridProp(std::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
+// GridProp::GridProp(std::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
 //{
 //    common_init();
 //}
-//GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.legacy_wavefunction())
+// GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.legacy_wavefunction())
 //{
 //    common_init();
 //}
-//GridProp::~GridProp()
+// GridProp::~GridProp()
 //{
 //    reset();
 //    free_block(temp_tens_);
 //}
-//void GridProp::common_init()
+// void GridProp::common_init()
 //{
 //    initialized_ = false;
 //    format_ = "DF3";
@@ -2380,25 +2249,25 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //
 //    temp_tens_ = block_matrix(block_size_, basisset_->nbf());
 //}
-//void GridProp::add_alpha_mo(int irrep, int index)
+// void GridProp::add_alpha_mo(int irrep, int index)
 //{
 //    alpha_mos_.push_back(make_pair(irrep,index));
 //}
-//void GridProp::add_beta_mo(int irrep, int index)
+// void GridProp::add_beta_mo(int irrep, int index)
 //{
 //    beta_mos_.push_back(make_pair(irrep,index));
 //}
-//void GridProp::add_basis_fun(int irrep, int index)
+// void GridProp::add_basis_fun(int irrep, int index)
 //{
 //    basis_funs_.push_back(make_pair(irrep,index));
 //}
-//void GridProp::print_header()
+// void GridProp::print_header()
 //{
 //    outfile->Printf( "\n GRIDPROP: One-electron grid properties.\n");
 //    outfile->Printf( "  by Rob Parrish and Justin Turney.\n");
 //    outfile->Printf( "  built on LIBMINTS.\n\n");
 //}
-//double*** GridProp::block_grid(int nx, int ny, int nz)
+// double*** GridProp::block_grid(int nx, int ny, int nz)
 //{
 //    double*** grid = new double**[nx];
 //
@@ -2416,13 +2285,13 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //
 //    return grid;
 //}
-//void GridProp::free_grid(double*** grid)
+// void GridProp::free_grid(double*** grid)
 //{
 //    delete[] grid[0][0];
 //    delete[] grid[0];
 //    delete[] grid;
 //}
-//void GridProp::build_grid_overages(double over)
+// void GridProp::build_grid_overages(double over)
 //{
 //    std::shared_ptr<Molecule> mol = basisset_->molecule();
 //
@@ -2467,7 +2336,7 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //
 //    build_grid();
 //}
-//void GridProp::build_grid()
+// void GridProp::build_grid()
 //{
 //    int nx = n_[0] + 1;
 //    int ny = n_[1] + 1;
@@ -2523,7 +2392,7 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //    delete[] y;
 //    delete[] z;
 //}
-//void GridProp::allocate_arrays()
+// void GridProp::allocate_arrays()
 //{
 //    int nx = n_[0] + 1;
 //    int ny = n_[1] + 1;
@@ -2539,7 +2408,7 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //        }
 //    }
 //}
-//void GridProp::compute()
+// void GridProp::compute()
 //{
 //#if 0
 //    reset();
@@ -2634,7 +2503,7 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //
 //#endif
 //}
-//void GridProp::write_data_grid()
+// void GridProp::write_data_grid()
 //{
 //    int nx = n_[0] + 1;
 //    int ny = n_[1] + 1;
@@ -2661,7 +2530,7 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //        fclose(fptr);
 //    }
 //}
-//void GridProp::write_df3_grid()
+// void GridProp::write_df3_grid()
 //{
 //    int nx = n_[0] + 1;
 //    int ny = n_[1] + 1;
@@ -2701,7 +2570,7 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //        fclose(fptr);
 //    }
 //}
-//void GridProp::reset()
+// void GridProp::reset()
 //{
 //    if (!initialized_)
 //        return;
@@ -2715,15 +2584,15 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //    }
 //}
 //#if 0
-//void GridProp::compute_mos(std::shared_ptr<GridBlock> g, size_t offset)
+// void GridProp::compute_mos(std::shared_ptr<GridBlock> g, size_t offset)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_basis_funs(std::shared_ptr<GridBlock> g, size_t offset)
+// void GridProp::compute_basis_funs(std::shared_ptr<GridBlock> g, size_t offset)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_rho(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_rho(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    int npoints = g->getTruePoints();
 //    int nbf = basisset_->nbf();
@@ -2756,42 +2625,42 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
 //        C_DSCAL(npoints,2.0,results,1);
 //    }
 //}
-//void GridProp::compute_rho_s(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_rho_s(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_rho_a(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_rho_a(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_rho_b(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_rho_b(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_gamma_aa(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_gamma_aa(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_gamma_ab(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_gamma_ab(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_gamma_bb(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_gamma_bb(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_tau_a(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_tau_a(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_tau_b(std::shared_ptr<GridBlock> g, double* results)
+// void GridProp::compute_tau_b(std::shared_ptr<GridBlock> g, double* results)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
 //#endif
-//void GridProp::compute_ESP()
+// void GridProp::compute_ESP()
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
 
-}
+}  // namespace psi
