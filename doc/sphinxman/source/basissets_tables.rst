@@ -201,6 +201,9 @@ Appendix :ref:`apdx:basisElement`.
     | cc-pVXZ-F12      | DTQ        |     |     |     |     |     |                  |        |       |
     +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
 
+|
+|
+
 .. _`table:basisDunningJKFIT`:
 
 .. table:: Summary of Dunning JK-fitting basis sets available in |PSIfour|
@@ -317,11 +320,11 @@ Appendix :ref:`apdx:basisElement`.
 
 .. table:: Summary of Petersson orbital basis sets available in |PSIfour|
 
-    +---------------+--------------+------
+    +---------------+--------------+-----+
     | basis set     |  augmented, tight  |
-    +===============+==============+======
+    +===============+==============+=====+
     | nZaPa-NR      |    234567          |
-    +---------------+--------------+------
+    +---------------+--------------+-----+
 
 |
 |
