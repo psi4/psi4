@@ -181,22 +181,14 @@ def compute_charges(charge_method, charge_type, molecule):
     return charges
 
 
-def electrostatic_embedding(metadata, pair):
+def electrostatic_embedding(embedding_charges):
     """
-    Add atom-centered point charges for fragments whose basis sets are not included in the computation.
+    Add atom-centered point charges
     """
-    from psi4.driver import constants, qmmm
+    from psi4.driver import qmmm
 
-    if not metadata['return_total_data']:
-        raise Exception('Cannot return interaction data when using embedding scheme.')
     # Add embedding point charges
     Chrgfield = qmmm.QMMM()
-    for p in metadata['embedding_charges']:
-        if p in pair[1]: continue
-        mol = metadata['molecule'].extract_subsets([p])
-        for i in range(mol.natom()):
-            geom = np.array([mol.x(i), mol.y(i), mol.z(i)])
-            if mol.units() == 'Angstrom':
-                geom *= constants.bohr2angstroms
-            Chrgfield.extern.addCharge(metadata['embedding_charges'][p][i], geom[0], geom[1], geom[2])
+    for i in embedding_charges:
+        Chrgfield.extern.addCharge(i[0], i[1][0], i[1][1], i[1][2])
     core.set_global_option_python('EXTERN', Chrgfield.extern)

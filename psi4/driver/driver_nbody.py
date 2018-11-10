@@ -868,7 +868,9 @@ class NBodyComputer(BaseTask):
 
     return_wfn: bool = False
     return_total_data: bool = False
-    embedding_charges: bool = False
+    embedding_charges: Dict[int, list] = {}
+    charge_method: str = ''
+    charge_type: str = 'MULLIKEN_CHARGES'
     task_list: Dict[str, Any] = {}
     results_list: Dict[str, Any] = {}
     compute_dict: Dict[str, Any] = {}
@@ -881,6 +883,10 @@ class NBodyComputer(BaseTask):
             self.max_nbody = self.molecule.nfragments()
         else:
             self.max_nbody = min(self.max_nbody, self.max_frag)
+
+        if not self.return_total_data:
+            if self.embedding_charges or self.charge_method:
+                raise Exception('Cannot return interaction data when using embedding scheme.')
 
     #     # Get compute list
         self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
@@ -908,11 +914,16 @@ class NBodyComputer(BaseTask):
 
         return bsse_type[0]
 
+
     def build_tasks(self, obj, bsse_type="all", **kwargs):
 
         import json
         template = json.dumps(kwargs)
         compute_list = self.compute_dict[bsse_type]
+
+        if self.charge_method and not self.embedding_charges:
+            self.embedding_charges = driver_nbody_helper.compute_charges(self.charge_method,
+                                                self.charge_type, self.molecule)
 
         counter = 0
         for count, n in enumerate(compute_list):
@@ -923,6 +934,13 @@ class NBodyComputer(BaseTask):
                 data = json.loads(template)
                 ghost = list(set(pair[1]) - set(pair[0]))
                 data["molecule"] = self.molecule.extract_subsets(list(pair[0]), ghost)
+                if self.embedding_charges:
+                    embedding_frags = list(set(range(1, self.max_frag + 1)) - set(pair[1]))
+                    charges = []
+                    for frag in embedding_frags:
+                        positions = self.molecule.extract_subsets(frag).geometry().np.tolist()
+                        charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
+                    data['keywords'].update({'embedding_charges': charges})
 
                 self.task_list[pair] = obj(**data)
                 counter += 1
